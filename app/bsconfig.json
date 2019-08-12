@@ -1,0 +1,34 @@
+{
+  "name": "react-hooks-template",
+  "reason": {
+    "react-jsx": 3
+  },
+  "sources": [
+    {
+      "dir" : "src",
+      "subdirs" : true
+    },
+    {
+      "dev": true,
+      "dir": "__tests__",
+      "subdirs": true
+    }
+  ],
+  "package-specs": [{
+    "module": "commonjs",
+    "in-source": true
+  }],
+  "suffix": ".bs.js",
+  "namespace": true,
+  "bs-dependencies": [
+    "@glennsl/bs-jest",
+    "bs-jest-dom",
+    "bs-react-testing-library",
+    "reason-react"
+  ],
+  "refmt": 3,
+  "warnings": {
+    "number": "+A-48",
+    "error": "+A"
+  }
+}

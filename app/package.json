@@ -1,0 +1,44 @@
+{
+  "name": "oscoin-governance",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world",
+    "test": "bsb -make-world && jest",
+    "webpack": "webpack -w",
+    "webpack:production": "NODE_ENV=production webpack",
+    "server": "webpack-dev-server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
+    "reason-react": ">=0.7.0"
+  },
+  "devDependencies": {
+    "@glennsl/bs-jest": "^0.4.9",
+    "bs-jest-dom": "^2.0.1",
+    "bs-platform": "^5.0.4",
+    "bs-react-testing-library": "^0.6.0",
+    "html-webpack-plugin": "^3.2.0",
+    "husky": "^3.0.3",
+    "lint-staged": "^9.2.1",
+    "webpack": "^4.0.1",
+    "webpack-cli": "^3.1.1",
+    "webpack-dev-server": "^3.1.8"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{re,rei}": [
+      "refmt --in-place",
+      "git add"
+    ]
+  }
+}
