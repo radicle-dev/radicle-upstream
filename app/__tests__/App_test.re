@@ -7,7 +7,7 @@ let () =
   test("App renders heading", () =>
     <App />
     |> render
-    |> getByText(~matcher=`Str("Governance MVP"))
+    |> getByText(~matcher=`Str("Home of Oscoin"))
     |> expect
     |> toBeInTheDocument
   );
