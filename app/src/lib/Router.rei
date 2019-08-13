@@ -10,7 +10,7 @@ type page =
 /** Reads the current url and return a matching page, or NotFound. **/
 let currentPage: unit => page;
 
-/** Given a page returns a function which nvigates to it by pushing a new url
+/** Given a page returns a function which navigates to it by pushing a new url
  ** onto the pushState.
  **/
 let navigateOfPage: (page, 'a) => unit;
