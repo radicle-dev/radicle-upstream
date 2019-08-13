@@ -1,2 +1,14 @@
 [@react.component]
-let make = () => <h1> {React.string("Governance MVP")} </h1>;
+let make = () => {
+  open Router;
+
+  let url = ReasonReactRouter.useUrl();
+  let page =
+    switch (pageOfUrl(url)) {
+    | Root => <Generic title="Home of Oscoin" />
+    | Projects => <Generic title="List of projects" />
+    | NotFound(_path) => <Generic title="Not Found" />
+    };
+
+  <div className="app"> <Navigation /> page </div>;
+};
