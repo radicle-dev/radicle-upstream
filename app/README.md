@@ -6,11 +6,7 @@ This is the app for the product explorations.
 
 We consistently use `yarn` for our dependency management and script execution.
 Basis for the list of dependencies as well as the scripts supported is the
-`package.json`. To install all packages relevant for development run:
-
-```
-yarn
-```
+`package.json`. To install all packages relevant for development run: `yarn`
 
 ### Run
 
