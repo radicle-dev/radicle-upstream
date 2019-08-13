@@ -28,7 +28,7 @@ let navigateOfPage = (p: page) => {
 let nameOfPage = (p: page): string =>
   switch (p) {
   | Root => "Root"
-  | Projects => "Projects"
+  | Projects => "Explore"
   | Project(id) => "Project " ++ id
   | ProjectCode(id) => "Project " ++ id ++ "Code"
   | ProjectFunds(id) => "Project " ++ id ++ "Funds"
