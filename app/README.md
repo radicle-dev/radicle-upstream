@@ -1,7 +1,6 @@
-# Governance MVP
+# MVP
 
-This is the app for the Governance exploration showcasing ways to orchestrate
-and deploy funds and decision making in open source projects.
+This is the app for the product explorations.
 
 ### Setup
 
