@@ -1,5 +1,5 @@
 type page =
-  | Home
+  | Root
   | Projects
   | NotFound(list(string));
 

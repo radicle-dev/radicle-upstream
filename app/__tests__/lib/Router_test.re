@@ -1,16 +1,24 @@
 open Jest;
+open Expect;
+open ReasonReactRouter;
+open Router;
 
 describe("Router", () =>
-  Expect.(
-    ReasonReactRouter.(
-      Router.(
-        test("pageOfUrl", () => {
-          let url = {hash: "", path: ["projects"], search: ""};
-          let page = pageOfUrl(url);
-
-          expect(page) |> toBe(Projects);
-        })
-      )
-    )
+  testAll(
+    "pageOfUrl",
+    [
+      (Root, {hash: "", path: [], search: ""}),
+      (Projects, {hash: "", path: ["projects"], search: ""}),
+      (
+        NotFound(["not-found"]),
+        {hash: "", path: ["not-found"], search: ""},
+      ),
+      (
+        NotFound(["utter", "crap"]),
+        {hash: "", path: ["utter", "crap"], search: ""},
+      ),
+    ],
+    ((page, url)) =>
+    expect(pageOfUrl(url)) |> toEqual(page)
   )
 );

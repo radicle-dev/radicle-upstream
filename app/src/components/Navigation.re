@@ -15,4 +15,4 @@ module Item = {
 };
 
 [@react.component]
-let make = () => <ul> <Item page=Home /> <Item page=Projects /> </ul>;
+let make = () => <ul> <Item page=Root /> <Item page=Projects /> </ul>;
