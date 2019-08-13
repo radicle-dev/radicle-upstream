@@ -1,9 +1,10 @@
+open Component;
 open Router;
 
 [@react.component]
 let make = () =>
   <footer>
-    <Link page=Root> <Icon.Logo /> </Link>
+    <Link page=Root> <Atom.Icon.Logo /> </Link>
     <ul>
       <li> <a href="/"> {React.string("What is oscoin?")} </a> </li>
       <li> <a href="/"> {React.string("Maintainers")} </a> </li>

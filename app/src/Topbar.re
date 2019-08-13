@@ -1,3 +1,5 @@
+open Component;
+
 module JoinNetwork = {
   [@react.component]
   let make = () => <button> {React.string("Join Network")} </button>;
@@ -18,7 +20,7 @@ module Navigation = {
 let make = () =>
   Router.(
     <header>
-      <Link page=Root> <Icon.Logo /> </Link>
+      <Link page=Root> <Atom.Icon.Logo /> </Link>
       <Navigation />
       <JoinNetwork />
     </header>

@@ -1,5 +1,6 @@
 [@react.component]
 let make = () => {
+  open Page;
   open Router;
 
   let page =
