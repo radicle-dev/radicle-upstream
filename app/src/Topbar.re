@@ -1,5 +1,3 @@
-open Component;
-
 module JoinNetwork = {
   [@react.component]
   let make = () => <button> {React.string("Join Network")} </button>;

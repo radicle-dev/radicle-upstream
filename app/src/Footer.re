@@ -1,4 +1,3 @@
-open Component;
 open Router;
 
 [@react.component]
