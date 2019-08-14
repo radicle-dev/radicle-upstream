@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const outputDir = path.join(__dirname, 'build/');
+const assetsDir = path.join(__dirname, 'assets/');
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -19,7 +20,7 @@ module.exports = {
   ],
   devServer: {
     compress: true,
-    contentBase: outputDir,
+    contentBase: [outputDir, assetsDir],
     port: process.env.PORT || 8000,
     historyApiFallback: true
   }
