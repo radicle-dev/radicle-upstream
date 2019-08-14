@@ -24,7 +24,8 @@
     "@glennsl/bs-jest",
     "bs-jest-dom",
     "bs-react-testing-library",
-    "reason-react"
+    "reason-react",
+    "bs-css"
   ],
   "refmt": 3,
   "warnings": {
