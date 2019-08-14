@@ -1,24 +1,24 @@
 open Css;
 
 /** Primaries **/
-let purple = hex("6E41E0");
-let blue = hex("1F91CC");
-let green = hex("20D479");
-let orange = hex("F5BF36");
-let red = hex("E75050");
-let bordeaux = hex("BF456B");
+let purple = (~alpha=1.0, ()) => rgba(120, 52, 232, alpha);
+let blue = (~alpha=1.0, ()) => rgba(0, 146, 210, alpha);
+let green = (~alpha=1.0, ()) => rgba(0, 217, 110, alpha);
+let orange = (~alpha=1.0, ()) => rgba(254, 190, 0, alpha);
+let red = (~alpha=1.0, ()) => rgba(250, 64, 72, alpha);
+let bordeaux = (~alpha=1.0, ()) => rgba(207, 56, 107, alpha);
 
 /** Secondaries **/
-let lightBlue = hex("999FF0");
-let teal = hex("51E2F5");
-let lightGreen = hex("24F38B");
-let yellow = hex("E3ED11");
-let pink = hex("E074CB");
+let lightBlue = (~alpha=1.0, ()) => rgba(153, 159, 240, alpha);
+let teal = (~alpha=1.0, ()) => rgba(0, 229, 248, alpha);
+let lightGreen = (~alpha=1.0, ()) => rgba(0, 249, 126, alpha);
+let yellow = (~alpha=1.0, ()) => rgba(223, 239, 0, alpha);
+let pink = (~alpha=1.0, ()) => rgba(224, 116, 203, alpha);
 
 /** Grays **/
-let black = hex("28333D");
-let darkGrey = hex("546474");
-let grey = hex("90A0AF");
-let lightGray = hex("CED8E1");
-let almostWhite = hex("F8F8F8");
-let white = hex("FFFFFF");
+let black = (~alpha=1.0, ()) => rgba(40, 51, 61, alpha);
+let darkGrey = (~alpha=1.0, ()) => rgba(84, 100, 116, alpha);
+let grey = (~alpha=1.0, ()) => rgba(144, 160, 174, alpha);
+let lightGray = (~alpha=1.0, ()) => rgba(206, 216, 255, alpha);
+let almostWhite = (~alpha=1.0, ()) => rgba(248, 248, 248, alpha);
+let white = (~alpha=1.0, ()) => rgba(255, 255, 255, alpha);
