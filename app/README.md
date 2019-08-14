@@ -1,17 +1,12 @@
-# Governance MVP
+# MVP
 
-This is the app for the Governance exploration showcasing ways to orchestrate
-and deploy funds and decision making in open source projects.
+This is the app for the product explorations.
 
 ### Setup
 
 We consistently use `yarn` for our dependency management and script execution.
 Basis for the list of dependencies as well as the scripts supported is the
-`package.json`. To install all packages relevant for development run:
-
-```
-yarn
-```
+`package.json`. To install all packages relevant for development run: `yarn`
 
 ### Run
 

@@ -4,6 +4,7 @@
 npm-debug.log
 *.bs.js
 
+/build/
 /coverage/
 /lib/bs/
 /node_modules/
