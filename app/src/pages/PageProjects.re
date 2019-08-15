@@ -10,7 +10,8 @@ module List = {
         project =>
           <li key={project.address}>
             <Link page={Project(project.address)}>
-              {React.string(project.name)}
+              <Title> {React.string(project.name)} </Title>
+              <p> {React.string(project.description)} </p>
             </Link>
           </li>,
         projects,
@@ -50,7 +51,12 @@ let make = () => {
   });
 
   <>
-    <Title.Huge> {React.string("Explore")} </Title.Huge>
+    <div>
+      <Title.Huge> {React.string("Explore")} </Title.Huge>
+      <Button style=Button.Styles.alternate>
+        {React.string("Register project")}
+      </Button>
+    </div>
     {
       switch (state) {
       | Loading => <div> {React.string("Loading...")} </div>

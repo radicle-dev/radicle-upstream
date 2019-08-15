@@ -33,6 +33,18 @@ module Styles = {
       ]),
     ]);
 
+  let alternate =
+    merge([
+      primary,
+      style([
+        color(Color.black()),
+        borderWidth(px(1)),
+        backgroundColor(Color.white()),
+        hover([backgroundColor(Color.white(~alpha=0.85, ()))]),
+        active([backgroundColor(Color.white(~alpha=0.75, ()))]),
+      ]),
+    ]);
+
   let disabled =
     merge([
       primary,
