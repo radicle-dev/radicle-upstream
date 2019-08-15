@@ -4,8 +4,6 @@ let gtBold =
   fontFace(
     ~fontFamily="GT America",
     ~src=[url("/fonts/GTAmericaBold.otf")],
-    ~fontStyle=normal,
-    ~fontWeight=`normal,
     (),
   );
 
@@ -13,8 +11,6 @@ let gtMedium =
   fontFace(
     ~fontFamily="GT America",
     ~src=[url("/fonts/GTAmericaMedium.otf")],
-    ~fontStyle=normal,
-    ~fontWeight=`normal,
     (),
   );
 
@@ -22,8 +18,6 @@ let gtRegular =
   fontFace(
     ~fontFamily="GT America",
     ~src=[url("/fonts/GTAmericaRegular.otf")],
-    ~fontStyle=normal,
-    ~fontWeight=`normal,
     (),
   );
 
@@ -31,8 +25,6 @@ let gtMonoBold =
   fontFace(
     ~fontFamily="GT America Mono",
     ~src=[url("/fonts/GTAmericaMonoBold")],
-    ~fontStyle=normal,
-    ~fontWeight=`normal,
     (),
   );
 
@@ -40,8 +32,6 @@ let gtMonoRegular =
   fontFace(
     ~fontFamily="GT America Mono",
     ~src=[url("/fonts/GTAmericaMonoRegular")],
-    ~fontStyle=normal,
-    ~fontWeight=`normal,
     (),
   );
 
