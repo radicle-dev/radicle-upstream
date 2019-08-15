@@ -4,7 +4,7 @@ module JoinNetwork = {
   [@react.component]
   let make = () =>
     <Button style=Button.Styles.primary>
-      {React.string("Join Network")}
+      {React.string("Join the network")}
     </Button>;
 };
 
