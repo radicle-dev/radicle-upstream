@@ -1,6 +1,8 @@
-open Css;
+module Styles = {
+  open Css;
 
-global("body", [color(Particle.Color.black()), ...Particle.Font.text]);
+  let app = style([color(Particle.Color.black()), ...Particle.Font.text]);
+};
 
 [@react.component]
 let make = () => {
@@ -17,5 +19,5 @@ let make = () => {
     | NotFound(_path) => <Generic title="Not Found" />
     };
 
-  <div className="app"> <Topbar /> page <Footer /> </div>;
+  <div className=Styles.app> <Topbar /> page <Footer /> </div>;
 };
