@@ -1,4 +1,5 @@
 open Router;
+open Atom;
 
 [@react.component]
 let make = () =>
