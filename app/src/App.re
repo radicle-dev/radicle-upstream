@@ -1,7 +1,11 @@
 module Styles = {
   open Css;
 
-  let app = style([color(Particle.Color.black()), ...Particle.Font.text]);
+  global("body", [color(Particle.Color.black()), ...Particle.Font.text]);
+
+  global("a", [color(Particle.Color.black()), textDecoration(none)]);
+
+  let app = style([]);
 };
 
 [@react.component]
