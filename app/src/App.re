@@ -8,6 +8,7 @@ module Styles = {
 let make = () => {
   open Page;
   open Router;
+  open Molecule;
 
   let page =
     switch (currentPage()) {
