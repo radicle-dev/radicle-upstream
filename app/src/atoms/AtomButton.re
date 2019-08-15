@@ -36,7 +36,7 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~text, ~style, ~disabled=false) =>
+let make = (~children, ~style, ~disabled=false) =>
   <button className={disabled ? Styles.disabled : style} disabled>
-    {React.string(text)}
+    children
   </button>;
