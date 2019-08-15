@@ -1,5 +1,6 @@
 open Source.Project;
 open Router;
+open Atom;
 
 module List = {
   [@react.component]
@@ -49,7 +50,7 @@ let make = () => {
   });
 
   <>
-    <h1> {React.string("Explore projects")} </h1>
+    <Title.Huge> {React.string("Explore")} </Title.Huge>
     {
       switch (state) {
       | Loading => <div> {React.string("Loading...")} </div>
