@@ -15,9 +15,7 @@ module Styles = {
 module JoinNetwork = {
   [@react.component]
   let make = () =>
-    <Button style=Button.Styles.primary>
-      {React.string("Join the network")}
-    </Button>;
+    <Button.Primary> {React.string("Join the network")} </Button.Primary>;
 };
 
 module Navigation = {
