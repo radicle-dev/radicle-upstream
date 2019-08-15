@@ -35,32 +35,8 @@ module Styles = {
     ]);
 };
 
-module Primary = {
-  [@react.component]
-  let make = (~text, ~disabled=false) =>
-    switch (disabled) {
-    | false =>
-      <button className=Styles.primary disabled>
-        {React.string(text)}
-      </button>
-    | true =>
-      <button className=Styles.disabled disabled>
-        {React.string(text)}
-      </button>
-    };
-};
-
-module Secondary = {
-  [@react.component]
-  let make = (~text, ~disabled=false) =>
-    switch (disabled) {
-    | false =>
-      <button className=Styles.secondary disabled>
-        {React.string(text)}
-      </button>
-    | true =>
-      <button className=Styles.disabled disabled>
-        {React.string(text)}
-      </button>
-    };
-};
+[@react.component]
+let make = (~text, ~style, ~disabled=false) =>
+  <button className={disabled ? Styles.disabled : style} disabled>
+    {React.string(text)}
+  </button>;

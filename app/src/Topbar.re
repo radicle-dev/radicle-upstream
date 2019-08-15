@@ -2,7 +2,7 @@ open Atom;
 
 module JoinNetwork = {
   [@react.component]
-  let make = () => <Button.Primary text="Join Network" />;
+  let make = () => <Button style=Button.Styles.primary text="Join Network" />;
 };
 
 module Navigation = {
