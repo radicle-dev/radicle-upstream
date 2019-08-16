@@ -11,7 +11,14 @@ module Styles = {
     ],
   );
 
-  global("a", [color(Particle.Color.black()), textDecoration(none)]);
+  global(
+    "a",
+    [
+      color(Particle.Color.black()),
+      textDecoration(none),
+      cursor(`pointer),
+    ],
+  );
 
   let app = style([]);
 };
