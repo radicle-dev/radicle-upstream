@@ -1,15 +1,7 @@
 module Styles = {
   open Css;
 
-  global(
-    "body",
-    [
-      color(Particle.Color.black()),
-      unsafe("-webkit-font-smoothing", "antialiased"),
-      unsafe("-moz-osx-font-smoothing:", "grayscale"),
-      ...Particle.Font.text,
-    ],
-  );
+  global("body", [color(Particle.Color.black()), ...Particle.Font.text]);
 
   global(
     "a",
