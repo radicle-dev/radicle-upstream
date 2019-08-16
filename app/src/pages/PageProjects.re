@@ -54,7 +54,9 @@ let make = () => {
   <>
     <div>
       <Title.Huge> {React.string("Explore")} </Title.Huge>
-      <Button> {React.string("Register project")} </Button>
+      <Link page=RegisterProject>
+        <Button> {React.string("Register project")} </Button>
+      </Link>
     </div>
     {
       switch (state) {

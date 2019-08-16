@@ -22,6 +22,7 @@ let make = () => {
     switch (currentPage()) {
     | Root => <Generic title="Home of Oscoin" />
     | Projects => <Projects />
+    | RegisterProject => <RegisterProject />
     | Project(id) => <Project id subPage=Project.Overview />
     | ProjectCode(id) => <Project id subPage=Project.Code />
     | ProjectFunds(id) => <Project id subPage=Project.Funds />

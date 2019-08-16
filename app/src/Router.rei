@@ -3,6 +3,7 @@ type page =
   | Root
   | Projects
   | Project(string)
+  | RegisterProject
   | ProjectCode(string)
   | ProjectFunds(string)
   | NotFound(list(string));
