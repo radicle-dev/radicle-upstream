@@ -19,8 +19,6 @@ module Styles = {
       cursor(`pointer),
     ],
   );
-
-  let app = style([]);
 };
 
 [@react.component]
@@ -39,5 +37,5 @@ let make = () => {
     | NotFound(_path) => <Generic title="Not Found" />
     };
 
-  <div className=Styles.app> <Topbar /> page <Footer /> </div>;
+  <div> <Topbar /> page <Footer /> </div>;
 };
