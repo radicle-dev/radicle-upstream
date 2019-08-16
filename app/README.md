@@ -24,3 +24,6 @@ We follow the code formatting dictated by `refmt` which is part of the
 [reason-cli](https://github.com/reasonml/reason-cli) and enforce it locally on
 `precommit` with [husky](https://github.com/typicode/husky) and
 [lint-staged](https://github.com/okonet/lint-staged).
+
+Run `yarn test` to have all tests executed and `yarn test:watch` to have
+a continuous feedback from our test runner.

@@ -6,6 +6,8 @@
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
     "test": "bsb -make-world && jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watchAll",
     "webpack": "webpack -w",
     "webpack:production": "NODE_ENV=production webpack",
     "server": "webpack-dev-server"
