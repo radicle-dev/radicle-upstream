@@ -12,6 +12,7 @@ module List = {
             <Link page={Project(project.address)}>
               <Title> {React.string(project.name)} </Title>
               <p> {React.string(project.description)} </p>
+              <img src={project.imgUrl} />
             </Link>
           </li>,
         projects,
