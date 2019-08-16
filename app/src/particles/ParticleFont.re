@@ -2,55 +2,62 @@ open Css;
 
 let gtBold =
   fontFace(
-    ~fontFamily="GT America",
+    ~fontFamily="GT America Bold",
     ~src=[url("/fonts/GTAmericaBold.otf")],
     (),
   );
 
 let gtMedium =
   fontFace(
-    ~fontFamily="GT America",
+    ~fontFamily="GT America Medium",
     ~src=[url("/fonts/GTAmericaMedium.otf")],
     (),
   );
 
 let gtRegular =
   fontFace(
-    ~fontFamily="GT America",
+    ~fontFamily="GT America Regular",
     ~src=[url("/fonts/GTAmericaRegular.otf")],
     (),
   );
 
 let gtMonoBold =
   fontFace(
-    ~fontFamily="GT America Mono",
-    ~src=[url("/fonts/GTAmericaMonoBold")],
+    ~fontFamily="GT America Mono Bold",
+    ~src=[url("/fonts/GTAmericaMonoBold.otf")],
+    (),
+  );
+
+let gtMonoMedium =
+  fontFace(
+    ~fontFamily="GT America Mono Medium",
+    ~src=[url("/fonts/GTAmericaMonoMedium.otf")],
     (),
   );
 
 let gtMonoRegular =
   fontFace(
-    ~fontFamily="GT America Mono",
-    ~src=[url("/fonts/GTAmericaMonoRegular")],
+    ~fontFamily="GT America Mono Regular",
+    ~src=[url("/fonts/GTAmericaMonoRegular.otf")],
     (),
   );
 
 /** Titles **/
 
 let hugeTitle = [
-  fontFamily(gtRegular),
+  fontFamily(gtBold),
   fontSize(px(36)),
   lineHeight(px(43)),
 ];
 
 let bigTitle = [
-  fontFamily(gtRegular),
+  fontFamily(gtBold),
   fontSize(px(24)),
   lineHeight(px(29)),
 ];
 
 let title = [
-  fontFamily(gtRegular),
+  fontFamily(gtMedium),
   fontSize(px(16)),
   lineHeight(`percent(130.0)),
 ];
@@ -68,7 +75,7 @@ let smallText = [
 /** Captions **/
 
 let caption = [
-  fontFamily(gtRegular),
+  fontFamily(gtMedium),
   fontSize(px(13)),
   lineHeight(px(16)),
   letterSpacing(em(0.1)),
@@ -84,13 +91,13 @@ let bigNumber = [
 ];
 
 let number = [
-  fontFamily(gtMonoRegular),
+  fontFamily(gtMonoMedium),
   fontSize(px(16)),
   lineHeight(px(19)),
 ];
 
 let smallNumber = [
-  fontFamily(gtMonoRegular),
+  fontFamily(gtMonoMedium),
   fontSize(px(12)),
   lineHeight(px(14)),
 ];

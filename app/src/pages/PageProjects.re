@@ -1,5 +1,6 @@
 open Source.Project;
 open Router;
+open Atom;
 
 module List = {
   [@react.component]
@@ -9,7 +10,9 @@ module List = {
         project =>
           <li key={project.address}>
             <Link page={Project(project.address)}>
-              {React.string(project.name)}
+              <Title> {React.string(project.name)} </Title>
+              <p> {React.string(project.description)} </p>
+              <img src={project.imgUrl} />
             </Link>
           </li>,
         projects,
@@ -49,7 +52,10 @@ let make = () => {
   });
 
   <>
-    <h1> {React.string("Explore projects")} </h1>
+    <div>
+      <Title.Huge> {React.string("Explore")} </Title.Huge>
+      <Button> {React.string("Register project")} </Button>
+    </div>
     {
       switch (state) {
       | Loading => <div> {React.string("Loading...")} </div>

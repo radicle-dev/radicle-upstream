@@ -1,11 +1,21 @@
 open Atom;
 
+module Styles = {
+  open Css;
+
+  let topBar =
+    style([
+      display(`flex),
+      justifyContent(`spaceAround),
+      alignItems(`center),
+      height(px(118)),
+    ]);
+};
+
 module JoinNetwork = {
   [@react.component]
   let make = () =>
-    <Button style=Button.Styles.primary>
-      {React.string("Join Network")}
-    </Button>;
+    <Button.Primary> {React.string("Join the network")} </Button.Primary>;
 };
 
 module Navigation = {
@@ -22,7 +32,7 @@ module Navigation = {
 [@react.component]
 let make = () =>
   Router.(
-    <header>
+    <header className=Styles.topBar>
       <Link page=Root> <Atom.Icon.Logo /> </Link>
       <Navigation />
       <JoinNetwork />
