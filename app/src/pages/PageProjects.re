@@ -39,13 +39,13 @@ let make = () => {
     );
 
   React.useEffect0(() => {
-    let timeoutId =
-      Js.Global.setTimeout(
-        () => dispatch(ProjectsFetched(getProjects())),
-        1000,
-      );
+    getProjects()
+    |> Js.Promise.then_(projects =>
+         ProjectsFetched(projects) |> dispatch |> Js.Promise.resolve
+       )
+    |> ignore;
 
-    Some(() => Js.Global.clearTimeout(timeoutId));
+    None;
   });
 
   <>

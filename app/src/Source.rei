@@ -6,5 +6,5 @@ module Project: {
     imgUrl: string,
   };
 
-  let getProjects: unit => array(project);
+  let getProjects: unit => Js.Promise.t(array(project));
 };
