@@ -19,7 +19,8 @@
     "bs-css": "^9.0.1",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
-    "reason-react": ">=0.7.0"
+    "reason-react": ">=0.7.0",
+    "reductive": "https://github.com/MargaretKrutikova/reductive#hooks"
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.9",
@@ -29,6 +30,9 @@
     "html-webpack-plugin": "^3.2.0",
     "husky": "^3.0.3",
     "lint-staged": "^9.2.1",
+    "reductive-dev-tools": "^0.2.6",
+    "redux": "^4.0.4",
+    "redux-devtools-extension": "^2.13.8",
     "webpack": "^4.0.1",
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.8"

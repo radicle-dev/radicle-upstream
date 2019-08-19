@@ -25,11 +25,16 @@
     "bs-jest-dom",
     "bs-react-testing-library",
     "reason-react",
+    "reductive",
     "bs-css"
   ],
+  "bs-dev-dependencies": ["reductive-dev-tools"],
   "refmt": 3,
   "warnings": {
     "number": "+A-48",
     "error": "+A"
-  }
+  },
+  "bsc-flags": [
+    "-bs-g"
+  ]
 }
