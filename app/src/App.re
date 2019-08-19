@@ -4,8 +4,8 @@ module Styles = {
   global(
     "body",
     [
-      unsafe("-webkit-font-smoothing", "antialiased"),
-      unsafe("-moz-osx-font-smoothing", "grayscale"),
+      unsafe(" -webkit-font-smoothing", "antialiased"),
+      unsafe(" -moz-osx-font-smoothing", "grayscale"),
       color(Particle.Color.black()),
       ...Particle.Font.text,
     ],
@@ -24,7 +24,7 @@ module Styles = {
     style([
       display(grid),
       unsafe("gridTemplateColumns", "repeat(8, 1fr)"),
-      unsafe("grid-template-rows", "repeat(8, 1fr)"),
+      unsafe("gridTemplateRows", "repeat(8, 1fr)"),
       gridGap(px(24)),
       height(vh(100.0)),
     ]);

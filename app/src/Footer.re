@@ -12,7 +12,7 @@ module Styles = {
       height(px(64)),
       display(`flex),
       justifyContent(`center),
-      unsafe("place-self", "end stretch"),
+      unsafe("placeSelf", "end stretch"),
     ]);
 
   let li = style([marginLeft(px(24)), display(inline)]);
