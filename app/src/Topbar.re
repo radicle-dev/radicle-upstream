@@ -1,14 +1,16 @@
 open Atom;
+open Layout;
 
 module Styles = {
   open Css;
 
-  let topBar =
+  let header =
     style([
+      gridColumnStart(2),
+      gridColumnEnd(8),
+      height(px(64)),
       display(`flex),
-      justifyContent(`spaceAround),
-      alignItems(`center),
-      height(px(118)),
+      paddingTop(px(32)),
     ]);
 };
 
@@ -32,9 +34,12 @@ module Navigation = {
 [@react.component]
 let make = () =>
   Router.(
-    <header className=Styles.topBar>
-      <Link page=Root> <Atom.Icon.Logo /> </Link>
-      <Navigation />
-      <JoinNetwork />
+    <header className=Styles.header>
+      <Container.TwoColumns>
+        ...(
+             <> <Link page=Root> <Atom.Icon.Logo /> </Link> <Navigation /> </>,
+             <JoinNetwork />,
+           )
+      </Container.TwoColumns>
     </header>
   );

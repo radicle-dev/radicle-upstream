@@ -6,10 +6,13 @@ module Styles = {
 
   let footer =
     style([
+      gridColumnStart(2),
+      gridColumnEnd(8),
+      gridRowStart(-1),
+      height(px(64)),
       display(`flex),
-      justifyContent(`spaceAround),
-      alignItems(`center),
-      height(px(118)),
+      justifyContent(`center),
+      unsafe("place-self", "end stretch"),
     ]);
 
   let li = style([marginLeft(px(24)), display(inline)]);

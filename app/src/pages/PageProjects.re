@@ -1,6 +1,18 @@
 open Source.Project;
 open Router;
 open Atom;
+open Layout;
+
+module Styles = {
+  open Css;
+
+  let item =
+    style([
+      margin(px(16)),
+      borderBottom(px(1), solid, gray),
+      lastChild([borderWidth(px(0))]),
+    ]);
+};
 
 module List = {
   [@react.component]
@@ -8,7 +20,7 @@ module List = {
     let ps =
       Array.map(
         project =>
-          <li key={project.address}>
+          <li className=Styles.item key={project.address}>
             <Link page={Project(project.address)}>
               <Title> {React.string(project.name)} </Title>
               <p> {React.string(project.description)} </p>
@@ -52,10 +64,12 @@ let make = () => {
   });
 
   <>
-    <div>
-      <Title.Huge> {React.string("Explore")} </Title.Huge>
-      <Button> {React.string("Register project")} </Button>
-    </div>
+    <Container.TwoColumns>
+      ...(
+           <Title.Huge> {React.string("Explore")} </Title.Huge>,
+           <Button> {React.string("Register project")} </Button>,
+         )
+    </Container.TwoColumns>
     {
       switch (state) {
       | Loading => <div> {React.string("Loading...")} </div>

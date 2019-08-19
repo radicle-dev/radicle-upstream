@@ -1,7 +1,15 @@
 module Styles = {
   open Css;
 
-  global("body", [color(Particle.Color.black()), ...Particle.Font.text]);
+  global(
+    "body",
+    [
+      unsafe("-webkit-font-smoothing", "antialiased"),
+      unsafe("-moz-osx-font-smoothing", "grayscale"),
+      color(Particle.Color.black()),
+      ...Particle.Font.text,
+    ],
+  );
 
   global(
     "a",
@@ -11,6 +19,23 @@ module Styles = {
       cursor(`pointer),
     ],
   );
+
+  let container =
+    style([
+      display(grid),
+      unsafe("gridTemplateColumns", "repeat(8, 1fr)"),
+      unsafe("grid-template-rows", "repeat(8, 1fr)"),
+      gridGap(px(24)),
+      height(vh(100.0)),
+    ]);
+
+  let content =
+    style([
+      marginTop(px(50)),
+      gridColumnStart(3),
+      gridColumnEnd(7),
+      height(pct(100.0)),
+    ]);
 };
 
 [@react.component]
@@ -28,5 +53,9 @@ let make = () => {
     | NotFound(_path) => <Generic title="Not Found" />
     };
 
-  <div> <Topbar /> page <Footer /> </div>;
+  <div className=Styles.container>
+    <Topbar />
+    <div className=Styles.content> page </div>
+    <Footer />
+  </div>;
 };
