@@ -35,19 +35,17 @@ type t = Reductive.Store.t(thunk(appState), appState);
 
 let createStore = (): t => {
   /* Enable support for redux dev tooling. */
-  /* let storeEnhancer = */
-  /*   ReductiveDevTools.( */
-  /*     Connectors.reductiveEnhancer( */
-  /*       Extension.enhancerOptions(~name="ReductiveApp", ()), */
-  /*     ) */
-  /*   ); */
+  let storeEnhancer =
+    ReductiveDevTools.(
+      Connectors.reductiveEnhancer(
+        Extension.enhancerOptions(~name="ReductiveApp", ()),
+      )
+    );
 
   let store: t =
-    Reductive.Store.create(
+    (storeEnhancer @@ Reductive.Store.create)(
       ~reducer=appReducer,
-      ~preloadedState={
-        projects: projectInitialState,
-      },
+      ~preloadedState={projects: projectInitialState},
       ~enhancer=(_store, next) => next,
       (),
     );

@@ -26,9 +26,10 @@
     "bs-react-testing-library",
     "reason-react",
     "reductive",
-    "bs-css"
+    "bs-css",
+    "reductive-dev-tools"
   ],
-  "bs-dev-dependencies": ["reductive-dev-tools"],
+  "bs-dev-dependencies": [],
   "refmt": 3,
   "warnings": {
     "number": "+A-48",
