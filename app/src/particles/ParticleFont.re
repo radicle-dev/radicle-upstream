@@ -57,7 +57,7 @@ let bigTitle = [
 ];
 
 let title = [
-  fontFamily(gtRegular),
+  fontFamily(gtMedium),
   fontSize(px(16)),
   lineHeight(`percent(130.0)),
 ];
