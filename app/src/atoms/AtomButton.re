@@ -5,14 +5,14 @@ module Styles = {
   let button =
     merge([
       style([
-        color(Color.black()),
+        color(Color.darkGray()),
         backgroundColor(Color.white()),
         hover([backgroundColor(Color.almostWhite(~alpha=0.85, ()))]),
         active([backgroundColor(Color.almostWhite(~alpha=0.2, ()))]),
         borderRadius(px(4)),
         borderStyle(solid),
         borderWidth(px(1)),
-        borderColor(Color.black()),
+        borderColor(Color.lightGray()),
         outlineStyle(`none),
         height(px(48)),
         padding4(
@@ -54,9 +54,9 @@ module Styles = {
       button,
       style([
         borderStyle(none),
-        backgroundColor(Color.grey()),
-        hover([backgroundColor(Color.grey())]),
-        active([backgroundColor(Color.grey())]),
+        backgroundColor(Color.gray()),
+        hover([backgroundColor(Color.gray())]),
+        active([backgroundColor(Color.gray())]),
       ]),
     ]);
 };

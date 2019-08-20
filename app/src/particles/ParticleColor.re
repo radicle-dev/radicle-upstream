@@ -17,8 +17,8 @@ let pink = (~alpha=1.0, ()) => rgba(224, 116, 203, alpha);
 
 /** Grays **/
 let black = (~alpha=1.0, ()) => rgba(40, 51, 61, alpha);
-let darkGrey = (~alpha=1.0, ()) => rgba(84, 100, 116, alpha);
-let grey = (~alpha=1.0, ()) => rgba(144, 160, 174, alpha);
-let lightGray = (~alpha=1.0, ()) => rgba(206, 216, 255, alpha);
+let darkGray = (~alpha=1.0, ()) => rgba(84, 100, 116, alpha);
+let gray = (~alpha=1.0, ()) => rgba(144, 160, 174, alpha);
+let lightGray = (~alpha=1.0, ()) => rgba(206, 216, 225, alpha);
 let almostWhite = (~alpha=1.0, ()) => rgba(248, 248, 248, alpha);
 let white = (~alpha=1.0, ()) => rgba(255, 255, 255, alpha);
