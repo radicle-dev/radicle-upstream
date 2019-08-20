@@ -6,12 +6,7 @@ open Molecule;
 module Styles = {
   open Css;
 
-  let item =
-    style([
-      margin(px(16)),
-      borderBottom(px(1), solid, gray),
-      lastChild([borderWidth(px(0))]),
-    ]);
+  let projectHeading = style([marginTop(px(94)), marginBottom(px(48))]);
 };
 
 module List = {
@@ -53,12 +48,14 @@ let make = () => {
   });
 
   <>
-    <Container.TwoColumns>
-      ...(
-           <Title.Huge> {React.string("Explore")} </Title.Huge>,
-           <Button> {React.string("Register project")} </Button>,
-         )
-    </Container.TwoColumns>
+    <div className=Styles.projectHeading>
+      <Container.TwoColumns>
+        ...(
+             <Title.Huge> {React.string("Explore")} </Title.Huge>,
+             <Button> {React.string("Register project")} </Button>,
+           )
+      </Container.TwoColumns>
+    </div>
     {
       switch (state) {
       | Loading => <div> {React.string("Loading...")} </div>

@@ -30,12 +30,7 @@ module Styles = {
     ]);
 
   let content =
-    style([
-      marginTop(px(50)),
-      gridColumnStart(3),
-      gridColumnEnd(7),
-      height(pct(100.0)),
-    ]);
+    style([gridColumnStart(3), gridColumnEnd(7), height(pct(100.0))]);
 };
 
 [@react.component]
