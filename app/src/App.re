@@ -23,8 +23,8 @@ module Styles = {
   let container =
     style([
       display(grid),
-      unsafe("gridTemplateColumns", "repeat(8, 1fr)"),
-      unsafe("gridTemplateRows", "repeat(8, 1fr)"),
+      gridTemplateColumns([`repeat((`num(8), `fr(1.0)))]),
+      gridTemplateRows([`repeat((`num(8), `fr(1.0)))]),
       gridGap(px(24)),
       height(vh(100.0)),
     ]);
