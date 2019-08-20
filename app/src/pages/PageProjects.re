@@ -7,7 +7,6 @@ module Styles = {
   open Css;
 
   let projectHeading = style([marginTop(px(94)), marginBottom(px(48))]);
-  let link = style([]);
 };
 
 module List = {
@@ -16,7 +15,7 @@ module List = {
     let ps =
       Array.map(
         project =>
-          <Link style=Styles.link page={Router.Project(project.address)}>
+          <Link page={Router.Project(project.address)}>
             <ProjectCard
               imgUrl={project.imgUrl}
               name={project.name}
