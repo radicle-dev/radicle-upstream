@@ -1,82 +1,49 @@
 open AppStore;
-/* open Source.Project; */
-/* open Router; */
-/* open Atom; */
+open Atom;
+open Router;
+open Source.Project;
 
-/* module List = { */
-/*   [@react.component] */
-/*   let make = (~projects: array(project)) => { */
-/*     let ps = */
-/*       Array.map( */
-/*         project => */
-/*           <li key={project.address}> */
-/*             <Link page={Project(project.address)}> */
-/*               <Title> {React.string(project.name)} </Title> */
-/*               <p> {React.string(project.description)} </p> */
-/*               <img src={project.imgUrl} /> */
-/*             </Link> */
-/*           </li>, */
-/*         projects, */
-/*       ); */
+module List = {
+  [@react.component]
+  let make = (~projects: array(project)) => {
+    let ps =
+      Array.map(
+        project =>
+          <li key={project.address}>
+            <Link page={Project(project.address)}>
+              <Title> {React.string(project.name)} </Title>
+              <p> {React.string(project.description)} </p>
+              <img src={project.imgUrl} />
+            </Link>
+          </li>,
+        projects,
+      );
 
-/*     <ul> {React.array(ps)} </ul>; */
-/*   }; */
-/* }; */
-
-/* type action = */
-/*   | ProjectsFetched(array(project)); */
-
-/* type state = */
-/*   | Loading */
-/*   | Fetched(array(project)) */
-/*   | Failed(string); */
+    <ul> {React.array(ps)} </ul>;
+  };
+};
 
 [@react.component]
 let make = () => {
   let state = Store.useSelector(state => state.projects);
   let dispatch = Store.useDispatch();
 
-  switch (state) {
-  | Loading =>
-    <button onClick=(_event => dispatch(ProjectsAction(Fetch)))>
-      {React.string("LOAD")}
-    </button>
-  | Fetched(_projects) => <div> {React.string("Fetched")} </div>
+  if (state == Idle) {
+    dispatch(Thunk(ProjectsThunk.fetchProjects)) |> ignore;
   };
+
+  <>
+    <div>
+      <Title.Huge> {React.string("Explore")} </Title.Huge>
+      <Button> {React.string("Register project")} </Button>
+    </div>
+    {
+      switch (state) {
+      | Idle
+      | Loading => <div> {React.string("Loading...")} </div>
+      | Loaded(projects) => <List projects />
+      | Errored => <div className="error" />
+      }
+    }
+  </>;
 };
-
-/* let (state, dispatch) = */
-/*   React.useReducer( */
-/*     (_state, action) => */
-/*       switch (action) { */
-/*       | ProjectsFetched(ps) => Fetched(ps) */
-/*       }, */
-/*     Loading, */
-/*   ); */
-
-/* React.useEffect0(() => { */
-/*   getProjects() */
-/*   |> Js.Promise.then_(projects => */
-/*        ProjectsFetched(projects) |> dispatch |> Js.Promise.resolve */
-/*      ) */
-/*   |> ignore; */
-
-/*   None; */
-/* }); */
-
-/* <> */
-/* <div> */
-/*   <Title.Huge> {React.string("Explore")} </Title.Huge> */
-/*   <Link page=RegisterProject> */
-/*     <Button> {React.string("Register project")} </Button> */
-/*   </Link> */
-/* </div> */
-/* { */
-/*   switch (state) { */
-/*   | App.Loading => <div> {React.string("Loading...")} </div> */
-/*   | Fetched(projects) => <List projects /> */
-/*   | Failed(_error) => <div className="error" /> */
-/* } */
-/* } */
-/* </>; */
-/* }; */
