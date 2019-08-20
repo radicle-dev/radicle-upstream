@@ -1,7 +1,7 @@
 open Source.Project;
-open Router;
 open Atom;
 open Layout;
+open Molecule;
 
 module Styles = {
   open Css;
@@ -17,18 +17,7 @@ module Styles = {
 module List = {
   [@react.component]
   let make = (~projects: array(project)) => {
-    let ps =
-      Array.map(
-        project =>
-          <li className=Styles.item key={project.address}>
-            <Link page={Project(project.address)}>
-              <Title> {React.string(project.name)} </Title>
-              <p> {React.string(project.description)} </p>
-              <img src={project.imgUrl} />
-            </Link>
-          </li>,
-        projects,
-      );
+    let ps = Array.map(project => <ProjectCard project />, projects);
 
     <ul> {React.array(ps)} </ul>;
   };
