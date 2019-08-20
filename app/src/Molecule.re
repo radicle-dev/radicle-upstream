@@ -13,6 +13,7 @@ module Styles = {
       padding(px(13)),
       borderBottom(px(1), solid, Color.lightGray()),
       lastChild([borderBottomWidth(px(0))]),
+      hover([backgroundColor(Color.almostWhite())]),
     ]);
 
   let description =
