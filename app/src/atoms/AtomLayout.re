@@ -1,17 +1,17 @@
-module Styles = {
-  open Css;
-
-  let left = style([flex(`num(1.0)), display(`flex)]);
-
-  let right =
-    style([flex(`num(1.0)), display(`flex), justifyContent(flexEnd)]);
-
-  let twoColumns = style([display(`flex), flex(`num(1.0))]);
-};
-
 type tuple2Children = (ReasonReact.reactElement, ReasonReact.reactElement);
 
 module Container = {
+  module Styles = {
+    open Css;
+
+    let left = style([flex(`num(1.0)), display(`flex)]);
+
+    let right =
+      style([flex(`num(1.0)), display(`flex), justifyContent(flexEnd)]);
+
+    let twoColumns = style([display(`flex), flex(`num(1.0))]);
+  };
+
   module TwoColumns = {
     [@react.component]
     let make = (~children: tuple2Children) =>
