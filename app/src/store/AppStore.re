@@ -7,9 +7,11 @@ type projectsState =
   | Loading
   | Fetched(array(project));
 
-let projectsReducer = (state, action) =>
+let projectInitialState = Loading;
+
+let projectsReducer = (_state, action) =>
   switch (action) {
-  | Fetch => state
+  | Fetch => Fetched([||])
   };
 
 type thunk('state) = ..;
@@ -33,17 +35,19 @@ type t = Reductive.Store.t(thunk(appState), appState);
 
 let createStore = (): t => {
   /* Enable support for redux dev tooling. */
-  let _storeEnhancer =
-    ReductiveDevTools.(
-      Connectors.reductiveEnhancer(
-        Extension.enhancerOptions(~name="ReductiveApp", ()),
-      )
-    );
+  /* let storeEnhancer = */
+  /*   ReductiveDevTools.( */
+  /*     Connectors.reductiveEnhancer( */
+  /*       Extension.enhancerOptions(~name="ReductiveApp", ()), */
+  /*     ) */
+  /*   ); */
 
   let store: t =
-    (storeEnhancer @@ Reductive.Store.create)(
+    Reductive.Store.create(
       ~reducer=appReducer,
-      ~preloadedState,
+      ~preloadedState={
+        projects: projectInitialState,
+      },
       ~enhancer=(_store, next) => next,
       (),
     );

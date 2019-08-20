@@ -1,3 +1,4 @@
+open AppStore;
 /* open Source.Project; */
 /* open Router; */
 /* open Atom; */
@@ -32,11 +33,14 @@
 
 [@react.component]
 let make = () => {
-  open AppStore;
-  let state = AppStore.useSelector(state => state.projects);
+  let state = Store.useSelector(state => state.projects);
+  let dispatch = Store.useDispatch();
 
   switch (state) {
-  | Loading => <div> {React.string("Loading")} </div>
+  | Loading =>
+    <button onClick=(_event => dispatch(ProjectsAction(Fetch)))>
+      {React.string("LOAD")}
+    </button>
   | Fetched(_projects) => <div> {React.string("Fetched")} </div>
   };
 };

@@ -29,5 +29,5 @@ let make = () => {
     | NotFound(_path) => <Generic title="Not Found" />
     };
 
-  <div> <Topbar /> page <Footer /> </div>;
+  <Store.Provider> <div> <Topbar /> page <Footer /> </div> </Store.Provider>;
 };

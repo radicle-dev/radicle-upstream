@@ -32,9 +32,10 @@
   "refmt": 3,
   "warnings": {
     "number": "+A-48",
-    "error": "+A"
+    "error": "+A-102"
   },
   "bsc-flags": [
+   "-no-alias-deps",
     "-bs-g"
   ]
 }
