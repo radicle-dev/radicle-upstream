@@ -36,7 +36,7 @@ module ProjectCard = {
         <img className=Styles.image src={project.imgUrl} />
         <div className=Styles.description>
           <Title> {React.string(project.name)} </Title>
-          <p> {React.string(project.description)} </p>
+          <Text> {React.string(project.description)} </Text>
         </div>
       </Link>
     </li>;
