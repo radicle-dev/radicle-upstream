@@ -92,6 +92,7 @@ textarea {
   border: 0;
   font-family: inherit;
   font-size: 100%;
+  font-weight: unset;
   color: inherit;
   font-kerning: normal;
   text-decoration: none;

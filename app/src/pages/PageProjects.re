@@ -1,6 +1,13 @@
 open Source.Project;
-open Router;
 open Atom;
+open Layout;
+open Molecule;
+
+module Styles = {
+  open Css;
+
+  let projectHeading = style([marginBottom(px(48)), marginTop(px(94))]);
+};
 
 module List = {
   [@react.component]
@@ -8,13 +15,13 @@ module List = {
     let ps =
       Array.map(
         project =>
-          <li key={project.address}>
-            <Link page={Project(project.address)}>
-              <Title> {React.string(project.name)} </Title>
-              <p> {React.string(project.description)} </p>
-              <img src={project.imgUrl} />
-            </Link>
-          </li>,
+          <Link page={Router.Project(project.address)}>
+            <ProjectCard
+              imgUrl={project.imgUrl}
+              name={project.name}
+              description={project.description}
+            />
+          </Link>,
         projects,
       );
 
@@ -52,9 +59,13 @@ let make = () => {
   });
 
   <>
-    <div>
-      <Title.Huge> {React.string("Explore")} </Title.Huge>
-      <Button> {React.string("Register project")} </Button>
+    <div className=Styles.projectHeading>
+      <Container.TwoColumns>
+        ...(
+             <Title.Huge> {React.string("Explore")} </Title.Huge>,
+             <Button> {React.string("Register project")} </Button>,
+           )
+      </Container.TwoColumns>
     </div>
     {
       switch (state) {
