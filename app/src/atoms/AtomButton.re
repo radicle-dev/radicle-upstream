@@ -11,6 +11,7 @@ module Styles = {
         borderWidth(px(1)),
         borderColor(Color.lightGray()),
         color(Color.darkGray()),
+        cursor(`pointer),
         height(px(48)),
         outlineStyle(`none),
         padding4(
