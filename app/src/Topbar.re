@@ -9,7 +9,6 @@ module Styles = {
       gridColumnStart(2),
       gridColumnEnd(8),
       height(px(64)),
-      display(`flex),
       paddingTop(px(32)),
     ]);
 };
