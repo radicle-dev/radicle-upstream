@@ -4,9 +4,9 @@ module Styles = {
   global(
     "body",
     [
+      color(Particle.Color.black()),
       unsafe(" -webkit-font-smoothing", "antialiased"),
       unsafe(" -moz-osx-font-smoothing", "grayscale"),
-      color(Particle.Color.black()),
       ...Particle.Font.text,
     ],
   );
@@ -15,8 +15,8 @@ module Styles = {
     "a",
     [
       color(Particle.Color.black()),
-      textDecoration(none),
       cursor(`pointer),
+      textDecoration(none),
     ],
   );
 
@@ -30,7 +30,7 @@ module Styles = {
     ]);
 
   let content =
-    style([gridColumnStart(3), gridColumnEnd(7), height(pct(100.0))]);
+    style([gridColumnEnd(7), gridColumnStart(3), height(pct(100.0))]);
 };
 
 [@react.component]

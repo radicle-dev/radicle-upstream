@@ -6,7 +6,7 @@ open Molecule;
 module Styles = {
   open Css;
 
-  let projectHeading = style([marginTop(px(94)), marginBottom(px(48))]);
+  let projectHeading = style([marginBottom(px(48)), marginTop(px(94))]);
 };
 
 module List = {

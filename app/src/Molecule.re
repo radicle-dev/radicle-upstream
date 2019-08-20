@@ -7,13 +7,13 @@ module ProjectCard = {
 
     let item =
       style([
-        width(pct(100.0)),
+        borderBottom(px(1), solid, Color.lightGray()),
         display(`flex),
         flex(`num(1.0)),
         padding(px(13)),
-        borderBottom(px(1), solid, Color.lightGray()),
-        lastChild([borderBottomWidth(px(0))]),
+        width(pct(100.0)),
         hover([backgroundColor(Color.almostWhite())]),
+        lastChild([borderBottomWidth(px(0))]),
       ]);
 
     let description =
@@ -24,7 +24,7 @@ module ProjectCard = {
       ]);
 
     let image =
-      style([marginRight(px(21)), width(px(64)), height(px(64))]);
+      style([height(px(64)), marginRight(px(21)), width(px(64))]);
   };
 
   [@react.component]

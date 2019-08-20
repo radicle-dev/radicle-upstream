@@ -5,22 +5,22 @@ module Styles = {
   let button =
     merge([
       style([
-        color(Color.darkGray()),
         backgroundColor(Color.white()),
-        hover([backgroundColor(Color.almostWhite(~alpha=0.85, ()))]),
-        active([backgroundColor(Color.almostWhite(~alpha=0.2, ()))]),
         borderRadius(px(4)),
         borderStyle(solid),
         borderWidth(px(1)),
         borderColor(Color.lightGray()),
-        outlineStyle(`none),
+        color(Color.darkGray()),
         height(px(48)),
+        outlineStyle(`none),
         padding4(
           ~top=px(13),
           ~right=px(24),
           ~bottom=px(14),
           ~left=px(24),
         ),
+        active([backgroundColor(Color.almostWhite(~alpha=0.2, ()))]),
+        hover([backgroundColor(Color.almostWhite(~alpha=0.85, ()))]),
       ]),
       style(Font.title),
     ]);
@@ -32,8 +32,8 @@ module Styles = {
         borderStyle(none),
         color(Color.white()),
         backgroundColor(Color.purple()),
-        hover([backgroundColor(Color.purple(~alpha=0.85, ()))]),
         active([backgroundColor(Color.purple(~alpha=0.75, ()))]),
+        hover([backgroundColor(Color.purple(~alpha=0.85, ()))]),
       ]),
     ]);
 
@@ -44,8 +44,8 @@ module Styles = {
         borderStyle(none),
         color(Color.white()),
         backgroundColor(Color.pink()),
-        hover([backgroundColor(Color.pink(~alpha=0.85, ()))]),
         active([backgroundColor(Color.pink(~alpha=0.75, ()))]),
+        hover([backgroundColor(Color.pink(~alpha=0.85, ()))]),
       ]),
     ]);
 
@@ -53,10 +53,10 @@ module Styles = {
     merge([
       button,
       style([
-        borderStyle(none),
         backgroundColor(Color.gray()),
-        hover([backgroundColor(Color.gray())]),
+        borderStyle(none),
         active([backgroundColor(Color.gray())]),
+        hover([backgroundColor(Color.gray())]),
       ]),
     ]);
 };

@@ -3,12 +3,12 @@ module Styles = {
 
   let footer =
     style([
+      display(grid),
       gridColumnStart(2),
       gridColumnEnd(8),
       gridRowStart(-1),
       height(px(64)),
       justifySelf(center),
-      display(grid),
     ]);
 
   let ul =

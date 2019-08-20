@@ -4,10 +4,10 @@ module Container = {
   module Styles = {
     open Css;
 
-    let left = style([flex(`num(1.0)), display(`flex)]);
+    let left = style([display(`flex), flex(`num(1.0))]);
 
     let right =
-      style([flex(`num(1.0)), display(`flex), justifyContent(flexEnd)]);
+      style([display(`flex), flex(`num(1.0)), justifyContent(flexEnd)]);
 
     let twoColumns = style([display(`flex), flex(`num(1.0))]);
   };
