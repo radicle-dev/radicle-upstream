@@ -1,4 +1,3 @@
-open Source.Project;
 open Atom;
 open Particle;
 
@@ -23,22 +22,18 @@ module Styles = {
       justifyContent(`center),
     ]);
 
-  let link = style([display(`flex)]);
-
   let image =
     style([marginRight(px(21)), width(px(64)), height(px(64))]);
 };
 
 module ProjectCard = {
   [@react.component]
-  let make = (~project) =>
-    <li className=Styles.item key={project.address}>
-      <Link style=Styles.link page={Router.Project(project.address)}>
-        <img className=Styles.image src={project.imgUrl} />
-        <div className=Styles.description>
-          <Title> {React.string(project.name)} </Title>
-          <Text> {React.string(project.description)} </Text>
-        </div>
-      </Link>
-    </li>;
+  let make = (~imgUrl, ~name, ~description) =>
+    <div className=Styles.item>
+      <img className=Styles.image src=imgUrl />
+      <div className=Styles.description>
+        <Title> {React.string(name)} </Title>
+        <Text> {React.string(description)} </Text>
+      </div>
+    </div>;
 };

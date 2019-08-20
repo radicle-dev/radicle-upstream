@@ -7,12 +7,24 @@ module Styles = {
   open Css;
 
   let projectHeading = style([marginTop(px(94)), marginBottom(px(48))]);
+  let link = style([display(`flex)]);
 };
 
 module List = {
   [@react.component]
   let make = (~projects: array(project)) => {
-    let ps = Array.map(project => <ProjectCard project />, projects);
+    let ps =
+      Array.map(
+        project =>
+          <Link style=Styles.link page={Router.Project(project.address)}>
+            <ProjectCard
+              imgUrl={project.imgUrl}
+              name={project.name}
+              description={project.description}
+            />
+          </Link>,
+        projects,
+      );
 
     <ul> {React.array(ps)} </ul>;
   };
