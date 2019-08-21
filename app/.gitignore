@@ -5,6 +5,7 @@ npm-debug.log
 yarn-error.log
 
 *.bs.js
+.firebase
 
 /build/
 /coverage/

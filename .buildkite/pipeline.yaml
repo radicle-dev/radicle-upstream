@@ -1,0 +1,10 @@
+env:
+  DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.0'
+
+steps:
+  - commands:
+    - 'export HOME=/cache'
+    - 'export YARN_CACHE_FOLDER=/cache'
+    - 'cd app'
+    - 'yarn'
+    - 'yarn test'

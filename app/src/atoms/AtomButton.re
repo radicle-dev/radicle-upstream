@@ -11,6 +11,7 @@ module Styles = {
         borderWidth(px(1)),
         borderColor(Color.lightGray()),
         color(Color.darkGray()),
+        cursor(`pointer),
         height(px(48)),
         outlineStyle(`none),
         padding4(
@@ -19,8 +20,8 @@ module Styles = {
           ~bottom=px(14),
           ~left=px(24),
         ),
-        active([backgroundColor(Color.almostWhite(~alpha=0.2, ()))]),
         hover([backgroundColor(Color.almostWhite(~alpha=0.85, ()))]),
+        active([backgroundColor(Color.almostWhite(~alpha=0.2, ()))]),
       ]),
       style(Font.title),
     ]);
@@ -32,8 +33,8 @@ module Styles = {
         borderStyle(none),
         color(Color.white()),
         backgroundColor(Color.purple()),
-        active([backgroundColor(Color.purple(~alpha=0.75, ()))]),
         hover([backgroundColor(Color.purple(~alpha=0.85, ()))]),
+        active([backgroundColor(Color.purple(~alpha=0.75, ()))]),
       ]),
     ]);
 
@@ -44,8 +45,8 @@ module Styles = {
         borderStyle(none),
         color(Color.white()),
         backgroundColor(Color.pink()),
-        active([backgroundColor(Color.pink(~alpha=0.75, ()))]),
         hover([backgroundColor(Color.pink(~alpha=0.85, ()))]),
+        active([backgroundColor(Color.pink(~alpha=0.75, ()))]),
       ]),
     ]);
 
@@ -55,8 +56,8 @@ module Styles = {
       style([
         backgroundColor(Color.gray()),
         borderStyle(none),
-        active([backgroundColor(Color.gray())]),
         hover([backgroundColor(Color.gray())]),
+        active([backgroundColor(Color.gray())]),
       ]),
     ]);
 };
