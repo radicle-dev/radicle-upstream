@@ -44,7 +44,7 @@ To be able to deploy you'll need to ask for permissions to the Firebase project
 from someone on the team. This can be done via the [Firebase console][4]:
 `Project Overview (cogwheel icon)` -> `Users and permissions` -> `Add member`
 
-To build and deploy the latest changes run `yarn run deploy`. The published
+To build and deploy the latest changes run `yarn deploy`. The published
 app can be seen [here][5].
 
 
