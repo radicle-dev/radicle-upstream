@@ -3,6 +3,7 @@
 .bsb.lock
 npm-debug.log
 *.bs.js
+.firebase
 
 /build/
 /coverage/
