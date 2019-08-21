@@ -7,7 +7,7 @@ steps:
     command: 'env'
 
   - label: 'dependencies'
-    command: 'HOME=/build YARN_CACHE_FOLDER=/cache yarn'
+    command: 'HOME=/build YARN_CACHE_FOLDER=/cache cd app && yarn'
     
   - label: 'tests'
     command: 'HOME=/build YARN_CACHE_FOLDER=/cache cd app && yarn test'
