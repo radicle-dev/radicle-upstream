@@ -3,7 +3,7 @@ env:
 
 steps:
   - commands:
-    - 'export HOME=build'
+    - 'export HOME=/cache'
     - 'export YARN_CACHE_FOLDER=/cache'
     - 'env'
     - 'cd app'
