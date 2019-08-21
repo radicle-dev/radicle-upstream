@@ -5,8 +5,6 @@ steps:
   - commands:
     - 'export HOME=/cache'
     - 'export YARN_CACHE_FOLDER=/cache'
-    - 'env'
     - 'cd app'
-    - 'ls -lah'
     - 'yarn'
     - 'yarn test'
