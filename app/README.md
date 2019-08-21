@@ -36,7 +36,7 @@ The project is hosted on Firebase, so deployments require the [Firebase CLI][3].
 Install and configure the deployment tooling like so:
 
 ```
-npm install -g firebase-tools
+yarn global add firebase-tools
 firebase login
 ```
 
@@ -44,7 +44,7 @@ To be able to deploy you'll need to ask for permissions to the Firebase project
 from someone on the team. This can be done via the [Firebase console][4]:
 `Project Overview (cogwheel icon)` -> `Users and permissions` -> `Add member`
 
-To build and deploy the latest changes run `npm run deploy`. The published
+To build and deploy the latest changes run `yarn run deploy`. The published
 app can be seen [here][5].
 
 
