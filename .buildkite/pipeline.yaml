@@ -4,6 +4,10 @@ env:
 
 steps:
   - commands:
+    - 'export HOME=build'
+    - 'export YARN_CACHE_FOLDER=/cache'
     - 'env'
-    - 'cd app && HOME=/build YARN_CACHE_FOLDER=/cache yarn'
-    - 'cd app && HOME=/build YARN_CACHE_FOLDER=/cache yarn test'
+    - 'cd app'
+    - 'ls -lah'
+    - 'yarn'
+    - 'yarn test'
