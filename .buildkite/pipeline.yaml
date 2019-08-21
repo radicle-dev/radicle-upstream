@@ -1,4 +1,4 @@
 steps:
-  - command: 'yarn test'
+  - command: 'cd app && yarn test'
     env:
       DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.0'
