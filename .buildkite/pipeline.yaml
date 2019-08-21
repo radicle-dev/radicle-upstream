@@ -1,6 +1,5 @@
 env:
   DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.0'
-  HOME: '/build'
 
 steps:
   - commands:
