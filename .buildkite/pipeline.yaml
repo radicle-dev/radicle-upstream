@@ -3,11 +3,7 @@ env:
   HOME: '/build'
 
 steps:
-  - label: 'ENV'
-    command: 'env'
-
-  - label: 'dependencies'
-    command: 'cd app && HOME=/build YARN_CACHE_FOLDER=/cache yarn'
-    
-  - label: 'tests'
-    command: 'cd app && HOME=/build YARN_CACHE_FOLDER=/cache yarn test'
+  - commands:
+    - 'env'
+    - 'cd app && HOME=/build YARN_CACHE_FOLDER=/cache yarn'
+    - 'cd app && HOME=/build YARN_CACHE_FOLDER=/cache yarn test'
