@@ -15,13 +15,15 @@ module List = {
     let ps =
       Array.map(
         project =>
-          <Link page={Router.Project(project.address)}>
-            <ProjectCard
-              imgUrl={project.imgUrl}
-              name={project.name}
-              description={project.description}
-            />
-          </Link>,
+          <li key={project.address}>
+            <Link page={Router.Project(project.address)}>
+              <ProjectCard
+                imgUrl={project.imgUrl}
+                name={project.name}
+                description={project.description}
+              />
+            </Link>
+          </li>,
         projects,
       );
 
