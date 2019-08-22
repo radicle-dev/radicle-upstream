@@ -3,6 +3,7 @@ open Atom;
 open Atom.Layout;
 open Molecule;
 open Source;
+open StoreProjects;
 
 module Styles = {
   open Css;

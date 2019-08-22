@@ -1,25 +1,5 @@
 open Source;
 
-type projectsAction =
-  | Fetching
-  | Fetched(array(project))
-  | FetchFailed;
-
-type projectsState =
-  | Idle
-  | Loading
-  | Loaded(array(project))
-  | Errored;
-
-let projectsInitialState = Idle;
-
-let projectsReducer = (_state, action) =>
-  switch (action) {
-  | Fetching => Loading
-  | Fetched(projects) => Loaded(projects)
-  | FetchFailed => Errored
-  };
-
 type thunk('state) = ..;
 
 type thunkFunc('state) = (thunk('state) => unit, 'state, source) => unit;
@@ -38,23 +18,26 @@ let middleware = (source: source, store, next, action) =>
   | _ => next(action)
   };
 
-type appState = {projects: projectsState};
+type appState = {projects: StoreProjects.state};
 
 type thunk(_) +=
-  | ProjectsAction(projectsAction);
+  | ProjectsAction(StoreProjects.action);
 
 module ProjectsThunk = {
   let fetchProjects =
       (dispatch: thunk(appState) => unit, _state: appState, source: source) => {
-    dispatch(ProjectsAction(Fetching));
+    dispatch(ProjectsAction(StoreProjects.Fetching));
 
     Js.Promise.(
       source.fetchProjects()
       |> then_(result =>
            switch (result) {
            | Success(projects) =>
-             dispatch(ProjectsAction(Fetched(projects))) |> resolve
-           | Error => dispatch(ProjectsAction(FetchFailed)) |> resolve
+             ProjectsAction(StoreProjects.Fetched(projects))
+             |> dispatch
+             |> resolve
+           | Error =>
+             ProjectsAction(StoreProjects.FetchFailed) |> dispatch |> resolve
            }
          )
     )
@@ -65,7 +48,7 @@ module ProjectsThunk = {
 let appReducer = (state: appState, action) =>
   switch (action) {
   | ProjectsAction(action) => {
-      projects: projectsReducer(state.projects, action),
+      projects: StoreProjects.reducer(state.projects, action),
     }
   | _ => state
   };
@@ -87,7 +70,7 @@ let createStore = (): t => {
   let store: t =
     (storeEnhancer @@ Reductive.Store.create)(
       ~reducer=appReducer,
-      ~preloadedState={projects: projectsInitialState},
+      ~preloadedState={projects: StoreProjects.initialState},
       ~enhancer=thunkEnhancer,
       (),
     );
