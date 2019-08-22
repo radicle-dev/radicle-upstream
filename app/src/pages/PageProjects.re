@@ -37,7 +37,7 @@ let make = () => {
   let dispatch = Store.useDispatch();
 
   if (state == Idle) {
-    dispatch(Thunk(ProjectsThunk.fetchProjects)) |> ignore;
+    dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
   };
 
   <>
