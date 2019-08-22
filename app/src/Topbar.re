@@ -1,5 +1,6 @@
 open Atom;
 open Layout;
+open Page;
 
 module Styles = {
   open Css;
@@ -11,12 +12,6 @@ module Styles = {
       height(px(64)),
       paddingTop(px(32)),
     ]);
-};
-
-module JoinNetwork = {
-  [@react.component]
-  let make = () =>
-    <Button.Primary> {React.string("Join the network")} </Button.Primary>;
 };
 
 module Navigation = {

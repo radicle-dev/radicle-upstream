@@ -63,25 +63,30 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~children, ~disabled=false) =>
-  <button className={disabled ? Styles.disabled : Styles.button} disabled>
+let make = (~children, ~disabled=false, ~onClick=_ => ()) =>
+  <button
+    onClick className={disabled ? Styles.disabled : Styles.button} disabled>
     children
   </button>;
 
 module Primary = {
   [@react.component]
-  let make = (~children, ~disabled=false) =>
+  let make = (~children, ~disabled=false, ~onClick=_ => ()) =>
     <button
-      className={disabled ? Styles.disabled : Styles.primaryButton} disabled>
+      onClick
+      className={disabled ? Styles.disabled : Styles.primaryButton}
+      disabled>
       children
     </button>;
 };
 
 module Secondary = {
   [@react.component]
-  let make = (~children, ~disabled=false) =>
+  let make = (~children, ~disabled=false, ~onClick=_ => ()) =>
     <button
-      className={disabled ? Styles.disabled : Styles.secondaryButton} disabled>
+      onClick
+      className={disabled ? Styles.disabled : Styles.secondaryButton}
+      disabled>
       children
     </button>;
 };
