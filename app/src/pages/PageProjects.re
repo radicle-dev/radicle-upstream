@@ -2,7 +2,7 @@ open AppStore;
 open Atom;
 open Atom.Layout;
 open Molecule;
-open Source.Project;
+open Source;
 
 module Styles = {
   open Css;
