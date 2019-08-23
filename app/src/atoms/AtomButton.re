@@ -50,6 +50,23 @@ module Styles = {
       ]),
     ]);
 
+  let cancelButton =
+    merge([
+      button,
+      style([
+        borderStyle(none),
+        color(Color.gray()),
+        hover([
+          backgroundColor(Color.white()),
+          color(Color.gray(~alpha=0.75, ())),
+        ]),
+        active([
+          backgroundColor(Color.white()),
+          color(Color.gray(~alpha=0.55, ())),
+        ]),
+      ]),
+    ]);
+
   let disabled =
     merge([
       button,
@@ -86,6 +103,17 @@ module Secondary = {
     <button
       onClick
       className={disabled ? Styles.disabled : Styles.secondaryButton}
+      disabled>
+      children
+    </button>;
+};
+
+module Cancel = {
+  [@react.component]
+  let make = (~children, ~disabled=false, ~onClick=_ => ()) =>
+    <button
+      onClick
+      className={disabled ? Styles.disabled : Styles.cancelButton}
       disabled>
       children
     </button>;

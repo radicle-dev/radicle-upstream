@@ -24,7 +24,7 @@ module Form = {
         <Input placeholder="Enter an avatar URL" />
       </div>
       <div className=Styles.buttonContainer>
-        <Button> {React.string("Cancel")} </Button>
+        <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
         <Button.Secondary>
           {React.string("Join the network")}
         </Button.Secondary>
