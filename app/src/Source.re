@@ -17,7 +17,7 @@ type source = {
     Js.Promise.t(registerProjectResult),
 };
 
-let createMockSource = () => {
+let createLocalSource = () => {
   let mockProjects =
     ref([|
       {
