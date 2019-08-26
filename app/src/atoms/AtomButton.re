@@ -79,42 +79,36 @@ module Styles = {
     ]);
 };
 
+module Template = {
+  [@react.component]
+  let make = (~children, ~disabled, ~onClick, ~style) =>
+    <button onClick className={disabled ? Styles.disabled : style} disabled>
+      children
+    </button>;
+};
+
 [@react.component]
 let make = (~children, ~disabled=false, ~onClick=_ => ()) =>
-  <button
-    onClick className={disabled ? Styles.disabled : Styles.button} disabled>
-    children
-  </button>;
+  <Template disabled onClick style=Styles.button> children </Template>;
 
 module Primary = {
   [@react.component]
   let make = (~children, ~disabled=false, ~onClick=_ => ()) =>
-    <button
-      onClick
-      className={disabled ? Styles.disabled : Styles.primaryButton}
-      disabled>
+    <Template disabled onClick style=Styles.primaryButton>
       children
-    </button>;
+    </Template>;
 };
 
 module Secondary = {
   [@react.component]
   let make = (~children, ~disabled=false, ~onClick=_ => ()) =>
-    <button
-      onClick
-      className={disabled ? Styles.disabled : Styles.secondaryButton}
-      disabled>
+    <Template disabled onClick style=Styles.secondaryButton>
       children
-    </button>;
+    </Template>;
 };
 
 module Cancel = {
   [@react.component]
   let make = (~children, ~disabled=false, ~onClick=_ => ()) =>
-    <button
-      onClick
-      className={disabled ? Styles.disabled : Styles.cancelButton}
-      disabled>
-      children
-    </button>;
+    <Template disabled onClick style=Styles.cancelButton> children </Template>;
 };
