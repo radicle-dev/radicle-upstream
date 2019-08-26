@@ -26,20 +26,20 @@ let fetchProjects =
 
 let registerProject =
     (
+      name: string,
+      description: string,
+      imgUrl: string,
       dispatch: StoreMiddleware.thunk(appState) => unit,
       _state: appState,
       source: source,
     ) =>
   Js.Promise.(
-    source.registerProject(
-      ~name="mvp",
-      ~description="minimal viable product",
-      ~imgUrl="",
-    )
+    source.registerProject(~name, ~description, ~imgUrl)
     |> then_(result =>
          switch (result) {
          | Belt.Result.Ok(project) =>
-           ProjectsAction(Registered(project)) |> dispatch |> resolve
+           Router.navigateOfPage(Router.Projects, ());
+           ProjectsAction(Registered(project)) |> dispatch |> resolve;
          | Belt.Result.Error(reason) =>
            ProjectsAction(RegisterFailed(reason)) |> dispatch |> resolve
          }
