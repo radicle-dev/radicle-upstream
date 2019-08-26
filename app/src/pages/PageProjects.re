@@ -33,10 +33,12 @@ module List = {
 
 [@react.component]
 let make = () => {
-  let state = Store.useSelector(state => state.projects);
+  let state = Store.useSelector(state => state.projectsState);
   let dispatch = Store.useDispatch();
 
-  if (state == Idle) {
+  Js.log(state);
+
+  if (state.projects == None) {
     dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
   };
 
@@ -45,16 +47,19 @@ let make = () => {
       <Container.TwoColumns>
         ...(
              <Title.Huge> {React.string("Explore")} </Title.Huge>,
-             <Button> {React.string("Register project")} </Button>,
+             <Link page=Router.RegisterProject>
+               <Button> {React.string("Register project")} </Button>
+             </Link>,
            )
       </Container.TwoColumns>
     </div>
     {
-      switch (state) {
-      | Idle
-      | Loading => <div> {React.string("Loading...")} </div>
-      | Loaded(projects) => <List projects />
-      | Errored => <div className="error" />
+      switch (state.error, state.loading, state.projects) {
+      | (Some(error), _, _) =>
+        <div className="error"> {React.string("ERROR: " ++ error)} </div>
+      | (None, false, Some(projects)) => <List projects />
+      | (None, true, _) => <div> {React.string("Loading...")} </div>
+      | _ => <div> {React.string("Not loading...")} </div>
       }
     }
   </>;

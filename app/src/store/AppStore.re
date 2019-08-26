@@ -1,6 +1,6 @@
 open Source;
 
-type appState = {projects: StoreProjects.state};
+type appState = {projectsState: StoreProjects.state};
 
 type StoreMiddleware.thunk(_) +=
   | ProjectsAction(StoreProjects.action);
@@ -8,7 +8,7 @@ type StoreMiddleware.thunk(_) +=
 let appReducer = (state: appState, action) =>
   switch (action) {
   | ProjectsAction(action) => {
-      projects: StoreProjects.reducer(state.projects, action),
+      projectsState: StoreProjects.reducer(state.projectsState, action),
     }
   | _ => state
   };
@@ -30,7 +30,7 @@ let createStore = (): t => {
   let store: t =
     (storeEnhancer @@ Reductive.Store.create)(
       ~reducer=appReducer,
-      ~preloadedState={projects: StoreProjects.initialState},
+      ~preloadedState={projectsState: StoreProjects.initialState},
       ~enhancer=thunkEnhancer,
       (),
     );

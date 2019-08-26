@@ -7,11 +7,15 @@ type project = {
   imgUrl: string,
 };
 
-type fetchProjectsResult =
-  | Success(array(project))
-  | Error;
+type fetchProjectsResult = Belt.Result.t(array(project), string);
+type registerProjectResult = Belt.Result.t(project, string);
 
-type source = {fetchProjects: unit => Js.Promise.t(fetchProjectsResult)};
+type source = {
+  fetchProjects: unit => Js.Promise.t(fetchProjectsResult),
+  registerProject:
+    (~name: string, ~description: string, ~imgUrl: string) =>
+    Js.Promise.t(registerProjectResult),
+};
 
 let createMockSource = () => {
   let mockProjects = [|
@@ -43,9 +47,17 @@ let createMockSource = () => {
 
   let fetchProjects = () =>
     Js.Promise.make((~resolve, ~reject as _) =>
-      Js.Global.setTimeout(() => resolve(. Success(mockProjects)), 1000)
+      Js.Global.setTimeout(
+        () => resolve(. Belt.Result.Ok(mockProjects)),
+        1000,
+      )
       |> ignore
     );
 
-  {fetchProjects: fetchProjects};
+  let registerProject = (~name: string, ~description: string, ~imgUrl: string) =>
+    Js.Promise.make((~resolve, ~reject as _) =>
+      resolve(. Belt.Result.Ok({address: "", name, description, imgUrl}))
+    );
+
+  {fetchProjects, registerProject};
 };

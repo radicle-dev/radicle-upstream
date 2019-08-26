@@ -14,11 +14,35 @@ let fetchProjects =
     source.fetchProjects()
     |> then_(result =>
          switch (result) {
-         | Success(projects) =>
+         | Belt.Result.Ok(projects) =>
            ProjectsAction(Fetched(projects)) |> dispatch |> resolve
-         | Error => ProjectsAction(FetchFailed) |> dispatch |> resolve
+         | Belt.Result.Error(reason) =>
+           ProjectsAction(FetchFailed(reason)) |> dispatch |> resolve
          }
        )
   )
   |> ignore;
 };
+
+let registerProject =
+    (
+      dispatch: StoreMiddleware.thunk(appState) => unit,
+      _state: appState,
+      source: source,
+    ) =>
+  Js.Promise.(
+    source.registerProject(
+      ~name="mvp",
+      ~description="minimal viable product",
+      ~imgUrl="",
+    )
+    |> then_(result =>
+         switch (result) {
+         | Belt.Result.Ok(project) =>
+           ProjectsAction(Registered(project)) |> dispatch |> resolve
+         | Belt.Result.Error(reason) =>
+           ProjectsAction(RegisterFailed(reason)) |> dispatch |> resolve
+         }
+       )
+  )
+  |> ignore;
