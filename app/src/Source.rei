@@ -14,7 +14,7 @@ type project = {
  **/
 type fetchProjectsResult = Belt.Result.t(array(project), string);
 
-/** Returned for proejct registration, either the fully populated registered
+/** Returned for project registration, either the fully populated registered
  ** proejct or the reason why the operation failed.
  **/
 type registerProjectResult = Belt.Result.t(project, string);
