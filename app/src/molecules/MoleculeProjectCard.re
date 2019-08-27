@@ -1,18 +1,14 @@
 open Atom;
-open Particle;
 
 module Styles = {
   open Css;
 
   let item =
     style([
-      borderBottom(px(1), solid, Color.lightGray()),
       display(`flex),
       flex(`num(1.0)),
       padding(px(13)),
       width(pct(100.0)),
-      hover([backgroundColor(Color.almostWhite())]),
-      lastChild([borderBottomWidth(px(0))]),
     ]);
 
   let description =

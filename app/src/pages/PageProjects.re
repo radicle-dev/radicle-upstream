@@ -4,11 +4,19 @@ open Atom.Layout;
 open Molecule;
 open Source;
 open StoreProjects;
+open Particle;
 
 module Styles = {
   open Css;
 
   let projectHeading = style([marginBottom(px(48)), marginTop(px(94))]);
+
+  let listItem =
+    style([
+      borderBottom(px(1), solid, Color.lightGray()),
+      hover([backgroundColor(Color.almostWhite())]),
+      lastChild([borderBottomWidth(px(0))]),
+    ]);
 };
 
 module List = {
@@ -17,7 +25,7 @@ module List = {
     let ps =
       Array.map(
         project =>
-          <li key={project.address}>
+          <li className=Styles.listItem key={project.address}>
             <Link page={Router.Project(project.address)}>
               <ProjectCard
                 imgUrl={project.imgUrl}
@@ -37,7 +45,6 @@ module List = {
 let make = () => {
   let state = Store.useSelector(state => state.projectsState);
   let dispatch = Store.useDispatch();
-
 
   if (state.projects == None) {
     dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
