@@ -9,7 +9,7 @@ module Styles = {
 };
 
 [@react.component]
-let make = () =>
+let make = (~cancelButtonCallback) =>
   <>
     <Container style={margin(0, 0, 16, 0)}>
       <Title.Big> {React.string("Join the network")} </Title.Big>
@@ -25,7 +25,9 @@ let make = () =>
     </Container>
     <Container style=Styles.buttonContainer>
       <Container>
-        <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
+        <Button.Cancel onClick=cancelButtonCallback>
+          {React.string("Cancel")}
+        </Button.Cancel>
       </Container>
       <Button.Secondary>
         {React.string("Join the network")}

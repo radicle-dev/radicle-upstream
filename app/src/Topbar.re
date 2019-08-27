@@ -26,7 +26,9 @@ let make = () => {
              <Link page=Projects> <Atom.Icon.Logo /> </Link>,
              isModalVisible ?
                <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
-                 <JoinNetwork />
+                 <JoinNetwork
+                   cancelButtonCallback={_ => toggleModal(_ => false)}
+                 />
                </Modal> :
                <Button.Primary onClick={_ => toggleModal(_ => true)}>
                  {React.string("Join the network")}
