@@ -9,7 +9,7 @@ type project = {
   imgUrl: string,
 };
 
-/** Returned for fetched projects, either is the list of proejcts known to the
+/** Returned for fetched projects, either is the list of projects known to the
  ** ledger or a reason why the fetch operation failed.
  **/
 type fetchProjectsResult = Belt.Result.t(array(project), string);
