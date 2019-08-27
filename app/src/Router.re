@@ -4,6 +4,7 @@ type page =
   | Root
   | Projects
   | Project(string)
+  | RegisterProject
   | ProjectCode(string)
   | ProjectFunds(string)
   | NotFound(list(string));
@@ -16,6 +17,7 @@ let navigateOfPage = (p: page) => {
     switch (p) {
     | Root => "/"
     | Projects => join(["projects"])
+    | RegisterProject => join(["projects", "register"])
     | Project(id) => join(["projects", id])
     | ProjectCode(id) => join(["projects", id, "code"])
     | ProjectFunds(id) => join(["projects", id, "funds"])
@@ -29,6 +31,7 @@ let nameOfPage = (p: page): string =>
   switch (p) {
   | Root => "Root"
   | Projects => "Explore"
+  | RegisterProject => "Register Project"
   | Project(id) => "Project " ++ id
   | ProjectCode(id) => "Project " ++ id ++ "Code"
   | ProjectFunds(id) => "Project " ++ id ++ "Funds"
@@ -39,6 +42,7 @@ let pageOfUrl = (u: url): page =>
   switch (u.path) {
   | [] => Root
   | ["projects"] => Projects
+  | ["projects", "register"] => RegisterProject
   | ["projects", id] => Project(id)
   | ["projects", id, "code"] => ProjectCode(id)
   | ["projects", id, "funds"] => ProjectFunds(id)

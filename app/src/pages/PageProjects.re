@@ -1,7 +1,9 @@
-open Source.Project;
+open AppStore;
 open Atom;
-open Layout;
+open Atom.Layout;
 open Molecule;
+open Source;
+open StoreProjects;
 
 module Styles = {
   open Css;
@@ -31,49 +33,34 @@ module List = {
   };
 };
 
-type action =
-  | ProjectsFetched(array(project));
-
-type state =
-  | Loading
-  | Fetched(array(project))
-  | Failed(string);
-
 [@react.component]
 let make = () => {
-  let (state, dispatch) =
-    React.useReducer(
-      (_state, action) =>
-        switch (action) {
-        | ProjectsFetched(ps) => Fetched(ps)
-        },
-      Loading,
-    );
+  let state = Store.useSelector(state => state.projectsState);
+  let dispatch = Store.useDispatch();
 
-  React.useEffect0(() => {
-    getProjects()
-    |> Js.Promise.then_(projects =>
-         ProjectsFetched(projects) |> dispatch |> Js.Promise.resolve
-       )
-    |> ignore;
 
-    None;
-  });
+  if (state.projects == None) {
+    dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
+  };
 
   <>
     <div className=Styles.projectHeading>
       <Container.TwoColumns>
         ...(
              <Title.Huge> {React.string("Explore")} </Title.Huge>,
-             <Button> {React.string("Register project")} </Button>,
+             <Link page=Router.RegisterProject>
+               <Button> {React.string("Register project")} </Button>
+             </Link>,
            )
       </Container.TwoColumns>
     </div>
     {
-      switch (state) {
-      | Loading => <div> {React.string("Loading...")} </div>
-      | Fetched(projects) => <List projects />
-      | Failed(_error) => <div className="error" />
+      switch (state.error, state.loading, state.projects) {
+      | (Some(error), _, _) =>
+        <div className="error"> {React.string("ERROR: " ++ error)} </div>
+      | (None, false, Some(projects)) => <List projects />
+      | (None, true, _) => <div> {React.string("Loading...")} </div>
+      | _ => <div> {React.string("Not loading...")} </div>
       }
     }
   </>;

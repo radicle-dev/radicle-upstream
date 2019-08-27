@@ -9,9 +9,22 @@ describe("Router", () =>
     [
       (Root, {hash: "", path: [], search: ""}),
       (Projects, {hash: "", path: ["projects"], search: ""}),
-      (Project("monokel"), {hash: "", path: ["projects", "monokel"], search: ""}),
-      (ProjectCode("monokel"), {hash: "", path: ["projects", "monokel", "code"], search: ""}),
-      (ProjectFunds("monokel"), {hash: "", path: ["projects", "monokel", "funds"], search: ""}),
+      (
+        RegisterProject,
+        {hash: "", path: ["projects", "register"], search: ""},
+      ),
+      (
+        Project("monokel"),
+        {hash: "", path: ["projects", "monokel"], search: ""},
+      ),
+      (
+        ProjectCode("monokel"),
+        {hash: "", path: ["projects", "monokel", "code"], search: ""},
+      ),
+      (
+        ProjectFunds("monokel"),
+        {hash: "", path: ["projects", "monokel", "funds"], search: ""},
+      ),
       (
         NotFound(["not-found"]),
         {hash: "", path: ["not-found"], search: ""},
