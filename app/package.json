@@ -21,7 +21,7 @@
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "reason-react": ">=0.7.0",
-    "reductive": "https://github.com/MargaretKrutikova/reductive#hooks"
+    "reductive": "https://github.com/oscoin/reductive#hooks"
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.9",

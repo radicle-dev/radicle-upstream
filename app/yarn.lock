@@ -5581,9 +5581,9 @@ reductive-dev-tools@^0.2.6:
   resolved "https://registry.yarnpkg.com/reductive-dev-tools/-/reductive-dev-tools-0.2.6.tgz#cb8244224f317f051c260a03afd6fa9815289163"
   integrity sha512-dfZjLma1/ijZUPuPEmfnYR/z9ex1bH9EHLZMoSNoZ9rD52W51Ui+aQ5oOa8J4hHzoopMPTH+FU1ARGOWc1DmVg==
 
-"reductive@https://github.com/MargaretKrutikova/reductive#hooks":
+"reductive@https://github.com/oscoin/reductive#hooks":
   version "1.0.0"
-  resolved "https://github.com/MargaretKrutikova/reductive#dd9569b5ccb6a6d120b5705eb32a5fdd2b1a4aa3"
+  resolved "https://github.com/oscoin/reductive#dd9569b5ccb6a6d120b5705eb32a5fdd2b1a4aa3"
 
 redux-devtools-extension@^2.13.8:
   version "2.13.8"
