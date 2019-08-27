@@ -1,7 +1,7 @@
 open Atom;
 open Molecule;
 open Layout;
-open Util.CssHelper;
+open DesignSystem;
 
 module Form = {
   module Styles = {

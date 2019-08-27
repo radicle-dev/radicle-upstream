@@ -1,6 +1,6 @@
 open Router;
 open Css;
-open Util.CssHelper;
+open DesignSystem.Operators;
 
 module Styles = {
   let link = style([]);

@@ -1,7 +1,7 @@
 module Styles = {
   open Css;
   open Particle;
-  open Util.CssHelper;
+  open DesignSystem.Operators;
 
   let button =
     style([
