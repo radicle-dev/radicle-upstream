@@ -27,5 +27,5 @@ type source = {
     Js.Promise.t(registerProjectResult),
 };
 
-/** Returns an implementatio of `source` which gives back local data. **/
+/** Returns an implementation of `source` which gives back local data. **/
 let createLocalSource: unit => source;
