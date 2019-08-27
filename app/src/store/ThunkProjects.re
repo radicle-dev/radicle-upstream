@@ -38,7 +38,7 @@ let registerProject =
     |> then_(result =>
          switch (result) {
          | Belt.Result.Ok(project) =>
-           Router.navigateOfPage(Router.Projects, ());
+           Router.navigateToPage(Router.Projects, ());
            ProjectsAction(Registered(project)) |> dispatch |> resolve;
          | Belt.Result.Error(reason) =>
            ProjectsAction(RegisterFailed(reason)) |> dispatch |> resolve

@@ -20,5 +20,5 @@ let make = (~page: page, ~style=?, ~children=?) => {
     | None => Styles.link
     };
 
-  <a onClick={navigateOfPage(page)} className=style> content </a>;
+  <a onClick={navigateToPage(page)} className=style> content </a>;
 };

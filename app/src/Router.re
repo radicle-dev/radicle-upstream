@@ -9,7 +9,7 @@ type page =
   | ProjectFunds(string)
   | NotFound(list(string));
 
-let navigateOfPage = (p: page) => {
+let navigateToPage = (p: page) => {
   let join = (parts: list(string)): string =>
     List.fold_left((a, b) => a ++ "/" ++ b, "", parts);
 

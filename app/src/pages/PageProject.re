@@ -11,9 +11,9 @@ module Navigation = {
     let make = (~id: string, ~page: projectPage, ~selected: projectPage) => {
       let (navigate, name) =
         switch (page) {
-        | Overview => (navigateOfPage(Project(id)), "Overview")
-        | Code => (navigateOfPage(ProjectCode(id)), "Code")
-        | Funds => (navigateOfPage(ProjectFunds(id)), "Funds")
+        | Overview => (navigateToPage(Project(id)), "Overview")
+        | Code => (navigateToPage(ProjectCode(id)), "Code")
+        | Funds => (navigateToPage(ProjectFunds(id)), "Funds")
         };
 
       let name = page == selected ? name ++ " <" : name;
