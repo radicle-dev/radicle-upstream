@@ -1,9 +1,10 @@
 module Styles = {
   open Css;
   open Particle;
+  open Util.CssHelper;
 
   let regular =
-    merge([style([color(Color.darkGray())]), style(Particle.Font.text)]);
+    style([color(Color.darkGray())]) << style(Particle.Font.text);
 };
 
 [@react.component]
