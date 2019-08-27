@@ -12,6 +12,10 @@ module Container = {
     let twoColumns = style([display(`flex), flex(`num(1.0))]);
   };
 
+  [@react.component]
+  let make = (~children, ~style=Css.style([])) =>
+    <div className=style> children </div>;
+
   module TwoColumns = {
     [@react.component]
     let make = (~children: tuple2Children) =>

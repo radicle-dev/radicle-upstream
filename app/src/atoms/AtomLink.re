@@ -1,5 +1,6 @@
 open Router;
 open Css;
+open DesignSystem.Operators;
 
 module Styles = {
   let link = style([]);
@@ -15,7 +16,7 @@ let make = (~page: page, ~style=?, ~children=?) => {
 
   let style =
     switch (style) {
-    | Some(style) => merge([Styles.link, style])
+    | Some(style) => Styles.link << style
     | None => Styles.link
     };
 

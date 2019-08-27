@@ -1,5 +1,7 @@
 open Atom;
 open Layout;
+open Page;
+open Molecule;
 
 module Styles = {
   open Css;
@@ -11,12 +13,6 @@ module Styles = {
       height(px(64)),
       paddingTop(px(32)),
     ]);
-};
-
-module JoinNetwork = {
-  [@react.component]
-  let make = () =>
-    <Button.Primary> {React.string("Join the network")} </Button.Primary>;
 };
 
 module Navigation = {
@@ -31,14 +27,23 @@ module Navigation = {
 };
 
 [@react.component]
-let make = () =>
+let make = () => {
+  let (isModalVisible, toggleModal) = React.useState(_ => false);
+
   Router.(
     <header className=Styles.header>
       <Container.TwoColumns>
         ...(
              <> <Link page=Root> <Atom.Icon.Logo /> </Link> <Navigation /> </>,
-             <JoinNetwork />,
+             isModalVisible ?
+               <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
+                 <JoinNetwork />
+               </Modal> :
+               <Button.Primary onClick={_ => toggleModal(_ => true)}>
+                 {React.string("Join the network")}
+               </Button.Primary>,
            )
       </Container.TwoColumns>
     </header>
   );
+};
