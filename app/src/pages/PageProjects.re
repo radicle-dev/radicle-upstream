@@ -38,7 +38,6 @@ let make = () => {
   let state = Store.useSelector(state => state.projectsState);
   let dispatch = Store.useDispatch();
 
-  Js.log(state);
 
   if (state.projects == None) {
     dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
