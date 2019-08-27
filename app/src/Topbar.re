@@ -1,6 +1,7 @@
 open Atom;
 open Layout;
 open Page;
+open Molecule;
 
 module Styles = {
   open Css;
@@ -35,9 +36,9 @@ let make = () => {
         ...(
              <> <Link page=Root> <Atom.Icon.Logo /> </Link> <Navigation /> </>,
              isModalVisible ?
-               <JoinNetwork
-                 closeButtonCallback={_ => toggleModal(_ => false)}
-               /> :
+               <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
+                 <JoinNetwork />
+               </Modal> :
                <Button.Primary onClick={_ => toggleModal(_ => true)}>
                  {React.string("Join the network")}
                </Button.Primary>,

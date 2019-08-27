@@ -1,5 +1,4 @@
 open Atom;
-open Molecule;
 open Layout;
 open DesignSystem;
 
@@ -10,8 +9,8 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~closeButtonCallback) =>
-  <Modal closeButtonCallback>
+let make = () =>
+  <>
     <Container style={margin(0, 0, 16, 0)}>
       <Title.Big> {React.string("Join the network")} </Title.Big>
     </Container>
@@ -32,4 +31,4 @@ let make = (~closeButtonCallback) =>
         {React.string("Join the network")}
       </Button.Secondary>
     </Container>
-  </Modal>;
+  </>;
