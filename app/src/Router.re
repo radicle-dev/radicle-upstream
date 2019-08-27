@@ -40,7 +40,7 @@ let nameOfPage = (p: page): string =>
 
 let pageOfUrl = (u: url): page =>
   switch (u.path) {
-  | [] => Root
+  | [] => Projects
   | ["projects"] => Projects
   | ["projects", "register"] => RegisterProject
   | ["projects", id] => Project(id)

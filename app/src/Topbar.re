@@ -15,17 +15,6 @@ module Styles = {
     ]);
 };
 
-module Navigation = {
-  open Router;
-
-  [@react.component]
-  let make = () =>
-    <ul>
-      <li> <Link page=Projects> {React.string("Explore")} </Link> </li>
-      <li> <Link page={Project("monokel")} /> </li>
-    </ul>;
-};
-
 [@react.component]
 let make = () => {
   let (isModalVisible, toggleModal) = React.useState(_ => false);
@@ -34,7 +23,7 @@ let make = () => {
     <header className=Styles.header>
       <Container.TwoColumns>
         ...(
-             <> <Link page=Root> <Atom.Icon.Logo /> </Link> <Navigation /> </>,
+             <Link page=Projects> <Atom.Icon.Logo /> </Link>,
              isModalVisible ?
                <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
                  <JoinNetwork />

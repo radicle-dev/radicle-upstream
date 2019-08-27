@@ -7,7 +7,7 @@ describe("Router", () =>
   testAll(
     "pageOfUrl",
     [
-      (Root, {hash: "", path: [], search: ""}),
+      (Projects, {hash: "", path: [], search: ""}),
       (Projects, {hash: "", path: ["projects"], search: ""}),
       (
         RegisterProject,
