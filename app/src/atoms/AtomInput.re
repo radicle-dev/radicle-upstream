@@ -1,3 +1,5 @@
+open DesignSystem.Operators;
+
 module Styles = {
   open Css;
   open Particle;
@@ -14,5 +16,5 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~placeholder="", ~onChange=_ => ()) =>
-  <input className=Styles.input onChange placeholder />;
+let make = (~placeholder="", ~onChange=_ => (), ~style=?) =>
+  <input className={Styles.input <<? style} onChange placeholder />;
