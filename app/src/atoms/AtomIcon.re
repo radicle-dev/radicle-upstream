@@ -72,3 +72,28 @@ module PersonAvatarPlaceholder = {
       </defs>
     </svg>;
 };
+
+module ProjectAvatarPlaceholder = {
+  [@react.component]
+  let make = () =>
+    <svg
+      width="64"
+      height="64"
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg">
+      <rect width="64" height="64" rx="2" fill="url(#paint0_radial)" />
+      <defs>
+        <radialGradient
+          id="paint0_radial"
+          cx="0"
+          cy="0"
+          r="1"
+          gradientUnits="userSpaceOnUse"
+          gradientTransform="translate(32 32) rotate(90) scale(98.6667)">
+          <stop stopColor="#E074CB" />
+          <stop offset="1" stopColor="#6E41E0" />
+        </radialGradient>
+      </defs>
+    </svg>;
+};
