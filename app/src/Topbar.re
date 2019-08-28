@@ -1,7 +1,10 @@
+open AppStore;
 open Atom;
 open Layout;
 open Page;
 open Molecule;
+open Source;
+open StoreSession;
 
 module Styles = {
   open Css;
@@ -13,6 +16,58 @@ module Styles = {
       height(px(64)),
       paddingTop(px(32)),
     ]);
+};
+
+module Account = {
+  module Card = {
+    [@react.component]
+    let make = (~account: Source.account) =>
+      <p>
+        <strong> {React.string("Account:")} </strong>
+        {React.string(account.keyName)}
+      </p>;
+  };
+
+  module JoinButton = {
+    [@react.component]
+    let make = (~toggleModal) =>
+      <Button.Primary onClick={_ => toggleModal(_ => true)}>
+        {React.string("Join the network")}
+      </Button.Primary>;
+  };
+
+  [@react.component]
+  let make = () => {
+    let (isModalVisible, toggleModal) = React.useState(_ => false);
+    let state = Store.useSelector(state => state.session);
+    let dispatch = Store.useDispatch();
+
+    if (state == StoreSession.Initial) {
+      dispatch(AppStore.SessionAction(StoreSession.Fetch));
+    };
+
+    let card =
+      switch (state) {
+      | Initial
+      | Empty => <JoinButton toggleModal />
+      | Fetching =>
+        <Button.Primary disabled=true>
+          {React.string("Loading...")}
+        </Button.Primary>
+      | Present(account) => <Card account />
+      | Failed(reason) =>
+        <p>
+          <strong> {React.string("Error:")} </strong>
+          {React.string(reason)}
+        </p>
+      };
+
+    isModalVisible ?
+      <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
+        <JoinNetwork />
+      </Modal> :
+      card;
+  };
 };
 
 module Navigation = {
@@ -27,23 +82,14 @@ module Navigation = {
 };
 
 [@react.component]
-let make = () => {
-  let (isModalVisible, toggleModal) = React.useState(_ => false);
-
+let make = () =>
   Router.(
     <header className=Styles.header>
       <Container.TwoColumns>
         ...(
              <> <Link page=Root> <Atom.Icon.Logo /> </Link> <Navigation /> </>,
-             isModalVisible ?
-               <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
-                 <JoinNetwork />
-               </Modal> :
-               <Button.Primary onClick={_ => toggleModal(_ => true)}>
-                 {React.string("Join the network")}
-               </Button.Primary>,
+             <Account />,
            )
       </Container.TwoColumns>
     </header>
   );
-};

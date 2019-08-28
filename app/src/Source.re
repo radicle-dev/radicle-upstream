@@ -1,5 +1,12 @@
 type address = string;
 
+type account = {
+  avatarUrl: string,
+  keyName: string,
+};
+
+type fetchAccountResult = Belt.Result.t(account, string);
+
 type project = {
   address,
   name: string,
@@ -11,6 +18,7 @@ type fetchProjectsResult = Belt.Result.t(array(project), string);
 type registerProjectResult = Belt.Result.t(project, string);
 
 type source = {
+  fetchAccount: unit => Js.Promise.t(fetchAccountResult),
   fetchProjects: unit => Js.Promise.t(fetchProjectsResult),
   registerProject:
     (~name: string, ~description: string, ~imgUrl: string) =>
@@ -46,6 +54,11 @@ let createLocalSource = () => {
       },
     |]);
 
+  let fetchAccount = () =>
+    Js.Promise.make((~resolve, ~reject as _) =>
+      resolve(. Belt.Result.Error("not implemented"))
+    );
+
   let fetchProjects = () =>
     Js.Promise.make((~resolve, ~reject as _) =>
       Js.Global.setTimeout(
@@ -64,5 +77,5 @@ let createLocalSource = () => {
       resolve(. Belt.Result.Ok(project));
     });
 
-  {fetchProjects, registerProject};
+  {fetchAccount, fetchProjects, registerProject};
 };
