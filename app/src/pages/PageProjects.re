@@ -9,11 +9,12 @@ open Particle;
 module Styles = {
   open Css;
 
-  let projectHeading = style([marginBottom(px(48)), marginTop(px(94))]);
+  let projectHeading = style([marginBottom(px(48))]);
 
   let listItem =
     style([
       borderBottom(px(1), solid, Color.lightGray()),
+      padding(px(13)),
       hover([backgroundColor(Color.almostWhite())]),
       lastChild([borderBottomWidth(px(0))]),
     ]);
