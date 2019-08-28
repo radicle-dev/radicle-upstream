@@ -1,3 +1,5 @@
+open DesignSystem.Operators;
+
 type tuple2Children = (ReasonReact.reactElement, ReasonReact.reactElement);
 
 module Container = {
@@ -13,8 +15,8 @@ module Container = {
   };
 
   [@react.component]
-  let make = (~children, ~style=Css.style([])) =>
-    <div className=style> children </div>;
+  let make = (~children, ~style=?) =>
+    <div className={Css.style([]) <<? style}> children </div>;
 
   module TwoColumns = {
     [@react.component]

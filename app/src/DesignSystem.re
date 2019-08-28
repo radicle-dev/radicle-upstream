@@ -2,6 +2,12 @@ open Css;
 
 module Operators = {
   let (<<) = (a, b) => merge([a, b]);
+
+  let (<<?) = (a, b) =>
+    switch (b) {
+    | Some(b) => a << b
+    | None => a
+    };
 };
 
 let margin = (top, right, bottom, left) =>
