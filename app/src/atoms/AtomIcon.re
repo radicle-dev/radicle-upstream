@@ -28,3 +28,22 @@ module Close = {
       />
     </svg>;
 };
+
+module Back = {
+  [@react.component]
+  let make = () =>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M10 4L6 8L10 12"
+        stroke="#90A0AF"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>;
+};
