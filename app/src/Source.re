@@ -5,7 +5,7 @@ type account = {
   keyName: string,
 };
 
-type fetchAccountResult = Belt.Result.t(account, string);
+type fetchAccountResult = Belt.Result.t(option(account), string);
 
 type project = {
   address,
@@ -26,7 +26,8 @@ type source = {
 };
 
 let createLocalSource = () => {
-  let mockProjects =
+  let localAccount = ref(None);
+  let localProjects =
     ref([|
       {
         address: "monokel",
@@ -56,13 +57,13 @@ let createLocalSource = () => {
 
   let fetchAccount = () =>
     Js.Promise.make((~resolve, ~reject as _) =>
-      resolve(. Belt.Result.Error("not implemented"))
+      resolve(. Belt.Result.Ok(localAccount^))
     );
 
   let fetchProjects = () =>
     Js.Promise.make((~resolve, ~reject as _) =>
       Js.Global.setTimeout(
-        () => resolve(. Belt.Result.Ok(mockProjects^)),
+        () => resolve(. Belt.Result.Ok(localProjects^)),
         1000,
       )
       |> ignore
@@ -72,7 +73,7 @@ let createLocalSource = () => {
     Js.Promise.make((~resolve, ~reject as _) => {
       let project = {address: "", name, description, imgUrl};
 
-      mockProjects := Array.append(mockProjects^, [|project|]);
+      localProjects := Array.append(localProjects^, [|project|]);
 
       resolve(. Belt.Result.Ok(project));
     });

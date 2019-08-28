@@ -6,7 +6,7 @@ type account = {
   keyName: string,
 };
 
-type fetchAccountResult = Belt.Result.t(account, string);
+type fetchAccountResult = Belt.Result.t(option(account), string);
 
 /** The project representation on the registry. **/
 type project = {

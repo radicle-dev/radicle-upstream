@@ -1,6 +1,7 @@
 type action =
   | Fetch
-  | Fetched(Source.account);
+  | Fetched(option(Source.account))
+  | FetchFailed(string);
 
 type state =
   | Initial
@@ -14,5 +15,10 @@ let initialState = Initial;
 let reducer = (_state, action) =>
   switch (action) {
   | Fetch => Fetching
-  | Fetched(account) => Present(account)
+  | Fetched(maybeAccount) =>
+    switch (maybeAccount) {
+    | Some(account) => Present(account)
+    | None => Empty
+    }
+  | FetchFailed(reason) => Failed(reason)
   };

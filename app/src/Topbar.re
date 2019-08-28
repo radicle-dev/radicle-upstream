@@ -43,17 +43,17 @@ module Account = {
     let dispatch = Store.useDispatch();
 
     if (state == StoreSession.Initial) {
-      dispatch(AppStore.SessionAction(StoreSession.Fetch));
+      dispatch(StoreMiddleware.Thunk(ThunkSession.fetchSession));
     };
 
     let card =
       switch (state) {
       | Initial
-      | Empty => <JoinButton toggleModal />
       | Fetching =>
         <Button.Primary disabled=true>
           {React.string("Loading...")}
         </Button.Primary>
+      | Empty => <JoinButton toggleModal />
       | Present(account) => <Card account />
       | Failed(reason) =>
         <p>
