@@ -1,7 +1,10 @@
+open Source;
+
 type action =
   | Fetch
   | Fetched(option(Source.account))
-  | FetchFailed(string);
+  | FetchFailed(string)
+  | NewAccount(string, string);
 
 type state =
   | Initial
@@ -21,4 +24,5 @@ let reducer = (_state, action) =>
     | None => Empty
     }
   | FetchFailed(reason) => Failed(reason)
+  | NewAccount(keyName, avatarUrl) => Present({keyName, avatarUrl})
   };

@@ -38,7 +38,7 @@ module Account = {
 
   [@react.component]
   let make = () => {
-    let (isModalVisible, toggleModal) = React.useState(_ => false);
+    let (isModalVisible, toggleModal) = React.useState(_ => true);
     let state = Store.useSelector(state => state.session);
     let dispatch = Store.useDispatch();
 
@@ -64,7 +64,7 @@ module Account = {
 
     isModalVisible ?
       <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
-        <JoinNetwork />
+        <JoinNetwork onComplete={_ => toggleModal(_ => false)} />
       </Modal> :
       card;
   };

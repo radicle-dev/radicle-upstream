@@ -21,3 +21,14 @@ let fetchSession = (dispatch: dispatchFunc, source: source) => {
   )
   |> ignore;
 };
+
+let createAccount =
+    (
+      keyName: string,
+      avatarUrl: string,
+      dispatch: dispatchFunc,
+      _source: source,
+    ) => {
+  Router.navigateOfPage(Router.Projects, ());
+  SessionAction(NewAccount(keyName, avatarUrl)) |> dispatch;
+};
