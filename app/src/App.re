@@ -24,19 +24,21 @@ module Styles = {
     style([
       display(grid),
       gridTemplateColumns([`repeat((`num(8), `fr(1.0)))]),
-      gridTemplateRows([`repeat((`num(8), `fr(1.0)))]),
-      gridGap(px(24)),
-      height(vh(100.0)),
+      gridTemplateRows([px(174), auto, px(96)]),
+      gridRowGap(px(0)),
     ]);
 
-  let content =
-    style([gridColumnEnd(7), gridColumnStart(3), height(pct(100.0))]);
+  let topbarContainer =
+    style([gridColumnStart(2), gridColumnEnd(8), marginTop(px(32))]);
+
+  let content = style([gridColumnEnd(7), gridColumnStart(3)]);
 };
 
 [@react.component]
 let make = () => {
   open Page;
   open Router;
+  open Atom.Layout;
 
   let page =
     switch (currentPage()) {
@@ -51,9 +53,8 @@ let make = () => {
 
   <Store.Provider>
     <div className=Styles.container>
-      <Topbar />
-      <div className=Styles.content> page </div>
-      <Footer />
+      <Container style=Styles.topbarContainer> <Topbar /> </Container>
+      <Container style=Styles.content> page </Container>
     </div>
   </Store.Provider>;
 };
