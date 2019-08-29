@@ -9,7 +9,7 @@ let make = () => {
 
   Router.(
     <header>
-      <Container.TwoColumns>
+      <TwoColumns>
         ...(
              <Link page=Projects> <Atom.Icon.Logo /> </Link>,
              isModalVisible ?
@@ -22,7 +22,7 @@ let make = () => {
                  {React.string("Join the network")}
                </Button.Primary>,
            )
-      </Container.TwoColumns>
+      </TwoColumns>
     </header>
   );
 };

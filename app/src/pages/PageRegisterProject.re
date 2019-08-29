@@ -27,12 +27,12 @@ let make = () => {
       ),
     );
 
-  <Container style=Styles.content>
+  <El style=Styles.content>
     <Title.Big style={margin(0, 0, 16, 0)}>
       {React.string("Register a project")}
     </Title.Big>
     <Text> {React.string("Register a project on the network")} </Text>
-    <Container style={margin(48, 0, 24, 0)}>
+    <El style={margin(48, 0, 24, 0)}>
       <Input
         style={margin(0, 0, 16, 0)}
         placeholder="Enter the project name"
@@ -42,14 +42,14 @@ let make = () => {
         placeholder="Enter your project description"
       />
       <Input placeholder="Add a project picture" />
-    </Container>
-    <Container style=Styles.buttonContainer>
+    </El>
+    <El style=Styles.buttonContainer>
       <Button.Cancel onClick={navigateToPage(Projects)}>
         {React.string("Cancel")}
       </Button.Cancel>
       <Button.Secondary onClick=registerCallback>
         {React.string("Register")}
       </Button.Secondary>
-    </Container>
-  </Container>;
+    </El>
+  </El>;
 };

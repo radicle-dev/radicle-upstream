@@ -24,9 +24,7 @@ let make = (~imgUrl=?, ~firstName, ~lastName=?) => {
     switch (imgUrl) {
     | Some(imgUrl) => <img className=Styles.image src=imgUrl />
     | None =>
-      <Container style=Styles.imageContainer>
-        <Icon.PersonAvatarPlaceholder />
-      </Container>
+      <El style=Styles.imageContainer> <Icon.PersonAvatarPlaceholder /> </El>
     };
 
   <div className=Styles.personCard>

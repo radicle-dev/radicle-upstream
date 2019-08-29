@@ -13,23 +13,23 @@ module Styles = {
 
 [@react.component]
 let make = (~cancelButtonCallback) =>
-  <Container style=Styles.content>
-    <Container style={margin(0, 0, 16, 0)}>
+  <El style=Styles.content>
+    <El style={margin(0, 0, 16, 0)}>
       <Title.Big> {React.string("Join the network")} </Title.Big>
-    </Container>
+    </El>
     <Text>
       {React.string("Create an \"account\" to join the network.")}
     </Text>
-    <Container style={margin(48, 0, 24, 0)}>
+    <El style={margin(48, 0, 24, 0)}>
       <Input style={margin(0, 0, 16, 0)} placeholder="Enter your name" />
       <Input placeholder="Enter an avatar URL" />
-    </Container>
-    <Container style=Styles.buttonContainer>
+    </El>
+    <El style=Styles.buttonContainer>
       <Button.Cancel onClick=cancelButtonCallback>
         {React.string("Cancel")}
       </Button.Cancel>
       <Button.Secondary>
         {React.string("Join the network")}
       </Button.Secondary>
-    </Container>
-  </Container>;
+    </El>
+  </El>;

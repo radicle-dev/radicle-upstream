@@ -53,19 +53,19 @@ module Styles = {
 
 [@react.component]
 let make = (~id: string, ~subPage: projectPage) =>
-  <Container style=Positioning.mediumWidthCentered>
-    <Container style={margin(0, 0, 50, 0)}>
-      <Container style={margin(0, 0, 24, 0)}>
+  <El style=Positioning.mediumWidthCentered>
+    <El style={margin(0, 0, 50, 0)}>
+      <El style={margin(0, 0, 24, 0)}>
         <Breadcrumb page=Router.Projects />
-      </Container>
+      </El>
       <ProjectCard.Alternate
         name="Monadic"
         description="Open source organization of amazing things"
       />
-    </Container>
-    <Container style=Styles.membersHeading>
+    </El>
+    <El style=Styles.membersHeading>
       <Title> {React.string("Members")} </Title>
-    </Container>
+    </El>
     <ul className=Styles.list>
       <li>
         <PersonCard
@@ -76,4 +76,4 @@ let make = (~id: string, ~subPage: projectPage) =>
       <li> <PersonCard firstName="Willy" lastName="Gomez" /> </li>
     </ul>
     <Navigation id subPage />
-  </Container>;
+  </El>;

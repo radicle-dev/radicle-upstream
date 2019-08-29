@@ -39,11 +39,11 @@ let make = () => {
     };
 
   <Store.Provider>
-    <Container style=Layout.grid>
-      <Container style={Positioning.wideWidthCentered << margin(32, 0, 0, 0)}>
+    <El style=Layout.grid>
+      <El style={Positioning.wideWidthCentered << margin(32, 0, 0, 0)}>
         <Topbar />
-      </Container>
+      </El>
       page
-    </Container>
+    </El>
   </Store.Provider>;
 };

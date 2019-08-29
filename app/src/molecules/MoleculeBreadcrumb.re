@@ -13,11 +13,11 @@ module Styles = {
 
 [@react.component]
 let make = (~page) =>
-  <Container style=Styles.container>
+  <El style=Styles.container>
     <Icon.Back />
     <Link page>
       <Text.Small style=Styles.text>
         {React.string("Back to " ++ nameOfPage(page))}
       </Text.Small>
     </Link>
-  </Container>;
+  </El>;

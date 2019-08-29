@@ -26,9 +26,9 @@ module Template = {
       switch (imgUrl) {
       | Some(imgUrl) => <img className=Styles.image src=imgUrl />
       | None =>
-        <Container style=Styles.imageContainer>
+        <El style=Styles.imageContainer>
           <Icon.ProjectAvatarPlaceholder />
-        </Container>
+        </El>
       };
 
     <div className=Styles.item>

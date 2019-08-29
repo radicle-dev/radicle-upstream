@@ -33,7 +33,13 @@ module Positioning = {
   let narrowWidthCentered = style([gridColumnStart(4), gridColumnEnd(6)]);
 };
 
-module Container = {
+module El = {
+  [@react.component]
+  let make = (~children, ~style=?) =>
+    <div className={Css.style([]) <<? style}> children </div>;
+};
+
+module TwoColumns = {
   module Styles = {
     let left = style([display(`flex), flex(`num(1.0))]);
 
@@ -44,15 +50,9 @@ module Container = {
   };
 
   [@react.component]
-  let make = (~children, ~style=?) =>
-    <div className={Css.style([]) <<? style}> children </div>;
-
-  module TwoColumns = {
-    [@react.component]
-    let make = (~children) =>
-      <div className=Styles.twoColumns>
-        <div className=Styles.left> {fst(children)} </div>
-        <div className=Styles.right> {snd(children)} </div>
-      </div>;
-  };
+  let make = (~children) =>
+    <div className=Styles.twoColumns>
+      <div className=Styles.left> {fst(children)} </div>
+      <div className=Styles.right> {snd(children)} </div>
+    </div>;
 };

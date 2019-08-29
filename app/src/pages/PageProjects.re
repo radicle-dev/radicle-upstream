@@ -51,16 +51,16 @@ let make = () => {
     dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
   };
 
-  <Container style=Positioning.mediumWidthCentered>
+  <El style=Positioning.mediumWidthCentered>
     <div className=Styles.projectHeading>
-      <Container.TwoColumns>
+      <TwoColumns>
         ...(
              <Title.Huge> {React.string("Explore")} </Title.Huge>,
              <Link page=Router.RegisterProject>
                <Button> {React.string("Register project")} </Button>
              </Link>,
            )
-      </Container.TwoColumns>
+      </TwoColumns>
     </div>
     {
       switch (state.error, state.loading, state.projects) {
@@ -71,5 +71,5 @@ let make = () => {
       | _ => <div> {React.string("Not loading...")} </div>
       }
     }
-  </Container>;
+  </El>;
 };
