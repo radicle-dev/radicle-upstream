@@ -20,18 +20,8 @@ module Styles = {
     ],
   );
 
-  let container =
-    style([
-      display(grid),
-      gridTemplateColumns([`repeat((`num(8), `fr(1.0)))]),
-      gridTemplateRows([px(174), auto, px(96)]),
-      gridRowGap(px(0)),
-    ]);
-
   let topbarContainer =
     style([gridColumnStart(2), gridColumnEnd(8), marginTop(px(32))]);
-
-  let content = style([gridColumnEnd(7), gridColumnStart(3)]);
 };
 
 [@react.component]
@@ -52,9 +42,9 @@ let make = () => {
     };
 
   <Store.Provider>
-    <div className=Styles.container>
+    <Container style=DesignSystem.grid>
       <Container style=Styles.topbarContainer> <Topbar /> </Container>
-      <Container style=Styles.content> page </Container>
-    </div>
+      page
+    </Container>
   </Store.Provider>;
 };

@@ -5,17 +5,18 @@ external _getElementById: string => option(Dom.element) =
 module Styles = {
   open Css;
   open Particle;
+  open DesignSystem.Operators;
 
   let modal =
-    style([
-      position(fixed),
-      width(pct(100.0)),
-      height(pct(100.0)),
-      display(`flex),
-      backgroundColor(Color.white()),
-      justifyContent(center),
-      alignItems(center),
-    ]);
+    DesignSystem.grid
+    << style([
+         position(fixed),
+         width(pct(100.0)),
+         height(pct(100.0)),
+         backgroundColor(Color.white()),
+         justifyContent(center),
+       ]);
+
   let closeButton =
     style([
       cursor(`pointer),
@@ -24,7 +25,6 @@ module Styles = {
       right(px(0)),
       padding(px(36)),
     ]);
-  let content = style([width(px(390)), textAlign(center)]);
 };
 
 module Portal = {
@@ -43,6 +43,6 @@ let make = (~children, ~closeButtonCallback) =>
       <div className=Styles.closeButton onClick={_ => closeButtonCallback()}>
         <Atom.Icon.Close />
       </div>
-      <div className=Styles.content> children </div>
+      children
     </div>
   </Portal>;

@@ -5,7 +5,8 @@ open DesignSystem;
 module Styles = {
   open Css;
 
-  let content = style([textAlign(center)]);
+  let content =
+    style([textAlign(center), gridColumnEnd(6), gridColumnStart(4)]);
 
   let buttonContainer = style([display(`flex), justifyContent(flexEnd)]);
 };

@@ -5,12 +5,19 @@ open DesignSystem;
 module Styles = {
   open Css;
 
+  let content =
+    style([
+      textAlign(center),
+      gridColumnEnd(6),
+      gridColumnStart(4),
+      gridRowStart(2),
+    ]);
   let buttonContainer = style([display(`flex), justifyContent(flexEnd)]);
 };
 
 [@react.component]
 let make = (~cancelButtonCallback) =>
-  <>
+  <Container style=Styles.content>
     <Container style={margin(0, 0, 16, 0)}>
       <Title.Big> {React.string("Join the network")} </Title.Big>
     </Container>
@@ -29,4 +36,4 @@ let make = (~cancelButtonCallback) =>
         {React.string("Join the network")}
       </Button.Secondary>
     </Container>
-  </>;
+  </Container>;

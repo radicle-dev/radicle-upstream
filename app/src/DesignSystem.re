@@ -17,3 +17,11 @@ let margin = (top, right, bottom, left) =>
     marginBottom(px(bottom)),
     marginLeft(px(left)),
   ]);
+
+let grid =
+  style([
+    display(grid),
+    gridTemplateColumns([`repeat((`num(8), `fr(1.0)))]),
+    gridTemplateRows([px(174), auto, px(96)]),
+    gridRowGap(px(0)),
+  ]);
