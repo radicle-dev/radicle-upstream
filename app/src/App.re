@@ -19,16 +19,13 @@ module Styles = {
       textDecoration(none),
     ],
   );
-
-  let topbarContainer =
-    style([gridColumnStart(2), gridColumnEnd(8), marginTop(px(32))]);
 };
 
 [@react.component]
 let make = () => {
+  open DesignSystem;
   open Page;
   open Router;
-  open DesignSystem.Layout;
 
   let page =
     switch (currentPage()) {
@@ -42,8 +39,10 @@ let make = () => {
     };
 
   <Store.Provider>
-    <Container style=DesignSystem.Layout.grid>
-      <Container style=Styles.topbarContainer> <Topbar /> </Container>
+    <Container style=Layout.grid>
+      <Container style={Positioning.wideWidthCentered << margin(32, 0, 0, 0)}>
+        <Topbar />
+      </Container>
       page
     </Container>
   </Store.Provider>;

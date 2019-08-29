@@ -1,4 +1,4 @@
-open DesignSystem.Operators;
+open DesignSystem;
 
 module Styles = {
   open Css;

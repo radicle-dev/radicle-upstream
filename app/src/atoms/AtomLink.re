@@ -1,6 +1,6 @@
 open Router;
 open Css;
-open DesignSystem.Operators;
+open DesignSystem;
 
 module Styles = {
   let link = style([]);

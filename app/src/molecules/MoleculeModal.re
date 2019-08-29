@@ -5,10 +5,10 @@ external _getElementById: string => option(Dom.element) =
 module Styles = {
   open Css;
   open Particle;
-  open DesignSystem.Operators;
+  open DesignSystem;
 
   let modal =
-    DesignSystem.Layout.grid
+    Layout.grid
     << style([
          position(fixed),
          width(pct(100.0)),

@@ -1,5 +1,5 @@
 open Particle.Font;
-open DesignSystem.Operators;
+open DesignSystem;
 
 module Huge = {
   [@react.component]
