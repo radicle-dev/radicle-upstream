@@ -30,7 +30,7 @@ module Positioning = {
   let fullWidth = style([gridColumnStart(1), gridColumnEnd(9)]);
   let wideWidthCentered = style([gridColumnStart(2), gridColumnEnd(8)]);
   let mediumWidthCentered = style([gridColumnStart(3), gridColumnEnd(7)]);
-  let narrowWidthCentered = style([gridColumnStart(2), gridColumnEnd(8)]);
+  let narrowWidthCentered = style([gridColumnStart(4), gridColumnEnd(6)]);
 };
 
 module Container = {

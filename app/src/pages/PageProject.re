@@ -49,13 +49,11 @@ module Styles = {
       paddingBottom(px(16)),
       borderBottom(px(1), `solid, Color.lightGray()),
     ]);
-
-  let content = style([gridColumnEnd(7), gridColumnStart(3)]);
 };
 
 [@react.component]
 let make = (~id: string, ~subPage: projectPage) =>
-  <Container style=Styles.content>
+  <Container style=Positioning.mediumWidthCentered>
     <Container style={margin(0, 0, 50, 0)}>
       <Container style={margin(0, 0, 24, 0)}>
         <Breadcrumb page=Router.Projects />

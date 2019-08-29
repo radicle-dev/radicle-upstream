@@ -1,15 +1,15 @@
 module Styles = {
   open Css;
+  open DesignSystem;
 
   let footer =
-    style([
-      display(grid),
-      gridColumnStart(2),
-      gridColumnEnd(8),
-      gridRowStart(-1),
-      height(px(64)),
-      justifySelf(center),
-    ]);
+    Positioning.wideWidthCentered
+    << style([
+         display(grid),
+         gridRowStart(-1),
+         height(px(64)),
+         justifySelf(center),
+       ]);
 
   let ul =
     style([

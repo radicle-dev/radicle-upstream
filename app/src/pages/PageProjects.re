@@ -11,7 +11,6 @@ module Styles = {
 
   let projectHeading = style([marginBottom(px(48))]);
 
-  let content = style([gridColumnEnd(7), gridColumnStart(3)]);
   let listItem =
     style([
       borderBottom(px(1), solid, Color.lightGray()),
@@ -52,7 +51,7 @@ let make = () => {
     dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
   };
 
-  <Container style=Styles.content>
+  <Container style=Positioning.mediumWidthCentered>
     <div className=Styles.projectHeading>
       <Container.TwoColumns>
         ...(
