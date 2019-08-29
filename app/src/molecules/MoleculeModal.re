@@ -8,7 +8,7 @@ module Styles = {
   open DesignSystem.Operators;
 
   let modal =
-    DesignSystem.grid
+    DesignSystem.Layout.grid
     << style([
          position(fixed),
          width(pct(100.0)),

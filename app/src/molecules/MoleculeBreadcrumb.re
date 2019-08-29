@@ -1,5 +1,5 @@
 open Atom;
-open Layout;
+open DesignSystem.Layout;
 open Particle;
 open Router;
 

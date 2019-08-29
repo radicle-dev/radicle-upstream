@@ -28,7 +28,7 @@ module Styles = {
 let make = () => {
   open Page;
   open Router;
-  open Atom.Layout;
+  open DesignSystem.Layout;
 
   let page =
     switch (currentPage()) {
@@ -42,7 +42,7 @@ let make = () => {
     };
 
   <Store.Provider>
-    <Container style=DesignSystem.grid>
+    <Container style=DesignSystem.Layout.grid>
       <Container style=Styles.topbarContainer> <Topbar /> </Container>
       page
     </Container>

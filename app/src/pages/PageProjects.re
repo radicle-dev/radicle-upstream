@@ -1,6 +1,6 @@
 open AppStore;
 open Atom;
-open Atom.Layout;
+open DesignSystem.Layout;
 open Molecule;
 open Source;
 open StoreProjects;

@@ -1,5 +1,5 @@
 open Atom;
-open Layout;
+open DesignSystem.Layout;
 
 module Styles = {
   open Css;

@@ -1,7 +1,6 @@
 open Molecule;
 open Atom;
-open Layout;
-open DesignSystem;
+open DesignSystem.Layout;
 
 type projectPage =
   | Overview
