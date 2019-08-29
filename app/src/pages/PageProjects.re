@@ -53,14 +53,16 @@ let make = () => {
 
   <El style=Positioning.mediumWidthCentered>
     <div className=Styles.projectHeading>
-      <TwoColumns>
-        ...(
-             <Title.Huge> {React.string("Explore")} </Title.Huge>,
-             <Link page=Router.RegisterProject>
-               <Button> {React.string("Register project")} </Button>
-             </Link>,
-           )
-      </TwoColumns>
+      <El style=Flex.wrap>
+        <El style=Flex.left>
+          <Title.Huge> {React.string("Explore")} </Title.Huge>
+        </El>
+        <El style=Flex.right>
+          <Link page=Router.RegisterProject>
+            <Button> {React.string("Register project")} </Button>
+          </Link>
+        </El>
+      </El>
     </div>
     {
       switch (state.error, state.loading, state.projects) {

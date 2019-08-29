@@ -16,6 +16,15 @@ let margin = (top, right, bottom, left) =>
     marginLeft(px(left)),
   ]);
 
+module Flex = {
+  let wrap = style([display(`flex), flex(`num(1.0))]);
+
+  let left = style([display(`flex), flex(`num(1.0))]);
+
+  let right =
+    style([display(`flex), flex(`num(1.0)), justifyContent(flexEnd)]);
+};
+
 module Layout = {
   let grid =
     style([
@@ -37,22 +46,4 @@ module El = {
   [@react.component]
   let make = (~children, ~style=?) =>
     <div className={Css.style([]) <<? style}> children </div>;
-};
-
-module TwoColumns = {
-  module Styles = {
-    let left = style([display(`flex), flex(`num(1.0))]);
-
-    let right =
-      style([display(`flex), flex(`num(1.0)), justifyContent(flexEnd)]);
-
-    let twoColumns = style([display(`flex), flex(`num(1.0))]);
-  };
-
-  [@react.component]
-  let make = (~children) =>
-    <div className=Styles.twoColumns>
-      <div className=Styles.left> {fst(children)} </div>
-      <div className=Styles.right> {snd(children)} </div>
-    </div>;
 };
