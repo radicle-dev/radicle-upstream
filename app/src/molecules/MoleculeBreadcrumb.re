@@ -6,7 +6,7 @@ open Router;
 module Styles = {
   open Css;
 
-  let text = style([color(Color.gray())]);
+  let text = style([color(Color.gray()), lineHeight(px(24))]);
 
   let container = style([display(`flex), alignItems(center)]);
 };
