@@ -53,7 +53,7 @@ module Styles = {
 
 [@react.component]
 let make = (~id: string, ~subPage: projectPage) =>
-  <El style=Positioning.mediumWidthCentered>
+  <El style=Positioning.gridMediumCentered>
     <El style={margin(0, 0, 50, 0)}>
       <El style={margin(0, 0, 24, 0)}>
         <Breadcrumb page=Router.Projects />

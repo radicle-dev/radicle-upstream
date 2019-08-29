@@ -40,7 +40,7 @@ let make = () => {
 
   <Store.Provider>
     <El style=Layout.grid>
-      <El style={Positioning.wideWidthCentered << margin(32, 0, 0, 0)}>
+      <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
         <Topbar />
       </El>
       page

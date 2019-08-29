@@ -3,7 +3,7 @@ module Styles = {
   open DesignSystem;
 
   let footer =
-    Positioning.wideWidthCentered
+    Positioning.gridWideCentered
     << style([
          display(grid),
          gridRowStart(-1),

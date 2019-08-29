@@ -51,13 +51,13 @@ let make = () => {
     dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
   };
 
-  <El style=Positioning.mediumWidthCentered>
+  <El style=Positioning.gridMediumCentered>
     <div className=Styles.projectHeading>
-      <El style=Flex.wrap>
-        <El style=Flex.left>
+      <El style=Layout.flex>
+        <El style=Positioning.flexLeft>
           <Title.Huge> {React.string("Explore")} </Title.Huge>
         </El>
-        <El style=Flex.right>
+        <El style=Positioning.flexRight>
           <Link page=Router.RegisterProject>
             <Button> {React.string("Register project")} </Button>
           </Link>

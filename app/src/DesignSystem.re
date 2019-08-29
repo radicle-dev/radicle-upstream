@@ -16,15 +16,6 @@ let margin = (top, right, bottom, left) =>
     marginLeft(px(left)),
   ]);
 
-module Flex = {
-  let wrap = style([display(`flex), flex(`num(1.0))]);
-
-  let left = style([display(`flex), flex(`num(1.0))]);
-
-  let right =
-    style([display(`flex), flex(`num(1.0)), justifyContent(flexEnd)]);
-};
-
 module Layout = {
   let grid =
     style([
@@ -33,13 +24,19 @@ module Layout = {
       gridTemplateRows([px(174), auto, px(96)]),
       gridRowGap(px(0)),
     ]);
+
+  let flex = style([display(`flex), flex(`num(1.0))]);
 };
 
 module Positioning = {
-  let fullWidth = style([gridColumnStart(1), gridColumnEnd(9)]);
-  let wideWidthCentered = style([gridColumnStart(2), gridColumnEnd(8)]);
-  let mediumWidthCentered = style([gridColumnStart(3), gridColumnEnd(7)]);
-  let narrowWidthCentered = style([gridColumnStart(4), gridColumnEnd(6)]);
+  let gridFullCentered = style([gridColumnStart(1), gridColumnEnd(9)]);
+  let gridWideCentered = style([gridColumnStart(2), gridColumnEnd(8)]);
+  let gridMediumCentered = style([gridColumnStart(3), gridColumnEnd(7)]);
+  let gridNarrowCentered = style([gridColumnStart(4), gridColumnEnd(6)]);
+
+  let flexLeft = style([display(`flex), flex(`num(1.0))]);
+  let flexRight =
+    style([display(`flex), flex(`num(1.0)), justifyContent(flexEnd)]);
 };
 
 module El = {

@@ -9,11 +9,11 @@ let make = () => {
 
   Router.(
     <header>
-      <El style=Flex.wrap>
-        <El style=Flex.left>
+      <El style=Layout.flex>
+        <El style=Positioning.flexLeft>
           <Link page=Projects> <Atom.Icon.Logo /> </Link>
         </El>
-        <El style=Flex.right>
+        <El style=Positioning.flexRight>
           {
             isModalVisible ?
               <Modal closeButtonCallback={_ => toggleModal(_ => false)}>

@@ -4,8 +4,7 @@ open DesignSystem;
 module Styles = {
   open Css;
 
-  let content =
-    style([textAlign(center)]) << Positioning.narrowWidthCentered;
+  let content = style([textAlign(center)]) << Positioning.gridNarrowCentered;
 
   let buttonContainer = style([display(`flex), justifyContent(flexEnd)]);
 };
