@@ -21,7 +21,7 @@ module Styles = {
 
 module Template = {
   [@react.component]
-  let make = (~imgUrl=?, ~title, ~description) => {
+  let make = (~children, ~imgUrl=?, ~description) => {
     let image =
       switch (imgUrl) {
       | Some(imgUrl) => <img className=Styles.image src=imgUrl />
@@ -34,7 +34,7 @@ module Template = {
     <div className=Styles.item>
       image
       <div className=Styles.description>
-        title
+        children
         <Text> {React.string(description)} </Text>
       </div>
     </div>;
@@ -42,18 +42,17 @@ module Template = {
 };
 
 [@react.component]
-let make = (~imgUrl=?, ~name, ~description) => {
-  let title = <Title> {React.string(name)} </Title>;
-  <Template ?imgUrl description title />;
-};
+let make = (~imgUrl=?, ~name, ~description) =>
+  <Template ?imgUrl description>
+    <Title> {React.string(name)} </Title>
+  </Template>;
 
 module Alternate = {
   [@react.component]
-  let make = (~imgUrl=?, ~name, ~description) => {
-    let title =
+  let make = (~imgUrl=?, ~name, ~description) =>
+    <Template ?imgUrl description>
       <Title.Big style={margin(0, 0, 6, 0)}>
         {React.string(name)}
-      </Title.Big>;
-    <Template ?imgUrl description title />;
-  };
+      </Title.Big>
+    </Template>;
 };
