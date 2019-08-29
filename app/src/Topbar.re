@@ -38,7 +38,7 @@ module Account = {
 
   [@react.component]
   let make = () => {
-    let (isModalVisible, toggleModal) = React.useState(_ => true);
+    let (isModalVisible, toggleModal) = React.useState(_ => false);
     let state = Store.useSelector(state => state.session);
     let dispatch = Store.useDispatch();
 
