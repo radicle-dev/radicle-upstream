@@ -14,11 +14,13 @@ type project = {
   imgUrl: string,
 };
 
+type fetchProjectResult = Belt.Result.t(project, string);
 type fetchProjectsResult = Belt.Result.t(array(project), string);
 type registerProjectResult = Belt.Result.t(project, string);
 
 type source = {
   fetchAccount: unit => Js.Promise.t(fetchAccountResult),
+  fetchProject: address => Js.Promise.t(fetchProjectResult),
   fetchProjects: unit => Js.Promise.t(fetchProjectsResult),
   registerProject:
     (~name: string, ~description: string, ~imgUrl: string) =>
@@ -60,6 +62,16 @@ let createLocalSource = () => {
       resolve(. Belt.Result.Ok(localAccount^))
     );
 
+  let fetchProject = addr =>
+    Js.Promise.make((~resolve, ~reject as _) => {
+      let maybeProj = Belt.Array.getBy(localProjects^, p => addr == p.address);
+
+      switch (maybeProj) {
+      | Some(project) => resolve(. Belt.Result.Ok(project))
+      | None => resolve(. Belt.Result.Error("Not Found"))
+      };
+    });
+
   let fetchProjects = () =>
     Js.Promise.make((~resolve, ~reject as _) =>
       Js.Global.setTimeout(
@@ -78,5 +90,5 @@ let createLocalSource = () => {
       resolve(. Belt.Result.Ok(project));
     });
 
-  {fetchAccount, fetchProjects, registerProject};
+  {fetchAccount, fetchProject, fetchProjects, registerProject};
 };
