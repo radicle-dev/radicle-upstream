@@ -29,6 +29,6 @@ let createAccount =
       dispatch: dispatchFunc,
       _source: source,
     ) => {
-  Router.navigateOfPage(Router.Projects, ());
+  Router.navigateToPage(Router.Projects, ());
   SessionAction(NewAccount(keyName, avatarUrl)) |> dispatch;
 };

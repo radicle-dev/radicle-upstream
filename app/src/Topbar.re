@@ -54,7 +54,8 @@ module Account = {
           {React.string("Loading...")}
         </Button.Primary>
       | Empty => <JoinButton toggleModal />
-      | Present(account) => <Card account />
+      | Present(account) =>
+        <PersonCard firstName={account.keyName} imgUrl={account.avatarUrl} />
       | Failed(reason) =>
         <p>
           <strong> {React.string("Error:")} </strong>
