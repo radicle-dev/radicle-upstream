@@ -9,7 +9,7 @@ type page =
   | ProjectFunds(string)
   | NotFound(list(string));
 
-let navigateOfPage = (p: page) => {
+let navigateToPage = (p: page) => {
   let join = (parts: list(string)): string =>
     List.fold_left((a, b) => a ++ "/" ++ b, "", parts);
 
@@ -40,7 +40,7 @@ let nameOfPage = (p: page): string =>
 
 let pageOfUrl = (u: url): page =>
   switch (u.path) {
-  | [] => Root
+  | [] => Projects
   | ["projects"] => Projects
   | ["projects", "register"] => RegisterProject
   | ["projects", id] => Project(id)

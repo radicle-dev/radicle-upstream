@@ -1,34 +1,35 @@
 open Atom;
-open Layout;
 open DesignSystem;
 
 module Styles = {
   open Css;
 
+  let content =
+    Positioning.gridNarrowCentered
+    << style([textAlign(center), gridRowStart(2)]);
+
   let buttonContainer = style([display(`flex), justifyContent(flexEnd)]);
 };
 
 [@react.component]
-let make = () =>
-  <>
-    <Container style={margin(0, 0, 16, 0)}>
+let make = (~cancelButtonCallback) =>
+  <El style=Styles.content>
+    <El style={margin(0, 0, 16, 0)}>
       <Title.Big> {React.string("Join the network")} </Title.Big>
-    </Container>
+    </El>
     <Text>
       {React.string("Create an \"account\" to join the network.")}
     </Text>
-    <Container style={margin(48, 0, 24, 0)}>
-      <Container style={margin(0, 0, 16, 0)}>
-        <Input placeholder="Enter your name" />
-      </Container>
+    <El style={margin(48, 0, 24, 0)}>
+      <Input style={margin(0, 0, 16, 0)} placeholder="Enter your name" />
       <Input placeholder="Enter an avatar URL" />
-    </Container>
-    <Container style=Styles.buttonContainer>
-      <Container>
-        <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
-      </Container>
+    </El>
+    <El style=Styles.buttonContainer>
+      <Button.Cancel onClick=cancelButtonCallback>
+        {React.string("Cancel")}
+      </Button.Cancel>
       <Button.Secondary>
         {React.string("Join the network")}
       </Button.Secondary>
-    </Container>
-  </>;
+    </El>
+  </El>;

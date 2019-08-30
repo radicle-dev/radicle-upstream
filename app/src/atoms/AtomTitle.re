@@ -1,21 +1,18 @@
-module Styles = {
-  open Css;
-  open Particle.Font;
-
-  let hugeTitle = style(hugeTitle);
-  let bigTitle = style(bigTitle);
-  let title = style(title);
-};
+open Particle.Font;
+open DesignSystem;
 
 module Huge = {
   [@react.component]
-  let make = (~children) => <h1 className=Styles.hugeTitle> children </h1>;
+  let make = (~children, ~style=?) =>
+    <h1 className={Css.style(hugeTitle) <<? style}> children </h1>;
 };
 
 module Big = {
   [@react.component]
-  let make = (~children) => <h2 className=Styles.bigTitle> children </h2>;
+  let make = (~children, ~style=?) =>
+    <h2 className={Css.style(bigTitle) <<? style}> children </h2>;
 };
 
 [@react.component]
-let make = (~children) => <h3 className=Styles.title> children </h3>;
+let make = (~children, ~style=?) =>
+  <h3 className={Css.style(title) <<? style}> children </h3>;

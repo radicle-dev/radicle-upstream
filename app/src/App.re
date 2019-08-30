@@ -19,22 +19,11 @@ module Styles = {
       textDecoration(none),
     ],
   );
-
-  let container =
-    style([
-      display(grid),
-      gridTemplateColumns([`repeat((`num(8), `fr(1.0)))]),
-      gridTemplateRows([`repeat((`num(8), `fr(1.0)))]),
-      gridGap(px(24)),
-      height(vh(100.0)),
-    ]);
-
-  let content =
-    style([gridColumnEnd(7), gridColumnStart(3), height(pct(100.0))]);
 };
 
 [@react.component]
 let make = () => {
+  open DesignSystem;
   open Page;
   open Router;
 
@@ -50,10 +39,11 @@ let make = () => {
     };
 
   <Store.Provider>
-    <div className=Styles.container>
-      <Topbar />
-      <div className=Styles.content> page </div>
-      <Footer />
-    </div>
+    <El style=Layout.grid>
+      <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
+        <Topbar />
+      </El>
+      page
+    </El>
   </Store.Provider>;
 };

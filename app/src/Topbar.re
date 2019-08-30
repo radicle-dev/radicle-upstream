@@ -1,49 +1,32 @@
 open Atom;
-open Layout;
+open DesignSystem;
 open Page;
 open Molecule;
-
-module Styles = {
-  open Css;
-
-  let header =
-    style([
-      gridColumnStart(2),
-      gridColumnEnd(8),
-      height(px(64)),
-      paddingTop(px(32)),
-    ]);
-};
-
-module Navigation = {
-  open Router;
-
-  [@react.component]
-  let make = () =>
-    <ul>
-      <li> <Link page=Projects> {React.string("Explore")} </Link> </li>
-      <li> <Link page={Project("monokel")} /> </li>
-    </ul>;
-};
 
 [@react.component]
 let make = () => {
   let (isModalVisible, toggleModal) = React.useState(_ => false);
 
   Router.(
-    <header className=Styles.header>
-      <Container.TwoColumns>
-        ...(
-             <> <Link page=Root> <Atom.Icon.Logo /> </Link> <Navigation /> </>,
-             isModalVisible ?
-               <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
-                 <JoinNetwork />
-               </Modal> :
-               <Button.Primary onClick={_ => toggleModal(_ => true)}>
-                 {React.string("Join the network")}
-               </Button.Primary>,
-           )
-      </Container.TwoColumns>
+    <header>
+      <El style=Layout.flex>
+        <El style=Positioning.flexLeft>
+          <Link page=Projects> <Atom.Icon.Logo /> </Link>
+        </El>
+        <El style=Positioning.flexRight>
+          {
+            isModalVisible ?
+              <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
+                <JoinNetwork
+                  cancelButtonCallback={_ => toggleModal(_ => false)}
+                />
+              </Modal> :
+              <Button.Primary onClick={_ => toggleModal(_ => true)}>
+                {React.string("Join the network")}
+              </Button.Primary>
+          }
+        </El>
+      </El>
     </header>
   );
 };
