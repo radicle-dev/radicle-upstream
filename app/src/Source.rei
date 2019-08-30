@@ -14,6 +14,7 @@ type project = {
   name: string,
   description: string,
   imgUrl: string,
+  members: array(account),
 };
 
 /** Returned for a project fetch, either the full project for the given address

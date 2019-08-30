@@ -62,7 +62,7 @@ let make = (~address: string) => {
               imgUrl={project.imgUrl}
             />
           </El>
-          <Members members=[||] />
+          <Members members={project.members} />
         </>;
       }
     | Failed(reason) =>

@@ -12,6 +12,7 @@ type project = {
   name: string,
   description: string,
   imgUrl: string,
+  members: array(account),
 };
 
 type fetchProjectResult = Belt.Result.t(project, string);
@@ -36,24 +37,64 @@ let createLocalSource = () => {
         name: "monokel",
         description: "A looking glass into the future.",
         imgUrl: "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
+        members: [|
+          {
+            keyName: "xla",
+            avatarUrl: "https://avatars0.githubusercontent.com/u/1585",
+          },
+        |],
       },
       {
         address: "monadic",
         name: "Monadic",
         description: "Open source organization of amazing things",
         imgUrl: "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
+        members: [|
+          {
+            keyName: "cloudhead",
+            avatarUrl: "https://avatars1.githubusercontent.com/u/40774",
+          },
+          {
+            keyName: "lftherios",
+            avatarUrl: "https://avatars3.githubusercontent.com/u/853825",
+          },
+          {
+            keyName: "juliendonck",
+            avatarUrl: "https://avatars2.githubusercontent.com/u/2326909",
+          },
+        |],
       },
       {
         address: "oscoin",
         name: "open source coin",
         description: "Infrastructure for the open source community",
-        imgUrl: "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
+        imgUrl: "https://avatars0.githubusercontent.com/u/31632242",
+        members: [|
+          {
+            keyName: "geigerzaehler",
+            avatarUrl: "https://avatars2.githubusercontent.com/u/3919579",
+          },
+          {
+            keyName: "rockbmb",
+            avatarUrl: "https://avatars2.githubusercontent.com/u/16455833",
+          },
+          {
+            keyName: "rudolfs",
+            avatarUrl: "https://avatars1.githubusercontent.com/u/158411",
+          },
+        |],
       },
       {
         address: "radicle",
         name: "radicle",
         description: "Decentralized open source collaboration",
-        imgUrl: "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
+        imgUrl: "https://avatars0.githubusercontent.com/u/48290027",
+        members: [|
+          {
+            keyName: "jkarni",
+            avatarUrl: "https://avatars3.githubusercontent.com/u/1657498",
+          },
+        |],
       },
     |]);
 
@@ -82,13 +123,23 @@ let createLocalSource = () => {
     );
 
   let registerProject = (~name: string, ~description: string, ~imgUrl: string) =>
-    Js.Promise.make((~resolve, ~reject as _) => {
-      let project = {address: "", name, description, imgUrl};
+    Js.Promise.make((~resolve, ~reject as _) =>
+      switch (localAccount^) {
+      | Some(account) =>
+        let project = {
+          address: "",
+          name,
+          description,
+          imgUrl,
+          members: [|account|],
+        };
 
-      localProjects := Array.append(localProjects^, [|project|]);
+        localProjects := Array.append(localProjects^, [|project|]);
 
-      resolve(. Belt.Result.Ok(project));
-    });
+        resolve(. Belt.Result.Ok(project));
+      | None => resolve(. Belt.Result.Error("no account present"))
+      }
+    );
 
   {fetchAccount, fetchProject, fetchProjects, registerProject};
 };
