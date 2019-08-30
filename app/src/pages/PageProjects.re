@@ -1,14 +1,23 @@
 open AppStore;
 open Atom;
-open Atom.Layout;
+open DesignSystem;
 open Molecule;
 open Source;
 open StoreProjects;
+open Particle;
 
 module Styles = {
   open Css;
 
-  let projectHeading = style([marginBottom(px(48)), marginTop(px(94))]);
+  let projectHeading = style([marginBottom(px(48))]);
+
+  let listItem =
+    style([
+      borderBottom(px(1), solid, Color.lightGray()),
+      padding(px(13)),
+      hover([backgroundColor(Color.almostWhite())]),
+      lastChild([borderBottomWidth(px(0))]),
+    ]);
 };
 
 module List = {
@@ -17,7 +26,7 @@ module List = {
     let ps =
       Array.map(
         project =>
-          <li key={project.address}>
+          <li className=Styles.listItem key={project.address}>
             <Link page={Router.Project(project.address)}>
               <ProjectCard
                 imgUrl={project.imgUrl}
@@ -42,16 +51,18 @@ let make = () => {
     dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
   };
 
-  <>
+  <El style=Positioning.gridMediumCentered>
     <div className=Styles.projectHeading>
-      <Container.TwoColumns>
-        ...(
-             <Title.Huge> {React.string("Explore")} </Title.Huge>,
-             <Link page=Router.RegisterProject>
-               <Button> {React.string("Register project")} </Button>
-             </Link>,
-           )
-      </Container.TwoColumns>
+      <El style=Layout.flex>
+        <El style=Positioning.flexLeft>
+          <Title.Huge> {React.string("Explore")} </Title.Huge>
+        </El>
+        <El style=Positioning.flexRight>
+          <Link page=Router.RegisterProject>
+            <Button> {React.string("Register project")} </Button>
+          </Link>
+        </El>
+      </El>
     </div>
     {
       switch (state.error, state.loading, state.projects) {
@@ -62,5 +73,5 @@ let make = () => {
       | _ => <div> {React.string("Not loading...")} </div>
       }
     }
-  </>;
+  </El>;
 };

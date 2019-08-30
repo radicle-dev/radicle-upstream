@@ -1,6 +1,6 @@
 open AppStore;
 open Atom;
-open Layout;
+open DesignSystem;
 open Page;
 open Molecule;
 open Source;
@@ -84,12 +84,12 @@ module Navigation = {
 [@react.component]
 let make = () =>
   Router.(
-    <header className=Styles.header>
-      <Container.TwoColumns>
-        ...(
-             <> <Link page=Root> <Atom.Icon.Logo /> </Link> <Navigation /> </>,
-             <Account />,
-           )
-      </Container.TwoColumns>
+    <header>
+      <El style=Layout.flex>
+        <El style=Positioning.flexLeft>
+          <Link page=Projects> <Atom.Icon.Logo /> </Link>
+        </El>
+        <El style=Positioning.flexRight> <Account /> </El>
+      </El>
     </header>
   );
