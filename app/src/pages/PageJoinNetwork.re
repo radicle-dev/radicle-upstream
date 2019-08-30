@@ -12,7 +12,29 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~cancelButtonCallback) =>
+let make = (~onComplete) => {
+  let dispatch = Store.useDispatch();
+  let (name, setName) = React.useState(() => "");
+  let (avatarUrl, setAvatarUrl) = React.useState(() => "");
+
+  let onNameChange = ev => {
+    /* We need to memoize it as the underlying event is reused for performance
+     * reasons. Alternatively we can use the persist mechanism, which might lead
+     * to unnecessary garbage.
+     */
+    let newName = ReactEvent.Form.target(ev)##value;
+    setName(_ => newName);
+  };
+  let onAvatarChange = ev => {
+    let newAvatarUrl = ReactEvent.Form.target(ev)##value;
+    setAvatarUrl(_ => newAvatarUrl);
+  };
+  let onSubmit = (name, avatarUrl) => {
+    StoreMiddleware.Thunk(ThunkSession.createAccount(name, avatarUrl))
+    |> dispatch;
+    onComplete();
+  };
+
   <El style=Styles.content>
     <El style={margin(0, 0, 16, 0)}>
       <Title.Big> {React.string("Join the network")} </Title.Big>
@@ -21,15 +43,18 @@ let make = (~cancelButtonCallback) =>
       {React.string("Create an \"account\" to join the network.")}
     </Text>
     <El style={margin(48, 0, 24, 0)}>
-      <Input style={margin(0, 0, 16, 0)} placeholder="Enter your name" />
-      <Input placeholder="Enter an avatar URL" />
+      <Input
+        onChange=onNameChange
+        placeholder="Enter your name"
+        style={margin(0, 0, 16, 0)}
+      />
+      <Input onChange=onAvatarChange placeholder="Enter an avatar URL" />
     </El>
     <El style=Styles.buttonContainer>
-      <Button.Cancel onClick=cancelButtonCallback>
-        {React.string("Cancel")}
-      </Button.Cancel>
-      <Button.Secondary>
+      <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
+      <Button.Secondary onClick={_ => onSubmit(name, avatarUrl)}>
         {React.string("Join the network")}
       </Button.Secondary>
     </El>
   </El>;
+};

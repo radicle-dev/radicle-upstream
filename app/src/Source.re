@@ -1,5 +1,12 @@
 type address = string;
 
+type account = {
+  avatarUrl: string,
+  keyName: string,
+};
+
+type fetchAccountResult = Belt.Result.t(option(account), string);
+
 type project = {
   address,
   name: string,
@@ -11,6 +18,7 @@ type fetchProjectsResult = Belt.Result.t(array(project), string);
 type registerProjectResult = Belt.Result.t(project, string);
 
 type source = {
+  fetchAccount: unit => Js.Promise.t(fetchAccountResult),
   fetchProjects: unit => Js.Promise.t(fetchProjectsResult),
   registerProject:
     (~name: string, ~description: string, ~imgUrl: string) =>
@@ -18,7 +26,8 @@ type source = {
 };
 
 let createLocalSource = () => {
-  let mockProjects =
+  let localAccount = ref(None);
+  let localProjects =
     ref([|
       {
         address: "monokel",
@@ -46,10 +55,15 @@ let createLocalSource = () => {
       },
     |]);
 
+  let fetchAccount = () =>
+    Js.Promise.make((~resolve, ~reject as _) =>
+      resolve(. Belt.Result.Ok(localAccount^))
+    );
+
   let fetchProjects = () =>
     Js.Promise.make((~resolve, ~reject as _) =>
       Js.Global.setTimeout(
-        () => resolve(. Belt.Result.Ok(mockProjects^)),
+        () => resolve(. Belt.Result.Ok(localProjects^)),
         1000,
       )
       |> ignore
@@ -59,10 +73,10 @@ let createLocalSource = () => {
     Js.Promise.make((~resolve, ~reject as _) => {
       let project = {address: "", name, description, imgUrl};
 
-      mockProjects := Array.append(mockProjects^, [|project|]);
+      localProjects := Array.append(localProjects^, [|project|]);
 
       resolve(. Belt.Result.Ok(project));
     });
 
-  {fetchProjects, registerProject};
+  {fetchAccount, fetchProjects, registerProject};
 };

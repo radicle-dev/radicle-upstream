@@ -1,6 +1,13 @@
 /** Unique identifier to refer to accounts of type proejct for now **/
 type address = string;
 
+type account = {
+  avatarUrl: string,
+  keyName: string,
+};
+
+type fetchAccountResult = Belt.Result.t(option(account), string);
+
 /** The project representation on the registry. **/
 type project = {
   address,
@@ -21,6 +28,7 @@ type registerProjectResult = Belt.Result.t(project, string);
 
 /** The type used to fetch data vital to the app. **/
 type source = {
+  fetchAccount: unit => Js.Promise.t(fetchAccountResult),
   fetchProjects: unit => Js.Promise.t(fetchProjectsResult),
   registerProject:
     (~name: string, ~description: string, ~imgUrl: string) =>
