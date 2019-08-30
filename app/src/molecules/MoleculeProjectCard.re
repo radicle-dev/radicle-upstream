@@ -20,25 +20,34 @@ module Styles = {
 };
 
 module Template = {
-  [@react.component]
-  let make = (~children, ~imgUrl=?, ~description) => {
-    let image =
-      switch (imgUrl) {
-      | Some(imgUrl) => <img className=Styles.image src=imgUrl />
-      | None =>
+  module Image = {
+    [@react.component]
+    let make = (~imgUrl=?) => {
+      let empty =
         <El style=Styles.imageContainer>
           <Icon.ProjectAvatarPlaceholder />
-        </El>
-      };
+        </El>;
 
+      switch (imgUrl) {
+      | Some(imgUrl) =>
+        switch (imgUrl) {
+        | "" => empty
+        | _ => <img className=Styles.image src=imgUrl />
+        }
+      | None => empty
+      };
+    };
+  };
+
+  [@react.component]
+  let make = (~children, ~imgUrl=?, ~description) =>
     <div className=Styles.item>
-      image
+      <Image ?imgUrl />
       <div className=Styles.description>
         children
         <Text> {React.string(description)} </Text>
       </div>
     </div>;
-  };
 };
 
 [@react.component]
