@@ -1,6 +1,9 @@
-open Molecule;
+open AppStore;
 open Atom;
 open DesignSystem;
+open Molecule;
+open Source;
+open StoreProject;
 
 module Styles = {
   open Css;
@@ -17,28 +20,60 @@ module Styles = {
     ]);
 };
 
-[@react.component]
-let make = (~id as _: string) =>
-  <El style=Positioning.gridMediumCentered>
-    <El style={margin(0, 0, 50, 0)}>
-      <El style={margin(0, 0, 24, 0)}>
-        <Breadcrumb page=Router.Projects />
+module Members = {
+  let renderMember = member =>
+    <li>
+      <PersonCard firstName={member.keyName} imgUrl={member.avatarUrl} />
+    </li>;
+
+  [@react.component]
+  let make = (~members) =>
+    <>
+      <El style=Styles.membersHeading>
+        <Title> {React.string("Members")} </Title>
       </El>
-      <ProjectCard.Alternate
-        name="Monadic"
-        description="Open source organization of amazing things"
-      />
-    </El>
-    <El style=Styles.membersHeading>
-      <Title> {React.string("Members")} </Title>
-    </El>
-    <ul className=Styles.list>
-      <li>
-        <PersonCard
-          firstName="Elefterios"
-          imgUrl="https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg"
-        />
-      </li>
-      <li> <PersonCard firstName="Willy" lastName="Gomez" /> </li>
-    </ul>
+      <ul className=Styles.list>
+        {Array.map(renderMember, members) |> React.array}
+      </ul>
+    </>;
+};
+
+[@react.component]
+let make = (~address: string) => {
+  let state = Store.useSelector(state => state.projectState);
+  let dispatch = Store.useDispatch();
+
+  let content =
+    switch (state) {
+    | Initial
+    | Loading =>
+      dispatch(StoreMiddleware.Thunk(ThunkProject.fetchProject(address)));
+      <p> {React.string("Loading...")} </p>;
+    | Present(project) =>
+      if (project.address != address) {
+        dispatch(StoreMiddleware.Thunk(ThunkProject.fetchProject(address)));
+        <p> {React.string("Loading...")} </p>;
+      } else {
+        <>
+          <El style={margin(0, 0, 50, 0)}>
+            <ProjectCard.Alternate
+              description={project.description}
+              name={project.name}
+              imgUrl={project.imgUrl}
+            />
+          </El>
+          <Members members=[||] />
+        </>;
+      }
+    | Failed(reason) =>
+      <p>
+        <strong> {React.string("Error:")} </strong>
+        {React.string(reason)}
+      </p>
+    };
+
+  <El style=Positioning.gridMediumCentered>
+    <El style={margin(0, 0, 24, 0)}> <Breadcrumb page=Router.Projects /> </El>
+    content
   </El>;
+};
