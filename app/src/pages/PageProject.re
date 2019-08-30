@@ -2,40 +2,6 @@ open Molecule;
 open Atom;
 open DesignSystem;
 
-type projectPage =
-  | Overview
-  | Code
-  | Funds;
-
-module Navigation = {
-  open Router;
-  open Css;
-
-  module Item = {
-    [@react.component]
-    let make = (~id: string, ~page: projectPage, ~selected: projectPage) => {
-      let (navigate, name) =
-        switch (page) {
-        | Overview => (navigateToPage(Project(id)), "Overview")
-        | Code => (navigateToPage(ProjectCode(id)), "Code")
-        | Funds => (navigateToPage(ProjectFunds(id)), "Funds")
-        };
-
-      let name = page == selected ? name ++ " <" : name;
-
-      <li> <a onClick=navigate> {React.string(name)} </a> </li>;
-    };
-  };
-
-  [@react.component]
-  let make = (~id: string, ~subPage: projectPage) =>
-    <ul className={style([display(none)])}>
-      <Item id page=Overview selected=subPage />
-      <Item id page=Code selected=subPage />
-      <Item id page=Funds selected=subPage />
-    </ul>;
-};
-
 module Styles = {
   open Css;
   open Particle;
@@ -52,7 +18,7 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~id: string, ~subPage: projectPage) =>
+let make = (~id as _: string) =>
   <El style=Positioning.gridMediumCentered>
     <El style={margin(0, 0, 50, 0)}>
       <El style={margin(0, 0, 24, 0)}>
@@ -75,5 +41,4 @@ let make = (~id: string, ~subPage: projectPage) =>
       </li>
       <li> <PersonCard firstName="Willy" lastName="Gomez" /> </li>
     </ul>
-    <Navigation id subPage />
   </El>;

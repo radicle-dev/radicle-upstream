@@ -4,8 +4,6 @@ type page =
   | Projects
   | Project(string)
   | RegisterProject
-  | ProjectCode(string)
-  | ProjectFunds(string)
   | NotFound(list(string));
 
 /** Reads the current url and return a matching page, or NotFound. **/
