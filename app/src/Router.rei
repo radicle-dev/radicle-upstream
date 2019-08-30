@@ -2,6 +2,7 @@
 type page =
   | Root
   | Projects
+  | Styleguide
   | Project(string)
   | RegisterProject
   | NotFound(list(string));

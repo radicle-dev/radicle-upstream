@@ -3,6 +3,7 @@ open ReasonReactRouter;
 type page =
   | Root
   | Projects
+  | Styleguide
   | Project(string)
   | RegisterProject
   | NotFound(list(string));
@@ -15,6 +16,7 @@ let navigateToPage = (p: page) => {
     switch (p) {
     | Root => "/"
     | Projects => join(["projects"])
+    | Styleguide => "/styleguide"
     | RegisterProject => join(["projects", "register"])
     | Project(id) => join(["projects", id])
     | NotFound(_path) => "/not-found"
@@ -27,6 +29,7 @@ let nameOfPage = (p: page): string =>
   switch (p) {
   | Root => "Root"
   | Projects => "Explore"
+  | Styleguide => "Styleguide"
   | RegisterProject => "Register Project"
   | Project(id) => "Project " ++ id
   | NotFound(_path) => "Not Found"
@@ -35,6 +38,7 @@ let nameOfPage = (p: page): string =>
 let pageOfUrl = (u: url): page =>
   switch (u.path) {
   | [] => Projects
+  | ["styleguide"] => Styleguide
   | ["projects"] => Projects
   | ["projects", "register"] => RegisterProject
   | ["projects", id] => Project(id)

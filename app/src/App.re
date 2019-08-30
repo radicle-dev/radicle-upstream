@@ -31,6 +31,7 @@ let make = () => {
     switch (currentPage()) {
     | Root => <Generic title="Home of Oscoin" />
     | Projects => <Projects />
+    | Styleguide => <Styleguide />
     | RegisterProject => <RegisterProject />
     | Project(address) => <Project address />
     | NotFound(_path) => <Generic title="Not Found" />
