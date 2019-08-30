@@ -25,7 +25,7 @@ let margin: (int, int, int, int) => string;
 module Layout: {
   /** CSS grid style, to be used for container elements in combination with
    ** the respective grid* Positioning styles for child elements:
-
+   **
    **   <El style=Layout.grid>
    **     <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
    **     </El>
@@ -35,7 +35,7 @@ module Layout: {
 
   /** Flexbox style, to be used for container elements in combination with
    ** the respective flex* Positioning styles for child elements:
-
+   **
    **   <El style=Layout.flex>
    **     <El style=Positioning.flexLeft>
    **       {React.string("I'm on the left side")}
