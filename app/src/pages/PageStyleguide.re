@@ -197,6 +197,37 @@ let make = () =>
             </El>
           </El>
         </El>
+        <El style=Styles.section>
+          <El style=Styles.firstColumn>
+            <Title.Big style={Css.style([Css.marginBottom(Css.px(8))])}>
+              {React.string("Icons")}
+            </Title.Big>
+            <Text style={Css.style([Css.color(Particle.Color.gray())])}>
+              {
+                React.string(
+                  "Icons at 16px, 24px, 36px and 64px width and height with 2px stroke weight",
+                )
+              }
+            </Text>
+          </El>
+          <El style=Styles.secondColumn>
+            <El style=Styles.row>
+              <El style=Styles.iconContainer> <Icon.Plus /> </El>
+              <El style=Styles.iconContainer> <Icon.Important /> </El>
+              <El style=Styles.iconContainer> <Icon.CloseSmall /> </El>
+              <El style=Styles.iconContainer> <Icon.Info /> </El>
+              <El style=Styles.iconContainer> <Icon.Check /> </El>
+              <El style=Styles.iconContainer> <Icon.Search /> </El>
+              <El style=Styles.iconContainer> <Icon.Graph /> </El>
+              <El style=Styles.iconContainer> <Icon.Inbox /> </El>
+              <El style=Styles.iconContainer> <Icon.Wallet /> </El>
+              <El style=Styles.iconContainer> <Icon.Close /> </El>
+            </El>
+            <El style=Styles.row> <Icon.Back /> </El>
+            <El style=Styles.row> <Icon.PersonAvatarPlaceholder /> </El>
+            <El style=Styles.row> <Icon.ProjectAvatarPlaceholder /> </El>
+          </El>
+        </El>
       </El>
     </El>
   </Portal>;
