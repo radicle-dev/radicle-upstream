@@ -11,6 +11,10 @@ module Styles = {
   let smallText =
     style([color(Color.darkGray()), display(inline)])
     << style(Particle.Font.smallText);
+
+  let caption =
+    style([color(Color.darkGray()), display(inline)])
+    << style(Particle.Font.caption);
 };
 
 [@react.component]
@@ -21,4 +25,10 @@ module Small = {
   [@react.component]
   let make = (~children, ~style=?) =>
     <p className={Styles.smallText <<? style}> children </p>;
+};
+
+module Caption = {
+  [@react.component]
+  let make = (~children, ~style=?) =>
+    <p className={Styles.caption <<? style}> children </p>;
 };

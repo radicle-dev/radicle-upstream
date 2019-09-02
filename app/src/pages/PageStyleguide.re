@@ -28,7 +28,11 @@ module Styles = {
 
   let secondColumn = style([gridColumnStart(2)]);
 
-  let row = style([display(`flex), marginBottom(px(34))]);
+  let row =
+    style([display(`flex), marginBottom(px(34)), alignItems(baseline)]);
+  let iconContainer = style([marginRight(px(24))]);
+
+  let label = style([width(px(140))]);
 };
 
 module ColorSwatchTemplate = {
@@ -80,7 +84,9 @@ let make = () =>
         </El>
         <El style=Styles.section>
           <El style=Styles.firstColumn>
-            <Title.Big> {React.string("Colors")} </Title.Big>
+            <Title.Big style={Css.style([Css.marginBottom(Css.px(8))])}>
+              {React.string("Colors")}
+            </Title.Big>
             <Text style={Css.style([Css.color(Particle.Color.gray())])}>
               {React.string("Primary, secondary and grays")}
             </Text>
@@ -108,6 +114,86 @@ let make = () =>
               <ColorSwatch.HalfSize color=LightGray />
               <ColorSwatch.HalfSize color=AlmostWhite />
               <ColorSwatch.HalfSize color=White />
+            </El>
+          </El>
+        </El>
+        <El style=Styles.section>
+          <El style=Styles.firstColumn>
+            <Title.Big style={Css.style([Css.marginBottom(Css.px(8))])}>
+              {React.string("Typography")}
+            </Title.Big>
+            <Text style={Css.style([Css.color(Particle.Color.gray())])}>
+              {
+                React.string(
+                  "Using GT America and GT America Mono from Grill Type",
+                )
+              }
+            </Text>
+          </El>
+          <El style=Styles.secondColumn>
+            <El style=Styles.row>
+              <El style=Styles.label>
+                <Text.Small
+                  style={Css.style([Css.color(Particle.Color.gray())])}>
+                  {React.string("hugeTitle")}
+                </Text.Small>
+              </El>
+              <El>
+                <Title.Huge> {React.string("Open Source Coin")} </Title.Huge>
+              </El>
+            </El>
+            <El style=Styles.row>
+              <El style=Styles.label>
+                <Text.Small
+                  style={Css.style([Css.color(Particle.Color.gray())])}>
+                  {React.string("bigTitle")}
+                </Text.Small>
+              </El>
+              <El>
+                <Title.Big> {React.string("Open Source Coin")} </Title.Big>
+              </El>
+            </El>
+            <El style=Styles.row>
+              <El style=Styles.label>
+                <Text.Small
+                  style={Css.style([Css.color(Particle.Color.gray())])}>
+                  {React.string("title")}
+                </Text.Small>
+              </El>
+              <El> <Title> {React.string("Open Source Coin")} </Title> </El>
+            </El>
+            <El style=Styles.row>
+              <El style=Styles.label>
+                <Text.Small
+                  style={Css.style([Css.color(Particle.Color.gray())])}>
+                  {React.string("text")}
+                </Text.Small>
+              </El>
+              <El> <Text> {React.string("Open Source Coin")} </Text> </El>
+            </El>
+            <El style=Styles.row>
+              <El style=Styles.label>
+                <Text.Small
+                  style={Css.style([Css.color(Particle.Color.gray())])}>
+                  {React.string("smallText")}
+                </Text.Small>
+              </El>
+              <El>
+                <Text.Small> {React.string("Open Source Coin")} </Text.Small>
+              </El>
+            </El>
+            <El style=Styles.row>
+              <El style=Styles.label>
+                <Text.Small
+                  style={Css.style([Css.color(Particle.Color.gray())])}>
+                  {React.string("caption")}
+                </Text.Small>
+              </El>
+              <El>
+                <Text.Caption>
+                  {React.string("Open Source Coin")}
+                </Text.Caption>
+              </El>
             </El>
           </El>
         </El>
