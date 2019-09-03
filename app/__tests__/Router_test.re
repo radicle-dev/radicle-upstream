@@ -1,32 +1,33 @@
 open Jest;
 open Expect;
-open ReasonReactRouter;
 open Router;
 
-describe("Router", () =>
+describe("Router", () => {
   testAll(
     "pageOfUrl",
     [
-      (Projects, {hash: "", path: [], search: ""}),
-      (Projects, {hash: "", path: ["projects"], search: ""}),
+      (Projects, []),
+      (Projects, ["projects"]),
+      (RegisterProject, ["projects", "register"]),
+      (Project("monokel"), ["projects", "monokel"]),
+      (NotFound(["not-found"]), ["not-found"]),
+      (NotFound(["utter", "crap"]), ["utter", "crap"]),
+    ],
+    ((page, path)) =>
+    expect(pageOfPath(path)) |> toEqual(page)
+  );
+
+  testAll(
+    "overlayOfSearch",
+    [
+      ((None, None), ""),
+      ((Some(JoinNetwork), None), "overlay=join-network"),
       (
-        RegisterProject,
-        {hash: "", path: ["projects", "register"], search: ""},
-      ),
-      (
-        Project("monokel"),
-        {hash: "", path: ["projects", "monokel"], search: ""},
-      ),
-      (
-        NotFound(["not-found"]),
-        {hash: "", path: ["not-found"], search: ""},
-      ),
-      (
-        NotFound(["utter", "crap"]),
-        {hash: "", path: ["utter", "crap"], search: ""},
+        (Some(JoinNetwork), Some(Projects)),
+        "overlay=join-network&last=projects",
       ),
     ],
-    ((page, url)) =>
-    expect(pageOfUrl(url)) |> toEqual(page)
-  )
-);
+    ((overlay, search)) =>
+    expect(overlayOfSearch(search)) |> toEqual(overlay)
+  );
+});

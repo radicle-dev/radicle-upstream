@@ -1,10 +1,20 @@
 /** Routable pages which relate to larger context of features. **/
 type page =
   | Root
+  | JoinNetwork
   | Projects
   | Project(string)
   | RegisterProject
   | NotFound(list(string));
+
+type overlay = (option(page), option(page));
+
+/** Extracts the overlay parameter from the search part of the url and attempts
+ ** to parse a page from it to be shown as a modal over the actual page.
+ **
+ ** This is helpful to guard certain routes with setups.
+ **/
+let currentOverlay: unit => overlay;
 
 /** Reads the current url and return a matching page, or NotFound. **/
 let currentPage: unit => page;
@@ -19,5 +29,9 @@ let navigateToPage: (page, 'a) => unit;
  **/
 let nameOfPage: page => string;
 
-/** Given a ReasonReactRouter.url returns a matching page, or NotFound **/
-let pageOfUrl: ReasonReactRouter.url => page;
+/** Given the path of a ReasonReactRouter.url returns a matching page, or
+ ** NotFound.
+ **/
+let pageOfPath: list(string) => page;
+
+let overlayOfSearch: string => overlay;
