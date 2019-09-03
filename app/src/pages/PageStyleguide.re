@@ -110,6 +110,17 @@ module IconSwatch = {
   let make = (~children) => <El style=Styles.iconContainer> children </El>;
 };
 
+module ButtonSwatch = {
+  module Styles = {
+    open Css;
+
+    let button = style([marginLeft(px(8)), marginRight(px(8))]);
+  };
+
+  [@react.component]
+  let make = (~children) => <El style=Styles.button> children </El>;
+};
+
 module Styles = {
   open Css;
 
@@ -218,22 +229,40 @@ let make = () =>
             )
           }>
           <Row>
-            <Button> {React.string("Vanilla")} </Button>
-            <Button.Primary> {React.string("Primary")} </Button.Primary>
-            <Button.Secondary> {React.string("Secondary")} </Button.Secondary>
-            <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
+            <ButtonSwatch>
+              <Button> {React.string("Vanilla")} </Button>
+            </ButtonSwatch>
+            <ButtonSwatch>
+              <Button.Primary> {React.string("Primary")} </Button.Primary>
+            </ButtonSwatch>
+            <ButtonSwatch>
+              <Button.Secondary>
+                {React.string("Secondary")}
+              </Button.Secondary>
+            </ButtonSwatch>
+            <ButtonSwatch>
+              <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
+            </ButtonSwatch>
           </Row>
           <Row>
-            <Button disabled=true> {React.string("Vanilla")} </Button>
-            <Button.Primary disabled=true>
-              {React.string("Primary")}
-            </Button.Primary>
-            <Button.Secondary disabled=true>
-              {React.string("Secondary")}
-            </Button.Secondary>
-            <Button.Cancel disabled=true>
-              {React.string("Cancel")}
-            </Button.Cancel>
+            <ButtonSwatch>
+              <Button disabled=true> {React.string("Vanilla")} </Button>
+            </ButtonSwatch>
+            <ButtonSwatch>
+              <Button.Primary disabled=true>
+                {React.string("Primary")}
+              </Button.Primary>
+            </ButtonSwatch>
+            <ButtonSwatch>
+              <Button.Secondary disabled=true>
+                {React.string("Secondary")}
+              </Button.Secondary>
+            </ButtonSwatch>
+            <ButtonSwatch>
+              <Button.Cancel disabled=true>
+                {React.string("Cancel")}
+              </Button.Cancel>
+            </ButtonSwatch>
           </Row>
         </Section>
       </El>
