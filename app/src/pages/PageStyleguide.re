@@ -1,5 +1,6 @@
 open Atom;
 open DesignSystem;
+open Molecule;
 open Molecule.Modal;
 open Particle.Color;
 
@@ -119,6 +120,28 @@ module ButtonSwatch = {
 
   [@react.component]
   let make = (~children) => <El style=Styles.button> children </El>;
+};
+
+module FormElementSwatch = {
+  module Styles = {
+    open Css;
+
+    let input = style([width(pct(50.0))]);
+  };
+
+  [@react.component]
+  let make = (~children) => <El style=Styles.input> children </El>;
+};
+
+module CardSwatch = {
+  module Styles = {
+    open Css;
+
+    let card = style([marginTop(px(32)), marginBottom(px(32))]);
+  };
+
+  [@react.component]
+  let make = (~children) => <El style=Styles.card> children </El>;
 };
 
 module Styles = {
@@ -264,6 +287,40 @@ let make = () =>
               </Button.Cancel>
             </ButtonSwatch>
           </Row>
+        </Section>
+        <Section
+          title={React.string("Form elements")}
+          subTitle={React.string("Inputs, text areas, dropdowns, etc.")}>
+          <FormElementSwatch>
+            <Input placeholder="Hey an input, type something here" />
+          </FormElementSwatch>
+        </Section>
+        <Section
+          title={React.string("Links")}
+          subTitle={React.string("Links to other pages, breadcrumbs, etc.")}>
+          <Breadcrumb page=Router.Projects />
+          <Link page=Router.RegisterProject>
+            {React.string("I'm a link")}
+          </Link>
+        </Section>
+        <Section
+          title={React.string("Cards")}
+          subTitle={React.string("Projects, persons, etc")}>
+          <CardSwatch>
+            <PersonCard firstName="Elefterios" lastName="Diakomichalis" />
+          </CardSwatch>
+          <CardSwatch>
+            <ProjectCard
+              name="Monadic"
+              description="Open source organization of amazing things"
+            />
+          </CardSwatch>
+          <CardSwatch>
+            <ProjectCard.Alternate
+              name="Monadic"
+              description="Open source organization of amazing things"
+            />
+          </CardSwatch>
         </Section>
       </El>
     </El>
