@@ -12,6 +12,23 @@ module Styles = {
   let imageContainer = style([marginRight(px(16)), display(inherit_)]);
 };
 
+module Image = {
+  [@react.component]
+  let make = (~imgUrl=?) => {
+    let empty =
+      <El style=Styles.imageContainer> <Icon.PersonAvatarPlaceholder /> </El>;
+
+    switch (imgUrl) {
+    | Some(imgUrl) =>
+      switch (imgUrl) {
+      | "" => empty
+      | _ => <img className=Styles.image src=imgUrl />
+      }
+    | None => empty
+    };
+  };
+};
+
 [@react.component]
 let make = (~imgUrl=?, ~firstName, ~lastName=?) => {
   let text =
@@ -20,15 +37,8 @@ let make = (~imgUrl=?, ~firstName, ~lastName=?) => {
     | None => firstName
     };
 
-  let image =
-    switch (imgUrl) {
-    | Some(imgUrl) => <img className=Styles.image src=imgUrl />
-    | None =>
-      <El style=Styles.imageContainer> <Icon.PersonAvatarPlaceholder /> </El>
-    };
-
   <div className=Styles.personCard>
-    image
+    <Image ?imgUrl />
     <Text> {React.string(text)} </Text>
   </div>;
 };
