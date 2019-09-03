@@ -4,45 +4,6 @@ open Molecule;
 open Molecule.Modal;
 open Particle.Color;
 
-module ColorSwatch = {
-  module Template = {
-    open Css;
-
-    module Styles = {
-      let container = style([marginRight(px(24))]);
-
-      let color =
-        style([width(px(120)), height(px(120)), marginBottom(px(16))]);
-    };
-
-    [@react.component]
-    let make = (~color, ~containerStyle=?, ~colorStyle=?) =>
-      <El style={Styles.container <<? containerStyle}>
-        <div
-          className={
-            Styles.color
-            << style([backgroundColor(rgbaOfColor(color, 1.0))])
-            <<? colorStyle
-          }
-        />
-        <Title> {React.string(nameOfColor(color))} </Title>
-        <Text.Small style={style([textTransform(`uppercase)])}>
-          {React.string(hexOfColor(color))}
-        </Text.Small>
-      </El>;
-  };
-
-  [@react.component]
-  let make = (~color) => <Template color />;
-
-  module HalfSize = {
-    open Css;
-    [@react.component]
-    let make = (~color) =>
-      <Template color colorStyle={style([height(px(60))])} />;
-  };
-};
-
 module Section = {
   open Css;
   open Particle;
@@ -80,6 +41,45 @@ module Row = {
 
   [@react.component]
   let make = (~children) => <El style=Styles.row> children </El>;
+};
+
+module ColorSwatch = {
+  module Template = {
+    open Css;
+
+    module Styles = {
+      let container = style([marginRight(px(24))]);
+
+      let color =
+        style([width(px(120)), height(px(120)), marginBottom(px(16))]);
+    };
+
+    [@react.component]
+    let make = (~color, ~containerStyle=?, ~colorStyle=?) =>
+      <El style={Styles.container <<? containerStyle}>
+        <div
+          className={
+            Styles.color
+            << style([backgroundColor(rgbaOfColor(color, 1.0))])
+            <<? colorStyle
+          }
+        />
+        <Title> {React.string(nameOfColor(color))} </Title>
+        <Text.Small style={style([textTransform(`uppercase)])}>
+          {React.string(hexOfColor(color))}
+        </Text.Small>
+      </El>;
+  };
+
+  [@react.component]
+  let make = (~color) => <Template color />;
+
+  module HalfSize = {
+    open Css;
+    [@react.component]
+    let make = (~color) =>
+      <Template color colorStyle={style([height(px(60))])} />;
+  };
 };
 
 module FontSwatch = {
