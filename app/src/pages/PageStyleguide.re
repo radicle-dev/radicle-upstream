@@ -3,38 +3,6 @@ open DesignSystem;
 open Molecule.Modal;
 open Particle.Color;
 
-module Styles = {
-  open Css;
-
-  let wrapper =
-    style([
-      width(pct(100.0)),
-      height(pct(100.0)),
-      backgroundColor(Particle.Color.white()),
-      paddingLeft(px(160)),
-    ]);
-
-  let content =
-    Positioning.gridFullCentered << style([paddingTop(px(145))]);
-
-  let section =
-    style([
-      marginBottom(px(180)),
-      display(`grid),
-      gridTemplateColumns([px(342)]),
-    ]);
-
-  let firstColumn = style([gridColumnStart(1), marginRight(px(90))]);
-
-  let secondColumn = style([gridColumnStart(2)]);
-
-  let row =
-    style([display(`flex), marginBottom(px(34)), alignItems(baseline)]);
-  let iconContainer = style([marginRight(px(24))]);
-
-  let label = style([width(px(140))]);
-};
-
 module ColorSwatchTemplate = {
   open Css;
 
@@ -78,6 +46,18 @@ module Section = {
   open Css;
   open Particle;
 
+  module Styles = {
+    let section =
+      style([
+        marginBottom(px(180)),
+        display(`grid),
+        gridTemplateColumns([px(342)]),
+      ]);
+
+    let firstColumn = style([gridColumnStart(1), marginRight(px(90))]);
+    let secondColumn = style([gridColumnStart(2)]);
+  };
+
   [@react.component]
   let make = (~title, ~subTitle, ~children) =>
     <El style=Styles.section>
@@ -90,6 +70,13 @@ module Section = {
 };
 
 module Row = {
+  module Styles = {
+    open Css;
+
+    let row =
+      style([display(`flex), marginBottom(px(34)), alignItems(baseline)]);
+  };
+
   [@react.component]
   let make = (~children) => <El style=Styles.row> children </El>;
 };
@@ -97,6 +84,10 @@ module Row = {
 module FontSwatch = {
   open Css;
   open Particle;
+
+  module Styles = {
+    let label = style([width(px(140))]);
+  };
 
   [@react.component]
   let make = (~label, ~children) =>
@@ -109,8 +100,29 @@ module FontSwatch = {
 };
 
 module IconSwatch = {
+  module Styles = {
+    open Css;
+
+    let iconContainer = style([marginRight(px(24))]);
+  };
+
   [@react.component]
   let make = (~children) => <El style=Styles.iconContainer> children </El>;
+};
+
+module Styles = {
+  open Css;
+
+  let wrapper =
+    style([
+      width(pct(100.0)),
+      height(pct(100.0)),
+      backgroundColor(Particle.Color.white()),
+      paddingLeft(px(160)),
+    ]);
+
+  let content =
+    Positioning.gridFullCentered << style([paddingTop(px(145))]);
 };
 
 [@react.component]
