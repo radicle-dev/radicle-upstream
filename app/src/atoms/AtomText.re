@@ -4,7 +4,7 @@ open Particle;
 module Styles = {
   open Css;
 
-  let text = style([color(Color.black()), display(inline)]);
+  let text = style([color(Color.darkGray()), display(inline)]);
 };
 
 [@react.component]
