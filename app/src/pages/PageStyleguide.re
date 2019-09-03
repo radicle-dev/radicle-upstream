@@ -216,6 +216,15 @@ let make = () =>
           <FontSwatch label={React.string("caption")}>
             <Text.Caption> {React.string("Open Source Coin")} </Text.Caption>
           </FontSwatch>
+          <FontSwatch label={React.string("bigNumber")}>
+            <Number.Big> {React.string("0123456789")} </Number.Big>
+          </FontSwatch>
+          <FontSwatch label={React.string("number")}>
+            <Number> {React.string("0123456789")} </Number>
+          </FontSwatch>
+          <FontSwatch label={React.string("smallNumber")}>
+            <Number.Small> {React.string("0123456789")} </Number.Small>
+          </FontSwatch>
         </Section>
         <Section
           title={React.string("Icons")}
