@@ -108,6 +108,11 @@ module FontSwatch = {
     </Row>;
 };
 
+module IconSwatch = {
+  [@react.component]
+  let make = (~children) => <El style=Styles.iconContainer> children </El>;
+};
+
 [@react.component]
 let make = () =>
   <Portal>
@@ -174,23 +179,23 @@ let make = () =>
             )
           }>
           <Row>
-            <El style=Styles.iconContainer> <Icon.Plus /> </El>
-            <El style=Styles.iconContainer> <Icon.Important /> </El>
-            <El style=Styles.iconContainer> <Icon.CloseSmall /> </El>
-            <El style=Styles.iconContainer> <Icon.Info /> </El>
-            <El style=Styles.iconContainer> <Icon.Check /> </El>
-            <El style=Styles.iconContainer> <Icon.Search /> </El>
-            <El style=Styles.iconContainer> <Icon.Graph /> </El>
-            <El style=Styles.iconContainer> <Icon.Inbox /> </El>
-            <El style=Styles.iconContainer> <Icon.Wallet /> </El>
-            <El style=Styles.iconContainer> <Icon.Close /> </El>
+            <IconSwatch> <Icon.Plus /> </IconSwatch>
+            <IconSwatch> <Icon.Important /> </IconSwatch>
+            <IconSwatch> <Icon.CloseSmall /> </IconSwatch>
+            <IconSwatch> <Icon.Info /> </IconSwatch>
+            <IconSwatch> <Icon.Check /> </IconSwatch>
+            <IconSwatch> <Icon.Search /> </IconSwatch>
+            <IconSwatch> <Icon.Graph /> </IconSwatch>
+            <IconSwatch> <Icon.Inbox /> </IconSwatch>
+            <IconSwatch> <Icon.Wallet /> </IconSwatch>
+            <IconSwatch> <Icon.Close /> </IconSwatch>
           </Row>
-          <Row> <El style=Styles.row> <Icon.Back /> </El> </Row>
+          <Row> <IconSwatch> <Icon.Back /> </IconSwatch> </Row>
           <Row>
-            <El style=Styles.row> <Icon.PersonAvatarPlaceholder /> </El>
+            <IconSwatch> <Icon.PersonAvatarPlaceholder /> </IconSwatch>
           </Row>
           <Row>
-            <El style=Styles.row> <Icon.ProjectAvatarPlaceholder /> </El>
+            <IconSwatch> <Icon.ProjectAvatarPlaceholder /> </IconSwatch>
           </Row>
         </Section>
       </El>
