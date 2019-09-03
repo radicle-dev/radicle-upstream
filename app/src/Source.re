@@ -15,11 +15,13 @@ type project = {
   members: array(account),
 };
 
+type createAccountResult = Belt.Result.t(account, string);
 type fetchProjectResult = Belt.Result.t(project, string);
 type fetchProjectsResult = Belt.Result.t(array(project), string);
 type registerProjectResult = Belt.Result.t(project, string);
 
 type source = {
+  createAccount: (string, string) => Js.Promise.t(createAccountResult),
   fetchAccount: unit => Js.Promise.t(fetchAccountResult),
   fetchProject: address => Js.Promise.t(fetchProjectResult),
   fetchProjects: unit => Js.Promise.t(fetchProjectsResult),
@@ -98,6 +100,14 @@ let createLocalSource = () => {
       },
     |]);
 
+  let createAccount = (keyName, avatarUrl) =>
+    Js.Promise.make((~resolve, ~reject as _) => {
+      let account = {keyName, avatarUrl};
+      localAccount := Some(account);
+
+      resolve(. Belt.Result.Ok(account));
+    });
+
   let fetchAccount = () =>
     Js.Promise.make((~resolve, ~reject as _) =>
       resolve(. Belt.Result.Ok(localAccount^))
@@ -141,5 +151,5 @@ let createLocalSource = () => {
       }
     );
 
-  {fetchAccount, fetchProject, fetchProjects, registerProject};
+  {createAccount, fetchAccount, fetchProject, fetchProjects, registerProject};
 };
