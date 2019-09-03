@@ -1,3 +1,6 @@
+/* We use the Random module for fake address creation. */
+Random.self_init();
+
 type address = string;
 
 type account = {
@@ -137,7 +140,7 @@ let createLocalSource = () => {
       switch (localAccount^) {
       | Some(account) =>
         let project = {
-          address: "",
+          address: Printf.sprintf("%X", Random.bits()),
           name,
           description,
           imgUrl,
