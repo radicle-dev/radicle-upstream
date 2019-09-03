@@ -2,9 +2,10 @@ open Source;
 
 type action =
   | Fetch
-  | Fetched(option(Source.account))
+  | Fetched(option(account))
   | FetchFailed(string)
-  | NewAccount(string, string);
+  | Created(account)
+  | CreationFailed(string);
 
 type state =
   | Initial
@@ -24,5 +25,6 @@ let reducer = (_state, action) =>
     | None => Empty
     }
   | FetchFailed(reason) => Failed(reason)
-  | NewAccount(keyName, avatarUrl) => Present({keyName, avatarUrl})
+  | Created(account) => Present(account)
+  | CreationFailed(reason) => Failed(reason)
   };

@@ -1,9 +1,9 @@
 open AppStore;
 open Source;
+open StoreMiddleware;
 open StoreProjects;
 
-let fetchProjects =
-    (dispatch: StoreMiddleware.thunk(appState) => unit, source: source) => {
+let fetchProjects = (dispatch: thunk(appState) => unit, source: source) => {
   dispatch(ProjectsAction(Fetching));
 
   Js.Promise.(
@@ -25,7 +25,7 @@ let registerProject =
       name: string,
       description: string,
       imgUrl: string,
-      dispatch: StoreMiddleware.thunk(appState) => unit,
+      dispatch: thunk(appState) => unit,
       source: source,
     ) =>
   Js.Promise.(

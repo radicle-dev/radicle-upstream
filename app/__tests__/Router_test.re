@@ -18,14 +18,6 @@ describe("Router", () =>
         {hash: "", path: ["projects", "monokel"], search: ""},
       ),
       (
-        ProjectCode("monokel"),
-        {hash: "", path: ["projects", "monokel", "code"], search: ""},
-      ),
-      (
-        ProjectFunds("monokel"),
-        {hash: "", path: ["projects", "monokel", "funds"], search: ""},
-      ),
-      (
         NotFound(["not-found"]),
         {hash: "", path: ["not-found"], search: ""},
       ),

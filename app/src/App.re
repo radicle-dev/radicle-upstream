@@ -32,9 +32,7 @@ let make = () => {
     | Root => <Generic title="Home of Oscoin" />
     | Projects => <Projects />
     | RegisterProject => <RegisterProject />
-    | Project(id) => <Project id subPage=Project.Overview />
-    | ProjectCode(id) => <Project id subPage=Project.Code />
-    | ProjectFunds(id) => <Project id subPage=Project.Funds />
+    | Project(address) => <Project address />
     | NotFound(_path) => <Generic title="Not Found" />
     };
 
