@@ -11,22 +11,11 @@ type page =
 
 type overlay = (option(page), option(page));
 
-let navigateToPage = (p: page) => {
+let linkOfUrl = url => {
   let join = (parts: list(string)): string =>
-    List.fold_left((a, b) => a ++ "/" ++ b, "", parts);
+    List.fold_left((a, b) => a ++ "/" ++ b, "/", parts);
 
-  let link =
-    switch (p) {
-    | Root => "/"
-    | JoinNetwork => join(["join-network"])
-    | Projects => join(["projects"])
-    | RegisterProject => join(["projects", "register"])
-    | Project(id) => join(["projects", id])
-    | Styleguide => "/styleguide"
-    | NotFound(_path) => "/not-found"
-    };
-
-  _ => ReasonReactRouter.push(link);
+  join(url.path);
 };
 
 let nameOfPage = (p: page): string =>
@@ -50,6 +39,17 @@ let pageOfPath = path: page =>
   | ["styleguide"] => Styleguide
   | ["not-found"] => NotFound(path)
   | _ => NotFound(path)
+  };
+
+let pathOfPage = p =>
+  switch (p) {
+  | Root => ["/"]
+  | JoinNetwork => ["join-network"]
+  | Projects => ["projects"]
+  | RegisterProject => ["projects", "register"]
+  | Project(id) => ["projects", id]
+  | Styleguide => ["styleguide"]
+  | NotFound(_path) => ["not-found"]
   };
 
 let valueOfSearchParam = (search, key) => {
@@ -83,6 +83,11 @@ let overlayOfSearch = search => {
 
   (ov, last);
 };
+
+let navigateToPage = (p, _) =>
+  ReasonReactRouter.push(
+    linkOfUrl({path: pathOfPage(p), hash: "", search: ""}),
+  );
 
 let currentOverlay = (): overlay => {
   let url = ReasonReactRouter.useUrl();
