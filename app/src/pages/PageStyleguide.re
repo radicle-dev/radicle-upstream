@@ -74,160 +74,125 @@ module ColorSwatch = {
   };
 };
 
+module Section = {
+  open Css;
+  open Particle;
+
+  [@react.component]
+  let make = (~title, ~subTitle, ~children) =>
+    <El style=Styles.section>
+      <El style=Styles.firstColumn>
+        <Title.Big style={style([marginBottom(px(8))])}> title </Title.Big>
+        <Text style={style([color(Color.gray())])}> subTitle </Text>
+      </El>
+      <El style=Styles.secondColumn> children </El>
+    </El>;
+};
+
+module Row = {
+  [@react.component]
+  let make = (~children) => <El style=Styles.row> children </El>;
+};
+
+module FontSwatch = {
+  open Css;
+  open Particle;
+
+  [@react.component]
+  let make = (~label, ~children) =>
+    <Row>
+      <El style=Styles.label>
+        <Text.Small style={style([color(Color.gray())])}> label </Text.Small>
+      </El>
+      <El> children </El>
+    </Row>;
+};
+
 [@react.component]
 let make = () =>
   <Portal>
     <El style=Styles.wrapper>
       <El style=Styles.content>
-        <El style=Styles.section>
-          <Title.Huge> {React.string("Oscoin Styleguide")} </Title.Huge>
-        </El>
-        <El style=Styles.section>
-          <El style=Styles.firstColumn>
-            <Title.Big style={Css.style([Css.marginBottom(Css.px(8))])}>
-              {React.string("Colors")}
-            </Title.Big>
-            <Text style={Css.style([Css.color(Particle.Color.gray())])}>
-              {React.string("Primary, secondary and grays")}
-            </Text>
-          </El>
-          <El style=Styles.secondColumn>
-            <El style=Styles.row>
-              <ColorSwatch color=Purple />
-              <ColorSwatch color=Blue />
-              <ColorSwatch color=Green />
-              <ColorSwatch color=Orange />
-              <ColorSwatch color=Red />
-              <ColorSwatch color=Bordeaux />
-            </El>
-            <El style=Styles.row>
-              <ColorSwatch color=LightBlue />
-              <ColorSwatch color=Teal />
-              <ColorSwatch color=LightGreen />
-              <ColorSwatch color=Yellow />
-              <ColorSwatch color=Pink />
-            </El>
-            <El style=Styles.row>
-              <ColorSwatch.HalfSize color=Black />
-              <ColorSwatch.HalfSize color=DarkGray />
-              <ColorSwatch.HalfSize color=Gray />
-              <ColorSwatch.HalfSize color=LightGray />
-              <ColorSwatch.HalfSize color=AlmostWhite />
-              <ColorSwatch.HalfSize color=White />
-            </El>
-          </El>
-        </El>
-        <El style=Styles.section>
-          <El style=Styles.firstColumn>
-            <Title.Big style={Css.style([Css.marginBottom(Css.px(8))])}>
-              {React.string("Typography")}
-            </Title.Big>
-            <Text style={Css.style([Css.color(Particle.Color.gray())])}>
-              {
-                React.string(
-                  "Using GT America and GT America Mono from Grill Type",
-                )
-              }
-            </Text>
-          </El>
-          <El style=Styles.secondColumn>
-            <El style=Styles.row>
-              <El style=Styles.label>
-                <Text.Small
-                  style={Css.style([Css.color(Particle.Color.gray())])}>
-                  {React.string("hugeTitle")}
-                </Text.Small>
-              </El>
-              <El>
-                <Title.Huge> {React.string("Open Source Coin")} </Title.Huge>
-              </El>
-            </El>
-            <El style=Styles.row>
-              <El style=Styles.label>
-                <Text.Small
-                  style={Css.style([Css.color(Particle.Color.gray())])}>
-                  {React.string("bigTitle")}
-                </Text.Small>
-              </El>
-              <El>
-                <Title.Big> {React.string("Open Source Coin")} </Title.Big>
-              </El>
-            </El>
-            <El style=Styles.row>
-              <El style=Styles.label>
-                <Text.Small
-                  style={Css.style([Css.color(Particle.Color.gray())])}>
-                  {React.string("title")}
-                </Text.Small>
-              </El>
-              <El> <Title> {React.string("Open Source Coin")} </Title> </El>
-            </El>
-            <El style=Styles.row>
-              <El style=Styles.label>
-                <Text.Small
-                  style={Css.style([Css.color(Particle.Color.gray())])}>
-                  {React.string("text")}
-                </Text.Small>
-              </El>
-              <El> <Text> {React.string("Open Source Coin")} </Text> </El>
-            </El>
-            <El style=Styles.row>
-              <El style=Styles.label>
-                <Text.Small
-                  style={Css.style([Css.color(Particle.Color.gray())])}>
-                  {React.string("smallText")}
-                </Text.Small>
-              </El>
-              <El>
-                <Text.Small> {React.string("Open Source Coin")} </Text.Small>
-              </El>
-            </El>
-            <El style=Styles.row>
-              <El style=Styles.label>
-                <Text.Small
-                  style={Css.style([Css.color(Particle.Color.gray())])}>
-                  {React.string("caption")}
-                </Text.Small>
-              </El>
-              <El>
-                <Text.Caption>
-                  {React.string("Open Source Coin")}
-                </Text.Caption>
-              </El>
-            </El>
-          </El>
-        </El>
-        <El style=Styles.section>
-          <El style=Styles.firstColumn>
-            <Title.Big style={Css.style([Css.marginBottom(Css.px(8))])}>
-              {React.string("Icons")}
-            </Title.Big>
-            <Text style={Css.style([Css.color(Particle.Color.gray())])}>
-              {
-                React.string(
-                  "Icons at 16px, 24px, 36px and 64px width and height with 2px stroke weight",
-                )
-              }
-            </Text>
-          </El>
-          <El style=Styles.secondColumn>
-            <El style=Styles.row>
-              <El style=Styles.iconContainer> <Icon.Plus /> </El>
-              <El style=Styles.iconContainer> <Icon.Important /> </El>
-              <El style=Styles.iconContainer> <Icon.CloseSmall /> </El>
-              <El style=Styles.iconContainer> <Icon.Info /> </El>
-              <El style=Styles.iconContainer> <Icon.Check /> </El>
-              <El style=Styles.iconContainer> <Icon.Search /> </El>
-              <El style=Styles.iconContainer> <Icon.Graph /> </El>
-              <El style=Styles.iconContainer> <Icon.Inbox /> </El>
-              <El style=Styles.iconContainer> <Icon.Wallet /> </El>
-              <El style=Styles.iconContainer> <Icon.Close /> </El>
-            </El>
-            <El style=Styles.row> <Icon.Back /> </El>
+        <Section
+          title={React.string("Oscoin Styleguide")}
+          subTitle={React.string("Primary, secondary and grays")}>
+          <Row>
+            <ColorSwatch color=Purple />
+            <ColorSwatch color=Blue />
+            <ColorSwatch color=Green />
+            <ColorSwatch color=Orange />
+            <ColorSwatch color=Red />
+            <ColorSwatch color=Bordeaux />
+          </Row>
+          <Row>
+            <ColorSwatch color=LightBlue />
+            <ColorSwatch color=Teal />
+            <ColorSwatch color=LightGreen />
+            <ColorSwatch color=Yellow />
+            <ColorSwatch color=Pink />
+          </Row>
+          <Row>
+            <ColorSwatch.HalfSize color=Black />
+            <ColorSwatch.HalfSize color=DarkGray />
+            <ColorSwatch.HalfSize color=Gray />
+            <ColorSwatch.HalfSize color=LightGray />
+            <ColorSwatch.HalfSize color=AlmostWhite />
+            <ColorSwatch.HalfSize color=White />
+          </Row>
+        </Section>
+        <Section
+          title={React.string("Typography")}
+          subTitle={
+            React.string(
+              "Using GT America and GT America Mono from Grill Type",
+            )
+          }>
+          <FontSwatch label={React.string("hugeTitle")}>
+            <Title.Huge> {React.string("Open Source Coin")} </Title.Huge>
+          </FontSwatch>
+          <FontSwatch label={React.string("bigTitle")}>
+            <Title.Big> {React.string("Open Source Coin")} </Title.Big>
+          </FontSwatch>
+          <FontSwatch label={React.string("title")}>
+            <Title> {React.string("Open Source Coin")} </Title>
+          </FontSwatch>
+          <FontSwatch label={React.string("text")}>
+            <Text> {React.string("Open Source Coin")} </Text>
+          </FontSwatch>
+          <FontSwatch label={React.string("smallText")}>
+            <Text.Small> {React.string("Open Source Coin")} </Text.Small>
+          </FontSwatch>
+          <FontSwatch label={React.string("caption")}>
+            <Text.Caption> {React.string("Open Source Coin")} </Text.Caption>
+          </FontSwatch>
+        </Section>
+        <Section
+          title={React.string("Icons")}
+          subTitle={
+            React.string(
+              "Icons at 16px, 24px, 36px and 64px width and height with 2px stroke weight",
+            )
+          }>
+          <Row>
+            <El style=Styles.iconContainer> <Icon.Plus /> </El>
+            <El style=Styles.iconContainer> <Icon.Important /> </El>
+            <El style=Styles.iconContainer> <Icon.CloseSmall /> </El>
+            <El style=Styles.iconContainer> <Icon.Info /> </El>
+            <El style=Styles.iconContainer> <Icon.Check /> </El>
+            <El style=Styles.iconContainer> <Icon.Search /> </El>
+            <El style=Styles.iconContainer> <Icon.Graph /> </El>
+            <El style=Styles.iconContainer> <Icon.Inbox /> </El>
+            <El style=Styles.iconContainer> <Icon.Wallet /> </El>
+            <El style=Styles.iconContainer> <Icon.Close /> </El>
+          </Row>
+          <Row> <El style=Styles.row> <Icon.Back /> </El> </Row>
+          <Row>
             <El style=Styles.row> <Icon.PersonAvatarPlaceholder /> </El>
+          </Row>
+          <Row>
             <El style=Styles.row> <Icon.ProjectAvatarPlaceholder /> </El>
-          </El>
-        </El>
+          </Row>
+        </Section>
       </El>
     </El>
   </Portal>;
