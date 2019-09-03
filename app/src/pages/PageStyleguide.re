@@ -198,6 +198,32 @@ let make = () =>
             <IconSwatch> <Icon.ProjectAvatarPlaceholder /> </IconSwatch>
           </Row>
         </Section>
+        <Section
+          title={React.string("Buttons")}
+          subTitle={
+            React.string(
+              "Vanilla, Primary, Secondary, Cancel, disabled state",
+            )
+          }>
+          <Row>
+            <Button> {React.string("Vanilla")} </Button>
+            <Button.Primary> {React.string("Primary")} </Button.Primary>
+            <Button.Secondary> {React.string("Secondary")} </Button.Secondary>
+            <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
+          </Row>
+          <Row>
+            <Button disabled=true> {React.string("Vanilla")} </Button>
+            <Button.Primary disabled=true>
+              {React.string("Primary")}
+            </Button.Primary>
+            <Button.Secondary disabled=true>
+              {React.string("Secondary")}
+            </Button.Secondary>
+            <Button.Cancel disabled=true>
+              {React.string("Cancel")}
+            </Button.Cancel>
+          </Row>
+        </Section>
       </El>
     </El>
   </Portal>;
