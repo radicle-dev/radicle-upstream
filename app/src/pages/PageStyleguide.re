@@ -153,6 +153,7 @@ module Styles = {
       height(pct(100.0)),
       backgroundColor(Particle.Color.white()),
       paddingLeft(px(160)),
+      paddingTop(px(145)),
     ]);
 
   let content =
@@ -163,9 +164,10 @@ module Styles = {
 let make = () =>
   <Portal>
     <El style=Styles.wrapper>
+      <Title.Huge> {React.string("Oscoin Styleguide")} </Title.Huge>
       <El style=Styles.content>
         <Section
-          title={React.string("Oscoin Styleguide")}
+          title={React.string("Colors")}
           subTitle={React.string("Primary, secondary and grays")}>
           <Row>
             <ColorSwatch color=Purple />
