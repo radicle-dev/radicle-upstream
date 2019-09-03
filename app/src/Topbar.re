@@ -1,7 +1,6 @@
 open AppStore;
 open Atom;
 open DesignSystem;
-open Page;
 open Molecule;
 open Source;
 open StoreSession;
@@ -30,15 +29,20 @@ module Account = {
 
   module JoinButton = {
     [@react.component]
-    let make = (~toggleModal) =>
-      <Button.Primary onClick={_ => toggleModal(_ => true)}>
+    let make = () =>
+      <Button.Primary
+        onClick={
+          Router.navigateToOverlay(
+            Router.Projects,
+            (Some(Router.JoinNetwork), None),
+          )
+        }>
         {React.string("Join the network")}
       </Button.Primary>;
   };
 
   [@react.component]
   let make = () => {
-    let (isModalVisible, toggleModal) = React.useState(_ => false);
     let state = Store.useSelector(state => state.session);
     let dispatch = Store.useDispatch();
 
@@ -46,28 +50,21 @@ module Account = {
       dispatch(StoreMiddleware.Thunk(ThunkSession.fetchSession));
     };
 
-    let card =
-      switch (state) {
-      | Initial
-      | Fetching =>
-        <Button.Primary disabled=true>
-          {React.string("Loading...")}
-        </Button.Primary>
-      | Empty => <JoinButton toggleModal />
-      | Present(account) =>
-        <PersonCard firstName={account.keyName} imgUrl={account.avatarUrl} />
-      | Failed(reason) =>
-        <p>
-          <strong> {React.string("Error:")} </strong>
-          {React.string(reason)}
-        </p>
-      };
-
-    isModalVisible ?
-      <Modal closeButtonCallback={_ => toggleModal(_ => false)}>
-        <JoinNetwork onComplete={_ => toggleModal(_ => false)} />
-      </Modal> :
-      card;
+    switch (state) {
+    | Initial
+    | Fetching =>
+      <Button.Primary disabled=true>
+        {React.string("Loading...")}
+      </Button.Primary>
+    | Empty => <JoinButton />
+    | Present(account) =>
+      <PersonCard firstName={account.keyName} imgUrl={account.avatarUrl} />
+    | Failed(reason) =>
+      <p>
+        <strong> {React.string("Error:")} </strong>
+        {React.string(reason)}
+      </p>
+    };
   };
 };
 

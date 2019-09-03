@@ -11,11 +11,17 @@ type page =
 
 type overlay = (option(page), option(page));
 
-let linkOfUrl = url => {
-  let join = (parts: list(string)): string =>
-    List.fold_left((a, b) => a ++ "/" ++ b, "/", parts);
+let join = (parts: list(string)): string =>
+  List.fold_left((a, b) => a ++ "/" ++ b, "", parts);
 
-  join(url.path);
+let linkOfUrl = url => {
+  let path = join(url.path);
+  let search = url.search != "" ? "?" ++ url.search : "";
+  let hash = url.hash != "" ? "#" ++ url.hash : "";
+
+  Js.log(url);
+
+  path ++ search ++ hash;
 };
 
 let nameOfPage = (p: page): string =>
@@ -83,6 +89,18 @@ let overlayOfSearch = search => {
 
   (ov, last);
 };
+
+let searchOfOverlay = ov =>
+  switch (ov) {
+  | (Some(overlayPage), None) =>
+    "overlay=" ++ join(pathOfPage(overlayPage))
+  | _ => ""
+  };
+
+let navigateToOverlay = (p, ov, _) =>
+  ReasonReactRouter.push(
+    linkOfUrl({path: pathOfPage(p), hash: "", search: searchOfOverlay(ov)}),
+  );
 
 let navigateToPage = (p, _) =>
   ReasonReactRouter.push(

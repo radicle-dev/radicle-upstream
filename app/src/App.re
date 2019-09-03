@@ -1,3 +1,6 @@
+open Page;
+open Router;
+
 module Styles = {
   open Css;
 
@@ -21,22 +24,36 @@ module Styles = {
   );
 };
 
+let matchPage = page: React.element =>
+  switch (page) {
+  | Root => <Generic title="Home of Oscoin" />
+  | JoinNetwork => <JoinNetwork />
+  | Projects => <Projects />
+  | RegisterProject => <RegisterProject />
+  | Project(address) => <Project address />
+  | Styleguide => <Styleguide />
+  | NotFound(_path) => <Generic title="Not Found" />
+  };
+
+module Overlay = {
+  open Molecule;
+
+  [@react.component]
+  let make = () =>
+    switch (currentOverlay()) {
+    | (Some(overlayPage), None) =>
+      let page = matchPage(overlayPage);
+
+      <Modal onClose=(_ => Js.log("closed"))> page </Modal>;
+    | _ => React.null
+    };
+};
+
 [@react.component]
 let make = () => {
   open DesignSystem;
-  open Page;
-  open Router;
 
-  let page =
-    switch (currentPage()) {
-    | Root => <Generic title="Home of Oscoin" />
-    | JoinNetwork => <JoinNetwork onComplete=(_ => ()) />
-    | Projects => <Projects />
-    | RegisterProject => <RegisterProject />
-    | Project(address) => <Project address />
-    | Styleguide => <Styleguide />
-    | NotFound(_path) => <Generic title="Not Found" />
-    };
+  let page = matchPage(currentPage());
 
   currentPage() == Router.Styleguide ?
     page :
@@ -47,5 +64,6 @@ let make = () => {
         </El>
         page
       </El>
+      <Overlay />
     </Store.Provider>;
 };

@@ -20,6 +20,8 @@ let currentOverlay: unit => overlay;
 /** Reads the current url and return a matching page, or NotFound. **/
 let currentPage: unit => page;
 
+let navigateToOverlay: (page, overlay, 'a) => unit;
+
 /** Given a page returns a function which navigates to it by pushing a new url
  ** onto the pushState.
  **/

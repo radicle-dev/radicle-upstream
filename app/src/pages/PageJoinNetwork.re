@@ -12,7 +12,7 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~onComplete) => {
+let make = () => {
   let dispatch = Store.useDispatch();
   let (name, setName) = React.useState(() => "");
   let (avatarUrl, setAvatarUrl) = React.useState(() => "");
@@ -29,11 +29,9 @@ let make = (~onComplete) => {
     let newAvatarUrl = ReactEvent.Form.target(ev)##value;
     setAvatarUrl(_ => newAvatarUrl);
   };
-  let onSubmit = (name, avatarUrl) => {
+  let onSubmit = (name, avatarUrl) =>
     StoreMiddleware.Thunk(ThunkSession.createAccount(name, avatarUrl))
     |> dispatch;
-    onComplete();
-  };
 
   <El style=Styles.content>
     <El style={margin(0, 0, 16, 0)}>
