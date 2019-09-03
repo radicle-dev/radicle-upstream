@@ -22,7 +22,7 @@ module Styles = {
 
 module Members = {
   let renderMember = member =>
-    <li>
+    <li key={member.keyName}>
       <PersonCard firstName={member.keyName} imgUrl={member.avatarUrl} />
     </li>;
 
