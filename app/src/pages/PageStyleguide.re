@@ -4,42 +4,42 @@ open Molecule;
 open Molecule.Modal;
 open Particle.Color;
 
-module ColorSwatchTemplate = {
-  open Css;
+module ColorSwatch = {
+  module Template = {
+    open Css;
 
-  module Styles = {
-    let container = style([marginRight(px(24))]);
+    module Styles = {
+      let container = style([marginRight(px(24))]);
 
-    let color =
-      style([width(px(120)), height(px(120)), marginBottom(px(16))]);
+      let color =
+        style([width(px(120)), height(px(120)), marginBottom(px(16))]);
+    };
+
+    [@react.component]
+    let make = (~color, ~containerStyle=?, ~colorStyle=?) =>
+      <El style={Styles.container <<? containerStyle}>
+        <div
+          className={
+            Styles.color
+            << style([backgroundColor(rgbaOfColor(color, 1.0))])
+            <<? colorStyle
+          }
+        />
+        <Title> {React.string(nameOfColor(color))} </Title>
+        <Text.Small style={style([textTransform(`uppercase)])}>
+          {React.string(hexOfColor(color))}
+        </Text.Small>
+      </El>;
   };
 
   [@react.component]
-  let make = (~color, ~containerStyle=?, ~colorStyle=?) =>
-    <El style={Styles.container <<? containerStyle}>
-      <div
-        className={
-          Styles.color
-          << style([backgroundColor(rgbaOfColor(color, 1.0))])
-          <<? colorStyle
-        }
-      />
-      <Title> {React.string(nameOfColor(color))} </Title>
-      <Text.Small style={style([textTransform(`uppercase)])}>
-        {React.string(hexOfColor(color))}
-      </Text.Small>
-    </El>;
-};
-
-module ColorSwatch = {
-  [@react.component]
-  let make = (~color) => <ColorSwatchTemplate color />;
+  let make = (~color) => <Template color />;
 
   module HalfSize = {
     open Css;
     [@react.component]
     let make = (~color) =>
-      <ColorSwatchTemplate color colorStyle={style([height(px(60))])} />;
+      <Template color colorStyle={style([height(px(60))])} />;
   };
 };
 
