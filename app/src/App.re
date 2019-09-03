@@ -30,18 +30,22 @@ let make = () => {
   let page =
     switch (currentPage()) {
     | Root => <Generic title="Home of Oscoin" />
+    | JoinNetwork => <JoinNetwork onComplete=(_ => ()) />
     | Projects => <Projects />
     | RegisterProject => <RegisterProject />
     | Project(address) => <Project address />
+    | Styleguide => <Styleguide />
     | NotFound(_path) => <Generic title="Not Found" />
     };
 
-  <Store.Provider>
-    <El style=Layout.grid>
-      <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
-        <Topbar />
+  currentPage() == Router.Styleguide ?
+    page :
+    <Store.Provider>
+      <El style=Layout.grid>
+        <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
+          <Topbar />
+        </El>
+        page
       </El>
-      page
-    </El>
-  </Store.Provider>;
+    </Store.Provider>;
 };

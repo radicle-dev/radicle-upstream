@@ -6,6 +6,7 @@ type page =
   | Projects
   | Project(string)
   | RegisterProject
+  | Styleguide
   | NotFound(list(string));
 
 type overlay = (option(page), option(page));
@@ -21,6 +22,7 @@ let navigateToPage = (p: page) => {
     | Projects => join(["projects"])
     | RegisterProject => join(["projects", "register"])
     | Project(id) => join(["projects", id])
+    | Styleguide => "/styleguide"
     | NotFound(_path) => "/not-found"
     };
 
@@ -34,6 +36,7 @@ let nameOfPage = (p: page): string =>
   | Projects => "Explore"
   | RegisterProject => "Register Project"
   | Project(id) => "Project " ++ id
+  | Styleguide => "Styleguide"
   | NotFound(_path) => "Not Found"
   };
 
@@ -44,6 +47,7 @@ let pageOfPath = path: page =>
   | ["projects"] => Projects
   | ["projects", "register"] => RegisterProject
   | ["projects", id] => Project(id)
+  | ["styleguide"] => Styleguide
   | ["not-found"] => NotFound(path)
   | _ => NotFound(path)
   };

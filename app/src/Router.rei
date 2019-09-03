@@ -5,6 +5,7 @@ type page =
   | Projects
   | Project(string)
   | RegisterProject
+  | Styleguide
   | NotFound(list(string));
 
 type overlay = (option(page), option(page));
