@@ -90,12 +90,17 @@ let overlayOfSearch = search => {
   (ov, last);
 };
 
-let searchOfOverlay = ov =>
+let searchOfOverlay = ov => {
+  let join = page =>
+    join(pathOfPage(page)) |> Js.String.sliceToEnd(~from=1);
+
   switch (ov) {
-  | (Some(overlayPage), None) =>
-    "overlay=" ++ join(pathOfPage(overlayPage))
+  | (Some(overlayPage), Some(lastPage)) =>
+    "overlay=" ++ join(overlayPage) ++ "&last=" ++ join(lastPage)
+  | (Some(overlayPage), None) => "overlay=" ++ join(overlayPage)
   | _ => ""
   };
+};
 
 let navigateToOverlay = (p, ov, _) =>
   ReasonReactRouter.push(

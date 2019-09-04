@@ -33,8 +33,8 @@ module Account = {
       <Button.Primary
         onClick={
           Router.navigateToOverlay(
-            Router.Projects,
-            (Some(Router.JoinNetwork), None),
+            Router.currentPage(),
+            (Some(Router.JoinNetwork), Some(Router.currentPage())),
           )
         }>
         {React.string("Join the network")}

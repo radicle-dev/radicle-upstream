@@ -39,12 +39,12 @@ module Overlay = {
   open Molecule;
 
   [@react.component]
-  let make = () =>
-    switch (currentOverlay()) {
-    | (Some(overlayPage), None) =>
-      let page = matchPage(overlayPage);
+  let make = (~overlay, ~page) =>
+    switch (overlay) {
+    | (Some(overlayPage), _) =>
+      let el = matchPage(overlayPage);
 
-      <Modal onClose=(_ => Js.log("closed"))> page </Modal>;
+      <Modal onClose={navigateToPage(page)}> el </Modal>;
     | _ => React.null
     };
 };
@@ -64,6 +64,6 @@ let make = () => {
         </El>
         page
       </El>
-      <Overlay />
+      <Overlay overlay={currentOverlay()} page={currentPage()} />
     </Store.Provider>;
 };

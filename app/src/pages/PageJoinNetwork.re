@@ -1,5 +1,6 @@
 open Atom;
 open DesignSystem;
+open Router;
 
 module Styles = {
   open Css;
@@ -49,7 +50,9 @@ let make = () => {
       <Input onChange=onAvatarChange placeholder="Enter an avatar URL" />
     </El>
     <El style=Styles.buttonContainer>
-      <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
+      <Button.Cancel onClick={navigateToPage(currentPage())}>
+        {React.string("Cancel")}
+      </Button.Cancel>
       <Button.Secondary onClick={_ => onSubmit(name, avatarUrl)}>
         {React.string("Join the network")}
       </Button.Secondary>
