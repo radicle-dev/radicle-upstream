@@ -1,9 +1,10 @@
 [package]
 name = "proxy"
 version = "0.1.0"
-authors = ["Alexander Simmerl <a.simmerl@gmail.com>"]
+authors = ["Alexander Simmerl <xla@monadic.xyz>"]
 edition = "2018"
 
 [dependencies]
 log = "0.4"
 pretty_env_logger = "0.3"
+warp = "0.1"
