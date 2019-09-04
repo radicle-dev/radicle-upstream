@@ -49,6 +49,33 @@ module Overlay = {
     };
 };
 
+module SessionGuard = {
+  open AppStore;
+  open StoreSession;
+
+  [@react.component]
+  let make = (~children, ~overlay, ~page) => {
+    let state = Store.useSelector(state => state.session);
+    let (ov, _) = overlay;
+
+    let hasOverlay =
+      switch (ov) {
+      | Some(_overlayPage) => true
+      | None => false
+      };
+
+    if (state == Empty && page == RegisterProject && !hasOverlay) {
+      navigateToOverlay(
+        Projects,
+        (Some(JoinNetwork), Some(RegisterProject)),
+        (),
+      );
+    };
+
+    children;
+  };
+};
+
 [@react.component]
 let make = () => {
   open DesignSystem;
@@ -62,7 +89,9 @@ let make = () => {
         <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
           <Topbar />
         </El>
-        page
+        <SessionGuard overlay={currentOverlay()} page={currentPage()}>
+          page
+        </SessionGuard>
       </El>
       <Overlay overlay={currentOverlay()} page={currentPage()} />
     </Store.Provider>;
