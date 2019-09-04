@@ -25,7 +25,7 @@ describe("Router", () => {
       ((Some(JoinNetwork), None), "overlay=join-network"),
       (
         (Some(JoinNetwork), Some(Projects)),
-        "overlay=join-network&last=projects",
+        "overlay=join-network&next=projects",
       ),
     ],
     ((overlay, search)) =>
