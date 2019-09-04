@@ -79,11 +79,15 @@ let valueOfSearchParam = (search, key) => {
 let overlayOfSearch = search => {
   let ov =
     valueOfSearchParam(search, "overlay")
-    ->Belt.Option.mapWithDefault(None, path => Some(pageOfPath([path])));
+    ->Belt.Option.mapWithDefault(None, path =>
+        Some(path |> Js.String.split("/") |> Array.to_list |> pageOfPath)
+      );
 
   let next =
     valueOfSearchParam(search, "next")
-    ->Belt.Option.mapWithDefault(None, path => Some(pageOfPath([path])));
+    ->Belt.Option.mapWithDefault(None, path =>
+        Some(path |> Js.String.split("/") |> Array.to_list |> pageOfPath)
+      );
 
   (ov, next);
 };
