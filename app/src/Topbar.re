@@ -34,7 +34,7 @@ module Account = {
         onClick={
           Router.navigateToOverlay(
             Router.currentPage(),
-            (Some(Router.JoinNetwork), Some(Router.currentPage())),
+            (Some(Router.JoinNetwork), None),
           )
         }>
         {React.string("Join the network")}

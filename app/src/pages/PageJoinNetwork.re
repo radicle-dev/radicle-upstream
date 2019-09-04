@@ -17,6 +17,7 @@ let make = () => {
   let dispatch = Store.useDispatch();
   let (name, setName) = React.useState(() => "");
   let (avatarUrl, setAvatarUrl) = React.useState(() => "");
+  let currentOverlay = currentOverlay();
 
   let onNameChange = ev => {
     /* We need to memoize it as the underlying event is reused for performance
@@ -30,9 +31,15 @@ let make = () => {
     let newAvatarUrl = ReactEvent.Form.target(ev)##value;
     setAvatarUrl(_ => newAvatarUrl);
   };
-  let onSubmit = (name, avatarUrl) =>
-    StoreMiddleware.Thunk(ThunkSession.createAccount(name, avatarUrl))
+  let onSubmit = (name, avatarUrl) => {
+    let next =
+      switch (currentOverlay) {
+      | (_, Some(nextPage)) => nextPage
+      | _ => Projects
+      };
+    ThunkSession.createAccount(name, avatarUrl, next)->StoreMiddleware.Thunk
     |> dispatch;
+  };
 
   <El style=Styles.content>
     <El style={margin(0, 0, 16, 0)}>

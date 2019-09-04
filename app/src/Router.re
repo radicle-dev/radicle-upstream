@@ -19,8 +19,6 @@ let linkOfUrl = url => {
   let search = url.search != "" ? "?" ++ url.search : "";
   let hash = url.hash != "" ? "#" ++ url.hash : "";
 
-  Js.log(url);
-
   path ++ search ++ hash;
 };
 
@@ -83,11 +81,11 @@ let overlayOfSearch = search => {
     valueOfSearchParam(search, "overlay")
     ->Belt.Option.mapWithDefault(None, path => Some(pageOfPath([path])));
 
-  let last =
-    valueOfSearchParam(search, "last")
+  let next =
+    valueOfSearchParam(search, "next")
     ->Belt.Option.mapWithDefault(None, path => Some(pageOfPath([path])));
 
-  (ov, last);
+  (ov, next);
 };
 
 let searchOfOverlay = ov => {
@@ -95,8 +93,8 @@ let searchOfOverlay = ov => {
     join(pathOfPage(page)) |> Js.String.sliceToEnd(~from=1);
 
   switch (ov) {
-  | (Some(overlayPage), Some(lastPage)) =>
-    "overlay=" ++ join(overlayPage) ++ "&last=" ++ join(lastPage)
+  | (Some(overlayPage), Some(nextPage)) =>
+    "overlay=" ++ join(overlayPage) ++ "&next=" ++ join(nextPage)
   | (Some(overlayPage), None) => "overlay=" ++ join(overlayPage)
   | _ => ""
   };

@@ -30,12 +30,10 @@ let make = () => {
     let newImgUrl = ev->ReactEvent.Form.target##value;
     setImgUrl(_ => newImgUrl);
   };
-  let registerCallback = _ =>
-    dispatch(
-      StoreMiddleware.Thunk(
-        ThunkProjects.registerProject(name, description, imgUrl),
-      ),
-    );
+  let onSubmit = _ =>
+    ThunkProjects.registerProject(name, description, imgUrl)
+    ->StoreMiddleware.Thunk
+    |> dispatch;
 
   <El style=Styles.content>
     <Title.Big style={margin(0, 0, 16, 0)}>
@@ -59,7 +57,7 @@ let make = () => {
       <Button.Cancel onClick={navigateToPage(Projects)}>
         {React.string("Cancel")}
       </Button.Cancel>
-      <Button.Secondary onClick=registerCallback>
+      <Button.Secondary onClick=onSubmit>
         {React.string("Register")}
       </Button.Secondary>
     </El>
