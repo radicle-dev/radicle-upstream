@@ -27,13 +27,17 @@
     "reason-react",
     "reductive",
     "bs-css",
-    "reductive-dev-tools"
+    "reductive-dev-tools",
+    "reason-apollo"
+  ],
+  "ppx-flags": [
+    "graphql_ppx/ppx"
   ],
   "bs-dev-dependencies": [],
   "refmt": 3,
   "warnings": {
-    "number": "+A-48",
-    "error": "+A-102"
+    "number": "+A-48-42-9-40-102",
+    "error": "+A-102-42"
   },
   "bsc-flags": [
    "-no-alias-deps",

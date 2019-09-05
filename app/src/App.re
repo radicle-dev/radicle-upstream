@@ -1,3 +1,5 @@
+/* let ste = React.string; */
+
 module Styles = {
   open Css;
 

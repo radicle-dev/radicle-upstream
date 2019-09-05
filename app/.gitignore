@@ -3,6 +3,8 @@
 .bsb.lock
 npm-debug.log
 yarn-error.log
+graphql_schema.json
+.graphql_ppx_cache
 
 *.bs.js
 .firebase
