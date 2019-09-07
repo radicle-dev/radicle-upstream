@@ -1,4 +1,5 @@
 use juniper::{EmptyMutation, FieldResult, RootNode};
+use std::sync::Arc;
 
 use crate::source::{Address, Local, Project, Source};
 
@@ -8,13 +9,14 @@ pub fn create() -> Schema {
     Schema::new(Query {}, EmptyMutation::new())
 }
 
+#[derive(Clone)]
 pub struct Context {
-    source: Local,
+    source: Arc<Local>,
 }
 
 impl Context {
     pub fn new(source: Local) -> Self {
-        Self { source }
+        Self { source: Arc::new(source) }
     }
 }
 
