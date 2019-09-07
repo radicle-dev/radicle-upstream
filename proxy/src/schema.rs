@@ -16,7 +16,9 @@ pub struct Context {
 
 impl Context {
     pub fn new(source: Local) -> Self {
-        Self { source: Arc::new(source) }
+        Self {
+            source: Arc::new(source),
+        }
     }
 }
 
@@ -27,9 +29,9 @@ graphql_object!(Query: Context | &self | {
     field all_projects(&executor) -> FieldResult<Vec<&Project>> {
         Ok(executor.context().source.get_all_projects())
     },
-    field get_project(&executor, addr: Address) -> FieldResult<Option<&Project>> {
+    field get_project(&executor, address: Address) -> FieldResult<Option<&Project>> {
         let source = &executor.context().source;
 
-        Ok(source.get_project(addr))
+        Ok(source.get_project(address))
     }
 });
