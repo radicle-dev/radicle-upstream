@@ -25,13 +25,18 @@ impl Context {
 impl juniper::Context for Context {}
 
 pub struct Query;
-graphql_object!(Query: Context | &self | {
-    field all_projects(&executor) -> FieldResult<Vec<&Project>> {
-        Ok(executor.context().source.get_all_projects())
-    },
-    field get_project(&executor, address: Address) -> FieldResult<Option<&Project>> {
-        let source = &executor.context().source;
 
-        Ok(source.get_project(address))
+#[juniper::object(Context = Context)]
+impl Query {
+    fn apiVersion() -> &str {
+        "1.0"
     }
-});
+
+    fn all_projects(ctx: &Context) -> FieldResult<Vec<&Project>> {
+        Ok(ctx.source.get_all_projects())
+    }
+
+    fn get_project(ctx: &Context, address: Address) -> FieldResult<Option<&Project>> {
+        Ok(ctx.source.get_project(address))
+    }
+}
