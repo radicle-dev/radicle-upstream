@@ -8,13 +8,28 @@
 extern crate log;
 extern crate pretty_env_logger;
 
-use warp::{self, path, Filter};
+#[macro_use]
+extern crate juniper;
 
-fn main() {
+use std::io;
+
+mod schema;
+mod server;
+mod source;
+
+use crate::schema::Context;
+use crate::source::Local;
+
+fn main() -> io::Result<()> {
+    std::env::set_var("RUST_LOG", "debug");
     pretty_env_logger::init();
-    info!("Proxy started");
 
-    let projects = path!("projects").map(|| "not implemented".to_string());
+    info!("Creating Juniper schema");
+    let schema = std::sync::Arc::new(schema::create());
 
-    warp::serve(projects).run(([127, 0, 0, 1], 3030));
+    info!("Setting up source");
+    let context = std::sync::Arc::new(Context::new(Local::new()));
+
+    info!("Starting HTTP server...");
+    server::run(schema, context)
 }
