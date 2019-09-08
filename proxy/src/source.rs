@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 pub type Address = String;
 
@@ -19,13 +20,22 @@ pub struct Project {
     members: Vec<Account>,
 }
 
+#[derive(juniper::GraphQLInputObject)]
+#[graphql(description = "All information needed for a project registration")]
+pub struct ProjectRegistration {
+    name: String,
+    description: String,
+    img_url: String,
+}
+
 pub trait Source {
     fn get_all_projects(&self) -> Vec<&Project>;
     fn get_project(&self, addr: Address) -> Option<&Project>;
+    fn register_project(&self, name: String, description: String, img_url: String) -> Project;
 }
 
 pub struct Local {
-    projects: HashMap<Address, Project>,
+    projects: Arc<HashMap<Address, Project>>,
 }
 
 impl Local {
@@ -101,16 +111,41 @@ impl Local {
             },
         );
 
-        Self { projects }
+        Self {
+            projects: Arc::new(projects),
+        }
     }
 }
 
 impl Source for Local {
     fn get_all_projects(&self) -> Vec<&Project> {
-        self.projects.iter().map(|(_k, v)| v).collect()
+        let mut ps: Vec<&Project> = self.projects.iter().map(|(_k, v)| v).collect();
+
+        ps.sort_by(|a, b| a.name.partial_cmp(&b.name).unwrap());
+
+        ps
     }
 
     fn get_project(&self, addr: Address) -> Option<&Project> {
         self.projects.get(&addr)
+    }
+
+    fn register_project(&self, _name: String, _description: String, _img_url: String) -> Project {
+        // let p = Project {
+        //     address: "".to_owned(),
+        //     name: "".to_owned(),
+        //     description: "".to_owned(),
+        //     img_url: "".to_owned(),
+        //     members: vec![],
+        // };
+        // self.projects.insert(name, p);
+
+        Project {
+            address: "".to_owned(),
+            name: "".to_owned(),
+            description: "".to_owned(),
+            img_url: "".to_owned(),
+            members: vec![],
+        }
     }
 }
