@@ -32,11 +32,11 @@ impl Query {
         "1.0"
     }
 
-    fn all_projects(ctx: &Context) -> FieldResult<Vec<&Project>> {
+    fn all_projects(ctx: &Context) -> FieldResult<Vec<Arc<Project>>> {
         Ok(ctx.source.get_all_projects())
     }
 
-    fn get_project(ctx: &Context, address: Address) -> FieldResult<Option<&Project>> {
+    fn get_project(ctx: &Context, address: Address) -> FieldResult<Option<Arc<Project>>> {
         Ok(ctx.source.get_project(address))
     }
 }
@@ -77,7 +77,7 @@ impl Mutation {
         name: String,
         description: String,
         img_url: String,
-    ) -> FieldResult<Project> {
+    ) -> FieldResult<Arc<Project>> {
         Ok(ctx.source.register_project(name, description, img_url))
     }
 }
