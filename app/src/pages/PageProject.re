@@ -1,9 +1,8 @@
-open AppStore;
 open Atom;
 open DesignSystem;
 open Molecule;
 open Source;
-open StoreProject;
+open ReasonApolloHooks.Query;
 
 module Styles = {
   open Css;
@@ -38,38 +37,53 @@ module Members = {
     </>;
 };
 
+module GetProjectConfig = [%graphql
+  {|
+  query Query($address: String!){
+    getProject(address: $address) {
+      name
+      description
+      imgUrl
+      members {
+        keyName
+        avatarUrl
+      }
+    }
+  }
+|}
+];
+
+module GetProjectQuery = ReasonApolloHooks.Query.Make(GetProjectConfig);
+
 [@react.component]
 let make = (~address: string) => {
-  let state = Store.useSelector(state => state.projectState);
-  let dispatch = Store.useDispatch();
+  let getProject = GetProjectConfig.make(~address, ());
+  let (state, _full) =
+    GetProjectQuery.use(~variables=getProject##variables, ());
 
   let content =
     switch (state) {
-    | Initial
-    | Loading =>
-      dispatch(StoreMiddleware.Thunk(ThunkProject.fetchProject(address)));
-      <p> {React.string("Loading...")} </p>;
-    | Present(project) =>
-      if (project.address != address) {
-        dispatch(StoreMiddleware.Thunk(ThunkProject.fetchProject(address)));
-        <p> {React.string("Loading...")} </p>;
-      } else {
+    | Error(err) =>
+      <div className="error">
+        {"Error: " ++ err##message |> React.string}
+      </div>
+    | NoData
+    | Loading => <p> {React.string("Loading...")} </p>
+    | Data(response) =>
+      switch (response##getProject) {
+      | None => "Not Found" |> React.string
+      | Some(project) =>
         <>
           <El style={margin(0, 0, 50, 0)}>
             <ProjectCard.Alternate
-              description={project.description}
-              name={project.name}
-              imgUrl={project.imgUrl}
+              description=project##description
+              name=project##name
+              imgUrl=project##imgUrl
             />
           </El>
-          <Members members={project.members} />
-        </>;
+          /* <Members members={project##members} /> */
+        </>
       }
-    | Failed(reason) =>
-      <p>
-        <strong> {React.string("Error:")} </strong>
-        {React.string(reason)}
-      </p>
     };
 
   <El style=Positioning.gridMediumCentered>

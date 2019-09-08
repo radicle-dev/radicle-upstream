@@ -27,6 +27,15 @@ let make = () => {
   open Page;
   open Router;
 
+  let httpLink =
+    ApolloLinks.createHttpLink(~uri="http://localhost:8080/graphql", ());
+  let client =
+    ReasonApollo.createApolloClient(
+      ~link=httpLink,
+      ~cache=ApolloInMemoryCache.createInMemoryCache(),
+      (),
+    );
+
   let page =
     switch (currentPage()) {
     | Root => <Generic title="Home of Oscoin" />
@@ -40,11 +49,13 @@ let make = () => {
   currentPage() == Router.Styleguide ?
     page :
     <Store.Provider>
-      <El style=Layout.grid>
-        <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
-          <Topbar />
+      <ReasonApolloHooks.ApolloProvider client>
+        <El style=Layout.grid>
+          <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
+            <Topbar />
+          </El>
+          page
         </El>
-        page
-      </El>
+      </ReasonApolloHooks.ApolloProvider>
     </Store.Provider>;
 };
