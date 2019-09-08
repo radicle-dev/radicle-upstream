@@ -41,6 +41,7 @@
   },
   "bsc-flags": [
    "-no-alias-deps",
-    "-bs-g"
+   "-bs-g",
+   "-bs-super-errors"
   ]
 }

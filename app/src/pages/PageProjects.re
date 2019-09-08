@@ -59,6 +59,7 @@ let make = () =>
           | Data(response) =>
             <ul>
               {
+                Js.log(response);
                 response##allProjects
                 |> Array.mapi((index, project) =>
                      <li
@@ -72,7 +73,7 @@ let make = () =>
                        </Link>
                      </li>
                    )
-                |> React.array
+                |> React.array;
               }
             </ul>
           }

@@ -27,4 +27,5 @@ type Account {
 
 type Query {
   allProjects: [Project!]!
+  project(address: String!): Project
 }

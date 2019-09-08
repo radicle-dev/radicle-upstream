@@ -10,6 +10,20 @@ module Styles = {
   let buttonContainer = style([display(`flex), justifyContent(flexEnd)]);
 };
 
+module RegisterProject = [%graphql
+  {|
+  mutation($name: String!, $description: String!, $imgUrl: String!) {
+    registerProject(name: $name, description: $description, imgUrl: $imgUrl) {
+      name
+      description
+      imgUrl
+    }
+  }
+|}
+];
+
+module RegisterProjectMutation = ReasonApollo.CreateMutation(RegisterProject);
+
 [@react.component]
 let make = () => {
   let dispatch = Store.useDispatch();
@@ -30,7 +44,7 @@ let make = () => {
     let newImgUrl = ev->ReactEvent.Form.target##value;
     setImgUrl(_ => newImgUrl);
   };
-  let registerCallback = _ =>
+  let _registerCallback = _ =>
     dispatch(
       StoreMiddleware.Thunk(
         ThunkProjects.registerProject(name, description, imgUrl),
@@ -59,9 +73,27 @@ let make = () => {
       <Button.Cancel onClick={navigateToPage(Projects)}>
         {React.string("Cancel")}
       </Button.Cancel>
-      <Button.Secondary onClick=registerCallback>
-        {React.string("Register")}
-      </Button.Secondary>
+      <RegisterProjectMutation>
+        ...{
+             (mutation, res) => {
+               Js.log(res);
+               let registerProjectQuery =
+                 RegisterProject.make(~name, ~description, ~imgUrl, ());
+               <Button.Secondary
+                 onClick={
+                   _ev =>
+                     mutation(
+                       ~variables=registerProjectQuery##variables,
+                       ~refetchQueries=[|"getAllProjects"|],
+                       (),
+                     )
+                     |> ignore
+                 }>
+                 {React.string("Register")}
+               </Button.Secondary>;
+             }
+           }
+      </RegisterProjectMutation>
     </El>
   </El>;
 };

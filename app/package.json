@@ -12,7 +12,7 @@
     "webpack:production": "NODE_ENV=production webpack",
     "server": "webpack-dev-server",
     "deploy": "rm -rf ./build && yarn clean && yarn build && yarn webpack:production && firebase deploy",
-    "fetch:schema": "yarn send-introspection-query http://localhost:9002/graphql"
+    "fetch:schema": "yarn send-introspection-query http://localhost:8080/graphql"
   },
   "keywords": [],
   "author": "",

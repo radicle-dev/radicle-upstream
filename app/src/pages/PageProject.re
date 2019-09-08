@@ -1,9 +1,7 @@
-open AppStore;
 open Atom;
 open DesignSystem;
 open Molecule;
 open Source;
-open StoreProject;
 
 module Styles = {
   open Css;
@@ -38,42 +36,44 @@ module Members = {
     </>;
 };
 
+module GetProject = [%graphql
+  {|
+    query Query($address: String!){
+      getProject(address: $address) {
+        name
+        description
+        imgUrl
+        members {
+          keyName
+          avatarUrl
+        }
+      }
+    }
+  |}
+];
+
+module GetProjectQuery = ReasonApollo.CreateQuery(GetProject);
+
 [@react.component]
 let make = (~address: string) => {
-  let state = Store.useSelector(state => state.projectState);
-  let dispatch = Store.useDispatch();
-
-  let content =
-    switch (state) {
-    | Initial
-    | Loading =>
-      dispatch(StoreMiddleware.Thunk(ThunkProject.fetchProject(address)));
-      <p> {React.string("Loading...")} </p>;
-    | Present(project) =>
-      if (project.address != address) {
-        dispatch(StoreMiddleware.Thunk(ThunkProject.fetchProject(address)));
-        <p> {React.string("Loading...")} </p>;
-      } else {
-        <>
-          <El style={margin(0, 0, 50, 0)}>
-            <ProjectCard.Alternate
-              description={project.description}
-              name={project.name}
-              imgUrl={project.imgUrl}
-            />
-          </El>
-          <Members members={project.members} />
-        </>;
-      }
-    | Failed(reason) =>
-      <p>
-        <strong> {React.string("Error:")} </strong>
-        {React.string(reason)}
-      </p>
-    };
+  let getProjectQuery = GetProject.make(~address, ());
 
   <El style=Positioning.gridMediumCentered>
     <El style={margin(0, 0, 24, 0)}> <Breadcrumb page=Router.Projects /> </El>
-    content
+    <GetProjectQuery variables=getProjectQuery##variables>
+      ...{
+           ({result}) =>
+             switch (result) {
+             | Error(e) =>
+               <div className="error">
+                 {"ERROR: " ++ e##message |> React.string}
+               </div>
+             | Loading => "Loading..." |> React.string
+             | Data(project) =>
+               Js.log(project);
+               React.null;
+             }
+         }
+    </GetProjectQuery>
   </El>;
 };
