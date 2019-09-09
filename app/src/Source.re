@@ -40,7 +40,7 @@ module GraphQL = {
     {|
     query GetAllProjects{
         allProjects @singular(name: "project"){
-          address: queryAddress
+          address
           description
           name
           imgUrl
