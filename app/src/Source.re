@@ -90,9 +90,21 @@ module GraphQL = {
             (maybeData: option(GetAllProjects.queryResult), maybeErrors) =>
             switch (maybeData, maybeErrors) {
             | (Some(result), None) =>
+              let projects =
+                result.GetAllProjects.allProjects
+                |> Array.map(p =>
+                     {
+                       address: p.GetAllProjects.address,
+                       name: p.GetAllProjects.name,
+                       description: p.GetAllProjects.description,
+                       imgUrl: p.GetAllProjects.imgUrl,
+                       members: [||],
+                     }
+                   );
               Js.log(result);
-              Js.log(result.allProjects);
-              resolve(. Belt.Result.Ok(result.allProjects));
+              Js.log(result.GetAllProjects.allProjects);
+
+              resolve(. Belt.Result.Ok(projects));
             | (None, Some(errors)) => Js.log(errors)
             | (None, None) => raise(Impossible_Case("Both are missing"))
             | (Some(_data), Some(_errors)) =>
