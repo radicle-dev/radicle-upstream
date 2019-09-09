@@ -50,7 +50,7 @@ let make = () => {
   let registerCallback = _ => {
     let vars =
       RegisterProjectConfig.make(~name, ~description, ~imgUrl, ())##variables;
-    registerProjectMutation(~variables=vars, ()) |> ignore;
+    registerProjectMutation(~variables=vars, ()) |> navigateToPage(Projects);
   };
 
   <El style=Styles.content>
