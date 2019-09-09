@@ -2,7 +2,9 @@ env:
   DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.0'
 
 steps:
-  - commands:
+  - agents:
+      docker: "true"
+    commands:
     - 'export HOME=/cache'
     - 'export YARN_CACHE_FOLDER=/cache'
     - 'cd app'
