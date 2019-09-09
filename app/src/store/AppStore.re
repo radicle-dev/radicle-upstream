@@ -31,7 +31,7 @@ let appReducer = (state: appState, action) =>
 type t = Reductive.Store.t(StoreMiddleware.thunk(appState), appState);
 
 let createStore = (): t => {
-  let thunkMiddleware = StoreMiddleware.middleware(createLocalSource());
+  let thunkMiddleware = StoreMiddleware.middleware(GraphQL.createSource());
   let thunkEnhancer = (store, next) => thunkMiddleware(store) @@ next;
 
   /* Enable support for redux dev tooling. */

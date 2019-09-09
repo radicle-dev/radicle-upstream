@@ -52,5 +52,7 @@ type source = {
     Js.Promise.t(registerProjectResult),
 };
 
+module GraphQL: {let createSource: unit => source;};
+
 /** Returns an implementation of `source` which gives back local data. **/
 let createLocalSource: unit => source;

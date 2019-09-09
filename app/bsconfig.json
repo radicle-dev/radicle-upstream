@@ -22,6 +22,7 @@
   "namespace": true,
   "bs-dependencies": [
     "@glennsl/bs-jest",
+    "@reasonql/core",
     "bs-jest-dom",
     "bs-react-testing-library",
     "reason-react",

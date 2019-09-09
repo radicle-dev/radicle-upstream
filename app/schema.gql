@@ -1,0 +1,17 @@
+type Project {
+  address: String!
+  name: String!
+  description: String!
+  imgUrl: String!
+  members: [Account!]
+}
+
+type Account {
+  avatarUrl: String
+  keyName: String
+}
+
+type Query {
+  allProjects: [Project!]!
+  project(address: String!): Project
+}

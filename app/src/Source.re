@@ -1,6 +1,8 @@
 /* We use the Random module for fake address creation. */
 Random.self_init();
 
+exception Impossible_Case(string);
+
 type address = string;
 
 type account = {
@@ -33,7 +35,90 @@ type source = {
     Js.Promise.t(registerProjectResult),
 };
 
-let createLocalSource = () => {
+module GraphQL = {
+  ReasonQL.gql(
+    {|
+    query GetAllProjects{
+        allProjects @singular(name: "project"){
+          address: queryAddress
+          description
+          name
+          imgUrl
+        }
+      }
+  |},
+  )
+  |> ignore;
+
+  module GetAllProjectsRequest =
+    ReasonQL.MakeRequest(
+      GetAllProjects,
+      {
+        let url = "http://localhost:8080/graphql";
+        let headers = Js.Obj.empty();
+      },
+    );
+
+  let createSource = () => {
+    let localAccount = ref(None);
+
+    let createAccount = (keyName, avatarUrl) =>
+      Js.Promise.make((~resolve, ~reject as _) => {
+        let account = {keyName, avatarUrl};
+        localAccount := Some(account);
+
+        resolve(. Belt.Result.Ok(account));
+      });
+
+    let fetchAccount = () =>
+      Js.Promise.make((~resolve, ~reject as _) =>
+        resolve(. Belt.Result.Ok(localAccount^))
+      );
+
+    let fetchProject = _addr =>
+      Js.Promise.make((~resolve, ~reject as _) =>
+        resolve(. Belt.Result.Error("not implemented")) |> ignore
+      );
+
+    let fetchProjects = () =>
+      Js.Promise.make((~resolve, ~reject as _) =>
+        GetAllProjectsRequest.send(
+          ~vars=Js.Dict.empty(),
+          ~headers=Js.Obj.empty(),
+        )
+        ->GetAllProjectsRequest.finishedWithError(
+            (maybeData: option(GetAllProjects.queryResult), maybeErrors) =>
+            switch (maybeData, maybeErrors) {
+            | (Some(result), None) =>
+              Js.log(result);
+              Js.log(result.allProjects);
+              resolve(. Belt.Result.Ok(result.allProjects));
+            | (None, Some(errors)) => Js.log(errors)
+            | (None, None) => raise(Impossible_Case("Both are missing"))
+            | (Some(_data), Some(_errors)) =>
+              raise(Impossible_Case("Both are present"))
+            }
+          )
+        |> ignore
+      );
+
+    let registerProject =
+        (~name as _: string, ~description as _: string, ~imgUrl as _: string) =>
+      Js.Promise.make((~resolve, ~reject as _) =>
+        resolve(. Belt.Result.Error("not implemented")) |> ignore
+      );
+
+    {
+      createAccount,
+      fetchAccount,
+      fetchProject,
+      fetchProjects,
+      registerProject,
+    };
+  };
+};
+
+let createLocalSource = (): source => {
   let localAccount = ref(None);
   let localProjects =
     ref([|
