@@ -16,7 +16,7 @@ pub fn run(schema: Schema, context: Context) {
         .or(make_graphql_filter("graphql", schema, context))
         .with(
             warp::cors()
-                .allow_origin("http://localhost:8000")
+                .allow_origins(vec!["http://localhost:8000", "http://localhost:8080"])
                 .allow_headers(&[warp::http::header::CONTENT_TYPE])
                 .allow_methods(&[
                     warp::http::Method::GET,
