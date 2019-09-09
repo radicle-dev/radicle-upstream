@@ -58,9 +58,7 @@ module GetProjectsQuery = ReasonApolloHooks.Query.Make(GetProjectsConfig);
 
 [@react.component]
 let make = () => {
-  let (simple, full) = GetProjectsQuery.use();
-
-  Js.log(full);
+  let (simple, _full) = GetProjectsQuery.use();
 
   <El style=Positioning.gridMediumCentered>
     <div className=Styles.projectHeading>
