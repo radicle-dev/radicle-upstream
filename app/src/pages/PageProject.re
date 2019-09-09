@@ -1,7 +1,6 @@
 open Atom;
 open DesignSystem;
 open Molecule;
-open Source;
 open ReasonApolloHooks.Query;
 
 module Styles = {
@@ -21,8 +20,8 @@ module Styles = {
 
 module Members = {
   let renderMember = member =>
-    <li key={member.keyName}>
-      <PersonCard firstName={member.keyName} imgUrl={member.avatarUrl} />
+    <li key=member##keyName>
+      <PersonCard firstName=member##keyName imgUrl=member##avatarUrl />
     </li>;
 
   [@react.component]
@@ -81,7 +80,7 @@ let make = (~address: string) => {
               imgUrl=project##imgUrl
             />
           </El>
-          /* <Members members={project##members} /> */
+          <Members members=project##members />
         </>
       }
     };
