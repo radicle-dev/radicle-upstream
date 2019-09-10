@@ -58,10 +58,10 @@ module Styles = {
   let disabled =
     button
     << style([
-         backgroundColor(Color.gray()),
+         backgroundColor(Color.lightGray()),
          borderStyle(none),
-         hover([backgroundColor(Color.gray())]),
-         active([backgroundColor(Color.gray())]),
+         hover([backgroundColor(Color.lightGray())]),
+         active([backgroundColor(Color.lightGray())]),
        ]);
 };
 
