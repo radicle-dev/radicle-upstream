@@ -4,11 +4,16 @@ open StoreSession;
 
 [@react.component]
 let make = (~children) => {
-  let session = Store.useSelector(state => state.session);
   let dispatch = Store.useDispatch();
+  let overlay = Store.useSelector(state => state.overlay);
+  let session = Store.useSelector(state => state.session);
 
   switch (session) {
-  | Present(_) => ()
+  | Present(_) =>
+    switch (overlay) {
+    | None => ()
+    | Some(_) => StoreOverlay.Hide->OverlayAction |> dispatch
+    }
   | NotPresent(_) =>
     StoreOverlay.Show((JoinNetwork, Projects))->OverlayAction |> dispatch
   };

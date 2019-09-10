@@ -20,6 +20,7 @@ let make = () => {
       Store.useSelector(state => state.overlay),
       (JoinNetwork, Projects),
     );
+  let nextPage = currentPage();
   let dispatch = Store.useDispatch();
   let (name, setName) = React.useState(() => "");
   let (avatarUrl, setAvatarUrl) = React.useState(() => "");
@@ -41,10 +42,10 @@ let make = () => {
     dispatch(OverlayAction(StoreOverlay.Hide));
   };
   let onSubmit = (name, avatarUrl, _ev) => {
-    let next = currentPage();
-
-    ThunkSession.createAccount(name, avatarUrl, next)->StoreMiddleware.Thunk
+    ThunkSession.createAccount(name, avatarUrl, nextPage)
+    ->StoreMiddleware.Thunk
     |> dispatch;
+    dispatch(OverlayAction(StoreOverlay.Hide));
   };
 
   <El style=Styles.content>
