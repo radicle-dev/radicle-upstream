@@ -44,7 +44,7 @@ module List = {
 module GetProjectsConfig = [%graphql
   {|
   query Query{
-    allProjects {
+    projects {
       address
       description
       name
@@ -84,7 +84,7 @@ let make = () => {
       | Data(response) =>
         <ul>
           {
-            response##allProjects
+            response##projects
             |> Array.mapi((index, project) =>
                  <li className=Styles.listItem key={index |> string_of_int}>
                    <Link page={Router.Project(project##address)}>

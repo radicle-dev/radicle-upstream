@@ -239,7 +239,7 @@
               "deprecationReason": null
             },
             {
-              "name": "allProjects",
+              "name": "projects",
               "description": null,
               "args": [],
               "type": {
