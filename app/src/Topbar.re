@@ -6,18 +6,6 @@ open Molecule;
 open Source;
 open StoreSession;
 
-module Styles = {
-  open Css;
-
-  let header =
-    style([
-      gridColumnStart(2),
-      gridColumnEnd(8),
-      height(px(64)),
-      paddingTop(px(32)),
-    ]);
-};
-
 module Account = {
   module Card = {
     [@react.component]
