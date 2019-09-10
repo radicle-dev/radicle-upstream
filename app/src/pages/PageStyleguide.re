@@ -232,18 +232,21 @@ let make = () =>
           title={React.string("Icons")}
           subTitle={
             React.string(
-              "Icons at 16px, 24px, 36px and 64px width and height with 2px stroke weight",
+              "Icons at 16px, 24px, 36px and 64px width and height with 2px stroke weight, multiple color variations",
             )
           }>
           <Row>
             <IconSwatch> <Icon.Plus /> </IconSwatch>
             <IconSwatch> <Icon.Important /> </IconSwatch>
+            <IconSwatch> <Icon.Important color=Green /> </IconSwatch>
+            <IconSwatch> <Icon.Important color=Bordeaux /> </IconSwatch>
             <IconSwatch> <Icon.CloseSmall /> </IconSwatch>
             <IconSwatch> <Icon.Info /> </IconSwatch>
             <IconSwatch> <Icon.Check /> </IconSwatch>
             <IconSwatch> <Icon.Search /> </IconSwatch>
             <IconSwatch> <Icon.Graph /> </IconSwatch>
             <IconSwatch> <Icon.Inbox /> </IconSwatch>
+            <IconSwatch> <Icon.Inbox notificationColor=Purple /> </IconSwatch>
             <IconSwatch> <Icon.Wallet /> </IconSwatch>
             <IconSwatch> <Icon.Close /> </IconSwatch>
           </Row>
