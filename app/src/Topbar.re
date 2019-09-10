@@ -59,17 +59,6 @@ module Account = {
   };
 };
 
-module Navigation = {
-  open Router;
-
-  [@react.component]
-  let make = () =>
-    <ul>
-      <li> <Link page=Projects> {React.string("Explore")} </Link> </li>
-      <li> <Link page={Project("monokel")} /> </li>
-    </ul>;
-};
-
 [@react.component]
 let make = () =>
   Router.(
