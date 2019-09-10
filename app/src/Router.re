@@ -9,8 +9,6 @@ type page =
   | Styleguide
   | NotFound(list(string));
 
-type overlay = (option(page), option(page));
-
 let join = (parts: list(string)): string =>
   List.fold_left((a, b) => a ++ "/" ++ b, "", parts);
 
@@ -56,68 +54,10 @@ let pathOfPage = p =>
   | NotFound(_path) => ["not-found"]
   };
 
-let valueOfSearchParam = (search, key) => {
-  let rawPairs = Js.String.split("&", search);
-  let safePairs =
-    rawPairs
-    |> Array.map(pair =>
-         switch (Js.String.split("=", pair)) {
-         | [|key, value|] => (Some(key), Some(value))
-         | [|key|] => (Some(key), None)
-         | _ => (None, None)
-         }
-       );
-
-  let maybePair = Belt.Array.getBy(safePairs, ((k, _)) => k == Some(key));
-
-  switch (maybePair) {
-  | Some((_key, value)) => value
-  | None => None
-  };
-};
-
-let overlayOfSearch = search => {
-  let ov =
-    valueOfSearchParam(search, "overlay")
-    ->Belt.Option.mapWithDefault(None, path =>
-        Some(path |> Js.String.split("/") |> Array.to_list |> pageOfPath)
-      );
-
-  let next =
-    valueOfSearchParam(search, "next")
-    ->Belt.Option.mapWithDefault(None, path =>
-        Some(path |> Js.String.split("/") |> Array.to_list |> pageOfPath)
-      );
-
-  (ov, next);
-};
-
-let searchOfOverlay = ov => {
-  let join = page =>
-    join(pathOfPage(page)) |> Js.String.sliceToEnd(~from=1);
-
-  switch (ov) {
-  | (Some(overlayPage), Some(nextPage)) =>
-    "overlay=" ++ join(overlayPage) ++ "&next=" ++ join(nextPage)
-  | (Some(overlayPage), None) => "overlay=" ++ join(overlayPage)
-  | _ => ""
-  };
-};
-
-let navigateToOverlay = (p, ov, _) =>
-  ReasonReactRouter.push(
-    linkOfUrl({path: pathOfPage(p), hash: "", search: searchOfOverlay(ov)}),
-  );
-
 let navigateToPage = (p, _) =>
   ReasonReactRouter.push(
     linkOfUrl({path: pathOfPage(p), hash: "", search: ""}),
   );
-
-let currentOverlay = (): overlay => {
-  let url = ReasonReactRouter.useUrl();
-  overlayOfSearch(url.search);
-};
 
 let currentPage = (): page => {
   let url = ReasonReactRouter.useUrl();

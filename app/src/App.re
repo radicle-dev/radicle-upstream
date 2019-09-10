@@ -1,3 +1,6 @@
+open AppStore;
+open DesignSystem;
+open Molecule;
 open Page;
 open Router;
 
@@ -24,63 +27,39 @@ module Styles = {
   );
 };
 
-let matchPage = page: React.element =>
+let elementOfPage = page: React.element =>
   switch (page) {
   | Root => <Generic title="Home of Oscoin" />
   | JoinNetwork => <JoinNetwork />
   | Projects => <Projects />
-  | RegisterProject => <RegisterProject />
+  | RegisterProject => <SessionGuard> <RegisterProject /> </SessionGuard>
   | Project(address) => <Project address />
   | Styleguide => <Styleguide />
   | NotFound(_path) => <Generic title="Not Found" />
   };
 
 module Overlay = {
-  open Molecule;
-
   [@react.component]
-  let make = (~overlay, ~page) =>
-    switch (overlay) {
-    | (Some(overlayPage), _) =>
-      let el = matchPage(overlayPage);
+  let make = () => {
+    let dispatch = Store.useDispatch();
 
-      <Modal onClose={navigateToPage(page)}> el </Modal>;
-    | _ => React.null
-    };
-};
-
-module SessionGuard = {
-  open AppStore;
-  open StoreSession;
-
-  [@react.component]
-  let make = (~children, ~overlay, ~page) => {
-    let state = Store.useSelector(state => state.session);
-    let (ov, _) = overlay;
-
-    let hasOverlay =
-      switch (ov) {
-      | Some(_overlayPage) => true
-      | None => false
+    switch (Store.useSelector(state => state.overlay)) {
+    | Some((overlay, last)) =>
+      let el = elementOfPage(overlay);
+      let onClose = _ev => {
+        dispatch(OverlayAction(StoreOverlay.Hide));
+        navigateToPage(last, ());
       };
 
-    if (state == Empty && page == RegisterProject && !hasOverlay) {
-      navigateToOverlay(
-        Projects,
-        (Some(JoinNetwork), Some(RegisterProject)),
-        (),
-      );
+      <Modal onClose> el </Modal>;
+    | _ => React.null
     };
-
-    children;
   };
 };
 
 [@react.component]
 let make = () => {
-  open DesignSystem;
-
-  let page = matchPage(currentPage());
+  let page = elementOfPage(currentPage());
 
   currentPage() == Router.Styleguide ?
     page :
@@ -89,10 +68,8 @@ let make = () => {
         <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
           <Topbar />
         </El>
-        <SessionGuard overlay={currentOverlay()} page={currentPage()}>
-          page
-        </SessionGuard>
+        page
       </El>
-      <Overlay overlay={currentOverlay()} page={currentPage()} />
+      <Overlay />
     </Store.Provider>;
 };

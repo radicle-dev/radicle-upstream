@@ -8,19 +8,8 @@ type page =
   | Styleguide
   | NotFound(list(string));
 
-type overlay = (option(page), option(page));
-
-/** Extracts the overlay parameter from the search part of the url and attempts
- ** to parse a page from it to be shown as a modal over the actual page.
- **
- ** This is helpful to guard certain routes with setups.
- **/
-let currentOverlay: unit => overlay;
-
 /** Reads the current url and return a matching page, or NotFound. **/
 let currentPage: unit => page;
-
-let navigateToOverlay: (page, overlay, 'a) => unit;
 
 /** Given a page returns a function which navigates to it by pushing a new url
  ** onto the pushState.
@@ -36,5 +25,3 @@ let nameOfPage: page => string;
  ** NotFound.
  **/
 let pageOfPath: list(string) => page;
-
-let overlayOfSearch: string => overlay;

@@ -29,16 +29,20 @@ module Account = {
 
   module JoinButton = {
     [@react.component]
-    let make = () =>
+    let make = () => {
+      let next = Router.currentPage();
+      let dispatch = Store.useDispatch();
+
       <Button.Primary
         onClick={
-          Router.navigateToOverlay(
-            Router.currentPage(),
-            (Some(Router.JoinNetwork), None),
-          )
+          _ev =>
+            dispatch(
+              OverlayAction(StoreOverlay.Show((Router.JoinNetwork, next))),
+            )
         }>
         {React.string("Join the network")}
       </Button.Primary>;
+    };
   };
 
   [@react.component]
@@ -46,24 +50,27 @@ module Account = {
     let state = Store.useSelector(state => state.session);
     let dispatch = Store.useDispatch();
 
-    if (state == StoreSession.Initial) {
+    if (state == StoreSession.NotPresent(Initial)) {
       dispatch(StoreMiddleware.Thunk(ThunkSession.fetchSession));
     };
 
     switch (state) {
-    | Initial
-    | Fetching =>
-      <Button.Primary disabled=true>
-        {React.string("Loading...")}
-      </Button.Primary>
-    | Empty => <JoinButton />
     | Present(account) =>
       <PersonCard firstName={account.keyName} imgUrl={account.avatarUrl} />
-    | Failed(reason) =>
-      <p>
-        <strong> {React.string("Error:")} </strong>
-        {React.string(reason)}
-      </p>
+    | NotPresent(remoteState) =>
+      switch (remoteState) {
+      | Initial
+      | Fetching =>
+        <Button.Primary disabled=true>
+          {React.string("Loading...")}
+        </Button.Primary>
+      | Empty => <JoinButton />
+      | Failed(reason) =>
+        <p>
+          <strong> {React.string("Error:")} </strong>
+          {React.string(reason)}
+        </p>
+      }
     };
   };
 };

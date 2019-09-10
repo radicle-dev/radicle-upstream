@@ -2,7 +2,7 @@ open Jest;
 open Expect;
 open Router;
 
-describe("Router", () => {
+describe("Router", () =>
   testAll(
     "pageOfUrl",
     [
@@ -16,19 +16,5 @@ describe("Router", () => {
     ],
     ((page, path)) =>
     expect(pageOfPath(path)) |> toEqual(page)
-  );
-
-  testAll(
-    "overlayOfSearch",
-    [
-      ((None, None), ""),
-      ((Some(JoinNetwork), None), "overlay=join-network"),
-      (
-        (Some(JoinNetwork), Some(Projects)),
-        "overlay=join-network&next=projects",
-      ),
-    ],
-    ((overlay, search)) =>
-    expect(overlayOfSearch(search)) |> toEqual(overlay)
-  );
-});
+  )
+);
