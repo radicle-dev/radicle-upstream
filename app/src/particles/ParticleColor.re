@@ -21,20 +21,20 @@ type t =
 
 let rgbaOfColor = (color, alpha) =>
   switch (color) {
-  | Purple => rgba(110, 72, 221, alpha)
-  | Blue => rgba(41, 146, 202, alpha)
-  | Green => rgba(48, 210, 124, alpha)
-  | Orange => rgba(244, 190, 69, alpha)
-  | Red => rgba(229, 81, 84, alpha)
-  | Bordeaux => rgba(189, 71, 108, alpha)
-  | LightBlue => rgba(154, 161, 237, alpha)
-  | Teal => rgba(89, 226, 243, alpha)
-  | LightGreen => rgba(55, 241, 143, alpha)
-  | Yellow => rgba(227, 235, 55, alpha)
-  | Pink => rgba(222, 119, 201, alpha)
+  | Purple => rgba(110, 65, 224, alpha)
+  | Blue => rgba(32, 145, 204, alpha)
+  | Green => rgba(32, 212, 121, alpha)
+  | Orange => rgba(245, 191, 53, alpha)
+  | Red => rgba(231, 80, 80, alpha)
+  | Bordeaux => rgba(181, 69, 107, alpha)
+  | LightBlue => rgba(153, 159, 239, alpha)
+  | Teal => rgba(89, 226, 245, alpha)
+  | LightGreen => rgba(36, 243, 139, alpha)
+  | Yellow => rgba(227, 237, 19, alpha)
+  | Pink => rgba(224, 116, 203, alpha)
   | Black => rgba(40, 51, 61, alpha)
-  | DarkGray => rgba(85, 100, 115, alpha)
-  | Gray => rgba(145, 160, 174, alpha)
+  | DarkGray => rgba(85, 100, 116, alpha)
+  | Gray => rgba(145, 160, 175, alpha)
   | LightGray => rgba(206, 216, 225, alpha)
   | AlmostWhite => rgba(248, 248, 248, alpha)
   | White => rgba(255, 255, 255, alpha)
@@ -66,7 +66,7 @@ let hexOfColor = color =>
   | Purple => "#6e41e0"
   | Blue => "#1f91cc"
   | Green => "#20d479"
-  | Orange => "#f5bf35"
+  | Orange => "#f5bf36"
   | Red => "#e75050"
   | Bordeaux => "#bf456b"
   | LightBlue => "#999ff0"
