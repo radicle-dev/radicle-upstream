@@ -32,7 +32,7 @@ impl Query {
         "1.0"
     }
 
-    fn all_projects(ctx: &Context) -> FieldResult<Vec<Project>> {
+    fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
         Ok(ctx.source.get_all_projects())
     }
 
@@ -47,7 +47,7 @@ fn test_schema_all_projects() {
 
     let ctx = Context::new(Local::new());
     let (res, _errors) = juniper::execute(
-        "query { allProjects { name } }",
+        "query { projects { name } }",
         None,
         &Schema::new(Query, Mutation),
         &Variables::new(),
@@ -58,7 +58,7 @@ fn test_schema_all_projects() {
     assert_eq!(
         res,
         graphql_value!({
-            "allProjects": [
+            "projects": [
                 {"name": "Monadic"},
                 {"name": "monokel"},
                 {"name": "open source coin"},
