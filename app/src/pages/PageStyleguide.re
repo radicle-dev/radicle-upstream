@@ -13,7 +13,7 @@ module Section = {
       style([
         marginBottom(px(180)),
         display(`grid),
-        gridTemplateColumns([px(342)]),
+        gridTemplateColumns([px(342), auto, px(100)]),
       ]);
 
     let firstColumn = style([gridColumnStart(1), marginRight(px(90))]);
@@ -142,6 +142,17 @@ module CardSwatch = {
 
   [@react.component]
   let make = (~children) => <El style=Styles.card> children </El>;
+};
+
+module AlertSwatch = {
+  module Styles = {
+    open Css;
+
+    let alert = style([marginTop(px(16)), marginBottom(px(16))]);
+  };
+
+  [@react.component]
+  let make = (~children) => <El style=Styles.alert> children </El>;
 };
 
 module Styles = {
@@ -335,6 +346,25 @@ let make = () =>
               description="Open source organization of amazing things"
             />
           </CardSwatch>
+        </Section>
+        <Section
+          title={React.string("Alerts")}
+          subTitle={React.string("Info, Success, Error")}>
+          <AlertSwatch>
+            <Alert onClick={_ => Js.log("Close info alert")}>
+              {React.string("Info")}
+            </Alert>
+          </AlertSwatch>
+          <AlertSwatch>
+            <Alert.Success onClick={_ => Js.log("Close success alert")}>
+              {React.string("Success")}
+            </Alert.Success>
+          </AlertSwatch>
+          <AlertSwatch>
+            <Alert.Error onClick={_ => Js.log("Close error alert")}>
+              {React.string("Error")}
+            </Alert.Error>
+          </AlertSwatch>
         </Section>
       </El>
     </El>
