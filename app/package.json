@@ -11,15 +11,19 @@
     "webpack": "webpack -w",
     "webpack:production": "NODE_ENV=production webpack",
     "server": "webpack-dev-server",
-    "deploy": "rm -rf ./build && yarn clean && yarn build && yarn webpack:production && firebase deploy"
+    "deploy": "rm -rf ./build && yarn clean && yarn build && yarn webpack:production && firebase deploy",
+    "schema:fetch": "yarn send-introspection-query http://localhost:8080/graphql"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@apollo/react-hooks": "^3.1.0",
     "bs-css": "^9.0.1",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
+    "reason-apollo": "^0.17.0",
+    "reason-apollo-hooks": "^2.5.1",
     "reason-react": ">=0.7.0",
     "reductive": "https://github.com/oscoin/reductive#hooks"
   },
@@ -29,6 +33,7 @@
     "bs-platform": "^5.0.4",
     "bs-react-testing-library": "^0.6.0",
     "copy-webpack-plugin": "^5.0.4",
+    "graphql_ppx": "^0.2.8",
     "html-webpack-plugin": "^3.2.0",
     "husky": "^3.0.3",
     "lint-staged": "^9.2.1",

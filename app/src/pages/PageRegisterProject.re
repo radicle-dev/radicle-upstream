@@ -1,5 +1,6 @@
 open Atom;
 open DesignSystem;
+open ReasonApolloHooks;
 open Router;
 
 module Styles = {
@@ -10,9 +11,25 @@ module Styles = {
   let buttonContainer = style([display(`flex), justifyContent(flexEnd)]);
 };
 
+module RegisterProjectConfig = [%graphql
+  {|
+  mutation($name: String!, $description: String!, $imgUrl: String!) {
+    registerProject(name: $name, description: $description, imgUrl: $imgUrl) {
+      name
+      description
+      imgUrl
+    }
+  }
+|}
+];
+
+module RegisterProjectMutation = Mutation.Make(RegisterProjectConfig);
+
 [@react.component]
 let make = () => {
-  let dispatch = Store.useDispatch();
+  let (registerProjectMutation, _simple, _full) =
+    RegisterProjectMutation.use();
+
   let (name, setName) = React.useState(() => "mvp");
   let (description, setDescription) =
     React.useState(() => "minimal viable product");
@@ -30,12 +47,11 @@ let make = () => {
     let newImgUrl = ev->ReactEvent.Form.target##value;
     setImgUrl(_ => newImgUrl);
   };
-  let registerCallback = _ =>
-    dispatch(
-      StoreMiddleware.Thunk(
-        ThunkProjects.registerProject(name, description, imgUrl),
-      ),
-    );
+  let registerCallback = _ => {
+    let vars =
+      RegisterProjectConfig.make(~name, ~description, ~imgUrl, ())##variables;
+    registerProjectMutation(~variables=vars, ()) |> navigateToPage(Projects);
+  };
 
   <El style=Styles.content>
     <Title.Big style={margin(0, 0, 16, 0)}>

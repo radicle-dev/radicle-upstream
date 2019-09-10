@@ -27,6 +27,8 @@
     "reason-react",
     "reductive",
     "bs-css",
+    "reason-apollo",
+    "reason-apollo-hooks",
     "reductive-dev-tools"
   ],
   "bs-dev-dependencies": [],
@@ -37,6 +39,10 @@
   },
   "bsc-flags": [
    "-no-alias-deps",
-    "-bs-g"
+    "-bs-g",
+    "-bs-super-errors"
+  ],
+  "ppx-flags": [
+    "graphql_ppx/ppx"
   ]
 }

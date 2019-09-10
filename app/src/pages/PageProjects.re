@@ -1,10 +1,9 @@
-open AppStore;
 open Atom;
 open DesignSystem;
 open Molecule;
 open Source;
-open StoreProjects;
 open Particle;
+open ReasonApolloHooks.Query;
 
 module Styles = {
   open Css;
@@ -42,14 +41,24 @@ module List = {
   };
 };
 
+module GetProjectsConfig = [%graphql
+  {|
+  query Query{
+    allProjects {
+      address
+      description
+      name
+      imgUrl
+    }
+  }
+|}
+];
+
+module GetProjectsQuery = ReasonApolloHooks.Query.Make(GetProjectsConfig);
+
 [@react.component]
 let make = () => {
-  let state = Store.useSelector(state => state.projectsState);
-  let dispatch = Store.useDispatch();
-
-  if (state.projects == None) {
-    dispatch(StoreMiddleware.Thunk(ThunkProjects.fetchProjects)) |> ignore;
-  };
+  let (simple, _full) = GetProjectsQuery.use();
 
   <El style=Positioning.gridMediumCentered>
     <div className=Styles.projectHeading>
@@ -65,12 +74,31 @@ let make = () => {
       </El>
     </div>
     {
-      switch (state.error, state.loading, state.projects) {
-      | (Some(error), _, _) =>
-        <div className="error"> {React.string("ERROR: " ++ error)} </div>
-      | (None, false, Some(projects)) => <List projects />
-      | (None, true, _) => <div> {React.string("Loading...")} </div>
-      | _ => <div> {React.string("Not loading...")} </div>
+      switch (simple) {
+      | Error(err) =>
+        <div className="error">
+          {"ERROR: " ++ err##message |> React.string}
+        </div>
+      | NoData => React.null
+      | Loading => "Loading..." |> React.string
+      | Data(response) =>
+        <ul>
+          {
+            response##allProjects
+            |> Array.mapi((index, project) =>
+                 <li className=Styles.listItem key={index |> string_of_int}>
+                   <Link page={Router.Project(project##address)}>
+                     <ProjectCard
+                       imgUrl=project##imgUrl
+                       name=project##name
+                       description=project##description
+                     />
+                   </Link>
+                 </li>
+               )
+            |> React.array
+          }
+        </ul>
       }
     }
   </El>;
