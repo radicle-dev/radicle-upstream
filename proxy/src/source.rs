@@ -137,6 +137,17 @@ impl Source for Local {
     }
 
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
+        use futures::Future;
+        let client = oscoin_client::Client::new_from_file().unwrap();
+        let sender = client.new_account().wait().unwrap();
+        let project_address = oscoin_client::Address::zero();
+        let url = "https://example.com";
+
+        client
+            .register_project(sender, project_address, url.to_string())
+            .wait()
+            .unwrap();
+
         let mut projects = self.projects.write().unwrap();
         let p = Project {
             address: name.to_owned(),
