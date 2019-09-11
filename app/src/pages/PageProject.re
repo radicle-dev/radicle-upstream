@@ -38,7 +38,7 @@ module Members = {
 
 module GetProjectConfig = [%graphql
   {|
-  query Query($address: String!){
+  query Query($address: Address!){
     getProject(address: $address) {
       name
       description
@@ -55,7 +55,7 @@ module GetProjectConfig = [%graphql
 module GetProjectQuery = ReasonApolloHooks.Query.Make(GetProjectConfig);
 
 [@react.component]
-let make = (~address: string) => {
+let make = (~address) => {
   let getProject = GetProjectConfig.make(~address, ());
   let (state, _full) =
     GetProjectQuery.use(~variables=getProject##variables, ());

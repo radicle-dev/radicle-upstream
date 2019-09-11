@@ -1,7 +1,32 @@
+use juniper::{ParseScalarResult, ParseScalarValue, Value};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
-pub type Address = String;
+// Address a project can be uniquely referenced by.
+//
+// We have to use the newtype pattern to support lcoal implementations for foreign traits.
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
+pub struct Address(oscoin_client::Address);
+
+juniper::graphql_scalar!(Address where Scalar = <S> {
+    description: "Address"
+
+    // Define how to convert your custom scalar into a primitive type.
+    resolve(&self) -> Value {
+        Value::scalar(hex::encode(self.0.as_bytes()))
+    }
+
+    // Define how to parse a primitive type into your custom scalar.
+    from_input_value(v: &InputValue) -> Option<Address> {
+        v.as_scalar_value::<String>()
+            .map(|s| Address(oscoin_client::Address::from_slice(&hex::decode(s).unwrap())))
+    }
+
+    // Define how to parse a string value.
+    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+        <String as ParseScalarValue<S>>::from_str(value)
+    }
+});
 
 #[derive(Clone, GraphQLObject)]
 #[graphql(description = "Metadata enriched user keypair")]
@@ -42,8 +67,9 @@ impl Local {
     pub fn new() -> Self {
         let mut projects = HashMap::new();
 
-        projects.insert("monokel".to_owned(), Project{
-            address: "monokel".to_owned(),
+        let addr = Address(oscoin_client::Address::random());
+        projects.insert(addr, Project{
+            address: addr,
             name: "monokel".to_owned(),
             description: "A looking glass into the future".to_owned(),
             img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg".to_owned(),
@@ -54,9 +80,11 @@ impl Local {
                 },
             ],
         });
-        projects.insert("monadic".to_owned(), Project{
-            address: "monadic".to_owned(),
-            name: "Monadic".to_owned(),
+
+        let addr = Address(oscoin_client::Address::random());
+        projects.insert(addr, Project{
+            address: addr,
+            name: "monokel".to_owned(),
             description: "Open source organization of amazing things".to_owned(),
             img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg".to_owned(),
             members: vec![
@@ -74,10 +102,12 @@ impl Local {
                 },
             ],
         });
+
+        let addr = Address(oscoin_client::Address::random());
         projects.insert(
-            "oscoin".to_owned(),
+            addr,
             Project {
-                address: "oscoin".to_owned(),
+                address: addr,
                 name: "open source coin".to_owned(),
                 description: "Infrastructure for the open source communit".to_owned(),
                 img_url: "https://avatars0.githubusercontent.com/u/31632242".to_owned(),
@@ -97,10 +127,12 @@ impl Local {
                 ],
             },
         );
+
+        let addr = Address(oscoin_client::Address::random());
         projects.insert(
-            "radicle".to_owned(),
+            addr,
             Project {
-                address: "radicle".to_owned(),
+                address: addr,
                 name: "radicle".to_owned(),
                 description: "Decentralized open source collaboration".to_owned(),
                 img_url: "https://avatars0.githubusercontent.com/u/48290027".to_owned(),
@@ -140,23 +172,22 @@ impl Source for Local {
         use futures::Future;
         let client = oscoin_client::Client::new_from_file().unwrap();
         let sender = client.new_account().wait().unwrap();
-        let project_address = oscoin_client::Address::zero();
-        let url = "https://example.com";
+        let project_address = oscoin_client::Address::random();
 
         client
-            .register_project(sender, project_address, url.to_string())
+            .register_project(sender, project_address, img_url.to_string())
             .wait()
             .unwrap();
 
         let mut projects = self.projects.write().unwrap();
         let p = Project {
-            address: name.to_owned(),
+            address: Address(project_address),
             name: name.to_owned(),
             description: description.to_owned(),
             img_url: img_url.to_owned(),
             members: vec![],
         };
-        projects.insert(name, p.clone());
+        projects.insert(Address(project_address), p.clone());
 
         p
     }
