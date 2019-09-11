@@ -1,3 +1,9 @@
+open AppStore;
+open DesignSystem;
+open Molecule;
+open Page;
+open Router;
+
 module Styles = {
   open Css;
 
@@ -21,30 +27,48 @@ module Styles = {
   );
 };
 
+let httpLink =
+  ApolloLinks.createHttpLink(~uri="http://localhost:8080/graphql", ());
+let client =
+  ReasonApollo.createApolloClient(
+    ~link=httpLink,
+    ~cache=ApolloInMemoryCache.createInMemoryCache(),
+    (),
+  );
+
+let elementOfPage = page: React.element =>
+  switch (page) {
+  | Root => <Generic title="Home of Oscoin" />
+  | JoinNetwork => <JoinNetwork />
+  | Projects => <Projects />
+  | RegisterProject => <SessionGuard> <RegisterProject /> </SessionGuard>
+  | Project(address) => <Project address />
+  | Styleguide => <Styleguide />
+  | NotFound(_path) => <Generic title="Not Found" />
+  };
+
+module Overlay = {
+  [@react.component]
+  let make = () => {
+    let dispatch = Store.useDispatch();
+
+    switch (Store.useSelector(state => state.overlay)) {
+    | Some((overlay, last)) =>
+      let el = elementOfPage(overlay);
+      let onClose = _ev => {
+        dispatch(OverlayAction(StoreOverlay.Hide));
+        navigateToPage(last, ());
+      };
+
+      <Modal onClose> el </Modal>;
+    | _ => React.null
+    };
+  };
+};
+
 [@react.component]
 let make = () => {
-  open DesignSystem;
-  open Page;
-  open Router;
-
-  let httpLink =
-    ApolloLinks.createHttpLink(~uri="http://localhost:8080/graphql", ());
-  let client =
-    ReasonApollo.createApolloClient(
-      ~link=httpLink,
-      ~cache=ApolloInMemoryCache.createInMemoryCache(),
-      (),
-    );
-
-  let page =
-    switch (currentPage()) {
-    | Root => <Generic title="Home of Oscoin" />
-    | Projects => <Projects />
-    | Styleguide => <Styleguide />
-    | RegisterProject => <RegisterProject />
-    | Project(address) => <Project address />
-    | NotFound(_path) => <Generic title="Not Found" />
-    };
+  let page = elementOfPage(currentPage());
 
   currentPage() == Router.Styleguide ?
     page :
@@ -56,6 +80,7 @@ let make = () => {
           </El>
           page
         </El>
+        <Overlay />
       </ReasonApolloHooks.ApolloProvider>
     </Store.Provider>;
 };

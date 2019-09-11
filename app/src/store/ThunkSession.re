@@ -26,6 +26,7 @@ let createAccount =
     (
       keyName: string,
       avatarUrl: string,
+      next: Router.page,
       dispatch: dispatchFunc,
       source: source,
     ) => {
@@ -36,7 +37,7 @@ let createAccount =
     |> then_(result =>
          switch (result) {
          | Belt.Result.Ok(account) =>
-           Router.navigateToPage(Router.Projects, ());
+           Router.navigateToPage(next, ());
            SessionAction(Created(account)) |> dispatch |> resolve;
          | Belt.Result.Error(reason) =>
            SessionAction(CreationFailed(reason)) |> dispatch |> resolve
