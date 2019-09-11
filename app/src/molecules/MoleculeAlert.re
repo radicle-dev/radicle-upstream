@@ -1,6 +1,16 @@
 open Atom;
 open Particle;
 
+type severity =
+  | Info
+  | Success
+  | Error;
+
+type t = {
+  severity,
+  message: string,
+};
+
 module Styles = {
   open Css;
   open DesignSystem;
@@ -34,6 +44,13 @@ module Styles = {
          color(Color.bordeaux()),
        ]);
 
+  let alert = severity =>
+    switch (severity) {
+    | Info => info
+    | Success => success
+    | Error => error
+    };
+
   let close =
     style([
       cursor(`pointer),
@@ -45,36 +62,44 @@ module Styles = {
   let icon = style([height(px(24)), Css.margin(px(8))]);
 };
 
+module Template = {
+  [@react.component]
+  let make = (~children, ~severity, ~onClick=_ => ()) =>
+    <div className={Styles.alert(severity)}>
+      <div className=Styles.icon>
+        {
+          switch (severity) {
+          | Info => <Icon.Info />
+          | Success => <Icon.Important color=Color.Green />
+          | Error => <Icon.Important color=Color.Bordeaux />
+          }
+        }
+      </div>
+      <Title> children </Title>
+      <div className=Styles.close onClick>
+        {
+          switch (severity) {
+          | Info => <Icon.CloseSmall />
+          | Success => <Icon.CloseSmall color=Color.Green />
+          | Error => <Icon.CloseSmall color=Color.Bordeaux />
+          }
+        }
+      </div>
+    </div>;
+};
+
 [@react.component]
-let make = (~children, ~onClick=_ => ()) =>
-  <div className=Styles.info>
-    <div className=Styles.icon> <Icon.Info /> </div>
-    <Title> children </Title>
-    <div className=Styles.close onClick> <Icon.CloseSmall /> </div>
-  </div>;
+let make = (~children, ~severity=Info, ~onClick=_ => ()) =>
+  <Template onClick severity> children </Template>;
 
 module Success = {
   [@react.component]
   let make = (~children, ~onClick=_ => ()) =>
-    <div className=Styles.success>
-      <div className=Styles.icon> <Icon.Important color=Color.Green /> </div>
-      <Title> children </Title>
-      <div className=Styles.close onClick>
-        <Icon.CloseSmall color=Color.Green />
-      </div>
-    </div>;
+    <Template onClick severity=Success> children </Template>;
 };
 
 module Error = {
   [@react.component]
   let make = (~children, ~onClick=_ => ()) =>
-    <div className=Styles.error>
-      <div className=Styles.icon>
-        <Icon.Important color=Color.Bordeaux />
-      </div>
-      <Title> children </Title>
-      <div className=Styles.close onClick>
-        <Icon.CloseSmall color=Color.Bordeaux />
-      </div>
-    </div>;
+    <Template onClick severity=Error> children </Template>;
 };

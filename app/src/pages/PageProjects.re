@@ -1,3 +1,4 @@
+open AppStore;
 open Atom;
 open DesignSystem;
 open Molecule;
@@ -59,6 +60,7 @@ module GetProjectsQuery = ReasonApolloHooks.Query.Make(GetProjectsConfig);
 [@react.component]
 let make = () => {
   let (simple, _full) = GetProjectsQuery.use();
+  let dispatch = Store.useDispatch();
 
   <El style=Positioning.gridMediumCentered>
     <div className=Styles.projectHeading>
@@ -76,9 +78,14 @@ let make = () => {
     {
       switch (simple) {
       | Error(err) =>
-        <div className="error">
-          {"ERROR: " ++ err##message |> React.string}
-        </div>
+        dispatch(
+          AlertsAction(
+            StoreAlerts.Show(
+              Alert.{severity: Alert.Error, message: err##message},
+            ),
+          ),
+        );
+        React.null;
       | NoData => React.null
       | Loading => "Loading..." |> React.string
       | Data(response) =>

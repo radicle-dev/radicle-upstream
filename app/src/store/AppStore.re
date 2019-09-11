@@ -5,13 +5,15 @@ type appState = {
   projectState: StoreProject.state,
   projectsState: StoreProjects.state,
   session: StoreSession.state,
+  alerts: StoreAlerts.state,
 };
 
 type StoreMiddleware.thunk(_) +=
   | OverlayAction(StoreOverlay.action)
   | ProjectAction(StoreProject.action)
   | ProjectsAction(StoreProjects.action)
-  | SessionAction(StoreSession.action);
+  | SessionAction(StoreSession.action)
+  | AlertsAction(StoreAlerts.action);
 
 let appReducer = (state: appState, action) =>
   switch (action) {
@@ -30,6 +32,10 @@ let appReducer = (state: appState, action) =>
   | SessionAction(action) => {
       ...state,
       session: StoreSession.reducer(state.session, action),
+    }
+  | AlertsAction(action) => {
+      ...state,
+      alerts: StoreAlerts.reducer(state.alerts, action),
     }
   | _ => state
   };
@@ -56,6 +62,7 @@ let createStore = (): t => {
         projectState: StoreProject.initialState,
         projectsState: StoreProjects.initialState,
         session: StoreSession.initialState,
+        alerts: StoreAlerts.initialState,
       },
       ~enhancer=thunkEnhancer,
       (),
