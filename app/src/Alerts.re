@@ -14,7 +14,7 @@ let make = () => {
       let onClose = _ev =>
         dispatch(AlertsAction(StoreAlerts.Remove(index)));
 
-      <El style={margin(24, 0, 0, 0)}>
+      <El style={margin(24, 0, 0, 0)} key={index |> string_of_int}>
         <Alert onClick=onClose severity={alert.severity}>
           {React.string(alert.message)}
         </Alert>
