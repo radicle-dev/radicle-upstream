@@ -5,6 +5,7 @@ module Styles = {
 
   let button =
     style([
+      whiteSpace(nowrap),
       backgroundColor(Color.white()),
       borderRadius(px(4)),
       borderStyle(solid),
