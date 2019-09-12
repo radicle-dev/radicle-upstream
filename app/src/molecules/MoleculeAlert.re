@@ -64,28 +64,27 @@ module Styles = {
 
 module Template = {
   [@react.component]
-  let make = (~children, ~severity, ~onClick=_ => ()) =>
+  let make = (~children, ~severity, ~onClick=_ => ()) => {
+    let icon =
+      switch (severity) {
+      | Info => <Icon.Info />
+      | Success => <Icon.Important color=Color.Green />
+      | Error => <Icon.Important color=Color.Bordeaux />
+      };
+
+    let closeIcon =
+      switch (severity) {
+      | Info => <Icon.CloseSmall />
+      | Success => <Icon.CloseSmall color=Color.Green />
+      | Error => <Icon.CloseSmall color=Color.Bordeaux />
+      };
+
     <div className={Styles.alert(severity)}>
-      <div className=Styles.icon>
-        {
-          switch (severity) {
-          | Info => <Icon.Info />
-          | Success => <Icon.Important color=Color.Green />
-          | Error => <Icon.Important color=Color.Bordeaux />
-          }
-        }
-      </div>
+      <div className=Styles.icon> icon </div>
       <Title> children </Title>
-      <div className=Styles.close onClick>
-        {
-          switch (severity) {
-          | Info => <Icon.CloseSmall />
-          | Success => <Icon.CloseSmall color=Color.Green />
-          | Error => <Icon.CloseSmall color=Color.Bordeaux />
-          }
-        }
-      </div>
+      <div className=Styles.close onClick> closeIcon </div>
     </div>;
+  };
 };
 
 [@react.component]
