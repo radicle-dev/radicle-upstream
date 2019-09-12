@@ -1,8 +1,13 @@
+type alert = {
+  severity: Molecule.Alert.severity,
+  message: string,
+};
+
 type action =
-  | Show(Molecule.Alert.t)
+  | Show(alert)
   | Remove;
 
-type state = {latest: option(Molecule.Alert.t)};
+type state = {latest: option(alert)};
 
 let initialState = {latest: None};
 

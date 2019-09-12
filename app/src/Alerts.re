@@ -1,7 +1,6 @@
 open AppStore;
 open DesignSystem;
 open Molecule;
-open Alert;
 open StoreAlerts;
 
 [@react.component]

@@ -6,11 +6,6 @@ type severity =
   | Success
   | Error;
 
-type t = {
-  severity,
-  message: string,
-};
-
 module Styles = {
   open Css;
   open DesignSystem;
