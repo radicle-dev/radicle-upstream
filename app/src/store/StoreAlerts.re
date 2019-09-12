@@ -1,18 +1,20 @@
+open Molecule.Alert;
+
 type alert = {
-  severity: Molecule.Alert.severity,
+  severity,
   message: string,
 };
 
 type action =
   | Show(alert)
-  | Remove;
+  | Remove(int);
 
-type state = {latest: option(alert)};
+type state = array(alert);
 
-let initialState = {latest: None};
+let initialState = [||];
 
-let reducer = (_state, action) =>
+let reducer = (state, action) =>
   switch (action) {
-  | Show(alert) => {latest: Some(alert)}
-  | Remove => {latest: None}
+  | Show(alert) => Array.append(state, [|alert|])
+  | Remove(index) => Belt.Array.keepWithIndex(state, (_, i) => index !== i)
   };
