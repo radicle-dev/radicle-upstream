@@ -81,7 +81,11 @@ let make = () => {
         dispatch(
           AlertsAction(
             StoreAlerts.Show(
-              StoreAlerts.{severity: Alert.Error, message: err##message},
+              StoreAlerts.{
+                severity: Alert.Error,
+                message: err##message,
+                id: 0,
+              },
             ),
           ),
         );
