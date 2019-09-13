@@ -68,9 +68,9 @@ let make = () => {
           <Title.Huge> {React.string("Explore")} </Title.Huge>
         </El>
         <El style=Positioning.flexRight>
-          <Link page=Router.RegisterProject>
-            <Button> {React.string("Register project")} </Button>
-          </Link>
+          <Button onClick={Router.navigateToPage(Router.RegisterProject)}>
+            {React.string("Register project")}
+          </Button>
         </El>
       </El>
     </div>
