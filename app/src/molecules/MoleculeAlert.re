@@ -1,5 +1,6 @@
 open Atom;
 open Particle;
+open DesignSystem;
 
 type severity =
   | Info
@@ -8,7 +9,6 @@ type severity =
 
 module Styles = {
   open Css;
-  open DesignSystem;
 
   let info =
     style([
@@ -60,7 +60,7 @@ module Styles = {
 
 module Template = {
   [@react.component]
-  let make = (~children, ~severity, ~onClick=_ => ()) => {
+  let make = (~children, ~style=?, ~severity, ~onClick=_ => ()) => {
     let icon =
       switch (severity) {
       | Info => <Icon.Info />
@@ -75,7 +75,7 @@ module Template = {
       | Error => <Icon.CloseSmall color=Color.Bordeaux />
       };
 
-    <div className={Styles.alert(severity)}>
+    <div className={Styles.alert(severity) <<? style}>
       <div className=Styles.icon> icon </div>
       <Title> children </Title>
       <div className=Styles.close onClick> closeIcon </div>
@@ -84,17 +84,17 @@ module Template = {
 };
 
 [@react.component]
-let make = (~children, ~severity=Info, ~onClick=_ => ()) =>
-  <Template onClick severity> children </Template>;
+let make = (~children, ~style=?, ~severity=Info, ~onClick=_ => ()) =>
+  <Template ?style onClick severity> children </Template>;
 
 module Success = {
   [@react.component]
-  let make = (~children, ~onClick=_ => ()) =>
-    <Template onClick severity=Success> children </Template>;
+  let make = (~children, ~style=?, ~onClick=_ => ()) =>
+    <Template ?style onClick severity=Success> children </Template>;
 };
 
 module Error = {
   [@react.component]
-  let make = (~children, ~onClick=_ => ()) =>
-    <Template onClick severity=Error> children </Template>;
+  let make = (~children, ~style=?, ~onClick=_ => ()) =>
+    <Template ?style onClick severity=Error> children </Template>;
 };

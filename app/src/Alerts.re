@@ -2,25 +2,35 @@ open AppStore;
 open DesignSystem;
 open Molecule;
 open StoreAlerts;
+open Particle;
+
+module Styles = {
+  open Css;
+
+  let alerts = style([backgroundColor(Color.white()), marginTop(px(24))]);
+};
 
 [@react.component]
 let make = () => {
   let dispatch = Store.useDispatch();
 
-  let alerts = Store.useSelector(state => state.alerts.all);
+  let alerts =
+    Array.mapi(
+      (index, alert) => {
+        let onClose = _ev =>
+          dispatch(AlertsAction(StoreAlerts.Remove(alert)));
 
-  Array.mapi(
-    (index, alert) => {
-      let onClose = _ev =>
-        dispatch(AlertsAction(StoreAlerts.Remove(alert)));
-
-      <El style={margin(24, 0, 0, 0)} key={index |> string_of_int}>
-        <Alert onClick=onClose severity={alert.severity}>
+        <Alert
+          style={margin(0, 0, 8, 0)}
+          onClick=onClose
+          severity={alert.severity}
+          key={index |> string_of_int}>
           {React.string(alert.message)}
-        </Alert>
-      </El>;
-    },
-    alerts,
-  )
-  |> React.array;
+        </Alert>;
+      },
+      Store.useSelector(state => state.alerts.all),
+    )
+    |> React.array;
+
+  <El style=Styles.alerts> alerts </El>;
 };
