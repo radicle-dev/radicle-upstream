@@ -1,4 +1,7 @@
-open Molecule.Alert;
+type severity =
+  | Info
+  | Success
+  | Error;
 
 type alert = {
   severity,

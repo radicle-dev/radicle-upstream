@@ -1,5 +1,4 @@
 open AppStore;
-open Molecule;
 open Source;
 open StoreMiddleware;
 open StoreSession;
@@ -42,7 +41,10 @@ let createAccount =
            Router.navigateToPage(next, ());
            SessionAction(Created(account)) |> dispatch;
            StoreMiddleware.Thunk(
-             ThunkAlerts.showAlert(Alert.Success, "Welcome " ++ keyName),
+             ThunkAlerts.showAlert(
+               StoreAlerts.Success,
+               "Welcome " ++ keyName,
+             ),
            )
            |> dispatch
            |> resolve;

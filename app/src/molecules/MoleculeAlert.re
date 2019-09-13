@@ -1,11 +1,7 @@
 open Atom;
 open Particle;
 open DesignSystem;
-
-type severity =
-  | Info
-  | Success
-  | Error;
+open StoreAlerts;
 
 module Styles = {
   open Css;

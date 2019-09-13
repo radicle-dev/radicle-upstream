@@ -78,7 +78,7 @@ let make = () => {
       switch (simple) {
       | Error(err) =>
         StoreMiddleware.Thunk(
-          ThunkAlerts.showAlert(Alert.Error, err##message),
+          ThunkAlerts.showAlert(StoreAlerts.Error, err##message),
         )
         |> dispatch;
         React.null;
