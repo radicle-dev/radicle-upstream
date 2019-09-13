@@ -1,4 +1,3 @@
-use juniper::{ParseScalarResult, ParseScalarValue, Value};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
@@ -6,27 +5,7 @@ use std::sync::{Arc, RwLock};
 //
 // We have to use the newtype pattern to support lcoal implementations for foreign traits.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
-pub struct Address(oscoin_client::Address);
-
-juniper::graphql_scalar!(Address where Scalar = <S> {
-    description: "Address"
-
-    // Define how to convert your custom scalar into a primitive type.
-    resolve(&self) -> Value {
-        Value::scalar(hex::encode(self.0.as_bytes()))
-    }
-
-    // Define how to parse a primitive type into your custom scalar.
-    from_input_value(v: &InputValue) -> Option<Address> {
-        v.as_scalar_value::<String>()
-            .map(|s| Address(oscoin_client::Address::from_slice(&hex::decode(s).unwrap())))
-    }
-
-    // Define how to parse a string value.
-    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
-        <String as ParseScalarValue<S>>::from_str(value)
-    }
-});
+pub struct Address(pub oscoin_client::Address);
 
 #[derive(Clone, GraphQLObject)]
 #[graphql(description = "Metadata enriched user keypair")]
@@ -84,7 +63,7 @@ impl Local {
         let addr = Address(oscoin_client::Address::random());
         projects.insert(addr, Project{
             address: addr,
-            name: "monokel".to_owned(),
+            name: "Monadic".to_owned(),
             description: "Open source organization of amazing things".to_owned(),
             img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg".to_owned(),
             members: vec![
