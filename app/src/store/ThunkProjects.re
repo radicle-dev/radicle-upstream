@@ -27,7 +27,7 @@ let registerProject =
       description: string,
       imgUrl: string,
       dispatch: thunk(appState) => unit,
-      _store,
+      _state,
       source: source,
     ) =>
   Js.Promise.(

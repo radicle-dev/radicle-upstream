@@ -29,7 +29,7 @@ let createAccount =
       avatarUrl: string,
       next: Router.page,
       dispatch: dispatchFunc,
-      _store,
+      _state,
       source: source,
     ) => {
   dispatch(SessionAction(Fetch));
