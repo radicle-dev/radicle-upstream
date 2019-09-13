@@ -5,7 +5,7 @@ open StoreSession;
 
 type dispatchFunc = thunk(appState) => unit;
 
-let fetchSession = (dispatch: dispatchFunc, _state, source: source) => {
+let fetchSession = (dispatch: dispatchFunc, source: source) => {
   dispatch(SessionAction(Fetch));
 
   Js.Promise.(
@@ -28,7 +28,6 @@ let createAccount =
       avatarUrl: string,
       next: Router.page,
       dispatch: dispatchFunc,
-      _state,
       source: source,
     ) => {
   dispatch(SessionAction(Fetch));

@@ -3,8 +3,7 @@ open Source;
 open StoreMiddleware;
 open StoreProjects;
 
-let fetchProjects =
-    (dispatch: thunk(appState) => unit, _state, source: source) => {
+let fetchProjects = (dispatch: thunk(appState) => unit, source: source) => {
   dispatch(ProjectsAction(Fetching));
 
   Js.Promise.(
@@ -27,7 +26,6 @@ let registerProject =
       description: string,
       imgUrl: string,
       dispatch: thunk(appState) => unit,
-      _state,
       source: source,
     ) =>
   Js.Promise.(

@@ -4,12 +4,7 @@ open StoreMiddleware;
 open StoreProject;
 
 let fetchProject =
-    (
-      address: string,
-      dispatch: thunk(appState) => unit,
-      _state,
-      source: source,
-    ) => {
+    (address: string, dispatch: thunk(appState) => unit, source: source) => {
   dispatch(ProjectAction(Fetching));
 
   Js.Promise.(
