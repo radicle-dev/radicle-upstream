@@ -2,9 +2,10 @@ open AppStore;
 open Atom;
 open DesignSystem;
 open Molecule;
-open Source;
 open Particle;
 open ReasonApolloHooks.Query;
+open Source;
+open StoreAlerts;
 
 module Styles = {
   open Css;
@@ -80,13 +81,7 @@ let make = () => {
       | Error(err) =>
         dispatch(
           AlertsAction(
-            StoreAlerts.Show(
-              StoreAlerts.{
-                severity: Alert.Error,
-                message: err##message,
-                id: 0,
-              },
-            ),
+            Show({severity: Alert.Error, message: err##message, id: 0}),
           ),
         );
         React.null;
