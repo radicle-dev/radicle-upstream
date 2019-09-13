@@ -25,6 +25,9 @@ module Styles = {
       textDecoration(none),
     ],
   );
+
+  let topContainer =
+    Positioning.gridWideCentered << style([marginTop(px(32)), zIndex(10)]);
 };
 
 let httpLink =
@@ -75,9 +78,7 @@ let make = () => {
     <Store.Provider>
       <ReasonApolloHooks.ApolloProvider client>
         <El style=Layout.grid>
-          <El style={Positioning.gridWideCentered << margin(32, 0, 0, 0)}>
-            <Topbar />
-          </El>
+          <El style=Styles.topContainer> <Topbar /> <Alerts /> </El>
           page
         </El>
         <Overlay />

@@ -1,9 +1,9 @@
 open Atom;
 open DesignSystem;
 open Molecule;
-open Source;
 open Particle;
 open ReasonApolloHooks.Query;
+open Source;
 
 module Styles = {
   open Css;
@@ -60,6 +60,7 @@ module GetProjectsQuery = ReasonApolloHooks.Query.Make(GetProjectsConfig);
 [@react.component]
 let make = () => {
   let (simple, _full) = GetProjectsQuery.use();
+  let dispatch = Store.useDispatch();
 
   <El style=Positioning.gridMediumCentered>
     <div className=Styles.projectHeading>
@@ -77,9 +78,11 @@ let make = () => {
     {
       switch (simple) {
       | Error(err) =>
-        <div className="error">
-          {"ERROR: " ++ err##message |> React.string}
-        </div>
+        StoreMiddleware.Thunk(
+          ThunkAlerts.showAlert(StoreAlerts.Error, err##message),
+        )
+        |> dispatch;
+        React.null;
       | NoData => React.null
       | Loading => "Loading..." |> React.string
       | Data(response) =>
