@@ -7,7 +7,7 @@ type alert = {
 };
 
 type action =
-  | Show(alert)
+  | Add(alert)
   | Remove(alert);
 
 type state = {
@@ -19,7 +19,7 @@ let initialState = {idCounter: 0, all: [||]};
 
 let reducer = (state, action) =>
   switch (action) {
-  | Show(alert) => {
+  | Add(alert) => {
       idCounter: state.idCounter + 1,
       all: Array.append(state.all, [|alert|]),
     }
