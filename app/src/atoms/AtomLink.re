@@ -1,6 +1,12 @@
 open Router;
 open DesignSystem;
 
+module Styles = {
+  open Css;
+
+  let link = style([userSelect(none)]);
+};
+
 [@react.component]
 let make = (~page: page, ~style=?, ~children=?) => {
   let content =
@@ -9,7 +15,7 @@ let make = (~page: page, ~style=?, ~children=?) => {
     | None => React.string(nameOfPage(page))
     };
 
-  <a onClick={navigateToPage(page)} className={Css.style([]) <<? style}>
+  <a onClick={navigateToPage(page)} className={Styles.link <<? style}>
     content
   </a>;
 };
