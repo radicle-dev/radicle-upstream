@@ -52,6 +52,7 @@ module Styles = {
       height(px(24)),
       marginLeft(auto),
       marginRight(px(8)),
+      userSelect(none),
     ]);
 
   let icon = style([height(px(24)), Css.margin(px(8))]);
