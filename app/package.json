@@ -5,6 +5,7 @@
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
+    "cypress": "./node_modules/.bin/cypress open",
     "test": "bsb -make-world && jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watchAll",
