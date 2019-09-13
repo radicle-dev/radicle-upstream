@@ -28,7 +28,7 @@ let make = () => {
           {React.string(alert.message)}
         </Alert>;
       },
-      Store.useSelector(state => state.alerts.all),
+      Store.useSelector(state => state.alerts),
     )
     |> React.array;
 

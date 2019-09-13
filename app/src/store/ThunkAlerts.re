@@ -2,8 +2,8 @@ open AppStore;
 open StoreAlerts;
 open Source;
 
-let showAlert = (severity, message, dispatch, state, _source: source) => {
-  let alert = {severity, message, id: state.alerts.idCounter};
+let showAlert = (severity, message, dispatch, _store, _source: source) => {
+  let alert = {severity, message, id: Random.bits()};
 
   dispatch(AlertsAction(Add(alert)));
 
