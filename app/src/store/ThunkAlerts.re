@@ -7,13 +7,6 @@ let showAlert = (severity, message, dispatch, state, _source: source) => {
 
   dispatch(AlertsAction(Add(alert)));
 
-  Js.Promise.make((~resolve, ~reject as _) =>
-    Js.Global.setTimeout(
-      () =>
-        resolve(. Belt.Result.Ok(dispatch(AlertsAction(Remove(alert))))),
-      3000,
-    )
-    |> ignore
-  )
+  Js.Global.setTimeout(() => dispatch(AlertsAction(Remove(alert))), 3000)
   |> ignore;
 };
