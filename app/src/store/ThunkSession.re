@@ -1,13 +1,12 @@
 open AppStore;
 open Molecule;
 open Source;
-open StoreAlerts;
 open StoreMiddleware;
 open StoreSession;
 
 type dispatchFunc = thunk(appState) => unit;
 
-let fetchSession = (dispatch: dispatchFunc, source: source) => {
+let fetchSession = (dispatch: dispatchFunc, _state, source: source) => {
   dispatch(SessionAction(Fetch));
 
   Js.Promise.(
@@ -30,6 +29,7 @@ let createAccount =
       avatarUrl: string,
       next: Router.page,
       dispatch: dispatchFunc,
+      _store,
       source: source,
     ) => {
   dispatch(SessionAction(Fetch));
@@ -41,12 +41,8 @@ let createAccount =
          | Belt.Result.Ok(account) =>
            Router.navigateToPage(next, ());
            SessionAction(Created(account)) |> dispatch;
-           AlertsAction(
-             Show({
-               severity: Alert.Success,
-               message: "Welcome " ++ keyName,
-               id: 0,
-             }),
+           StoreMiddleware.Thunk(
+             ThunkAlerts.showAlert(Alert.Success, "Welcome " ++ keyName),
            )
            |> dispatch
            |> resolve;

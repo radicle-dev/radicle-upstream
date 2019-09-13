@@ -21,7 +21,7 @@ let reducer = (state, action) =>
   switch (action) {
   | Show(alert) => {
       idCounter: state.idCounter + 1,
-      all: Array.append(state.all, [|{...alert, id: state.idCounter}|]),
+      all: Array.append(state.all, [|alert|]),
     }
   | Remove(alert) => {
       ...state,

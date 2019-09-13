@@ -1,11 +1,9 @@
-open AppStore;
 open Atom;
 open DesignSystem;
 open Molecule;
 open Particle;
 open ReasonApolloHooks.Query;
 open Source;
-open StoreAlerts;
 
 module Styles = {
   open Css;
@@ -79,11 +77,10 @@ let make = () => {
     {
       switch (simple) {
       | Error(err) =>
-        dispatch(
-          AlertsAction(
-            Show({severity: Alert.Error, message: err##message, id: 0}),
-          ),
-        );
+        StoreMiddleware.Thunk(
+          ThunkAlerts.showAlert(Alert.Error, err##message),
+        )
+        |> dispatch;
         React.null;
       | NoData => React.null
       | Loading => "Loading..." |> React.string
