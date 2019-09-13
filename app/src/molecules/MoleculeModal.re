@@ -24,6 +24,7 @@ module Styles = {
       top(px(0)),
       right(px(0)),
       padding(px(36)),
+      userSelect(none),
     ]);
 };
 

@@ -13,10 +13,11 @@ module Styles = {
   let listItem =
     style([
       borderBottom(px(1), solid, Color.lightGray()),
-      padding(px(13)),
       hover([backgroundColor(Color.almostWhite())]),
       lastChild([borderBottomWidth(px(0))]),
     ]);
+
+  let link = style([display(block), padding(px(13))]);
 };
 
 module List = {
@@ -67,9 +68,9 @@ let make = () => {
           <Title.Huge> {React.string("Explore")} </Title.Huge>
         </El>
         <El style=Positioning.flexRight>
-          <Link page=Router.RegisterProject>
-            <Button> {React.string("Register project")} </Button>
-          </Link>
+          <Button onClick={Router.navigateToPage(Router.RegisterProject)}>
+            {React.string("Register project")}
+          </Button>
         </El>
       </El>
     </div>
@@ -87,7 +88,9 @@ let make = () => {
             response##projects
             |> Array.mapi((index, project) =>
                  <li className=Styles.listItem key={index |> string_of_int}>
-                   <Link page={Router.Project(project##address)}>
+                   <Link
+                     style=Styles.link
+                     page={Router.Project(project##address)}>
                      <ProjectCard
                        imgUrl=project##imgUrl
                        name=project##name
