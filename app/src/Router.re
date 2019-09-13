@@ -2,51 +2,64 @@ open ReasonReactRouter;
 
 type page =
   | Root
+  | JoinNetwork
   | Projects
-  | Styleguide
   | Project(string)
   | RegisterProject
+  | Styleguide
   | NotFound(list(string));
 
-let navigateToPage = (p: page) => {
-  let join = (parts: list(string)): string =>
-    List.fold_left((a, b) => a ++ "/" ++ b, "", parts);
+let join = (parts: list(string)): string =>
+  List.fold_left((a, b) => a ++ "/" ++ b, "", parts);
 
-  let link =
-    switch (p) {
-    | Root => "/"
-    | Projects => join(["projects"])
-    | Styleguide => "/styleguide"
-    | RegisterProject => join(["projects", "register"])
-    | Project(id) => join(["projects", id])
-    | NotFound(_path) => "/not-found"
-    };
+let linkOfUrl = url => {
+  let path = join(url.path);
+  let search = url.search != "" ? "?" ++ url.search : "";
+  let hash = url.hash != "" ? "#" ++ url.hash : "";
 
-  _ => ReasonReactRouter.push(link);
+  path ++ search ++ hash;
 };
 
 let nameOfPage = (p: page): string =>
   switch (p) {
   | Root => "Root"
+  | JoinNetwork => "Join Network"
   | Projects => "Explore"
-  | Styleguide => "Styleguide"
   | RegisterProject => "Register Project"
   | Project(id) => "Project " ++ id
+  | Styleguide => "Styleguide"
   | NotFound(_path) => "Not Found"
   };
 
-let pageOfUrl = (u: url): page =>
-  switch (u.path) {
+let pageOfPath = path: page =>
+  switch (path) {
   | [] => Projects
-  | ["styleguide"] => Styleguide
+  | ["join-network"] => JoinNetwork
   | ["projects"] => Projects
   | ["projects", "register"] => RegisterProject
   | ["projects", id] => Project(id)
-  | ["not-found"] => NotFound(u.path)
-  | _ => NotFound(u.path)
+  | ["styleguide"] => Styleguide
+  | ["not-found"] => NotFound(path)
+  | _ => NotFound(path)
   };
+
+let pathOfPage = p =>
+  switch (p) {
+  | Root => ["/"]
+  | JoinNetwork => ["join-network"]
+  | Projects => ["projects"]
+  | RegisterProject => ["projects", "register"]
+  | Project(id) => ["projects", id]
+  | Styleguide => ["styleguide"]
+  | NotFound(_path) => ["not-found"]
+  };
+
+let navigateToPage = (p, _) =>
+  ReasonReactRouter.push(
+    linkOfUrl({path: pathOfPage(p), hash: "", search: ""}),
+  );
 
 let currentPage = (): page => {
   let url = ReasonReactRouter.useUrl();
-  pageOfUrl(url);
+  pageOfPath(url.path);
 };

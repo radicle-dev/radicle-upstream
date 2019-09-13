@@ -37,10 +37,10 @@ module Portal = {
 };
 
 [@react.component]
-let make = (~children, ~closeButtonCallback) =>
+let make = (~children, ~onClose) =>
   <Portal>
     <div className=Styles.modal>
-      <div className=Styles.closeButton onClick={_ => closeButtonCallback()}>
+      <div className=Styles.closeButton onClick=onClose>
         <Atom.Icon.Close />
       </div>
       children

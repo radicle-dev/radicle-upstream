@@ -47,7 +47,7 @@ let make = () => {
     let newImgUrl = ev->ReactEvent.Form.target##value;
     setImgUrl(_ => newImgUrl);
   };
-  let registerCallback = _ => {
+  let onSubmit = _ => {
     let vars =
       RegisterProjectConfig.make(~name, ~description, ~imgUrl, ())##variables;
     registerProjectMutation(~variables=vars, ()) |> navigateToPage(Projects);
@@ -75,7 +75,7 @@ let make = () => {
       <Button.Cancel onClick={navigateToPage(Projects)}>
         {React.string("Cancel")}
       </Button.Cancel>
-      <Button.Secondary onClick=registerCallback>
+      <Button.Secondary onClick=onSubmit>
         {React.string("Register")}
       </Button.Secondary>
     </El>
