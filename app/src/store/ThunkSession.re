@@ -1,5 +1,7 @@
 open AppStore;
+open Molecule;
 open Source;
+open StoreAlerts;
 open StoreMiddleware;
 open StoreSession;
 
@@ -38,7 +40,16 @@ let createAccount =
          switch (result) {
          | Belt.Result.Ok(account) =>
            Router.navigateToPage(next, ());
-           SessionAction(Created(account)) |> dispatch |> resolve;
+           SessionAction(Created(account)) |> dispatch;
+           AlertsAction(
+             Show({
+               severity: Alert.Success,
+               message: "Welcome " ++ keyName,
+               id: 0,
+             }),
+           )
+           |> dispatch
+           |> resolve;
          | Belt.Result.Error(reason) =>
            SessionAction(CreationFailed(reason)) |> dispatch |> resolve
          }
