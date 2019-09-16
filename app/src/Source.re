@@ -12,11 +12,18 @@ type source = {
   fetchAccount: unit => Js.Promise.t(fetchAccountResult),
 };
 
+module StorageLabel = {
+  let keyName = "keyName";
+  let avatarUrl = "avatarUrl";
+};
+
 let createLocalSource = () => {
   let createAccount = (keyName, avatarUrl) =>
     Js.Promise.make((~resolve, ~reject as _) => {
-      Dom.Storage.(localStorage |> setItem("keyName", keyName));
-      Dom.Storage.(localStorage |> setItem("avatarUrl", avatarUrl));
+      Dom.Storage.(localStorage |> setItem(StorageLabel.keyName, keyName));
+      Dom.Storage.(
+        localStorage |> setItem(StorageLabel.avatarUrl, avatarUrl)
+      );
 
       let account = {keyName, avatarUrl};
       resolve(. Belt.Result.Ok(account));
@@ -24,8 +31,10 @@ let createLocalSource = () => {
 
   let fetchAccount = () =>
     Js.Promise.make((~resolve, ~reject as _) => {
-      let keyName = Dom.Storage.(localStorage |> getItem("keyName"));
-      let avatarUrl = Dom.Storage.(localStorage |> getItem("avatarUrl"));
+      let keyName =
+        Dom.Storage.(localStorage |> getItem(StorageLabel.keyName));
+      let avatarUrl =
+        Dom.Storage.(localStorage |> getItem(StorageLabel.avatarUrl));
 
       let account =
         switch (keyName) {
