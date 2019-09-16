@@ -3,7 +3,6 @@ open DesignSystem;
 open Molecule;
 open Particle;
 open ReasonApolloHooks.Query;
-open Source;
 
 module Styles = {
   open Css;
@@ -22,16 +21,16 @@ module Styles = {
 
 module List = {
   [@react.component]
-  let make = (~projects: array(project)) => {
+  let make = (~projects) => {
     let ps =
       Array.map(
         project =>
-          <li className=Styles.listItem key={project.address}>
-            <Link page={Router.Project(project.address)}>
+          <li className=Styles.listItem key=project##address>
+            <Link page={Router.Project(project##address)}>
               <ProjectCard
-                imgUrl={project.imgUrl}
-                name={project.name}
-                description={project.description}
+                imgUrl=project##imgUrl
+                name=project##name
+                description=project##description
               />
             </Link>
           </li>,
