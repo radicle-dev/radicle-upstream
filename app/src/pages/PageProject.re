@@ -25,13 +25,13 @@ module Members = {
     </li>;
 
   [@react.component]
-  let make = (~members) =>
+  let make = (~children) =>
     <>
       <El style=Styles.membersHeading>
         <Title> {React.string("Members")} </Title>
       </El>
       <ul className=Styles.list>
-        {Array.map(renderMember, members) |> React.array}
+        {Array.map(renderMember, children) |> React.array}
       </ul>
     </>;
 };
@@ -79,7 +79,7 @@ let make = (~address: string) => {
             name=project##name
             imgUrl=project##imgUrl
           />
-          <Members members=project##members />
+          <Members> {project##members} </Members>
         </>
       }
     };
