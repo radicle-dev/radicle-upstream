@@ -38,7 +38,15 @@ let createAccount =
          switch (result) {
          | Belt.Result.Ok(account) =>
            Router.navigateToPage(next, ());
-           SessionAction(Created(account)) |> dispatch |> resolve;
+           SessionAction(Created(account)) |> dispatch;
+           StoreMiddleware.Thunk(
+             ThunkAlerts.showAlert(
+               StoreAlerts.Success,
+               "Welcome " ++ keyName,
+             ),
+           )
+           |> dispatch
+           |> resolve;
          | Belt.Result.Error(reason) =>
            SessionAction(CreationFailed(reason)) |> dispatch |> resolve
          }

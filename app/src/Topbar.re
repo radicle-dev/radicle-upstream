@@ -5,18 +5,6 @@ open Molecule;
 open Source;
 open StoreSession;
 
-module Styles = {
-  open Css;
-
-  let header =
-    style([
-      gridColumnStart(2),
-      gridColumnEnd(8),
-      height(px(64)),
-      paddingTop(px(32)),
-    ]);
-};
-
 module Account = {
   module Card = {
     [@react.component]
@@ -73,17 +61,6 @@ module Account = {
       }
     };
   };
-};
-
-module Navigation = {
-  open Router;
-
-  [@react.component]
-  let make = () =>
-    <ul>
-      <li> <Link page=Projects> {React.string("Explore")} </Link> </li>
-      <li> <Link page={Project("monokel")} /> </li>
-    </ul>;
 };
 
 [@react.component]

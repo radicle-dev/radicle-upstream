@@ -15,6 +15,7 @@ module Styles = {
          height(pct(100.0)),
          backgroundColor(Color.white()),
          justifyContent(center),
+         zIndex(100),
        ]);
 
   let closeButton =
@@ -24,6 +25,7 @@ module Styles = {
       top(px(0)),
       right(px(0)),
       padding(px(36)),
+      userSelect(none),
     ]);
 };
 

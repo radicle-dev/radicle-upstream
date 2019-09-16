@@ -1,9 +1,9 @@
 open Atom;
 open DesignSystem;
 open Molecule;
-open Source;
 open Particle;
 open ReasonApolloHooks.Query;
+open Source;
 
 module Styles = {
   open Css;
@@ -13,10 +13,11 @@ module Styles = {
   let listItem =
     style([
       borderBottom(px(1), solid, Color.lightGray()),
-      padding(px(13)),
       hover([backgroundColor(Color.almostWhite())]),
       lastChild([borderBottomWidth(px(0))]),
     ]);
+
+  let link = style([display(block), padding(px(13))]);
 };
 
 module List = {
@@ -59,6 +60,7 @@ module GetProjectsQuery = ReasonApolloHooks.Query.Make(GetProjectsConfig);
 [@react.component]
 let make = () => {
   let (simple, _full) = GetProjectsQuery.use();
+  let dispatch = Store.useDispatch();
 
   <El style=Positioning.gridMediumCentered>
     <div className=Styles.projectHeading>
@@ -67,18 +69,20 @@ let make = () => {
           <Title.Huge> {React.string("Explore")} </Title.Huge>
         </El>
         <El style=Positioning.flexRight>
-          <Link page=Router.RegisterProject>
-            <Button> {React.string("Register project")} </Button>
-          </Link>
+          <Button onClick={Router.navigateToPage(Router.RegisterProject)}>
+            {React.string("Register project")}
+          </Button>
         </El>
       </El>
     </div>
     {
       switch (simple) {
       | Error(err) =>
-        <div className="error">
-          {"ERROR: " ++ err##message |> React.string}
-        </div>
+        StoreMiddleware.Thunk(
+          ThunkAlerts.showAlert(StoreAlerts.Error, err##message),
+        )
+        |> dispatch;
+        React.null;
       | NoData => React.null
       | Loading => "Loading..." |> React.string
       | Data(response) =>
@@ -87,7 +91,9 @@ let make = () => {
             response##projects
             |> Array.mapi((index, project) =>
                  <li className=Styles.listItem key={index |> string_of_int}>
-                   <Link page={Router.Project(project##address)}>
+                   <Link
+                     style=Styles.link
+                     page={Router.Project(project##address)}>
                      <ProjectCard
                        imgUrl=project##imgUrl
                        name=project##name
