@@ -59,15 +59,18 @@ let make = (~address: string) => {
   let getProject = GetProjectConfig.make(~address, ());
   let (state, _full) =
     GetProjectQuery.use(~variables=getProject##variables, ());
+  let dispatch = Store.useDispatch();
 
   let content =
     switch (state) {
     | Error(err) =>
-      <div className="error">
-        {"Error: " ++ err##message |> React.string}
-      </div>
-    | NoData
-    | Loading => <p> {React.string("Loading...")} </p>
+      StoreMiddleware.Thunk(
+        ThunkAlerts.showAlert(StoreAlerts.Error, err##message),
+      )
+      |> dispatch;
+      React.null;
+    | NoData => React.null
+    | Loading => React.string("Loading...")
     | Data(response) =>
       switch (response##getProject) {
       | None => React.string("Not Found")
