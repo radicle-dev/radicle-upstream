@@ -73,13 +73,12 @@ let make = (~address: string) => {
       | None => "Not Found" |> React.string
       | Some(project) =>
         <>
-          <El style={margin(0, 0, 50, 0)}>
-            <ProjectCard.Alternate
-              description=project##description
-              name=project##name
-              imgUrl=project##imgUrl
-            />
-          </El>
+          <ProjectCard.Alternate
+            style={margin(0, 0, 50, 0)}
+            description=project##description
+            name=project##name
+            imgUrl=project##imgUrl
+          />
           <Members members=project##members />
         </>
       }
