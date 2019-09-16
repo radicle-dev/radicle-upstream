@@ -70,7 +70,7 @@ let make = (~address: string) => {
     | Loading => <p> {React.string("Loading...")} </p>
     | Data(response) =>
       switch (response##getProject) {
-      | None => "Not Found" |> React.string
+      | None => React.string("Not Found")
       | Some(project) =>
         <>
           <ProjectCard.Alternate
