@@ -1,6 +1,6 @@
 context('session', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:8000')
+    cy.visit('/')
   })
 
   it('signs in the user', () => {
