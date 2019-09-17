@@ -1,16 +1,15 @@
-context('Session', () => {
+context('session', () => {
   beforeEach(() => {
     cy.visit('http://localhost:8000')
   })
 
-  it('allows to sign in', () => {
+  it('signs in the user', () => {
     cy.get('button').contains('Join the network').click()
 
-    cy.get('input:first').should('have.attr', 'placeholder', 'Enter your name')
-    cy.get('input:last').should('have.attr', 'placeholder', 'Enter an avatar URL')
-
-    cy.get('input:first').type("Rudolfs Osins")
+    cy.get('input[placeholder="Enter your name"]').type("Rudolfs")
     cy.get('button').contains('Join the network').click()
-    cy.get('header p').should('contain', 'Rudolfs Osins')
+
+    cy.get('header').contains('Rudolfs').should('exist')
+    cy.contains('Welcome Rudolfs').should('exist')
   })
 })
