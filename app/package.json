@@ -52,6 +52,9 @@
       "pre-commit": "lint-staged"
     }
   },
+  "jest": {
+    "testPathIgnorePatterns": ["<rootDir>/cypress/"]
+  },
   "lint-staged": {
     "*.{re,rei}": [
       "refmt --in-place",
