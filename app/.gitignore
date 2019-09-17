@@ -12,3 +12,5 @@ yarn-error.log
 /coverage/
 /lib/bs/
 /node_modules/
+/cypress/videos/
+/cypress/screenshots/
