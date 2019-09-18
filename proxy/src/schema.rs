@@ -1,7 +1,7 @@
 use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
-use crate::source::{Address, Local, Project, Source};
+use crate::source::{Address, Project, Source};
 
 pub type Schema = RootNode<'static, Query, Mutation>;
 
@@ -11,11 +11,11 @@ pub fn create() -> Schema {
 
 #[derive(Clone)]
 pub struct Context {
-    source: Arc<Local>,
+    source: Arc<dyn Source + Send + Sync>,
 }
 
 impl Context {
-    pub fn new(source: Local) -> Self {
+    pub fn new<S: Source + Send + Sync + 'static>(source: S) -> Self {
         Self {
             source: Arc::new(source),
         }
@@ -78,6 +78,8 @@ juniper::graphql_scalar!(Address where Scalar = <S> {
 #[test]
 fn test_schema_projects() {
     use juniper::Variables;
+
+    use crate::source::Local;
 
     let ctx = Context::new(Local::new());
     let (res, _errors) = juniper::execute(

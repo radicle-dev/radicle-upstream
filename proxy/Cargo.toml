@@ -12,7 +12,7 @@ hex = "0.3"
 juniper = "0.13"
 juniper_warp = "0.4"
 log = "0.4"
-oscoin_client = { git = "https://github.com/oscoin/oscoin-parity-wasm-prototype", branch = "explicit-dependency-patches" }
+oscoin_client = { git = "https://github.com/oscoin/oscoin-parity-wasm-prototype", branch = "project-listing" }
 pretty_env_logger = "0.3"
 serde = "1.0"
 serde_derive = "1.0"

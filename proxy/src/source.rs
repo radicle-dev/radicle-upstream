@@ -1,3 +1,4 @@
+use futures::Future;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 
@@ -5,7 +6,8 @@ use std::sync::{Arc, RwLock};
 //
 // We have to use the newtype pattern to support lcoal implementations for foreign traits.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
-pub struct Address(pub oscoin_client::Address);
+pub struct Address(pub [u8; 20]);
+// pub struct Address(pub oscoin_client::ProjectId);
 
 #[derive(Clone, GraphQLObject)]
 #[graphql(description = "Metadata enriched user keypair")]
@@ -36,6 +38,74 @@ pub trait Source {
     fn get_all_projects(&self) -> Vec<Project>;
     fn get_project(&self, addr: Address) -> Option<Project>;
     fn register_project(&self, name: String, description: String, img_url: String) -> Project;
+}
+
+pub struct Mixed {
+    ledger: Ledger,
+    local: Local,
+}
+
+impl Mixed {
+    pub fn new(ledger: Ledger, local: Local) -> Self {
+        Self { ledger, local }
+    }
+}
+
+impl Source for Mixed {
+    fn get_all_projects(&self) -> Vec<Project> {
+        self.local.get_all_projects()
+    }
+
+    fn get_project(&self, addr: Address) -> Option<Project> {
+        self.ledger.get_project(addr)
+    }
+
+    fn register_project(&self, name: String, description: String, img_url: String) -> Project {
+        let p = self.ledger.register_project(name, description, img_url);
+
+        let mut projects = self.local.projects.write().unwrap();
+        projects.insert(p.address, p.clone());
+
+        p
+    }
+}
+
+pub struct Ledger {
+    client: oscoin_client::Client,
+}
+
+impl Ledger {
+    pub fn new(client: oscoin_client::Client) -> Self {
+        Self { client }
+    }
+}
+
+impl Source for Ledger {
+    fn get_all_projects(&self) -> Vec<Project> {
+        unimplemented!()
+    }
+
+    fn get_project(&self, _addr: Address) -> Option<Project> {
+        unimplemented!()
+    }
+
+    fn register_project(&self, name: String, description: String, img_url: String) -> Project {
+        let sender = self.client.new_account().wait().unwrap();
+
+        let project_address = self
+            .client
+            .register_project(sender, img_url.to_string())
+            .wait()
+            .unwrap();
+
+        Project {
+            address: Address(project_address),
+            name: name.to_owned(),
+            description: description.to_owned(),
+            img_url: img_url.to_owned(),
+            members: vec![],
+        }
+    }
 }
 
 pub struct Local {
@@ -148,15 +218,7 @@ impl Source for Local {
     }
 
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-        use futures::Future;
-        let client = oscoin_client::Client::new_from_file().unwrap();
-        let sender = client.new_account().wait().unwrap();
         let project_address = oscoin_client::Address::random();
-
-        client
-            .register_project(sender, project_address, img_url.to_string())
-            .wait()
-            .unwrap();
 
         let mut projects = self.projects.write().unwrap();
         let p = Project {

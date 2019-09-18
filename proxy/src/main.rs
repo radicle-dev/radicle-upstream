@@ -16,19 +16,16 @@ mod schema;
 mod server_warp;
 mod source;
 
-use crate::schema::Context;
-use crate::source::Local;
-
 fn main() {
     std::env::set_var("RUST_LOG", "debug");
     pretty_env_logger::init();
 
-    info!("Setting up source");
-    let source = Local::new();
+    let osc = oscoin_client::Client::new_from_file().unwrap();
+    let source = source::Mixed::new(source::Ledger::new(osc), source::Local::new());
 
     info!("Creating GraphQL schema and context");
     let schema = schema::create();
-    let context = Context::new(source);
+    let context = schema::Context::new(source);
 
     info!("Starting HTTP server");
     server_warp::run(schema, context);

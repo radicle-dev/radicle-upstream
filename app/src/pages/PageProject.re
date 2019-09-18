@@ -39,7 +39,7 @@ module Members = {
 module GetProjectConfig = [%graphql
   {|
   query Query($address: Address!){
-    getProject(address: $address) {
+    project(address: $address) {
       name
       description
       imgUrl

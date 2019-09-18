@@ -771,7 +771,7 @@
               "deprecationReason": null
             },
             {
-              "name": "getProject",
+              "name": "project",
               "description": null,
               "args": [
                 {

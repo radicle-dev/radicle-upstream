@@ -963,11 +963,12 @@ dependencies = [
 [[package]]
 name = "oscoin_client"
 version = "0.1.0"
-source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=explicit-dependency-patches#27ced7e6121da134e0a2ca0b25846bf4f48100d2"
+source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing#7564de430a66ced585e53ba7fac2ee3134ece353"
 dependencies = [
  "ethabi 8.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ethereum-types 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
- "oscoin_ledger 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=explicit-dependency-patches)",
+ "oscoin_ledger 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.100 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_cbor 0.10.1 (git+https://github.com/pyfisch/cbor.git?rev=2c7ed27f0ecf89cdf2883586ad40dde1f216df6e)",
@@ -977,7 +978,7 @@ dependencies = [
 [[package]]
 name = "oscoin_ledger"
 version = "0.1.0"
-source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=explicit-dependency-patches#27ced7e6121da134e0a2ca0b25846bf4f48100d2"
+source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing#7564de430a66ced585e53ba7fac2ee3134ece353"
 dependencies = [
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-abi 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1153,7 +1154,7 @@ dependencies = [
  "juniper 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper_warp 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "oscoin_client 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=explicit-dependency-patches)",
+ "oscoin_client 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.100 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.100 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2368,8 +2369,8 @@ dependencies = [
 "checksum openssl 0.10.24 (registry+https://github.com/rust-lang/crates.io-index)" = "8152bb5a9b5b721538462336e3bef9a539f892715e5037fda0f984577311af15"
 "checksum openssl-probe 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "77af24da69f9d9341038eba93a073b1fdaaa1b788221b00a69bce9e762cb32de"
 "checksum openssl-sys 0.9.49 (registry+https://github.com/rust-lang/crates.io-index)" = "f4fad9e54bd23bd4cbbe48fdc08a1b8091707ac869ef8508edea2fec77dcc884"
-"checksum oscoin_client 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=explicit-dependency-patches)" = "<none>"
-"checksum oscoin_ledger 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=explicit-dependency-patches)" = "<none>"
+"checksum oscoin_client 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing)" = "<none>"
+"checksum oscoin_ledger 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing)" = "<none>"
 "checksum owning_ref 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "49a4b8ea2179e6a2e27411d3bca09ca6dd630821cf6894c6c7c8467a8ee7ef13"
 "checksum parity-codec 3.5.4 (registry+https://github.com/rust-lang/crates.io-index)" = "2b9df1283109f542d8852cd6b30e9341acc2137481eb6157d2e62af68b0afec9"
 "checksum parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ab41b4aed082705d1056416ae4468b6ea99d52599ecf3169b00088d43113e337"
