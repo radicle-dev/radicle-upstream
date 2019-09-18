@@ -1,8 +1,9 @@
 //! Proxy to serve a specialised HTTP to the oscoin MVP.
 
-#![deny(clippy::all, clippy::pedantic)]
 #![deny(missing_docs)]
 #![deny(warnings)]
+#![deny(clippy::all, clippy::pedantic)]
+#![allow(clippy::unseparated_literal_suffix)]
 
 #[macro_use]
 extern crate log;

@@ -6,7 +6,7 @@ use std::sync::{Arc, RwLock};
 //
 // We have to use the newtype pattern to support lcoal implementations for foreign traits.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
-pub struct Address(pub [u8; 20]);
+pub struct Address(pub oscoin_client::Address);
 // pub struct Address(pub oscoin_client::ProjectId);
 
 #[derive(Clone, GraphQLObject)]
@@ -92,11 +92,12 @@ impl Source for Ledger {
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
         let sender = self.client.new_account().wait().unwrap();
 
-        let project_address = self
-            .client
-            .register_project(sender, img_url.to_string())
-            .wait()
-            .unwrap();
+        let project_address = oscoin_client::Address::from(
+            self.client
+                .register_project(sender, img_url.to_string())
+                .wait()
+                .unwrap(),
+        );
 
         Project {
             address: Address(project_address),
