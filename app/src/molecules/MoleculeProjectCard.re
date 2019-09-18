@@ -4,7 +4,7 @@ open DesignSystem;
 module Styles = {
   open Css;
 
-  let item = style([display(`flex), flex(`num(1.0)), width(pct(100.0))]);
+  let card = style([display(`flex), flex(`num(1.0)), width(pct(100.0))]);
 
   let description =
     style([
@@ -40,8 +40,8 @@ module Template = {
   };
 
   [@react.component]
-  let make = (~children, ~imgUrl=?, ~description) =>
-    <div className=Styles.item>
+  let make = (~style=?, ~children, ~imgUrl=?, ~description) =>
+    <div className={Styles.card <<? style}>
       <Image ?imgUrl />
       <div className=Styles.description>
         children
@@ -51,15 +51,15 @@ module Template = {
 };
 
 [@react.component]
-let make = (~imgUrl=?, ~name, ~description) =>
-  <Template ?imgUrl description>
+let make = (~style=?, ~imgUrl=?, ~name, ~description) =>
+  <Template ?style ?imgUrl description>
     <Title> {React.string(name)} </Title>
   </Template>;
 
 module Alternate = {
   [@react.component]
-  let make = (~imgUrl=?, ~name, ~description) =>
-    <Template ?imgUrl description>
+  let make = (~style=?, ~imgUrl=?, ~name, ~description) =>
+    <Template ?style ?imgUrl description>
       <Title.Big style={margin(0, 0, 6, 0)}>
         {React.string(name)}
       </Title.Big>
