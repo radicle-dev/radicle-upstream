@@ -37,6 +37,8 @@ module Positioning = {
   let flexLeft = style([display(`flex), flex(`num(1.0))]);
   let flexRight =
     style([display(`flex), flex(`num(1.0)), justifyContent(flexEnd)]);
+  let flexCentered =
+    style([display(`flex), flex(`num(1.0)), justifyContent(center)]);
 };
 
 module El = {

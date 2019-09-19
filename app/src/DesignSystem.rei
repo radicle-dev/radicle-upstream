@@ -65,6 +65,7 @@ module Positioning: {
   /** To be used for child containers of a flex container. **/
   let flexLeft: string;
   let flexRight: string;
+  let flexCentered: string;
 };
 
 /** Basic container element for layouts, should be used instead of <div>,

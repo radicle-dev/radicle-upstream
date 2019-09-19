@@ -59,23 +59,14 @@ module ProjectList = {
 };
 
 module ErrorMessage = {
-  module Styles = {
-    open Css;
-
-    let errorCard =
-      style([
-        display(`flex),
-        flexDirection(column),
-        textAlign(center),
-        alignItems(center),
-      ]);
-  };
-
   [@react.component]
-  let make = (~children) =>
-    <El style=Styles.errorCard>
-      <Icon.SadFace style={margin(24, 0, 24, 0)} />
-      <El> children </El>
+  let make = () =>
+    <El style=Positioning.flexCentered>
+      <ErrorCard>
+        <Text> {React.string("Coundn't load projects.")} </Text>
+        <br />
+        <Text> {React.string("Backend is not reachable.")} </Text>
+      </ErrorCard>
     </El>;
 };
 
@@ -100,14 +91,7 @@ let make = () => {
 
   let content =
     switch (simple) {
-    | Error(_error) =>
-      <ErrorMessage>
-        <Text> {React.string("Coundn't load projects.")} </Text>
-        <br />
-        <Text>
-          {React.string("Please make sure the proxy is running.")}
-        </Text>
-      </ErrorMessage>
+    | Error(_error) => <ErrorMessage />
     | NoData => React.null
     | Loading => React.string("Loading...")
     | Data(response) =>

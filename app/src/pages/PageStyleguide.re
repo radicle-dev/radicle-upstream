@@ -347,6 +347,13 @@ let make = () =>
               description="Open source organization of amazing things"
             />
           </CardSwatch>
+          <CardSwatch>
+            <ErrorCard>
+              <Text> {React.string("Nope.")} </Text>
+              <br />
+              <Text> {React.string("That didn't work out.")} </Text>
+            </ErrorCard>
+          </CardSwatch>
         </Section>
         <Section
           title={React.string("Alerts")}
