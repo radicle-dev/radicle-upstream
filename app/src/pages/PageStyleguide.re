@@ -265,6 +265,7 @@ let make = () =>
           <Row>
             <IconSwatch> <Icon.PersonAvatarPlaceholder /> </IconSwatch>
           </Row>
+          <Row> <IconSwatch> <Icon.SadFace /> </IconSwatch> </Row>
           <Row>
             <IconSwatch> <Icon.ProjectAvatarPlaceholder /> </IconSwatch>
           </Row>

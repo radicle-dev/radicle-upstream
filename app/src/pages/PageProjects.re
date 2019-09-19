@@ -58,6 +58,27 @@ module ProjectList = {
   };
 };
 
+module ErrorMessage = {
+  module Styles = {
+    open Css;
+
+    let errorCard =
+      style([
+        display(`flex),
+        flexDirection(column),
+        textAlign(center),
+        alignItems(center),
+      ]);
+  };
+
+  [@react.component]
+  let make = (~children) =>
+    <El style=Styles.errorCard>
+      <Icon.SadFace style={margin(24, 0, 24, 0)} />
+      <El> children </El>
+    </El>;
+};
+
 module GetProjectsConfig = [%graphql
   {|
   query Query{
@@ -76,16 +97,17 @@ module GetProjectsQuery = ReasonApolloHooks.Query.Make(GetProjectsConfig);
 [@react.component]
 let make = () => {
   let (simple, _full) = GetProjectsQuery.use();
-  let dispatch = Store.useDispatch();
 
   let content =
     switch (simple) {
-    | Error(err) =>
-      StoreMiddleware.Thunk(
-        ThunkAlerts.showAlert(StoreAlerts.Error, err##message),
-      )
-      |> dispatch;
-      React.null;
+    | Error(_error) =>
+      <ErrorMessage>
+        <Text> {React.string("Coundn't load projects.")} </Text>
+        <br />
+        <Text>
+          {React.string("Please make sure the proxy is running.")}
+        </Text>
+      </ErrorMessage>
     | NoData => React.null
     | Loading => React.string("Loading...")
     | Data(response) =>

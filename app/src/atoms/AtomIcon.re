@@ -225,6 +225,47 @@ module Back = {
     </svg>;
 };
 
+module SadFace = {
+  [@react.component]
+  let make = (~style=?, ~color=Gray) =>
+    <svg
+      className=?style
+      width="48"
+      height="48"
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg">
+      <circle
+        cx="24"
+        cy="24"
+        r="23"
+        stroke={hexOfColor(color)}
+        strokeWidth="2"
+      />
+      <path
+        d="M33.3688 34.8269C30.457 33.6208 27.3361 33 24.1844 33C21.0327 33 17.9118 33.6208 15 34.8269"
+        stroke={hexOfColor(color)}
+        strokeWidth="2"
+      />
+      <rect
+        x="10.8719"
+        y="18.5361"
+        width="6"
+        height="2"
+        transform="rotate(-10 10.8719 18.5361)"
+        fill="#90A0AF"
+      />
+      <rect
+        x="31.2192"
+        y="17.4941"
+        width="6"
+        height="2"
+        transform="rotate(10 31.2192 17.4941)"
+        fill={hexOfColor(color)}
+      />
+    </svg>;
+};
+
 module PersonAvatarPlaceholder = {
   [@react.component]
   let make = () =>
