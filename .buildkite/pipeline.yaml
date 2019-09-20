@@ -5,18 +5,12 @@ steps:
     agents:
       production: "true"
       platform: "linux"
-    commands:
-      - 'export HOME=/cache'
-      - 'export YARN_CACHE_FOLDER=/cache'
-      - 'cd app'
-      - 'yarn'
-      - 'yarn test'
+    command: '.buildkite/unit.sh'
 
   - label: 'Integration tests'
     env:
-      TERM: "xterm" # colorful output
       DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.1'
     agents:
       production: "true"
       platform: "linux"
-    commands: '.buildkite/integration.sh'
+    command: '.buildkite/integration.sh'
