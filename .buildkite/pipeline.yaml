@@ -1,14 +1,28 @@
-env:
-  DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.1'
-
 steps:
-  - agents:
+  - label: 'Unit tests'
+    env:
+      DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.1'
+    agents:
       production: "true"
       platform: "linux"
     commands:
-    - 'export HOME=/cache'
-    - 'export YARN_CACHE_FOLDER=/cache'
-    - 'cd app'
-    - 'yarn'
-    - 'yarn test'
-    - 'yarn test:cypress:run'
+      - 'export HOME=/cache'
+      - 'export YARN_CACHE_FOLDER=/cache'
+      - 'cd app'
+      - 'yarn'
+      - 'yarn test'
+
+  - wait
+
+  - label: 'Integration tests'
+    env:
+      DOCKER_IMAGE: 'gcr.io/opensourcecoin/cypress-base:12.6.0'
+    agents:
+      production: "true"
+      platform: "linux"
+    commands:
+      - 'export HOME=/cache'
+      - 'export YARN_CACHE_FOLDER=/cache'
+      - 'cd app'
+      - 'yarn'
+      - 'yarn test:cypress:run'
