@@ -12,8 +12,6 @@ steps:
       - 'yarn'
       - 'yarn test'
 
-  - wait
-
   - label: 'Integration tests'
     env:
       DOCKER_IMAGE: 'gcr.io/opensourcecoin/cypress-base:12.6.0'
