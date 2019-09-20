@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eou pipefail
+set -Eeou pipefail
 
 export HOME=/cache
 export YARN_CACHE_FOLDER=/cache
