@@ -25,13 +25,13 @@ module Members = {
     </li>;
 
   [@react.component]
-  let make = (~members) =>
+  let make = (~children) =>
     <>
       <El style=Styles.membersHeading>
         <Title> {React.string("Members")} </Title>
       </El>
       <ul className=Styles.list>
-        {Array.map(renderMember, members) |> React.array}
+        {Array.map(renderMember, children) |> React.array}
       </ul>
     </>;
 };
@@ -59,28 +59,30 @@ let make = (~address: string) => {
   let getProject = GetProjectConfig.make(~address, ());
   let (state, _full) =
     GetProjectQuery.use(~variables=getProject##variables, ());
+  let dispatch = Store.useDispatch();
 
   let content =
     switch (state) {
     | Error(err) =>
-      <div className="error">
-        {"Error: " ++ err##message |> React.string}
-      </div>
-    | NoData
-    | Loading => <p> {React.string("Loading...")} </p>
+      StoreMiddleware.Thunk(
+        ThunkAlerts.showAlert(StoreAlerts.Error, err##message),
+      )
+      |> dispatch;
+      React.null;
+    | NoData => React.null
+    | Loading => React.string("Loading...")
     | Data(response) =>
       switch (response##getProject) {
-      | None => "Not Found" |> React.string
+      | None => React.string("Not Found")
       | Some(project) =>
         <>
-          <El style={margin(0, 0, 50, 0)}>
-            <ProjectCard.Alternate
-              description=project##description
-              name=project##name
-              imgUrl=project##imgUrl
-            />
-          </El>
-          <Members members=project##members />
+          <ProjectCard.Alternate
+            style={margin(0, 0, 50, 0)}
+            description=project##description
+            name=project##name
+            imgUrl=project##imgUrl
+          />
+          <Members> {project##members} </Members>
         </>
       }
     };

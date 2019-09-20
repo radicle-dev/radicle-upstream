@@ -2,16 +2,12 @@ open Source;
 
 type appState = {
   overlay: StoreOverlay.state,
-  projectState: StoreProject.state,
-  projectsState: StoreProjects.state,
   session: StoreSession.state,
   alerts: StoreAlerts.state,
 };
 
 type StoreMiddleware.thunk(_) +=
   | OverlayAction(StoreOverlay.action)
-  | ProjectAction(StoreProject.action)
-  | ProjectsAction(StoreProjects.action)
   | SessionAction(StoreSession.action)
   | AlertsAction(StoreAlerts.action);
 
@@ -20,14 +16,6 @@ let appReducer = (state: appState, action) =>
   | OverlayAction(action) => {
       ...state,
       overlay: StoreOverlay.reducer(state.overlay, action),
-    }
-  | ProjectAction(action) => {
-      ...state,
-      projectState: StoreProject.reducer(state.projectState, action),
-    }
-  | ProjectsAction(action) => {
-      ...state,
-      projectsState: StoreProjects.reducer(state.projectsState, action),
     }
   | SessionAction(action) => {
       ...state,
@@ -59,8 +47,6 @@ let createStore = (): t => {
       ~reducer=appReducer,
       ~preloadedState={
         overlay: StoreOverlay.initialState,
-        projectState: StoreProject.initialState,
-        projectsState: StoreProjects.initialState,
         session: StoreSession.initialState,
         alerts: StoreAlerts.initialState,
       },
