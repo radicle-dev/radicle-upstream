@@ -3,16 +3,16 @@ context('session', () => {
     cy.visit('/')
   })
 
-  let signIn = (username) => {
+  Cypress.Commands.add('signIn', (username) => {
     cy.get('button').contains('Join the network').click()
 
     cy.get('input[placeholder="Enter your name"]').type(username)
     cy.get('button').contains('Join the network').click()
-  }
+  })
 
   context('happy path', () => {
     it('signs in the user', () => {
-      signIn("Rudolfs")
+      cy.signIn("Rudolfs")
 
       cy.get('header').contains('Rudolfs').should('exist')
       cy.contains('Welcome Rudolfs').should('exist')
@@ -25,7 +25,7 @@ context('session', () => {
     })
 
     it('does not lose the session over a browser reload', () => {
-      signIn("Ange")
+      cy.signIn("Ange")
 
       cy.get('header').contains('Ange').should('exist')
 
@@ -34,13 +34,13 @@ context('session', () => {
     })
 
     it('signs out the user when localStorage is cleared', () => {
-      signIn("Ange")
+      cy.signIn("Merle")
 
-      cy.get('header').contains('Ange').should('exist')
+      cy.get('header').contains('Merle').should('exist')
 
       cy.clearLocalStorage()
       cy.reload()
-      cy.get('header').contains('Ange').should('not.exist')
+      cy.get('header').contains('Merle').should('not.exist')
     })
   })
 })
