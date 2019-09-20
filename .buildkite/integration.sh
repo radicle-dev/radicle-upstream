@@ -1,8 +1,5 @@
 #!/bin/bash
 set -Eeou pipefail
-trap 'kill %1' EXIT
-
-exit 1
 
 export HOME=/cache
 export YARN_CACHE_FOLDER=/cache
@@ -14,4 +11,5 @@ yarn clean
 yarn build
 yarn server&
 
+exit 1
 #yarn test:cypress:run
