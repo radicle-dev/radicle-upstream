@@ -10,3 +10,4 @@ steps:
     - 'cd app'
     - 'yarn'
     - 'yarn test'
+    - 'yarn test:cypress:run'
