@@ -10,4 +10,5 @@ yarn
 trap 'kill %1' EXIT
 yarn server&
 
+unset YARN_CACHE_FOLDER
 cypress run
