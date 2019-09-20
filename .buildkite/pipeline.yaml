@@ -3,7 +3,8 @@ env:
 
 steps:
   - agents:
-      docker: "true"
+      production: "true"
+      platform: "linux"
     commands:
     - 'export HOME=/cache'
     - 'export YARN_CACHE_FOLDER=/cache'
