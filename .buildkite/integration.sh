@@ -10,6 +10,7 @@ yarn
 trap 'kill %1' EXIT
 yarn server&
 
-export HOME=/usr/local
 unset YARN_CACHE_FOLDER
+export CYPRESS_RUN_BINARY=/usr/local/bin/cypress
+export CYPRESS_CACHE_FOLDER=/build/.cypress
 cypress run
