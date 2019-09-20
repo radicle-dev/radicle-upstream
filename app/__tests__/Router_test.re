@@ -7,7 +7,7 @@ describe("Router", () =>
     "pageOfUrl",
     [
       (Projects, []),
-      (Projects, ["fail"]),
+      (Projects, ["projects"]),
       (RegisterProject, ["projects", "register"]),
       (Project("monokel"), ["projects", "monokel"]),
       (Styleguide, ["styleguide"]),
