@@ -8,6 +8,8 @@ cd app
 yarn
 
 trap 'kill %1' EXIT
+yarn clean
+yarn build
 yarn server&
 
 yarn test:cypress:run
