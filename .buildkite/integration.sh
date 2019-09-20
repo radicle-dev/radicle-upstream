@@ -12,4 +12,5 @@ yarn build
 yarn server&
 
 exit 1
+yarn wait-on -t 10000 http://localhost:8000 && echo "run the tests now"
 #yarn test:cypress:run

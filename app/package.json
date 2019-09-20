@@ -44,6 +44,7 @@
     "reductive-dev-tools": "^0.2.6",
     "redux": "^4.0.4",
     "redux-devtools-extension": "^2.13.8",
+    "wait-on": "^3.3.0",
     "webpack": "^4.0.1",
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.8"
@@ -54,7 +55,9 @@
     }
   },
   "jest": {
-    "testPathIgnorePatterns": ["<rootDir>/cypress/"]
+    "testPathIgnorePatterns": [
+      "<rootDir>/cypress/"
+    ]
   },
   "lint-staged": {
     "*.{re,rei}": [
