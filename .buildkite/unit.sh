@@ -7,4 +7,3 @@ export YARN_CACHE_FOLDER=/cache
 cd app
 yarn
 yarn test
-exit 1
