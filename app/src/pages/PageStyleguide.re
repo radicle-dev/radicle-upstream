@@ -265,6 +265,7 @@ let make = () =>
           <Row>
             <IconSwatch> <Icon.PersonAvatarPlaceholder /> </IconSwatch>
           </Row>
+          <Row> <IconSwatch> <Icon.SadFace /> </IconSwatch> </Row>
           <Row>
             <IconSwatch> <Icon.ProjectAvatarPlaceholder /> </IconSwatch>
           </Row>
@@ -345,6 +346,13 @@ let make = () =>
               name="Monadic"
               description="Open source organization of amazing things"
             />
+          </CardSwatch>
+          <CardSwatch>
+            <ErrorCard>
+              <Text> {React.string("Nope.")} </Text>
+              <br />
+              <Text> {React.string("That didn't work out.")} </Text>
+            </ErrorCard>
           </CardSwatch>
         </Section>
         <Section

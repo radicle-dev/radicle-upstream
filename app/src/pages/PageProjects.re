@@ -58,6 +58,18 @@ module ProjectList = {
   };
 };
 
+module ErrorMessage = {
+  [@react.component]
+  let make = () =>
+    <El style=Positioning.flexCentered>
+      <ErrorCard>
+        <Text> {React.string("Coundn't load projects.")} </Text>
+        <br />
+        <Text> {React.string("Backend is not reachable.")} </Text>
+      </ErrorCard>
+    </El>;
+};
+
 module GetProjectsConfig = [%graphql
   {|
   query Query{
@@ -76,16 +88,10 @@ module GetProjectsQuery = ReasonApolloHooks.Query.Make(GetProjectsConfig);
 [@react.component]
 let make = () => {
   let (simple, _full) = GetProjectsQuery.use();
-  let dispatch = Store.useDispatch();
 
   let content =
     switch (simple) {
-    | Error(err) =>
-      StoreMiddleware.Thunk(
-        ThunkAlerts.showAlert(StoreAlerts.Error, err##message),
-      )
-      |> dispatch;
-      React.null;
+    | Error(_error) => <ErrorMessage />
     | NoData => React.null
     | Loading => React.string("Loading...")
     | Data(response) =>
