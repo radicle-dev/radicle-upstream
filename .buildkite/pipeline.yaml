@@ -13,4 +13,4 @@ steps:
     agents:
       production: "true"
       platform: "linux"
-    command: 'exit 1'
+    command: '.buildkite/integration.sh'
