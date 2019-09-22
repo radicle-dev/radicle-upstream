@@ -54,8 +54,14 @@ impl Ledger {
 
 impl Source for Ledger {
     fn get_all_projects(&self) -> Vec<Project> {
-        // TODO(xla): Get project list from ledger.
-        unimplemented!()
+        // TODO(xla): Return proper error.
+        self.client
+            .list_projects()
+            .wait()
+            .unwrap()
+            .into_iter()
+            .map(|p| Project::from(p.clone()))
+            .collect()
     }
 
     fn get_project(&self, id: ProjectId) -> Option<Project> {
