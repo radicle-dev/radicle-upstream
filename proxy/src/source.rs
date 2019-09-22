@@ -20,12 +20,20 @@ pub struct Project {
     members: Vec<Account>,
 }
 
-#[derive(juniper::GraphQLInputObject)]
-#[graphql(description = "All information needed for a project registration")]
-pub struct ProjectRegistration {
-    name: String,
-    description: String,
-    img_url: String,
+impl From<oscoin_ledger::interface::Project> for Project {
+    fn from(p: oscoin_ledger::interface::Project) -> Self {
+        let id = oscoin_client::Address::random().as_fixed_bytes().clone();
+
+        // TODO(xla): Get id proper.
+        // TODO(xla): Get members proper.
+        Self {
+            id: ProjectId(id),
+            name: p.name,
+            description: p.description,
+            img_url: p.img_url,
+            members: vec![],
+        }
+    }
 }
 
 pub trait Source {
@@ -46,11 +54,19 @@ impl Ledger {
 
 impl Source for Ledger {
     fn get_all_projects(&self) -> Vec<Project> {
+        // TODO(xla): Get project list from ledger.
         unimplemented!()
     }
 
-    fn get_project(&self, _id: ProjectId) -> Option<Project> {
-        unimplemented!()
+    fn get_project(&self, id: ProjectId) -> Option<Project> {
+        // TODO(xla): Bubble up errors from QueryResult.
+        match self.client.get_project(id.0).wait() {
+            Ok(maybe_project) => match maybe_project {
+                Some(p) => Some(Project::from(p)),
+                None => None,
+            },
+            Err(_err) => None,
+        }
     }
 
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
