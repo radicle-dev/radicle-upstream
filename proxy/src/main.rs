@@ -23,7 +23,7 @@ fn main() {
     pretty_env_logger::init();
 
     let osc = oscoin_client::Client::new_from_file().unwrap();
-    let source = source::Mixed::new(source::Ledger::new(osc), source::Local::new());
+    let source = source::Ledger::new(osc);
 
     info!("Creating GraphQL schema and context");
     let schema = schema::create();

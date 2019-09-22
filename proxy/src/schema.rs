@@ -59,7 +59,7 @@ impl Mutation {
 fn test_schema_projects() {
     use juniper::Variables;
 
-    use crate::source::Local;
+    use crate::source::test::Local;
 
     let ctx = Context::new(Local::new());
     let (res, _errors) = juniper::execute(
@@ -87,17 +87,15 @@ fn test_schema_projects() {
 juniper::graphql_scalar!(ProjectId where Scalar = <S> {
     description: "ProjectId"
 
-    // Define how to convert your custom scalar into a primitive type.
     resolve(&self) -> Value {
         Value::scalar(hex::encode(self.0))
     }
 
-    // Define how to parse a primitive type into your custom scalar.
     from_input_value(v: &InputValue) -> Option<ProjectId> {
         let mut bytes = [0_u8; 20];
 
         v.as_scalar_value::<String>()
-            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]).unwrap());
+            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
 
         Some(ProjectId(bytes))
     }

@@ -1,6 +1,4 @@
 use futures::Future;
-use std::collections::HashMap;
-use std::sync::{Arc, RwLock};
 
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub struct ProjectId(pub oscoin_client::ProjectId);
@@ -34,36 +32,6 @@ pub trait Source {
     fn get_all_projects(&self) -> Vec<Project>;
     fn get_project(&self, id: ProjectId) -> Option<Project>;
     fn register_project(&self, name: String, description: String, img_url: String) -> Project;
-}
-
-pub struct Mixed {
-    ledger: Ledger,
-    local: Local,
-}
-
-impl Mixed {
-    pub fn new(ledger: Ledger, local: Local) -> Self {
-        Self { ledger, local }
-    }
-}
-
-impl Source for Mixed {
-    fn get_all_projects(&self) -> Vec<Project> {
-        self.local.get_all_projects()
-    }
-
-    fn get_project(&self, id: ProjectId) -> Option<Project> {
-        self.ledger.get_project(id)
-    }
-
-    fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-        let p = self.ledger.register_project(name, description, img_url);
-
-        let mut projects = self.local.projects.write().unwrap();
-        projects.insert(p.id, p.clone());
-
-        p
-    }
 }
 
 pub struct Ledger {
@@ -109,16 +77,23 @@ impl Source for Ledger {
     }
 }
 
-pub struct Local {
-    projects: Arc<RwLock<HashMap<ProjectId, Project>>>,
-}
+#[cfg(test)]
+pub mod test {
+    use std::collections::HashMap;
+    use std::sync::{Arc, RwLock};
 
-impl Local {
-    pub fn new() -> Self {
-        let mut projects = HashMap::new();
+    use crate::source::{Account, Project, ProjectId, Source};
 
-        let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
-        projects.insert(id, Project{
+    pub struct Local {
+        projects: Arc<RwLock<HashMap<ProjectId, Project>>>,
+    }
+
+    impl Local {
+        pub fn new() -> Self {
+            let mut projects = HashMap::new();
+
+            let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
+            projects.insert(id, Project{
             id,
             name: "monokel".to_owned(),
             description: "A looking glass into the future".to_owned(),
@@ -131,8 +106,8 @@ impl Local {
             ],
         });
 
-        let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
-        projects.insert(id, Project{
+            let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
+            projects.insert(id, Project{
             id,
             name: "Monadic".to_owned(),
             description: "Open source organization of amazing things".to_owned(),
@@ -153,84 +128,88 @@ impl Local {
             ],
         });
 
-        let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
-        projects.insert(
-            id,
-            Project {
+            let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
+            projects.insert(
                 id,
-                name: "open source coin".to_owned(),
-                description: "Infrastructure for the open source communit".to_owned(),
-                img_url: "https://avatars0.githubusercontent.com/u/31632242".to_owned(),
-                members: vec![
-                    Account {
-                        key_name: "geigerzaehler".to_owned(),
-                        avatar_url: "https://avatars2.githubusercontent.com/u/3919579".to_owned(),
-                    },
-                    Account {
-                        key_name: "rockbmb".to_owned(),
-                        avatar_url: "https://avatars2.githubusercontent.com/u/16455833".to_owned(),
-                    },
-                    Account {
-                        key_name: "rudolfs".to_owned(),
-                        avatar_url: "https://avatars1.githubusercontent.com/u/158411".to_owned(),
-                    },
-                ],
-            },
-        );
+                Project {
+                    id,
+                    name: "open source coin".to_owned(),
+                    description: "Infrastructure for the open source communit".to_owned(),
+                    img_url: "https://avatars0.githubusercontent.com/u/31632242".to_owned(),
+                    members: vec![
+                        Account {
+                            key_name: "geigerzaehler".to_owned(),
+                            avatar_url: "https://avatars2.githubusercontent.com/u/3919579"
+                                .to_owned(),
+                        },
+                        Account {
+                            key_name: "rockbmb".to_owned(),
+                            avatar_url: "https://avatars2.githubusercontent.com/u/16455833"
+                                .to_owned(),
+                        },
+                        Account {
+                            key_name: "rudolfs".to_owned(),
+                            avatar_url: "https://avatars1.githubusercontent.com/u/158411"
+                                .to_owned(),
+                        },
+                    ],
+                },
+            );
 
-        let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
-        projects.insert(
-            id,
-            Project {
+            let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
+            projects.insert(
                 id,
-                name: "radicle".to_owned(),
-                description: "Decentralized open source collaboration".to_owned(),
-                img_url: "https://avatars0.githubusercontent.com/u/48290027".to_owned(),
-                members: vec![Account {
-                    key_name: "jkarni".to_owned(),
-                    avatar_url: "https://avatars3.githubusercontent.com/u/1657498".to_owned(),
-                }],
-            },
-        );
+                Project {
+                    id,
+                    name: "radicle".to_owned(),
+                    description: "Decentralized open source collaboration".to_owned(),
+                    img_url: "https://avatars0.githubusercontent.com/u/48290027".to_owned(),
+                    members: vec![Account {
+                        key_name: "jkarni".to_owned(),
+                        avatar_url: "https://avatars3.githubusercontent.com/u/1657498".to_owned(),
+                    }],
+                },
+            );
 
-        Self {
-            projects: Arc::new(RwLock::new(projects)),
-        }
-    }
-}
-
-impl Source for Local {
-    fn get_all_projects(&self) -> Vec<Project> {
-        let projects = self.projects.read().unwrap();
-
-        let mut ps: Vec<Project> = projects.iter().map(|(_k, v)| v.clone()).collect();
-
-        ps.sort_by(|a, b| a.name.partial_cmp(&b.name).unwrap());
-
-        ps.to_vec()
-    }
-
-    fn get_project(&self, id: ProjectId) -> Option<Project> {
-        let projects = self.projects.read().unwrap();
-        match projects.get(&id) {
-            Some(p) => Some(p.clone()),
-            None => None,
+            Self {
+                projects: Arc::new(RwLock::new(projects)),
+            }
         }
     }
 
-    fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-        let id = oscoin_client::Address::random().as_fixed_bytes().clone();
+    impl Source for Local {
+        fn get_all_projects(&self) -> Vec<Project> {
+            let projects = self.projects.read().unwrap();
 
-        let mut projects = self.projects.write().unwrap();
-        let p = Project {
-            id: ProjectId(id),
-            name: name.to_owned(),
-            description: description.to_owned(),
-            img_url: img_url.to_owned(),
-            members: vec![],
-        };
-        projects.insert(ProjectId(id), p.clone());
+            let mut ps: Vec<Project> = projects.iter().map(|(_k, v)| v.clone()).collect();
 
-        p
+            ps.sort_by(|a, b| a.name.partial_cmp(&b.name).unwrap());
+
+            ps.to_vec()
+        }
+
+        fn get_project(&self, id: ProjectId) -> Option<Project> {
+            let projects = self.projects.read().unwrap();
+            match projects.get(&id) {
+                Some(p) => Some(p.clone()),
+                None => None,
+            }
+        }
+
+        fn register_project(&self, name: String, description: String, img_url: String) -> Project {
+            let id = oscoin_client::Address::random().as_fixed_bytes().clone();
+
+            let mut projects = self.projects.write().unwrap();
+            let p = Project {
+                id: ProjectId(id),
+                name: name.to_owned(),
+                description: description.to_owned(),
+                img_url: img_url.to_owned(),
+                members: vec![],
+            };
+            projects.insert(ProjectId(id), p.clone());
+
+            p
+        }
     }
 }
