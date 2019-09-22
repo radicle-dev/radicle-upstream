@@ -473,7 +473,7 @@ dependencies = [
 
 [[package]]
 name = "hex"
-version = "0.3.2"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -963,12 +963,12 @@ dependencies = [
 [[package]]
 name = "oscoin_client"
 version = "0.1.0"
-source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing#e202d8c4e1abd0c89755a728ab9ff2723d969f4f"
+source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api#90a77899907dadf7baee4e19cc79f559b9169775"
 dependencies = [
  "ethabi 8.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethereum-types 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
- "oscoin_ledger 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing)",
+ "oscoin_ledger 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api)",
  "rustc-hex 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_cbor 0.10.1 (git+https://github.com/pyfisch/cbor.git?rev=2c7ed27f0ecf89cdf2883586ad40dde1f216df6e)",
@@ -978,7 +978,7 @@ dependencies = [
 [[package]]
 name = "oscoin_ledger"
 version = "0.1.0"
-source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing#e202d8c4e1abd0c89755a728ab9ff2723d969f4f"
+source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api#90a77899907dadf7baee4e19cc79f559b9169775"
 dependencies = [
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-abi 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1137,7 +1137,7 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1150,11 +1150,11 @@ dependencies = [
  "failure 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure_derive 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
- "hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hex 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper_warp 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "oscoin_client 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing)",
+ "oscoin_client 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1227,7 +1227,7 @@ name = "quote"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "proc-macro2 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1532,7 +1532,7 @@ name = "serde_derive"
 version = "1.0.101"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "proc-macro2 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1632,7 +1632,7 @@ name = "syn"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "proc-macro2 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro2 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "unicode-xid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -2293,7 +2293,7 @@ dependencies = [
 "checksum headers 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "882ca7d8722f33ce2c2db44f95425d6267ed59ca96ce02acbe58320054ceb642"
 "checksum headers-core 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "967131279aaa9f7c20c7205b45a391638a83ab118e6509b2d0ccbe08de044237"
 "checksum heapsize 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1679e6ea370dee694f91f1dc469bf94cf8f52051d147aec3e1f9497c6fc22461"
-"checksum hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "805026a5d0141ffc30abb3be3173848ad46a1b1664fe632428479619a3644d77"
+"checksum hex 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "023b39be39e3a2da62a94feb433e91e8bcd37676fbc8bea371daf52b7a769a3e"
 "checksum http 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)" = "372bcb56f939e449117fb0869c2e8fd8753a8223d92a172c6e808cf123a5b6e4"
 "checksum http-body 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6741c859c1b2463a423a1dbce98d418e6c3c3fc720fb0d45528657320920292d"
 "checksum httparse 1.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "cd179ae861f0c2e53da70d892f5f3029f9594be0c41dc5269cd371691b1dc2f9"
@@ -2344,8 +2344,8 @@ dependencies = [
 "checksum openssl 0.10.24 (registry+https://github.com/rust-lang/crates.io-index)" = "8152bb5a9b5b721538462336e3bef9a539f892715e5037fda0f984577311af15"
 "checksum openssl-probe 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "77af24da69f9d9341038eba93a073b1fdaaa1b788221b00a69bce9e762cb32de"
 "checksum openssl-sys 0.9.49 (registry+https://github.com/rust-lang/crates.io-index)" = "f4fad9e54bd23bd4cbbe48fdc08a1b8091707ac869ef8508edea2fec77dcc884"
-"checksum oscoin_client 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing)" = "<none>"
-"checksum oscoin_ledger 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=project-listing)" = "<none>"
+"checksum oscoin_client 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api)" = "<none>"
+"checksum oscoin_ledger 0.1.0 (git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api)" = "<none>"
 "checksum owning_ref 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "49a4b8ea2179e6a2e27411d3bca09ca6dd630821cf6894c6c7c8467a8ee7ef13"
 "checksum parity-codec 3.5.4 (registry+https://github.com/rust-lang/crates.io-index)" = "2b9df1283109f542d8852cd6b30e9341acc2137481eb6157d2e62af68b0afec9"
 "checksum parking_lot 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ab41b4aed082705d1056416ae4468b6ea99d52599ecf3169b00088d43113e337"
@@ -2363,7 +2363,7 @@ dependencies = [
 "checksum pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "717ee476b1690853d222af4634056d830b5197ffd747726a9a1eee6da9f49074"
 "checksum primitive-types 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2288eb2a39386c4bc817974cc413afe173010dc80e470fcb1e9a35580869f024"
 "checksum proc-macro2 0.4.30 (registry+https://github.com/rust-lang/crates.io-index)" = "cf3d2011ab5c909338f7887f4fc896d35932e29146c12c8d01da6b22a80ba759"
-"checksum proc-macro2 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "e98a83a9f9b331f54b924e68a66acb1bb35cb01fb0a23645139967abefb697e8"
+"checksum proc-macro2 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)" = "afdc77cc74ec70ed262262942ebb7dac3d479e9e5cfa2da1841c0806f6cdabcc"
 "checksum pwasm-abi 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3eccaec239b0e2967578c97a589a08893abe5d3ada2479fde6d04e0ec32c9993"
 "checksum pwasm-alloc 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "20c219f82ecb45feafa64e22a1f354462243f5be05eb1f4722a302e79ff7e3b9"
 "checksum pwasm-ethereum 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8b5509e67ee47ec62bdbd1c32a6949931adbe2e12a460bb45e5dc46593fdc71c"

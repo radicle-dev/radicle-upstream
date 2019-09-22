@@ -18,7 +18,8 @@ mod server_warp;
 mod source;
 
 fn main() {
-    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_BACKTRACE", "full");
+    std::env::set_var("RUST_LOG", "trace");
     pretty_env_logger::init();
 
     let osc = oscoin_client::Client::new_from_file().unwrap();

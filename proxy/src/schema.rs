@@ -1,7 +1,7 @@
 use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
-use crate::source::{Address, Project, Source};
+use crate::source::{Project, ProjectId, Source};
 
 pub type Schema = RootNode<'static, Query, Mutation>;
 
@@ -36,8 +36,8 @@ impl Query {
         Ok(ctx.source.get_all_projects())
     }
 
-    fn project(ctx: &Context, address: Address) -> FieldResult<Option<Project>> {
-        Ok(ctx.source.get_project(address))
+    fn project(ctx: &Context, id: ProjectId) -> FieldResult<Option<Project>> {
+        Ok(ctx.source.get_project(id))
     }
 }
 
@@ -54,26 +54,6 @@ impl Mutation {
         Ok(ctx.source.register_project(name, description, img_url))
     }
 }
-
-juniper::graphql_scalar!(Address where Scalar = <S> {
-    description: "Address"
-
-    // Define how to convert your custom scalar into a primitive type.
-    resolve(&self) -> Value {
-        Value::scalar(hex::encode(self.0.as_bytes()))
-    }
-
-    // Define how to parse a primitive type into your custom scalar.
-    from_input_value(v: &InputValue) -> Option<Address> {
-        v.as_scalar_value::<String>()
-            .map(|s| Address(oscoin_client::Address::from_slice(&hex::decode(s).unwrap())))
-    }
-
-    // Define how to parse a string value.
-    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
-        <String as ParseScalarValue<S>>::from_str(value)
-    }
-});
 
 #[test]
 fn test_schema_projects() {
@@ -103,3 +83,27 @@ fn test_schema_projects() {
         })
     );
 }
+
+juniper::graphql_scalar!(ProjectId where Scalar = <S> {
+    description: "ProjectId"
+
+    // Define how to convert your custom scalar into a primitive type.
+    resolve(&self) -> Value {
+        Value::scalar(hex::encode(self.0))
+    }
+
+    // Define how to parse a primitive type into your custom scalar.
+    from_input_value(v: &InputValue) -> Option<ProjectId> {
+        let mut bytes = [0_u8; 20];
+
+        v.as_scalar_value::<String>()
+            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]).unwrap());
+
+        Some(ProjectId(bytes))
+    }
+
+    // Define how to parse a string value.
+    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+        <String as ParseScalarValue<S>>::from_str(value)
+    }
+});
