@@ -22,12 +22,9 @@ pub struct Project {
 
 impl From<oscoin_ledger::interface::Project> for Project {
     fn from(p: oscoin_ledger::interface::Project) -> Self {
-        let id = oscoin_client::Address::random().as_fixed_bytes().clone();
-
-        // TODO(xla): Get id proper.
         // TODO(xla): Get members proper.
         Self {
-            id: ProjectId(id),
+            id: ProjectId(p.id),
             name: p.name,
             description: p.description,
             img_url: p.img_url,

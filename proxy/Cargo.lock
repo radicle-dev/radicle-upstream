@@ -963,7 +963,7 @@ dependencies = [
 [[package]]
 name = "oscoin_client"
 version = "0.1.0"
-source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api#90a77899907dadf7baee4e19cc79f559b9169775"
+source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api#e2ef6fcedc3f9161e374a158e0f8b2309b69f026"
 dependencies = [
  "ethabi 8.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "ethereum-types 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -978,7 +978,7 @@ dependencies = [
 [[package]]
 name = "oscoin_ledger"
 version = "0.1.0"
-source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api#90a77899907dadf7baee4e19cc79f559b9169775"
+source = "git+https://github.com/oscoin/oscoin-parity-wasm-prototype?branch=xla/fix-project-api#e2ef6fcedc3f9161e374a158e0f8b2309b69f026"
 dependencies = [
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pwasm-abi 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
