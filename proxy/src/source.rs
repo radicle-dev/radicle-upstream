@@ -1,4 +1,8 @@
 use futures::Future;
+use std::collections::HashMap;
+
+#[derive(Clone, Copy, Eq, Hash, PartialEq)]
+pub struct AccountId(pub oscoin_client::AccountId);
 
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub struct ProjectId(pub oscoin_client::ProjectId);
@@ -6,6 +10,7 @@ pub struct ProjectId(pub oscoin_client::ProjectId);
 #[derive(Clone, GraphQLObject)]
 #[graphql(description = "Metadata enriched user keypair")]
 struct Account {
+    id: AccountId,
     key_name: String,
     avatar_url: String,
 }
@@ -22,13 +27,22 @@ pub struct Project {
 
 impl From<oscoin_ledger::interface::Project> for Project {
     fn from(p: oscoin_ledger::interface::Project) -> Self {
-        // TODO(xla): Get members proper.
+        let ms = p
+            .members
+            .into_iter()
+            .map(|id| Account {
+                id: AccountId(id),
+                key_name: "".to_owned(),
+                avatar_url: "".to_owned(),
+            })
+            .collect();
+
         Self {
             id: ProjectId(p.id),
             name: p.name,
             description: p.description,
             img_url: p.img_url,
-            members: vec![],
+            members: ms,
         }
     }
 }
@@ -41,11 +55,31 @@ pub trait Source {
 
 pub struct Ledger {
     client: oscoin_client::Client,
+    accounts: HashMap<AccountId, Account>,
 }
 
 impl Ledger {
     pub fn new(client: oscoin_client::Client) -> Self {
-        Self { client }
+        Self {
+            client,
+            accounts: HashMap::new(),
+        }
+    }
+
+    fn enrich_members(&self, p: Project) -> Project {
+        let ms = p
+            .members
+            .into_iter()
+            .map(|a| self.accounts[&a.id].clone())
+            .collect();
+
+        Project {
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            img_url: p.img_url,
+            members: ms,
+        }
     }
 }
 
@@ -58,6 +92,7 @@ impl Source for Ledger {
             .unwrap()
             .into_iter()
             .map(|p| Project::from(p.clone()))
+            .map(|p| self.enrich_members(p))
             .collect()
     }
 
@@ -65,7 +100,7 @@ impl Source for Ledger {
         // TODO(xla): Bubble up errors from QueryResult.
         match self.client.get_project(id.0).wait() {
             Ok(maybe_project) => match maybe_project {
-                Some(p) => Some(Project::from(p)),
+                Some(p) => Some(self.enrich_members(Project::from(p))),
                 None => None,
             },
             Err(_err) => None,
@@ -75,6 +110,7 @@ impl Source for Ledger {
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
         let sender = self.client.new_account().wait().unwrap();
 
+        // TODO(xla): Proper error handling.
         let project_id = self
             .client
             .register_project(
@@ -101,7 +137,7 @@ pub mod test {
     use std::collections::HashMap;
     use std::sync::{Arc, RwLock};
 
-    use crate::source::{Account, Project, ProjectId, Source};
+    use crate::source::{Account, AccountId, Project, ProjectId, Source};
 
     pub struct Local {
         projects: Arc<RwLock<HashMap<ProjectId, Project>>>,
@@ -119,6 +155,7 @@ pub mod test {
             img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg".to_owned(),
             members: vec![
                 Account{
+                    id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
                     key_name: "xla".to_owned(),
                     avatar_url: "https://avatars0.githubusercontent.com/u/1585".to_owned(),
                 },
@@ -133,14 +170,17 @@ pub mod test {
             img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg".to_owned(),
             members: vec![
                 Account{
+                    id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
                     key_name: "cloudhead".to_owned(),
                     avatar_url: "https://avatars1.githubusercontent.com/u/40774".to_owned(),
                 },
                 Account{
+                    id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
                     key_name: "lftherios".to_owned(),
                     avatar_url: "https://avatars3.githubusercontent.com/u/853825".to_owned(),
                 },
                 Account{
+                    id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
                     key_name: "juliendonck".to_owned(),
                     avatar_url: "https://avatars2.githubusercontent.com/u/2326909".to_owned(),
                 },
@@ -157,16 +197,19 @@ pub mod test {
                     img_url: "https://avatars0.githubusercontent.com/u/31632242".to_owned(),
                     members: vec![
                         Account {
+                            id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
                             key_name: "geigerzaehler".to_owned(),
                             avatar_url: "https://avatars2.githubusercontent.com/u/3919579"
                                 .to_owned(),
                         },
                         Account {
+                            id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
                             key_name: "rockbmb".to_owned(),
                             avatar_url: "https://avatars2.githubusercontent.com/u/16455833"
                                 .to_owned(),
                         },
                         Account {
+                            id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
                             key_name: "rudolfs".to_owned(),
                             avatar_url: "https://avatars1.githubusercontent.com/u/158411"
                                 .to_owned(),
@@ -184,6 +227,7 @@ pub mod test {
                     description: "Decentralized open source collaboration".to_owned(),
                     img_url: "https://avatars0.githubusercontent.com/u/48290027".to_owned(),
                     members: vec![Account {
+                        id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
                         key_name: "jkarni".to_owned(),
                         avatar_url: "https://avatars3.githubusercontent.com/u/1657498".to_owned(),
                     }],

@@ -1,7 +1,7 @@
 use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
-use crate::source::{Project, ProjectId, Source};
+use crate::source::{AccountId, Project, ProjectId, Source};
 
 pub type Schema = RootNode<'static, Query, Mutation>;
 
@@ -83,6 +83,28 @@ fn test_schema_projects() {
         })
     );
 }
+
+juniper::graphql_scalar!(AccountId where Scalar = <S> {
+    description: "AccountId"
+
+    resolve(&self) -> Value {
+        Value::scalar(hex::encode(self.0))
+    }
+
+    from_input_value(v: &InputValue) -> Option<AccountId> {
+        let mut bytes = [0_u8; 20];
+
+        v.as_scalar_value::<String>()
+            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
+
+        Some(AccountId(bytes))
+    }
+
+    // Define how to parse a string value.
+    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+        <String as ParseScalarValue<S>>::from_str(value)
+    }
+});
 
 juniper::graphql_scalar!(ProjectId where Scalar = <S> {
     description: "ProjectId"
