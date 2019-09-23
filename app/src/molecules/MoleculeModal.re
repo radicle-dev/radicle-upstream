@@ -15,6 +15,7 @@ module Styles = {
          height(pct(100.0)),
          backgroundColor(Color.white()),
          justifyContent(center),
+         zIndex(100),
        ]);
 
   let closeButton =
@@ -24,6 +25,7 @@ module Styles = {
       top(px(0)),
       right(px(0)),
       padding(px(36)),
+      userSelect(none),
     ]);
 };
 
@@ -37,10 +39,10 @@ module Portal = {
 };
 
 [@react.component]
-let make = (~children, ~closeButtonCallback) =>
+let make = (~children, ~onClose) =>
   <Portal>
     <div className=Styles.modal>
-      <div className=Styles.closeButton onClick={_ => closeButtonCallback()}>
+      <div className=Styles.closeButton onClick=onClose>
         <Atom.Icon.Close />
       </div>
       children

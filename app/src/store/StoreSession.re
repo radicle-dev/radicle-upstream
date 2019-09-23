@@ -7,24 +7,27 @@ type action =
   | Created(account)
   | CreationFailed(string);
 
-type state =
+type remoteState =
   | Initial
   | Empty
   | Fetching
-  | Present(Source.account)
   | Failed(string);
 
-let initialState = Initial;
+type state =
+  | Present(Source.account)
+  | NotPresent(remoteState);
+
+let initialState = NotPresent(Initial);
 
 let reducer = (_state, action) =>
   switch (action) {
-  | Fetch => Fetching
+  | Fetch => NotPresent(Fetching)
   | Fetched(maybeAccount) =>
     switch (maybeAccount) {
     | Some(account) => Present(account)
-    | None => Empty
+    | None => NotPresent(Empty)
     }
-  | FetchFailed(reason) => Failed(reason)
+  | FetchFailed(reason) => NotPresent(Failed(reason))
   | Created(account) => Present(account)
-  | CreationFailed(reason) => Failed(reason)
+  | CreationFailed(reason) => NotPresent(Failed(reason))
   };

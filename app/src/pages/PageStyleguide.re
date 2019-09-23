@@ -13,7 +13,7 @@ module Section = {
       style([
         marginBottom(px(180)),
         display(`grid),
-        gridTemplateColumns([px(342)]),
+        gridTemplateColumns([px(342), auto, px(100)]),
       ]);
 
     let firstColumn = style([gridColumnStart(1), marginRight(px(90))]);
@@ -144,6 +144,17 @@ module CardSwatch = {
   let make = (~children) => <El style=Styles.card> children </El>;
 };
 
+module AlertSwatch = {
+  module Styles = {
+    open Css;
+
+    let alert = style([marginTop(px(16)), marginBottom(px(16))]);
+  };
+
+  [@react.component]
+  let make = (~children) => <El style=Styles.alert> children </El>;
+};
+
 module Styles = {
   open Css;
 
@@ -232,18 +243,21 @@ let make = () =>
           title={React.string("Icons")}
           subTitle={
             React.string(
-              "Icons at 16px, 24px, 36px and 64px width and height with 2px stroke weight",
+              "Icons at 16px, 24px, 36px and 64px width and height with 2px stroke weight, multiple color variations",
             )
           }>
           <Row>
             <IconSwatch> <Icon.Plus /> </IconSwatch>
             <IconSwatch> <Icon.Important /> </IconSwatch>
+            <IconSwatch> <Icon.Important color=Green /> </IconSwatch>
+            <IconSwatch> <Icon.Important color=Bordeaux /> </IconSwatch>
             <IconSwatch> <Icon.CloseSmall /> </IconSwatch>
             <IconSwatch> <Icon.Info /> </IconSwatch>
             <IconSwatch> <Icon.Check /> </IconSwatch>
             <IconSwatch> <Icon.Search /> </IconSwatch>
             <IconSwatch> <Icon.Graph /> </IconSwatch>
             <IconSwatch> <Icon.Inbox /> </IconSwatch>
+            <IconSwatch> <Icon.Inbox notificationColor=Purple /> </IconSwatch>
             <IconSwatch> <Icon.Wallet /> </IconSwatch>
             <IconSwatch> <Icon.Close /> </IconSwatch>
           </Row>
@@ -251,6 +265,7 @@ let make = () =>
           <Row>
             <IconSwatch> <Icon.PersonAvatarPlaceholder /> </IconSwatch>
           </Row>
+          <Row> <IconSwatch> <Icon.SadFace /> </IconSwatch> </Row>
           <Row>
             <IconSwatch> <Icon.ProjectAvatarPlaceholder /> </IconSwatch>
           </Row>
@@ -332,6 +347,32 @@ let make = () =>
               description="Open source organization of amazing things"
             />
           </CardSwatch>
+          <CardSwatch>
+            <ErrorCard>
+              <Text> {React.string("Nope.")} </Text>
+              <br />
+              <Text> {React.string("That didn't work out.")} </Text>
+            </ErrorCard>
+          </CardSwatch>
+        </Section>
+        <Section
+          title={React.string("Alerts")}
+          subTitle={React.string("Info, Success, Error")}>
+          <AlertSwatch>
+            <Alert onClick={_ => Js.log("Close info alert")}>
+              {React.string("Info")}
+            </Alert>
+          </AlertSwatch>
+          <AlertSwatch>
+            <Alert.Success onClick={_ => Js.log("Close success alert")}>
+              {React.string("Success")}
+            </Alert.Success>
+          </AlertSwatch>
+          <AlertSwatch>
+            <Alert.Error onClick={_ => Js.log("Close error alert")}>
+              {React.string("Error")}
+            </Alert.Error>
+          </AlertSwatch>
         </Section>
       </El>
     </El>

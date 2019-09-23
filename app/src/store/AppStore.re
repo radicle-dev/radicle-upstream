@@ -1,29 +1,29 @@
 open Source;
 
 type appState = {
-  projectState: StoreProject.state,
-  projectsState: StoreProjects.state,
+  overlay: StoreOverlay.state,
   session: StoreSession.state,
+  alerts: StoreAlerts.state,
 };
 
 type StoreMiddleware.thunk(_) +=
-  | ProjectAction(StoreProject.action)
-  | ProjectsAction(StoreProjects.action)
-  | SessionAction(StoreSession.action);
+  | OverlayAction(StoreOverlay.action)
+  | SessionAction(StoreSession.action)
+  | AlertsAction(StoreAlerts.action);
 
 let appReducer = (state: appState, action) =>
   switch (action) {
-  | ProjectAction(action) => {
+  | OverlayAction(action) => {
       ...state,
-      projectState: StoreProject.reducer(state.projectState, action),
-    }
-  | ProjectsAction(action) => {
-      ...state,
-      projectsState: StoreProjects.reducer(state.projectsState, action),
+      overlay: StoreOverlay.reducer(state.overlay, action),
     }
   | SessionAction(action) => {
       ...state,
       session: StoreSession.reducer(state.session, action),
+    }
+  | AlertsAction(action) => {
+      ...state,
+      alerts: StoreAlerts.reducer(state.alerts, action),
     }
   | _ => state
   };
@@ -46,9 +46,9 @@ let createStore = (): t => {
     (storeEnhancer @@ Reductive.Store.create)(
       ~reducer=appReducer,
       ~preloadedState={
-        projectState: StoreProject.initialState,
-        projectsState: StoreProjects.initialState,
+        overlay: StoreOverlay.initialState,
         session: StoreSession.initialState,
+        alerts: StoreAlerts.initialState,
       },
       ~enhancer=thunkEnhancer,
       (),

@@ -1,10 +1,11 @@
 /** Routable pages which relate to larger context of features. **/
 type page =
   | Root
+  | JoinNetwork
   | Projects
-  | Styleguide
   | Project(string)
   | RegisterProject
+  | Styleguide
   | NotFound(list(string));
 
 /** Reads the current url and return a matching page, or NotFound. **/
@@ -20,5 +21,7 @@ let navigateToPage: (page, 'a) => unit;
  **/
 let nameOfPage: page => string;
 
-/** Given a ReasonReactRouter.url returns a matching page, or NotFound **/
-let pageOfUrl: ReasonReactRouter.url => page;
+/** Given the path of a ReasonReactRouter.url returns a matching page, or
+ ** NotFound.
+ **/
+let pageOfPath: list(string) => page;

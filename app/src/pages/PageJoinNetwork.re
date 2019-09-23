@@ -1,5 +1,7 @@
+open AppStore;
 open Atom;
 open DesignSystem;
+open Router;
 
 module Styles = {
   open Css;
@@ -12,7 +14,13 @@ module Styles = {
 };
 
 [@react.component]
-let make = (~onComplete) => {
+let make = () => {
+  let (_, backPage) =
+    Belt.Option.getWithDefault(
+      Store.useSelector(state => state.overlay),
+      (JoinNetwork, Projects),
+    );
+  let nextPage = currentPage();
   let dispatch = Store.useDispatch();
   let (name, setName) = React.useState(() => "");
   let (avatarUrl, setAvatarUrl) = React.useState(() => "");
@@ -29,10 +37,15 @@ let make = (~onComplete) => {
     let newAvatarUrl = ReactEvent.Form.target(ev)##value;
     setAvatarUrl(_ => newAvatarUrl);
   };
-  let onSubmit = (name, avatarUrl) => {
-    StoreMiddleware.Thunk(ThunkSession.createAccount(name, avatarUrl))
+  let onCancel = _ev => {
+    navigateToPage(backPage, ());
+    dispatch(OverlayAction(StoreOverlay.Hide));
+  };
+  let onSubmit = (name, avatarUrl, _ev) => {
+    ThunkSession.createAccount(name, avatarUrl, nextPage)
+    ->StoreMiddleware.Thunk
     |> dispatch;
-    onComplete();
+    dispatch(OverlayAction(StoreOverlay.Hide));
   };
 
   <El style=Styles.content>
@@ -51,8 +64,10 @@ let make = (~onComplete) => {
       <Input onChange=onAvatarChange placeholder="Enter an avatar URL" />
     </El>
     <El style=Styles.buttonContainer>
-      <Button.Cancel> {React.string("Cancel")} </Button.Cancel>
-      <Button.Secondary onClick={_ => onSubmit(name, avatarUrl)}>
+      <Button.Cancel onClick=onCancel>
+        {React.string("Cancel")}
+      </Button.Cancel>
+      <Button.Secondary onClick={onSubmit(name, avatarUrl)}>
         {React.string("Join the network")}
       </Button.Secondary>
     </El>
