@@ -95,11 +95,12 @@ impl Ledger {
 impl Source for Ledger {
     fn get_all_projects(&self) -> Vec<Project> {
         // TODO(xla): Return proper error.
-        let ps = self.client.list_projects().wait().unwrap().into_iter();
-
-        info!("{}", ps.len());
-
-        ps.map(|p| Project::from(p.clone()))
+        self.client
+            .list_projects()
+            .wait()
+            .expect("osc client list projects failed")
+            .into_iter()
+            .map(Project::from)
             .map(|p| self.enrich_members(p))
             .collect()
     }
@@ -116,7 +117,11 @@ impl Source for Ledger {
     }
 
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-        let sender = self.client.new_account().wait().unwrap();
+        let sender = self
+            .client
+            .new_account()
+            .wait()
+            .expect("osc new account failed");
 
         // TODO(xla): Proper error handling.
         let project_id = self
@@ -128,13 +133,13 @@ impl Source for Ledger {
                 img_url.to_owned(),
             )
             .wait()
-            .unwrap();
+            .expect("osc project registration failed");
 
         Project {
             id: ProjectId(project_id),
-            name: name.to_owned(),
-            description: description.to_owned(),
-            img_url: img_url.to_owned(),
+            name,
+            description,
+            img_url,
             members: vec![],
         }
     }
@@ -250,17 +255,23 @@ pub mod test {
 
     impl Source for Local {
         fn get_all_projects(&self) -> Vec<Project> {
-            let projects = self.projects.read().unwrap();
+            let projects = self
+                .projects
+                .read()
+                .expect("acquiring read lock on projects failed");
 
             let mut ps: Vec<Project> = projects.iter().map(|(_k, v)| v.clone()).collect();
 
-            ps.sort_by(|a, b| a.name.partial_cmp(&b.name).unwrap());
+            ps.sort_by(|a, b| a.name.partial_cmp(&b.name).expect("project compare failed"));
 
             ps.to_vec()
         }
 
         fn get_project(&self, id: ProjectId) -> Option<Project> {
-            let projects = self.projects.read().unwrap();
+            let projects = self
+                .projects
+                .read()
+                .expect("acquiring read lock for projects failed");
             match projects.get(&id) {
                 Some(p) => Some(p.clone()),
                 None => None,
@@ -268,17 +279,21 @@ pub mod test {
         }
 
         fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-            let id = oscoin_client::Address::random().as_fixed_bytes().clone();
+            let addr = oscoin_client::Address::random();
+            let id = addr.as_fixed_bytes();
 
-            let mut projects = self.projects.write().unwrap();
+            let mut projects = self
+                .projects
+                .write()
+                .expect("claiming projects write lock failed");
             let p = Project {
-                id: ProjectId(id),
-                name: name.to_owned(),
-                description: description.to_owned(),
-                img_url: img_url.to_owned(),
+                id: ProjectId(*id),
+                name,
+                description,
+                img_url,
                 members: vec![],
             };
-            projects.insert(ProjectId(id), p.clone());
+            projects.insert(ProjectId(*id), p.clone());
 
             p
         }

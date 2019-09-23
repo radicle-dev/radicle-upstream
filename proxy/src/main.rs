@@ -4,12 +4,13 @@
 #![deny(warnings)]
 #![forbid(
     clippy::all,
-    clippy::cargo,
+    // clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
-    clippy::restriction
+    clippy::restriction,
+    clippy::result_unwrap_used
 )]
-#![allow(clippy::unseparated_literal_suffix)]
+#![allow(clippy::unseparated_literal_suffix, clippy::implicit_return)]
 
 #[macro_use]
 extern crate log;
@@ -28,7 +29,7 @@ fn main() {
     std::env::set_var("RUST_LOG", "info");
     pretty_env_logger::init();
 
-    let osc = oscoin_client::Client::new_from_file().unwrap();
+    let osc = oscoin_client::Client::new_from_file().expect("setup of osc client from file failed");
     let source = source::Ledger::new(osc);
 
     info!("Creating GraphQL schema and context");

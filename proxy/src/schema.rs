@@ -69,7 +69,7 @@ fn test_schema_projects() {
         &Variables::new(),
         &ctx,
     )
-    .unwrap();
+    .expect("juniper execute failed for projects");
 
     assert_eq!(
         res,
