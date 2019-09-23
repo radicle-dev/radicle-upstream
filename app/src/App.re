@@ -45,7 +45,7 @@ let elementOfPage = page: React.element =>
   | JoinNetwork => <JoinNetwork />
   | Projects => <Projects />
   | RegisterProject => <SessionGuard> <RegisterProject /> </SessionGuard>
-  | Project(address) => <Project address />
+  | Project(id) => <Project id />
   | Styleguide => <Styleguide />
   | NotFound(_path) => <NotFound />
   };

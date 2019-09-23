@@ -38,8 +38,8 @@ module Members = {
 
 module GetProjectConfig = [%graphql
   {|
-  query Query($address: Address!){
-    project(address: $address) {
+  query Query($id: ProjectId!){
+    project(id: $id) {
       name
       description
       imgUrl
@@ -55,8 +55,8 @@ module GetProjectConfig = [%graphql
 module GetProjectQuery = ReasonApolloHooks.Query.Make(GetProjectConfig);
 
 [@react.component]
-let make = (~address) => {
-  let getProject = GetProjectConfig.make(~address, ());
+let make = (~id) => {
+  let getProject = GetProjectConfig.make(~id=id |> Js.Json.string, ());
   let (state, _full) =
     GetProjectQuery.use(~variables=getProject##variables, ());
   let dispatch = Store.useDispatch();
@@ -72,8 +72,8 @@ let make = (~address) => {
     | NoData => React.null
     | Loading => React.string("Loading...")
     | Data(response) =>
-      switch (response##getProject) {
-      | None => React.string("Not Found")
+      switch (response##project) {
+      | None => "Not Found" |> React.string
       | Some(project) =>
         <>
           <ProjectCard.Alternate

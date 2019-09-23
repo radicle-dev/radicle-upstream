@@ -2,7 +2,13 @@
 
 #![deny(missing_docs)]
 #![deny(warnings)]
-#![deny(clippy::all, clippy::pedantic)]
+#![forbid(
+    clippy::all,
+    clippy::cargo,
+    clippy::nursery,
+    clippy::pedantic,
+    clippy::restriction
+)]
 #![allow(clippy::unseparated_literal_suffix)]
 
 #[macro_use]
@@ -19,7 +25,7 @@ mod source;
 
 fn main() {
     std::env::set_var("RUST_BACKTRACE", "full");
-    std::env::set_var("RUST_LOG", "trace");
+    std::env::set_var("RUST_LOG", "info");
     pretty_env_logger::init();
 
     let osc = oscoin_client::Client::new_from_file().unwrap();

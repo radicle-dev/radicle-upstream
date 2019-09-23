@@ -88,16 +88,6 @@
         },
         {
           "kind": "SCALAR",
-          "name": "Address",
-          "description": "Address",
-          "fields": null,
-          "inputFields": null,
-          "interfaces": null,
-          "enumValues": null,
-          "possibleTypes": null
-        },
-        {
-          "kind": "SCALAR",
           "name": "String",
           "description": null,
           "fields": null,
@@ -280,6 +270,16 @@
           ],
           "inputFields": null,
           "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "AccountId",
+          "description": "AccountId",
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
           "enumValues": null,
           "possibleTypes": null
         },
@@ -632,7 +632,7 @@
           "description": "An open source coin project",
           "fields": [
             {
-              "name": "address",
+              "name": "id",
               "description": null,
               "args": [],
               "type": {
@@ -640,7 +640,7 @@
                 "name": null,
                 "ofType": {
                   "kind": "SCALAR",
-                  "name": "Address",
+                  "name": "ProjectId",
                   "ofType": null
                 }
               },
@@ -775,14 +775,14 @@
               "description": null,
               "args": [
                 {
-                  "name": "address",
+                  "name": "id",
                   "description": null,
                   "type": {
                     "kind": "NON_NULL",
                     "name": null,
                     "ofType": {
                       "kind": "SCALAR",
-                      "name": "Address",
+                      "name": "ProjectId",
                       "ofType": null
                     }
                   },
@@ -800,6 +800,16 @@
           ],
           "inputFields": null,
           "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "ProjectId",
+          "description": "ProjectId",
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
           "enumValues": null,
           "possibleTypes": null
         },
@@ -922,6 +932,22 @@
           "name": "Account",
           "description": "Metadata enriched user keypair",
           "fields": [
+            {
+              "name": "id",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "AccountId",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
             {
               "name": "keyName",
               "description": null,

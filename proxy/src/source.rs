@@ -70,7 +70,16 @@ impl Ledger {
         let ms = p
             .members
             .into_iter()
-            .map(|a| self.accounts[&a.id].clone())
+            .map(|a| {
+                self.accounts
+                    .get(&a.id)
+                    .unwrap_or(&Account {
+                        id: a.id,
+                        key_name: "anonymous".to_owned(),
+                        avatar_url: "".to_owned(),
+                    })
+                    .clone()
+            })
             .collect();
 
         Project {
@@ -86,12 +95,11 @@ impl Ledger {
 impl Source for Ledger {
     fn get_all_projects(&self) -> Vec<Project> {
         // TODO(xla): Return proper error.
-        self.client
-            .list_projects()
-            .wait()
-            .unwrap()
-            .into_iter()
-            .map(|p| Project::from(p.clone()))
+        let ps = self.client.list_projects().wait().unwrap().into_iter();
+
+        info!("{}", ps.len());
+
+        ps.map(|p| Project::from(p.clone()))
             .map(|p| self.enrich_members(p))
             .collect()
     }
