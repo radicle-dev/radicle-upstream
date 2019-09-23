@@ -50,7 +50,20 @@ let make = () => {
   let onSubmit = _ => {
     let vars =
       RegisterProjectConfig.make(~name, ~description, ~imgUrl, ())##variables;
-    registerProjectMutation(~variables=vars, ()) |> navigateToPage(Projects);
+
+    registerProjectMutation(
+      ~variables=vars,
+      ~refetchQueries=
+        _ => {
+          let projects =
+            PageProjects.GetProjectsConfig.make()
+            |> ReasonApolloHooks.Utils.toQueryObj;
+
+          [|projects|];
+        },
+      (),
+    )
+    |> navigateToPage(Projects);
   };
 
   <El style=Styles.content>
