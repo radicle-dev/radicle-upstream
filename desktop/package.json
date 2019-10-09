@@ -10,13 +10,16 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/react-hooks": "^3.1.2",
     "@types/hookrouter": "^2.2.1",
     "@types/jest": "24.0.18",
     "@types/node": "12.7.11",
     "@types/react": "16.9.5",
     "@types/react-dom": "16.9.1",
+    "apollo-boost": "^0.4.4",
     "cross-env": "^6.0.3",
     "electron-is-dev": "^1.1.0",
+    "graphql": "^14.5.8",
     "hookrouter": "^1.2.3",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
@@ -31,7 +34,7 @@
     "electron-build": "electron-builder",
     "release": "yarn react-build && electron-builder --publish=always",
     "build": "yarn react-build && yarn electron-build",
-    "start": "concurrently \"cross-env BROWSER=none yarn react-start\" \"wait-on http://localhost:3000 && electron .\""
+    "start": "concurrently \"cross-env BROWSER=none yarn react-start\" \"cd ../proxy && cargo run\" \"wait-on http://localhost:3000 && wait-on http://localhost:8080 && electron .\""
   },
   "eslintConfig": {
     "extends": "react-app"
