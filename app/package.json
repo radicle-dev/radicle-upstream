@@ -5,7 +5,7 @@
   "build": {
     "appId": "xyz.monadic.mvp"
   },
-  "main": "src/electron.js",
+  "main": "src/main/electron.js",
   "homepage": "./",
   "scripts": {
     "build": "bsb -make-world",
@@ -20,7 +20,7 @@
     "deploy": "rm -rf ./build && yarn clean && yarn build && yarn webpack:production && firebase deploy",
     "schema:fetch": "yarn send-introspection-query http://localhost:8080/graphql",
     "proxy:start": "cd ../proxy && cargo run",
-    "electron:start": "concurrently --kill-others \"yarn start\" \"wait-on ./src/Index.bs.js && yarn server\" \"yarn proxy:start\" \"wait-on http://localhost:8000 && wait-on http://localhost:8080 && electron .\""
+    "electron:start": "concurrently --kill-others \"yarn start\" \"wait-on ./src/renderer/Index.bs.js && yarn server\" \"yarn proxy:start\" \"wait-on http://localhost:8000 && wait-on http://localhost:8080 && electron .\""
   },
   "keywords": [],
   "author": "monadic",

@@ -8,7 +8,7 @@ const assetsDir = path.join(__dirname, 'assets/');
 const isProd = process.env.NODE_ENV === 'production';
 
 module.exports = {
-  entry: './src/Index.bs.js',
+  entry: './src/renderer/Index.bs.js',
   mode: isProd ? 'production' : 'development',
   output: {
     path: outputDir,
@@ -16,7 +16,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'src/index.html',
+      template: 'src/renderer/index.html',
       inject: false
     }),
     new CopyPlugin([
