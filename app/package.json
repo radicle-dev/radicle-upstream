@@ -20,9 +20,9 @@
     "schema:fetch": "yarn send-introspection-query http://localhost:8080/graphql",
     "proxy:start": "cd ../proxy && cargo run",
 
+    "bs:clean": "bsb -clean-world",
     "bs:build": "bsb -make-world",
-    "bs:watch": "bsb -make-world -w",
-    "bs:clean": "bsb -clean-world"
+    "bs:watch": "bsb -make-world -w"
   },
   "keywords": [],
   "author": "monadic",
