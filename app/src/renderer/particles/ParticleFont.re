@@ -3,42 +3,42 @@ open Css;
 let gtBold =
   fontFace(
     ~fontFamily="GT America Bold",
-    ~src=[url("/fonts/GTAmericaBold.otf")],
+    ~src=[url("fonts/GTAmericaBold.otf")],
     (),
   );
 
 let gtMedium =
   fontFace(
     ~fontFamily="GT America Medium",
-    ~src=[url("/fonts/GTAmericaMedium.otf")],
+    ~src=[url("fonts/GTAmericaMedium.otf")],
     (),
   );
 
 let gtRegular =
   fontFace(
     ~fontFamily="GT America Regular",
-    ~src=[url("/fonts/GTAmericaRegular.otf")],
+    ~src=[url("fonts/GTAmericaRegular.otf")],
     (),
   );
 
 let gtMonoBold =
   fontFace(
     ~fontFamily="GT America Mono Bold",
-    ~src=[url("/fonts/GTAmericaMonoBold.otf")],
+    ~src=[url("fonts/GTAmericaMonoBold.otf")],
     (),
   );
 
 let gtMonoMedium =
   fontFace(
     ~fontFamily="GT America Mono Medium",
-    ~src=[url("/fonts/GTAmericaMonoMedium.otf")],
+    ~src=[url("fonts/GTAmericaMonoMedium.otf")],
     (),
   );
 
 let gtMonoRegular =
   fontFace(
     ~fontFamily="GT America Mono Regular",
-    ~src=[url("/fonts/GTAmericaMonoRegular.otf")],
+    ~src=[url("fonts/GTAmericaMonoRegular.otf")],
     (),
   );
 
