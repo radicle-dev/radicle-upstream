@@ -10,10 +10,9 @@ Basis for the list of dependencies as well as the scripts supported is the
 
 
 ### Development
-#### Run
 
 In order to access to latest state of the app which updates on any code change
-run: `yarn start:electron`.
+run: `yarn start`.
 
 #### Tests
 We follow the code formatting dictated by `refmt` which is part of the
