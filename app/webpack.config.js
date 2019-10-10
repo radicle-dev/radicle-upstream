@@ -1,5 +1,4 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
 const outputDir = path.join(__dirname, 'build/');
@@ -15,10 +14,6 @@ module.exports = {
     filename: 'Index.js'
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: 'src/renderer/index.html',
-      inject: false
-    }),
     new CopyPlugin([
       { from: 'assets', to: './' }
     ])
