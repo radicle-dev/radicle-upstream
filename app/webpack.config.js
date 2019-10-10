@@ -12,7 +12,7 @@ module.exports = {
   mode: isProd ? 'production' : 'development',
   output: {
     path: outputDir,
-    filename: 'Index.js'
+    filename: 'index.js'
   },
   plugins: [
     new CleanWebpackPlugin(),
