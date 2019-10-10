@@ -19,7 +19,7 @@
     "server": "webpack-dev-server",
     "schema:fetch": "yarn send-introspection-query http://localhost:8080/graphql",
     "proxy:start": "cd ../proxy && cargo run",
-    "electron:start": "concurrently --kill-others \"yarn start\" \"wait-on ./src/renderer/Index.bs.js && yarn server\" \"yarn proxy:start\" \"wait-on http://localhost:8000 && wait-on http://localhost:8080 && electron .\""
+    "electron:start": "concurrently --kill-others \"yarn start\" \"wait-on ./lib/js/src/renderer/Index.bs.js && yarn server\" \"yarn proxy:start\" \"wait-on http://localhost:8000 && wait-on http://localhost:8080 && electron .\""
   },
   "keywords": [],
   "author": "monadic",
