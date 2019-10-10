@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const outputDir = path.join(__dirname, 'build/');
 const assetsDir = path.join(__dirname, 'assets/');
@@ -14,6 +15,7 @@ module.exports = {
     filename: 'Index.js'
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new CopyPlugin([
       { from: 'assets', to: './' }
     ])
