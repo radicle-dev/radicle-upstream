@@ -3,12 +3,17 @@
   "description": "mvp",
   "version": "0.1.0",
   "build": {
-    "appId": "xyz.monadic.mvp"
+    "appId": "xyz.monadic.mvp",
+    "files": [
+      "build/**/*",
+      "lib/js/src/main/**/*",
+      "!__tests__"
+    ]
   },
   "main": "./lib/js/src/main/Electron.bs.js",
-  "homepage": "./",
   "scripts": {
     "start": "concurrently --kill-others \"yarn bs:clean && yarn bs:watch\" \"wait-on ./lib/js/src/renderer/Index.bs.js && yarn webpack:server\" \"yarn proxy:start\" \"wait-on http://localhost:8000 && wait-on http://localhost:8080 && electron .\"",
+    "build": "rm -rf ./dist && yarn bs:clean && yarn bs:build && yarn webpack:build && electron-builder",
 
     "test": "yarn bs:build && jest",
     "test:coverage": "jest --coverage",
