@@ -27,30 +27,7 @@ We follow the code formatting dictated by `refmt` which is part of the
 Run `yarn test` to have all tests executed and `yarn test:watch` to have
 a continuous feedback from our test runner.
 
-### Deployment
-
-The app can be deployed to a CDN as a static page, so far it only shows dummy
-data and the deployment is meant only for presentation purposes.
-
-The project is hosted on Firebase, so deployments require the [Firebase CLI][3].
-Install and configure the deployment tooling like so:
-
-```
-yarn global add firebase-tools
-firebase login
-```
-
-To be able to deploy you'll need to ask for permissions to the Firebase project
-from someone on the team. This can be done via the [Firebase console][4]:
-`Project Overview (cogwheel icon)` -> `Users and permissions` -> `Add member`
-
-To build and deploy the latest changes run `yarn deploy`. The published
-app can be seen [here][5].
-
 
 [0]: https://github.com/reasonml/reason-cli
 [1]: https://github.com/typicode/husky
 [2]: https://github.com/okonet/lint-staged
-[3]: https://firebase.google.com/docs/cli/
-[4]: https://console.firebase.google.com/project/product-mvp-gf3s2
-[5]: https://product-mvp-gf3s2.firebaseapp.com
