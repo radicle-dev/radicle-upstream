@@ -1,3 +1,10 @@
+/** Router implementation on top of ReasonReact Router.
+ **
+ ** All routing is done via changing the hash portion of the URL.
+ ** This way our routes work when served by a webserver as well as in an
+ ** Electron app when served from the file-system.
+ **/
+
 /** Routable pages which relate to larger context of features. **/
 type page =
   | Root
@@ -6,13 +13,23 @@ type page =
   | Project(string)
   | RegisterProject
   | Styleguide
-  | NotFound(list(string));
+  | NotFound;
 
-/** Reads the current url and return a matching page, or NotFound. **/
+/** Reads the current url and returns a matching page.
+ **
+ ** Given: http://localhost:8000/#projects/monokel
+ ** Returns: Project("monokel")
+ **
+ ** Given: file:///Users/rudolfs/work/mvp/app/build/index.html#projects/oscoin
+ ** Returns: Project("oscoin")
+ **
+ ** Given: file:///Users/rudolfs/work/mvp/app/build/index.html#nonexistant/path
+ ** Returns: NotFound
+ **/
 let currentPage: unit => page;
 
-/** Given a page returns a function which navigates to it by pushing a new url
- ** onto the pushState.
+/** Navigates to a given page. This is done via pushState to update the
+ ** browser's URL. Achtung, side-effects!
  **/
 let navigateToPage: (page, 'a) => unit;
 
@@ -21,7 +38,5 @@ let navigateToPage: (page, 'a) => unit;
  **/
 let nameOfPage: page => string;
 
-/** Given the path of a ReasonReactRouter.url returns a matching page, or
- ** NotFound.
- **/
-let pageOfPath: list(string) => page;
+/** Used only in tests. **/
+let pageFromRoute: string => page;

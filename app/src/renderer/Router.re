@@ -7,59 +7,50 @@ type page =
   | Project(string)
   | RegisterProject
   | Styleguide
-  | NotFound(list(string));
+  | NotFound;
 
-let join = (parts: list(string)): string =>
-  List.fold_left((a, b) => a ++ "/" ++ b, "", parts);
-
-let linkOfUrl = url => {
-  let path = join(url.path);
-  let search = url.search != "" ? "?" ++ url.search : "";
-  let hash = url.hash != "" ? "#" ++ url.hash : "";
-
-  path ++ search ++ hash;
-};
-
-let nameOfPage = (p: page): string =>
-  switch (p) {
+let nameOfPage = page =>
+  switch (page) {
   | Root => "Root"
   | JoinNetwork => "Join Network"
   | Projects => "Explore"
   | RegisterProject => "Register Project"
   | Project(id) => "Project " ++ id
   | Styleguide => "Styleguide"
-  | NotFound(_path) => "Not Found"
+  | NotFound => "Not Found"
   };
 
-let pageOfPath = path: page =>
-  switch (path) {
-  | [] => Projects
-  | ["join-network"] => JoinNetwork
-  | ["projects"] => Projects
-  | ["projects", "register"] => RegisterProject
-  | ["projects", id] => Project(id)
-  | ["styleguide"] => Styleguide
-  | ["not-found"] => NotFound(path)
-  | _ => NotFound(path)
+let pageFromRoute = route => {
+  let pathSegments = Js.String.split("/", route);
+
+  switch (pathSegments) {
+  | [|""|] => Projects
+  | [|"join-network"|] => JoinNetwork
+  | [|"projects"|] => Projects
+  | [|"projects", "register"|] => RegisterProject
+  | [|"projects", id|] => Project(id)
+  | [|"styleguide"|] => Styleguide
+  | [|"not-found"|] => NotFound
+  | _ => NotFound
+  };
+};
+
+let routeFromPage = page =>
+  switch (page) {
+  | Root => ""
+  | JoinNetwork => "#join-network"
+  | Projects => "#projects"
+  | RegisterProject => "#projects/register"
+  | Project(id) => "#projects/" ++ id
+  | Styleguide => "#styleguide"
+  | NotFound => "#not-found"
   };
 
-let pathOfPage = p =>
-  switch (p) {
-  | Root => ["/"]
-  | JoinNetwork => ["join-network"]
-  | Projects => ["projects"]
-  | RegisterProject => ["projects", "register"]
-  | Project(id) => ["projects", id]
-  | Styleguide => ["styleguide"]
-  | NotFound(_path) => ["not-found"]
-  };
-
-let navigateToPage = (p, _) =>
-  ReasonReactRouter.push(
-    linkOfUrl({path: pathOfPage(p), hash: "", search: ""}),
-  );
+let navigateToPage = (page, _) =>
+  ReasonReactRouter.push(routeFromPage(page));
 
 let currentPage = (): page => {
-  let url = ReasonReactRouter.useUrl();
-  pageOfPath(url.path);
+  let hashPartOfUrl = ReasonReactRouter.useUrl().hash;
+
+  pageFromRoute(hashPartOfUrl);
 };

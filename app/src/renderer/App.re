@@ -47,7 +47,7 @@ let elementOfPage = page: React.element =>
   | RegisterProject => <SessionGuard> <RegisterProject /> </SessionGuard>
   | Project(address) => <Project address />
   | Styleguide => <Styleguide />
-  | NotFound(_path) => <NotFound />
+  | NotFound => <NotFound />
   };
 
 module Overlay = {
