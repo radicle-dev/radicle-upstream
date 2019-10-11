@@ -1,8 +1,10 @@
 # MVP
+
 This is a cross-platform desktop app for product explorations.
 
 
 ## Development
+
 The app is written in ReasonML + Electron. For our dependency management and
 script execution we use `yarn`.
 
@@ -32,10 +34,12 @@ After making changes to the code, run tests:
 
 
 ### Build pipelines
+
 The app consists of three parts:
   - the main electron process: `src/main`
   - the app logic: `src/renderer`
   - backend GraphQL proxy that runs as a background daemon
+
 
 #### In development
 
@@ -65,7 +69,7 @@ We use [electron-builder][3] to build and distribute cross-platform
 (macOS/Linux) packages.
 
 
-Here's how the build pipeline works:
+##### Build pipeline works
 
 1. Old `dist` directory is removed and a new clean one is re-created
 
@@ -89,7 +93,7 @@ Here's how the build pipeline works:
    into one runnable package. It also creates a installable `oscoin-mvp-0.1.0.dmg`
 
 
-Runtime details
+##### Runtime details
 
 When the electron app is bundled as a package the setup slightly differs from
 development. The app which lives in `src/renderer` is served from an archive
