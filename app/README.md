@@ -1,28 +1,142 @@
 # MVP
+This is a cross-platform desktop app for product explorations.
 
-This is the app for the product explorations.
+
+## Development
+The app is written in ReasonML + Electron. For our dependency management and
+script execution we use `yarn`.
+
+Code formatting is dictated by `refmt` which is part of [reason-cli][0] and we
+enforce it locally on `precommit` with [husky][1] and [lint-staged][2].
+
 
 ### Setup
 
-We consistently use `yarn` for our dependency management and script execution.
-Basis for the list of dependencies as well as the scripts supported is the
-`package.json`. To install all packages relevant for development run: `yarn`
+Run the app locally with hot reloading:
+
+1. Get the code: `git clone git@github.com:oscoin/mvp.git`
+2. Install dependencies: `cd mvp/app && yarn install`
+3. Start the app in development mode: `yarn start`
 
 
-### Development
+Build and package the app:
 
-In order to access to latest state of the app which updates on any code change
-run: `yarn start`.
+1. Build: `yarn dist`
+2. Get the generated package from: `dist/oscoin-mvp-0.1.0.dmg`
 
-#### Tests
-We follow the code formatting dictated by `refmt` which is part of the
-[reason-cli][0] and enforce it locally on `precommit` with [husky][1] and
-[lint-staged][2].
 
-Run `yarn test` to have all tests executed and `yarn test:watch` to have
-a continuous feedback from our test runner.
+After making changes to the code, run tests:
 
+- Run `yarn test` to have all tests executed
+- To have a continuous feedback from our test runner run `yarn test:watch`
+
+
+### Build pipelines
+The app consists of three parts:
+  - the main electron process: `src/main`
+  - the app logic: `src/renderer`
+  - backend GraphQL proxy that runs as a background daemon
+
+#### In development
+
+When you run `yarn start` the following things happen which enable live code
+reloading in development mode:
+
+1. Old BuckleScript build outputs in `lib/js` are removed
+
+2. BuckleScript watches code changes and re-compiles ReasonML to JavaScript,
+   output lands in `lib/js`
+
+3. When everything in `src/renderer` is compiled we start a webpack development
+   webserver which bundles everything from `lib/js/src/renderer/Index.bs.js`
+   and serves it together with `assets` on: http://localhost:8000
+
+4. Backend proxy is started and serves mock data via GraphQL on
+   http://localhost:8080
+
+5. When both the webserver and proxy are up and running Electron is started.
+   Electron gets its configuration from `package.json`, the main Node.js process
+   entry point is defined as: `"main": "./lib/js/src/main/Electron.bs.js"`
+
+
+#### Distributed as a package
+
+We use [electron-builder][3] to build and distribute cross-platform
+(macOS/Linux) packages.
+
+
+Here's how the build pipeline works:
+
+1. Old `dist` directory is removed and a new clean one is re-created
+
+2. Old BuckleScript build outputs in `lib/js` are removed
+
+3. BuckleScript compiles all ReasonML source from `src` into `lib/src/js`, this
+   includes both code for main process as well as the renderer.
+
+4. Webpack creates a single `.js` bundle file of the renderer sources and
+   copies it into the `build` folder together with everything from the `assets`
+   folder. This is configured in `webpack.config.js`.
+
+5. The backend proxy is built with cargo and copied into the dist folder,
+   because all assets have to be in the same folder where `package.json` lives
+   so electron builder can bundle them into one package.
+
+6. Finally electron builder packages all the resources
+     - renderer from `build/*` -> `oscoin-mvp.app/Contents/Resources/app.asar`
+     - main process from `lib/js` -> `oscoin-mvp.app/Contents/Resources/app.asar`
+     - proxy from `dist/proxy` -> `oscoin-mvp.app/Contents/Resources/proxy`
+   into one runnable package. It also creates a installable `oscoin-mvp-0.1.0.dmg`
+
+
+Runtime details
+
+When the electron app is bundled as a package the setup slightly differs from
+development. The app which lives in `src/renderer` is served from an archive
+package on the filesystem: `oscoin-mvp.app/Contents/Resources/app.asar`.
+
+If you wanna have a peek at the layout of the package, you'll need to extract
+it with:
+```
+npx asar extract app.asar app
+ls app
+  #  .
+  #  ├── build
+  #  ├── lib
+  #  ├── node_modules
+  #  └── package.json
+```
+
+The proxy backend is copied by the build pipeline into
+`oscoin-mvp.app/Contents/Resources/proxy` and started by the main Node.js
+Electron process (`src/main/Electron.re`) when the app is launched.
+
+
+### Scripts
+
+```
+start            - start electron app with hot code reloading
+dist             - build and package the macOS/Linux app
+
+test             - run test suite
+test:coverage    - run code coverage
+test:watch       - watch changes to source code and continuously re-run tests
+
+webpack:server   - start webpack development server, use the renderer part of
+                   the app via your local browser http://localhost:8000/
+webpack:build    - build renderer application and copy static assets to
+                   build folder
+
+schema:fetch     - fetch GraphQL schema from a running backend proxy
+proxy:build      - build the backend GraphQL proxy binary
+proxy:start      - start the backend proxy and serve mock data
+
+bs:clean         - clean all `.js` files generated by BuckleScript in `lib/js`
+bs:build         - compile ReasonML to Javascript, output to `lib/js`
+bs:watch         - continuously watch sources and compile ReasonML on change
+```
 
 [0]: https://github.com/reasonml/reason-cli
 [1]: https://github.com/typicode/husky
 [2]: https://github.com/okonet/lint-staged
+[3]: https://www.electron.build
