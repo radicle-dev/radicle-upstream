@@ -1,21 +1,26 @@
-use juniper::{FieldResult, RootNode};
+use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
-use crate::source::{Address, Local, Project, Source};
+use crate::source::{AccountId, Project, ProjectId, Source};
 
+/// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;
 
+/// Returns a `Schema` with the default parameterised `Query` and `Mutation`.
 pub fn create() -> Schema {
     Schema::new(Query {}, Mutation {})
 }
 
+/// Container to pass the `Source` around for data access.
 #[derive(Clone)]
 pub struct Context {
-    source: Arc<Local>,
+    /// Origin of data needed to server APIs.
+    source: Arc<dyn Source + Send + Sync>,
 }
 
 impl Context {
-    pub fn new(source: Local) -> Self {
+    /// Returns a new `Context`.
+    pub fn new<S: Source + Send + Sync + 'static>(source: S) -> Self {
         Self {
             source: Arc::new(source),
         }
@@ -24,6 +29,7 @@ impl Context {
 
 impl juniper::Context for Context {}
 
+/// Encapsulates read paths in API.
 pub struct Query;
 
 #[juniper::object(Context = Context)]
@@ -36,14 +42,31 @@ impl Query {
         Ok(ctx.source.get_all_projects())
     }
 
-    fn get_project(ctx: &Context, address: Address) -> FieldResult<Option<Project>> {
-        Ok(ctx.source.get_project(address))
+    fn project(ctx: &Context, id: ProjectId) -> FieldResult<Option<Project>> {
+        Ok(ctx.source.get_project(id))
+    }
+}
+
+/// Encapsulates write path in API.
+pub struct Mutation;
+
+#[juniper::object(Context = Context)]
+impl Mutation {
+    fn register_project(
+        ctx: &Context,
+        name: String,
+        description: String,
+        img_url: String,
+    ) -> FieldResult<Project> {
+        Ok(ctx.source.register_project(name, description, img_url))
     }
 }
 
 #[test]
-fn test_schema_all_projects() {
+fn test_schema_projects() {
     use juniper::Variables;
+
+    use crate::source::test::Local;
 
     let ctx = Context::new(Local::new());
     let (res, _errors) = juniper::execute(
@@ -53,7 +76,7 @@ fn test_schema_all_projects() {
         &Variables::new(),
         &ctx,
     )
-    .unwrap();
+    .expect("juniper execute failed for projects");
 
     assert_eq!(
         res,
@@ -68,16 +91,46 @@ fn test_schema_all_projects() {
     );
 }
 
-pub struct Mutation;
+juniper::graphql_scalar!(AccountId where Scalar = <S> {
+    description: "AccountId"
 
-#[juniper::object(Context = Context)]
-impl Mutation {
-    fn register_project(
-        ctx: &Context,
-        name: String,
-        description: String,
-        img_url: String,
-    ) -> FieldResult<Project> {
-        Ok(ctx.source.register_project(name, description, img_url))
+    resolve(&self) -> Value {
+        Value::scalar(hex::encode(self.0))
     }
-}
+
+    from_input_value(v: &InputValue) -> Option<AccountId> {
+        let mut bytes = [0_u8; 20];
+
+        v.as_scalar_value::<String>()
+            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
+
+        Some(AccountId(bytes))
+    }
+
+    // Define how to parse a string value.
+    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+        <String as ParseScalarValue<S>>::from_str(value)
+    }
+});
+
+juniper::graphql_scalar!(ProjectId where Scalar = <S> {
+    description: "ProjectId"
+
+    resolve(&self) -> Value {
+        Value::scalar(hex::encode(self.0))
+    }
+
+    from_input_value(v: &InputValue) -> Option<ProjectId> {
+        let mut bytes = [0_u8; 20];
+
+        v.as_scalar_value::<String>()
+            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
+
+        Some(ProjectId(bytes))
+    }
+
+    // Define how to parse a string value.
+    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+        <String as ParseScalarValue<S>>::from_str(value)
+    }
+});
