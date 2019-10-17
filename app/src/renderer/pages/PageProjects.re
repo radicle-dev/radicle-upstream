@@ -36,21 +36,36 @@ module Header = {
     </div>;
 };
 
+module ProjectItem = {
+  [@react.component]
+  let make = (~id, ~name, ~description, ~imgUrl) =>
+    <li className=Styles.listItem>
+      <Link style=Styles.link page={Router.Project(id)}>
+        <ProjectCard imgUrl name description />
+      </Link>
+    </li>;
+};
+
 module ProjectList = {
   [@react.component]
   let make = (~children) => {
     let projects =
       Array.map(
-        project =>
-          <li className=Styles.listItem key=project##address>
-            <Link style=Styles.link page={Router.Project(project##address)}>
-              <ProjectCard
-                imgUrl=project##imgUrl
-                name=project##name
-                description=project##description
-              />
-            </Link>
-          </li>,
+        project => {
+          let id =
+            switch (project##id |> Js.Json.decodeString) {
+            | Some(id) => id
+            | None => ""
+            };
+
+          <ProjectItem
+            key=id
+            id
+            name=project##name
+            description=project##description
+            imgUrl=project##imgUrl
+          />;
+        },
         children,
       );
 
@@ -72,9 +87,10 @@ module ErrorMessage = {
 
 module GetProjectsConfig = [%graphql
   {|
+
   query Query{
     projects {
-      address
+      id
       description
       name
       imgUrl

@@ -5,6 +5,7 @@ use warp::Filter;
 
 use crate::schema::{Context, Schema};
 
+/// Runs the warp server with the given schema and context.
 pub fn run(schema: Schema, context: Context) {
     let index = warp::path::end().map(|| {
         Response::builder()
@@ -29,6 +30,7 @@ pub fn run(schema: Schema, context: Context) {
     warp::serve(routes).run(([127, 0, 0, 1], 8080))
 }
 
+/// Filter for the graphql endpoint.
 fn make_graphql_filter<Query, Mutation, Context>(
     path: &'static str,
     schema: juniper::RootNode<'static, Query, Mutation>,
@@ -57,6 +59,7 @@ where
         .boxed()
 }
 
+/// Helper for standard response shape.
 fn build_response(response: Result<Vec<u8>, serde_json::Error>) -> warp::http::Response<Vec<u8>> {
     match response {
         Ok(body) => warp::http::Response::builder()
