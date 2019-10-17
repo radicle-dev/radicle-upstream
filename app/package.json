@@ -1,26 +1,48 @@
 {
   "name": "oscoin-mvp",
+  "description": "mvp",
   "version": "0.1.0",
+  "build": {
+    "appId": "xyz.monadic.mvp",
+    "files": [
+      "build/**/*",
+      "lib/js/src/main/**/*",
+      "!__tests__"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/proxy",
+        "to": "proxy"
+      }
+    ]
+  },
+  "main": "./lib/js/src/main/Electron.bs.js",
   "scripts": {
-    "build": "bsb -make-world",
-    "start": "bsb -make-world -w",
-    "clean": "bsb -clean-world",
-    "test": "bsb -make-world && jest",
+    "start": "concurrently --kill-others \"yarn bs:clean && yarn bs:watch\" \"wait-on ./lib/js/src/renderer/Index.bs.js && yarn webpack:server\" \"yarn proxy:start\" \"wait-on http://localhost:8000 && wait-on http://localhost:8080 && electron .\"",
+    "dist": "rm -rf ./dist && mkdir ./dist && yarn bs:clean && yarn bs:build && yarn webpack:build && yarn proxy:build && cp ../proxy/target/debug/proxy dist && electron-builder",
+
+    "test": "yarn bs:build && jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watchAll",
-    "webpack": "webpack -w",
-    "webpack:production": "NODE_ENV=production webpack",
-    "server": "webpack-dev-server",
-    "deploy": "rm -rf ./build && yarn clean && yarn build && yarn webpack:production && firebase deploy",
+
+    "webpack:server": "webpack-dev-server",
+    "webpack:build": "NODE_ENV=production webpack",
+
     "schema:fetch": "yarn send-introspection-query http://localhost:8080/graphql",
-    "proxy:start": "cd ../proxy && cargo run"
+    "proxy:build": "cd ../proxy && cargo build",
+    "proxy:start": "cd ../proxy && cargo run",
+
+    "bs:clean": "bsb -clean-world",
+    "bs:build": "bsb -make-world",
+    "bs:watch": "bsb -make-world -w"
   },
   "keywords": [],
-  "author": "",
+  "author": "monadic",
   "license": "MIT",
   "dependencies": {
     "@apollo/react-hooks": "^3.1.0",
     "bs-css": "^9.0.1",
+    "electron-is-dev": "^1.1.0",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "reason-apollo": "^0.17.0",
@@ -33,14 +55,18 @@
     "bs-jest-dom": "^2.0.1",
     "bs-platform": "^5.0.4",
     "bs-react-testing-library": "^0.6.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "concurrently": "^5.0.0",
     "copy-webpack-plugin": "^5.0.4",
+    "electron": "^6.0.12",
+    "electron-builder": "^21.2.0",
     "graphql_ppx": "^0.2.8",
-    "html-webpack-plugin": "^3.2.0",
     "husky": "^3.0.3",
     "lint-staged": "^9.2.1",
     "reductive-dev-tools": "^0.2.6",
     "redux": "^4.0.4",
     "redux-devtools-extension": "^2.13.8",
+    "wait-on": "^3.3.0",
     "webpack": "^4.0.1",
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.8"

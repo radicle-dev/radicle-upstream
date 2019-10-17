@@ -4,17 +4,18 @@ open Router;
 
 describe("Router", () =>
   testAll(
-    "pageOfUrl",
+    "pageFromRoute",
     [
-      (Projects, []),
-      (Projects, ["projects"]),
-      (RegisterProject, ["projects", "register"]),
-      (Project("monokel"), ["projects", "monokel"]),
-      (Styleguide, ["styleguide"]),
-      (NotFound(["not-found"]), ["not-found"]),
-      (NotFound(["utter", "crap"]), ["utter", "crap"]),
+      ("", Projects),
+      ("join-network", JoinNetwork),
+      ("projects", Projects),
+      ("projects/register", RegisterProject),
+      ("projects/monokel", Project("monokel")),
+      ("styleguide", Styleguide),
+      ("not-found", NotFound),
+      ("this/page/does/not/exist", NotFound),
     ],
-    ((page, path)) =>
-    expect(pageOfPath(path)) |> toEqual(page)
+    ((route, page)) =>
+    expect(pageFromRoute(route)) |> toEqual(page)
   )
 );

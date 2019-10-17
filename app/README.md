@@ -1,56 +1,145 @@
 # MVP
 
-This is the app for the product explorations.
+This is a cross-platform desktop app for product explorations.
+
+
+## Development
+
+The app is written in ReasonML + Electron. For our dependency management and
+script execution we use `yarn`.
+
+Code formatting is dictated by `refmt` which is part of [reason-cli][0] and we
+enforce it locally on `precommit` with [husky][1] and [lint-staged][2].
+
 
 ### Setup
 
-We consistently use `yarn` for our dependency management and script execution.
-Basis for the list of dependencies as well as the scripts supported is the
-`package.json`. To install all packages relevant for development run: `yarn`
+Run the app locally with hot reloading:
 
-### Run
+1. Get the code: `git clone git@github.com:oscoin/mvp.git`
+2. Install dependencies: `cd mvp/app && yarn install`
+3. Start the app in development mode: `yarn start`
 
-In order to access to latest state of the app which updates on any change, two
-commands need to run in parallel. One for the compiler to recomplile the
-sources: `yarn start`.
 
-And in another session have the development server running which live reloads
-the output produced by the compiler and applies any build pipeline changes
-configured via `webpack.config.js`: `yarn server`.
+Build and package the app:
 
-### Development
+1. Build: `yarn dist`
+2. Get the generated package from: `dist/oscoin-mvp-0.1.0.dmg`
 
-We follow the code formatting dictated by `refmt` which is part of the
-[reason-cli][0] and enforce it locally on `precommit` with [husky][1] and
-[lint-staged][2].
 
-Run `yarn test` to have all tests executed and `yarn test:watch` to have
-a continuous feedback from our test runner.
+After making changes to the code, run tests:
 
-### Deployment
+- Run `yarn test` to have all tests executed
+- To have a continuous feedback from our test runner run `yarn test:watch`
 
-The app can be deployed to a CDN as a static page, so far it only shows dummy
-data and the deployment is meant only for presentation purposes.
 
-The project is hosted on Firebase, so deployments require the [Firebase CLI][3].
-Install and configure the deployment tooling like so:
+### Build pipelines
+
+The app consists of three parts:
+  - the main electron process: `src/main`
+  - the app logic: `src/renderer`
+  - backend GraphQL proxy that runs as a background daemon
+
+
+#### In development
+
+When you run `yarn start` the following things happen which enable live code
+reloading in development mode:
+
+1. Old BuckleScript build outputs in `lib/js` are removed
+
+2. BuckleScript watches code changes and re-compiles ReasonML to JavaScript,
+   output lands in `lib/js`
+
+3. When everything in `src/renderer` is compiled we start a webpack development
+   webserver which bundles everything from `lib/js/src/renderer/Index.bs.js`
+   and serves it together with `assets` on: http://localhost:8000
+
+4. Backend proxy is started and serves mock data via GraphQL on
+   http://localhost:8080
+
+5. When both the webserver and proxy are up and running Electron is started.
+   Electron gets its configuration from `package.json`, the main Node.js process
+   entry point is defined as: `"main": "./lib/js/src/main/Electron.bs.js"`
+
+
+#### Distributed as a package
+
+We use [electron-builder][3] to build and distribute cross-platform
+(macOS/Linux) packages.
+
+
+1. Old `dist` directory is removed and a new clean one is re-created
+
+2. Old BuckleScript build outputs in `lib/js` are removed
+
+3. BuckleScript compiles all ReasonML source from `src` into `lib/src/js`, this
+   includes both code for main process as well as the renderer.
+
+4. Webpack creates a single `.js` bundle file of the renderer sources and
+   copies it into the `build` folder together with everything from the `assets`
+   folder. This is configured in `webpack.config.js`.
+
+5. The backend proxy is built with cargo and copied into the `dist` folder,
+   because all assets have to be in the same folder relative to `package.json`,
+   so electron-builder can bundle them into one package.
+
+6. Finally electron-builder packages all the resources into one runnable
+   package (including a DMG: `oscoin-mvp-0.1.0.dmg`):
+
+     - renderer from `build/*` -> `oscoin-mvp.app/Contents/Resources/app.asar`
+     - main process from `lib/js` -> `oscoin-mvp.app/Contents/Resources/app.asar`
+     - proxy from `dist/proxy` -> `oscoin-mvp.app/Contents/Resources/proxy`
+
+
+##### Runtime details
+
+When the electron app is bundled as a package the setup slightly differs from
+development. The app which lives in `src/renderer` is served from an archive
+package on the filesystem: `oscoin-mvp.app/Contents/Resources/app.asar`.
+
+If you wanna have a look at the layout of the package, you'll need to extract
+it with:
 
 ```
-yarn global add firebase-tools
-firebase login
+npx asar extract app.asar app
+ls app
+  #  .
+  #  ├── build
+  #  ├── lib
+  #  ├── node_modules
+  #  └── package.json
 ```
 
-To be able to deploy you'll need to ask for permissions to the Firebase project
-from someone on the team. This can be done via the [Firebase console][4]:
-`Project Overview (cogwheel icon)` -> `Users and permissions` -> `Add member`
+The proxy backend is copied by the build pipeline into
+`oscoin-mvp.app/Contents/Resources/proxy` and started by the main Node.js
+Electron process (`src/main/Electron.re`) when the app is launched.
 
-To build and deploy the latest changes run `yarn deploy`. The published
-app can be seen [here][5].
 
+### Scripts
+
+```
+start            - start electron app with hot-code-reloading
+dist             - build and package macOS/Linux app
+
+test             - run test suite
+test:coverage    - run code coverage
+test:watch       - watch changes to source code and continuously re-run tests
+
+webpack:server   - start webpack development server, use the renderer part of
+                   the app via your local browser http://localhost:8000/
+webpack:build    - build renderer app and copy static assets to build folder
+
+schema:fetch     - fetch GraphQL schema from a running backend proxy
+proxy:build      - build the backend GraphQL proxy binary
+proxy:start      - start the backend proxy and serve mock data
+
+bs:clean         - clean all `.js` files generated by BuckleScript in `lib/js`
+bs:build         - compile ReasonML to Javascript, output to `lib/js`
+bs:watch         - continuously watch and re-compile ReasonML code to JS
+```
 
 [0]: https://github.com/reasonml/reason-cli
 [1]: https://github.com/typicode/husky
 [2]: https://github.com/okonet/lint-staged
-[3]: https://firebase.google.com/docs/cli/
-[4]: https://console.firebase.google.com/project/product-mvp-gf3s2
-[5]: https://product-mvp-gf3s2.firebaseapp.com
+[3]: https://www.electron.build
