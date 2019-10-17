@@ -1,27 +1,40 @@
 use futures::Future;
 use std::collections::HashMap;
 
+/// Newtype for the registry `oscoin_client::AccountId`.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub struct AccountId(pub oscoin_client::AccountId);
 
+/// Newtype for the registry `oscoin_client::ProjectId`.
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
 pub struct ProjectId(pub oscoin_client::ProjectId);
 
+/// Metadata enriched user keypair.
+/// TODO(xla): This overlaps with accounts on the registry, needs renaming.
 #[derive(Clone, GraphQLObject)]
 #[graphql(description = "Metadata enriched user keypair")]
 struct Account {
+    /// Reference to the `AccountId`.
     id: AccountId,
+    /// User given name of the key.
     key_name: String,
+    /// User given url for the avatar attached to the keypair.
     avatar_url: String,
 }
 
+/// Representation of a users project.
 #[derive(Clone, GraphQLObject)]
 #[graphql(description = "An open source coin project")]
 pub struct Project {
+    /// Reference to the `ProjectId` of the project.
     id: ProjectId,
+    /// User given project name.
     name: String,
+    /// Longer form description of the project.
     description: String,
+    /// Image to be shown as the projects avatar.
     img_url: String,
+    /// List of members with extended rights.
     members: Vec<Account>,
 }
 
@@ -47,18 +60,26 @@ impl From<oscoin_ledger::interface::Project> for Project {
     }
 }
 
+/// Abstraction used to fetch information from the registry.
 pub trait Source {
+    /// Retrieve unfiltered list of projects.
     fn get_all_projects(&self) -> Vec<Project>;
+    /// Retrieve a single proejct by `ProjectId`.
     fn get_project(&self, id: ProjectId) -> Option<Project>;
+    /// Register a new project.
     fn register_project(&self, name: String, description: String, img_url: String) -> Project;
 }
 
+/// Container to store local view on accounts to match with metadata.
 pub struct Ledger {
+    /// Ledger client.
     client: oscoin_client::Client,
+    /// Mapping of `AccountId`s to `Account`s for easier metadata enrichment.
     accounts: HashMap<AccountId, Account>,
 }
 
 impl Ledger {
+    /// Returns a new `Ledger`.
     pub fn new(client: oscoin_client::Client) -> Self {
         Self {
             client,
@@ -66,6 +87,7 @@ impl Ledger {
         }
     }
 
+    /// Returns the project with added account metadata if found.
     fn enrich_members(&self, p: Project) -> Project {
         let ms = p
             .members

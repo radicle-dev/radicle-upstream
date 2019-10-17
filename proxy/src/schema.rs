@@ -3,18 +3,23 @@ use std::sync::Arc;
 
 use crate::source::{AccountId, Project, ProjectId, Source};
 
+/// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;
 
+/// Returns a `Schema` with the default parameterised `Query` and `Mutation`.
 pub fn create() -> Schema {
     Schema::new(Query {}, Mutation {})
 }
 
+/// Container to pass the `Source` around for data access.
 #[derive(Clone)]
 pub struct Context {
+    /// Origin of data needed to server APIs.
     source: Arc<dyn Source + Send + Sync>,
 }
 
 impl Context {
+    /// Returns a new `Context`.
     pub fn new<S: Source + Send + Sync + 'static>(source: S) -> Self {
         Self {
             source: Arc::new(source),
@@ -24,6 +29,7 @@ impl Context {
 
 impl juniper::Context for Context {}
 
+/// Encapsulates read paths in API.
 pub struct Query;
 
 #[juniper::object(Context = Context)]
@@ -41,6 +47,7 @@ impl Query {
     }
 }
 
+/// Encapsulates write path in API.
 pub struct Mutation;
 
 #[juniper::object(Context = Context)]

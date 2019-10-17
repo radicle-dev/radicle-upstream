@@ -19,9 +19,11 @@ extern crate pretty_env_logger;
 #[macro_use]
 extern crate juniper;
 
+/// Defines the schema served to the application via `GraphQL`.
 mod schema;
-// mod server_actix;
+/// Server infrastructure used to power the API.
 mod server_warp;
+/// Origin of data required like the on-chain Registry.
 mod source;
 
 fn main() {

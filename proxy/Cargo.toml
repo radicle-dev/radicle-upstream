@@ -18,8 +18,8 @@ hex = "0.4"
 juniper = "0.13"
 juniper_warp = "0.4"
 log = "0.4"
-oscoin_client = { git = "https://github.com/oscoin/oscoin-parity-wasm-prototype", branch = "xla/fix-project-api" }
-oscoin_ledger =  { git = "https://github.com/oscoin/oscoin-parity-wasm-prototype", branch = "xla/fix-project-api" }
+oscoin_client = { git = "https://github.com/oscoin/oscoin-parity-wasm-prototype" }
+oscoin_ledger =  { git = "https://github.com/oscoin/oscoin-parity-wasm-prototype" }
 pretty_env_logger = "0.3"
 serde = "1.0"
 serde_derive = "1.0"
