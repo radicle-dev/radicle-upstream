@@ -1,0 +1,9 @@
+{
+  "name": "mvp",
+  "version": "0.0.1",
+  "description": "Desktop app for peer-to-peer code collaboration",
+  "main": "index.js",
+  "repository": "git@github.com:oscoin/mvp.git",
+  "author": "Monadic <team@monadic.xyz>",
+  "license": "MIT"
+}
