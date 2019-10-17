@@ -1,8 +1,14 @@
 [package]
 name = "proxy"
 version = "0.1.0"
+license = "GPL"
 authors = ["Alexander Simmerl <xla@monadic.xyz>"]
 edition = "2018"
+description = "Proxy to serve a specialised HTTP API to the oscoin MVP."
+readme = "https://github.com/oscoin/mvp/blob/master/proxy/README.md"
+categories = [ "crypto" ]
+keywords = [ "oscoin", "proxy" ]
+repository = "https://github.com/oscoin/mvp.git"
 
 [dependencies]
 failure = "0.1"
