@@ -1,0 +1,53 @@
+{
+  "name": "rhizine",
+  "productName": "rhizine",
+  "version": "0.0.1",
+  "description": "Decentralised code collaboration.",
+  "main": ".webpack/main",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "publish": "electron-forge publish",
+    "lint": "echo \"No linting configured\""
+  },
+  "keywords": [],
+  "author": {
+    "name": "Radicle Team",
+    "email": "hello@radicle.xyz"
+  },
+  "license": "MIT",
+  "config": {
+    "forge": {
+      "packagerConfig": {},
+      "makers": [],
+      "plugins": [
+        [
+          "@electron-forge/plugin-webpack",
+          {
+            "mainConfig": "./webpack.main.config.js",
+            "renderer": {
+              "config": "./webpack.renderer.config.js",
+              "entryPoints": [
+                {
+                  "html": "./src/index.html",
+                  "js": "./src/renderer.js",
+                  "name": "main_window"
+                }
+              ]
+            }
+          }
+        ]
+      ]
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@electron-forge/cli": "6.0.0-beta.45",
+    "@electron-forge/plugin-webpack": "6.0.0-beta.45",
+    "css-loader": "^3.0.0",
+    "electron": "6.0.12",
+    "node-loader": "^0.6.0",
+    "style-loader": "^0.23.1"
+  }
+}
