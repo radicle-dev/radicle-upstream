@@ -9,6 +9,7 @@ const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    center: true,
   });
 
   // and load the index.html of the app.
@@ -24,6 +25,8 @@ const createWindow = () => {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+
+  mainWindow.setMenuBarVisibility(false)
 };
 
 // This method will be called when Electron has finished
