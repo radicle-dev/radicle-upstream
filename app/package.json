@@ -25,13 +25,13 @@
         [
           "@electron-forge/plugin-webpack",
           {
-            "mainConfig": "./webpack.main.config.js",
+            "mainConfig": "./native/webpack.main.config.js",
             "renderer": {
-              "config": "./webpack.renderer.config.js",
+              "config": "./native/webpack.renderer.config.js",
               "entryPoints": [
                 {
-                  "html": "./src/index.html",
-                  "js": "./src/renderer.js",
+                  "html": "./native/index.html",
+                  "js": "./native/renderer.js",
                   "name": "main_window"
                 }
               ]

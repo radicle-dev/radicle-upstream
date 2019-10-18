@@ -2,7 +2,7 @@ import React from "react"
 import ReactDOM from "react-dom"
 import {hot} from 'react-hot-loader/root'
 
-import App from './App.js'
+import App from '../src/App.js'
 
 const Container = hot(App);
 
