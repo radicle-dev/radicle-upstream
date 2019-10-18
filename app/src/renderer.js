@@ -1,3 +1,9 @@
-import './index.css';
+import React from "react"
+import ReactDOM from "react-dom"
+import {hot} from 'react-hot-loader/root'
 
-console.log('👋 This message is being logged by "renderer.js", included via webpack');
+import App from './App.js'
+
+const Container = hot(App);
+
+ReactDOM.render(<Container />, document.getElementById("app"))
