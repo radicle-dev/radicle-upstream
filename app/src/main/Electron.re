@@ -28,7 +28,7 @@
   function startProxy() {
     const proxyPath = path.join(__dirname, '../../../../../proxy');
     const { execFile } = require('child_process');
-    proxyChildProcess = execFile(proxyPath, [], (error, stdout, stderr) => {
+    proxyChildProcess = execFile(proxyPath, ['local'], (error, stdout, stderr) => {
       if (error) {
         console.log(error);
       }
