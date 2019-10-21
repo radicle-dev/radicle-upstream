@@ -1,5 +1,13 @@
 <script>
-	export let name;
+  import Projects from './components/Projects.svelte'
+
+  import ApolloClient from 'apollo-boost'
+  import { setClient } from 'svelte-apollo'
+
+  const client = new ApolloClient({
+    uri: 'http://127.0.0.1:8080/graphql'
+  });
+  setClient(client)
 </script>
 
 <style>
@@ -8,4 +16,5 @@
 	}
 </style>
 
-<h1>Hello {name}!</h1>
+<h1>Radicle</h1>
+<Projects />

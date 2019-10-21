@@ -23,5 +23,10 @@
     "dev": "run-p start:dev autobuild",
     "start": "sirv public --single",
     "start:dev": "sirv public --single --dev"
+  },
+  "dependencies": {
+    "apollo-boost": "^0.4.4",
+    "graphql": "^14.5.8",
+    "svelte-apollo": "^0.3.0"
   }
 }
