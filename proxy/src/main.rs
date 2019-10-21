@@ -31,12 +31,23 @@ fn main() {
     std::env::set_var("RUST_LOG", "info");
     pretty_env_logger::init();
 
-    let osc = oscoin_client::Client::new_from_file().expect("setup of osc client from file failed");
-    let source = source::Ledger::new(osc);
+    let source_type = std::env::args().nth(1).expect("no source was given");
+
+    let context = match source_type.as_ref() {
+        "ledger" => {
+            let osc = oscoin_client::Client::new_from_file()
+                .expect("setup of osc client from file failed");
+            let src = source::Ledger::new(osc);
+            schema::Context::new(src)
+        }
+        _ => {
+            let src = source::test::Local::new();
+            schema::Context::new(src)
+        }
+    };
 
     info!("Creating GraphQL schema and context");
     let schema = schema::create();
-    let context = schema::Context::new(source);
 
     info!("Starting HTTP server");
     server_warp::run(schema, context);
