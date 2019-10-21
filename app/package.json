@@ -1,7 +1,9 @@
 {
   "name": "svelte-app",
   "version": "1.0.0",
+  "main": "./native/main.js",
   "devDependencies": {
+    "electron": "^6.0.12",
     "npm-run-all": "^4.1.5",
     "rollup": "^1.12.0",
     "rollup-plugin-commonjs": "^10.0.0",
@@ -13,6 +15,8 @@
     "svelte": "^3.0.0"
   },
   "scripts": {
+    "electron:dev": "run-s build electron:run",
+    "electron:run": "electron .",
     "build": "rollup -c",
     "autobuild": "rollup -c -w",
     "dev": "run-p start:dev autobuild",
