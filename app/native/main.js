@@ -22,7 +22,6 @@ function createWindow() {
 
     watcher.on('change', p => {
       mainWindow.reload();
-      console.log('reload', p)
     });
   }
 

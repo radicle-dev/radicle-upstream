@@ -1,6 +1,7 @@
 <script>
   import { gql } from 'apollo-boost'
   import { getClient, query } from 'svelte-apollo'
+  import { link } from 'svelte-spa-router'
 
   const GET_PROJECTS = gql`
     query Query{
@@ -29,7 +30,11 @@
 {:then result}
   <ul>
   {#each result.data.projects as project}
-    <li><strong>{project.name}</strong>({project.id}) - {project.description}</li>
+    <li>
+      <a href='/projects/{project.id}' use:link>
+        <strong>{project.name}</strong>({project.id}) - {project.description}
+      </a>
+    </li>
   {/each}
   </ul>
 {:catch error}
