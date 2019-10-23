@@ -23,7 +23,9 @@
     "autobuild": "rollup -c -w",
     "dev": "run-p start:dev autobuild",
     "start": "sirv public --single",
-    "start:dev": "sirv public --single --dev"
+    "start:dev": "sirv public --single --dev",
+    "proxy:build": "cd ../proxy && cargo build --release",
+    "proxy:start": "cd ../proxy && cargo run --release -- local"
   },
   "dependencies": {
     "apollo-boost": "^0.4.4",
