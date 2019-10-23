@@ -1,6 +1,6 @@
 {
-  "name": "svelte-app",
-  "version": "1.0.0",
+  "name": "radicle-upstream",
+  "version": "0.0.1",
   "main": "./native/main.js",
   "devDependencies": {
     "chokidar": "^3.2.2",
