@@ -22,7 +22,7 @@ Run the app locally with hot reloading:
 Build and package the app:
 
 1. Build: `yarn dist`
-2. Get the generated package from: `radicle-upstream-0.0.1.dmg`
+2. Get the generated package from: `dist/radicle-upstream-0.0.1.dmg`
 
 
 ### Scripts
