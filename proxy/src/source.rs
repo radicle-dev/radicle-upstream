@@ -167,7 +167,6 @@ impl Source for Ledger {
     }
 }
 
-#[cfg(test)]
 pub mod test {
     use std::collections::HashMap;
     use std::sync::{Arc, RwLock};
