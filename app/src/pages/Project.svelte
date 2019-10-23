@@ -1,8 +1,6 @@
 <script>
   export let params = {};
 
-  console.log(params);
-
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
 

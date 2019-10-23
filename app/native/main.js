@@ -12,7 +12,6 @@ function createWindow() {
     height: 680
   });
 
-  console.log(mode);
   let watcher;
   if (mode === "development") {
     watcher = require("chokidar").watch(path.join(__dirname, "../public/**"), {
