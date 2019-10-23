@@ -1,24 +1,30 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
+const isDev = process.env.NODE_ENV === "development";
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+let proxyChildProcess;
+
+function startApp() {
+  startProxy();
+  createWindow();
+}
 
 function createWindow() {
-  const mode = process.env.NODE_ENV;
   mainWindow = new BrowserWindow({
     width: 900,
     height: 680
   });
 
   let watcher;
-  if (mode === "development") {
+  if (isDev) {
     watcher = require("chokidar").watch(path.join(__dirname, "../public/**"), {
       ignoreInitial: true
     });
 
-    watcher.on("change", p => {
+    watcher.on("change", _p => {
       mainWindow.reload();
     });
   }
@@ -33,10 +39,37 @@ function createWindow() {
   });
 }
 
+function startProxy() {
+  if (isDev) {
+    return;
+  }
+
+  const proxyPath = path.join(__dirname, "../../proxy");
+  const { execFile } = require("child_process");
+  proxyChildProcess = execFile(
+    proxyPath,
+    ["local"],
+    (error, stdout, _stderr) => {
+      if (error) {
+        console.log(error);
+      }
+      console.log(stdout);
+    }
+  );
+
+  console.log(proxyChildProcess);
+}
+
+app.on("will-quit", () => {
+  if (proxyChildProcess) {
+    proxyChildProcess.kill("SIGHUP");
+  }
+});
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", createWindow);
+app.on("ready", startApp);
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
@@ -51,6 +84,6 @@ app.on("activate", () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
-    createWindow();
+    startApp();
   }
 });
