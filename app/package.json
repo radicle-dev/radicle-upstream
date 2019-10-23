@@ -5,6 +5,8 @@
   "devDependencies": {
     "chokidar": "^3.2.2",
     "electron": "^6.0.12",
+    "husky": ">=1",
+    "lint-staged": "^10.0.0-0",
     "npm-run-all": "^4.1.5",
     "prettier": "^1.18.2",
     "prettier-plugin-svelte": "^0.7.0",
@@ -33,5 +35,20 @@
     "apollo-boost": "^0.4.4",
     "graphql": "^14.5.8",
     "svelte-apollo": "^0.3.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,css,json,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.svelte": [
+      "prettier --plugin-search-dir=. --write",
+      "git add"
+    ]
   }
 }
