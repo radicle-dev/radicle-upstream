@@ -1,5 +1,5 @@
-const {app, BrowserWindow} = require('electron');
-const path = require('path')
+const { app, BrowserWindow } = require("electron");
+const path = require("path");
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -9,24 +9,23 @@ function createWindow() {
   const mode = process.env.NODE_ENV;
   mainWindow = new BrowserWindow({
     width: 900,
-    height: 680,
+    height: 680
   });
 
-  console.log(mode)
+  console.log(mode);
   let watcher;
-  if (mode === 'development') {
-    watcher = require('chokidar').watch(
-      path.join(__dirname, '../public/**'),
-      {ignoreInitial: true},
-    );
+  if (mode === "development") {
+    watcher = require("chokidar").watch(path.join(__dirname, "../public/**"), {
+      ignoreInitial: true
+    });
 
-    watcher.on('change', p => {
+    watcher.on("change", p => {
       mainWindow.reload();
     });
   }
 
-  mainWindow.loadURL(`file://${path.join(__dirname, '../public/index.html')}`);
-  mainWindow.on('closed', () => {
+  mainWindow.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
+  mainWindow.on("closed", () => {
     if (watcher) {
       watcher.close();
     }
@@ -38,18 +37,18 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on("ready", createWindow);
 
 // Quit when all windows are closed.
-app.on('window-all-closed', () => {
+app.on("window-all-closed", () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
