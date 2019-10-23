@@ -27,7 +27,8 @@
     "svelte:build": "yarn svelte:clean && rollup -c",
     "svelte:watch": "yarn svelte:clean && rollup -c -w",
     "proxy:build": "cd ../proxy && cargo build --release",
-    "proxy:start": "cd ../proxy && cargo run --release -- local"
+    "proxy:start": "cd ../proxy && cargo run --release -- local",
+    "test": "echo 'no tests to run'"
   },
   "dependencies": {
     "apollo-boost": "^0.4.4",
