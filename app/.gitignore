@@ -1,15 +1,3 @@
 .DS_Store
-.merlin
-.bsb.lock
-npm-debug.log
-yarn-error.log
-
-*.bs.js
-.firebase
-
-.graphql_ppx_cache/
-/build/
-/dist/
-/coverage/
-/lib/bs/
-/node_modules/
+node_modules
+public/bundle.*
