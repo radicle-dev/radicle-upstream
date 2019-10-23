@@ -1,13 +1,13 @@
 <script>
-  export let params = {}
+  export let params = {};
 
-  console.log(params)
+  console.log(params);
 
-  import { gql } from 'apollo-boost'
-  import { getClient, query } from 'svelte-apollo'
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
 
   const GET_PROJECT = gql`
-    query Query($id: ProjectId!){
+    query Query($id: ProjectId!) {
       project(id: $id) {
         name
         description
@@ -18,10 +18,13 @@
         }
       }
     }
-  `
+  `;
 
-  const client = getClient()
-  const project = query(client, { query: GET_PROJECT, variables: { id: params.id } })
+  const client = getClient();
+  const project = query(client, {
+    query: GET_PROJECT,
+    variables: { id: params.id }
+  });
 </script>
 
 {#await $project}

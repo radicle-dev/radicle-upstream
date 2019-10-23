@@ -1,11 +1,11 @@
 <script>
-  import Projects from '../components/Projects.svelte'
+  import Projects from "../components/Projects.svelte";
 </script>
 
 <style>
-	h1 {
-		color: purple;
-	}
+  h1 {
+    color: purple;
+  }
 </style>
 
 <h1>Radicle</h1>

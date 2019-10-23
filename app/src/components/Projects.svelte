@@ -1,10 +1,10 @@
 <script>
-  import { gql } from 'apollo-boost'
-  import { getClient, query } from 'svelte-apollo'
-  import { link } from 'svelte-spa-router'
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
+  import { link } from "svelte-spa-router";
 
   const GET_PROJECTS = gql`
-    query Query{
+    query Query {
       projects {
         id
         description
@@ -12,10 +12,10 @@
         imgUrl
       }
     }
-  `
+  `;
 
-  const client = getClient()
-  const projects = query(client, { query: GET_PROJECTS })
+  const client = getClient();
+  const projects = query(client, { query: GET_PROJECTS });
 </script>
 
 <style>
@@ -29,13 +29,14 @@
   <p>Loading projects...</p>
 {:then result}
   <ul>
-  {#each result.data.projects as project}
-    <li>
-      <a href='/projects/{project.id}' use:link>
-        <strong>{project.name}</strong>({project.id}) - {project.description}
-      </a>
-    </li>
-  {/each}
+    {#each result.data.projects as project}
+      <li>
+        <a href="/projects/{project.id}" use:link>
+          <strong>{project.name}</strong>
+          ({project.id}) - {project.description}
+        </a>
+      </li>
+    {/each}
   </ul>
 {:catch error}
   <p>ERROR: {error}</p>
