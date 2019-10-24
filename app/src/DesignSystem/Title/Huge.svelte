@@ -6,6 +6,6 @@
   }
 </style>
 
-<h1>
+<h1 style={$$props.style}>
   <slot />
 </h1>

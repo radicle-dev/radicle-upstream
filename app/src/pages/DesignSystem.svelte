@@ -32,9 +32,7 @@
 <a href="/" use:link>back</a>
 
 {#each colors as color}
-  <Text.Regular>
-    <div style="background-color: var({color})">{color}</div>
-  </Text.Regular>
+  <Text.Regular style="background-color: var({color})">{color}</Text.Regular>
 {/each}
 
 <Title.Huge>Open Source Coin</Title.Huge>
