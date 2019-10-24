@@ -1,5 +1,6 @@
-const { app, BrowserWindow } = require("electron");
-const path = require("path");
+import { app, BrowserWindow } from "electron";
+import path from "path";
+
 const isDev = process.env.NODE_ENV === "development";
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -7,12 +8,12 @@ const isDev = process.env.NODE_ENV === "development";
 let mainWindow;
 let proxyChildProcess;
 
-function startApp() {
+const startApp = () => {
   startProxy();
   createWindow();
-}
+};
 
-function createWindow() {
+const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 900,
     height: 680
@@ -37,9 +38,9 @@ function createWindow() {
 
     mainWindow = null;
   });
-}
+};
 
-function startProxy() {
+const startProxy = () => {
   if (isDev) {
     return;
   }
@@ -58,7 +59,7 @@ function startProxy() {
   );
 
   console.log(proxyChildProcess);
-}
+};
 
 app.on("will-quit", () => {
   if (proxyChildProcess) {

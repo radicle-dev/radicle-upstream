@@ -1,4 +1,6 @@
-.DS_Store
 node_modules
-public/bundle.*
 dist
+
+.DS_Store
+native/main.comp.js
+public/bundle.*
