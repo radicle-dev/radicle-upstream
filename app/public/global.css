@@ -49,8 +49,19 @@
   src: url("fonts/GTAmericaMonoRegular.otf");
 }
 
-html {
+html,
+body {
   font-family: "GT America Regular";
   font-size: 16px;
   line-height: 24px;
+
+  color: var(--color-black);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--color-black);
+  cursor: pointer;
+  text-decoration: none;
 }
