@@ -1,67 +1,50 @@
-html,
-body {
-  position: relative;
-  width: 100%;
-  height: 100%;
+/* Global style tokens */
+:root {
+  --color-purple: #6e41e0;
+  --color-blue: #1f91cc;
+  --color-green: #20d479;
+  --color-orange: #f5bf36;
+  --color-red: #e75050;
+  --color-bordeaux: #bf456b;
+  --color-lightblue: #999ff0;
+  --color-teal: #51e2f5;
+  --color-lightgreen: #24f38b;
+  --color-yellow: #e3ed11;
+  --color-pink: #e074cb;
+  --color-black: #28333d;
+  --color-darkgray: #546474;
+  --color-gray: #90a0af;
+  --color-lightgray: #ced8e1;
+  --color-almostwhite: #f8f8f8;
+  --color-white: #ffffff;
 }
 
-body {
-  color: #333;
-  margin: 0;
-  padding: 8px;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+@font-face {
+  font-family: "GT America Bold";
+  src: url("fonts/GTAmericaBold.otf");
 }
 
-a {
-  color: rgb(0, 100, 200);
-  text-decoration: none;
+@font-face {
+  font-family: "GT America Medium";
+  src: url("fonts/GTAmericaMedium.otf");
 }
 
-a:hover {
-  text-decoration: underline;
+@font-face {
+  font-family: "GT America Regular";
+  src: url("fonts/GTAmericaRegular.otf");
 }
 
-a:visited {
-  color: rgb(0, 80, 160);
+@font-face {
+  font-family: "GT America Mono Bold";
+  src: url("fonts/GTAmericaMonoBold.otf");
 }
 
-label {
-  display: block;
+@font-face {
+  font-family: "GT America Mono Medium";
+  src: url("fonts/GTAmericaMonoMedium.otf");
 }
 
-input,
-button,
-select,
-textarea {
-  font-family: inherit;
-  font-size: inherit;
-  padding: 0.4em;
-  margin: 0 0 0.5em 0;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 2px;
-}
-
-input:disabled {
-  color: #ccc;
-}
-
-input[type="range"] {
-  height: 0;
-}
-
-button {
-  color: #333;
-  background-color: #f4f4f4;
-  outline: none;
-}
-
-button:active {
-  background-color: #ddd;
-}
-
-button:focus {
-  border-color: #666;
+@font-face {
+  font-family: "GT America Mono Regular";
+  src: url("fonts/GTAmericaMonoRegular.otf");
 }

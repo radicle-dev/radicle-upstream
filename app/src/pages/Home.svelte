@@ -1,12 +1,7 @@
 <script>
+  import { Title } from "../DesignSystem";
   import Projects from "../components/Projects.svelte";
 </script>
 
-<style>
-  h1 {
-    color: purple;
-  }
-</style>
-
-<h1>Radicle</h1>
+<Title.Huge>Radicle Upstream</Title.Huge>
 <Projects />
