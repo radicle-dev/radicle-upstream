@@ -1,4 +1,5 @@
 <script>
+  import { Text, Title, Numeric, Caption } from "../DesignSystem";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
   import { link } from "svelte-spa-router";
@@ -19,21 +20,20 @@
 </script>
 
 <style>
-  li {
-    margin-bottom: 12px;
-  }
+
 </style>
 
-<h2>Projects</h2>
+<a href="/design-system" use:link>design system</a>
+<Title.Big>Projects</Title.Big>
+
 {#await $projects}
-  <p>Loading projects...</p>
+  <Text.Regular>Loading projects...</Text.Regular>
 {:then result}
   <ul>
     {#each result.data.projects as project}
       <li>
         <a href="/projects/{project.id}" use:link>
-          <strong>{project.name}</strong>
-          ({project.id}) - {project.description}
+          {project.name} ({project.id}) - {project.description}
         </a>
       </li>
     {/each}

@@ -4,6 +4,7 @@
   import Router from "svelte-spa-router";
 
   import Home from "./pages/Home.svelte";
+  import DesignSystem from "./pages/DesignSystem.svelte";
   import NotFound from "./pages/NotFound.svelte";
   import Project from "./pages/Project.svelte";
 
@@ -14,6 +15,7 @@
 
   const routes = {
     "/": Home,
+    "/design-system": DesignSystem,
     "/projects/:id": Project,
     "*": NotFound
   };

@@ -1,4 +1,6 @@
 <script>
+  import { link } from "svelte-spa-router";
+
   export let params = {};
 
   import { gql } from "apollo-boost";
@@ -24,6 +26,8 @@
     variables: { id: params.id }
   });
 </script>
+
+<a href="/" use:link>back</a>
 
 {#await $project}
   <h1>Loading project...</h1>

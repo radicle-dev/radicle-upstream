@@ -1,1 +1,5 @@
-<h1>Not Found</h1>
+<script>
+  import { Title } from "../DesignSystem";
+</script>
+
+<Title.Huge>Not Found</Title.Huge>
