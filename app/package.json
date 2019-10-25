@@ -41,6 +41,7 @@
   },
   "scripts": {
     "start": "run-p --race svelte:watch proxy:start electron:start",
+    "test": "yarn svelte:build && yarn cypress:run",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build && cp ../proxy/target/debug/proxy dist && electron-builder",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on http://localhost:8080 && NODE_ENV=development electron .",
     "svelte:clean": "rm -rf public/bundle.*",
@@ -48,7 +49,8 @@
     "svelte:watch": "yarn svelte:clean && rollup -c -w",
     "proxy:build": "cd ../proxy && cargo build --release",
     "proxy:start": "cd ../proxy && cargo run --release -- local",
-    "test": "echo 'no tests to run'"
+    "cypress:run": "yarn run cypress run",
+    "cypress:open": "yarn run cypress open"
   },
   "dependencies": {
     "apollo-boost": "^0.4.4",
