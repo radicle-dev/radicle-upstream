@@ -1,3 +1,7 @@
+<script>
+  export let style;
+</script>
+
 <style>
   p {
     font-family: "GT America Medium";
@@ -8,6 +12,6 @@
   }
 </style>
 
-<p>
+<p {style}>
   <slot />
 </p>

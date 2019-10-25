@@ -4,5 +4,5 @@
 </script>
 
 <Layout>
-  <Title.Huge>Not Found</Title.Huge>
+  <Title.Huge>Wallet</Title.Huge>
 </Layout>

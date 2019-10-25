@@ -1,0 +1,76 @@
+<script>
+  import { Icon } from "../DesignSystem";
+  import SidebarItem from "./SidebarItem.svelte";
+  import SidebarAvatar from "./SidebarAvatar.svelte";
+</script>
+
+<style>
+  div {
+    width: 68px;
+    background-color: var(--color-almostwhite);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 18px;
+  }
+
+  nav ul {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  li {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 18px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  :global(li .show-on-hover) {
+    opacity: 0;
+  }
+
+  :global(li:hover .show-on-hover) {
+    opacity: 1;
+  }
+</style>
+
+<div>
+  <nav>
+    <ul>
+      <li>
+        <SidebarItem icon={Icon.Search} href="/search" title="Search" />
+      </li>
+      <li>
+        <SidebarItem icon={Icon.Feed} href="/feed" title="Feed" />
+      </li>
+      <li>
+        <SidebarItem icon={Icon.Projects} href="/projects" title="Projects" />
+      </li>
+    </ul>
+  </nav>
+
+  <nav>
+    <ul>
+      <li>
+        <SidebarItem
+          icon={Icon.Plus}
+          href="/design-system"
+          title="Create new project" />
+      </li>
+      <li>
+        <SidebarItem icon={Icon.Fund} href="/wallet" title="Fund" />
+      </li>
+      <li>
+        <SidebarAvatar
+          image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
+          href="/profile"
+          title="Profile" />
+      </li>
+    </ul>
+  </nav>
+</div>
