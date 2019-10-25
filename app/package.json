@@ -19,6 +19,7 @@
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
     "chokidar": "^3.2.2",
+    "cypress": "^3.5.0",
     "electron": "^6.0.12",
     "electron-builder": "^21.2.0",
     "husky": ">=1",
