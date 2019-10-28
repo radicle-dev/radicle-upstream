@@ -43,22 +43,3 @@ cd ..
 rm -rf "$target_cache"
 time cp -aTu proxy/target "$target_cache"
 echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
-
-
-echo "--- show debug info"
-echo "yarn --version"
-yarn --version
-echo "yarn cypress --version"
-yarn cypress --version
-echo "rustup --version"
-rustup --version
-echo "ls -la /cache"
-ls -la /cache
-echo "ls -la /cache/yarn"
-ls -la /cache/yarn
-echo "ls -la /cache/cargo"
-ls -la /cache/cargo
-echo "ls -la /cache/rustup"
-ls -la /cache/rustup
-echo "ls -la dist"
-ls -la dist
