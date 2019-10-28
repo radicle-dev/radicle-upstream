@@ -1,3 +1,5 @@
+[![Build status](https://badge.buildkite.com/4fb43c6b471ab7cc26509eae235b0e4bbbaace11cc1848eae6.svg?branch=master)](https://buildkite.com/monadic/mvp)
+
 # radicle-upstream
 
 This is a cross-platform desktop app for product explorations.
