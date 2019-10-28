@@ -15,7 +15,7 @@ export PATH="$PATH:CARGO_HOME/bin"
 
 TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
 
-echo "--- Load proxy/target cache"
+echo "--- Loading proxy/target cache"
 target_cache=/cache/radicle-upstream-proxy-target-cache
 
 if [[ -d "$target_cache" ]]; then
@@ -25,20 +25,20 @@ else
   echo "Cache $target_cache not available"
 fi
 
-echo "--- install yarn deps"
+echo "--- Installing yarn dependencies"
 cd app
 yarn install
 
-echo "--- build proxy"
+echo "--- Building proxy"
 yarn proxy:build
 
-echo "--- start proxy in background and run app tests"
+echo "--- Starting proxy daemon and runing app tests"
 yarn run-p --race proxy:start ci:test
 
-echo "--- package and upload app binaries"
+echo "--- Packaging and uploading app binaries"
 yarn ci:dist
 
-echo "--- Save proxy/target cache"
+echo "--- Saving proxy/target cache"
 cd ..
 rm -rf "$target_cache"
 time cp -aTu proxy/target "$target_cache"
