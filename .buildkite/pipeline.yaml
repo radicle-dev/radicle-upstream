@@ -6,3 +6,13 @@ steps:
       production: "true"
       platform: "linux"
     command: '.buildkite/integration-tests.sh'
+  - label: 'Build Linux packages'
+    env:
+      DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.2'
+    agents:
+      production: "true"
+      platform: "linux"
+    command: '.buildkite/build-packages.sh'
+    artifact_paths:
+      - "app/dist/*.AppImage"
+      - "app/dist/*.snap"
