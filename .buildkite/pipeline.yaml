@@ -1,13 +1,8 @@
-env:
-  DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.0'
-
 steps:
-  - agents:
+  - label: 'Integration tests'
+    env:
+      DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.2'
+    agents:
       production: "true"
       platform: "linux"
-    commands:
-    - 'export HOME=/cache'
-    - 'export YARN_CACHE_FOLDER=/cache'
-    - 'cd app'
-    - 'yarn'
-    - 'yarn test'
+    command: '.buildkite/integration-tests.sh'
