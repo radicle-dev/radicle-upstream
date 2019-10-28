@@ -34,10 +34,10 @@ fn main() {
     let source_type = std::env::args().nth(1).expect("no source was given");
 
     let context = match source_type.as_ref() {
-        "ledger" => {
-            let osc = oscoin_client::Client::new_from_file()
-                .expect("setup of osc client from file failed");
-            let src = source::Ledger::new(osc);
+        "registry" => {
+            let client = radicle_registry_client::SyncClient::create()
+                .expect("creating registry client failed");
+            let src = source::Ledger::new(client);
             schema::Context::new(src)
         }
         _ => {

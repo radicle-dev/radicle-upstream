@@ -95,16 +95,16 @@ juniper::graphql_scalar!(AccountId where Scalar = <S> {
     description: "AccountId"
 
     resolve(&self) -> Value {
-        Value::scalar(hex::encode(self.0))
+        Value::scalar(hex::encode(self.0.as_ref() as &[u8]))
     }
 
     from_input_value(v: &InputValue) -> Option<AccountId> {
-        let mut bytes = [0_u8; 20];
+        let mut bytes = [0_u8; 32];
 
         v.as_scalar_value::<String>()
             .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
 
-        Some(AccountId(bytes))
+        Some(AccountId(radicle_registry_client::AccountId::from_raw(bytes)))
     }
 
     // Define how to parse a string value.
@@ -121,12 +121,12 @@ juniper::graphql_scalar!(ProjectId where Scalar = <S> {
     }
 
     from_input_value(v: &InputValue) -> Option<ProjectId> {
-        let mut bytes = [0_u8; 20];
+        let mut bytes = [0_u8; 32];
 
         v.as_scalar_value::<String>()
             .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
 
-        Some(ProjectId(bytes))
+        Some(ProjectId(radicle_registry_client::ProjectId::from(bytes)))
     }
 
     // Define how to parse a string value.
