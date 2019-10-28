@@ -13,9 +13,20 @@ export RUSTUP_HOME=/cache/rustup
 
 export PATH="$PATH:CARGO_HOME/bin"
 
-cd app
+TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
+
+echo "--- Load proxy/target cache"
+target_cache=/cache/radicle-upstream-proxy-target-cache
+
+if [[ -d "$target_cache" ]]; then
+  time cp -aT "$target_cache" proxy/target
+  echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
+else
+  echo "Cache $target_cache not available"
+fi
 
 echo "--- install yarn deps"
+cd app
 yarn install
 
 echo "--- build proxy"
@@ -26,6 +37,13 @@ yarn run-p --race proxy:start ci:test
 
 echo "--- package and upload app binaries"
 yarn ci:dist
+
+echo "--- Save proxy/target cache"
+cd ..
+rm -rf "$target_cache"
+time cp -aTu proxy/target "$target_cache"
+echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
+
 
 echo "--- show debug info"
 echo "yarn --version"
