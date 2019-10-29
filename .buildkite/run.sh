@@ -16,33 +16,30 @@ chmod -R a+w $CARGO_HOME $RUSTUP_HOME
 
 export PATH="$PATH:CARGO_HOME/bin"
 
-TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
+
+echo "--- Installing yarn dependencies"
+(cd app && yarn install)
 
 echo "--- Loading proxy/target cache"
 target_cache=/cache/radicle-upstream-proxy-target-cache
 
 if [[ -d "$target_cache" ]]; then
-  time cp -aT "$target_cache" proxy/target
+  cp -aT "$target_cache" proxy/target
   echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 else
   echo "Cache $target_cache not available"
 fi
 
-echo "--- Installing yarn dependencies"
-cd app
-yarn install
-
 echo "--- Building proxy"
-yarn proxy:build
-
-echo "--- Starting proxy daemon and runing app tests"
-yarn run-p --race proxy:start ci:test
-
-echo "--- Packaging and uploading app binaries"
-yarn ci:dist
+(cd app && yarn proxy:build)
 
 echo "--- Saving proxy/target cache"
-cd ..
 rm -rf "$target_cache"
-time cp -aTu proxy/target "$target_cache"
+cp -aTu proxy/target "$target_cache"
 echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
+
+echo "--- Starting proxy daemon and runing app tests"
+(cd app && yarn run-p --race proxy:start ci:test)
+
+echo "--- Packaging and uploading app binaries"
+(cd app && yarn ci:dist)
