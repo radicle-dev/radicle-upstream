@@ -1,8 +1,11 @@
 steps:
-  - label: 'Integration tests'
+  - label: 'Build app and proxy, run tests and package binaries'
     env:
       DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.2'
     agents:
       production: "true"
       platform: "linux"
-    command: '.buildkite/integration-tests.sh'
+    command: '.buildkite/run.sh'
+    artifact_paths:
+      - "app/dist/*.AppImage"
+      - "app/dist/*.snap"
