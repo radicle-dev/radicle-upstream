@@ -3,10 +3,6 @@ set -Eeou pipefail
 
 export HOME=/cache
 
-# Remove old yarn cache if it's still around. This fixes the following error:
-# "Cypress: error while loading shared libraries: libffmpeg.so"
-rm -rf /cache/.cache
-
 mkdir -p /cache/yarn
 mkdir -p /cache/cargo
 mkdir -p /cache/rustup
