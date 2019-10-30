@@ -1,3 +1,7 @@
+<script>
+  export let style;
+</script>
+
 <style>
   p {
     font-family: "GT America Mono Bold";
@@ -6,6 +10,6 @@
   }
 </style>
 
-<p style={$$props.style}>
+<p {style}>
   <slot />
 </p>

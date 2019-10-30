@@ -30,7 +30,9 @@ const createWindow = () => {
     });
   }
 
-  mainWindow.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
+  mainWindow.loadURL(
+    `file://${path.join(__dirname, "../public/index.html#/projects")}`
+  );
   mainWindow.on("closed", () => {
     if (watcher) {
       watcher.close();

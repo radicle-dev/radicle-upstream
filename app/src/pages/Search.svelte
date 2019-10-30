@@ -4,5 +4,5 @@
 </script>
 
 <Layout>
-  <Title.Huge>Not Found</Title.Huge>
+  <Title.Huge>Search</Title.Huge>
 </Layout>

@@ -1,3 +1,7 @@
+<script>
+  export let style;
+</script>
+
 <style>
   h2 {
     font-family: "GT America Bold";
@@ -6,6 +10,6 @@
   }
 </style>
 
-<h2 style={$$props.style}>
+<h2 {style}>
   <slot />
 </h2>

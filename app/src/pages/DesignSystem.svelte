@@ -1,6 +1,7 @@
 <script>
   import { Text, Title, Numeric, Caption } from "../DesignSystem";
   import { link } from "svelte-spa-router";
+  import Layout from "../components/Layout.svelte";
 
   let colors = Array.from(document.styleSheets)
     .filter(
@@ -29,21 +30,21 @@
     );
 </script>
 
-<a href="/" use:link>back</a>
+<Layout>
+  {#each colors as color}
+    <Text.Regular style="background-color: var({color})">{color}</Text.Regular>
+  {/each}
 
-{#each colors as color}
-  <Text.Regular style="background-color: var({color})">{color}</Text.Regular>
-{/each}
+  <Title.Huge>Open Source Coin</Title.Huge>
+  <Title.Big>Open Source Coin</Title.Big>
+  <Title.Regular>Open Source Coin</Title.Regular>
 
-<Title.Huge>Open Source Coin</Title.Huge>
-<Title.Big>Open Source Coin</Title.Big>
-<Title.Regular>Open Source Coin</Title.Regular>
+  <Text.Regular>Open Source Coin</Text.Regular>
+  <Text.Small>Open Source Coin</Text.Small>
 
-<Text.Regular>Open Source Coin</Text.Regular>
-<Text.Small>Open Source Coin</Text.Small>
+  <Caption>Open Source Coin</Caption>
 
-<Caption>Open Source Coin</Caption>
-
-<Numeric.Big>0123456789</Numeric.Big>
-<Numeric.Regular>0123456789</Numeric.Regular>
-<Numeric.Small>0123456789</Numeric.Small>
+  <Numeric.Big>0123456789</Numeric.Big>
+  <Numeric.Regular>0123456789</Numeric.Regular>
+  <Numeric.Small>0123456789</Numeric.Small>
+</Layout>

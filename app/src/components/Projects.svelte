@@ -19,13 +19,6 @@
   const projects = query(client, { query: GET_PROJECTS });
 </script>
 
-<style>
-
-</style>
-
-<a href="/design-system" use:link>design system</a>
-<Title.Big>Projects</Title.Big>
-
 {#await $projects}
   <Text.Regular>Loading projects...</Text.Regular>
 {:then result}
