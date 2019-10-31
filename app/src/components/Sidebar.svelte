@@ -7,11 +7,14 @@
 <style>
   div {
     width: 68px;
+    height: 100%;
     background-color: var(--color-almostwhite);
     display: flex;
+    position: fixed;
     flex-direction: column;
     justify-content: space-between;
     padding: 18px;
+    z-index: 1000;
   }
 
   nav ul {
