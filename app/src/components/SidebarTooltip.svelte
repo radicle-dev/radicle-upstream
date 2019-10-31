@@ -28,6 +28,10 @@
 
     top: 12px;
   }
+
+  div:hover {
+    opacity: 0;
+  }
 </style>
 
 <div class="show-on-hover">
