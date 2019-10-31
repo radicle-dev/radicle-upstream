@@ -40,7 +40,8 @@
 </script>
 
 <style>
-  div {
+  div,
+  table {
     margin-bottom: 32px;
   }
 </style>
@@ -85,21 +86,62 @@
     <Icon.Fund />
   </div>
 
-  <div>
-    <Button.Vanilla>Vanilla button</Button.Vanilla>
-    <Button.Primary>Primary button</Button.Primary>
-    <Button.Secondary>Secondary button</Button.Secondary>
-    <Button.Transparent>Transparent button</Button.Transparent>
-    <Button.Outline>Outline button</Button.Outline>
-  </div>
+  <table>
+    <thead>
+      <tr>
+        <td>
+          <Caption>Normal</Caption>
+        </td>
+        <td>
+          <Caption>Disabled</Caption>
+        </td>
+      </tr>
+    </thead>
+    <tr>
+      <td>
+        <Button.Vanilla>Vanilla button</Button.Vanilla>
+      </td>
+      <td>
+        <Button.Vanilla disabled>Vanilla button</Button.Vanilla>
+      </td>
+    </tr>
 
-  <div>
-    <Button.Vanilla disabled>Vanilla button disabled</Button.Vanilla>
-    <Button.Primary disabled>Primary button</Button.Primary>
-    <Button.Secondary disabled>Secondary button</Button.Secondary>
-    <Button.Transparent disabled>Transparent button</Button.Transparent>
-    <Button.Outline disabled>Outline button</Button.Outline>
-  </div>
+    <tr>
+      <td>
+        <Button.Primary>Primary button</Button.Primary>
+      </td>
+      <td>
+        <Button.Primary disabled>Primary button</Button.Primary>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <Button.Secondary>Secondary button</Button.Secondary>
+      </td>
+      <td>
+        <Button.Secondary disabled>Secondary button</Button.Secondary>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <Button.Transparent>Transparent button</Button.Transparent>
+      </td>
+      <td>
+        <Button.Transparent disabled>Transparent button</Button.Transparent>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <Button.Outline>Outline button</Button.Outline>
+      </td>
+      <td>
+        <Button.Outline disabled>Outline button</Button.Outline>
+      </td>
+    </tr>
+  </table>
 
   <div>
     <Input placeholder="Hey, I'm an input." />
