@@ -1,5 +1,13 @@
 <script>
-  import { Text, Title, Numeric, Caption, Icon, Input } from "../DesignSystem";
+  import {
+    Button,
+    Text,
+    Title,
+    Numeric,
+    Caption,
+    Icon,
+    Input
+  } from "../DesignSystem";
   import { link } from "svelte-spa-router";
   import Layout from "../components/Layout.svelte";
 
@@ -58,6 +66,8 @@
     <Numeric.Big>0123456789</Numeric.Big>
     <Numeric.Regular>0123456789</Numeric.Regular>
     <Numeric.Small>0123456789</Numeric.Small>
+
+    <Caption>Open Source Coin</Caption>
   </div>
 
   <div>
@@ -66,6 +76,22 @@
     <Icon.Projects />
     <Icon.Plus />
     <Icon.Fund />
+  </div>
+
+  <div>
+    <Button.Vanilla>Vanilla button</Button.Vanilla>
+    <Button.Primary>Primary button</Button.Primary>
+    <Button.Secondary>Secondary button</Button.Secondary>
+    <Button.Transparent>Transparent button</Button.Transparent>
+    <Button.Outline>Outline button</Button.Outline>
+  </div>
+
+  <div>
+    <Button.Vanilla disabled>Vanilla button disabled</Button.Vanilla>
+    <Button.Primary disabled>Primary button</Button.Primary>
+    <Button.Secondary disabled>Secondary button</Button.Secondary>
+    <Button.Transparent disabled>Transparent button</Button.Transparent>
+    <Button.Outline disabled>Outline button</Button.Outline>
   </div>
 
   <div>
