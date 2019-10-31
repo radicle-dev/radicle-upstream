@@ -17,8 +17,10 @@
   "main": "./native/main.comp.js",
   "devDependencies": {
     "@babel/core": "^7.6.4",
+    "@babel/node": "^7.6.3",
     "@babel/preset-env": "^7.6.3",
     "chokidar": "^3.2.2",
+    "color": "^3.1.2",
     "cypress": "^3.5.0",
     "electron": "^6.0.12",
     "electron-builder": "^21.2.0",
@@ -54,7 +56,8 @@
     "proxy:start": "cd ../proxy && cargo run --release -- local",
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js"
   },
   "dependencies": {
     "apollo-boost": "^0.4.4",

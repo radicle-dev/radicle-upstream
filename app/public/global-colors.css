@@ -1,0 +1,57 @@
+/* This file is auto-generated via `yarn generate:colors`, don't edit this
+ * file manually. If you need to make changes to the global color tokens
+ * edit `colors.json` and re-generate them via the yarn script. */
+
+:root {
+  --color-purple-tint-10: #815ae4;
+  --color-purple: #6e41e0;
+  --color-purple-shade-10: #5b28dc;
+  --color-blue-tint-10: #259fde;
+  --color-blue: #1f91cc;
+  --color-blue-shade-10: #1c83b8;
+  --color-green-tint-10: #2ddf85;
+  --color-green: #20d479;
+  --color-green-shade-10: #1dbf6d;
+  --color-orange-tint-10: #f6c852;
+  --color-orange: #f5bf36;
+  --color-orange-shade-10: #f4b61a;
+  --color-red-tint-10: #eb6b6b;
+  --color-red: #e75050;
+  --color-red-shade-10: #e33535;
+  --color-bordeaux-tint-10: #c6587a;
+  --color-bordeaux: #bf456b;
+  --color-bordeaux-shade-10: #ae3c5f;
+  --color-lightblue-tint-10: #bbbff5;
+  --color-lightblue: #999ff0;
+  --color-lightblue-shade-10: #777feb;
+  --color-teal-tint-10: #70e7f7;
+  --color-teal: #51e2f5;
+  --color-teal-shade-10: #32ddf3;
+  --color-lightgreen-tint-10: #3ef499;
+  --color-lightgreen: #24f38b;
+  --color-lightgreen-shade-10: #0dee7d;
+  --color-yellow-tint-10: #e6f028;
+  --color-yellow: #e3ed11;
+  --color-yellow-shade-10: #ccd50f;
+  --color-pink-tint-10: #e690d5;
+  --color-pink: #e074cb;
+  --color-pink-shade-10: #da58c1;
+  --color-black-tint-10: #2c3843;
+  --color-black: #28333d;
+  --color-black-shade-10: #242e37;
+  --color-darkgray-tint-10: #5c6e80;
+  --color-darkgray: #546474;
+  --color-darkgray-shade-10: #4c5a68;
+  --color-gray-tint-10: #a3b0bc;
+  --color-gray: #90a0af;
+  --color-gray-shade-10: #7d90a2;
+  --color-lightgray-tint-10: #e9edf1;
+  --color-lightgray: #ced8e1;
+  --color-lightgray-shade-10: #b3c3d1;
+  --color-almostwhite-tint-10: #ffffff;
+  --color-almostwhite: #f8f8f8;
+  --color-almostwhite-shade-10: #dfdfdf;
+  --color-white-tint-10: #ffffff;
+  --color-white: #ffffff;
+  --color-white-shade-10: #e6e6e6;
+}
