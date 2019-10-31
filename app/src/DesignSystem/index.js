@@ -1,9 +1,10 @@
 import Button from "./Button";
 import Caption from "./Caption.svelte";
+import Header from "./Header.svelte";
 import Icon from "./Icon";
 import Input from "./Input.svelte";
 import Numeric from "./Numeric";
 import Text from "./Text";
 import Title from "./Title";
 
-export { Button, Caption, Icon, Input, Numeric, Text, Title };
+export { Button, Caption, Header, Icon, Input, Numeric, Text, Title };

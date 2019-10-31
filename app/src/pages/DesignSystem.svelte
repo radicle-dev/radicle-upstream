@@ -1,6 +1,7 @@
 <script>
   import {
     Button,
+    Header,
     Text,
     Title,
     Numeric,
@@ -40,11 +41,17 @@
 
 <style>
   div {
-    margin: 32px;
+    margin-bottom: 32px;
   }
 </style>
 
 <Layout>
+  <Header>
+    <div slot="left">
+      <Title.Big>Design System</Title.Big>
+    </div>
+  </Header>
+
   <div>
     {#each colors as color}
       <Text.Regular style="background-color: var({color})">
