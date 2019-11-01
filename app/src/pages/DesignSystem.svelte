@@ -44,6 +44,11 @@
   table {
     margin-bottom: 32px;
   }
+
+  .icons {
+    display: flex;
+    align-items: center;
+  }
 </style>
 
 <Layout>
@@ -78,12 +83,27 @@
     <Caption>Open Source Coin</Caption>
   </div>
 
-  <div>
-    <Icon.Search />
+  <div class="icons">
+    <Icon.Branch />
+    <Icon.Check />
+    <Icon.Commit />
+    <Icon.Cross />
+    <Icon.CrossBig />
+    <Icon.Ellipses />
     <Icon.Feed />
-    <Icon.Projects />
-    <Icon.Plus />
+    <Icon.File />
+    <Icon.Folder />
     <Icon.Fund />
+    <Icon.Graph />
+    <Icon.Important />
+    <Icon.Inbox />
+    <Icon.Info />
+    <Icon.Minus />
+    <Icon.Plus />
+    <Icon.Projects />
+    <Icon.Search />
+    <Icon.SearchSmall />
+    <Icon.Source />
   </div>
 
   <table>

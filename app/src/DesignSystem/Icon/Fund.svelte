@@ -1,24 +1,10 @@
-<script>
-  export let active = false;
-  export let style = active && "fill:var(--color-purple)";
-</script>
-
-<style>
-  svg {
-    pointer-events: all;
-    cursor: pointer;
-  }
-  path {
-    fill: var(--color-gray);
-  }
-  svg:hover path {
-    fill: var(--color-purple);
-  }
-</style>
-
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+<svg
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="var(--color-gray)"
+  xmlns="http://www.w3.org/2000/svg">
   <path
-    {style}
     fill-rule="evenodd"
     clip-rule="evenodd"
     d="M4 5H18V8H11C8.79086 8 7 9.79086 7 12C7 14.2091 8.79086 16 11
