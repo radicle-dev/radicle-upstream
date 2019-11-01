@@ -10,7 +10,7 @@
       <Title.Big>Projects</Title.Big>
     </div>
     <div slot="right">
-      <Button.Outline>New Project</Button.Outline>
+      <Button variant="outline">New Project</Button>
     </div>
   </Header>
 

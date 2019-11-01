@@ -1,4 +1,5 @@
 <script>
+  import Title from "./Title";
   export let variant;
   export let disabled = false;
 </script>
@@ -13,9 +14,9 @@
     border-color: var(--color-lightgray);
     color: var(--color-darkgray);
     cursor: pointer;
-    height: 48px;
+    height: 36px;
     outline-style: none;
-    padding: 13px 24px 14px 24px;
+    padding: 0 16px 0 16px;
   }
 
   button:hover {
@@ -120,5 +121,7 @@
 </style>
 
 <button class={variant} {disabled} class:disabled>
-  <slot />
+  <Title.Regular style="display: inline-block">
+    <slot />
+  </Title.Regular>
 </button>

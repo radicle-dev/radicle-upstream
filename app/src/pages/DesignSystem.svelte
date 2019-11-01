@@ -1,6 +1,9 @@
 <script>
   import {
     Button,
+    ButtonIcon,
+    ButtonSmall,
+    ButtonIconSmall,
     Header,
     Text,
     Title,
@@ -110,7 +113,13 @@
     <thead>
       <tr>
         <td>
-          <Caption>Normal</Caption>
+          <Caption>Variant</Caption>
+        </td>
+        <td>
+          <Caption>Disabled</Caption>
+        </td>
+        <td>
+          <Caption>Variant</Caption>
         </td>
         <td>
           <Caption>Disabled</Caption>
@@ -119,46 +128,203 @@
     </thead>
     <tr>
       <td>
-        <Button.Vanilla>Vanilla button</Button.Vanilla>
+        <Button variant="vanilla">Vanilla</Button>
       </td>
       <td>
-        <Button.Vanilla disabled>Vanilla button</Button.Vanilla>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        <Button.Primary>Primary button</Button.Primary>
+        <Button variant="vanilla" disabled>Vanilla</Button>
       </td>
       <td>
-        <Button.Primary disabled>Primary button</Button.Primary>
-      </td>
-    </tr>
-
-    <tr>
-      <td>
-        <Button.Secondary>Secondary button</Button.Secondary>
+        <ButtonIcon icon={Icon.Plus} variant="vanilla">Vanilla</ButtonIcon>
       </td>
       <td>
-        <Button.Secondary disabled>Secondary button</Button.Secondary>
+        <ButtonIcon icon={Icon.Plus} variant="vanilla" disabled>
+          Vanilla
+        </ButtonIcon>
       </td>
     </tr>
 
     <tr>
       <td>
-        <Button.Transparent>Transparent button</Button.Transparent>
+        <Button variant="primary">Primary</Button>
       </td>
       <td>
-        <Button.Transparent disabled>Transparent button</Button.Transparent>
+        <Button variant="primary" disabled>Primary</Button>
+      </td>
+      <td>
+        <ButtonIcon icon={Icon.Minus} variant="primary">Primary</ButtonIcon>
+      </td>
+      <td>
+        <ButtonIcon icon={Icon.Minus} variant="primary" disabled>
+          Primary
+        </ButtonIcon>
       </td>
     </tr>
 
     <tr>
       <td>
-        <Button.Outline>Outline button</Button.Outline>
+        <Button variant="secondary">Secondary</Button>
       </td>
       <td>
-        <Button.Outline disabled>Outline button</Button.Outline>
+        <Button variant="secondary" disabled>Secondary</Button>
+      </td>
+      <td>
+        <ButtonIcon icon={Icon.SearchSmall} variant="secondary">
+          Secondary
+        </ButtonIcon>
+      </td>
+      <td>
+        <ButtonIcon icon={Icon.SearchSmall} variant="secondary" disabled>
+          Secondary
+        </ButtonIcon>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <Button variant="transparent">Transparent</Button>
+      </td>
+      <td>
+        <Button variant="transparent" disabled>Transparent</Button>
+      </td>
+      <td>
+        <ButtonIcon icon={Icon.Check} variant="transparent">
+          Transparent
+        </ButtonIcon>
+      </td>
+      <td>
+        <ButtonIcon icon={Icon.Check} variant="transparent" disabled>
+          Transparent
+        </ButtonIcon>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <Button variant="outline">Outline</Button>
+      </td>
+      <td>
+        <Button variant="outline" disabled>Outline</Button>
+      </td>
+      <td>
+        <ButtonIcon icon={Icon.Graph} variant="outline">Outline</ButtonIcon>
+      </td>
+      <td>
+        <ButtonIcon icon={Icon.Graph} variant="outline" disabled>
+          Outline
+        </ButtonIcon>
+      </td>
+    </tr>
+  </table>
+
+  <table>
+    <thead>
+      <tr>
+        <td>
+          <Caption>Variant</Caption>
+        </td>
+        <td>
+          <Caption>Disabled</Caption>
+        </td>
+        <td>
+          <Caption>Variant</Caption>
+        </td>
+        <td>
+          <Caption>Disabled</Caption>
+        </td>
+      </tr>
+    </thead>
+    <tr>
+      <td>
+        <ButtonSmall variant="vanilla">Vanilla</ButtonSmall>
+      </td>
+      <td>
+        <ButtonSmall variant="vanilla" disabled>Vanilla</ButtonSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.Plus} variant="vanilla">
+          Vanilla
+        </ButtonIconSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.Plus} variant="vanilla" disabled>
+          Vanilla
+        </ButtonIconSmall>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <ButtonSmall variant="primary">Primary</ButtonSmall>
+      </td>
+      <td>
+        <ButtonSmall variant="primary" disabled>Primary</ButtonSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.Minus} variant="primary">
+          Primary
+        </ButtonIconSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.Minus} variant="primary" disabled>
+          Primary
+        </ButtonIconSmall>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <ButtonSmall variant="secondary">Secondary</ButtonSmall>
+      </td>
+      <td>
+        <ButtonSmall variant="secondary" disabled>Secondary</ButtonSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.SearchSmall} variant="secondary">
+          Secondary
+        </ButtonIconSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.SearchSmall} variant="secondary" disabled>
+          Secondary
+        </ButtonIconSmall>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <ButtonSmall variant="transparent">Transparent</ButtonSmall>
+      </td>
+      <td>
+        <ButtonSmall variant="transparent" disabled>Transparent</ButtonSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.Check} variant="transparent">
+          Transparent
+        </ButtonIconSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.Check} variant="transparent" disabled>
+          Transparent
+        </ButtonIconSmall>
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+        <ButtonSmall variant="outline">Outline</ButtonSmall>
+      </td>
+      <td>
+        <ButtonSmall variant="outline" disabled>Outline</ButtonSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.Graph} variant="outline">
+          Outline
+        </ButtonIconSmall>
+      </td>
+      <td>
+        <ButtonIconSmall icon={Icon.Graph} variant="outline" disabled>
+          Outline
+        </ButtonIconSmall>
       </td>
     </tr>
   </table>
