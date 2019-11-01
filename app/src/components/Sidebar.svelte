@@ -35,10 +35,16 @@
 
   :global(li .show-on-hover) {
     opacity: 0;
+    display: none;
+  }
+
+  :global(li:hover svg) {
+    fill: var(--color-purple);
   }
 
   :global(li:hover .show-on-hover) {
     opacity: 1;
+    display: inline-block;
   }
 </style>
 
