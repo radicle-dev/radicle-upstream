@@ -16,7 +16,8 @@ const startApp = () => {
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 900,
-    height: 680
+    height: 680,
+    icon: path.join(__dirname, "../public/icon.png")
   });
 
   let watcher;
