@@ -8,8 +8,14 @@
   export let icon = Icon.Search;
 </script>
 
-<a {href} use:link>
-  <svelte:component this={icon} active={$location.startsWith(href)} />
+<style>
+  :global(.active svg) {
+    fill: var(--color-purple);
+  }
+</style>
+
+<a {href} use:link class={$location.startsWith(href) ? 'active' : ''}>
+  <svelte:component this={icon} />
 </a>
 
 <SidebarTooltip>
