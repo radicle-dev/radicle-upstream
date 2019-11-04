@@ -18,10 +18,12 @@ hex = "0.4"
 juniper = "0.13"
 juniper_warp = "0.4"
 log = "0.4"
-oscoin_client = { git = "https://github.com/oscoin/oscoin-parity-wasm-prototype" }
-oscoin_ledger =  { git = "https://github.com/oscoin/oscoin-parity-wasm-prototype" }
 pretty_env_logger = "0.3"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 warp = "0.1"
+
+[dependencies.radicle_registry_client]
+git = "https://github.com/radicle-dev/radicle-registry.git"
+rev = "b417c0a1abcd9da05d3acd0498d46c48039bcf7a"

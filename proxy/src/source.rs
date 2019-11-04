@@ -1,13 +1,13 @@
-use futures::Future;
+use radicle_registry_client::CryptoPair as _;
 use std::collections::HashMap;
 
 /// Newtype for the registry `oscoin_client::AccountId`.
-#[derive(Clone, Copy, Eq, Hash, PartialEq)]
-pub struct AccountId(pub oscoin_client::AccountId);
+#[derive(Clone, Eq, Hash, PartialEq)]
+pub struct AccountId(pub radicle_registry_client::AccountId);
 
 /// Newtype for the registry `oscoin_client::ProjectId`.
-#[derive(Clone, Copy, Eq, Hash, PartialEq)]
-pub struct ProjectId(pub oscoin_client::ProjectId);
+#[derive(Clone, Eq, Hash, PartialEq)]
+pub struct ProjectId(pub radicle_registry_client::ProjectId);
 
 /// Metadata enriched user keypair.
 /// TODO(xla): This overlaps with accounts on the registry, needs renaming.
@@ -38,8 +38,8 @@ pub struct Project {
     members: Vec<Account>,
 }
 
-impl From<oscoin_ledger::interface::Project> for Project {
-    fn from(p: oscoin_ledger::interface::Project) -> Self {
+impl From<radicle_registry_client::Project> for Project {
+    fn from(p: radicle_registry_client::Project) -> Self {
         let ms = p
             .members
             .into_iter()
@@ -73,16 +73,16 @@ pub trait Source {
 /// Container to store local view on accounts to match with metadata.
 pub struct Ledger {
     /// Ledger client.
-    client: oscoin_client::Client,
+    client: radicle_registry_client::SyncClient,
     /// Mapping of `AccountId`s to `Account`s for easier metadata enrichment.
     accounts: HashMap<AccountId, Account>,
 }
 
 impl Ledger {
     /// Returns a new `Ledger`.
-    pub fn new(client: oscoin_client::Client) -> Self {
+    pub fn new(client: radicle_registry_client::SyncClient) -> Self {
         Self {
-            client,
+            client: client,
             accounts: HashMap::new(),
         }
     }
@@ -119,17 +119,19 @@ impl Source for Ledger {
         // TODO(xla): Return proper error.
         self.client
             .list_projects()
-            .wait()
             .expect("osc client list projects failed")
             .into_iter()
-            .map(Project::from)
-            .map(|p| self.enrich_members(p))
+            .take(10)
+            .map(|id| {
+                let project = Project::from(self.client.get_project(id).unwrap().unwrap());
+                self.enrich_members(project)
+            })
             .collect()
     }
 
     fn get_project(&self, id: ProjectId) -> Option<Project> {
         // TODO(xla): Bubble up errors from QueryResult.
-        match self.client.get_project(id.0).wait() {
+        match self.client.get_project(id.0) {
             Ok(maybe_project) => match maybe_project {
                 Some(p) => Some(self.enrich_members(Project::from(p))),
                 None => None,
@@ -139,22 +141,19 @@ impl Source for Ledger {
     }
 
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-        let sender = self
-            .client
-            .new_account()
-            .wait()
-            .expect("osc new account failed");
+        let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
         // TODO(xla): Proper error handling.
         let project_id = self
             .client
             .register_project(
-                sender,
-                name.to_owned(),
-                description.to_owned(),
-                img_url.to_owned(),
+                &sender,
+                radicle_registry_client::RegisterProjectParams {
+                    name: name.to_owned(),
+                    description: description.to_owned(),
+                    img_url: img_url.to_owned(),
+                },
             )
-            .wait()
             .expect("osc project registration failed");
 
         Project {
@@ -168,6 +167,7 @@ impl Source for Ledger {
 }
 
 pub mod test {
+    use radicle_registry_client::CryptoPair;
     use std::collections::HashMap;
     use std::sync::{Arc, RwLock};
 
@@ -181,49 +181,49 @@ pub mod test {
         pub fn new() -> Self {
             let mut projects = HashMap::new();
 
-            let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
-            projects.insert(id, Project{
+            let id = ProjectId(radicle_registry_client::ProjectId::random());
+            projects.insert(id.clone(), Project{
             id,
             name: "monokel".to_owned(),
             description: "A looking glass into the future".to_owned(),
             img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg".to_owned(),
             members: vec![
                 Account{
-                    id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
+                    id: AccountId(radicle_registry_client::ed25519::Pair::generate().0.public()),
                     key_name: "xla".to_owned(),
                     avatar_url: "https://avatars0.githubusercontent.com/u/1585".to_owned(),
                 },
             ],
         });
 
-            let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
-            projects.insert(id, Project{
+            let id = ProjectId(radicle_registry_client::ProjectId::random());
+            projects.insert(id.clone(), Project{
             id,
             name: "Monadic".to_owned(),
             description: "Open source organization of amazing things".to_owned(),
             img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg".to_owned(),
             members: vec![
                 Account{
-                    id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
+                    id: AccountId(radicle_registry_client::ed25519::Pair::generate().0.public()),
                     key_name: "cloudhead".to_owned(),
                     avatar_url: "https://avatars1.githubusercontent.com/u/40774".to_owned(),
                 },
                 Account{
-                    id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
+                    id: AccountId(radicle_registry_client::ed25519::Pair::generate().0.public()),
                     key_name: "lftherios".to_owned(),
                     avatar_url: "https://avatars3.githubusercontent.com/u/853825".to_owned(),
                 },
                 Account{
-                    id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
+                    id: AccountId(radicle_registry_client::ed25519::Pair::generate().0.public()),
                     key_name: "juliendonck".to_owned(),
                     avatar_url: "https://avatars2.githubusercontent.com/u/2326909".to_owned(),
                 },
             ],
         });
 
-            let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
+            let id = ProjectId(radicle_registry_client::ProjectId::random());
             projects.insert(
-                id,
+                id.clone(),
                 Project {
                     id,
                     name: "open source coin".to_owned(),
@@ -231,19 +231,31 @@ pub mod test {
                     img_url: "https://avatars0.githubusercontent.com/u/31632242".to_owned(),
                     members: vec![
                         Account {
-                            id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
+                            id: AccountId(
+                                radicle_registry_client::ed25519::Pair::generate()
+                                    .0
+                                    .public(),
+                            ),
                             key_name: "geigerzaehler".to_owned(),
                             avatar_url: "https://avatars2.githubusercontent.com/u/3919579"
                                 .to_owned(),
                         },
                         Account {
-                            id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
+                            id: AccountId(
+                                radicle_registry_client::ed25519::Pair::generate()
+                                    .0
+                                    .public(),
+                            ),
                             key_name: "rockbmb".to_owned(),
                             avatar_url: "https://avatars2.githubusercontent.com/u/16455833"
                                 .to_owned(),
                         },
                         Account {
-                            id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
+                            id: AccountId(
+                                radicle_registry_client::ed25519::Pair::generate()
+                                    .0
+                                    .public(),
+                            ),
                             key_name: "rudolfs".to_owned(),
                             avatar_url: "https://avatars1.githubusercontent.com/u/158411"
                                 .to_owned(),
@@ -252,16 +264,20 @@ pub mod test {
                 },
             );
 
-            let id = ProjectId(*oscoin_client::Address::random().as_fixed_bytes());
+            let id = ProjectId(radicle_registry_client::ProjectId::random());
             projects.insert(
-                id,
+                id.clone(),
                 Project {
                     id,
                     name: "radicle".to_owned(),
                     description: "Decentralized open source collaboration".to_owned(),
                     img_url: "https://avatars0.githubusercontent.com/u/48290027".to_owned(),
                     members: vec![Account {
-                        id: AccountId(*oscoin_client::Address::random().as_fixed_bytes()),
+                        id: AccountId(
+                            radicle_registry_client::ed25519::Pair::generate()
+                                .0
+                                .public(),
+                        ),
                         key_name: "jkarni".to_owned(),
                         avatar_url: "https://avatars3.githubusercontent.com/u/1657498".to_owned(),
                     }],
@@ -300,21 +316,20 @@ pub mod test {
         }
 
         fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-            let addr = oscoin_client::Address::random();
-            let id = addr.as_fixed_bytes();
+            let id = ProjectId(radicle_registry_client::ProjectId::random());
 
             let mut projects = self
                 .projects
                 .write()
                 .expect("claiming projects write lock failed");
             let p = Project {
-                id: ProjectId(*id),
+                id: id.clone(),
                 name,
                 description,
                 img_url,
                 members: vec![],
             };
-            projects.insert(ProjectId(*id), p.clone());
+            projects.insert(id, p.clone());
 
             p
         }
