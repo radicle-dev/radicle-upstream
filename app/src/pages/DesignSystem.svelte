@@ -1,9 +1,6 @@
 <script>
   import {
     Button,
-    ButtonIcon,
-    ButtonSmall,
-    ButtonIconSmall,
     Header,
     Text,
     Title,
@@ -134,12 +131,10 @@
         <Button variant="vanilla" disabled>Vanilla</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.Plus} variant="vanilla">Vanilla</ButtonIcon>
+        <Button icon={Icon.Plus} variant="vanilla">Vanilla</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.Plus} variant="vanilla" disabled>
-          Vanilla
-        </ButtonIcon>
+        <Button icon={Icon.Plus} variant="vanilla" disabled>Vanilla</Button>
       </td>
     </tr>
 
@@ -151,12 +146,10 @@
         <Button variant="primary" disabled>Primary</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.Minus} variant="primary">Primary</ButtonIcon>
+        <Button icon={Icon.Minus} variant="primary">Primary</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.Minus} variant="primary" disabled>
-          Primary
-        </ButtonIcon>
+        <Button icon={Icon.Minus} variant="primary" disabled>Primary</Button>
       </td>
     </tr>
 
@@ -168,14 +161,12 @@
         <Button variant="secondary" disabled>Secondary</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.SearchSmall} variant="secondary">
-          Secondary
-        </ButtonIcon>
+        <Button icon={Icon.SearchSmall} variant="secondary">Secondary</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.SearchSmall} variant="secondary" disabled>
+        <Button icon={Icon.SearchSmall} variant="secondary" disabled>
           Secondary
-        </ButtonIcon>
+        </Button>
       </td>
     </tr>
 
@@ -187,14 +178,12 @@
         <Button variant="transparent" disabled>Transparent</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.Check} variant="transparent">
-          Transparent
-        </ButtonIcon>
+        <Button icon={Icon.Check} variant="transparent">Transparent</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.Check} variant="transparent" disabled>
+        <Button icon={Icon.Check} variant="transparent" disabled>
           Transparent
-        </ButtonIcon>
+        </Button>
       </td>
     </tr>
 
@@ -206,12 +195,10 @@
         <Button variant="outline" disabled>Outline</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.Graph} variant="outline">Outline</ButtonIcon>
+        <Button icon={Icon.Graph} variant="outline">Outline</Button>
       </td>
       <td>
-        <ButtonIcon icon={Icon.Graph} variant="outline" disabled>
-          Outline
-        </ButtonIcon>
+        <Button icon={Icon.Graph} variant="outline" disabled>Outline</Button>
       </td>
     </tr>
   </table>
@@ -235,96 +222,98 @@
     </thead>
     <tr>
       <td>
-        <ButtonSmall variant="vanilla">Vanilla</ButtonSmall>
+        <Button size="small" variant="vanilla">Vanilla</Button>
       </td>
       <td>
-        <ButtonSmall variant="vanilla" disabled>Vanilla</ButtonSmall>
+        <Button size="small" variant="vanilla" disabled>Vanilla</Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.Plus} variant="vanilla">
+        <Button size="small" icon={Icon.Plus} variant="vanilla">Vanilla</Button>
+      </td>
+      <td>
+        <Button size="small" icon={Icon.Plus} variant="vanilla" disabled>
           Vanilla
-        </ButtonIconSmall>
-      </td>
-      <td>
-        <ButtonIconSmall icon={Icon.Plus} variant="vanilla" disabled>
-          Vanilla
-        </ButtonIconSmall>
+        </Button>
       </td>
     </tr>
 
     <tr>
       <td>
-        <ButtonSmall variant="primary">Primary</ButtonSmall>
+        <Button size="small" variant="primary">Primary</Button>
       </td>
       <td>
-        <ButtonSmall variant="primary" disabled>Primary</ButtonSmall>
+        <Button size="small" variant="primary" disabled>Primary</Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.Minus} variant="primary">
+        <Button size="small" icon={Icon.Minus} variant="primary">
           Primary
-        </ButtonIconSmall>
+        </Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.Minus} variant="primary" disabled>
+        <Button size="small" icon={Icon.Minus} variant="primary" disabled>
           Primary
-        </ButtonIconSmall>
+        </Button>
       </td>
     </tr>
 
     <tr>
       <td>
-        <ButtonSmall variant="secondary">Secondary</ButtonSmall>
+        <Button size="small" variant="secondary">Secondary</Button>
       </td>
       <td>
-        <ButtonSmall variant="secondary" disabled>Secondary</ButtonSmall>
+        <Button size="small" variant="secondary" disabled>Secondary</Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.SearchSmall} variant="secondary">
+        <Button size="small" icon={Icon.SearchSmall} variant="secondary">
           Secondary
-        </ButtonIconSmall>
+        </Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.SearchSmall} variant="secondary" disabled>
+        <Button
+          size="small"
+          icon={Icon.SearchSmall}
+          variant="secondary"
+          disabled>
           Secondary
-        </ButtonIconSmall>
+        </Button>
       </td>
     </tr>
 
     <tr>
       <td>
-        <ButtonSmall variant="transparent">Transparent</ButtonSmall>
+        <Button size="small" variant="transparent">Transparent</Button>
       </td>
       <td>
-        <ButtonSmall variant="transparent" disabled>Transparent</ButtonSmall>
+        <Button size="small" variant="transparent" disabled>Transparent</Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.Check} variant="transparent">
+        <Button size="small" icon={Icon.Check} variant="transparent">
           Transparent
-        </ButtonIconSmall>
+        </Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.Check} variant="transparent" disabled>
+        <Button size="small" icon={Icon.Check} variant="transparent" disabled>
           Transparent
-        </ButtonIconSmall>
+        </Button>
       </td>
     </tr>
 
     <tr>
       <td>
-        <ButtonSmall variant="outline">Outline</ButtonSmall>
+        <Button size="small" variant="outline">Outline</Button>
       </td>
       <td>
-        <ButtonSmall variant="outline" disabled>Outline</ButtonSmall>
+        <Button size="small" variant="outline" disabled>Outline</Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.Graph} variant="outline">
+        <Button size="small" icon={Icon.Graph} variant="outline">
           Outline
-        </ButtonIconSmall>
+        </Button>
       </td>
       <td>
-        <ButtonIconSmall icon={Icon.Graph} variant="outline" disabled>
+        <Button size="small" icon={Icon.Graph} variant="outline" disabled>
           Outline
-        </ButtonIconSmall>
+        </Button>
       </td>
     </tr>
   </table>

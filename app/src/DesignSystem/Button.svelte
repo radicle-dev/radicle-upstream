@@ -1,7 +1,13 @@
 <script>
   import Title from "./Title";
-  export let variant;
+  export let variant = "primary";
+  export let size = "big";
   export let disabled = false;
+  export let icon = null;
+
+  let iconClass = icon ? (size === "big" ? "icon" : "icon-small") : null;
+  let disabledClass = disabled ? "disabled" : null;
+  let buttonClass = [variant, size, iconClass, disabledClass].join(" ");
 </script>
 
 <style>
@@ -14,10 +20,43 @@
     border-color: var(--color-lightgray);
     color: var(--color-darkgray);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .big {
     height: 48px;
     outline-style: none;
     line-height: 40px;
     padding: 0 24px 0 24px;
+  }
+
+  .small {
+    height: 36px;
+    outline-style: none;
+    padding: 0 16px 0 16px;
+  }
+
+  .icon {
+    padding: 0 24px 0 15px;
+  }
+
+  .icon-small {
+    line-height: 32px;
+    padding: 0 16px 0 11px;
+  }
+
+  :global(button svg) {
+    fill: var(--color-darkgray);
+    margin-right: 8px;
+  }
+
+  :global(.primary svg, .secondary svg) {
+    fill: var(--color-white);
+  }
+
+  :global(.disabled svg) {
+    fill: var(--color-gray);
   }
 
   button:hover {
@@ -121,7 +160,8 @@
   }
 </style>
 
-<button class={variant} {disabled} class:disabled>
+<button class={buttonClass} {disabled}>
+  <svelte:component this={icon} />
   <Title.Regular style="display: inline-block">
     <slot />
   </Title.Regular>
