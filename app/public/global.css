@@ -1,24 +1,3 @@
-/* Global style tokens */
-:root {
-  --color-purple: #6e41e0;
-  --color-blue: #1f91cc;
-  --color-green: #20d479;
-  --color-orange: #f5bf36;
-  --color-red: #e75050;
-  --color-bordeaux: #bf456b;
-  --color-lightblue: #999ff0;
-  --color-teal: #51e2f5;
-  --color-lightgreen: #24f38b;
-  --color-yellow: #e3ed11;
-  --color-pink: #e074cb;
-  --color-black: #28333d;
-  --color-darkgray: #546474;
-  --color-gray: #90a0af;
-  --color-lightgray: #ced8e1;
-  --color-almostwhite: #f8f8f8;
-  --color-white: #ffffff;
-}
-
 @font-face {
   font-family: "GT America Bold";
   src: url("fonts/GTAmericaBold.otf");

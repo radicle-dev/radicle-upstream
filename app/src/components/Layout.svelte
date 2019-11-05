@@ -3,21 +3,23 @@
 </script>
 
 <style>
-  .container {
-    display: grid;
-    grid-template-columns: 68px 1fr;
-    grid-template-rows: 1fr;
-    grid-column-gap: 0px;
-    grid-row-gap: 0px;
+  .wrapper {
+    width: 100vw;
+    padding-left: 68px;
   }
+
   .content {
-    padding: 24px;
+    margin-top: 80px;
+    margin-left: 8vw;
+    margin-right: 8vw;
   }
 </style>
 
-<div class="container">
+<div>
   <Sidebar />
-  <div class="content">
-    <slot />
+  <div class="wrapper">
+    <div class="content">
+      <slot />
+    </div>
   </div>
 </div>

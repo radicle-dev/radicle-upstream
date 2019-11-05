@@ -7,11 +7,14 @@
 <style>
   div {
     width: 68px;
+    height: 100%;
     background-color: var(--color-almostwhite);
     display: flex;
+    position: fixed;
     flex-direction: column;
     justify-content: space-between;
     padding: 18px;
+    z-index: 1000;
   }
 
   nav ul {
@@ -32,10 +35,16 @@
 
   :global(li .show-on-hover) {
     opacity: 0;
+    display: none;
+  }
+
+  :global(li:hover svg) {
+    fill: var(--color-purple);
   }
 
   :global(li:hover .show-on-hover) {
     opacity: 1;
+    display: inline-block;
   }
 </style>
 

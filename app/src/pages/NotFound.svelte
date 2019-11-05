@@ -1,8 +1,12 @@
 <script>
-  import { Title } from "../DesignSystem";
+  import { Header, Title } from "../DesignSystem";
   import Layout from "../components/Layout.svelte";
 </script>
 
 <Layout>
-  <Title.Huge>Not Found</Title.Huge>
+  <Header>
+    <div slot="left">
+      <Title.Big>Not Found</Title.Big>
+    </div>
+  </Header>
 </Layout>

@@ -1,5 +1,5 @@
 <script>
-  export let style;
+  export let style = null;
 </script>
 
 <style>
