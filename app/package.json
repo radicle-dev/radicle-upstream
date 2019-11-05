@@ -7,6 +7,9 @@
       "public/**/*",
       "native/**/*"
     ],
+    "directories": {
+      "buildResources": "public"
+    },
     "extraResources": [
       {
         "from": "dist/proxy",
