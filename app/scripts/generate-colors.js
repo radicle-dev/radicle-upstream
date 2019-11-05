@@ -21,9 +21,9 @@ const generateShades = (color, range) => {
   });
 };
 
-let globalColorCss = `
+let colorCss = `
 /* This file is auto-generated via \`yarn generate:colors\`, don't edit this
- * file manually. If you have to make changes to the global color tokens edit
+ * file manually. If you have to make changes to the color tokens edit
  * \`tokens/colors.json\` and re-generate this file by running the yarn script. */
 
 :root {
@@ -36,14 +36,14 @@ colorTokens.map(color => {
 
   const shades = generateShades(color, [0.1]);
 
-  globalColorCss += tints + primary + shades;
+  colorCss += tints + primary + shades;
 });
 
-globalColorCss += "}";
+colorCss += "}";
 
-const pathToFile = path.resolve(__dirname, "../public/global-colors.css");
+const pathToFile = path.resolve(__dirname, "../public/colors.css");
 
-fs.writeFile(pathToFile, globalColorCss, error => {
+fs.writeFile(pathToFile, colorCss, error => {
   if (error) {
     return console.log(error);
   }

@@ -1,6 +1,6 @@
 /* This file is auto-generated via `yarn generate:colors`, don't edit this
- * file manually. If you need to make changes to the global color tokens
- * edit `colors.json` and re-generate them via the yarn script. */
+ * file manually. If you have to make changes to the color tokens edit
+ * `tokens/colors.json` and re-generate this file by running the yarn script. */
 
 :root {
   --color-purple-tint-10: #815ae4;
