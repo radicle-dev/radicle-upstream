@@ -45,6 +45,11 @@
     margin-bottom: 32px;
   }
 
+  td {
+    vertical-align: middle;
+    padding: 5px;
+  }
+
   .icons {
     display: flex;
     align-items: center;

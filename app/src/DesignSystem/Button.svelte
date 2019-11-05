@@ -27,7 +27,6 @@
   .big {
     height: 48px;
     outline-style: none;
-    line-height: 40px;
     padding: 0 24px 0 24px;
   }
 
@@ -42,7 +41,6 @@
   }
 
   .icon-small {
-    line-height: 32px;
     padding: 0 16px 0 11px;
   }
 
@@ -162,7 +160,7 @@
 
 <button class={buttonClass} {disabled}>
   <svelte:component this={icon} />
-  <Title.Regular style="display: inline-block">
+  <Title.Regular>
     <slot />
   </Title.Regular>
 </button>
