@@ -21,6 +21,41 @@
     }
   `;
 
+  // For reference of Info type:
+  gql`
+    # File info and metadata.
+    type Info {
+      # Base name of the file.
+      Name: String!
+      # Length in bytes.
+      Size: Int!
+      # Equivalent of creation time of last related commit.
+      Modtime: DateTime!
+      # If it's a directory.
+      IsDirectory: Bool!
+      # Any flags Git stores, currently only executable.
+      Flags: [Int]!
+    }
+  `;
+
+  const LS = gql`
+    query Query($id: ProjectId!, $head: Head!, $prefix: String!) {
+      ls(id: $id, head: $head, prefix: $prefix) {
+        path
+        info
+      }
+    }
+  `;
+
+  const CAT = gql`
+  query Query($id: ProjectId!, head: Head!, $path: String!) {
+    cat(id: $id, head: $head, path: $path) {
+      info
+      Content
+    }
+  }
+`;
+
   const client = getClient();
   const project = query(client, {
     query: GET_PROJECT,
