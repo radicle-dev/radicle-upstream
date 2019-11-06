@@ -1,11 +1,16 @@
 <script>
+  import { location } from "svelte-spa-router";
   import Sidebar from "./Sidebar.svelte";
+  import ProjectSidebar from "./ProjectSidebar.svelte";
+
+  let wrapperLeftPadding = $$props.$$slots.double ? "318px" : "68px";
+
+  export let params = {};
 </script>
 
 <style>
   .wrapper {
     width: 100vw;
-    padding-left: 68px;
   }
 
   .content {
@@ -17,7 +22,10 @@
 
 <div>
   <Sidebar />
-  <div class="wrapper">
+  <slot name="double" />
+
+  <div class="wrapper" style="padding-left: {wrapperLeftPadding}">
+    <div>{$location}</div>
     <div class="content">
       <slot />
     </div>

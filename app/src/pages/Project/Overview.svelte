@@ -1,6 +1,7 @@
 <script>
   import { link } from "svelte-spa-router";
-  import Layout from "../components/Layout.svelte";
+  import Layout from "../../components/Layout.svelte";
+  import ProjectSidebar from "../../components/ProjectSidebar.svelte";
 
   export let params = {};
 
@@ -29,6 +30,10 @@
 </script>
 
 <Layout>
+  <div slot="double">
+    <ProjectSidebar projectId={params.id} />
+  </div>
+
   {#await $project}
     <h1>Loading project...</h1>
   {:then result}

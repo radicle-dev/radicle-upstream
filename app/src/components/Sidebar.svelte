@@ -8,7 +8,7 @@
   div {
     width: 68px;
     height: 100%;
-    background-color: var(--color-almostwhite);
+    background-color: #eeeeef;
     display: flex;
     position: fixed;
     flex-direction: column;

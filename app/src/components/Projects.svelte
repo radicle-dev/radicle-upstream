@@ -48,7 +48,7 @@
   <ul>
     {#each result.data.projects as project}
       <li class="project-card">
-        <a href="/projects/{project.id}" use:link>
+        <a href="/projects/{project.id}/overview" use:link>
           <ProjectCard
             title={project.name}
             description={project.description}
