@@ -94,6 +94,7 @@
     <Icon.Commit />
     <Icon.Cross />
     <Icon.CrossBig />
+    <Icon.Ellipse />
     <Icon.Ellipses />
     <Icon.Feed />
     <Icon.File />

@@ -1,3 +1,7 @@
+<script>
+  export let style = null;
+</script>
+
 <style>
   header {
     display: flex;
@@ -16,7 +20,7 @@
   }
 </style>
 
-<header>
+<header {style}>
   <div class="align-left">
     <slot name="left" />
   </div>

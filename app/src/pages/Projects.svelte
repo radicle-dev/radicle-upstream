@@ -5,10 +5,11 @@
 </script>
 
 <Layout>
-  <Header>
+  <Header style="margin-bottom: 24px">
     <div slot="left">
       <Title.Big>Projects</Title.Big>
     </div>
+
     <div slot="right">
       <Button icon={Icon.Plus} variant="outline">New Project</Button>
     </div>
