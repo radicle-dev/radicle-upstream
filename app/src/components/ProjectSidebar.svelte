@@ -1,6 +1,7 @@
 <script>
   import { Icon, Text } from "../DesignSystem";
-  import { link } from "svelte-spa-router";
+  import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
+  import { link, location } from "svelte-spa-router";
 
   export let projectId = null;
 </script>
@@ -28,92 +29,77 @@
     display: flex;
   }
 
-  .icon {
-    margin-right: 12px;
-    align-self: center;
+  :global(.ProjectSidebar li:hover p) {
+    color: var(--color-purple) !important;
   }
 
-  .itemWithCarret {
-    display: flex;
-    width: 100%;
+  :global(.ProjectSidebar li:hover svg) {
+    fill: var(--color-purple);
   }
 </style>
 
-<nav>
+<nav class="ProjectSidebar">
   <ul>
     <li>
       <a href="/projects/{projectId}/overview" use:link>
-        <div class="icon">
-          <Icon.Home />
-        </div>
-        <Text.Regular style="color: var(--color-darkgray)">
-          Overview
-        </Text.Regular>
+        <ProjectSidebarItem
+          icon={Icon.Home}
+          title="Overview"
+          active={$location.endsWith('overview')} />
       </a>
     </li>
 
     <li>
       <a href="/projects/{projectId}/feed" use:link>
-        <div class="icon">
-          <Icon.Feed />
-        </div>
-        <Text.Regular style="color: var(--color-darkgray)">Feed</Text.Regular>
+        <ProjectSidebarItem
+          icon={Icon.Feed}
+          title="Feed"
+          active={$location.endsWith('feed')} />
       </a>
     </li>
 
     <li>
       <a href="/projects/{projectId}/members" use:link>
-        <div class="icon">
-          <Icon.Member />
-        </div>
-        <Text.Regular style="color: var(--color-darkgray)">
-          Members
-        </Text.Regular>
+        <ProjectSidebarItem
+          icon={Icon.Member}
+          title="Members"
+          active={$location.endsWith('members')} />
       </a>
     </li>
 
     <li>
       <a href="/projects/{projectId}/funds" use:link>
-        <div class="icon">
-          <Icon.Fund />
-        </div>
-        <Text.Regular style="color: var(--color-darkgray)">Fund</Text.Regular>
+        <ProjectSidebarItem
+          icon={Icon.Fund}
+          title="Fund"
+          active={$location.endsWith('funds')} />
       </a>
     </li>
 
     <li>
       <a href="/projects/{projectId}/source" use:link>
-        <div class="icon">
-          <Icon.Source />
-        </div>
-        <div class="itemWithCarret">
-          <Text.Regular style="color: var(--color-darkgray); flex: 1">
-            Source
-          </Text.Regular>
-          <Icon.Carret style="align-self: center; transform: rotate(90deg)" />
-        </div>
+        <ProjectSidebarItem
+          icon={Icon.Source}
+          title="Source"
+          active={$location.endsWith('source')} />
       </a>
     </li>
 
     <li>
       <a href="/projects/{projectId}/commits" use:link>
-        <div class="icon">
-          <Icon.Commit />
-        </div>
-        <Text.Regular style="color: var(--color-darkgray)">
-          Commits
-        </Text.Regular>
+        <ProjectSidebarItem
+          icon={Icon.Commit}
+          title="Commits"
+          active={$location.endsWith('commits')} />
       </a>
     </li>
 
     <li>
       <a href="/projects/{projectId}/branches" use:link>
-        <div class="icon">
-          <Icon.Branch />
-        </div>
-        <Text.Regular style="color: var(--color-darkgray)">
-          Branches
-        </Text.Regular>
+        <ProjectSidebarItem
+          icon={Icon.Branch}
+          title="Branches"
+          active={$location.endsWith('branches')} />
       </a>
     </li>
   </ul>

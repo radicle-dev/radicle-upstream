@@ -25,7 +25,6 @@
   <slot name="double" />
 
   <div class="wrapper" style="padding-left: {wrapperLeftPadding}">
-    <div>{$location}</div>
     <div class="content">
       <slot />
     </div>
