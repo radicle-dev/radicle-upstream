@@ -3,7 +3,7 @@
   import Sidebar from "./Sidebar.svelte";
   import ProjectSidebar from "./ProjectSidebar.svelte";
 
-  let wrapperLeftPadding = $$props.$$slots.double ? "318px" : "68px";
+  let wrapperLeftPadding = $$props.$$slots.nestedSidebar ? "318px" : "68px";
 
   export let params = {};
 </script>
@@ -22,7 +22,7 @@
 
 <div>
   <Sidebar />
-  <slot name="double" />
+  <slot name="nestedSidebar" />
 
   <div class="wrapper" style="padding-left: {wrapperLeftPadding}">
     <div class="content">

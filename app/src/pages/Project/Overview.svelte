@@ -30,7 +30,7 @@
 </script>
 
 <Layout>
-  <div slot="double">
+  <div slot="nestedSidebar">
     <ProjectSidebar projectId={params.id} />
   </div>
 
