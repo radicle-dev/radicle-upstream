@@ -21,22 +21,8 @@
     }
   `;
 
-  // For reference of Info type:
-  gql`
-    # File info and metadata.
-    type Info {
-      # Base name of the file.
-      Name: String!
-      # Length in bytes.
-      Size: Int!
-      # Equivalent of creation time of last related commit.
-      Modtime: DateTime!
-      # If it's a directory.
-      IsDirectory: Bool!
-      # Any flags Git stores, currently only executable.
-      Flags: [Int]!
-    }
-  `;
+  // For reference of types used by ls.
+  gql``;
 
   const LS = gql`
     query Query($id: ProjectId!, $head: Head!, $prefix: String!) {

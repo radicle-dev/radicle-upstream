@@ -1,0 +1,54 @@
+type Author {
+  Name: String
+  Email: String
+}
+
+enum ObjectType {
+  Commit
+  Tree
+  Blob
+  Tag
+}
+
+# Git tags.
+type LightweightTag {
+  Commit: Commit!
+}
+
+type AnnotatedTag {
+  Object: String!
+  Type: ObjectType!
+  Name: String!
+  Tagger: Author!
+}
+
+union Tag = AnnotatedTag | LightweightTag
+
+type Head {
+  Name: String!
+  Commit: Commit!
+}
+
+union Ref = Head | Tag
+
+# Git commit data.
+type Commit {
+  Author: String!
+  Date: DateTime!
+  Message: String!
+  Refs: [Ref]
+}
+
+# File info and metadata.
+type Info {
+  # Base name of the file.
+  Name: String!
+  # Length in bytes.
+  Size: Int!
+  # If it's a directory.
+  IsDirectory: Bool!
+  # Any flags Git stores, currently only executable.
+  Flags: [Int]!
+  # Last commit which affected this path.
+  LastCommit: Commit!
+}
