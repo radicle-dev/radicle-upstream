@@ -1,3 +1,5 @@
+scalar DateTime
+
 type Author {
   Name: String
   Email: String
@@ -46,7 +48,7 @@ type Info {
   # Length in bytes.
   Size: Int!
   # If it's a directory.
-  IsDirectory: Bool!
+  IsDirectory: Boolean!
   # Any flags Git stores, currently only executable.
   Flags: [Int]!
   # Last commit which affected this path.
