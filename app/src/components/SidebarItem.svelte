@@ -9,7 +9,7 @@
 </script>
 
 <style>
-  :global(.active svg) {
+  a.active :global(svg) {
     fill: var(--color-purple);
   }
 </style>

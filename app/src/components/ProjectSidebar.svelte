@@ -29,16 +29,16 @@
     display: flex;
   }
 
-  :global(.ProjectSidebar li:hover p) {
+  nav :global(li:hover p) {
     color: var(--color-purple) !important;
   }
 
-  :global(.ProjectSidebar li:hover svg) {
+  nav :global(li:hover svg) {
     fill: var(--color-purple);
   }
 </style>
 
-<nav class="ProjectSidebar">
+<nav>
   <ul>
     <li>
       <a href="/projects/{projectId}/overview" use:link>

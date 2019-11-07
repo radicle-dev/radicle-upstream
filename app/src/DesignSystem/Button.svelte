@@ -44,16 +44,17 @@
     padding: 0 16px 0 11px;
   }
 
-  :global(button svg) {
+  button :global(svg) {
     fill: var(--color-darkgray);
     margin-right: 8px;
   }
 
-  :global(.primary svg, .secondary svg) {
+  .primary :global(svg),
+  .secondary :global(svg) {
     fill: var(--color-white);
   }
 
-  :global(.disabled svg) {
+  .disabled :global(svg) {
     fill: var(--color-gray);
   }
 

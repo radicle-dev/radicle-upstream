@@ -33,22 +33,22 @@
     align-items: center;
   }
 
-  :global(.Sidebar li .show-on-hover) {
+  div :global(li .show-on-hover) {
     opacity: 0;
     display: none;
   }
 
-  :global(.Sidebar li:hover svg) {
+  div :global(li:hover svg) {
     fill: var(--color-purple);
   }
 
-  :global(.Sidebar li:hover .show-on-hover) {
+  div :global(li:hover .show-on-hover) {
     opacity: 1;
     display: inline-block;
   }
 </style>
 
-<div class="Sidebar">
+<div>
   <nav>
     <ul>
       <li>
