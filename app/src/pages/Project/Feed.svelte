@@ -1,5 +1,4 @@
 <script>
-  import { link } from "svelte-spa-router";
   import Layout from "../../components/Layout.svelte";
   import ProjectSidebar from "../../components/ProjectSidebar.svelte";
 
