@@ -17,7 +17,7 @@
     flex-direction: column;
     justify-content: space-between;
     padding: 44px 20px 0 24px;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
   li {
