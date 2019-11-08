@@ -1,9 +1,9 @@
 <script>
-  import { Icon, Text, Title } from "../DesignSystem";
+  import { Text, Title } from "../DesignSystem";
+  import { location, link } from "svelte-spa-router";
 
-  export let icon = Icon.Home;
-  export let title = "";
-  export let active = false;
+  export let projectId;
+  export let page;
 </script>
 
 <style>
@@ -11,20 +11,28 @@
     margin-right: 12px;
     align-self: center;
   }
+
+  a {
+    display: flex;
+  }
 </style>
 
-{#if active}
-  <div class="icon">
-    <svelte:component this={icon} style="fill: var(--color-purple)" />
-  </div>
+<a href={page.path(projectId)} use:link>
+  {#if $location.endsWith(page.title.toLowerCase())}
+    <div class="icon">
+      <svelte:component this={page.icon} style="fill: var(--color-purple)" />
+    </div>
 
-  <Title.Regular style="color: var(--color-purple); line-height: 24px">
-    {title}
-  </Title.Regular>
-{:else}
-  <div class="icon">
-    <svelte:component this={icon} />
-  </div>
+    <Title.Regular style="color: var(--color-purple); line-height: 24px">
+      {page.title}
+    </Title.Regular>
+  {:else}
+    <div class="icon">
+      <svelte:component this={page.icon} />
+    </div>
 
-  <Text.Regular style="color: var(--color-darkgray)">{title}</Text.Regular>
-{/if}
+    <Text.Regular style="color: var(--color-darkgray)">
+      {page.title}
+    </Text.Regular>
+  {/if}
+</a>

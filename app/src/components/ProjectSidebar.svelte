@@ -3,6 +3,16 @@
   import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
   import { link, location } from "svelte-spa-router";
 
+  import {
+    ProjectOverview,
+    ProjectFeed,
+    ProjectMembers,
+    ProjectFunds,
+    ProjectSource,
+    ProjectCommits,
+    ProjectBranches
+  } from "../routes.js";
+
   export let projectId = null;
 </script>
 
@@ -24,10 +34,6 @@
     margin-bottom: 14px;
   }
 
-  a {
-    display: flex;
-  }
-
   nav :global(li:hover p) {
     color: var(--color-purple) !important;
   }
@@ -40,66 +46,31 @@
 <nav>
   <ul>
     <li>
-      <a href="/projects/{projectId}/overview" use:link>
-        <ProjectSidebarItem
-          icon={Icon.Home}
-          title="Overview"
-          active={$location.endsWith('overview')} />
-      </a>
+      <ProjectSidebarItem {projectId} page={ProjectOverview} />
     </li>
 
     <li>
-      <a href="/projects/{projectId}/feed" use:link>
-        <ProjectSidebarItem
-          icon={Icon.Feed}
-          title="Feed"
-          active={$location.endsWith('feed')} />
-      </a>
+      <ProjectSidebarItem {projectId} page={ProjectFeed} />
     </li>
 
     <li>
-      <a href="/projects/{projectId}/members" use:link>
-        <ProjectSidebarItem
-          icon={Icon.Member}
-          title="Members"
-          active={$location.endsWith('members')} />
-      </a>
+      <ProjectSidebarItem {projectId} page={ProjectMembers} />
     </li>
 
     <li>
-      <a href="/projects/{projectId}/funds" use:link>
-        <ProjectSidebarItem
-          icon={Icon.Fund}
-          title="Fund"
-          active={$location.endsWith('funds')} />
-      </a>
+      <ProjectSidebarItem {projectId} page={ProjectFunds} />
     </li>
 
     <li>
-      <a href="/projects/{projectId}/source" use:link>
-        <ProjectSidebarItem
-          icon={Icon.Source}
-          title="Source"
-          active={$location.endsWith('source')} />
-      </a>
+      <ProjectSidebarItem {projectId} page={ProjectSource} />
     </li>
 
     <li>
-      <a href="/projects/{projectId}/commits" use:link>
-        <ProjectSidebarItem
-          icon={Icon.Commit}
-          title="Commits"
-          active={$location.endsWith('commits')} />
-      </a>
+      <ProjectSidebarItem {projectId} page={ProjectCommits} />
     </li>
 
     <li>
-      <a href="/projects/{projectId}/branches" use:link>
-        <ProjectSidebarItem
-          icon={Icon.Branch}
-          title="Branches"
-          active={$location.endsWith('branches')} />
-      </a>
+      <ProjectSidebarItem {projectId} page={ProjectBranches} />
     </li>
   </ul>
 </nav>
