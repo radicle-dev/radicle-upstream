@@ -17,7 +17,6 @@
     flex-direction: column;
     justify-content: space-between;
     padding: 44px 20px 0 24px;
-    z-index: 900;
     overflow-y: scroll;
   }
 
