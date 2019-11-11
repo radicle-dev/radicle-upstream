@@ -90,19 +90,23 @@
 
   <div class="icons">
     <Icon.Branch />
+    <Icon.Carret />
     <Icon.Check />
     <Icon.Commit />
     <Icon.Cross />
     <Icon.CrossBig />
+    <Icon.Ellipse />
     <Icon.Ellipses />
     <Icon.Feed />
     <Icon.File />
     <Icon.Folder />
     <Icon.Fund />
     <Icon.Graph />
+    <Icon.Home />
     <Icon.Important />
     <Icon.Inbox />
     <Icon.Info />
+    <Icon.Member />
     <Icon.Minus />
     <Icon.Plus />
     <Icon.Projects />

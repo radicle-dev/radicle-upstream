@@ -2,13 +2,22 @@
   import { Icon } from "../DesignSystem";
   import SidebarItem from "./SidebarItem.svelte";
   import SidebarAvatar from "./SidebarAvatar.svelte";
+
+  import {
+    Search,
+    Feed,
+    Projects,
+    DesignSystem,
+    Wallet,
+    Profile
+  } from "../routes";
 </script>
 
 <style>
   div {
     width: 68px;
     height: 100%;
-    background-color: var(--color-almostwhite);
+    background-color: #eeeeef;
     display: flex;
     position: fixed;
     flex-direction: column;
@@ -33,16 +42,16 @@
     align-items: center;
   }
 
-  :global(li .show-on-hover) {
+  div :global(li .show-on-hover) {
     opacity: 0;
     display: none;
   }
 
-  :global(li:hover svg) {
+  div :global(li:hover svg) {
     fill: var(--color-purple);
   }
 
-  :global(li:hover .show-on-hover) {
+  div :global(li:hover .show-on-hover) {
     opacity: 1;
     display: inline-block;
   }
@@ -52,13 +61,13 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem icon={Icon.Search} href="/search" title="Search" />
+        <SidebarItem page={Search} />
       </li>
       <li>
-        <SidebarItem icon={Icon.Feed} href="/feed" title="Feed" />
+        <SidebarItem page={Feed} />
       </li>
       <li>
-        <SidebarItem icon={Icon.Projects} href="/projects" title="Projects" />
+        <SidebarItem page={Projects} />
       </li>
     </ul>
   </nav>
@@ -66,19 +75,13 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem
-          icon={Icon.Plus}
-          href="/design-system"
-          title="Create new project" />
+        <SidebarItem page={DesignSystem} />
       </li>
       <li>
-        <SidebarItem icon={Icon.Fund} href="/wallet" title="Fund" />
+        <SidebarItem page={Wallet} />
       </li>
       <li>
-        <SidebarAvatar
-          image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
-          href="/profile"
-          title="Profile" />
+        <SidebarAvatar page={Profile} />
       </li>
     </ul>
   </nav>

@@ -3,21 +3,22 @@
   import SidebarTooltip from "./SidebarTooltip.svelte";
   import { link, location } from "svelte-spa-router";
 
-  export let href = "";
-  export let title = "";
-  export let icon = Icon.Search;
+  export let page = {};
 </script>
 
 <style>
-  :global(.active svg) {
+  a.active :global(svg) {
     fill: var(--color-purple);
   }
 </style>
 
-<a {href} use:link class={$location.startsWith(href) ? 'active' : ''}>
-  <svelte:component this={icon} />
+<a
+  href={page.path()}
+  use:link
+  class={$location.startsWith(page.path()) ? 'active' : ''}>
+  <svelte:component this={page.icon} />
 </a>
 
 <SidebarTooltip>
-  <Title.Regular style="white-space: nowrap;">{title}</Title.Regular>
+  <Title.Regular style="white-space: nowrap;">{page.title}</Title.Regular>
 </SidebarTooltip>
