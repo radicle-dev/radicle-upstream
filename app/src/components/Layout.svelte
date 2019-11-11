@@ -1,13 +1,10 @@
 <script>
   import Sidebar from "./Sidebar.svelte";
+
+  let wrapperLeftPadding = $$props.$$slots.nestedSidebar ? "318px" : "68px";
 </script>
 
 <style>
-  .wrapper {
-    width: 100vw;
-    padding-left: 68px;
-  }
-
   .content {
     margin-top: 80px;
     margin-left: 8vw;
@@ -17,7 +14,9 @@
 
 <div>
   <Sidebar />
-  <div class="wrapper">
+  <slot name="nestedSidebar" />
+
+  <div style="width: 100vw; padding-left: {wrapperLeftPadding}">
     <div class="content">
       <slot />
     </div>

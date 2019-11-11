@@ -3,9 +3,7 @@
   import SidebarTooltip from "./SidebarTooltip.svelte";
   import { link } from "svelte-spa-router";
 
-  export let href = "";
-  export let title = "";
-  export let image = "";
+  export let page = {};
 </script>
 
 <style>
@@ -16,10 +14,12 @@
   }
 </style>
 
-<a {href} use:link>
-  <img src={image} alt="user-avatar" />
+<a href={page.path()} use:link>
+  <img
+    src="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
+    alt="user-avatar" />
 </a>
 
 <SidebarTooltip>
-  <Title.Regular>{title}</Title.Regular>
+  <Title.Regular>{page.title}</Title.Regular>
 </SidebarTooltip>
