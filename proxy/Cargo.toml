@@ -19,6 +19,7 @@ juniper = "0.13"
 juniper_warp = "0.4"
 log = "0.4"
 pretty_env_logger = "0.3"
+rand = "0.7"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
@@ -26,4 +27,4 @@ warp = "0.1"
 
 [dependencies.radicle_registry_client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "b417c0a1abcd9da05d3acd0498d46c48039bcf7a"
+rev = "1bcf23d23ec150ef3a45e903ada9702508a442f4"

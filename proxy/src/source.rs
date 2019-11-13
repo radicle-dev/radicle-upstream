@@ -51,8 +51,8 @@ impl From<radicle_registry_client::Project> for Project {
             .collect();
 
         Self {
-            id: ProjectId(p.id),
-            name: p.name,
+            id: ProjectId(p.id.clone()),
+            name: p.id.0,
             description: p.description,
             img_url: p.img_url,
             members: ms,
@@ -82,7 +82,7 @@ impl Ledger {
     /// Returns a new `Ledger`.
     pub fn new(client: radicle_registry_client::SyncClient) -> Self {
         Self {
-            client: client,
+            client,
             accounts: HashMap::new(),
         }
     }
@@ -143,13 +143,13 @@ impl Source for Ledger {
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
+        let project_id = (name.clone(), "rad".to_string());
         // TODO(xla): Proper error handling.
-        let project_id = self
-            .client
+        self.client
             .register_project(
                 &sender,
                 radicle_registry_client::RegisterProjectParams {
-                    name: name.to_owned(),
+                    id: project_id.to_owned(),
                     description: description.to_owned(),
                     img_url: img_url.to_owned(),
                 },
@@ -177,11 +177,16 @@ pub mod test {
         projects: Arc<RwLock<HashMap<ProjectId, Project>>>,
     }
 
+    fn random_project_id() -> ProjectId {
+        let name = format!("{}", rand::random::<u32>());
+        ProjectId((name, "rad".to_string()))
+    }
+
     impl Local {
         pub fn new() -> Self {
             let mut projects = HashMap::new();
 
-            let id = ProjectId(radicle_registry_client::ProjectId::random());
+            let id = random_project_id();
             projects.insert(id.clone(), Project{
             id,
             name: "monokel".to_owned(),
@@ -196,7 +201,7 @@ pub mod test {
             ],
         });
 
-            let id = ProjectId(radicle_registry_client::ProjectId::random());
+            let id = random_project_id();
             projects.insert(id.clone(), Project{
             id,
             name: "Monadic".to_owned(),
@@ -221,7 +226,7 @@ pub mod test {
             ],
         });
 
-            let id = ProjectId(radicle_registry_client::ProjectId::random());
+            let id = random_project_id();
             projects.insert(
                 id.clone(),
                 Project {
@@ -264,7 +269,7 @@ pub mod test {
                 },
             );
 
-            let id = ProjectId(radicle_registry_client::ProjectId::random());
+            let id = random_project_id();
             projects.insert(
                 id.clone(),
                 Project {
@@ -316,7 +321,7 @@ pub mod test {
         }
 
         fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-            let id = ProjectId(radicle_registry_client::ProjectId::random());
+            let id = random_project_id();
 
             let mut projects = self
                 .projects

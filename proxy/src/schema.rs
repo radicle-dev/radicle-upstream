@@ -117,16 +117,14 @@ juniper::graphql_scalar!(ProjectId where Scalar = <S> {
     description: "ProjectId"
 
     resolve(&self) -> Value {
-        Value::scalar(hex::encode(self.0))
+        Value::scalar((self.0).0.clone())
     }
 
     from_input_value(v: &InputValue) -> Option<ProjectId> {
-        let mut bytes = [0_u8; 32];
+        let name = v.as_scalar_value::<String>()?.to_owned();
+        let domain = "rad".to_string();
 
-        v.as_scalar_value::<String>()
-            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
-
-        Some(ProjectId(radicle_registry_client::ProjectId::from(bytes)))
+        Some(ProjectId((name, domain)))
     }
 
     // Define how to parse a string value.
