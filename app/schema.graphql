@@ -1,56 +1,56 @@
-scalar DateTime
+scalar Datetime
 
 type Author {
-  Name: String
-  Email: String
+  name: String
+  email: String
 }
 
-enum ObjectType {
+enum Objecttype {
   Commit
   Tree
   Blob
   Tag
 }
 
-# Git tags.
-type LightweightTag {
-  Commit: Commit!
+# git tags.
+type Lightweighttag {
+  commit: Commit!
 }
 
-type AnnotatedTag {
-  Object: String!
-  Type: ObjectType!
-  Name: String!
-  Tagger: Author!
+type Annotatedtag {
+  object: String!
+  type: Objecttype!
+  name: String!
+  tagger: Author!
 }
 
-union Tag = AnnotatedTag | LightweightTag
+union Tag = Annotatedtag | Lightweighttag
 
 type Head {
-  Name: String!
-  Commit: Commit!
+  name: String!
+  commit: Commit!
 }
 
 union Ref = Head | Tag
 
-# Git commit data.
+# git commit data.
 type Commit {
-  Author: String!
-  Date: DateTime!
-  Message: String!
-  Refs: [Ref]
+  author: Author!
+  date: Datetime!
+  message: String!
+  refs: [Ref]
 }
 
-# File info and metadata.
+# file info and metadata.
 type Info {
-  # Base name of the file.
-  Name: String!
-  # Length in bytes.
-  Size: Int!
-  # If it's a directory.
-  IsDirectory: Boolean!
-  # Any flags Git stores, currently only executable.
-  Flags: [Int]!
-  # Last commit which affected this path.
-  LastCommit: Commit!
+  # base name of the file.
+  name: String!
+  # length in bytes.
+  size: Int!
+  # if it's a directory.
+  isdirectory: Boolean!
+  # any flags git stores, currently only executable.
+  flags: [Int]!
+  # last commit which affected this path.
+  lastcommit: Commit!
 }
