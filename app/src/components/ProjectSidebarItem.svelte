@@ -36,3 +36,7 @@
     </Text.Regular>
   {/if}
 </a>
+
+{#if $location.endsWith(page.title.toLowerCase())}
+  <slot />
+{/if}

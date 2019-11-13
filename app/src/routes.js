@@ -68,7 +68,7 @@ const ProjectSource = {
   title: "Source",
   route: { "/projects/:id/source": ProjectSourcePage },
   path: id => `/projects/${id}/source`,
-  icon: Icon.Source
+  icon: Icon.CarretBig
 };
 
 const ProjectCommits = {

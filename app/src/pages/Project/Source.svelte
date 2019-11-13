@@ -2,7 +2,7 @@
   import Layout from "../../components/Layout.svelte";
   import ProjectSidebar from "../../components/ProjectSidebar.svelte";
 
-  export let params = {};
+  export let params = null;
 </script>
 
 <Layout>

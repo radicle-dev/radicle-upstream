@@ -1,6 +1,7 @@
 <script>
   import { Icon, Text } from "../DesignSystem";
   import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
+  import Folder from "./Folder.svelte";
   import { link, location } from "svelte-spa-router";
 
   import {
@@ -38,8 +39,11 @@
     color: var(--color-purple) !important;
   }
 
-  nav :global(li:hover svg) {
+  nav :global(li:hover .icon svg) {
     fill: var(--color-purple);
+  }
+  .source-tree {
+    margin-top: 8px;
   }
 </style>
 
@@ -62,7 +66,11 @@
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectSource} />
+      <ProjectSidebarItem {projectId} page={ProjectSource}>
+        <div class="source-tree">
+          <Folder {projectId} prefix={'./'} head="master" />
+        </div>
+      </ProjectSidebarItem>
     </li>
 
     <li>

@@ -21,27 +21,6 @@
     }
   `;
 
-  // For reference of types used by ls.
-  gql``;
-
-  const LS = gql`
-    query Query($id: ProjectId!, $head: Head!, $prefix: String!) {
-      ls(id: $id, head: $head, prefix: $prefix) {
-        path
-        info
-      }
-    }
-  `;
-
-  const CAT = gql`
-  query Query($id: ProjectId!, head: Head!, $path: String!) {
-    cat(id: $id, head: $head, path: $path) {
-      info
-      Content
-    }
-  }
-`;
-
   const client = getClient();
   const project = query(client, {
     query: GET_PROJECT,

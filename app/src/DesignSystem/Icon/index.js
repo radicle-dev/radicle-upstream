@@ -1,5 +1,6 @@
 import Branch from "./Branch.svelte";
 import Carret from "./Carret.svelte";
+import CarretBig from "./CarretBig.svelte";
 import Check from "./Check.svelte";
 import Commit from "./Commit.svelte";
 import Cross from "./Cross.svelte";
@@ -26,6 +27,7 @@ import Source from "./Source.svelte";
 export default {
   Branch,
   Carret,
+  CarretBig,
   Check,
   Commit,
   Cross,
