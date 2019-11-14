@@ -2,6 +2,7 @@
   import { Icon } from "../DesignSystem";
   import SidebarItem from "./SidebarItem.svelte";
   import SidebarAvatar from "./SidebarAvatar.svelte";
+  import * as path from "../path.js";
 </script>
 
 <style>
@@ -52,13 +53,25 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem icon={Icon.Search} href="/search" title="Search" />
+        <SidebarItem
+          icon={Icon.Search}
+          title="Search"
+          href={path.makeHref(path.SEARCH)}
+          active={path.isActive(path.SEARCH)} />
       </li>
       <li>
-        <SidebarItem icon={Icon.Feed} href="/feed" title="Feed" />
+        <SidebarItem
+          icon={Icon.Feed}
+          title="Feed"
+          href={path.makeHref(path.FEED)}
+          active={path.isActive(path.FEED)} />
       </li>
       <li>
-        <SidebarItem icon={Icon.Projects} href="/projects" title="Projects" />
+        <SidebarItem
+          icon={Icon.Projects}
+          title="Projects"
+          href={path.makeHref(path.PROJECTS)}
+          active={path.isActive(path.PROJECTS)} />
       </li>
     </ul>
   </nav>
@@ -68,17 +81,23 @@
       <li>
         <SidebarItem
           icon={Icon.Plus}
-          href="/design-system"
-          title="Create new project" />
+          title="Create new project"
+          href={path.makeHref(path.DESIGN_SYSTEM)}
+          active={path.isActive(path.DESIGN_SYSTEM)} />
       </li>
       <li>
-        <SidebarItem icon={Icon.Fund} href="/wallet" title="Fund" />
+        <SidebarItem
+          icon={Icon.Fund}
+          title="Fund"
+          href={path.makeHref(path.WALLET)}
+          active={path.isActive(path.WALLET)} />
       </li>
       <li>
         <SidebarAvatar
           image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
-          href="/profile"
-          title="Profile" />
+          title="Profile"
+          href={path.makeHref(path.PROFILE)}
+          active={path.isActive(path.PROFILE)} />
       </li>
     </ul>
   </nav>

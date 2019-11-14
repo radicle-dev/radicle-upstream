@@ -1,12 +1,11 @@
 <script>
   import { Icon, Text, Title } from "../DesignSystem";
-  import { link, location } from "svelte-spa-router";
+  import { link } from "svelte-spa-router";
 
-  export let projectId = null;
   export let href = null;
   export let icon = null;
   export let title = null;
-  export let active = false;
+  export let active = null;
 </script>
 
 <style>
@@ -38,6 +37,6 @@
   {/if}
 </a>
 
-{#if $location.endsWith(title.toLowerCase())}
+{#if active}
   <slot />
 {/if}

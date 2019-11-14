@@ -1,9 +1,9 @@
 <script>
+  import * as path from "../path.js";
   import { head } from "../stores.js";
-  import { Icon, Text } from "../DesignSystem";
+  import { Icon } from "../DesignSystem";
   import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
   import Folder from "./Folder.svelte";
-  import { link, location } from "svelte-spa-router";
 
   export let projectId = null;
 </script>
@@ -48,45 +48,40 @@
       <ProjectSidebarItem
         icon={Icon.Home}
         title="Overview"
-        {projectId}
-        href={`/projects/${projectId}/overview`}
-        active={$location.endsWith('overview')} />
+        href={path.makeHref(path.PROJECT_OVERVIEW, { id: projectId })}
+        active={path.isActive(path.PROJECT_OVERVIEW)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Feed}
         title="Feed"
-        {projectId}
-        href={`/projects/${projectId}/feed`}
-        active={$location.endsWith('feed')} />
+        href={path.makeHref(path.PROJECT_FEED, { id: projectId })}
+        active={path.isActive(path.PROJECT_FEED)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Member}
         title="Members"
-        {projectId}
-        href={`/projects/${projectId}/members`}
-        active={$location.endsWith('members')} />
+        href={path.makeHref(path.PROJECT_MEMBERS, { id: projectId })}
+        active={path.isActive(path.PROJECT_MEMBERS)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Fund}
         title="Fund"
-        {projectId}
-        href={`/projects/${projectId}/funds`}
-        active={$location.endsWith('funds')} />
+        href={path.makeHref(path.PROJECT_FUNDS, { id: projectId })}
+        active={path.isActive(path.PROJECT_FUNDS)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Source}
         title="Source"
-        {projectId}
-        href={`/projects/${projectId}/source`}
-        active={$location.endsWith('source')}>
+        href={path.makeHref(path.PROJECT_SOURCE, { id: projectId })}
+        active={path.isActive(path.PROJECT_SOURCE)}>
 
         <div class="source-tree">
           <Folder {projectId} prefix={'./'} head={$head} />
@@ -98,18 +93,16 @@
       <ProjectSidebarItem
         icon={Icon.Commit}
         title="Commits"
-        {projectId}
-        href={`/projects/${projectId}/commits`}
-        active={$location.endsWith('commits')} />
+        href={path.makeHref(path.PROJECT_COMMITS, { id: projectId })}
+        active={path.isActive(path.PROJECT_COMMITS)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Branch}
         title="Branches"
-        {projectId}
-        href={`/projects/${projectId}/branches`}
-        active={$location.endsWith('branches')} />
+        href={path.makeHref(path.PROJECT_BRANCHES, { id: projectId })}
+        active={path.isActive(path.PROJECT_BRANCHES)} />
     </li>
   </ul>
 </nav>
