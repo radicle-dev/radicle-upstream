@@ -2,15 +2,6 @@
   import { Icon } from "../DesignSystem";
   import SidebarItem from "./SidebarItem.svelte";
   import SidebarAvatar from "./SidebarAvatar.svelte";
-
-  import {
-    Search,
-    Feed,
-    Projects,
-    DesignSystem,
-    Wallet,
-    Profile
-  } from "../routes";
 </script>
 
 <style>
@@ -61,13 +52,13 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem page={Search} />
+        <SidebarItem icon={Icon.Search} href="/search" title="Search" />
       </li>
       <li>
-        <SidebarItem page={Feed} />
+        <SidebarItem icon={Icon.Feed} href="/feed" title="Feed" />
       </li>
       <li>
-        <SidebarItem page={Projects} />
+        <SidebarItem icon={Icon.Projects} href="/projects" title="Projects" />
       </li>
     </ul>
   </nav>
@@ -75,13 +66,19 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem page={DesignSystem} />
+        <SidebarItem
+          icon={Icon.Plus}
+          href="/design-system"
+          title="Create new project" />
       </li>
       <li>
-        <SidebarItem page={Wallet} />
+        <SidebarItem icon={Icon.Fund} href="/wallet" title="Fund" />
       </li>
       <li>
-        <SidebarAvatar page={Profile} />
+        <SidebarAvatar
+          image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
+          href="/profile"
+          title="Profile" />
       </li>
     </ul>
   </nav>

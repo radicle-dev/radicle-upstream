@@ -3,7 +3,9 @@
   import SidebarTooltip from "./SidebarTooltip.svelte";
   import { link, location } from "svelte-spa-router";
 
-  export let page = {};
+  export let href = "";
+  export let title = "";
+  export let icon = Icon.Search;
 </script>
 
 <style>
@@ -12,13 +14,10 @@
   }
 </style>
 
-<a
-  href={page.path()}
-  use:link
-  class={$location.startsWith(page.path()) ? 'active' : ''}>
-  <svelte:component this={page.icon} />
+<a {href} use:link class={$location.startsWith(href) ? 'active' : ''}>
+  <svelte:component this={icon} />
 </a>
 
 <SidebarTooltip>
-  <Title.Regular style="white-space: nowrap;">{page.title}</Title.Regular>
+  <Title.Regular style="white-space: nowrap;">{title}</Title.Regular>
 </SidebarTooltip>

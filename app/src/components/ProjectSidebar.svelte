@@ -5,16 +5,6 @@
   import Folder from "./Folder.svelte";
   import { link, location } from "svelte-spa-router";
 
-  import {
-    ProjectOverview,
-    ProjectFeed,
-    ProjectMembers,
-    ProjectFunds,
-    ProjectSource,
-    ProjectCommits,
-    ProjectBranches
-  } from "../routes.js";
-
   export let projectId = null;
 </script>
 
@@ -36,6 +26,10 @@
     margin-bottom: 14px;
   }
 
+  a {
+    display: flex;
+  }
+
   nav :global(li:hover p) {
     color: var(--color-purple) !important;
   }
@@ -51,23 +45,49 @@
 <nav>
   <ul>
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectOverview} />
+      <ProjectSidebarItem
+        icon={Icon.Home}
+        title="Overview"
+        {projectId}
+        href={`/projects/${projectId}/overview`}
+        active={$location.endsWith('overview')} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectFeed} />
+      <ProjectSidebarItem
+        icon={Icon.Feed}
+        title="Feed"
+        {projectId}
+        href={`/projects/${projectId}/feed`}
+        active={$location.endsWith('feed')} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectMembers} />
+      <ProjectSidebarItem
+        icon={Icon.Member}
+        title="Members"
+        {projectId}
+        href={`/projects/${projectId}/members`}
+        active={$location.endsWith('members')} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectFunds} />
+      <ProjectSidebarItem
+        icon={Icon.Fund}
+        title="Fund"
+        {projectId}
+        href={`/projects/${projectId}/funds`}
+        active={$location.endsWith('funds')} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectSource}>
+      <ProjectSidebarItem
+        icon={Icon.Source}
+        title="Source"
+        {projectId}
+        href={`/projects/${projectId}/source`}
+        active={$location.endsWith('source')}>
+
         <div class="source-tree">
           <Folder {projectId} prefix={'./'} head={$head} />
         </div>
@@ -75,11 +95,21 @@
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectCommits} />
+      <ProjectSidebarItem
+        icon={Icon.Commit}
+        title="Commits"
+        {projectId}
+        href={`/projects/${projectId}/commits`}
+        active={$location.endsWith('commits')} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectBranches} />
+      <ProjectSidebarItem
+        icon={Icon.Branch}
+        title="Branches"
+        {projectId}
+        href={`/projects/${projectId}/branches`}
+        active={$location.endsWith('branches')} />
     </li>
   </ul>
 </nav>
