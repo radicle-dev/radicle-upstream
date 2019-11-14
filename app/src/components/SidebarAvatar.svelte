@@ -3,21 +3,27 @@
   import SidebarTooltip from "./SidebarTooltip.svelte";
   import { link } from "svelte-spa-router";
 
-  export let href = "";
-  export let title = "";
-  export let image = "";
+  export let image = null;
+  export let title = null;
+  export let href = null;
+  export let active = null;
 </script>
 
 <style>
   img {
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
+    width: 34px;
+    height: 34px;
+    border-radius: 17px;
+    border: 2px solid transparent;
+  }
+
+  .active {
+    border: 2px solid var(--color-purple);
   }
 </style>
 
 <a {href} use:link>
-  <img src={image} alt="user-avatar" />
+  <img class:active src={image} alt="user-avatar" />
 </a>
 
 <SidebarTooltip>
