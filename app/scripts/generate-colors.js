@@ -4,18 +4,22 @@ import fs from "fs";
 import path from "path";
 
 const generateTints = (color, range) => {
+  if (!range) return;
+
   return range.map(tint => {
-    return `  --color-${color.name}-tint-${tint * 100}: ${Color(color.hex)
-      .lighten(tint)
+    return `  --color-${color.name}-tint-${tint}: ${Color(color.hex)
+      .lighten(tint / 100)
       .hex()
       .toLowerCase()};\n`;
   });
 };
 
 const generateShades = (color, range) => {
+  if (!range) return;
+
   return range.map(shade => {
-    return `  --color-${color.name}-shade-${shade * 100}: ${Color(color.hex)
-      .darken(shade)
+    return `  --color-${color.name}-shade-${shade}: ${Color(color.hex)
+      .darken(shade / 100)
       .hex()
       .toLowerCase()};\n`;
   });
@@ -30,13 +34,13 @@ let colorCss = `
 `;
 
 colorTokens.map(color => {
-  const tints = generateTints(color, [0.1]);
+  const tints = generateTints(color, color.tints);
 
   const primary = `  --color-${color.name}: ${color.hex};\n`;
 
-  const shades = generateShades(color, [0.1]);
+  const shades = generateShades(color, color.shades);
 
-  colorCss += tints + primary + shades;
+  colorCss += [tints, primary, shades].join("");
 });
 
 colorCss += "}";
