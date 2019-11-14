@@ -1,4 +1,5 @@
 <script>
+  import { head } from "../stores.js";
   import { Icon, Text } from "../DesignSystem";
   import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
   import Folder from "./Folder.svelte";
@@ -68,7 +69,7 @@
     <li>
       <ProjectSidebarItem {projectId} page={ProjectSource}>
         <div class="source-tree">
-          <Folder {projectId} prefix={'./'} head="master" />
+          <Folder {projectId} prefix={'./'} head={$head} />
         </div>
       </ProjectSidebarItem>
     </li>

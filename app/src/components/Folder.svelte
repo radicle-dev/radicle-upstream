@@ -30,7 +30,7 @@
     }
   `;
 
-  const sourceTree = query(client, {
+  $: sourceTree = query(client, {
     query: LS,
     variables: { projectId: projectId, head: head, prefix: prefix }
   });
