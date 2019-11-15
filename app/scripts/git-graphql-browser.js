@@ -1,5 +1,6 @@
 import { GraphQLServer } from "graphql-yoga";
 const util = require("util");
+import path from "path";
 const exec = util.promisify(require("child_process").exec);
 
 const typeDefs = `
@@ -21,10 +22,19 @@ const typeDefs = `
   }
 `;
 
-async function ls(_projectId, head, prefix) {
-  const { stdout } = await exec(`git ls-tree --long ${head} ${prefix}`);
+async function ls(projectId, head, prefix) {
+  console.log(`projectId: ${projectId}`);
+  console.log(`head: ${head}`);
+  console.log(`prefix: ${prefix}`);
 
-  let prefixWithoutDotSlash = prefix.replace("./", "");
+  const repoBasePath = path.resolve(__dirname, "../");
+  console.log(`repoBasePath: ${repoBasePath}`);
+
+  const command = `git ls-tree --long ${head} ${repoBasePath}${prefix}`;
+  console.log(`command: ${command}`);
+  const { stdout } = await exec(command);
+
+  const relativePrefix = prefix.replace(/^\//, "");
 
   return stdout
     .split("\n") // split into rows
@@ -37,7 +47,11 @@ async function ls(_projectId, head, prefix) {
         sizeOrDash,
         nameWithPath
       ] = row.split(/\s+/);
-      const name = nameWithPath.replace(prefixWithoutDotSlash, "");
+
+      console.log(`nameWithPath: ${nameWithPath}`);
+      const name = nameWithPath.replace(new RegExp(`^${relativePrefix}`), "");
+      console.log(`name: ${name}`);
+      console.log("\n");
 
       return {
         path: prefix + name,

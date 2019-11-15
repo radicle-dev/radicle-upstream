@@ -84,7 +84,7 @@
         active={path.isActive(path.PROJECT_SOURCE)}>
 
         <div class="source-tree">
-          <Folder {projectId} prefix={'./'} head={$head} />
+          <Folder {projectId} prefix={'/'} head={$head} />
         </div>
       </ProjectSidebarItem>
     </li>
