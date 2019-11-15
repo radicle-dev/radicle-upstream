@@ -13,23 +13,21 @@ import Projects from "./pages/Projects.svelte";
 import Search from "./pages/Search.svelte";
 import Wallet from "./pages/Wallet.svelte";
 
-import * as path from "./path.js";
-
 export const routes = {
-  [path.SEARCH]: Search,
-  [path.FEED]: Feed,
-  [path.PROJECTS]: Projects,
+  "/search": Search,
+  "/feed": Feed,
+  "/projects": Projects,
 
-  [path.PROJECT_OVERVIEW]: ProjectOverview,
-  [path.PROJECT_FEED]: ProjectFeed,
-  [path.PROJECT_MEMBERS]: ProjectMembers,
-  [path.PROJECT_FUNDS]: ProjectFunds,
-  [path.PROJECT_SOURCE]: ProjectSource,
-  [path.PROJECT_COMMITS]: ProjectCommits,
-  [path.PROJECT_BRANCHES]: ProjectBranches,
+  "/projects/:id/overview": ProjectOverview,
+  "/projects/:id/feed": ProjectFeed,
+  "/projects/:id/members": ProjectMembers,
+  "/projects/:id/funds": ProjectFunds,
+  "/projects/:id/source": ProjectSource,
+  "/projects/:id/commits": ProjectCommits,
+  "/projects/:id/branches": ProjectBranches,
 
-  [path.DESIGN_SYSTEM]: DesignSystem,
-  [path.WALLET]: Wallet,
-  [path.PROFILE]: Profile,
-  [path.NOT_FOUND]: NotFound
+  "/design-system": DesignSystem,
+  "/wallet": Wallet,
+  "/profile": Profile,
+  "*": NotFound
 };

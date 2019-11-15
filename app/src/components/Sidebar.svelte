@@ -56,22 +56,22 @@
         <SidebarItem
           icon={Icon.Search}
           title="Search"
-          href={path.makeHref(path.SEARCH)}
-          active={path.isActive(path.SEARCH)} />
+          href={path.search()}
+          active={path.isActive(path.search())} />
       </li>
       <li>
         <SidebarItem
           icon={Icon.Feed}
           title="Feed"
-          href={path.makeHref(path.FEED)}
-          active={path.isActive(path.FEED)} />
+          href={path.feed()}
+          active={path.isActive(path.feed())} />
       </li>
       <li>
         <SidebarItem
           icon={Icon.Projects}
           title="Projects"
-          href={path.makeHref(path.PROJECTS)}
-          active={path.isActive(path.PROJECTS)} />
+          href={path.projects()}
+          active={path.isActive(path.projects())} />
       </li>
     </ul>
   </nav>
@@ -82,22 +82,22 @@
         <SidebarItem
           icon={Icon.Plus}
           title="Create new project"
-          href={path.makeHref(path.DESIGN_SYSTEM)}
-          active={path.isActive(path.DESIGN_SYSTEM)} />
+          href={path.designSystem()}
+          active={path.isActive(path.designSystem())} />
       </li>
       <li>
         <SidebarItem
           icon={Icon.Fund}
           title="Fund"
-          href={path.makeHref(path.WALLET)}
-          active={path.isActive(path.WALLET)} />
+          href={path.wallet()}
+          active={path.isActive(path.wallet())} />
       </li>
       <li>
         <SidebarAvatar
           image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
           title="Profile"
-          href={path.makeHref(path.PROFILE)}
-          active={path.isActive(path.PROFILE)} />
+          href={path.profile()}
+          active={path.isActive(path.profile())} />
       </li>
     </ul>
   </nav>

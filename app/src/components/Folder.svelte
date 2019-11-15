@@ -5,10 +5,10 @@
   import { link, location } from "svelte-spa-router";
   import { Icon } from "../DesignSystem";
   import File from "./File.svelte";
+  import { head } from "../stores.js";
 
   export let projectId = null;
-  export let head = null;
-  export let prefix = null;
+  export let prefix = "/";
   export let name = null;
 
   export let expanded = false;
@@ -32,7 +32,7 @@
 
   $: sourceTree = query(client, {
     query: LS,
-    variables: { projectId: projectId, head: head, prefix: prefix }
+    variables: { projectId: projectId, head: $head, prefix: prefix }
   });
 
   let toggle = () => {

@@ -2,32 +2,24 @@ import { location } from "svelte-spa-router";
 import { get } from "svelte/store";
 import regexparam from "regexparam";
 
-export const SEARCH = "/search";
-export const FEED = "/feed";
-export const PROJECTS = "/projects";
+export const search = _params => "/search";
+export const feed = _params => "/feed";
+export const projects = _params => "/projects";
 
-export const PROJECT_OVERVIEW = "/projects/:id/overview";
-export const PROJECT_FEED = "/projects/:id/feed";
-export const PROJECT_MEMBERS = "/projects/:id/members";
-export const PROJECT_FUNDS = "/projects/:id/funds";
-export const PROJECT_SOURCE = "/projects/:id/source";
-export const PROJECT_COMMITS = "/projects/:id/commits";
-export const PROJECT_BRANCHES = "/projects/:id/branches";
+export const projectOverview = (params = {}) =>
+  `/projects/${params.id}/overview`;
+export const projectFeed = (params = {}) => `/projects/${params.id}/feed`;
+export const projectMembers = (params = {}) => `/projects/${params.id}/members`;
+export const projectFunds = (params = {}) => `/projects/${params.id}/funds`;
+export const projectSource = (params = {}) => `/projects/${params.id}/source`;
 
-export const DESIGN_SYSTEM = "/design-system";
-export const WALLET = "/wallet";
-export const PROFILE = "/profile";
-export const NOT_FOUND = "*";
+export const projectCommits = (params = {}) => `/projects/${params.id}/commits`;
+export const projectBranches = (params = {}) =>
+  `/projects/${params.id}/branches`;
 
-// expand(PROJECT_OVERVIEW, {id: 123})
-// > "/projects/123/overview"
-export let makeHref = (path, params = {}) => {
-  Object.keys(params).forEach(key => {
-    path = path.replace(`:${key}`, params[key]);
-  });
-
-  return path;
-};
+export const designSystem = _params => "/design-system";
+export const wallet = _params => "/wallet";
+export const profile = _params => "/profile";
 
 // check if given path matches the current location
 export const isActive = path => {

@@ -48,43 +48,43 @@
       <ProjectSidebarItem
         icon={Icon.Home}
         title="Overview"
-        href={path.makeHref(path.PROJECT_OVERVIEW, { id: projectId })}
-        active={path.isActive(path.PROJECT_OVERVIEW)} />
+        href={path.projectOverview({ id: projectId })}
+        active={path.isActive(path.projectOverview({ id: projectId }))} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Feed}
         title="Feed"
-        href={path.makeHref(path.PROJECT_FEED, { id: projectId })}
-        active={path.isActive(path.PROJECT_FEED)} />
+        href={path.projectFeed({ id: projectId })}
+        active={path.isActive(path.projectFeed({ id: projectId }))} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Member}
         title="Members"
-        href={path.makeHref(path.PROJECT_MEMBERS, { id: projectId })}
-        active={path.isActive(path.PROJECT_MEMBERS)} />
+        href={path.projectMembers({ id: projectId })}
+        active={path.isActive(path.projectMembers({ id: projectId }))} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Fund}
         title="Fund"
-        href={path.makeHref(path.PROJECT_FUNDS, { id: projectId })}
-        active={path.isActive(path.PROJECT_FUNDS)} />
+        href={path.projectFunds({ id: projectId })}
+        active={path.isActive(path.projectFunds({ id: projectId }))} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Source}
         title="Source"
-        href={path.makeHref(path.PROJECT_SOURCE, { id: projectId })}
-        active={path.isActive(path.PROJECT_SOURCE)}>
+        href={path.projectSource({ id: projectId })}
+        active={path.isActive(path.projectSource({ id: projectId }))}>
 
         <div class="source-tree">
-          <Folder {projectId} prefix={'/'} head={$head} />
+          <Folder {projectId} prefix={'/'} {$head} />
         </div>
       </ProjectSidebarItem>
     </li>
@@ -93,16 +93,16 @@
       <ProjectSidebarItem
         icon={Icon.Commit}
         title="Commits"
-        href={path.makeHref(path.PROJECT_COMMITS, { id: projectId })}
-        active={path.isActive(path.PROJECT_COMMITS)} />
+        href={path.projectCommits({ id: projectId })}
+        active={path.isActive(path.projectCommits({ id: projectId }))} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Branch}
         title="Branches"
-        href={path.makeHref(path.PROJECT_BRANCHES, { id: projectId })}
-        active={path.isActive(path.PROJECT_BRANCHES)} />
+        href={path.projectBranches({ id: projectId })}
+        active={path.isActive(path.projectBranches({ id: projectId }))} />
     </li>
   </ul>
 </nav>
