@@ -22,16 +22,18 @@ const typeDefs = `
   }
 `;
 
+const debug = false;
+
 async function ls(projectId, head, prefix) {
-  console.log(`projectId: ${projectId}`);
-  console.log(`head: ${head}`);
-  console.log(`prefix: ${prefix}`);
+  debug && console.log(`projectId: ${projectId}`);
+  debug && console.log(`head: ${head}`);
+  debug && console.log(`prefix: ${prefix}`);
 
   const repoBasePath = path.resolve(__dirname, "../");
-  console.log(`repoBasePath: ${repoBasePath}`);
+  debug && console.log(`repoBasePath: ${repoBasePath}`);
 
   const command = `git ls-tree --long ${head} ${repoBasePath}${prefix}`;
-  console.log(`command: ${command}`);
+  debug && console.log(`command: ${command}`);
   const { stdout } = await exec(command);
 
   const relativePrefix = prefix.replace(/^\//, "");
@@ -48,10 +50,10 @@ async function ls(projectId, head, prefix) {
         nameWithPath
       ] = row.split(/\s+/);
 
-      console.log(`nameWithPath: ${nameWithPath}`);
+      debug && console.log(`nameWithPath: ${nameWithPath}`);
       const name = nameWithPath.replace(new RegExp(`^${relativePrefix}`), "");
-      console.log(`name: ${name}`);
-      console.log("\n");
+      debug && console.log(`name: ${name}`);
+      debug && console.log("\n");
 
       return {
         path: prefix + name,
