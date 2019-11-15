@@ -1,4 +1,5 @@
 <script>
+  import { location } from "svelte-spa-router";
   import * as path from "../path.js";
   import { head } from "../stores.js";
   import { Icon } from "../DesignSystem";
@@ -10,12 +11,11 @@
 
 <style>
   nav {
-    width: 250px;
+    width: var(--project-sidebar-width);
     height: 100%;
     background-color: var(--color-almostwhite);
     display: flex;
     position: fixed;
-    left: 68px;
     flex-direction: column;
     justify-content: space-between;
     padding: 44px 20px 0 24px;
@@ -49,7 +49,9 @@
         icon={Icon.Home}
         title="Overview"
         href={path.projectOverview({ id: projectId })}
-        active={path.isActive(path.projectOverview({ id: projectId }))} />
+        active={path.active(path.projectOverview({
+            id: projectId
+          }), $location)} />
     </li>
 
     <li>
@@ -57,7 +59,7 @@
         icon={Icon.Feed}
         title="Feed"
         href={path.projectFeed({ id: projectId })}
-        active={path.isActive(path.projectFeed({ id: projectId }))} />
+        active={path.active(path.projectFeed({ id: projectId }), $location)} />
     </li>
 
     <li>
@@ -65,7 +67,9 @@
         icon={Icon.Member}
         title="Members"
         href={path.projectMembers({ id: projectId })}
-        active={path.isActive(path.projectMembers({ id: projectId }))} />
+        active={path.active(path.projectMembers({
+            id: projectId
+          }), $location)} />
     </li>
 
     <li>
@@ -73,7 +77,7 @@
         icon={Icon.Fund}
         title="Fund"
         href={path.projectFunds({ id: projectId })}
-        active={path.isActive(path.projectFunds({ id: projectId }))} />
+        active={path.active(path.projectFunds({ id: projectId }), $location)} />
     </li>
 
     <li>
@@ -81,10 +85,10 @@
         icon={Icon.Source}
         title="Source"
         href={path.projectSource({ id: projectId })}
-        active={path.isActive(path.projectSource({ id: projectId }))}>
+        active={path.active(path.projectSource({ id: projectId }), $location)}>
 
         <div class="source-tree">
-          <Folder {projectId} prefix={'/'} {$head} />
+          <Folder {projectId} prefix={'/'} />
         </div>
       </ProjectSidebarItem>
     </li>
@@ -94,7 +98,9 @@
         icon={Icon.Commit}
         title="Commits"
         href={path.projectCommits({ id: projectId })}
-        active={path.isActive(path.projectCommits({ id: projectId }))} />
+        active={path.active(path.projectCommits({
+            id: projectId
+          }), $location)} />
     </li>
 
     <li>
@@ -102,7 +108,9 @@
         icon={Icon.Branch}
         title="Branches"
         href={path.projectBranches({ id: projectId })}
-        active={path.isActive(path.projectBranches({ id: projectId }))} />
+        active={path.active(path.projectBranches({
+            id: projectId
+          }), $location)} />
     </li>
   </ul>
 </nav>

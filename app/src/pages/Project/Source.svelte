@@ -1,6 +1,8 @@
 <script>
+  import { Header, Title } from "../../DesignSystem";
+  import Layout from "./Layout.svelte";
+
   import { head } from "../../stores.js";
-  import Layout from "../../components/Layout.svelte";
   import ProjectSidebar from "../../components/ProjectSidebar.svelte";
 
   export let params = null;
@@ -17,9 +19,11 @@
 </script>
 
 <Layout>
-  <div slot="nestedSidebar">
-    <ProjectSidebar projectId={params.id} />
-  </div>
+  <Header>
+    <div slot="left">
+      <Title.Big>Source</Title.Big>
+    </div>
+  </Header>
 
   <select bind:value={$head}>
     {#each [...branches, ...tags, ...commits] as availableHead}

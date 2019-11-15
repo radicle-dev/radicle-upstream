@@ -1,0 +1,61 @@
+<script>
+  import Router from "svelte-spa-router";
+  import { location } from "svelte-spa-router";
+  import ProjectSidebar from "../components/ProjectSidebar.svelte";
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
+
+  import Overview from "./Project/Overview.svelte";
+  import Feed from "./Project/Feed.svelte";
+  import Members from "./Project/Members.svelte";
+  import Funds from "./Project/Funds.svelte";
+  import Source from "./Project/Source.svelte";
+  import Commits from "./Project/Commits.svelte";
+  import Branches from "./Project/Branches.svelte";
+
+  export let params = null;
+
+  const GET_PROJECT = gql`
+    query Query($id: ProjectId!) {
+      project(id: $id) {
+        name
+        description
+        imgUrl
+        members {
+          keyName
+          avatarUrl
+        }
+      }
+    }
+  `;
+
+  const client = getClient();
+  const project = query(client, {
+    query: GET_PROJECT,
+    variables: { id: params.id }
+  });
+
+  const routes = {
+    "/projects/:id/overview": Overview,
+    "/projects/:id/feed": Feed,
+    "/projects/:id/members": Members,
+    "/projects/:id/Funds": Funds,
+    "/projects/:id/Source": Source,
+    "/projects/:id/Commits": Commits,
+    "/projects/:id/Branches": Branches
+  };
+</script>
+
+<style>
+  .container {
+    position: relative;
+    left: calc(var(--project-sidebar-width));
+    width: calc(100vw - var(--sidebar-total-width));
+  }
+</style>
+
+<ProjectSidebar projectId={params.id} />
+
+<div class="container">
+  <Router {routes} />
+</div>

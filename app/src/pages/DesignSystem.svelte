@@ -10,7 +10,7 @@
     Input
   } from "../DesignSystem";
   import { link } from "svelte-spa-router";
-  import Layout from "../components/Layout.svelte";
+  import Layout from "./Layout.svelte";
 
   let colors = Array.from(document.styleSheets)
     .filter(

@@ -1,6 +1,6 @@
 <script>
-  import Layout from "../../components/Layout.svelte";
-  import ProjectSidebar from "../../components/ProjectSidebar.svelte";
+  import { Header, Title } from "../../DesignSystem";
+  import Layout from "./Layout.svelte";
 
   export let params = {};
 
@@ -29,9 +29,11 @@
 </script>
 
 <Layout>
-  <div slot="nestedSidebar">
-    <ProjectSidebar projectId={params.id} />
-  </div>
+  <Header>
+    <div slot="left">
+      <Title.Big>Branches</Title.Big>
+    </div>
+  </Header>
 
   {#await $project}
     <h1>Loading project...</h1>

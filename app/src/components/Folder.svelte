@@ -80,7 +80,6 @@
         {#if entry.info.isDirectory}
           <svelte:self
             {projectId}
-            {head}
             prefix={entry.path + '/'}
             name={entry.info.name}
             firstEntry={false} />

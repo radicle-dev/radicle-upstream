@@ -1,4 +1,5 @@
 <script>
+  import { location } from "svelte-spa-router";
   import { Icon } from "../DesignSystem";
   import SidebarItem from "./SidebarItem.svelte";
   import SidebarAvatar from "./SidebarAvatar.svelte";
@@ -7,7 +8,7 @@
 
 <style>
   div {
-    width: 68px;
+    width: var(--slim-sidebar-width);
     height: 100%;
     background-color: #eeeeef;
     display: flex;
@@ -57,21 +58,21 @@
           icon={Icon.Search}
           title="Search"
           href={path.search()}
-          active={path.isActive(path.search())} />
+          active={path.active(path.search(), $location)} />
       </li>
       <li>
         <SidebarItem
           icon={Icon.Feed}
           title="Feed"
           href={path.feed()}
-          active={path.isActive(path.feed())} />
+          active={path.active(path.feed(), $location)} />
       </li>
       <li>
         <SidebarItem
           icon={Icon.Projects}
           title="Projects"
           href={path.projects()}
-          active={path.isActive(path.projects())} />
+          active={path.active(path.projects(), $location)} />
       </li>
     </ul>
   </nav>
@@ -83,21 +84,21 @@
           icon={Icon.Plus}
           title="Create new project"
           href={path.designSystem()}
-          active={path.isActive(path.designSystem())} />
+          active={path.active(path.designSystem(), $location)} />
       </li>
       <li>
         <SidebarItem
           icon={Icon.Fund}
           title="Fund"
           href={path.wallet()}
-          active={path.isActive(path.wallet())} />
+          active={path.active(path.wallet(), $location)} />
       </li>
       <li>
         <SidebarAvatar
           image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
           title="Profile"
           href={path.profile()}
-          active={path.isActive(path.profile())} />
+          active={path.active(path.profile(), $location)} />
       </li>
     </ul>
   </nav>

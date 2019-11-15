@@ -45,3 +45,11 @@ a {
   cursor: pointer;
   text-decoration: none;
 }
+
+:root {
+  --slim-sidebar-width: 68px;
+  --project-sidebar-width: 250px;
+  --sidebar-total-width: calc(
+    var(--slim-sidebar-width) + var(--project-sidebar-width)
+  );
+}

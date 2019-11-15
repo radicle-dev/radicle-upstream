@@ -1,5 +1,3 @@
-import { location } from "svelte-spa-router";
-import { get } from "svelte/store";
 import regexparam from "regexparam";
 
 export const search = _params => "/search";
@@ -21,7 +19,6 @@ export const designSystem = _params => "/design-system";
 export const wallet = _params => "/wallet";
 export const profile = _params => "/profile";
 
-// check if given path matches the current location
-export const isActive = path => {
-  return regexparam(path).pattern.test(get(location));
+export const active = (path, location) => {
+  return regexparam(path).pattern.test(location);
 };
