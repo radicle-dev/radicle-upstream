@@ -1,9 +1,12 @@
 <script>
   import { Icon } from "../DesignSystem";
   import { link, location } from "svelte-spa-router";
+  import * as path from "../path.js";
 
   export let name = null;
-  export let path = null;
+  export let filePath = null;
+  export let projectId = null;
+  export let head = null;
 </script>
 
 <style>
@@ -26,7 +29,9 @@
 </style>
 
 <div class="file">
-  <a href={$location + path} use:link>
+  <a
+    href={path.projectSource({ id: projectId, head: head, path: filePath })}
+    use:link>
     <Icon.File />
     {name}
   </a>

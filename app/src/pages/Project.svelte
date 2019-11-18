@@ -12,6 +12,7 @@
   import Source from "./Project/Source.svelte";
   import Commits from "./Project/Commits.svelte";
   import Branches from "./Project/Branches.svelte";
+  import NotFound from "./NotFound.svelte";
 
   export let params = null;
 
@@ -39,10 +40,12 @@
     "/projects/:id/overview": Overview,
     "/projects/:id/feed": Feed,
     "/projects/:id/members": Members,
-    "/projects/:id/Funds": Funds,
-    "/projects/:id/Source": Source,
-    "/projects/:id/Commits": Commits,
-    "/projects/:id/Branches": Branches
+    "/projects/:id/funds": Funds,
+    "/projects/:id/source": Source,
+    "/projects/:id/source/:head/*": Source,
+    "/projects/:id/commits": Commits,
+    "/projects/:id/branches": Branches,
+    "*": NotFound
   };
 </script>
 

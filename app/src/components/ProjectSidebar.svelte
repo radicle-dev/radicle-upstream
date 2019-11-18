@@ -85,7 +85,9 @@
         icon={Icon.Source}
         title="Source"
         href={path.projectSource({ id: projectId })}
-        active={path.active(path.projectSource({ id: projectId }), $location)}>
+        active={path.active(path.projectSource({
+            id: projectId
+          }), $location, true)}>
 
         <div class="source-tree">
           <Folder {projectId} prefix={'/'} />

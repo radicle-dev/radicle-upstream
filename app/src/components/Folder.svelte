@@ -6,6 +6,7 @@
   import { Icon } from "../DesignSystem";
   import File from "./File.svelte";
   import { head } from "../stores.js";
+  import * as path from "../path.js";
 
   export let projectId = null;
   export let prefix = "/";
@@ -71,7 +72,15 @@
     {#if !firstEntry}
       <div class="folder" class:expanded>
         <Icon.CarretBig on:click={toggle} />
-        <a href={$location + prefix} use:link>{name}</a>
+        <a
+          href={path.projectSource({
+            id: projectId,
+            head: $head,
+            path: prefix
+          })}
+          use:link>
+          {name}
+        </a>
       </div>
     {/if}
 
@@ -84,7 +93,11 @@
             name={entry.info.name}
             firstEntry={false} />
         {:else}
-          <File name={entry.info.name} path={entry.path} />
+          <File
+            name={entry.info.name}
+            filePath={entry.path}
+            {projectId}
+            head={$head} />
         {/if}
       {/each}
     {/if}

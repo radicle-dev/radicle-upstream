@@ -23,7 +23,7 @@
     "/search": Search,
     "/feed": Feed,
     "/projects": Projects,
-    "/projects/:id/:subpage*": Project,
+    "/projects/:id/*": Project,
     "/design-system": DesignSystem,
     "/wallet": Wallet,
     "/profile": Profile,
