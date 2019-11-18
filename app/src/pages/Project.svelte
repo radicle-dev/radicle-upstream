@@ -2,8 +2,6 @@
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
   import ProjectSidebar from "../components/ProjectSidebar.svelte";
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
 
   import Overview from "./Project/Overview.svelte";
   import Feed from "./Project/Feed.svelte";
@@ -15,26 +13,6 @@
   import NotFound from "./NotFound.svelte";
 
   export let params = null;
-
-  const GET_PROJECT = gql`
-    query Query($id: ProjectId!) {
-      project(id: $id) {
-        name
-        description
-        imgUrl
-        members {
-          keyName
-          avatarUrl
-        }
-      }
-    }
-  `;
-
-  const client = getClient();
-  const project = query(client, {
-    query: GET_PROJECT,
-    variables: { id: params.id }
-  });
 
   const routes = {
     "/projects/:id/overview": Overview,
