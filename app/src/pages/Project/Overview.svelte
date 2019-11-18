@@ -31,7 +31,7 @@
 <Layout>
   <Header>
     <div slot="left">
-      <Title.Big>Branches</Title.Big>
+      <Title.Big>Overview</Title.Big>
     </div>
   </Header>
 
