@@ -2,6 +2,7 @@
   import ApolloClient from "apollo-boost";
   import * as path from "../../path.js";
   import { Header, Title, Text } from "../../DesignSystem";
+  import FileSource from "../../components/FileSource.svelte";
   import Layout from "./Layout.svelte";
 
   import { head } from "../../stores.js";
@@ -55,7 +56,7 @@
       {/each}
     </select>
 
-    <pre>{result.data.cat}</pre>
+    <FileSource path="/path/to/file.md" code={result.data.cat} />
   {:catch error}
     <p>ERROR: {error}</p>
   {/await}
