@@ -19,6 +19,9 @@ const typeDefs = `
 
   type Query {
     ls(projectId: String!, head: String!, prefix: String!): [Entry]!
+    cat(projectId: String!, head: String!, path: String!): String!
+    branches(projectId: String!): [String]!
+    tags(projectId: String!): [String]!
   }
 `;
 
@@ -74,9 +77,48 @@ async function ls(projectId, head, prefix) {
     });
 }
 
+async function cat(projectId, head, path) {
+  debug && console.log(`projectId: ${projectId}`);
+  debug && console.log(`head: ${head}`);
+  debug && console.log(`path: ${path}`);
+
+  const command = `git show ${head}:${path}`;
+  debug && console.log(`command: ${command}`);
+  const { stdout } = await exec(command);
+
+  return stdout;
+}
+
+async function branches(_projectId) {
+  const command = 'git branch -a --format="%(refname)"';
+  debug && console.log(`command: ${command}`);
+
+  const { stdout } = await exec(command);
+  debug && console.log(stdout);
+
+  return stdout
+    .split("\n") // split into rows
+    .filter(el => el !== ""); // throw out empty rows
+}
+
+async function tags(_projectId) {
+  const command = "git tag -l";
+  debug && console.log(`command: ${command}`);
+
+  const { stdout } = await exec(command);
+  debug && console.log(stdout);
+
+  return stdout
+    .split("\n") // split into rows
+    .filter(el => el !== ""); // throw out empty rows
+}
+
 const resolvers = {
   Query: {
-    ls: (_, { projectId, head, prefix }) => ls(projectId, head, prefix)
+    ls: (_, { projectId, head, prefix }) => ls(projectId, head, prefix),
+    cat: (_, { projectId, head, path }) => cat(projectId, head, path),
+    branches: (_, { projectId }) => branches(projectId),
+    tags: (_, { projectId }) => tags(projectId)
   }
 };
 

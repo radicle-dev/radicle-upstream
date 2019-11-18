@@ -1,21 +1,36 @@
 <script>
-  import { Header, Title } from "../../DesignSystem";
+  import ApolloClient from "apollo-boost";
+  import * as path from "../../path.js";
+  import { Header, Title, Text } from "../../DesignSystem";
   import Layout from "./Layout.svelte";
 
   import { head } from "../../stores.js";
-  import ProjectSidebar from "../../components/ProjectSidebar.svelte";
+
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
 
   export let params = null;
 
-  let branches = ["master", "code-browsing"];
+  const PAGE_DATA = gql`
+    query($projectId: String!, $head: String!, $path: String!) {
+      tags(projectId: $projectId)
+      branches(projectId: $projectId)
+      cat(projectId: $projectId, head: $head, path: $path)
+    }
+  `;
 
-  let tags = ["v0.0.1"];
+  const client = new ApolloClient({
+    uri: "http://127.0.0.1:4000"
+  });
 
-  let commits = [
-    "4f34a7e27c56983f4082eec7148ff2de8943a4c7",
-    "c56499bd12d0b7ab26f01466fe248a62e54cac4f",
-    "cfca2129c335f800b7939d64fc50248f5bfffff4"
-  ];
+  $: pageData = query(client, {
+    query: PAGE_DATA,
+    variables: {
+      projectId: params.id,
+      head: $head,
+      path: `app/${params.wild || ""}`
+    }
+  });
 </script>
 
 <Layout>
@@ -25,9 +40,23 @@
     </div>
   </Header>
 
-  <select bind:value={$head}>
-    {#each [...branches, ...tags, ...commits] as availableHead}
-      <option value={availableHead}>{availableHead}</option>
-    {/each}
-  </select>
+  <pre>{JSON.stringify(params, null, 2)}</pre>
+
+  {#await $pageData}
+    <Text.Regular>Loading...</Text.Regular>
+  {:then result}
+    <select bind:value={$head}>
+      {#each result.data.tags as availableHead}
+        <option value={availableHead}>{availableHead}</option>
+      {/each}
+
+      {#each result.data.branches as availableHead}
+        <option value={availableHead}>{availableHead}</option>
+      {/each}
+    </select>
+
+    <pre>{result.data.cat}</pre>
+  {:catch error}
+    <p>ERROR: {error}</p>
+  {/await}
 </Layout>
