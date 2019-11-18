@@ -55,7 +55,7 @@
         .split('\n')
         .slice(0, -1)
         .map((_, index) => {
-          return `${index}`;
+          return `${index + 1}`;
         })
         .join('\n')}
     </pre>
