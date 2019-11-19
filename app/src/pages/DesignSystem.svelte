@@ -7,7 +7,8 @@
     Numeric,
     Caption,
     Icon,
-    Input
+    Input,
+    Select
   } from "../DesignSystem";
   import { link } from "svelte-spa-router";
   import Layout from "./Layout.svelte";
@@ -329,5 +330,9 @@
 
   <div>
     <Input placeholder="Hey, I'm an input." />
+  </div>
+
+  <div>
+    <Select items={['master', 'dev']} value={'dev'} />
   </div>
 </Layout>
