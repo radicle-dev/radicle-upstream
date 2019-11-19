@@ -33,10 +33,16 @@
     left: calc(var(--project-sidebar-width));
     width: calc(100vw - var(--sidebar-total-width));
   }
+
+  .layout {
+    margin: 64px 8vw 64px 8vw;
+  }
 </style>
 
 <ProjectSidebar projectId={params.id} />
 
 <div class="container">
-  <Router {routes} />
+  <div class="layout">
+    <Router {routes} />
+  </div>
 </div>

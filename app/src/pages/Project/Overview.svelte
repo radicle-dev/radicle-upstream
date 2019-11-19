@@ -1,6 +1,5 @@
 <script>
   import { Header, Title } from "../../DesignSystem";
-  import Layout from "./Layout.svelte";
 
   export let params = {};
 
@@ -28,19 +27,17 @@
   });
 </script>
 
-<Layout>
-  <Header>
-    <div slot="left">
-      <Title.Big>Overview</Title.Big>
-    </div>
-  </Header>
+<Header>
+  <div slot="left">
+    <Title.Big>Overview</Title.Big>
+  </div>
+</Header>
 
-  {#await $project}
-    <h1>Loading project...</h1>
-  {:then result}
-    <h1>{result.data.project.name}</h1>
-    <p>{result.data.project.description}</p>
-  {:catch error}
-    <p>ERROR: {error}</p>
-  {/await}
-</Layout>
+{#await $project}
+  <h1>Loading project...</h1>
+{:then result}
+  <h1>{result.data.project.name}</h1>
+  <p>{result.data.project.description}</p>
+{:catch error}
+  <p>ERROR: {error}</p>
+{/await}

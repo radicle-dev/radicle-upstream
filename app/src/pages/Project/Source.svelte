@@ -3,7 +3,6 @@
   import * as path from "../../path.js";
   import { Header, Title, Text } from "../../DesignSystem";
   import FileSource from "../../components/FileSource.svelte";
-  import Layout from "./Layout.svelte";
 
   import { head } from "../../stores.js";
 
@@ -36,28 +35,26 @@
   });
 </script>
 
-<Layout>
-  <Header>
-    <div slot="left">
-      <Title.Big>Source</Title.Big>
-    </div>
-  </Header>
+<Header>
+  <div slot="left">
+    <Title.Big>Source</Title.Big>
+  </div>
+</Header>
 
-  {#await $pageData}
-    <Text.Regular>Loading...</Text.Regular>
-  {:then result}
-    <select bind:value={$head}>
-      {#each result.data.tags as availableHead}
-        <option value={availableHead}>{availableHead}</option>
-      {/each}
+{#await $pageData}
+  <Text.Regular>Loading...</Text.Regular>
+{:then result}
+  <select bind:value={$head}>
+    {#each result.data.tags as availableHead}
+      <option value={availableHead}>{availableHead}</option>
+    {/each}
 
-      {#each result.data.branches as availableHead}
-        <option value={availableHead}>{availableHead}</option>
-      {/each}
-    </select>
+    {#each result.data.branches as availableHead}
+      <option value={availableHead}>{availableHead}</option>
+    {/each}
+  </select>
 
-    <FileSource path={filePath} code={result.data.cat} />
-  {:catch error}
-    <p>ERROR: {error}</p>
-  {/await}
-</Layout>
+  <FileSource path={filePath} code={result.data.cat} />
+{:catch error}
+  <p>ERROR: {error}</p>
+{/await}
