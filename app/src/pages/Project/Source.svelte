@@ -1,7 +1,7 @@
 <script>
   import ApolloClient from "apollo-boost";
   import * as path from "../../path.js";
-  import { Header, Title, Text } from "../../DesignSystem";
+  import { Header, Title, Text, Select } from "../../DesignSystem";
   import FileSource from "../../components/FileSource.svelte";
 
   import { head } from "../../stores.js";
@@ -35,26 +35,11 @@
   });
 </script>
 
-<Header>
-  <div slot="left">
-    <Title.Big>Source</Title.Big>
-  </div>
-</Header>
-
-{#await $pageData}
-  <Text.Regular>Loading...</Text.Regular>
-{:then result}
-  <select bind:value={$head}>
-    {#each result.data.tags as availableHead}
-      <option value={availableHead}>{availableHead}</option>
-    {/each}
-
-    {#each result.data.branches as availableHead}
-      <option value={availableHead}>{availableHead}</option>
-    {/each}
-  </select>
+{#await $pageData then result}
+  <Select
+    style="margin-bottom: 16px"
+    items={[...result.data.tags, ...result.data.branches]}
+    bind:value={$head} />
 
   <FileSource path={filePath} code={result.data.cat} />
-{:catch error}
-  <p>ERROR: {error}</p>
 {/await}
