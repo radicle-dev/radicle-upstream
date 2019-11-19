@@ -50,4 +50,6 @@
     style="margin-bottom: 48px" />
 
   <FileSource path={filePath} code={result.data.cat} />
+{:catch error}
+  <p>ERROR: {error}</p>
 {/await}
