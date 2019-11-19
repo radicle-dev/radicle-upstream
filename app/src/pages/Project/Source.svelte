@@ -24,12 +24,14 @@
     uri: "http://127.0.0.1:4000"
   });
 
+  $: filePath = `app/${params.wild || ""}`;
+
   $: pageData = query(client, {
     query: PAGE_DATA,
     variables: {
       projectId: params.id,
       head: $head,
-      path: `app/${params.wild || ""}`
+      path: filePath
     }
   });
 </script>
@@ -56,7 +58,7 @@
       {/each}
     </select>
 
-    <FileSource path="/path/to/file.md" code={result.data.cat} />
+    <FileSource path={filePath} code={result.data.cat} />
   {:catch error}
     <p>ERROR: {error}</p>
   {/await}
