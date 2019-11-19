@@ -43,8 +43,6 @@
     </div>
   </Header>
 
-  <pre>{JSON.stringify(params, null, 2)}</pre>
-
   {#await $pageData}
     <Text.Regular>Loading...</Text.Regular>
   {:then result}
