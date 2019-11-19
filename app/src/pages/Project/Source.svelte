@@ -3,6 +3,7 @@
   import * as path from "../../path.js";
   import { Header, Title, Text, Select } from "../../DesignSystem";
   import FileSource from "../../components/FileSource.svelte";
+  import CommitTeaser from "../../components/CommitTeaser.svelte";
 
   import { head } from "../../stores.js";
 
@@ -40,6 +41,13 @@
     style="margin-bottom: 16px"
     items={[...result.data.tags, ...result.data.branches]}
     bind:value={$head} />
+
+  <CommitTeaser
+    user={{ username: 'cloudhead', avatar: 'https://avatars2.githubusercontent.com/u/2326909?s=400&v=4' }}
+    commitMessage="Remove debugging statement"
+    commitSha="f4c7697"
+    timestamp="13 days ago"
+    style="margin-bottom: 48px" />
 
   <FileSource path={filePath} code={result.data.cat} />
 {/await}

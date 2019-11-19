@@ -35,7 +35,7 @@
   }
 
   .layout {
-    margin: 64px 8vw 64px 8vw;
+    margin: 64px 81px 64px 81px;
   }
 </style>
 

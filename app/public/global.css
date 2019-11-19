@@ -52,4 +52,5 @@ a {
   --sidebar-total-width: calc(
     var(--slim-sidebar-width) + var(--project-sidebar-width)
   );
+  --content-min-width: 700px;
 }
