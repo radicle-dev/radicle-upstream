@@ -1,6 +1,8 @@
 import { GraphQLServer } from "graphql-yoga";
-const util = require("util");
+import { isBinary } from "istextorbinary";
+import util from "util";
 import path from "path";
+
 const exec = util.promisify(require("child_process").exec);
 
 const typeDefs = `
@@ -86,7 +88,11 @@ async function cat(projectId, head, path) {
   debug && console.log(`command: ${command}`);
   const { stdout } = await exec(command);
 
-  return stdout;
+  if (isBinary(null, stdout)) {
+    return "Binary content.";
+  } else {
+    return stdout;
+  }
 }
 
 async function branches(_projectId) {
