@@ -30,6 +30,7 @@
     text-align: center;
     flex: 0 0 49px;
     border-right: 1px solid var(--color-lightgray);
+    user-select: none;
   }
 
   .code {
