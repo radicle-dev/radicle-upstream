@@ -15,10 +15,14 @@ const startApp = () => {
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
-    width: 900,
+    width: 1200,
     height: 680,
-    icon: path.join(__dirname, "../public/icon.png")
+    icon: path.join(__dirname, "../public/icon.png"),
+    show: false
   });
+
+  mainWindow.maximize();
+  mainWindow.show();
 
   let watcher;
   if (isDev) {
