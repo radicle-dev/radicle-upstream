@@ -3,6 +3,7 @@
   import * as path from "../../path.js";
   import { Header, Title, Text, Select } from "../../DesignSystem";
   import FileSource from "../../components/FileSource.svelte";
+  import FileList from "../../components/FileList.svelte";
   import CommitTeaser from "../../components/CommitTeaser.svelte";
 
   import { head } from "../../stores.js";
@@ -50,6 +51,5 @@
     style="margin-bottom: 48px" />
 
   <FileSource path={filePath} code={result.data.cat} />
-{:catch error}
-  <p>ERROR: {error}</p>
+  <FileList style="margin-top: 48px" />
 {/await}
