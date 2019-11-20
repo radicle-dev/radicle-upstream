@@ -55,7 +55,8 @@
   }
 
   .folder :global(svg:hover) {
-    background-color: var(--color-lightgray-tint-10);
+    background-color: #eeeeef;
+    border-radius: 2px;
   }
 
   .container {
