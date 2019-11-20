@@ -2,6 +2,7 @@
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
   import ProjectSidebar from "../components/ProjectSidebar.svelte";
+  import ProjectBreadcrumbs from "../components/ProjectBreadcrumbs.svelte";
 
   import Overview from "./Project/Overview.svelte";
   import Feed from "./Project/Feed.svelte";
@@ -25,6 +26,30 @@
     "/projects/:id/branches": Branches,
     "*": NotFound
   };
+
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
+
+  const GET_PROJECT = gql`
+    query Query($id: ProjectId!) {
+      project(id: $id) {
+        id
+        name
+        description
+        imgUrl
+        members {
+          keyName
+          avatarUrl
+        }
+      }
+    }
+  `;
+
+  const client = getClient();
+  const project = query(client, {
+    query: GET_PROJECT,
+    variables: { id: params.id }
+  });
 </script>
 
 <style>
@@ -35,14 +60,19 @@
   }
 
   .layout {
-    margin: 64px 81px 64px 81px;
+    margin: 96px 81px 64px 81px;
   }
 </style>
 
-<ProjectSidebar projectId={params.id} />
+{#await $project then result}
+  <ProjectSidebar projectId={params.id} />
 
-<div class="container">
-  <div class="layout">
-    <Router {routes} />
+  <div class="container">
+    <ProjectBreadcrumbs
+      style="position: fixed; top: 0;"
+      project={result.data.project} />
+    <div class="layout">
+      <Router {routes} />
+    </div>
   </div>
-</div>
+{/await}
