@@ -39,6 +39,7 @@ type Commit {
   date: Datetime!
   message: String!
   refs: [Ref]
+  objectName: ObjectName!
 }
 
 # file info and metadata.
