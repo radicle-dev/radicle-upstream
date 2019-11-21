@@ -13,11 +13,11 @@ enum ObjectType {
 }
 
 # git tags.
-type Lightweighttag {
+type LightweightTag {
   commit: Commit!
 }
 
-type Annotatedtag {
+type AnnotatedTag {
   object: String!
   type: ObjectType!
   name: String!
@@ -86,12 +86,12 @@ union Revision = ObjectName | RefName
 
 type Query {
   # Source browsing.
-  blob(projectId: ID!, revision: Revision!, path: String!): [BlobEntry]!
-  tree(projectId: ID!, revision: Revision!, prefix: String!): [TreeEntry]!
+  blob(projectId: ID!, revision: Revision!, path: String!): BlobEntry
+  tree(projectId: ID!, revision: Revision!, prefix: String!): [TreeEntry!]!
 
   # Commits browsing
-  commits(projectId, Revision: Revision!): [Commit]!
-  commit(projectId, objectName: ObjectName!) Commit
+  commits(projectId: ID!, Revision: Revision!): [Commit]!
+  commit(projectId: ID!, objectName: ObjectName!) Commit
 
   # Ref browsing
   branches(projectId: ID!): [Head]!
