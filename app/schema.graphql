@@ -5,7 +5,7 @@ type Author {
   email: String
 }
 
-enum Objecttype {
+enum ObjectType {
   Commit
   Tree
   Blob
@@ -19,12 +19,12 @@ type Lightweighttag {
 
 type Annotatedtag {
   object: String!
-  type: Objecttype!
+  type: ObjectType!
   name: String!
   tagger: Author!
 }
 
-union Tag = Annotatedtag | Lightweighttag
+union Tag = AnnotatedTag | LightweightTag
 
 type Head {
   name: String!
@@ -53,4 +53,48 @@ type Info {
   flags: [Int]!
   # last commit which affected this path.
   lastcommit: Commit!
+}
+
+type BlobEntry {
+  content: String!
+  info: Info!
+}
+
+type TreeEntry {
+  path: String!
+  info: Info!
+}
+
+# Representation of object name.
+type ObjectName {
+  sha1: String!
+}
+
+# Representation of a refname.
+#
+# master
+# v1.0.0
+# refs/heads/master
+# refs/tags/v1.0.0
+# refs/remotes/origin/master
+type Refname {
+  name: String!
+}
+
+# Representation of gitrevisions: https://git-scm.com/docs/gitrevisions/
+union Revision = ObjectName | RefName
+
+type Query {
+  # Source browsing.
+  blob(projectId: ID!, revision: Revision!, path: String!): [BlobEntry]!
+  tree(projectId: ID!, revision: Revision!, prefix: String!): [TreeEntry]!
+
+  # Commits browsing
+  commits(projectId, Revision: Revision!): [Commit]!
+  commit(projectId, objectName: ObjectName!) Commit
+
+  # Ref browsing
+  branches(projectId: ID!): [Head]!
+  refs(projectId: ID!): [Ref]!
+  tags(projectId: ID!): [Tag]!
 }

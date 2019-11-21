@@ -130,3 +130,17 @@ const resolvers = {
 
 const server = new GraphQLServer({ typeDefs, resolvers });
 server.start(() => console.log("Server is running on http://localhost:4000"));
+
+// HELPER
+
+// This helper usese `git rev-list <path>` to retrieve the last commit hash
+// which touched the given path (directory or file) for the branch given.
+async function lastCommitInBranch(path, branch) {
+  const command = `git rev-list -n 1 HEAD --branches ${branch} -- "${path}"`;
+  debug && console.log(`command: ${command}`);
+
+  const { stdout } = await exec(command);
+  debug && console.log(stdout);
+
+  return stdout;
+}
