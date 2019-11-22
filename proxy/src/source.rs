@@ -1,3 +1,4 @@
+use futures::future::Future;
 use radicle_registry_client::CryptoPair as _;
 use std::collections::HashMap;
 
@@ -71,19 +72,25 @@ pub trait Source {
 }
 
 /// Container to store local view on accounts to match with metadata.
-pub struct Ledger {
-    /// Ledger client.
-    client: radicle_registry_client::SyncClient,
+pub struct Ledger<R>
+where
+    R: radicle_registry_client::ClientT,
+{
     /// Mapping of `AccountId`s to `Account`s for easier metadata enrichment.
     accounts: HashMap<AccountId, Account>,
+    /// Ledger client.
+    registry_client: R,
 }
 
-impl Ledger {
+impl<R> Ledger<R>
+where
+    R: radicle_registry_client::ClientT,
+{
     /// Returns a new `Ledger`.
-    pub fn new(client: radicle_registry_client::SyncClient) -> Self {
+    pub fn new(registry_client: R) -> Self {
         Self {
-            client,
             accounts: HashMap::new(),
+            registry_client,
         }
     }
 
@@ -114,16 +121,26 @@ impl Ledger {
     }
 }
 
-impl Source for Ledger {
+impl<R> Source for Ledger<R>
+where
+    R: radicle_registry_client::ClientT,
+{
     fn get_all_projects(&self) -> Vec<Project> {
         // TODO(xla): Return proper error.
-        self.client
+        self.registry_client
             .list_projects()
+            .wait()
             .expect("osc client list projects failed")
             .into_iter()
             .take(10)
             .map(|id| {
-                let project = Project::from(self.client.get_project(id).unwrap().unwrap());
+                let project = Project::from(
+                    self.registry_client
+                        .get_project(id)
+                        .wait()
+                        .expect("get_project failed")
+                        .unwrap(),
+                );
                 self.enrich_members(project)
             })
             .collect()
@@ -131,7 +148,7 @@ impl Source for Ledger {
 
     fn get_project(&self, id: ProjectId) -> Option<Project> {
         // TODO(xla): Bubble up errors from QueryResult.
-        match self.client.get_project(id.0) {
+        match self.registry_client.get_project(id.0) {
             Ok(maybe_project) => match maybe_project {
                 Some(p) => Some(self.enrich_members(Project::from(p))),
                 None => None,
@@ -145,7 +162,7 @@ impl Source for Ledger {
 
         let project_id = (name.clone(), "rad".to_string());
         // TODO(xla): Proper error handling.
-        self.client
+        self.registry_client
             .register_project(
                 &sender,
                 radicle_registry_client::RegisterProjectParams {
@@ -154,6 +171,7 @@ impl Source for Ledger {
                     img_url: img_url.to_owned(),
                 },
             )
+            .wait()
             .expect("osc project registration failed");
 
         Project {

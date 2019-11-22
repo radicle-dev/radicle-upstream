@@ -34,13 +34,14 @@ fn main() {
     let source_type = std::env::args().nth(1).expect("no source was given");
 
     let context = match source_type.as_ref() {
-        "registry" => {
-            let client = radicle_registry_client::SyncClient::create()
-                .expect("creating registry client failed");
+        "memory" => {
+            let client = radicle_registry_client::MemoryClient::new();
             let src = source::Ledger::new(client);
             schema::Context::new(src)
         }
         _ => {
+            let client = radicle_registry_client::ClientWithExecutor::create()
+                .expect("creating registry client failed");
             let src = source::test::Local::new();
             schema::Context::new(src)
         }

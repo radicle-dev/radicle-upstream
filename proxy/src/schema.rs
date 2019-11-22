@@ -1,6 +1,8 @@
 use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
+use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
+
 use crate::source::{AccountId, Project, ProjectId, Source};
 
 /// Glue to bundle our read and write APIs together.
@@ -121,8 +123,9 @@ juniper::graphql_scalar!(ProjectId where Scalar = <S> {
     }
 
     from_input_value(v: &InputValue) -> Option<ProjectId> {
-        let name = v.as_scalar_value::<String>()?.to_owned();
-        let domain = "rad".to_string();
+        let name = ProjectName::from_string(v.as_scalar_value::<String>()?.to_owned()).unwrap();
+        // let name = v.as_scalar_value::<String>()?.to_owned();
+        let domain = ProjectDomain::from_string("rad".to_owned()).unwrap();
 
         Some(ProjectId((name, domain)))
     }

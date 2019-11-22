@@ -27,4 +27,8 @@ warp = "0.1"
 
 [dependencies.radicle_registry_client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "1bcf23d23ec150ef3a45e903ada9702508a442f4"
+rev = "b97c77c12b9938b893db8af0324ff24d424f745a"
+
+[dependencies.radicle_registry_runtime]
+git = "https://github.com/radicle-dev/radicle-registry.git"
+rev = "b97c77c12b9938b893db8af0324ff24d424f745a"
