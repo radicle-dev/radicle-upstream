@@ -29,16 +29,20 @@ const typeDefs = `
 
 const debug = false;
 
+const log = message => {
+  debug && console.log(message);
+};
+
 async function tree(projectId, revision, prefix) {
-  debug && console.log(`projectId: ${projectId}`);
-  debug && console.log(`revision: ${revision}`);
-  debug && console.log(`prefix: ${prefix}`);
+  log(`projectId: ${projectId}`);
+  log(`revision: ${revision}`);
+  log(`prefix: ${prefix}`);
 
   const repoBasePath = path.resolve(__dirname, "../");
-  debug && console.log(`repoBasePath: ${repoBasePath}`);
+  log(`repoBasePath: ${repoBasePath}`);
 
   const command = `git ls-tree --long ${revision} ${repoBasePath}${prefix}`;
-  debug && console.log(`command: ${command}`);
+  log(`command: ${command}`);
   const { stdout } = await exec(command);
 
   const relativePrefix = prefix.replace(/^\//, "");
@@ -55,10 +59,10 @@ async function tree(projectId, revision, prefix) {
         nameWithPath
       ] = row.split(/\s+/);
 
-      debug && console.log(`nameWithPath: ${nameWithPath}`);
+      log(`nameWithPath: ${nameWithPath}`);
       const name = nameWithPath.replace(new RegExp(`^${relativePrefix}`), "");
-      debug && console.log(`name: ${name}`);
-      debug && console.log("\n");
+      log(`name: ${name}`);
+      log("\n");
 
       return {
         path: prefix + name,
@@ -80,12 +84,12 @@ async function tree(projectId, revision, prefix) {
 }
 
 async function blob(projectId, revision, path) {
-  debug && console.log(`projectId: ${projectId}`);
-  debug && console.log(`revision: ${revision}`);
-  debug && console.log(`path: ${path}`);
+  log(`projectId: ${projectId}`);
+  log(`revision: ${revision}`);
+  log(`path: ${path}`);
 
   const command = `git show ${revision}:${path}`;
-  debug && console.log(`command: ${command}`);
+  log(`command: ${command}`);
   const { stdout } = await exec(command);
 
   if (isBinary(null, stdout)) {
@@ -97,10 +101,10 @@ async function blob(projectId, revision, path) {
 
 async function branches(_projectId) {
   const command = 'git branch -a --format="%(refname)"';
-  debug && console.log(`command: ${command}`);
+  log(`command: ${command}`);
 
   const { stdout } = await exec(command);
-  debug && console.log(stdout);
+  log(stdout);
 
   return stdout
     .split("\n") // split into rows
@@ -109,10 +113,10 @@ async function branches(_projectId) {
 
 async function tags(_projectId) {
   const command = "git tag -l";
-  debug && console.log(`command: ${command}`);
+  log(`command: ${command}`);
 
   const { stdout } = await exec(command);
-  debug && console.log(stdout);
+  log(stdout);
 
   return stdout
     .split("\n") // split into rows
@@ -138,10 +142,10 @@ server.start(() => console.log("Server is running on http://localhost:4000"));
 // which touched the given path (directory or file) for the branch given.
 async function lastCommitInBranch(path, branch) {
   const command = `git rev-list -n 1 HEAD --branches ${branch} -- "${path}"`;
-  debug && console.log(`command: ${command}`);
+  log(`command: ${command}`);
 
   const { stdout } = await exec(command);
-  debug && console.log(stdout);
+  log(stdout);
 
   return stdout;
 }
