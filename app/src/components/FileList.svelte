@@ -8,8 +8,8 @@
   export let style = null;
 
   const LS = gql`
-    query Query($projectId: String!, $head: String!, $prefix: String!) {
-      ls(projectId: $projectId, head: $head, prefix: $prefix) {
+    query Query($projectId: String!, $revision: String!, $prefix: String!) {
+      ls(projectId: $projectId, revision: $revision, prefix: $prefix) {
         path
         info {
           isDirectory
@@ -26,7 +26,7 @@
 
   $: sourceTree = query(client, {
     query: LS,
-    variables: { projectId: "123", head: "master", prefix: "/" }
+    variables: { projectId: "123", revision: "master", prefix: "/" }
   });
 </script>
 

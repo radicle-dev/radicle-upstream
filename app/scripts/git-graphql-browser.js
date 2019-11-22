@@ -20,8 +20,8 @@ const typeDefs = `
   }
 
   type Query {
-    ls(projectId: String!, head: String!, prefix: String!): [Entry]!
-    cat(projectId: String!, head: String!, path: String!): String!
+    ls(projectId: String!, revision: String!, prefix: String!): [Entry]!
+    cat(projectId: String!, revision: String!, path: String!): String!
     branches(projectId: String!): [String]!
     tags(projectId: String!): [String]!
   }
@@ -29,15 +29,15 @@ const typeDefs = `
 
 const debug = false;
 
-async function ls(projectId, head, prefix) {
+async function ls(projectId, revision, prefix) {
   debug && console.log(`projectId: ${projectId}`);
-  debug && console.log(`head: ${head}`);
+  debug && console.log(`revision: ${revision}`);
   debug && console.log(`prefix: ${prefix}`);
 
   const repoBasePath = path.resolve(__dirname, "../");
   debug && console.log(`repoBasePath: ${repoBasePath}`);
 
-  const command = `git ls-tree --long ${head} ${repoBasePath}${prefix}`;
+  const command = `git ls-tree --long ${revision} ${repoBasePath}${prefix}`;
   debug && console.log(`command: ${command}`);
   const { stdout } = await exec(command);
 
@@ -79,12 +79,12 @@ async function ls(projectId, head, prefix) {
     });
 }
 
-async function cat(projectId, head, path) {
+async function cat(projectId, revision, path) {
   debug && console.log(`projectId: ${projectId}`);
-  debug && console.log(`head: ${head}`);
+  debug && console.log(`revision: ${revision}`);
   debug && console.log(`path: ${path}`);
 
-  const command = `git show ${head}:${path}`;
+  const command = `git show ${revision}:${path}`;
   debug && console.log(`command: ${command}`);
   const { stdout } = await exec(command);
 
@@ -121,8 +121,8 @@ async function tags(_projectId) {
 
 const resolvers = {
   Query: {
-    ls: (_, { projectId, head, prefix }) => ls(projectId, head, prefix),
-    cat: (_, { projectId, head, path }) => cat(projectId, head, path),
+    ls: (_, { projectId, revision, prefix }) => ls(projectId, revision, prefix),
+    cat: (_, { projectId, revision, path }) => cat(projectId, revision, path),
     branches: (_, { projectId }) => branches(projectId),
     tags: (_, { projectId }) => tags(projectId)
   }

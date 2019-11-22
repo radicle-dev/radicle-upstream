@@ -1,7 +1,6 @@
 <script>
   import { location } from "svelte-spa-router";
   import * as path from "../path.js";
-  import { head } from "../stores.js";
   import { Icon } from "../DesignSystem";
   import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
   import Folder from "./Folder.svelte";

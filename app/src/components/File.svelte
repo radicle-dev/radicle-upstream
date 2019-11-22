@@ -6,7 +6,7 @@
   export let name = null;
   export let filePath = null;
   export let projectId = null;
-  export let head = null;
+  export let revision = null;
 </script>
 
 <style>
@@ -30,7 +30,11 @@
 
 <div class="file">
   <a
-    href={path.projectSource({ id: projectId, head: head, path: filePath })}
+    href={path.projectSource({
+      id: projectId,
+      revision: revision,
+      path: filePath
+    })}
     use:link>
     <Icon.File />
     {name}

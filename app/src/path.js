@@ -10,8 +10,8 @@ export const projectFeed = (params = {}) => `/projects/${params.id}/feed`;
 export const projectMembers = (params = {}) => `/projects/${params.id}/members`;
 export const projectFunds = (params = {}) => `/projects/${params.id}/funds`;
 export const projectSource = (params = {}) => {
-  if (params.head && params.path) {
-    return `/projects/${params.id}/source/${params.head}${params.path}`;
+  if (params.revision && params.path) {
+    return `/projects/${params.id}/source/${params.revision}${params.path}`;
   } else {
     return `/projects/${params.id}/source`;
   }

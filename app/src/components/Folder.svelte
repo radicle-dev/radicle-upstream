@@ -5,7 +5,7 @@
   import { link, location } from "svelte-spa-router";
   import { Icon } from "../DesignSystem";
   import File from "./File.svelte";
-  import { head } from "../stores.js";
+  import { revision } from "../stores.js";
   import * as path from "../path.js";
 
   export let projectId = null;
@@ -20,8 +20,8 @@
   });
 
   const LS = gql`
-    query Query($projectId: String!, $head: String!, $prefix: String!) {
-      ls(projectId: $projectId, head: $head, prefix: $prefix) {
+    query Query($projectId: String!, $revision: String!, $prefix: String!) {
+      ls(projectId: $projectId, revision: $revision, prefix: $prefix) {
         path
         info {
           isDirectory
@@ -33,7 +33,7 @@
 
   $: sourceTree = query(client, {
     query: LS,
-    variables: { projectId: projectId, head: $head, prefix: prefix }
+    variables: { projectId: projectId, revision: $revision, prefix: prefix }
   });
 
   let toggle = () => {
@@ -76,7 +76,7 @@
         <a
           href={path.projectSource({
             id: projectId,
-            head: $head,
+            revision: $revision,
             path: prefix
           })}
           use:link>
@@ -98,7 +98,7 @@
             name={entry.info.name}
             filePath={entry.path}
             {projectId}
-            head={$head} />
+            revision={$revision} />
         {/if}
       {/each}
     {/if}
