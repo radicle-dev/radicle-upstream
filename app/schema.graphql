@@ -5,36 +5,9 @@ type Author {
   email: String
 }
 
-enum ObjectType {
-  Commit
-  Tree
-  Blob
-  Tag
-}
-
-# git tags.
-type LightweightTag {
-  commit: Commit!
-}
-
-type AnnotatedTag {
-  object: String!
-  type: ObjectType!
-  name: String!
-  tagger: Author!
-}
-
-union Tag = AnnotatedTag | LightweightTag
-
-type Head {
-  name: String!
-  commit: Commit!
-}
-
-union Ref = Head | Tag
-
 # git commit data.
 type Commit {
+  sha1: String!
   author: Author!
   date: Datetime!
   message: String!
@@ -66,36 +39,65 @@ type TreeEntry {
   info: Info!
 }
 
+# Representation of a refname. Special refs like HEAD are omitted on purpose as
+# of now.
+#
+# master
+# v1.0.0
+# heads/master
+# tags/v1.0.0
+# remotes/origin/master
+type Ref = {
+  name: String!
+  sha1: String!
+}
+
+type Query {
+  # Source browsing.
+  blob(projectId: ID!, revision: String!, path: String!): BlobEntry
+  tree(projectId: ID!, revision: String!, prefix: String!): [TreeEntry!]!
+
+  # Commits browsing
+  commits(projectId: ID!, Revision: String!): [Commit]!
+  commit(projectId: ID!, sha1: String!) Commit
+
+  # Ref browsing
+  branches(projectId: ID!): [Ref]!
+  refs(projectId: ID!): [Ref]!
+  tags(projectId: ID!): [Ref]!
+}
+
+################
+# Exploration. #
+
+enum ObjectType {
+  Commit
+  Tree
+  Blob
+  Tag
+}
+
+# git tags.
+type LightweightTag {
+  commit: Commit!
+}
+
+type AnnotatedTag {
+  objectName: ObjectName!
+  type: ObjectType!
+  name: String!
+  tagger: Author!
+}
+
+union Tag = AnnotatedTag | LightweightTag
+
 # Representation of object name.
 type ObjectName {
   sha1: String!
 }
-
-# Representation of a refname.
-#
-# master
-# v1.0.0
-# refs/heads/master
-# refs/tags/v1.0.0
-# refs/remotes/origin/master
 type Refname {
   name: String!
 }
 
 # Representation of gitrevisions: https://git-scm.com/docs/gitrevisions/
 union Revision = ObjectName | RefName
-
-type Query {
-  # Source browsing.
-  blob(projectId: ID!, revision: Revision!, path: String!): BlobEntry
-  tree(projectId: ID!, revision: Revision!, prefix: String!): [TreeEntry!]!
-
-  # Commits browsing
-  commits(projectId: ID!, Revision: Revision!): [Commit]!
-  commit(projectId: ID!, objectName: ObjectName!) Commit
-
-  # Ref browsing
-  branches(projectId: ID!): [Head]!
-  refs(projectId: ID!): [Ref]!
-  tags(projectId: ID!): [Tag]!
-}
