@@ -7,9 +7,9 @@
 
   export let style = null;
 
-  const LS = gql`
+  const TREE = gql`
     query Query($projectId: String!, $revision: String!, $prefix: String!) {
-      ls(projectId: $projectId, revision: $revision, prefix: $prefix) {
+      tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
         path
         info {
           isDirectory
@@ -25,7 +25,7 @@
   });
 
   $: sourceTree = query(client, {
-    query: LS,
+    query: TREE,
     variables: { projectId: "123", revision: "master", prefix: "/" }
   });
 </script>
@@ -95,7 +95,7 @@
     </thead>
 
     <tbody>
-      {#each result.data.ls as entry}
+      {#each result.data.tree as entry}
         <tr>
           <td class="file-column">
             <a href="/path" use:link>

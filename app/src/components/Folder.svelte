@@ -19,9 +19,9 @@
     uri: "http://127.0.0.1:4000"
   });
 
-  const LS = gql`
+  const TREE = gql`
     query Query($projectId: String!, $revision: String!, $prefix: String!) {
-      ls(projectId: $projectId, revision: $revision, prefix: $prefix) {
+      tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
         path
         info {
           isDirectory
@@ -32,7 +32,7 @@
   `;
 
   $: sourceTree = query(client, {
-    query: LS,
+    query: TREE,
     variables: { projectId: projectId, revision: $revision, prefix: prefix }
   });
 
@@ -86,7 +86,7 @@
     {/if}
 
     {#if expanded || firstEntry}
-      {#each result.data.ls as entry}
+      {#each result.data.tree as entry}
         {#if entry.info.isDirectory}
           <svelte:self
             {projectId}
