@@ -17,7 +17,7 @@
     query($projectId: String!, $revision: String!, $path: String!) {
       tags(projectId: $projectId)
       branches(projectId: $projectId)
-      cat(projectId: $projectId, revision: $revision, path: $path)
+      blob(projectId: $projectId, revision: $revision, path: $path)
     }
   `;
 
@@ -50,6 +50,6 @@
     timestamp="13 days ago"
     style="margin-bottom: 48px" />
 
-  <FileSource path={filePath} code={result.data.cat} />
+  <FileSource path={filePath} code={result.data.blob} />
   <FileList style="margin-top: 48px" />
 {/await}

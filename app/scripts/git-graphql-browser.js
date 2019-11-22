@@ -21,7 +21,7 @@ const typeDefs = `
 
   type Query {
     ls(projectId: String!, revision: String!, prefix: String!): [Entry]!
-    cat(projectId: String!, revision: String!, path: String!): String!
+    blob(projectId: String!, revision: String!, path: String!): String!
     branches(projectId: String!): [String]!
     tags(projectId: String!): [String]!
   }
@@ -79,7 +79,7 @@ async function ls(projectId, revision, prefix) {
     });
 }
 
-async function cat(projectId, revision, path) {
+async function blob(projectId, revision, path) {
   debug && console.log(`projectId: ${projectId}`);
   debug && console.log(`revision: ${revision}`);
   debug && console.log(`path: ${path}`);
@@ -122,7 +122,7 @@ async function tags(_projectId) {
 const resolvers = {
   Query: {
     ls: (_, { projectId, revision, prefix }) => ls(projectId, revision, prefix),
-    cat: (_, { projectId, revision, path }) => cat(projectId, revision, path),
+    blob: (_, { projectId, revision, path }) => blob(projectId, revision, path),
     branches: (_, { projectId }) => branches(projectId),
     tags: (_, { projectId }) => tags(projectId)
   }
