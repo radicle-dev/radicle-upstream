@@ -7,6 +7,7 @@
   import FileSource from "../../components/FileSource.svelte";
   import FileList from "../../components/FileList.svelte";
   import CommitTeaser from "../../components/CommitTeaser.svelte";
+  import RevisionSelector from "../../components/RevisionSelector.svelte";
 
   import { revision } from "../../stores.js";
 
@@ -15,17 +16,15 @@
 
   export let params = null;
 
-  const PAGE_DATA = gql`
-    query($projectId: String!, $revision: String!, $path: String!) {
-      tags(projectId: $projectId)
-      branches(projectId: $projectId)
-      blob(projectId: $projectId, revision: $revision, path: $path)
-    }
-  `;
-
   const client = new ApolloClient({
     uri: "http://127.0.0.1:4000"
   });
+
+  const PAGE_DATA = gql`
+    query($projectId: String!, $revision: String!, $path: String!) {
+      blob(projectId: $projectId, revision: $revision, path: $path)
+    }
+  `;
 
   $: filePath = `app/${params.wild || ""}`;
 
@@ -39,12 +38,9 @@
   });
 </script>
 
-{#await $pageData then result}
-  <Select
-    style="margin-bottom: 16px"
-    items={[...result.data.tags, ...result.data.branches]}
-    bind:value={$revision} />
+<RevisionSelector />
 
+{#await $pageData then result}
   <CommitTeaser
     user={{ username: 'cloudhead', avatar: 'https://avatars2.githubusercontent.com/u/2326909?s=400&v=4' }}
     commitMessage="Remove debugging statement"
