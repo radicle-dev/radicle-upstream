@@ -22,7 +22,7 @@ type Info {
   # length in bytes.
   size: Int!
   # if it's a directory.
-  isdirectory: Boolean!
+  isDirectory: Boolean!
   # any flags git stores, currently only executable.
   flags: [Int]!
   # last commit which affected this path.
