@@ -42,7 +42,7 @@ fn main() {
         _ => {
             let client = radicle_registry_client::ClientWithExecutor::create()
                 .expect("creating registry client failed");
-            let src = source::test::Local::new();
+            let src = source::Ledger::new(client);
             schema::Context::new(src)
         }
     };
