@@ -1,4 +1,5 @@
 <script>
+  import { setContext } from "svelte";
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
   import ProjectSidebar from "../components/ProjectSidebar.svelte";
@@ -14,6 +15,8 @@
   import NotFound from "./NotFound.svelte";
 
   export let params = null;
+
+  setContext("projectId", params.id);
 
   const routes = {
     "/projects/:id/overview": Overview,
@@ -65,7 +68,7 @@
 </style>
 
 {#await $project then result}
-  <ProjectSidebar projectId={params.id} />
+  <ProjectSidebar />
 
   <div class="container">
     <ProjectBreadcrumbs

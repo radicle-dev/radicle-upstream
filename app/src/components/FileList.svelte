@@ -1,4 +1,6 @@
 <script>
+  import { getContext } from "svelte";
+
   import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -26,7 +28,11 @@
 
   $: sourceTree = query(client, {
     query: TREE,
-    variables: { projectId: "123", revision: "master", prefix: "/" }
+    variables: {
+      projectId: getContext("projectId"),
+      revision: "master",
+      prefix: "/"
+    }
   });
 </script>
 

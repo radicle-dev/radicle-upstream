@@ -1,14 +1,14 @@
 <script>
-  import { Header, Title } from "../../DesignSystem";
+  import { getContext } from "svelte";
 
-  export let params = {};
+  import { Header, Title } from "../../DesignSystem";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
 
   const GET_PROJECT = gql`
     query Query($id: ProjectId!) {
-      project(id: $id) {
+      project(id: $projectId) {
         name
         description
         imgUrl
@@ -23,7 +23,7 @@
   const client = getClient();
   const project = query(client, {
     query: GET_PROJECT,
-    variables: { id: params.id }
+    variables: { projectId: getContext("projectId") }
   });
 </script>
 

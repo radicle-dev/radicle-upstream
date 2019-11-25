@@ -1,4 +1,6 @@
 <script>
+  import { getContext } from "svelte";
+
   import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
   import { query } from "svelte-apollo";
@@ -8,7 +10,7 @@
   import { revision } from "../stores.js";
   import * as path from "../path.js";
 
-  export let projectId = null;
+  const projectId = getContext("projectId");
   export let prefix = "/";
   export let name = null;
 

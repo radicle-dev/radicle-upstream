@@ -1,11 +1,14 @@
 <script>
+  import { getContext } from "svelte";
+
   import { Icon } from "../DesignSystem";
   import { link, location } from "svelte-spa-router";
   import * as path from "../path.js";
 
+  const projectId = getContext("projectId");
+
   export let name = null;
   export let filePath = null;
-  export let projectId = null;
   export let revision = null;
 </script>
 

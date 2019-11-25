@@ -1,4 +1,6 @@
 <script>
+  import { getContext } from "svelte";
+
   import ApolloClient from "apollo-boost";
   import * as path from "../../path.js";
   import { Header, Title, Text, Select } from "../../DesignSystem";
@@ -30,7 +32,7 @@
   $: pageData = query(client, {
     query: PAGE_DATA,
     variables: {
-      projectId: params.id,
+      projectId: getContext("projectId"),
       revision: $revision,
       path: filePath
     }
