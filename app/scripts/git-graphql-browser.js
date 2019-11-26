@@ -90,7 +90,7 @@ async function blob(projectId, revision, path) {
 
   const command = `git show ${revision}:app${path}`;
   log(`command: ${command}`);
-  const { stdout } = await exec(command);
+  const { stdout } = await exec(command, {maxBuffer: 1024 * 1024});
 
   if (isBinary(null, stdout)) {
     return "Binary content.";

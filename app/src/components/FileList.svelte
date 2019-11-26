@@ -146,4 +146,6 @@
       {/each}
     </tbody>
   </table>
+{:catch error}
+  <div>{error}</div>
 {/await}

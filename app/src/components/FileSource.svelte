@@ -96,4 +96,6 @@
       <pre class="code">{result.data.blob}</pre>
     </div>
   </div>
+{:catch error}
+  <div>{error}</div>
 {/await}
