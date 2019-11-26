@@ -15,9 +15,10 @@ failure = "0.1"
 failure_derive = "0.1"
 futures = "0.1"
 hex = "0.4"
-juniper = "0.13"
-juniper_warp = "0.4"
+juniper = "0.14"
+juniper_warp = "0.5"
 log = "0.4"
+pretty_assertions = "0.6"
 pretty_env_logger = "0.3"
 rand = "0.7"
 serde = "1.0"
@@ -27,8 +28,8 @@ warp = "0.1"
 
 [dependencies.radicle_registry_client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "c2ac0a00a086c04ac5f7be684cf15d1e227c5300"
+rev = "58e3b8bc79e556053d8e17dc21f72c8bbdf243e5"
 
 [dependencies.radicle_registry_runtime]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "c2ac0a00a086c04ac5f7be684cf15d1e227c5300"
+rev = "58e3b8bc79e556053d8e17dc21f72c8bbdf243e5"
