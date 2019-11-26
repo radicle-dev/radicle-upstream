@@ -90,7 +90,7 @@
           }), $location, true)}>
 
         <div class="source-tree">
-          <Folder {projectId} prefix={'/'} />
+          <Folder />
         </div>
       </ProjectSidebarItem>
     </li>

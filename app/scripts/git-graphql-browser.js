@@ -88,7 +88,7 @@ async function blob(projectId, revision, path) {
   log(`revision: ${revision}`);
   log(`path: ${path}`);
 
-  const command = `git show ${revision}:${path}`;
+  const command = `git show ${revision}:app${path}`;
   log(`command: ${command}`);
   const { stdout } = await exec(command);
 

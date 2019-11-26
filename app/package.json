@@ -43,7 +43,7 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-svelte": "^5.0.3",
     "rollup-plugin-terser": "^4.0.4",
-    "svelte": "^3.0.0",
+    "svelte": "^3.15.0",
     "svelte-spa-router": "^1.2.1",
     "wait-on": "^3.3.0"
   },

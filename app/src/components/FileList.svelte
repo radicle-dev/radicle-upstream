@@ -1,13 +1,15 @@
 <script>
-  import { getContext } from "svelte";
-
   import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
-  import { Caption, Icon, Text } from "../DesignSystem";
-  import { link } from "svelte-spa-router";
 
-  export let style = null;
+  import { getContext } from "svelte";
+  import { revision, objectPath } from "../stores.js";
+  import * as path from "../path.js";
+
+  import { Caption, Icon, Text } from "../DesignSystem";
+  import CommitTeaser from "../components/CommitTeaser.svelte";
+  import { link } from "svelte-spa-router";
 
   const TREE = gql`
     query Query($projectId: String!, $revision: String!, $prefix: String!) {
@@ -26,18 +28,21 @@
     uri: "http://127.0.0.1:4000"
   });
 
+  const projectId = getContext("projectId");
+
   $: sourceTree = query(client, {
     query: TREE,
     variables: {
-      projectId: getContext("projectId"),
-      revision: "master",
-      prefix: "/"
+      projectId: projectId,
+      revision: $revision,
+      prefix: $objectPath
     }
   });
 </script>
 
 <style>
   table {
+    min-width: var(--content-min-width);
     border-collapse: collapse;
     width: 100%;
   }
@@ -85,7 +90,14 @@
 </style>
 
 {#await $sourceTree then result}
-  <table {style}>
+  <CommitTeaser
+    user={{ username: 'cloudhead', avatar: 'https://avatars2.githubusercontent.com/u/2326909?s=400&v=4' }}
+    commitMessage="Remove debugging statement"
+    commitSha="f4c7697"
+    timestamp="13 days ago"
+    style="margin-bottom: 48px" />
+
+  <table>
     <thead>
       <tr>
         <td style="padding-left: 24px">
@@ -104,7 +116,14 @@
       {#each result.data.tree as entry}
         <tr>
           <td class="file-column">
-            <a href="/path" use:link>
+            <a
+              href={path.projectSource({
+                id: projectId,
+                revision: $revision,
+                objectType: entry.info.isDirectory ? 'tree' : 'blob',
+                path: entry.info.isDirectory ? entry.path + '/' : entry.path
+              })}
+              use:link>
               {#if entry.info.isDirectory}
                 <Icon.Folder />
               {:else}

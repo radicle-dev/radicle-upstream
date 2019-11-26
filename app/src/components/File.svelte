@@ -1,15 +1,13 @@
 <script>
   import { getContext } from "svelte";
+  import { revision } from "../stores.js";
 
   import { Icon } from "../DesignSystem";
-  import { link, location } from "svelte-spa-router";
+  import { link } from "svelte-spa-router";
   import * as path from "../path.js";
-
-  const projectId = getContext("projectId");
 
   export let name = null;
   export let filePath = null;
-  export let revision = null;
 </script>
 
 <style>
@@ -34,8 +32,9 @@
 <div class="file">
   <a
     href={path.projectSource({
-      id: projectId,
-      revision: revision,
+      id: getContext('projectId'),
+      revision: $revision,
+      objectType: 'blob',
       path: filePath
     })}
     use:link>

@@ -1,10 +1,10 @@
 <script>
-  import { getContext } from "svelte";
-
   import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
   import { query } from "svelte-apollo";
-  import { link, location } from "svelte-spa-router";
+
+  import { getContext } from "svelte";
+  import { link } from "svelte-spa-router";
   import { Icon } from "../DesignSystem";
   import File from "./File.svelte";
   import { revision } from "../stores.js";
@@ -79,6 +79,7 @@
           href={path.projectSource({
             id: projectId,
             revision: $revision,
+            objectType: 'tree',
             path: prefix
           })}
           use:link>
@@ -91,16 +92,11 @@
       {#each result.data.tree as entry}
         {#if entry.info.isDirectory}
           <svelte:self
-            {projectId}
             prefix={entry.path + '/'}
             name={entry.info.name}
             firstEntry={false} />
         {:else}
-          <File
-            name={entry.info.name}
-            filePath={entry.path}
-            {projectId}
-            revision={$revision} />
+          <File name={entry.info.name} filePath={entry.path} />
         {/if}
       {/each}
     {/if}

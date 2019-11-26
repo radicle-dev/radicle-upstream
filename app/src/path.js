@@ -11,7 +11,7 @@ export const projectMembers = (params = {}) => `/projects/${params.id}/members`;
 export const projectFunds = (params = {}) => `/projects/${params.id}/funds`;
 export const projectSource = (params = {}) => {
   if (params.revision && params.path) {
-    return `/projects/${params.id}/source/${params.revision}${params.path}`;
+    return `/projects/${params.id}/source/${params.revision}/${params.objectType}${params.path}`;
   } else {
     return `/projects/${params.id}/source`;
   }

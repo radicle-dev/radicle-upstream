@@ -1,8 +1,32 @@
 <script>
-  import { Icon } from "../DesignSystem";
+  import ApolloClient from "apollo-boost";
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
 
-  export let path = null;
-  export let code = null;
+  import { getContext } from "svelte";
+  import { revision, objectPath } from "../stores.js";
+
+  import { Icon } from "../DesignSystem";
+  import CommitTeaser from "../components/CommitTeaser.svelte";
+
+  const client = new ApolloClient({
+    uri: "http://127.0.0.1:4000"
+  });
+
+  const SOURCE = gql`
+    query($projectId: String!, $revision: String!, $path: String!) {
+      blob(projectId: $projectId, revision: $revision, path: $path)
+    }
+  `;
+
+  $: source = query(client, {
+    query: SOURCE,
+    variables: {
+      projectId: getContext("projectId"),
+      revision: $revision,
+      path: $objectPath
+    }
+  });
 </script>
 
 <style>
@@ -46,21 +70,30 @@
   }
 </style>
 
-<div class="file-source">
-  <header>
-    <Icon.File />
-    {path}
-  </header>
-  <div class="container">
-    <pre class="line-numbers">
-      {@html code
-        .split('\n')
-        .slice(0, -1)
-        .map((_, index) => {
-          return `${index + 1}`;
-        })
-        .join('\n')}
-    </pre>
-    <pre class="code">{code}</pre>
+{#await $source then result}
+  <CommitTeaser
+    user={{ username: 'cloudhead', avatar: 'https://avatars2.githubusercontent.com/u/2326909?s=400&v=4' }}
+    commitMessage="Remove debugging statement"
+    commitSha="f4c7697"
+    timestamp="13 days ago"
+    style="margin-bottom: 48px" />
+
+  <div class="file-source">
+    <header>
+      <Icon.File />
+      {$objectPath}
+    </header>
+    <div class="container">
+      <pre class="line-numbers">
+        {@html result.data.blob
+          .split('\n')
+          .slice(0, -1)
+          .map((_, index) => {
+            return `${index + 1}`;
+          })
+          .join('\n')}
+      </pre>
+      <pre class="code">{result.data.blob}</pre>
+    </div>
   </div>
-</div>
+{/await}

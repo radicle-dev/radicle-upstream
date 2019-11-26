@@ -1,5 +1,7 @@
 <script>
   import { setContext } from "svelte";
+  import { revision, objectPath, objectType } from "../stores.js";
+
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
   import ProjectSidebar from "../components/ProjectSidebar.svelte";
@@ -24,7 +26,7 @@
     "/projects/:id/members": Members,
     "/projects/:id/funds": Funds,
     "/projects/:id/source": Source,
-    "/projects/:id/source/:head/*": Source,
+    "/projects/:id/source/*": Source,
     "/projects/:id/commits": Commits,
     "/projects/:id/branches": Branches,
     "*": NotFound
@@ -53,6 +55,20 @@
     query: GET_PROJECT,
     variables: { id: params.id }
   });
+
+  const PATH_MATCH = /\/source\/(.*)\/(blob|tree)(.*)/;
+
+  $: rev = $location.match(PATH_MATCH);
+  $: rev = rev === null ? "refs/heads/master" : rev[1];
+  $: revision.set(rev);
+
+  $: path = $location.match(PATH_MATCH);
+  $: path = path === null ? "/" : path[3];
+  $: objectPath.set(path);
+
+  $: type = $location.match(PATH_MATCH);
+  $: type = type === null ? "tree" : type[2];
+  $: objectType.set(type);
 </script>
 
 <style>
