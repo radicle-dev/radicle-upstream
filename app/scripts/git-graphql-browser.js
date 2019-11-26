@@ -29,6 +29,14 @@ const typeDefs = `
 
 const debug = false;
 
+// TODO: implement actual lookup once we have mock data with stable IDs
+const projectRepoPathById = _projectId => path.resolve(__dirname, "../../");
+
+const execOptions = projectId => ({
+  maxBuffer: 1024 * 1000,
+  cwd: projectRepoPathById(projectId)
+});
+
 const log = message => {
   debug && console.log(message);
 };
@@ -38,14 +46,10 @@ async function tree(projectId, revision, prefix) {
   log(`revision: ${revision}`);
   log(`prefix: ${prefix}`);
 
-  const repoBasePath = path.resolve(__dirname, "../");
-  log(`repoBasePath: ${repoBasePath}`);
-
-  const command = `git ls-tree --long ${revision} ${repoBasePath}${prefix}`;
+  const command = `git ls-tree --long ${revision} ./${prefix}`;
   log(`command: ${command}`);
-  const { stdout } = await exec(command);
 
-  const relativePrefix = prefix.replace(/^\//, "");
+  const { stdout } = await exec(command, execOptions(projectId));
 
   return stdout
     .split("\n") // split into rows
@@ -59,19 +63,14 @@ async function tree(projectId, revision, prefix) {
         nameWithPath
       ] = row.split(/\s+/);
 
-      log(`nameWithPath: ${nameWithPath}`);
-      const name = nameWithPath.replace(new RegExp(`^${relativePrefix}`), "");
-      log(`name: ${name}`);
-      log("\n");
-
       return {
-        path: prefix + name,
+        path: nameWithPath,
         info: {
           mode: mode,
           isDirectory: treeOrBlob === "tree",
           lastCommit: lastCommit,
           size: sizeOrDash === "-" ? 0 : parseInt(sizeOrDash),
-          name: name
+          name: nameWithPath.replace(prefix, "")
         }
       };
     })
@@ -88,9 +87,9 @@ async function blob(projectId, revision, path) {
   log(`revision: ${revision}`);
   log(`path: ${path}`);
 
-  const command = `git show ${revision}:app${path}`;
+  const command = `git show ${revision}:${path}`;
   log(`command: ${command}`);
-  const { stdout } = await exec(command, {maxBuffer: 1024 * 1024});
+  const { stdout } = await exec(command, execOptions(projectId));
 
   if (isBinary(null, stdout)) {
     return "Binary content.";
@@ -99,11 +98,11 @@ async function blob(projectId, revision, path) {
   }
 }
 
-async function branches(_projectId) {
+async function branches(projectId) {
   const command = 'git branch -a --format="%(refname)"';
   log(`command: ${command}`);
 
-  const { stdout } = await exec(command);
+  const { stdout } = await exec(command, execOptions(projectId));
   log(stdout);
 
   return stdout
@@ -111,11 +110,11 @@ async function branches(_projectId) {
     .filter(el => el !== ""); // throw out empty rows
 }
 
-async function tags(_projectId) {
+async function tags(projectId) {
   const command = "git tag -l";
   log(`command: ${command}`);
 
-  const { stdout } = await exec(command);
+  const { stdout } = await exec(command, execOptions(projectId));
   log(stdout);
 
   return stdout
@@ -144,7 +143,7 @@ async function lastCommitInBranch(path, branch) {
   const command = `git rev-list -n 1 HEAD --branches ${branch} -- "${path}"`;
   log(`command: ${command}`);
 
-  const { stdout } = await exec(command);
+  const { stdout } = await exec(command, execOptions("FIXME"));
   log(stdout);
 
   return stdout;
