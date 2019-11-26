@@ -56,7 +56,7 @@
     "svelte:build": "yarn svelte:clean && rollup -c",
     "svelte:watch": "yarn svelte:clean && rollup -c -w",
     "proxy:build": "cd ../proxy && cargo build --release",
-    "proxy:start": "cd ../proxy && cargo run --release -- local",
+    "proxy:start": "cd ../proxy && cargo run --release -- memory",
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
     "postinstall": "patch-package",
