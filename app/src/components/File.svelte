@@ -1,13 +1,15 @@
 <script>
   import { getContext } from "svelte";
-  import { revision } from "../stores.js";
+  import { revision, objectPath } from "../stores.js";
 
-  import { Icon } from "../DesignSystem";
+  import { Icon, Title, Text } from "../DesignSystem";
   import { link } from "svelte-spa-router";
   import * as path from "../path.js";
 
   export let name = null;
   export let filePath = null;
+
+  $: active = filePath === $objectPath;
 </script>
 
 <style>
@@ -27,9 +29,18 @@
   a {
     display: flex;
   }
+
+  .active a {
+    color: var(--color-purple);
+    font-family: "GT America Medium";
+  }
+
+  .active :global(svg) {
+    fill: var(--color-purple);
+  }
 </style>
 
-<div class="file">
+<div class="file" class:active>
   <a
     href={path.projectSource({
       id: getContext('projectId'),

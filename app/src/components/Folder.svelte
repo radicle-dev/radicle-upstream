@@ -7,7 +7,7 @@
   import { link } from "svelte-spa-router";
   import { Icon } from "../DesignSystem";
   import File from "./File.svelte";
-  import { revision } from "../stores.js";
+  import { revision, objectPath } from "../stores.js";
   import * as path from "../path.js";
 
   const projectId = getContext("projectId");
@@ -41,6 +41,8 @@
   let toggle = () => {
     expanded = !expanded;
   };
+
+  $: active = prefix === $objectPath;
 </script>
 
 <style>
@@ -68,12 +70,21 @@
   a {
     display: flex;
   }
+
+  .active a {
+    color: var(--color-purple);
+    font-family: "GT America Medium";
+  }
+
+  .active :global(svg) {
+    fill: var(--color-purple);
+  }
 </style>
 
 {#await $sourceTree then result}
   <div class="container">
     {#if !firstEntry}
-      <div class="folder" class:expanded>
+      <div class="folder" class:expanded class:active>
         <Icon.CarretBig on:click={toggle} />
         <a
           href={path.projectSource({
