@@ -1,8 +1,6 @@
 use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
-use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
-
 use crate::source::{AccountId, Project, ProjectId, Source};
 
 /// Glue to bundle our read and write APIs together.
@@ -68,9 +66,15 @@ impl Mutation {
 fn test_schema_projects() {
     use juniper::Variables;
 
-    use crate::source::test::Local;
+    use crate::source::Ledger;
 
-    let ctx = Context::new(Local::new());
+    let registry_client = radicle_registry_client::MemoryClient::new();
+    let mut source = Ledger::new(registry_client);
+
+    crate::source::setup_fixtures(&mut source);
+
+    let ctx = Context::new(source);
+
     let (res, _errors) = juniper::execute(
         "query { projects { name } }",
         None,
@@ -84,8 +88,8 @@ fn test_schema_projects() {
         res,
         graphql_value!({
             "projects": [
-                {"name": "Monadic"},
                 {"name": "monokel"},
+                {"name": "Monadic"},
                 {"name": "open source coin"},
                 {"name": "radicle"},
             ]
@@ -115,23 +119,25 @@ juniper::graphql_scalar!(AccountId where Scalar = <S> {
     }
 });
 
-juniper::graphql_scalar!(ProjectId where Scalar = <S> {
-    description: "ProjectId"
+// juniper::graphql_scalar!(ProjectId where Scalar = <S> {
+//     description: "ProjectId"
 
-    resolve(&self) -> Value {
-        Value::scalar(format!("{}.{}", (self.0).0.to_string(), (self.0).1.to_string()))
-    }
+//     resolve(&self) -> Value {
+//         Value::scalar(format!("{}.{}", (self.0).0.to_string(), (self.0).1.to_string()))
+//     }
 
-    from_input_value(v: &InputValue) -> Option<ProjectId> {
-        let name = ProjectName::from_string(v.as_scalar_value::<String>()?.to_owned()).expect("project name conversion failed");
-        // let name = v.as_scalar_value::<String>()?.to_owned();
-        let domain = ProjectDomain::from_string("rad".to_owned()).expect("project domain conversion failed");
+//     from_input_value(v: &InputValue) -> Option<ProjectId> {
+//         let name =
+// ProjectName::from_string(v.as_scalar_value::<String>()?.to_owned()).expect("project name
+// conversion failed");         // let name = v.as_scalar_value::<String>()?.to_owned();
+//         let domain = ProjectDomain::from_string("rad".to_owned()).expect("project domain
+// conversion failed");
 
-        Some(ProjectId((name, domain)))
-    }
+//         Some(ProjectId((name, domain)))
+//     }
 
-    // Define how to parse a string value.
-    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
-        <String as ParseScalarValue<S>>::from_str(value)
-    }
-});
+//     // Define how to parse a string value.
+//     from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+//         <String as ParseScalarValue<S>>::from_str(value)
+//     }
+// });

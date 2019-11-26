@@ -35,7 +35,10 @@ fn main() {
 
     let context = if let "memory" = source_type.as_ref() {
         let client = radicle_registry_client::MemoryClient::new();
-        let src = source::Ledger::new(client);
+        let mut src = source::Ledger::new(client);
+
+        source::setup_fixtures(&mut src);
+
         schema::Context::new(src)
     } else {
         let client = radicle_registry_client::ClientWithExecutor::create()

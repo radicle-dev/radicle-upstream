@@ -8,9 +8,9 @@ use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
 #[derive(Clone, Eq, Hash, PartialEq)]
 pub struct AccountId(pub radicle_registry_client::AccountId);
 
-/// Newtype for the registry `oscoin_client::ProjectId`.
-#[derive(Clone, Eq, PartialEq)]
-pub struct ProjectId(pub radicle_registry_client::ProjectId);
+// /// Newtype for the registry `oscoin_client::ProjectId`.
+// #[derive(Clone, Eq, PartialEq)]
+// pub struct ProjectId(pub radicle_registry_client::ProjectId);
 
 /// Metadata enriched user keypair.
 /// TODO(xla): This overlaps with accounts on the registry, needs renaming.
@@ -23,6 +23,32 @@ struct Account {
     key_name: String,
     /// User given url for the avatar attached to the keypair.
     avatar_url: String,
+}
+
+#[derive(Clone, GraphQLObject)]
+#[graphql(description = "Identifier for a project on the registry.")]
+pub struct ProjectId {
+    name: String,
+    domain: String,
+}
+
+impl From<radicle_registry_client::ProjectId> for ProjectId {
+    fn from(id: radicle_registry_client::ProjectId) -> Self {
+        Self {
+            name: id.0.to_string(),
+            domain: id.1.to_string(),
+        }
+    }
+}
+
+impl Into<radicle_registry_client::ProjectId> for ProjectId {
+    fn into(self) -> radicle_registry_client::ProjectId {
+        (
+            ProjectName::from_string(self.name.to_string()).expect("project name creation failed"),
+            ProjectDomain::from_string(self.domain.to_string())
+                .expect("project domain creation faile"),
+        )
+    }
 }
 
 /// Representation of a users project.
@@ -54,7 +80,7 @@ impl From<radicle_registry_client::Project> for Project {
             .collect();
 
         Self {
-            id: ProjectId(p.id.clone()),
+            id: p.id.into(),
             name: p.id.0.to_string(),
             description: p.description,
             img_url: p.img_url,
@@ -65,6 +91,7 @@ impl From<radicle_registry_client::Project> for Project {
 
 /// Abstraction used to fetch information from the registry.
 pub trait Source {
+    fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
     fn get_all_projects(&self) -> Vec<Project>;
     /// Retrieve a single proejct by `ProjectId`.
@@ -127,6 +154,25 @@ impl<R> Source for Ledger<R>
 where
     R: radicle_registry_client::ClientT,
 {
+    fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId {
+        let id = AccountId(
+            radicle_registry_client::ed25519::Pair::generate()
+                .0
+                .public(),
+        );
+
+        self.accounts.insert(
+            id.clone(),
+            Account {
+                id: id.clone(),
+                avatar_url,
+                key_name,
+            },
+        );
+
+        id
+    }
+
     fn get_all_projects(&self) -> Vec<Project> {
         // TODO(xla): Return proper error.
         self.registry_client
@@ -153,7 +199,7 @@ where
     fn get_project(&self, id: ProjectId) -> Option<Project> {
         let maybe_project = self
             .registry_client
-            .get_project(id.0)
+            .get_project(id.into())
             .wait()
             .expect("get project failed");
 
@@ -170,14 +216,14 @@ where
             ProjectName::from_string(name.to_string()).expect("project name creation failed");
         let project_domain =
             ProjectDomain::from_string("rad".to_string()).expect("project domain creation faile");
-        let project_id = (project_name, project_domain);
+        let registry_id = (project_name, project_domain);
 
         // TODO(xla): Proper error handling.
         self.registry_client
             .register_project(
                 &sender,
                 radicle_registry_client::RegisterProjectParams {
-                    id: project_id.clone(),
+                    id: registry_id.clone(),
                     description: description.to_owned(),
                     img_url: img_url.to_owned(),
                     checkpoint_id: H256::random(),
@@ -187,11 +233,43 @@ where
             .expect("osc project registration failed");
 
         Project {
-            id: ProjectId(project_id),
+            id: registry_id.into(),
             name,
             description,
             img_url,
             members: vec![],
         }
     }
+}
+
+/// Populate a `Source` with a set of initial projects.
+pub fn setup_fixtures<S: Source + Send + Sync>(source: &mut S) {
+    let _ = source.create_account(
+        "xla".into(),
+        "https://avatars0.githubusercontent.com/u/1585".into(),
+    );
+    let _ = source.register_project(
+        "monokel".into(),
+        "A looking glass into the future".into(),
+        "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg".into(),
+    );
+
+    let _ = source.register_project(
+        "Monadic".into(),
+        "Open source organization of amazing things.".into(),
+        "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg"
+            .into(),
+    );
+
+    let _ = source.register_project(
+        "open source coin".into(),
+        "Research for the open source community.".into(),
+        "https://avatars0.githubusercontent.com/u/31632242".into(),
+    );
+
+    let _ = source.register_project(
+        "radicle".into(),
+        "Decentralized open source collaboration".into(),
+        "https://avatars0.githubusercontent.com/u/48290027".into(),
+    );
 }
