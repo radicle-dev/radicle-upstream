@@ -135,7 +135,7 @@ where
             .expect("osc client list projects failed")
             .into_iter()
             .take(10)
-            .map(|id| {
+            .flat_map(|id| {
                 let maybe_project = self
                     .registry_client
                     .get_project(id)
@@ -147,7 +147,6 @@ where
                     None => None,
                 }
             })
-            .flatten()
             .collect()
     }
 

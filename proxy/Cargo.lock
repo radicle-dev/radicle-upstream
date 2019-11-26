@@ -1821,8 +1821,8 @@ dependencies = [
  "juniper_warp 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "radicle_registry_client 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00)",
- "radicle_registry_runtime 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00)",
+ "radicle_registry_client 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300)",
+ "radicle_registry_runtime 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.101 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1864,7 +1864,7 @@ dependencies = [
 [[package]]
 name = "radicle_registry_client"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00#43e88bff831007dc4735cc35f6ea22c428e4cb00"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300#c2ac0a00a086c04ac5f7be684cf15d1e227c5300"
 dependencies = [
  "env_logger 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1874,18 +1874,18 @@ dependencies = [
  "paint-system 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)",
  "paint-transaction-payment 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)",
  "parity-scale-codec 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "radicle_registry_runtime 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00)",
+ "radicle_registry_runtime 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300)",
  "sr-io 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)",
  "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)",
  "substrate-primitives 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)",
- "substrate-subxt 0.2.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00)",
+ "substrate-subxt 0.2.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300)",
  "tokio 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "radicle_registry_runtime"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00#43e88bff831007dc4735cc35f6ea22c428e4cb00"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300#c2ac0a00a086c04ac5f7be684cf15d1e227c5300"
 dependencies = [
  "paint-aura 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)",
  "paint-balances 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)",
@@ -2664,7 +2664,7 @@ dependencies = [
 [[package]]
 name = "substrate-subxt"
 version = "0.2.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00#43e88bff831007dc4735cc35f6ea22c428e4cb00"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300#c2ac0a00a086c04ac5f7be684cf15d1e227c5300"
 dependencies = [
  "derive_more 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3572,8 +3572,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum quick-error 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9274b940887ce9addde99c4eee6b5c44cc494b182b97e73dc8ffdcb3397fd3f0"
 "checksum quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)" = "6ce23b6b870e8f94f81fb0a363d65d86675884b34a09043c81e5562f11c1f8e1"
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
-"checksum radicle_registry_client 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00)" = "<none>"
-"checksum radicle_registry_runtime 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00)" = "<none>"
+"checksum radicle_registry_client 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300)" = "<none>"
+"checksum radicle_registry_runtime 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300)" = "<none>"
 "checksum rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)" = "6d71dacdc3c88c1fde3885a3be3fbab9f35724e6ce99467f7d9c5026132184ca"
 "checksum rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3ae1b169243eaf61759b8475a998f0a385e42042370f3a7dbaf35246eacc8412"
 "checksum rand_chacha 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "556d3a1ca6600bfcbab7c7c91ccb085ac7fbbcd70e008a98742e7847f4f7bcef"
@@ -3649,7 +3649,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum substrate-runtime-interface-proc-macro 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)" = "<none>"
 "checksum substrate-session 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)" = "<none>"
 "checksum substrate-state-machine 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)" = "<none>"
-"checksum substrate-subxt 0.2.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=43e88bff831007dc4735cc35f6ea22c428e4cb00)" = "<none>"
+"checksum substrate-subxt 0.2.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=c2ac0a00a086c04ac5f7be684cf15d1e227c5300)" = "<none>"
 "checksum substrate-transaction-graph 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)" = "<none>"
 "checksum substrate-transaction-pool-runtime-api 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)" = "<none>"
 "checksum substrate-trie 2.0.0 (git+https://github.com/paritytech/substrate?rev=dc4a8329b9c47790c25429a5df272b3648275c1b)" = "<none>"
