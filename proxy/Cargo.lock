@@ -1857,6 +1857,7 @@ dependencies = [
  "futures 0.1.29 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "juniper_codegen 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper_warp 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
