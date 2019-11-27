@@ -3,6 +3,8 @@
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
 
+  import { format } from "timeago.js";
+
   import { getContext } from "svelte";
   import { revision, objectPath } from "../stores.js";
 
@@ -15,7 +17,20 @@
 
   const SOURCE = gql`
     query($projectId: String!, $revision: String!, $path: String!) {
-      blob(projectId: $projectId, revision: $revision, path: $path)
+      blob(projectId: $projectId, revision: $revision, path: $path) {
+        content
+        info {
+          lastCommit {
+            author {
+              name
+              avatar
+            }
+            authorDate
+            subject
+            sha1
+          }
+        }
+      }
     }
   `;
 
@@ -72,10 +87,10 @@
 
 {#await $source then result}
   <CommitTeaser
-    user={{ username: 'cloudhead', avatar: 'https://avatars2.githubusercontent.com/u/2326909?s=400&v=4' }}
-    commitMessage="Remove debugging statement"
-    commitSha="f4c7697"
-    timestamp="13 days ago"
+    user={{ username: result.data.blob.info.lastCommit.author.name, avatar: result.data.blob.info.lastCommit.author.avatar }}
+    commitMessage={result.data.blob.info.lastCommit.subject}
+    commitSha={result.data.blob.info.lastCommit.sha1.substring(0, 7)}
+    timestamp={format(result.data.blob.info.lastCommit.authorDate)}
     style="margin-bottom: 48px" />
 
   <div class="file-source">
@@ -85,7 +100,7 @@
     </header>
     <div class="container">
       <pre class="line-numbers">
-        {@html result.data.blob
+        {@html result.data.blob.content
           .split('\n')
           .slice(0, -1)
           .map((_, index) => {
@@ -93,9 +108,7 @@
           })
           .join('\n')}
       </pre>
-      <pre class="code">{result.data.blob}</pre>
+      <pre class="code">{result.data.blob.content}</pre>
     </div>
   </div>
-{:catch error}
-  <div>{error}</div>
 {/await}

@@ -3,6 +3,8 @@
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
 
+  import { format } from "timeago.js";
+
   import { getContext } from "svelte";
   import { revision, objectPath } from "../stores.js";
   import * as path from "../path.js";
@@ -18,7 +20,13 @@
         info {
           isDirectory
           name
-          lastCommit
+          lastCommit {
+            author {
+              name
+            }
+            subject
+            authorDate
+          }
         }
       }
     }
@@ -136,16 +144,16 @@
           </td>
           <td class="commit-message-column">
             <a href="/commit" use:link>
-              <Text.Regular>{entry.info.lastCommit}</Text.Regular>
+              <Text.Regular>{entry.info.lastCommit.subject}</Text.Regular>
             </a>
           </td>
           <td class="last-update-column">
-            <Text.Regular>2 months ago</Text.Regular>
+            <Text.Regular>
+              {format(entry.info.lastCommit.authorDate)}
+            </Text.Regular>
           </td>
         </tr>
       {/each}
     </tbody>
   </table>
-{:catch error}
-  <div>{error}</div>
 {/await}

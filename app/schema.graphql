@@ -59,7 +59,7 @@ type Query {
 
   # Commits browsing
   commits(projectId: ID!, Revision: String!): [Commit]!
-  commit(projectId: ID!, sha1: String!) Commit
+  commit(projectId: ID!, sha1: String!): Commit
 
   # Ref browsing
   branches(projectId: ID!): [Ref]!

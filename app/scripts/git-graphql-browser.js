@@ -5,25 +5,59 @@ import path from "path";
 
 const exec = util.promisify(require("child_process").exec);
 
+function anonymize(str) {
+  return str
+    .split("")
+    .reduce(
+      (prevHash, currVal) =>
+        ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0,
+      0
+    );
+}
+
 const typeDefs = `
+  scalar Datetime
+
+  type Person {
+    name: String
+    email: String
+    avatar: String
+  }
+
+  # git commit data.
+  type Commit {
+    sha1: String!
+    author: Person!
+    authorDate: Datetime!
+    subject: String!
+    body: String!
+    message: String!
+  }
+
   type Info {
-    mode: String!,
-    isDirectory: Boolean!,
-    lastCommit: String!,
-    size: Int!,
+    mode: String!
+    isDirectory: Boolean!
+    lastCommit: Commit
+    size: Int!
     name: String!
   }
 
-  type Entry {
-    path: String,
+  type TreeEntry {
+    path: String
     info: Info
   }
 
+  type BlobEntry {
+    content: String!
+    info: Info!
+  }
+
   type Query {
-    tree(projectId: String!, revision: String!, prefix: String!): [Entry]!
-    blob(projectId: String!, revision: String!, path: String!): String!
+    tree(projectId: String!, revision: String!, prefix: String!): [TreeEntry]!
+    blob(projectId: String!, revision: String!, path: String!): BlobEntry!
     branches(projectId: String!): [String]!
     tags(projectId: String!): [String]!
+    commit(projectId: String!, sha1: String!): Commit
   }
 `;
 
@@ -41,6 +75,43 @@ const log = message => {
   debug && console.log(message);
 };
 
+async function commit(projectId, sha1) {
+  log(`projectId: ${projectId}`);
+  log(`sha1: ${sha1}`);
+
+  const delimiter = "<<<<<<<<<<";
+
+  const command =
+    `git show --quiet --pretty=format:'` +
+    `%an${delimiter}` +
+    `%ae${delimiter}` +
+    `%aD${delimiter}` +
+    `%s${delimiter}` +
+    `%b' ${sha1}`;
+
+  log(`command: ${command}`);
+  const { stdout } = await exec(command, execOptions(projectId));
+
+  const [authorName, authorEmail, authorDate, subject, body] = stdout.split(
+    "<<<<<<<<<<"
+  );
+
+  return {
+    sha1: sha1,
+    author: {
+      name: authorName,
+      email: authorEmail,
+      avatar: `https://avatars.dicebear.com/v2/human/${anonymize(
+        authorName
+      )}.svg`
+    },
+    authorDate: authorDate,
+    subject: subject,
+    body: body,
+    message: subject + "\n\n" + body
+  };
+}
+
 async function tree(projectId, revision, prefix) {
   log(`projectId: ${projectId}`);
   log(`revision: ${revision}`);
@@ -51,17 +122,20 @@ async function tree(projectId, revision, prefix) {
 
   const { stdout } = await exec(command, execOptions(projectId));
 
-  return stdout
+  const listOfPromises = stdout
     .split("\n") // split into rows
     .filter(el => el !== "") // throw out empty rows
-    .map(row => {
-      const [
-        mode,
-        treeOrBlob,
-        lastCommit,
-        sizeOrDash,
-        nameWithPath
-      ] = row.split(/\s+/);
+    .map(async row => {
+      const [mode, treeOrBlob, objectSha, sizeOrDash, nameWithPath] = row.split(
+        /\s+/
+      );
+
+      const lastCommitInBranchSha1 = await lastCommitInBranch(
+        projectId,
+        nameWithPath,
+        objectSha
+      );
+      const lastCommit = await commit(projectId, lastCommitInBranchSha1);
 
       return {
         path: nameWithPath,
@@ -73,13 +147,16 @@ async function tree(projectId, revision, prefix) {
           name: nameWithPath.replace(prefix, "")
         }
       };
-    })
-    .sort(function(a, b) {
-      // sort directories first, then files alphabetically
-      if (a.info.isDirectory && !b.info.isDirectory) return -1;
-      if (!a.info.isDirectory && b.info.isDirectory) return 1;
-      if (a.info.toLowerCase > b.info.toLowerCase) return 1;
     });
+
+  const list = await Promise.all(listOfPromises);
+
+  return list.sort(function(a, b) {
+    // sort directories first, then files alphabetically
+    if (a.info.isDirectory && !b.info.isDirectory) return -1;
+    if (!a.info.isDirectory && b.info.isDirectory) return 1;
+    if (a.info.toLowerCase > b.info.toLowerCase) return 1;
+  });
 }
 
 async function blob(projectId, revision, path) {
@@ -87,15 +164,36 @@ async function blob(projectId, revision, path) {
   log(`revision: ${revision}`);
   log(`path: ${path}`);
 
-  const command = `git show ${revision}:${path}`;
-  log(`command: ${command}`);
-  const { stdout } = await exec(command, execOptions(projectId));
+  const blobCommand = `git show ${revision}:${path}`;
+  const { stdout: blob } = await exec(blobCommand, execOptions(projectId));
 
-  if (isBinary(null, stdout)) {
-    return "Binary content.";
-  } else {
-    return stdout;
-  }
+  const metadataCommand = `git ls-tree --long ${revision} ${path}`;
+  const { stdout: metadata } = await exec(
+    metadataCommand,
+    execOptions(projectId)
+  );
+
+  const [mode, objectType, sha1, size, filePath] = metadata.split(/\s+/);
+
+  const lastCommitInBranchSha1 = await lastCommitInBranch(
+    projectId,
+    path,
+    revision
+  );
+  const lastCommit = await commit(projectId, lastCommitInBranchSha1);
+
+  const blobEntry = {
+    content: isBinary(null, blob) ? "ఠ ͟ಠ Binary content." : blob,
+    info: {
+      mode: mode,
+      isDirectory: objectType === "tree",
+      lastCommit: lastCommit,
+      size: size,
+      name: path.split("/").slice(-1)[0]
+    }
+  };
+
+  return blobEntry;
 }
 
 async function branches(projectId) {
@@ -128,7 +226,8 @@ const resolvers = {
       tree(projectId, revision, prefix),
     blob: (_, { projectId, revision, path }) => blob(projectId, revision, path),
     branches: (_, { projectId }) => branches(projectId),
-    tags: (_, { projectId }) => tags(projectId)
+    tags: (_, { projectId }) => tags(projectId),
+    commit: (_, { projectId, sha1 }) => commit(projectId, sha1)
   }
 };
 
@@ -139,12 +238,12 @@ server.start(() => console.log("Server is running on http://localhost:4000"));
 
 // This helper usese `git rev-list <path>` to retrieve the last commit hash
 // which touched the given path (directory or file) for the branch given.
-async function lastCommitInBranch(path, branch) {
+async function lastCommitInBranch(projectId, path, branch) {
   const command = `git rev-list -n 1 HEAD --branches ${branch} -- "${path}"`;
   log(`command: ${command}`);
 
-  const { stdout } = await exec(command, execOptions("FIXME"));
+  const { stdout } = await exec(command, execOptions(projectId));
   log(stdout);
 
-  return stdout;
+  return stdout.trim();
 }
