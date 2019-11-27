@@ -42,19 +42,25 @@ const typeDefs = `
     name: String!
   }
 
-  type TreeEntry {
+  type Tree {
+    path: String
+    info: Info
+    leaves: [Leaf]!
+  }
+
+  type Leaf {
     path: String
     info: Info
   }
 
-  type BlobEntry {
+  type Blob {
     content: String!
     info: Info!
   }
 
   type Query {
-    tree(projectId: String!, revision: String!, prefix: String!): [TreeEntry]!
-    blob(projectId: String!, revision: String!, path: String!): BlobEntry!
+    tree(projectId: String!, revision: String!, prefix: String!): Tree!
+    blob(projectId: String!, revision: String!, path: String!): Blob!
     branches(projectId: String!): [String]!
     tags(projectId: String!): [String]!
     commit(projectId: String!, sha1: String!): Commit
@@ -151,12 +157,26 @@ async function tree(projectId, revision, prefix) {
 
   const list = await Promise.all(listOfPromises);
 
-  return list.sort(function(a, b) {
+  const sortedList = list.sort(function(a, b) {
     // sort directories first, then files alphabetically
     if (a.info.isDirectory && !b.info.isDirectory) return -1;
     if (!a.info.isDirectory && b.info.isDirectory) return 1;
     if (a.info.toLowerCase > b.info.toLowerCase) return 1;
   });
+
+  const lastCommitInBranchSha1 = await lastCommitInBranch(
+    projectId,
+    `./${prefix}`,
+    revision
+  );
+  const lastCommit = await commit(projectId, lastCommitInBranchSha1);
+
+  return {
+    info: {
+      lastCommit: lastCommit
+    },
+    leaves: sortedList
+  };
 }
 
 async function blob(projectId, revision, path) {

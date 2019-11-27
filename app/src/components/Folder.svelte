@@ -24,10 +24,12 @@
   const TREE = gql`
     query Query($projectId: String!, $revision: String!, $prefix: String!) {
       tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
-        path
-        info {
-          isDirectory
-          name
+        leaves {
+          path
+          info {
+            isDirectory
+            name
+          }
         }
       }
     }
@@ -100,7 +102,7 @@
     {/if}
 
     {#if expanded || firstEntry}
-      {#each result.data.tree as entry}
+      {#each result.data.tree.leaves as entry}
         {#if entry.info.isDirectory}
           <svelte:self
             prefix={entry.path + '/'}

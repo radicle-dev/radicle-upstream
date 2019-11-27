@@ -16,16 +16,29 @@
   const TREE = gql`
     query Query($projectId: String!, $revision: String!, $prefix: String!) {
       tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
-        path
         info {
-          isDirectory
-          name
           lastCommit {
             author {
               name
+              avatar
             }
-            subject
             authorDate
+            sha1
+            subject
+          }
+        }
+        leaves {
+          path
+          info {
+            isDirectory
+            name
+            lastCommit {
+              author {
+                name
+              }
+              subject
+              authorDate
+            }
           }
         }
       }
@@ -99,10 +112,10 @@
 
 {#await $sourceTree then result}
   <CommitTeaser
-    user={{ username: 'cloudhead', avatar: 'https://avatars2.githubusercontent.com/u/2326909?s=400&v=4' }}
-    commitMessage="Remove debugging statement"
-    commitSha="f4c7697"
-    timestamp="13 days ago"
+    user={{ username: result.data.tree.info.lastCommit.author.name, avatar: result.data.tree.info.lastCommit.author.avatar }}
+    commitMessage={result.data.tree.info.lastCommit.subject}
+    commitSha={result.data.tree.info.lastCommit.sha1.substring(0, 7)}
+    timestamp={format(result.data.tree.info.lastCommit.authorDate)}
     style="margin-bottom: 48px" />
 
   <table>
@@ -121,7 +134,7 @@
     </thead>
 
     <tbody>
-      {#each result.data.tree as entry}
+      {#each result.data.tree.leaves as entry}
         <tr>
           <td class="file-column">
             <a
