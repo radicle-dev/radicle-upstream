@@ -26,10 +26,9 @@ struct Account {
 }
 
 #[derive(Clone, GraphQLObject)]
-#[graphql(description = "Identifier for a project on the registry.")]
 pub struct ProjectId {
-    name: String,
-    domain: String,
+    pub name: String,
+    pub domain: String,
 }
 
 impl From<radicle_registry_client::ProjectId> for ProjectId {
@@ -44,9 +43,8 @@ impl From<radicle_registry_client::ProjectId> for ProjectId {
 impl Into<radicle_registry_client::ProjectId> for ProjectId {
     fn into(self) -> radicle_registry_client::ProjectId {
         (
-            ProjectName::from_string(self.name.to_string()).expect("project name creation failed"),
-            ProjectDomain::from_string(self.domain.to_string())
-                .expect("project domain creation faile"),
+            ProjectName::from_string(self.name).expect("project name creation failed"),
+            ProjectDomain::from_string(self.domain).expect("project domain creation faile"),
         )
     }
 }
@@ -80,7 +78,7 @@ impl From<radicle_registry_client::Project> for Project {
             .collect();
 
         Self {
-            id: p.id.into(),
+            id: p.id.clone().into(),
             name: p.id.0.to_string(),
             description: p.description,
             img_url: p.img_url,

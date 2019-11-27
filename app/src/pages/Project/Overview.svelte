@@ -8,7 +8,7 @@
   import { getClient, query } from "svelte-apollo";
 
   const GET_PROJECT = gql`
-    query Query($id: ProjectId!) {
+    query Query($id: IdInput!) {
       project(id: $id) {
         name
         description
@@ -21,16 +21,17 @@
     }
   `;
 
+  const id = { name: params.name, domain: params.domain };
   const client = getClient();
   const project = query(client, {
     query: GET_PROJECT,
-    variables: { id: params.id }
+    variables: { id }
   });
 </script>
 
 <Layout>
   <div slot="nestedSidebar">
-    <ProjectSidebar projectId={params.id} />
+    <ProjectSidebar projectId={id} />
   </div>
 
   {#await $project}

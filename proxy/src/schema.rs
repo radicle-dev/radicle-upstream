@@ -29,6 +29,21 @@ impl Context {
 
 impl juniper::Context for Context {}
 
+#[derive(GraphQLInputObject)]
+struct IdInput {
+    name: String,
+    domain: String,
+}
+
+impl Into<ProjectId> for IdInput {
+    fn into(self) -> ProjectId {
+        ProjectId {
+            name: self.name,
+            domain: self.domain,
+        }
+    }
+}
+
 /// Encapsulates read paths in API.
 pub struct Query;
 
@@ -42,8 +57,8 @@ impl Query {
         Ok(ctx.source.get_all_projects())
     }
 
-    fn project(ctx: &Context, id: ProjectId) -> FieldResult<Option<Project>> {
-        Ok(ctx.source.get_project(id))
+    fn project(ctx: &Context, id: IdInput) -> FieldResult<Option<Project>> {
+        Ok(ctx.source.get_project(id.into()))
     }
 }
 

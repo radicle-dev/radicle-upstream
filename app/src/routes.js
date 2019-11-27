@@ -38,50 +38,50 @@ const Projects = {
 
 const ProjectOverview = {
   title: "Overview",
-  route: { "/projects/:id/overview": ProjectOverviewPage },
-  path: id => `/projects/${id}/overview`,
+  route: { "/projects/:domain/:name/overview": ProjectOverviewPage },
+  path: id => `/projects/${id.domain}/${id.name}/overview`,
   icon: Icon.Home
 };
 
 const ProjectFeed = {
   title: "Feed",
-  route: { "/projects/:id/feed": ProjectFeedPage },
-  path: id => `/projects/${id}/feed`,
+  route: { "/projects/:domain/:name/feed": ProjectFeedPage },
+  path: id => `/projects/${id.domain}/${id.name}/feed`,
   icon: Icon.Feed
 };
 
 const ProjectMembers = {
   title: "Members",
-  route: { "/projects/:id/members": ProjectMembersPage },
-  path: id => `/projects/${id}/members`,
+  route: { "/projects/:domain/:name/members": ProjectMembersPage },
+  path: id => `/projects/${id.domain}/${id.name}/members`,
   icon: Icon.Member
 };
 
 const ProjectFunds = {
   title: "Funds",
-  route: { "/projects/:id/funds": ProjectFundsPage },
-  path: id => `/projects/${id}/funds`,
+  route: { "/projects/:domain/:name/funds": ProjectFundsPage },
+  path: id => `/projects/${id.domain}/${id.name}/funds`,
   icon: Icon.Fund
 };
 
 const ProjectSource = {
   title: "Source",
-  route: { "/projects/:id/source": ProjectSourcePage },
-  path: id => `/projects/${id}/source`,
+  route: { "/projects/:domain/:name/source": ProjectSourcePage },
+  path: id => `/projects/${id.domain}/${id.name}/source`,
   icon: Icon.Source
 };
 
 const ProjectCommits = {
   title: "Commits",
-  route: { "/projects/:id/commits": ProjectCommitsPage },
-  path: id => `/projects/${id}/commits`,
+  route: { "/projects/:domain/:name/commits": ProjectCommitsPage },
+  path: id => `/projects/${id.domain}/${id.name}/commits`,
   icon: Icon.Commit
 };
 
 const ProjectBranches = {
   title: "Branches",
-  route: { "/projects/:id/branches": ProjectBranchesPage },
-  path: id => `/projects/${id}/branches`,
+  route: { "/projects/:domain/:name/branches": ProjectBranchesPage },
+  path: id => `/projects/${id.domain}/${id.name}/branches`,
   icon: Icon.Branch
 };
 

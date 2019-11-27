@@ -2,12 +2,13 @@
   import Layout from "../../components/Layout.svelte";
   import ProjectSidebar from "../../components/ProjectSidebar.svelte";
 
-  export let params = {};
+  export let params = { name: "", domain: "" };
+  let id = { name: params.name, domain: params.domain };
 </script>
 
 <Layout>
   <div slot="nestedSidebar">
-    <ProjectSidebar projectId={params.id} />
+    <ProjectSidebar projectId={id} />
   </div>
   Funds
 </Layout>
