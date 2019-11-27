@@ -1,42 +1,46 @@
 scalar Datetime
 
-type Author {
+type Person {
   name: String
   email: String
+  avatar: String
 }
 
 # git commit data.
 type Commit {
   sha1: String!
-  author: Author!
-  date: Datetime!
-  message: String!
-  refs: [Ref]
-  objectName: ObjectName!
+  author: Person!        # the author of the code in the commit
+  authorDate: Datetime!  # when commit was authored
+  committer: Person!     # person who committed (or merged) the code (low-prio)
+  commitDate: Datetime!  # when commit or merge happened (low-prio)
+  subject: String!
+  body: String!          # commit message body (low-prio)
+  message: String!       # full commit message: subject + body (low-prio)
 }
 
 # file info and metadata.
 type Info {
-  # base name of the file.
-  name: String!
-  # length in bytes.
-  size: Int!
-  # if it's a directory.
-  isDirectory: Boolean!
-  # any flags git stores, currently only executable.
-  flags: [Int]!
-  # last commit which affected this path.
-  lastcommit: Commit!
+  name: String!          # base name of the file
+  size: Int!             # length in bytes (low-prio)
+  isDirectory: Boolean!  # if it's a directory
+  flags: [Int]!          # any flags git stores, currently only executable (low-prio)
+  lastcommit: Commit!    # last commit which affected this path
 }
 
-type BlobEntry {
+type Blob {
   content: String!
   info: Info!
 }
 
-type TreeEntry {
-  path: String!
-  info: Info!
+type Tree {
+  path: String
+  info: Info
+  leaves: [Leaf!]!
+}
+
+type Leaf {
+  path: String
+  info: Info
 }
 
 # Representation of a refname. Special refs like HEAD are omitted on purpose as
@@ -54,8 +58,8 @@ type Ref = {
 
 type Query {
   # Source browsing.
-  blob(projectId: ID!, revision: String!, path: String!): BlobEntry
-  tree(projectId: ID!, revision: String!, prefix: String!): [TreeEntry!]!
+  blob(projectId: ID!, revision: String!, path: String!): Blob!
+  tree(projectId: ID!, revision: String!, prefix: String!): Tree!
 
   # Commits browsing
   commits(projectId: ID!, Revision: String!): [Commit]!

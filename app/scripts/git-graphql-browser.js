@@ -35,17 +35,17 @@ const typeDefs = `
   }
 
   type Info {
-    mode: String!
-    isDirectory: Boolean!
-    lastCommit: Commit
-    size: Int!
     name: String!
+    size: Int!
+    isDirectory: Boolean!
+    mode: String!
+    lastCommit: Commit!
   }
 
   type Tree {
     path: String
     info: Info
-    leaves: [Leaf]!
+    leaves: [Leaf!]!
   }
 
   type Leaf {
@@ -59,11 +59,13 @@ const typeDefs = `
   }
 
   type Query {
-    tree(projectId: String!, revision: String!, prefix: String!): Tree!
     blob(projectId: String!, revision: String!, path: String!): Blob!
+    tree(projectId: String!, revision: String!, prefix: String!): Tree!
+
+    commit(projectId: String!, sha1: String!): Commit
+
     branches(projectId: String!): [String]!
     tags(projectId: String!): [String]!
-    commit(projectId: String!, sha1: String!): Commit
   }
 `;
 
