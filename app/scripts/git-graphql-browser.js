@@ -24,7 +24,6 @@ const typeDefs = `
     avatar: String
   }
 
-  # git commit data.
   type Commit {
     sha1: String!
     author: Person!
@@ -42,6 +41,11 @@ const typeDefs = `
     lastCommit: Commit!
   }
 
+  type Blob {
+    content: String!
+    info: Info!
+  }
+
   type Tree {
     path: String
     info: Info
@@ -51,11 +55,6 @@ const typeDefs = `
   type TreeEntry {
     path: String
     info: Info
-  }
-
-  type Blob {
-    content: String!
-    info: Info!
   }
 
   type Query {
@@ -125,6 +124,13 @@ async function tree(projectId, revision, prefix) {
   log(`revision: ${revision}`);
   log(`prefix: ${prefix}`);
 
+  // strip any leading /
+  prefix = prefix.replace(/^\//, "");
+  // add trailing / if none is present
+  if (!prefix.match(/\/$/)) {
+    prefix = prefix + "/";
+  }
+
   const command = `git ls-tree --long ${revision} ./${prefix}`;
   log(`command: ${command}`);
 
@@ -151,7 +157,7 @@ async function tree(projectId, revision, prefix) {
           mode: mode,
           isDirectory: treeOrBlob === "tree",
           lastCommit: lastCommit,
-          size: sizeOrDash === "-" ? 0 : parseInt(sizeOrDash),
+          size: sizeOrDash === "-" ? -1 : parseInt(sizeOrDash),
           name: nameWithPath.replace(prefix, "")
         }
       };
@@ -174,8 +180,13 @@ async function tree(projectId, revision, prefix) {
   const lastCommit = await commit(projectId, lastCommitInBranchSha1);
 
   return {
+    path: prefix,
     info: {
-      lastCommit: lastCommit
+      lastCommit: lastCommit,
+      name: prefix.split("/").slice(-1)[0],
+      size: -1,
+      mode: "TODO",
+      isDirectory: true
     },
     entries: sortedList
   };

@@ -11,7 +11,7 @@
   import * as path from "../path.js";
 
   const projectId = getContext("projectId");
-  export let prefix = "/";
+  export let prefix = ""; // start sidebar tree from repository root
   export let name = null;
 
   export let expanded = false;

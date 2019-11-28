@@ -34,11 +34,20 @@ type Blob {
 
 type Tree {
   path: String
+
+  # Metadata for the path itself, for now we just use lastCommit to populate
+  # the commit teaser for each folder listing.
   info: Info
+
+  # We expect the results to be grouped by object type (folders first,
+  # then files) and sorted lexicographically in descending order.
   entries: [TreeEntry!]!
 }
 
 type TreeEntry {
+  # The format of the returned path is equal for both files and folders:
+  #   app/README.md
+  #   app/cypress/integration
   path: String
   info: Info
 }
@@ -58,6 +67,17 @@ type Ref = {
 
 type Query {
   # Source browsing.
+
+  # Both "path" for files and "prefix" for folders are relative to the
+  # repository root and don't contain a leading or trailing "/". To query for
+  # the root of a repository use an empty string "".
+  #
+  # A couple of valid examples:
+  #   app/README.md
+  #   app/native/main.js
+  #   app/native
+  #   app/cypress/plugins
+
   blob(projectId: ID!, revision: String!, path: String!): Blob!
   tree(projectId: ID!, revision: String!, prefix: String!): Tree!
 
