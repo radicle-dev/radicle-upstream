@@ -35,10 +35,10 @@ type Blob {
 type Tree {
   path: String
   info: Info
-  leaves: [Leaf!]!
+  entries: [TreeEntry!]!
 }
 
-type Leaf {
+type TreeEntry {
   path: String
   info: Info
 }

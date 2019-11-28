@@ -45,10 +45,10 @@ const typeDefs = `
   type Tree {
     path: String
     info: Info
-    leaves: [Leaf!]!
+    entries: [TreeEntry!]!
   }
 
-  type Leaf {
+  type TreeEntry {
     path: String
     info: Info
   }
@@ -177,7 +177,7 @@ async function tree(projectId, revision, prefix) {
     info: {
       lastCommit: lastCommit
     },
-    leaves: sortedList
+    entries: sortedList
   };
 }
 

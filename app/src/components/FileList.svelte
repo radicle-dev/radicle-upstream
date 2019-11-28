@@ -27,7 +27,7 @@
             subject
           }
         }
-        leaves {
+        entries {
           path
           info {
             isDirectory
@@ -134,7 +134,7 @@
     </thead>
 
     <tbody>
-      {#each result.data.tree.leaves as entry}
+      {#each result.data.tree.entries as entry}
         <tr>
           <td class="file-column">
             <a
