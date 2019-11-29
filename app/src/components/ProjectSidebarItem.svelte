@@ -1,9 +1,11 @@
 <script>
-  import { Text, Title } from "../DesignSystem";
-  import { location, link } from "svelte-spa-router";
+  import { Icon, Text, Title } from "../DesignSystem";
+  import { link } from "svelte-spa-router";
 
-  export let projectId;
-  export let page;
+  export let href = null;
+  export let icon = null;
+  export let title = null;
+  export let active = null;
 </script>
 
 <style>
@@ -17,22 +19,24 @@
   }
 </style>
 
-<a href={page.path(projectId)} use:link>
-  {#if $location.endsWith(page.title.toLowerCase())}
+<a {href} use:link>
+  {#if active}
     <div class="icon">
-      <svelte:component this={page.icon} style="fill: var(--color-purple)" />
+      <svelte:component this={icon} style="fill: var(--color-purple)" />
     </div>
 
     <Title.Regular style="color: var(--color-purple); line-height: 24px">
-      {page.title}
+      {title}
     </Title.Regular>
   {:else}
     <div class="icon">
-      <svelte:component this={page.icon} />
+      <svelte:component this={icon} />
     </div>
 
-    <Text.Regular style="color: var(--color-darkgray)">
-      {page.title}
-    </Text.Regular>
+    <Text.Regular style="color: var(--color-darkgray)">{title}</Text.Regular>
   {/if}
 </a>
+
+{#if active}
+  <slot />
+{/if}

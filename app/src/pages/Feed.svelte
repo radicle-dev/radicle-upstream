@@ -1,6 +1,6 @@
 <script>
   import { Header, Title } from "../DesignSystem";
-  import Layout from "../components/Layout.svelte";
+  import Layout from "./Layout.svelte";
 </script>
 
 <Layout>

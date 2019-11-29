@@ -1,7 +1,7 @@
 <script>
   import { Button, Header, Icon, Title } from "../DesignSystem";
   import Projects from "../components/Projects.svelte";
-  import Layout from "../components/Layout.svelte";
+  import Layout from "./Layout.svelte";
 </script>
 
 <Layout>

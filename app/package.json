@@ -27,7 +27,9 @@
     "cypress": "^3.5.0",
     "electron": "^6.0.12",
     "electron-builder": "^21.2.0",
+    "graphql-schema-linter": "^0.2.2",
     "husky": ">=1",
+    "istextorbinary": "^3.0.0",
     "lint-staged": "^10.0.0-0",
     "npm-run-all": "^4.1.5",
     "patch-package": "^6.2.0",
@@ -41,12 +43,12 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-svelte": "^5.0.3",
     "rollup-plugin-terser": "^4.0.4",
-    "svelte": "^3.0.0",
+    "svelte": "^3.15.0",
     "svelte-spa-router": "^1.2.1",
     "wait-on": "^3.3.0"
   },
   "scripts": {
-    "start": "run-p --race svelte:watch proxy:start electron:start",
+    "start": "run-p --race svelte:watch fake:radicle:start proxy:start electron:start",
     "test": "yarn svelte:build && yarn cypress:run",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build && cp ../proxy/target/release/proxy dist && electron-builder",
     "ci:test": "wait-on http://localhost:8080 && yarn test",
@@ -60,12 +62,15 @@
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
     "postinstall": "patch-package",
-    "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js"
+    "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js",
+    "fake:radicle:start": "babel-node --presets \"@babel/env\" scripts/git-graphql-browser.js"
   },
   "dependencies": {
     "apollo-boost": "^0.4.4",
     "graphql": "^14.5.8",
-    "svelte-apollo": "^0.3.0"
+    "graphql-yoga": "^1.18.3",
+    "svelte-apollo": "^0.3.0",
+    "timeago.js": "^4.0.1"
   },
   "husky": {
     "hooks": {

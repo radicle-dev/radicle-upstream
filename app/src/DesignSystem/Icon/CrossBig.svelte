@@ -1,4 +1,9 @@
+<script>
+  export let style = null;
+</script>
+
 <svg
+  {style}
   width="34"
   height="34"
   viewBox="0 0 34 34"

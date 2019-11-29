@@ -1,13 +1,9 @@
 <script>
-  import Layout from "../../components/Layout.svelte";
-  import ProjectSidebar from "../../components/ProjectSidebar.svelte";
-
-  export let params = {};
+  import { Header, Title } from "../../DesignSystem";
 </script>
 
-<Layout>
-  <div slot="nestedSidebar">
-    <ProjectSidebar projectId={params.id} />
+<Header>
+  <div slot="left">
+    <Title.Big>Branches</Title.Big>
   </div>
-  Branches
-</Layout>
+</Header>

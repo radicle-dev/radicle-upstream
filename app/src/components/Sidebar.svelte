@@ -1,21 +1,14 @@
 <script>
+  import { location } from "svelte-spa-router";
   import { Icon } from "../DesignSystem";
   import SidebarItem from "./SidebarItem.svelte";
   import SidebarAvatar from "./SidebarAvatar.svelte";
-
-  import {
-    Search,
-    Feed,
-    Projects,
-    DesignSystem,
-    Wallet,
-    Profile
-  } from "../routes";
+  import * as path from "../path.js";
 </script>
 
 <style>
   div {
-    width: 68px;
+    width: var(--slim-sidebar-width);
     height: 100%;
     background-color: #eeeeef;
     display: flex;
@@ -61,13 +54,25 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem page={Search} />
+        <SidebarItem
+          icon={Icon.Search}
+          title="Search"
+          href={path.search()}
+          active={path.active(path.search(), $location)} />
       </li>
       <li>
-        <SidebarItem page={Feed} />
+        <SidebarItem
+          icon={Icon.Feed}
+          title="Feed"
+          href={path.feed()}
+          active={path.active(path.feed(), $location)} />
       </li>
       <li>
-        <SidebarItem page={Projects} />
+        <SidebarItem
+          icon={Icon.Projects}
+          title="Projects"
+          href={path.projects()}
+          active={path.active(path.projects(), $location)} />
       </li>
     </ul>
   </nav>
@@ -75,13 +80,25 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem page={DesignSystem} />
+        <SidebarItem
+          icon={Icon.Plus}
+          title="Create new project"
+          href={path.designSystem()}
+          active={path.active(path.designSystem(), $location)} />
       </li>
       <li>
-        <SidebarItem page={Wallet} />
+        <SidebarItem
+          icon={Icon.Fund}
+          title="Fund"
+          href={path.wallet()}
+          active={path.active(path.wallet(), $location)} />
       </li>
       <li>
-        <SidebarAvatar page={Profile} />
+        <SidebarAvatar
+          image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
+          title="Profile"
+          href={path.profile()}
+          active={path.active(path.profile(), $location)} />
       </li>
     </ul>
   </nav>
