@@ -2,6 +2,7 @@
   import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
+  import { TREE } from "../types.js";
 
   import { format } from "timeago.js";
 
@@ -13,7 +14,7 @@
   import CommitTeaser from "./CommitTeaser.svelte";
   import { link } from "svelte-spa-router";
 
-  const TREE = gql`
+  const QUERY = gql`
     query Query($projectId: String!, $revision: String!, $prefix: String!) {
       tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
         info {
@@ -30,7 +31,7 @@
         entries {
           path
           info {
-            isDirectory
+            objectType
             name
             lastCommit {
               author {
@@ -52,7 +53,7 @@
   const projectId = getContext("projectId");
 
   $: sourceTree = query(client, {
-    query: TREE,
+    query: QUERY,
     variables: {
       projectId: projectId,
       revision: $revision,
@@ -141,11 +142,12 @@
               href={path.projectSource({
                 id: projectId,
                 revision: $revision,
-                objectType: entry.info.isDirectory ? 'tree' : 'blob',
-                path: entry.info.isDirectory ? entry.path + '/' : entry.path
+                objectType: entry.info.objectType,
+                path:
+                  entry.info.objectType === TREE ? entry.path + '/' : entry.path
               })}
               use:link>
-              {#if entry.info.isDirectory}
+              {#if entry.info.objectType === TREE}
                 <Icon.Folder />
               {:else}
                 <Icon.File />

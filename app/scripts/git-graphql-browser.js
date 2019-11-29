@@ -18,6 +18,11 @@ function anonymize(str) {
 const typeDefs = `
   scalar Datetime
 
+  enum ObjectType {
+    TREE
+    BLOB
+  }
+
   type Person {
     name: String
     email: String
@@ -36,7 +41,7 @@ const typeDefs = `
   type Info {
     name: String!
     size: Int!
-    isDirectory: Boolean!
+    objectType: ObjectType!
     mode: String!
     lastCommit: Commit!
   }
@@ -140,7 +145,7 @@ async function tree(projectId, revision, prefix) {
     .split("\n") // split into rows
     .filter(el => el !== "") // throw out empty rows
     .map(async row => {
-      const [mode, treeOrBlob, objectSha, sizeOrDash, nameWithPath] = row.split(
+      const [mode, objectType, objectSha, sizeOrDash, nameWithPath] = row.split(
         /\s+/
       );
 
@@ -155,7 +160,7 @@ async function tree(projectId, revision, prefix) {
         path: nameWithPath,
         info: {
           mode: mode,
-          isDirectory: treeOrBlob === "tree",
+          objectType: objectType.toUpperCase(),
           lastCommit: lastCommit,
           size: sizeOrDash === "-" ? -1 : parseInt(sizeOrDash),
           name: nameWithPath.replace(prefix, "")
@@ -167,8 +172,8 @@ async function tree(projectId, revision, prefix) {
 
   const sortedList = list.sort(function(a, b) {
     // sort directories first, then files alphabetically
-    if (a.info.isDirectory && !b.info.isDirectory) return -1;
-    if (!a.info.isDirectory && b.info.isDirectory) return 1;
+    if (a.info.objectType === "TREE" && b.info.objectType === "BLOB") return -1;
+    if (a.info.objectType === "BLOB" && b.info.objectType === "TREE") return 1;
     if (a.info.toLowerCase > b.info.toLowerCase) return 1;
   });
 
@@ -186,7 +191,7 @@ async function tree(projectId, revision, prefix) {
       name: prefix.split("/").slice(-1)[0],
       size: -1,
       mode: "TODO",
-      isDirectory: true
+      objectType: "TREE"
     },
     entries: sortedList
   };
@@ -219,7 +224,7 @@ async function blob(projectId, revision, path) {
     content: isBinary(null, blob) ? "ఠ ͟ಠ Binary content." : blob,
     info: {
       mode: mode,
-      isDirectory: objectType === "tree",
+      objectType: objectType.toUpperCase(),
       lastCommit: lastCommit,
       size: size,
       name: path.split("/").slice(-1)[0]

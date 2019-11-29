@@ -2,6 +2,7 @@
   import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
   import { query } from "svelte-apollo";
+  import { TREE } from "../types.js";
 
   import { getContext } from "svelte";
   import { link } from "svelte-spa-router";
@@ -21,13 +22,13 @@
     uri: "http://127.0.0.1:4000"
   });
 
-  const TREE = gql`
+  const QUERY = gql`
     query Query($projectId: String!, $revision: String!, $prefix: String!) {
       tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
         entries {
           path
           info {
-            isDirectory
+            objectType
             name
           }
         }
@@ -36,7 +37,7 @@
   `;
 
   $: sourceTree = query(client, {
-    query: TREE,
+    query: QUERY,
     variables: { projectId: projectId, revision: $revision, prefix: prefix }
   });
 
@@ -92,7 +93,7 @@
           href={path.projectSource({
             id: projectId,
             revision: $revision,
-            objectType: 'tree',
+            objectType: TREE,
             path: prefix
           })}
           use:link>
@@ -103,7 +104,7 @@
 
     {#if expanded || firstEntry}
       {#each result.data.tree.entries as entry}
-        {#if entry.info.isDirectory}
+        {#if entry.info.objectType === TREE}
           <svelte:self
             prefix={entry.path + '/'}
             name={entry.info.name}

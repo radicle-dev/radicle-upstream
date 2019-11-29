@@ -1,6 +1,7 @@
 <script>
   import { getContext } from "svelte";
   import { revision, objectPath } from "../stores.js";
+  import { BLOB } from "../types.js";
 
   import { Icon, Title, Text } from "../DesignSystem";
   import { link } from "svelte-spa-router";
@@ -45,7 +46,7 @@
     href={path.projectSource({
       id: getContext('projectId'),
       revision: $revision,
-      objectType: 'blob',
+      objectType: BLOB,
       path: filePath
     })}
     use:link>

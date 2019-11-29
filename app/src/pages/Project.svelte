@@ -2,6 +2,7 @@
   import { setContext } from "svelte";
   import { revision, objectPath, objectType } from "../stores.js";
   import { DEFAULT_PROJECT_REVISION } from "../config.js";
+  import { BLOB, TREE } from "../types.js";
 
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
@@ -57,7 +58,7 @@
     variables: { id: params.id }
   });
 
-  const PATH_MATCH = /\/source\/(.*)\/(blob|tree)(.*)/;
+  const PATH_MATCH = new RegExp(`/source/(.*)/(${BLOB}|${TREE})(.*)`);
 
   $: rev = $location.match(PATH_MATCH);
   $: rev = rev === null ? DEFAULT_PROJECT_REVISION : rev[1];
@@ -68,7 +69,7 @@
   $: objectPath.set(path);
 
   $: type = $location.match(PATH_MATCH);
-  $: type = type === null ? "tree" : type[2];
+  $: type = type === null ? TREE : type[2];
   $: objectType.set(type);
 </script>
 
