@@ -1,8 +1,7 @@
 <script>
   import { setContext } from "svelte";
   import { revision, objectPath, objectType } from "../stores.js";
-  import { DEFAULT_PROJECT_REVISION } from "../config.js";
-  import { BLOB, TREE } from "../types.js";
+  import * as path from "../path.js";
 
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
@@ -58,19 +57,9 @@
     variables: { id: params.id }
   });
 
-  const PATH_MATCH = new RegExp(`/source/(.*)/(${BLOB}|${TREE})/(.*)`);
-
-  $: rev = $location.match(PATH_MATCH);
-  $: rev = rev === null ? DEFAULT_PROJECT_REVISION : rev[1];
-  $: revision.set(rev);
-
-  $: path = $location.match(PATH_MATCH);
-  $: path = path === null ? "/" : path[3];
-  $: objectPath.set(path);
-
-  $: type = $location.match(PATH_MATCH);
-  $: type = type === null ? TREE : type[2];
-  $: objectType.set(type);
+  $: revision.set(path.extractProjectSourceRevision($location));
+  $: objectPath.set(path.extractProjectSourceObjectPath($location));
+  $: objectType.set(path.extractProjectSourceObjectType($location));
 </script>
 
 <style>
