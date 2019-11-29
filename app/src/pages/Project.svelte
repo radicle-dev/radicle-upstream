@@ -58,7 +58,7 @@
     variables: { id: params.id }
   });
 
-  const PATH_MATCH = new RegExp(`/source/(.*)/(${BLOB}|${TREE})(.*)`);
+  const PATH_MATCH = new RegExp(`/source/(.*)/(${BLOB}|${TREE})/(.*)`);
 
   $: rev = $location.match(PATH_MATCH);
   $: rev = rev === null ? DEFAULT_PROJECT_REVISION : rev[1];
