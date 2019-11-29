@@ -10,7 +10,7 @@
   import * as path from "../path.js";
 
   import { Caption, Icon, Text } from "../DesignSystem";
-  import CommitTeaser from "../components/CommitTeaser.svelte";
+  import CommitTeaser from "./CommitTeaser.svelte";
   import { link } from "svelte-spa-router";
 
   const TREE = gql`

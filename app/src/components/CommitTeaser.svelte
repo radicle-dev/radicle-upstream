@@ -1,5 +1,5 @@
 <script>
-  import UserCard from "../components/UserCard.svelte";
+  import UserCard from "./UserCard.svelte";
   import { link } from "svelte-spa-router";
   import { Text } from "../DesignSystem";
 

@@ -9,7 +9,7 @@
   import { revision, objectPath } from "../stores.js";
 
   import { Icon } from "../DesignSystem";
-  import CommitTeaser from "../components/CommitTeaser.svelte";
+  import CommitTeaser from "./CommitTeaser.svelte";
 
   const client = new ApolloClient({
     uri: "http://127.0.0.1:4000"
