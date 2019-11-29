@@ -34,6 +34,7 @@
     height: 36px;
     outline-style: none;
     padding: 0 16px 0 16px;
+    border-radius: 2px;
   }
 
   .icon {

@@ -1,29 +1,21 @@
 <script>
-  import { Icon, Text } from "../DesignSystem";
+  import { getContext } from "svelte";
+  import { location } from "svelte-spa-router";
+  import * as path from "../path.js";
+  import { Icon } from "../DesignSystem";
   import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
-  import { link, location } from "svelte-spa-router";
+  import Folder from "./Folder.svelte";
 
-  import {
-    ProjectOverview,
-    ProjectFeed,
-    ProjectMembers,
-    ProjectFunds,
-    ProjectSource,
-    ProjectCommits,
-    ProjectBranches
-  } from "../routes.js";
-
-  export let projectId = null;
+  const projectId = getContext("projectId");
 </script>
 
 <style>
   nav {
-    width: 250px;
+    width: var(--project-sidebar-width);
     height: 100%;
     background-color: var(--color-almostwhite);
     display: flex;
     position: fixed;
-    left: 68px;
     flex-direction: column;
     justify-content: space-between;
     padding: 44px 20px 0 24px;
@@ -38,39 +30,81 @@
     color: var(--color-purple) !important;
   }
 
-  nav :global(li:hover svg) {
+  nav :global(li:hover .icon svg) {
     fill: var(--color-purple);
+  }
+  .source-tree {
+    margin-top: 8px;
   }
 </style>
 
 <nav>
   <ul>
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectOverview} />
+      <ProjectSidebarItem
+        icon={Icon.Home}
+        title="Overview"
+        href={path.projectOverview(projectId.domain, projectId.name)}
+        active={path.active(path.projectOverview(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectFeed} />
+      <ProjectSidebarItem
+        icon={Icon.Feed}
+        title="Feed"
+        href={path.projectFeed(projectId.domain, projectId.name)}
+        active={path.active(path.projectFeed(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectMembers} />
+      <ProjectSidebarItem
+        icon={Icon.Member}
+        title="Members"
+        href={path.projectMembers(projectId.domain, projectId.name)}
+        active={path.active(path.projectMembers({
+            id: projectId
+          }), $location)} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectFunds} />
+      <ProjectSidebarItem
+        icon={Icon.Fund}
+        title="Fund"
+        href={path.projectFunds(projectId.domain, projectId.name)}
+        active={path.active(path.projectFunds(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectSource} />
+      <ProjectSidebarItem
+        icon={Icon.Source}
+        title="Source"
+        href={path.projectSource(projectId.domain, projectId.name)}
+        active={path.active(path.projectSource(projectId.domain, projectId.name), $location, true)}>
+
+        <div class="source-tree">
+          <Folder />
+        </div>
+      </ProjectSidebarItem>
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectCommits} />
+      <ProjectSidebarItem
+        icon={Icon.Commit}
+        title="Commits"
+        href={path.projectCommits(projectId.domain, projectId.name)}
+        active={path.active(path.projectCommits({
+            id: projectId
+          }), $location)} />
     </li>
 
     <li>
-      <ProjectSidebarItem {projectId} page={ProjectBranches} />
+      <ProjectSidebarItem
+        icon={Icon.Branch}
+        title="Branches"
+        href={path.projectBranches(projectId.domain, projectId.name)}
+        active={path.active(path.projectBranches({
+            id: projectId
+          }), $location)} />
     </li>
   </ul>
 </nav>

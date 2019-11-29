@@ -1,9 +1,12 @@
 <script>
-  import { Icon, Title } from "../DesignSystem";
+  import { Title } from "../DesignSystem";
   import SidebarTooltip from "./SidebarTooltip.svelte";
-  import { link, location } from "svelte-spa-router";
+  import { link } from "svelte-spa-router";
 
-  export let page = {};
+  export let icon = null;
+  export let title = null;
+  export let href = null;
+  export let active = null;
 </script>
 
 <style>
@@ -12,13 +15,10 @@
   }
 </style>
 
-<a
-  href={page.path()}
-  use:link
-  class={$location.startsWith(page.path()) ? 'active' : ''}>
-  <svelte:component this={page.icon} />
+<a {href} use:link class:active>
+  <svelte:component this={icon} />
 </a>
 
 <SidebarTooltip>
-  <Title.Regular style="white-space: nowrap;">{page.title}</Title.Regular>
+  <Title.Regular style="white-space: nowrap;">{title}</Title.Regular>
 </SidebarTooltip>

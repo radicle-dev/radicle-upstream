@@ -1,14 +1,17 @@
 <script>
-  import Layout from "../../components/Layout.svelte";
-  import ProjectSidebar from "../../components/ProjectSidebar.svelte";
+  import { objectType } from "../../stores.js";
+  import { BLOB } from "../../types.js";
+  import FileSource from "../../components/FileSource.svelte";
+  import FileList from "../../components/FileList.svelte";
+  import RevisionSelector from "../../components/RevisionSelector.svelte";
 
-  export let params = { name: "", domain: "" };
-  let id = { name: params.name, domain: params.domain };
+  console.log($objectType);
 </script>
 
-<Layout>
-  <div slot="nestedSidebar">
-    <ProjectSidebar projectId={id} />
-  </div>
-  Source
-</Layout>
+<RevisionSelector />
+
+{#if $objectType === BLOB}
+  <FileSource />
+{:else}
+  <FileList />
+{/if}

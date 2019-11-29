@@ -6,5 +6,6 @@ import Input from "./Input.svelte";
 import Numeric from "./Numeric";
 import Text from "./Text";
 import Title from "./Title";
+import Select from "./Select.svelte";
 
-export { Button, Caption, Header, Icon, Input, Numeric, Text, Title };
+export { Button, Caption, Header, Icon, Input, Numeric, Text, Title, Select };

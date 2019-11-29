@@ -1,15 +1,14 @@
 <script>
-  import Layout from "../../components/Layout.svelte";
-  import ProjectSidebar from "../../components/ProjectSidebar.svelte";
+  import { getContext } from "svelte";
 
-  export let params = {};
+  import { Header, Title } from "../../DesignSystem";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
 
   const GET_PROJECT = gql`
     query Query($id: IdInput!) {
-      project(id: $id) {
+      project(id: $projectId) {
         name
         description
         imgUrl
@@ -21,25 +20,24 @@
     }
   `;
 
-  const id = { name: params.name, domain: params.domain };
   const client = getClient();
   const project = query(client, {
     query: GET_PROJECT,
-    variables: { id }
+    variables: { projectId: getContext("projectId") }
   });
 </script>
 
-<Layout>
-  <div slot="nestedSidebar">
-    <ProjectSidebar projectId={id} />
+<Header>
+  <div slot="left">
+    <Title.Big>Overview</Title.Big>
   </div>
+</Header>
 
-  {#await $project}
-    <h1>Loading project...</h1>
-  {:then result}
-    <h1>{result.data.project.name}</h1>
-    <p>{result.data.project.description}</p>
-  {:catch error}
-    <p>ERROR: {error}</p>
-  {/await}
-</Layout>
+{#await $project}
+  <h1>Loading project...</h1>
+{:then result}
+  <h1>{result.data.project.name}</h1>
+  <p>{result.data.project.description}</p>
+{:catch error}
+  <p>ERROR: {error}</p>
+{/await}
