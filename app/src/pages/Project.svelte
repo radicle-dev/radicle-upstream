@@ -1,6 +1,7 @@
 <script>
   import { setContext } from "svelte";
   import { revision, objectPath, objectType } from "../stores.js";
+  import { DEFAULT_PROJECT_REVISION } from "../config.js";
 
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
@@ -59,7 +60,7 @@
   const PATH_MATCH = /\/source\/(.*)\/(blob|tree)(.*)/;
 
   $: rev = $location.match(PATH_MATCH);
-  $: rev = rev === null ? "refs/heads/master" : rev[1];
+  $: rev = rev === null ? DEFAULT_PROJECT_REVISION : rev[1];
   $: revision.set(rev);
 
   $: path = $location.match(PATH_MATCH);
