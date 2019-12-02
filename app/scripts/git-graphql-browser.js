@@ -257,10 +257,10 @@ async function branches(domain, name) {
 }
 
 async function tags(domain, name) {
-  log(`tags() domain: ${domain}, name: ${name} `);
+  log(`tags() domain: ${domain}, name: ${name}`);
 
   const command = "git tag -l";
-  log(`tags() command: ${command} `);
+  log(`tags() command: ${command}`);
 
   const { stdout } = await exec(command, execOptions(domain, name));
   log(stdout);
@@ -291,10 +291,10 @@ server.start(() => console.log("Server is running on http://localhost:4000"));
 // This helper usese `git rev-list <path>` to retrieve the last commit hash
 // which touched the given path (directory or file) for the branch given.
 async function lastCommitInBranch(domain, name, path, branch) {
-  log(`lastCommitInBranch() domain: ${domain}, name: ${name} `);
+  log(`lastCommitInBranch() domain: ${domain}, name: ${name}`);
 
   const command = `git rev-list -n 1 HEAD --branches ${branch} -- "${path}"`;
-  log(`lastCommitInBranch() command: ${command} `);
+  log(`lastCommitInBranch() command: ${command}`);
 
   const { stdout } = await exec(command, execOptions(domain, name));
   log(stdout);
