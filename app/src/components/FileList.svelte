@@ -15,7 +15,7 @@
   import { link } from "svelte-spa-router";
 
   const QUERY = gql`
-    query Query($projectId: String!, $revision: String!, $prefix: String!) {
+    query Query($projectId: IdInput!, $revision: String!, $prefix: String!) {
       tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
         info {
           lastCommit {
@@ -139,13 +139,7 @@
         <tr>
           <td class="file-column">
             <a
-              href={path.projectSource({
-                id: projectId,
-                revision: $revision,
-                objectType: entry.info.objectType,
-                path:
-                  entry.info.objectType === TREE ? entry.path + '/' : entry.path
-              })}
+              href={path.projectSource(projectId.domain, projectId.name, $revision, entry.info.objectType, entry.info.objectType === TREE ? entry.path + '/' : entry.path)}
               use:link>
               {#if entry.info.objectType === TREE}
                 <Icon.Folder />

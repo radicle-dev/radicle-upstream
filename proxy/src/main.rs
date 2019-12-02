@@ -33,17 +33,18 @@ fn main() {
 
     let source_type = std::env::args().nth(1).expect("no source was given");
 
-    let context = match source_type.as_ref() {
-        "registry" => {
-            let client = radicle_registry_client::SyncClient::create()
-                .expect("creating registry client failed");
-            let src = source::Ledger::new(client);
-            schema::Context::new(src)
-        }
-        _ => {
-            let src = source::test::Local::new();
-            schema::Context::new(src)
-        }
+    let context = if let "memory" = source_type.as_ref() {
+        let client = radicle_registry_client::MemoryClient::new();
+        let mut src = source::Ledger::new(client);
+
+        source::setup_fixtures(&mut src);
+
+        schema::Context::new(src)
+    } else {
+        let client = radicle_registry_client::ClientWithExecutor::create()
+            .expect("creating registry client failed");
+        let src = source::Ledger::new(client);
+        schema::Context::new(src)
     };
 
     info!("Creating GraphQL schema and context");

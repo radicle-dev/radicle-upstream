@@ -29,6 +29,21 @@ impl Context {
 
 impl juniper::Context for Context {}
 
+#[derive(GraphQLInputObject)]
+struct IdInput {
+    name: String,
+    domain: String,
+}
+
+impl Into<ProjectId> for IdInput {
+    fn into(self) -> ProjectId {
+        ProjectId {
+            name: self.name,
+            domain: self.domain,
+        }
+    }
+}
+
 /// Encapsulates read paths in API.
 pub struct Query;
 
@@ -42,8 +57,8 @@ impl Query {
         Ok(ctx.source.get_all_projects())
     }
 
-    fn project(ctx: &Context, id: ProjectId) -> FieldResult<Option<Project>> {
-        Ok(ctx.source.get_project(id))
+    fn project(ctx: &Context, id: IdInput) -> FieldResult<Option<Project>> {
+        Ok(ctx.source.get_project(id.into()))
     }
 }
 
@@ -66,9 +81,15 @@ impl Mutation {
 fn test_schema_projects() {
     use juniper::Variables;
 
-    use crate::source::test::Local;
+    use crate::source::Ledger;
 
-    let ctx = Context::new(Local::new());
+    let registry_client = radicle_registry_client::MemoryClient::new();
+    let mut source = Ledger::new(registry_client);
+
+    crate::source::setup_fixtures(&mut source);
+
+    let ctx = Context::new(source);
+
     let (res, _errors) = juniper::execute(
         "query { projects { name } }",
         None,
@@ -82,8 +103,8 @@ fn test_schema_projects() {
         res,
         graphql_value!({
             "projects": [
-                {"name": "Monadic"},
                 {"name": "monokel"},
+                {"name": "Monadic"},
                 {"name": "open source coin"},
                 {"name": "radicle"},
             ]
@@ -105,26 +126,6 @@ juniper::graphql_scalar!(AccountId where Scalar = <S> {
             .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
 
         Some(AccountId(radicle_registry_client::AccountId::from_raw(bytes)))
-    }
-
-    // Define how to parse a string value.
-    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
-        <String as ParseScalarValue<S>>::from_str(value)
-    }
-});
-
-juniper::graphql_scalar!(ProjectId where Scalar = <S> {
-    description: "ProjectId"
-
-    resolve(&self) -> Value {
-        Value::scalar((self.0).0.clone())
-    }
-
-    from_input_value(v: &InputValue) -> Option<ProjectId> {
-        let name = v.as_scalar_value::<String>()?.to_owned();
-        let domain = "rad".to_string();
-
-        Some(ProjectId((name, domain)))
     }
 
     // Define how to parse a string value.

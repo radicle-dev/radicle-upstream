@@ -11,19 +11,20 @@
   import { revision, objectPath } from "../stores.js";
   import * as path from "../path.js";
 
-  const projectId = getContext("projectId");
   export let prefix = ""; // start sidebar tree from repository root
   export let name = null;
 
   export let expanded = false;
   export let firstEntry = true;
 
+  const projectId = getContext("projectId");
+
   const client = new ApolloClient({
     uri: "http://127.0.0.1:4000"
   });
 
   const QUERY = gql`
-    query Query($projectId: String!, $revision: String!, $prefix: String!) {
+    query Query($projectId: IdInput!, $revision: String!, $prefix: String!) {
       tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
         entries {
           path
@@ -90,12 +91,7 @@
       <div class="folder" class:expanded class:active>
         <Icon.CarretBig on:click={toggle} />
         <a
-          href={path.projectSource({
-            id: projectId,
-            revision: $revision,
-            objectType: TREE,
-            path: prefix
-          })}
+          href={path.projectSource(projectId.domain, projectId.name, $revision, TREE, prefix)}
           use:link>
           {name}
         </a>

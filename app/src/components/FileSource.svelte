@@ -16,7 +16,7 @@
   });
 
   const SOURCE = gql`
-    query($projectId: String!, $revision: String!, $path: String!) {
+    query($projectId: IdInput!, $revision: String!, $path: String!) {
       blob(projectId: $projectId, revision: $revision, path: $path) {
         content
         info {

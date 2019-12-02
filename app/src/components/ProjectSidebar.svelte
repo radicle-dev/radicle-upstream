@@ -26,10 +26,6 @@
     margin-bottom: 14px;
   }
 
-  a {
-    display: flex;
-  }
-
   nav :global(li:hover p) {
     color: var(--color-purple) !important;
   }
@@ -48,46 +44,40 @@
       <ProjectSidebarItem
         icon={Icon.Home}
         title="Overview"
-        href={path.projectOverview({ id: projectId })}
-        active={path.active(path.projectOverview({
-            id: projectId
-          }), $location)} />
+        href={path.projectOverview(projectId.domain, projectId.name)}
+        active={path.active(path.projectOverview(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Feed}
         title="Feed"
-        href={path.projectFeed({ id: projectId })}
-        active={path.active(path.projectFeed({ id: projectId }), $location)} />
+        href={path.projectFeed(projectId.domain, projectId.name)}
+        active={path.active(path.projectFeed(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Member}
         title="Members"
-        href={path.projectMembers({ id: projectId })}
-        active={path.active(path.projectMembers({
-            id: projectId
-          }), $location)} />
+        href={path.projectMembers(projectId.domain, projectId.name)}
+        active={path.active(path.projectMembers(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Fund}
         title="Fund"
-        href={path.projectFunds({ id: projectId })}
-        active={path.active(path.projectFunds({ id: projectId }), $location)} />
+        href={path.projectFunds(projectId.domain, projectId.name)}
+        active={path.active(path.projectFunds(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Source}
         title="Source"
-        href={path.projectSource({ id: projectId })}
-        active={path.active(path.projectSource({
-            id: projectId
-          }), $location, true)}>
+        href={path.projectSource(projectId.domain, projectId.name)}
+        active={path.active(path.projectSource(projectId.domain, projectId.name), $location, true)}>
 
         <div class="source-tree">
           <Folder />
@@ -99,20 +89,16 @@
       <ProjectSidebarItem
         icon={Icon.Commit}
         title="Commits"
-        href={path.projectCommits({ id: projectId })}
-        active={path.active(path.projectCommits({
-            id: projectId
-          }), $location)} />
+        href={path.projectCommits(projectId.domain, projectId.name)}
+        active={path.active(path.projectCommits(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Branch}
         title="Branches"
-        href={path.projectBranches({ id: projectId })}
-        active={path.active(path.projectBranches({
-            id: projectId
-          }), $location)} />
+        href={path.projectBranches(projectId.domain, projectId.name)}
+        active={path.active(path.projectBranches(projectId.domain, projectId.name), $location)} />
     </li>
   </ul>
 </nav>

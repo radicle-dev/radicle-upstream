@@ -16,14 +16,14 @@
   export let project = null;
 
   const routes = {
-    "/projects/:id/overview": Overview,
-    "/projects/:id/feed": Feed,
-    "/projects/:id/members": Members,
-    "/projects/:id/funds": Funds,
-    "/projects/:id/source": Source,
-    "/projects/:id/source/*": Source,
-    "/projects/:id/commits": Commits,
-    "/projects/:id/branches": Branches
+    "/projects/:domain/:name/overview": Overview,
+    "/projects/:domain/:name/feed": Feed,
+    "/projects/:domain/:name/members": Members,
+    "/projects/:domain/:name/funds": Funds,
+    "/projects/:domain/:name/source": Source,
+    "/projects/:domain/:name/source/*": Source,
+    "/projects/:domain/:name/commits": Commits,
+    "/projects/:domain/:name/branches": Branches
   };
 </script>
 

@@ -20,17 +20,19 @@
 
   export let params = null;
 
-  setContext("projectId", params.id);
+  const id = { domain: params.domain, name: params.name };
+  setContext("projectId", id);
 
   const routes = {
-    "/projects/:id/overview": Overview,
-    "/projects/:id/feed": Feed,
-    "/projects/:id/members": Members,
-    "/projects/:id/funds": Funds,
-    "/projects/:id/source": Source,
-    "/projects/:id/source/*": Source,
-    "/projects/:id/commits": Commits,
-    "/projects/:id/branches": Branches,
+    "/projects/:domain/:name/": Overview,
+    "/projects/:domain/:name/overview": Overview,
+    "/projects/:domain/:name/feed": Feed,
+    "/projects/:domain/:name/members": Members,
+    "/projects/:domain/:name/funds": Funds,
+    "/projects/:domain/:name/source": Source,
+    "/projects/:domain/:name/source/*": Source,
+    "/projects/:domain/:name/commits": Commits,
+    "/projects/:domain/:name/branches": Branches,
     "*": NotFound
   };
 
@@ -38,9 +40,12 @@
   import { getClient, query } from "svelte-apollo";
 
   const GET_PROJECT = gql`
-    query Query($id: ProjectId!) {
+    query Query($id: IdInput!) {
       project(id: $id) {
-        id
+        id {
+          domain
+          name
+        }
         name
         description
         imgUrl
@@ -55,7 +60,7 @@
   const client = getClient();
   const project = query(client, {
     query: GET_PROJECT,
-    variables: { id: params.id }
+    variables: { id }
   });
 
   const PATH_MATCH = new RegExp(`/source/(.*)/(${BLOB}|${TREE})(.*)`);

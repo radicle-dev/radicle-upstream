@@ -4,22 +4,25 @@ export const search = _params => "/search";
 export const feed = _params => "/feed";
 export const projects = _params => "/projects";
 
-export const projectOverview = (params = {}) =>
-  `/projects/${params.id}/overview`;
-export const projectFeed = (params = {}) => `/projects/${params.id}/feed`;
-export const projectMembers = (params = {}) => `/projects/${params.id}/members`;
-export const projectFunds = (params = {}) => `/projects/${params.id}/funds`;
-export const projectSource = (params = {}) => {
-  if (params.revision && params.path) {
-    return `/projects/${params.id}/source/${params.revision}/${params.objectType}${params.path}`;
+export const projectOverview = (domain, name) =>
+  `/projects/${domain}/${name}/overview`;
+export const projectFeed = (domain, name) => `/projects/${domain}/${name}/feed`;
+export const projectMembers = (domain, name) =>
+  `/projects/${domain}/${name}/members`;
+export const projectFunds = (domain, name) =>
+  `/projects/${domain}/${name}/funds`;
+export const projectSource = (domain, name, revision, objectType, path) => {
+  if (revision && path) {
+    return `/projects/${domain}/${name}/source/${revision}/${objectType}${path}`;
   } else {
-    return `/projects/${params.id}/source`;
+    return `/projects/${domain}/${name}/source`;
   }
 };
 
-export const projectCommits = (params = {}) => `/projects/${params.id}/commits`;
-export const projectBranches = (params = {}) =>
-  `/projects/${params.id}/branches`;
+export const projectCommits = (domain, name) =>
+  `/projects/${domain}/${name}/commits`;
+export const projectBranches = (domain, name) =>
+  `/projects/${domain}/${name}/branches`;
 
 export const designSystem = _params => "/design-system";
 export const wallet = _params => "/wallet";
