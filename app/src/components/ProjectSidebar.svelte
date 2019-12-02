@@ -38,7 +38,7 @@
   }
 </style>
 
-<nav>
+<nav data-cy="project-sidebar">
   <ul>
     <li>
       <ProjectSidebarItem

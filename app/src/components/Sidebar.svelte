@@ -50,7 +50,7 @@
   }
 </style>
 
-<div>
+<div data-cy="sidebar">
   <nav>
     <ul>
       <li>

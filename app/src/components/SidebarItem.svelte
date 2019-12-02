@@ -15,7 +15,7 @@
   }
 </style>
 
-<a {href} use:link class:active>
+<a {href} use:link class:active {title}>
   <svelte:component this={icon} />
 </a>
 

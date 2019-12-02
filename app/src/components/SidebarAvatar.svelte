@@ -22,7 +22,7 @@
   }
 </style>
 
-<a {href} use:link>
+<a {href} use:link {title}>
   <img class:active src={image} alt="user-avatar" />
 </a>
 
