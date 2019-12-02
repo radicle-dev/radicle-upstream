@@ -78,7 +78,7 @@ const typeDefs = `
   }
 `;
 
-const debug = true;
+const debug = false;
 
 // TODO: implement actual lookup once we have mock data with stable IDs
 const projectRepoPathById = _projectId => path.resolve(__dirname, "../../");
