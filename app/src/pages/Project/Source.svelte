@@ -4,8 +4,6 @@
   import FileSource from "../../components/FileSource.svelte";
   import FileList from "../../components/FileList.svelte";
   import RevisionSelector from "../../components/RevisionSelector.svelte";
-
-  console.log($objectType);
 </script>
 
 <RevisionSelector />

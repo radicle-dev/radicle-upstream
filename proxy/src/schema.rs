@@ -133,26 +133,3 @@ juniper::graphql_scalar!(AccountId where Scalar = <S> {
         <String as ParseScalarValue<S>>::from_str(value)
     }
 });
-
-// juniper::graphql_scalar!(ProjectId where Scalar = <S> {
-//     description: "ProjectId"
-
-//     resolve(&self) -> Value {
-//         Value::scalar(format!("{}.{}", (self.0).0.to_string(), (self.0).1.to_string()))
-//     }
-
-//     from_input_value(v: &InputValue) -> Option<ProjectId> {
-//         let name =
-// ProjectName::from_string(v.as_scalar_value::<String>()?.to_owned()).expect("project name
-// conversion failed");         // let name = v.as_scalar_value::<String>()?.to_owned();
-//         let domain = ProjectDomain::from_string("rad".to_owned()).expect("project domain
-// conversion failed");
-
-//         Some(ProjectId((name, domain)))
-//     }
-
-//     // Define how to parse a string value.
-//     from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
-//         <String as ParseScalarValue<S>>::from_str(value)
-//     }
-// });
