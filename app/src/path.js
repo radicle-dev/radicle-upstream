@@ -4,7 +4,8 @@ export const search = _params => "/search";
 export const feed = _params => "/feed";
 export const projects = _params => "/projects";
 
-export const projectOverview = (domain, name) => `/projects/${domain}/${name}/`;
+export const projectOverview = (domain, name) =>
+  `/projects/${domain}/${name}/overview`;
 export const projectFeed = (domain, name) => `/projects/${domain}/${name}/feed`;
 export const projectMembers = (domain, name) =>
   `/projects/${domain}/${name}/members`;

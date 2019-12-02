@@ -61,9 +61,7 @@
         icon={Icon.Member}
         title="Members"
         href={path.projectMembers(projectId.domain, projectId.name)}
-        active={path.active(path.projectMembers({
-            id: projectId
-          }), $location)} />
+        active={path.active(path.projectMembers(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
@@ -92,9 +90,7 @@
         icon={Icon.Commit}
         title="Commits"
         href={path.projectCommits(projectId.domain, projectId.name)}
-        active={path.active(path.projectCommits({
-            id: projectId
-          }), $location)} />
+        active={path.active(path.projectCommits(projectId.domain, projectId.name), $location)} />
     </li>
 
     <li>
@@ -102,9 +98,7 @@
         icon={Icon.Branch}
         title="Branches"
         href={path.projectBranches(projectId.domain, projectId.name)}
-        active={path.active(path.projectBranches({
-            id: projectId
-          }), $location)} />
+        active={path.active(path.projectBranches(projectId.domain, projectId.name), $location)} />
     </li>
   </ul>
 </nav>
