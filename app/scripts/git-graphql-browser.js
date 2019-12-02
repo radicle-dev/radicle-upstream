@@ -18,6 +18,11 @@ function anonymize(str) {
 const typeDefs = `
   scalar Datetime
 
+  input IdInput {
+    domain: String!
+    name: String!
+  }
+
   enum ObjectType {
     TREE
     BLOB
@@ -63,13 +68,13 @@ const typeDefs = `
   }
 
   type Query {
-    blob(projectId: String!, revision: String!, path: String!): Blob!
-    tree(projectId: String!, revision: String!, prefix: String!): Tree!
+    blob(projectId: IdInput!, revision: String!, path: String!): Blob!
+    tree(projectId: IdInput!, revision: String!, prefix: String!): Tree!
 
-    commit(projectId: String!, sha1: String!): Commit
+    commit(projectId: IdInput!, sha1: String!): Commit
 
-    branches(projectId: String!): [String]!
-    tags(projectId: String!): [String]!
+    branches(projectId: IdInput!): [String]!
+    tags(projectId: IdInput!): [String]!
   }
 `;
 
@@ -78,18 +83,18 @@ const debug = false;
 // TODO: implement actual lookup once we have mock data with stable IDs
 const projectRepoPathById = _projectId => path.resolve(__dirname, "../../");
 
-const execOptions = projectId => ({
+const execOptions = (domain, name) => ({
   maxBuffer: 1024 * 1000,
-  cwd: projectRepoPathById(projectId)
+  cwd: projectRepoPathById(domain, name)
 });
 
 const log = message => {
   debug && console.log(message);
 };
 
-async function commit(projectId, sha1) {
-  log(`projectId: ${projectId}`);
-  log(`sha1: ${sha1}`);
+async function commit(domain, name, sha1) {
+  log(`commit() domain: ${domain}, name: ${name}`);
+  log(`commit() sha1: ${sha1}`);
 
   const delimiter = "<<<<<<<<<<";
 
@@ -100,9 +105,9 @@ async function commit(projectId, sha1) {
     `%aD${delimiter}` +
     `%s${delimiter}` +
     `%b' ${sha1}`;
-
   log(`command: ${command}`);
-  const { stdout } = await exec(command, execOptions(projectId));
+
+  const { stdout } = await exec(command, execOptions(domain, name));
 
   const [authorName, authorEmail, authorDate, subject, body] = stdout.split(
     "<<<<<<<<<<"
@@ -124,10 +129,10 @@ async function commit(projectId, sha1) {
   };
 }
 
-async function tree(projectId, revision, prefix) {
-  log(`projectId: ${projectId}`);
-  log(`revision: ${revision}`);
-  log(`prefix: ${prefix}`);
+async function tree(domain, name, revision, prefix) {
+  log(`tree() domain: ${domain}, name: ${name}`);
+  log(`tree() revision: ${revision}`);
+  log(`tree() prefix: ${prefix}`);
 
   // strip any leading /
   prefix = prefix.replace(/^\//, "");
@@ -139,7 +144,7 @@ async function tree(projectId, revision, prefix) {
   const command = `git ls-tree --long ${revision} ./${prefix}`;
   log(`command: ${command}`);
 
-  const { stdout } = await exec(command, execOptions(projectId));
+  const { stdout } = await exec(command, execOptions(domain, name));
 
   const listOfPromises = stdout
     .split("\n") // split into rows
@@ -150,11 +155,12 @@ async function tree(projectId, revision, prefix) {
       );
 
       const lastCommitInBranchSha1 = await lastCommitInBranch(
-        projectId,
+        domain,
+        name,
         nameWithPath,
         objectSha
       );
-      const lastCommit = await commit(projectId, lastCommitInBranchSha1);
+      const lastCommit = await commit(domain, name, lastCommitInBranchSha1);
 
       return {
         path: nameWithPath,
@@ -178,11 +184,12 @@ async function tree(projectId, revision, prefix) {
   });
 
   const lastCommitInBranchSha1 = await lastCommitInBranch(
-    projectId,
+    domain,
+    name,
     `./${prefix}`,
     revision
   );
-  const lastCommit = await commit(projectId, lastCommitInBranchSha1);
+  const lastCommit = await commit(domain, name, lastCommitInBranchSha1);
 
   return {
     path: prefix,
@@ -197,28 +204,29 @@ async function tree(projectId, revision, prefix) {
   };
 }
 
-async function blob(projectId, revision, path) {
-  log(`projectId: ${projectId}`);
-  log(`revision: ${revision}`);
-  log(`path: ${path}`);
+async function blob(domain, name, revision, path) {
+  log(`blob() domain: ${domain}, name: ${name}`);
+  log(`blob() revision: ${revision}`);
+  log(`blob() path: ${path}`);
 
   const blobCommand = `git show ${revision}:${path}`;
-  const { stdout: blob } = await exec(blobCommand, execOptions(projectId));
+  const { stdout: blob } = await exec(blobCommand, execOptions(domain, name));
 
   const metadataCommand = `git ls-tree --long ${revision} ${path}`;
   const { stdout: metadata } = await exec(
     metadataCommand,
-    execOptions(projectId)
+    execOptions(domain, name)
   );
 
   const [mode, objectType, sha1, size, filePath] = metadata.split(/\s+/);
 
   const lastCommitInBranchSha1 = await lastCommitInBranch(
-    projectId,
+    domain,
+    name,
     path,
     revision
   );
-  const lastCommit = await commit(projectId, lastCommitInBranchSha1);
+  const lastCommit = await commit(domain, name, lastCommitInBranchSha1);
 
   const blobEntry = {
     content: isBinary(null, blob) ? "ఠ ͟ಠ Binary content." : blob,
@@ -234,11 +242,13 @@ async function blob(projectId, revision, path) {
   return blobEntry;
 }
 
-async function branches(projectId) {
+async function branches(domain, name) {
+  log(`branches() domain: ${domain}, name: ${name}`);
+
   const command = 'git branch -a --format="%(refname)"';
   log(`command: ${command}`);
 
-  const { stdout } = await exec(command, execOptions(projectId));
+  const { stdout } = await exec(command, execOptions(domain, name));
   log(stdout);
 
   return stdout
@@ -246,11 +256,13 @@ async function branches(projectId) {
     .filter(el => el !== ""); // throw out empty rows
 }
 
-async function tags(projectId) {
-  const command = "git tag -l";
-  log(`command: ${command}`);
+async function tags(domain, name) {
+  log(`tags() domain: ${domain}, name: ${name}`);
 
-  const { stdout } = await exec(command, execOptions(projectId));
+  const command = "git tag -l";
+  log(`tags() command: ${command}`);
+
+  const { stdout } = await exec(command, execOptions(domain, name));
   log(stdout);
 
   return stdout
@@ -261,11 +273,13 @@ async function tags(projectId) {
 const resolvers = {
   Query: {
     tree: (_, { projectId, revision, prefix }) =>
-      tree(projectId, revision, prefix),
-    blob: (_, { projectId, revision, path }) => blob(projectId, revision, path),
-    branches: (_, { projectId }) => branches(projectId),
-    tags: (_, { projectId }) => tags(projectId),
-    commit: (_, { projectId, sha1 }) => commit(projectId, sha1)
+      tree(projectId.domain, projectId.name, revision, prefix),
+    blob: (_, { projectId, revision, path }) =>
+      blob(projectId.domain, projectId.name, revision, path),
+    branches: (_, { projectId }) => branches(projectId.domain, projectId.name),
+    tags: (_, { projectId }) => tags(projectId.domain, projectId.name),
+    commit: (_, { projectId, sha1 }) =>
+      commit(projectId.domain, projectId.name, sha1)
   }
 };
 
@@ -276,11 +290,13 @@ server.start(() => console.log("Server is running on http://localhost:4000"));
 
 // This helper usese `git rev-list <path>` to retrieve the last commit hash
 // which touched the given path (directory or file) for the branch given.
-async function lastCommitInBranch(projectId, path, branch) {
-  const command = `git rev-list -n 1 HEAD --branches ${branch} -- "${path}"`;
-  log(`command: ${command}`);
+async function lastCommitInBranch(domain, name, path, branch) {
+  log(`lastCommitInBranch() domain: ${domain}, name: ${name}`);
 
-  const { stdout } = await exec(command, execOptions(projectId));
+  const command = `git rev-list -n 1 HEAD --branches ${branch} -- "${path}"`;
+  log(`lastCommitInBranch() command: ${command}`);
+
+  const { stdout } = await exec(command, execOptions(domain, name));
   log(stdout);
 
   return stdout.trim();

@@ -1,6 +1,7 @@
 <script>
   import { Text, Title, Icon, Numeric, Caption } from "../DesignSystem";
   import ProjectCard from "./ProjectCard.svelte";
+  import { projectOverview } from "../path.js";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
   import { link } from "svelte-spa-router";
@@ -8,7 +9,10 @@
   const GET_PROJECTS = gql`
     query Query {
       projects {
-        id
+        id {
+          name
+          domain
+        }
         description
         name
         imgUrl
@@ -48,7 +52,7 @@
   <ul>
     {#each result.data.projects as project}
       <li class="project-card">
-        <a href="/projects/{project.id}/overview" use:link>
+        <a href={projectOverview(project.id.domain, project.id.name)} use:link>
           <ProjectCard
             title={project.name}
             description={project.description}

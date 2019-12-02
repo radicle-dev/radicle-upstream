@@ -7,7 +7,7 @@
   import { getClient, query } from "svelte-apollo";
 
   const GET_PROJECT = gql`
-    query Query($id: ProjectId!) {
+    query Query($id: IdInput!) {
       project(id: $projectId) {
         name
         description

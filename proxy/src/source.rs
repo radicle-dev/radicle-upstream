@@ -1,13 +1,16 @@
-use radicle_registry_client::CryptoPair as _;
+use futures::future::Future;
 use std::collections::HashMap;
+
+use radicle_registry_client::{CryptoPair as _, H256};
+use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
 
 /// Newtype for the registry `oscoin_client::AccountId`.
 #[derive(Clone, Eq, Hash, PartialEq)]
 pub struct AccountId(pub radicle_registry_client::AccountId);
 
-/// Newtype for the registry `oscoin_client::ProjectId`.
-#[derive(Clone, Eq, Hash, PartialEq)]
-pub struct ProjectId(pub radicle_registry_client::ProjectId);
+// /// Newtype for the registry `oscoin_client::ProjectId`.
+// #[derive(Clone, Eq, PartialEq)]
+// pub struct ProjectId(pub radicle_registry_client::ProjectId);
 
 /// Metadata enriched user keypair.
 /// TODO(xla): This overlaps with accounts on the registry, needs renaming.
@@ -20,6 +23,30 @@ struct Account {
     key_name: String,
     /// User given url for the avatar attached to the keypair.
     avatar_url: String,
+}
+
+#[derive(Clone, GraphQLObject)]
+pub struct ProjectId {
+    pub name: String,
+    pub domain: String,
+}
+
+impl From<radicle_registry_client::ProjectId> for ProjectId {
+    fn from(id: radicle_registry_client::ProjectId) -> Self {
+        Self {
+            name: id.0.to_string(),
+            domain: id.1.to_string(),
+        }
+    }
+}
+
+impl Into<radicle_registry_client::ProjectId> for ProjectId {
+    fn into(self) -> radicle_registry_client::ProjectId {
+        (
+            ProjectName::from_string(self.name).expect("project name creation failed"),
+            ProjectDomain::from_string(self.domain).expect("project domain creation faile"),
+        )
+    }
 }
 
 /// Representation of a users project.
@@ -51,8 +78,8 @@ impl From<radicle_registry_client::Project> for Project {
             .collect();
 
         Self {
-            id: ProjectId(p.id.clone()),
-            name: p.id.0,
+            id: p.id.clone().into(),
+            name: p.id.0.to_string(),
             description: p.description,
             img_url: p.img_url,
             members: ms,
@@ -62,6 +89,7 @@ impl From<radicle_registry_client::Project> for Project {
 
 /// Abstraction used to fetch information from the registry.
 pub trait Source {
+    fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
     fn get_all_projects(&self) -> Vec<Project>;
     /// Retrieve a single proejct by `ProjectId`.
@@ -71,19 +99,25 @@ pub trait Source {
 }
 
 /// Container to store local view on accounts to match with metadata.
-pub struct Ledger {
-    /// Ledger client.
-    client: radicle_registry_client::SyncClient,
+pub struct Ledger<R>
+where
+    R: radicle_registry_client::ClientT,
+{
     /// Mapping of `AccountId`s to `Account`s for easier metadata enrichment.
     accounts: HashMap<AccountId, Account>,
+    /// Ledger client.
+    registry_client: R,
 }
 
-impl Ledger {
+impl<R> Ledger<R>
+where
+    R: radicle_registry_client::ClientT,
+{
     /// Returns a new `Ledger`.
-    pub fn new(client: radicle_registry_client::SyncClient) -> Self {
+    pub fn new(registry_client: R) -> Self {
         Self {
-            client,
             accounts: HashMap::new(),
+            registry_client,
         }
     }
 
@@ -114,50 +148,90 @@ impl Ledger {
     }
 }
 
-impl Source for Ledger {
+impl<R> Source for Ledger<R>
+where
+    R: radicle_registry_client::ClientT,
+{
+    fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId {
+        let id = AccountId(
+            radicle_registry_client::ed25519::Pair::generate()
+                .0
+                .public(),
+        );
+
+        self.accounts.insert(
+            id.clone(),
+            Account {
+                id: id.clone(),
+                avatar_url,
+                key_name,
+            },
+        );
+
+        id
+    }
+
     fn get_all_projects(&self) -> Vec<Project> {
         // TODO(xla): Return proper error.
-        self.client
+        self.registry_client
             .list_projects()
+            .wait()
             .expect("osc client list projects failed")
             .into_iter()
             .take(10)
-            .map(|id| {
-                let project = Project::from(self.client.get_project(id).unwrap().unwrap());
-                self.enrich_members(project)
+            .flat_map(|id| {
+                let maybe_project = self
+                    .registry_client
+                    .get_project(id)
+                    .wait()
+                    .expect("get_project failed");
+
+                match maybe_project {
+                    Some(project) => Some(self.enrich_members(Project::from(project))),
+                    None => None,
+                }
             })
             .collect()
     }
 
     fn get_project(&self, id: ProjectId) -> Option<Project> {
-        // TODO(xla): Bubble up errors from QueryResult.
-        match self.client.get_project(id.0) {
-            Ok(maybe_project) => match maybe_project {
-                Some(p) => Some(self.enrich_members(Project::from(p))),
-                None => None,
-            },
-            Err(_err) => None,
+        let maybe_project = self
+            .registry_client
+            .get_project(id.into())
+            .wait()
+            .expect("get project failed");
+
+        match maybe_project {
+            Some(p) => Some(self.enrich_members(Project::from(p))),
+            None => None,
         }
     }
 
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
-        let project_id = (name.clone(), "rad".to_string());
+        let project_name =
+            ProjectName::from_string(name.to_string()).expect("project name creation failed");
+        let project_domain =
+            ProjectDomain::from_string("rad".to_string()).expect("project domain creation faile");
+        let registry_id = (project_name, project_domain);
+
         // TODO(xla): Proper error handling.
-        self.client
+        self.registry_client
             .register_project(
                 &sender,
                 radicle_registry_client::RegisterProjectParams {
-                    id: project_id.to_owned(),
+                    id: registry_id.clone(),
                     description: description.to_owned(),
                     img_url: img_url.to_owned(),
+                    checkpoint_id: H256::random(),
                 },
             )
+            .wait()
             .expect("osc project registration failed");
 
         Project {
-            id: ProjectId(project_id),
+            id: registry_id.into(),
             name,
             description,
             img_url,
@@ -166,177 +240,34 @@ impl Source for Ledger {
     }
 }
 
-pub mod test {
-    use radicle_registry_client::CryptoPair;
-    use std::collections::HashMap;
-    use std::sync::{Arc, RwLock};
+/// Populate a `Source` with a set of initial projects.
+pub fn setup_fixtures<S: Source + Send + Sync>(source: &mut S) {
+    let _ = source.create_account(
+        "xla".into(),
+        "https://avatars0.githubusercontent.com/u/1585".into(),
+    );
+    let _ = source.register_project(
+        "monokel".into(),
+        "A looking glass into the future".into(),
+        "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg".into(),
+    );
 
-    use crate::source::{Account, AccountId, Project, ProjectId, Source};
+    let _ = source.register_project(
+        "Monadic".into(),
+        "Open source organization of amazing things.".into(),
+        "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg"
+            .into(),
+    );
 
-    pub struct Local {
-        projects: Arc<RwLock<HashMap<ProjectId, Project>>>,
-    }
+    let _ = source.register_project(
+        "open source coin".into(),
+        "Research for the open source community.".into(),
+        "https://avatars0.githubusercontent.com/u/31632242".into(),
+    );
 
-    fn random_project_id() -> ProjectId {
-        let name = format!("{}", rand::random::<u32>());
-        ProjectId((name, "rad".to_string()))
-    }
-
-    impl Local {
-        pub fn new() -> Self {
-            let mut projects = HashMap::new();
-
-            let id = random_project_id();
-            projects.insert(id.clone(), Project{
-            id,
-            name: "monokel".to_owned(),
-            description: "A looking glass into the future".to_owned(),
-            img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg".to_owned(),
-            members: vec![
-                Account{
-                    id: AccountId(radicle_registry_client::ed25519::Pair::generate().0.public()),
-                    key_name: "xla".to_owned(),
-                    avatar_url: "https://avatars0.githubusercontent.com/u/1585".to_owned(),
-                },
-            ],
-        });
-
-            let id = random_project_id();
-            projects.insert(id.clone(), Project{
-            id,
-            name: "Monadic".to_owned(),
-            description: "Open source organization of amazing things".to_owned(),
-            img_url: "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg".to_owned(),
-            members: vec![
-                Account{
-                    id: AccountId(radicle_registry_client::ed25519::Pair::generate().0.public()),
-                    key_name: "cloudhead".to_owned(),
-                    avatar_url: "https://avatars1.githubusercontent.com/u/40774".to_owned(),
-                },
-                Account{
-                    id: AccountId(radicle_registry_client::ed25519::Pair::generate().0.public()),
-                    key_name: "lftherios".to_owned(),
-                    avatar_url: "https://avatars3.githubusercontent.com/u/853825".to_owned(),
-                },
-                Account{
-                    id: AccountId(radicle_registry_client::ed25519::Pair::generate().0.public()),
-                    key_name: "juliendonck".to_owned(),
-                    avatar_url: "https://avatars2.githubusercontent.com/u/2326909".to_owned(),
-                },
-            ],
-        });
-
-            let id = random_project_id();
-            projects.insert(
-                id.clone(),
-                Project {
-                    id,
-                    name: "open source coin".to_owned(),
-                    description: "Infrastructure for the open source communit".to_owned(),
-                    img_url: "https://avatars0.githubusercontent.com/u/31632242".to_owned(),
-                    members: vec![
-                        Account {
-                            id: AccountId(
-                                radicle_registry_client::ed25519::Pair::generate()
-                                    .0
-                                    .public(),
-                            ),
-                            key_name: "geigerzaehler".to_owned(),
-                            avatar_url: "https://avatars2.githubusercontent.com/u/3919579"
-                                .to_owned(),
-                        },
-                        Account {
-                            id: AccountId(
-                                radicle_registry_client::ed25519::Pair::generate()
-                                    .0
-                                    .public(),
-                            ),
-                            key_name: "rockbmb".to_owned(),
-                            avatar_url: "https://avatars2.githubusercontent.com/u/16455833"
-                                .to_owned(),
-                        },
-                        Account {
-                            id: AccountId(
-                                radicle_registry_client::ed25519::Pair::generate()
-                                    .0
-                                    .public(),
-                            ),
-                            key_name: "rudolfs".to_owned(),
-                            avatar_url: "https://avatars1.githubusercontent.com/u/158411"
-                                .to_owned(),
-                        },
-                    ],
-                },
-            );
-
-            let id = random_project_id();
-            projects.insert(
-                id.clone(),
-                Project {
-                    id,
-                    name: "radicle".to_owned(),
-                    description: "Decentralized open source collaboration".to_owned(),
-                    img_url: "https://avatars0.githubusercontent.com/u/48290027".to_owned(),
-                    members: vec![Account {
-                        id: AccountId(
-                            radicle_registry_client::ed25519::Pair::generate()
-                                .0
-                                .public(),
-                        ),
-                        key_name: "jkarni".to_owned(),
-                        avatar_url: "https://avatars3.githubusercontent.com/u/1657498".to_owned(),
-                    }],
-                },
-            );
-
-            Self {
-                projects: Arc::new(RwLock::new(projects)),
-            }
-        }
-    }
-
-    impl Source for Local {
-        fn get_all_projects(&self) -> Vec<Project> {
-            let projects = self
-                .projects
-                .read()
-                .expect("acquiring read lock on projects failed");
-
-            let mut ps: Vec<Project> = projects.iter().map(|(_k, v)| v.clone()).collect();
-
-            ps.sort_by(|a, b| a.name.partial_cmp(&b.name).expect("project compare failed"));
-
-            ps.to_vec()
-        }
-
-        fn get_project(&self, id: ProjectId) -> Option<Project> {
-            let projects = self
-                .projects
-                .read()
-                .expect("acquiring read lock for projects failed");
-            match projects.get(&id) {
-                Some(p) => Some(p.clone()),
-                None => None,
-            }
-        }
-
-        fn register_project(&self, name: String, description: String, img_url: String) -> Project {
-            let id = random_project_id();
-
-            let mut projects = self
-                .projects
-                .write()
-                .expect("claiming projects write lock failed");
-            let p = Project {
-                id: id.clone(),
-                name,
-                description,
-                img_url,
-                members: vec![],
-            };
-            projects.insert(id, p.clone());
-
-            p
-        }
-    }
+    let _ = source.register_project(
+        "radicle".into(),
+        "Decentralized open source collaboration".into(),
+        "https://avatars0.githubusercontent.com/u/48290027".into(),
+    );
 }

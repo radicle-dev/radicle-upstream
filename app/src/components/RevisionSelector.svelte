@@ -14,7 +14,7 @@
   });
 
   const ALL_REVISIONS = gql`
-    query($projectId: String!) {
+    query($projectId: IdInput!) {
       tags(projectId: $projectId)
       branches(projectId: $projectId)
     }
