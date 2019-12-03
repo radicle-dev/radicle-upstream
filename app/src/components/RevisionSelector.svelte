@@ -28,6 +28,7 @@
 
 {#await $allRevisions then result}
   <Select
+    dataCy="revision-selector"
     style="margin-bottom: 16px"
     items={[...result.data.tags, ...result.data.branches]}
     bind:value={$revision} />
