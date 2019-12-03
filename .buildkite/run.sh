@@ -38,7 +38,7 @@ cp -aTu proxy/target "$target_cache"
 echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 
 echo "--- Starting proxy daemon and runing app tests"
-(cd app && yarn run-p --race proxy:start ci:test)
+(cd app && yarn run-p --race proxy:start fake:radicle:start:ci ci:test)
 
 echo "--- Packaging and uploading app binaries"
 (cd app && yarn ci:dist)

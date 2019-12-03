@@ -81,7 +81,13 @@ const typeDefs = `
 const debug = false;
 
 // TODO: implement actual lookup once we have mock data with stable IDs
-const projectRepoPathById = _projectId => path.resolve(__dirname, "../../");
+const projectRepoPathById = _projectId => {
+  if (process.argv[2] == "--test") {
+    return path.resolve(__dirname, "../../../upstream-test-repo/");
+  } else {
+    return path.resolve(__dirname, "../../");
+  }
+};
 
 const execOptions = (domain, name) => ({
   maxBuffer: 1024 * 1000,
