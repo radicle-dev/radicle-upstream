@@ -19,9 +19,15 @@ context("source code browsing", () => {
       );
 
       // there is a commit teaser
-      cy.contains("Rūdolfs Ošiņš").should("exist");
-      cy.contains("Commit on the dev branch").should("exist");
-      cy.contains("27acd68").should("exist");
+      cy.get("[data-cy=commit-teaser]")
+        .contains("Rūdolfs Ošiņš")
+        .should("exist");
+      cy.get("[data-cy=commit-teaser]")
+        .contains("Add dotfiles")
+        .should("exist");
+      cy.get("[data-cy=commit-teaser]")
+        .contains("1820cb0")
+        .should("exist");
 
       // it is the folder view
       cy.get("thead")
