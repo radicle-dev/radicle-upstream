@@ -48,9 +48,9 @@
   },
   "scripts": {
     "start": "run-p --race svelte:watch fake:radicle:start proxy:start electron:start",
-    "test": "yarn svelte:build && yarn cypress:run",
+    "test": "TZ='Europe/Berlin' run-p --race fake:radicle:start:test proxy:start ci:test",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build && cp ../proxy/target/release/proxy dist && electron-builder",
-    "ci:test": "wait-on http://localhost:8080 && wait-on http://localhost:4000 && yarn test",
+    "ci:test": "wait-on http://localhost:8080 && wait-on http://localhost:4000 && yarn svelte:build && yarn cypress:run",
     "ci:dist": "rm -rf ./dist && mkdir ./dist && cp ../proxy/target/release/proxy dist && electron-builder",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on http://localhost:8080 && NODE_ENV=development electron .",
     "svelte:clean": "rm -rf public/bundle.*",
@@ -62,7 +62,8 @@
     "cypress:open": "yarn run cypress open",
     "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js",
     "fake:radicle:start": "babel-node --presets \"@babel/env\" scripts/git-graphql-browser.js",
-    "fake:radicle:start:ci": "yarn fake:radicle:start --test"
+    "fake:radicle:start:ci": "yarn fake:radicle:start --ci",
+    "fake:radicle:start:test": "yarn fake:radicle:start --test"
   },
   "dependencies": {
     "apollo-boost": "^0.4.4",
