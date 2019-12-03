@@ -15,6 +15,8 @@ chmod -R a+w $CARGO_HOME $RUSTUP_HOME
 
 export PATH="$PATH:CARGO_HOME/bin"
 
+echo "--- Clone git-platinum test repo"
+((cd /cache/git-platinum && git pull) || (cd /cache && git clone https://github.com/radicle-dev/git-platinum.git))
 
 echo "--- Installing yarn dependencies"
 (cd app && yarn install)
