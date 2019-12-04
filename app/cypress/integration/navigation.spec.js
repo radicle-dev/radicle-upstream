@@ -169,5 +169,25 @@ context("navigation", () => {
         cy.contains("Overview").should("exist");
       });
     });
+
+    context("when using the vertical scrollbar", () => {
+      it("stays fixed at the top", () => {
+        cy.get('[data-cy="sidebar"]')
+          .get('a[title="Projects"]')
+          .click();
+        cy.contains("Monadic").click();
+        cy.get('[data-cy="project-sidebar"]')
+          .get('a[title="ProjectSource"]')
+          .click();
+
+        cy.get("[data-cy=source-tree]").within(() => {
+          cy.get("[data-cy=expand-src]").click();
+          cy.contains("Eval.hs").click();
+        });
+        cy.window().scrollTo("bottom");
+
+        cy.get("[data-cy=breadcrumbs]").should("be.inViewport");
+      });
+    });
   });
 });
