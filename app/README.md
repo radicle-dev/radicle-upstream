@@ -44,7 +44,24 @@ workdir/ » tree -L 1
 To run the tests do: `yarn test`.
 
 
-#### Buildkite
+#### CI
+
+CI is configured via:
+```
+radicle-upstream/.buildkite » tree -L 1
+.
+├── Dockerfile
+├── pipeline.yaml
+└── run.sh
+```
+
+The build process is run for every commit that is pushed to GitHub. When the
+tests pass, the build process spits out and uploads an app binary as build
+artifact. When the tests fail, screenshots of the failing tests will be
+uploaded instead of the binary.
+
+
+#### Buildkite setup
 
 We use a Docker image that has all of the system dependencies installed to run
 tests on Buildkite. Follow these steps if you need to update the dependencies
