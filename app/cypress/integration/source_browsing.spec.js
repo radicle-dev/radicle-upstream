@@ -99,7 +99,7 @@ context("source code browsing", () => {
       context("when the timeframe is less than a day", () => {
         it("shows timeframe in hours", () => {
           cy.clock(Date.parse("3 dec 2019"));
-          cy.contains("12 hours ago").should("exist");
+          cy.contains("13 hours ago").should("exist");
         });
       });
 
