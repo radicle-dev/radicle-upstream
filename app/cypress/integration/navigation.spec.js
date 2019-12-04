@@ -20,34 +20,69 @@ context("navigation", () => {
     it("provides navigation to all main sections of the app", () => {
       cy.get('[data-cy="sidebar"]')
         .get('a[title="Search"]')
-        .click();
+        .click()
+        .blur();
       cy.contains("Search").should("exist");
+
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="sidebar"]').toMatchImageSnapshot({
+        name: "sidebar-search-active"
+      });
 
       cy.get('[data-cy="sidebar"]')
         .get('a[title="Feed"]')
-        .click();
+        .click()
+        .blur();
       cy.contains("Feed").should("exist");
+
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="sidebar"]').toMatchImageSnapshot({
+        name: "sidebar-feed-active"
+      });
 
       cy.get('[data-cy="sidebar"]')
         .get('a[title="Projects"]')
-        .click();
+        .click()
+        .blur();
       cy.contains("Projects").should("exist");
-      cy.contains("New Project").should("exist");
+
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="sidebar"]').toMatchImageSnapshot({
+        name: "sidebar-projects-active"
+      });
 
       cy.get('[data-cy="sidebar"]')
         .get('a[title="Create new project"]')
-        .click();
+        .click()
+        .blur();
       cy.contains("Design System").should("exist");
 
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Fund"]')
-        .click();
-      cy.contains("Wallet").should("exist");
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="sidebar"]').toMatchImageSnapshot({
+        name: "sidebar-design-system-active"
+      });
 
       cy.get('[data-cy="sidebar"]')
         .get('a[title="Profile"]')
-        .click();
+        .click()
+        .blur();
       cy.contains("Profile").should("exist");
+
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="sidebar"]').toMatchImageSnapshot({
+        name: "sidebar-profile-active"
+      });
+
+      cy.get('[data-cy="sidebar"]')
+        .get('a[title="Fund"]')
+        .click()
+        .blur();
+      cy.contains("Wallet").should("exist");
+
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="sidebar"]').toMatchImageSnapshot({
+        name: "sidebar-fund-active"
+      });
     });
   });
 
@@ -81,9 +116,15 @@ context("navigation", () => {
         cy.contains("Overview").should("exist");
       });
 
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="project-sidebar"]').toMatchImageSnapshot({
+        name: "project-sidebar-overview-active"
+      });
+
       cy.get('[data-cy="project-sidebar"]')
         .get('a[title="ProjectFeed"]')
-        .click();
+        .click()
+        .blur();
       cy.get("h2")
         .contains("Feed")
         .should("exist");
@@ -91,9 +132,15 @@ context("navigation", () => {
         cy.contains("Feed").should("exist");
       });
 
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="project-sidebar"]').toMatchImageSnapshot({
+        name: "project-sidebar-feed-active"
+      });
+
       cy.get('[data-cy="project-sidebar"]')
         .get('a[title="ProjectMembers"]')
-        .click();
+        .click()
+        .blur();
       cy.get("h2")
         .contains("Members")
         .should("exist");
@@ -101,9 +148,15 @@ context("navigation", () => {
         cy.contains("Members").should("exist");
       });
 
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="project-sidebar"]').toMatchImageSnapshot({
+        name: "project-sidebar-members-active"
+      });
+
       cy.get('[data-cy="project-sidebar"]')
         .get('a[title="ProjectFund"]')
-        .click();
+        .click()
+        .blur();
       cy.get("h2")
         .contains("Fund")
         .should("exist");
@@ -111,9 +164,15 @@ context("navigation", () => {
         cy.contains("Fund").should("exist");
       });
 
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="project-sidebar"]').toMatchImageSnapshot({
+        name: "project-sidebar-fund-active"
+      });
+
       cy.get('[data-cy="project-sidebar"]')
         .get('a[title="ProjectSource"]')
-        .click();
+        .click()
+        .blur();
       cy.get("thead")
         .contains("Commit Message")
         .should("exist");
@@ -121,9 +180,15 @@ context("navigation", () => {
         cy.contains("Source").should("exist");
       });
 
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="project-sidebar"]').toMatchImageSnapshot({
+        name: "project-sidebar-source-active"
+      });
+
       cy.get('[data-cy="project-sidebar"]')
         .get('a[title="ProjectCommits"]')
-        .click();
+        .click()
+        .blur();
       cy.get("h2")
         .contains("Commits")
         .should("exist");
@@ -131,14 +196,25 @@ context("navigation", () => {
         cy.contains("Commits").should("exist");
       });
 
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="project-sidebar"]').toMatchImageSnapshot({
+        name: "project-sidebar-commits-active"
+      });
+
       cy.get('[data-cy="project-sidebar"]')
         .get('a[title="ProjectBranches"]')
-        .click();
+        .click()
+        .blur();
       cy.get("h2")
         .contains("Branches")
         .should("exist");
       cy.get("[data-cy=breadcrumbs]").within(() => {
         cy.contains("Branches").should("exist");
+      });
+
+      // check whether the active icon is highlighted
+      cy.get('[data-cy="project-sidebar"]').toMatchImageSnapshot({
+        name: "project-sidebar-branches-active"
       });
     });
   });
