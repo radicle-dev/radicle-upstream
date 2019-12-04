@@ -68,11 +68,11 @@ context("source code browsing", () => {
       cy.get("[data-cy=source-tree]").within(() => {
         cy.get("[data-cy=expand-bin]").click();
       });
-      cy.contains("Branches").should("not.be.visible");
+      cy.contains("Branches").should("not.be.inViewport");
 
       // the scrollbar allows us to reach all the content in the sidebar
       cy.contains("Branches").scrollIntoView();
-      cy.contains("Branches").should("be.visible");
+      cy.contains("Branches").should("be.inViewport");
     });
 
     context("when clicking on the carret icon next to the folder name", () => {
@@ -152,9 +152,9 @@ context("source code browsing", () => {
           // line numbers are shown
           cy.contains("1\n2\n3\n4\n5\n").should("exist");
 
+          cy.window().scrollTo("bottom");
           // the scrollbar allows us to reach the bottom of the file
-          cy.contains("253").scrollIntoView();
-          cy.contains("callFn f' vs'").should("be.visible");
+          cy.contains("callFn f' vs'").should("be.inViewport");
         });
       });
 
