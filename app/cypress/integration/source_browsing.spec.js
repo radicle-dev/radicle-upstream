@@ -43,6 +43,28 @@ context("source code browsing", () => {
   });
 
   context("page view", () => {
+    context("revision selector", () => {
+      it("allows switching to a different branch", () => {
+        cy.get("[data-cy=revision-selector]").should(
+          "have.value",
+          "refs/heads/master"
+        );
+
+        cy.get("[data-cy=revision-selector]").select("refs/remotes/origin/dev");
+        cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
+      });
+
+      it("allows switching to a different tag", () => {
+        cy.get("[data-cy=revision-selector]").should(
+          "have.value",
+          "refs/heads/master"
+        );
+
+        cy.get("[data-cy=revision-selector]").select("v0.4.0");
+        cy.contains("test-file-deletion.txt").should("exist");
+      });
+    });
+
     context("when clicking on a directory", () => {
       it("allows diving deep into directory structures", () => {
         cy.get("[data-cy=file-list] [data-cy=open-this]").click();
