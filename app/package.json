@@ -2,7 +2,7 @@
   "name": "radicle-upstream",
   "version": "0.0.1",
   "build": {
-    "appId": "radicle-upstream.monadic.mvp",
+    "appId": "radicle-upstream.monadic.xyz",
     "files": [
       "public/**/*",
       "native/**/*"

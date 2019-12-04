@@ -1,4 +1,4 @@
-[![Build status](https://badge.buildkite.com/4fb43c6b471ab7cc26509eae235b0e4bbbaace11cc1848eae6.svg?branch=master)](https://buildkite.com/monadic/mvp)
+[![Build status](https://badge.buildkite.com/4fb43c6b471ab7cc26509eae235b0e4bbbaace11cc1848eae6.svg?branch=master)](https://buildkite.com/monadic/radicle-upstream)
 
 # radicle-upstream
 
@@ -16,8 +16,8 @@ a pre-commit basis with [husky][1] and [lint-staged][2].
 
 Run the app locally with hot reloading:
 
-1. Get the code: `git clone git@github.com:oscoin/mvp.git`
-2. Install dependencies: `cd mvp/app && yarn install`
+1. Get the code: `git clone git@github.com:radicle-dev/radicle-upstream.git`
+2. Install dependencies: `cd radicle-upstream/app && yarn install`
 3. Start the app in development mode: `yarn start`
 
 

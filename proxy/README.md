@@ -1,6 +1,7 @@
 # AppProxy
 
-Intermediate serving a specialised API to the MVP frontend via GraphQL.
+Intermediate serving a specialised API to the radicle-upstream frontend via
+GraphQL.
 
 ### Run
 
