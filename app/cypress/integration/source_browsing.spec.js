@@ -23,22 +23,14 @@ context("source code browsing", () => {
         .contains("Rūdolfs Ošiņš")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("Add dotfiles")
+        .contains("Delete unneeded file")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("1820cb0")
+        .contains("80ded66")
         .should("exist");
 
       // it is the folder view
-      cy.get("thead")
-        .contains("Name")
-        .should("exist");
-      cy.get("thead")
-        .contains("Commit Message")
-        .should("exist");
-      cy.get("thead")
-        .contains("Last Update")
-        .should("exist");
+      cy.get("[data-cy=file-list]").should("exist");
 
       // some top-level files/folders exist
       cy.get("tbody")
