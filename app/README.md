@@ -42,6 +42,7 @@ workdir/ » tree -L 1
 ```
 
 To run the tests do: `yarn test`.
+To troubleshoot tests in the Cypress GUI, run: `yarn test:debug`.
 
 
 #### CI
