@@ -50,6 +50,38 @@ context("source code browsing", () => {
     });
   });
 
+  context("page view", () => {
+    context("when clicking on a directory", () => {
+      it("allows diving deep into directory structures", () => {
+        cy.get("[data-cy=file-list] [data-cy=open-this]").click();
+        cy.get("[data-cy=file-list] [data-cy=open-is]").click();
+        cy.get("[data-cy=file-list] [data-cy=open-a]").click();
+        cy.get("[data-cy=file-list] [data-cy=open-really]").click();
+        cy.get("[data-cy=file-list] [data-cy=open-deeply]").click();
+        cy.get("[data-cy=file-list] [data-cy=open-nested]").click();
+        cy.get("[data-cy=file-list] [data-cy=open-directory]").click();
+        cy.get("[data-cy=file-list] [data-cy=open-tree]").click();
+        cy.get("[data-cy=file-list]")
+          .contains(".gitkeep")
+          .should("exist");
+      });
+    });
+
+    context("when clicking on a file", () => {
+      it("shows the file contents", () => {
+        cy.get("[data-cy=file-list] [data-cy=open-src]").click();
+        cy.get("[data-cy=file-list]")
+          .contains("Eval.hs")
+          .click();
+
+        cy.get("[data-cy=file-source]").within(() => {
+          cy.contains("Eval.hs").should("exist");
+          cy.contains("module Radicle.Lang.Eval").should("exist");
+        });
+      });
+    });
+  });
+
   context("sidebar source-tree", () => {
     it("shows files and directories", () => {
       cy.get("[data-cy=source-tree]").within(() => {
