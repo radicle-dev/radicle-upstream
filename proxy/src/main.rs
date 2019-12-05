@@ -1,4 +1,4 @@
-//! Proxy to serve a specialised HTTP to the oscoin MVP.
+//! Proxy to serve a specialised GraphQL API to radicle-upstream.
 
 #![deny(missing_docs)]
 #![deny(warnings)]
