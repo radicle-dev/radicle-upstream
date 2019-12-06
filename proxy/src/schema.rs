@@ -58,7 +58,7 @@ impl Query {
         "1.0"
     }
 
-    fn branches(ctx: &Context) -> FieldResult<Vec<Branch>> {
+    fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
         Ok(vec![
             Branch {
                 name: "master".into(),
@@ -94,7 +94,7 @@ fn test_schema_branches() {
     let vars = Variables::new();
 
     let (res, _errors) = juniper::execute(
-        "query { branches { name } }",
+        "query($id: IdInput!) { branches(id: $id) { name } }",
         None,
         &Schema::new(Query, Mutation),
         &vars,
