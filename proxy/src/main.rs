@@ -14,7 +14,6 @@
 
 #[macro_use]
 extern crate log;
-extern crate pretty_env_logger;
 
 #[macro_use]
 extern crate juniper;
@@ -28,7 +27,7 @@ mod source;
 
 fn main() {
     std::env::set_var("RUST_BACKTRACE", "full");
-    std::env::set_var("RUST_LOG", "info");
+    std::env::set_var("RUST_LOG", "debug");
     pretty_env_logger::init();
 
     let source_type = std::env::args().nth(1).expect("no source was given");
