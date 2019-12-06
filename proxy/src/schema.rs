@@ -31,8 +31,8 @@ impl juniper::Context for Context {}
 
 #[derive(GraphQLInputObject)]
 struct IdInput {
-    name: String,
     domain: String,
+    name: String,
 }
 
 impl Into<ProjectId> for IdInput {
@@ -44,6 +44,11 @@ impl Into<ProjectId> for IdInput {
     }
 }
 
+#[derive(GraphQLObject)]
+struct Branch {
+    name: String,
+}
+
 /// Encapsulates read paths in API.
 pub struct Query;
 
@@ -53,6 +58,17 @@ impl Query {
         "1.0"
     }
 
+    fn branches(ctx: &Context) -> FieldResult<Vec<Branch>> {
+        Ok(vec![
+            Branch {
+                name: "master".into(),
+            },
+            Branch {
+                name: "origin/test".into(),
+            },
+        ])
+    }
+
     fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
         Ok(ctx.source.get_all_projects())
     }
@@ -60,6 +76,41 @@ impl Query {
     fn project(ctx: &Context, id: IdInput) -> FieldResult<Option<Project>> {
         Ok(ctx.source.get_project(id.into()))
     }
+}
+
+#[test]
+fn test_schema_branches() {
+    use juniper::Variables;
+    use radicle_registry_client::MemoryClient;
+
+    use crate::source::{setup_fixtures, Ledger};
+
+    let registry_client = MemoryClient::new();
+    let mut source = Ledger::new(registry_client);
+
+    setup_fixtures(&mut source);
+
+    let ctx = Context::new(source);
+    let vars = Variables::new();
+
+    let (res, _errors) = juniper::execute(
+        "query { branches { name } }",
+        None,
+        &Schema::new(Query, Mutation),
+        &vars,
+        &ctx,
+    )
+    .expect("juniper execute failed");
+
+    assert_eq!(
+        res,
+        graphql_value!({
+            "branches": [
+                { "name": "master" },
+                { "name": "origin/test" },
+            ]
+        }),
+    );
 }
 
 /// Encapsulates write path in API.
