@@ -80,7 +80,8 @@ impl Query {
 
 #[test]
 fn test_schema_branches() {
-    use juniper::Variables;
+    use indexmap::IndexMap;
+    use juniper::{InputValue, Variables};
     use radicle_registry_client::MemoryClient;
 
     use crate::source::{setup_fixtures, Ledger};
@@ -91,7 +92,14 @@ fn test_schema_branches() {
     setup_fixtures(&mut source);
 
     let ctx = Context::new(source);
-    let vars = Variables::new();
+
+    let mut vars = Variables::new();
+    let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+
+    id_map.insert("domain".into(), InputValue::scalar("rad"));
+    id_map.insert("name".into(), InputValue::scalar("upstream"));
+
+    vars.insert("id".into(), InputValue::object(id_map));
 
     let (res, _errors) = juniper::execute(
         "query($id: IdInput!) { branches(id: $id) { name } }",
