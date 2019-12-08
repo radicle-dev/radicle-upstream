@@ -59,14 +59,20 @@ impl Query {
     }
 
     fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
-        Ok(vec![
-            Branch {
-                name: "master".into(),
-            },
-            Branch {
-                name: "origin/test".into(),
-            },
-        ])
+        use radicle_surf::git::{GitBrowser, GitRepository};
+
+        let repo =
+            GitRepository::new("../data/git-golden").expect("Pointing to golden repo failed");
+        let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        let branche_names = browser.list_branches().expect("Getting branches failed");
+        let branches = branche_names
+            .into_iter()
+            .map(|branch_name| Branch {
+                name: branch_name.name(),
+            })
+            .collect();
+
+        Ok(branches)
     }
 
     fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
@@ -115,7 +121,9 @@ fn test_schema_branches() {
         graphql_value!({
             "branches": [
                 { "name": "master" },
-                { "name": "origin/test" },
+                { "name": "origin/HEAD" },
+                { "name": "origin/add-tests" },
+                { "name": "origin/master" },
             ]
         }),
     );
