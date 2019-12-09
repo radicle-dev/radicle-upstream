@@ -55,6 +55,11 @@ struct Branch {
 }
 
 #[derive(GraphQLObject)]
+struct Commit {
+    id: String,
+}
+
+#[derive(GraphQLObject)]
 struct Tag {
     name: String,
 }
@@ -66,6 +71,12 @@ pub struct Query;
 impl Query {
     fn apiVersion() -> &str {
         "1.0"
+    }
+
+    fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<Option<Commit>> {
+        Ok(Some(Commit {
+            id: "abc1234".into(),
+        }))
     }
 
     fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
@@ -161,6 +172,29 @@ mod tests {
     }
 
     #[test]
+    fn query_commit() {
+        let mut vars = Variables::new();
+        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+
+        id_map.insert("domain".into(), InputValue::scalar("rad"));
+        id_map.insert("name".into(), InputValue::scalar("upstream"));
+        vars.insert("id".into(), InputValue::object(id_map));
+        vars.insert("sha1".into(), InputValue::scalar("abc1234"));
+
+        let (res, _errors) = execute_query(
+            "query($id: IdInput!, $sha1: String!) { commit(id: $id, sha1: $sha1) { id } }",
+            &vars,
+        );
+
+        assert_eq!(
+            res,
+            graphql_value!({
+                "commit": { "id": "abc1234" },
+            }),
+        )
+    }
+
+    #[test]
     fn query_tags() {
         let mut vars = Variables::new();
         let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
@@ -176,7 +210,7 @@ mod tests {
             res,
             graphql_value!({
                 "tags": [
-                { "name": "v0.0.1" },
+                    { "name": "v0.0.1" },
                 ]
             }),
         )
