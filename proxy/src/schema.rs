@@ -105,122 +105,99 @@ impl Query {
     }
 }
 
-#[test]
-fn test_schema_branches() {
+#[cfg(test)]
+mod tests {
     use indexmap::IndexMap;
     use juniper::{InputValue, Variables};
     use radicle_registry_client::MemoryClient;
 
+    use super::{Context, Mutation, Query, Schema};
     use crate::source::{setup_fixtures, Ledger};
 
-    let registry_client = MemoryClient::new();
-    let mut source = Ledger::new(registry_client);
+    const REPO_PATH: &str = "../data/git-golden";
 
-    setup_fixtures(&mut source);
+    fn execute_query(
+        query: &str,
+        vars: &Variables,
+    ) -> (
+        juniper::Value,
+        Vec<juniper::ExecutionError<juniper::DefaultScalarValue>>,
+    ) {
+        let registry_client = MemoryClient::new();
+        let mut source = Ledger::new(registry_client);
 
-    let ctx = Context::new("../data/git-golden".into(), source);
+        setup_fixtures(&mut source);
 
-    let mut vars = Variables::new();
-    let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+        let ctx = Context::new(REPO_PATH.into(), source);
 
-    id_map.insert("domain".into(), InputValue::scalar("rad"));
-    id_map.insert("name".into(), InputValue::scalar("upstream"));
+        juniper::execute(query, None, &Schema::new(Query, Mutation), &vars, &ctx)
+            .expect("test execute failed")
+    }
 
-    vars.insert("id".into(), InputValue::object(id_map));
+    #[test]
+    fn query_branches() {
+        let mut vars = Variables::new();
+        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-    let (res, _errors) = juniper::execute(
-        "query($id: IdInput!) { branches(id: $id) { name } }",
-        None,
-        &Schema::new(Query, Mutation),
-        &vars,
-        &ctx,
-    )
-    .expect("test branches execute failed");
+        id_map.insert("domain".into(), InputValue::scalar("rad"));
+        id_map.insert("name".into(), InputValue::scalar("upstream"));
 
-    assert_eq!(
-        res,
-        graphql_value!({
-            "branches": [
-                { "name": "master" },
-                { "name": "origin/HEAD" },
-                { "name": "origin/add-tests" },
-                { "name": "origin/master" },
-            ]
-        }),
-    );
-}
+        vars.insert("id".into(), InputValue::object(id_map));
 
-#[test]
-fn test_schema_tags() {
-    use indexmap::IndexMap;
-    use juniper::{InputValue, Variables};
-    use radicle_registry_client::MemoryClient;
+        let (res, _errors) =
+            execute_query("query($id: IdInput!) { branches(id: $id) { name } }", &vars);
 
-    use crate::source::{setup_fixtures, Ledger};
+        assert_eq!(
+            res,
+            graphql_value!({
+                "branches": [
+                    { "name": "master" },
+                    { "name": "origin/HEAD" },
+                    { "name": "origin/add-tests" },
+                    { "name": "origin/master" },
+                ]
+            }),
+        );
+    }
 
-    let mut source = Ledger::new(MemoryClient::new());
-    setup_fixtures(&mut source);
+    #[test]
+    fn query_tags() {
+        let mut vars = Variables::new();
+        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-    let ctx = Context::new("../data/git-golden".into(), source);
-    let mut vars = Variables::new();
-    let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+        id_map.insert("domain".into(), InputValue::scalar("rad"));
+        id_map.insert("name".into(), InputValue::scalar("upstream"));
+        vars.insert("id".into(), InputValue::object(id_map));
 
-    id_map.insert("domain".into(), InputValue::scalar("rad"));
-    id_map.insert("name".into(), InputValue::scalar("upstream"));
-    vars.insert("id".into(), InputValue::object(id_map));
+        let (res, _errors) =
+            execute_query("query($id: IdInput!) { tags(id: $id) { name } }", &vars);
 
-    let (res, _errors) = juniper::execute(
-        "query($id: IdInput!) { tags(id: $id) { name } }",
-        None,
-        &Schema::new(Query, Mutation),
-        &vars,
-        &ctx,
-    )
-    .expect("test tags execute failed");
+        assert_eq!(
+            res,
+            graphql_value!({
+                "tags": [
+                { "name": "v0.0.1" },
+                ]
+            }),
+        )
+    }
 
-    assert_eq!(
-        res,
-        graphql_value!({
-            "tags": [
-            { "name": "v0.0.1" },
-            ]
-        }),
-    )
-}
+    #[test]
+    fn query_projects() {
+        let (res, _errors) = execute_query("query { projects { name } }", &Variables::new());
 
-#[test]
-fn test_schema_projects() {
-    use juniper::Variables;
-
-    use crate::source::Ledger;
-
-    let registry_client = radicle_registry_client::MemoryClient::new();
-    let mut source = Ledger::new(registry_client);
-
-    crate::source::setup_fixtures(&mut source);
-
-    let ctx = Context::new("../data/git-golden".into(), source);
-
-    let (res, _errors) = juniper::execute(
-        "query { projects { name } }",
-        None,
-        &Schema::new(Query, Mutation),
-        &Variables::new(),
-        &ctx,
-    )
-    .expect("test projects execute failed");
-
-    assert_eq!(
-        res,
-        graphql_value!({
-            "projects": [
-                {"name": "monokel"},
-                {"name": "Monadic"},
-                {"name": "open source coin"},
-                {"name": "radicle"},
-            ]
-        })
-    );
+        assert_eq!(
+            res,
+            graphql_value!({
+                "projects": [
+                    {"name": "monokel"},
+                    {"name": "Monadic"},
+                    {"name": "open source coin"},
+                    {"name": "radicle"},
+                ]
+            })
+        );
+    }
 }
 
 /// Encapsulates write path in API.
