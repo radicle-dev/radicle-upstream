@@ -56,7 +56,7 @@ struct Branch {
 
 #[derive(GraphQLObject)]
 struct Commit {
-    id: String,
+    sha1: String,
 }
 
 #[derive(GraphQLObject)]
@@ -74,9 +74,21 @@ impl Query {
     }
 
     fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<Option<Commit>> {
-        Ok(Some(Commit {
-            id: "abc1234".into(),
-        }))
+        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        browser
+            .commit(radicle_surf::vcs::git::Sha1::new(&sha1))
+            .expect("setting commit failed");
+
+        let history = browser.get_history();
+        let maybe_commit = history.iter().last();
+
+        match maybe_commit {
+            None => Ok(None),
+            Some(commit) => Ok(Some(Commit {
+                sha1: commit.id().to_string(),
+            })),
+        }
     }
 
     fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
@@ -173,23 +185,25 @@ mod tests {
 
     #[test]
     fn query_commit() {
+        const SHA1: &str = "74ba370ee5643f310873fb288af1c99d639da8ca";
+
         let mut vars = Variables::new();
         let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
         id_map.insert("domain".into(), InputValue::scalar("rad"));
         id_map.insert("name".into(), InputValue::scalar("upstream"));
         vars.insert("id".into(), InputValue::object(id_map));
-        vars.insert("sha1".into(), InputValue::scalar("abc1234"));
+        vars.insert("sha1".into(), InputValue::scalar(SHA1));
 
         let (res, _errors) = execute_query(
-            "query($id: IdInput!, $sha1: String!) { commit(id: $id, sha1: $sha1) { id } }",
+            "query($id: IdInput!, $sha1: String!) { commit(id: $id, sha1: $sha1) { sha1 } }",
             &vars,
         );
 
         assert_eq!(
             res,
             graphql_value!({
-                "commit": { "id": "abc1234" },
+                "commit": { "id": SHA1 },
             }),
         )
     }
