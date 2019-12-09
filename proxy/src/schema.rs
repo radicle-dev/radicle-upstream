@@ -1,6 +1,8 @@
 use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
+use radicle_surf::git::{GitBrowser, GitRepository};
+
 use crate::source::{AccountId, Project, ProjectId, Source};
 
 /// Glue to bundle our read and write APIs together.
@@ -14,14 +16,17 @@ pub fn create() -> Schema {
 /// Container to pass the `Source` around for data access.
 #[derive(Clone)]
 pub struct Context {
+    /// Intermediate repo used to serve dummy data to be presented to the API consumer.
+    dummy_repo_path: String,
     /// Origin of data needed to server APIs.
     source: Arc<dyn Source + Send + Sync>,
 }
 
 impl Context {
     /// Returns a new `Context`.
-    pub fn new<S: Source + Send + Sync + 'static>(source: S) -> Self {
+    pub fn new<S: Source + Send + Sync + 'static>(dummy_repo_path: String, source: S) -> Self {
         Self {
+            dummy_repo_path,
             source: Arc::new(source),
         }
     }
@@ -59,10 +64,7 @@ impl Query {
     }
 
     fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
-        use radicle_surf::git::{GitBrowser, GitRepository};
-
-        let repo =
-            GitRepository::new("../data/git-golden").expect("Pointing to golden repo failed");
+        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
         let branche_names = browser.list_branches().expect("Getting branches failed");
         let branches = branche_names
@@ -97,7 +99,7 @@ fn test_schema_branches() {
 
     setup_fixtures(&mut source);
 
-    let ctx = Context::new(source);
+    let ctx = Context::new("../data/git-golden".into(), source);
 
     let mut vars = Variables::new();
     let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
@@ -155,7 +157,7 @@ fn test_schema_projects() {
 
     crate::source::setup_fixtures(&mut source);
 
-    let ctx = Context::new(source);
+    let ctx = Context::new("../data/git-golden".into(), source);
 
     let (res, _errors) = juniper::execute(
         "query { projects { name } }",
