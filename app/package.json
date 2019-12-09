@@ -68,7 +68,6 @@
   },
   "dependencies": {
     "apollo-boost": "^0.4.4",
-    "cypress-plugin-snapshots": "^1.2.9",
     "graphql": "^14.5.8",
     "graphql-yoga": "^1.18.3",
     "svelte-apollo": "^0.3.0",

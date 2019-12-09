@@ -10,5 +10,3 @@ steps:
       - "app/dist/*.AppImage"
       - "app/dist/*.snap"
       - "app/cypress/screenshots/**/*.png"
-      - "app/cypress/integration/__image_snapshots__/*.actual.png"
-      - "app/cypress/integration/__image_snapshots__/*.diff.png"

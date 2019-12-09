@@ -1,6 +1,5 @@
 {
   "video": false,
   "viewportWidth": 1200,
-  "viewportHeight": 600,
-  "ignoreTestFiles": ["**/__snapshots__/*", "**/__image_snapshots__/*"]
+  "viewportHeight": 600
 }
