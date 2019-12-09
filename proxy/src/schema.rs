@@ -54,6 +54,11 @@ struct Branch {
     name: String,
 }
 
+#[derive(GraphQLObject)]
+struct Tag {
+    name: String,
+}
+
 /// Encapsulates read paths in API.
 pub struct Query;
 
@@ -75,6 +80,20 @@ impl Query {
             .collect();
 
         Ok(branches)
+    }
+
+    fn tags(ctx: &Context, id: IdInput) -> FieldResult<Vec<Tag>> {
+        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        let tag_names = browser.list_tags().expect("Getting branches failed");
+        let tags = tag_names
+            .into_iter()
+            .map(|tag_name| Tag {
+                name: tag_name.name(),
+            })
+            .collect();
+
+        Ok(tags)
     }
 
     fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
@@ -116,7 +135,7 @@ fn test_schema_branches() {
         &vars,
         &ctx,
     )
-    .expect("juniper execute failed");
+    .expect("test branches execute failed");
 
     assert_eq!(
         res,
@@ -131,19 +150,42 @@ fn test_schema_branches() {
     );
 }
 
-/// Encapsulates write path in API.
-pub struct Mutation;
+#[test]
+fn test_schema_tags() {
+    use indexmap::IndexMap;
+    use juniper::{InputValue, Variables};
+    use radicle_registry_client::MemoryClient;
 
-#[juniper::object(Context = Context)]
-impl Mutation {
-    fn register_project(
-        ctx: &Context,
-        name: String,
-        description: String,
-        img_url: String,
-    ) -> FieldResult<Project> {
-        Ok(ctx.source.register_project(name, description, img_url))
-    }
+    use crate::source::{setup_fixtures, Ledger};
+
+    let mut source = Ledger::new(MemoryClient::new());
+    setup_fixtures(&mut source);
+
+    let ctx = Context::new("../data/git-golden".into(), source);
+    let mut vars = Variables::new();
+    let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+
+    id_map.insert("domain".into(), InputValue::scalar("rad"));
+    id_map.insert("name".into(), InputValue::scalar("upstream"));
+    vars.insert("id".into(), InputValue::object(id_map));
+
+    let (res, _errors) = juniper::execute(
+        "query($id: IdInput!) { tags(id: $id) { name } }",
+        None,
+        &Schema::new(Query, Mutation),
+        &vars,
+        &ctx,
+    )
+    .expect("test tags execute failed");
+
+    assert_eq!(
+        res,
+        graphql_value!({
+            "tags": [
+            { "name": "v0.0.1" },
+            ]
+        }),
+    )
 }
 
 #[test]
@@ -166,7 +208,7 @@ fn test_schema_projects() {
         &Variables::new(),
         &ctx,
     )
-    .expect("juniper execute failed for projects");
+    .expect("test projects execute failed");
 
     assert_eq!(
         res,
@@ -179,6 +221,21 @@ fn test_schema_projects() {
             ]
         })
     );
+}
+
+/// Encapsulates write path in API.
+pub struct Mutation;
+
+#[juniper::object(Context = Context)]
+impl Mutation {
+    fn register_project(
+        ctx: &Context,
+        name: String,
+        description: String,
+        img_url: String,
+    ) -> FieldResult<Project> {
+        Ok(ctx.source.register_project(name, description, img_url))
+    }
 }
 
 juniper::graphql_scalar!(AccountId where Scalar = <S> {
