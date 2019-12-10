@@ -45,10 +45,16 @@ impl TryFrom<radicle_registry_client::ProjectId> for ProjectId {
 impl TryInto<radicle_registry_client::ProjectId> for ProjectId {
     type Error = &'static str;
     fn try_into(self) -> Result<radicle_registry_client::ProjectId, Self::Error> {
-        Ok((
-            ProjectName::from_string(self.name).expect("project name creation failed"),
-            ProjectDomain::from_string(self.domain).expect("project domain creation faile"),
-        ))
+        let project_name = match ProjectName::from_string(self.name) {
+            Ok(project_name) => project_name,
+            Err(_) => { panic!("project name creation failed.") },
+        };
+        let project_domain = match ProjectDomain::from_string(self.domain) {
+            Ok(project_domain) => project_domain,
+            Err(_) => { panic!("project domain creation failed.") },
+        };
+
+        Ok(( project_name, project_domain ))
     }
 }
 
@@ -81,13 +87,17 @@ impl TryFrom<radicle_registry_client::Project> for Project {
             })
             .collect();
 
-        Ok(Self {
-            id: p.id.clone().try_into().unwrap(),
-            name: p.id.0.to_string(),
-            description: p.description,
-            img_url: p.img_url,
-            members: ms,
-        })
+        if let Ok(p_id) = p.id.clone().try_into() {
+            Ok(Self {
+                id: p_id,
+                name: p.id.0.to_string(),
+                description: p.description,
+                img_url: p.img_url,
+                members: ms,
+            })
+        } else {
+            Err("Failed to convert to radicle project.")
+        }
     }
 }
 
