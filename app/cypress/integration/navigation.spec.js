@@ -17,7 +17,7 @@ context("navigation", () => {
   });
 
   context("first-level sidebar", () => {
-    it.only("provides navigation to all main sections of the app", () => {
+    it("provides navigation to all main sections of the app", () => {
       cy.get('[data-cy="sidebar"] [data-cy="search"]').click();
       cy.get('[data-cy="page"]').should("contain", "Search");
 
