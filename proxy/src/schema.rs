@@ -55,13 +55,38 @@ struct Branch {
 }
 
 #[derive(GraphQLObject)]
-struct Commit {
-    sha1: String,
+struct Tag {
+    name: String,
 }
 
 #[derive(GraphQLObject)]
-struct Tag {
+struct Person {
     name: String,
+    email: String,
+}
+
+#[derive(GraphQLObject)]
+struct Commit {
+    sha1: String,
+    author: Person,
+}
+
+// FIXME(xla): This should be a `std::convert::TryFrom` and needs to be addressed together with
+//             consistent error handling.
+impl From<&radicle_surf::vcs::git::git2::Commit<'_>> for Commit {
+    fn from(commit: &radicle_surf::vcs::git::git2::Commit) -> Self {
+        let signature = commit.author();
+        let name = signature.name().unwrap_or("invalid name");
+        let email = signature.email().unwrap_or("invalid email");
+
+        Self {
+            sha1: commit.id().to_string(),
+            author: Person {
+                name: name.into(),
+                email: email.into(),
+            },
+        }
+    }
 }
 
 /// Encapsulates read paths in API.
@@ -81,14 +106,9 @@ impl Query {
             .expect("setting commit failed");
 
         let history = browser.get_history();
-        let maybe_commit = history.iter().last();
+        let commit = history.0.first();
 
-        match maybe_commit {
-            None => Ok(None),
-            Some(commit) => Ok(Some(Commit {
-                sha1: commit.id().to_string(),
-            })),
-        }
+        Ok(Some(Commit::from(commit)))
     }
 
     fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
@@ -132,6 +152,7 @@ impl Query {
 mod tests {
     use indexmap::IndexMap;
     use juniper::{InputValue, Variables};
+    use pretty_assertions::assert_eq;
     use radicle_registry_client::MemoryClient;
 
     use super::{Context, Mutation, Query, Schema};
@@ -196,14 +217,28 @@ mod tests {
         vars.insert("sha1".into(), InputValue::scalar(SHA1));
 
         let (res, _errors) = execute_query(
-            "query($id: IdInput!, $sha1: String!) { commit(id: $id, sha1: $sha1) { sha1 } }",
+            "query($id: IdInput!, $sha1: String!) {
+                commit(id: $id, sha1: $sha1) {
+                    sha1,
+                    author {
+                        name,
+                        email,
+                    },
+                }
+            }",
             &vars,
         );
 
         assert_eq!(
             res,
             graphql_value!({
-                "commit": { "id": SHA1 },
+                "commit": {
+                    "sha1": SHA1,
+                    "author": {
+                        "name": "Fintan Halpenny",
+                        "email": "fintan.halpenny@gmail.com",
+                    },
+                },
             }),
         )
     }
