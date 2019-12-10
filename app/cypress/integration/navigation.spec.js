@@ -17,45 +17,31 @@ context("navigation", () => {
   });
 
   context("first-level sidebar", () => {
-    it("provides navigation to all main sections of the app", () => {
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Search"]')
-        .click();
+    it.only("provides navigation to all main sections of the app", () => {
+      cy.get('[data-cy="sidebar"] [data-cy="search"]').click();
       cy.contains("Search").should("exist");
 
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Feed"]')
-        .click();
+      cy.get('[data-cy="sidebar"] [data-cy="feed"]').click();
       cy.contains("Feed").should("exist");
 
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Projects"]')
-        .click();
+      cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
       cy.contains("Projects").should("exist");
       cy.contains("New Project").should("exist");
 
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Create new project"]')
-        .click();
+      cy.get('[data-cy="sidebar"] [data-cy="new-project"]').click();
       cy.contains("Design System").should("exist");
 
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Fund"]')
-        .click();
+      cy.get('[data-cy="sidebar"] [data-cy="wallet"]').click();
       cy.contains("Wallet").should("exist");
 
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Profile"]')
-        .click();
+      cy.get('[data-cy="sidebar"] [data-cy="profile"]').click();
       cy.contains("Profile").should("exist");
     });
   });
 
   context("second-level project sidebar", () => {
     it("opens the project overview by default", () => {
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Projects"]')
-        .click();
+      cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
       cy.contains("monokel").click();
 
       cy.get("h2")
@@ -69,9 +55,7 @@ context("navigation", () => {
     });
 
     it("provides navigation to all sub-sections of a project", () => {
-      cy.get('[data-cy="sidebar"]')
-        .get('a[title="Projects"]')
-        .click();
+      cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
       cy.contains("monokel").click();
 
       cy.get("h2")
@@ -146,9 +130,7 @@ context("navigation", () => {
   context("breadcrumb navigation", () => {
     context("clicking on 'My Projects'", () => {
       it("navigates back to project listing", () => {
-        cy.get('[data-cy="sidebar"]')
-          .get('a[title="Projects"]')
-          .click();
+        cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
         cy.contains("Monadic").click();
         cy.contains("My Projects").click();
         cy.contains("Projects").should("exist");
@@ -157,9 +139,7 @@ context("navigation", () => {
 
     context("clicking on the project name", () => {
       it("navigates to project overview", () => {
-        cy.get('[data-cy="sidebar"]')
-          .get('a[title="Projects"]')
-          .click();
+        cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
         cy.contains("Monadic").click();
         cy.get('[data-cy="project-sidebar"]')
           .get('a[title="ProjectBranches"]')
@@ -172,9 +152,7 @@ context("navigation", () => {
 
     context("when using the vertical scrollbar", () => {
       it("stays fixed at the top", () => {
-        cy.get('[data-cy="sidebar"]')
-          .get('a[title="Projects"]')
-          .click();
+        cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
         cy.contains("Monadic").click();
         cy.get('[data-cy="project-sidebar"]')
           .get('a[title="ProjectSource"]')

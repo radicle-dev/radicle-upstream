@@ -57,6 +57,7 @@
         <SidebarItem
           icon={Icon.Search}
           title="Search"
+          dataCy="search"
           href={path.search()}
           active={path.active(path.search(), $location)} />
       </li>
@@ -64,6 +65,7 @@
         <SidebarItem
           icon={Icon.Feed}
           title="Feed"
+          dataCy="feed"
           href={path.feed()}
           active={path.active(path.feed(), $location)} />
       </li>
@@ -71,6 +73,7 @@
         <SidebarItem
           icon={Icon.Projects}
           title="Projects"
+          dataCy="projects"
           href={path.projects()}
           active={path.active(path.projects(), $location)} />
       </li>
@@ -83,6 +86,7 @@
         <SidebarItem
           icon={Icon.Plus}
           title="Create new project"
+          dataCy="new-project"
           href={path.designSystem()}
           active={path.active(path.designSystem(), $location)} />
       </li>
@@ -90,6 +94,7 @@
         <SidebarItem
           icon={Icon.Fund}
           title="Fund"
+          dataCy="wallet"
           href={path.wallet()}
           active={path.active(path.wallet(), $location)} />
       </li>
@@ -97,6 +102,7 @@
         <SidebarAvatar
           image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
           title="Profile"
+          dataCy="profile"
           href={path.profile()}
           active={path.active(path.profile(), $location)} />
       </li>
