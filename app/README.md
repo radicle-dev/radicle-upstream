@@ -30,12 +30,13 @@ Build and package the app:
 #### Running tests locally
 
 Before running tests locally you'll need to set up a test fixture repository
-via: `cd ../../ && git clone https://github.com/radicle-dev/git-platinum`.
+relative to `radicle-upstream` via:
+`git clone https://github.com/radicle-dev/git-platinum`.
 
-Make sure the test fixture repository is in the same parent folder relative to
-the repository of this app:
+The directory layout shoud look like this:
+
 ```
-workdir/ » tree -L 1
+workdir
 .
 ├── git-platinum
 └── radicle-upstream
@@ -49,7 +50,7 @@ To troubleshoot tests in the Cypress GUI, run: `yarn test:debug`.
 
 CI is configured via:
 ```
-radicle-upstream/.buildkite » tree -L 1
+radicle-upstream/.buildkite
 .
 ├── Dockerfile
 ├── pipeline.yaml
