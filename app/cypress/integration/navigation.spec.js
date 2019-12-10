@@ -19,23 +19,23 @@ context("navigation", () => {
   context("first-level sidebar", () => {
     it.only("provides navigation to all main sections of the app", () => {
       cy.get('[data-cy="sidebar"] [data-cy="search"]').click();
-      cy.contains("Search").should("exist");
+      cy.get('[data-cy="page"]').should("contain", "Search");
 
       cy.get('[data-cy="sidebar"] [data-cy="feed"]').click();
-      cy.contains("Feed").should("exist");
+      cy.get('[data-cy="page"]').should("contain", "Feed");
 
       cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
-      cy.contains("Projects").should("exist");
-      cy.contains("New Project").should("exist");
+      cy.get('[data-cy="page"]').should("contain", "Projects");
+      cy.get('[data-cy="page"]').should("contain", "New Project");
 
       cy.get('[data-cy="sidebar"] [data-cy="new-project"]').click();
-      cy.contains("Design System").should("exist");
+      cy.get('[data-cy="page"]').should("contain", "Design System");
 
       cy.get('[data-cy="sidebar"] [data-cy="wallet"]').click();
-      cy.contains("Wallet").should("exist");
+      cy.get('[data-cy="page"]').should("contain", "Wallet");
 
       cy.get('[data-cy="sidebar"] [data-cy="profile"]').click();
-      cy.contains("Profile").should("exist");
+      cy.get('[data-cy="page"]').should("contain", "Profile");
     });
   });
 

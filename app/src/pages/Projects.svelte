@@ -4,7 +4,7 @@
   import Layout from "./Layout.svelte";
 </script>
 
-<Layout>
+<Layout dataCy="page">
   <Header style="margin-bottom: 24px">
     <div slot="left">
       <Title.Big>Projects</Title.Big>
