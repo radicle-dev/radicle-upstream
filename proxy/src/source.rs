@@ -1,5 +1,6 @@
 use futures::future::Future;
 use std::collections::HashMap;
+use std::convert::{TryFrom, TryInto};
 
 use radicle_registry_client::{CryptoPair as _, H256};
 use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
@@ -31,21 +32,23 @@ pub struct ProjectId {
     pub domain: String,
 }
 
-impl From<radicle_registry_client::ProjectId> for ProjectId {
-    fn from(id: radicle_registry_client::ProjectId) -> Self {
-        Self {
+impl TryFrom<radicle_registry_client::ProjectId> for ProjectId {
+    type Error = &'static str;
+    fn try_from(id: radicle_registry_client::ProjectId) -> Result<Self, Self::Error> {
+        Ok(Self {
             name: id.0.to_string(),
             domain: id.1.to_string(),
-        }
+        })
     }
 }
 
-impl Into<radicle_registry_client::ProjectId> for ProjectId {
-    fn into(self) -> radicle_registry_client::ProjectId {
-        (
+impl TryInto<radicle_registry_client::ProjectId> for ProjectId {
+    type Error = &'static str;
+    fn try_into(self) -> Result<radicle_registry_client::ProjectId, Self::Error> {
+        Ok((
             ProjectName::from_string(self.name).expect("project name creation failed"),
             ProjectDomain::from_string(self.domain).expect("project domain creation faile"),
-        )
+        ))
     }
 }
 
@@ -65,8 +68,9 @@ pub struct Project {
     members: Vec<Account>,
 }
 
-impl From<radicle_registry_client::Project> for Project {
-    fn from(p: radicle_registry_client::Project) -> Self {
+impl TryFrom<radicle_registry_client::Project> for Project {
+    type Error = &'static str;
+    fn try_from(p: radicle_registry_client::Project) -> Result<Self, Self::Error> {
         let ms = p
             .members
             .into_iter()
@@ -77,13 +81,13 @@ impl From<radicle_registry_client::Project> for Project {
             })
             .collect();
 
-        Self {
-            id: p.id.clone().into(),
+        Ok(Self {
+            id: p.id.clone().try_into().unwrap(),
             name: p.id.0.to_string(),
             description: p.description,
             img_url: p.img_url,
             members: ms,
-        }
+        })
     }
 }
 
@@ -187,7 +191,7 @@ where
                     .expect("get_project failed");
 
                 match maybe_project {
-                    Some(project) => Some(self.enrich_members(Project::from(project))),
+                    Some(project) => Some(self.enrich_members(Project::try_from(project).unwrap())),
                     None => None,
                 }
             })
@@ -197,12 +201,12 @@ where
     fn get_project(&self, id: ProjectId) -> Option<Project> {
         let maybe_project = self
             .registry_client
-            .get_project(id.into())
+            .get_project(id.try_into().unwrap())
             .wait()
             .expect("get project failed");
 
         match maybe_project {
-            Some(p) => Some(self.enrich_members(Project::from(p))),
+            Some(p) => Some(self.enrich_members(Project::try_from(p).unwrap())),
             None => None,
         }
     }
@@ -231,7 +235,7 @@ where
             .expect("osc project registration failed");
 
         Project {
-            id: registry_id.into(),
+            id: registry_id.try_into().unwrap(),
             name,
             description,
             img_url,
