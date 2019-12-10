@@ -69,6 +69,9 @@ struct Person {
 struct Commit {
     sha1: String,
     author: Person,
+    summary: String,
+    message: String,
+    time: String,
 }
 
 // FIXME(xla): This should be a `std::convert::TryFrom` and needs to be addressed together with
@@ -76,15 +79,16 @@ struct Commit {
 impl From<&radicle_surf::vcs::git::git2::Commit<'_>> for Commit {
     fn from(commit: &radicle_surf::vcs::git::git2::Commit) -> Self {
         let signature = commit.author();
-        let name = signature.name().unwrap_or("invalid name");
-        let email = signature.email().unwrap_or("invalid email");
 
         Self {
             sha1: commit.id().to_string(),
             author: Person {
-                name: name.into(),
-                email: email.into(),
+                name: signature.name().unwrap_or("invalid name").into(),
+                email: signature.email().unwrap_or("invalid email").into(),
             },
+            summary: commit.summary().unwrap_or("invalid subject").into(),
+            message: commit.message().unwrap_or("invalid message").into(),
+            time: commit.time().seconds().to_string(),
         }
     }
 }
@@ -197,8 +201,8 @@ mod tests {
                 "branches": [
                     { "name": "master" },
                     { "name": "origin/HEAD" },
-                    { "name": "origin/add-tests" },
                     { "name": "origin/master" },
+                    { "name": "origin/add-tests" },
                 ]
             }),
         );
@@ -206,7 +210,7 @@ mod tests {
 
     #[test]
     fn query_commit() {
-        const SHA1: &str = "74ba370ee5643f310873fb288af1c99d639da8ca";
+        const SHA1: &str = "b9053ab4916e8ba50a78c243c3440ebdd7500263";
 
         let mut vars = Variables::new();
         let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
@@ -224,6 +228,9 @@ mod tests {
                         name,
                         email,
                     },
+                    summary,
+                    message,
+                    time,
                 }
             }",
             &vars,
@@ -235,9 +242,12 @@ mod tests {
                 "commit": {
                     "sha1": SHA1,
                     "author": {
-                        "name": "Fintan Halpenny",
-                        "email": "fintan.halpenny@gmail.com",
+                        "name": "Alexander Simmerl",
+                        "email": "a.simmerl@gmail.com",
                     },
+                    "summary": "Add a long commit message for integration testing",
+                    "message": "Add a long commit message for integration testing\n\nIn order to have a long commit message with distinct summary this commit\nis added to the repo to integrate against.\n",
+                    "time": "1575988508",
                 },
             }),
         )
