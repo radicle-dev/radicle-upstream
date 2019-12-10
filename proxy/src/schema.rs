@@ -1,7 +1,10 @@
-use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
+use juniper::{FieldError, FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
-use radicle_surf::git::{GitBrowser, GitRepository};
+use radicle_surf::{
+    file_system::Path,
+    git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
+};
 
 use crate::source::{AccountId, Project, ProjectId, Source};
 
@@ -93,6 +96,17 @@ impl From<&radicle_surf::vcs::git::git2::Commit<'_>> for Commit {
     }
 }
 
+#[derive(GraphQLObject)]
+struct Tree {
+    path: String,
+    entries: Vec<TreeEntry>,
+}
+
+#[derive(GraphQLObject)]
+struct TreeEntry {
+    path: String,
+}
+
 /// Encapsulates read paths in API.
 pub struct Query;
 
@@ -141,6 +155,51 @@ impl Query {
             .collect();
 
         Ok(tags)
+    }
+
+    fn tree(ctx: &Context, id: IdInput, revision: String, prefix: String) -> FieldResult<Tree> {
+        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+
+        if let Err(err) = browser
+            .branch(BranchName::new(&revision))
+            .or(browser.commit(Sha1::new(&revision)))
+            .or(browser.tag(TagName::new(&revision)))
+        {
+            let err_fmt = format!("{:?}", err);
+
+            return Err(FieldError::new(
+                "Git error occurred",
+                graphql_value!({ "git": err_fmt }),
+            ));
+        };
+
+        let path = std::path::Path::new(&prefix);
+        let path_components: Vec<radicle_surf::file_system::Label> = path
+            .iter()
+            .filter_map(|c| c.to_str())
+            .map(|c| c.into())
+            .collect();
+        let root_dir = browser
+            .get_directory()
+            .expect("getting repo directory failed");
+        let prefix_dir = root_dir
+            .find_directory(&Path::with_root(&path_components))
+            .expect("directory listing failed");
+        let mut prefix_contents = prefix_dir.list_directory();
+        prefix_contents.sort();
+
+        let entries = prefix_contents
+            .iter()
+            .map(|(label, _type)| TreeEntry {
+                path: label.to_string(),
+            })
+            .collect();
+
+        Ok(Tree {
+            path: prefix,
+            entries,
+        })
     }
 
     fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
@@ -192,9 +251,10 @@ mod tests {
 
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, _errors) =
+        let (res, errors) =
             execute_query("query($id: IdInput!) { branches(id: $id) { name } }", &vars);
 
+        assert_eq!(errors, []);
         assert_eq!(
             res,
             graphql_value!({
@@ -220,7 +280,7 @@ mod tests {
         vars.insert("id".into(), InputValue::object(id_map));
         vars.insert("sha1".into(), InputValue::scalar(SHA1));
 
-        let (res, _errors) = execute_query(
+        let (res, errors) = execute_query(
             "query($id: IdInput!, $sha1: String!) {
                 commit(id: $id, sha1: $sha1) {
                     sha1,
@@ -236,6 +296,7 @@ mod tests {
             &vars,
         );
 
+        assert_eq!(errors, []);
         assert_eq!(
             res,
             graphql_value!({
@@ -262,9 +323,9 @@ mod tests {
         id_map.insert("name".into(), InputValue::scalar("upstream"));
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, _errors) =
-            execute_query("query($id: IdInput!) { tags(id: $id) { name } }", &vars);
+        let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) { name } }", &vars);
 
+        assert_eq!(errors, []);
         assert_eq!(
             res,
             graphql_value!({
@@ -276,9 +337,47 @@ mod tests {
     }
 
     #[test]
-    fn query_projects() {
-        let (res, _errors) = execute_query("query { projects { name } }", &Variables::new());
+    fn query_tree() {
+        let mut vars = Variables::new();
+        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
+        id_map.insert("domain".into(), InputValue::scalar("rad"));
+        id_map.insert("name".into(), InputValue::scalar("upstream"));
+        vars.insert("id".into(), InputValue::object(id_map));
+        vars.insert("revision".into(), InputValue::scalar("master"));
+        vars.insert("prefix".into(), InputValue::scalar("src"));
+
+        let (res, errors) = execute_query(
+            "query($id: IdInput!, $revision: String!, $prefix: String!) {
+                tree(id: $id, revision: $revision, prefix: $prefix) {
+                    path,
+                    entries {
+                        path,
+                    },
+                }
+            }",
+            &vars,
+        );
+
+        assert_eq!(errors, []);
+        assert_eq!(
+            res,
+            graphql_value!({
+                "tree": {
+                    "path": "src",
+                    "entries": [
+                        { "path": "main.rs" },
+                    ],
+                }
+            }),
+        );
+    }
+
+    #[test]
+    fn query_projects() {
+        let (res, errors) = execute_query("query { projects { name } }", &Variables::new());
+
+        assert_eq!(errors, []);
         assert_eq!(
             res,
             graphql_value!({
