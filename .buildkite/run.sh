@@ -15,9 +15,6 @@ chmod -R a+w $CARGO_HOME $RUSTUP_HOME
 
 export PATH="$PATH:CARGO_HOME/bin"
 
-echo "--- Update git-platinum submodule"
-git submodule foreach "git fetch --all"
-
 echo "--- Installing yarn dependencies"
 (cd app && yarn install)
 
