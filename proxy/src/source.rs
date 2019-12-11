@@ -173,14 +173,25 @@ where
     }
 
     fn get_all_projects(&self) -> Result<Vec<Project>, RegistryError> {
-         self
+         Ok(self
             .registry_client
             .list_projects()
             .wait()? // bubble error up if registry client throws anything
             .into_iter()
             .take(10)
-            .flat_map(|id| { self.get_project(id.into()).wait() })
-            .collect()
+            .flat_map(|id| {
+                match self.get_project(id.into()) {
+                    Ok(maybe_project) => match maybe_project {
+                        Some(project) => Ok(project),
+                        None => {
+                            // TODO possible data consistency issue. retry?
+                            panic!("Project listed by registry but could not be found.")
+                        },
+                    },
+                    Err(err) => Err(err),
+                }
+            })
+            .collect())
     }
 
     fn get_project(&self, id: ProjectId) -> Result<Option<Project>, RegistryError> {
@@ -201,8 +212,8 @@ where
 
         // TODO(garbados): eliminate .unwrap calls
         let registry_id = (
-            ProjectName::from_string(name.into()).unwrap(),
-            ProjectDomain::from_string("rad".into()).unwrap()
+            ProjectName::from_string(name.to_string()).unwrap(),
+            ProjectDomain::from_string("rad".to_string()).unwrap()
         );
 
         // TODO(xla): Proper error handling.
