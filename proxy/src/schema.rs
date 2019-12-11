@@ -122,6 +122,12 @@ struct TreeEntry {
     path: String,
 }
 
+#[derive(GraphQLObject)]
+struct Blob {
+    content: String,
+    info: Info,
+}
+
 /// Encapsulates read paths in API.
 pub struct Query;
 
@@ -129,6 +135,47 @@ pub struct Query;
 impl Query {
     fn apiVersion() -> &str {
         "1.0"
+    }
+
+    fn blob(ctx: &Context, id: IdInput, revision: String, path: String) -> FieldResult<Blob> {
+        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+
+        // Best effort to guess the revision.
+        if let Err(err) = browser
+            .branch(BranchName::new(&revision))
+            .or(browser.commit(Sha1::new(&revision)))
+            .or(browser.tag(TagName::new(&revision)))
+        {
+            let err_fmt = format!("{:?}", err);
+
+            return Err(FieldError::new(
+                "Git error occurred",
+                graphql_value!({ "git": err_fmt }),
+            ));
+        };
+
+        let root = browser
+            .get_directory()
+            .expect("unable to get root directory");
+
+        println!("{:?}", path);
+        let mut p = Path::root();
+        p.append(&mut Path::from_string(&path));
+        let file = root.find_file(&p).expect("unable to find file");
+        let last_commit = browser.last_commit(&p).expect("unable to get last commit");
+        let (_rest, last) = p.split_last();
+
+        Ok(Blob {
+            content: std::str::from_utf8(&file.contents)
+                .expect("invalid content")
+                .to_string(),
+            info: Info {
+                name: last.label,
+                object_type: ObjectType::Blob,
+                last_commit: Commit::from(&last_commit),
+            },
+        })
     }
 
     fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<Option<Commit>> {
@@ -291,6 +338,66 @@ mod tests {
 
         juniper::execute(query, None, &Schema::new(Query, Mutation), &vars, &ctx)
             .expect("test execute failed")
+    }
+
+    #[test]
+    fn query_blob() {
+        let mut vars = Variables::new();
+        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+
+        id_map.insert("domain".into(), InputValue::scalar("rad"));
+        id_map.insert("name".into(), InputValue::scalar("upstream"));
+
+        vars.insert("id".into(), InputValue::object(id_map));
+        vars.insert("revision".into(), InputValue::scalar("master"));
+        vars.insert("path".into(), InputValue::scalar("src/main.rs"));
+
+        let (res, errors) = execute_query(
+            "query($id: IdInput!, $revision: String!, $path: String!) {
+                blob(id: $id, revision: $revision, path: $path) {
+                    content,
+                    info {
+                        name,
+                        objectType,
+                        lastCommit{
+                            sha1,
+                            author {
+                                name,
+                                email,
+                            },
+                            summary,
+                            message,
+                            time,
+                        },
+                    },
+                }
+            }",
+            &vars,
+        );
+
+        assert_eq!(errors, []);
+        assert_eq!(
+            res,
+            graphql_value!({
+                "blob": {
+                    "content": "fn main() {\n    println!(\"Hello, world!\");\n}\n",
+                    "info": {
+                        "name": "main.rs",
+                        "objectType": "BLOB",
+                        "lastCommit": {
+                            "sha1": "74ba370ee5643f310873fb288af1c99d639da8ca",
+                            "author": {
+                                "name": "Fintan Halpenny",
+                                "email": "fintan.halpenny@gmail.com",
+                            },
+                            "summary": "Add .gitignore",
+                            "message": "Add .gitignore\n",
+                            "time": "1574786128",
+                        }
+                    },
+                }
+            }),
+        );
     }
 
     #[test]
