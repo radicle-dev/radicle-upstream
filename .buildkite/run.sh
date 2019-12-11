@@ -29,7 +29,7 @@ else
 fi
 
 echo "--- Building proxy"
-(cd app && yarn proxy:build)
+(cd app && ELECTRON_ENABLE_LOGGING=1 yarn proxy:build)
 
 echo "--- Saving proxy/target cache"
 rm -rf "$target_cache"
