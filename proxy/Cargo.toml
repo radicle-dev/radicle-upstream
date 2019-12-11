@@ -34,7 +34,7 @@ rev = "58e3b8bc79e556053d8e17dc21f72c8bbdf243e5"
 
 [dependencies.radicle-surf]
 git = "https://github.com/radicle-dev/radicle-surf.git"
-rev = "840e75edc46c84b6392b3f38e1d830547fac89a4"
+rev = "3ddc170c109b10273ea04659eb64ec6918189f70"
 
 [dev-dependencies]
 indexmap = "1.3"

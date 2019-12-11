@@ -1932,7 +1932,7 @@ dependencies = [
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=840e75edc46c84b6392b3f38e1d830547fac89a4)",
+ "radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=3ddc170c109b10273ea04659eb64ec6918189f70)",
  "radicle_registry_client 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=58e3b8bc79e556053d8e17dc21f72c8bbdf243e5)",
  "radicle_registry_runtime 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=58e3b8bc79e556053d8e17dc21f72c8bbdf243e5)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1976,7 +1976,7 @@ dependencies = [
 [[package]]
 name = "radicle-surf"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-surf.git?rev=840e75edc46c84b6392b3f38e1d830547fac89a4#840e75edc46c84b6392b3f38e1d830547fac89a4"
+source = "git+https://github.com/radicle-dev/radicle-surf.git?rev=3ddc170c109b10273ea04659eb64ec6918189f70#3ddc170c109b10273ea04659eb64ec6918189f70"
 dependencies = [
  "git2 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nonempty 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -3704,7 +3704,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum quick-error 1.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9274b940887ce9addde99c4eee6b5c44cc494b182b97e73dc8ffdcb3397fd3f0"
 "checksum quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)" = "6ce23b6b870e8f94f81fb0a363d65d86675884b34a09043c81e5562f11c1f8e1"
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
-"checksum radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=840e75edc46c84b6392b3f38e1d830547fac89a4)" = "<none>"
+"checksum radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=3ddc170c109b10273ea04659eb64ec6918189f70)" = "<none>"
 "checksum radicle_registry_client 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=58e3b8bc79e556053d8e17dc21f72c8bbdf243e5)" = "<none>"
 "checksum radicle_registry_runtime 0.1.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=58e3b8bc79e556053d8e17dc21f72c8bbdf243e5)" = "<none>"
 "checksum rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)" = "6d71dacdc3c88c1fde3885a3be3fbab9f35724e6ce99467f7d9c5026132184ca"
