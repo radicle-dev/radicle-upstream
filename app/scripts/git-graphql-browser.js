@@ -83,14 +83,8 @@ const debug = false;
 // TODO: implement actual lookup once we have mock data with stable IDs
 const projectRepoPathById = _projectId => {
   switch (process.argv[2]) {
-    // on CI the only way to run tests against an external repo is to check
-    // it out in the /cache folder
-    case "--ci":
-      return "/cache/git-platinum/";
-    // for local tests git-platinum has to be checked out relative to the
-    // upstream app repo
     case "--test":
-      return path.resolve(__dirname, "../../../git-platinum/");
+      return path.resolve(__dirname, "../cypress/git-platinum/");
     // in dev mode serve the upstream app repo itself
     default:
       return path.resolve(__dirname, "../../");

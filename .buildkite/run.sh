@@ -15,9 +15,8 @@ chmod -R a+w $CARGO_HOME $RUSTUP_HOME
 
 export PATH="$PATH:CARGO_HOME/bin"
 
-echo "--- Clone git-platinum test repo"
-((cd /cache/git-platinum && git fetch --all && git pull --all) || \
-  (cd /cache && git clone https://github.com/radicle-dev/git-platinum.git))
+echo "--- Update git-platinum submodule"
+git submodule foreach "git fetch --all"
 
 echo "--- Installing yarn dependencies"
 (cd app && yarn install)
@@ -41,7 +40,7 @@ cp -aTu proxy/target "$target_cache"
 echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 
 echo "--- Starting proxy daemon and runing app tests"
-(cd app && yarn run-p --race proxy:start fake:radicle:start:ci ci:test)
+(cd app && yarn test)
 
 echo "--- Packaging and uploading app binaries"
 (cd app && yarn ci:dist)

@@ -29,18 +29,8 @@ Build and package the app:
 
 #### Running tests locally
 
-Before running tests locally you'll need to set up a test fixture repository
-relative to `radicle-upstream` via:
-`git clone https://github.com/radicle-dev/git-platinum`.
-
-The directory layout shoud look like this:
-
-```
-workdir
-.
-├── git-platinum
-└── radicle-upstream
-```
+Before running tests locally you'll need to set up a test fixture repository:
+`git submodule foreach "git fetch --all"`.
 
 To run the tests do: `yarn test`.
 To troubleshoot tests in the Cypress GUI, run: `yarn test:debug`.
@@ -97,7 +87,8 @@ DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.3'
 ```
 yarn start           - start electron app in development mode with code
                        hot-reloading
-yarn test            - run cypress tests locally
+yarn test            - run cypress e2e tests
+yarn test:debug      - run tests via the cypress GUI
 yarn dist            - packages the app into an installable package
 
 yarn electron:start  - wait for dependency start-up and start electron without
