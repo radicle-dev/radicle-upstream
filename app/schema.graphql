@@ -89,7 +89,21 @@ type Query {
   branches(projectId: ID!): [Ref]!
   refs(projectId: ID!): [Ref]!
   tags(projectId: ID!): [Ref]!
+
+  # local disk browsing
+  localBranches(path: String!): [Ref]!
 }
+
+ProjectMetadataInput {
+  name: String!
+  description: String
+  defaultBranch: String!
+}
+
+type Mutation {
+  createProject(project: ProjectMetadataInput!, path: String!, publish: Boolean!): Project!
+}
+
 
 ################
 # Exploration. #
