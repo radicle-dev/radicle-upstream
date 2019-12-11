@@ -1,5 +1,15 @@
 scalar Datetime
 
+input IdInput {
+  domain: String!
+  name: String!
+}
+
+enum ObjectType {
+  TREE
+  BLOB
+}
+
 type Person {
   name: String
   email: String
@@ -20,11 +30,11 @@ type Commit {
 
 # file info and metadata.
 type Info {
-  name: String!          # base name of the file
-  size: Int!             # length in bytes (low-prio)
-  isDirectory: Boolean!  # if it's a directory
-  flags: [Int]!          # any flags git stores, currently only executable (low-prio)
-  lastcommit: Commit!    # last commit which affected this path
+  name: String!            # base name of the file
+  size: Int!               # length in bytes (low-prio)
+  objectType: ObjectType!  # TREE or BLOB
+  mode: String!            # any flags git stores (e.g. "100644") (low-prio)
+  lastcommit: Commit!      # last commit which affected this path
 }
 
 type Blob {
@@ -78,17 +88,16 @@ type Query {
   #   app/native
   #   app/cypress/plugins
 
-  blob(projectId: ID!, revision: String!, path: String!): Blob!
-  tree(projectId: ID!, revision: String!, prefix: String!): Tree!
+  blob(projectId: IdInput!, revision: String!, path: String!): Blob!
+  tree(projectId: IdInput!, revision: String!, prefix: String!): Tree!
 
-  # Commits browsing
-  commits(projectId: ID!, Revision: String!): [Commit]!
-  commit(projectId: ID!, sha1: String!): Commit
+  # Commit browsing
+  commit(projectId: IdInput!, sha1: String!): Commit
 
   # Ref browsing
-  branches(projectId: ID!): [Ref]!
+  branches(projectId: IdInput!): [String]!
   refs(projectId: ID!): [Ref]!
-  tags(projectId: ID!): [Ref]!
+  tags(projectId: IdInput!): [String]!
 
   # local disk browsing
   localBranches(path: String!): [Ref]!
