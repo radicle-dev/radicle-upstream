@@ -79,7 +79,7 @@ impl From<radicle_registry_client::Project> for Project {
             .collect();
 
         Self {
-            id:  p.id.clone().into(),
+            id: p.id.clone().into(),
             name: p.id.0.to_string(),
             description: p.description,
             img_url: p.img_url,
