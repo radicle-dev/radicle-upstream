@@ -25,10 +25,12 @@ mod schema;
 mod server_warp;
 /// Origin of data required like the on-chain Registry.
 mod source;
+/// lib functions
+mod env;
 
 fn main() {
-    std::env::set_var("RUST_BACKTRACE", "full");
-    std::env::set_var("RUST_LOG", "info");
+    env::set_if_unset("RUST_BACKTRACE", "full");
+    env::set_if_unset("RUST_LOG", "debug");
     pretty_env_logger::init();
 
     let source_type = std::env::args().nth(1).expect("no source was given");
