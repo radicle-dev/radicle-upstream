@@ -32,28 +32,20 @@ pub struct ProjectId {
     pub domain: String,
 }
 
-impl TryFrom<radicle_registry_client::ProjectId> for ProjectId {
-    type Error = &'static str;
-    fn try_from(id: radicle_registry_client::ProjectId) -> Result<Self, Self::Error> {
-        Ok(Self {
+impl From<radicle_registry_client::ProjectId> for ProjectId {
+    fn from(id: radicle_registry_client::ProjectId) -> Self {
+        Self {
             name: id.0.to_string(),
             domain: id.1.to_string(),
-        })
+        }
     }
 }
 
 impl TryInto<radicle_registry_client::ProjectId> for ProjectId {
-    type Error = &'static str;
+    type Error = String;
     fn try_into(self) -> Result<radicle_registry_client::ProjectId, Self::Error> {
-        let project_name = match ProjectName::from_string(self.name) {
-            Ok(project_name) => project_name,
-            Err(_) => { panic!("project name creation failed.") },
-        };
-        let project_domain = match ProjectDomain::from_string(self.domain) {
-            Ok(project_domain) => project_domain,
-            Err(_) => { panic!("project domain creation failed.") },
-        };
-
+        let project_name = ProjectName::from_string(self.name)?;
+        let project_domain = ProjectDomain::from_string(self.domain)?;
         Ok(( project_name, project_domain ))
     }
 }
@@ -74,9 +66,8 @@ pub struct Project {
     members: Vec<Account>,
 }
 
-impl TryFrom<radicle_registry_client::Project> for Project {
-    type Error = &'static str;
-    fn try_from(p: radicle_registry_client::Project) -> Result<Self, Self::Error> {
+impl From<radicle_registry_client::Project> for Project {
+    fn from(p: radicle_registry_client::Project) -> Self {
         let ms = p
             .members
             .into_iter()
@@ -87,16 +78,12 @@ impl TryFrom<radicle_registry_client::Project> for Project {
             })
             .collect();
 
-        if let Ok(p_id) = p.id.clone().try_into() {
-            Ok(Self {
-                id: p_id,
-                name: p.id.0.to_string(),
-                description: p.description,
-                img_url: p.img_url,
-                members: ms,
-            })
-        } else {
-            Err("Failed to convert to radicle project.")
+        Self {
+            id:  p.id.clone().into(),
+            name: p.id.0.to_string(),
+            description: p.description,
+            img_url: p.img_url,
+            members: ms,
         }
     }
 }
@@ -216,7 +203,7 @@ where
             .expect("get project failed");
 
         match maybe_project {
-            Some(p) => Some(self.enrich_members(Project::try_from(p).unwrap())),
+            Some(p) => Some(self.enrich_members(Project::from(p))),
             None => None,
         }
     }
