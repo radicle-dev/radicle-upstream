@@ -227,7 +227,7 @@ where
         let project_name =
             ProjectName::from_string(name.to_string()).expect("project name creation failed");
         let project_domain =
-            ProjectDomain::from_string("rad".to_string()).expect("project domain creation faile");
+            ProjectDomain::from_string("rad".to_string()).expect("project domain creation failed");
         let registry_id = (project_name, project_domain);
 
         // TODO(xla): Proper error handling.
