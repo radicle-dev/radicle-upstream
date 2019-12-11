@@ -73,7 +73,7 @@ impl Mutation {
         description: String,
         img_url: String,
     ) -> FieldResult<Project> {
-        Ok(ctx.source.register_project(name, description, img_url))
+        Ok(ctx.source.register_project(name, description, img_url)?)
     }
 }
 

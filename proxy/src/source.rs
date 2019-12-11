@@ -96,7 +96,7 @@ pub trait Source {
     /// Retrieve a single proejct by `ProjectId`.
     fn get_project(&self, id: ProjectId) -> Result<Option<Project>, RegistryError>;
     /// Register a new project.
-    fn register_project(&self, name: String, description: String, img_url: String) -> Project;
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, RegistryError>;
 }
 
 /// Container to store local view on accounts to match with metadata.
@@ -179,7 +179,7 @@ where
             .wait()? // bubble error up if registry client throws anything
             .into_iter()
             .take(10)
-            .flat_map(|id| { self.get_project(id.into()).wait()? })
+            .flat_map(|id| { self.get_project(id.into()).wait() })
             .collect()
     }
 
@@ -196,14 +196,14 @@ where
         Ok(result)
     }
 
-    fn register_project(&self, name: String, description: String, img_url: String) -> Project {
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, RegistryError> {
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
-        let project_name =
-            ProjectName::from_string(name.to_string()).expect("project name creation failed");
-        let project_domain =
-            ProjectDomain::from_string("rad".to_string()).expect("project domain creation failed");
-        let registry_id = (project_name, project_domain);
+        // TODO(garbados): eliminate .unwrap calls
+        let registry_id = (
+            ProjectName::from_string(name.into()).unwrap(),
+            ProjectDomain::from_string("rad".into()).unwrap()
+        );
 
         // TODO(xla): Proper error handling.
         self.registry_client
@@ -216,16 +216,15 @@ where
                     checkpoint_id: H256::random(),
                 },
             )
-            .wait()
-            .expect("osc project registration failed");
+            .wait()?;
 
-        Project {
+        Ok(Project {
             id: registry_id.try_into().unwrap(),
             name,
             description,
             img_url,
             members: vec![],
-        }
+        })
     }
 }
 
