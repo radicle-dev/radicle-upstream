@@ -54,11 +54,11 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
-        Ok(ctx.source.get_all_projects())
+        Ok(ctx.source.get_all_projects()?)
     }
 
     fn project(ctx: &Context, id: IdInput) -> FieldResult<Option<Project>> {
-        Ok(ctx.source.get_project(id.into()))
+        Ok(ctx.source.get_project(id.into())?)
     }
 }
 

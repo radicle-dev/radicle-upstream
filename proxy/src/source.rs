@@ -1,8 +1,8 @@
 use futures::future::Future;
 use std::collections::HashMap;
-use std::convert::{TryFrom, TryInto};
+use std::convert::{TryInto};
 
-use radicle_registry_client::{CryptoPair as _, H256};
+use radicle_registry_client::{CryptoPair as _, H256, Error as RegistryError};
 use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
 
 /// Newtype for the registry `oscoin_client::AccountId`.
@@ -92,9 +92,9 @@ impl From<radicle_registry_client::Project> for Project {
 pub trait Source {
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
-    fn get_all_projects(&self) -> Vec<Project>;
+    fn get_all_projects(&self) -> Result<Vec<Project>, RegistryError>;
     /// Retrieve a single proejct by `ProjectId`.
-    fn get_project(&self, id: ProjectId) -> Option<Project>;
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, RegistryError>;
     /// Register a new project.
     fn register_project(&self, name: String, description: String, img_url: String) -> Project;
 }
@@ -172,40 +172,28 @@ where
         id
     }
 
-    fn get_all_projects(&self) -> Vec<Project> {
-        // TODO(xla): Return proper error.
-        self.registry_client
+    fn get_all_projects(&self) -> Result<Vec<Project>, RegistryError> {
+         self
+            .registry_client
             .list_projects()
-            .wait()
-            .expect("osc client list projects failed")
+            .wait()? // bubble error up if registry client throws anything
             .into_iter()
             .take(10)
-            .flat_map(|id| {
-                let maybe_project = self
-                    .registry_client
-                    .get_project(id)
-                    .wait()
-                    .expect("get_project failed");
-
-                match maybe_project {
-                    Some(project) => Some(self.enrich_members(Project::try_from(project).unwrap())),
-                    None => None,
-                }
-            })
+            .flat_map(|id| { self.get_project(id.into()).wait()? })
             .collect()
     }
 
-    fn get_project(&self, id: ProjectId) -> Option<Project> {
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, RegistryError> {
         let maybe_project = self
             .registry_client
             .get_project(id.try_into().unwrap())
-            .wait()
-            .expect("get project failed");
+            .wait()?;
 
-        match maybe_project {
+        let result = match maybe_project {
             Some(p) => Some(self.enrich_members(Project::from(p))),
             None => None,
-        }
+        };
+        Ok(result)
     }
 
     fn register_project(&self, name: String, description: String, img_url: String) -> Project {
