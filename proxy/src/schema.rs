@@ -2,7 +2,7 @@ use juniper::{FieldError, FieldResult, ParseScalarResult, ParseScalarValue, Root
 use std::sync::Arc;
 
 use radicle_surf::{
-    file_system::Path,
+    file_system::{Path, SystemType},
     git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
@@ -96,14 +96,29 @@ impl From<&radicle_surf::vcs::git::git2::Commit<'_>> for Commit {
     }
 }
 
+#[derive(GraphQLEnum)]
+enum ObjectType {
+    Blob,
+    Tree,
+}
+
+#[derive(GraphQLObject)]
+struct Info {
+    name: String,
+    object_type: ObjectType,
+    last_commit: Commit,
+}
+
 #[derive(GraphQLObject)]
 struct Tree {
     path: String,
     entries: Vec<TreeEntry>,
+    info: Info,
 }
 
 #[derive(GraphQLObject)]
 struct TreeEntry {
+    info: Info,
     path: String,
 }
 
@@ -175,8 +190,8 @@ impl Query {
             ));
         };
 
-        let path = std::path::Path::new(&prefix);
-        let path_components: Vec<radicle_surf::file_system::Label> = path
+        let prefix_path = std::path::Path::new(&prefix);
+        let path_components: Vec<radicle_surf::file_system::Label> = prefix_path
             .iter()
             .filter_map(|c| c.to_str())
             .map(|c| c.into())
@@ -192,14 +207,50 @@ impl Query {
 
         let entries = prefix_contents
             .iter()
-            .map(|(label, _type)| TreeEntry {
-                path: label.to_string(),
+            .map(|(label, system_type)| {
+                let path = prefix_path
+                    .join(label.to_string())
+                    .to_str()
+                    .expect("invalid path")
+                    .to_string();
+                let last_commit = Commit::from(
+                    &browser
+                        .last_commit(&radicle_surf::file_system::Path::from_string(&path))
+                        .expect("unable to get last commit"),
+                );
+                let info = Info {
+                    name: label.to_string(),
+                    object_type: match system_type {
+                        SystemType::Directory => ObjectType::Tree,
+                        SystemType::File => ObjectType::Blob,
+                    },
+                    last_commit,
+                };
+
+                TreeEntry { info, path }
             })
             .collect();
+
+        let last_commit = Commit::from(
+            &browser
+                .last_commit(&Path::with_root(&[prefix.clone().into()]))
+                .expect("unable to get last commit"),
+        );
+        let info = Info {
+            name: prefix_path
+                .file_name()
+                .expect("invalid filename")
+                .to_str()
+                .expect("invalid string")
+                .to_string(),
+            object_type: ObjectType::Tree,
+            last_commit,
+        };
 
         Ok(Tree {
             path: prefix,
             entries,
+            info,
         })
     }
 
@@ -352,8 +403,36 @@ mod tests {
             "query($id: IdInput!, $revision: String!, $prefix: String!) {
                 tree(id: $id, revision: $revision, prefix: $prefix) {
                     path,
+                    info {
+                        name
+                        objectType
+                        lastCommit {
+                            sha1,
+                            author {
+                                name,
+                                email,
+                            },
+                            summary,
+                            message,
+                            time,
+                        }
+                    }
                     entries {
                         path,
+                        info {
+                            name,
+                            objectType,
+                            lastCommit {
+                                sha1,
+                                author {
+                                    name,
+                                    email,
+                                },
+                                summary,
+                                message,
+                                time,
+                            }
+                        },
                     },
                 }
             }",
@@ -366,8 +445,38 @@ mod tests {
             graphql_value!({
                 "tree": {
                     "path": "src",
+                    "info": {
+                        "name": "src",
+                        "objectType": "TREE",
+                        "lastCommit": {
+                            "sha1": "74ba370ee5643f310873fb288af1c99d639da8ca",
+                            "author": {
+                                "name": "Fintan Halpenny",
+                                "email": "fintan.halpenny@gmail.com",
+                            },
+                            "summary": "Add .gitignore",
+                            "message": "Add .gitignore\n",
+                            "time": "1574786128",
+                        },
+                    },
                     "entries": [
-                        { "path": "main.rs" },
+                        {
+                            "path": "src/main.rs",
+                            "info": {
+                                "name": "main.rs",
+                                "objectType": "BLOB",
+                                "lastCommit": {
+                                    "sha1": "74ba370ee5643f310873fb288af1c99d639da8ca",
+                                    "author": {
+                                        "name": "Fintan Halpenny",
+                                        "email": "fintan.halpenny@gmail.com",
+                                    },
+                                    "summary": "Add .gitignore",
+                                    "message": "Add .gitignore\n",
+                                    "time": "1574786128",
+                                }
+                            },
+                        },
                     ],
                 }
             }),
