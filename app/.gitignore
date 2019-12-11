@@ -6,3 +6,4 @@ native/main.comp.js
 public/bundle.*
 cypress/videos
 cypress/screenshots
+cypress/fixtures/example.json

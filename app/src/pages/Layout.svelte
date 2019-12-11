@@ -1,3 +1,7 @@
+<script>
+  export let dataCy = null;
+</script>
+
 <style>
   .content {
     margin-top: 64px;
@@ -6,6 +10,6 @@
   }
 </style>
 
-<div class="content">
+<div class="content" data-cy={dataCy}>
   <slot />
 </div>

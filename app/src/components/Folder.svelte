@@ -89,7 +89,7 @@
   <div class="container">
     {#if !firstEntry}
       <div class="folder" class:expanded class:active>
-        <Icon.CarretBig on:click={toggle} />
+        <Icon.CarretBig dataCy={`expand-${name}`} on:click={toggle} />
         <a
           href={path.projectSource(projectId.domain, projectId.name, $revision, TREE, prefix)}
           use:link>

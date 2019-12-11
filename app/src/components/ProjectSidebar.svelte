@@ -38,7 +38,7 @@
   }
 </style>
 
-<nav>
+<nav data-cy="project-sidebar">
   <ul>
     <li>
       <ProjectSidebarItem
@@ -79,7 +79,7 @@
         href={path.projectSource(projectId.domain, projectId.name)}
         active={path.active(path.projectSource(projectId.domain, projectId.name), $location, true)}>
 
-        <div class="source-tree">
+        <div class="source-tree" data-cy="source-tree">
           <Folder />
         </div>
       </ProjectSidebarItem>
