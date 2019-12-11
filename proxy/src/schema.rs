@@ -132,11 +132,12 @@ impl Query {
     fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
-        let branche_names = browser.list_branches().expect("Getting branches failed");
-        let branches = branche_names
+        let branches = browser
+            .list_branches(None)
+            .expect("Getting branches failed")
             .into_iter()
-            .map(|branch_name| Branch {
-                name: branch_name.name(),
+            .map(|b| Branch {
+                name: b.name.name(),
             })
             .collect();
 
