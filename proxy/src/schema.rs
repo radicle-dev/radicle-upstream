@@ -273,17 +273,18 @@ impl Query {
             ));
         };
 
-        let prefix_path = std::path::Path::new(&prefix);
-        let path_components: Vec<radicle_surf::file_system::Label> = prefix_path
-            .iter()
-            .filter_map(|c| c.to_str())
-            .map(|c| c.into())
-            .collect();
+        let path = Path::from_string(&prefix);
+        let root_path = {
+            let mut root = Path::root();
+            root.append(&mut path.clone());
+            root
+        };
+
         let root_dir = browser
             .get_directory()
             .expect("getting repo directory failed");
         let prefix_dir = root_dir
-            .find_directory(&Path::with_root(&path_components))
+            .find_directory(&root_path)
             .expect("directory listing failed");
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
@@ -291,14 +292,14 @@ impl Query {
         let entries = prefix_contents
             .iter()
             .map(|(label, system_type)| {
-                let path = prefix_path
-                    .join(label.to_string())
-                    .to_str()
-                    .expect("invalid path")
-                    .to_string();
+                let path = {
+                    let mut path = path.clone();
+                    path.push(label.clone());
+                    path
+                };
                 let last_commit = Commit::from(
                     &browser
-                        .last_commit(&radicle_surf::file_system::Path::from_string(&path))
+                        .last_commit(&path)
                         .expect("unable to get last commit"),
                 );
                 let info = Info {
@@ -310,22 +311,24 @@ impl Query {
                     last_commit,
                 };
 
-                TreeEntry { info, path }
+                TreeEntry {
+                    info,
+                    path: path.to_string(),
+                }
             })
             .collect();
 
         let last_commit = Commit::from(
             &browser
-                .last_commit(&Path::with_root(&[prefix.clone().into()]))
+                .last_commit(&root_path)
                 .expect("unable to get last commit"),
         );
+        let name = {
+            let (_first, last) = path.split_last();
+            last.label
+        };
         let info = Info {
-            name: prefix_path
-                .file_name()
-                .expect("invalid filename")
-                .to_str()
-                .expect("invalid string")
-                .to_string(),
+            name,
             object_type: ObjectType::Tree,
             last_commit,
         };
