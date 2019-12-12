@@ -81,7 +81,15 @@ const typeDefs = `
 const debug = false;
 
 // TODO: implement actual lookup once we have mock data with stable IDs
-const projectRepoPathById = _projectId => path.resolve(__dirname, "../../");
+const projectRepoPathById = _projectId => {
+  switch (process.argv[2]) {
+    case "--test":
+      return path.resolve(__dirname, "../cypress/git-platinum/");
+    // in dev mode serve the upstream app repo itself
+    default:
+      return path.resolve(__dirname, "../../");
+  }
+};
 
 const execOptions = (domain, name) => ({
   maxBuffer: 1024 * 1000,

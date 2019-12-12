@@ -18,6 +18,8 @@ extern crate log;
 #[macro_use]
 extern crate juniper;
 
+/// Utilities to manipulate the process environment.
+mod env;
 /// Defines the schema served to the application via `GraphQL`.
 mod schema;
 /// Server infrastructure used to power the API.
@@ -26,8 +28,8 @@ mod server_warp;
 mod source;
 
 fn main() {
-    std::env::set_var("RUST_BACKTRACE", "full");
-    std::env::set_var("RUST_LOG", "debug");
+    env::set_if_unset("RUST_BACKTRACE", "full");
+    env::set_if_unset("RUST_LOG", "debug");
     pretty_env_logger::init();
 
     let source_type = std::env::args().nth(1).expect("no source was given");

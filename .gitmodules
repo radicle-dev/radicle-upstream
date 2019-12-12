@@ -1,3 +1,7 @@
+[submodule "app/cypress/git-platinum"]
+	path = app/cypress/git-platinum
+	url = https://github.com/radicle-dev/git-platinum.git
+
 [submodule "data/git-golden"]
 	path = data/git-golden
 	url = git@github.com:radicle-dev/git-golden.git

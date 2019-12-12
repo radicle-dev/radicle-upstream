@@ -54,7 +54,7 @@
   }
 </style>
 
-<div class="breadcrumbs" {style}>
+<div data-cy="breadcrumbs" class="breadcrumbs" {style}>
   <a href={path.projects()} use:link>
     <Icon.Projects style="margin-right: 6px" />
     <Text.Regular>My Projects</Text.Regular>

@@ -119,7 +119,7 @@
     timestamp={format(result.data.tree.info.lastCommit.authorDate)}
     style="margin-bottom: 48px" />
 
-  <table>
+  <table data-cy="file-list">
     <thead>
       <tr>
         <td style="padding-left: 24px">
@@ -140,6 +140,7 @@
           <td class="file-column">
             <a
               href={path.projectSource(projectId.domain, projectId.name, $revision, entry.info.objectType, entry.info.objectType === TREE ? entry.path + '/' : entry.path)}
+              data-cy={`open-${entry.info.name}`}
               use:link>
               {#if entry.info.objectType === TREE}
                 <Icon.Folder />

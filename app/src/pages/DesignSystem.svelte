@@ -57,7 +57,7 @@
   }
 </style>
 
-<Layout>
+<Layout dataCy="page">
   <Header>
     <div slot="left">
       <Title.Big>Design System</Title.Big>

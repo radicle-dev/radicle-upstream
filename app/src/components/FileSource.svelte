@@ -93,7 +93,7 @@
     timestamp={format(result.data.blob.info.lastCommit.authorDate)}
     style="margin-bottom: 48px" />
 
-  <div class="file-source">
+  <div class="file-source" data-cy="file-source">
     <header>
       <Icon.File />
       {$objectPath}
