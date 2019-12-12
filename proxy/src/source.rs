@@ -191,10 +191,7 @@ where
             .get_project(id.try_into().unwrap())
             .wait()?;
 
-        let result = match maybe_project {
-            Some(p) => Some(self.enrich_members(Project::from(p))),
-            None => None,
-        };
+        let result = maybe_project.map(|p| self.enrich_members(Project::from(p)));
         Ok(result)
     }
 
