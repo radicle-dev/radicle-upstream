@@ -356,7 +356,7 @@ mod tests {
     use super::{Context, Mutation, Query, Schema};
     use crate::source::{setup_fixtures, Ledger};
 
-    const REPO_PATH: &str = "../data/git-golden";
+    const REPO_PATH: &str = "../fixtures/git-platinum";
 
     fn execute_query(
         query: &str,
@@ -386,7 +386,7 @@ mod tests {
 
         vars.insert("id".into(), InputValue::object(id_map));
         vars.insert("revision".into(), InputValue::scalar("master"));
-        vars.insert("path".into(), InputValue::scalar("src/main.rs"));
+        vars.insert("path".into(), InputValue::scalar("text/arrows.txt"));
 
         let (res, errors) = execute_query(
             "query($id: IdInput!, $revision: String!, $path: String!) {
@@ -416,19 +416,26 @@ mod tests {
             res,
             graphql_value!({
                 "blob": {
-                    "content": "fn main() {\n    println!(\"Hello, world!\");\n}\n",
+                    "content": "  ;;;;;        ;;;;;        ;;;;;
+  ;;;;;        ;;;;;        ;;;;;
+  ;;;;;        ;;;;;        ;;;;;
+  ;;;;;        ;;;;;        ;;;;;
+..;;;;;..    ..;;;;;..    ..;;;;;..
+ ':::::'      ':::::'      ':::::'
+   ':`          ':`          ':`
+",
                     "info": {
-                        "name": "main.rs",
+                        "name": "arrows.txt",
                         "objectType": "BLOB",
                         "lastCommit": {
-                            "sha1": "74ba370ee5643f310873fb288af1c99d639da8ca",
+                            "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
                             "author": {
-                                "name": "Fintan Halpenny",
-                                "email": "fintan.halpenny@gmail.com",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
                             },
-                            "summary": "Add .gitignore",
-                            "message": "Add .gitignore\n",
-                            "time": "1574786128",
+                            "summary": "Delete unneeded file",
+                            "message": "Delete unneeded file\n",
+                            "time": "1575468397",
                         }
                     },
                 }
@@ -456,8 +463,8 @@ mod tests {
                 "branches": [
                     { "name": "master" },
                     { "name": "origin/HEAD" },
+                    { "name": "origin/dev" },
                     { "name": "origin/master" },
-                    { "name": "origin/add-tests" },
                 ]
             }),
         );
@@ -465,7 +472,7 @@ mod tests {
 
     #[test]
     fn query_commit() {
-        const SHA1: &str = "b9053ab4916e8ba50a78c243c3440ebdd7500263";
+        const SHA1: &str = "80ded66281a4de2889cc07293a8f10947c6d57fe";
 
         let mut vars = Variables::new();
         let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
@@ -498,12 +505,12 @@ mod tests {
                 "commit": {
                     "sha1": SHA1,
                     "author": {
-                        "name": "Alexander Simmerl",
-                        "email": "a.simmerl@gmail.com",
+                        "name": "Rūdolfs Ošiņš",
+                        "email": "rudolfs@osins.org",
                     },
-                    "summary": "Add a long commit message for integration testing",
-                    "message": "Add a long commit message for integration testing\n\nIn order to have a long commit message with distinct summary this commit\nis added to the repo to integrate against.\n",
-                    "time": "1575988508",
+                    "summary": "Delete unneeded file",
+                    "message": "Delete unneeded file\n",
+                    "time": "1575468397",
                 },
             }),
         )
@@ -525,7 +532,11 @@ mod tests {
             res,
             graphql_value!({
                 "tags": [
-                    { "name": "v0.0.1" },
+                    { "name": "v0.1.0" },
+                    { "name": "v0.2.0" },
+                    { "name": "v0.3.0" },
+                    { "name": "v0.4.0" },
+                    { "name": "v0.5.0" },
                 ]
             }),
         )
@@ -592,31 +603,65 @@ mod tests {
                         "name": "src",
                         "objectType": "TREE",
                         "lastCommit": {
-                            "sha1": "74ba370ee5643f310873fb288af1c99d639da8ca",
+                            "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
                             "author": {
-                                "name": "Fintan Halpenny",
-                                "email": "fintan.halpenny@gmail.com",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
                             },
-                            "summary": "Add .gitignore",
-                            "message": "Add .gitignore\n",
-                            "time": "1574786128",
+                            "summary": "Delete unneeded file",
+                            "message": "Delete unneeded file\n",
+                            "time": "1575468397",
                         },
                     },
                     "entries": [
                         {
-                            "path": "src/main.rs",
+                            "path": "src/Eval.hs",
                             "info": {
-                                "name": "main.rs",
+                                "name": "Eval.hs",
                                 "objectType": "BLOB",
                                 "lastCommit": {
-                                    "sha1": "74ba370ee5643f310873fb288af1c99d639da8ca",
+                                    "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
                                     "author": {
-                                        "name": "Fintan Halpenny",
-                                        "email": "fintan.halpenny@gmail.com",
+                                        "name": "Rūdolfs Ošiņš",
+                                        "email": "rudolfs@osins.org",
                                     },
-                                    "summary": "Add .gitignore",
-                                    "message": "Add .gitignore\n",
-                                    "time": "1574786128",
+                                    "summary": "Delete unneeded file",
+                                    "message": "Delete unneeded file\n",
+                                    "time": "1575468397",
+                                }
+                            },
+                        },
+                        {
+                            "path": "src/Folder.svelte",
+                            "info": {
+                                "name": "Folder.svelte",
+                                "objectType": "BLOB",
+                                "lastCommit": {
+                                    "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
+                                    "author": {
+                                        "name": "Rūdolfs Ošiņš",
+                                        "email": "rudolfs@osins.org",
+                                    },
+                                    "summary": "Delete unneeded file",
+                                    "message": "Delete unneeded file\n",
+                                    "time": "1575468397",
+                                }
+                            },
+                        },
+                        {
+                            "path": "src/memory.rs",
+                            "info": {
+                                "name": "memory.rs",
+                                "objectType": "BLOB",
+                                "lastCommit": {
+                                    "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
+                                    "author": {
+                                        "name": "Rūdolfs Ošiņš",
+                                        "email": "rudolfs@osins.org",
+                                    },
+                                    "summary": "Delete unneeded file",
+                                    "message": "Delete unneeded file\n",
+                                    "time": "1575468397",
                                 }
                             },
                         },

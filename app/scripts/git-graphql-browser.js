@@ -84,7 +84,7 @@ const debug = false;
 const projectRepoPathById = _projectId => {
   switch (process.argv[2]) {
     case "--test":
-      return path.resolve(__dirname, "../cypress/git-platinum/");
+      return path.resolve(__dirname, "../../fixtures/git-platinum");
     // in dev mode serve the upstream app repo itself
     default:
       return path.resolve(__dirname, "../../");
