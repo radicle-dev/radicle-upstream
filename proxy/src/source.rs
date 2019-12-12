@@ -180,16 +180,7 @@ where
             .into_iter()
             .take(10)
             .flat_map(|id| {
-                match self.get_project(id.into()) {
-                    Ok(maybe_project) => match maybe_project {
-                        Some(project) => Ok(project),
-                        None => {
-                            // TODO possible data consistency issue. retry?
-                            panic!("Project listed by registry but could not be found.")
-                        },
-                    },
-                    Err(err) => Err(err),
-                }
+                self.get_project(id.into())?.ok_or(None)
             })
             .collect())
     }
