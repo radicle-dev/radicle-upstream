@@ -431,15 +431,15 @@ mod tests {
                         "name": "arrows.txt",
                         "objectType": "BLOB",
                         "lastCommit": {
-                            "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
+                            "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
                             "author": {
-                                "name": "Rūdolfs Ošiņš",
-                                "email": "rudolfs@osins.org",
+                                "name": "Alexander Simmerl",
+                                "email": "a.simmerl@gmail.com",
                             },
-                            "summary": "Delete unneeded file",
-                            "message": "Delete unneeded file\n",
-                            "time": "1575468397",
-                        }
+                            "summary": "Add a long commit message to commit message body (#1)",
+                            "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                            "time": "1576170713",
+                        },
                     },
                 }
             }),
@@ -466,8 +466,8 @@ mod tests {
                 "branches": [
                     { "name": "master" },
                     { "name": "origin/HEAD" },
-                    { "name": "origin/dev" },
                     { "name": "origin/master" },
+                    { "name": "origin/dev" },
                 ]
             }),
         );
@@ -606,14 +606,14 @@ mod tests {
                         "name": "src",
                         "objectType": "TREE",
                         "lastCommit": {
-                            "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
+                            "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
                             "author": {
-                                "name": "Rūdolfs Ošiņš",
-                                "email": "rudolfs@osins.org",
+                                "name": "Alexander Simmerl",
+                                "email": "a.simmerl@gmail.com",
                             },
-                            "summary": "Delete unneeded file",
-                            "message": "Delete unneeded file\n",
-                            "time": "1575468397",
+                            "summary": "Add a long commit message to commit message body (#1)",
+                            "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                            "time": "1576170713",
                         },
                     },
                     "entries": [
@@ -623,15 +623,15 @@ mod tests {
                                 "name": "Eval.hs",
                                 "objectType": "BLOB",
                                 "lastCommit": {
-                                    "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
+                                    "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
                                     "author": {
-                                        "name": "Rūdolfs Ošiņš",
-                                        "email": "rudolfs@osins.org",
+                                        "name": "Alexander Simmerl",
+                                        "email": "a.simmerl@gmail.com",
                                     },
-                                    "summary": "Delete unneeded file",
-                                    "message": "Delete unneeded file\n",
-                                    "time": "1575468397",
-                                }
+                                    "summary": "Add a long commit message to commit message body (#1)",
+                                    "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                    "time": "1576170713",
+                                },
                             },
                         },
                         {
@@ -640,15 +640,15 @@ mod tests {
                                 "name": "Folder.svelte",
                                 "objectType": "BLOB",
                                 "lastCommit": {
-                                    "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
+                                    "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
                                     "author": {
-                                        "name": "Rūdolfs Ošiņš",
-                                        "email": "rudolfs@osins.org",
+                                        "name": "Alexander Simmerl",
+                                        "email": "a.simmerl@gmail.com",
                                     },
-                                    "summary": "Delete unneeded file",
-                                    "message": "Delete unneeded file\n",
-                                    "time": "1575468397",
-                                }
+                                    "summary": "Add a long commit message to commit message body (#1)",
+                                    "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                    "time": "1576170713",
+                                },
                             },
                         },
                         {
@@ -657,15 +657,15 @@ mod tests {
                                 "name": "memory.rs",
                                 "objectType": "BLOB",
                                 "lastCommit": {
-                                    "sha1": "80ded66281a4de2889cc07293a8f10947c6d57fe",
+                                    "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
                                     "author": {
-                                        "name": "Rūdolfs Ošiņš",
-                                        "email": "rudolfs@osins.org",
+                                        "name": "Alexander Simmerl",
+                                        "email": "a.simmerl@gmail.com",
                                     },
-                                    "summary": "Delete unneeded file",
-                                    "message": "Delete unneeded file\n",
-                                    "time": "1575468397",
-                                }
+                                    "summary": "Add a long commit message to commit message body (#1)",
+                                    "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                    "time": "1576170713",
+                                },
                             },
                         },
                     ],
