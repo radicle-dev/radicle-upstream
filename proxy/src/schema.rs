@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use radicle_surf::{
     file_system::{Path, SystemType},
-    git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
+    git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
 use crate::source::{AccountId, Project, ProjectId, Source};
@@ -36,6 +36,28 @@ impl Context {
 }
 
 impl juniper::Context for Context {}
+
+juniper::graphql_scalar!(AccountId where Scalar = <S> {
+    description: "AccountId"
+
+    resolve(&self) -> Value {
+        Value::scalar(hex::encode(self.0.as_ref() as &[u8]))
+    }
+
+    from_input_value(v: &InputValue) -> Option<AccountId> {
+        let mut bytes = [0_u8; 32];
+
+        v.as_scalar_value::<String>()
+            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
+
+        Some(AccountId(radicle_registry_client::AccountId::from_raw(bytes)))
+    }
+
+    // Define how to parse a string value.
+    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+        <String as ParseScalarValue<S>>::from_str(value)
+    }
+});
 
 #[derive(GraphQLInputObject)]
 struct IdInput {
@@ -79,8 +101,8 @@ struct Commit {
 
 // FIXME(xla): This should be a `std::convert::TryFrom` and needs to be addressed together with
 //             consistent error handling.
-impl From<&radicle_surf::vcs::git::git2::Commit<'_>> for Commit {
-    fn from(commit: &radicle_surf::vcs::git::git2::Commit) -> Self {
+impl From<&git2::Commit<'_>> for Commit {
+    fn from(commit: &git2::Commit) -> Self {
         let signature = commit.author();
 
         Self {
@@ -128,6 +150,21 @@ struct Blob {
     info: Info,
 }
 
+/// Encapsulates write path in API.
+pub struct Mutation;
+
+#[juniper::object(Context = Context)]
+impl Mutation {
+    fn register_project(
+        ctx: &Context,
+        name: String,
+        description: String,
+        img_url: String,
+    ) -> FieldResult<Project> {
+        Ok(ctx.source.register_project(name, description, img_url))
+    }
+}
+
 /// Encapsulates read paths in API.
 pub struct Query;
 
@@ -159,7 +196,6 @@ impl Query {
             .get_directory()
             .expect("unable to get root directory");
 
-        println!("{:?}", path);
         let mut p = Path::root();
         p.append(&mut Path::from_string(&path));
         let file = root.find_file(&p).expect("unable to find file");
@@ -178,7 +214,7 @@ impl Query {
         })
     }
 
-    fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<Option<Commit>> {
+    fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<Commit> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
         browser
@@ -188,7 +224,7 @@ impl Query {
         let history = browser.get_history();
         let commit = history.0.first();
 
-        Ok(Some(Commit::from(commit)))
+        Ok(Commit::from(commit))
     }
 
     fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
@@ -608,40 +644,3 @@ mod tests {
         );
     }
 }
-
-/// Encapsulates write path in API.
-pub struct Mutation;
-
-#[juniper::object(Context = Context)]
-impl Mutation {
-    fn register_project(
-        ctx: &Context,
-        name: String,
-        description: String,
-        img_url: String,
-    ) -> FieldResult<Project> {
-        Ok(ctx.source.register_project(name, description, img_url))
-    }
-}
-
-juniper::graphql_scalar!(AccountId where Scalar = <S> {
-    description: "AccountId"
-
-    resolve(&self) -> Value {
-        Value::scalar(hex::encode(self.0.as_ref() as &[u8]))
-    }
-
-    from_input_value(v: &InputValue) -> Option<AccountId> {
-        let mut bytes = [0_u8; 32];
-
-        v.as_scalar_value::<String>()
-            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
-
-        Some(AccountId(radicle_registry_client::AccountId::from_raw(bytes)))
-    }
-
-    // Define how to parse a string value.
-    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
-        <String as ParseScalarValue<S>>::from_str(value)
-    }
-});
