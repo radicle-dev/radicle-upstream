@@ -6,6 +6,8 @@
   } from "apollo-cache-inmemory";
   import { setClient } from "svelte-apollo";
   import Router from "svelte-spa-router";
+  import { push, pop, location } from "svelte-spa-router";
+  import * as path from "./path.js";
 
   import DesignSystem from "./pages/DesignSystem.svelte";
   import Feed from "./pages/Feed.svelte";
@@ -16,6 +18,7 @@
   import Project from "./pages/Project.svelte";
   import Search from "./pages/Search.svelte";
   import Wallet from "./pages/Wallet.svelte";
+  import Help from "./pages/Help.svelte";
 
   const hash = s =>
     s.split("").reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
@@ -45,8 +48,40 @@
     "/design-system": DesignSystem,
     "/wallet": Wallet,
     "/profile": Profile,
+    "/help": Help,
     "*": NotFound
   };
+
+  document.addEventListener("keyup", function(event) {
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    var key = event.key;
+
+    if (key === "?") {
+      if (path.active(path.help(), $location)) {
+        pop();
+      }
+      push(path.help());
+    }
+
+    if (key === "d" || key === "D") {
+      if (path.active(path.designSystem(), $location)) {
+        pop();
+      }
+      push(path.designSystem());
+    }
+
+    if (key === "Escape") {
+      if (
+        path.active(path.help(), $location) ||
+        path.active(path.designSystem(), $location)
+      ) {
+        pop();
+      }
+    }
+  });
 </script>
 
 <Router {routes} />

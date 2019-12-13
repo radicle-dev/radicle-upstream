@@ -48,6 +48,7 @@ export const designSystem = _params => "/design-system";
 export const createProject = _params => "/projects/new";
 export const wallet = _params => "/wallet";
 export const profile = _params => "/profile";
+export const help = _params => "/help";
 
 export const active = (path, location, loose = false) => {
   return regexparam(path, loose).pattern.test(location);
