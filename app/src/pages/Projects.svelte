@@ -1,10 +1,10 @@
 <script>
   import { Button, Header, Icon, Title } from "../DesignSystem";
   import Projects from "../components/Projects.svelte";
-  import Layout from "./Layout.svelte";
+  import NarrowSidebarLayout from "../layouts/NarrowSidebarLayout.svelte";
 </script>
 
-<Layout dataCy="page">
+<NarrowSidebarLayout dataCy="page">
   <Header style="margin-bottom: 24px">
     <div slot="left">
       <Title.Big>Projects</Title.Big>
@@ -16,4 +16,4 @@
   </Header>
 
   <Projects />
-</Layout>
+</NarrowSidebarLayout>

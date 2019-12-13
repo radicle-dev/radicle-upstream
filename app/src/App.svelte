@@ -7,7 +7,6 @@
   import { setClient } from "svelte-apollo";
   import Router from "svelte-spa-router";
 
-  import Sidebar from "./components/Sidebar.svelte";
   import DesignSystem from "./pages/DesignSystem.svelte";
   import Feed from "./pages/Feed.svelte";
   import NotFound from "./pages/NotFound.svelte";
@@ -48,18 +47,4 @@
   };
 </script>
 
-<style>
-  .container {
-    position: relative;
-    left: var(--slim-sidebar-width);
-    width: calc(100vw - var(--slim-sidebar-width));
-    overflow-x: hidden;
-  }
-</style>
-
-<div>
-  <Sidebar />
-  <div class="container">
-    <Router {routes} />
-  </div>
-</div>
+<Router {routes} />

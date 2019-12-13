@@ -11,7 +11,7 @@
     Select
   } from "../DesignSystem";
   import { link } from "svelte-spa-router";
-  import Layout from "./Layout.svelte";
+  import Layout from "../layouts/NarrowSidebarLayout.svelte";
 
   let colors = Array.from(document.styleSheets)
     .filter(

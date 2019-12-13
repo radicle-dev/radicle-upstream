@@ -1,4 +1,5 @@
 <script>
+  import DoubleSidebarLayout from "../layouts/DoubleSidebarLayout.svelte";
   import { setContext } from "svelte";
   import { revision, objectPath, objectType } from "../stores.js";
   import * as path from "../path.js";
@@ -79,15 +80,17 @@
   }
 </style>
 
-{#await $project then result}
-  <ProjectSidebar />
+<DoubleSidebarLayout>
+  {#await $project then result}
+    <ProjectSidebar />
 
-  <div class="container">
-    <ProjectBreadcrumbs
-      style="position: fixed; top: 0;"
-      project={result.data.project} />
-    <div class="layout">
-      <Router {routes} />
+    <div class="container">
+      <ProjectBreadcrumbs
+        style="position: fixed; top: 0;"
+        project={result.data.project} />
+      <div class="layout">
+        <Router {routes} />
+      </div>
     </div>
-  </div>
-{/await}
+  {/await}
+</DoubleSidebarLayout>
