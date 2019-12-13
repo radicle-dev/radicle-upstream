@@ -5,6 +5,11 @@ use std::convert::{TryInto};
 use radicle_registry_client::{CryptoPair as _, H256, Error as RegistryError};
 use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
 
+// pub enum ProxyError {
+//     RegistryError,
+//     // TODO include juniper errors?
+// }
+
 /// Newtype for the registry `oscoin_client::AccountId`.
 #[derive(Clone, Eq, Hash, PartialEq)]
 pub struct AccountId(pub radicle_registry_client::AccountId);
@@ -89,14 +94,14 @@ impl From<radicle_registry_client::Project> for Project {
 }
 
 /// Abstraction used to fetch information from the registry.
-pub trait Source {
+pub trait Source<Error = RegistryError> {
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
-    fn get_all_projects(&self) -> Result<Vec<Project>, RegistryError>;
+    fn get_all_projects(&self) -> Result<Vec<Project>, Error>;
     /// Retrieve a single proejct by `ProjectId`.
-    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, RegistryError>;
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, Error>;
     /// Register a new project.
-    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, RegistryError>;
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Error>;
 }
 
 /// Container to store local view on accounts to match with metadata.
