@@ -45,6 +45,7 @@ export const projectBranches = (domain, name) =>
   `/projects/${domain}/${name}/branches`;
 
 export const designSystem = _params => "/design-system";
+export const createProject = _params => "/projects/new";
 export const wallet = _params => "/wallet";
 export const profile = _params => "/profile";
 

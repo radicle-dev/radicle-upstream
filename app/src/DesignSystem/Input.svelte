@@ -1,6 +1,7 @@
 <script>
   export let style = null;
   export let placeholder = null;
+  export let value = null;
 </script>
 
 <style>
@@ -20,4 +21,4 @@
   }
 </style>
 
-<input {placeholder} {style} />
+<input {placeholder} {style} bind:value />
