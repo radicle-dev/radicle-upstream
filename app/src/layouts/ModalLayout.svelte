@@ -1,6 +1,8 @@
 <script>
   import { pop } from "svelte-spa-router";
   import { Icon } from "../DesignSystem";
+
+  export let dataCy = null;
 </script>
 
 <style>
@@ -26,7 +28,7 @@
   <Icon.CrossBig on:click={pop} />
 </div>
 
-<div class="wrapper">
+<div class="wrapper" data-cy={dataCy}>
   <div class="content">
     <slot />
   </div>

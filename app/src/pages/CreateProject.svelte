@@ -119,7 +119,7 @@
   }
 </style>
 
-<ModalLayout>
+<ModalLayout dataCy="page">
   <div class="wrapper">
     <div class="create-project">
       <Title.Big style="margin-bottom: 32px; text-align: left">
