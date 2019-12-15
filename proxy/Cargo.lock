@@ -1834,6 +1834,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "pico-args"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "pin-utils"
 version = "0.1.0-alpha.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1930,6 +1935,8 @@ dependencies = [
  "juniper_codegen 0.14.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper_warp 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nonempty 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pico-args 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=3ddc170c109b10273ea04659eb64ec6918189f70)",
@@ -3689,6 +3696,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum phf_codegen 0.7.24 (registry+https://github.com/rust-lang/crates.io-index)" = "b03e85129e324ad4166b06b2c7491ae27fe3ec353af72e72cd1654c7225d517e"
 "checksum phf_generator 0.7.24 (registry+https://github.com/rust-lang/crates.io-index)" = "09364cc93c159b8b06b1f4dd8a4398984503483891b0c26b867cf431fb132662"
 "checksum phf_shared 0.7.24 (registry+https://github.com/rust-lang/crates.io-index)" = "234f71a15de2288bcb7e3b6515828d22af7ec8598ee6d24c3b526fa0a80b67a0"
+"checksum pico-args 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "22e32b0f3771287ebb436130477eabf0f11f934ed036099ad548bc885e708667"
 "checksum pin-utils 0.1.0-alpha.4 (registry+https://github.com/rust-lang/crates.io-index)" = "5894c618ce612a3fa23881b152b608bafb8c56cfc22f434a3ba3120b40f7b587"
 "checksum pkg-config 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)" = "72d5370d90f49f70bd033c3d75e87fc529fbfff9d6f7cccef07d6170079d91ea"
 "checksum ppv-lite86 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "e3cbf9f658cdb5000fcf6f362b8ea2ba154b9f146a61c7a20d647034c6b6561b"

@@ -27,25 +27,39 @@ mod server_warp;
 /// Origin of data required like the on-chain Registry.
 mod source;
 
-fn main() {
+struct Args {
+    source_type: String,
+    test: bool,
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     env::set_if_unset("RUST_BACKTRACE", "full");
-    env::set_if_unset("RUST_LOG", "debug");
+    env::set_if_unset("RUST_LOG", "info");
     pretty_env_logger::init();
 
-    let source_type = std::env::args().nth(1).expect("no source was given");
+    let mut args = pico_args::Arguments::from_env();
+    let args = Args {
+        source_type: args.value_from_str("--source")?,
+        test: args.contains("--test"),
+    };
 
-    let context = if let "memory" = source_type.as_ref() {
+    let dummy_repo = if args.test {
+        "../fixtures/git-platinum"
+    } else {
+        ".."
+    };
+    let context = if "memory" == args.source_type {
         let client = radicle_registry_client::MemoryClient::new();
         let mut src = source::Ledger::new(client);
 
         source::setup_fixtures(&mut src);
 
-        schema::Context::new("../".into(), src)
+        schema::Context::new(dummy_repo.into(), src)
     } else {
         let client = radicle_registry_client::ClientWithExecutor::create()
             .expect("creating registry client failed");
         let src = source::Ledger::new(client);
-        schema::Context::new("../".into(), src)
+        schema::Context::new(dummy_repo.into(), src)
     };
 
     info!("Creating GraphQL schema and context");
@@ -53,4 +67,6 @@ fn main() {
 
     info!("Starting HTTP server");
     server_warp::run(schema, context);
+
+    Ok(())
 }

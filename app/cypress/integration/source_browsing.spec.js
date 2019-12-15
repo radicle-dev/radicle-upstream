@@ -13,17 +13,14 @@ context("source code browsing", () => {
 
     it("shows contents of the root folder for the latest revision", () => {
       // the default revision is selected
-      cy.get("[data-cy=revision-selector]").should(
-        "have.value",
-        "refs/heads/master"
-      );
+      cy.get("[data-cy=revision-selector]").should("have.value", "master");
 
       // there is a commit teaser
       cy.get("[data-cy=commit-teaser]")
-        .contains("Rūdolfs Ošiņš")
+        .contains("Alexander Simmerl")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("Delete unneeded file")
+        .contains("Add a long commit message to commit message body")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
         .contains("80ded66")
@@ -45,20 +42,14 @@ context("source code browsing", () => {
   context("page view", () => {
     context("revision selector", () => {
       it("allows switching to a different branch", () => {
-        cy.get("[data-cy=revision-selector]").should(
-          "have.value",
-          "refs/heads/master"
-        );
+        cy.get("[data-cy=revision-selector]").should("have.value", "master");
 
         cy.get("[data-cy=revision-selector]").select("refs/remotes/origin/dev");
         cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
       });
 
       it("allows switching to a different tag", () => {
-        cy.get("[data-cy=revision-selector]").should(
-          "have.value",
-          "refs/heads/master"
-        );
+        cy.get("[data-cy=revision-selector]").should("have.value", "master");
 
         cy.get("[data-cy=revision-selector]").select("v0.4.0");
         cy.contains("test-file-deletion.txt").should("exist");

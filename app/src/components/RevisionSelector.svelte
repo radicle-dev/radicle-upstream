@@ -1,26 +1,23 @@
 <script>
-  import { getContext } from "svelte";
-
-  import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
-  import { query } from "svelte-apollo";
+  import { getContext } from "svelte";
+  import { getClient, query } from "svelte-apollo";
 
   import { revision } from "../stores.js";
-
   import { Select } from "../DesignSystem";
-
-  const client = new ApolloClient({
-    uri: "http://127.0.0.1:4000"
-  });
 
   const ALL_REVISIONS = gql`
     query($projectId: IdInput!) {
-      tags(projectId: $projectId)
-      branches(projectId: $projectId)
+      tags(id: $projectId) {
+        name
+      }
+      branches(id: $projectId) {
+        name
+      }
     }
   `;
 
-  const allRevisions = query(client, {
+  const allRevisions = query(getClient(), {
     query: ALL_REVISIONS,
     variables: { projectId: getContext("projectId") }
   });
@@ -30,6 +27,6 @@
   <Select
     dataCy="revision-selector"
     style="margin-bottom: 16px"
-    items={[...result.data.tags, ...result.data.branches]}
+    items={[...result.data.tags.map(t => t.name), ...result.data.branches.map(b => b.name)].sort()}
     bind:value={$revision} />
 {/await}
