@@ -94,14 +94,15 @@ impl From<radicle_registry_client::Project> for Project {
 }
 
 /// Abstraction used to fetch information from the registry.
-pub trait Source<Error = RegistryError> {
+pub trait Source {
+    type Error;
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
-    fn get_all_projects(&self) -> Result<Vec<Project>, Error>;
+    fn get_all_projects(&self) -> Result<Vec<Project>, Self::Error>;
     /// Retrieve a single proejct by `ProjectId`.
-    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, Error>;
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, Self::Error>;
     /// Register a new project.
-    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Error>;
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Self::Error>;
 }
 
 /// Container to store local view on accounts to match with metadata.
@@ -158,6 +159,7 @@ impl<R> Source for Ledger<R>
 where
     R: radicle_registry_client::ClientT,
 {
+    type Error = RegistryError;
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId {
         let id = AccountId(
             radicle_registry_client::ed25519::Pair::generate()
@@ -177,7 +179,7 @@ where
         id
     }
 
-    fn get_all_projects(&self) -> Result<Vec<Project>, RegistryError> {
+    fn get_all_projects(&self) -> Result<Vec<Project>, Self::Error> {
          Ok(self
             .registry_client
             .list_projects()
@@ -190,7 +192,7 @@ where
             .collect())
     }
 
-    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, RegistryError> {
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, Self::Error> {
         let maybe_project = self
             .registry_client
             .get_project(id.try_into().unwrap())
@@ -200,7 +202,7 @@ where
         Ok(result)
     }
 
-    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, RegistryError> {
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Self::Error> {
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
         // TODO(garbados): eliminate .unwrap calls
