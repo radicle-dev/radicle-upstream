@@ -334,5 +334,6 @@
 
   <div>
     <Select items={['master', 'dev']} value={'dev'} />
+    <Select disabled items={['master', 'dev']} value={'dev'} />
   </div>
 </Layout>
