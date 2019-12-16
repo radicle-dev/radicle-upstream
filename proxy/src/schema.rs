@@ -1,4 +1,5 @@
 use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
+use radicle_registry_client::{Error as RegistryError};
 use std::sync::Arc;
 
 use crate::source::{AccountId, Project, ProjectId, Source};
@@ -44,6 +45,21 @@ impl Into<ProjectId> for IdInput {
     }
 }
 
+enum ProxyError {
+    RegistryError,
+}
+
+impl juniper::IntoFieldError for ProxyError {
+    fn into_field_error(self) -> juniper::FieldError {
+        match self {
+            RegistryError => juniper::FieldError::new(
+                "Error interacting with the Radicle Registry.",
+                graphql_value!({ "type": "RegistryError" }),
+            ),
+        }
+    }
+}
+
 /// Encapsulates read paths in API.
 pub struct Query;
 
@@ -53,12 +69,12 @@ impl Query {
         "1.0"
     }
 
-    fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
-        Ok(ctx.source.get_all_projects()?)
+    fn projects(ctx: &Context) -> Result<Vec<Project>, ProxyError> {
+        ctx.source.get_all_projects()
     }
 
-    fn project(ctx: &Context, id: IdInput) -> FieldResult<Option<Project>> {
-        Ok(ctx.source.get_project(id.into())?)
+    fn project(ctx: &Context, id: IdInput) -> Result<Option<Project>, ProxyError> {
+        ctx.source.get_project(id.into())
     }
 }
 
