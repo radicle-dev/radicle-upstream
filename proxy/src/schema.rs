@@ -1,5 +1,6 @@
 use juniper::{FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use radicle_registry_client::{Error as RegistryError};
+use substrate_subxt::error::{Error as SubstrateError};
 use std::sync::Arc;
 
 use crate::source::{AccountId, Project, ProjectId, Source};
@@ -16,7 +17,7 @@ pub fn create() -> Schema {
 #[derive(Clone)]
 pub struct Context {
     /// Origin of data needed to server APIs.
-    source: Arc<dyn Source + Send + Sync>,
+    source: Arc<dyn Source<Error = RegistryError> + Send + Sync>,
 }
 
 impl Context {
@@ -47,6 +48,7 @@ impl Into<ProjectId> for IdInput {
 
 enum ProxyError {
     RegistryError,
+    SubstrateError,
 }
 
 impl juniper::IntoFieldError for ProxyError {
@@ -55,6 +57,10 @@ impl juniper::IntoFieldError for ProxyError {
             RegistryError => juniper::FieldError::new(
                 "Error interacting with the Radicle Registry.",
                 graphql_value!({ "type": "RegistryError" }),
+            ),
+            SubstrateError => juniper::FieldError::new(
+                "Error with Substrate (TODO more info).",
+                graphql_value!({ "type": "SubstrateError" }),
             ),
         }
     }
