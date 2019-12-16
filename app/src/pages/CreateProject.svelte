@@ -7,6 +7,7 @@
     Icon,
     Input,
     DirectoryInput,
+    CheckboxInput,
     Text,
     Title,
     Select
@@ -31,6 +32,7 @@
   let name = "";
   let description = "";
   let defaultBranch = "master";
+  let publish = true;
 
   const createProject = () => {};
 </script>
@@ -180,10 +182,9 @@
                 style="min-width: 240px" />
             </div>
             <div class="publish">
-              <Icon.CheckCircle style="margin-right: 14px" />
-              <Text.Regular style="color: var(--color-darkgray)">
+              <CheckboxInput bind:checked={publish}>
                 Publish the {defaultBranch} branch to the network
-              </Text.Regular>
+              </CheckboxInput>
             </div>
           </div>
         </div>

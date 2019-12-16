@@ -8,7 +8,8 @@
     Caption,
     Icon,
     Input,
-    Select
+    Select,
+    CheckboxInput
   } from "../DesignSystem";
   import { link } from "svelte-spa-router";
   import Layout from "../layouts/NarrowSidebarLayout.svelte";
@@ -335,5 +336,9 @@
   <div>
     <Select items={['master', 'dev']} value={'dev'} />
     <Select disabled items={['master', 'dev']} value={'dev'} />
+  </div>
+
+  <div>
+    <CheckboxInput>How about a checkbox?</CheckboxInput>
   </div>
 </Layout>
