@@ -69,6 +69,7 @@
     "apollo-boost": "^0.4.4",
     "graphql": "^14.5.8",
     "graphql-yoga": "^1.18.3",
+    "hotkeys-js": "^3.7.3",
     "svelte-apollo": "^0.3.0",
     "timeago.js": "^4.0.1"
   },

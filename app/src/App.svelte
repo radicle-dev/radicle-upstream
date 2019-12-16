@@ -20,6 +20,8 @@
   import Wallet from "./pages/Wallet.svelte";
   import Help from "./pages/Help.svelte";
 
+  import hotkeys from "hotkeys-js";
+
   const hash = s =>
     s.split("").reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
 
@@ -52,34 +54,26 @@
     "*": NotFound
   };
 
-  document.addEventListener("keyup", function(event) {
-    if (event.defaultPrevented) {
-      return;
+  hotkeys("d,shift+d", () => {
+    if (path.active(path.designSystem(), $location)) {
+      pop();
     }
+    push(path.designSystem());
+  });
 
-    var key = event.key;
-
-    if (key === "?") {
-      if (path.active(path.help(), $location)) {
-        pop();
-      }
-      push(path.help());
+  hotkeys("shift+/", () => {
+    if (path.active(path.help(), $location)) {
+      pop();
     }
+    push(path.help());
+  });
 
-    if (key === "d" || key === "D") {
-      if (path.active(path.designSystem(), $location)) {
-        pop();
-      }
-      push(path.designSystem());
-    }
-
-    if (key === "Escape") {
-      if (
-        path.active(path.help(), $location) ||
-        path.active(path.designSystem(), $location)
-      ) {
-        pop();
-      }
+  hotkeys("esc", () => {
+    if (
+      path.active(path.help(), $location) ||
+      path.active(path.designSystem(), $location)
+    ) {
+      pop();
     }
   });
 </script>
