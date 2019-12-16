@@ -31,6 +31,7 @@
 
   let name = "";
   let description = "";
+  let availableBranches = ["master", "dev"];
   let defaultBranch = "master";
   let publish = true;
 
@@ -177,8 +178,9 @@
                 Select the default branch
               </Text.Regular>
               <Select
-                items={['master', 'dev']}
+                items={availableBranches}
                 bind:value={defaultBranch}
+                disabled
                 style="min-width: 240px" />
             </div>
             <div class="publish">
