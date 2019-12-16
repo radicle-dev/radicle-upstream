@@ -16,7 +16,7 @@ pub fn create() -> Schema {
     Schema::new(Query {}, Mutation {})
 }
 
-/// Container to pass the `Source` around for data access.
+/// Container for data access from handlers.
 #[derive(Clone)]
 pub struct Context {
     /// Intermediate repo used to serve dummy data to be presented to the API consumer.
@@ -59,9 +59,12 @@ juniper::graphql_scalar!(AccountId where Scalar = <S> {
     }
 });
 
+/// Input value used to communciate a `Registry` project id. (domain, name)
 #[derive(GraphQLInputObject)]
 struct IdInput {
+    /// Domain part of the `Registry` namespace (e.g. "rad").
     domain: String,
+    /// Name part of the `Registry` namespace (e.g. "upstream").
     name: String,
 }
 
@@ -74,29 +77,46 @@ impl Into<ProjectId> for IdInput {
     }
 }
 
+/// Object representing a git branch.
 #[derive(GraphQLObject)]
 struct Branch {
+    /// Name of the branch.
     name: String,
 }
 
+/// Object representing a git tag.
+///
+/// We still need full tag support.
 #[derive(GraphQLObject)]
 struct Tag {
+    /// Name of the tag.
     name: String,
 }
 
+/// Representation of a person (e.g. committer, author, signer) from a repository. Usually
+/// extracted from a signature.
 #[derive(GraphQLObject)]
 struct Person {
+    /// Name part of the commit signature commit.
     name: String,
+    /// Email part of the commit signature commit.
     email: String,
+    /// Reference (url/uri) to a persons avatar image.
     avatar: String,
 }
 
+/// Representation of a code commit.
 #[derive(GraphQLObject)]
 struct Commit {
+    /// Identifier of the commit in the form of a sha1 hash. Often referred to as oid or object id.
     sha1: String,
+    /// The author of the commit.
     author: Person,
+    /// The summary of the commit message body.
     summary: String,
+    /// The entire commit message body.
     message: String,
+    /// The recorded time of the commit.
     time: String,
 }
 
@@ -120,36 +140,56 @@ impl From<&git2::Commit<'_>> for Commit {
     }
 }
 
+/// Git object types.
+///
+/// `shafiul.github.io/gitbook/1_the_git_object_model.html`
 #[derive(GraphQLEnum)]
 enum ObjectType {
+    /// Used to store file data.
     Blob,
+    /// References a list of other trees and blobs.
     Tree,
 }
 
+/// Set of extra information we carry for blob and tree objects returned from the API.
 #[derive(GraphQLObject)]
 struct Info {
+    /// Name part of an object.
     name: String,
+    /// The type of the object.
     object_type: ObjectType,
+    /// The last commmit that touched this object.
     last_commit: Commit,
 }
 
+/// Result of a directory listing, carries other trees and blobs.
 #[derive(GraphQLObject)]
 struct Tree {
+    /// Absolute path to the tree object from the repo root.
     path: String,
+    /// Entries listed in that tree result.
     entries: Vec<TreeEntry>,
+    /// Extra info for the tree object.
     info: Info,
 }
 
+/// Entry in a Tree result.
 #[derive(GraphQLObject)]
 struct TreeEntry {
+    /// Extra info for the entry.
     info: Info,
+    /// Absolute path to the object from the root of the repo.
     path: String,
 }
 
+/// File data abstraction.
 #[derive(GraphQLObject)]
 struct Blob {
+    /// Best-effort guess if the content is binary.
     binary: bool,
+    /// Actual content of the file, if the content is ASCII.
     content: Option<String>,
+    /// Extra info for the file.
     info: Info,
 }
 
@@ -350,7 +390,7 @@ impl Query {
             Commit::from(
                 &browser
                     .last_commit(&path)
-                    .expect(&format!("[tree] unable to get last commit: {}", path)),
+                    .unwrap_or_else(|| panic!("[tree] unable to get last commit: {}", path)),
             )
         };
         let name = {
@@ -405,7 +445,7 @@ mod tests {
 
         let ctx = Context::new(REPO_PATH.into(), source);
 
-        juniper::execute(query, None, &Schema::new(Query, Mutation), &vars, &ctx)
+        juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
             .expect("test execute failed")
     }
 
@@ -662,7 +702,7 @@ mod tests {
                 "commit": {
                     "sha1": SHA1,
                     "author": {
-                        "name": "Rūdolfs Ošiņš",
+                        "name": "R\u{16b}dolfs O\u{161}i\u{146}\u{161}",
                         "email": "rudolfs@osins.org",
                     },
                     "summary": "Delete unneeded file",

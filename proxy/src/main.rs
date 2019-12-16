@@ -1,4 +1,4 @@
-//! Proxy to serve a specialised GraphQL API to radicle-upstream.
+//! Proxy to serve a specialised `GraphQL` API to radicle-upstream.
 
 #![deny(missing_docs)]
 #![deny(warnings)]
@@ -27,8 +27,11 @@ mod server_warp;
 /// Origin of data required like the on-chain Registry.
 mod source;
 
+/// Flags accepted by the proxy binary.
 struct Args {
+    /// Signaling which backend type to use.
     source_type: String,
+    /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
 }
 
