@@ -78,7 +78,7 @@ impl Into<ProjectId> for IdInput {
 }
 
 /// Object representing a git branch.
-#[derive(GraphQLObject)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLObject)]
 struct Branch {
     /// Name of the branch.
     name: String,
@@ -87,7 +87,7 @@ struct Branch {
 /// Object representing a git tag.
 ///
 /// We still need full tag support.
-#[derive(GraphQLObject)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLObject)]
 struct Tag {
     /// Name of the tag.
     name: String,
@@ -284,7 +284,7 @@ impl Query {
     fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
-        let branches = browser
+        let mut branches: Vec<Branch> = browser
             .list_branches(None)
             .expect("Getting branches failed")
             .into_iter()
@@ -292,6 +292,8 @@ impl Query {
                 name: b.name.name(),
             })
             .collect();
+
+        branches.sort();
 
         Ok(branches)
     }
@@ -302,12 +304,14 @@ impl Query {
         let mut tag_names = browser.list_tags().expect("Getting branches failed");
         tag_names.sort();
 
-        let tags = tag_names
+        let mut tags: Vec<Tag> = tag_names
             .into_iter()
             .map(|tag_name| Tag {
                 name: tag_name.name(),
             })
             .collect();
+
+        tags.sort();
 
         Ok(tags)
     }
