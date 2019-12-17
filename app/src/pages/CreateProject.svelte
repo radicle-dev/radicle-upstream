@@ -60,7 +60,7 @@
     border-radius: 4px;
   }
 
-  .active {
+  .option .active {
     box-shadow: 0 0 0 1px var(--color-pink);
     border: 1px solid var(--color-pink);
   }
@@ -81,23 +81,7 @@
     user-select: none;
   }
 
-  .footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 32px;
-  }
-
-  .left {
-    display: flex;
-    flex: 1;
-    justify-content: flex-start;
-    align-items: flex-start;
-    text-align: left;
-    padding-left: 15px;
-  }
-
-  .body {
+  .option-body {
     border-top: 1px solid var(--color-lightgray);
     background-color: var(--color-almostwhite);
     padding: 16px 22px 24px 22px;
@@ -109,16 +93,32 @@
     display: block;
   }
 
-  .default-branch {
+  .button-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 32px;
+  }
+
+  .default-branch-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 24px;
   }
 
-  .publish {
+  .publish-row {
     display: flex;
     align-items: center;
+  }
+
+  .footnote {
+    display: flex;
+    flex: 1;
+    justify-content: flex-start;
+    align-items: flex-start;
+    text-align: left;
+    padding-left: 15px;
   }
 </style>
 
@@ -150,7 +150,7 @@
             <Icon.CheckCircle
               style={isNew ? 'display: block' : 'display: none'} />
           </div>
-          <div class="body" class:show={isNew}>
+          <div class="option-body" class:show={isNew}>
             <Text.Regular
               style="margin-bottom: 12px; color: var(--color-darkgray)">
               Choose where you'd like to create the repository
@@ -167,13 +167,13 @@
             <Icon.CheckCircle
               style={isExisting ? 'display: block' : 'display: none'} />
           </div>
-          <div class="body" class:show={isExisting}>
+          <div class="option-body" class:show={isExisting}>
             <Text.Regular
               style="margin-bottom: 12px; color: var(--color-darkgray)">
               Choose the existing repository
             </Text.Regular>
             <DirectoryInput style="margin-bottom: 16px" />
-            <div class="default-branch">
+            <div class="default-branch-row">
               <Text.Regular style="color: var(--color-darkgray)">
                 Select the default branch
               </Text.Regular>
@@ -183,7 +183,7 @@
                 disabled
                 style="min-width: 240px" />
             </div>
-            <div class="publish">
+            <div class="publish-row">
               <CheckboxInput bind:checked={publish}>
                 Publish the {defaultBranch} branch to the network
               </CheckboxInput>
@@ -192,8 +192,8 @@
         </div>
       </div>
 
-      <div class="footer">
-        <div class="left">
+      <div class="button-row">
+        <div class="footnote">
           <Text.Small style="color: var(--color-gray)">* required</Text.Small>
         </div>
         <Button
