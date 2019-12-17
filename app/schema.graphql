@@ -100,7 +100,7 @@ type Query {
   tags(projectId: IdInput!): [String]!
 
   # local disk browsing
-  localBranches(path: String!): [Ref]!
+  localBranches(path: String!): [String]!
 }
 
 ProjectMetadataInput {
