@@ -23,7 +23,7 @@ context("source code browsing", () => {
         .contains("Add a long commit message to commit message body")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("80ded66")
+        .contains("d688035")
         .should("exist");
 
       // it is the folder view
@@ -44,7 +44,7 @@ context("source code browsing", () => {
       it("allows switching to a different branch", () => {
         cy.get("[data-cy=revision-selector]").should("have.value", "master");
 
-        cy.get("[data-cy=revision-selector]").select("refs/remotes/origin/dev");
+        cy.get("[data-cy=revision-selector]").select("origin/dev");
         cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
       });
 
@@ -128,29 +128,31 @@ context("source code browsing", () => {
 
         // the main view of the page stays unchanged and shows the top level
         // directory listing
-        cy.contains("Initial commit FTW!").should("exist");
+        cy.contains("Add a long commit message to commit message body").should(
+          "exist"
+        );
       });
     });
 
     context("relative timestamps", () => {
       context("when the timeframe is less than a day", () => {
         it("shows timeframe in hours", () => {
-          cy.clock(Date.parse("3 dec 2019"));
-          cy.contains("13 hours ago").should("exist");
+          cy.clock(Date.parse("13 dec 2019"));
+          cy.contains("6 hours ago").should("exist");
         });
       });
 
       context("when the timeframe is less than a week", () => {
         it("shows timeframe in days", () => {
-          cy.clock(Date.parse("4 dec 2019"));
+          cy.clock(Date.parse("14 dec 2019"));
           cy.contains("1 day ago").should("exist");
         });
       });
 
       context("when the timeframe is less than a week", () => {
         it("shows timeframe in weeks", () => {
-          cy.clock(Date.parse("15 dec 2019"));
-          cy.contains("1 week ago").should("exist");
+          cy.clock(Date.parse("17 dec 2019"));
+          cy.contains("4 days ago").should("exist");
         });
       });
     });
