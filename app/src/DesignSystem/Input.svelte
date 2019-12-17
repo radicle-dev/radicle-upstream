@@ -2,6 +2,8 @@
   export let style = null;
   export let placeholder = null;
   export let value = null;
+
+  export let disabled = null;
 </script>
 
 <style>
@@ -13,6 +15,7 @@
     height: 48px;
     line-height: 48px;
     padding: 0 16px 0 16px;
+    background-color: var(--color-white);
   }
 
   input:focus {
@@ -22,4 +25,4 @@
   }
 </style>
 
-<input {placeholder} {style} bind:value />
+<input {placeholder} {style} bind:value {disabled} />

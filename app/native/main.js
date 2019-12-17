@@ -1,5 +1,6 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
+import { MAIN_IPC_CHANNEL } from "../src/types.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -13,12 +14,27 @@ const startApp = () => {
   createWindow();
 };
 
+ipcMain.handle(MAIN_IPC_CHANNEL, async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ["openDirectory", "showHiddenFiles", "createDirectory"]
+  });
+
+  if (result.filePaths.length === 1) {
+    return result.filePaths[0];
+  } else {
+    return false;
+  }
+});
+
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 680,
     icon: path.join(__dirname, "../public/icon.png"),
-    show: false
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js")
+    }
   });
 
   mainWindow.maximize();
