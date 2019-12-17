@@ -125,13 +125,23 @@ struct Commit {
 impl From<&git2::Commit<'_>> for Commit {
     fn from(commit: &git2::Commit) -> Self {
         let signature = commit.author();
+        let email = signature.email().unwrap_or("invalid email");
+
+        use std::hash::{Hash, Hasher};
+        let mut s = std::collections::hash_map::DefaultHasher::new();
+        email.hash(&mut s);
+
+        let avatar = format!(
+            "https://avatars.dicebear.com/v2/jdenticon/{}.svg",
+            s.finish().to_string()
+        );
 
         Self {
             sha1: commit.id().to_string(),
             author: Person {
                 name: signature.name().unwrap_or("invalid name").into(),
-                email: signature.email().unwrap_or("invalid email").into(),
-                avatar: "https://avatars.dicebear.com/v2/human/foo.svg".into(),
+                email: email.into(),
+                avatar: avatar.into(),
             },
             summary: commit.summary().unwrap_or("invalid subject").into(),
             message: commit.message().unwrap_or("invalid message").into(),
