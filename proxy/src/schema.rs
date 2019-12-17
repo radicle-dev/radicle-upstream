@@ -1,4 +1,6 @@
 use juniper::{FieldError, FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
 use radicle_surf::{
@@ -77,21 +79,15 @@ impl Into<ProjectId> for IdInput {
     }
 }
 
-/// Object representing a git branch.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLObject)]
-struct Branch {
-    /// Name of the branch.
-    name: String,
-}
+/// Branch name representation.
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLScalarValue)]
+struct Branch(String);
 
-/// Object representing a git tag.
+/// Tag name representation.
 ///
 /// We still need full tag support.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLObject)]
-struct Tag {
-    /// Name of the tag.
-    name: String,
-}
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLScalarValue)]
+struct Tag(String);
 
 /// Representation of a person (e.g. committer, author, signer) from a repository. Usually
 /// extracted from a signature.
@@ -127,8 +123,7 @@ impl From<&git2::Commit<'_>> for Commit {
         let signature = commit.author();
         let email = signature.email().unwrap_or("invalid email");
 
-        use std::hash::{Hash, Hasher};
-        let mut s = std::collections::hash_map::DefaultHasher::new();
+        let mut s = DefaultHasher::new();
         email.hash(&mut s);
 
         let avatar = format!(
@@ -298,9 +293,7 @@ impl Query {
             .list_branches(None)
             .expect("Getting branches failed")
             .into_iter()
-            .map(|b| Branch {
-                name: b.name.name(),
-            })
+            .map(|b| Branch(b.name.name()))
             .collect();
 
         branches.sort();
@@ -316,9 +309,7 @@ impl Query {
 
         let mut tags: Vec<Tag> = tag_names
             .into_iter()
-            .map(|tag_name| Tag {
-                name: tag_name.name(),
-            })
+            .map(|tag_name| Tag(tag_name.name()))
             .collect();
 
         tags.sort();
@@ -672,18 +663,17 @@ mod tests {
 
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, errors) =
-            execute_query("query($id: IdInput!) { branches(id: $id) { name } }", &vars);
+        let (res, errors) = execute_query("query($id: IdInput!) { branches(id: $id) }", &vars);
 
         assert_eq!(errors, []);
         assert_eq!(
             res,
             graphql_value!({
                 "branches": [
-                    { "name": "master" },
-                    { "name": "origin/HEAD" },
-                    { "name": "origin/dev" },
-                    { "name": "origin/master" },
+                    "master",
+                    "origin/HEAD",
+                    "origin/dev",
+                    "origin/master",
                 ]
             }),
         );
@@ -744,18 +734,18 @@ mod tests {
         id_map.insert("name".into(), InputValue::scalar("upstream"));
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) { name } }", &vars);
+        let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
 
         assert_eq!(errors, []);
         assert_eq!(
             res,
             graphql_value!({
                 "tags": [
-                    { "name": "v0.1.0" },
-                    { "name": "v0.2.0" },
-                    { "name": "v0.3.0" },
-                    { "name": "v0.4.0" },
-                    { "name": "v0.5.0" },
+                    "v0.1.0",
+                    "v0.2.0",
+                    "v0.3.0",
+                    "v0.4.0",
+                    "v0.5.0",
                 ]
             }),
         )

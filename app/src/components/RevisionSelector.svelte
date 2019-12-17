@@ -8,12 +8,8 @@
 
   const ALL_REVISIONS = gql`
     query($projectId: IdInput!) {
-      tags(id: $projectId) {
-        name
-      }
-      branches(id: $projectId) {
-        name
-      }
+      tags(id: $projectId)
+      branches(id: $projectId)
     }
   `;
 
@@ -27,6 +23,6 @@
   <Select
     dataCy="revision-selector"
     style="margin-bottom: 16px"
-    items={[...result.data.tags.map(t => t.name), ...result.data.branches.map(b => b.name)].sort()}
+    items={[...result.data.tags, ...result.data.branches].sort()}
     bind:value={$revision} />
 {/await}
