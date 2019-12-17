@@ -22,7 +22,11 @@
 </style>
 
 <div class="wrapper" {style}>
-  <Input {placeholder} value={path} disabled style="margin-right: 16px" />
+  <Input
+    {placeholder}
+    value={path || placeholder}
+    disabled
+    style="margin-right: 16px" />
 
   <Button variant="primary" on:click={openFileDialog}>Choose</Button>
 </div>
