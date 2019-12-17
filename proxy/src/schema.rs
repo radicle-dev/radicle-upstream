@@ -143,12 +143,12 @@ impl From<&git2::Commit<'_>> for Commit {
 /// Git object types.
 ///
 /// `shafiul.github.io/gitbook/1_the_git_object_model.html`
-#[derive(GraphQLEnum)]
+#[derive(Debug, Eq, Ord, PartialOrd, PartialEq, GraphQLEnum)]
 enum ObjectType {
-    /// Used to store file data.
-    Blob,
     /// References a list of other trees and blobs.
     Tree,
+    /// Used to store file data.
+    Blob,
 }
 
 /// Set of extra information we carry for blob and tree objects returned from the API.
@@ -357,7 +357,7 @@ impl Query {
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
 
-        let entries = prefix_contents
+        let mut entries: Vec<TreeEntry> = prefix_contents
             .iter()
             .map(|(label, system_type)| {
                 let entry_path = {
@@ -388,6 +388,12 @@ impl Query {
             })
             .collect();
 
+        // We want to ensure that in the response Tree entries come first. `Ord` being derived on
+        // the enum ensures Variant declaration order.
+        //
+        // https://doc.rust-lang.org/std/cmp/trait.Ord.html#derivable
+        entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
+
         let last_commit = if path.is_root() {
             Commit::from(browser.get_history().0.first())
         } else {
@@ -397,7 +403,9 @@ impl Query {
                     .unwrap_or_else(|| panic!("[tree] unable to get last commit: {}", path)),
             )
         };
-        let name = {
+        let name = if path.is_root() {
+            "".into()
+        } else {
             let (_first, last) = path.split_last();
             last.label
         };
@@ -887,9 +895,16 @@ mod tests {
             "query($id: IdInput!, $revision: String!, $prefix: String!) {
                 tree(id: $id, revision: $revision, prefix: $prefix) {
                     path,
-                    entries {
-                        path
+                    info {
+                        name
+                        objectType
                     }
+                    entries {
+                        path,
+                        info {
+                            objectType
+                        }
+                    },
                 }
             }",
             &vars,
@@ -901,17 +916,21 @@ mod tests {
             graphql_value!({
                 "tree": {
                     "path": "",
+                    "info": {
+                        "name": "",
+                        "objectType": "TREE",
+                    },
                     "entries": [
-                        { "path": ".i-am-well-hidden" },
-                        { "path": ".i-too-am-hidden" },
-                        { "path": "README.md" },
-                        { "path": "bin" },
-                        { "path": "src" },
-                        { "path": "text" },
-                        { "path": "this" },
-                    ]
+                        { "path": "bin", "info": { "objectType": "TREE" } },
+                        { "path": "src", "info": { "objectType": "TREE" } },
+                        { "path": "text", "info": { "objectType": "TREE" } },
+                        { "path": "this", "info": { "objectType": "TREE" } },
+                        { "path": ".i-am-well-hidden", "info": { "objectType": "BLOB" } },
+                        { "path": ".i-too-am-hidden", "info": { "objectType": "BLOB" } },
+                        { "path": "README.md", "info": { "objectType": "BLOB" } },
+                    ],
                 }
-            })
+            }),
         );
     }
 
