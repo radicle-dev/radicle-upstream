@@ -20,8 +20,7 @@
     }
   `;
 
-  const client = getClient();
-  const projects = query(client, { query: GET_PROJECTS });
+  const projects = query(getClient(), { query: GET_PROJECTS });
 </script>
 
 <style>

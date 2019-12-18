@@ -28,14 +28,14 @@ context("navigation", () => {
       cy.get('[data-cy="page"]').should("contain", "Projects");
       cy.get('[data-cy="page"]').should("contain", "New Project");
 
-      cy.get('[data-cy="sidebar"] [data-cy="new-project"]').click();
-      cy.get('[data-cy="page"]').should("contain", "Design System");
-
       cy.get('[data-cy="sidebar"] [data-cy="wallet"]').click();
       cy.get('[data-cy="page"]').should("contain", "Wallet");
 
       cy.get('[data-cy="sidebar"] [data-cy="profile"]').click();
       cy.get('[data-cy="page"]').should("contain", "Profile");
+
+      cy.get('[data-cy="sidebar"] [data-cy="new-project"]').click();
+      cy.get('[data-cy="page"]').should("contain", "Design System");
     });
   });
 

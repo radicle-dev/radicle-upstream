@@ -13,20 +13,17 @@ context("source code browsing", () => {
 
     it("shows contents of the root folder for the latest revision", () => {
       // the default revision is selected
-      cy.get("[data-cy=revision-selector]").should(
-        "have.value",
-        "refs/heads/master"
-      );
+      cy.get("[data-cy=revision-selector]").should("have.value", "master");
 
       // there is a commit teaser
       cy.get("[data-cy=commit-teaser]")
-        .contains("Rūdolfs Ošiņš")
+        .contains("Alexander Simmerl")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("Delete unneeded file")
+        .contains("Add a long commit message to commit message body")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("80ded66")
+        .contains("d688035")
         .should("exist");
 
       // it is the folder view
@@ -45,20 +42,14 @@ context("source code browsing", () => {
   context("page view", () => {
     context("revision selector", () => {
       it("allows switching to a different branch", () => {
-        cy.get("[data-cy=revision-selector]").should(
-          "have.value",
-          "refs/heads/master"
-        );
+        cy.get("[data-cy=revision-selector]").should("have.value", "master");
 
-        cy.get("[data-cy=revision-selector]").select("refs/remotes/origin/dev");
+        cy.get("[data-cy=revision-selector]").select("origin/dev");
         cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
       });
 
       it("allows switching to a different tag", () => {
-        cy.get("[data-cy=revision-selector]").should(
-          "have.value",
-          "refs/heads/master"
-        );
+        cy.get("[data-cy=revision-selector]").should("have.value", "master");
 
         cy.get("[data-cy=revision-selector]").select("v0.4.0");
         cy.contains("test-file-deletion.txt").should("exist");
@@ -137,29 +128,45 @@ context("source code browsing", () => {
 
         // the main view of the page stays unchanged and shows the top level
         // directory listing
-        cy.contains("Initial commit FTW!").should("exist");
+        cy.contains("Add a long commit message to commit message body").should(
+          "exist"
+        );
       });
     });
 
     context("relative timestamps", () => {
       context("when the timeframe is less than a day", () => {
         it("shows timeframe in hours", () => {
-          cy.clock(Date.parse("3 dec 2019"));
-          cy.contains("13 hours ago").should("exist");
+          cy.clock(Date.parse("13 dec 2019"));
+          cy.contains("6 hours ago").should("exist");
         });
       });
 
-      context("when the timeframe is less than a week", () => {
+      context("when the timeframe is less than 2 days", () => {
         it("shows timeframe in days", () => {
-          cy.clock(Date.parse("4 dec 2019"));
+          cy.clock(Date.parse("14 dec 2019"));
           cy.contains("1 day ago").should("exist");
         });
       });
 
       context("when the timeframe is less than a week", () => {
+        it("shows timeframe in days", () => {
+          cy.clock(Date.parse("18 dec 2019"));
+          cy.contains("5 days ago").should("exist");
+        });
+      });
+
+      context("when the timeframe is more than a week", () => {
         it("shows timeframe in weeks", () => {
-          cy.clock(Date.parse("15 dec 2019"));
+          cy.clock(Date.parse("23 dec 2019"));
           cy.contains("1 week ago").should("exist");
+        });
+      });
+
+      context("when the timeframe is more than 2 weeks", () => {
+        it("shows timeframe in weeks", () => {
+          cy.clock(Date.parse("31 dec 2019"));
+          cy.contains("2 weeks ago").should("exist");
         });
       });
     });

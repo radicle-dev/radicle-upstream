@@ -1,11 +1,10 @@
 <script>
-  import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
-  import { query } from "svelte-apollo";
-  import { TREE } from "../types.js";
-
   import { getContext } from "svelte";
+  import { getClient, query } from "svelte-apollo";
   import { link } from "svelte-spa-router";
+
+  import { TREE } from "../types.js";
   import { Icon } from "../DesignSystem";
   import File from "./File.svelte";
   import { revision, objectPath } from "../stores.js";
@@ -19,13 +18,9 @@
 
   const projectId = getContext("projectId");
 
-  const client = new ApolloClient({
-    uri: "http://127.0.0.1:4000"
-  });
-
   const QUERY = gql`
     query Query($projectId: IdInput!, $revision: String!, $prefix: String!) {
-      tree(projectId: $projectId, revision: $revision, prefix: $prefix) {
+      tree(id: $projectId, revision: $revision, prefix: $prefix) {
         entries {
           path
           info {
@@ -37,7 +32,7 @@
     }
   `;
 
-  $: sourceTree = query(client, {
+  $: sourceTree = query(getClient(), {
     query: QUERY,
     variables: { projectId: projectId, revision: $revision, prefix: prefix }
   });

@@ -29,15 +29,20 @@ else
 fi
 
 echo "--- Building proxy"
-(cd app && ELECTRON_ENABLE_LOGGING=1 yarn proxy:build)
+(cd app && yarn proxy:build)
 
 echo "--- Saving proxy/target cache"
 rm -rf "$target_cache"
 cp -aTu proxy/target "$target_cache"
 echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 
+echo "--- Updateing submodules"
+(cd app && git submodule update --init --recursive)
+(cd app && git submodule foreach "git fetch --all")
+(cd app && git submodule foreach "git log -n1")
+
 echo "--- Starting proxy daemon and runing app tests"
-(cd app && yarn test)
+(cd app && ELECTRON_ENABLE_LOGGING=1 yarn test)
 
 echo "--- Packaging and uploading app binaries"
 (cd app && yarn ci:dist)
