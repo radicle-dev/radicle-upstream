@@ -112,8 +112,9 @@ struct Commit {
     summary: String,
     /// The entire commit message body.
     message: String,
-    /// The recorded time of the commit.
-    time: String,
+    /// The recorded time of the committer signature. This is a convenience alias until we expose
+    /// the actual author and commiter signatures.
+    committer_time: String,
 }
 
 // FIXME(xla): This should be a `std::convert::TryFrom` and needs to be addressed together with
@@ -140,7 +141,7 @@ impl From<&git2::Commit<'_>> for Commit {
             },
             summary: commit.summary().unwrap_or("invalid subject").into(),
             message: commit.message().unwrap_or("invalid message").into(),
-            time: commit.time().seconds().to_string(),
+            committer_time: commit.time().seconds().to_string(),
         }
     }
 }
@@ -490,7 +491,7 @@ mod tests {
                             },
                             summary,
                             message,
-                            time,
+                            committerTime,
                         },
                     },
                 }
@@ -523,7 +524,7 @@ mod tests {
                             },
                             "summary": "Add a long commit message to commit message body (#1)",
                             "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                            "time": "1576170713",
+                            "committerTime": "1576170713",
                         },
                     },
                 }
@@ -559,7 +560,7 @@ mod tests {
                             },
                             summary,
                             message,
-                            time,
+                            committerTime,
                         },
                     },
                 }
@@ -585,7 +586,7 @@ mod tests {
                             },
                             "summary": "Add a long commit message to commit message body (#1)",
                             "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                            "time": "1576170713",
+                            "committerTime": "1576170713",
                         },
                     },
                 }
@@ -620,7 +621,7 @@ mod tests {
                             },
                             summary,
                             message,
-                            time,
+                            committerTime,
                         },
                     },
                 }
@@ -645,7 +646,7 @@ mod tests {
                             },
                             "summary": "Add a long commit message to commit message body (#1)",
                             "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                            "time": "1576170713",
+                            "committerTime": "1576170713",
                         },
                     },
                 }
@@ -701,7 +702,7 @@ mod tests {
                     },
                     summary,
                     message,
-                    time,
+                    committerTime,
                 }
             }",
             &vars,
@@ -719,7 +720,7 @@ mod tests {
                     },
                     "summary": "Delete unneeded file",
                     "message": "Delete unneeded file\n",
-                    "time": "1575468397",
+                    "committerTime": "1575468397",
                 },
             }),
         )
@@ -777,7 +778,7 @@ mod tests {
                             },
                             summary,
                             message,
-                            time,
+                            committerTime,
                         }
                     }
                     entries {
@@ -793,7 +794,7 @@ mod tests {
                                 },
                                 summary,
                                 message,
-                                time,
+                                committerTime,
                             }
                         },
                     },
@@ -819,7 +820,7 @@ mod tests {
                             },
                             "summary": "Add a long commit message to commit message body (#1)",
                             "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                            "time": "1576170713",
+                            "committerTime": "1576170713",
                         },
                     },
                     "entries": [
@@ -836,7 +837,7 @@ mod tests {
                                     },
                                     "summary": "Add a long commit message to commit message body (#1)",
                                     "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                                    "time": "1576170713",
+                                    "committerTime": "1576170713",
                                 },
                             },
                         },
@@ -853,7 +854,7 @@ mod tests {
                                     },
                                     "summary": "Add a long commit message to commit message body (#1)",
                                     "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                                    "time": "1576170713",
+                                    "committerTime": "1576170713",
                                 },
                             },
                         },
@@ -870,7 +871,7 @@ mod tests {
                                     },
                                     "summary": "Add a long commit message to commit message body (#1)",
                                     "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                                    "time": "1576170713",
+                                    "committerTime": "1576170713",
                                 },
                             },
                         },

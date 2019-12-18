@@ -23,7 +23,7 @@
               name
               avatar
             }
-            time
+            committerTime
             sha1
             summary
           }
@@ -38,7 +38,7 @@
                 name
               }
               summary
-              time
+              committerTime
             }
           }
         }
@@ -110,7 +110,7 @@
     user={{ username: result.data.tree.info.lastCommit.author.name, avatar: result.data.tree.info.lastCommit.author.avatar }}
     commitMessage={result.data.tree.info.lastCommit.summary}
     commitSha={result.data.tree.info.lastCommit.sha1.substring(0, 7)}
-    timestamp={format(result.data.tree.info.lastCommit.time * 1000)}
+    timestamp={format(result.data.tree.info.lastCommit.committerTime * 1000)}
     style="margin-bottom: 48px" />
 
   <table data-cy="file-list">
@@ -153,7 +153,7 @@
           </td>
           <td class="last-update-column">
             <Text.Regular>
-              {format(entry.info.lastCommit.time * 1000)}
+              {format(entry.info.lastCommit.committerTime * 1000)}
             </Text.Regular>
           </td>
         </tr>
