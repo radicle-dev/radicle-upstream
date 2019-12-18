@@ -31,7 +31,7 @@ export const extractProjectSourceRevision = location => {
 
 export const extractProjectSourceObjectPath = location => {
   const path = location.match(PROJECT_SOURCE_PATH_MATCH);
-  return path === null ? "/" : path[3];
+  return path === null ? "" : path[3];
 };
 
 export const extractProjectSourceObjectType = location => {

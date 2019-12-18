@@ -3,6 +3,7 @@
   export let value = null;
 
   export let style = null;
+  export let dataCy = null;
 </script>
 
 <style>
@@ -30,7 +31,7 @@
   }
 </style>
 
-<select {style} bind:value>
+<select data-cy={dataCy} {style} bind:value>
   {#each items as item}
     <option value={item}>{item}</option>
   {/each}

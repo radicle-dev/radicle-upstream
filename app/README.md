@@ -27,7 +27,33 @@ Build and package the app:
 2. Get the generated package from: `dist/radicle-upstream-0.0.1.dmg`
 
 
-#### Buildkite
+#### Running tests locally
+
+Before running tests locally you'll need to set up a test fixture repository:
+`git submodule foreach "git fetch --all"`.
+
+To run the tests do: `yarn test`.
+To troubleshoot tests in the Cypress GUI, run: `yarn test:debug`.
+
+
+#### CI
+
+CI is configured via:
+```
+radicle-upstream/.buildkite
+.
+├── Dockerfile
+├── pipeline.yaml
+└── run.sh
+```
+
+The build process is run for every commit that is pushed to GitHub. When the
+tests pass, the build process spits out and uploads an app binary as build
+artifact. When the tests fail, screenshots of the failing tests will be
+uploaded instead of the binary.
+
+
+#### Buildkite setup
 
 We use a Docker image that has all of the system dependencies installed to run
 tests on Buildkite. Follow these steps if you need to update the dependencies
@@ -61,6 +87,8 @@ DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.3'
 ```
 yarn start           - start electron app in development mode with code
                        hot-reloading
+yarn test            - run cypress e2e tests
+yarn test:debug      - run tests via the cypress GUI
 yarn dist            - packages the app into an installable package
 
 yarn electron:start  - wait for dependency start-up and start electron without

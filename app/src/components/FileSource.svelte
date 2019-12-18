@@ -1,23 +1,19 @@
 <script>
-  import ApolloClient from "apollo-boost";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
-
   import { format } from "timeago.js";
-
-  import { getContext } from "svelte";
-  import { revision, objectPath } from "../stores.js";
 
   import { Icon } from "../DesignSystem";
   import CommitTeaser from "./CommitTeaser.svelte";
 
-  const client = new ApolloClient({
-    uri: "http://127.0.0.1:4000"
-  });
+  export let projectId = null;
+  export let path = null;
+  export let revision = null;
 
   const SOURCE = gql`
     query($projectId: IdInput!, $revision: String!, $path: String!) {
-      blob(projectId: $projectId, revision: $revision, path: $path) {
+      blob(id: $projectId, revision: $revision, path: $path) {
+        binary
         content
         info {
           lastCommit {
@@ -25,8 +21,8 @@
               name
               avatar
             }
-            authorDate
-            subject
+            committerTime
+            summary
             sha1
           }
         }
@@ -34,12 +30,12 @@
     }
   `;
 
-  $: source = query(client, {
+  $: source = query(getClient(), {
     query: SOURCE,
     variables: {
-      projectId: getContext("projectId"),
-      revision: $revision,
-      path: $objectPath
+      projectId: projectId,
+      path: path,
+      revision: revision
     }
   });
 </script>
@@ -88,27 +84,31 @@
 {#await $source then result}
   <CommitTeaser
     user={{ username: result.data.blob.info.lastCommit.author.name, avatar: result.data.blob.info.lastCommit.author.avatar }}
-    commitMessage={result.data.blob.info.lastCommit.subject}
+    commitMessage={result.data.blob.info.lastCommit.summary}
     commitSha={result.data.blob.info.lastCommit.sha1.substring(0, 7)}
-    timestamp={format(result.data.blob.info.lastCommit.authorDate)}
+    timestamp={format(result.data.blob.info.lastCommit.committerTime * 1000)}
     style="margin-bottom: 48px" />
 
-  <div class="file-source">
+  <div class="file-source" data-cy="file-source">
     <header>
       <Icon.File />
-      {$objectPath}
+      {path}
     </header>
     <div class="container">
-      <pre class="line-numbers">
-        {@html result.data.blob.content
-          .split('\n')
-          .slice(0, -1)
-          .map((_, index) => {
-            return `${index + 1}`;
-          })
-          .join('\n')}
-      </pre>
-      <pre class="code">{result.data.blob.content}</pre>
+      {#if result.data.blob.binary}
+        ఠ ͟ಠ Binary content.
+      {:else}
+        <pre class="line-numbers">
+          {@html result.data.blob.content
+            .split('\n')
+            .slice(0, -1)
+            .map((_, index) => {
+              return `${index + 1}`;
+            })
+            .join('\n')}
+        </pre>
+        <pre class="code">{result.data.blob.content}</pre>
+      {/if}
     </div>
   </div>
 {/await}

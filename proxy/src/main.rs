@@ -1,4 +1,4 @@
-//! Proxy to serve a specialised GraphQL API to radicle-upstream.
+//! Proxy to serve a specialised `GraphQL` API to radicle-upstream.
 
 #![deny(missing_docs)]
 #![deny(warnings)]
@@ -14,11 +14,12 @@
 
 #[macro_use]
 extern crate log;
-extern crate pretty_env_logger;
 
 #[macro_use]
 extern crate juniper;
 
+/// Utilities to manipulate the process environment.
+mod env;
 /// Defines the schema served to the application via `GraphQL`.
 mod schema;
 /// Server infrastructure used to power the API.
@@ -26,25 +27,42 @@ mod server_warp;
 /// Origin of data required like the on-chain Registry.
 mod source;
 
-fn main() {
-    std::env::set_var("RUST_BACKTRACE", "full");
-    std::env::set_var("RUST_LOG", "info");
+/// Flags accepted by the proxy binary.
+struct Args {
+    /// Signaling which backend type to use.
+    source_type: String,
+    /// Put proxy in test mode to use certain fixtures to serve.
+    test: bool,
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    env::set_if_unset("RUST_BACKTRACE", "full");
+    env::set_if_unset("RUST_LOG", "info");
     pretty_env_logger::init();
 
-    let source_type = std::env::args().nth(1).expect("no source was given");
+    let mut args = pico_args::Arguments::from_env();
+    let args = Args {
+        source_type: args.value_from_str("--source")?,
+        test: args.contains("--test"),
+    };
 
-    let context = if let "memory" = source_type.as_ref() {
+    let dummy_repo = if args.test {
+        "../fixtures/git-platinum"
+    } else {
+        ".."
+    };
+    let context = if "memory" == args.source_type {
         let client = radicle_registry_client::MemoryClient::new();
         let mut src = source::Ledger::new(client);
 
         source::setup_fixtures(&mut src);
 
-        schema::Context::new(src)
+        schema::Context::new(dummy_repo.into(), src)
     } else {
         let client = radicle_registry_client::ClientWithExecutor::create()
             .expect("creating registry client failed");
         let src = source::Ledger::new(client);
-        schema::Context::new(src)
+        schema::Context::new(dummy_repo.into(), src)
     };
 
     info!("Creating GraphQL schema and context");
@@ -52,4 +70,6 @@ fn main() {
 
     info!("Starting HTTP server");
     server_warp::run(schema, context);
+
+    Ok(())
 }

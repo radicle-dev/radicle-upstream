@@ -9,3 +9,4 @@ steps:
     artifact_paths:
       - "app/dist/*.AppImage"
       - "app/dist/*.snap"
+      - "app/cypress/screenshots/**/*.png"
