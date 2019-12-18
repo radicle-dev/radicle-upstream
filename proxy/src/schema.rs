@@ -1,4 +1,6 @@
-use juniper::{FieldError, FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
+use juniper::{
+    FieldError, FieldResult, IntoFieldError, ParseScalarResult, ParseScalarValue, RootNode, Value,
+};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
@@ -199,11 +201,32 @@ struct Blob {
     info: Info,
 }
 
+enum Error {
+    Unimplemented,
+}
+
+impl IntoFieldError for Error {
+    fn into_field_error(self) -> FieldError {
+        match self {
+            Error::Unimplemented => FieldError::new(
+                "unimplemented",
+                graphql_value!({
+                    "type": "UNIMPLEMENTED",
+                }),
+            ),
+        }
+    }
+}
+
 /// Encapsulates write path in API.
 pub struct Mutation;
 
 #[juniper::object(Context = Context)]
 impl Mutation {
+    fn create_project(ctx: &Context) -> Result<Project, Error> {
+        Err(Error::Unimplemented)
+    }
+
     fn register_project(
         ctx: &Context,
         name: String,
@@ -435,12 +458,10 @@ impl Query {
 
 #[cfg(test)]
 mod tests {
-    use indexmap::IndexMap;
-    use juniper::{InputValue, Variables};
-    use pretty_assertions::assert_eq;
+    use juniper::Variables;
     use radicle_registry_client::MemoryClient;
 
-    use super::{Context, Mutation, Query, Schema};
+    use crate::schema::{Context, Mutation, Query, Schema};
     use crate::source::{setup_fixtures, Ledger};
 
     const REPO_PATH: &str = "../fixtures/git-platinum";
@@ -463,20 +484,51 @@ mod tests {
             .expect("test execute failed")
     }
 
-    #[test]
-    fn query_blob() {
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+    mod mutation {
+        use juniper::Variables;
+        use pretty_assertions::assert_eq;
 
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
+        use super::execute_query;
 
-        vars.insert("id".into(), InputValue::object(id_map));
-        vars.insert("revision".into(), InputValue::scalar("master"));
-        vars.insert("path".into(), InputValue::scalar("text/arrows.txt"));
+        #[test]
+        fn create_project() {
+            let (res, errors) = execute_query(
+                "mutation CreateProject { createProject { name } }",
+                &Variables::new(),
+            );
+            assert_eq!(errors, []);
+            assert_eq!(res, graphql_value!(None));
+        }
+    }
 
-        let (res, errors) = execute_query(
-            "query($id: IdInput!, $revision: String!, $path: String!) {
+    mod query {
+        use indexmap::IndexMap;
+        use juniper::{InputValue, Variables};
+        use pretty_assertions::assert_eq;
+
+        use super::execute_query;
+
+        #[test]
+        fn api_version() {
+            let (res, errors) = execute_query("query { apiVersion }", &Variables::new());
+            assert_eq!(errors, []);
+            assert_eq!(res, graphql_value!({ "apiVersion": "1.0" }));
+        }
+
+        #[test]
+        fn blob() {
+            let mut vars = Variables::new();
+            let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+
+            id_map.insert("domain".into(), InputValue::scalar("rad"));
+            id_map.insert("name".into(), InputValue::scalar("upstream"));
+
+            vars.insert("id".into(), InputValue::object(id_map));
+            vars.insert("revision".into(), InputValue::scalar("master"));
+            vars.insert("path".into(), InputValue::scalar("text/arrows.txt"));
+
+            let (res, errors) = execute_query(
+                "query($id: IdInput!, $revision: String!, $path: String!) {
                 blob(id: $id, revision: $revision, path: $path) {
                     binary,
                     content,
@@ -496,16 +548,16 @@ mod tests {
                     },
                 }
             }",
-            &vars,
-        );
+                &vars,
+            );
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "blob": {
-                    "binary": false,
-                    "content": "  ;;;;;        ;;;;;        ;;;;;
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "blob": {
+                        "binary": false,
+                        "content": "  ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
@@ -513,39 +565,39 @@ mod tests {
  ':::::'      ':::::'      ':::::'
    ':`          ':`          ':`
 ",
-                    "info": {
-                        "name": "arrows.txt",
-                        "objectType": "BLOB",
-                        "lastCommit": {
-                            "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
-                            "author": {
-                                "name": "Alexander Simmerl",
-                                "email": "a.simmerl@gmail.com",
+                        "info": {
+                            "name": "arrows.txt",
+                            "objectType": "BLOB",
+                            "lastCommit": {
+                                "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
+                                "author": {
+                                    "name": "Alexander Simmerl",
+                                    "email": "a.simmerl@gmail.com",
+                                },
+                                "summary": "Add a long commit message to commit message body (#1)",
+                                "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                "committerTime": "1576170713",
                             },
-                            "summary": "Add a long commit message to commit message body (#1)",
-                            "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                            "committerTime": "1576170713",
                         },
-                    },
-                }
-            }),
-        );
-    }
+                    }
+                }),
+            );
+        }
 
-    #[test]
-    fn query_blob_binary() {
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+        #[test]
+        fn blob_binary() {
+            let mut vars = Variables::new();
+            let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
+            id_map.insert("domain".into(), InputValue::scalar("rad"));
+            id_map.insert("name".into(), InputValue::scalar("upstream"));
 
-        vars.insert("id".into(), InputValue::object(id_map));
-        vars.insert("revision".into(), InputValue::scalar("master"));
-        vars.insert("path".into(), InputValue::scalar("bin/ls"));
+            vars.insert("id".into(), InputValue::object(id_map));
+            vars.insert("revision".into(), InputValue::scalar("master"));
+            vars.insert("path".into(), InputValue::scalar("bin/ls"));
 
-        let (res, errors) = execute_query(
-            "query($id: IdInput!, $revision: String!, $path: String!) {
+            let (res, errors) = execute_query(
+                "query($id: IdInput!, $revision: String!, $path: String!) {
                 blob(id: $id, revision: $revision, path: $path) {
                     binary,
                     content,
@@ -565,49 +617,49 @@ mod tests {
                     },
                 }
             }",
-            &vars,
-        );
+                &vars,
+            );
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "blob": {
-                    "binary": true,
-                    "content": None,
-                    "info": {
-                        "name": "ls",
-                        "objectType": "BLOB",
-                        "lastCommit": {
-                            "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
-                            "author": {
-                                "name": "Alexander Simmerl",
-                                "email": "a.simmerl@gmail.com",
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "blob": {
+                        "binary": true,
+                        "content": None,
+                        "info": {
+                            "name": "ls",
+                            "objectType": "BLOB",
+                            "lastCommit": {
+                                "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
+                                "author": {
+                                    "name": "Alexander Simmerl",
+                                    "email": "a.simmerl@gmail.com",
+                                },
+                                "summary": "Add a long commit message to commit message body (#1)",
+                                "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                "committerTime": "1576170713",
                             },
-                            "summary": "Add a long commit message to commit message body (#1)",
-                            "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                            "committerTime": "1576170713",
                         },
-                    },
-                }
-            }),
-        );
-    }
+                    }
+                }),
+            );
+        }
 
-    #[test]
-    fn query_blob_in_root() {
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+        #[test]
+        fn blob_in_root() {
+            let mut vars = Variables::new();
+            let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
+            id_map.insert("domain".into(), InputValue::scalar("rad"));
+            id_map.insert("name".into(), InputValue::scalar("upstream"));
 
-        vars.insert("id".into(), InputValue::object(id_map));
-        vars.insert("revision".into(), InputValue::scalar("master"));
-        vars.insert("path".into(), InputValue::scalar("README.md"));
+            vars.insert("id".into(), InputValue::object(id_map));
+            vars.insert("revision".into(), InputValue::scalar("master"));
+            vars.insert("path".into(), InputValue::scalar("README.md"));
 
-        let (res, errors) = execute_query(
-            "query($id: IdInput!, $revision: String!, $path: String!) {
+            let (res, errors) = execute_query(
+                "query($id: IdInput!, $revision: String!, $path: String!) {
                 blob(id: $id, revision: $revision, path: $path) {
                     content,
                     info {
@@ -626,74 +678,74 @@ mod tests {
                     },
                 }
             }",
-            &vars,
-        );
+                &vars,
+            );
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "blob": {
-                    "content": "This repository is a data source for the Upstream front-end tests.\n",
-                    "info": {
-                        "name": "README.md",
-                        "objectType": "BLOB",
-                        "lastCommit": {
-                            "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
-                            "author": {
-                                "name": "Alexander Simmerl",
-                                "email": "a.simmerl@gmail.com",
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "blob": {
+                        "content": "This repository is a data source for the Upstream front-end tests.\n",
+                        "info": {
+                            "name": "README.md",
+                            "objectType": "BLOB",
+                            "lastCommit": {
+                                "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
+                                "author": {
+                                    "name": "Alexander Simmerl",
+                                    "email": "a.simmerl@gmail.com",
+                                },
+                                "summary": "Add a long commit message to commit message body (#1)",
+                                "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                "committerTime": "1576170713",
                             },
-                            "summary": "Add a long commit message to commit message body (#1)",
-                            "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                            "committerTime": "1576170713",
                         },
-                    },
-                }
-            }),
-        );
-    }
+                    }
+                }),
+            );
+        }
 
-    #[test]
-    fn query_branches() {
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+        #[test]
+        fn branches() {
+            let mut vars = Variables::new();
+            let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
+            id_map.insert("domain".into(), InputValue::scalar("rad"));
+            id_map.insert("name".into(), InputValue::scalar("upstream"));
 
-        vars.insert("id".into(), InputValue::object(id_map));
+            vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, errors) = execute_query("query($id: IdInput!) { branches(id: $id) }", &vars);
+            let (res, errors) = execute_query("query($id: IdInput!) { branches(id: $id) }", &vars);
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "branches": [
-                    "master",
-                    "origin/HEAD",
-                    "origin/dev",
-                    "origin/master",
-                ]
-            }),
-        );
-    }
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "branches": [
+                        "master",
+                        "origin/HEAD",
+                        "origin/dev",
+                        "origin/master",
+                    ]
+                }),
+            );
+        }
 
-    #[test]
-    fn query_commit() {
-        const SHA1: &str = "80ded66281a4de2889cc07293a8f10947c6d57fe";
+        #[test]
+        fn commit() {
+            const SHA1: &str = "80ded66281a4de2889cc07293a8f10947c6d57fe";
 
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+            let mut vars = Variables::new();
+            let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
-        vars.insert("id".into(), InputValue::object(id_map));
-        vars.insert("sha1".into(), InputValue::scalar(SHA1));
+            id_map.insert("domain".into(), InputValue::scalar("rad"));
+            id_map.insert("name".into(), InputValue::scalar("upstream"));
+            vars.insert("id".into(), InputValue::object(id_map));
+            vars.insert("sha1".into(), InputValue::scalar(SHA1));
 
-        let (res, errors) = execute_query(
-            "query($id: IdInput!, $sha1: String!) {
+            let (res, errors) = execute_query(
+                "query($id: IdInput!, $sha1: String!) {
                 commit(id: $id, sha1: $sha1) {
                     sha1,
                     author {
@@ -705,66 +757,66 @@ mod tests {
                     committerTime,
                 }
             }",
-            &vars,
-        );
+                &vars,
+            );
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "commit": {
-                    "sha1": SHA1,
-                    "author": {
-                        "name": "R\u{16b}dolfs O\u{161}i\u{146}\u{161}",
-                        "email": "rudolfs@osins.org",
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "commit": {
+                        "sha1": SHA1,
+                        "author": {
+                            "name": "R\u{16b}dolfs O\u{161}i\u{146}\u{161}",
+                            "email": "rudolfs@osins.org",
+                        },
+                        "summary": "Delete unneeded file",
+                        "message": "Delete unneeded file\n",
+                        "committerTime": "1575468397",
                     },
-                    "summary": "Delete unneeded file",
-                    "message": "Delete unneeded file\n",
-                    "committerTime": "1575468397",
-                },
-            }),
-        )
-    }
+                }),
+            )
+        }
 
-    #[test]
-    fn query_tags() {
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+        #[test]
+        fn tags() {
+            let mut vars = Variables::new();
+            let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
-        vars.insert("id".into(), InputValue::object(id_map));
+            id_map.insert("domain".into(), InputValue::scalar("rad"));
+            id_map.insert("name".into(), InputValue::scalar("upstream"));
+            vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
+            let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "tags": [
-                    "v0.1.0",
-                    "v0.2.0",
-                    "v0.3.0",
-                    "v0.4.0",
-                    "v0.5.0",
-                ]
-            }),
-        )
-    }
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "tags": [
+                        "v0.1.0",
+                        "v0.2.0",
+                        "v0.3.0",
+                        "v0.4.0",
+                        "v0.5.0",
+                    ]
+                }),
+            )
+        }
 
-    #[test]
-    fn query_tree() {
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+        #[test]
+        fn tree() {
+            let mut vars = Variables::new();
+            let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
-        vars.insert("id".into(), InputValue::object(id_map));
-        vars.insert("revision".into(), InputValue::scalar("master"));
-        vars.insert("prefix".into(), InputValue::scalar("src"));
+            id_map.insert("domain".into(), InputValue::scalar("rad"));
+            id_map.insert("name".into(), InputValue::scalar("upstream"));
+            vars.insert("id".into(), InputValue::object(id_map));
+            vars.insert("revision".into(), InputValue::scalar("master"));
+            vars.insert("prefix".into(), InputValue::scalar("src"));
 
-        let (res, errors) = execute_query(
-            "query($id: IdInput!, $revision: String!, $prefix: String!) {
+            let (res, errors) = execute_query(
+                "query($id: IdInput!, $revision: String!, $prefix: String!) {
                 tree(id: $id, revision: $revision, prefix: $prefix) {
                     path,
                     info {
@@ -800,100 +852,100 @@ mod tests {
                     },
                 }
             }",
-            &vars,
-        );
+                &vars,
+            );
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "tree": {
-                    "path": "src",
-                    "info": {
-                        "name": "src",
-                        "objectType": "TREE",
-                        "lastCommit": {
-                            "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
-                            "author": {
-                                "name": "Alexander Simmerl",
-                                "email": "a.simmerl@gmail.com",
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "tree": {
+                        "path": "src",
+                        "info": {
+                            "name": "src",
+                            "objectType": "TREE",
+                            "lastCommit": {
+                                "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
+                                "author": {
+                                    "name": "Alexander Simmerl",
+                                    "email": "a.simmerl@gmail.com",
+                                },
+                                "summary": "Add a long commit message to commit message body (#1)",
+                                "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                "committerTime": "1576170713",
                             },
-                            "summary": "Add a long commit message to commit message body (#1)",
-                            "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                            "committerTime": "1576170713",
                         },
-                    },
-                    "entries": [
-                        {
-                            "path": "src/Eval.hs",
-                            "info": {
-                                "name": "Eval.hs",
-                                "objectType": "BLOB",
-                                "lastCommit": {
-                                    "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
-                                    "author": {
-                                        "name": "Alexander Simmerl",
-                                        "email": "a.simmerl@gmail.com",
+                        "entries": [
+                            {
+                                "path": "src/Eval.hs",
+                                "info": {
+                                    "name": "Eval.hs",
+                                    "objectType": "BLOB",
+                                    "lastCommit": {
+                                        "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
+                                        "author": {
+                                            "name": "Alexander Simmerl",
+                                            "email": "a.simmerl@gmail.com",
+                                        },
+                                        "summary": "Add a long commit message to commit message body (#1)",
+                                        "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                        "committerTime": "1576170713",
                                     },
-                                    "summary": "Add a long commit message to commit message body (#1)",
-                                    "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                                    "committerTime": "1576170713",
                                 },
                             },
-                        },
-                        {
-                            "path": "src/Folder.svelte",
-                            "info": {
-                                "name": "Folder.svelte",
-                                "objectType": "BLOB",
-                                "lastCommit": {
-                                    "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
-                                    "author": {
-                                        "name": "Alexander Simmerl",
-                                        "email": "a.simmerl@gmail.com",
+                            {
+                                "path": "src/Folder.svelte",
+                                "info": {
+                                    "name": "Folder.svelte",
+                                    "objectType": "BLOB",
+                                    "lastCommit": {
+                                        "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
+                                        "author": {
+                                            "name": "Alexander Simmerl",
+                                            "email": "a.simmerl@gmail.com",
+                                        },
+                                        "summary": "Add a long commit message to commit message body (#1)",
+                                        "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                        "committerTime": "1576170713",
                                     },
-                                    "summary": "Add a long commit message to commit message body (#1)",
-                                    "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                                    "committerTime": "1576170713",
                                 },
                             },
-                        },
-                        {
-                            "path": "src/memory.rs",
-                            "info": {
-                                "name": "memory.rs",
-                                "objectType": "BLOB",
-                                "lastCommit": {
-                                    "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
-                                    "author": {
-                                        "name": "Alexander Simmerl",
-                                        "email": "a.simmerl@gmail.com",
+                            {
+                                "path": "src/memory.rs",
+                                "info": {
+                                    "name": "memory.rs",
+                                    "objectType": "BLOB",
+                                    "lastCommit": {
+                                        "sha1": "d6880352fc7fda8f521ae9b7357668b17bb5bad5",
+                                        "author": {
+                                            "name": "Alexander Simmerl",
+                                            "email": "a.simmerl@gmail.com",
+                                        },
+                                        "summary": "Add a long commit message to commit message body (#1)",
+                                        "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
+                                        "committerTime": "1576170713",
                                     },
-                                    "summary": "Add a long commit message to commit message body (#1)",
-                                    "message": "Add a long commit message to commit message body (#1)\n\nIn order to test the correct delivery of the message part of the commit\r\nwe add this commit which has both by expanding beyond the summary.",
-                                    "committerTime": "1576170713",
                                 },
                             },
-                        },
-                    ],
-                }
-            }),
-        );
-    }
+                        ],
+                    }
+                }),
+            );
+        }
 
-    #[test]
-    fn query_tree_root() {
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+        #[test]
+        fn tree_root() {
+            let mut vars = Variables::new();
+            let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
-        vars.insert("id".into(), InputValue::object(id_map));
-        vars.insert("revision".into(), InputValue::scalar("master"));
-        vars.insert("prefix".into(), InputValue::scalar(""));
+            id_map.insert("domain".into(), InputValue::scalar("rad"));
+            id_map.insert("name".into(), InputValue::scalar("upstream"));
+            vars.insert("id".into(), InputValue::object(id_map));
+            vars.insert("revision".into(), InputValue::scalar("master"));
+            vars.insert("prefix".into(), InputValue::scalar(""));
 
-        let (res, errors) = execute_query(
-            "query($id: IdInput!, $revision: String!, $prefix: String!) {
+            let (res, errors) = execute_query(
+                "query($id: IdInput!, $revision: String!, $prefix: String!) {
                 tree(id: $id, revision: $revision, prefix: $prefix) {
                     path,
                     info {
@@ -908,48 +960,49 @@ mod tests {
                     },
                 }
             }",
-            &vars,
-        );
+                &vars,
+            );
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "tree": {
-                    "path": "",
-                    "info": {
-                        "name": "",
-                        "objectType": "TREE",
-                    },
-                    "entries": [
-                        { "path": "bin", "info": { "objectType": "TREE" } },
-                        { "path": "src", "info": { "objectType": "TREE" } },
-                        { "path": "text", "info": { "objectType": "TREE" } },
-                        { "path": "this", "info": { "objectType": "TREE" } },
-                        { "path": ".i-am-well-hidden", "info": { "objectType": "BLOB" } },
-                        { "path": ".i-too-am-hidden", "info": { "objectType": "BLOB" } },
-                        { "path": "README.md", "info": { "objectType": "BLOB" } },
-                    ],
-                }
-            }),
-        );
-    }
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "tree": {
+                        "path": "",
+                        "info": {
+                            "name": "",
+                            "objectType": "TREE",
+                        },
+                        "entries": [
+                            { "path": "bin", "info": { "objectType": "TREE" } },
+                            { "path": "src", "info": { "objectType": "TREE" } },
+                            { "path": "text", "info": { "objectType": "TREE" } },
+                            { "path": "this", "info": { "objectType": "TREE" } },
+                            { "path": ".i-am-well-hidden", "info": { "objectType": "BLOB" } },
+                            { "path": ".i-too-am-hidden", "info": { "objectType": "BLOB" } },
+                            { "path": "README.md", "info": { "objectType": "BLOB" } },
+                        ],
+                    }
+                }),
+            );
+        }
 
-    #[test]
-    fn query_projects() {
-        let (res, errors) = execute_query("query { projects { name } }", &Variables::new());
+        #[test]
+        fn projects() {
+            let (res, errors) = execute_query("query { projects { name } }", &Variables::new());
 
-        assert_eq!(errors, []);
-        assert_eq!(
-            res,
-            graphql_value!({
-                "projects": [
-                    {"name": "monokel"},
-                    {"name": "Monadic"},
-                    {"name": "open source coin"},
-                    {"name": "radicle"},
-                ]
-            })
-        );
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "projects": [
+                        {"name": "monokel"},
+                        {"name": "Monadic"},
+                        {"name": "open source coin"},
+                        {"name": "radicle"},
+                    ]
+                })
+            );
+        }
     }
 }
