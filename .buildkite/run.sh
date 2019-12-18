@@ -41,6 +41,9 @@ echo "--- Updateing submodules"
 (cd app && git submodule foreach "git fetch --all")
 (cd app && git submodule foreach "git log -n1")
 
+echo "--- Kill any running proxy"
+killall proxy
+
 echo "--- Starting proxy daemon and runing app tests"
 (cd app && ELECTRON_ENABLE_LOGGING=1 yarn test)
 
