@@ -36,6 +36,7 @@ rm -rf "$target_cache"
 cp -aTu proxy/target "$target_cache"
 echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 
+echo "--- Updateing submodules"
 (cd app && git submodule update --init --recursive)
 
 (cd app && git submodule foreach "git fetch --all")
