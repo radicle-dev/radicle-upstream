@@ -5,7 +5,6 @@
 
   export let disabled = null;
   export let valid = true;
-  export let autofocus = null;
 
   let element = null;
 
@@ -47,5 +46,4 @@
   {style}
   bind:value
   {disabled}
-  {autofocus}
   on:change />
