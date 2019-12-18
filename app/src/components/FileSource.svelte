@@ -107,8 +107,8 @@
             })
             .join('\n')}
         </pre>
+        <pre class="code">{result.data.blob.content}</pre>
       {/if}
-      <pre class="code">{result.data.blob.content}</pre>
     </div>
   </div>
 {/await}
