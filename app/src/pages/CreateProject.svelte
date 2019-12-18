@@ -34,6 +34,17 @@
   let availableBranches = ["master", "dev"];
   let defaultBranch = "master";
   let publish = true;
+  let newRepositoryPath = "";
+  let existingRepositoryPath = "";
+
+  const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
+  let showValidations = false;
+
+  $: isFormValid = isNameValid && isPathValid;
+  $: isNameValid = VALID_NAME_MATCH.test(name);
+  $: isPathValid =
+    (isNew && newRepositoryPath.length > 0) ||
+    (isExisting && existingRepositoryPath.length > 0);
 
   const createProject = () => {};
 </script>
@@ -120,6 +131,11 @@
     text-align: left;
     padding-left: 15px;
   }
+
+  .validation-row {
+    display: flex;
+    align-items: center;
+  }
 </style>
 
 <ModalLayout dataCy="page">
@@ -131,7 +147,9 @@
       <Input
         style="margin-bottom: 16px"
         placeholder="Project name*"
-        bind:value={name} />
+        bind:value={name}
+        on:change={() => (showValidations = true)}
+        valid={!showValidations || isNameValid} />
       <Input
         style="margin-bottom: 16px"
         placeholder="Project description"
@@ -155,7 +173,7 @@
               style="margin-bottom: 12px; color: var(--color-darkgray)">
               Choose where you'd like to create the repository
             </Text.Regular>
-            <DirectoryInput />
+            <DirectoryInput bind:path={newRepositoryPath} />
           </div>
         </div>
 
@@ -172,7 +190,9 @@
               style="margin-bottom: 12px; color: var(--color-darkgray)">
               Choose the existing repository
             </Text.Regular>
-            <DirectoryInput style="margin-bottom: 16px" />
+            <DirectoryInput
+              style="margin-bottom: 16px"
+              bind:path={existingRepositoryPath} />
             <div class="default-branch-row">
               <Text.Regular style="color: var(--color-darkgray)">
                 Select the default branch
@@ -192,6 +212,15 @@
         </div>
       </div>
 
+      <div class="validation-row">
+        {#if showValidations && !isNameValid}
+          <Icon.Important style="margin-right: 8px;fill: var(--color-red)" />
+          <Title.Regular style="color: var(--color-red)">
+            Project name should be [a-z0-9][a-z0-9_-]+
+          </Title.Regular>
+        {/if}
+      </div>
+
       <div class="button-row">
         <div class="footnote">
           <Text.Small style="color: var(--color-gray)">* required</Text.Small>
@@ -202,7 +231,10 @@
           style="margin-right: 24px;">
           Cancel
         </Button>
-        <Button variant="primary" on:click={createProject} disabled>
+        <Button
+          variant="primary"
+          on:click={createProject}
+          disabled={!isFormValid}>
           Create project
         </Button>
       </div>

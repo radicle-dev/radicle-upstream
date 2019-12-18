@@ -6,9 +6,9 @@
 
   export let placeholder = "";
   export let style = null;
+  export let path = "";
 
   let files;
-  let path;
 
   const openFileDialog = async () => {
     path = await window.electron.ipcRenderer.invoke(MAIN_IPC_CHANNEL);

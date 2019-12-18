@@ -22,7 +22,7 @@ ipcMain.handle(MAIN_IPC_CHANNEL, async () => {
   if (result.filePaths.length === 1) {
     return result.filePaths[0];
   } else {
-    return false;
+    return "";
   }
 });
 
