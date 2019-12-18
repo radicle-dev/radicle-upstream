@@ -6,6 +6,7 @@ context("debugging", () => {
   it("shows latest commit", () => {
     cy.get(".CodeMirror-code")
       .first()
+      .type("{ctrl}{a}{del}")
       .type("{meta}{a}{del}");
     cy.get(".CodeMirror-code")
       .first()
