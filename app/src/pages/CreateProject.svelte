@@ -1,6 +1,12 @@
 <script>
   import ModalLayout from "../layouts/ModalLayout.svelte";
-  import { pop } from "svelte-spa-router";
+
+  import { gql } from "apollo-boost";
+  import { getClient, query, mutate } from "svelte-apollo";
+
+  import * as path from "../path.js";
+
+  import { pop, push } from "svelte-spa-router";
   import {
     Button,
     Header,
@@ -31,7 +37,6 @@
 
   let name = "";
   let description = "";
-  let availableBranches = ["master", "dev"];
   let defaultBranch = "master";
   let publish = true;
   let newRepositoryPath = "";
@@ -46,7 +51,67 @@
     (isNew && newRepositoryPath.length > 0) ||
     (isExisting && existingRepositoryPath.length > 0);
 
-  const createProject = () => {};
+  const client = getClient();
+
+  const LOCAL_BRANCHES = gql`
+    query($projectId: IdInput!) {
+      branches(id: $projectId)
+    }
+  `;
+
+  $: branches = query(client, {
+    query: LOCAL_BRANCHES,
+    variables: {
+      projectId: {
+        name: isNew ? newRepositoryPath : existingRepositoryPath,
+        domain: "buu"
+      }
+    }
+  });
+
+  const CREATE_PROJECT = gql`
+    mutation($name: String!, $description: String!, $imgUrl: String!) {
+      registerProject(name: $name, description: $description, imgUrl: $imgUrl) {
+        name
+        description
+        imgUrl
+      }
+    }
+  `;
+
+  const anonymize = str => {
+    return str
+      .split("")
+      .reduce(
+        (prevHash, currVal) =>
+          ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0,
+        0
+      );
+  };
+
+  let project;
+
+  const createProject = async () => {
+    try {
+      project = await mutate(client, {
+        mutation: CREATE_PROJECT,
+        variables: {
+          name: name,
+          description: description,
+          imgUrl: `https://avatars.dicebear.com/v2/jdenticon/${anonymize(
+            name + description
+          )}.svg`
+          // defaultBranch: defaultBranch
+          // path: (isNew ? newRepositoryPath : existingRepositoryPath)
+          // publish: (isNew ? true : publish)
+        }
+      });
+      push(path.projectOverview("rad", name));
+      // TODO: show info message
+    } catch (error) {
+      console.log("Error: " + error);
+    }
+  };
 </script>
 
 <style>
@@ -197,11 +262,19 @@
               <Text.Regular style="color: var(--color-darkgray)">
                 Select the default branch
               </Text.Regular>
-              <Select
-                items={availableBranches}
-                bind:value={defaultBranch}
-                disabled
-                style="min-width: 240px" />
+              {#if existingRepositoryPath.length > 0}
+                {#await $branches then result}
+                  <Select
+                    items={result.data.branches}
+                    bind:value={defaultBranch}
+                    style="min-width: 240px" />
+                {/await}
+              {:else}
+                <Select
+                  items={[defaultBranch]}
+                  disabled
+                  style="min-width: 240px" />
+              {/if}
             </div>
             <div class="publish-row">
               <CheckboxInput bind:checked={publish}>

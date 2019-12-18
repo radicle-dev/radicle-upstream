@@ -22,6 +22,7 @@
 
   const client = getClient();
   const projects = query(client, { query: GET_PROJECTS });
+  projects.refetch();
 
   const createProject = () => {
     push("/projects/new");
