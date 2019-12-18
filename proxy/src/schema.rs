@@ -202,16 +202,16 @@ struct Blob {
 }
 
 enum Error {
-    Unimplemented,
+    GitError(librad::git::Error),
 }
 
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
-            Error::Unimplemented => FieldError::new(
-                "unimplemented",
+            Error::GitError(librad_error) => FieldError::new(
+                librad_error.to_string(),
                 graphql_value!({
-                    "type": "UNIMPLEMENTED",
+                    "type": "GIT_ERROR",
                 }),
             ),
         }
@@ -223,8 +223,21 @@ pub struct Mutation;
 
 #[juniper::object(Context = Context)]
 impl Mutation {
-    fn create_project(ctx: &Context) -> Result<Project, Error> {
-        Err(Error::Unimplemented)
+    fn create_project(ctx: &Context, path: String) -> Result<String, Error> {
+        let paths = librad::paths::Paths::new().expect("getting paths failed");
+        let key = librad::keys::device::Key::new();
+        let profile = librad::meta::profile::UserProfile::new("xla");
+        let sources =
+            git2::Repository::open(std::path::Path::new(&path)).expect("open git repo failed");
+
+        match librad::git::GitProject::init(&paths, &key, &profile, &sources) {
+            Ok(project_id) => Ok("".into()),
+            Err(error) => {
+                println!("{:?}", error);
+
+                Err(Error::GitError(error))
+            }
+        }
     }
 
     fn register_project(
@@ -485,19 +498,27 @@ mod tests {
     }
 
     mod mutation {
-        use juniper::Variables;
+        use juniper::{InputValue, Variables};
         use pretty_assertions::assert_eq;
 
         use super::execute_query;
 
         #[test]
         fn create_project() {
+            let dir = tempfile::tempdir().expect("creating temporary directory failed");
+            let path = dir.path().to_str().expect("unable to get path");
+
+            let mut vars = Variables::new();
+            vars.insert("path".into(), InputValue::scalar(path));
+
             let (res, errors) = execute_query(
-                "mutation CreateProject { createProject { name } }",
-                &Variables::new(),
+                "mutation CreateProject($path: String) { createProject(path: $path) }",
+                &vars,
             );
             assert_eq!(errors, []);
             assert_eq!(res, graphql_value!(None));
+
+            dir.close().expect("directory teardown failed");
         }
     }
 
