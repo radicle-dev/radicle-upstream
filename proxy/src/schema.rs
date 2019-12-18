@@ -1,4 +1,6 @@
-use juniper::{FieldError, FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
+use juniper::{
+    FieldError, FieldResult, IntoFieldError, ParseScalarResult, ParseScalarValue, RootNode, Value,
+};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
@@ -60,6 +62,37 @@ juniper::graphql_scalar!(AccountId where Scalar = <S> {
         <String as ParseScalarValue<S>>::from_str(value)
     }
 });
+
+enum Error {
+    GitError(radicle_surf::git::GitError),
+}
+
+impl From<radicle_surf::git::GitError> for Error {
+    fn from(git_error: radicle_surf::git::GitError) -> Self {
+        Error::GitError(git_error)
+    }
+}
+
+impl IntoFieldError for Error {
+    fn into_field_error(self) -> FieldError {
+        match self {
+            Error::GitError(git_error) => {
+                let error_type = match &git_error {
+                    radicle_surf::git::GitError::EmptyCommitHistory => "EMPTY_COMMIT_HISTORY",
+                    radicle_surf::git::GitError::BranchDecode => "BRANCH_DECODE",
+                    radicle_surf::git::GitError::NotBranch => "NOT_BRANCH",
+                    radicle_surf::git::GitError::NotTag => "NOT_TAG",
+                    radicle_surf::git::GitError::Internal(_error) => "INTERNAL",
+                };
+
+                FieldError::new(
+                    format!("{:?}", git_error),
+                    juniper::Value::scalar(error_type),
+                )
+            }
+        }
+    }
+}
 
 /// Input value used to communciate a `Registry` project id. (domain, name)
 #[derive(GraphQLInputObject)]
@@ -302,10 +335,11 @@ impl Query {
         Ok(branches)
     }
 
-    fn tags(ctx: &Context, id: IdInput) -> FieldResult<Vec<Tag>> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
-        let mut tag_names = browser.list_tags().expect("Getting branches failed");
+    fn tags(ctx: &Context, id: IdInput) -> Result<Vec<Tag>, Error> {
+        let repo = GitRepository::new(&ctx.dummy_repo_path)?;
+        let browser = GitBrowser::new(&repo)?;
+        let mut tag_names = browser.list_tags()?;
+
         tag_names.sort();
 
         let mut tags: Vec<Tag> = tag_names
@@ -443,7 +477,8 @@ mod tests {
     use super::{Context, Mutation, Query, Schema};
     use crate::source::{setup_fixtures, Ledger};
 
-    const REPO_PATH: &str = "../fixtures/git-platinum";
+    // const REPO_PATH: &str = "../fixtures/git-platinum";
+    const REPO_PATH: &str = "dasdwakjhdasd/awdjawkdh";
 
     fn execute_query(
         query: &str,
@@ -750,6 +785,20 @@ mod tests {
                 ]
             }),
         )
+    }
+
+    #[test]
+    fn query_tags_error() {
+        let mut vars = Variables::new();
+        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+
+        id_map.insert("domain".into(), InputValue::scalar("rad"));
+        id_map.insert("name".into(), InputValue::scalar("upstream"));
+        vars.insert("id".into(), InputValue::object(id_map));
+
+        let (_res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
+
+        assert_eq!(errors, []);
     }
 
     #[test]
