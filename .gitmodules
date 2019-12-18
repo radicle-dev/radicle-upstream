@@ -1,3 +1,3 @@
-[submodule "app/cypress/git-platinum"]
-	path = app/cypress/git-platinum
-	url = https://github.com/radicle-dev/git-platinum.git
+[submodule "fixtures/git-platinum"]
+	path = fixtures/git-platinum
+	url = https://github.com/radicle-dev/git-platinum
