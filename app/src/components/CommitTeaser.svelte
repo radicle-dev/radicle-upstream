@@ -40,7 +40,7 @@
   }
 </style>
 
-<div class="container" {style}>
+<div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
     <UserCard {user} style="margin-right: 8px" />
     <Text.Regular style="color: var(--color-darkgray)">

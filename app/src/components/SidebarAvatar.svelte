@@ -7,6 +7,8 @@
   export let title = null;
   export let href = null;
   export let active = null;
+
+  export let dataCy = null;
 </script>
 
 <style>
@@ -22,7 +24,7 @@
   }
 </style>
 
-<a {href} use:link>
+<a {href} use:link data-cy={dataCy}>
   <img class:active src={image} alt="user-avatar" />
 </a>
 

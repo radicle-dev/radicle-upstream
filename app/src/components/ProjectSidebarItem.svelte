@@ -19,7 +19,7 @@
   }
 </style>
 
-<a {href} use:link>
+<a {href} use:link title={`Project${title}`}>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-purple)" />

@@ -3,7 +3,7 @@
   import Layout from "./Layout.svelte";
 </script>
 
-<Layout>
+<Layout dataCy="page">
   <Header>
     <div slot="left">
       <Title.Big>Search</Title.Big>
