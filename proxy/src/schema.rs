@@ -393,7 +393,7 @@ impl Query {
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
 
-        let mut entries: Vec<TreeEntry> = prefix_contents
+        let maybe_entries: Result<Vec<TreeEntry>, Error> = prefix_contents
             .iter()
             .map(|(label, system_type)| {
                 let entry_path = {
@@ -401,6 +401,7 @@ impl Query {
                     path.push(label.clone());
                     path
                 };
+                // TODO handle when entry last commit
                 let last_commit = Commit::from(&browser.last_commit(&entry_path).expect(&format!(
                     "[tree] unable to get entry last commit: {}",
                     entry_path
@@ -415,14 +416,21 @@ impl Query {
                 };
 
                 let (_root, labels) = entry_path.split_first();
-                let clean_path = Path(nonempty::NonEmpty::from_slice(labels).unwrap());
+                // TODO assert that labels is, in fact, not empty
+                let clean_path = if let Some(clean_path) = nonempty::NonEmpty::from_slice(labels) {
+                    Ok(Path(clean_path))
+                } else {
+                    Err(Error::CatchAll(format!("Labels empty for {}", info.name)))
+                }?;
 
-                TreeEntry {
+                Ok(TreeEntry {
                     info,
                     path: clean_path.to_string(),
-                }
+                })
             })
             .collect();
+
+        let mut entries = maybe_entries?;
 
         // We want to ensure that in the response Tree entries come first. `Ord` being derived on
         // the enum ensures Variant declaration order.
@@ -431,14 +439,16 @@ impl Query {
         entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
 
         let last_commit = if path.is_root() {
-            Commit::from(browser.get_history().0.first())
+            Ok(Commit::from(browser.get_history().0.first()))
         } else {
-            Commit::from(
-                &browser
-                    .last_commit(&path)
-                    .unwrap_or_else(|| panic!("[tree] unable to get last commit: {}", path)),
-            )
-        };
+            let maybe_last_commit = &browser.last_commit(&path);
+            if let Some(last_commit) = maybe_last_commit {
+                Ok(Commit::from(last_commit))
+            } else {
+                // TODO handle unable to get last commit
+                Err(Error::CatchAll(format!("[tree] unable to get last commit: {}", path)))
+            }
+        }?;
         let name = if path.is_root() {
             "".into()
         } else {
