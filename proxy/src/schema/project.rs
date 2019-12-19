@@ -1,5 +1,7 @@
 use librad::meta;
 
+const IMG_URL_LABEL: &str = "img_url";
+
 #[derive(GraphQLInputObject)]
 #[graphql(description = "Input object for project metadata")]
 pub struct MetadataInput {
@@ -12,19 +14,39 @@ pub struct MetadataInput {
 #[derive(GraphQLObject)]
 #[graphql(description = "Project metadata")]
 pub struct Metadata {
-    name: String,
-    description: String,
-    default_branch: String,
-    img_url: String,
+    pub name: String,
+    pub description: String,
+    pub default_branch: String,
+    pub img_url: String,
 }
 
 impl From<meta::Project> for Metadata {
     fn from(project_meta: meta::Project) -> Self {
+        let img_url = project_meta
+            .rel
+            .into_iter()
+            .filter_map(|r| {
+                if let meta::Relation::Url(label, url) = r {
+                    Some((label, url))
+                } else {
+                    None
+                }
+            })
+            .filter_map(|(label, url)| {
+                if *label == *IMG_URL_LABEL {
+                    Some(url.to_string())
+                } else {
+                    None
+                }
+            })
+            .nth(0)
+            .unwrap_or("".to_string());
+
         Self {
             name: project_meta.name.unwrap_or("name unknown".into()),
             description: project_meta.description.unwrap_or("".into()),
             default_branch: project_meta.default_branch,
-            img_url: "".into(),
+            img_url: img_url,
         }
     }
 }

@@ -1,9 +1,34 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+use librad::paths::Paths;
 use radicle_surf::git::git2;
 
 use crate::schema::error::Error;
+
+pub fn init_project(
+    librad_paths: &Paths,
+    path: String,
+    name: String,
+    description: String,
+    default_branch: String,
+    img_url: String,
+) -> Result<(librad::git::ProjectId, librad::meta::Project), Error> {
+    let key = librad::keys::device::Key::new();
+    let peer_id = librad::peer::PeerId::from(key.public());
+    let founder = librad::meta::contributor::Contributor::new();
+    let sources = git2::Repository::open(std::path::Path::new(&path))?;
+    let img = url::Url::parse(&img_url)?;
+    let mut meta = librad::meta::Project::new(&name, &peer_id);
+
+    meta.description = Some(description.to_string());
+    meta.default_branch = default_branch.to_string();
+    meta.add_rel(librad::meta::Relation::Url("img_url".to_string(), img));
+
+    let id = librad::git::GitProject::init(&librad_paths, &key, &sources, meta.clone(), founder)?;
+
+    Ok((id, meta))
+}
 
 pub fn init_repo(path: String) -> Result<(), Error> {
     let repo = git2::Repository::init(path)?;

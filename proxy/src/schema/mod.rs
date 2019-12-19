@@ -1,9 +1,9 @@
 use juniper::{FieldError, FieldResult, RootNode};
 
-use librad::{git::GitProject, paths::Paths};
+use librad::paths::Paths;
 use radicle_surf::{
     file_system::{Path, SystemType},
-    git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
+    git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
 mod error;
@@ -61,28 +61,18 @@ impl Mutation {
         path: String,
     ) -> Result<project::Project, Error> {
         git::init_repo(path.clone())?;
-
-        let key = librad::keys::device::Key::new();
-        let peer_id = librad::peer::PeerId::from(key.public());
-        let founder = librad::meta::contributor::Contributor::new();
-        let sources = git2::Repository::open(std::path::Path::new(&path))?;
-        let img_url = url::Url::parse(&metadata.img_url)?;
-        let mut project_meta = librad::meta::Project::new(&metadata.name, &peer_id);
-
-        project_meta.description = Some(metadata.description);
-        project_meta.add_rel(librad::meta::Relation::Url("img_url".to_string(), img_url));
-
-        let project_id = GitProject::init(
+        let (id, meta) = git::init_project(
             &ctx.librad_paths,
-            &key,
-            &sources,
-            project_meta.clone(),
-            founder,
+            path,
+            metadata.name,
+            metadata.description,
+            metadata.default_branch,
+            metadata.img_url,
         )?;
 
         Ok(project::Project {
-            id: project_id.to_string().into(),
-            metadata: project_meta.into(),
+            id: id.to_string().into(),
+            metadata: meta.into(),
         })
     }
 }
@@ -302,7 +292,7 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
-        let projects = librad::project::list_projects(&ctx.librad_paths)
+        let mut projects = librad::project::list_projects(&ctx.librad_paths)
             .map(|id| {
                 let project_meta = librad::project::show_project(&ctx.librad_paths, &id).unwrap();
 
@@ -311,7 +301,9 @@ impl Query {
                     metadata: project_meta.into(),
                 }
             })
-            .collect();
+            .collect::<Vec<project::Project>>();
+
+        projects.sort_by(|a, b| a.metadata.name.cmp(&b.metadata.name));
 
         Ok(projects)
     }
@@ -322,9 +314,7 @@ mod tests {
     use juniper::Variables;
     use librad::paths::Paths;
 
-    use radicle_surf::git::git2;
-
-    use crate::schema::{git, Context, Mutation, Query, Schema};
+    use crate::schema::{Context, Mutation, Query, Schema};
 
     const REPO_PATH: &str = "../fixtures/git-platinum";
 
@@ -335,11 +325,32 @@ mod tests {
         let tmp_dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
         let librad_paths = Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
 
-        let infos = vec![(
-            "monokel",
-            "A looking glass into the future",
-            "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
-        )];
+        let infos = vec![
+            (
+                "monokel",
+                "A looking glass into the future",
+                "master",
+                "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
+            ),
+            (
+                "Monadic",
+                "Open source organization of amazing things.",
+                "stable",
+                "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
+            ),
+            (
+                "open source coin",
+                "Research for the sustainability of the open source community.",
+                "master",
+                "https://avatars0.githubusercontent.com/u/31632242",
+            ),
+            (
+                "radicle",
+                "Decentralized open source collaboration",
+                "dev",
+                "https://avatars0.githubusercontent.com/u/48290027",
+            ),
+        ];
 
         for info in infos {
             let repos_dir =
@@ -348,24 +359,17 @@ mod tests {
                 tempfile::tempdir_in(repos_dir.path()).expect("unable to create repo directory");
             let path = repo_dir.path().to_str().expect("repo dir path").to_string();
 
-            git::init_repo(path.clone()).expect("repo init failed");
-
-            let key = librad::keys::device::Key::new();
-            let peer_id = librad::peer::PeerId::from(key.public());
-            let founder = librad::meta::contributor::Contributor::new();
-            let sources = git2::Repository::open(std::path::Path::new(&path)).expect("get sources");
-            let img_url = url::Url::parse(info.2).expect("parse image url");
-            let mut project_meta = librad::meta::Project::new(info.0, &peer_id);
-
-            project_meta.description = Some(info.1.to_string());
-            project_meta.add_rel(librad::meta::Relation::Url("img_url".to_string(), img_url));
-
-            librad::git::GitProject::init(&librad_paths, &key, &sources, project_meta, founder)
-                .expect("project init");
+            crate::schema::git::init_repo(path.clone()).expect("repo init failed");
+            crate::schema::git::init_project(
+                &librad_paths,
+                path,
+                info.0.to_string(),
+                info.1.to_string(),
+                info.2.to_string(),
+                info.3.to_string(),
+            )
+            .expect("project init failed");
         }
-
-        // std::fs::create_dir_all(librad_paths.projects_dir())
-        //     .expect("unable to create projects dir");
 
         let ctx = Context::new(REPO_PATH.into(), librad_paths);
         let (res, errors) =
@@ -920,7 +924,16 @@ mod tests {
 
         #[test]
         fn projects() {
-            let query = "{ projects { metadata { name } } }";
+            let query = "{
+                projects {
+                    metadata {
+                        name
+                        description
+                        defaultBranch
+                        imgUrl
+                    }
+                }
+            }";
 
             execute_query(query, &Variables::new(), |res, errors| {
                 assert_eq!(errors, []);
@@ -928,10 +941,38 @@ mod tests {
                     res,
                     graphql_value!({
                         "projects": [
-                        { "metadata": {
-                                "name": "monokel",
+                            {
+                                "metadata": {
+                                    "name": "Monadic",
+                                    "description": "Open source organization of amazing things.",
+                                    "defaultBranch": "stable",
+                                    "imgUrl": "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
+                                },
                             },
-                        },
+                            {
+                                "metadata": {
+                                    "name": "monokel",
+                                    "description": "A looking glass into the future",
+                                    "defaultBranch": "master",
+                                    "imgUrl": "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
+                                },
+                            },
+                            {
+                                "metadata": {
+                                    "name": "open source coin",
+                                    "description": "Research for the sustainability of the open source community.",
+                                    "defaultBranch": "master",
+                                    "imgUrl": "https://avatars0.githubusercontent.com/u/31632242",
+                                },
+                            },
+                            {
+                                "metadata": {
+                                    "name": "radicle",
+                                    "description": "Decentralized open source collaboration",
+                                    "defaultBranch": "dev",
+                                    "imgUrl": "https://avatars0.githubusercontent.com/u/48290027",
+                                },
+                            },
                         ],
                     })
                 );
