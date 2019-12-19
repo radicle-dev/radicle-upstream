@@ -88,7 +88,7 @@ impl Mutation {
         )?;
 
         Ok(project::Project {
-            id: project_id.to_string(),
+            id: project_id.to_string().into(),
             metadata: project_meta.into(),
         })
     }

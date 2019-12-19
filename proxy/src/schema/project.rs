@@ -32,6 +32,6 @@ impl From<meta::Project> for Metadata {
 #[derive(GraphQLObject)]
 #[graphql(description = "Radicle project")]
 pub struct Project {
-    pub id: String,
+    pub id: juniper::ID,
     pub metadata: Metadata,
 }
