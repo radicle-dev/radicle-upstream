@@ -14,8 +14,7 @@ pub struct AccountId(pub radicle_registry_client::AccountId);
 
 /// Metadata enriched user keypair.
 /// TODO(xla): This overlaps with accounts on the registry, needs renaming.
-#[derive(Clone, GraphQLObject)]
-#[graphql(description = "Metadata enriched user keypair")]
+#[derive(Clone)]
 struct Account {
     /// Reference to the `AccountId`.
     id: AccountId,
@@ -25,7 +24,7 @@ struct Account {
     avatar_url: String,
 }
 
-#[derive(Clone, GraphQLObject)]
+#[derive(Clone)]
 pub struct ProjectId {
     pub name: String,
     pub domain: String,
@@ -50,8 +49,7 @@ impl Into<radicle_registry_client::ProjectId> for ProjectId {
 }
 
 /// Representation of a users project.
-#[derive(Clone, GraphQLObject)]
-#[graphql(description = "An open source coin project")]
+#[derive(Clone)]
 pub struct Project {
     /// Reference to the `ProjectId` of the project.
     id: ProjectId,

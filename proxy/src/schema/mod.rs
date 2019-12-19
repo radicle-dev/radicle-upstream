@@ -1,4 +1,4 @@
-use juniper::{FieldError, FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
+use juniper::{FieldError, FieldResult, RootNode};
 use std::sync::Arc;
 
 use librad::{git::GitProject, paths::Paths};
@@ -7,11 +7,12 @@ use radicle_surf::{
     git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
-use crate::schema::error::Error;
-use crate::source::{AccountId, Project, ProjectId, Source};
-
 mod error;
 mod git;
+mod project;
+
+use crate::schema::error::Error;
+use crate::source::Source;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;
@@ -48,28 +49,6 @@ impl Context {
 
 impl juniper::Context for Context {}
 
-juniper::graphql_scalar!(AccountId where Scalar = <S> {
-    description: "AccountId"
-
-    resolve(&self) -> Value {
-        Value::scalar(hex::encode(self.0.as_ref() as &[u8]))
-    }
-
-    from_input_value(v: &InputValue) -> Option<AccountId> {
-        let mut bytes = [0_u8; 32];
-
-        v.as_scalar_value::<String>()
-            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
-
-        Some(AccountId(radicle_registry_client::AccountId::from_raw(bytes)))
-    }
-
-    // Define how to parse a string value.
-    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
-        <String as ParseScalarValue<S>>::from_str(value)
-    }
-});
-
 /// Input value used to communciate a `Registry` project id. (domain, name)
 #[derive(GraphQLInputObject)]
 struct IdInput {
@@ -79,42 +58,39 @@ struct IdInput {
     name: String,
 }
 
-impl Into<ProjectId> for IdInput {
-    fn into(self) -> ProjectId {
-        ProjectId {
-            name: self.name,
-            domain: self.domain,
-        }
-    }
-}
-
 /// Encapsulates write path in API.
 pub struct Mutation;
 
 #[juniper::object(Context = Context)]
 impl Mutation {
-    fn create_project(ctx: &Context, path: String) -> Result<String, Error> {
+    fn create_project(
+        ctx: &Context,
+        metadata: project::MetadataInput,
+        path: String,
+    ) -> Result<project::Project, Error> {
         init_repo(path.clone())?;
 
-        // TODO(xla): Have per environment paths configured to seperate the default store paths
-        // from testing purposes to avoid polution.
-        let paths = librad::paths::Paths::new()?;
         let key = librad::keys::device::Key::new();
-        let profile = librad::meta::profile::UserProfile::new("xla");
+        let peer_id = librad::peer::PeerId::from(key.public());
+        let founder = librad::meta::contributor::Contributor::new();
         let sources = git2::Repository::open(std::path::Path::new(&path))?;
+        let img_url = url::Url::parse(&metadata.img_url)?;
+        let mut project_meta = librad::meta::Project::new(&metadata.name, &peer_id);
 
-        let project_id = GitProject::init(&paths, &key, &profile, &sources)?;
+        project_meta.add_rel(librad::meta::Relation::Url("img_url".to_string(), img_url));
 
-        Ok(project_id.to_string())
-    }
+        let project_id = GitProject::init(
+            &ctx.librad_paths,
+            &key,
+            &sources,
+            project_meta.clone(),
+            founder,
+        )?;
 
-    fn register_project(
-        ctx: &Context,
-        name: String,
-        description: String,
-        img_url: String,
-    ) -> FieldResult<Project> {
-        Ok(ctx.source.register_project(name, description, img_url))
+        Ok(project::Project {
+            id: project_id.to_string(),
+            metadata: project_meta.into(),
+        })
     }
 }
 
@@ -331,14 +307,6 @@ impl Query {
             info,
         })
     }
-
-    fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
-        Ok(ctx.source.get_all_projects())
-    }
-
-    fn project(ctx: &Context, id: IdInput) -> FieldResult<Option<Project>> {
-        Ok(ctx.source.get_project(id.into()))
-    }
 }
 
 fn init_repo(path: String) -> Result<(), Error> {
@@ -398,6 +366,7 @@ mod tests {
     }
 
     mod mutation {
+        use indexmap::IndexMap;
         use juniper::{InputValue, Variables};
         use pretty_assertions::assert_eq;
 
@@ -408,15 +377,45 @@ mod tests {
             let dir = tempfile::tempdir().expect("creating temporary directory failed");
             let path = dir.path().to_str().expect("unable to get path");
 
+            let mut metadata_input: IndexMap<String, InputValue> = IndexMap::new();
+
+            metadata_input.insert("name".into(), InputValue::scalar("upstream"));
+            metadata_input.insert(
+                "description".into(),
+                InputValue::scalar("Code collaboration without intermediates."),
+            );
+            metadata_input.insert("defaultBranch".into(), InputValue::scalar("master"));
+            metadata_input.insert("imgUrl".into(), InputValue::scalar("https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png"));
+
             let mut vars = Variables::new();
+            vars.insert("metadata".into(), InputValue::object(metadata_input));
             vars.insert("path".into(), InputValue::scalar(path));
 
             let (res, errors) = execute_query(
-                "mutation($path: String!) { createProject(path: $path) }",
+                "mutation($metadata: MetadataInput!, $path: String!) {
+                    createProject(metadata: $metadata, path: $path) {
+                        metadata {
+                            name
+                            description
+                            defaultBranch
+                            imgUrl
+                        }
+                    }
+                }",
                 &vars,
             );
             assert_eq!(errors, []);
-            assert_ne!(res, graphql_value!(""));
+            assert_ne!(
+                res,
+                graphql_value!({
+                    "metadata": {
+                        "name": "upstream",
+                        "description": "Code collaboration without intermediates.",
+                        "default_branch": "master",
+                        "img_url": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                    }
+                })
+            );
 
             dir.close().expect("directory teardown failed");
         }
@@ -905,24 +904,6 @@ mod tests {
                         ],
                     }
                 }),
-            );
-        }
-
-        #[test]
-        fn projects() {
-            let (res, errors) = execute_query("query { projects { name } }", &Variables::new());
-
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "projects": [
-                        {"name": "monokel"},
-                        {"name": "Monadic"},
-                        {"name": "open source coin"},
-                        {"name": "radicle"},
-                    ]
-                })
             );
         }
     }

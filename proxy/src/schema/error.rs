@@ -7,6 +7,7 @@ pub enum Error {
     Git2Error(git2::Error),
     LibradError(librad::git::Error),
     IoError(std::io::Error),
+    UrlError(url::ParseError),
 }
 
 impl From<git2::Error> for Error {
@@ -24,6 +25,12 @@ impl From<librad::git::Error> for Error {
 impl From<std::io::Error> for Error {
     fn from(io_error: std::io::Error) -> Self {
         Error::IoError(io_error)
+    }
+}
+
+impl From<url::ParseError> for Error {
+    fn from(url_error: url::ParseError) -> Self {
+        Error::UrlError(url_error)
     }
 }
 
@@ -46,6 +53,12 @@ impl IntoFieldError for Error {
                 librad_error.to_string(),
                 graphql_value!({
                     "type": "LIBRAD_ERROR",
+                }),
+            ),
+            Error::UrlError(url_error) => FieldError::new(
+                url_error.to_string(),
+                graphql_value!({
+                    "type": "URL_ERROR",
                 }),
             ),
         }
