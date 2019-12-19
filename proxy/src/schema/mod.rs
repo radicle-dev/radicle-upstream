@@ -68,7 +68,7 @@ impl Mutation {
         metadata: project::MetadataInput,
         path: String,
     ) -> Result<project::Project, Error> {
-        init_repo(path.clone())?;
+        git::init_repo(path.clone())?;
 
         let key = librad::keys::device::Key::new();
         let peer_id = librad::peer::PeerId::from(key.public());
@@ -307,27 +307,6 @@ impl Query {
             info,
         })
     }
-}
-
-fn init_repo(path: String) -> Result<(), Error> {
-    let repo = git2::Repository::init(path)?;
-
-    // First use the config to initialize a commit signature for the user.
-    let sig = repo.signature()?;
-    // Now let's create an empty tree for this commit
-    let tree_id = {
-        let mut index = repo.index()?;
-
-        // For our purposes, we'll leave the index empty for now.
-        index.write_tree()?
-    };
-    let tree = repo.find_tree(tree_id)?;
-    // Normally creating a commit would involve looking up the current HEAD
-    // commit and making that be the parent of the initial commit, but here this
-    // is the first commit so there will be no parent.
-    repo.commit(Some("HEAD"), &sig, &sig, "Initial commit", &tree, &[])?;
-
-    Ok(())
 }
 
 #[cfg(test)]
