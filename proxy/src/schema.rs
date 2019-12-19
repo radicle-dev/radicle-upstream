@@ -65,11 +65,18 @@ juniper::graphql_scalar!(AccountId where Scalar = <S> {
 
 enum Error {
     GitError(radicle_surf::git::GitError),
+    String(String)
 }
 
 impl From<radicle_surf::git::GitError> for Error {
     fn from(git_error: radicle_surf::git::GitError) -> Self {
         Error::GitError(git_error)
+    }
+}
+
+impl From<String> for Error {
+    fn from(error: String) -> Self {
+        Error::String(error)
     }
 }
 
@@ -89,6 +96,10 @@ impl IntoFieldError for Error {
                     format!("{:?}", git_error),
                     juniper::Value::scalar(error_type),
                 )
+            },
+            Error::String(error) => {
+                // placeholder for as-of-yet uncaptured errors
+                FieldError::new(&error, juniper::Value::scalar(String::from(&error)))
             }
         }
     }
@@ -256,27 +267,17 @@ impl Query {
         "1.0"
     }
 
-    fn blob(ctx: &Context, id: IdInput, revision: String, path: String) -> FieldResult<Blob> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+    fn blob(ctx: &Context, id: IdInput, revision: String, path: String) -> Result<Blob, Error> {
+        let repo = GitRepository::new(&ctx.dummy_repo_path)?;
+        let mut browser = GitBrowser::new(&repo)?;
 
         // Best effort to guess the revision.
-        if let Err(err) = browser
+        browser
             .branch(BranchName::new(&revision))
             .or(browser.commit(Sha1::new(&revision)))
-            .or(browser.tag(TagName::new(&revision)))
-        {
-            let err_fmt = format!("{:?}", err);
+            .or(browser.tag(TagName::new(&revision)))?;
 
-            return Err(FieldError::new(
-                "Git error occurred",
-                graphql_value!({ "git": err_fmt }),
-            ));
-        };
-
-        let root = browser
-            .get_directory()
-            .expect("unable to get root directory");
+        let root = browser.get_directory()?;
 
         let mut p = Path::root();
         p.append(&mut Path::from_string(&path));
@@ -307,12 +308,10 @@ impl Query {
         })
     }
 
-    fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<Commit> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
-        browser
-            .commit(radicle_surf::vcs::git::Sha1::new(&sha1))
-            .expect("setting commit failed");
+    fn commit(ctx: &Context, id: IdInput, sha1: String) -> Result<Commit, Error> {
+        let repo = GitRepository::new(&ctx.dummy_repo_path)?;
+        let mut browser = GitBrowser::new(&repo)?;
+        browser.commit(radicle_surf::vcs::git::Sha1::new(&sha1))?;
 
         let history = browser.get_history();
         let commit = history.0.first();
@@ -320,12 +319,11 @@ impl Query {
         Ok(Commit::from(commit))
     }
 
-    fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+    fn branches(ctx: &Context, id: IdInput) -> Result<Vec<Branch>, Error> {
+        let repo = GitRepository::new(&ctx.dummy_repo_path)?;
+        let browser = GitBrowser::new(&repo)?;
         let mut branches: Vec<Branch> = browser
-            .list_branches(None)
-            .expect("Getting branches failed")
+            .list_branches(None)?
             .into_iter()
             .map(|b| Branch(b.name.name()))
             .collect();
@@ -352,22 +350,14 @@ impl Query {
         Ok(tags)
     }
 
-    fn tree(ctx: &Context, id: IdInput, revision: String, prefix: String) -> FieldResult<Tree> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+    fn tree(ctx: &Context, id: IdInput, revision: String, prefix: String) -> Result<Tree, Error> {
+        let repo = GitRepository::new(&ctx.dummy_repo_path)?;
+        let mut browser = GitBrowser::new(&repo)?;
 
-        if let Err(err) = browser
+        browser
             .branch(BranchName::new(&revision))
             .or(browser.commit(Sha1::new(&revision)))
-            .or(browser.tag(TagName::new(&revision)))
-        {
-            let err_fmt = format!("{:?}", err);
-
-            return Err(FieldError::new(
-                "Git error occurred",
-                graphql_value!({ "git": err_fmt }),
-            ));
-        };
+            .or(browser.tag(TagName::new(&revision)))?;
 
         let path = if prefix == "/" || prefix == "" {
             Path::root()
@@ -377,19 +367,22 @@ impl Query {
             root
         };
 
-        let root_dir = browser
-            .get_directory()
-            .expect("getting repo directory failed");
+        let root_dir = browser.get_directory()?;
         let prefix_dir = if path.is_root() {
-            root_dir
+            Ok(root_dir)
         } else {
-            root_dir.find_directory(&path).expect(&format!(
-                "directory listing failed: {} -> {} | {:?}",
-                path,
-                path.is_root(),
-                prefix,
-            ))
-        };
+            // TODO log error
+            // .expect(&format!(
+            //     "directory listing failed: {} -> {} | {:?}",
+            //     path,
+            //     path.is_root(),
+            //     prefix,
+            // ))
+            match root_dir.find_directory(&path) {
+                Some(dir) => Ok(dir),
+                None => Err(format!("Directory at path {} is missing.", path)),
+            }
+        }?;
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
 
@@ -477,8 +470,7 @@ mod tests {
     use super::{Context, Mutation, Query, Schema};
     use crate::source::{setup_fixtures, Ledger};
 
-    // const REPO_PATH: &str = "../fixtures/git-platinum";
-    const REPO_PATH: &str = "dasdwakjhdasd/awdjawkdh";
+    const REPO_PATH: &str = "../fixtures/git-platinum";
 
     fn execute_query(
         query: &str,
