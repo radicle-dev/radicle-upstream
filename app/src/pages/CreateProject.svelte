@@ -267,7 +267,8 @@
                   <Select
                     items={result.data.branches}
                     bind:value={defaultBranch}
-                    style="min-width: 240px" />
+                    style="min-width: 240px; --focus-outline-color:
+                    var(--color-pink)" />
                 {/await}
               {:else}
                 <Select
