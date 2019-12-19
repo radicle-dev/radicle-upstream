@@ -1,5 +1,4 @@
 use juniper::{FieldError, FieldResult, RootNode};
-use std::sync::Arc;
 
 use librad::{git::GitProject, paths::Paths};
 use radicle_surf::{
@@ -12,7 +11,6 @@ mod git;
 mod project;
 
 use crate::schema::error::Error;
-use crate::source::Source;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;
@@ -29,20 +27,14 @@ pub struct Context {
     dummy_repo_path: String,
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
-    /// Origin of data needed to server APIs.
-    source: Arc<dyn Source + Send + Sync>,
 }
 
 impl Context {
     /// Returns a new `Context`.
-    pub fn new<S>(dummy_repo_path: String, librad_paths: Paths, source: S) -> Self
-    where
-        S: Source + Send + Sync + 'static,
-    {
+    pub fn new(dummy_repo_path: String, librad_paths: Paths) -> Self {
         Self {
             dummy_repo_path,
             librad_paths,
-            source: Arc::new(source),
         }
     }
 }
@@ -313,10 +305,8 @@ impl Query {
 mod tests {
     use juniper::Variables;
     use librad::paths::Paths;
-    use radicle_registry_client::MemoryClient;
 
     use crate::schema::{Context, Mutation, Query, Schema};
-    use crate::source::{setup_fixtures, Ledger};
 
     const REPO_PATH: &str = "../fixtures/git-platinum";
 
@@ -327,18 +317,13 @@ mod tests {
         juniper::Value,
         Vec<juniper::ExecutionError<juniper::DefaultScalarValue>>,
     ) {
-        let registry_client = MemoryClient::new();
-        let mut source = Ledger::new(registry_client);
-
-        setup_fixtures(&mut source);
-
         let librad_paths = {
             let dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
 
             Paths::from_root(dir.path()).expect("unable to get librad paths")
         };
 
-        let ctx = Context::new(REPO_PATH.into(), librad_paths, source);
+        let ctx = Context::new(REPO_PATH.into(), librad_paths);
 
         juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
             .expect("test execute failed")

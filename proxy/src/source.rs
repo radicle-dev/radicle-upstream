@@ -111,6 +111,7 @@ impl<R> Ledger<R>
 where
     R: radicle_registry_client::ClientT,
 {
+    #[allow(dead_code)]
     /// Returns a new `Ledger`.
     pub fn new(registry_client: R) -> Self {
         Self {
@@ -238,6 +239,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 /// Populate a `Source` with a set of initial projects.
 pub fn setup_fixtures<S: Source + Send + Sync>(source: &mut S) {
     let _ = source.create_account(

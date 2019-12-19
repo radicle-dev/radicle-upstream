@@ -53,17 +53,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let librad_paths = librad::paths::Paths::new().expect("librad paths failed");
     let context = if "memory" == args.source_type {
-        let client = radicle_registry_client::MemoryClient::new();
-        let mut src = source::Ledger::new(client);
-
-        source::setup_fixtures(&mut src);
-
-        schema::Context::new(dummy_repo.into(), librad_paths, src)
+        schema::Context::new(dummy_repo.into(), librad_paths)
     } else {
-        let client = radicle_registry_client::ClientWithExecutor::create()
-            .expect("creating registry client failed");
-        let src = source::Ledger::new(client);
-        schema::Context::new(dummy_repo.into(), librad_paths, src)
+        schema::Context::new(dummy_repo.into(), librad_paths)
     };
 
     info!("Creating GraphQL schema and context");
