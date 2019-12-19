@@ -5,7 +5,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
-use librad::git::GitProject;
+use librad::{git::GitProject, paths::Paths};
 use radicle_surf::{
     file_system::{Path, SystemType},
     git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
@@ -26,15 +26,21 @@ pub fn create() -> Schema {
 pub struct Context {
     /// Intermediate repo used to serve dummy data to be presented to the API consumer.
     dummy_repo_path: String,
+    /// Root on the filesystem for the librad config and storage paths.
+    librad_paths: Paths,
     /// Origin of data needed to server APIs.
     source: Arc<dyn Source + Send + Sync>,
 }
 
 impl Context {
     /// Returns a new `Context`.
-    pub fn new<S: Source + Send + Sync + 'static>(dummy_repo_path: String, source: S) -> Self {
+    pub fn new<S>(dummy_repo_path: String, librad_paths: Paths, source: S) -> Self
+    where
+        S: Source + Send + Sync + 'static,
+    {
         Self {
             dummy_repo_path,
+            librad_paths,
             source: Arc::new(source),
         }
     }
@@ -525,6 +531,7 @@ fn init_repo(path: String) -> Result<(), Error> {
 #[cfg(test)]
 mod tests {
     use juniper::Variables;
+    use librad::paths::Paths;
     use radicle_registry_client::MemoryClient;
 
     use crate::schema::{Context, Mutation, Query, Schema};
@@ -544,7 +551,13 @@ mod tests {
 
         setup_fixtures(&mut source);
 
-        let ctx = Context::new(REPO_PATH.into(), source);
+        let librad_paths = {
+            let dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
+
+            Paths::from_root(dir.path()).expect("unable to get librad paths")
+        };
+
+        let ctx = Context::new(REPO_PATH.into(), librad_paths, source);
 
         juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
             .expect("test execute failed")
