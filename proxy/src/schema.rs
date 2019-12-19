@@ -202,14 +202,22 @@ struct Blob {
     info: Info,
 }
 
+#[derive(Debug)]
 enum Error {
-    GitError(librad::git::Error),
+    Git2Error(git2::Error),
+    LibradError(librad::git::Error),
     IoError(std::io::Error),
 }
 
+impl From<git2::Error> for Error {
+    fn from(git2_error: git2::Error) -> Self {
+        Error::Git2Error(git2_error)
+    }
+}
+
 impl From<librad::git::Error> for Error {
-    fn from(git_error: librad::git::Error) -> Self {
-        Error::GitError(git_error)
+    fn from(librad_error: librad::git::Error) -> Self {
+        Error::LibradError(librad_error)
     }
 }
 
@@ -222,16 +230,22 @@ impl From<std::io::Error> for Error {
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
-            Error::GitError(librad_error) => FieldError::new(
-                librad_error.to_string(),
+            Error::Git2Error(git2_error) => FieldError::new(
+                git2_error.to_string(),
                 graphql_value!({
-                    "type": "GIT_ERROR",
+                    "type": "GIT2_ERROR",
                 }),
             ),
             Error::IoError(io_error) => FieldError::new(
                 io_error.to_string(),
                 graphql_value!({
                     "type": "IO_ERROR",
+                }),
+            ),
+            Error::LibradError(librad_error) => FieldError::new(
+                librad_error.to_string(),
+                graphql_value!({
+                    "type": "LIBRAD_ERROR",
                 }),
             ),
         }
@@ -244,11 +258,14 @@ pub struct Mutation;
 #[juniper::object(Context = Context)]
 impl Mutation {
     fn create_project(ctx: &Context, path: String) -> Result<String, Error> {
+        init_repo(path.clone())?;
+
+        // TODO(xla): Have per environment paths configured to seperate the default store paths
+        // from testing purposes to avoid polution.
         let paths = librad::paths::Paths::new()?;
         let key = librad::keys::device::Key::new();
         let profile = librad::meta::profile::UserProfile::new("xla");
-        let sources =
-            git2::Repository::open(std::path::Path::new(&path)).expect("open git repo failed");
+        let sources = git2::Repository::open(std::path::Path::new(&path))?;
 
         let project_id = GitProject::init(&paths, &key, &profile, &sources)?;
 
@@ -484,6 +501,27 @@ impl Query {
     }
 }
 
+fn init_repo(path: String) -> Result<(), Error> {
+    let repo = git2::Repository::init(path)?;
+
+    // First use the config to initialize a commit signature for the user.
+    let sig = repo.signature()?;
+    // Now let's create an empty tree for this commit
+    let tree_id = {
+        let mut index = repo.index()?;
+
+        // For our purposes, we'll leave the index empty for now.
+        index.write_tree()?
+    };
+    let tree = repo.find_tree(tree_id)?;
+    // Normally creating a commit would involve looking up the current HEAD
+    // commit and making that be the parent of the initial commit, but here this
+    // is the first commit so there will be no parent.
+    repo.commit(Some("HEAD"), &sig, &sig, "Initial commit", &tree, &[])?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use juniper::Variables;
@@ -522,33 +560,12 @@ mod tests {
         fn create_project() {
             let dir = tempfile::tempdir().expect("creating temporary directory failed");
             let path = dir.path().to_str().expect("unable to get path");
-            let repo =
-                radicle_surf::git::git2::Repository::init(path).expect("unable to initialise repo");
-
-            // First use the config to initialize a commit signature for the user.
-            let sig = repo.signature().expect("unable to get repo signature");
-            // Now let's create an empty tree for this commit
-            let tree_id = {
-                let mut index = repo.index().expect("unable to get repo index");
-
-                // Outside of this example, you could call index.add_path()
-                // here to put actual files into the index. For our purposes, we'll
-                // leave it empty for now.
-
-                index.write_tree().expect("unable to write tree")
-            };
-            let tree = repo.find_tree(tree_id).expect("unable to find tree");
-            // Normally creating a commit would involve looking up the current HEAD
-            // commit and making that be the parent of the initial commit, but here this
-            // is the first commit so there will be no parent.
-            repo.commit(Some("HEAD"), &sig, &sig, "Initial commit", &tree, &[])
-                .expect("unable to create commit");
 
             let mut vars = Variables::new();
             vars.insert("path".into(), InputValue::scalar(path));
 
             let (res, errors) = execute_query(
-                "mutation CreateProject($path: String!) { createProject(path: $path) }",
+                "mutation($path: String!) { createProject(path: $path) }",
                 &vars,
             );
             assert_eq!(errors, []);
