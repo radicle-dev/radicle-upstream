@@ -10,7 +10,7 @@ use radicle_surf::{
     git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
-use crate::source::{AccountId, Project, ProjectId, Source};
+use crate::source::{AccountId, Project, ProjectId, Source, SourceError};
 
 enum Error {
     GitError(radicle_surf::git::GitError),
@@ -26,6 +26,13 @@ impl From<radicle_surf::git::GitError> for Error {
 impl From<String> for Error {
     fn from(error: String) -> Self {
         Error::CatchAll(error)
+    }
+}
+
+impl From<SourceError> for Error {
+    fn from(_source_error: SourceError) -> Self {
+        // TODO process source errors
+        Error::CatchAll(String::from("SOURCE_ERROR"))
     }
 }
 

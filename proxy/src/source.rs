@@ -5,10 +5,22 @@ use std::convert::{TryInto};
 use radicle_registry_client::{CryptoPair as _, H256, Error as RegistryError};
 use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
 
-// pub enum ProxyError {
-//     RegistryError,
-//     // TODO include juniper errors?
-// }
+pub enum SourceError {
+    RegistryError(RegistryError),
+    CatchAll(String),
+}
+
+impl From<RegistryError> for SourceError {
+    fn from(error: RegistryError) -> Self {
+        SourceError::RegistryError(error)
+    }
+}
+
+impl From<String> for SourceError {
+    fn from(error: String) -> Self {
+        SourceError::CatchAll(error)
+    }
+}
 
 /// Newtype for the registry `oscoin_client::AccountId`.
 #[derive(Clone, Eq, Hash, PartialEq)]
@@ -97,11 +109,11 @@ impl From<radicle_registry_client::Project> for Project {
 pub trait Source {
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
-    fn get_all_projects(&self) -> Result<Vec<Project>, RegistryError>;
+    fn get_all_projects(&self) -> Result<Vec<Project>, SourceError>;
     /// Retrieve a single proejct by `ProjectId`.
-    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, RegistryError>;
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, SourceError>;
     /// Register a new project.
-    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, RegistryError>;
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, SourceError>;
 }
 
 /// Container to store local view on accounts to match with metadata.
@@ -177,7 +189,7 @@ where
         id
     }
 
-    fn get_all_projects(&self) -> Result<Vec<Project>, RegistryError> {
+    fn get_all_projects(&self) -> Result<Vec<Project>, SourceError> {
          Ok(self
             .registry_client
             .list_projects()
@@ -190,7 +202,7 @@ where
             .collect())
     }
 
-    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, RegistryError> {
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, SourceError> {
         let maybe_project = self
             .registry_client
             .get_project(id.try_into().unwrap())
@@ -200,14 +212,12 @@ where
         Ok(result)
     }
 
-    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, RegistryError> {
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, SourceError> {
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
-        // TODO(garbados): eliminate .unwrap calls
-        let registry_id = (
-            ProjectName::from_string(name.to_string()).unwrap(),
-            ProjectDomain::from_string("rad".to_string()).unwrap()
-        );
+        let project_name = ProjectName::from_string(name.to_string())?;
+        let project_domain = ProjectDomain::from_string("rad".to_string()).unwrap(); // TODO configurable domain. unwrap here is ok because "rad" is always valid input.
+        let registry_id = ( project_name, project_domain );
 
         // TODO(xla): Proper error handling.
         self.registry_client
@@ -222,13 +232,17 @@ where
             )
             .wait()?;
 
-        Ok(Project {
-            id: registry_id.try_into().unwrap(),
-            name,
-            description,
-            img_url,
-            members: vec![],
-        })
+        if let Ok(id) = registry_id.try_into() {
+            Ok(Project {
+                id,
+                name,
+                description,
+                img_url,
+                members: vec![],
+            })
+        } else {
+            Err(SourceError::CatchAll(format!("Could not derive registry ID from project name {}.", name)))
+        }
     }
 }
 
