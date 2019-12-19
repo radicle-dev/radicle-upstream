@@ -1,5 +1,5 @@
 use juniper::{
-    FieldError, FieldResult, IntoFieldError, ParseScalarResult, ParseScalarValue, RootNode, Value,
+    FieldError, IntoFieldError, ParseScalarResult, ParseScalarValue, RootNode, Value,
 };
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
@@ -11,57 +11,6 @@ use radicle_surf::{
 };
 
 use crate::source::{AccountId, Project, ProjectId, Source};
-
-/// Glue to bundle our read and write APIs together.
-pub type Schema = RootNode<'static, Query, Mutation>;
-
-/// Returns a `Schema` with the default parameterised `Query` and `Mutation`.
-pub fn create() -> Schema {
-    Schema::new(Query {}, Mutation {})
-}
-
-/// Container for data access from handlers.
-#[derive(Clone)]
-pub struct Context {
-    /// Intermediate repo used to serve dummy data to be presented to the API consumer.
-    dummy_repo_path: String,
-    /// Origin of data needed to server APIs.
-    source: Arc<dyn Source + Send + Sync>,
-}
-
-impl Context {
-    /// Returns a new `Context`.
-    pub fn new<S: Source + Send + Sync + 'static>(dummy_repo_path: String, source: S) -> Self {
-        Self {
-            dummy_repo_path,
-            source: Arc::new(source),
-        }
-    }
-}
-
-impl juniper::Context for Context {}
-
-juniper::graphql_scalar!(AccountId where Scalar = <S> {
-    description: "AccountId"
-
-    resolve(&self) -> Value {
-        Value::scalar(hex::encode(self.0.as_ref() as &[u8]))
-    }
-
-    from_input_value(v: &InputValue) -> Option<AccountId> {
-        let mut bytes = [0_u8; 32];
-
-        v.as_scalar_value::<String>()
-            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
-
-        Some(AccountId(radicle_registry_client::AccountId::from_raw(bytes)))
-    }
-
-    // Define how to parse a string value.
-    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
-        <String as ParseScalarValue<S>>::from_str(value)
-    }
-});
 
 enum Error {
     GitError(radicle_surf::git::GitError),
@@ -104,6 +53,57 @@ impl IntoFieldError for Error {
         }
     }
 }
+
+/// Glue to bundle our read and write APIs together.
+pub type Schema = RootNode<'static, Query, Mutation>;
+
+/// Returns a `Schema` with the default parameterised `Query` and `Mutation`.
+pub fn create() -> Schema {
+    Schema::new(Query {}, Mutation {})
+}
+
+/// Container for data access from handlers.
+#[derive(Clone)]
+pub struct Context {
+    /// Intermediate repo used to serve dummy data to be presented to the API consumer.
+    dummy_repo_path: String,
+    /// Origin of data needed to server APIs.
+    source: Arc<dyn Source<Error = Error> + Send + Sync>,
+}
+
+impl Context {
+    /// Returns a new `Context`.
+    pub fn new<S: Source + Send + Sync + 'static>(dummy_repo_path: String, source: S) -> Self {
+        Self {
+            dummy_repo_path,
+            source: Arc::new(source),
+        }
+    }
+}
+
+impl juniper::Context for Context {}
+
+juniper::graphql_scalar!(AccountId where Scalar = <S> {
+    description: "AccountId"
+
+    resolve(&self) -> Value {
+        Value::scalar(hex::encode(self.0.as_ref() as &[u8]))
+    }
+
+    from_input_value(v: &InputValue) -> Option<AccountId> {
+        let mut bytes = [0_u8; 32];
+
+        v.as_scalar_value::<String>()
+            .map(|s| hex::decode_to_slice(s, &mut bytes as &mut [u8]));
+
+        Some(AccountId(radicle_registry_client::AccountId::from_raw(bytes)))
+    }
+
+    // Define how to parse a string value.
+    from_str<'a>(value: ScalarToken<'a>) -> ParseScalarResult<'a, S> {
+        <String as ParseScalarValue<S>>::from_str(value)
+    }
+});
 
 /// Input value used to communciate a `Registry` project id. (domain, name)
 #[derive(GraphQLInputObject)]
@@ -253,8 +253,8 @@ impl Mutation {
         name: String,
         description: String,
         img_url: String,
-    ) -> FieldResult<Project> {
-        Ok(ctx.source.register_project(name, description, img_url))
+    ) -> Result<Project, Error> {
+        ctx.source.register_project(name, description, img_url)
     }
 }
 
@@ -451,12 +451,12 @@ impl Query {
         })
     }
 
-    fn projects(ctx: &Context) -> FieldResult<Vec<Project>> {
-        Ok(ctx.source.get_all_projects())
+    fn projects(ctx: &Context) -> Result<Vec<Project>, Error> {
+        ctx.source.get_all_projects()
     }
 
-    fn project(ctx: &Context, id: IdInput) -> FieldResult<Option<Project>> {
-        Ok(ctx.source.get_project(id.into()))
+    fn project(ctx: &Context, id: IdInput) -> Result<Option<Project>, Error> {
+        ctx.source.get_project(id.into())
     }
 }
 

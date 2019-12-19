@@ -1,8 +1,14 @@
 use futures::future::Future;
 use std::collections::HashMap;
+use std::convert::{TryInto};
 
-use radicle_registry_client::{CryptoPair as _, H256};
+use radicle_registry_client::{CryptoPair as _, H256, Error as RegistryError};
 use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
+
+// pub enum ProxyError {
+//     RegistryError,
+//     // TODO include juniper errors?
+// }
 
 /// Newtype for the registry `oscoin_client::AccountId`.
 #[derive(Clone, Eq, Hash, PartialEq)]
@@ -40,12 +46,12 @@ impl From<radicle_registry_client::ProjectId> for ProjectId {
     }
 }
 
-impl Into<radicle_registry_client::ProjectId> for ProjectId {
-    fn into(self) -> radicle_registry_client::ProjectId {
-        (
-            ProjectName::from_string(self.name).expect("project name creation failed"),
-            ProjectDomain::from_string(self.domain).expect("project domain creation faile"),
-        )
+impl TryInto<radicle_registry_client::ProjectId> for ProjectId {
+    type Error = String;
+    fn try_into(self) -> Result<radicle_registry_client::ProjectId, Self::Error> {
+        let project_name = ProjectName::from_string(self.name)?;
+        let project_domain = ProjectDomain::from_string(self.domain)?;
+        Ok(( project_name, project_domain ))
     }
 }
 
@@ -89,13 +95,14 @@ impl From<radicle_registry_client::Project> for Project {
 
 /// Abstraction used to fetch information from the registry.
 pub trait Source {
+    type Error;
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
-    fn get_all_projects(&self) -> Vec<Project>;
+    fn get_all_projects(&self) -> Result<Vec<Project>, Self::Error>;
     /// Retrieve a single proejct by `ProjectId`.
-    fn get_project(&self, id: ProjectId) -> Option<Project>;
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, Self::Error>;
     /// Register a new project.
-    fn register_project(&self, name: String, description: String, img_url: String) -> Project;
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Self::Error>;
 }
 
 /// Container to store local view on accounts to match with metadata.
@@ -152,6 +159,7 @@ impl<R> Source for Ledger<R>
 where
     R: radicle_registry_client::ClientT,
 {
+    type Error = RegistryError;
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId {
         let id = AccountId(
             radicle_registry_client::ed25519::Pair::generate()
@@ -171,50 +179,37 @@ where
         id
     }
 
-    fn get_all_projects(&self) -> Vec<Project> {
-        // TODO(xla): Return proper error.
-        self.registry_client
+    fn get_all_projects(&self) -> Result<Vec<Project>, Self::Error> {
+         Ok(self
+            .registry_client
             .list_projects()
-            .wait()
-            .expect("osc client list projects failed")
+            .wait()? // bubble error up if registry client throws anything
             .into_iter()
             .take(10)
             .flat_map(|id| {
-                let maybe_project = self
-                    .registry_client
-                    .get_project(id)
-                    .wait()
-                    .expect("get_project failed");
-
-                match maybe_project {
-                    Some(project) => Some(self.enrich_members(Project::from(project))),
-                    None => None,
-                }
+                self.get_project(id.into())?.ok_or(None)
             })
-            .collect()
+            .collect())
     }
 
-    fn get_project(&self, id: ProjectId) -> Option<Project> {
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, Self::Error> {
         let maybe_project = self
             .registry_client
-            .get_project(id.into())
-            .wait()
-            .expect("get project failed");
+            .get_project(id.try_into().unwrap())
+            .wait()?;
 
-        match maybe_project {
-            Some(p) => Some(self.enrich_members(Project::from(p))),
-            None => None,
-        }
+        let result = maybe_project.map(|p| self.enrich_members(Project::from(p)));
+        Ok(result)
     }
 
-    fn register_project(&self, name: String, description: String, img_url: String) -> Project {
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Self::Error> {
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
-        let project_name =
-            ProjectName::from_string(name.to_string()).expect("project name creation failed");
-        let project_domain =
-            ProjectDomain::from_string("rad".to_string()).expect("project domain creation faile");
-        let registry_id = (project_name, project_domain);
+        // TODO(garbados): eliminate .unwrap calls
+        let registry_id = (
+            ProjectName::from_string(name.to_string()).unwrap(),
+            ProjectDomain::from_string("rad".to_string()).unwrap()
+        );
 
         // TODO(xla): Proper error handling.
         self.registry_client
@@ -227,16 +222,15 @@ where
                     checkpoint_id: H256::random(),
                 },
             )
-            .wait()
-            .expect("osc project registration failed");
+            .wait()?;
 
-        Project {
-            id: registry_id.into(),
+        Ok(Project {
+            id: registry_id.try_into().unwrap(),
             name,
             description,
             img_url,
             members: vec![],
-        }
+        })
     }
 }
 
