@@ -42,6 +42,7 @@
   let publish = true;
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
+  let imageUrl = "";
 
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
   let showValidations = false;
@@ -210,16 +211,23 @@
       <Title.Big style="margin-bottom: 32px; text-align: left">
         Create a new project
       </Title.Big>
+
       <Input
         style="margin-bottom: 16px; --focus-outline-color: var(--color-pink)"
         placeholder="Project name*"
         bind:value={name}
         on:change={() => (showValidations = true)}
         valid={!showValidations || isNameValid} />
+
       <Input
         style="margin-bottom: 16px; --focus-outline-color: var(--color-pink)"
         placeholder="Project description"
         bind:value={description} />
+
+      <Input
+        style="margin-bottom: 16px; --focus-outline-color: var(--color-pink)"
+        placeholder="http://my-project-website.com/project-avatar.png"
+        bind:value={imageUrl} />
 
       <Title.Regular style="margin: 0 0 12px 16px; text-align: left">
         Select one:
