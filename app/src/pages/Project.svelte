@@ -18,6 +18,8 @@
   import Branches from "./Project/Branches.svelte";
   import NotFound from "./NotFound.svelte";
 
+  import NotificationFaucet from "../components/NotificationFaucet.svelte";
+
   export let params = null;
 
   const id = { domain: params.domain, name: params.name };
@@ -85,6 +87,7 @@
     <ProjectSidebar />
 
     <div class="container">
+      <NotificationFaucet />
       <ProjectBreadcrumbs
         style="position: fixed; top: 0;"
         project={result.data.project} />

@@ -1,5 +1,6 @@
 <script>
   import ModalLayout from "../layouts/ModalLayout.svelte";
+  import { showNotification } from "../stores.js";
 
   import { gql } from "apollo-boost";
   import { getClient, query, mutate } from "svelte-apollo";
@@ -107,7 +108,7 @@
         }
       });
       push(path.projectOverview("rad", name));
-      // TODO: show info message
+      showNotification(`Project ${name} successfully created`);
     } catch (error) {
       console.log("Error: " + error);
     }

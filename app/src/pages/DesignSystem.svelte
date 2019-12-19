@@ -10,6 +10,9 @@
     Select,
     CheckboxInput
   } from "../DesignSystem";
+
+  import Notification from "../components/Notification.svelte";
+
   import { link } from "svelte-spa-router";
 
   let colors = Array.from(document.styleSheets)
@@ -410,6 +413,22 @@
 
       <div class="row">
         <CheckboxInput>How about a checkbox?</CheckboxInput>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="first-column">
+      <Title.Big>Components</Title.Big>
+      <Text.Regular style="color: var(--color-gray)">
+        More complex UI elements
+      </Text.Regular>
+    </div>
+    <div class="second-column">
+      <div class="row">
+        <Notification>
+          This is harmless, but you should know anyway.
+        </Notification>
       </div>
     </div>
   </div>
