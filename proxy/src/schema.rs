@@ -14,7 +14,7 @@ use crate::source::{AccountId, Project, ProjectId, Source};
 
 enum Error {
     GitError(radicle_surf::git::GitError),
-    String(String)
+    CatchAll(String),
 }
 
 impl From<radicle_surf::git::GitError> for Error {
@@ -25,7 +25,7 @@ impl From<radicle_surf::git::GitError> for Error {
 
 impl From<String> for Error {
     fn from(error: String) -> Self {
-        Error::String(error)
+        Error::CatchAll(error)
     }
 }
 
@@ -46,7 +46,7 @@ impl IntoFieldError for Error {
                     juniper::Value::scalar(error_type),
                 )
             },
-            Error::String(error) => {
+            Error::CatchAll(error) => {
                 // placeholder for as-of-yet uncaptured errors
                 FieldError::new(&error, juniper::Value::scalar(String::from(&error)))
             }
@@ -68,7 +68,7 @@ pub struct Context {
     /// Intermediate repo used to serve dummy data to be presented to the API consumer.
     dummy_repo_path: String,
     /// Origin of data needed to server APIs.
-    source: Arc<dyn Source<Error = Error> + Send + Sync>,
+    source: Arc<dyn Source + Send + Sync>,
 }
 
 impl Context {
@@ -254,7 +254,14 @@ impl Mutation {
         description: String,
         img_url: String,
     ) -> Result<Project, Error> {
-        ctx.source.register_project(name, description, img_url)
+        let err_name = &name.clone();
+        match ctx.source.register_project(name, description, img_url) {
+            Ok(project) => Ok(project),
+            Err(_error) => {
+                // TODO handle error
+                Err(Error::CatchAll(format!("Project {} failed to register.", err_name)))
+            },
+        }
     }
 }
 
@@ -452,11 +459,25 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<Project>, Error> {
-        ctx.source.get_all_projects()
+        match ctx.source.get_all_projects() {
+            Ok(projects) => Ok(projects),
+            Err(_error) => {
+                // TODO handle error
+                Err(Error::CatchAll("Could not retrieve projects".to_string()))
+            },
+        }
     }
 
     fn project(ctx: &Context, id: IdInput) -> Result<Option<Project>, Error> {
-        ctx.source.get_project(id.into())
+        let err_domain = id.domain.clone();
+        let err_name = id.name.clone();
+        match ctx.source.get_project(id.into()) {
+            Ok(projects) => Ok(projects),
+            Err(_error) => {
+                // TODO handle error
+                Err(Error::CatchAll(format!("Could not retrieve project {}/{}", err_domain, err_name)))
+            },
+        }
     }
 }
 
