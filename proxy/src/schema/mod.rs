@@ -1,8 +1,4 @@
-use juniper::{
-    FieldError, FieldResult, IntoFieldError, ParseScalarResult, ParseScalarValue, RootNode, Value,
-};
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
+use juniper::{FieldError, FieldResult, ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::sync::Arc;
 
 use librad::{git::GitProject, paths::Paths};
@@ -11,7 +7,11 @@ use radicle_surf::{
     git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
+use crate::schema::error::Error;
 use crate::source::{AccountId, Project, ProjectId, Source};
+
+mod error;
+mod git;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;
@@ -88,176 +88,6 @@ impl Into<ProjectId> for IdInput {
     }
 }
 
-/// Branch name representation.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLScalarValue)]
-struct Branch(String);
-
-/// Tag name representation.
-///
-/// We still need full tag support.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLScalarValue)]
-struct Tag(String);
-
-/// Representation of a person (e.g. committer, author, signer) from a repository. Usually
-/// extracted from a signature.
-#[derive(GraphQLObject)]
-struct Person {
-    /// Name part of the commit signature commit.
-    name: String,
-    /// Email part of the commit signature commit.
-    email: String,
-    /// Reference (url/uri) to a persons avatar image.
-    avatar: String,
-}
-
-/// Representation of a code commit.
-#[derive(GraphQLObject)]
-struct Commit {
-    /// Identifier of the commit in the form of a sha1 hash. Often referred to as oid or object id.
-    sha1: String,
-    /// The author of the commit.
-    author: Person,
-    /// The summary of the commit message body.
-    summary: String,
-    /// The entire commit message body.
-    message: String,
-    /// The recorded time of the committer signature. This is a convenience alias until we expose
-    /// the actual author and commiter signatures.
-    committer_time: String,
-}
-
-// FIXME(xla): This should be a `std::convert::TryFrom` and needs to be addressed together with
-//             consistent error handling.
-impl From<&git2::Commit<'_>> for Commit {
-    fn from(commit: &git2::Commit) -> Self {
-        let signature = commit.author();
-        let email = signature.email().unwrap_or("invalid email");
-
-        let mut s = DefaultHasher::new();
-        email.hash(&mut s);
-
-        let avatar = format!(
-            "https://avatars.dicebear.com/v2/jdenticon/{}.svg",
-            s.finish().to_string()
-        );
-
-        Self {
-            sha1: commit.id().to_string(),
-            author: Person {
-                name: signature.name().unwrap_or("invalid name").into(),
-                email: email.into(),
-                avatar: avatar.into(),
-            },
-            summary: commit.summary().unwrap_or("invalid subject").into(),
-            message: commit.message().unwrap_or("invalid message").into(),
-            committer_time: commit.time().seconds().to_string(),
-        }
-    }
-}
-
-/// Git object types.
-///
-/// `shafiul.github.io/gitbook/1_the_git_object_model.html`
-#[derive(Debug, Eq, Ord, PartialOrd, PartialEq, GraphQLEnum)]
-enum ObjectType {
-    /// References a list of other trees and blobs.
-    Tree,
-    /// Used to store file data.
-    Blob,
-}
-
-/// Set of extra information we carry for blob and tree objects returned from the API.
-#[derive(GraphQLObject)]
-struct Info {
-    /// Name part of an object.
-    name: String,
-    /// The type of the object.
-    object_type: ObjectType,
-    /// The last commmit that touched this object.
-    last_commit: Commit,
-}
-
-/// Result of a directory listing, carries other trees and blobs.
-#[derive(GraphQLObject)]
-struct Tree {
-    /// Absolute path to the tree object from the repo root.
-    path: String,
-    /// Entries listed in that tree result.
-    entries: Vec<TreeEntry>,
-    /// Extra info for the tree object.
-    info: Info,
-}
-
-/// Entry in a Tree result.
-#[derive(GraphQLObject)]
-struct TreeEntry {
-    /// Extra info for the entry.
-    info: Info,
-    /// Absolute path to the object from the root of the repo.
-    path: String,
-}
-
-/// File data abstraction.
-#[derive(GraphQLObject)]
-struct Blob {
-    /// Best-effort guess if the content is binary.
-    binary: bool,
-    /// Actual content of the file, if the content is ASCII.
-    content: Option<String>,
-    /// Extra info for the file.
-    info: Info,
-}
-
-#[derive(Debug)]
-enum Error {
-    Git2Error(git2::Error),
-    LibradError(librad::git::Error),
-    IoError(std::io::Error),
-}
-
-impl From<git2::Error> for Error {
-    fn from(git2_error: git2::Error) -> Self {
-        Error::Git2Error(git2_error)
-    }
-}
-
-impl From<librad::git::Error> for Error {
-    fn from(librad_error: librad::git::Error) -> Self {
-        Error::LibradError(librad_error)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(io_error: std::io::Error) -> Self {
-        Error::IoError(io_error)
-    }
-}
-
-impl IntoFieldError for Error {
-    fn into_field_error(self) -> FieldError {
-        match self {
-            Error::Git2Error(git2_error) => FieldError::new(
-                git2_error.to_string(),
-                graphql_value!({
-                    "type": "GIT2_ERROR",
-                }),
-            ),
-            Error::IoError(io_error) => FieldError::new(
-                io_error.to_string(),
-                graphql_value!({
-                    "type": "IO_ERROR",
-                }),
-            ),
-            Error::LibradError(librad_error) => FieldError::new(
-                librad_error.to_string(),
-                graphql_value!({
-                    "type": "LIBRAD_ERROR",
-                }),
-            ),
-        }
-    }
-}
-
 /// Encapsulates write path in API.
 pub struct Mutation;
 
@@ -297,7 +127,7 @@ impl Query {
         "1.0"
     }
 
-    fn blob(ctx: &Context, id: IdInput, revision: String, path: String) -> FieldResult<Blob> {
+    fn blob(ctx: &Context, id: IdInput, revision: String, path: String) -> FieldResult<git::Blob> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
 
@@ -337,18 +167,18 @@ impl Query {
             }
         };
 
-        Ok(Blob {
+        Ok(git::Blob {
             binary,
             content,
-            info: Info {
+            info: git::Info {
                 name: last.label,
-                object_type: ObjectType::Blob,
-                last_commit: Commit::from(&last_commit),
+                object_type: git::ObjectType::Blob,
+                last_commit: git::Commit::from(&last_commit),
             },
         })
     }
 
-    fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<Commit> {
+    fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<git::Commit> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
         browser
@@ -358,17 +188,17 @@ impl Query {
         let history = browser.get_history();
         let commit = history.0.first();
 
-        Ok(Commit::from(commit))
+        Ok(git::Commit::from(commit))
     }
 
-    fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<Branch>> {
+    fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<git::Branch>> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
-        let mut branches: Vec<Branch> = browser
+        let mut branches: Vec<git::Branch> = browser
             .list_branches(None)
             .expect("Getting branches failed")
             .into_iter()
-            .map(|b| Branch(b.name.name()))
+            .map(|b| git::Branch(b.name.name()))
             .collect();
 
         branches.sort();
@@ -376,15 +206,15 @@ impl Query {
         Ok(branches)
     }
 
-    fn tags(ctx: &Context, id: IdInput) -> FieldResult<Vec<Tag>> {
+    fn tags(ctx: &Context, id: IdInput) -> FieldResult<Vec<git::Tag>> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
         let mut tag_names = browser.list_tags().expect("Getting branches failed");
         tag_names.sort();
 
-        let mut tags: Vec<Tag> = tag_names
+        let mut tags: Vec<git::Tag> = tag_names
             .into_iter()
-            .map(|tag_name| Tag(tag_name.name()))
+            .map(|tag_name| git::Tag(tag_name.name()))
             .collect();
 
         tags.sort();
@@ -392,7 +222,12 @@ impl Query {
         Ok(tags)
     }
 
-    fn tree(ctx: &Context, id: IdInput, revision: String, prefix: String) -> FieldResult<Tree> {
+    fn tree(
+        ctx: &Context,
+        id: IdInput,
+        revision: String,
+        prefix: String,
+    ) -> FieldResult<git::Tree> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
 
@@ -433,7 +268,7 @@ impl Query {
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
 
-        let mut entries: Vec<TreeEntry> = prefix_contents
+        let mut entries: Vec<git::TreeEntry> = prefix_contents
             .iter()
             .map(|(label, system_type)| {
                 let entry_path = {
@@ -441,15 +276,14 @@ impl Query {
                     path.push(label.clone());
                     path
                 };
-                let last_commit = Commit::from(&browser.last_commit(&entry_path).expect(&format!(
-                    "[tree] unable to get entry last commit: {}",
-                    entry_path
-                )));
-                let info = Info {
+                let last_commit = git::Commit::from(&browser.last_commit(&entry_path).expect(
+                    &format!("[tree] unable to get entry last commit: {}", entry_path),
+                ));
+                let info = git::Info {
                     name: label.to_string(),
                     object_type: match system_type {
-                        SystemType::Directory => ObjectType::Tree,
-                        SystemType::File => ObjectType::Blob,
+                        SystemType::Directory => git::ObjectType::Tree,
+                        SystemType::File => git::ObjectType::Blob,
                     },
                     last_commit,
                 };
@@ -457,7 +291,7 @@ impl Query {
                 let (_root, labels) = entry_path.split_first();
                 let clean_path = Path(nonempty::NonEmpty::from_slice(labels).unwrap());
 
-                TreeEntry {
+                git::TreeEntry {
                     info,
                     path: clean_path.to_string(),
                 }
@@ -471,9 +305,9 @@ impl Query {
         entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
 
         let last_commit = if path.is_root() {
-            Commit::from(browser.get_history().0.first())
+            git::Commit::from(browser.get_history().0.first())
         } else {
-            Commit::from(
+            git::Commit::from(
                 &browser
                     .last_commit(&path)
                     .unwrap_or_else(|| panic!("[tree] unable to get last commit: {}", path)),
@@ -485,13 +319,13 @@ impl Query {
             let (_first, last) = path.split_last();
             last.label
         };
-        let info = Info {
+        let info = git::Info {
             name,
-            object_type: ObjectType::Tree,
+            object_type: git::ObjectType::Tree,
             last_commit,
         };
 
-        Ok(Tree {
+        Ok(git::Tree {
             path: prefix,
             entries,
             info,
