@@ -210,13 +210,13 @@
         Create a new project
       </Title.Big>
       <Input
-        style="margin-bottom: 16px"
+        style="margin-bottom: 16px; --focus-outline-color: var(--color-pink)"
         placeholder="Project name*"
         bind:value={name}
         on:change={() => (showValidations = true)}
         valid={!showValidations || isNameValid} />
       <Input
-        style="margin-bottom: 16px"
+        style="margin-bottom: 16px; --focus-outline-color: var(--color-pink)"
         placeholder="Project description"
         bind:value={description} />
 

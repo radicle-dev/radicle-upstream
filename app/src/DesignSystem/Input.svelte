@@ -25,8 +25,8 @@
 
   input:focus {
     outline: none;
-    box-shadow: 0 0 0 1px var(--color-purple);
-    border: 1px solid var(--color-purple);
+    box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-purple));
+    border: 1px solid var(--focus-outline-color, var(--color-purple));
   }
 
   input:invalid {
