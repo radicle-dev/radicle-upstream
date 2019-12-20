@@ -64,19 +64,17 @@
   $: branches = query(client, {
     query: LOCAL_BRANCHES,
     variables: {
-      projectId: {
-        name: isNew ? newRepositoryPath : existingRepositoryPath,
-        domain: "buu"
-      }
+      projectId: "123"
     }
   });
 
   const CREATE_PROJECT = gql`
-    mutation($name: String!, $description: String!, $imgUrl: String!) {
-      registerProject(name: $name, description: $description, imgUrl: $imgUrl) {
-        name
-        description
-        imgUrl
+    mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
+      createProject(metadata: $metadata, path: $path, publish: $publish) {
+        id
+        metadata {
+          name
+        }
       }
     }
   `;
@@ -91,27 +89,36 @@
       );
   };
 
-  let project;
-
   const createProject = async () => {
+    let response;
+
     try {
-      project = await mutate(client, {
+      response = await mutate(client, {
         mutation: CREATE_PROJECT,
         variables: {
-          name: name,
-          description: description,
-          imgUrl: `https://avatars.dicebear.com/v2/jdenticon/${anonymize(
-            name + description
-          )}.svg`
-          // defaultBranch: defaultBranch
-          // path: (isNew ? newRepositoryPath : existingRepositoryPath)
-          // publish: (isNew ? true : publish)
+          metadata: {
+            name: name,
+            description: description,
+            imgUrl:
+              imageUrl ||
+              `https://avatars.dicebear.com/v2/jdenticon/${anonymize(
+                name + description
+              )}.svg`,
+            defaultBranch: defaultBranch
+          },
+          path: isNew ? newRepositoryPath : existingRepositoryPath,
+          publish: isNew ? true : publish
         }
       });
-      push(path.projectOverview("rad", name));
-      showNotification(`Project ${name} successfully created`);
+
+      push(path.projectOverview(response.data.createProject.id));
+      showNotification(
+        `Project ${response.data.createProject.metadata.name} successfully created`
+      );
     } catch (error) {
-      console.log("Error: " + error);
+      console.log(error);
+      push(path.projects());
+      showNotification("Could not create project");
     }
   };
 </script>
