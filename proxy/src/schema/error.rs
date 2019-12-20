@@ -6,6 +6,8 @@ use radicle_surf::git::git2;
 pub enum Error {
     Git2Error(git2::Error),
     LibradError(librad::git::Error),
+    LibradParseError(librad::project::projectid::ParseError),
+    LibradProjectError(librad::project::Error),
     IoError(std::io::Error),
     UrlError(url::ParseError),
 }
@@ -19,6 +21,18 @@ impl From<git2::Error> for Error {
 impl From<librad::git::Error> for Error {
     fn from(librad_error: librad::git::Error) -> Self {
         Error::LibradError(librad_error)
+    }
+}
+
+impl From<librad::project::Error> for Error {
+    fn from(project_error: librad::project::Error) -> Self {
+        Error::LibradProjectError(project_error)
+    }
+}
+
+impl From<librad::project::projectid::ParseError> for Error {
+    fn from(parse_error: librad::project::projectid::ParseError) -> Self {
+        Error::LibradParseError(parse_error)
     }
 }
 
@@ -53,6 +67,18 @@ impl IntoFieldError for Error {
                 librad_error.to_string(),
                 graphql_value!({
                     "type": "LIBRAD_ERROR",
+                }),
+            ),
+            Error::LibradParseError(parse_error) => FieldError::new(
+                parse_error.to_string(),
+                graphql_value!({
+                    "type": "LIBRAD_PARSE_ERROR",
+                }),
+            ),
+            Error::LibradProjectError(project_error) => FieldError::new(
+                project_error.to_string(),
+                graphql_value!({
+                    "type": "LIBRAD_PROJECT_ERROR",
                 }),
             ),
             Error::UrlError(url_error) => FieldError::new(

@@ -292,6 +292,17 @@ impl Query {
         })
     }
 
+    fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, Error> {
+        use std::str::FromStr;
+        let project_id = librad::project::ProjectId::from_str(&id.to_string())?;
+        let meta = librad::project::show_project(&ctx.librad_paths, &project_id)?;
+
+        Ok(project::Project {
+            id: id,
+            metadata: meta.into(),
+        })
+    }
+
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
         let mut projects = librad::project::list_projects(&ctx.librad_paths)
             .map(|id| {
@@ -921,6 +932,29 @@ mod tests {
                         }
                     }),
                 );
+            });
+        }
+
+        #[test]
+        fn project() {
+            let mut vars = Variables::new();
+            vars.insert("id".into(), InputValue::scalar("foo.git"));
+
+            let query = "
+            query($id: ID!) {
+                project(id: $id) {
+                    metadata {
+                        name
+                        description
+                        defaultBranch
+                        imgUrl
+                    }
+                }
+            }";
+
+            execute_query(query, &vars, |res, errors| {
+                assert_eq!(errors, []);
+                assert_eq!(res, graphql_value!(None));
             });
         }
 
