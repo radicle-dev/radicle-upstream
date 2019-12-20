@@ -15,7 +15,7 @@ const startApp = () => {
 };
 
 ipcMain.handle(MAIN_IPC_CHANNEL, async () => {
-  const result = await dialog.showOpenDialog({
+  const result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openDirectory", "showHiddenFiles", "createDirectory"]
   });
 
