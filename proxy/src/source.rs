@@ -2,8 +2,9 @@ use futures::future::Future;
 use std::collections::HashMap;
 use std::convert::{TryInto};
 
-use radicle_registry_client::{CryptoPair as _, ProjectDomain, ProjectName, H256, Error as RegistryError};
-use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
+use radicle_registry_client::{
+    CryptoPair as _, ProjectDomain, ProjectName, H256, Error as RegistryError
+};
 
 type BadInput = String;
 
