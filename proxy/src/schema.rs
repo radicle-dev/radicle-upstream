@@ -14,9 +14,12 @@ use radicle_surf::{
 use crate::source::{AccountId, Project, ProjectId, Source, SourceError};
 
 enum Error {
-    GitError(radicle_surf::git::GitError),
-    RegistryError(SourceError),
+    BadInput(String),
     CatchAll(String),
+    FileNotFound(String),
+    GitError(radicle_surf::git::GitError),
+    RegistrationError(String),
+    RegistryError(String),
 }
 
 impl From<radicle_surf::git::GitError> for Error {
@@ -28,10 +31,8 @@ impl From<radicle_surf::git::GitError> for Error {
 impl From<SourceError> for Error {
     fn from(source_error: SourceError) -> Self {
         match source_error {
-            SourceError::RegistryError(_error) => {
-                // TODO handle error subtypes https://github.com/paritytech/substrate-subxt/blob/master/src/error.rs#L28-L53
-                Error::CatchAll("REGISTRY_ERROR".to_string())
-            },
+            SourceError::RegistryError(error) => Error::RegistryError(format!("{:?}", error)),
+            SourceError::BadInput(string) => Error::BadInput(string.to_string()),
             SourceError::CatchAll(string) => Error::CatchAll(string.to_string()),
         }
     }
@@ -58,7 +59,7 @@ impl IntoFieldError for Error {
                     },
                     radicle_surf::git::GitError::BranchDecode => {
                         FieldError::new(
-                            "TODO branch decode failure",
+                            "Unable to decode the given branch.",
                             graphql_value!({
                                 "type": "BRANCH_DECODE"
                             })
@@ -66,7 +67,7 @@ impl IntoFieldError for Error {
                     },
                     radicle_surf::git::GitError::NotBranch => {
                         FieldError::new(
-                            "TODO not a branch",
+                            "Not a known branch.",
                             graphql_value!({
                                 "type": "NOT_BRANCH"
                             })
@@ -74,7 +75,7 @@ impl IntoFieldError for Error {
                     },
                     radicle_surf::git::GitError::NotTag => {
                         FieldError::new(
-                            "TODO not a tag",
+                            "Not a known tag.",
                             graphql_value!({
                                 "type": "NOT_TAG"
                             })
@@ -93,10 +94,28 @@ impl IntoFieldError for Error {
             Error::RegistryError(reg_error) => {
                 // TODO handle source error subtypes
                 FieldError::new(
-                    format!("{:?}", reg_error),
+                    format!("Registry error: {:?}", reg_error),
                     juniper::Value::scalar("REGISTRY_ERROR"),
                 )
             },
+            Error::RegistrationError(error) => {
+                FieldError::new(
+                    format!("Could not register project: {:?}", error),
+                    juniper::Value::scalar("REGISTRATION_ERROR"),
+                )
+            }
+            Error::BadInput(error) => {
+                FieldError::new(
+                    format!("Bad input: {:?}", error),
+                    juniper::Value::scalar("BAD_INPUT"),
+                )
+            },
+            Error::FileNotFound(error) => {
+                FieldError::new(
+                    format!("File not found: {:?}", error),
+                    juniper::Value::scalar("FILE_NOT_FOUND"),
+                )
+            }
             Error::CatchAll(error) => {
                 // placeholder for as-of-yet uncaptured errors
                 FieldError::new(&error, juniper::Value::scalar(String::from(&error)))
@@ -308,9 +327,9 @@ impl Mutation {
         let err_name = &name.clone();
         match ctx.source.register_project(name, description, img_url) {
             Ok(project) => Ok(project),
-            Err(_error) => {
-                // TODO handle error
-                Err(Error::CatchAll(format!("Project {} failed to register.", err_name)))
+            Err(error) => {
+                let message = format!("Project {} failed to register: {:?}", err_name, error);
+                Err(Error::RegistrationError(message))
             },
         }
     }
@@ -339,12 +358,14 @@ impl Query {
 
         let mut p = Path::root();
         p.append(&mut Path::from_string(&path));
-        let file = root
-            .find_file(&p)
-            .expect(&format!("unable to find file: {} -> {}", path, p));
-        let last_commit = browser
-            .last_commit(&p)
-            .expect(&format!("[blob] unable to get last commit: {}", p));
+        let file = match root.find_file(&p) {
+            Some(result) => Ok(result),
+            None => Err(Error::FileNotFound(format!("unable to find file: {} -> {}", path, p))),
+        }?;
+        let last_commit = match browser.last_commit(&p) {
+            Some(result) => Ok(result),
+            None => Err(radicle_surf::git::GitError::EmptyCommitHistory),
+        }?;
         let (_rest, last) = p.split_last();
         let (binary, content) = {
             let res = std::str::from_utf8(&file.contents);
@@ -452,11 +473,10 @@ impl Query {
                     path.push(label.clone());
                     path
                 };
-                // TODO handle when entry last commit
-                let last_commit = Commit::from(&browser.last_commit(&entry_path).expect(&format!(
-                    "[tree] unable to get entry last commit: {}",
-                    entry_path
-                )));
+                let last_commit = match &browser.last_commit(&path) {
+                    Some(last_commit) => Ok(Commit::from(last_commit)),
+                    None => Err(radicle_surf::git::GitError::EmptyCommitHistory),
+                }?;
                 let info = Info {
                     name: label.to_string(),
                     object_type: match system_type {
@@ -492,12 +512,9 @@ impl Query {
         let last_commit = if path.is_root() {
             Ok(Commit::from(browser.get_history().0.first()))
         } else {
-            let maybe_last_commit = &browser.last_commit(&path);
-            if let Some(last_commit) = maybe_last_commit {
-                Ok(Commit::from(last_commit))
-            } else {
-                // TODO handle unable to get last commit
-                Err(Error::CatchAll(format!("[tree] unable to get last commit: {}", path)))
+            match &browser.last_commit(&path) {
+                Some(last_commit) => Ok(Commit::from(last_commit)),
+                None => Err(radicle_surf::git::GitError::EmptyCommitHistory),
             }
         }?;
         let name = if path.is_root() {
@@ -520,27 +537,11 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<Project>, Error> {
-        ctx.source.get_all_projects()
-        // match ctx.source.get_all_projects() {
-        //     Ok(projects) => Ok(projects),
-        //     Err(_error) => {
-        //         // TODO handle error
-        //         Err(Error::CatchAll("Could not retrieve projects".to_string()))
-        //     },
-        // }
+        Ok(ctx.source.get_all_projects()?)
     }
 
     fn project(ctx: &Context, id: IdInput) -> Result<Option<Project>, Error> {
-        let err_domain = id.domain.clone();
-        let err_name = id.name.clone();
-        ctx.source.get_project(id.into())
-        // match ctx.source.get_project(id.into()) {
-        //     Ok(projects) => Ok(projects),
-        //     Err(_error) => {
-        //         // TODO handle error
-        //         Err(Error::CatchAll(format!("Could not retrieve project {}/{}", err_domain, err_name)))
-        //     },
-        // }
+        Ok(ctx.source.get_project(id.into())?)
     }
 }
 

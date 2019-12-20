@@ -5,9 +5,12 @@ use std::convert::{TryInto};
 use radicle_registry_client::{CryptoPair as _, H256, Error as RegistryError};
 use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
 
+type BadInput = String;
+
 #[derive(Debug)]
 pub enum SourceError {
     RegistryError(RegistryError),
+    BadInput(String),
     CatchAll(String),
 }
 
@@ -60,7 +63,7 @@ impl From<radicle_registry_client::ProjectId> for ProjectId {
 }
 
 impl TryInto<radicle_registry_client::ProjectId> for ProjectId {
-    type Error = String;
+    type Error = BadInput;
     fn try_into(self) -> Result<radicle_registry_client::ProjectId, Self::Error> {
         let project_name = ProjectName::from_string(self.name)?;
         let project_domain = ProjectDomain::from_string(self.domain)?;
@@ -206,7 +209,7 @@ where
     fn get_project(&self, id: ProjectId) -> Result<Option<Project>, SourceError> {
         let maybe_project = self
             .registry_client
-            .get_project(id.try_into().unwrap())
+            .get_project(id.try_into()?)
             .wait()?;
 
         let result = maybe_project.map(|p| self.enrich_members(Project::from(p)));
@@ -242,7 +245,8 @@ where
                 members: vec![],
             })
         } else {
-            Err(SourceError::CatchAll(format!("Could not derive registry ID from project name {}.", name)))
+            let error = format!("Could not derive registry ID from project name {}.", name);
+            Err(SourceError::BadInput(error))
         }
     }
 }
