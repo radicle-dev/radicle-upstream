@@ -22,19 +22,18 @@
 
   export let params = null;
 
-  const id = { domain: params.domain, name: params.name };
-  setContext("projectId", id);
+  setContext("projectId", params.id);
 
   const routes = {
-    "/projects/:domain/:name/": Overview,
-    "/projects/:domain/:name/overview": Overview,
-    "/projects/:domain/:name/feed": Feed,
-    "/projects/:domain/:name/members": Members,
-    "/projects/:domain/:name/funds": Funds,
-    "/projects/:domain/:name/source": Source,
-    "/projects/:domain/:name/source/*": Source,
-    "/projects/:domain/:name/commits": Commits,
-    "/projects/:domain/:name/branches": Branches,
+    "/projects/:id/": Overview,
+    "/projects/:id/overview": Overview,
+    "/projects/:id/feed": Feed,
+    "/projects/:id/members": Members,
+    "/projects/:id/funds": Funds,
+    "/projects/:id/source": Source,
+    "/projects/:id/source/*": Source,
+    "/projects/:id/commits": Commits,
+    "/projects/:id/branches": Branches,
     "*": NotFound
   };
 
@@ -42,18 +41,13 @@
   import { getClient, query } from "svelte-apollo";
 
   const GET_PROJECT = gql`
-    query Query($id: IdInput!) {
+    query Query($id: ID!) {
       project(id: $id) {
-        id {
-          domain
+        id
+        metadata {
           name
-        }
-        name
-        description
-        imgUrl
-        members {
-          keyName
-          avatarUrl
+          description
+          imgUrl
         }
       }
     }
@@ -62,7 +56,7 @@
   const client = getClient();
   const project = query(client, {
     query: GET_PROJECT,
-    variables: { id }
+    variables: { id: params.id }
   });
 
   $: revision.set(path.extractProjectSourceRevision($location));

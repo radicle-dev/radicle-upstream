@@ -56,7 +56,7 @@
   const client = getClient();
 
   const LOCAL_BRANCHES = gql`
-    query($projectId: IdInput!) {
+    query($projectId: ID!) {
       branches(id: $projectId)
     }
   `;

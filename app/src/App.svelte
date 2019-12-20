@@ -46,7 +46,7 @@
     "/feed": Feed,
     "/projects": Projects,
     "/projects/new": CreateProject,
-    "/projects/:domain/:name/*": Project,
+    "/projects/:id/*": Project,
     "/design-system": DesignSystem,
     "/wallet": Wallet,
     "/profile": Profile,

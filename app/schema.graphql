@@ -1,10 +1,5 @@
 scalar Datetime
 
-input IdInput {
-  domain: String!
-  name: String!
-}
-
 enum ObjectType {
   TREE
   BLOB
@@ -88,16 +83,16 @@ type Query {
   #   app/native
   #   app/cypress/plugins
 
-  blob(projectId: IdInput!, revision: String!, path: String!): Blob!
-  tree(projectId: IdInput!, revision: String!, prefix: String!): Tree!
+  blob(projectId: ID!, revision: String!, path: String!): Blob!
+  tree(projectId: ID!, revision: String!, prefix: String!): Tree!
 
   # Commit browsing
-  commit(projectId: IdInput!, sha1: String!): Commit
+  commit(projectId: ID!, sha1: String!): Commit
 
   # Ref browsing
-  branches(projectId: IdInput!): [String]!
+  branches(projectId: ID!): [String]!
   refs(projectId: ID!): [Ref]!
-  tags(projectId: IdInput!): [String]!
+  tags(projectId: ID!): [String]!
 
   # local disk browsing
   localBranches(path: String!): [String]!

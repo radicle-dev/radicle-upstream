@@ -9,13 +9,12 @@
   const GET_PROJECTS = gql`
     query Query {
       projects {
-        id {
+        id
+        metadata {
+          description
           name
-          domain
+          imgUrl
         }
-        description
-        name
-        imgUrl
       }
     }
   `;
@@ -69,14 +68,12 @@
     <ul>
       {#each result.data.projects as project}
         <li class="project-card">
-          <a
-            href={projectOverview(project.id.domain, project.id.name)}
-            use:link>
+          <a href={projectOverview(project.id)} use:link>
             <ProjectCard
-              title={project.name}
-              description={project.description}
+              title={project.metadata.name}
+              description={project.metadata.description}
               isRegistered={true}
-              imgUrl={project.imgUrl}
+              imgUrl={project.metadata.imgUrl}
               state={Icon.Check} />
           </a>
         </li>

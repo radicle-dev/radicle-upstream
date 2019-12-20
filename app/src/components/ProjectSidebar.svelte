@@ -44,40 +44,40 @@
       <ProjectSidebarItem
         icon={Icon.Home}
         title="Overview"
-        href={path.projectOverview(projectId.domain, projectId.name)}
-        active={path.active(path.projectOverview(projectId.domain, projectId.name), $location)} />
+        href={path.projectOverview(projectId)}
+        active={path.active(path.projectOverview(projectId), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Feed}
         title="Feed"
-        href={path.projectFeed(projectId.domain, projectId.name)}
-        active={path.active(path.projectFeed(projectId.domain, projectId.name), $location)} />
+        href={path.projectFeed(projectId)}
+        active={path.active(path.projectFeed(projectId), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Member}
         title="Members"
-        href={path.projectMembers(projectId.domain, projectId.name)}
-        active={path.active(path.projectMembers(projectId.domain, projectId.name), $location)} />
+        href={path.projectMembers(projectId)}
+        active={path.active(path.projectMembers(projectId), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Fund}
         title="Fund"
-        href={path.projectFunds(projectId.domain, projectId.name)}
-        active={path.active(path.projectFunds(projectId.domain, projectId.name), $location)} />
+        href={path.projectFunds(projectId)}
+        active={path.active(path.projectFunds(projectId), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Source}
         title="Source"
-        href={path.projectSource(projectId.domain, projectId.name)}
-        active={path.active(path.projectSource(projectId.domain, projectId.name), $location, true)}>
+        href={path.projectSource(projectId)}
+        active={path.active(path.projectSource(projectId), $location, true)}>
 
         <div class="source-tree" data-cy="source-tree">
           <Folder />
@@ -89,16 +89,16 @@
       <ProjectSidebarItem
         icon={Icon.Commit}
         title="Commits"
-        href={path.projectCommits(projectId.domain, projectId.name)}
-        active={path.active(path.projectCommits(projectId.domain, projectId.name), $location)} />
+        href={path.projectCommits(projectId)}
+        active={path.active(path.projectCommits(projectId), $location)} />
     </li>
 
     <li>
       <ProjectSidebarItem
         icon={Icon.Branch}
         title="Branches"
-        href={path.projectBranches(projectId.domain, projectId.name)}
-        active={path.active(path.projectBranches(projectId.domain, projectId.name), $location)} />
+        href={path.projectBranches(projectId)}
+        active={path.active(path.projectBranches(projectId), $location)} />
     </li>
   </ul>
 </nav>
