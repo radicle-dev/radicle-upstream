@@ -142,19 +142,12 @@ impl Query {
         Ok(git::Commit::from(commit))
     }
 
-    fn branches(ctx: &Context, id: ID) -> FieldResult<Vec<git::Branch>> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
-        let mut branches: Vec<git::Branch> = browser
-            .list_branches(None)
-            .expect("Getting branches failed")
-            .into_iter()
-            .map(|b| git::Branch(b.name.name()))
-            .collect();
+    fn branches(ctx: &Context, id: ID) -> Result<Vec<git::Branch>, Error> {
+        git::branches(&ctx.dummy_repo_path)
+    }
 
-        branches.sort();
-
-        Ok(branches)
+    fn local_branches(ctx: &Context, path: String) -> Result<Vec<git::Branch>, Error> {
+        git::branches(&path)
     }
 
     fn tags(ctx: &Context, id: ID) -> FieldResult<Vec<git::Tag>> {
@@ -627,6 +620,34 @@ mod tests {
                         res,
                         graphql_value!({
                             "branches": [
+                                "master",
+                                "origin/HEAD",
+                                "origin/dev",
+                                "origin/master",
+                            ]
+                        }),
+                    );
+                });
+            });
+        }
+
+        #[test]
+        fn local_branches() {
+            with_fixtures(|librad_paths, _repos_dir| {
+                let mut vars = Variables::new();
+                vars.insert(
+                    "path".into(),
+                    InputValue::scalar("../fixtures/git-platinum"),
+                );
+
+                let query = "query($path: String!) { localBranches(path: $path) }";
+
+                execute_query(librad_paths, query, &vars, |res, errors| {
+                    assert_eq!(errors, []);
+                    assert_eq!(
+                        res,
+                        graphql_value!({
+                            "localBranches": [
                                 "master",
                                 "origin/HEAD",
                                 "origin/dev",

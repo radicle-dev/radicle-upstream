@@ -2,7 +2,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
 use librad::paths::Paths;
-use radicle_surf::git::git2;
+use radicle_surf::git::{git2, GitBrowser, GitRepository};
 
 use crate::schema::error::Error;
 
@@ -125,6 +125,21 @@ pub struct TreeEntry {
     pub info: Info,
     /// Absolute path to the object from the root of the repo.
     pub path: String,
+}
+
+pub fn branches(repo_path: &str) -> Result<Vec<Branch>, Error> {
+    let repo = GitRepository::new(&repo_path)?;
+    let browser = GitBrowser::new(&repo)?;
+    let mut branches = browser
+        .list_branches(None)
+        .expect("Getting branches failed")
+        .into_iter()
+        .map(|b| Branch(b.name.name()))
+        .collect::<Vec<Branch>>();
+
+    branches.sort();
+
+    Ok(branches)
 }
 
 pub fn init_project(

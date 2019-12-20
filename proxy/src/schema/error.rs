@@ -4,12 +4,19 @@ use radicle_surf::git::git2;
 
 #[derive(Debug)]
 pub enum Error {
+    GitError(radicle_surf::git::GitError),
     Git2Error(git2::Error),
     LibradError(librad::git::Error),
     LibradParseError(librad::project::projectid::ParseError),
     LibradProjectError(librad::project::Error),
     IoError(std::io::Error),
     UrlError(url::ParseError),
+}
+
+impl From<radicle_surf::git::GitError> for Error {
+    fn from(git_error: radicle_surf::git::GitError) -> Self {
+        Error::GitError(git_error)
+    }
 }
 
 impl From<git2::Error> for Error {
@@ -51,6 +58,12 @@ impl From<url::ParseError> for Error {
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
+            Error::GitError(git_error) => FieldError::new(
+                format!("{:?}", git_error),
+                graphql_value!({
+                    "type": "GIT_ERROR",
+                }),
+            ),
             Error::Git2Error(git2_error) => FieldError::new(
                 git2_error.to_string(),
                 graphql_value!({
