@@ -7,7 +7,7 @@ use radicle_surf::{
 };
 
 mod error;
-mod git;
+pub mod git;
 mod project;
 
 use crate::schema::error::Error;
@@ -313,11 +313,11 @@ mod tests {
     use librad::paths::Paths;
     use tempfile::{tempdir_in, TempDir};
 
-    use crate::schema::{git, Context, Mutation, Query, Schema};
+    use crate::schema::{Context, Mutation, Query, Schema};
 
     const REPO_PATH: &str = "../fixtures/git-platinum";
 
-    fn with_env<F>(f: F)
+    fn with_fixtures<F>(f: F)
     where
         F: FnOnce(Paths, TempDir) -> (),
     {
@@ -325,49 +325,15 @@ mod tests {
         let librad_paths = Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
         let repos_dir = tempdir_in(tmp_dir.path()).expect("unable to create repos directory");
 
-        let infos = vec![
-            (
-                "monokel",
-                "A looking glass into the future",
-                "master",
-                "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
-            ),
-            (
-                "Monadic",
-                "Open source organization of amazing things.",
-                "stable",
-                "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
-            ),
-            (
-                "open source coin",
-                "Research for the sustainability of the open source community.",
-                "master",
-                "https://avatars0.githubusercontent.com/u/31632242",
-            ),
-            (
-                "radicle",
-                "Decentralized open source collaboration",
-                "dev",
-                "https://avatars0.githubusercontent.com/u/48290027",
-            ),
-        ];
-
-        for info in infos {
-            let repo_dir =
-                tempfile::tempdir_in(repos_dir.path()).expect("unable to create repo directory");
-            let path = repo_dir.path().to_str().expect("repo dir path").to_string();
-
-            git::init_repo(path.clone()).expect("repo init failed");
-            git::init_project(
-                &librad_paths,
-                path,
-                info.0.to_string(),
-                info.1.to_string(),
-                info.2.to_string(),
-                info.3.to_string(),
-            )
-            .expect("project init failed");
-        }
+        crate::schema::git::setup_fixtures(
+            &librad_paths,
+            tmp_dir
+                .path()
+                .to_str()
+                .expect("path extraction failed")
+                .to_string(),
+        )
+        .expect("fixture setup failed");
 
         f(librad_paths, repos_dir)
     }
@@ -389,11 +355,11 @@ mod tests {
         use juniper::{InputValue, Variables};
         use pretty_assertions::assert_eq;
 
-        use super::{execute_query, with_env};
+        use super::{execute_query, with_fixtures};
 
         #[test]
         fn create_project() {
-            with_env(|librad_paths, repos_dir| {
+            with_fixtures(|librad_paths, repos_dir| {
                 let dir = tempfile::tempdir_in(repos_dir.path())
                     .expect("creating temporary directory failed");
                 let path = dir.path().to_str().expect("unable to get path");
@@ -451,11 +417,11 @@ mod tests {
 
         use crate::schema::git;
 
-        use super::{execute_query, with_env};
+        use super::{execute_query, with_fixtures};
 
         #[test]
         fn api_version() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let query = "query { apiVersion }";
 
                 execute_query(librad_paths, query, &Variables::new(), |res, errors| {
@@ -467,7 +433,7 @@ mod tests {
 
         #[test]
         fn blob() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -533,7 +499,7 @@ mod tests {
 
         #[test]
         fn blob_binary() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -592,7 +558,7 @@ mod tests {
 
         #[test]
         fn blob_in_root() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -649,7 +615,7 @@ mod tests {
 
         #[test]
         fn branches() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
 
@@ -674,7 +640,7 @@ mod tests {
 
         #[test]
         fn commit() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 const SHA1: &str = "80ded66281a4de2889cc07293a8f10947c6d57fe";
 
                 let mut vars = Variables::new();
@@ -718,7 +684,7 @@ mod tests {
 
         #[test]
         fn tags() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
 
@@ -744,7 +710,7 @@ mod tests {
 
         #[test]
         fn tree() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -871,7 +837,7 @@ mod tests {
 
         #[test]
         fn tree_root() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -923,7 +889,7 @@ mod tests {
 
         #[test]
         fn project() {
-            with_env(|librad_paths, repos_dir| {
+            with_fixtures(|librad_paths, repos_dir| {
                 let repo_dir = tempfile::tempdir_in(repos_dir.path()).expect("repo dir failed");
                 let path = repo_dir.path().to_str().expect("repo path").to_string();
                 git::init_repo(path.clone()).expect("repo init failed");
@@ -975,7 +941,7 @@ mod tests {
 
         #[test]
         fn projects() {
-            with_env(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir| {
                 let query = "{
                 projects {
                     metadata {

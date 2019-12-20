@@ -46,12 +46,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         test: args.contains("--test"),
     };
 
-    let dummy_repo = if args.test {
-        "../fixtures/git-platinum"
+    let (dummy_repo, librad_paths) = if args.test {
+        let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+        let librad_paths =
+            librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
+
+        crate::schema::git::setup_fixtures(
+            &librad_paths,
+            temp_dir
+                .path()
+                .to_str()
+                .expect("path extraction failed")
+                .to_string(),
+        )
+        .expect("fixture setup failed");
+
+        ("../fixtures/git-platinum", librad_paths)
     } else {
-        ".."
+        (
+            "..",
+            librad::paths::Paths::new().expect("librad paths failed"),
+        )
     };
-    let librad_paths = librad::paths::Paths::new().expect("librad paths failed");
+
     let context = if "memory" == args.source_type {
         schema::Context::new(dummy_repo.into(), librad_paths)
     } else {
