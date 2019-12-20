@@ -5,6 +5,7 @@ use std::convert::{TryInto};
 use radicle_registry_client::{CryptoPair as _, H256, Error as RegistryError};
 use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
 
+#[derive(Debug)]
 pub enum SourceError {
     RegistryError(RegistryError),
     CatchAll(String),

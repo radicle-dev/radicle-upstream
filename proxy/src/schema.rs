@@ -5,6 +5,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
+use radicle_registry_client;
 use radicle_surf::{
     file_system::{Path, SystemType},
     git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
@@ -14,6 +15,7 @@ use crate::source::{AccountId, Project, ProjectId, Source, SourceError};
 
 enum Error {
     GitError(radicle_surf::git::GitError),
+    RegistryError(SourceError),
     CatchAll(String),
 }
 
@@ -23,16 +25,21 @@ impl From<radicle_surf::git::GitError> for Error {
     }
 }
 
-impl From<String> for Error {
-    fn from(error: String) -> Self {
-        Error::CatchAll(error)
+impl From<SourceError> for Error {
+    fn from(source_error: SourceError) -> Self {
+        match source_error {
+            SourceError::RegistryError(_error) => {
+                // TODO handle error subtypes https://github.com/paritytech/substrate-subxt/blob/master/src/error.rs#L28-L53
+                Error::CatchAll("REGISTRY_ERROR".to_string())
+            },
+            SourceError::CatchAll(string) => Error::CatchAll(string.to_string()),
+        }
     }
 }
 
-impl From<SourceError> for Error {
-    fn from(_source_error: SourceError) -> Self {
-        // TODO process source errors
-        Error::CatchAll(String::from("SOURCE_ERROR"))
+impl From<String> for Error {
+    fn from(error: String) -> Self {
+        Error::CatchAll(error)
     }
 }
 
@@ -51,6 +58,13 @@ impl IntoFieldError for Error {
                 FieldError::new(
                     format!("{:?}", git_error),
                     juniper::Value::scalar(error_type),
+                )
+            },
+            Error::RegistryError(reg_error) => {
+                // TODO handle source error subtypes
+                FieldError::new(
+                    format!("{:?}", reg_error),
+                    juniper::Value::scalar("REGISTRY_ERROR"),
                 )
             },
             Error::CatchAll(error) => {
@@ -476,25 +490,27 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<Project>, Error> {
-        match ctx.source.get_all_projects() {
-            Ok(projects) => Ok(projects),
-            Err(_error) => {
-                // TODO handle error
-                Err(Error::CatchAll("Could not retrieve projects".to_string()))
-            },
-        }
+        ctx.source.get_all_projects()
+        // match ctx.source.get_all_projects() {
+        //     Ok(projects) => Ok(projects),
+        //     Err(_error) => {
+        //         // TODO handle error
+        //         Err(Error::CatchAll("Could not retrieve projects".to_string()))
+        //     },
+        // }
     }
 
     fn project(ctx: &Context, id: IdInput) -> Result<Option<Project>, Error> {
         let err_domain = id.domain.clone();
         let err_name = id.name.clone();
-        match ctx.source.get_project(id.into()) {
-            Ok(projects) => Ok(projects),
-            Err(_error) => {
-                // TODO handle error
-                Err(Error::CatchAll(format!("Could not retrieve project {}/{}", err_domain, err_name)))
-            },
-        }
+        ctx.source.get_project(id.into())
+        // match ctx.source.get_project(id.into()) {
+        //     Ok(projects) => Ok(projects),
+        //     Err(_error) => {
+        //         // TODO handle error
+        //         Err(Error::CatchAll(format!("Could not retrieve project {}/{}", err_domain, err_name)))
+        //     },
+        // }
     }
 }
 
