@@ -59,6 +59,7 @@ impl Mutation {
         ctx: &Context,
         metadata: project::MetadataInput,
         path: String,
+        publish: bool,
     ) -> Result<project::Project, Error> {
         git::init_repo(path.clone())?;
         let (id, meta) = git::init_project(
@@ -404,9 +405,10 @@ mod tests {
             let mut vars = Variables::new();
             vars.insert("metadata".into(), InputValue::object(metadata_input));
             vars.insert("path".into(), InputValue::scalar(path));
+            vars.insert("publish".into(), InputValue::scalar(false));
 
-            let query = "mutation($metadata: MetadataInput!, $path: String!) {
-                    createProject(metadata: $metadata, path: $path) {
+            let query = "mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
+                    createProject(metadata: $metadata, path: $path, publish: $publish) {
                         metadata {
                             name
                             description
