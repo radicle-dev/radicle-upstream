@@ -1,8 +1,7 @@
 use futures::future::Future;
 use std::collections::HashMap;
 
-use radicle_registry_client::{CryptoPair as _, H256};
-use radicle_registry_runtime::registry::{ProjectDomain, ProjectName};
+use radicle_registry_client::{CryptoPair as _, ProjectDomain, ProjectName, H256};
 
 /// Newtype for the registry `oscoin_client::AccountId`.
 #[derive(Clone, Eq, Hash, PartialEq)]
