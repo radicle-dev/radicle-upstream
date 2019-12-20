@@ -1,4 +1,4 @@
-use juniper::{FieldError, FieldResult, RootNode};
+use juniper::{FieldError, FieldResult, RootNode, ID};
 
 use librad::paths::Paths;
 use radicle_surf::{
@@ -41,15 +41,6 @@ impl Context {
 
 impl juniper::Context for Context {}
 
-/// Input value used to communciate a `Registry` project id. (domain, name)
-#[derive(GraphQLInputObject)]
-struct IdInput {
-    /// Domain part of the `Registry` namespace (e.g. "rad").
-    domain: String,
-    /// Name part of the `Registry` namespace (e.g. "upstream").
-    name: String,
-}
-
 /// Encapsulates write path in API.
 pub struct Mutation;
 
@@ -87,7 +78,7 @@ impl Query {
         "1.0"
     }
 
-    fn blob(ctx: &Context, id: IdInput, revision: String, path: String) -> FieldResult<git::Blob> {
+    fn blob(ctx: &Context, id: ID, revision: String, path: String) -> FieldResult<git::Blob> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
 
@@ -138,7 +129,7 @@ impl Query {
         })
     }
 
-    fn commit(ctx: &Context, id: IdInput, sha1: String) -> FieldResult<git::Commit> {
+    fn commit(ctx: &Context, id: ID, sha1: String) -> FieldResult<git::Commit> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
         browser
@@ -151,7 +142,7 @@ impl Query {
         Ok(git::Commit::from(commit))
     }
 
-    fn branches(ctx: &Context, id: IdInput) -> FieldResult<Vec<git::Branch>> {
+    fn branches(ctx: &Context, id: ID) -> FieldResult<Vec<git::Branch>> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
         let mut branches: Vec<git::Branch> = browser
@@ -166,7 +157,7 @@ impl Query {
         Ok(branches)
     }
 
-    fn tags(ctx: &Context, id: IdInput) -> FieldResult<Vec<git::Tag>> {
+    fn tags(ctx: &Context, id: ID) -> FieldResult<Vec<git::Tag>> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
         let mut tag_names = browser.list_tags().expect("Getting branches failed");
@@ -182,12 +173,7 @@ impl Query {
         Ok(tags)
     }
 
-    fn tree(
-        ctx: &Context,
-        id: IdInput,
-        revision: String,
-        prefix: String,
-    ) -> FieldResult<git::Tree> {
+    fn tree(ctx: &Context, id: ID, revision: String, prefix: String) -> FieldResult<git::Tree> {
         let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
         let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
 
@@ -292,7 +278,7 @@ impl Query {
         })
     }
 
-    fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, Error> {
+    fn project(ctx: &Context, id: ID) -> Result<project::Project, Error> {
         use std::str::FromStr;
         let project_id = librad::project::ProjectId::from_str(&id.to_string())?;
         let meta = librad::project::show_project(&ctx.librad_paths, &project_id)?;
@@ -460,7 +446,6 @@ mod tests {
     }
 
     mod query {
-        use indexmap::IndexMap;
         use juniper::{InputValue, Variables};
         use pretty_assertions::assert_eq;
 
@@ -484,16 +469,12 @@ mod tests {
         fn blob() {
             with_env(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
-                let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-                id_map.insert("domain".into(), InputValue::scalar("rad"));
-                id_map.insert("name".into(), InputValue::scalar("upstream"));
-
-                vars.insert("id".into(), InputValue::object(id_map));
+                vars.insert("id".into(), InputValue::scalar("git-platinum"));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("path".into(), InputValue::scalar("text/arrows.txt"));
 
-                let query = "query($id: IdInput!, $revision: String!, $path: String!) {
+                let query = "query($id: ID!, $revision: String!, $path: String!) {
                 blob(id: $id, revision: $revision, path: $path) {
                     binary,
                     content,
@@ -554,16 +535,12 @@ mod tests {
         fn blob_binary() {
             with_env(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
-                let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-                id_map.insert("domain".into(), InputValue::scalar("rad"));
-                id_map.insert("name".into(), InputValue::scalar("upstream"));
-
-                vars.insert("id".into(), InputValue::object(id_map));
+                vars.insert("id".into(), InputValue::scalar("git-platinum"));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("path".into(), InputValue::scalar("bin/ls"));
 
-                let query = "query($id: IdInput!, $revision: String!, $path: String!) {
+                let query = "query($id: ID!, $revision: String!, $path: String!) {
                 blob(id: $id, revision: $revision, path: $path) {
                     binary,
                     content,
@@ -617,16 +594,12 @@ mod tests {
         fn blob_in_root() {
             with_env(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
-                let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-                id_map.insert("domain".into(), InputValue::scalar("rad"));
-                id_map.insert("name".into(), InputValue::scalar("upstream"));
-
-                vars.insert("id".into(), InputValue::object(id_map));
+                vars.insert("id".into(), InputValue::scalar("git-platinum"));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("path".into(), InputValue::scalar("README.md"));
 
-                let query = "query($id: IdInput!, $revision: String!, $path: String!) {
+                let query = "query($id: ID!, $revision: String!, $path: String!) {
                 blob(id: $id, revision: $revision, path: $path) {
                     content,
                     info {
@@ -678,14 +651,9 @@ mod tests {
         fn branches() {
             with_env(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
-                let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+                vars.insert("id".into(), InputValue::scalar("git-platinum"));
 
-                id_map.insert("domain".into(), InputValue::scalar("rad"));
-                id_map.insert("name".into(), InputValue::scalar("upstream"));
-
-                vars.insert("id".into(), InputValue::object(id_map));
-
-                let query = "query($id: IdInput!) { branches(id: $id) }";
+                let query = "query($id: ID!) { branches(id: $id) }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
@@ -710,14 +678,11 @@ mod tests {
                 const SHA1: &str = "80ded66281a4de2889cc07293a8f10947c6d57fe";
 
                 let mut vars = Variables::new();
-                let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-                id_map.insert("domain".into(), InputValue::scalar("rad"));
-                id_map.insert("name".into(), InputValue::scalar("upstream"));
-                vars.insert("id".into(), InputValue::object(id_map));
+                vars.insert("id".into(), InputValue::scalar("git-platinum"));
                 vars.insert("sha1".into(), InputValue::scalar(SHA1));
 
-                let query = "query($id: IdInput!, $sha1: String!) {
+                let query = "query($id: ID!, $sha1: String!) {
                 commit(id: $id, sha1: $sha1) {
                     sha1,
                     author {
@@ -755,13 +720,9 @@ mod tests {
         fn tags() {
             with_env(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
-                let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
+                vars.insert("id".into(), InputValue::scalar("git-platinum"));
 
-                id_map.insert("domain".into(), InputValue::scalar("rad"));
-                id_map.insert("name".into(), InputValue::scalar("upstream"));
-                vars.insert("id".into(), InputValue::object(id_map));
-
-                let query = "query($id: IdInput!) { tags(id: $id) }";
+                let query = "query($id: ID!) { tags(id: $id) }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
@@ -785,15 +746,12 @@ mod tests {
         fn tree() {
             with_env(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
-                let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-                id_map.insert("domain".into(), InputValue::scalar("rad"));
-                id_map.insert("name".into(), InputValue::scalar("upstream"));
-                vars.insert("id".into(), InputValue::object(id_map));
+                vars.insert("id".into(), InputValue::scalar("git-platinum"));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("prefix".into(), InputValue::scalar("src"));
 
-                let query = "query($id: IdInput!, $revision: String!, $prefix: String!) {
+                let query = "query($id: ID!, $revision: String!, $prefix: String!) {
                 tree(id: $id, revision: $revision, prefix: $prefix) {
                     path,
                     info {
@@ -915,15 +873,12 @@ mod tests {
         fn tree_root() {
             with_env(|librad_paths, _repos_dir| {
                 let mut vars = Variables::new();
-                let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
 
-                id_map.insert("domain".into(), InputValue::scalar("rad"));
-                id_map.insert("name".into(), InputValue::scalar("upstream"));
-                vars.insert("id".into(), InputValue::object(id_map));
+                vars.insert("id".into(), InputValue::scalar("git-platinum"));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("prefix".into(), InputValue::scalar(""));
 
-                let query = "query($id: IdInput!, $revision: String!, $prefix: String!) {
+                let query = "query($id: ID!, $revision: String!, $prefix: String!) {
                 tree(id: $id, revision: $revision, prefix: $prefix) {
                     path,
                     info {
