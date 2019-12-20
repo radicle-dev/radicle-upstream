@@ -47,18 +47,48 @@ impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
             Error::GitError(git_error) => {
-                let error_type = match &git_error {
-                    radicle_surf::git::GitError::EmptyCommitHistory => "EMPTY_COMMIT_HISTORY",
-                    radicle_surf::git::GitError::BranchDecode => "BRANCH_DECODE",
-                    radicle_surf::git::GitError::NotBranch => "NOT_BRANCH",
-                    radicle_surf::git::GitError::NotTag => "NOT_TAG",
-                    radicle_surf::git::GitError::Internal(_error) => "INTERNAL",
-                };
-
-                FieldError::new(
-                    format!("{:?}", git_error),
-                    juniper::Value::scalar(error_type),
-                )
+                match &git_error {
+                    radicle_surf::git::GitError::EmptyCommitHistory => {
+                        FieldError::new(
+                            "Repository has an empty commit history.",
+                            graphql_value!({
+                                "type": "EMPTY_COMMIT_HISTORY"
+                            })
+                        )
+                    },
+                    radicle_surf::git::GitError::BranchDecode => {
+                        FieldError::new(
+                            "TODO branch decode failure",
+                            graphql_value!({
+                                "type": "BRANCH_DECODE"
+                            })
+                        )
+                    },
+                    radicle_surf::git::GitError::NotBranch => {
+                        FieldError::new(
+                            "TODO not a branch",
+                            graphql_value!({
+                                "type": "NOT_BRANCH"
+                            })
+                        )
+                    },
+                    radicle_surf::git::GitError::NotTag => {
+                        FieldError::new(
+                            "TODO not a tag",
+                            graphql_value!({
+                                "type": "NOT_TAG"
+                            })
+                        )
+                    },
+                    radicle_surf::git::GitError::Internal(error) => {
+                        FieldError::new(
+                            format!("Internal Git error: {:?}", error),
+                            graphql_value!({
+                                "type": "INTERNAL"
+                            })
+                        )
+                    },
+                }
             },
             Error::RegistryError(reg_error) => {
                 // TODO handle source error subtypes
