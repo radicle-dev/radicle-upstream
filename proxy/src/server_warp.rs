@@ -25,7 +25,7 @@ pub fn run(schema: Schema, context: Context) {
                     warp::http::Method::OPTIONS,
                 ]),
         )
-        .with(warp::log("app-proxy"));
+        .with(warp::log("proxy"));
 
     warp::serve(routes).run(([127, 0, 0, 1], 8080))
 }
