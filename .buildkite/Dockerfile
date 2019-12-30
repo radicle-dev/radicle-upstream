@@ -1,8 +1,8 @@
-FROM rust:1.38
+FROM gcr.io/opensourcecoin/radicle-registry/ci-base
 
 RUN apt-get -y update
 # install cypress deps
-RUN apt-get -y install xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2
+RUN apt-get -y install git nettle-dev m4 gnupg xvfb libgtk-3-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2
 
 # install yarn
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -

@@ -13,7 +13,7 @@ export RUSTUP_HOME=/cache/rustup
 
 chmod -R a+w $CARGO_HOME $RUSTUP_HOME
 
-export PATH="$PATH:CARGO_HOME/bin"
+export PATH="$PATH:$CARGO_HOME/bin"
 
 echo "--- Installing yarn dependencies"
 (cd app && yarn install)
@@ -28,21 +28,37 @@ else
   echo "Cache $target_cache not available"
 fi
 
-echo "--- Building proxy"
+echo "--- Updateing submodules"
+(cd app && git submodule update --init --recursive)
+(cd app && git submodule foreach "git fetch --all")
+
+echo "--- Set custom git config"
+(cp .buildkite/.gitconfig /cache/)
+
+echo "--- Build proxy"
 (cd app && yarn proxy:build)
+
+echo "--- Build proxy release"
+(cd app && yarn proxy:build:release)
+
+echo "--- Build proxy test"
+(cd app && yarn proxy:build:test)
 
 echo "--- Saving proxy/target cache"
 rm -rf "$target_cache"
 cp -aTu proxy/target "$target_cache"
 echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 
-echo "--- Updateing submodules"
-(cd app && git submodule update --init --recursive)
-(cd app && git submodule foreach "git fetch --all")
-(cd app && git submodule foreach "git log -n1")
+echo "--- Print debug"
+cat /cache/.gitconfig
+(env)
+
+echo "--- Run proxy tests"
+(cd proxy && cargo test --all-targets --all-features)
 
 echo "--- Starting proxy daemon and runing app tests"
 (cd app && ELECTRON_ENABLE_LOGGING=1 yarn test)
 
 echo "--- Packaging and uploading app binaries"
+(cd app && yarn ci:dist)
 (cd app && yarn ci:dist)

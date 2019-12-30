@@ -36,10 +36,6 @@ rev = "f2e9ed6d46e4f86820a30e840ab929c0d4fac48a"
 git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "58e3b8bc79e556053d8e17dc21f72c8bbdf243e5"
 
-[dependencies.radicle_registry_runtime]
-git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "58e3b8bc79e556053d8e17dc21f72c8bbdf243e5"
-
 [dependencies.radicle-surf]
 git = "https://github.com/radicle-dev/radicle-surf.git"
 rev = "3ddc170c109b10273ea04659eb64ec6918189f70"
