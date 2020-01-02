@@ -6,24 +6,26 @@ use radicle_registry_client::{
     CryptoPair as _, ProjectDomain, ProjectName, H256, Error as RegistryError
 };
 
-type BadInput = String;
-
 #[derive(Debug)]
-pub enum SourceError {
-    RegistryError(RegistryError),
+/// TODO
+pub enum Error {
+    /// TODO
+    Registry(RegistryError),
+    /// TODO
     BadInput(String),
+    /// TODO
     CatchAll(String),
 }
 
-impl From<RegistryError> for SourceError {
+impl From<RegistryError> for Error {
     fn from(error: RegistryError) -> Self {
-        SourceError::RegistryError(error)
+        Self::Registry(error)
     }
 }
 
-impl From<String> for SourceError {
+impl From<String> for Error {
     fn from(error: String) -> Self {
-        SourceError::CatchAll(error)
+        Self::CatchAll(error)
     }
 }
 
@@ -49,8 +51,11 @@ struct Account {
 }
 
 #[derive(Clone, GraphQLObject)]
+/// TODO
 pub struct ProjectId {
+    /// TODO
     pub name: String,
+    /// TODO
     pub domain: String,
 }
 
@@ -64,8 +69,8 @@ impl From<radicle_registry_client::ProjectId> for ProjectId {
 }
 
 impl TryInto<radicle_registry_client::ProjectId> for ProjectId {
-    type Error = BadInput;
-    fn try_into(self) -> Result<radicle_registry_client::ProjectId, Self::Error> {
+    type Error = String;
+    fn try_into(self) -> Result<radicle_registry_client::ProjectId, String> {
         let project_name = ProjectName::from_string(self.name)?;
         let project_domain = ProjectDomain::from_string(self.domain)?;
         Ok(( project_name, project_domain ))
@@ -112,13 +117,14 @@ impl From<radicle_registry_client::Project> for Project {
 
 /// Abstraction used to fetch information from the registry.
 pub trait Source {
+    /// TODO
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
-    fn get_all_projects(&self) -> Result<Vec<Project>, SourceError>;
+    fn get_all_projects(&self) -> Result<Vec<Project>, Error>;
     /// Retrieve a single proejct by `ProjectId`.
-    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, SourceError>;
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, Error>;
     /// Register a new project.
-    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, SourceError>;
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Error>;
 }
 
 /// Container to store local view on accounts to match with metadata.
@@ -194,7 +200,7 @@ where
         id
     }
 
-    fn get_all_projects(&self) -> Result<Vec<Project>, SourceError> {
+    fn get_all_projects(&self) -> Result<Vec<Project>, Error> {
          Ok(self
             .registry_client
             .list_projects()
@@ -207,7 +213,7 @@ where
             .collect())
     }
 
-    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, SourceError> {
+    fn get_project(&self, id: ProjectId) -> Result<Option<Project>, Error> {
         let maybe_project = self
             .registry_client
             .get_project(id.try_into()?)
@@ -217,11 +223,11 @@ where
         Ok(result)
     }
 
-    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, SourceError> {
+    fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Error> {
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
         let project_name = ProjectName::from_string(name.to_string())?;
-        let project_domain = ProjectDomain::from_string("rad".to_string()).unwrap(); // TODO configurable domain. unwrap here is ok because "rad" is always valid input.
+        let project_domain = ProjectDomain::from_string("rad".to_string())?;
         let registry_id = ( project_name, project_domain );
 
         // TODO(xla): Proper error handling.
@@ -247,7 +253,7 @@ where
             })
         } else {
             let error = format!("Could not derive registry ID from project name {}.", name);
-            Err(SourceError::BadInput(error))
+            Err(Error::BadInput(error))
         }
     }
 }

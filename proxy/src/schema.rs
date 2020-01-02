@@ -11,43 +11,51 @@ use radicle_surf::{
     git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
-use crate::source::{AccountId, Project, ProjectId, Source, SourceError};
+use crate::source::{AccountId, Project, ProjectId, Source, Error as SourceError};
 
+#[derive(Debug)]
+/// TODO
 enum Error {
+    /// TODO
     BadInput(String),
+    /// TODO
     CatchAll(String),
+    /// TODO
     FileNotFound(String),
-    GitError(radicle_surf::git::GitError),
-    RegistrationError(String),
-    RegistryError(String),
+    /// TODO
+    Git(radicle_surf::git::GitError),
+    /// TODO
+    Registration(String),
+    /// TODO
+    Registry(String),
 }
 
 impl From<radicle_surf::git::GitError> for Error {
     fn from(git_error: radicle_surf::git::GitError) -> Self {
-        Error::GitError(git_error)
+        Self::Git(git_error)
     }
 }
 
 impl From<SourceError> for Error {
     fn from(source_error: SourceError) -> Self {
         match source_error {
-            SourceError::RegistryError(error) => Error::RegistryError(format!("{:?}", error)),
-            SourceError::BadInput(string) => Error::BadInput(string.to_string()),
-            SourceError::CatchAll(string) => Error::CatchAll(string.to_string()),
+            SourceError::Registry(error) => Self::Registry(format!("{:?}", error)),
+            SourceError::BadInput(string) => Self::BadInput(string),
+            SourceError::CatchAll(string) => Self::CatchAll(string),
         }
     }
 }
 
 impl From<String> for Error {
     fn from(error: String) -> Self {
-        Error::CatchAll(error)
+        Self::CatchAll(error)
     }
 }
 
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
-            Error::GitError(git_error) => {
+            Self::Git(git_error) => {
                 match &git_error {
                     radicle_surf::git::GitError::EmptyCommitHistory => {
                         FieldError::new(
@@ -91,32 +99,32 @@ impl IntoFieldError for Error {
                     },
                 }
             },
-            Error::RegistryError(reg_error) => {
+            Self::Registry(reg_error) => {
                 // TODO handle source error subtypes
                 FieldError::new(
                     format!("Registry error: {:?}", reg_error),
                     juniper::Value::scalar("REGISTRY_ERROR"),
                 )
             },
-            Error::RegistrationError(error) => {
+            Self::Registration(error) => {
                 FieldError::new(
                     format!("Could not register project: {:?}", error),
                     juniper::Value::scalar("REGISTRATION_ERROR"),
                 )
             }
-            Error::BadInput(error) => {
+            Self::BadInput(error) => {
                 FieldError::new(
                     format!("Bad input: {:?}", error),
                     juniper::Value::scalar("BAD_INPUT"),
                 )
             },
-            Error::FileNotFound(error) => {
+            Self::FileNotFound(error) => {
                 FieldError::new(
                     format!("File not found: {:?}", error),
                     juniper::Value::scalar("FILE_NOT_FOUND"),
                 )
             }
-            Error::CatchAll(error) => {
+            Self::CatchAll(error) => {
                 // placeholder for as-of-yet uncaptured errors
                 FieldError::new(&error, juniper::Value::scalar(String::from(&error)))
             }
@@ -251,7 +259,7 @@ impl From<&git2::Commit<'_>> for Commit {
             author: Person {
                 name: signature.name().unwrap_or("invalid name").into(),
                 email: email.into(),
-                avatar: avatar.into(),
+                avatar,
             },
             summary: commit.summary().unwrap_or("invalid subject").into(),
             message: commit.message().unwrap_or("invalid message").into(),
@@ -325,13 +333,11 @@ impl Mutation {
         img_url: String,
     ) -> Result<Project, Error> {
         let err_name = &name.clone();
-        match ctx.source.register_project(name, description, img_url) {
-            Ok(project) => Ok(project),
-            Err(error) => {
+        ctx.source.register_project(name, description, img_url)
+            .or_else(|error| {
                 let message = format!("Project {} failed to register: {:?}", err_name, error);
-                Err(Error::RegistrationError(message))
-            },
-        }
+                Err(Error::Registration(message))
+            })
     }
 }
 
@@ -344,23 +350,27 @@ impl Query {
         "1.0"
     }
 
-    fn blob(ctx: &Context, id: IdInput, revision: String, path: String) -> Result<Blob, Error> {
+    fn blob(ctx: &Context, id: IdInput, revision: String, path: String)
+            -> Result<Blob, Error> {
         let repo = GitRepository::new(&ctx.dummy_repo_path)?;
         let mut browser = GitBrowser::new(&repo)?;
 
         // Best effort to guess the revision.
         browser
             .branch(BranchName::new(&revision))
-            .or(browser.commit(Sha1::new(&revision)))
-            .or(browser.tag(TagName::new(&revision)))?;
+            .or_else(|_| browser.commit(Sha1::new(&revision)))
+            .or_else(|_| browser.tag(TagName::new(&revision)))?;
 
         let root = browser.get_directory()?;
 
         let mut p = Path::root();
         p.append(&mut Path::from_string(&path));
-        let file = match root.find_file(&p) {
-            Some(result) => Ok(result),
-            None => Err(Error::FileNotFound(format!("unable to find file: {} -> {}", path, p))),
+        let file = if let Some(result) = root.find_file(&p) {
+            Ok(result)
+        } else {
+            let error_message = format!("unable to find file: {} -> {}", path, p);
+            let error = Error::FileNotFound(error_message);
+            Err(error)
         }?;
         let last_commit = match browser.last_commit(&p) {
             Some(result) => Ok(result),
@@ -435,8 +445,8 @@ impl Query {
 
         browser
             .branch(BranchName::new(&revision))
-            .or(browser.commit(Sha1::new(&revision)))
-            .or(browser.tag(TagName::new(&revision)))?;
+            .or_else(|_| browser.commit(Sha1::new(&revision)))
+            .or_else(|_| browser.tag(TagName::new(&revision)))?;
 
         let path = if prefix == "/" || prefix == "" {
             Path::root()
@@ -491,7 +501,9 @@ impl Query {
                 let clean_path = if let Some(clean_path) = nonempty::NonEmpty::from_slice(labels) {
                     Ok(Path(clean_path))
                 } else {
-                    Err(Error::CatchAll(format!("Labels empty for {}", info.name)))
+                    let error_message = format!("Labels empty for {}", info.name);
+                    let error = Error::CatchAll(error_message);
+                    Err(error)
                 }?;
 
                 Ok(TreeEntry {
@@ -558,12 +570,12 @@ mod tests {
     const REPO_PATH: &str = "../fixtures/git-platinum";
 
     fn execute_query(
-        query: &str,
-        vars: &Variables,
-    ) -> (
+        query: &'static str,
+        vars: &'static Variables,
+    ) -> Result<(
         juniper::Value,
         Vec<juniper::ExecutionError<juniper::DefaultScalarValue>>,
-    ) {
+    ), juniper::GraphQLError<'static>> {
         let registry_client = MemoryClient::new();
         let mut source = Ledger::new(registry_client);
 
@@ -572,7 +584,6 @@ mod tests {
         let ctx = Context::new(REPO_PATH.into(), source);
 
         juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
-            .expect("test execute failed")
     }
 
     #[test]
@@ -587,29 +598,29 @@ mod tests {
         vars.insert("revision".into(), InputValue::scalar("master"));
         vars.insert("path".into(), InputValue::scalar("text/arrows.txt"));
 
-        let (res, errors) = execute_query(
-            "query($id: IdInput!, $revision: String!, $path: String!) {
-                blob(id: $id, revision: $revision, path: $path) {
-                    binary,
-                    content,
-                    info {
-                        name,
-                        objectType,
-                        lastCommit{
-                            sha1,
-                            author {
-                                name,
-                                email,
-                            },
-                            summary,
-                            message,
-                            committerTime,
+        let query = "query($id: IdInput!, $revision: String!, $path: String!) {
+            blob(id: $id, revision: $revision, path: $path) {
+                binary,
+                content,
+                info {
+                    name,
+                    objectType,
+                    lastCommit{
+                        sha1,
+                        author {
+                            name,
+                            email,
                         },
+                        summary,
+                        message,
+                        committerTime,
                     },
-                }
-            }",
-            &vars,
-        );
+                },
+            }
+        }";
+        let (res, errors) = execute_query(query, &vars).unwrap_or_else(|error| {
+            panic!(error);
+        });
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -678,7 +689,7 @@ mod tests {
                 }
             }",
             &vars,
-        );
+        ).unwrap_or_else(|error| panic!(error));
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -739,7 +750,7 @@ mod tests {
                 }
             }",
             &vars,
-        );
+        ).unwrap_or_else(|error| panic!(error)); // TODO convert to assert;
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -776,7 +787,8 @@ mod tests {
 
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, errors) = execute_query("query($id: IdInput!) { branches(id: $id) }", &vars);
+        let (res, errors) = execute_query("query($id: IdInput!) { branches(id: $id) }", &vars)
+            .unwrap();
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -818,7 +830,7 @@ mod tests {
                 }
             }",
             &vars,
-        );
+        ).unwrap();
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -847,7 +859,8 @@ mod tests {
         id_map.insert("name".into(), InputValue::scalar("upstream"));
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
+        let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars)
+            .unwrap();
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -873,7 +886,8 @@ mod tests {
         id_map.insert("name".into(), InputValue::scalar("upstream"));
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (_res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
+        let (_res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars)
+            .unwrap_or_else(|error| panic!(error)); // TODO convert to assert
 
         assert_eq!(errors, []);
     }
@@ -927,7 +941,7 @@ mod tests {
                 }
             }",
             &vars,
-        );
+        ).unwrap_or_else(|error| panic!(error)); // TODO convert to assert
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -1035,7 +1049,7 @@ mod tests {
                 }
             }",
             &vars,
-        );
+        ).unwrap_or_else(|error| panic!(error)); // TODO convert to assert
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -1063,7 +1077,9 @@ mod tests {
 
     #[test]
     fn query_projects() {
-        let (res, errors) = execute_query("query { projects { name } }", &Variables::new());
+        let vars = Variables::new();
+        let (res, errors) = execute_query("query { projects { name } }", &vars)
+            .unwrap_or_else(|error| panic!(error)); // TODO convert to assert
 
         assert_eq!(errors, []);
         assert_eq!(
