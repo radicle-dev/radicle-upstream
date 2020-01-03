@@ -372,10 +372,8 @@ impl Query {
             let error = Error::FileNotFound(error_message);
             Err(error)
         }?;
-        let last_commit = match browser.last_commit(&p) {
-            Some(result) => Ok(result),
-            None => Err(radicle_surf::git::GitError::EmptyCommitHistory),
-        }?;
+        let last_commit = browser.last_commit(&p)
+            .ok_or(radicle_surf::git::GitError::EmptyCommitHistory)?;
         let (_rest, last) = p.split_last();
         let (binary, content) = {
             let res = std::str::from_utf8(&file.contents);
@@ -460,17 +458,14 @@ impl Query {
         let prefix_dir = if path.is_root() {
             Ok(root_dir)
         } else {
-            // TODO log error
-            // .expect(&format!(
-            //     "directory listing failed: {} -> {} | {:?}",
-            //     path,
-            //     path.is_root(),
-            //     prefix,
-            // ))
-            match root_dir.find_directory(&path) {
-                Some(dir) => Ok(dir),
-                None => Err(format!("Directory at path {} is missing.", path)),
-            }
+            root_dir.find_directory(&path).ok_or({
+                format!(
+                    "directory listing failed: {} -> {} | {:?}",
+                    path,
+                    path.is_root(),
+                    prefix,
+                )
+            })
         }?;
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
@@ -526,7 +521,11 @@ impl Query {
         } else {
             match &browser.last_commit(&path) {
                 Some(last_commit) => Ok(Commit::from(last_commit)),
-                None => Err(radicle_surf::git::GitError::EmptyCommitHistory),
+                None => {
+                    let error_message = String::from("TODO");
+                    let error = Error::CatchAll(error_message);
+                    Err(error)
+                },
             }
         }?;
         let name = if path.is_root() {

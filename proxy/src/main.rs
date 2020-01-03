@@ -36,8 +36,8 @@ struct Args {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env::set_if_unset("RUST_BACKTRACE", "full");
-    env::set_if_unset("RUST_LOG", "info");
+    env::set_if_unset("RUST_BACKTRACE", "full")?;
+    env::set_if_unset("RUST_LOG", "info")?;
     pretty_env_logger::init();
 
     let mut args = pico_args::Arguments::from_env();
