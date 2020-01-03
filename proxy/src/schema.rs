@@ -28,6 +28,8 @@ enum Error {
     Registration(String),
     /// TODO
     Registry(String),
+    /// TODO
+    LastCommitNotFound(String),
 }
 
 impl From<radicle_surf::git::GitError> for Error {
@@ -123,7 +125,13 @@ impl IntoFieldError for Error {
                     format!("File not found: {:?}", error),
                     juniper::Value::scalar("FILE_NOT_FOUND"),
                 )
-            }
+            },
+            Self::LastCommitNotFound(error) => {
+                FieldError::new(
+                    format!("Last commit not found: {:?}", error),
+                    juniper::Value::scalar("LAST_COMMIT_NOT_FOUND"),
+                )
+            },
             Self::CatchAll(error) => {
                 // placeholder for as-of-yet uncaptured errors
                 FieldError::new(&error, juniper::Value::scalar(String::from(&error)))
@@ -521,11 +529,7 @@ impl Query {
         } else {
             match &browser.last_commit(&path) {
                 Some(last_commit) => Ok(Commit::from(last_commit)),
-                None => {
-                    let error_message = String::from("TODO");
-                    let error = Error::CatchAll(error_message);
-                    Err(error)
-                },
+                None => Err(Error::LastCommitNotFound(path.to_string())),
             }
         }?;
         let name = if path.is_root() {
