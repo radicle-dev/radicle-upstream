@@ -1,6 +1,8 @@
 context("source code browsing", () => {
   beforeEach(() => {
-    cy.visit("./public/index.html#/projects/rad/Monadic/source");
+    cy.visit("./public/index.html#/projects");
+    cy.contains("Monadic").click();
+    cy.contains("Source").click();
   });
 
   context("when the 'source' section is selected in project sidebar", () => {
@@ -205,7 +207,7 @@ context("source code browsing", () => {
           // line numbers are shown
           cy.contains("1\n2\n3\n4\n5\n").should("exist");
 
-          cy.window().scrollTo("bottom");
+          cy.get("[data-cy=page-container]").scrollTo("bottom");
           // the scrollbar allows us to reach the bottom of the file
           cy.contains("callFn f' vs'").should("be.inViewport");
         });
