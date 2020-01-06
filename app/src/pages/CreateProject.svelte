@@ -25,6 +25,8 @@
     EXISTING: "existing"
   };
 
+  const DEFAULT_BRANCH = "master";
+
   let currentSelection;
 
   const selectNew = () => {
@@ -38,7 +40,7 @@
 
   let name = "";
   let description = "";
-  let defaultBranch = "master";
+  let defaultBranch = DEFAULT_BRANCH;
   let publish = true;
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
@@ -118,6 +120,15 @@
   let localBranches = "";
 
   const fetchBranches = async path => {
+    // Reset to defaults whenever the path changes so that we show the defaults
+    // in case this query fails or the user clicks cancel in the directory
+    // selection dialog.
+    localBranches = "";
+    defaultBranch = DEFAULT_BRANCH;
+
+    // This function gets executed even for the first path change which sets
+    // the path variable to an empty string on page load. If we don't ignore
+    // this then the backend will throw an exception.
     if (path === "") {
       return;
     }
@@ -304,7 +315,7 @@
                   var(--color-pink)" />
               {:else}
                 <Select
-                  items={[defaultBranch]}
+                  items={[DEFAULT_BRANCH]}
                   disabled
                   style="min-width: 240px" />
               {/if}
