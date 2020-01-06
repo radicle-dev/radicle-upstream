@@ -31,5 +31,9 @@
       <kbd>d</kbd>
       - design system
     </div>
+    <div class="shortcut">
+      <kbd>esc</kbd>
+      - close design system or help overlay
+    </div>
   </div>
 </div>
