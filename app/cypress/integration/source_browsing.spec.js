@@ -1,8 +1,54 @@
+Cypress.Commands.add("visitSource", () => {
+  cy.visit("./public/index.html#/projects");
+  cy.contains("Monadic").click();
+  cy.contains("Source").click();
+});
+
 context("source code browsing", () => {
+  context("relative timestamps", () => {
+    context("when the timeframe is less than a day", () => {
+      it("shows timeframe in hours", () => {
+        cy.clock(Date.parse("13 dec 2019"));
+        cy.visitSource();
+        cy.contains("6 hours ago").should("exist");
+      });
+    });
+
+    context("when the timeframe is less than 2 days", () => {
+      it("shows timeframe in days", () => {
+        cy.clock(Date.parse("14 dec 2019"));
+        cy.visitSource();
+        cy.contains("1 day ago").should("exist");
+      });
+    });
+
+    context("when the timeframe is less than a week", () => {
+      it("shows timeframe in days", () => {
+        cy.clock(Date.parse("18 dec 2019"));
+        cy.visitSource();
+        cy.contains("5 days ago").should("exist");
+      });
+    });
+
+    context("when the timeframe is more than a week", () => {
+      it("shows timeframe in weeks", () => {
+        cy.clock(Date.parse("23 dec 2019"));
+        cy.visitSource();
+        cy.contains("1 week ago").should("exist");
+      });
+    });
+
+    context("when the timeframe is more than 2 weeks", () => {
+      it("shows timeframe in weeks", () => {
+        cy.clock(Date.parse("31 dec 2019"));
+        cy.visitSource();
+        cy.contains("2 weeks ago").should("exist");
+      });
+    });
+  });
+
   beforeEach(() => {
-    cy.visit("./public/index.html#/projects");
-    cy.contains("Monadic").click();
-    cy.contains("Source").click();
+    cy.visitSource();
   });
 
   context("when the 'source' section is selected in project sidebar", () => {
@@ -133,43 +179,6 @@ context("source code browsing", () => {
         cy.contains("Add a long commit message to commit message body").should(
           "exist"
         );
-      });
-    });
-
-    context("relative timestamps", () => {
-      context("when the timeframe is less than a day", () => {
-        it("shows timeframe in hours", () => {
-          cy.clock(Date.parse("13 dec 2019"));
-          cy.contains("6 hours ago").should("exist");
-        });
-      });
-
-      context("when the timeframe is less than 2 days", () => {
-        it("shows timeframe in days", () => {
-          cy.clock(Date.parse("14 dec 2019"));
-          cy.contains("1 day ago").should("exist");
-        });
-      });
-
-      context("when the timeframe is less than a week", () => {
-        it("shows timeframe in days", () => {
-          cy.clock(Date.parse("18 dec 2019"));
-          cy.contains("5 days ago").should("exist");
-        });
-      });
-
-      context("when the timeframe is more than a week", () => {
-        it("shows timeframe in weeks", () => {
-          cy.clock(Date.parse("23 dec 2019"));
-          cy.contains("1 week ago").should("exist");
-        });
-      });
-
-      context("when the timeframe is more than 2 weeks", () => {
-        it("shows timeframe in weeks", () => {
-          cy.clock(Date.parse("31 dec 2019"));
-          cy.contains("2 weeks ago").should("exist");
-        });
       });
     });
 
