@@ -56,17 +56,10 @@
   const client = getClient();
 
   const LOCAL_BRANCHES = gql`
-    query($projectId: ID!) {
-      branches(id: $projectId)
+    query($path: String!) {
+      localBranches(path: $path)
     }
   `;
-
-  $: branches = query(client, {
-    query: LOCAL_BRANCHES,
-    variables: {
-      projectId: "123"
-    }
-  });
 
   const CREATE_PROJECT = gql`
     mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
@@ -121,6 +114,31 @@
       showNotification("Could not create project");
     }
   };
+
+  let localBranches = "";
+
+  const fetchBranches = async path => {
+    if (path === "") {
+      return;
+    }
+
+    try {
+      const response = await query(client, {
+        query: LOCAL_BRANCHES,
+        variables: {
+          path: path
+        }
+      });
+
+      const result = await response.result();
+      localBranches = result.data.localBranches;
+    } catch (error) {
+      console.log("Branch fetch error");
+      console.log(error);
+    }
+  };
+
+  $: fetchBranches(existingRepositoryPath);
 </script>
 
 <style>
@@ -278,14 +296,12 @@
               <Text.Regular style="color: var(--color-darkgray)">
                 Select the default branch
               </Text.Regular>
-              {#if existingRepositoryPath.length > 0}
-                {#await $branches then result}
-                  <Select
-                    items={result.data.branches}
-                    bind:value={defaultBranch}
-                    style="min-width: 240px; --focus-outline-color:
-                    var(--color-pink)" />
-                {/await}
+              {#if localBranches.length > 0}
+                <Select
+                  items={localBranches}
+                  bind:value={defaultBranch}
+                  style=" min-width: 240px; --focus-outline-color:
+                  var(--color-pink)" />
               {:else}
                 <Select
                   items={[defaultBranch]}
