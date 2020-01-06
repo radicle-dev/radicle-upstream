@@ -162,7 +162,7 @@ context("navigation", () => {
           cy.get("[data-cy=expand-src]").click();
           cy.contains("Eval.hs").click();
         });
-        cy.window().scrollTo("bottom");
+        cy.get("[data-cy=page-container]").scrollTo("bottom");
 
         cy.get("[data-cy=breadcrumbs]").should("be.inViewport");
       });

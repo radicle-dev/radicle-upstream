@@ -16,7 +16,7 @@
 
 <div data-cy={dataCy}>
   <Sidebar />
-  <div class="container">
+  <div data-cy="page-container" class="container">
     <slot />
   </div>
 </div>
