@@ -12,8 +12,6 @@ pub enum Error {
     /// TODO
     Registry(RegistryError),
     /// TODO
-    BadInput(String),
-    /// TODO
     CatchAll(String),
 }
 
@@ -243,18 +241,8 @@ where
             )
             .wait()?;
 
-        if let Ok(id) = registry_id.try_into() {
-            Ok(Project {
-                id,
-                name,
-                description,
-                img_url,
-                members: vec![],
-            })
-        } else {
-            let error = format!("Could not derive registry ID from project name {}.", name);
-            Err(Error::BadInput(error))
-        }
+        let project_id = registry_id.into();
+        Ok(Project { id: project_id, name, description, img_url, members: vec![], })
     }
 }
 

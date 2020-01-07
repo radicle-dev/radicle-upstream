@@ -6,6 +6,7 @@ use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
 use radicle_registry_client;
+use radicle_registry_client::{Error as RegistryError};
 use radicle_surf::{
     file_system::{Path, SystemType},
     git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
@@ -17,17 +18,15 @@ use crate::source::{AccountId, Project, ProjectId, Source, Error as SourceError}
 /// TODO
 enum Error {
     /// TODO
-    BadInput(String),
-    /// TODO
     CatchAll(String),
     /// TODO
-    FileNotFound(String),
+    FileNotFound(Path),
     /// TODO
     Git(radicle_surf::git::GitError),
     /// TODO
-    Registration(String),
+    Registration(SourceError),
     /// TODO
-    Registry(String),
+    Registry(RegistryError),
     /// TODO
     LastCommitNotFound(String),
 }
@@ -41,8 +40,7 @@ impl From<radicle_surf::git::GitError> for Error {
 impl From<SourceError> for Error {
     fn from(source_error: SourceError) -> Self {
         match source_error {
-            SourceError::Registry(error) => Self::Registry(format!("{:?}", error)),
-            SourceError::BadInput(string) => Self::BadInput(string),
+            SourceError::Registry(error) => Self::Registry(error),
             SourceError::CatchAll(string) => Self::CatchAll(string),
         }
     }
@@ -112,12 +110,6 @@ impl IntoFieldError for Error {
                 FieldError::new(
                     format!("Could not register project: {:?}", error),
                     juniper::Value::scalar("REGISTRATION_ERROR"),
-                )
-            }
-            Self::BadInput(error) => {
-                FieldError::new(
-                    format!("Bad input: {:?}", error),
-                    juniper::Value::scalar("BAD_INPUT"),
                 )
             },
             Self::FileNotFound(error) => {
@@ -343,8 +335,7 @@ impl Mutation {
         let err_name = &name.clone();
         ctx.source.register_project(name, description, img_url)
             .or_else(|error| {
-                let message = format!("Project {} failed to register: {:?}", err_name, error);
-                Err(Error::Registration(message))
+                Err(Error::Registration(error))
             })
     }
 }
@@ -373,13 +364,7 @@ impl Query {
 
         let mut p = Path::root();
         p.append(&mut Path::from_string(&path));
-        let file = if let Some(result) = root.find_file(&p) {
-            Ok(result)
-        } else {
-            let error_message = format!("unable to find file: {} -> {}", path, p);
-            let error = Error::FileNotFound(error_message);
-            Err(error)
-        }?;
+        let file = root.find_file(&p).ok_or_else(|| { Error::FileNotFound(p.clone()) })?;
         let last_commit = browser.last_commit(&p)
             .ok_or(radicle_surf::git::GitError::EmptyCommitHistory)?;
         let (_rest, last) = p.split_last();
@@ -574,19 +559,21 @@ mod tests {
 
     fn execute_query(
         query: &'static str,
-        vars: &'static Variables,
-    ) -> Result<(
+        vars: &Variables,
+    ) -> (
         juniper::Value,
         Vec<juniper::ExecutionError<juniper::DefaultScalarValue>>,
-    ), juniper::GraphQLError<'static>> {
+    ) {
         let registry_client = MemoryClient::new();
         let mut source = Ledger::new(registry_client);
 
         setup_fixtures(&mut source);
 
         let ctx = Context::new(REPO_PATH.into(), source);
+        let schema = Schema::new(Query, Mutation);
 
-        juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
+        juniper::execute(query, None, &schema, vars, &ctx)
+            .expect("test execute failed")
     }
 
     #[test]
@@ -621,9 +608,7 @@ mod tests {
                 },
             }
         }";
-        let (res, errors) = execute_query(query, &vars).unwrap_or_else(|error| {
-            panic!(error);
-        });
+        let (res, errors) = execute_query(query, &vars);
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -692,7 +677,7 @@ mod tests {
                 }
             }",
             &vars,
-        ).unwrap_or_else(|error| panic!(error));
+        );
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -753,7 +738,7 @@ mod tests {
                 }
             }",
             &vars,
-        ).unwrap_or_else(|error| panic!(error)); // TODO convert to assert;
+        );
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -790,8 +775,7 @@ mod tests {
 
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, errors) = execute_query("query($id: IdInput!) { branches(id: $id) }", &vars)
-            .unwrap();
+        let (res, errors) = execute_query("query($id: IdInput!) { branches(id: $id) }", &vars);
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -833,7 +817,7 @@ mod tests {
                 }
             }",
             &vars,
-        ).unwrap();
+        );
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -862,8 +846,7 @@ mod tests {
         id_map.insert("name".into(), InputValue::scalar("upstream"));
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars)
-            .unwrap();
+        let (res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -889,8 +872,7 @@ mod tests {
         id_map.insert("name".into(), InputValue::scalar("upstream"));
         vars.insert("id".into(), InputValue::object(id_map));
 
-        let (_res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars)
-            .unwrap_or_else(|error| panic!(error)); // TODO convert to assert
+        let (_res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
 
         assert_eq!(errors, []);
     }
@@ -944,7 +926,7 @@ mod tests {
                 }
             }",
             &vars,
-        ).unwrap_or_else(|error| panic!(error)); // TODO convert to assert
+        );
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -1052,7 +1034,7 @@ mod tests {
                 }
             }",
             &vars,
-        ).unwrap_or_else(|error| panic!(error)); // TODO convert to assert
+        );
 
         assert_eq!(errors, []);
         assert_eq!(
@@ -1081,8 +1063,7 @@ mod tests {
     #[test]
     fn query_projects() {
         let vars = Variables::new();
-        let (res, errors) = execute_query("query { projects { name } }", &vars)
-            .unwrap_or_else(|error| panic!(error)); // TODO convert to assert
+        let (res, errors) = execute_query("query { projects { name } }", &vars);
 
         assert_eq!(errors, []);
         assert_eq!(
