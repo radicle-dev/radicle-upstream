@@ -174,7 +174,7 @@
     border-radius: 4px;
   }
 
-  .option .active {
+  .option.active {
     box-shadow: 0 0 0 1px var(--color-pink);
     border: 1px solid var(--color-pink);
   }
