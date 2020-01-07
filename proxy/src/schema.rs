@@ -97,10 +97,32 @@ impl IntoFieldError for Error {
                 }
             },
             Self::Registry(reg_error) => {
-                FieldError::new(
-                    format!("Registry error: {:?}", reg_error),
-                    juniper::Value::scalar("REGISTRY_ERROR"),
-                )
+                match reg_error {
+                    RegistryError::Codec(codec_error) => {
+                        FieldError::new(
+                            format!("Failed to decode data: {:?}", codec_error),
+                            juniper::Value::scalar("CODEC_ERROR"),
+                        )
+                    },
+                    RegistryError::Rpc(rpc_error) => {
+                        FieldError::new(
+                            format!("RPC error: {:?}", rpc_error),
+                            juniper::Value::scalar("RPC_ERROR"),
+                        )
+                    },
+                    RegistryError::InvalidTransaction(error) => {
+                        FieldError::new(
+                            format!("Invalid transaction: {:?}", error),
+                            juniper::Value::scalar("INVALID_TRANSACTION"),
+                        )
+                    },
+                    RegistryError::Other(error) => {
+                        FieldError::new(
+                            format!("Registry error: {:?}", error),
+                            juniper::Value::scalar("REGISTRY_ERROR"),
+                        )
+                    },
+                }
             },
             Self::DirectoryNotFound(path) => {
                 FieldError::new(
