@@ -359,7 +359,7 @@ impl Mutation {
         img_url: String,
     ) -> Result<Project, Error> {
         ctx.source.register_project(name, description, img_url)
-            .map_err(|error| { error.into() })
+            .map_err(|error| error.into())
     }
 }
 
