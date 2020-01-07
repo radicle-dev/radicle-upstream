@@ -13,7 +13,7 @@ fn test_set_if_unset() {
     const KEY: &str = "DUMMY_VALUE";
     const VALUE: &str = "hello world";
 
-    assert!(var(KEY).is_err(), "DUMMY_VALUE should be unset");
+    assert_eq!(var(KEY).is_err(), true, "DUMMY_VALUE should be unset");
     set_if_unset(KEY, VALUE);
     assert_eq!(var(KEY), Ok(VALUE.to_string()));
 }

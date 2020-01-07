@@ -1,3 +1,5 @@
+//! Abstractions and utilities for git interactions through the API.
+
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 

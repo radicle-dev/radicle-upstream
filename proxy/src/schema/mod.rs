@@ -348,8 +348,21 @@ mod tests {
         use indexmap::IndexMap;
         use juniper::{InputValue, Variables};
         use pretty_assertions::assert_eq;
+        use radicle_surf::git::git2;
 
         use super::{execute_query, with_fixtures};
+
+        #[test]
+        fn create_project_existing_repo() {
+            with_fixtures(|_librad_paths, repos_dir| {
+                let dir = tempfile::tempdir_in(repos_dir.path())
+                    .expect("creating temporary directory failed");
+                let path = dir.path().to_str().expect("unable to get path");
+
+                crate::schema::git::init_repo(path.to_string()).expect("unable to create repo");
+                git2::Repository::init(path).expect("unable to create repo");
+            })
+        }
 
         #[test]
         fn create_project() {

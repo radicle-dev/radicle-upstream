@@ -1,15 +1,24 @@
-use juniper::{FieldError, IntoFieldError};
+//! Domain errors returned by the API.
 
+use juniper::{FieldError, IntoFieldError};
 use radicle_surf::git::git2;
 
+/// All error variants the API will return.
 #[derive(Debug)]
 pub enum Error {
+    /// Originated from `radicle_surf`.
     Git(radicle_surf::git::GitError),
+    /// Originated from `radicle_surf::git::git2`.
     Git2(git2::Error),
+    /// Originated from `librad`.
     Librad(librad::git::Error),
+    /// Parse error for `librad::project::ProjectId`.
     LibradParse(librad::project::projectid::ParseError),
+    /// Project error from `librad`.
     LibradProject(librad::project::Error),
+    /// Common I/O errors.
     Io(std::io::Error),
+    /// Url parse error.
     Url(url::ParseError),
 }
 

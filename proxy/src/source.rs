@@ -23,9 +23,12 @@ struct Account {
     avatar_url: String,
 }
 
+/// Registry identification tuple comprised of name and domain.
 #[derive(Clone)]
 pub struct ProjectId {
+    /// Name part, assumed to be unique in the domain.
     pub name: String,
+    /// Domain part.
     pub domain: String,
 }
 
@@ -86,6 +89,7 @@ impl From<radicle_registry_client::Project> for Project {
 
 /// Abstraction used to fetch information from the registry.
 pub trait Source {
+    /// Create a new keypair with an associated avatar.
     fn create_account(&mut self, key_name: String, avatar_url: String) -> AccountId;
     /// Retrieve unfiltered list of projects.
     fn get_all_projects(&self) -> Vec<Project>;
