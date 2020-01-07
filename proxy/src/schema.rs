@@ -97,7 +97,6 @@ impl IntoFieldError for Error {
                 }
             },
             Self::Registry(reg_error) => {
-                // TODO handle source error subtypes
                 FieldError::new(
                     format!("Registry error: {:?}", reg_error),
                     juniper::Value::scalar("REGISTRY_ERROR"),
@@ -480,7 +479,6 @@ impl Query {
                 };
 
                 let (_root, labels) = entry_path.split_first();
-                // TODO assert that labels is, in fact, not empty
                 let clean_path = match nonempty::NonEmpty::from_slice(labels) {
                     Some(clean_path) => Ok(Path(clean_path)),
                     None => Err(Error::FileNotFound(entry_path)),
