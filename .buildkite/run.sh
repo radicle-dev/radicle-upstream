@@ -15,6 +15,9 @@ chmod -R a+w $CARGO_HOME $RUSTUP_HOME
 
 export PATH="$PATH:$CARGO_HOME/bin"
 
+echo "--- Install clippy"
+(cd proxy && rustup component add clippy --toolchain nightly-2019-11-17-x86_64-unknown-linux-gnu)
+
 echo "--- Installing yarn dependencies"
 (cd app && yarn install)
 
