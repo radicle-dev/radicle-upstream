@@ -7,23 +7,19 @@ use radicle_registry_client::{
 };
 
 #[derive(Debug)]
-/// TODO
+/// Enumerable of expected error types.
 pub enum Error {
-    /// TODO
+    /// Registry client errors.
     Registry(RegistryError),
-    /// TODO
-    CatchAll(String),
+    /// Thrown when a project name exceeds 32 characters.
+    BadProjectName(String),
+    /// Thrown when a project domain exceeds 32 characters.
+    BadProjectDomain(String),
 }
 
 impl From<RegistryError> for Error {
     fn from(error: RegistryError) -> Self {
         Self::Registry(error)
-    }
-}
-
-impl From<String> for Error {
-    fn from(error: String) -> Self {
-        Self::CatchAll(error)
     }
 }
 
@@ -67,10 +63,12 @@ impl From<radicle_registry_client::ProjectId> for ProjectId {
 }
 
 impl TryInto<radicle_registry_client::ProjectId> for ProjectId {
-    type Error = String;
-    fn try_into(self) -> Result<radicle_registry_client::ProjectId, String> {
-        let project_name = ProjectName::from_string(self.name)?;
-        let project_domain = ProjectDomain::from_string(self.domain)?;
+    type Error = Error;
+    fn try_into(self) -> Result<radicle_registry_client::ProjectId, Error> {
+        let project_name = ProjectName::from_string(self.name)
+            .map_err(|error| { Error::BadProjectName(error) })?;
+        let project_domain = ProjectDomain::from_string(self.domain)
+            .map_err(|error| { Error::BadProjectDomain(error) })?;
         Ok(( project_name, project_domain ))
     }
 }
@@ -224,8 +222,10 @@ where
     fn register_project(&self, name: String, description: String, img_url: String) -> Result<Project, Error> {
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
-        let project_name = ProjectName::from_string(name.to_string())?;
-        let project_domain = ProjectDomain::from_string("rad".to_string())?;
+        let project_name = ProjectName::from_string(name.to_string())
+            .map_err(|error| { Error::BadProjectName(error) })?;
+        let project_domain = ProjectDomain::from_string("rad".to_string())
+            .map_err(|error| { Error::BadProjectDomain(error) })?;
         let registry_id = ( project_name, project_domain );
 
         // TODO(xla): Proper error handling.

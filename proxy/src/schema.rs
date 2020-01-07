@@ -15,20 +15,22 @@ use radicle_surf::{
 use crate::source::{AccountId, Project, ProjectId, Source, Error as SourceError};
 
 #[derive(Debug)]
-/// TODO
+/// Enumerable of expected error types.
 enum Error {
-    /// TODO
-    CatchAll(String),
-    /// TODO
+    /// File at a given path was irretrievable.
     FileNotFound(Path),
-    /// TODO
+    /// Directory at a given path was irretrievable.
+    DirectoryNotFound(Path),
+    /// Project name exceeded 32 characters.
+    BadProjectName(String),
+    /// Project domain exceeded 32 characters.
+    BadProjectDomain(String),
+    /// Errors originating in radicle-surf's Git adapter.
     Git(radicle_surf::git::GitError),
-    /// TODO
-    Registration(SourceError),
-    /// TODO
+    /// Registry client errors.
     Registry(RegistryError),
-    /// TODO
-    LastCommitNotFound(String),
+    /// VCS Browser could not find the last commit of a branch.
+    LastCommitNotFound(Path),
 }
 
 impl From<radicle_surf::git::GitError> for Error {
@@ -40,15 +42,10 @@ impl From<radicle_surf::git::GitError> for Error {
 impl From<SourceError> for Error {
     fn from(source_error: SourceError) -> Self {
         match source_error {
+            SourceError::BadProjectName(name) => Self::BadProjectName(name),
+            SourceError::BadProjectDomain(domain) => Self::BadProjectDomain(domain),
             SourceError::Registry(error) => Self::Registry(error),
-            SourceError::CatchAll(string) => Self::CatchAll(string),
         }
-    }
-}
-
-impl From<String> for Error {
-    fn from(error: String) -> Self {
-        Self::CatchAll(error)
     }
 }
 
@@ -106,10 +103,10 @@ impl IntoFieldError for Error {
                     juniper::Value::scalar("REGISTRY_ERROR"),
                 )
             },
-            Self::Registration(error) => {
+            Self::DirectoryNotFound(path) => {
                 FieldError::new(
-                    format!("Could not register project: {:?}", error),
-                    juniper::Value::scalar("REGISTRATION_ERROR"),
+                    format!("Directory not found: {:?}", path),
+                    juniper::Value::scalar("DIR_NOT_FOUND"),
                 )
             },
             Self::FileNotFound(error) => {
@@ -124,9 +121,17 @@ impl IntoFieldError for Error {
                     juniper::Value::scalar("LAST_COMMIT_NOT_FOUND"),
                 )
             },
-            Self::CatchAll(error) => {
-                // placeholder for as-of-yet uncaptured errors
-                FieldError::new(&error, juniper::Value::scalar(String::from(&error)))
+            Self::BadProjectName(error) => {
+                FieldError::new(
+                    error,
+                    juniper::Value::scalar("BAD_PROJECT_NAME"),
+                )
+            },
+            Self::BadProjectDomain(error) => {
+                FieldError::new(
+                    error,
+                    juniper::Value::scalar("BAD_PROJECT_DOMAIN"),
+                )
             }
         }
     }
@@ -332,11 +337,8 @@ impl Mutation {
         description: String,
         img_url: String,
     ) -> Result<Project, Error> {
-        let err_name = &name.clone();
         ctx.source.register_project(name, description, img_url)
-            .or_else(|error| {
-                Err(Error::Registration(error))
-            })
+            .map_err(|error| { error.into() })
     }
 }
 
@@ -451,14 +453,7 @@ impl Query {
         let prefix_dir = if path.is_root() {
             Ok(root_dir)
         } else {
-            root_dir.find_directory(&path).ok_or({
-                format!(
-                    "directory listing failed: {} -> {} | {:?}",
-                    path,
-                    path.is_root(),
-                    prefix,
-                )
-            })
+            root_dir.find_directory(&path).ok_or({ Error::DirectoryNotFound(path.clone()) })
         }?;
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
@@ -486,12 +481,9 @@ impl Query {
 
                 let (_root, labels) = entry_path.split_first();
                 // TODO assert that labels is, in fact, not empty
-                let clean_path = if let Some(clean_path) = nonempty::NonEmpty::from_slice(labels) {
-                    Ok(Path(clean_path))
-                } else {
-                    let error_message = format!("Labels empty for {}", info.name);
-                    let error = Error::CatchAll(error_message);
-                    Err(error)
+                let clean_path = match nonempty::NonEmpty::from_slice(labels) {
+                    Some(clean_path) => Ok(Path(clean_path)),
+                    None => Err(Error::FileNotFound(entry_path)),
                 }?;
 
                 Ok(TreeEntry {
@@ -514,7 +506,7 @@ impl Query {
         } else {
             match &browser.last_commit(&path) {
                 Some(last_commit) => Ok(Commit::from(last_commit)),
-                None => Err(Error::LastCommitNotFound(path.to_string())),
+                None => Err(Error::LastCommitNotFound(path.clone())),
             }
         }?;
         let name = if path.is_root() {

@@ -6,19 +6,7 @@ pub fn set_if_unset (key: &str, val: &str) -> Result<String, std::env::VarError>
 
 #[test]
 fn test_set_if_unset() {
-    match std::env::var("DUMMY_VALUE") {
-        Ok(_val) => {
-            // should be unset
-            panic!("$DUMMY_VALUE should be unset.")
-        },
-        Err(_e) => {
-            set_if_unset("DUMMY_VALUE", "hello world");
-        }
-    }
-    match std::env::var("DUMMY_VALUE") {
-        Ok(val) => { assert_eq!(val, "hello world") },
-        Err(_e) => {
-            panic!("$DUMMY_VALUE is still unset.")
-        }
-    }
+    std::env::var("DUMMY_VALUE").unwrap_err(); // should fail because the value should be unset
+    let val = set_if_unset("DUMMY_VALUE", "hello world").expect("Value should be set.");
+    assert_eq!(val, "hello world");
 }
