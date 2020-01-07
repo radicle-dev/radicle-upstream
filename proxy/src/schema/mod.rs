@@ -31,7 +31,7 @@ pub struct Context {
 
 impl Context {
     /// Returns a new `Context`.
-    pub fn new(dummy_repo_path: String, librad_paths: Paths) -> Self {
+    pub const fn new(dummy_repo_path: String, librad_paths: Paths) -> Self {
         Self {
             dummy_repo_path,
             librad_paths,
@@ -55,11 +55,11 @@ impl Mutation {
         git::init_repo(path.clone())?;
         let (id, meta) = git::init_project(
             &ctx.librad_paths,
-            path,
-            metadata.name,
-            metadata.description,
-            metadata.default_branch,
-            metadata.img_url,
+            &path,
+            &metadata.name,
+            &metadata.description,
+            &metadata.default_branch,
+            &metadata.img_url,
         )?;
 
         Ok(project::Project {
@@ -104,10 +104,10 @@ impl Query {
         p.append(&mut Path::from_string(&path));
         let file = root
             .find_file(&p)
-            .expect(&format!("unable to find file: {} -> {}", path, p));
+            .unwrap_or_else(|| panic!("unable to find file: {} -> {}", path, p));
         let last_commit = browser
             .last_commit(&p)
-            .expect(&format!("[blob] unable to get last commit: {}", p));
+            .unwrap_or_else(|| panic!("[blob] unable to get last commit: {}", p));
         let (_rest, last) = p.split_last();
         let (binary, content) = {
             let res = std::str::from_utf8(&file.contents);
@@ -197,12 +197,14 @@ impl Query {
         let prefix_dir = if path.is_root() {
             root_dir
         } else {
-            root_dir.find_directory(&path).expect(&format!(
-                "directory listing failed: {} -> {} | {:?}",
-                path,
-                path.is_root(),
-                prefix,
-            ))
+            root_dir.find_directory(&path).unwrap_or_else(|| {
+                panic!(
+                    "directory listing failed: {} -> {} | {:?}",
+                    path,
+                    path.is_root(),
+                    prefix,
+                )
+            })
         };
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
@@ -215,9 +217,10 @@ impl Query {
                     path.push(label.clone());
                     path
                 };
-                let last_commit = git::Commit::from(&browser.last_commit(&entry_path).expect(
-                    &format!("[tree] unable to get entry last commit: {}", entry_path),
-                ));
+                let last_commit =
+                    git::Commit::from(&browser.last_commit(&entry_path).unwrap_or_else(|| {
+                        panic!("[tree] unable to get entry last commit: {}", entry_path)
+                    }));
                 let info = git::Info {
                     name: label.to_string(),
                     object_type: match system_type {
@@ -228,7 +231,8 @@ impl Query {
                 };
 
                 let (_root, labels) = entry_path.split_first();
-                let clean_path = Path(nonempty::NonEmpty::from_slice(labels).unwrap());
+                let clean_path =
+                    Path(nonempty::NonEmpty::from_slice(labels).expect("unable to list of paths"));
 
                 git::TreeEntry {
                     info,
@@ -277,7 +281,7 @@ impl Query {
         let meta = librad::project::show_project(&ctx.librad_paths, &project_id)?;
 
         Ok(project::Project {
-            id: id,
+            id,
             metadata: meta.into(),
         })
     }
@@ -285,7 +289,8 @@ impl Query {
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
         let mut projects = librad::project::list_projects(&ctx.librad_paths)
             .map(|id| {
-                let project_meta = librad::project::show_project(&ctx.librad_paths, &id).unwrap();
+                let project_meta = librad::project::show_project(&ctx.librad_paths, &id)
+                    .expect("unable to get project meta");
 
                 project::Project {
                     id: id.to_string().into(),
@@ -320,18 +325,14 @@ mod tests {
 
         crate::schema::git::setup_fixtures(
             &librad_paths,
-            tmp_dir
-                .path()
-                .to_str()
-                .expect("path extraction failed")
-                .to_string(),
+            tmp_dir.path().to_str().expect("path extraction failed"),
         )
         .expect("fixture setup failed");
 
         f(librad_paths, repos_dir)
     }
 
-    fn execute_query<F>(librad_paths: Paths, query: &str, vars: &Variables, f: F) -> ()
+    fn execute_query<F>(librad_paths: Paths, query: &str, vars: &Variables, f: F)
     where
         F: FnOnce(Value, Vec<ExecutionError<DefaultScalarValue>>) -> (),
     {
@@ -729,6 +730,7 @@ mod tests {
             });
         }
 
+        #[allow(clippy::too_many_lines)]
         #[test]
         fn tree() {
             with_fixtures(|librad_paths, _repos_dir| {
@@ -918,11 +920,11 @@ mod tests {
                 let (project_id, _project_meta) =
                     git::init_project(
                         &librad_paths,
-                        path,
-                        "upstream".to_string(),
-                        "Code collaboration without intermediates.".to_string(),
-                        "master".to_string(),
-                        "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png".to_string(),
+                        &path,
+                        "upstream",
+                        "Code collaboration without intermediates.",
+                        "master",
+                        "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
                     )
                     .expect("project init failed");
 

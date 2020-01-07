@@ -1,16 +1,24 @@
 //! Proxy to serve a specialised `GraphQL` API to radicle-upstream.
 
-#![deny(missing_docs)]
-#![deny(warnings)]
-#![forbid(
+#![deny(missing_docs, unused_import_braces, unused_qualifications, warnings)]
+#![deny(
     clippy::all,
     // clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
     clippy::restriction,
+    clippy::option_unwrap_used,
     clippy::result_unwrap_used
 )]
-#![allow(clippy::unseparated_literal_suffix, clippy::implicit_return)]
+// TODO(xla): Handle all Results properly and never panic outside of main.
+// TODO(xla): Remove exception for or_fun_call lint.
+#![allow(
+    clippy::implicit_return,
+    clippy::unseparated_literal_suffix,
+    clippy::option_expect_used,
+    clippy::or_fun_call,
+    clippy::result_expect_used
+)]
 
 #[macro_use]
 extern crate log;
@@ -30,7 +38,7 @@ mod source;
 /// Flags accepted by the proxy binary.
 struct Args {
     /// Signaling which backend type to use.
-    source_type: String,
+    _source_type: String,
     /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
 }
@@ -42,7 +50,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        source_type: args.value_from_str("--source")?,
+        _source_type: args.value_from_str("--source")?,
         test: args.contains("--test"),
     };
 
@@ -53,11 +61,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         crate::schema::git::setup_fixtures(
             &librad_paths,
-            temp_dir
-                .path()
-                .to_str()
-                .expect("path extraction failed")
-                .to_string(),
+            temp_dir.path().to_str().expect("path extraction failed"),
         )
         .expect("fixture setup failed");
 
@@ -69,11 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
     };
 
-    let context = if "memory" == args.source_type {
-        schema::Context::new(dummy_repo.into(), librad_paths)
-    } else {
-        schema::Context::new(dummy_repo.into(), librad_paths)
-    };
+    let context = schema::Context::new(dummy_repo.into(), librad_paths);
 
     info!("Creating GraphQL schema and context");
     let schema = schema::create();

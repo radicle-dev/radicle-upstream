@@ -65,7 +65,7 @@ impl From<&git2::Commit<'_>> for Commit {
             author: Person {
                 name: signature.name().unwrap_or("invalid name").into(),
                 email: email.into(),
-                avatar: avatar.into(),
+                avatar,
             },
             summary: commit.summary().unwrap_or("invalid subject").into(),
             message: commit.message().unwrap_or("invalid message").into(),
@@ -127,8 +127,9 @@ pub struct TreeEntry {
     pub path: String,
 }
 
+/// Given a path to a repo returns the list of branches.
 pub fn branches(repo_path: &str) -> Result<Vec<Branch>, Error> {
-    let repo = GitRepository::new(&repo_path)?;
+    let repo = GitRepository::new(repo_path)?;
     let browser = GitBrowser::new(&repo)?;
     let mut branches = browser
         .list_branches(None)
@@ -142,30 +143,32 @@ pub fn branches(repo_path: &str) -> Result<Vec<Branch>, Error> {
     Ok(branches)
 }
 
+/// Initialize a [`librad::Project`] in the location of the given `path`.
 pub fn init_project(
     librad_paths: &Paths,
-    path: String,
-    name: String,
-    description: String,
-    default_branch: String,
-    img_url: String,
+    path: &str,
+    name: &str,
+    description: &str,
+    default_branch: &str,
+    img_url: &str,
 ) -> Result<(librad::git::ProjectId, librad::meta::Project), Error> {
     let key = librad::keys::device::Key::new();
     let peer_id = librad::peer::PeerId::from(key.public());
     let founder = librad::meta::contributor::Contributor::new();
-    let sources = git2::Repository::open(std::path::Path::new(&path))?;
-    let img = url::Url::parse(&img_url)?;
-    let mut meta = librad::meta::Project::new(&name, &peer_id);
+    let sources = git2::Repository::open(std::path::Path::new(path))?;
+    let img = url::Url::parse(img_url)?;
+    let mut meta = librad::meta::Project::new(name, &peer_id);
 
     meta.description = Some(description.to_string());
     meta.default_branch = default_branch.to_string();
     meta.add_rel(librad::meta::Relation::Url("img_url".to_string(), img));
 
-    let id = librad::git::GitProject::init(&librad_paths, &key, &sources, meta.clone(), founder)?;
+    let id = librad::git::GitProject::init(librad_paths, &key, &sources, meta.clone(), founder)?;
 
     Ok((id, meta))
 }
 
+/// Initialize a [`git2::GitRepository`] at the given path.
 pub fn init_repo(path: String) -> Result<(), Error> {
     let repo = git2::Repository::init(path)?;
 
@@ -187,7 +190,8 @@ pub fn init_repo(path: String) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn setup_fixtures(librad_paths: &Paths, root: String) -> Result<(), Error> {
+/// Creates a small set of projects in [`librad::Paths`].
+pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), Error> {
     let infos = vec![
             (
                 "monokel",
@@ -220,14 +224,7 @@ pub fn setup_fixtures(librad_paths: &Paths, root: String) -> Result<(), Error> {
         std::fs::create_dir_all(path.clone())?;
 
         init_repo(path.clone())?;
-        init_project(
-            &librad_paths,
-            path,
-            info.0.to_string(),
-            info.1.to_string(),
-            info.2.to_string(),
-            info.3.to_string(),
-        )?;
+        init_project(librad_paths, &path, info.0, info.1, info.2, info.3)?;
     }
 
     Ok(())

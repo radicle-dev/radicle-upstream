@@ -49,12 +49,11 @@ rm -rf "$target_cache"
 cp -aTu proxy/target "$target_cache"
 echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 
-echo "--- Print debug"
-cat /cache/.gitconfig
-(env)
-
 echo "--- Run proxy tests"
-(cd proxy && cargo test --all-targets --all-features)
+(cd proxy && cargo test --all-features --all-targets)
+
+echo "--- Run proxy lints"
+(cd proxy && cargo clippy --all-features --all-targets)
 
 echo "--- Starting proxy daemon and runing app tests"
 (cd app && ELECTRON_ENABLE_LOGGING=1 yarn test)

@@ -40,13 +40,13 @@ impl From<meta::Project> for Metadata {
                 }
             })
             .nth(0)
-            .unwrap_or("".to_string());
+            .unwrap_or_else(|| "".to_string());
 
         Self {
-            name: project_meta.name.unwrap_or("name unknown".into()),
-            description: project_meta.description.unwrap_or("".into()),
+            name: project_meta.name.unwrap_or_else(|| "name unknown".into()),
+            description: project_meta.description.unwrap_or_else(|| "".into()),
             default_branch: project_meta.default_branch,
-            img_url: img_url,
+            img_url,
         }
     }
 }
