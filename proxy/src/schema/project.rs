@@ -45,14 +45,13 @@ impl From<meta::Project> for Metadata {
                     None
                 }
             })
-            .filter_map(|(label, url)| {
+            .find_map(|(label, url)| {
                 if *label == *IMG_URL_LABEL {
                     Some(url.to_string())
                 } else {
                     None
                 }
             })
-            .nth(0)
             .unwrap_or_else(|| "".to_string());
 
         Self {

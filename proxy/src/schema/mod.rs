@@ -448,25 +448,25 @@ mod tests {
                 vars.insert("path".into(), InputValue::scalar("text/arrows.txt"));
 
                 let query = "query($id: ID!, $revision: String!, $path: String!) {
-                blob(id: $id, revision: $revision, path: $path) {
-                    binary,
-                    content,
-                    info {
-                        name,
-                        objectType,
-                        lastCommit{
-                            sha1,
-                            author {
-                                name,
-                                email,
+                    blob(id: $id, revision: $revision, path: $path) {
+                        binary,
+                        content,
+                        info {
+                            name,
+                            objectType,
+                            lastCommit{
+                                sha1,
+                                author {
+                                    name,
+                                    email,
+                                },
+                                summary,
+                                message,
+                                committerTime,
                             },
-                            summary,
-                            message,
-                            committerTime,
                         },
-                    },
-                }
-            }";
+                    }
+                }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
