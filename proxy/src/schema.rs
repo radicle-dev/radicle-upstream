@@ -1,162 +1,16 @@
-use juniper::{
-    FieldError, IntoFieldError, ParseScalarResult, ParseScalarValue, RootNode, Value,
-};
+use juniper::{ParseScalarResult, ParseScalarValue, RootNode, Value};
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
 use radicle_registry_client;
-use radicle_registry_client::{Error as RegistryError};
 use radicle_surf::{
     file_system::{Path, SystemType},
     git::{git2, BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
-use crate::source::{AccountId, Project, ProjectId, Source, Error as SourceError};
-
-#[derive(Debug)]
-/// Enumerable of expected error types.
-enum Error {
-    /// File at a given path was irretrievable.
-    FileNotFound(Path),
-    /// Directory at a given path was irretrievable.
-    DirectoryNotFound(Path),
-    /// Project name exceeded 32 characters.
-    BadProjectName(String),
-    /// Project domain exceeded 32 characters.
-    BadProjectDomain(String),
-    /// Errors originating in radicle-surf's Git adapter.
-    Git(radicle_surf::git::GitError),
-    /// Registry client errors.
-    Registry(RegistryError),
-    /// VCS Browser could not find the last commit of a branch.
-    LastCommitNotFound(Path),
-}
-
-impl From<radicle_surf::git::GitError> for Error {
-    fn from(git_error: radicle_surf::git::GitError) -> Self {
-        Self::Git(git_error)
-    }
-}
-
-impl From<SourceError> for Error {
-    fn from(source_error: SourceError) -> Self {
-        match source_error {
-            SourceError::BadProjectName(name) => Self::BadProjectName(name),
-            SourceError::BadProjectDomain(domain) => Self::BadProjectDomain(domain),
-            SourceError::Registry(error) => Self::Registry(error),
-        }
-    }
-}
-
-impl IntoFieldError for Error {
-    fn into_field_error(self) -> FieldError {
-        match self {
-            Self::Git(git_error) => {
-                match &git_error {
-                    radicle_surf::git::GitError::EmptyCommitHistory => {
-                        FieldError::new(
-                            "Repository has an empty commit history.",
-                            graphql_value!({
-                                "type": "EMPTY_COMMIT_HISTORY"
-                            })
-                        )
-                    },
-                    radicle_surf::git::GitError::BranchDecode => {
-                        FieldError::new(
-                            "Unable to decode the given branch.",
-                            graphql_value!({
-                                "type": "BRANCH_DECODE"
-                            })
-                        )
-                    },
-                    radicle_surf::git::GitError::NotBranch => {
-                        FieldError::new(
-                            "Not a known branch.",
-                            graphql_value!({
-                                "type": "NOT_BRANCH"
-                            })
-                        )
-                    },
-                    radicle_surf::git::GitError::NotTag => {
-                        FieldError::new(
-                            "Not a known tag.",
-                            graphql_value!({
-                                "type": "NOT_TAG"
-                            })
-                        )
-                    },
-                    radicle_surf::git::GitError::Internal(error) => {
-                        FieldError::new(
-                            format!("Internal Git error: {:?}", error),
-                            graphql_value!({
-                                "type": "INTERNAL"
-                            })
-                        )
-                    },
-                }
-            },
-            Self::Registry(reg_error) => {
-                match reg_error {
-                    RegistryError::Codec(codec_error) => {
-                        FieldError::new(
-                            format!("Failed to decode data: {:?}", codec_error),
-                            juniper::Value::scalar("CODEC_ERROR"),
-                        )
-                    },
-                    RegistryError::Rpc(rpc_error) => {
-                        FieldError::new(
-                            format!("RPC error: {:?}", rpc_error),
-                            juniper::Value::scalar("RPC_ERROR"),
-                        )
-                    },
-                    RegistryError::InvalidTransaction(error) => {
-                        FieldError::new(
-                            format!("Invalid transaction: {:?}", error),
-                            juniper::Value::scalar("INVALID_TRANSACTION"),
-                        )
-                    },
-                    RegistryError::Other(error) => {
-                        FieldError::new(
-                            format!("Registry error: {:?}", error),
-                            juniper::Value::scalar("REGISTRY_ERROR"),
-                        )
-                    },
-                }
-            },
-            Self::DirectoryNotFound(path) => {
-                FieldError::new(
-                    format!("Directory not found: {:?}", path),
-                    juniper::Value::scalar("DIR_NOT_FOUND"),
-                )
-            },
-            Self::FileNotFound(error) => {
-                FieldError::new(
-                    format!("File not found: {:?}", error),
-                    juniper::Value::scalar("FILE_NOT_FOUND"),
-                )
-            },
-            Self::LastCommitNotFound(error) => {
-                FieldError::new(
-                    format!("Last commit not found: {:?}", error),
-                    juniper::Value::scalar("LAST_COMMIT_NOT_FOUND"),
-                )
-            },
-            Self::BadProjectName(error) => {
-                FieldError::new(
-                    error,
-                    juniper::Value::scalar("BAD_PROJECT_NAME"),
-                )
-            },
-            Self::BadProjectDomain(error) => {
-                FieldError::new(
-                    error,
-                    juniper::Value::scalar("BAD_PROJECT_DOMAIN"),
-                )
-            }
-        }
-    }
-}
+use crate::source::{AccountId, Project, ProjectId, Source};
+use crate::error::Error;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;
@@ -562,7 +416,7 @@ mod tests {
     use indexmap::IndexMap;
     use juniper::{InputValue, Variables};
     use pretty_assertions::assert_eq;
-    use radicle_registry_client::MemoryClient;
+    use radicle_registry_client::Client;
 
     use super::{Context, Mutation, Query, Schema};
     use crate::source::{setup_fixtures, Ledger};
@@ -576,7 +430,7 @@ mod tests {
         juniper::Value,
         Vec<juniper::ExecutionError<juniper::DefaultScalarValue>>,
     ) {
-        let registry_client = MemoryClient::new();
+        let registry_client = Client::new_emulator();
         let mut source = Ledger::new(registry_client);
 
         setup_fixtures(&mut source);

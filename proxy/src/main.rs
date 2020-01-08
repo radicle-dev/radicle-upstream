@@ -20,6 +20,8 @@ extern crate juniper;
 
 /// Utilities to manipulate the process environment.
 mod env;
+/// Error definitions and type casting logic.
+mod error;
 /// Defines the schema served to the application via `GraphQL`.
 mod schema;
 /// Server infrastructure used to power the API.
@@ -52,14 +54,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ".."
     };
     let context = if "memory" == args.source_type {
-        let client = radicle_registry_client::MemoryClient::new();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut src = source::Ledger::new(client);
 
         source::setup_fixtures(&mut src);
 
         schema::Context::new(dummy_repo.into(), src)
     } else {
-        let client = radicle_registry_client::ClientWithExecutor::create()
+        let client = radicle_registry_client::Client::create_with_executor()
             .expect("creating registry client failed");
         let src = source::Ledger::new(client);
         schema::Context::new(dummy_repo.into(), src)

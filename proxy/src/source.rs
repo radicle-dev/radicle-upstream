@@ -230,7 +230,7 @@ where
 
         // TODO(xla): Proper error handling.
         self.registry_client
-            .register_project(
+            .submit(
                 &sender,
                 radicle_registry_client::RegisterProjectParams {
                     id: registry_id.clone(),

@@ -26,9 +26,9 @@ serde_derive = "1.0"
 serde_json = "1.0"
 warp = "0.1"
 
-[dependencies.radicle_registry_client]
+[dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "58e3b8bc79e556053d8e17dc21f72c8bbdf243e5"
+rev = "100205d976eaa39c93b0cf68906d95008ea8e414"
 
 [dependencies.radicle-surf]
 git = "https://github.com/radicle-dev/radicle-surf.git"
