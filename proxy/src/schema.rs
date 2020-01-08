@@ -213,7 +213,6 @@ impl Mutation {
         img_url: String,
     ) -> Result<Project, Error> {
         ctx.source.register_project(name, description, img_url)
-            .map_err(|error| error.into())
     }
 }
 
@@ -243,7 +242,7 @@ impl Query {
         p.append(&mut Path::from_string(&path));
         let file = root.find_file(&p).ok_or_else(|| { Error::FileNotFound(p.clone()) })?;
         let last_commit = browser.last_commit(&p)
-            .ok_or(radicle_surf::git::GitError::EmptyCommitHistory)?;
+            .ok_or_else(|| Error::LastCommitNotFound(p.clone()))?;
         let (_rest, last) = p.split_last();
         let (binary, content) = {
             let res = std::str::from_utf8(&file.contents);
@@ -343,7 +342,7 @@ impl Query {
                 };
                 let last_commit = match &browser.last_commit(&path) {
                     Some(last_commit) => Ok(Commit::from(last_commit)),
-                    None => Err(radicle_surf::git::GitError::EmptyCommitHistory),
+                    None => Err(Error::LastCommitNotFound(path.clone())),
                 }?;
                 let info = Info {
                     name: label.to_string(),
@@ -727,20 +726,6 @@ mod tests {
                 ]
             }),
         )
-    }
-
-    #[test]
-    fn query_tags_error() {
-        let mut vars = Variables::new();
-        let mut id_map: IndexMap<String, InputValue> = IndexMap::new();
-
-        id_map.insert("domain".into(), InputValue::scalar("rad"));
-        id_map.insert("name".into(), InputValue::scalar("upstream"));
-        vars.insert("id".into(), InputValue::object(id_map));
-
-        let (_res, errors) = execute_query("query($id: IdInput!) { tags(id: $id) }", &vars);
-
-        assert_eq!(errors, []);
     }
 
     #[test]

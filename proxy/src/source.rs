@@ -2,26 +2,9 @@ use futures::future::Future;
 use std::collections::HashMap;
 use std::convert::{TryInto};
 
-use radicle_registry_client::{
-    CryptoPair as _, ProjectDomain, ProjectName, H256, Error as RegistryError
-};
+use radicle_registry_client::{CryptoPair as _, ProjectDomain, ProjectName, H256};
 
-#[derive(Debug)]
-/// Enumerable of expected error types.
-pub enum Error {
-    /// Registry client errors.
-    Registry(RegistryError),
-    /// Thrown when a project name exceeds 32 characters.
-    BadProjectName(String),
-    /// Thrown when a project domain exceeds 32 characters.
-    BadProjectDomain(String),
-}
-
-impl From<RegistryError> for Error {
-    fn from(error: RegistryError) -> Self {
-        Self::Registry(error)
-    }
-}
+use crate::error::{Error, ProjectNameValidation, ProjectDomainValidation};
 
 /// Newtype for the registry `oscoin_client::AccountId`.
 #[derive(Clone, Eq, Hash, PartialEq)]
@@ -66,9 +49,9 @@ impl TryInto<radicle_registry_client::ProjectId> for ProjectId {
     type Error = Error;
     fn try_into(self) -> Result<radicle_registry_client::ProjectId, Error> {
         let project_name = ProjectName::from_string(self.name)
-            .map_err(|error| { Error::BadProjectName(error) })?;
+            .map_err(ProjectNameValidation::TooLong)?;
         let project_domain = ProjectDomain::from_string(self.domain)
-            .map_err(|error| { Error::BadProjectDomain(error) })?;
+            .map_err(ProjectDomainValidation::TooLong)?;
         Ok(( project_name, project_domain ))
     }
 }
@@ -223,9 +206,9 @@ where
         let (sender, _, _) = radicle_registry_client::ed25519::Pair::generate_with_phrase(None);
 
         let project_name = ProjectName::from_string(name.to_string())
-            .map_err(|error| { Error::BadProjectName(error) })?;
+            .map_err(ProjectNameValidation::TooLong)?;
         let project_domain = ProjectDomain::from_string("rad".to_string())
-            .map_err(|error| { Error::BadProjectDomain(error) })?;
+            .map_err(ProjectDomainValidation::TooLong)?;
         let registry_id = ( project_name, project_domain );
 
         // TODO(xla): Proper error handling.
