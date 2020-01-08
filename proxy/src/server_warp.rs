@@ -25,7 +25,7 @@ pub fn run(schema: Schema, context: Context) {
                     warp::http::Method::OPTIONS,
                 ]),
         )
-        .with(warp::log("app-proxy"));
+        .with(warp::log("proxy"));
 
     warp::serve(routes).run(([127, 0, 0, 1], 8080))
 }
@@ -60,7 +60,7 @@ where
 }
 
 /// Helper for standard response shape.
-fn build_response(response: Result<Vec<u8>, serde_json::Error>) -> warp::http::Response<Vec<u8>> {
+fn build_response(response: Result<Vec<u8>, serde_json::Error>) -> Response<Vec<u8>> {
     match response {
         Ok(body) => warp::http::Response::builder()
             .header("content-type", "application/json; charset=utf-8")

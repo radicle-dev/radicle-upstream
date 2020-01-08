@@ -19,7 +19,7 @@
   const projectId = getContext("projectId");
 
   const QUERY = gql`
-    query Query($projectId: IdInput!, $revision: String!, $prefix: String!) {
+    query Query($projectId: ID!, $revision: String!, $prefix: String!) {
       tree(id: $projectId, revision: $revision, prefix: $prefix) {
         entries {
           path
@@ -86,7 +86,7 @@
       <div class="folder" class:expanded class:active>
         <Icon.CarretBig dataCy={`expand-${name}`} on:click={toggle} />
         <a
-          href={path.projectSource(projectId.domain, projectId.name, $revision, TREE, prefix)}
+          href={path.projectSource(projectId, $revision, TREE, prefix)}
           use:link>
           {name}
         </a>

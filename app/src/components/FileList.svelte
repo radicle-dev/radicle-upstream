@@ -15,7 +15,7 @@
   export let prefix = null;
 
   const QUERY = gql`
-    query Query($projectId: IdInput!, $revision: String!, $prefix: String!) {
+    query Query($projectId: ID!, $revision: String!, $prefix: String!) {
       tree(id: $projectId, revision: $revision, prefix: $prefix) {
         info {
           lastCommit {
@@ -133,7 +133,7 @@
         <tr>
           <td class="file-column">
             <a
-              href={path.projectSource(projectId.domain, projectId.name, revision, entry.info.objectType, entry.info.objectType === TREE ? entry.path + '/' : entry.path)}
+              href={path.projectSource(projectId, revision, entry.info.objectType, entry.info.objectType === TREE ? entry.path + '/' : entry.path)}
               data-cy={`open-${entry.info.name}`}
               use:link>
               {#if entry.info.objectType === TREE}

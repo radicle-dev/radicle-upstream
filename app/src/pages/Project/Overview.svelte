@@ -7,14 +7,12 @@
   import { getClient, query } from "svelte-apollo";
 
   const GET_PROJECT = gql`
-    query Query($id: IdInput!) {
+    query Query($id: ID!) {
       project(id: $projectId) {
-        name
-        description
-        imgUrl
-        members {
-          keyName
-          avatarUrl
+        metadata {
+          name
+          description
+          imgUrl
         }
       }
     }
@@ -36,8 +34,8 @@
 {#await $project}
   <h1>Loading project...</h1>
 {:then result}
-  <h1>{result.data.project.name}</h1>
-  <p>{result.data.project.description}</p>
+  <h1>{result.data.project.metadata.name}</h1>
+  <p>{result.data.project.metadata.description}</p>
 {:catch error}
   <p>ERROR: {error}</p>
 {/await}

@@ -44,9 +44,7 @@
 </style>
 
 <div class="file" class:active>
-  <a
-    href={path.projectSource(id.domain, id.name, $revision, BLOB, filePath)}
-    use:link>
+  <a href={path.projectSource(id, $revision, BLOB, filePath)} use:link>
     <Icon.File />
     {name}
   </a>

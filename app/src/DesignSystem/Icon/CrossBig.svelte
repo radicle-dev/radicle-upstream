@@ -4,6 +4,7 @@
 
 <svg
   {style}
+  on:click
   width="34"
   height="34"
   viewBox="0 0 34 34"

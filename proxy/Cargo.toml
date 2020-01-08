@@ -24,7 +24,13 @@ rand = "0.7"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
+tempfile = "3.1"
+url = "2.1"
 warp = "0.1"
+
+[dependencies.librad]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "f2e9ed6d46e4f86820a30e840ab929c0d4fac48a"
 
 [dependencies.radicle_registry_client]
 git = "https://github.com/radicle-dev/radicle-registry.git"

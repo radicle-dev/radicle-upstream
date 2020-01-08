@@ -7,7 +7,7 @@
   import { Select } from "../DesignSystem";
 
   const ALL_REVISIONS = gql`
-    query($projectId: IdInput!) {
+    query($projectId: ID!) {
       tags(id: $projectId)
       branches(id: $projectId)
     }
