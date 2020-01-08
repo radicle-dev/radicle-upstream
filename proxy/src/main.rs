@@ -15,7 +15,7 @@
 // TODO(xla): Remove let_underscore_must_use once the issue is resolved: https://github.com/rust-lang/rust-clippy/issues/4980
 #![allow(
     clippy::implicit_return,
-    clippy::let_underscore_must_use,
+    // clippy::let_underscore_must_use,
     clippy::option_expect_used,
     clippy::or_fun_call,
     clippy::result_expect_used,
