@@ -1,5 +1,10 @@
 scalar Datetime
 
+enum ObjectType {
+  TREE
+  BLOB
+}
+
 type Person {
   name: String
   email: String
@@ -20,11 +25,11 @@ type Commit {
 
 # file info and metadata.
 type Info {
-  name: String!          # base name of the file
-  size: Int!             # length in bytes (low-prio)
-  isDirectory: Boolean!  # if it's a directory
-  flags: [Int]!          # any flags git stores, currently only executable (low-prio)
-  lastcommit: Commit!    # last commit which affected this path
+  name: String!            # base name of the file
+  size: Int!               # length in bytes (low-prio)
+  objectType: ObjectType!  # TREE or BLOB
+  mode: String!            # any flags git stores (e.g. "100644") (low-prio)
+  lastcommit: Commit!      # last commit which affected this path
 }
 
 type Blob {
@@ -81,15 +86,28 @@ type Query {
   blob(projectId: ID!, revision: String!, path: String!): Blob!
   tree(projectId: ID!, revision: String!, prefix: String!): Tree!
 
-  # Commits browsing
-  commits(projectId: ID!, Revision: String!): [Commit]!
+  # Commit browsing
   commit(projectId: ID!, sha1: String!): Commit
 
   # Ref browsing
-  branches(projectId: ID!): [Ref]!
+  branches(projectId: ID!): [String]!
   refs(projectId: ID!): [Ref]!
-  tags(projectId: ID!): [Ref]!
+  tags(projectId: ID!): [String]!
+
+  # local disk browsing
+  localBranches(path: String!): [String]!
 }
+
+ProjectMetadataInput {
+  name: String!
+  description: String
+  defaultBranch: String!
+}
+
+type Mutation {
+  createProject(project: ProjectMetadataInput!, path: String!, publish: Boolean!): Project!
+}
+
 
 ################
 # Exploration. #

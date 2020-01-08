@@ -2,12 +2,15 @@
   import Title from "./Title";
   export let variant = "primary";
   export let size = "big";
-  export let disabled = false;
+  export let disabled = null;
   export let icon = null;
+  export let style = null;
 
   let iconClass = icon ? (size === "big" ? "icon" : "icon-small") : null;
-  let disabledClass = disabled ? "disabled" : null;
-  let buttonClass = [variant, size, iconClass, disabledClass].join(" ");
+
+  // we want to dynamically change whether a button is disabled or not
+  $: disabledClass = disabled ? "disabled" : null;
+  $: buttonClass = [variant, size, iconClass, disabledClass].join(" ");
 </script>
 
 <style>
@@ -108,19 +111,19 @@
   .transparent {
     background-color: var(--color-white);
     border-color: var(--color-white);
-    color: var(--color-darkgray);
+    color: var(--color-gray);
   }
 
   .transparent:hover {
     background-color: var(--color-lightgray-tint-10);
     border-color: var(--color-lightgray-tint-10);
-    color: var(--color-darkgray);
+    color: var(--color-gray);
   }
 
   .transparent:active {
     background-color: var(--color-lightgray-shade-10);
     border-color: var(--color-lightgray-shade-10);
-    color: var(--color-darkgray);
+    color: var(--color-gray);
   }
 
   .outline {
@@ -160,7 +163,7 @@
   }
 </style>
 
-<button class={buttonClass} {disabled}>
+<button class={buttonClass} {disabled} on:click {style}>
   <svelte:component this={icon} />
   <Title.Regular>
     <slot />

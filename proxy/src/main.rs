@@ -1,16 +1,26 @@
 //! Proxy to serve a specialised `GraphQL` API to radicle-upstream.
 
-#![deny(missing_docs)]
-#![deny(warnings)]
-#![forbid(
+#![deny(missing_docs, unused_import_braces, unused_qualifications, warnings)]
+#![deny(
     clippy::all,
     // clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
     clippy::restriction,
+    clippy::option_unwrap_used,
     clippy::result_unwrap_used
 )]
-#![allow(clippy::unseparated_literal_suffix, clippy::implicit_return)]
+// TODO(xla): Handle all Results properly and never panic outside of main.
+// TODO(xla): Remove exception for or_fun_call lint.
+// TODO(xla): Remove let_underscore_must_use once the issue is resolved: https://github.com/rust-lang/rust-clippy/issues/4980
+#![allow(
+    clippy::implicit_return,
+    // clippy::let_underscore_must_use,
+    clippy::option_expect_used,
+    clippy::or_fun_call,
+    clippy::result_expect_used,
+    clippy::unseparated_literal_suffix
+)]
 
 #[macro_use]
 extern crate log;
@@ -30,7 +40,7 @@ mod source;
 /// Flags accepted by the proxy binary.
 struct Args {
     /// Signaling which backend type to use.
-    source_type: String,
+    _source_type: String,
     /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
 }
@@ -42,28 +52,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        source_type: args.value_from_str("--source")?,
+        _source_type: args.value_from_str("--source")?,
         test: args.contains("--test"),
     };
 
-    let dummy_repo = if args.test {
-        "../fixtures/git-platinum"
-    } else {
-        ".."
-    };
-    let context = if "memory" == args.source_type {
-        let client = radicle_registry_client::MemoryClient::new();
-        let mut src = source::Ledger::new(client);
+    let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+    let (dummy_repo, librad_paths) = if args.test {
+        let librad_paths =
+            librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
-        source::setup_fixtures(&mut src);
+        crate::schema::git::setup_fixtures(
+            &librad_paths,
+            temp_dir.path().to_str().expect("path extraction failed"),
+        )
+        .expect("fixture setup failed");
 
-        schema::Context::new(dummy_repo.into(), src)
+        ("../fixtures/git-platinum", librad_paths)
     } else {
-        let client = radicle_registry_client::ClientWithExecutor::create()
-            .expect("creating registry client failed");
-        let src = source::Ledger::new(client);
-        schema::Context::new(dummy_repo.into(), src)
+        (
+            "..",
+            librad::paths::Paths::new().expect("librad paths failed"),
+        )
     };
+
+    let context = schema::Context::new(dummy_repo.into(), librad_paths);
 
     info!("Creating GraphQL schema and context");
     let schema = schema::create();

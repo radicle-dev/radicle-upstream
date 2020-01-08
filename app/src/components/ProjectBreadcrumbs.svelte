@@ -16,14 +16,14 @@
   export let project = null;
 
   const routes = {
-    "/projects/:domain/:name/overview": Overview,
-    "/projects/:domain/:name/feed": Feed,
-    "/projects/:domain/:name/members": Members,
-    "/projects/:domain/:name/funds": Funds,
-    "/projects/:domain/:name/source": Source,
-    "/projects/:domain/:name/source/*": Source,
-    "/projects/:domain/:name/commits": Commits,
-    "/projects/:domain/:name/branches": Branches
+    "/projects/:id/overview": Overview,
+    "/projects/:id/feed": Feed,
+    "/projects/:id/members": Members,
+    "/projects/:id/funds": Funds,
+    "/projects/:id/source": Source,
+    "/projects/:id/source/*": Source,
+    "/projects/:id/commits": Commits,
+    "/projects/:id/branches": Branches
   };
 </script>
 
@@ -62,9 +62,9 @@
 
   <Text.Regular>/</Text.Regular>
 
-  <a href={path.projectOverview({ id: project.id })} use:link>
-    <img alt="Project Avatar" src={project.imgUrl} />
-    <Text.Regular>{project.name}</Text.Regular>
+  <a href={path.projectOverview(project.id)} use:link>
+    <img alt="Project Avatar" src={project.metadata.imgUrl} />
+    <Text.Regular>{project.metadata.name}</Text.Regular>
   </a>
 
   <Text.Regular style="margin: 0 6px 0 0">/</Text.Regular>

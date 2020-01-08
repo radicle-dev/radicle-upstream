@@ -87,8 +87,8 @@
           icon={Icon.Plus}
           title="Create new project"
           dataCy="new-project"
-          href={path.designSystem()}
-          active={path.active(path.designSystem(), $location)} />
+          href={path.createProject()}
+          active={path.active(path.createProject(), $location)} />
       </li>
       <li>
         <SidebarItem

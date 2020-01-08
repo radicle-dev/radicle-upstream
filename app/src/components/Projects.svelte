@@ -1,26 +1,27 @@
 <script>
-  import { Text, Title, Icon, Numeric, Caption } from "../DesignSystem";
+  import { Text, Title, Icon, Numeric, Caption, Button } from "../DesignSystem";
   import ProjectCard from "./ProjectCard.svelte";
-  import { projectOverview } from "../path.js";
+  import { createProject, projectOverview } from "../path.js";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
-  import { link } from "svelte-spa-router";
+  import { link, push } from "svelte-spa-router";
 
   const GET_PROJECTS = gql`
     query Query {
       projects {
-        id {
+        id
+        metadata {
+          description
           name
-          domain
+          imgUrl
         }
-        description
-        name
-        imgUrl
       }
     }
   `;
 
-  const projects = query(getClient(), { query: GET_PROJECTS });
+  const client = getClient();
+  const projects = query(client, { query: GET_PROJECTS });
+  projects.refetch();
 </script>
 
 <style>
@@ -43,25 +44,58 @@
     display: flex;
     width: 100%;
   }
+
+  .wrapper {
+    margin-top: 156px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .create-project {
+    text-align: center;
+    width: 240px;
+  }
 </style>
 
 {#await $projects}
   <Text.Regular>Loading projects...</Text.Regular>
 {:then result}
-  <ul>
-    {#each result.data.projects as project}
-      <li class="project-card">
-        <a href={projectOverview(project.id.domain, project.id.name)} use:link>
-          <ProjectCard
-            title={project.name}
-            description={project.description}
-            isRegistered={true}
-            imgUrl={project.imgUrl}
-            state={Icon.Check} />
-        </a>
-      </li>
-    {/each}
-  </ul>
+  {#if result.data.projects.length > 0}
+    <ul>
+      {#each result.data.projects as project}
+        <li class="project-card">
+          <a href={projectOverview(project.id)} use:link>
+            <ProjectCard
+              title={project.metadata.name}
+              description={project.metadata.description}
+              isRegistered={true}
+              imgUrl={project.metadata.imgUrl}
+              state={Icon.Check} />
+          </a>
+        </li>
+      {/each}
+    </ul>
+  {:else}
+    <div class="wrapper">
+      <div class="create-project">
+        <Title.Regular
+          style="color: var(--color-darkgray); margin-bottom: 13px">
+          You have no projects
+        </Title.Regular>
+        <Text.Regular style="color: var(--color-gray)">
+          Create a new project and share it with friends to get started
+        </Text.Regular>
+        <Button
+          style="margin: 23px auto"
+          variant="primary"
+          on:click={() => {
+            push(createProject());
+          }}>
+          Create a new project
+        </Button>
+      </div>
+    </div>
+  {/if}
 {:catch error}
   <p>ERROR: {error}</p>
 {/await}

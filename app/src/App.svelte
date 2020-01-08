@@ -6,16 +6,21 @@
   } from "apollo-cache-inmemory";
   import { setClient } from "svelte-apollo";
   import Router from "svelte-spa-router";
+  import { push, pop, location } from "svelte-spa-router";
+  import * as path from "./path.js";
 
-  import Sidebar from "./components/Sidebar.svelte";
   import DesignSystem from "./pages/DesignSystem.svelte";
   import Feed from "./pages/Feed.svelte";
   import NotFound from "./pages/NotFound.svelte";
   import Profile from "./pages/Profile.svelte";
   import Projects from "./pages/Projects.svelte";
+  import CreateProject from "./pages/CreateProject.svelte";
   import Project from "./pages/Project.svelte";
   import Search from "./pages/Search.svelte";
   import Wallet from "./pages/Wallet.svelte";
+  import Help from "./pages/Help.svelte";
+
+  import hotkeys from "hotkeys-js";
 
   const hash = s =>
     s.split("").reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
@@ -40,26 +45,37 @@
     "/search": Search,
     "/feed": Feed,
     "/projects": Projects,
-    "/projects/:domain/:name/*": Project,
+    "/projects/new": CreateProject,
+    "/projects/:id/*": Project,
     "/design-system": DesignSystem,
     "/wallet": Wallet,
     "/profile": Profile,
+    "/help": Help,
     "*": NotFound
   };
+
+  hotkeys("shift+d", () => {
+    if (path.active(path.designSystem(), $location)) {
+      pop();
+    }
+    push(path.designSystem());
+  });
+
+  hotkeys("shift+/", () => {
+    if (path.active(path.help(), $location)) {
+      pop();
+    }
+    push(path.help());
+  });
+
+  hotkeys("esc", () => {
+    if (
+      path.active(path.help(), $location) ||
+      path.active(path.designSystem(), $location)
+    ) {
+      pop();
+    }
+  });
 </script>
 
-<style>
-  .container {
-    position: relative;
-    left: var(--slim-sidebar-width);
-    width: calc(100vw - var(--slim-sidebar-width));
-    overflow-x: hidden;
-  }
-</style>
-
-<div>
-  <Sidebar />
-  <div class="container">
-    <Router {routes} />
-  </div>
-</div>
+<Router {routes} />
