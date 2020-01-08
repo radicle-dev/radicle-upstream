@@ -118,13 +118,13 @@
     }
   };
 
-  let localBranches = "";
+  let localBranches = [];
 
   const fetchBranches = async path => {
     // Reset to defaults whenever the path changes so that we show the defaults
     // in case this query fails or the user clicks cancel in the directory
     // selection dialog.
-    localBranches = "";
+    localBranches = [];
     defaultBranch = DEFAULT_BRANCH;
 
     // This function gets executed even for the first path change which sets
