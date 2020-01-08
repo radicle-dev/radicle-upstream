@@ -419,9 +419,9 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Components</Title.Big>
+      <Title.Big>Notifications</Title.Big>
       <Text.Regular style="color: var(--color-gray)">
-        More complex UI elements
+        Info, Warnings and Errors
       </Text.Regular>
     </div>
     <div class="second-column">
