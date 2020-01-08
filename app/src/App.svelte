@@ -54,7 +54,7 @@
     "*": NotFound
   };
 
-  hotkeys("d,shift+d", () => {
+  hotkeys("shift+d", () => {
     if (path.active(path.designSystem(), $location)) {
       pop();
     }
