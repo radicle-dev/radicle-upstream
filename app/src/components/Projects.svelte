@@ -1,7 +1,7 @@
 <script>
   import { Text, Title, Icon, Numeric, Caption, Button } from "../DesignSystem";
   import ProjectCard from "./ProjectCard.svelte";
-  import { projectOverview } from "../path.js";
+  import { createProject, projectOverview } from "../path.js";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
   import { link, push } from "svelte-spa-router";
@@ -22,10 +22,6 @@
   const client = getClient();
   const projects = query(client, { query: GET_PROJECTS });
   projects.refetch();
-
-  const createProject = () => {
-    push("/projects/new");
-  };
 </script>
 
 <style>
@@ -92,7 +88,9 @@
         <Button
           style="margin: 23px auto"
           variant="primary"
-          on:click={createProject}>
+          on:click={() => {
+            push(createProject());
+          }}>
           Create a new project
         </Button>
       </div>

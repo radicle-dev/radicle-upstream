@@ -3,10 +3,7 @@
   import { Button, Header, Icon, Title } from "../DesignSystem";
   import Projects from "../components/Projects.svelte";
   import NarrowSidebarLayout from "../layouts/NarrowSidebarLayout.svelte";
-
-  const createProject = () => {
-    push("/projects/new");
-  };
+  import { createProject } from "../path.js";
 </script>
 
 <NarrowSidebarLayout dataCy="page">
@@ -20,7 +17,9 @@
         icon={Icon.Plus}
         variant="outline"
         size="small"
-        on:click={createProject}>
+        on:click={() => {
+          push(createProject());
+        }}>
         New Project
       </Button>
     </div>
