@@ -1,12 +1,19 @@
+use std::env::{set_var, var};
+
 /// Convenience function for setting env vars only if they are unset.
-pub fn set_if_unset (key: &str, val: &str) -> Result<String, std::env::VarError> {
-    use std::env::{var,set_var};
-    var(key).or({ set_var(key, val); var(key) })
+pub fn set_if_unset(key: &str, val: &str) {
+    var(key).unwrap_or_else(|_| {
+        set_var(key, val);
+        var(key).expect("unable to get ENV var")
+    });
 }
 
 #[test]
 fn test_set_if_unset() {
-    std::env::var("DUMMY_VALUE").unwrap_err(); // should fail because the value should be unset
-    let val = set_if_unset("DUMMY_VALUE", "hello world").expect("Value should be set.");
-    assert_eq!(val, "hello world");
+    const KEY: &str = "DUMMY_VALUE";
+    const VALUE: &str = "hello world";
+
+    assert_eq!(var(KEY).is_err(), true, "DUMMY_VALUE should be unset");
+    set_if_unset(KEY, VALUE);
+    assert_eq!(var(KEY), Ok(VALUE.to_string()));
 }

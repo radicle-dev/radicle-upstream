@@ -11,7 +11,7 @@
   export let revision = null;
 
   const SOURCE = gql`
-    query($projectId: IdInput!, $revision: String!, $path: String!) {
+    query($projectId: ID!, $revision: String!, $path: String!) {
       blob(id: $projectId, revision: $revision, path: $path) {
         binary
         content

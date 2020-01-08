@@ -2,6 +2,7 @@ import Branch from "./Branch.svelte";
 import Carret from "./Carret.svelte";
 import CarretBig from "./CarretBig.svelte";
 import Check from "./Check.svelte";
+import CheckCircle from "./CheckCircle.svelte";
 import Commit from "./Commit.svelte";
 import Cross from "./Cross.svelte";
 import CrossBig from "./CrossBig.svelte";
@@ -29,6 +30,7 @@ export default {
   Carret,
   CarretBig,
   Check,
+  CheckCircle,
   Commit,
   Cross,
   CrossBig,

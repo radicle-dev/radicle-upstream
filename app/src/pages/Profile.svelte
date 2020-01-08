@@ -1,6 +1,6 @@
 <script>
   import { Header, Title } from "../DesignSystem";
-  import Layout from "./Layout.svelte";
+  import Layout from "../layouts/NarrowSidebarLayout.svelte";
 </script>
 
 <Layout dataCy="page">

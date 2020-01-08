@@ -35,7 +35,7 @@ context("navigation", () => {
       cy.get('[data-cy="page"]').should("contain", "Profile");
 
       cy.get('[data-cy="sidebar"] [data-cy="new-project"]').click();
-      cy.get('[data-cy="page"]').should("contain", "Design System");
+      cy.get('[data-cy="page"]').should("contain", "Create a new project");
     });
   });
 
@@ -162,7 +162,7 @@ context("navigation", () => {
           cy.get("[data-cy=expand-src]").click();
           cy.contains("Eval.hs").click();
         });
-        cy.window().scrollTo("bottom");
+        cy.get("[data-cy=page-container]").scrollTo("bottom");
 
         cy.get("[data-cy=breadcrumbs]").should("be.inViewport");
       });
