@@ -1,6 +1,7 @@
 <script>
   import ModalLayout from "../layouts/ModalLayout.svelte";
   import { showNotification } from "../stores.js";
+  import { slide } from "svelte/transition";
 
   import { gql } from "apollo-boost";
   import { getClient, query, mutate } from "svelte-apollo";
@@ -200,7 +201,6 @@
     background-color: var(--color-almostwhite);
     padding: 16px 22px 24px 22px;
     border-radius: 0 0 4px 4px;
-    display: none;
   }
 
   .show {
@@ -278,13 +278,15 @@
             <Icon.CheckCircle
               style={isNew ? 'display: block' : 'display: none'} />
           </div>
-          <div class="option-body" class:show={isNew}>
-            <Text.Regular
-              style="margin-bottom: 12px; color: var(--color-darkgray)">
-              Choose where you'd like to create the repository
-            </Text.Regular>
-            <DirectoryInput bind:path={newRepositoryPath} />
-          </div>
+          {#if isNew}
+            <div class="option-body" in:slide>
+              <Text.Regular
+                style="margin-bottom: 12px; color: var(--color-darkgray)">
+                Choose where you'd like to create the repository
+              </Text.Regular>
+              <DirectoryInput bind:path={newRepositoryPath} />
+            </div>
+          {/if}
         </div>
 
         <div class="option" class:active={isExisting}>
@@ -295,37 +297,39 @@
             <Icon.CheckCircle
               style={isExisting ? 'display: block' : 'display: none'} />
           </div>
-          <div class="option-body" class:show={isExisting}>
-            <Text.Regular
-              style="margin-bottom: 12px; color: var(--color-darkgray)">
-              Choose the existing repository
-            </Text.Regular>
-            <DirectoryInput
-              style="margin-bottom: 16px"
-              bind:path={existingRepositoryPath} />
-            <div class="default-branch-row">
-              <Text.Regular style="color: var(--color-darkgray)">
-                Select the default branch
+          {#if isExisting}
+            <div class="option-body" in:slide>
+              <Text.Regular
+                style="margin-bottom: 12px; color: var(--color-darkgray)">
+                Choose the existing repository
               </Text.Regular>
-              {#if localBranches.length > 0}
-                <Select
-                  items={localBranches}
-                  bind:value={defaultBranch}
-                  style=" min-width: 240px; --focus-outline-color:
-                  var(--color-pink)" />
-              {:else}
-                <Select
-                  items={[DEFAULT_BRANCH]}
-                  disabled
-                  style="min-width: 240px" />
-              {/if}
+              <DirectoryInput
+                style="margin-bottom: 16px"
+                bind:path={existingRepositoryPath} />
+              <div class="default-branch-row">
+                <Text.Regular style="color: var(--color-darkgray)">
+                  Select the default branch
+                </Text.Regular>
+                {#if localBranches.length > 0}
+                  <Select
+                    items={localBranches}
+                    bind:value={defaultBranch}
+                    style=" min-width: 240px; --focus-outline-color:
+                    var(--color-pink)" />
+                {:else}
+                  <Select
+                    items={[DEFAULT_BRANCH]}
+                    disabled
+                    style="min-width: 240px" />
+                {/if}
+              </div>
+              <div class="publish-row">
+                <CheckboxInput bind:checked={publish}>
+                  Publish the {defaultBranch} branch to the network
+                </CheckboxInput>
+              </div>
             </div>
-            <div class="publish-row">
-              <CheckboxInput bind:checked={publish}>
-                Publish the {defaultBranch} branch to the network
-              </CheckboxInput>
-            </div>
-          </div>
+          {/if}
         </div>
       </div>
 
