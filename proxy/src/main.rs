@@ -30,12 +30,12 @@ extern crate juniper;
 
 /// Utilities to manipulate the process environment.
 mod env;
+/// Error definitions and type casting logic.
+mod error;
 /// Defines the schema served to the application via `GraphQL`.
 mod schema;
 /// Server infrastructure used to power the API.
 mod server_warp;
-/// Origin of data required like the on-chain Registry.
-mod source;
 
 /// Flags accepted by the proxy binary.
 struct Args {
