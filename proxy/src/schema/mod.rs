@@ -6,6 +6,7 @@ use radicle_surf::{
     git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
 };
 
+/// Error definitions and type casting logic.
 mod error;
 pub mod git;
 mod project;
