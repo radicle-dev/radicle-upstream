@@ -73,7 +73,8 @@
     "graphql": "^14.5.8",
     "hotkeys-js": "^3.7.3",
     "svelte-apollo": "^0.3.0",
-    "timeago.js": "^4.0.1"
+    "timeago.js": "^4.0.1",
+    "validate.js": "^0.13.1"
   },
   "husky": {
     "hooks": {
