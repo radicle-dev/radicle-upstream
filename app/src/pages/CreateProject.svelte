@@ -184,6 +184,7 @@
   const createProject = async () => {
     beginValidation = true;
     validate();
+
     if (validations !== undefined) {
       return;
     }
@@ -223,16 +224,15 @@
   let localBranchesError;
 
   const fetchBranches = async path => {
-    // Reset to defaults whenever the path changes so that we show the defaults
-    // in case this query fails or the user clicks cancel in the directory
-    // selection dialog.
+    // Revert to defaults whenever the path changes in case this query fails
+    // or the user clicks cancel in the directory selection dialog.
     localBranches = "";
     localBranchesError = "";
     defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
 
-    // This function gets executed even for the first path change which sets
-    // the path variable to an empty string on page load. If we don't ignore
-    // this then the backend will throw an exception.
+    // This function gets executed even for the first path change on page load
+    // which sets the path variable to an empty string. We shouldn't query the
+    // backend when the path is not given.
     if (path === "") {
       return;
     }
@@ -253,6 +253,9 @@
     } catch (error) {
       localBranchesError = error.message;
     }
+
+    // Now that we have a response with potential branches or an error from the
+    // backend, we can perform path validation.
     validate();
   };
 
