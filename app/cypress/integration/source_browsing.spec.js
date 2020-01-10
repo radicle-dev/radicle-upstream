@@ -70,13 +70,13 @@ context("source code browsing", () => {
 
       // there is a commit teaser
       cy.get("[data-cy=commit-teaser]")
-        .contains("Alexander Simmerl")
+        .contains("Fintan Halpenny")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("Add a long commit message to commit message body")
+        .contains("Extend the docs (#2)")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("d688035")
+        .contains("3873745")
         .should("exist");
 
       // it is the folder view
