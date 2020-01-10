@@ -171,9 +171,9 @@
 
   $: fetchBranches(isNew ? newRepositoryPath : existingRepositoryPath);
 
-  function isEmpty(v) {
+  const isEmpty = v => {
     return ["", null, undefined].includes(v);
-  }
+  };
 
   validatejs.validators.optional = (value, options) => {
     return !isEmpty(value) ? validatejs.single(value, options) : null;
