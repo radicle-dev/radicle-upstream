@@ -29,8 +29,9 @@ echo "--- Installing yarn dependencies"
 echo "--- Loading proxy/target cache"
 declare -r target_cache=/cache/proxy-target
 
+mkdir -p "$target_cache"
+
 if [[ -d "$target_cache" ]]; then
-	mkdir -p "$target_cache"
 	ln -s "$target_cache" proxy/target
   echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 else
