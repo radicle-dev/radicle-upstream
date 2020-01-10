@@ -6,8 +6,9 @@
 
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
+  import Layout from "../layouts/SidebarHeaderLayout.svelte";
   import ProjectSidebar from "../components/ProjectSidebar.svelte";
-  import ProjectBreadcrumbs from "../components/ProjectBreadcrumbs.svelte";
+  import ProjectHeader from "../components/ProjectHeader.svelte";
 
   import Overview from "./Project/Overview.svelte";
   import Feed from "./Project/Feed.svelte";
@@ -67,27 +68,25 @@
 <style>
   .container {
     position: relative;
-    left: calc(var(--project-sidebar-width));
-    width: calc(100vw - var(--sidebar-total-width));
+    /* left: calc(var(--slim-sidebar-width));
+    width: calc(100vw - var(--slim-sidebar-width)); */
   }
 
-  .layout {
+  /* .layout {
     margin: 96px 81px 64px 81px;
-  }
+  } */
 </style>
 
-<DoubleSidebarLayout>
+<Layout dataCy="page">
   {#await $project then result}
-    <ProjectSidebar />
-
+    <ProjectHeader
+      style="position: fixed; top: 0;"
+      project={result.data.project} />
+    <NotificationFaucet />
     <div class="container">
-      <NotificationFaucet />
-      <ProjectBreadcrumbs
-        style="position: fixed; top: 0;"
-        project={result.data.project} />
       <div class="layout">
         <Router {routes} />
       </div>
     </div>
   {/await}
-</DoubleSidebarLayout>
+</Layout>

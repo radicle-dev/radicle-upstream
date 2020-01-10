@@ -11,19 +11,25 @@
 
 <style>
   nav {
-    width: var(--project-sidebar-width);
-    height: 100%;
-    background-color: var(--color-almostwhite);
+    /* width: var(--project-sidebar-width); */
+    /* height: 100%; */
+    /* width: calc(100vw - var(--slim-sidebar-width)); */
     display: flex;
-    position: fixed;
+    /* position: fixed; */
     flex-direction: column;
-    justify-content: space-between;
-    padding: 44px 20px 0 24px;
-    overflow-y: auto;
+    /* justify-content: space-between; */
+    /* padding: 44px 20px 0 24px; */
+    /* overflow-y: auto; */
+  }
+
+  ul {
+    display: flex;
+    flex-direction: row;
   }
 
   li {
-    margin-bottom: 14px;
+    /* margin-bottom: 14px; */
+    /* display: inline; */
   }
 
   nav :global(li:hover p) {
@@ -79,9 +85,9 @@
         href={path.projectSource(projectId)}
         active={path.active(path.projectSource(projectId), $location, true)}>
 
-        <div class="source-tree" data-cy="source-tree">
+        <!-- <div class="source-tree" data-cy="source-tree">
           <Folder />
-        </div>
+        </div> -->
       </ProjectSidebarItem>
     </li>
 
