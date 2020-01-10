@@ -1,12 +1,20 @@
+.test: &test
+  label: 'Build app and proxy, run tests and package binaries'
+  agents:
+    production: "true"
+    platform: "linux"
+  timeout_in_minutes: 60
+  env:
+    DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.9'
+    SHARED_MASTER_CACHE: true
+  command: '.buildkite/run.sh'
+  artifact_paths:
+    - "app/dist/*.AppImage"
+    - "app/dist/*.snap"
+    - "app/cypress/screenshots/**/*.png"
+
 steps:
-  - label: 'Build app and proxy, run tests and package binaries'
-    env:
-      DOCKER_IMAGE: 'gcr.io/opensourcecoin/mvp:0.1.9'
-    agents:
-      production: "true"
-      platform: "linux"
-    command: '.buildkite/run.sh'
-    artifact_paths:
-      - "app/dist/*.AppImage"
-      - "app/dist/*.snap"
-      - "app/cypress/screenshots/**/*.png"
+  - branches: master
+    concurrency: 1
+    concurrency_group: master
+    <<: *test
