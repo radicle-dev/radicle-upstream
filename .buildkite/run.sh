@@ -44,7 +44,7 @@ echo "--- Updateing submodules"
 echo "--- Set custom git config"
 (cp .buildkite/.gitconfig /cache/)
 
-echo "--- Run cargo fm"
+echo "--- Run cargo fmt"
 (cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy tests"
