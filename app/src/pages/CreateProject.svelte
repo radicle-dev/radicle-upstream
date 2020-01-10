@@ -1,15 +1,14 @@
 <script>
   import validatejs from "validate.js";
-  import ModalLayout from "../layouts/ModalLayout.svelte";
-  import { showNotification } from "../stores.js";
-  import { slide } from "svelte/transition";
-
   import { gql } from "apollo-boost";
   import { getClient, query, mutate } from "svelte-apollo";
-
-  import * as path from "../path.js";
-
   import { pop, push } from "svelte-spa-router";
+
+  import { showNotification } from "../stores.js";
+  import * as path from "../path.js";
+  import { slide } from "svelte/transition";
+
+  import ModalLayout from "../layouts/ModalLayout.svelte";
   import {
     Button,
     Header,
