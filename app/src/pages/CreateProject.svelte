@@ -129,7 +129,6 @@
         `Project ${response.data.createProject.metadata.name} successfully created`
       );
     } catch (error) {
-      console.log(error);
       push(path.projects());
       showNotification("Could not create project");
     }
