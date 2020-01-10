@@ -309,10 +309,6 @@
     border-radius: 0 0 4px 4px;
   }
 
-  .show {
-    display: block;
-  }
-
   .button-row {
     display: flex;
     align-items: center;
