@@ -25,8 +25,11 @@
 
   let currentSelection;
 
-  $: isNew = currentSelection === "new";
-  $: isExisting = currentSelection === "existing";
+  const NEW = "new";
+  const EXISTING = "existing";
+
+  $: isNew = currentSelection === NEW;
+  $: isExisting = currentSelection === EXISTING;
 
   let name;
   let description = "";
@@ -390,9 +393,7 @@
 
       <div class="radio-selector">
         <div class="option" class:active={isNew}>
-          <div
-            class="option-header"
-            on:click={() => (currentSelection = 'new')}>
+          <div class="option-header" on:click={() => (currentSelection = NEW)}>
             <Title.Regular style="color: var(--color-darkgray)">
               Start with a new repository
             </Title.Regular>
@@ -421,7 +422,7 @@
         <div class="option" class:active={isExisting}>
           <div
             class="option-header"
-            on:click={() => (currentSelection = 'existing')}>
+            on:click={() => (currentSelection = EXISTING)}>
             <Title.Regular style="color: var(--color-darkgray)">
               Continue with an existing repository
             </Title.Regular>
