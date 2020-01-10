@@ -6,6 +6,7 @@
 
   import { showNotification } from "../stores.js";
   import * as path from "../path.js";
+  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
   import { slide } from "svelte/transition";
 
   import ModalLayout from "../layouts/ModalLayout.svelte";
@@ -21,8 +22,6 @@
     Select
   } from "../DesignSystem";
 
-  const DEFAULT_BRANCH = "master";
-
   let currentSelection;
 
   $: isNew = currentSelection === "new";
@@ -30,7 +29,7 @@
 
   let name;
   let description = "";
-  let defaultBranch = DEFAULT_BRANCH;
+  let defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
   let publish = true;
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
@@ -145,7 +144,7 @@
     // selection dialog.
     localBranches = "";
     localBranchesError = "";
-    defaultBranch = DEFAULT_BRANCH;
+    defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
 
     // This function gets executed even for the first path change which sets
     // the path variable to an empty string on page load. If we don't ignore
@@ -463,7 +462,7 @@
                     var(--color-pink)" />
                 {:else}
                   <Select
-                    items={[DEFAULT_BRANCH]}
+                    items={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
                     disabled
                     style="min-width: 240px" />
                 {/if}
