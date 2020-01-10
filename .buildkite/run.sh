@@ -1,6 +1,8 @@
 #!/bin/bash
 set -Eeou pipefail
 
+TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
+
 export HOME=/cache
 
 mkdir -p /cache/yarn
@@ -15,49 +17,49 @@ chmod -R a+w $CARGO_HOME $RUSTUP_HOME
 
 export PATH="$PATH:$CARGO_HOME/bin"
 
+# Incremental builds use timestamps of local code. Since we always
+# check it out fresh we can never use incremental builds.
+export CARGO_BUILD_INCREMENTAL=false
+# Most of the caching is done through caching ./target
+export SCCACHE_CACHE_SIZE="1G"
+
 echo "--- Installing yarn dependencies"
-(cd app && yarn install)
+(cd app && time yarn install)
 
 echo "--- Loading proxy/target cache"
-target_cache=/cache/radicle-upstream-proxy-target-cache
+declare -r target_cache=/cache/proxy-target
+
+mkdir -p "$target_cache"
 
 if [[ -d "$target_cache" ]]; then
-  cp -aT "$target_cache" proxy/target
+	ln -s "$target_cache" proxy/target
   echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
 else
   echo "Cache $target_cache not available"
 fi
 
 echo "--- Updateing submodules"
-(cd app && git submodule update --init --recursive)
-(cd app && git submodule foreach "git fetch --all")
+(cd app && time git submodule update --init --recursive)
+(cd app && time git submodule foreach "git fetch --all")
 
 echo "--- Set custom git config"
 (cp .buildkite/.gitconfig /cache/)
 
-echo "--- Build proxy"
-(cd app && yarn proxy:build)
-
-echo "--- Build proxy release"
-(cd app && yarn proxy:build:release)
-
-echo "--- Build proxy test"
-(cd app && yarn proxy:build:test)
-
-echo "--- Saving proxy/target cache"
-rm -rf "$target_cache"
-cp -aTu proxy/target "$target_cache"
-echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
+echo "--- Run cargo fmt"
+(cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy tests"
-(cd proxy && cargo test --all-features --all-targets)
+(cd proxy && time cargo test --all --all-features --all-targets)
 
 echo "--- Run proxy lints"
-(cd proxy && cargo clippy --all-features --all-targets)
+(cd proxy && time cargo check --all --all-features --all-targets)
+(cd proxy && time cargo clippy --all --all-features --all-targets)
 
 echo "--- Starting proxy daemon and runing app tests"
-(cd app && ELECTRON_ENABLE_LOGGING=1 yarn test)
+(cd app && time ELECTRON_ENABLE_LOGGING=1 yarn test)
+
+echo "--- Build proxy release"
+(cd app && time yarn proxy:build:release)
 
 echo "--- Packaging and uploading app binaries"
-(cd app && yarn ci:dist)
-(cd app && yarn ci:dist)
+(cd app && time yarn ci:dist)
