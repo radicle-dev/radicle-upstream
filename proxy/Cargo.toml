@@ -11,7 +11,7 @@ keywords = [ "radicle-upstream", "proxy" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
-futures = "0.1"
+futures = "0.3"
 hex = "0.4"
 juniper = "0.14"
 juniper_codegen = "0.14"
@@ -34,7 +34,7 @@ rev = "f2e9ed6d46e4f86820a30e840ab929c0d4fac48a"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "100205d976eaa39c93b0cf68906d95008ea8e414"
+rev = "d8b690401e58f7c8ff1a140b536eaec2c92ef1e2"
 
 [dependencies.radicle-surf]
 git = "https://github.com/radicle-dev/radicle-surf.git"
