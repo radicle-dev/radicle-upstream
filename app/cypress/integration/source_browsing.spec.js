@@ -181,9 +181,7 @@ context("source code browsing", () => {
 
         // the main view of the page stays unchanged and shows the top level
         // directory listing
-        cy.contains("Add a long commit message to commit message body").should(
-          "exist"
-        );
+        cy.get("[data-cy=file-list]").should("exist");
       });
     });
 
