@@ -104,7 +104,7 @@
   const constraints = {
     name: {
       presence: {
-        message: "Project name is required!",
+        message: "Project name is required",
         allowEmpty: false
       },
       format: {
@@ -271,12 +271,8 @@
   }
 
   .create-project {
-    text-align: center;
-    width: 540px;
-  }
-
-  .radio-selector {
     text-align: left;
+    width: 540px;
   }
 
   .option {
@@ -341,21 +337,12 @@
     flex: 1;
     justify-content: flex-start;
     align-items: flex-start;
-    text-align: left;
     padding-left: 15px;
   }
 
   .validation-row {
     display: flex;
     align-items: center;
-  }
-
-  .validationMessage {
-    color: var(--color-red);
-    font-size: 14px;
-    font-family: "GT America Medium";
-    text-align: left;
-    margin-top: 4px;
   }
 </style>
 
@@ -372,7 +359,9 @@
         bind:value={name}
         valid={!(validations && validations.name)} />
       {#if validations && validations.name}
-        <div class="validationMessage">{validations.name[0]}</div>
+        <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
+          {validations.name[0]}
+        </Text.SmallBold>
       {/if}
 
       <Input
@@ -387,7 +376,9 @@
         bind:value={imageUrl}
         valid={!(validations && validations.imageUrl)} />
       {#if validations && validations.imageUrl}
-        <div class="validationMessage">{validations.imageUrl[0]}</div>
+        <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
+          {validations.imageUrl[0]}
+        </Text.SmallBold>
       {/if}
 
       <Title.Regular style="margin: 16px 0 12px 16px; text-align: left">
@@ -414,9 +405,10 @@
                 placeholder="~/path/to/folder"
                 bind:path={newRepositoryPath} />
               {#if validations && validations.newRepositoryPath}
-                <div class="validationMessage" style="text-align: left">
+                <Text.SmallBold
+                  style="color: var(--color-red); margin-top: 4px">
                   {validations.newRepositoryPath[0]}
-                </div>
+                </Text.SmallBold>
               {/if}
             </div>
           {/if}
@@ -443,9 +435,10 @@
                 valid={!(validations && validations.existingRepositoryPath)}
                 bind:path={existingRepositoryPath} />
               {#if validations && validations.existingRepositoryPath}
-                <div class="validationMessage" style="text-align: left">
+                <Text.SmallBold
+                  style="color: var(--color-red); margin-top: 4px">
                   {validations.existingRepositoryPath[0]}
-                </div>
+                </Text.SmallBold>
               {/if}
               <div class="default-branch-row" style="margin-top: 16px">
                 <Text.Regular style="color: var(--color-darkgray)">
