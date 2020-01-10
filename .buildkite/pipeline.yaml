@@ -18,3 +18,5 @@ steps:
     concurrency: 1
     concurrency_group: master
     <<: *test
+  - branches: "!master"
+    <<: *test
