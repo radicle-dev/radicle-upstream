@@ -8,6 +8,7 @@
   import Router from "svelte-spa-router";
   import { push, pop, location } from "svelte-spa-router";
   import * as path from "./path.js";
+  import { hash } from "./hash.js";
 
   import DesignSystem from "./pages/DesignSystem.svelte";
   import Feed from "./pages/Feed.svelte";
@@ -21,9 +22,6 @@
   import Help from "./pages/Help.svelte";
 
   import hotkeys from "hotkeys-js";
-
-  const hash = s =>
-    s.split("").reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
 
   const client = new ApolloClient({
     uri: "http://127.0.0.1:8080/graphql",

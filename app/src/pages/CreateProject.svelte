@@ -6,6 +6,7 @@
 
   import { showNotification } from "../stores.js";
   import * as path from "../path.js";
+  import { hash } from "../hash.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
   import { slide } from "svelte/transition";
 
@@ -86,16 +87,6 @@
     }
   `;
 
-  const anonymize = str => {
-    return str
-      .split("")
-      .reduce(
-        (prevHash, currVal) =>
-          ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0,
-        0
-      );
-  };
-
   const createProject = async () => {
     validationStarted = true;
     validate();
@@ -114,7 +105,7 @@
             description: description,
             imgUrl:
               imageUrl ||
-              `https://avatars.dicebear.com/v2/jdenticon/${anonymize(
+              `https://avatars.dicebear.com/v2/jdenticon/${hash(
                 name + description
               )}.svg`,
             defaultBranch: defaultBranch
