@@ -24,7 +24,7 @@ export CARGO_BUILD_INCREMENTAL=false
 export SCCACHE_CACHE_SIZE="1G"
 
 echo "--- Installing yarn dependencies"
-(cd app && yarn install)
+(cd app && time yarn install)
 
 echo "--- Loading proxy/target cache"
 declare -r target_cache=/cache/proxy-target
@@ -45,19 +45,19 @@ echo "--- Set custom git config"
 (cp .buildkite/.gitconfig /cache/)
 
 echo "--- Run cargo fm"
-(cd proxy && time cargo fmt --workspace -- --check)
+(cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy tests"
-(cd proxy && time cargo test --workspace --all-features --all-targets)
+(cd proxy && time cargo test --all --all-features --all-targets)
 
 echo "--- Run proxy lints"
-(cd proxy && time cargo clippy --workspace --all-features --all-targets)
+(cd proxy && time cargo clippy --all --all-features --all-targets)
 
 echo "--- Starting proxy daemon and runing app tests"
 (cd app && ELECTRON_ENABLE_LOGGING=1 yarn test)
 
 echo "--- Build proxy release"
-(cd app && yarn proxy:build:release)
+(cd app && time yarn proxy:build:release)
 
 echo "--- Packaging and uploading app binaries"
-(cd app && yarn ci:dist)
+(cd app && time yarn ci:dist)
