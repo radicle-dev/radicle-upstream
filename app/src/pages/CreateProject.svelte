@@ -39,128 +39,11 @@
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
 
   let validations = false;
-  let validationStarted = false;
+  let beginValidation = false;
 
-  const validate = () => {
-    if (!validationStarted) {
-      return;
-    }
-
-    validations = validatejs(
-      {
-        name: name,
-        imageUrl: imageUrl,
-        currentSelection: currentSelection,
-        newRepositoryPath: newRepositoryPath,
-        existingRepositoryPath: existingRepositoryPath
-      },
-      constraints
-    );
+  validatejs.options = {
+    fullMessages: false
   };
-
-  // Note: the arguments are actually not passed to the function, they are
-  // only needed to make the function reactive to when they're changed.
-  $: validate(
-    name,
-    imageUrl,
-    currentSelection,
-    newRepositoryPath,
-    existingRepositoryPath
-  );
-
-  const client = getClient();
-
-  const LOCAL_BRANCHES = gql`
-    query($path: String!) {
-      localBranches(path: $path)
-    }
-  `;
-
-  const CREATE_PROJECT = gql`
-    mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
-      createProject(metadata: $metadata, path: $path, publish: $publish) {
-        id
-        metadata {
-          name
-        }
-      }
-    }
-  `;
-
-  const createProject = async () => {
-    validationStarted = true;
-    validate();
-    if (validations !== undefined) {
-      return;
-    }
-
-    let response;
-
-    try {
-      response = await mutate(client, {
-        mutation: CREATE_PROJECT,
-        variables: {
-          metadata: {
-            name: name,
-            description: description,
-            imgUrl:
-              imageUrl ||
-              `https://avatars.dicebear.com/v2/jdenticon/${hash(
-                name + description
-              )}.svg`,
-            defaultBranch: defaultBranch
-          },
-          path: isNew ? newRepositoryPath : existingRepositoryPath,
-          publish: isNew ? true : publish
-        }
-      });
-
-      push(path.projectOverview(response.data.createProject.id));
-      showNotification(
-        `Project ${response.data.createProject.metadata.name} successfully created`
-      );
-    } catch (error) {
-      push(path.projects());
-      showNotification("Could not create project");
-    }
-  };
-
-  let localBranches;
-  let localBranchesError;
-
-  const fetchBranches = async path => {
-    // Reset to defaults whenever the path changes so that we show the defaults
-    // in case this query fails or the user clicks cancel in the directory
-    // selection dialog.
-    localBranches = "";
-    localBranchesError = "";
-    defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
-
-    // This function gets executed even for the first path change which sets
-    // the path variable to an empty string on page load. If we don't ignore
-    // this then the backend will throw an exception.
-    if (path === "") {
-      return;
-    }
-    validationStarted = true;
-
-    try {
-      const response = await query(client, {
-        query: LOCAL_BRANCHES,
-        variables: {
-          path: path
-        }
-      });
-
-      const result = await response.result();
-      localBranches = result.data.localBranches;
-    } catch (error) {
-      localBranchesError = error.message;
-    }
-    validate();
-  };
-
-  $: fetchBranches(isNew ? newRepositoryPath : existingRepositoryPath);
 
   const isEmpty = v => {
     return ["", null, undefined].includes(v);
@@ -170,15 +53,11 @@
     return !isEmpty(value) ? validatejs.single(value, options) : null;
   };
 
-  validatejs.options = {
-    fullMessages: false
-  };
-
   validatejs.validators.validateNewRepositoryPath = (
     value,
-    options,
-    key,
-    attributes
+    _options,
+    _key,
+    _attributes
   ) => {
     if (isExisting) {
       return;
@@ -195,9 +74,9 @@
 
   validatejs.validators.validateExistingRepositoryPath = (
     value,
-    options,
-    key,
-    attributes
+    _options,
+    _key,
+    _attributes
   ) => {
     if (isNew) {
       return;
@@ -252,6 +131,130 @@
       validateExistingRepositoryPath: true
     }
   };
+
+  const validate = () => {
+    if (!beginValidation) {
+      return;
+    }
+
+    validations = validatejs(
+      {
+        name: name,
+        imageUrl: imageUrl,
+        currentSelection: currentSelection,
+        newRepositoryPath: newRepositoryPath,
+        existingRepositoryPath: existingRepositoryPath
+      },
+      constraints
+    );
+  };
+
+  // Note: the arguments are actually not passed to the function, they are
+  // only needed to make the function reactive to when they're changed.
+  $: validate(
+    name,
+    imageUrl,
+    currentSelection,
+    newRepositoryPath,
+    existingRepositoryPath
+  );
+
+  const client = getClient();
+
+  const LOCAL_BRANCHES = gql`
+    query($path: String!) {
+      localBranches(path: $path)
+    }
+  `;
+
+  const CREATE_PROJECT = gql`
+    mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
+      createProject(metadata: $metadata, path: $path, publish: $publish) {
+        id
+        metadata {
+          name
+        }
+      }
+    }
+  `;
+
+  const createProject = async () => {
+    beginValidation = true;
+    validate();
+    if (validations !== undefined) {
+      return;
+    }
+
+    let response;
+
+    try {
+      response = await mutate(client, {
+        mutation: CREATE_PROJECT,
+        variables: {
+          metadata: {
+            name: name,
+            description: description,
+            imgUrl:
+              imageUrl ||
+              `https://avatars.dicebear.com/v2/jdenticon/${hash(
+                name + description
+              )}.svg`,
+            defaultBranch: defaultBranch
+          },
+          path: isNew ? newRepositoryPath : existingRepositoryPath,
+          publish: isNew ? true : publish
+        }
+      });
+
+      push(path.projectOverview(response.data.createProject.id));
+      showNotification(
+        `Project ${response.data.createProject.metadata.name} successfully created`
+      );
+    } catch (error) {
+      push(path.projects());
+      showNotification("Could not create project");
+    }
+  };
+
+  let localBranches;
+  let localBranchesError;
+
+  const fetchBranches = async path => {
+    // Reset to defaults whenever the path changes so that we show the defaults
+    // in case this query fails or the user clicks cancel in the directory
+    // selection dialog.
+    localBranches = "";
+    localBranchesError = "";
+    defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
+
+    // This function gets executed even for the first path change which sets
+    // the path variable to an empty string on page load. If we don't ignore
+    // this then the backend will throw an exception.
+    if (path === "") {
+      return;
+    }
+
+    // Start validating all the form fields when the user chooses a path.
+    beginValidation = true;
+
+    try {
+      const response = await query(client, {
+        query: LOCAL_BRANCHES,
+        variables: {
+          path: path
+        }
+      });
+
+      const result = await response.result();
+      localBranches = result.data.localBranches;
+    } catch (error) {
+      localBranchesError = error.message;
+    }
+    validate();
+  };
+
+  // Re-fetch branches whenever the user selects a new path.
+  $: fetchBranches(isNew ? newRepositoryPath : existingRepositoryPath);
 </script>
 
 <style>
