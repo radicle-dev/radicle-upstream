@@ -39,8 +39,8 @@ else
 fi
 
 echo "--- Updateing submodules"
-(cd app && git submodule update --init --recursive)
-(cd app && git submodule foreach "git fetch --all")
+(cd app && time git submodule update --init --recursive)
+(cd app && time git submodule foreach "git fetch --all")
 
 echo "--- Set custom git config"
 (cp .buildkite/.gitconfig /cache/)
@@ -55,7 +55,7 @@ echo "--- Run proxy lints"
 (cd proxy && time cargo clippy --all --all-features --all-targets)
 
 echo "--- Starting proxy daemon and runing app tests"
-(cd app && ELECTRON_ENABLE_LOGGING=1 yarn test)
+(cd app && time ELECTRON_ENABLE_LOGGING=1 yarn test)
 
 echo "--- Build proxy release"
 (cd app && time yarn proxy:build:release)
