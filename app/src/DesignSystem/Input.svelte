@@ -2,6 +2,7 @@
   export let style = null;
   export let placeholder = null;
   export let value = null;
+  export let dataCy = null;
 
   export let disabled = null;
   export let valid = true;
@@ -39,6 +40,7 @@
 </style>
 
 <input
+  data-cy={dataCy}
   class:invalid={!valid}
   {placeholder}
   {style}

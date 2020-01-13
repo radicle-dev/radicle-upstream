@@ -86,10 +86,10 @@
     }
 
     if (isEmpty(value)) {
-      return "Pick a directory for the new project";
+      return "Pick an existing repository for the new project";
     }
 
-    if (localBranches.length < 1) {
+    if (localBranchesError.match("could not find repository")) {
       return "The directory should contain a valid git repository";
     }
 
@@ -343,7 +343,7 @@
 </style>
 
 <ModalLayout dataCy="page">
-  <div class="wrapper">
+  <div class="wrapper" data-cy="create-project">
     <div class="create-project">
       <Title.Big style="margin-bottom: 32px; text-align: left">
         Create a new project
@@ -352,6 +352,7 @@
       <Input
         style="--focus-outline-color: var(--color-pink)"
         placeholder="Project name*"
+        dataCy="name"
         bind:value={name}
         valid={!(validations && validations.name)} />
       {#if validations && validations.name}
@@ -367,6 +368,7 @@
         bind:value={description} />
 
       <Input
+        dataCy="avatar-url"
         style="--focus-outline-color: var(--color-pink)"
         placeholder="http://my-project-website.com/project-avatar.png"
         bind:value={imageUrl}
@@ -382,7 +384,7 @@
       </Title.Regular>
 
       <div class="radio-selector">
-        <div class="option" class:active={isNew}>
+        <div class="option" class:active={isNew} data-cy="new-project">
           <div class="option-header" on:click={() => (currentSelection = NEW)}>
             <Title.Regular style="color: var(--color-darkgray)">
               Start with a new repository
@@ -410,7 +412,10 @@
           {/if}
         </div>
 
-        <div class="option" class:active={isExisting}>
+        <div
+          class="option"
+          class:active={isExisting}
+          data-cy="existing-project">
           <div
             class="option-header"
             on:click={() => (currentSelection = EXISTING)}>
@@ -477,12 +482,14 @@
           <Text.Small style="color: var(--color-gray)">* required</Text.Small>
         </div>
         <Button
+          dataCy="cancel-button"
           variant="transparent"
           on:click={pop}
           style="margin-right: 24px;">
           Cancel
         </Button>
         <Button
+          dataCy="create-project-button"
           disabled={!(name && currentSelection)}
           variant="primary"
           on:click={createProject}>
