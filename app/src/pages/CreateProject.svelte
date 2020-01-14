@@ -1,14 +1,16 @@
 <script>
-  import ModalLayout from "../layouts/ModalLayout.svelte";
-  import { showNotification } from "../stores.js";
-  import { slide } from "svelte/transition";
-
+  import validatejs from "validate.js";
   import { gql } from "apollo-boost";
   import { getClient, query, mutate } from "svelte-apollo";
-
-  import * as path from "../path.js";
-
   import { pop, push } from "svelte-spa-router";
+
+  import { showNotification } from "../stores.js";
+  import * as path from "../path.js";
+  import { hash } from "../hash.js";
+  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
+  import { slide } from "svelte/transition";
+
+  import ModalLayout from "../layouts/ModalLayout.svelte";
   import {
     Button,
     Header,
@@ -21,40 +23,144 @@
     Select
   } from "../DesignSystem";
 
-  const options = {
-    NEW: "new",
-    EXISTING: "existing"
-  };
-
-  const DEFAULT_BRANCH = "master";
-
   let currentSelection;
 
-  const selectNew = () => {
-    currentSelection = options.NEW;
-  };
-  const selectExisting = () => {
-    currentSelection = options.EXISTING;
-  };
-  $: isNew = currentSelection === options.NEW;
-  $: isExisting = currentSelection === options.EXISTING;
+  const NEW = "new";
+  const EXISTING = "existing";
 
-  let name = "";
+  $: isNew = currentSelection === NEW;
+  $: isExisting = currentSelection === EXISTING;
+
+  let name;
   let description = "";
-  let defaultBranch = DEFAULT_BRANCH;
+  let defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
   let publish = true;
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
   let imageUrl = "";
 
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
-  let showValidations = false;
 
-  $: isFormValid = isNameValid && isPathValid;
-  $: isNameValid = VALID_NAME_MATCH.test(name);
-  $: isPathValid =
-    (isNew && newRepositoryPath.length > 0) ||
-    (isExisting && existingRepositoryPath.length > 0);
+  let validations = false;
+  let beginValidation = false;
+
+  validatejs.options = {
+    fullMessages: false
+  };
+
+  const isEmpty = v => {
+    return ["", null, undefined].includes(v);
+  };
+
+  validatejs.validators.optional = (value, options) => {
+    return !isEmpty(value) ? validatejs.single(value, options) : null;
+  };
+
+  validatejs.validators.validateNewRepositoryPath = (
+    value,
+    _options,
+    _key,
+    _attributes
+  ) => {
+    if (isExisting) {
+      return;
+    }
+
+    if (isEmpty(value)) {
+      return "Pick a directory for the new project";
+    }
+
+    if (!localBranchesError.match("could not find repository")) {
+      return "The directory should not contain an existing repository";
+    }
+  };
+
+  validatejs.validators.validateExistingRepositoryPath = (
+    value,
+    _options,
+    _key,
+    _attributes
+  ) => {
+    if (isNew) {
+      return;
+    }
+
+    if (isEmpty(value)) {
+      return "Pick an existing repository for the new project";
+    }
+
+    if (localBranchesError.match("could not find repository")) {
+      return "The directory should contain a valid git repository";
+    }
+
+    if (
+      localBranches.includes("rad/rad/contributor") ||
+      localBranches.includes("rad/rad/project")
+    ) {
+      return "This repository is already managed by Radicle";
+    }
+  };
+
+  const constraints = {
+    name: {
+      presence: {
+        message: "Project name is required",
+        allowEmpty: false
+      },
+      format: {
+        pattern: VALID_NAME_MATCH,
+        message: "Project name should match [a-z0-9][a-z0-9_-]+"
+      }
+    },
+    imageUrl: {
+      optional: {
+        url: {
+          schemes: ["http", "https"],
+          message: "Not a valid avatar URL",
+          allowLocal: false
+        }
+      }
+    },
+    currentSelection: {
+      presence: {
+        message:
+          "Select whether to start a new repository or use an existing one"
+      }
+    },
+    newRepositoryPath: {
+      validateNewRepositoryPath: true
+    },
+    existingRepositoryPath: {
+      validateExistingRepositoryPath: true
+    }
+  };
+
+  const validate = () => {
+    if (!beginValidation) {
+      return;
+    }
+
+    validations = validatejs(
+      {
+        name: name,
+        imageUrl: imageUrl,
+        currentSelection: currentSelection,
+        newRepositoryPath: newRepositoryPath,
+        existingRepositoryPath: existingRepositoryPath
+      },
+      constraints
+    );
+  };
+
+  // Note: the arguments are actually not passed to the function, they are
+  // only needed to make the function reactive to when they're changed.
+  $: validate(
+    name,
+    imageUrl,
+    currentSelection,
+    newRepositoryPath,
+    existingRepositoryPath
+  );
 
   const client = getClient();
 
@@ -75,17 +181,14 @@
     }
   `;
 
-  const anonymize = str => {
-    return str
-      .split("")
-      .reduce(
-        (prevHash, currVal) =>
-          ((prevHash << 5) - prevHash + currVal.charCodeAt(0)) | 0,
-        0
-      );
-  };
-
   const createProject = async () => {
+    beginValidation = true;
+    validate();
+
+    if (validations !== undefined) {
+      return;
+    }
+
     let response;
 
     try {
@@ -97,7 +200,7 @@
             description: description,
             imgUrl:
               imageUrl ||
-              `https://avatars.dicebear.com/v2/jdenticon/${anonymize(
+              `https://avatars.dicebear.com/v2/jdenticon/${hash(
                 name + description
               )}.svg`,
             defaultBranch: defaultBranch
@@ -112,27 +215,30 @@
         `Project ${response.data.createProject.metadata.name} successfully created`
       );
     } catch (error) {
-      console.log(error);
       push(path.projects());
       showNotification("Could not create project");
     }
   };
 
-  let localBranches = [];
+  let localBranches;
+  let localBranchesError;
 
   const fetchBranches = async path => {
-    // Reset to defaults whenever the path changes so that we show the defaults
-    // in case this query fails or the user clicks cancel in the directory
-    // selection dialog.
-    localBranches = [];
-    defaultBranch = DEFAULT_BRANCH;
+    // Revert to defaults whenever the path changes in case this query fails
+    // or the user clicks cancel in the directory selection dialog.
+    localBranches = "";
+    localBranchesError = "";
+    defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
 
-    // This function gets executed even for the first path change which sets
-    // the path variable to an empty string on page load. If we don't ignore
-    // this then the backend will throw an exception.
+    // This function gets executed even for the first path change on page load
+    // which sets the path variable to an empty string. We shouldn't query the
+    // backend when the path is not given.
     if (path === "") {
       return;
     }
+
+    // Start validating all the form fields when the user chooses a path.
+    beginValidation = true;
 
     try {
       const response = await query(client, {
@@ -145,12 +251,16 @@
       const result = await response.result();
       localBranches = result.data.localBranches;
     } catch (error) {
-      console.log("Branch fetch error");
-      console.log(error);
+      localBranchesError = error.message;
     }
+
+    // Now that we have a response with potential branches or an error from the
+    // backend, we can perform path validation.
+    validate();
   };
 
-  $: fetchBranches(existingRepositoryPath);
+  // Re-fetch branches whenever the user selects a new path.
+  $: fetchBranches(isNew ? newRepositoryPath : existingRepositoryPath);
 </script>
 
 <style>
@@ -161,12 +271,8 @@
   }
 
   .create-project {
-    text-align: center;
-    width: 540px;
-  }
-
-  .radio-selector {
     text-align: left;
+    width: 540px;
   }
 
   .option {
@@ -203,10 +309,6 @@
     border-radius: 0 0 4px 4px;
   }
 
-  .show {
-    display: block;
-  }
-
   .button-row {
     display: flex;
     align-items: center;
@@ -231,7 +333,6 @@
     flex: 1;
     justify-content: flex-start;
     align-items: flex-start;
-    text-align: left;
     padding-left: 15px;
   }
 
@@ -242,36 +343,49 @@
 </style>
 
 <ModalLayout dataCy="page">
-  <div class="wrapper">
+  <div class="wrapper" data-cy="create-project">
     <div class="create-project">
       <Title.Big style="margin-bottom: 32px; text-align: left">
         Create a new project
       </Title.Big>
 
       <Input
-        style="margin-bottom: 16px; --focus-outline-color: var(--color-pink)"
+        style="--focus-outline-color: var(--color-pink)"
         placeholder="Project name*"
+        dataCy="name"
         bind:value={name}
-        on:change={() => (showValidations = true)}
-        valid={!showValidations || isNameValid} />
+        valid={!(validations && validations.name)} />
+      {#if validations && validations.name}
+        <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
+          {validations.name[0]}
+        </Text.SmallBold>
+      {/if}
 
       <Input
-        style="margin-bottom: 16px; --focus-outline-color: var(--color-pink)"
+        style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
+        var(--color-pink)"
         placeholder="Project description"
         bind:value={description} />
 
       <Input
-        style="margin-bottom: 16px; --focus-outline-color: var(--color-pink)"
+        dataCy="avatar-url"
+        style="--focus-outline-color: var(--color-pink)"
         placeholder="http://my-project-website.com/project-avatar.png"
-        bind:value={imageUrl} />
+        bind:value={imageUrl}
+        valid={!(validations && validations.imageUrl)} />
+      {#if validations && validations.imageUrl}
+        <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
+          {validations.imageUrl[0]}
+        </Text.SmallBold>
+      {/if}
 
-      <Title.Regular style="margin: 0 0 12px 16px; text-align: left">
+      <Title.Regular style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
       </Title.Regular>
 
       <div class="radio-selector">
-        <div class="option" class:active={isNew}>
-          <div class="option-header" on:click={selectNew}>
+        <div class="option" class:active={isNew} data-cy="new-project">
+          <div class="option-header" on:click={() => (currentSelection = NEW)}>
             <Title.Regular style="color: var(--color-darkgray)">
               Start with a new repository
             </Title.Regular>
@@ -284,13 +398,27 @@
                 style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose where you'd like to create the repository
               </Text.Regular>
-              <DirectoryInput bind:path={newRepositoryPath} />
+              <DirectoryInput
+                valid={!(validations && validations.newRepositoryPath)}
+                placeholder="~/path/to/folder"
+                bind:path={newRepositoryPath} />
+              {#if validations && validations.newRepositoryPath}
+                <Text.SmallBold
+                  style="color: var(--color-red); margin-top: 4px">
+                  {validations.newRepositoryPath[0]}
+                </Text.SmallBold>
+              {/if}
             </div>
           {/if}
         </div>
 
-        <div class="option" class:active={isExisting}>
-          <div class="option-header" on:click={selectExisting}>
+        <div
+          class="option"
+          class:active={isExisting}
+          data-cy="existing-project">
+          <div
+            class="option-header"
+            on:click={() => (currentSelection = EXISTING)}>
             <Title.Regular style="color: var(--color-darkgray)">
               Continue with an existing repository
             </Title.Regular>
@@ -304,9 +432,16 @@
                 Choose the existing repository
               </Text.Regular>
               <DirectoryInput
-                style="margin-bottom: 16px"
+                placeholder="~/path/to/folder"
+                valid={!(validations && validations.existingRepositoryPath)}
                 bind:path={existingRepositoryPath} />
-              <div class="default-branch-row">
+              {#if validations && validations.existingRepositoryPath}
+                <Text.SmallBold
+                  style="color: var(--color-red); margin-top: 4px">
+                  {validations.existingRepositoryPath[0]}
+                </Text.SmallBold>
+              {/if}
+              <div class="default-branch-row" style="margin-top: 16px">
                 <Text.Regular style="color: var(--color-darkgray)">
                   Select the default branch
                 </Text.Regular>
@@ -318,7 +453,7 @@
                     var(--color-pink)" />
                 {:else}
                   <Select
-                    items={[DEFAULT_BRANCH]}
+                    items={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
                     disabled
                     style="min-width: 240px" />
                 {/if}
@@ -333,29 +468,31 @@
         </div>
       </div>
 
-      <div class="validation-row">
-        {#if showValidations && !isNameValid}
+      {#if validations && validations.currentSelection}
+        <div class="validation-row">
           <Icon.Important style="margin-right: 8px;fill: var(--color-red)" />
           <Title.Regular style="color: var(--color-red)">
-            Project name should be [a-z0-9][a-z0-9_-]+
+            {validations.currentSelection[0]}
           </Title.Regular>
-        {/if}
-      </div>
+        </div>
+      {/if}
 
       <div class="button-row">
         <div class="footnote">
           <Text.Small style="color: var(--color-gray)">* required</Text.Small>
         </div>
         <Button
+          dataCy="cancel-button"
           variant="transparent"
           on:click={pop}
           style="margin-right: 24px;">
           Cancel
         </Button>
         <Button
+          dataCy="create-project-button"
+          disabled={!(name && currentSelection)}
           variant="primary"
-          on:click={createProject}
-          disabled={!isFormValid}>
+          on:click={createProject}>
           Create project
         </Button>
       </div>

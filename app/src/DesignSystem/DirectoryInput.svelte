@@ -4,9 +4,10 @@
   import Input from "./Input.svelte";
   import Text from "./Text";
 
-  export let placeholder = "";
+  export let placeholder = null;
   export let style = null;
-  export let path = "";
+  export let valid = true;
+  export let path = null;
 
   let files;
 
@@ -25,13 +26,15 @@
 <style>
   .wrapper {
     display: flex;
+    align-items: flex-end;
   }
 </style>
 
 <div class="wrapper" {style}>
   <Input
     {placeholder}
-    value={path || placeholder}
+    value={path}
+    {valid}
     disabled
     style="margin-right: 16px" />
 
