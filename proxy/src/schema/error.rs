@@ -79,7 +79,7 @@ fn convert_fs(error: &radicle_surf::file_system::error::Error) -> FieldError {
         radicle_surf::file_system::error::Error::Label(label_error) => match label_error {
             radicle_surf::file_system::error::Label::ContainsSlash => "Label contains slashes",
             radicle_surf::file_system::error::Label::Empty => "Label is empty",
-            radicle_surf::file_system::error::Label::InvalidUTF8 => "Lable is not valid utf8",
+            radicle_surf::file_system::error::Label::InvalidUTF8 => "Label is not valid utf8",
         },
         radicle_surf::file_system::error::Error::Path(path_error) => match path_error {
             radicle_surf::file_system::error::Path::Empty => "Path is empty",
