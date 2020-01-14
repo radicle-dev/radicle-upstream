@@ -87,7 +87,7 @@
     commitMessage={result.data.blob.info.lastCommit.summary}
     commitSha={result.data.blob.info.lastCommit.sha1.substring(0, 7)}
     timestamp={format(result.data.blob.info.lastCommit.committerTime * 1000)}
-    style="margin-bottom: 48px" />
+    style="margin-bottom: 24px" />
 
   <div class="file-source" data-cy="file-source">
     <header>

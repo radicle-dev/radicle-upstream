@@ -4,7 +4,6 @@
   import * as path from "../path.js";
   import { Icon } from "../DesignSystem";
   import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
-  import Folder from "./Folder.svelte";
 
   const projectId = getContext("projectId");
 </script>
@@ -75,12 +74,7 @@
         icon={Icon.Source}
         title="Source"
         href={path.projectSource(projectId)}
-        active={path.active(path.projectSource(projectId), $location, true)}>
-
-        <!-- <div class="source-tree" data-cy="source-tree">
-          <Folder />
-        </div> -->
-      </ProjectSidebarItem>
+        active={path.active(path.projectSource(projectId), $location, true)} />
     </li>
 
     <li>

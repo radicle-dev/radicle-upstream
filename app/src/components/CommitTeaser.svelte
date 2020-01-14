@@ -15,7 +15,7 @@
   .container {
     display: flex;
     align-items: center;
-    height: 48px;
+    height: 36px;
     padding: 0 12px 0 12px;
     border-radius: 2px;
     border: 1px solid var(--color-lightgray);

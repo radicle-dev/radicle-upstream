@@ -111,7 +111,7 @@
     commitMessage={result.data.tree.info.lastCommit.summary}
     commitSha={result.data.tree.info.lastCommit.sha1.substring(0, 7)}
     timestamp={format(result.data.tree.info.lastCommit.committerTime * 1000)}
-    style="margin-bottom: 48px" />
+    style="margin-bottom: 24px" />
 
   <table data-cy="file-list">
     <thead>
