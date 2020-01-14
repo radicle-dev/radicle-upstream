@@ -95,7 +95,7 @@ pub struct Info {
     /// The type of the object.
     pub object_type: ObjectType,
     /// The last commmit that touched this object.
-    pub last_commit: Commit,
+    pub last_commit: Option<Commit>,
 }
 
 /// File data abstraction.
