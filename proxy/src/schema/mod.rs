@@ -805,7 +805,16 @@ mod tests {
                                 "info": {
                                     "name": "src",
                                     "objectType": "TREE",
-                                    "lastCommit": None,
+                                    "lastCommit": {
+                                        "sha1": "3873745c8f6ffb45c990eb23b491d4b4b6182f95",
+                                        "author": {
+                                            "name": "Fintan Halpenny",
+                                            "email": "fintan.halpenny@gmail.com",
+                                        },
+                                        "summary": "Extend the docs (#2)",
+                                        "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
+                                        "committerTime": "1578309972",
+                                    },
                                 },
                                 "entries": [
                                     {
