@@ -14,6 +14,7 @@
 
     <div slot="right">
       <Button
+        dataCy="new-project-button"
         icon={Icon.Plus}
         variant="outline"
         size="small"

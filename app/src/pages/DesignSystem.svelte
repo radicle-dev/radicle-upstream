@@ -110,6 +110,7 @@
       <Title.Regular>Open Source Coin</Title.Regular>
 
       <Text.Regular>Open Source Coin</Text.Regular>
+      <Text.SmallBold>Open Source Coin</Text.SmallBold>
       <Text.Small>Open Source Coin</Text.Small>
 
       <Caption>Open Source Coin</Caption>
