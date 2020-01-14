@@ -1,6 +1,7 @@
 //! Domain errors returned by the API.
 
 use juniper::{FieldError, IntoFieldError};
+use radicle_surf as surf;
 use radicle_surf::git::git2;
 
 /// All error variants the API will return.
@@ -9,7 +10,7 @@ pub enum Error {
     /// FileSystem errors from interacting with code in repository.
     FS(radicle_surf::file_system::error::Error),
     /// Originated from `radicle_surf`.
-    Git(radicle_surf::git::GitError),
+    Git(surf::git::error::Error),
     /// Originated from `radicle_surf::git::git2`.
     Git2(git2::Error),
     /// Originated from `librad`.
@@ -30,9 +31,9 @@ impl From<radicle_surf::file_system::error::Error> for Error {
     }
 }
 
-impl From<radicle_surf::git::GitError> for Error {
-    fn from(git_error: radicle_surf::git::GitError) -> Self {
-        Self::Git(git_error)
+impl From<surf::git::error::Error> for Error {
+    fn from(surf_error: surf::git::error::Error) -> Self {
+        Self::Git(surf_error)
     }
 }
 
@@ -104,46 +105,40 @@ fn convert_io(error: &std::io::Error) -> FieldError {
 }
 
 /// Helper to convert a `radicle_surf` Git error to `FieldError`.
-fn convert_git(error: &radicle_surf::git::GitError) -> FieldError {
+fn convert_git(error: &surf::git::error::Error) -> FieldError {
     match error {
-        radicle_surf::git::GitError::EmptyCommitHistory => FieldError::new(
+        surf::git::error::Error::EmptyCommitHistory => FieldError::new(
             "Repository has an empty commit history.",
             graphql_value!({
                 "type": "GIT_EMPTY_COMMIT_HISTORY"
             }),
         ),
-        radicle_surf::git::GitError::BranchDecode => FieldError::new(
-            "Unable to decode the given branch.",
-            graphql_value!({
-                "type": "GIT_BRANCH_DECODE"
-            }),
-        ),
-        radicle_surf::git::GitError::NameDecode => FieldError::new(
-            "Name decode failed.",
-            graphql_value!({
-                "type": "GIT_NAME_DECODE"
-            }),
-        ),
-        radicle_surf::git::GitError::NotBranch => FieldError::new(
+        surf::git::error::Error::NotBranch => FieldError::new(
             "Not a known branch.",
             graphql_value!({
                 "type": "GIT_NOT_BRANCH"
             }),
         ),
-        radicle_surf::git::GitError::NotTag => FieldError::new(
+        surf::git::error::Error::NotTag => FieldError::new(
             "Not a known tag.",
             graphql_value!({
                 "type": "GIT_NOT_TAG"
             }),
         ),
-        radicle_surf::git::GitError::FileSystem(fs_error) => convert_fs(fs_error),
-        radicle_surf::git::GitError::FileDiffException => FieldError::new(
+        surf::git::error::Error::Utf8Error(_utf8_error) => FieldError::new(
+            "String conversion error",
+            graphql_value!({
+                "type": "STRING_CONVERSION",
+            }),
+        ),
+        surf::git::error::Error::FileSystem(fs_error) => convert_fs(fs_error),
+        surf::git::error::Error::FileDiffException => FieldError::new(
             "Diff failed.",
             graphql_value!({
                 "type": "GIT_FILE_DIFF"
             }),
         ),
-        radicle_surf::git::GitError::Internal(error) => FieldError::new(
+        surf::git::error::Error::Internal(error) => FieldError::new(
             format!("Internal Git error: {:?}", error),
             graphql_value!({
                 "type": "GIT_INTERNAL"

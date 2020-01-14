@@ -2437,12 +2437,12 @@ dependencies = [
  "juniper_warp 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=f2e9ed6d46e4f86820a30e840ab929c0d4fac48a)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "nonempty 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nonempty 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pico-args 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=100205d976eaa39c93b0cf68906d95008ea8e414)",
- "radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=396ef491f4ef2acfcbe8f90c3be788fdf82e1f59)",
+ "radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=763eace1ffec81e6dedf712baae29676fcfe633a)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2544,7 +2544,7 @@ dependencies = [
 [[package]]
 name = "radicle-surf"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-surf.git?rev=396ef491f4ef2acfcbe8f90c3be788fdf82e1f59#396ef491f4ef2acfcbe8f90c3be788fdf82e1f59"
+source = "git+https://github.com/radicle-dev/radicle-surf.git?rev=763eace1ffec81e6dedf712baae29676fcfe633a#763eace1ffec81e6dedf712baae29676fcfe633a"
 dependencies = [
  "git2 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "nonempty 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -4471,7 +4471,7 @@ dependencies = [
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
 "checksum radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=100205d976eaa39c93b0cf68906d95008ea8e414)" = "<none>"
 "checksum radicle-registry-runtime 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=100205d976eaa39c93b0cf68906d95008ea8e414)" = "<none>"
-"checksum radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=396ef491f4ef2acfcbe8f90c3be788fdf82e1f59)" = "<none>"
+"checksum radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=763eace1ffec81e6dedf712baae29676fcfe633a)" = "<none>"
 "checksum rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)" = "6d71dacdc3c88c1fde3885a3be3fbab9f35724e6ce99467f7d9c5026132184ca"
 "checksum rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3ae1b169243eaf61759b8475a998f0a385e42042370f3a7dbaf35246eacc8412"
 "checksum rand_chacha 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "556d3a1ca6600bfcbab7c7c91ccb085ac7fbbcd70e008a98742e7847f4f7bcef"

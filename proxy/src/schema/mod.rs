@@ -2,10 +2,7 @@ use juniper::{FieldResult, RootNode, ID};
 use std::str::FromStr;
 
 use librad::paths::Paths;
-use radicle_surf::{
-    file_system::{Path, SystemType},
-    git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
-};
+use radicle_surf as surf;
 
 /// Error definitions and type casting logic.
 mod error;
@@ -81,31 +78,33 @@ impl Query {
     }
 
     fn blob(ctx: &Context, id: ID, revision: String, path: String) -> Result<git::Blob, Error> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        let repo =
+            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let mut browser =
+            surf::git::Browser::new(repo).expect("setting up browser for repo failed");
 
         // Best effort to guess the revision.
         if let Err(err) = browser
-            .branch(BranchName::new(&revision))
-            .or(browser.commit(Sha1::new(&revision)))
-            .or(browser.tag(TagName::new(&revision)))
+            .branch(surf::git::BranchName::new(&revision))
+            .or(browser.commit(surf::git::Sha1::new(&revision)))
+            .or(browser.tag(surf::git::TagName::new(&revision)))
         {
             let err_fmt = format!("{:?}", err);
 
-            return Err(Error::Git(radicle_surf::git::GitError::NotBranch));
+            return Err(Error::Git(surf::git::error::Error::NotBranch));
         };
 
         let root = browser
             .get_directory()
             .expect("unable to get root directory");
 
-        let mut p = Path::from_str(&path)?;
+        let mut p = surf::file_system::Path::from_str(&path)?;
 
         let file = root
             .find_file(&p)
             .unwrap_or_else(|| panic!("unable to find file: {} -> {}", path, p));
 
-        let mut commit_path = Path::root();
+        let mut commit_path = surf::file_system::Path::root();
         commit_path.append(&mut p);
 
         let last_commit = browser
@@ -133,8 +132,10 @@ impl Query {
     }
 
     fn commit(ctx: &Context, id: ID, sha1: String) -> FieldResult<git::Commit> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        let repo =
+            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let mut browser =
+            surf::git::Browser::new(repo).expect("setting up browser for repo failed");
         browser
             .commit(radicle_surf::vcs::git::Sha1::new(&sha1))
             .expect("setting commit failed");
@@ -154,8 +155,9 @@ impl Query {
     }
 
     fn tags(ctx: &Context, id: ID) -> FieldResult<Vec<git::Tag>> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        let repo =
+            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let browser = surf::git::Browser::new(repo).expect("setting up browser for repo failed");
         let mut tag_names = browser.list_tags().expect("Getting branches failed");
         tag_names.sort();
 
@@ -170,23 +172,23 @@ impl Query {
     }
 
     fn tree(ctx: &Context, id: ID, revision: String, prefix: String) -> Result<git::Tree, Error> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
+        let mut browser = surf::git::Browser::new(repo)?;
 
         if let Err(err) = browser
-            .branch(BranchName::new(&revision))
-            .or(browser.commit(Sha1::new(&revision)))
-            .or(browser.tag(TagName::new(&revision)))
+            .branch(surf::git::BranchName::new(&revision))
+            .or(browser.commit(surf::git::Sha1::new(&revision)))
+            .or(browser.tag(surf::git::TagName::new(&revision)))
         {
             let err_fmt = format!("{:?}", err);
 
-            return Err(Error::Git(radicle_surf::git::GitError::NotBranch));
+            return Err(Error::Git(surf::git::error::Error::NotBranch));
         };
 
         let mut path = if prefix == "/" || prefix == "" {
-            Path::root()
+            surf::file_system::Path::root()
         } else {
-            Path::from_str(&prefix)?
+            surf::file_system::Path::from_str(&prefix)?
         };
 
         let root_dir = browser
@@ -211,7 +213,7 @@ impl Query {
             .iter()
             .map(|(label, system_type)| {
                 let mut entry_path = if path.is_root() {
-                    Path(
+                    surf::file_system::Path(
                         nonempty::NonEmpty::from_slice(&[label.clone()])
                             .expect("unable to create label slice"),
                     )
@@ -220,7 +222,7 @@ impl Query {
                     p.push(label.clone());
                     p
                 };
-                let mut commit_path = Path::root();
+                let mut commit_path = surf::file_system::Path::root();
                 commit_path.append(&mut entry_path);
 
                 let last_commit = browser
@@ -230,8 +232,8 @@ impl Query {
                 let info = git::Info {
                     name: label.to_string(),
                     object_type: match system_type {
-                        SystemType::Directory => git::ObjectType::Tree,
-                        SystemType::File => git::ObjectType::Blob,
+                        surf::file_system::SystemType::Directory => git::ObjectType::Tree,
+                        surf::file_system::SystemType::File => git::ObjectType::Blob,
                     },
                     last_commit,
                 };
@@ -252,7 +254,7 @@ impl Query {
         let last_commit = if path.is_root() {
             Some(git::Commit::from(browser.get_history().0.first()))
         } else {
-            let mut commit_path = Path::root();
+            let mut commit_path = surf::file_system::Path::root();
             commit_path.append(&mut path);
 
             browser
