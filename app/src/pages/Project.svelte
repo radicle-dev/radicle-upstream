@@ -67,14 +67,12 @@
 
 <style>
   .container {
-    position: relative;
-    /* left: calc(var(--slim-sidebar-width));
-    width: calc(100vw - var(--slim-sidebar-width)); */
+    position: fixed;
   }
 
-  /* .layout {
-    margin: 96px 81px 64px 81px;
-  } */
+  .layout {
+    margin-top: 40px;
+  }
 </style>
 
 <Layout dataCy="page">

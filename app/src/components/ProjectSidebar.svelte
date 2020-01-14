@@ -10,26 +10,18 @@
 </script>
 
 <style>
-  nav {
-    /* width: var(--project-sidebar-width); */
-    /* height: 100%; */
-    /* width: calc(100vw - var(--slim-sidebar-width)); */
-    display: flex;
-    /* position: fixed; */
-    flex-direction: column;
-    /* justify-content: space-between; */
-    /* padding: 44px 20px 0 24px; */
-    /* overflow-y: auto; */
-  }
-
   ul {
+    height: 100%;
+    align-items: center;
     display: flex;
     flex-direction: row;
   }
 
   li {
-    /* margin-bottom: 14px; */
-    /* display: inline; */
+    margin-left: 24px;
+    margin-right: 8px;
+    align-items: center;
+    line-height: 100%;
   }
 
   nav :global(li:hover p) {

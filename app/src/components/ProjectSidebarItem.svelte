@@ -10,12 +10,13 @@
 
 <style>
   .icon {
-    margin-right: 12px;
-    align-self: center;
+    margin-right: 16px;
+    align-items: center;
   }
 
   a {
     display: flex;
+    align-items: center;
   }
 </style>
 
@@ -25,9 +26,7 @@
       <svelte:component this={icon} style="fill: var(--color-purple)" />
     </div>
 
-    <Title.Regular style="color: var(--color-purple); line-height: 24px">
-      {title}
-    </Title.Regular>
+    <Title.Regular style="color: var(--color-purple)">{title}</Title.Regular>
   {:else}
     <div class="icon">
       <svelte:component this={icon} />
