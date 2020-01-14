@@ -6,13 +6,8 @@ context("project creation", () => {
 
     // TODO(rudolfs): test empty project listing has wording and button
 
-    it("can be opened via a button in the header of the projects index page", () => {
+    it("can be opened via the projects page and closed by pressing cancel", () => {
       cy.get('[data-cy="new-project-button"]').click();
-      cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");
-    });
-
-    it("can be opened via the sidebar and closed via 'cancel'", () => {
-      cy.get('[data-cy="sidebar"] [data-cy="new-project"]').click();
       cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");
       cy.get('[data-cy="create-project"] [data-cy="cancel-button"]').click();
       cy.contains("My Projects").should("exist");

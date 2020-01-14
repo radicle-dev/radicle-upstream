@@ -35,7 +35,7 @@ context("navigation", () => {
       cy.get('[data-cy="page"]').should("contain", "Profile");
 
       cy.get('[data-cy="sidebar"] [data-cy="new-project"]').click();
-      cy.get('[data-cy="page"]').should("contain", "Create a new project");
+      cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");
     });
   });
 
