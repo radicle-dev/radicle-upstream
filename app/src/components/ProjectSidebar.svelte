@@ -37,13 +37,6 @@
 
 <nav data-cy="project-sidebar">
   <ul>
-    <li>
-      <ProjectSidebarItem
-        icon={Icon.Home}
-        title="Overview"
-        href={path.projectOverview(projectId)}
-        active={path.active(path.projectOverview(projectId), $location)} />
-    </li>
 
     <li>
       <ProjectSidebarItem
