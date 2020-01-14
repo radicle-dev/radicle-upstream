@@ -68,7 +68,7 @@
             <ProjectCard
               title={project.metadata.name}
               description={project.metadata.description}
-              isRegistered={true}
+              isRegistered={false}
               imgUrl={project.metadata.imgUrl}
               state={Icon.Check} />
           </a>

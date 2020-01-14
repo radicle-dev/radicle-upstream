@@ -39,6 +39,7 @@ export const extractProjectSourceObjectType = location => {
 
 export const designSystem = _params => "/design-system";
 export const createProject = _params => "/projects/new";
+export const registerProject = id => `/projects/${id}/register`;
 export const wallet = _params => "/wallet";
 export const profile = _params => "/profile";
 export const help = _params => "/help";

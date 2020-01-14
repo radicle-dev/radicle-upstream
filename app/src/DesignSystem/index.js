@@ -8,6 +8,8 @@ import DirectoryInput from "./DirectoryInput.svelte";
 import Numeric from "./Numeric";
 import Text from "./Text";
 import Title from "./Title";
+import Avatar from "./Avatar.svelte";
+import Rad from "./Rad.svelte";
 import Select from "./Select.svelte";
 
 export {
@@ -21,5 +23,7 @@ export {
   Numeric,
   Text,
   Title,
+  Avatar,
+  Rad,
   Select
 };
