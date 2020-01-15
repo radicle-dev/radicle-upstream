@@ -98,10 +98,9 @@ context("navigation", () => {
       cy.get('[data-cy="project-sidebar"]')
         .get('a[title="ProjectSource"]')
         .click();
-      // TODO(xla): Reenable once last commit for directories works again.
-      // cy.get("thead")
-      //   .contains("Commit Message")
-      //   .should("exist");
+      cy.get("thead")
+        .contains("Commit Message")
+        .should("exist");
       cy.get("[data-cy=breadcrumbs]").within(() => {
         cy.contains("Source").should("exist");
       });
