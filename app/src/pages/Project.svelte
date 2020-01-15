@@ -1,5 +1,4 @@
 <script>
-  import DoubleSidebarLayout from "../layouts/DoubleSidebarLayout.svelte";
   import { setContext } from "svelte";
   import { revision, objectPath, objectType } from "../stores.js";
   import * as path from "../path.js";
@@ -74,8 +73,8 @@
 
   .project-container {
     position: relative;
-    left: var(--slim-sidebar-width);
-    width: calc(100vw - var(--slim-sidebar-width));
+    left: var(--sidebar-width);
+    width: calc(100vw - var(--sidebar-width));
     height: 100%;
   }
 

@@ -16,7 +16,7 @@
     background-color: var(--color-white);
     width: 100%;
     height: 61px;
-    left: var(--slim-sidebar-width);
+    left: var(--sidebar-width);
     border-bottom: 1px solid var(--color-lightgray);
   }
 

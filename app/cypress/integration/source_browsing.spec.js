@@ -140,7 +140,7 @@ context("source code browsing", () => {
     });
   });
 
-  context("sidebar source-tree", () => {
+  context("source-tree", () => {
     it("shows files and directories", () => {
       cy.get("[data-cy=source-tree]").within(() => {
         // directories
