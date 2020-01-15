@@ -34,8 +34,6 @@ mod env;
 mod schema;
 /// Server infrastructure used to power the API.
 mod server_warp;
-/// Logic for registering new projects.
-mod register;
 
 /// Flags accepted by the proxy binary.
 struct Args {

@@ -1,6 +1,8 @@
 use juniper::{FieldError, FieldResult, RootNode, ID};
+use std::convert::TryFrom;
 
 use librad::paths::Paths;
+use radicle_registry_client::{ed25519::Pair, Client};
 use radicle_surf::{
     file_system::{Path, SystemType},
     git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
@@ -8,10 +10,15 @@ use radicle_surf::{
 
 /// Error definitions and type casting logic.
 mod error;
+/// Git objects as GraphQL objects.
 pub mod git;
+/// TODO
 mod project;
+/// Logic for registering new projects.
+mod registry;
 
 use crate::schema::error::Error;
+use crate::schema::registry::Registry;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;
@@ -28,14 +35,27 @@ pub struct Context {
     dummy_repo_path: String,
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
+    /// Radicle registry client.
+    client: Registry<Client>,
 }
 
 impl Context {
     /// Returns a new `Context`.
     pub const fn new(dummy_repo_path: String, librad_paths: Paths) -> Self {
+        let client = Registry::<Client>::try_from("127.0.0.1").expect("localhost failed?!");
         Self {
             dummy_repo_path,
             librad_paths,
+            client,
+        }
+    }
+
+    pub const fn new_emulator(dummy_repo_path: String, librad_paths: Paths) -> Self {
+        let client = Registry::<Client>::new(Client::new_emulator());
+        Self {
+            dummy_repo_path,
+            librad_paths,
+            client,
         }
     }
 }
@@ -67,6 +87,24 @@ impl Mutation {
             id: id.to_string().into(),
             metadata: meta.into(),
         })
+    }
+
+    fn register_project(
+        ctx: &Context,
+        metadata: project::MetadataInput,
+    ) -> Result<project::Project, Error> {
+        // TODO replace with user info
+        let user = Pair::from_legacy_string("//anonymous", None);
+        ctx.client
+            .register_project(
+                &user,
+                metadata.name,
+                "rad".into(),
+                metadata.description,
+                metadata.img_url,
+            )
+            .await?;
+        // TODO return the newly registered project
     }
 }
 
