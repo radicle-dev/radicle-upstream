@@ -239,7 +239,7 @@ dependencies = [
 
 [[package]]
 name = "buffered-reader"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bzip2 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1423,26 +1423,27 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f2e9ed6d46e4f86820a30e840ab929c0d4fac48a#f2e9ed6d46e4f86820a30e840ab929c0d4fac48a"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=0aa3fe0895c3e1b0cceef98ab27bcf1b2a669744#0aa3fe0895c3e1b0cceef98ab27bcf1b2a669744"
 dependencies = [
  "bs58 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "directories 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure_derive 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "git2 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "nettle 5.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "nonempty 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "olpc-cjson 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "radicle-surf 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "secstr 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "sequoia-openpgp 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "sequoia-rfc2822 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sequoia-openpgp 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_cbor 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.44 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "sodiumoxide 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempfile 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "time 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)",
  "url 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "urltemplate 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1782,6 +1783,11 @@ dependencies = [
 [[package]]
 name = "nonempty"
 version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "nonempty"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -2430,14 +2436,14 @@ dependencies = [
  "juniper 0.14.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper_codegen 0.14.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "juniper_warp 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=f2e9ed6d46e4f86820a30e840ab929c0d4fac48a)",
+ "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=0aa3fe0895c3e1b0cceef98ab27bcf1b2a669744)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "nonempty 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nonempty 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pico-args 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=100205d976eaa39c93b0cf68906d95008ea8e414)",
- "radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=3ddc170c109b10273ea04659eb64ec6918189f70)",
+ "radicle-surf 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2538,11 +2544,11 @@ dependencies = [
 
 [[package]]
 name = "radicle-surf"
-version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-surf.git?rev=3ddc170c109b10273ea04659eb64ec6918189f70#3ddc170c109b10273ea04659eb64ec6918189f70"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "git2 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "nonempty 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nonempty 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2867,11 +2873,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "sequoia-openpgp"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "buffered-reader 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "buffered-reader 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bzip2 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "failure 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "flate2 1.0.13 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2883,17 +2889,7 @@ dependencies = [
  "nettle 5.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "quickcheck 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "time 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "sequoia-rfc2822"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "failure 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "lalrpop 0.17.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "lalrpop-util 0.17.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -4227,7 +4223,7 @@ dependencies = [
 "checksum block-padding 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "fa79dedbb091f449f1f39e53edf88d5dbe95f895dae6135a8d7b881fb5af73f5"
 "checksum bs58 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b170cd256a3f9fa6b9edae3e44a7dfdfc77e8124dbc3e2612d75f9c3e2396dae"
 "checksum buf_redux 0.8.4 (registry+https://github.com/rust-lang/crates.io-index)" = "b953a6887648bb07a535631f2bc00fbdb2a2216f135552cb3f534ed136b9c07f"
-"checksum buffered-reader 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "2f4841b73b4705c268f16b2d808c199b7469f1011a5b845b8c68f9180d42ddaa"
+"checksum buffered-reader 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)" = "926c9f1c816da9ee57eec1e951483e5d1b1617b4f5131e48902e7ae63154826c"
 "checksum byte-slice-cast 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)" = "b0a5e3906bcbf133e33c1d4d95afc664ad37fbdb9f6568d8043e7ea8c27d93d3"
 "checksum byte-tools 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "e3b5ca7a04898ad4bcd41c90c5285445ff5b791899bb1b0abdd2a2aa791211d7"
 "checksum byteorder 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "a7c3dd8985a7111efc5c80b44e23ecdd8c007de8ade3b96595387e812b957cf5"
@@ -4359,7 +4355,7 @@ dependencies = [
 "checksum libflate 0.1.27 (registry+https://github.com/rust-lang/crates.io-index)" = "d9135df43b1f5d0e333385cb6e7897ecd1a43d7d11b91ac003f4d2c2d2401fdd"
 "checksum libgit2-sys 0.9.2 (registry+https://github.com/rust-lang/crates.io-index)" = "4870c781f6063efb83150cd22c1ddf6ecf58531419e7570cdcced46970f64a16"
 "checksum libloading 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f2b111a074963af1d37a139918ac6d49ad1d0d5e47f72fd55388619691a7d753"
-"checksum librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=f2e9ed6d46e4f86820a30e840ab929c0d4fac48a)" = "<none>"
+"checksum librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=0aa3fe0895c3e1b0cceef98ab27bcf1b2a669744)" = "<none>"
 "checksum libsecp256k1 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "df6edf84fd62aad1c93932b39324eaeda3912c1d26bc18dfaee6293848e49a50"
 "checksum libsodium-sys 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "1c344ff12b90ef8fa1f0fffacd348c1fd041db331841fec9eab23fdb991f5e73"
 "checksum libssh2-sys 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)" = "5fcd5a428a31cbbfe059812d74f4b6cd3b9b7426c2bdaec56993c5365da1c328"
@@ -4396,6 +4392,7 @@ dependencies = [
 "checksum nodrop 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)" = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
 "checksum nom 4.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2ad2a91a8e869eeb30b9cb3119ae87773a8f4ae617f41b1eb9c154b2905f7bd6"
 "checksum nonempty 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "4f962080273ac958f790079cfc886b5b9d722969dbd7b03f473902bdfe5c69b1"
+"checksum nonempty 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6954982ece17426b038f84895b4a6771c541299dc7141fab20ee676b19d9d97f"
 "checksum num-bigint 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "343b3df15c945a59e72aae31e89a7cfc9e11850e96d4fde6fed5e3c7c8d9c887"
 "checksum num-integer 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)" = "b85e541ef8255f6cf42bbfe4ef361305c6c135d10919ecc26126c4e5ae94bc09"
 "checksum num-rational 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f2885278d5fe2adc2f75ced642d52d879bffaceb5a2e0b1d4309ffdfb239b454"
@@ -4465,7 +4462,7 @@ dependencies = [
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
 "checksum radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=100205d976eaa39c93b0cf68906d95008ea8e414)" = "<none>"
 "checksum radicle-registry-runtime 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=100205d976eaa39c93b0cf68906d95008ea8e414)" = "<none>"
-"checksum radicle-surf 0.1.0 (git+https://github.com/radicle-dev/radicle-surf.git?rev=3ddc170c109b10273ea04659eb64ec6918189f70)" = "<none>"
+"checksum radicle-surf 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b88710782bcd05854e7db894d0a85f25aaaf1b1ca9cb827ede7490e5ae5d84b0"
 "checksum rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)" = "6d71dacdc3c88c1fde3885a3be3fbab9f35724e6ce99467f7d9c5026132184ca"
 "checksum rand 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "3ae1b169243eaf61759b8475a998f0a385e42042370f3a7dbaf35246eacc8412"
 "checksum rand_chacha 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "556d3a1ca6600bfcbab7c7c91ccb085ac7fbbcd70e008a98742e7847f4f7bcef"
@@ -4505,8 +4502,7 @@ dependencies = [
 "checksum security-framework-sys 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "e31493fc37615debb8c5090a7aeb4a9730bc61e77ab10b9af59f1a202284f895"
 "checksum semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
 "checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
-"checksum sequoia-openpgp 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e414fea7ba6c55d07c3752a8d8f8e14f7c96f1b83cdbb5d3fad9e17be6009a3a"
-"checksum sequoia-rfc2822 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)" = "270d16627fe2cc0fc9dc24f96322f72a0c829d921e2d4ee4b336d49569307361"
+"checksum sequoia-openpgp 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)" = "33554f73114b96e1275ebec51131010c15e6c91f18a8d29a7d234112f9be43c5"
 "checksum serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)" = "414115f25f818d7dfccec8ee535d76949ae78584fc4f79a6f45a904bf8ab4449"
 "checksum serde_cbor 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f7081ed758ec726a6ed8ee7e92f5d3f6e6f8c3901b1f972e3a4a2f2599fad14f"
 "checksum serde_derive 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)" = "128f9e303a5a29922045a830221b8f78ec74a5f544944f3d5984f8ec3895ef64"

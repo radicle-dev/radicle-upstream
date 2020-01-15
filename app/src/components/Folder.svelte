@@ -82,7 +82,16 @@
 
 {#await $sourceTree then result}
   <div class="container">
-    {#if !firstEntry}
+    {#if firstEntry}
+      <div class="folder" class:active>
+        <Icon.Folder dataCy={`expand-${name}`} />
+        <a
+          href={path.projectSource(projectId, $revision, TREE, prefix)}
+          use:link>
+          {name}
+        </a>
+      </div>
+    {:else}
       <div class="folder" class:expanded class:active>
         <Icon.CarretBig dataCy={`expand-${name}`} on:click={toggle} />
         <a

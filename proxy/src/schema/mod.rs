@@ -1,10 +1,8 @@
-use juniper::{FieldError, FieldResult, RootNode, ID};
+use juniper::{FieldResult, RootNode, ID};
+use std::str::FromStr;
 
 use librad::paths::Paths;
-use radicle_surf::{
-    file_system::{Path, SystemType},
-    git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
-};
+use radicle_surf as surf;
 
 /// Error definitions and type casting logic.
 mod error;
@@ -53,7 +51,10 @@ impl Mutation {
         path: String,
         publish: bool,
     ) -> Result<project::Project, Error> {
-        git::init_repo(path.clone())?;
+        if surf::git::git2::Repository::open(path.clone()).is_err() {
+            git::init_repo(path.clone())?;
+        };
+
         let (id, meta) = git::init_project(
             &ctx.librad_paths,
             &path,
@@ -79,36 +80,39 @@ impl Query {
         "1.0"
     }
 
-    fn blob(ctx: &Context, id: ID, revision: String, path: String) -> FieldResult<git::Blob> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+    fn blob(ctx: &Context, id: ID, revision: String, path: String) -> Result<git::Blob, Error> {
+        let repo =
+            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let mut browser =
+            surf::git::Browser::new(repo).expect("setting up browser for repo failed");
 
         // Best effort to guess the revision.
         if let Err(err) = browser
-            .branch(BranchName::new(&revision))
-            .or(browser.commit(Sha1::new(&revision)))
-            .or(browser.tag(TagName::new(&revision)))
+            .branch(surf::git::BranchName::new(&revision))
+            .or(browser.commit(surf::git::Sha1::new(&revision)))
+            .or(browser.tag(surf::git::TagName::new(&revision)))
         {
             let err_fmt = format!("{:?}", err);
 
-            return Err(FieldError::new(
-                "Git error occurred",
-                graphql_value!({ "git": err_fmt }),
-            ));
+            return Err(Error::Git(surf::git::error::Error::NotBranch));
         };
 
         let root = browser
             .get_directory()
             .expect("unable to get root directory");
 
-        let mut p = Path::root();
-        p.append(&mut Path::from_string(&path));
+        let mut p = surf::file_system::Path::from_str(&path)?;
+
         let file = root
             .find_file(&p)
             .unwrap_or_else(|| panic!("unable to find file: {} -> {}", path, p));
+
+        let mut commit_path = surf::file_system::Path::root();
+        commit_path.append(&mut p);
+
         let last_commit = browser
-            .last_commit(&p)
-            .unwrap_or_else(|| panic!("[blob] unable to get last commit: {}", p));
+            .last_commit(&commit_path)?
+            .map(|c| git::Commit::from(&c));
         let (_rest, last) = p.split_last();
         let (binary, content) = {
             let res = std::str::from_utf8(&file.contents);
@@ -125,14 +129,16 @@ impl Query {
             info: git::Info {
                 name: last.label,
                 object_type: git::ObjectType::Blob,
-                last_commit: git::Commit::from(&last_commit),
+                last_commit,
             },
         })
     }
 
     fn commit(ctx: &Context, id: ID, sha1: String) -> FieldResult<git::Commit> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        let repo =
+            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let mut browser =
+            surf::git::Browser::new(repo).expect("setting up browser for repo failed");
         browser
             .commit(radicle_surf::vcs::git::Sha1::new(&sha1))
             .expect("setting commit failed");
@@ -152,8 +158,9 @@ impl Query {
     }
 
     fn tags(ctx: &Context, id: ID) -> FieldResult<Vec<git::Tag>> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+        let repo =
+            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
+        let browser = surf::git::Browser::new(repo).expect("setting up browser for repo failed");
         let mut tag_names = browser.list_tags().expect("Getting branches failed");
         tag_names.sort();
 
@@ -167,29 +174,24 @@ impl Query {
         Ok(tags)
     }
 
-    fn tree(ctx: &Context, id: ID, revision: String, prefix: String) -> FieldResult<git::Tree> {
-        let repo = GitRepository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser = GitBrowser::new(&repo).expect("setting up browser for repo failed");
+    fn tree(ctx: &Context, id: ID, revision: String, prefix: String) -> Result<git::Tree, Error> {
+        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
+        let mut browser = surf::git::Browser::new(repo)?;
 
         if let Err(err) = browser
-            .branch(BranchName::new(&revision))
-            .or(browser.commit(Sha1::new(&revision)))
-            .or(browser.tag(TagName::new(&revision)))
+            .branch(surf::git::BranchName::new(&revision))
+            .or(browser.commit(surf::git::Sha1::new(&revision)))
+            .or(browser.tag(surf::git::TagName::new(&revision)))
         {
             let err_fmt = format!("{:?}", err);
 
-            return Err(FieldError::new(
-                "Git error occurred",
-                graphql_value!({ "git": err_fmt }),
-            ));
+            return Err(Error::Git(surf::git::error::Error::NotBranch));
         };
 
-        let path = if prefix == "/" || prefix == "" {
-            Path::root()
+        let mut path = if prefix == "/" || prefix == "" {
+            surf::file_system::Path::root()
         } else {
-            let mut root = Path::root();
-            root.append(&mut Path::from_string(&prefix));
-            root
+            surf::file_system::Path::from_str(&prefix)?
         };
 
         let root_dir = browser
@@ -213,31 +215,35 @@ impl Query {
         let mut entries: Vec<git::TreeEntry> = prefix_contents
             .iter()
             .map(|(label, system_type)| {
-                let entry_path = {
-                    let mut path = path.clone();
-                    path.push(label.clone());
-                    path
+                let mut entry_path = if path.is_root() {
+                    surf::file_system::Path(
+                        nonempty::NonEmpty::from_slice(&[label.clone()])
+                            .expect("unable to create label slice"),
+                    )
+                } else {
+                    let mut p = path.clone();
+                    p.push(label.clone());
+                    p
                 };
-                let last_commit =
-                    git::Commit::from(&browser.last_commit(&entry_path).unwrap_or_else(|| {
-                        panic!("[tree] unable to get entry last commit: {}", entry_path)
-                    }));
+                let mut commit_path = surf::file_system::Path::root();
+                commit_path.append(&mut entry_path);
+
+                let last_commit = browser
+                    .last_commit(&commit_path)
+                    .expect("last commit for file failed")
+                    .map(|c| git::Commit::from(&c));
                 let info = git::Info {
                     name: label.to_string(),
                     object_type: match system_type {
-                        SystemType::Directory => git::ObjectType::Tree,
-                        SystemType::File => git::ObjectType::Blob,
+                        surf::file_system::SystemType::Directory => git::ObjectType::Tree,
+                        surf::file_system::SystemType::File => git::ObjectType::Blob,
                     },
                     last_commit,
                 };
 
-                let (_root, labels) = entry_path.split_first();
-                let clean_path =
-                    Path(nonempty::NonEmpty::from_slice(labels).expect("unable to list of paths"));
-
                 git::TreeEntry {
                     info,
-                    path: clean_path.to_string(),
+                    path: entry_path.to_string(),
                 }
             })
             .collect();
@@ -249,13 +255,14 @@ impl Query {
         entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
 
         let last_commit = if path.is_root() {
-            git::Commit::from(browser.get_history().0.first())
+            Some(git::Commit::from(browser.get_history().0.first()))
         } else {
-            git::Commit::from(
-                &browser
-                    .last_commit(&path)
-                    .unwrap_or_else(|| panic!("[tree] unable to get last commit: {}", path)),
-            )
+            let mut commit_path = surf::file_system::Path::root();
+            commit_path.append(&mut path);
+
+            browser
+                .last_commit(&commit_path)?
+                .map(|c| git::Commit::from(&c))
         };
         let name = if path.is_root() {
             "".into()
@@ -279,7 +286,7 @@ impl Query {
     fn project(ctx: &Context, id: ID) -> Result<project::Project, Error> {
         use std::str::FromStr;
         let project_id = librad::project::ProjectId::from_str(&id.to_string())?;
-        let meta = librad::project::show_project(&ctx.librad_paths, &project_id)?;
+        let meta = librad::project::Project::show(&ctx.librad_paths, &project_id)?;
 
         Ok(project::Project {
             id,
@@ -288,9 +295,9 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
-        let mut projects = librad::project::list_projects(&ctx.librad_paths)
+        let mut projects = librad::project::Project::list(&ctx.librad_paths)
             .map(|id| {
-                let project_meta = librad::project::show_project(&ctx.librad_paths, &id)
+                let project_meta = librad::project::Project::show(&ctx.librad_paths, &id)
                     .expect("unable to get project meta");
 
                 project::Project {
@@ -355,13 +362,56 @@ mod tests {
 
         #[test]
         fn create_project_existing_repo() {
-            with_fixtures(|_librad_paths, repos_dir| {
+            with_fixtures(|librad_paths, repos_dir| {
                 let dir = tempfile::tempdir_in(repos_dir.path())
                     .expect("creating temporary directory failed");
                 let path = dir.path().to_str().expect("unable to get path");
 
                 crate::schema::git::init_repo(path.to_string()).expect("unable to create repo");
                 git2::Repository::init(path).expect("unable to create repo");
+
+                let mut metadata_input: IndexMap<String, InputValue> = IndexMap::new();
+                metadata_input.insert("name".into(), InputValue::scalar("upstream"));
+                metadata_input.insert(
+                    "description".into(),
+                    InputValue::scalar("Code collaboration without intermediates."),
+                );
+                metadata_input.insert("defaultBranch".into(), InputValue::scalar("master"));
+                metadata_input.insert("imgUrl".into(), InputValue::scalar("https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png"));
+
+                let mut vars = Variables::new();
+                vars.insert("metadata".into(), InputValue::object(metadata_input));
+                vars.insert("path".into(), InputValue::scalar(path));
+                vars.insert("publish".into(), InputValue::scalar(false));
+
+                let query =
+                    "mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
+                        createProject(metadata: $metadata, path: $path, publish: $publish) {
+                            metadata {
+                                name
+                                description
+                                defaultBranch
+                                imgUrl
+                            }
+                        }
+                    }";
+
+                execute_query(librad_paths, query, &vars, |res, errors| {
+                    assert_eq!(errors, []);
+                    assert_ne!(
+                        res,
+                        graphql_value!({
+                            "metadata": {
+                                "name": "upstream",
+                                "description": "Code collaboration without intermediates.",
+                                "default_branch": "master",
+                                "img_url": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                            }
+                        })
+                    );
+                });
+
+                dir.close().expect("directory teardown failed");
             })
         }
 
@@ -488,14 +538,14 @@ mod tests {
                                     "name": "arrows.txt",
                                     "objectType": "BLOB",
                                     "lastCommit": {
-                                        "sha1": "3873745c8f6ffb45c990eb23b491d4b4b6182f95",
+                                        "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
                                         "author": {
-                                            "name": "Fintan Halpenny",
-                                            "email": "fintan.halpenny@gmail.com",
+                                            "name": "Rūdolfs Ošiņš",
+                                            "email": "rudolfs@osins.org",
                                         },
-                                        "summary": "Extend the docs (#2)",
-                                        "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                                        "committerTime": "1578309972",
+                                        "summary": "Add text files",
+                                        "message": "Add text files\n",
+                                        "committerTime": "1575283425",
                                     },
                                 },
                             }
@@ -515,25 +565,25 @@ mod tests {
                 vars.insert("path".into(), InputValue::scalar("bin/ls"));
 
                 let query = "query($id: ID!, $revision: String!, $path: String!) {
-                blob(id: $id, revision: $revision, path: $path) {
-                    binary,
-                    content,
-                    info {
-                        name,
-                        objectType,
-                        lastCommit{
-                            sha1,
-                            author {
-                                name,
-                                email,
+                    blob(id: $id, revision: $revision, path: $path) {
+                        binary,
+                        content,
+                        info {
+                            name,
+                            objectType,
+                            lastCommit{
+                                sha1,
+                                author {
+                                    name,
+                                    email,
+                                },
+                                summary,
+                                message,
+                                committerTime,
                             },
-                            summary,
-                            message,
-                            committerTime,
                         },
-                    },
-                }
-            }";
+                    }
+                }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
@@ -547,14 +597,14 @@ mod tests {
                                     "name": "ls",
                                     "objectType": "BLOB",
                                     "lastCommit": {
-                                        "sha1": "3873745c8f6ffb45c990eb23b491d4b4b6182f95",
+                                        "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
                                         "author": {
-                                            "name": "Fintan Halpenny",
-                                            "email": "fintan.halpenny@gmail.com",
+                                            "name": "Rūdolfs Ošiņš",
+                                            "email": "rudolfs@osins.org",
                                         },
-                                        "summary": "Extend the docs (#2)",
-                                        "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                                        "committerTime": "1578309972",
+                                        "summary": "Add some binary files",
+                                        "message": "Add some binary files\n",
+                                        "committerTime": "1575282964",
                                     },
                                 },
                             }
@@ -574,24 +624,24 @@ mod tests {
                 vars.insert("path".into(), InputValue::scalar("README.md"));
 
                 let query = "query($id: ID!, $revision: String!, $path: String!) {
-                blob(id: $id, revision: $revision, path: $path) {
-                    content,
-                    info {
-                        name,
-                        objectType,
-                        lastCommit{
-                            sha1,
-                            author {
-                                name,
-                                email,
+                    blob(id: $id, revision: $revision, path: $path) {
+                        content,
+                        info {
+                            name,
+                            objectType,
+                            lastCommit{
+                                sha1,
+                                author {
+                                    name,
+                                    email,
+                                },
+                                summary,
+                                message,
+                                committerTime,
                             },
-                            summary,
-                            message,
-                            committerTime,
                         },
-                    },
-                }
-            }";
+                    }
+                }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
@@ -604,14 +654,14 @@ mod tests {
                                     "name": "README.md",
                                     "objectType": "BLOB",
                                     "lastCommit": {
-                                        "sha1": "3873745c8f6ffb45c990eb23b491d4b4b6182f95",
+                                        "sha1": "d3464e33d75c75c99bfb90fa2e9d16efc0b7d0e3",
                                         "author": {
-                                            "name": "Fintan Halpenny",
-                                            "email": "fintan.halpenny@gmail.com",
+                                            "name": "Rūdolfs Ošiņš",
+                                            "email": "rudolfs@osins.org",
                                         },
-                                        "summary": "Extend the docs (#2)",
-                                        "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                                        "committerTime": "1578309972",
+                                        "summary": "Initial commit FTW!",
+                                        "message": "Initial commit FTW!\n",
+                                        "committerTime": "1575282266",
                                     },
                                 },
                             }
@@ -685,17 +735,17 @@ mod tests {
                 vars.insert("sha1".into(), InputValue::scalar(SHA1));
 
                 let query = "query($id: ID!, $sha1: String!) {
-                commit(id: $id, sha1: $sha1) {
-                    sha1,
-                    author {
-                        name,
-                        email,
-                    },
-                    summary,
-                    message,
-                    committerTime,
-                }
-            }";
+                    commit(id: $id, sha1: $sha1) {
+                        sha1,
+                        author {
+                            name,
+                            email,
+                        },
+                        summary,
+                        message,
+                        committerTime,
+                    }
+                }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
@@ -755,27 +805,11 @@ mod tests {
                 vars.insert("prefix".into(), InputValue::scalar("src"));
 
                 let query = "query($id: ID!, $revision: String!, $prefix: String!) {
-                tree(id: $id, revision: $revision, prefix: $prefix) {
-                    path,
-                    info {
-                        name
-                        objectType
-                        lastCommit {
-                            sha1,
-                            author {
-                                name,
-                                email,
-                            },
-                            summary,
-                            message,
-                            committerTime,
-                        }
-                    }
-                    entries {
+                    tree(id: $id, revision: $revision, prefix: $prefix) {
                         path,
                         info {
-                            name,
-                            objectType,
+                            name
+                            objectType
                             lastCommit {
                                 sha1,
                                 author {
@@ -786,10 +820,26 @@ mod tests {
                                 message,
                                 committerTime,
                             }
+                        }
+                        entries {
+                            path,
+                            info {
+                                name,
+                                objectType,
+                                lastCommit {
+                                    sha1,
+                                    author {
+                                        name,
+                                        email,
+                                    },
+                                    summary,
+                                    message,
+                                    committerTime,
+                                }
+                            },
                         },
-                    },
-                }
-            }";
+                    }
+                }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
@@ -836,14 +886,14 @@ mod tests {
                                             "name": "Folder.svelte",
                                             "objectType": "BLOB",
                                             "lastCommit": {
-                                                "sha1": "3873745c8f6ffb45c990eb23b491d4b4b6182f95",
+                                                "sha1": "e24124b7538658220b5aaf3b6ef53758f0a106dc",
                                                 "author": {
-                                                    "name": "Fintan Halpenny",
-                                                    "email": "fintan.halpenny@gmail.com",
+                                                    "name": "Rūdolfs Ošiņš",
+                                                    "email": "rudolfs@osins.org",
                                                 },
-                                                "summary": "Extend the docs (#2)",
-                                                "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                                                "committerTime": "1578309972",
+                                                "summary": "Move examples to \"src\"",
+                                                "message": "Move examples to \"src\"\n",
+                                                "committerTime": "1575283266",
                                             },
                                         },
                                     },
@@ -853,14 +903,14 @@ mod tests {
                                             "name": "memory.rs",
                                             "objectType": "BLOB",
                                             "lastCommit": {
-                                                "sha1": "3873745c8f6ffb45c990eb23b491d4b4b6182f95",
+                                                "sha1": "e24124b7538658220b5aaf3b6ef53758f0a106dc",
                                                 "author": {
-                                                    "name": "Fintan Halpenny",
-                                                    "email": "fintan.halpenny@gmail.com",
+                                                    "name": "Rūdolfs Ošiņš",
+                                                    "email": "rudolfs@osins.org",
                                                 },
-                                                "summary": "Extend the docs (#2)",
-                                                "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                                                "committerTime": "1578309972",
+                                                "summary": "Move examples to \"src\"",
+                                                "message": "Move examples to \"src\"\n",
+                                                "committerTime": "1575283266",
                                             },
                                         },
                                     },
@@ -882,20 +932,20 @@ mod tests {
                 vars.insert("prefix".into(), InputValue::scalar(""));
 
                 let query = "query($id: ID!, $revision: String!, $prefix: String!) {
-                tree(id: $id, revision: $revision, prefix: $prefix) {
-                    path,
-                    info {
-                        name
-                        objectType
-                    }
-                    entries {
+                    tree(id: $id, revision: $revision, prefix: $prefix) {
                         path,
                         info {
+                            name
                             objectType
                         }
-                    },
-                }
-            }";
+                        entries {
+                            path,
+                            info {
+                                objectType
+                            }
+                        },
+                    }
+                }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
@@ -945,17 +995,16 @@ mod tests {
                 let mut vars = Variables::new();
                 vars.insert("id".into(), InputValue::scalar(project_id.to_string()));
 
-                let query = "
-                    query($id: ID!) {
-                        project(id: $id) {
-                            metadata {
-                                name
-                                description
-                                defaultBranch
-                                imgUrl
-                            }
+                let query = "query($id: ID!) {
+                    project(id: $id) {
+                        metadata {
+                            name
+                            description
+                            defaultBranch
+                            imgUrl
                         }
-                    }";
+                    }
+                }";
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
@@ -980,15 +1029,15 @@ mod tests {
         fn projects() {
             with_fixtures(|librad_paths, _repos_dir| {
                 let query = "{
-                projects {
-                    metadata {
-                        name
-                        description
-                        defaultBranch
-                        imgUrl
+                    projects {
+                        metadata {
+                            name
+                            description
+                            defaultBranch
+                            imgUrl
+                        }
                     }
-                }
-            }";
+                }";
 
                 execute_query(librad_paths, query, &Variables::new(), |res, errors| {
                     assert_eq!(errors, []);
