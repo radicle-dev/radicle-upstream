@@ -30,12 +30,12 @@ extern crate juniper;
 
 /// Utilities to manipulate the process environment.
 mod env;
+/// Logic for registering new projects.
+mod register;
 /// Defines the schema served to the application via `GraphQL`.
 mod schema;
 /// Server infrastructure used to power the API.
 mod server_warp;
-/// Logic for registering new projects.
-mod register;
 
 /// Flags accepted by the proxy binary.
 struct Args {

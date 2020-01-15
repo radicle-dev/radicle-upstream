@@ -1,14 +1,8 @@
 use futures::compat::Future01CompatExt;
 
 use radicle_registry_client::{
-    ClientT,
-    CreateCheckpointParams,
-    ed25519::Pair,
-    DispatchError,
-    Error as ProtocolError,
-    H256,
-    RegisterProjectParams,
-    String32,
+    ed25519::Pair, ClientT, CreateCheckpointParams, DispatchError, Error as ProtocolError,
+    RegisterProjectParams, String32, H256,
 };
 
 /// TODO
@@ -20,7 +14,7 @@ pub struct ProjectParams {
     /// TODO
     description: String,
     /// TODO
-    img_url: String
+    img_url: String,
 }
 
 /// TODO
@@ -44,24 +38,34 @@ impl From<DispatchError> for ClientError {
 }
 
 /// TODO
-pub struct Registry<R> where R: ClientT {
+pub struct Registry<R>
+where
+    R: ClientT,
+{
     /// TODO
-    client: R
+    client: R,
 }
 
 /// TODO
-impl<R> Registry<R> where R: ClientT {
+impl<R> Registry<R>
+where
+    R: ClientT,
+{
     /// TODO
     fn new(client: R) -> Self {
         Self { client }
     }
 
     /// TODO
-    async fn register_project(&self, author: &Pair, project: ProjectParams)
-    -> Result<(), ClientError> {
+    async fn register_project(
+        &self,
+        author: &Pair,
+        project: ProjectParams,
+    ) -> Result<(), ClientError> {
         let project_id = (project.name, project.domain);
         let project_hash = H256::random();
-        let checkpoint_id = self.client
+        let checkpoint_id = self
+            .client
             .sign_and_submit_call(
                 author,
                 CreateCheckpointParams {
@@ -105,7 +109,7 @@ fn test_register_project() {
         name: String32::from_string(String::from("hello")).expect("String too long."),
         domain: String32::from_string(String::from("world")).expect("String too long"),
         description: String::from("a jolly old time"),
-        img_url: String::from("example.com/icon")
+        img_url: String::from("example.com/icon"),
     };
     let pending_result = registry.register_project(&alice, params);
     let result = block_on(pending_result);
