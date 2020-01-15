@@ -10,7 +10,7 @@ use radicle_surf::{
 mod error;
 /// Git objects as GraphQL objects.
 pub mod git;
-/// TODO
+/// Radicle projects as GraphQL objects.
 mod project;
 /// Logic for registering new projects.
 mod registry;
