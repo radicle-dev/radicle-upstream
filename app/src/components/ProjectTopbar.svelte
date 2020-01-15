@@ -1,81 +1,46 @@
 <script>
-  import { getContext } from "svelte";
-  import { location } from "svelte-spa-router";
+  import { link } from "svelte-spa-router";
+  import { Icon, Title } from "../DesignSystem";
   import * as path from "../path.js";
-  import { Icon } from "../DesignSystem";
-  import ProjectTopbarItem from "./ProjectTopbarItem.svelte";
+  import ProjectTopbarMenu from "../components/ProjectTopbarMenu.svelte";
 
-  const projectId = getContext("projectId");
+  export let style = null;
+  export let project = null;
 </script>
 
 <style>
-  ul {
-    height: 100%;
-    align-items: center;
+  .topbar {
     display: flex;
     flex-direction: row;
-  }
-
-  li {
-    margin-left: 24px;
-    margin-right: 8px;
     align-items: center;
-    line-height: 100%;
+    background-color: var(--color-white);
+    width: 100%;
+    height: 61px;
+    left: var(--sidebar-width);
+    border-bottom: 1px solid var(--color-lightgray);
   }
 
-  nav :global(li:hover p) {
-    color: var(--color-purple) !important;
+  .topbar img {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    margin-left: 16px;
   }
 
-  nav :global(li:hover .icon svg) {
-    fill: var(--color-purple);
-  }
-  .source-tree {
-    margin-top: 8px;
+  .project-name {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    border-right: 1px solid var(--color-lightgray);
   }
 </style>
 
-<nav data-cy="project-topbar">
-  <ul>
-
-    <li>
-      <ProjectTopbarItem
-        icon={Icon.Source}
-        title="Source"
-        href={path.projectSource(projectId)}
-        active={path.active(path.projectSource(projectId), $location, true)} />
-    </li>
-
-    <li>
-      <ProjectTopbarItem
-        icon={Icon.Feed}
-        title="Feed"
-        href={path.projectFeed(projectId)}
-        active={path.active(path.projectFeed(projectId), $location)} />
-    </li>
-
-    <li>
-      <ProjectTopbarItem
-        icon={Icon.Fund}
-        title="Fund"
-        href={path.projectFunds(projectId)}
-        active={path.active(path.projectFunds(projectId), $location)} />
-    </li>
-
-    <li>
-      <ProjectTopbarItem
-        icon={Icon.Issues}
-        title="Issues"
-        href={path.projectIssues(projectId)}
-        active={path.active(path.projectIssues(projectId), $location)} />
-    </li>
-
-    <li>
-      <ProjectTopbarItem
-        icon={Icon.Revisions}
-        title="Revisions"
-        href={path.projectRevisions(projectId)}
-        active={path.active(path.projectRevisions(projectId), $location)} />
-    </li>
-  </ul>
-</nav>
+<div data-cy="topbar" class="topbar" {style}>
+  <a class="project-name" href={path.projectOverview(project.id)} use:link>
+    <img alt="Project Avatar" src={project.metadata.imgUrl} />
+    <Title.Regular style="color: var(--color-purple); margin-right: 24px">
+      {project.metadata.name}
+    </Title.Regular>
+  </a>
+  <ProjectTopbarMenu />
+</div>

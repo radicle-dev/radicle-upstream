@@ -6,7 +6,7 @@
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
   import Sidebar from "../components/Sidebar.svelte";
-  import ProjectHeader from "../components/ProjectHeader.svelte";
+  import ProjectTopbar from "../components/ProjectTopbar.svelte";
 
   import Overview from "./Project/Overview.svelte";
   import Feed from "./Project/Feed.svelte";
@@ -89,7 +89,7 @@
   <div data-cy="page-container" class="project-container">
     <div class="content">
       {#await $project then result}
-        <ProjectHeader
+        <ProjectTopbar
           style="position: fixed; top: 0;"
           project={result.data.project} />
         <NotificationFaucet />
