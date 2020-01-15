@@ -1,5 +1,5 @@
-use std::convert::TryFrom;
 use futures::compat::Future01CompatExt;
+use std::convert::TryFrom;
 
 use radicle_registry_client::{
     ed25519::Pair, Client, ClientT, CreateCheckpointParams, RegisterProjectParams, String32, H256,
@@ -15,6 +15,17 @@ where
 {
     /// TODO
     client: R,
+}
+
+#[derive(GraphQLObject)]
+pub struct Metadata {
+    // TODO
+}
+
+#[derive(GraphQLObject)]
+pub struct RegistrationResult {
+    pub id: juniper::ID,
+    pub metadata: Metadata,
 }
 
 /// TODO
@@ -36,8 +47,7 @@ where
         description: String,
         img_url: String,
     ) -> Result<(), Error> {
-        let project_name =
-            String32::from_string(name).map_err(ProjectValidation::NameTooLong)?;
+        let project_name = String32::from_string(name).map_err(ProjectValidation::NameTooLong)?;
         let project_domain =
             String32::from_string(domain).map_err(ProjectValidation::DomainTooLong)?;
         let project_hash = H256::random();
@@ -71,11 +81,15 @@ where
             .compat()
             .await?
             .result
-            .map_err(|error| error.into())
+            .map_err(|error| error.into())?;
+        // TODO return project
     }
 }
 
-impl<R> TryFrom<&str> for Registry<R> where R: ClientT {
+impl<R> TryFrom<&str> for Registry<R>
+where
+    R: ClientT,
+{
     type Error = Error;
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         let node_name = url::Host::parse(s)?;
