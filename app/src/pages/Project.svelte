@@ -66,7 +66,7 @@
 
 <style>
   .container {
-    width: 80%;
+    width: 1180px;
   }
 
   .layout {

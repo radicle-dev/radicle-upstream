@@ -15,7 +15,7 @@
 
   .content {
     position: absolute;
-    margin: 64px 8vw 64px 8vw;
+    margin: 64px 96px 64px 96px;
   }
 </style>
 

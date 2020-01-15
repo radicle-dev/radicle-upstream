@@ -39,13 +39,13 @@
     display: flex;
     flex-direction: column;
     width: 196px;
-    padding-right: 24px;
   }
 
   .column-right {
     display: flex;
     flex-direction: column;
-    width: inherit;
+    width: 960px;
+    padding-left: 24px;
   }
 
   .source-tree {
