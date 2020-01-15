@@ -1,8 +1,6 @@
 use juniper::{FieldError, FieldResult, RootNode, ID};
-use std::convert::TryFrom;
 
 use librad::paths::Paths;
-use radicle_registry_client::{ed25519::Pair, Client};
 use radicle_surf::{
     file_system::{Path, SystemType},
     git::{BranchName, GitBrowser, GitRepository, Sha1, TagName},
@@ -18,7 +16,6 @@ mod project;
 mod registry;
 
 use crate::schema::error::Error;
-use crate::schema::registry::Registry;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;

@@ -24,7 +24,7 @@ where
         Self { client }
     }
 
-    /// TODO
+    /// Register a new project on the chain.
     pub fn register_project(
         &self,
         author: &Pair,
