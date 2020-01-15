@@ -3,7 +3,7 @@
   import { location } from "svelte-spa-router";
   import * as path from "../path.js";
   import { Icon } from "../DesignSystem";
-  import ProjectSidebarItem from "./ProjectSidebarItem.svelte";
+  import ProjectTopbarItem from "./ProjectTopbarItem.svelte";
 
   const projectId = getContext("projectId");
 </script>
@@ -35,11 +35,11 @@
   }
 </style>
 
-<nav data-cy="project-sidebar">
+<nav data-cy="project-topbar">
   <ul>
 
     <li>
-      <ProjectSidebarItem
+      <ProjectTopbarItem
         icon={Icon.Feed}
         title="Feed"
         href={path.projectFeed(projectId)}
@@ -47,7 +47,7 @@
     </li>
 
     <li>
-      <ProjectSidebarItem
+      <ProjectTopbarItem
         icon={Icon.Member}
         title="Members"
         href={path.projectMembers(projectId)}
@@ -55,7 +55,7 @@
     </li>
 
     <li>
-      <ProjectSidebarItem
+      <ProjectTopbarItem
         icon={Icon.Fund}
         title="Fund"
         href={path.projectFunds(projectId)}
@@ -63,7 +63,7 @@
     </li>
 
     <li>
-      <ProjectSidebarItem
+      <ProjectTopbarItem
         icon={Icon.Source}
         title="Source"
         href={path.projectSource(projectId)}
@@ -71,7 +71,7 @@
     </li>
 
     <li>
-      <ProjectSidebarItem
+      <ProjectTopbarItem
         icon={Icon.Commit}
         title="Commits"
         href={path.projectCommits(projectId)}
@@ -79,7 +79,7 @@
     </li>
 
     <li>
-      <ProjectSidebarItem
+      <ProjectTopbarItem
         icon={Icon.Branch}
         title="Branches"
         href={path.projectBranches(projectId)}

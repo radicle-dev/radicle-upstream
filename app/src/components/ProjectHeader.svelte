@@ -2,7 +2,7 @@
   import { link } from "svelte-spa-router";
   import { Icon, Title } from "../DesignSystem";
   import * as path from "../path.js";
-  import ProjectSidebar from "../components/ProjectSidebar.svelte";
+  import ProjectTopbar from "../components/ProjectTopbar.svelte";
 
   export let style = null;
   export let project = null;
@@ -42,5 +42,5 @@
       {project.metadata.name}
     </Title.Regular>
   </a>
-  <ProjectSidebar />
+  <ProjectTopbar />
 </div>

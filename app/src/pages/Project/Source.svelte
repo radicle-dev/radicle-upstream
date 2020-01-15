@@ -33,6 +33,7 @@
 <style>
   .container {
     display: flex;
+    width: inherit;
   }
   .column-left {
     display: flex;
@@ -44,6 +45,11 @@
   .column-right {
     display: flex;
     flex-direction: column;
+    width: inherit;
+  }
+
+  .source-tree {
+    overflow-x: scroll;
   }
 </style>
 

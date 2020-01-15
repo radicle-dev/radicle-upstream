@@ -7,7 +7,6 @@
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
   import Layout from "../layouts/SidebarHeaderLayout.svelte";
-  import ProjectSidebar from "../components/ProjectSidebar.svelte";
   import ProjectHeader from "../components/ProjectHeader.svelte";
 
   import Overview from "./Project/Overview.svelte";
@@ -67,11 +66,12 @@
 
 <style>
   .container {
-    position: fixed;
+    width: 80%;
   }
 
   .layout {
     margin-top: 40px;
+    width: inherit;
   }
 </style>
 
