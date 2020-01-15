@@ -140,7 +140,7 @@ context("source code browsing", () => {
     });
   });
 
-  context("sidebar source-tree", () => {
+  context("source-tree", () => {
     it("shows files and directories", () => {
       cy.get("[data-cy=source-tree]").within(() => {
         // directories
@@ -152,17 +152,6 @@ context("source code browsing", () => {
         // hidden files
         cy.contains(".i-am-well-hidden").should("exist");
       });
-    });
-
-    it("shows a vertical scrollbar if the content doesn't fit", () => {
-      cy.get("[data-cy=source-tree]").within(() => {
-        cy.get("[data-cy=expand-bin]").click();
-      });
-      cy.contains("Branches").should("not.be.inViewport");
-
-      // the scrollbar allows us to reach all the content in the sidebar
-      cy.contains("Branches").scrollIntoView();
-      cy.contains("Branches").should("be.inViewport");
     });
 
     context("when clicking on the carret icon next to the folder name", () => {

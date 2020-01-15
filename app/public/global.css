@@ -47,10 +47,6 @@ a {
 }
 
 :root {
-  --slim-sidebar-width: 68px;
-  --project-sidebar-width: 250px;
-  --sidebar-total-width: calc(
-    var(--slim-sidebar-width) + var(--project-sidebar-width)
-  );
+  --sidebar-width: 68px;
   --content-min-width: 700px;
 }
