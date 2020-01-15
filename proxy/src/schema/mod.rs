@@ -1,4 +1,4 @@
-use juniper::{FieldResult, RootNode, ID};
+use juniper::{RootNode, ID};
 use std::str::FromStr;
 
 use librad::paths::Paths;
@@ -81,10 +81,8 @@ impl Query {
     }
 
     fn blob(ctx: &Context, id: ID, revision: String, path: String) -> Result<git::Blob, Error> {
-        let repo =
-            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser =
-            surf::git::Browser::new(repo).expect("setting up browser for repo failed");
+        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
+        let mut browser = surf::git::Browser::new(repo)?;
 
         // Best effort to guess the revision.
         if let Err(err) = browser
@@ -97,12 +95,11 @@ impl Query {
             return Err(Error::Git(surf::git::error::Error::NotBranch));
         };
 
-        let root = browser
-            .get_directory()
-            .expect("unable to get root directory");
+        let root = browser.get_directory()?;
 
         let mut p = surf::file_system::Path::from_str(&path)?;
 
+        // TODO(garbados): un-unwrap, unpanic
         let file = root
             .find_file(&p)
             .unwrap_or_else(|| panic!("unable to find file: {} -> {}", path, p));
@@ -134,11 +131,9 @@ impl Query {
         })
     }
 
-    fn commit(ctx: &Context, id: ID, sha1: String) -> FieldResult<git::Commit> {
-        let repo =
-            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let mut browser =
-            surf::git::Browser::new(repo).expect("setting up browser for repo failed");
+    fn commit(ctx: &Context, id: ID, sha1: String) -> Result<git::Commit, Error> {
+        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
+        let mut browser = surf::git::Browser::new(repo)?;
         browser
             .commit(radicle_surf::vcs::git::Sha1::new(&sha1))
             .expect("setting commit failed");
@@ -157,11 +152,10 @@ impl Query {
         git::branches(&path)
     }
 
-    fn tags(ctx: &Context, id: ID) -> FieldResult<Vec<git::Tag>> {
-        let repo =
-            surf::git::Repository::new(&ctx.dummy_repo_path).expect("setting up repo failed");
-        let browser = surf::git::Browser::new(repo).expect("setting up browser for repo failed");
-        let mut tag_names = browser.list_tags().expect("Getting branches failed");
+    fn tags(ctx: &Context, id: ID) -> Result<Vec<git::Tag>, Error> {
+        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
+        let browser = surf::git::Browser::new(repo)?;
+        let mut tag_names = browser.list_tags()?;
         tag_names.sort();
 
         let mut tags: Vec<git::Tag> = tag_names
@@ -195,11 +189,11 @@ impl Query {
         };
 
         let root_dir = browser
-            .get_directory()
-            .expect("getting repo directory failed");
+            .get_directory()?;
         let prefix_dir = if path.is_root() {
             root_dir
         } else {
+            // TODO(garbados): un-unwrap, unpanic
             root_dir.find_directory(&path).unwrap_or_else(|| {
                 panic!(
                     "directory listing failed: {} -> {} | {:?}",
@@ -297,6 +291,7 @@ impl Query {
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
         let mut projects = librad::project::Project::list(&ctx.librad_paths)
             .map(|id| {
+                // TODO(garbados): unexpect
                 let project_meta = librad::project::Project::show(&ctx.librad_paths, &id)
                     .expect("unable to get project meta");
 
