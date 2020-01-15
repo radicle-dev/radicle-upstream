@@ -1,45 +1,31 @@
-use futures::compat::Future01CompatExt;
-use std::convert::TryFrom;
-
 use radicle_registry_client::{
-    ed25519::Pair, Client, ClientT, CreateCheckpointParams, RegisterProjectParams, String32, H256,
+    ed25519::Pair, ClientT, CreateCheckpointParams, RegisterProjectParams, String32, H256,
 };
 
 use crate::schema::error::{Error, ProjectValidation};
 
-/// TODO
+/// Registry client wrapper.
 #[derive(Clone)]
 pub struct Registry<R>
 where
     R: ClientT,
 {
-    /// TODO
+    /// Registry client, whether an emulator or otherwise.
     client: R,
 }
 
-#[derive(GraphQLObject)]
-pub struct Metadata {
-    // TODO
-}
-
-#[derive(GraphQLObject)]
-pub struct RegistrationResult {
-    pub id: juniper::ID,
-    pub metadata: Metadata,
-}
-
-/// TODO
+/// Registry client wrapper methods
 impl<R> Registry<R>
 where
     R: ClientT,
 {
-    /// TODO
+    /// Wrap a registry client.
     pub fn new(client: R) -> Self {
         Self { client }
     }
 
     /// TODO
-    pub async fn register_project(
+    pub fn register_project(
         &self,
         author: &Pair,
         name: String,
@@ -61,10 +47,8 @@ where
                     previous_checkpoint_id: None,
                 },
             )
-            .compat()
-            .await?
-            .compat()
-            .await?
+            .wait()?
+            .wait()?
             .result?;
         self.client
             .sign_and_submit_call(
@@ -76,43 +60,26 @@ where
                     checkpoint_id,
                 },
             )
-            .compat()
-            .await?
-            .compat()
-            .await?
+            .wait()?
+            .wait()?
             .result
-            .map_err(|error| error.into())?;
-        // TODO return project
-    }
-}
-
-impl<R> TryFrom<&str> for Registry<R>
-where
-    R: ClientT,
-{
-    type Error = Error;
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        let node_name = url::Host::parse(s)?;
-        let client = Client::create_with_executor(node_name);
-        Ok(Self { client })
+            .map_err(|error| error.into())
     }
 }
 
 #[test]
 fn test_register_project() {
     // Test that project registration submits valid transactions and they succeed.
-    use futures::executor::block_on;
     use radicle_registry_client::Client;
     let client = Client::new_emulator();
     let registry = Registry::new(client);
     let alice = Pair::from_legacy_string("//Alice", None);
-    let pending_result = registry.register_project(
+    let result = registry.register_project(
         &alice,
         "hello".into(),
         "world".into(),
         "a jolly old time".into(),
         "example.com/icon".into(),
     );
-    let result = block_on(pending_result);
     assert_eq!(result.is_err(), false);
 }
