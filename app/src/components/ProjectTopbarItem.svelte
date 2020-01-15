@@ -18,6 +18,28 @@
     display: flex;
     align-items: center;
   }
+
+  .item {
+    font-family: "GT America Regular";
+    font-size: 16px;
+    line-height: 130%;
+    color: var(--color-darkgray);
+  }
+
+  .item::after {
+    display: block;
+    height: 0;
+    color: transparent;
+    overflow: hidden;
+    visibility: hidden;
+    content: var(--title);
+    font-family: "GT America Medium";
+  }
+
+  .item.active {
+    font-family: "GT America Medium";
+    color: var(--color-purple);
+  }
 </style>
 
 <a {href} use:link title={`Project${title}`}>
@@ -25,15 +47,13 @@
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-purple)" />
     </div>
-
-    <Title.Regular style="color: var(--color-purple)">{title}</Title.Regular>
   {:else}
     <div class="icon">
       <svelte:component this={icon} />
     </div>
-
-    <Text.Regular style="color: var(--color-darkgray)">{title}</Text.Regular>
   {/if}
+
+  <div style={`--title: "${title}"`} class="item" class:active>{title}</div>
 </a>
 
 {#if active}
