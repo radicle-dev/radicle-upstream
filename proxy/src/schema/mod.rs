@@ -51,7 +51,10 @@ impl Mutation {
         path: String,
         publish: bool,
     ) -> Result<project::Project, Error> {
-        git::init_repo(path.clone())?;
+        if surf::git::git2::Repository::open(path.clone()).is_err() {
+            git::init_repo(path.clone())?;
+        };
+
         let (id, meta) = git::init_project(
             &ctx.librad_paths,
             &path,
@@ -359,13 +362,56 @@ mod tests {
 
         #[test]
         fn create_project_existing_repo() {
-            with_fixtures(|_librad_paths, repos_dir| {
+            with_fixtures(|librad_paths, repos_dir| {
                 let dir = tempfile::tempdir_in(repos_dir.path())
                     .expect("creating temporary directory failed");
                 let path = dir.path().to_str().expect("unable to get path");
 
                 crate::schema::git::init_repo(path.to_string()).expect("unable to create repo");
                 git2::Repository::init(path).expect("unable to create repo");
+
+                let mut metadata_input: IndexMap<String, InputValue> = IndexMap::new();
+                metadata_input.insert("name".into(), InputValue::scalar("upstream"));
+                metadata_input.insert(
+                    "description".into(),
+                    InputValue::scalar("Code collaboration without intermediates."),
+                );
+                metadata_input.insert("defaultBranch".into(), InputValue::scalar("master"));
+                metadata_input.insert("imgUrl".into(), InputValue::scalar("https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png"));
+
+                let mut vars = Variables::new();
+                vars.insert("metadata".into(), InputValue::object(metadata_input));
+                vars.insert("path".into(), InputValue::scalar(path));
+                vars.insert("publish".into(), InputValue::scalar(false));
+
+                let query =
+                    "mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
+                        createProject(metadata: $metadata, path: $path, publish: $publish) {
+                            metadata {
+                                name
+                                description
+                                defaultBranch
+                                imgUrl
+                            }
+                        }
+                    }";
+
+                execute_query(librad_paths, query, &vars, |res, errors| {
+                    assert_eq!(errors, []);
+                    assert_ne!(
+                        res,
+                        graphql_value!({
+                            "metadata": {
+                                "name": "upstream",
+                                "description": "Code collaboration without intermediates.",
+                                "default_branch": "master",
+                                "img_url": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                            }
+                        })
+                    );
+                });
+
+                dir.close().expect("directory teardown failed");
             })
         }
 
