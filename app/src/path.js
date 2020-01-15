@@ -7,7 +7,8 @@ export const feed = _params => "/feed";
 export const projects = _params => "/projects";
 export const projectOverview = id => `/projects/${id}/overview`;
 export const projectFeed = id => `/projects/${id}/feed`;
-export const projectMembers = id => `/projects/${id}/members`;
+export const projectIssues = id => `/projects/${id}/issues`;
+export const projectRevisions = id => `/projects/${id}/revisions`;
 export const projectFunds = id => `/projects/${id}/funds`;
 export const projectSource = (id, revision, objectType, path) => {
   if (revision && path) {
@@ -35,9 +36,6 @@ export const extractProjectSourceObjectType = location => {
   const type = location.match(PROJECT_SOURCE_PATH_MATCH);
   return type === null ? TREE : type[2];
 };
-
-export const projectCommits = id => `/projects/${id}/commits`;
-export const projectBranches = id => `/projects/${id}/branches`;
 
 export const designSystem = _params => "/design-system";
 export const createProject = _params => "/projects/new";

@@ -40,18 +40,18 @@
 
     <li>
       <ProjectTopbarItem
-        icon={Icon.Feed}
-        title="Feed"
-        href={path.projectFeed(projectId)}
-        active={path.active(path.projectFeed(projectId), $location)} />
+        icon={Icon.Source}
+        title="Source"
+        href={path.projectSource(projectId)}
+        active={path.active(path.projectSource(projectId), $location, true)} />
     </li>
 
     <li>
       <ProjectTopbarItem
-        icon={Icon.Member}
-        title="Members"
-        href={path.projectMembers(projectId)}
-        active={path.active(path.projectMembers(projectId), $location)} />
+        icon={Icon.Feed}
+        title="Feed"
+        href={path.projectFeed(projectId)}
+        active={path.active(path.projectFeed(projectId), $location)} />
     </li>
 
     <li>
@@ -64,26 +64,18 @@
 
     <li>
       <ProjectTopbarItem
-        icon={Icon.Source}
-        title="Source"
-        href={path.projectSource(projectId)}
-        active={path.active(path.projectSource(projectId), $location, true)} />
+        icon={Icon.Issues}
+        title="Issues"
+        href={path.projectIssues(projectId)}
+        active={path.active(path.projectIssues(projectId), $location)} />
     </li>
 
     <li>
       <ProjectTopbarItem
-        icon={Icon.Commit}
-        title="Commits"
-        href={path.projectCommits(projectId)}
-        active={path.active(path.projectCommits(projectId), $location)} />
-    </li>
-
-    <li>
-      <ProjectTopbarItem
-        icon={Icon.Branch}
-        title="Branches"
-        href={path.projectBranches(projectId)}
-        active={path.active(path.projectBranches(projectId), $location)} />
+        icon={Icon.Revisions}
+        title="Revisions"
+        href={path.projectRevisions(projectId)}
+        active={path.active(path.projectRevisions(projectId), $location)} />
     </li>
   </ul>
 </nav>

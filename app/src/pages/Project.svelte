@@ -11,11 +11,10 @@
 
   import Overview from "./Project/Overview.svelte";
   import Feed from "./Project/Feed.svelte";
-  import Members from "./Project/Members.svelte";
   import Funds from "./Project/Funds.svelte";
   import Source from "./Project/Source.svelte";
-  import Commits from "./Project/Commits.svelte";
-  import Branches from "./Project/Branches.svelte";
+  import Issues from "./Project/Issues.svelte";
+  import Revisions from "./Project/Revisions.svelte";
   import NotFound from "./NotFound.svelte";
 
   import NotificationFaucet from "../components/NotificationFaucet.svelte";
@@ -28,12 +27,11 @@
     "/projects/:id/": Overview,
     "/projects/:id/overview": Overview,
     "/projects/:id/feed": Feed,
-    "/projects/:id/members": Members,
     "/projects/:id/funds": Funds,
     "/projects/:id/source": Source,
     "/projects/:id/source/*": Source,
-    "/projects/:id/commits": Commits,
-    "/projects/:id/branches": Branches,
+    "/projects/:id/issues": Issues,
+    "/projects/:id/revisions": Revisions,
     "*": NotFound
   };
 

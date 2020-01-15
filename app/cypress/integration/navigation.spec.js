@@ -71,13 +71,13 @@ context("navigation", () => {
       });
 
       cy.get('[data-cy="project-topbar"]')
-        .get('a[title="ProjectMembers"]')
+        .get('a[title="ProjectIssues"]')
         .click();
       cy.get("h2")
-        .contains("Members")
+        .contains("Issues")
         .should("exist");
       cy.get("[data-cy=project-topbar]").within(() => {
-        cy.contains("Members").should("exist");
+        cy.contains("Issues").should("exist");
       });
 
       cy.get('[data-cy="project-topbar"]')
@@ -101,23 +101,13 @@ context("navigation", () => {
       });
 
       cy.get('[data-cy="project-topbar"]')
-        .get('a[title="ProjectCommits"]')
+        .get('a[title="ProjectRevisions"]')
         .click();
       cy.get("h2")
-        .contains("Commits")
+        .contains("Revisions")
         .should("exist");
       cy.get("[data-cy=project-topbar]").within(() => {
-        cy.contains("Commits").should("exist");
-      });
-
-      cy.get('[data-cy="project-topbar"]')
-        .get('a[title="ProjectBranches"]')
-        .click();
-      cy.get("h2")
-        .contains("Branches")
-        .should("exist");
-      cy.get("[data-cy=project-topbar]").within(() => {
-        cy.contains("Branches").should("exist");
+        cy.contains("Revisions").should("exist");
       });
     });
   });
