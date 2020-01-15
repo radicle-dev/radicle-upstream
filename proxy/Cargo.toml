@@ -17,7 +17,7 @@ juniper = "0.14"
 juniper_codegen = "0.14"
 juniper_warp = "0.5"
 log = "0.4"
-nonempty = "0.1"
+nonempty = "0.2"
 pico-args = "0.3"
 pretty_env_logger = "0.3"
 rand = "0.7"
@@ -38,7 +38,7 @@ rev = "100205d976eaa39c93b0cf68906d95008ea8e414"
 
 [dependencies.radicle-surf]
 git = "https://github.com/radicle-dev/radicle-surf.git"
-rev = "3ddc170c109b10273ea04659eb64ec6918189f70"
+rev = "15aba492fbb1b3aee0b53dacf0f39f0b3a4b3e56"
 
 [dev-dependencies]
 indexmap = "1.3"
