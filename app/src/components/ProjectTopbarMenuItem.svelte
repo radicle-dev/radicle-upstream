@@ -12,6 +12,7 @@
   .icon {
     margin-right: 16px;
     align-items: center;
+    padding-top: 1px;
   }
 
   a {
