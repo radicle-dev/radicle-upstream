@@ -2,6 +2,7 @@ use juniper::{RootNode, ID};
 use std::str::FromStr;
 
 use librad::paths::Paths;
+use librad::project::{Project, ProjectId};
 use radicle_surf as surf;
 
 /// Error definitions and type casting logic.
@@ -81,8 +82,12 @@ impl Query {
     }
 
     fn blob(ctx: &Context, id: ID, revision: String, path: String) -> Result<git::Blob, Error> {
-        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
-        let mut browser = surf::git::Browser::new(repo)?;
+        let project_id = ProjectId::from_str(&id)?;
+        let project = Project::open(&ctx.librad_paths, &project_id)?;
+
+        let mut browser = match project {
+            Project::Git(git_project) => git_project.browser()?,
+        };
 
         // Best effort to guess the revision.
         if let Err(err) = browser
@@ -133,9 +138,11 @@ impl Query {
     }
 
     fn commit(ctx: &Context, id: ID, sha1: String) -> Result<git::Commit, Error> {
-        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
-        let mut browser = surf::git::Browser::new(repo)?;
-        browser.commit(radicle_surf::vcs::git::Sha1::new(&sha1))?;
+        let project_id = ProjectId::from_str(&id)?;
+        let project = Project::open(&ctx.librad_paths, &project_id)?;
+        let mut browser = match project {
+            Project::Git(git_project) => git_project.browser()?,
+        };
 
         let history = browser.get_history();
         let commit = history.0.first();
@@ -144,16 +151,20 @@ impl Query {
     }
 
     fn branches(ctx: &Context, id: ID) -> Result<Vec<git::Branch>, Error> {
-        git::branches(&ctx.dummy_repo_path)
+        git::branches(&ctx.librad_paths, &id.to_string())
     }
 
     fn local_branches(ctx: &Context, path: String) -> Result<Vec<git::Branch>, Error> {
-        git::branches(&path)
+        git::local_branches(&path)
     }
 
     fn tags(ctx: &Context, id: ID) -> Result<Vec<git::Tag>, Error> {
-        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
-        let browser = surf::git::Browser::new(repo)?;
+        let project_id = ProjectId::from_str(&id)?;
+        let project = Project::open(&ctx.librad_paths, &project_id)?;
+        let mut browser = match project {
+            Project::Git(git_project) => git_project.browser()?,
+        };
+
         let mut tag_names = browser.list_tags()?;
         tag_names.sort();
 
@@ -168,8 +179,12 @@ impl Query {
     }
 
     fn tree(ctx: &Context, id: ID, revision: String, prefix: String) -> Result<git::Tree, Error> {
-        let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
-        let mut browser = surf::git::Browser::new(repo)?;
+        let project_id = ProjectId::from_str(&id)?;
+        let project = Project::open(&ctx.librad_paths, &project_id)?;
+
+        let mut browser = match project {
+            Project::Git(git_project) => git_project.browser()?,
+        };
 
         if let Err(err) = browser
             .branch(surf::git::BranchName::new(&revision))
@@ -276,9 +291,8 @@ impl Query {
     }
 
     fn project(ctx: &Context, id: ID) -> Result<project::Project, Error> {
-        use std::str::FromStr;
-        let project_id = librad::project::ProjectId::from_str(&id.to_string())?;
-        let meta = librad::project::Project::show(&ctx.librad_paths, &project_id)?;
+        let project_id = ProjectId::from_str(&id.to_string())?;
+        let meta = Project::show(&ctx.librad_paths, &project_id)?;
 
         Ok(project::Project {
             id,
@@ -287,19 +301,17 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
-        let projects_results: Result<Vec<project::Project>, Error> =
-            librad::project::Project::list(&ctx.librad_paths)
-                .map(|id| {
-                    let project_meta = librad::project::Project::show(&ctx.librad_paths, &id)?;
+        let mut projects = Project::list(&ctx.librad_paths)
+            .map(|id| {
+                let project_meta =
+                    Project::show(&ctx.librad_paths, &id).expect("unable to get project meta");
 
-                    Ok(project::Project {
-                        id: id.to_string().into(),
-                        metadata: project_meta.into(),
-                    })
-                })
-                .collect();
-
-        let mut projects = projects_results?;
+                project::Project {
+                    id: id.to_string().into(),
+                    metadata: project_meta.into(),
+                }
+            })
+            .collect::<Vec<project::Project>>();
 
         projects.sort_by(|a, b| a.metadata.name.cmp(&b.metadata.name));
 
@@ -310,6 +322,7 @@ impl Query {
 #[cfg(test)]
 mod tests {
     use juniper::{DefaultScalarValue, ExecutionError, Value, Variables};
+    use librad::git::ProjectId;
     use librad::paths::Paths;
     use tempfile::{tempdir_in, TempDir};
 
@@ -319,7 +332,7 @@ mod tests {
 
     fn with_fixtures<F>(f: F)
     where
-        F: FnOnce(Paths, TempDir) -> (),
+        F: FnOnce(Paths, TempDir, ProjectId) -> (),
     {
         let tmp_dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
         let librad_paths = Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
@@ -331,7 +344,29 @@ mod tests {
         )
         .expect("fixture setup failed");
 
-        f(librad_paths, repos_dir)
+        // Setup rad project for git-platinum fixture data.
+        //
+        // Remove leftover remote if present.
+        let mut platinum_config = radicle_surf::git::git2::Config::open(std::path::Path::new(
+            "../.git/modules/fixtures/git-platinum/config",
+        ))
+        .unwrap();
+        let _ = platinum_config.remove("remote.rad.fetch");
+        let _ = platinum_config.remove("remote.rad.push");
+        let _ = platinum_config.remove("remote.rad.url");
+
+        // Init as rad project.
+        let (platinum_id, _platinum_project) = crate::schema::git::init_project(
+            &librad_paths,
+            REPO_PATH,
+            "git-platinum",
+            "fixture data",
+            "master",
+            "https://avatars0.githubusercontent.com/u/48290027",
+        )
+        .unwrap();
+
+        f(librad_paths, repos_dir, platinum_id)
     }
 
     fn execute_query<F>(librad_paths: Paths, query: &str, vars: &Variables, f: F)
@@ -356,7 +391,7 @@ mod tests {
 
         #[test]
         fn create_project_existing_repo() {
-            with_fixtures(|librad_paths, repos_dir| {
+            with_fixtures(|librad_paths, repos_dir, _platinum_id| {
                 let dir = tempfile::tempdir_in(repos_dir.path())
                     .expect("creating temporary directory failed");
                 let path = dir.path().to_str().expect("unable to get path");
@@ -411,7 +446,7 @@ mod tests {
 
         #[test]
         fn create_project() {
-            with_fixtures(|librad_paths, repos_dir| {
+            with_fixtures(|librad_paths, repos_dir, _platinum_id| {
                 let dir = tempfile::tempdir_in(repos_dir.path())
                     .expect("creating temporary directory failed");
                 let path = dir.path().to_str().expect("unable to get path");
@@ -473,7 +508,7 @@ mod tests {
 
         #[test]
         fn api_version() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 let query = "query { apiVersion }";
 
                 execute_query(librad_paths, query, &Variables::new(), |res, errors| {
@@ -484,11 +519,22 @@ mod tests {
         }
 
         #[test]
+        fn open_browser() {
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+                let project_id = librad::project::ProjectId::from(platinum_id);
+                let project = librad::project::Project::open(&librad_paths, &project_id).unwrap();
+                let _browser = match project {
+                    librad::project::Project::Git(git_project) => git_project.browser().unwrap(),
+                };
+            });
+        }
+
+        #[test]
         fn blob() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
                 let mut vars = Variables::new();
 
-                vars.insert("id".into(), InputValue::scalar("git-platinum"));
+                vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("path".into(), InputValue::scalar("text/arrows.txt"));
 
@@ -551,7 +597,7 @@ mod tests {
 
         #[test]
         fn blob_binary() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -610,7 +656,7 @@ mod tests {
 
         #[test]
         fn blob_in_root() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -667,7 +713,7 @@ mod tests {
 
         #[test]
         fn branches() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 let mut vars = Variables::new();
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
 
@@ -692,7 +738,7 @@ mod tests {
 
         #[test]
         fn local_branches() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 let mut vars = Variables::new();
                 vars.insert(
                     "path".into(),
@@ -720,7 +766,7 @@ mod tests {
 
         #[test]
         fn commit() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 const SHA1: &str = "80ded66281a4de2889cc07293a8f10947c6d57fe";
 
                 let mut vars = Variables::new();
@@ -764,9 +810,9 @@ mod tests {
 
         #[test]
         fn tags() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
                 let mut vars = Variables::new();
-                vars.insert("id".into(), InputValue::scalar("git-platinum"));
+                vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
 
                 let query = "query($id: ID!) { tags(id: $id) }";
 
@@ -791,7 +837,7 @@ mod tests {
         #[allow(clippy::too_many_lines)]
         #[test]
         fn tree() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -918,7 +964,7 @@ mod tests {
 
         #[test]
         fn tree_root() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 let mut vars = Variables::new();
 
                 vars.insert("id".into(), InputValue::scalar("git-platinum"));
@@ -970,7 +1016,7 @@ mod tests {
 
         #[test]
         fn project() {
-            with_fixtures(|librad_paths, repos_dir| {
+            with_fixtures(|librad_paths, repos_dir, _platinum_id| {
                 let repo_dir = tempfile::tempdir_in(repos_dir.path()).expect("repo dir failed");
                 let path = repo_dir.path().to_str().expect("repo path").to_string();
                 git::init_repo(path.clone()).expect("repo init failed");
@@ -1021,7 +1067,7 @@ mod tests {
 
         #[test]
         fn projects() {
-            with_fixtures(|librad_paths, _repos_dir| {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
                 let query = "{
                     projects {
                         metadata {
