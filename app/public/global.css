@@ -48,6 +48,5 @@ a {
 
 :root {
   --sidebar-width: 68px;
-  --project-sidebar-width: 250px;
   --content-min-width: 700px;
 }
