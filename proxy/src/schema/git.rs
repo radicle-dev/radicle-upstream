@@ -3,6 +3,7 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+use librad::meta::common::Url;
 use librad::paths::Paths;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
@@ -154,7 +155,7 @@ pub fn init_project(
     let peer_id = librad::peer::PeerId::from(key.public());
     let founder = librad::meta::contributor::Contributor::new();
     let sources = git2::Repository::open(std::path::Path::new(path))?;
-    let img = url::Url::parse(img_url)?;
+    let img = Url::parse(img_url)?;
     let mut meta = librad::meta::Project::new(name, &peer_id);
 
     meta.description = Some(description.to_string());

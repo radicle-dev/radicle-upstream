@@ -286,7 +286,7 @@ impl Query {
     fn project(ctx: &Context, id: ID) -> Result<project::Project, Error> {
         use std::str::FromStr;
         let project_id = librad::project::ProjectId::from_str(&id.to_string())?;
-        let meta = librad::project::show_project(&ctx.librad_paths, &project_id)?;
+        let meta = librad::project::Project::show(&ctx.librad_paths, &project_id)?;
 
         Ok(project::Project {
             id,
@@ -295,9 +295,9 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
-        let mut projects = librad::project::list_projects(&ctx.librad_paths)
+        let mut projects = librad::project::Project::list(&ctx.librad_paths)
             .map(|id| {
-                let project_meta = librad::project::show_project(&ctx.librad_paths, &id)
+                let project_meta = librad::project::Project::show(&ctx.librad_paths, &id)
                     .expect("unable to get project meta");
 
                 project::Project {

@@ -30,15 +30,14 @@ warp = "0.1"
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "f2e9ed6d46e4f86820a30e840ab929c0d4fac48a"
+rev = "0aa3fe0895c3e1b0cceef98ab27bcf1b2a669744"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "100205d976eaa39c93b0cf68906d95008ea8e414"
 
 [dependencies.radicle-surf]
-git = "https://github.com/radicle-dev/radicle-surf.git"
-rev = "15aba492fbb1b3aee0b53dacf0f39f0b3a4b3e56"
+version = "0.2"
 
 [dev-dependencies]
 indexmap = "1.3"
