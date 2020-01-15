@@ -76,6 +76,7 @@
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));
     height: 100%;
+    overflow-y: scroll;
   }
 
   .content {
@@ -84,7 +85,7 @@
   }
 </style>
 
-<div dataCy="project-layout">
+<div data-cy="project-layout">
   <Sidebar />
   <div data-cy="page-container" class="project-container">
     <div class="content">
