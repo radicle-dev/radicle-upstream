@@ -39,7 +39,7 @@ context("navigation", () => {
     });
   });
 
-  context("second-level project sidebar", () => {
+  context("project topbar", () => {
     it("opens the project overview by default", () => {
       cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
       cy.contains("monokel").click();
@@ -47,10 +47,8 @@ context("navigation", () => {
       cy.get("h2")
         .contains("Overview")
         .should("exist");
-      cy.get("[data-cy=breadcrumbs]").within(() => {
-        cy.contains("My Projects").should("exist");
+      cy.get("[data-cy=topbar]").within(() => {
         cy.contains("monokel").should("exist");
-        cy.contains("Overview").should("exist");
       });
     });
 
@@ -61,87 +59,75 @@ context("navigation", () => {
       cy.get("h2")
         .contains("Overview")
         .should("exist");
-      cy.get("[data-cy=breadcrumbs]").within(() => {
-        cy.contains("Overview").should("exist");
-      });
 
-      cy.get('[data-cy="project-sidebar"]')
+      cy.get('[data-cy="project-topbar"]')
         .get('a[title="ProjectFeed"]')
         .click();
       cy.get("h2")
         .contains("Feed")
         .should("exist");
-      cy.get("[data-cy=breadcrumbs]").within(() => {
+      cy.get("[data-cy=project-topbar]").within(() => {
         cy.contains("Feed").should("exist");
       });
 
-      cy.get('[data-cy="project-sidebar"]')
+      cy.get('[data-cy="project-topbar"]')
         .get('a[title="ProjectMembers"]')
         .click();
       cy.get("h2")
         .contains("Members")
         .should("exist");
-      cy.get("[data-cy=breadcrumbs]").within(() => {
+      cy.get("[data-cy=project-topbar]").within(() => {
         cy.contains("Members").should("exist");
       });
 
-      cy.get('[data-cy="project-sidebar"]')
+      cy.get('[data-cy="project-topbar"]')
         .get('a[title="ProjectFund"]')
         .click();
       cy.get("h2")
         .contains("Fund")
         .should("exist");
-      cy.get("[data-cy=breadcrumbs]").within(() => {
+      cy.get("[data-cy=project-topbar]").within(() => {
         cy.contains("Fund").should("exist");
       });
 
-      cy.get('[data-cy="project-sidebar"]')
+      cy.get('[data-cy="project-topbar"]')
         .get('a[title="ProjectSource"]')
         .click();
       cy.get("thead")
         .contains("Commit Message")
         .should("exist");
-      cy.get("[data-cy=breadcrumbs]").within(() => {
+      cy.get("[data-cy=project-topbar]").within(() => {
         cy.contains("Source").should("exist");
       });
 
-      cy.get('[data-cy="project-sidebar"]')
+      cy.get('[data-cy="project-topbar"]')
         .get('a[title="ProjectCommits"]')
         .click();
       cy.get("h2")
         .contains("Commits")
         .should("exist");
-      cy.get("[data-cy=breadcrumbs]").within(() => {
+      cy.get("[data-cy=project-topbar]").within(() => {
         cy.contains("Commits").should("exist");
       });
 
-      cy.get('[data-cy="project-sidebar"]')
+      cy.get('[data-cy="project-topbar"]')
         .get('a[title="ProjectBranches"]')
         .click();
       cy.get("h2")
         .contains("Branches")
         .should("exist");
-      cy.get("[data-cy=breadcrumbs]").within(() => {
+      cy.get("[data-cy=project-topbar]").within(() => {
         cy.contains("Branches").should("exist");
       });
     });
   });
 
-  context("breadcrumb navigation", () => {
-    context("clicking on 'My Projects'", () => {
-      it("navigates back to project listing", () => {
-        cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
-        cy.contains("Monadic").click();
-        cy.contains("My Projects").click();
-        cy.contains("Projects").should("exist");
-      });
-    });
-
+  context("projects page", () => {
     context("clicking on the project name", () => {
       it("navigates to project overview", () => {
         cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
         cy.contains("Monadic").click();
-        cy.get('[data-cy="project-sidebar"]')
+        cy.get('[data-cy="project-topbar"]')
           .get('a[title="ProjectBranches"]')
           .click();
 
@@ -154,7 +140,7 @@ context("navigation", () => {
       it("stays fixed at the top", () => {
         cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
         cy.contains("Monadic").click();
-        cy.get('[data-cy="project-sidebar"]')
+        cy.get('[data-cy="project-topbar"]')
           .get('a[title="ProjectSource"]')
           .click();
 
@@ -162,9 +148,9 @@ context("navigation", () => {
           cy.get("[data-cy=expand-src]").click();
           cy.contains("Eval.hs").click();
         });
-        cy.get("[data-cy=page-container]").scrollTo("bottom");
+        cy.get("[data-cy=page]").scrollTo("bottom");
 
-        cy.get("[data-cy=breadcrumbs]").should("be.inViewport");
+        cy.get("[data-cy=project-topbar]").should("be.inViewport");
       });
     });
   });
