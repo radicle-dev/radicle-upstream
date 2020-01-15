@@ -1,6 +1,7 @@
 //! Domain errors returned by the API.
 
 use juniper::{FieldError, IntoFieldError};
+use librad::meta::common::url;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
 
@@ -198,6 +199,7 @@ fn convert_librad_git(error: &librad::git::Error) -> FieldError {
                 "type": "LIBRAD_PGP_ERROR"
             }),
         ),
+        librad::git::Error::Surf(surf_error) => convert_git(surf_error),
     }
 }
 
@@ -228,52 +230,7 @@ fn convert_librad_parse_error_to_field_error(
 
 /// Helper to convert `url::ParseError` to `FieldError`.
 fn convert_url_parse_error_to_field_error(error: url::ParseError) -> FieldError {
-    match error {
-        url::ParseError::EmptyHost => FieldError::new(
-            "Empty host.",
-            graphql_value!({ "type": "URL_PARSE_EMPTY_HOST" }),
-        ),
-        url::ParseError::IdnaError => FieldError::new(
-            error.to_string(),
-            graphql_value!({ "type": "URL_PARSE_IDNA" }),
-        ),
-        url::ParseError::InvalidPort => FieldError::new(
-            "Invalid port.",
-            graphql_value!({ "type": "URL_PARSE_INVALID_PORT" }),
-        ),
-        url::ParseError::InvalidIpv4Address => FieldError::new(
-            "Invalid IPv4 address.",
-            graphql_value!({ "type": "URL_PARSE_INVALID_IPV4" }),
-        ),
-        url::ParseError::InvalidIpv6Address => FieldError::new(
-            "Invalid IPv6 address.",
-            graphql_value!({ "type": "URL_PARSE_INVALID_IPV6" }),
-        ),
-        url::ParseError::InvalidDomainCharacter => FieldError::new(
-            "Invalid domain character.",
-            graphql_value!({ "type": "URL_PARSE_INVALID_DOMAIN_CHAR" }),
-        ),
-        url::ParseError::RelativeUrlWithoutBase => FieldError::new(
-            error.to_string(),
-            graphql_value!({ "type": "URL_PARSE_RELATIVE_WITHOUT_BASE" }),
-        ),
-        url::ParseError::RelativeUrlWithCannotBeABaseBase => FieldError::new(
-            error.to_string(),
-            graphql_value!({ "type": "URL_PARSE_RELATIVE_CANNOT_BE_BASE" }),
-        ),
-        url::ParseError::SetHostOnCannotBeABaseUrl => FieldError::new(
-            error.to_string(),
-            graphql_value!({ "type": "URL_PARSE_SET_HOST_CANNOT_BE_BASE" }),
-        ),
-        url::ParseError::Overflow => FieldError::new(
-            error.to_string(),
-            graphql_value!({ "type": "URL_PARSE_OVERFLOW" }),
-        ),
-        url::ParseError::__FutureProof => FieldError::new(
-            error.to_string(),
-            graphql_value!({ "type": "URL_PARSE_FUTURE_PROOF" }),
-        ),
-    }
+    FieldError::new(error.to_string(), graphql_value!({ "type": "URL_PARSE" }))
 }
 
 impl IntoFieldError for Error {
