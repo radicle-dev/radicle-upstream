@@ -99,10 +99,11 @@ impl Query {
 
         let mut p = surf::file_system::Path::from_str(&path)?;
 
-        // TODO(garbados): un-unwrap, unpanic
-        let file = root
-            .find_file(&p)
-            .unwrap_or_else(|| panic!("unable to find file: {} -> {}", path, p));
+        let file = root.find_file(&p).ok_or_else(|| {
+            radicle_surf::file_system::error::Error::Path(
+                radicle_surf::file_system::error::Path::Empty,
+            )
+        })?;
 
         let mut commit_path = surf::file_system::Path::root();
         commit_path.append(&mut p);
@@ -134,9 +135,7 @@ impl Query {
     fn commit(ctx: &Context, id: ID, sha1: String) -> Result<git::Commit, Error> {
         let repo = surf::git::Repository::new(&ctx.dummy_repo_path)?;
         let mut browser = surf::git::Browser::new(repo)?;
-        browser
-            .commit(radicle_surf::vcs::git::Sha1::new(&sha1))
-            .expect("setting commit failed");
+        browser.commit(radicle_surf::vcs::git::Sha1::new(&sha1))?;
 
         let history = browser.get_history();
         let commit = history.0.first();
@@ -188,32 +187,30 @@ impl Query {
             surf::file_system::Path::from_str(&prefix)?
         };
 
-        let root_dir = browser
-            .get_directory()?;
+        let root_dir = browser.get_directory()?;
         let prefix_dir = if path.is_root() {
             root_dir
         } else {
-            // TODO(garbados): un-unwrap, unpanic
-            root_dir.find_directory(&path).unwrap_or_else(|| {
-                panic!(
-                    "directory listing failed: {} -> {} | {:?}",
-                    path,
-                    path.is_root(),
-                    prefix,
+            root_dir.find_directory(&path).ok_or_else(|| {
+                radicle_surf::file_system::error::Error::Path(
+                    radicle_surf::file_system::error::Path::Empty,
                 )
-            })
+            })?
         };
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
 
-        let mut entries: Vec<git::TreeEntry> = prefix_contents
+        let entries_results: Result<Vec<git::TreeEntry>, Error> = prefix_contents
             .iter()
             .map(|(label, system_type)| {
                 let mut entry_path = if path.is_root() {
-                    surf::file_system::Path(
-                        nonempty::NonEmpty::from_slice(&[label.clone()])
-                            .expect("unable to create label slice"),
-                    )
+                    let label_path =
+                        nonempty::NonEmpty::from_slice(&[label.clone()]).ok_or_else(|| {
+                            radicle_surf::file_system::error::Error::Label(
+                                radicle_surf::file_system::error::Label::Empty,
+                            )
+                        })?;
+                    surf::file_system::Path(label_path)
                 } else {
                     let mut p = path.clone();
                     p.push(label.clone());
@@ -223,8 +220,7 @@ impl Query {
                 commit_path.append(&mut entry_path);
 
                 let last_commit = browser
-                    .last_commit(&commit_path)
-                    .expect("last commit for file failed")
+                    .last_commit(&commit_path)?
                     .map(|c| git::Commit::from(&c));
                 let info = git::Info {
                     name: label.to_string(),
@@ -235,12 +231,14 @@ impl Query {
                     last_commit,
                 };
 
-                git::TreeEntry {
+                Ok(git::TreeEntry {
                     info,
                     path: entry_path.to_string(),
-                }
+                })
             })
             .collect();
+
+        let mut entries = entries_results?;
 
         // We want to ensure that in the response Tree entries come first. `Ord` being derived on
         // the enum ensures Variant declaration order.
@@ -289,18 +287,19 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
-        let mut projects = librad::project::Project::list(&ctx.librad_paths)
-            .map(|id| {
-                // TODO(garbados): unexpect
-                let project_meta = librad::project::Project::show(&ctx.librad_paths, &id)
-                    .expect("unable to get project meta");
+        let projects_results: Result<Vec<project::Project>, Error> =
+            librad::project::Project::list(&ctx.librad_paths)
+                .map(|id| {
+                    let project_meta = librad::project::Project::show(&ctx.librad_paths, &id)?;
 
-                project::Project {
-                    id: id.to_string().into(),
-                    metadata: project_meta.into(),
-                }
-            })
-            .collect::<Vec<project::Project>>();
+                    Ok(project::Project {
+                        id: id.to_string().into(),
+                        metadata: project_meta.into(),
+                    })
+                })
+                .collect();
+
+        let mut projects = projects_results?;
 
         projects.sort_by(|a, b| a.metadata.name.cmp(&b.metadata.name));
 
