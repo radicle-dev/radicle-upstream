@@ -1,3 +1,5 @@
+use futures::future::Future;
+
 use radicle_registry_client::{
     ed25519::Pair, ClientT, CreateCheckpointParams, RegisterProjectParams, String32, H256,
 };
@@ -37,7 +39,6 @@ where
         let project_domain =
             String32::from_string(domain).map_err(ProjectValidation::DomainTooLong)?;
         let project_hash = H256::random();
-        let project_id = (project_name, project_domain);
         let checkpoint_id = self
             .client
             .sign_and_submit_call(
@@ -47,6 +48,7 @@ where
                     previous_checkpoint_id: None,
                 },
             )
+            // TODO(garbados): futurize
             .wait()?
             .wait()?
             .result?;
@@ -54,12 +56,13 @@ where
             .sign_and_submit_call(
                 author,
                 RegisterProjectParams {
-                    id: project_id.clone(),
+                    id: (project_name, project_domain),
                     description,
                     img_url,
                     checkpoint_id,
                 },
             )
+            // TODO(garbados): futurize
             .wait()?
             .wait()?
             .result
