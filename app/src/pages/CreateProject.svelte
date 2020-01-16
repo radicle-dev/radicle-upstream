@@ -211,12 +211,16 @@
       });
 
       push(path.projectOverview(response.data.createProject.id));
-      showNotification(
-        `Project ${response.data.createProject.metadata.name} successfully created`
-      );
+      showNotification({
+        text: `Project ${response.data.createProject.metadata.name} successfully created`,
+        level: "info"
+      });
     } catch (error) {
       push(path.projects());
-      showNotification("Could not create project");
+      showNotification({
+        text: "Could not create project",
+        level: "error"
+      });
     }
   };
 
