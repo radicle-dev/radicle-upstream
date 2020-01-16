@@ -6,9 +6,9 @@ use radicle_surf as surf;
 
 /// Error definitions and type casting logic.
 mod error;
-/// Git objects as GraphQL objects.
+/// Git objects as `GraphQL` objects.
 pub mod git;
-/// Radicle projects as GraphQL objects.
+/// Radicle projects as `GraphQL` objects.
 mod project;
 /// Logic for registering new projects.
 mod registry;

@@ -107,6 +107,7 @@ impl From<ProjectValidation> for Error {
     fn from(error: ProjectValidation) -> Self {
         Self::ProjectValidation(error)
     }
+}
 
 /// Helper to convert `radicle_surf` `FileSystem` error to `FieldError`.
 fn convert_fs(error: &radicle_surf::file_system::error::Error) -> FieldError {
@@ -263,7 +264,7 @@ fn convert_librad_parse_error_to_field_error(
 }
 
 /// Helper to convert `url::ParseError` to `FieldError`.
-fn convert_url_parse_error_to_field_error(error: url::ParseError) -> FieldError {
+fn convert_url_parse_error_to_field_error(error: &url::ParseError) -> FieldError {
     FieldError::new(error.to_string(), graphql_value!({ "type": "URL_PARSE" }))
 }
 
@@ -281,16 +282,14 @@ impl IntoFieldError for Error {
             Self::LibradProject(project_error) => match project_error {
                 librad::project::Error::Git(librad_error) => convert_librad_git(&librad_error),
             },
-            Self::Url(url_error) => convert_url_parse_error_to_field_error(url_error),
+            Self::Url(url_error) => convert_url_parse_error_to_field_error(&url_error),
             Self::ProjectValidation(project_error) => match project_error {
-                ProjectValidation::NameTooLong(error) => FieldError::new(
-                    error.to_string(),
-                    graphql_value!({ "type": "PROJECT_NAME_TOO_LONG" }),
-                ),
-                ProjectValidation::DomainTooLong(error) => FieldError::new(
-                    error.to_string(),
-                    graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }),
-                ),
+                ProjectValidation::NameTooLong(error) => {
+                    FieldError::new(error, graphql_value!({ "type": "PROJECT_NAME_TOO_LONG" }))
+                }
+                ProjectValidation::DomainTooLong(error) => {
+                    FieldError::new(error, graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }))
+                }
             },
             // TODO(garbados): expand via sub-match
             Self::Protocol(error) => FieldError::new(
