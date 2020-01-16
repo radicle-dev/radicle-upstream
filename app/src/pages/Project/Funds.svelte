@@ -1,5 +1,5 @@
 <script>
-  import { Header, Title, Button } from "../../DesignSystem";
+  import { Header, Text, Title, Button, Placeholder } from "../../DesignSystem";
   import { registerProject } from "../../path.js";
   import { push } from "svelte-spa-router";
   import { getContext } from "svelte";
@@ -7,14 +7,42 @@
   const projectId = getContext("projectId");
 </script>
 
-<Title.Big style="color: var(--color-darkgray)">
-  Register your project to receive donations
-</Title.Big>
+<style>
+  .wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 72px;
+    width: 490px;
+  }
+</style>
 
-<Button
-  variant="primary"
-  on:click={() => {
-    push(registerProject(projectId));
-  }}>
-  Register this project
-</Button>
+<div class="wrapper">
+  <div class="layout">
+    <Title.Big style="color: var(--color-darkgray); margin-bottom: 24px">
+      Register your project to receive donations
+    </Title.Big>
+
+    <Placeholder style="width: 480px; height: 250px; margin-bottom: 24px" />
+    <Text.Regular
+      style="color: var(--color-darkgray); margin-bottom: 48px; text-align:
+      center;">
+      Cupidatat velit incididunt cillum cillum voluptate in occaecat ipsum qui
+      sunt ad et aliqua consequat. Excepteur pariatur amet sunt duis excepteur
+      ullamco exercitation.
+    </Text.Regular>
+    <Button
+      variant="primary"
+      on:click={() => {
+        push(registerProject(projectId));
+      }}>
+      Register this project
+    </Button>
+  </div>
+</div>

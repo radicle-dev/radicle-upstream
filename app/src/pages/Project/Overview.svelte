@@ -1,8 +1,7 @@
 <script>
   import { getContext } from "svelte";
-  import { push } from "svelte-spa-router";
 
-  import { Header, Title, Button } from "../../DesignSystem";
+  import { Header, Title } from "../../DesignSystem";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -31,14 +30,6 @@
 <Header>
   <div slot="left">
     <Title.Big>Overview</Title.Big>
-    <Button
-      variant="secondary"
-      size="small"
-      on:click={() => {
-        push(registerProject(projectId));
-      }}>
-      Register
-    </Button>
   </div>
 </Header>
 
