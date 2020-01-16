@@ -5,6 +5,7 @@
   export let disabled = null;
   export let icon = null;
   export let style = null;
+  export let dataCy = null;
 
   let iconClass = icon ? (size === "big" ? "icon" : "icon-small") : null;
 
@@ -163,7 +164,7 @@
   }
 </style>
 
-<button class={buttonClass} {disabled} on:click {style}>
+<button data-cy={dataCy} class={buttonClass} {disabled} on:click {style}>
   <svelte:component this={icon} />
   <Title.Regular>
     <slot />

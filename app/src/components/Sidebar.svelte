@@ -8,7 +8,7 @@
 
 <style>
   div {
-    width: var(--slim-sidebar-width);
+    width: var(--sidebar-width);
     height: 100%;
     background-color: #eeeeef;
     display: flex;

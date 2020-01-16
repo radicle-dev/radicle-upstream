@@ -3,8 +3,10 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
+use librad::meta::common::Url;
 use librad::paths::Paths;
-use radicle_surf::git::{git2, GitBrowser, GitRepository};
+use radicle_surf as surf;
+use radicle_surf::git::git2;
 
 use crate::schema::error::Error;
 
@@ -47,15 +49,10 @@ pub struct Commit {
     committer_time: String,
 }
 
-// FIXME(xla): This should be a `std::convert::TryFrom` and needs to be addressed together with
-//             consistent error handling.
-impl From<&git2::Commit<'_>> for Commit {
-    fn from(commit: &git2::Commit) -> Self {
-        let signature = commit.author();
-        let email = signature.email().unwrap_or("invalid email");
-
+impl From<&surf::git::Commit> for Commit {
+    fn from(commit: &surf::git::Commit) -> Self {
         let mut s = DefaultHasher::new();
-        email.hash(&mut s);
+        commit.author.email.hash(&mut s);
 
         let avatar = format!(
             "https://avatars.dicebear.com/v2/jdenticon/{}.svg",
@@ -63,15 +60,15 @@ impl From<&git2::Commit<'_>> for Commit {
         );
 
         Self {
-            sha1: commit.id().to_string(),
+            sha1: commit.id.to_string(),
             author: Person {
-                name: signature.name().unwrap_or("invalid name").into(),
-                email: email.into(),
+                name: commit.author.name.clone(),
+                email: commit.author.email.clone(),
                 avatar,
             },
-            summary: commit.summary().unwrap_or("invalid subject").into(),
-            message: commit.message().unwrap_or("invalid message").into(),
-            committer_time: commit.time().seconds().to_string(),
+            summary: commit.summary.clone(),
+            message: commit.message.clone(),
+            committer_time: commit.author.time.seconds().to_string(),
         }
     }
 }
@@ -95,7 +92,7 @@ pub struct Info {
     /// The type of the object.
     pub object_type: ObjectType,
     /// The last commmit that touched this object.
-    pub last_commit: Commit,
+    pub last_commit: Option<Commit>,
 }
 
 /// File data abstraction.
@@ -131,11 +128,10 @@ pub struct TreeEntry {
 
 /// Given a path to a repo returns the list of branches.
 pub fn branches(repo_path: &str) -> Result<Vec<Branch>, Error> {
-    let repo = GitRepository::new(repo_path)?;
-    let browser = GitBrowser::new(&repo)?;
+    let repo = surf::git::Repository::new(repo_path)?;
+    let browser = surf::git::Browser::new(repo)?;
     let mut branches = browser
-        .list_branches(None)
-        .expect("Getting branches failed")
+        .list_branches(None)?
         .into_iter()
         .map(|b| Branch(b.name.name()))
         .collect::<Vec<Branch>>();
@@ -158,7 +154,7 @@ pub fn init_project(
     let peer_id = librad::peer::PeerId::from(key.public());
     let founder = librad::meta::contributor::Contributor::new();
     let sources = git2::Repository::open(std::path::Path::new(path))?;
-    let img = url::Url::parse(img_url)?;
+    let img = Url::parse(img_url)?;
     let mut meta = librad::meta::Project::new(name, &peer_id);
 
     meta.description = Some(description.to_string());

@@ -1,3 +1,4 @@
 [submodule "fixtures/git-platinum"]
 	path = fixtures/git-platinum
 	url = https://github.com/radicle-dev/git-platinum
+	branch = master

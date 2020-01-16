@@ -8,8 +8,8 @@
 <style>
   .container {
     position: relative;
-    left: var(--slim-sidebar-width);
-    width: calc(100vw - var(--slim-sidebar-width));
+    left: var(--sidebar-width);
+    width: calc(100vw - var(--sidebar-width));
     overflow-x: hidden;
     height: 100%;
   }

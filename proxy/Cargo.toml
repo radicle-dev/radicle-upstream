@@ -17,7 +17,7 @@ juniper = "0.14"
 juniper_codegen = "0.14"
 juniper_warp = "0.5"
 log = "0.4"
-nonempty = "0.1"
+nonempty = "0.2"
 pico-args = "0.3"
 pretty_env_logger = "0.3"
 rand = "0.7"
@@ -30,15 +30,14 @@ warp = "0.1"
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "f2e9ed6d46e4f86820a30e840ab929c0d4fac48a"
+rev = "0aa3fe0895c3e1b0cceef98ab27bcf1b2a669744"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "73a8d74a2f04facfcfa8ade93c44de810ce045f3"
 
 [dependencies.radicle-surf]
-git = "https://github.com/radicle-dev/radicle-surf.git"
-rev = "3ddc170c109b10273ea04659eb64ec6918189f70"
+version = "0.2"
 
 [dev-dependencies]
 indexmap = "1.3"

@@ -1,21 +1,19 @@
 <script>
-  import DoubleSidebarLayout from "../layouts/DoubleSidebarLayout.svelte";
   import { setContext } from "svelte";
   import { revision, objectPath, objectType } from "../stores.js";
   import * as path from "../path.js";
 
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
-  import ProjectSidebar from "../components/ProjectSidebar.svelte";
-  import ProjectBreadcrumbs from "../components/ProjectBreadcrumbs.svelte";
+  import Sidebar from "../components/Sidebar.svelte";
+  import ProjectTopbar from "../components/ProjectTopbar.svelte";
 
   import Overview from "./Project/Overview.svelte";
   import Feed from "./Project/Feed.svelte";
-  import Members from "./Project/Members.svelte";
   import Funds from "./Project/Funds.svelte";
   import Source from "./Project/Source.svelte";
-  import Commits from "./Project/Commits.svelte";
-  import Branches from "./Project/Branches.svelte";
+  import Issues from "./Project/Issues.svelte";
+  import Revisions from "./Project/Revisions.svelte";
   import NotFound from "./NotFound.svelte";
 
   import NotificationFaucet from "../components/NotificationFaucet.svelte";
@@ -28,12 +26,11 @@
     "/projects/:id/": Overview,
     "/projects/:id/overview": Overview,
     "/projects/:id/feed": Feed,
-    "/projects/:id/members": Members,
     "/projects/:id/funds": Funds,
     "/projects/:id/source": Source,
     "/projects/:id/source/*": Source,
-    "/projects/:id/commits": Commits,
-    "/projects/:id/branches": Branches,
+    "/projects/:id/issues": Issues,
+    "/projects/:id/revisions": Revisions,
     "*": NotFound
   };
 
@@ -65,29 +62,44 @@
 </script>
 
 <style>
-  .container {
-    position: relative;
-    left: calc(var(--project-sidebar-width));
-    width: calc(100vw - var(--sidebar-total-width));
+  .main-container {
+    width: 1180px;
   }
 
-  .layout {
-    margin: 96px 81px 64px 81px;
+  .main-layout {
+    margin-top: 40px;
+    width: inherit;
+  }
+
+  .project-container {
+    position: relative;
+    left: var(--sidebar-width);
+    width: calc(100vw - var(--sidebar-width));
+    height: 100%;
+    overflow-y: scroll;
+  }
+
+  .content {
+    position: absolute;
+    margin: 64px 96px 64px 96px;
   }
 </style>
 
-<DoubleSidebarLayout>
-  {#await $project then result}
-    <ProjectSidebar />
-
-    <div class="container">
-      <NotificationFaucet />
-      <ProjectBreadcrumbs
-        style="position: fixed; top: 0;"
-        project={result.data.project} />
-      <div class="layout">
-        <Router {routes} />
-      </div>
+<div data-cy="project-layout">
+  <Sidebar />
+  <div data-cy="page-container" class="project-container">
+    <div class="content">
+      {#await $project then result}
+        <ProjectTopbar
+          style="position: fixed; top: 0;"
+          project={result.data.project} />
+        <NotificationFaucet />
+        <div class="main-container">
+          <div class="main-layout">
+            <Router {routes} />
+          </div>
+        </div>
+      {/await}
     </div>
-  {/await}
-</DoubleSidebarLayout>
+  </div>
+</div>
