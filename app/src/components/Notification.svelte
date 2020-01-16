@@ -29,7 +29,7 @@
   .warning {
     border: 1px solid var(--color-orange);
     color: var(--color-orange);
-    background-color: var(--color-orange-tint-63);
+    background-color: var(--color-orange-tint-65);
   }
 
   .notification.warning :global(svg) {
@@ -39,7 +39,7 @@
   .error {
     border: 1px solid var(--color-bordeaux);
     color: var(--color-bordeaux);
-    background-color: var(--color-red-tint-57);
+    background-color: var(--color-red-tint-55);
   }
 
   .notification.error :global(svg) {
@@ -60,6 +60,7 @@
   <Title.Regular>
     <slot />
   </Title.Regular>
+
   <div class="close" on:click>
     <Icon.Cross />
   </div>
