@@ -5,32 +5,45 @@
   export let style = null;
 
   export let level = "info";
-
-  let color = "var(--color-green)";
-  let lightcolor = "var(--color-lightgreen-tint-75)";
-
-  if (level === "warning") {
-    color = "var(--color-orange)";
-    lightcolor = "var(--color-orange-tint-63)";
-  } else if (level === "error") {
-    color = "var(--color-bordeaux)";
-    lightcolor = "var(--color-red-tint-57)";
-  }
-
-  $: document.documentElement.style.setProperty("--color", color);
-  $: document.documentElement.style.setProperty("--lightcolor", lightcolor);
 </script>
 
 <style>
   .notification {
     display: flex;
     flex: 1;
-    border: 1px solid var(--color);
     border-radius: 2px;
-    color: var(--color);
     height: 40px;
     align-items: center;
-    background-color: var(--lightcolor);
+  }
+
+  .info {
+    border: 1px solid var(--color-green);
+    color: var(--color-green);
+    background-color: var(--color-lightgreen-tint-75);
+  }
+
+  .notification.info :global(svg) {
+    fill: var(--color-green);
+  }
+
+  .warning {
+    border: 1px solid var(--color-orange);
+    color: var(--color-orange);
+    background-color: var(--color-orange-tint-63);
+  }
+
+  .notification.warning :global(svg) {
+    fill: var(--color-orange);
+  }
+
+  .error {
+    border: 1px solid var(--color-bordeaux);
+    color: var(--color-bordeaux);
+    background-color: var(--color-red-tint-57);
+  }
+
+  .notification.error :global(svg) {
+    fill: var(--color-bordeaux);
   }
 
   .close {
@@ -41,15 +54,13 @@
   }
 </style>
 
-<div class="notification {level}" {style}>
-  <svelte:component
-    this={icon}
-    style="margin: 8px; height: 24px; fill: {color}" />
+<div class={`notification ${level}`} {style}>
+  <svelte:component this={icon} style="margin: 8px; height: 24px" />
 
   <Title.Regular>
     <slot />
   </Title.Regular>
   <div class="close" on:click>
-    <Icon.Cross style="fill: {color}" />
+    <Icon.Cross />
   </div>
 </div>
