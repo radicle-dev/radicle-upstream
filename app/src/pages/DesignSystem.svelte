@@ -431,6 +431,14 @@
           This is harmless, but you should know anyway.
         </Notification>
       </div>
+      <div class="row">
+        <Notification level="warning">
+          This is slightly concerning.
+        </Notification>
+      </div>
+      <div class="row">
+        <Notification level="error">Something bad happened, halp!</Notification>
+      </div>
     </div>
   </div>
 </div>

@@ -6,23 +6,27 @@ import path from "path";
 const generateTints = (color, range) => {
   if (!range) return;
 
-  return range.map(tint => {
-    return `  --color-${color.name}-tint-${tint}: ${Color(color.hex)
-      .lighten(tint / 100)
-      .hex()
-      .toLowerCase()};\n`;
-  });
+  return range
+    .map(tint => {
+      return `  --color-${color.name}-tint-${tint}: ${Color(color.hex)
+        .lighten(tint / 100)
+        .hex()
+        .toLowerCase()};\n`;
+    })
+    .join("");
 };
 
 const generateShades = (color, range) => {
   if (!range) return;
 
-  return range.map(shade => {
-    return `  --color-${color.name}-shade-${shade}: ${Color(color.hex)
-      .darken(shade / 100)
-      .hex()
-      .toLowerCase()};\n`;
-  });
+  return range
+    .map(shade => {
+      return `  --color-${color.name}-shade-${shade}: ${Color(color.hex)
+        .darken(shade / 100)
+        .hex()
+        .toLowerCase()};\n`;
+    })
+    .join("");
 };
 
 let colorCss = `

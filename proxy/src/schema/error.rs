@@ -5,6 +5,17 @@ use librad::meta::common::url;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
 
+use radicle_registry_client::{DispatchError, Error as ProtocolError};
+
+/// Project problems.
+#[derive(Debug)]
+pub enum ProjectValidation {
+    /// Project names (String32) can only be 32 characters.
+    NameTooLong(String),
+    /// Project names (String32) can only be 32 characters.
+    DomainTooLong(String),
+}
+
 /// All error variants the API will return.
 #[derive(Debug)]
 pub enum Error {
@@ -24,6 +35,12 @@ pub enum Error {
     Io(std::io::Error),
     /// Url parse error.
     Url(url::ParseError),
+    /// Project name validation.
+    ProjectValidation(ProjectValidation),
+    /// Issues with the Radicle protocol.
+    Protocol(ProtocolError),
+    /// Issues with the Radicle runtime.
+    Runtime(DispatchError),
 }
 
 impl From<radicle_surf::file_system::error::Error> for Error {
@@ -71,6 +88,24 @@ impl From<std::io::Error> for Error {
 impl From<url::ParseError> for Error {
     fn from(url_error: url::ParseError) -> Self {
         Self::Url(url_error)
+    }
+}
+
+impl From<ProtocolError> for Error {
+    fn from(error: ProtocolError) -> Self {
+        Self::Protocol(error)
+    }
+}
+
+impl From<DispatchError> for Error {
+    fn from(error: DispatchError) -> Self {
+        Self::Runtime(error)
+    }
+}
+
+impl From<ProjectValidation> for Error {
+    fn from(error: ProjectValidation) -> Self {
+        Self::ProjectValidation(error)
     }
 }
 
@@ -238,7 +273,7 @@ fn convert_librad_parse_error_to_field_error(
 }
 
 /// Helper to convert `url::ParseError` to `FieldError`.
-fn convert_url_parse_error_to_field_error(error: url::ParseError) -> FieldError {
+fn convert_url_parse_error_to_field_error(error: &url::ParseError) -> FieldError {
     FieldError::new(error.to_string(), graphql_value!({ "type": "URL_PARSE" }))
 }
 
@@ -256,7 +291,25 @@ impl IntoFieldError for Error {
             Self::LibradProject(project_error) => match project_error {
                 librad::project::Error::Git(librad_error) => convert_librad_git(&librad_error),
             },
-            Self::Url(url_error) => convert_url_parse_error_to_field_error(url_error),
+            Self::Url(url_error) => convert_url_parse_error_to_field_error(&url_error),
+            Self::ProjectValidation(project_error) => match project_error {
+                ProjectValidation::NameTooLong(error) => {
+                    FieldError::new(error, graphql_value!({ "type": "PROJECT_NAME_TOO_LONG" }))
+                }
+                ProjectValidation::DomainTooLong(error) => {
+                    FieldError::new(error, graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }))
+                }
+            },
+            // TODO(garbados): expand via sub-match
+            Self::Protocol(error) => FieldError::new(
+                error.to_string(),
+                graphql_value!({ "type": "RADICLE_PROTOCOL" }),
+            ),
+            // TODO(garbados): expand via sub-match
+            Self::Runtime(error) => FieldError::new(
+                format!("{:?}", error),
+                graphql_value!({ "type": "RADICLE_RUNTIME" }),
+            ),
         }
     }
 }

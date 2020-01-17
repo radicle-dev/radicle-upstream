@@ -13,7 +13,10 @@
     }
 
     let id = Math.random();
-    messages = [...messages, { id: id, message: message }];
+    messages = [
+      ...messages,
+      { id: id, message: message.text, level: message.level }
+    ];
     notification.set();
     setTimeout(() => {
       remove(id);
@@ -49,6 +52,7 @@
   {#each messages as message}
     <div class="notification" transition:blur={{ duration: 300 }}>
       <Notification
+        level={message.level}
         on:click={() => {
           remove(message.id);
         }}>
