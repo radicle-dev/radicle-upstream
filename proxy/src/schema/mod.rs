@@ -338,11 +338,11 @@ mod tests {
         let librad_paths = Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
         let repos_dir = tempdir_in(tmp_dir.path()).expect("unable to create repos directory");
 
-        crate::schema::git::setup_fixtures(
-            &librad_paths,
-            tmp_dir.path().to_str().expect("path extraction failed"),
-        )
-        .expect("fixture setup failed");
+        // crate::schema::git::setup_fixtures(
+        //     &librad_paths,
+        //     tmp_dir.path().to_str().expect("path extraction failed"),
+        // )
+        // .expect("fixture setup failed");
 
         // Setup rad project for git-platinum fixture data.
         //
