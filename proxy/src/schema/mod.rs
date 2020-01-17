@@ -523,17 +523,6 @@ mod tests {
         }
 
         #[test]
-        fn open_browser() {
-            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
-                let project_id = librad::project::ProjectId::from(platinum_id);
-                let project = librad::project::Project::open(&librad_paths, &project_id).unwrap();
-                let _browser = match project {
-                    librad::project::Project::Git(git_project) => git_project.browser().unwrap(),
-                };
-            });
-        }
-
-        #[test]
         fn blob() {
             with_fixtures(|librad_paths, _repos_dir, platinum_id| {
                 let mut vars = Variables::new();
