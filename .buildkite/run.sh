@@ -38,7 +38,7 @@ else
   echo "Cache $target_cache not available"
 fi
 
-echo "--- Updateing submodules"
+echo "--- Updating submodules"
 (cd app && time git submodule update --init --recursive)
 (cd app && time git submodule foreach "git fetch --all")
 
