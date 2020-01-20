@@ -3,10 +3,10 @@
   import ModalLayout from "../layouts/ModalLayout.svelte";
   import StepCounter from "../components/ProjectRegistration/StepCounter.svelte";
 
-  import StepOne from "../components/ProjectRegistration/StepOne.svelte";
-  import StepTwo from "../components/ProjectRegistration/StepTwo.svelte";
-  import StepThree from "../components/ProjectRegistration/StepThree.svelte";
-  import StepFour from "../components/ProjectRegistration/StepFour.svelte";
+  import PickNameStep from "../components/ProjectRegistration/PickNameStep.svelte";
+  import PickWalletStep from "../components/ProjectRegistration/PickWalletStep.svelte";
+  import ConfirmTransactionStep from "../components/ProjectRegistration/ConfirmTransactionStep.svelte";
+  import TransactionSummaryStep from "../components/ProjectRegistration/TransactionSummaryStep.svelte";
 
   import { Title } from "../DesignSystem";
 
@@ -54,19 +54,22 @@
       </Title.Big>
 
       {#if step === 1}
-        <StepOne bind:name onNextStep={nextStep} />
+        <PickNameStep bind:name onNextStep={nextStep} />
       {/if}
 
       {#if step === 2}
-        <StepTwo onNextStep={nextStep} onPreviousStep={previousStep} />
+        <PickWalletStep onNextStep={nextStep} onPreviousStep={previousStep} />
       {/if}
 
       {#if step === 3}
-        <StepThree onNextStep={nextStep} onPreviousStep={previousStep} {name} />
+        <ConfirmTransactionStep
+          onNextStep={nextStep}
+          onPreviousStep={previousStep}
+          {name} />
       {/if}
 
       {#if step === 4}
-        <StepFour {name} />
+        <TransactionSummaryStep {name} />
       {/if}
     </div>
   </div>
