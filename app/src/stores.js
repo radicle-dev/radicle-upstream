@@ -4,6 +4,8 @@ export const revision = writable(null);
 export const objectPath = writable(null);
 export const objectType = writable(null);
 
+export const projectName = writable(null);
+
 export const notification = writable(null);
 
 export const showNotification = message => {

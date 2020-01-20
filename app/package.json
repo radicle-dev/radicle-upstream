@@ -83,12 +83,10 @@
   },
   "lint-staged": {
     "*.{js,css,json,html}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "*.svelte": [
-      "prettier --plugin-search-dir=. --write",
-      "git add"
+      "prettier --plugin-search-dir=. --write"
     ]
   }
 }

@@ -5,6 +5,7 @@
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
+  import { registerProject } from "../../path.js";
 
   const GET_PROJECT = gql`
     query Query($id: ID!) {
@@ -19,9 +20,10 @@
   `;
 
   const client = getClient();
+  const projectId = getContext("projectId");
   const project = query(client, {
     query: GET_PROJECT,
-    variables: { projectId: getContext("projectId") }
+    variables: { projectId: projectId }
   });
 </script>
 
