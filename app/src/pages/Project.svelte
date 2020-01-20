@@ -92,7 +92,9 @@
       {#await $project then result}
         <ProjectTopbar
           style="position: fixed; top: 0;"
-          project={result.data.project} />
+          avatarUrl={result.data.project.metadata.imgUrl}
+          id={result.data.project.id}
+          name={result.data.project.metadata.name} />
         <NotificationFaucet />
         <div class="main-container">
           <div class="main-layout">

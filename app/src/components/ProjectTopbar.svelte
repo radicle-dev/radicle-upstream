@@ -5,7 +5,9 @@
   import ProjectTopbarMenu from "../components/ProjectTopbarMenu.svelte";
 
   export let style = null;
-  export let project = null;
+  export let avatarUrl = null;
+  export let id = null;
+  export let name = null;
 </script>
 
 <style>
@@ -36,10 +38,10 @@
 </style>
 
 <div data-cy="topbar" class="topbar" {style}>
-  <a class="project-name" href={path.projectOverview(project.id)} use:link>
-    <img alt="Project Avatar" src={project.metadata.imgUrl} />
+  <a class="project-name" href={path.projectOverview(id)} use:link>
+    <img alt="Project Avatar" src={avatarUrl} />
     <Title.Regular style="color: var(--color-purple); margin-right: 24px">
-      {project.metadata.name}
+      {name}
     </Title.Regular>
   </a>
   <ProjectTopbarMenu />
