@@ -58,8 +58,5 @@ echo "--- Run proxy lints"
 echo "--- Starting proxy daemon and runing app tests"
 (cd app && time ELECTRON_ENABLE_LOGGING=1 yarn test)
 
-echo "--- Build proxy release"
-(cd app && time yarn proxy:build:release)
-
 echo "--- Packaging and uploading app binaries"
 (cd app && time yarn ci:dist)
