@@ -1,4 +1,4 @@
-Cypress.Commands.add("visitSource", () => {
+beforeEach(() => {
   cy.visit("./public/index.html#/projects");
   cy.contains("Monadic").click();
   cy.contains("Source").click();
@@ -9,7 +9,6 @@ context("source code browsing", () => {
     context("when the timeframe is less than a day", () => {
       it("shows timeframe in hours", () => {
         cy.clock(Date.parse("5 dec 2019"));
-        cy.visitSource();
         cy.get("[data-cy=revision-selector]").select("v0.5.0");
         cy.contains("9 hours ago").should("exist");
       });
@@ -18,7 +17,6 @@ context("source code browsing", () => {
     context("when the timeframe is less than 2 days", () => {
       it("shows timeframe in days", () => {
         cy.clock(Date.parse("6 dec 2019"));
-        cy.visitSource();
         cy.get("[data-cy=revision-selector]").select("v0.5.0");
         cy.contains("1 day ago").should("exist");
       });
@@ -27,7 +25,6 @@ context("source code browsing", () => {
     context("when the timeframe is less than a week", () => {
       it("shows timeframe in days", () => {
         cy.clock(Date.parse("10 dec 2019"));
-        cy.visitSource();
         cy.get("[data-cy=revision-selector]").select("v0.5.0");
         cy.contains("5 days ago").should("exist");
       });
@@ -36,7 +33,6 @@ context("source code browsing", () => {
     context("when the timeframe is more than a week", () => {
       it("shows timeframe in weeks", () => {
         cy.clock(Date.parse("15 dec 2019"));
-        cy.visitSource();
         cy.get("[data-cy=revision-selector]").select("v0.5.0");
         cy.contains("1 week ago").should("exist");
       });
@@ -45,15 +41,10 @@ context("source code browsing", () => {
     context("when the timeframe is more than 2 weeks", () => {
       it("shows timeframe in weeks", () => {
         cy.clock(Date.parse("21 dec 2019"));
-        cy.visitSource();
         cy.get("[data-cy=revision-selector]").select("v0.5.0");
         cy.contains("2 weeks ago").should("exist");
       });
     });
-  });
-
-  beforeEach(() => {
-    cy.visitSource();
   });
 
   context("when the 'source' section is selected in project sidebar", () => {
