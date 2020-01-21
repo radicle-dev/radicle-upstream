@@ -112,6 +112,7 @@ impl Registry {
         let register_message = message::RegisterProject {
             id: (project_name, project_domain),
             checkpoint_id,
+            metadata: registry::Bytes128::from_vec(vec![]).expect("unable construct metadata"),
         };
         let register_tx = registry::Transaction::new_signed(
             author,
