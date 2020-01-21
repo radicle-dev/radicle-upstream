@@ -1,8 +1,4 @@
-use futures::future::Future;
-
-use radicle_registry_client::{
-    ed25519, Client, ClientT, CreateCheckpointParams, RegisterProjectParams, String32, H256,
-};
+use radicle_registry_client::{ed25519, message, Client, ClientT, String32, H256};
 
 use crate::schema::error::{Error, ProjectValidation};
 
@@ -48,7 +44,7 @@ impl Registry {
     // TODO(xla): Remvoe once integrated in the schema.
     #[allow(dead_code)]
     /// Register a new project on the chain.
-    pub fn register_project(
+    pub async fn register_project(
         &self,
         author: &ed25519::Pair,
         domain: String,
@@ -60,28 +56,28 @@ impl Registry {
         let project_hash = H256::random();
         let checkpoint_id = self
             .client
-            .sign_and_submit_call(
+            .sign_and_submit_message(
                 author,
-                CreateCheckpointParams {
+                message::CreateCheckpoint {
                     project_hash,
                     previous_checkpoint_id: None,
                 },
             )
             // TODO(garbados): futurize
-            .wait()?
-            .wait()?
+            .await?
+            .await?
             .result?;
         self.client
-            .sign_and_submit_call(
+            .sign_and_submit_message(
                 author,
-                RegisterProjectParams {
+                message::RegisterProject {
                     id: (project_name, project_domain),
                     checkpoint_id,
                 },
             )
             // TODO(garbados): futurize
-            .wait()?
-            .wait()?
+            .await?
+            .await?
             .result
             .map_err(|error| error.into())
     }
@@ -95,6 +91,10 @@ fn test_register_project() {
     let client = Client::new_emulator();
     let registry = Registry::new(client);
     let alice = ed25519::Pair::from_legacy_string("//Alice", None);
-    let result = registry.register_project(&alice, "hello".into(), "world".into());
+    let result = futures::executor::block_on(registry.register_project(
+        &alice,
+        "hello".into(),
+        "world".into(),
+    ));
     assert_eq!(result.is_err(), false);
 }

@@ -88,8 +88,11 @@ impl Mutation {
     ) -> Result<registry::Transaction, Error> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
-        ctx.registry
-            .register_project(&fake_pair, domain.clone(), name.clone())?;
+        futures::executor::block_on(ctx.registry.register_project(
+            &fake_pair,
+            domain.clone(),
+            name.clone(),
+        ))?;
 
         Ok(registry::Transaction {
             id: juniper::ID::new("123"),
