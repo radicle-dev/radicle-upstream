@@ -533,11 +533,6 @@ mod tests {
                                     name,
                                 }
                             },
-                            state {
-                                ... on Applied {
-                                    block
-                                }
-                            },
                         }
                     }";
                 execute_query(librad_paths, query, &vars, |res, errors| {
