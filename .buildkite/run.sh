@@ -38,7 +38,7 @@ else
   echo "Cache $target_cache not available"
 fi
 
-echo "--- Updateing submodules"
+echo "--- Updating submodules"
 (cd app && time git submodule update --init --recursive)
 (cd app && time git submodule foreach "git fetch --all")
 
@@ -58,8 +58,5 @@ echo "--- Run proxy lints"
 echo "--- Starting proxy daemon and runing app tests"
 (cd app && time ELECTRON_ENABLE_LOGGING=1 yarn test)
 
-echo "--- Build proxy release"
-(cd app && time yarn proxy:build:release)
-
 echo "--- Packaging and uploading app binaries"
-(cd app && time yarn ci:dist)
+(cd app && time yarn dist)
