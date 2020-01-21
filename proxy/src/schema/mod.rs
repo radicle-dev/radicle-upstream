@@ -109,8 +109,7 @@ impl Mutation {
             }),
             timestamp: radicle_surf::git::git2::Time::new(
                 std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .unwrap()
+                    .duration_since(std::time::UNIX_EPOCH)?
                     .as_secs() as i64,
                 0,
             )

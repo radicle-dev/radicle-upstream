@@ -4,6 +4,8 @@ use juniper::{FieldError, IntoFieldError};
 use librad::meta::common::url;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
+use std::error::Error as _;
+use std::time::SystemTimeError;
 
 use radicle_registry_client::{DispatchError, Error as ProtocolError};
 
@@ -41,6 +43,8 @@ pub enum Error {
     Protocol(ProtocolError),
     /// Issues with the Radicle runtime.
     Runtime(DispatchError),
+    /// Errors from handling time.
+    Time(SystemTimeError),
 }
 
 impl From<radicle_surf::file_system::error::Error> for Error {
@@ -106,6 +110,12 @@ impl From<DispatchError> for Error {
 impl From<ProjectValidation> for Error {
     fn from(error: ProjectValidation) -> Self {
         Self::ProjectValidation(error)
+    }
+}
+
+impl From<SystemTimeError> for Error {
+    fn from(error: SystemTimeError) -> Self {
+        Self::Time(error)
     }
 }
 
@@ -301,6 +311,9 @@ impl IntoFieldError for Error {
                 format!("{:?}", error),
                 graphql_value!({ "type": "RADICLE_RUNTIME" }),
             ),
+            Self::Time(error) => {
+                FieldError::new(error.description(), graphql_value!({ "type": "TIME" }))
+            }
         }
     }
 }
