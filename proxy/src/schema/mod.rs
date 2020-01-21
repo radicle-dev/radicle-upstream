@@ -2,6 +2,7 @@ use juniper::{RootNode, ID};
 use std::str::FromStr;
 
 use librad::paths::Paths;
+use radicle_registry_client::ed25519;
 use radicle_surf as surf;
 
 /// Error definitions and type casting logic.
@@ -30,14 +31,20 @@ pub struct Context {
     dummy_repo_path: String,
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
+    registry: registry::Registry,
 }
 
 impl Context {
     /// Returns a new `Context`.
-    pub const fn new(dummy_repo_path: String, librad_paths: Paths) -> Self {
+    pub fn new(
+        dummy_repo_path: String,
+        librad_paths: Paths,
+        registry_client: radicle_registry_client::Client,
+    ) -> Self {
         Self {
             dummy_repo_path,
             librad_paths,
+            registry: registry::Registry::new(registry_client),
         }
     }
 }
@@ -71,6 +78,28 @@ impl Mutation {
         Ok(project::Project {
             id: id.to_string().into(),
             metadata: meta.into(),
+        })
+    }
+
+    fn register_project(
+        ctx: &Context,
+        domain: String,
+        name: String,
+    ) -> Result<registry::Transaction, Error> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+        ctx.registry
+            .register_project(&fake_pair, domain.clone(), name.clone())?;
+
+        Ok(registry::Transaction {
+            id: juniper::ID::new("123"),
+            messages: vec![registry::Message::ProjectRegistration(
+                registry::ProjectRegistration {
+                    domain: domain,
+                    name: name,
+                },
+            )],
+            timestamp: "now".to_string(),
         })
     }
 }
@@ -342,7 +371,11 @@ mod tests {
     where
         F: FnOnce(Value, Vec<ExecutionError<DefaultScalarValue>>) -> (),
     {
-        let ctx = Context::new(REPO_PATH.into(), librad_paths);
+        let ctx = Context::new(
+            REPO_PATH.into(),
+            librad_paths,
+            radicle_registry_client::Client::new_emulator(),
+        );
         let (res, errors) =
             juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
                 .expect("test execute failed");
@@ -464,6 +497,41 @@ mod tests {
 
                 dir.close().expect("directory teardown failed");
             })
+        }
+
+        #[test]
+        fn register_project() {
+            with_fixtures(|librad_paths, _repos_dir| {
+                let mut vars = Variables::new();
+                vars.insert("domain".into(), InputValue::scalar("rad"));
+                vars.insert("name".into(), InputValue::scalar("upstream"));
+
+                let query = "mutation($domain: String!, $name: String!) {
+                        registerProject(domain: $domain, name: $name) {
+                            id,
+                            messages {
+                                ... on ProjectRegistration {
+                                    domain,
+                                    name,
+                                }
+                            },
+                        }
+                    }";
+                execute_query(librad_paths, query, &vars, |res, errors| {
+                    assert_eq!(errors, []);
+                    assert_eq!(
+                        res,
+                        graphql_value!({
+                            "registerProject": {
+                                "id": "123",
+                                "messages": [
+                                    { "domain": "rad", "name": "upstream" },
+                                ],
+                            },
+                        })
+                    );
+                });
+            });
         }
     }
 

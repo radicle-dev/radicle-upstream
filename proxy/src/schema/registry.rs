@@ -1,30 +1,47 @@
 use futures::future::Future;
 
 use radicle_registry_client::{
-    ed25519::Pair, ClientT, CreateCheckpointParams, RegisterProjectParams, String32, H256,
+    ed25519, Client, ClientT, CreateCheckpointParams, RegisterProjectParams, String32, H256,
 };
 
 use crate::schema::error::{Error, ProjectValidation};
 
+#[derive(GraphQLObject)]
+pub struct Transaction {
+    pub id: juniper::ID,
+    pub messages: Vec<Message>,
+    pub timestamp: String,
+}
+
+#[derive(juniper::GraphQLObject)]
+pub struct ProjectRegistration {
+    pub domain: String,
+    pub name: String,
+}
+
+pub enum Message {
+    ProjectRegistration(ProjectRegistration),
+}
+
+juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &ProjectRegistration => match *self { Message::ProjectRegistration(ref p) => Some(p) },
+    }
+});
+
 /// Registry client wrapper.
 #[derive(Clone)]
-pub struct Registry<R>
-where
-    R: ClientT,
-{
+pub struct Registry {
     /// Registry client, whether an emulator or otherwise.
-    client: R,
+    client: Client,
 }
 
 /// Registry client wrapper methods
-impl<R> Registry<R>
-where
-    R: ClientT,
-{
+impl Registry {
     // TODO(xla): Remvoe once integrated in the schema.
     #[allow(dead_code)]
     /// Wrap a registry client.
-    pub fn new(client: R) -> Self {
+    pub fn new(client: Client) -> Self {
         Self { client }
     }
 
@@ -33,9 +50,9 @@ where
     /// Register a new project on the chain.
     pub fn register_project(
         &self,
-        author: &Pair,
-        name: String,
+        author: &ed25519::Pair,
         domain: String,
+        name: String,
     ) -> Result<(), Error> {
         let project_name = String32::from_string(name).map_err(ProjectValidation::NameTooLong)?;
         let project_domain =
@@ -72,11 +89,12 @@ where
 
 #[test]
 fn test_register_project() {
-    // Test that project registration submits valid transactions and they succeed.
     use radicle_registry_client::Client;
+
+    // Test that project registration submits valid transactions and they succeed.
     let client = Client::new_emulator();
     let registry = Registry::new(client);
-    let alice = Pair::from_legacy_string("//Alice", None);
+    let alice = ed25519::Pair::from_legacy_string("//Alice", None);
     let result = registry.register_project(&alice, "hello".into(), "world".into());
     assert_eq!(result.is_err(), false);
 }
