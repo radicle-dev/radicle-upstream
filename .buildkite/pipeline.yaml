@@ -13,6 +13,18 @@
     - "app/dist/*.snap"
     - "app/cypress/screenshots/**/*.png"
 
+.test: &test
+  label: 'Build app for macOS'
+  agents:
+    production: "true"
+    platform: "macos"
+  timeout_in_minutes: 60
+  command: '.buildkite/mac-n-cheese.sh'
+  artifact_paths:
+    - "app/dist/*.AppImage"
+    - "app/dist/*.snap"
+    - "app/cypress/screenshots/**/*.png"
+
 steps:
   - branches: master
     concurrency: 1
