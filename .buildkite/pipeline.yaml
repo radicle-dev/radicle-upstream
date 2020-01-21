@@ -16,7 +16,7 @@
 .test: &test
   label: 'Build app for macOS'
   agents:
-    production: "true"
+    production: "false"
     platform: "macos"
   timeout_in_minutes: 60
   command: '.buildkite/mac-n-cheese.sh'
