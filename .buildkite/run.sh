@@ -38,7 +38,7 @@ echo "--- Installing yarn dependencies"
 (cd app && time yarn install)
 
 echo "--- Loading proxy/target cache"
-declare -r target_cache=/cache/proxy-target
+declare -r target_cache="$CACHE_FOLDER/proxy-target"
 
 mkdir -p "$target_cache"
 
@@ -54,7 +54,7 @@ echo "--- Updating submodules"
 (cd app && time git submodule foreach "git fetch --all")
 
 echo "--- Set custom git config"
-(cp .buildkite/.gitconfig /cache/)
+(cp .buildkite/.gitconfig "$CACHE_FOLDER/")
 
 echo "--- Run cargo fmt"
 (cd proxy && time cargo fmt --all -- --check)
