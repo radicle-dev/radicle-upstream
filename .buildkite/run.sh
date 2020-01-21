@@ -8,11 +8,17 @@ if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM}" == "macos" ]]; then
 
   export HOME=/Users/buildkite
   export CACHE_FOLDER="$HOME/buildkite-cache"
+
+  echo "CACHE_FOLDER=$CACHE_FOLDER"
+  echo "HOME=$HOME"
 else
   echo "--- Setting up Linux environment"
 
   export CACHE_FOLDER="/cache"
   export HOME="$CACHE_FOLDER"
+
+  echo "CACHE_FOLDER=$CACHE_FOLDER"
+  echo "HOME=$HOME"
 fi
 
 mkdir -p "$CACHE_FOLDER/yarn"
