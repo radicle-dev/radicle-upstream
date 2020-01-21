@@ -60,8 +60,8 @@ echo "--- Updating submodules"
 (cd app && time git submodule foreach "git fetch --all")
 
 echo "--- Set custom git config"
-(cp .buildkite/.gitconfig "$CACHE_FOLDER/")
-cat "$CACHE_FOLDER/.gitconfig"
+(cp .buildkite/.gitconfig "$HOME/")
+cat "$HOME/.gitconfig"
 
 echo "--- Run cargo fmt"
 (cd proxy && time cargo fmt --all -- --check)
