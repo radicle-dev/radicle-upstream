@@ -53,7 +53,6 @@
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test cypress:open",
     "test:run": "wait-on http://localhost:8080 && yarn svelte:build && yarn cypress:run",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp ../proxy/target/release/proxy dist && electron-builder",
-    "ci:dist": "rm -rf ./dist && mkdir ./dist && cp ../proxy/target/release/proxy dist && electron-builder",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on http://localhost:8080 && NODE_ENV=development electron .",
     "svelte:clean": "rm -rf public/bundle.*",
     "svelte:build": "yarn svelte:clean && rollup -c",

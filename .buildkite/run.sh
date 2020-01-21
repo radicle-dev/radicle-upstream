@@ -59,4 +59,4 @@ echo "--- Starting proxy daemon and runing app tests"
 (cd app && time ELECTRON_ENABLE_LOGGING=1 yarn test)
 
 echo "--- Packaging and uploading app binaries"
-(cd app && time yarn ci:dist)
+(cd app && time yarn dist)
