@@ -34,15 +34,11 @@ pub struct Registry {
 
 /// Registry client wrapper methods
 impl Registry {
-    // TODO(xla): Remvoe once integrated in the schema.
-    #[allow(dead_code)]
     /// Wrap a registry client.
     pub fn new(client: Client) -> Self {
         Self { client }
     }
 
-    // TODO(xla): Remvoe once integrated in the schema.
-    #[allow(dead_code)]
     /// Register a new project on the chain.
     pub async fn register_project(
         &self,
