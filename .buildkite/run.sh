@@ -3,7 +3,7 @@ set -Eeou pipefail
 
 TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
 
-if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM}" == "macos" ]]; then
+if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" == "macos" ]]; then
   echo "--- Setting up macOS environment"
 
   export HOME=/Users/buildkite
