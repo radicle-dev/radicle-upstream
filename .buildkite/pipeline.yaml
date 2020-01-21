@@ -1,5 +1,5 @@
 .test: &test
-  label: 'Build app and proxy, run tests and package binaries'
+  label: 'Test and package app on Linux'
   agents:
     production: "true"
     platform: "linux"
@@ -14,12 +14,12 @@
     - "app/cypress/screenshots/**/*.png"
 
 .test: &test
-  label: 'Build app for macOS'
+  label: 'Test and package app on macOS'
   agents:
     production: "false"
     platform: "macos"
   timeout_in_minutes: 60
-  command: '.buildkite/mac-n-cheese.sh'
+  command: '.buildkite/run.sh'
   artifact_paths:
     - "app/dist/*.dmg"
     - "app/cypress/screenshots/**/*.png"
