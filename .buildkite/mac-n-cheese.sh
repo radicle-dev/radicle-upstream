@@ -3,7 +3,14 @@ set -Eeou pipefail
 
 TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
 
-env
+export HOME=/Users/buildkite
+export PATH="$HOME/.cargo/bin:$PATH"
+
+export BUILDKITE_CACHE="$HOME/buildkite-cache"
+
+export YARN_CACHE_FOLDER="$BUILDKITE_CACHE/yarn"
+export CARGO_HOME="$BUILDKITE_CACHE/cargo"
+export RUSTUP_HOME="$BUILDKITE_CACHE/rustup"
 
 # Incremental builds use timestamps of local code. Since we always
 # check it out fresh we can never use incremental builds.
