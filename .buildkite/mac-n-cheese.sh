@@ -21,6 +21,18 @@ export SCCACHE_CACHE_SIZE="1G"
 echo "--- Installing yarn dependencies"
 (cd app && time yarn install)
 
+echo "--- Loading proxy/target cache"
+declare -r target_cache="$BUILDKITE_CACHE/proxy-target"
+
+mkdir -p "$target_cache"
+
+if [[ -d "$target_cache" ]]; then
+	ln -s "$target_cache" proxy/target
+  echo "Size of $target_cache is $(du -sh "$target_cache" | cut -f 1)"
+else
+  echo "Cache $target_cache not available"
+fi
+
 echo "--- Updating submodules"
 (cd app && time git submodule update --init --recursive)
 (cd app && time git submodule foreach "git fetch --all")
