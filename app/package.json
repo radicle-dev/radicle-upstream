@@ -15,7 +15,12 @@
         "from": "dist/proxy",
         "to": "proxy"
       }
-    ]
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ]
+    }
   },
   "main": "./native/main.comp.js",
   "devDependencies": {
