@@ -396,15 +396,17 @@ mod tests {
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
-                    assert_ne!(
+                    assert_eq!(
                         res,
                         graphql_value!({
-                            "metadata": {
-                                "name": "upstream",
-                                "description": "Code collaboration without intermediates.",
-                                "default_branch": "master",
-                                "img_url": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
-                            }
+                            "createProject": {
+                                "metadata": {
+                                    "name": "upstream",
+                                    "description": "Code collaboration without intermediates.",
+                                    "defaultBranch": "master",
+                                    "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                                },
+                            },
                         })
                     );
                 });
@@ -449,15 +451,17 @@ mod tests {
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
-                    assert_ne!(
+                    assert_eq!(
                         res,
                         graphql_value!({
-                            "metadata": {
-                                "name": "upstream",
-                                "description": "Code collaboration without intermediates.",
-                                "default_branch": "master",
-                                "img_url": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
-                            }
+                            "createProject": {
+                                "metadata": {
+                                    "name": "upstream",
+                                    "description": "Code collaboration without intermediates.",
+                                    "defaultBranch": "master",
+                                    "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                                },
+                            },
                         })
                     );
                 });
