@@ -9,6 +9,7 @@ use crate::schema::error::{Error, ProjectValidation};
 pub struct Transaction {
     pub id: juniper::ID,
     pub messages: Vec<Message>,
+    pub state: TransactionState,
     pub timestamp: String,
 }
 
@@ -27,6 +28,21 @@ juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
         &ProjectRegistration => match *self { Message::ProjectRegistration(ref p) => Some(p) },
     }
 });
+
+pub enum TransactionState {
+    Applied(Applied),
+}
+
+juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
+    }
+});
+
+#[derive(GraphQLObject)]
+pub struct Applied {
+    pub block: juniper::ID,
+}
 
 /// Registry client wrapper.
 #[derive(Clone)]

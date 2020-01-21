@@ -89,7 +89,7 @@ impl Mutation {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
-        //
+        // https://github.com/graphql-rust/juniper/pull/497
         let transaction_id = futures::executor::block_on(ctx.registry.register_project(
             &fake_pair,
             domain.clone(),
@@ -104,7 +104,18 @@ impl Mutation {
                     name: name,
                 },
             )],
-            timestamp: "now".to_string(),
+            state: registry::TransactionState::Applied(registry::Applied {
+                block: juniper::ID::new(radicle_registry_client::H256::random().to_string()),
+            }),
+            timestamp: radicle_surf::git::git2::Time::new(
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs() as i64,
+                0,
+            )
+            .seconds()
+            .to_string(),
         })
     }
 }
@@ -513,11 +524,15 @@ mod tests {
 
                 let query = "mutation($domain: String!, $name: String!) {
                         registerProject(domain: $domain, name: $name) {
-                            id,
                             messages {
                                 ... on ProjectRegistration {
                                     domain,
                                     name,
+                                }
+                            },
+                            state {
+                                ... on Applied {
+                                    block
                                 }
                             },
                         }
@@ -528,7 +543,6 @@ mod tests {
                         res,
                         graphql_value!({
                             "registerProject": {
-                                "id": "123",
                                 "messages": [
                                     { "domain": "rad", "name": "upstream" },
                                 ],
