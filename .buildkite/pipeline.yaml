@@ -21,8 +21,8 @@
   timeout_in_minutes: 60
   command: '.buildkite/mac-n-cheese.sh'
   artifact_paths:
-    - "app/dist/*.AppImage"
-    - "app/dist/*.snap"
+    - "app/dist/*.zip"
+    - "app/dist/*.dmg"
     - "app/cypress/screenshots/**/*.png"
 
 steps:
