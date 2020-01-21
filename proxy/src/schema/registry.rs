@@ -1,4 +1,7 @@
-use radicle_registry_client::{ed25519, message, Client, ClientT, String32, H256};
+use radicle_registry_client::{
+    self as registry, ed25519, message, Client, ClientT, CryptoPair, String32, TransactionExtra,
+    H256,
+};
 
 use crate::schema::error::{Error, ProjectValidation};
 
@@ -45,37 +48,52 @@ impl Registry {
         author: &ed25519::Pair,
         domain: String,
         name: String,
-    ) -> Result<(), Error> {
+    ) -> Result<H256, Error> {
+        // Verify that inputs are valid.
         let project_name = String32::from_string(name).map_err(ProjectValidation::NameTooLong)?;
         let project_domain =
             String32::from_string(domain).map_err(ProjectValidation::DomainTooLong)?;
-        let project_hash = H256::random();
+
+        // Prepare and submit checkpoint transaction.
+        let checkpoint_message = message::CreateCheckpoint {
+            project_hash: H256::random(),
+            previous_checkpoint_id: None,
+        };
+        let checkpoint_tx = registry::Transaction::new_signed(
+            author,
+            checkpoint_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+            },
+        );
         let checkpoint_id = self
             .client
-            .sign_and_submit_message(
-                author,
-                message::CreateCheckpoint {
-                    project_hash,
-                    previous_checkpoint_id: None,
-                },
-            )
-            // TODO(garbados): futurize
+            .submit_transaction(checkpoint_tx)
             .await?
             .await?
             .result?;
+
+        // Prepare and submit project registration transaction.
+        let register_message = message::RegisterProject {
+            id: (project_name, project_domain),
+            checkpoint_id,
+        };
+        let register_tx = registry::Transaction::new_signed(
+            author,
+            register_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+            },
+        );
         self.client
-            .sign_and_submit_message(
-                author,
-                message::RegisterProject {
-                    id: (project_name, project_domain),
-                    checkpoint_id,
-                },
-            )
-            // TODO(garbados): futurize
+            .submit_transaction(register_tx)
             .await?
             .await?
-            .result
-            .map_err(|error| error.into())
+            .result?;
+
+        Ok(H256::random())
     }
 }
 
