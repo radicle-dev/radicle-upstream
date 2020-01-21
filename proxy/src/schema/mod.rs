@@ -37,7 +37,7 @@ pub struct Context {
 
 impl Context {
     /// Returns a new `Context`.
-    pub fn new(
+    pub const fn new(
         dummy_repo_path: String,
         librad_paths: Paths,
         registry_client: radicle_registry_client::Client,

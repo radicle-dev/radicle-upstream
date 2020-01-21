@@ -72,7 +72,7 @@ pub struct Registry {
 /// Registry client wrapper methods
 impl Registry {
     /// Wrap a registry client.
-    pub fn new(client: Client) -> Self {
+    pub const fn new(client: Client) -> Self {
         Self { client }
     }
 
