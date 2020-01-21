@@ -5,21 +5,33 @@ use radicle_registry_client::{
 
 use crate::schema::error::{Error, ProjectValidation};
 
+/// A container to dissiminate and apply operations on the [`Registry`].
 #[derive(GraphQLObject)]
 pub struct Transaction {
+    /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
+    /// the API consumer to query state changes of a transaction.
     pub id: juniper::ID,
+    /// List of operations to be applied to the Registry. Currently limited to exactly one. We use
+    /// a Vec here to accommodate future extensibility.
     pub messages: Vec<Message>,
+    /// Current state of the transaction.
     pub state: TransactionState,
+    /// Creation time.
     pub timestamp: String,
 }
 
+/// Required information to issue a new project registration on the [`Regisry`].
 #[derive(juniper::GraphQLObject)]
 pub struct ProjectRegistration {
+    /// The domain/namespace the project should be registered for.
     pub domain: String,
+    /// The name of the project, which MUST be uniqure for the domain.
     pub name: String,
 }
 
+/// Possible messages a [`Transaction`] can carry.
 pub enum Message {
+    /// Issue a new project registration. See [`ProjectRegistration`] for the shape of the data.
     ProjectRegistration(ProjectRegistration),
 }
 
@@ -29,7 +41,10 @@ juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     }
 });
 
+/// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
+/// whereabouts of a given [`Transaction`].
 pub enum TransactionState {
+    /// [`Transaction`] has been applied to a block. See [`Applied`] for the shape of the data.
     Applied(Applied),
 }
 
@@ -39,8 +54,11 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
     }
 });
 
+/// Signals that [`Transaction`] has been successfully applied by a Node to a block. Carries the
+/// hash of the Block for further inspection and/or tracking of propagation.
 #[derive(GraphQLObject)]
 pub struct Applied {
+    /// Block hash the [`Transaction`] has been applied to.
     pub block: juniper::ID,
 }
 

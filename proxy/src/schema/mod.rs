@@ -31,6 +31,7 @@ pub struct Context {
     dummy_repo_path: String,
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
+    /// Wrapper to interact with the Registry.
     registry: registry::Registry,
 }
 
