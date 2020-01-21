@@ -27,6 +27,8 @@ pub enum Error {
     Git(surf::git::error::Error),
     /// Originated from `radicle_surf::git::git2`.
     Git2(git2::Error),
+    /// Integer conversion failed.
+    IntConversion(std::num::TryFromIntError),
     /// Originated from `librad`.
     Librad(librad::git::Error),
     /// Parse error for `librad::project::ProjectId`.
@@ -80,6 +82,12 @@ impl From<librad::project::Error> for Error {
 impl From<librad::project::projectid::ParseError> for Error {
     fn from(parse_error: librad::project::projectid::ParseError) -> Self {
         Self::LibradParse(parse_error)
+    }
+}
+
+impl From<std::num::TryFromIntError> for Error {
+    fn from(int_error: std::num::TryFromIntError) -> Self {
+        Self::IntConversion(int_error)
     }
 }
 
@@ -284,6 +292,12 @@ impl IntoFieldError for Error {
             Self::FS(fs_error) => convert_fs(&fs_error),
             Self::Git(git_error) => convert_git(&git_error),
             Self::Git2(git2_error) => convert_git2(&git2_error),
+            Self::IntConversion(int_error) => FieldError::new(
+                int_error.to_string(),
+                graphql_value!({
+                    "type": "INT_CONVERSION",
+                }),
+            ),
             Self::Io(io_error) => convert_io(&io_error),
             Self::Librad(librad_error) => convert_librad_git(&librad_error),
             Self::LibradParse(parse_error) => {

@@ -1,4 +1,5 @@
 use juniper::{RootNode, ID};
+use std::convert::TryFrom;
 use std::str::FromStr;
 
 use librad::paths::Paths;
@@ -109,9 +110,11 @@ impl Mutation {
                 block: juniper::ID::new(radicle_registry_client::H256::random().to_string()),
             }),
             timestamp: radicle_surf::git::git2::Time::new(
-                std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)?
-                    .as_secs() as i64,
+                i64::try_from(
+                    std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)?
+                        .as_secs(),
+                )?,
                 0,
             )
             .seconds()
