@@ -1,4 +1,4 @@
-.test: &test
+.test_linux: &test_linux
   label: 'Test and package app on Linux'
   agents:
     production: "true"
@@ -13,7 +13,7 @@
     - "app/dist/*.snap"
     - "app/cypress/screenshots/**/*.png"
 
-.test: &test
+.test_macos: &test_macos
   label: 'Test and package app on macOS'
   agents:
     production: "false"
@@ -28,6 +28,7 @@ steps:
   - branches: master
     concurrency: 1
     concurrency_group: master
-    <<: *test
+    <<: *test_linux
+    <<: *test_macos
   - branches: "!master"
-    <<: *test
+    <<: *test_linux
