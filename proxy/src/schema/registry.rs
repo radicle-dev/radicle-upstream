@@ -24,7 +24,7 @@ pub struct Transaction {
 /// Required information to issue a new project registration on the [`Registry`].
 #[derive(juniper::GraphQLObject)]
 pub struct ProjectRegistration {
-    /// The domain/namespace the project should be registered for.
+    /// The domain the project should be registered for.
     pub domain: String,
     /// The name of the project, which MUST be unique for the domain.
     pub name: String,
@@ -163,5 +163,5 @@ fn test_register_project() {
         "hello".into(),
         "world".into(),
     ));
-    assert_eq!(result.is_err(), false);
+    assert!(result.is_ok());
 }
