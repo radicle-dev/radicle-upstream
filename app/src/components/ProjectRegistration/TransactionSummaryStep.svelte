@@ -4,6 +4,8 @@
   import { Button, Text, Title, Rad, Avatar } from "../../DesignSystem";
 
   export let name = null;
+  export let timestamp = null;
+  export let errorMessage = null;
 </script>
 
 <style>
@@ -16,16 +18,28 @@
 
   .status {
     padding: 12px 16px 12px 16px;
-    background-color: var(--color-green);
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
   }
+
+  .error {
+    background-color: var(--color-red);
+  }
+
+  .success {
+    background-color: var(--color-green);
+  }
 </style>
 
-<div class="status">
-  <Text.Regular>Transaction succeeded on 8:26am January 15, 2020</Text.Regular>
-</div>
-
+{#if errorMessage}
+  <div class="status error">
+    <Text.Regular>Transaction was unsuccessful: {errorMessage}</Text.Regular>
+  </div>
+{:else}
+  <div class="status success">
+    <Text.Regular>Transaction succeeded on {timestamp}</Text.Regular>
+  </div>
+{/if}
 <Row
   disabled={true}
   style="background-color: var(--color-almostwhite); border-radius: 0; margin:
