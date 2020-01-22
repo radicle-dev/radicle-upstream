@@ -2,6 +2,7 @@ use radicle_registry_client::{
     self as registry, ed25519, message, Client, ClientT, CryptoPair, String32, TransactionExtra,
     H256,
 };
+use std::convert::TryFrom;
 
 use crate::schema::error::{Error, ProjectValidation};
 
@@ -82,11 +83,12 @@ impl Registry {
         author: &ed25519::Pair,
         domain: String,
         name: String,
-    ) -> Result<H256, Error> {
+    ) -> Result<Transaction, Error> {
         // Verify that inputs are valid.
-        let project_name = String32::from_string(name).map_err(ProjectValidation::NameTooLong)?;
+        let project_name =
+            String32::from_string(name.clone()).map_err(ProjectValidation::NameTooLong)?;
         let project_domain =
-            String32::from_string(domain).map_err(ProjectValidation::DomainTooLong)?;
+            String32::from_string(domain.clone()).map_err(ProjectValidation::DomainTooLong)?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
@@ -122,13 +124,29 @@ impl Registry {
                 nonce: self.client.account_nonce(&author.public()).await?,
             },
         );
-        self.client
-            .submit_transaction(register_tx)
-            .await?
-            .await?
-            .result?;
+        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
+        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
-        Ok(H256::random())
+        Ok(Transaction {
+            id: juniper::ID::new(register_applied.tx_hash.to_string()),
+            messages: vec![Message::ProjectRegistration(ProjectRegistration {
+                domain: domain,
+                name: name,
+            })],
+            state: TransactionState::Applied(Applied {
+                block: juniper::ID::new(register_applied.block.to_string()),
+            }),
+            timestamp: radicle_surf::git::git2::Time::new(
+                i64::try_from(
+                    std::time::SystemTime::now()
+                        .duration_since(std::time::UNIX_EPOCH)?
+                        .as_secs(),
+                )?,
+                0,
+            )
+            .seconds()
+            .to_string(),
+        })
     }
 }
 

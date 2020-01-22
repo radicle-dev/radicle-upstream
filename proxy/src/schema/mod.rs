@@ -1,5 +1,4 @@
 use juniper::{RootNode, ID};
-use std::convert::TryFrom;
 use std::str::FromStr;
 
 use librad::paths::Paths;
@@ -92,34 +91,7 @@ impl Mutation {
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
         // https://github.com/graphql-rust/juniper/pull/497
-        let transaction_id = futures::executor::block_on(ctx.registry.register_project(
-            &fake_pair,
-            domain.clone(),
-            name.clone(),
-        ))?;
-
-        Ok(registry::Transaction {
-            id: juniper::ID::new(transaction_id.to_string()),
-            messages: vec![registry::Message::ProjectRegistration(
-                registry::ProjectRegistration {
-                    domain: domain,
-                    name: name,
-                },
-            )],
-            state: registry::TransactionState::Applied(registry::Applied {
-                block: juniper::ID::new(radicle_registry_client::H256::random().to_string()),
-            }),
-            timestamp: radicle_surf::git::git2::Time::new(
-                i64::try_from(
-                    std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)?
-                        .as_secs(),
-                )?,
-                0,
-            )
-            .seconds()
-            .to_string(),
-        })
+        futures::executor::block_on(ctx.registry.register_project(&fake_pair, domain, name))
     }
 }
 
