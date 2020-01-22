@@ -104,10 +104,31 @@ ProjectMetadataInput {
   defaultBranch: String!
 }
 
-type Mutation {
-  createProject(project: ProjectMetadataInput!, path: String!, publish: Boolean!): Project!
+Transaction {
+  id: ID!
+  messages: [Message!]!
+  state: TransactionState!
+  timestamp: Datetime!
 }
 
+union Message = ProjectRegistration
+
+type ProjectRegistration {
+  domain: String!
+  name: String!
+}
+
+union TransactionState = Applied
+
+type Applied {
+  # Hash of the block it was applied to.
+  blocks: ID!
+}
+
+type Mutation {
+  createProject(project: ProjectMetadataInput!, path: String!, publish: Boolean!): Project!
+  registerProject(domain: String!, name: String!): Transaction!
+}
 
 ################
 # Exploration. #
