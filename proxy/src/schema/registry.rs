@@ -9,6 +9,7 @@ use crate::schema::error::{Error, ProjectValidation};
 /// A container to dissiminate and apply operations on the [`Registry`].
 #[derive(GraphQLObject)]
 pub struct Transaction {
+    // TODO(xla): Use actual transaction hash type.
     /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
     /// the API consumer to query state changes of a transaction.
     pub id: juniper::ID,
@@ -24,8 +25,10 @@ pub struct Transaction {
 /// Required information to issue a new project registration on the [`Registry`].
 #[derive(juniper::GraphQLObject)]
 pub struct ProjectRegistration {
+    // TODO(xla): Use String32 type.
     /// The domain the project should be registered for.
     pub domain: String,
+    // TODO(xla): Use String32 type.
     /// The name of the project, which MUST be unique for the domain.
     pub name: String,
 }
