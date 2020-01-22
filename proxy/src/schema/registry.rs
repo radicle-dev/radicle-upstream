@@ -20,12 +20,12 @@ pub struct Transaction {
     pub timestamp: String,
 }
 
-/// Required information to issue a new project registration on the [`Regisry`].
+/// Required information to issue a new project registration on the [`Registry`].
 #[derive(juniper::GraphQLObject)]
 pub struct ProjectRegistration {
     /// The domain/namespace the project should be registered for.
     pub domain: String,
-    /// The name of the project, which MUST be uniqure for the domain.
+    /// The name of the project, which MUST be unique for the domain.
     pub name: String,
 }
 
