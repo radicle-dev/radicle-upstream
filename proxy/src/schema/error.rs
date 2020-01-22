@@ -4,7 +4,6 @@ use juniper::{FieldError, IntoFieldError};
 use librad::meta::common::url;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
-use std::error::Error as _;
 use std::time::SystemTimeError;
 
 use radicle_registry_client::{DispatchError, Error as ProtocolError};
@@ -326,7 +325,7 @@ impl IntoFieldError for Error {
                 graphql_value!({ "type": "RADICLE_RUNTIME" }),
             ),
             Self::Time(error) => {
-                FieldError::new(error.description(), graphql_value!({ "type": "TIME" }))
+                FieldError::new(error.to_string(), graphql_value!({ "type": "TIME" }))
             }
         }
     }
