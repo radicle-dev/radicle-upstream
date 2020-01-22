@@ -26,6 +26,12 @@
         "to": "proxy"
       }
     ],
+    "linux": {
+      "target": [
+        "Appimage",
+        "snap"
+      ]
+    },
     "mac": {
       "target": [
         "dmg"
