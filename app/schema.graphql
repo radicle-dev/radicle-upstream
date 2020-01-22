@@ -122,7 +122,7 @@ union TransactionState = Applied
 
 type Applied {
   # Hash of the block it was applied to.
-  blocks: ID!
+  block: ID!
 }
 
 type Mutation {
