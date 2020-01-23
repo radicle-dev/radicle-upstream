@@ -526,6 +526,42 @@ mod tests {
                 });
             });
         }
+
+        #[test]
+        fn register_project_when_name_is_already_taken() {
+            with_fixtures(|librad_paths, _repos_dir| {
+                let mut vars = Variables::new();
+                vars.insert("domain".into(), InputValue::scalar("rad"));
+                vars.insert("name".into(), InputValue::scalar("upstream"));
+
+                let query = "mutation($domain: String!, $name: String!) {
+                        registerProject(domain: $domain, name: $name) {
+                            messages {
+                                ... on ProjectRegistration {
+                                    domain,
+                                    name,
+                                }
+                            },
+                        }
+                    }";
+                execute_query(librad_paths.clone(), query, &vars, |res, errors| {
+                    assert_eq!(errors, []);
+                    assert_eq!(
+                        res,
+                        graphql_value!({
+                            "registerProject": {
+                                "messages": [
+                                    { "domain": "rad", "name": "upstream" },
+                                ],
+                            },
+                        })
+                    );
+                });
+                execute_query(librad_paths.clone(), query, &vars, |_res, errors| {
+                    assert_ne!(errors, []);
+                });
+            });
+        }
     }
 
     mod query {
