@@ -8,7 +8,8 @@
     Icon,
     Input,
     Select,
-    CheckboxInput
+    CheckboxInput,
+    Avatar
   } from "../DesignSystem";
 
   import Notification from "../components/Notification.svelte";
@@ -139,6 +140,7 @@
       <Icon.Cross />
       <Icon.CrossBig />
       <Icon.Ellipse />
+      <Icon.EllipseBig />
       <Icon.Ellipses />
       <Icon.Feed />
       <Icon.File />
@@ -438,6 +440,33 @@
       </div>
       <div class="row">
         <Notification level="error">Something bad happened, halp!</Notification>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="first-column">
+      <Title.Big>Avatars</Title.Big>
+      <Text.Regular style="color: var(--color-gray)">
+        User, project, etc avatars in various sizes and shapes.
+      </Text.Regular>
+    </div>
+    <div class="second-column">
+      <div class="row">
+        <Avatar />
+        <Avatar size="big" />
+        <Avatar
+          imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg" />
+        <Avatar
+          imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg"
+          size="big" />
+        <Avatar
+          imageUrl="https://avatars.dicebear.com/v2/jdenticon/one.svg"
+          variant="project" />
+        <Avatar
+          imageUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
+          variant="project"
+          size="big" />
       </div>
     </div>
   </div>

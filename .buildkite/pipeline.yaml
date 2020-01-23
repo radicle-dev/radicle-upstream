@@ -1,5 +1,5 @@
-.test: &test
-  label: 'Build app and proxy, run tests and package binaries'
+.test_linux: &test_linux
+  label: 'Test and package app on Linux'
   agents:
     production: "true"
     platform: "linux"
@@ -13,10 +13,22 @@
     - "app/dist/*.snap"
     - "app/cypress/screenshots/**/*.png"
 
+.test_macos: &test_macos
+  label: 'Test and package app on macOS'
+  agents:
+    production: "false"
+    platform: "macos"
+  timeout_in_minutes: 60
+  command: '.buildkite/run.sh'
+  artifact_paths:
+    - "app/dist/*.dmg"
+    - "app/cypress/screenshots/**/*.png"
+
 steps:
   - branches: master
     concurrency: 1
     concurrency_group: master
-    <<: *test
+    <<: *test_linux
+    <<: *test_macos
   - branches: "!master"
-    <<: *test
+    <<: *test_linux

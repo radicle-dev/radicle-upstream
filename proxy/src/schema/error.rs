@@ -4,6 +4,7 @@ use juniper::{FieldError, IntoFieldError};
 use librad::meta::common::url;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
+use std::time::SystemTimeError;
 
 use radicle_registry_client::{DispatchError, Error as ProtocolError};
 
@@ -25,6 +26,8 @@ pub enum Error {
     Git(surf::git::error::Error),
     /// Originated from `radicle_surf::git::git2`.
     Git2(git2::Error),
+    /// Integer conversion failed.
+    IntConversion(std::num::TryFromIntError),
     /// Originated from `librad`.
     Librad(librad::git::Error),
     /// Parse error for `librad::project::ProjectId`.
@@ -41,6 +44,8 @@ pub enum Error {
     Protocol(ProtocolError),
     /// Issues with the Radicle runtime.
     Runtime(DispatchError),
+    /// Errors from handling time.
+    Time(SystemTimeError),
 }
 
 impl From<radicle_surf::file_system::error::Error> for Error {
@@ -79,6 +84,12 @@ impl From<librad::project::projectid::ParseError> for Error {
     }
 }
 
+impl From<std::num::TryFromIntError> for Error {
+    fn from(int_error: std::num::TryFromIntError) -> Self {
+        Self::IntConversion(int_error)
+    }
+}
+
 impl From<std::io::Error> for Error {
     fn from(io_error: std::io::Error) -> Self {
         Self::Io(io_error)
@@ -106,6 +117,12 @@ impl From<DispatchError> for Error {
 impl From<ProjectValidation> for Error {
     fn from(error: ProjectValidation) -> Self {
         Self::ProjectValidation(error)
+    }
+}
+
+impl From<SystemTimeError> for Error {
+    fn from(error: SystemTimeError) -> Self {
+        Self::Time(error)
     }
 }
 
@@ -283,6 +300,12 @@ impl IntoFieldError for Error {
             Self::FS(fs_error) => convert_fs(&fs_error),
             Self::Git(git_error) => convert_git(&git_error),
             Self::Git2(git2_error) => convert_git2(&git2_error),
+            Self::IntConversion(int_error) => FieldError::new(
+                int_error.to_string(),
+                graphql_value!({
+                    "type": "INT_CONVERSION",
+                }),
+            ),
             Self::Io(io_error) => convert_io(&io_error),
             Self::Librad(librad_error) => convert_librad_git(&librad_error),
             Self::LibradParse(parse_error) => {
@@ -310,6 +333,9 @@ impl IntoFieldError for Error {
                 format!("{:?}", error),
                 graphql_value!({ "type": "RADICLE_RUNTIME" }),
             ),
+            Self::Time(error) => {
+                FieldError::new(error.to_string(), graphql_value!({ "type": "TIME" }))
+            }
         }
     }
 }

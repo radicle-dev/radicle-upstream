@@ -84,7 +84,7 @@ context("navigation", () => {
         .get('a[title="ProjectFund"]')
         .click();
       cy.get("h2")
-        .contains("Fund")
+        .contains("Register your project to receive donations")
         .should("exist");
       cy.get("[data-cy=project-topbar-menu]").within(() => {
         cy.contains("Fund").should("exist");

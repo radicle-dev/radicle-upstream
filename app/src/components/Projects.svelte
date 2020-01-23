@@ -1,6 +1,7 @@
 <script>
   import { Text, Title, Icon, Numeric, Caption, Button } from "../DesignSystem";
   import ProjectCard from "./ProjectCard.svelte";
+  import { projectName } from "../stores.js";
   import { createProject, projectOverview } from "../path.js";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -30,6 +31,7 @@
     width: 100%;
     flex: 1;
     border-bottom: 1px solid var(--color-lightgray);
+    cursor: pointer;
   }
 
   li:hover {
@@ -38,11 +40,6 @@
 
   li:last-child {
     border-bottom: 0;
-  }
-
-  a {
-    display: flex;
-    width: 100%;
   }
 
   .wrapper {
@@ -63,15 +60,18 @@
   {#if result.data.projects.length > 0}
     <ul>
       {#each result.data.projects as project}
-        <li class="project-card">
-          <a href={projectOverview(project.id)} use:link>
-            <ProjectCard
-              title={project.metadata.name}
-              description={project.metadata.description}
-              isRegistered={true}
-              imgUrl={project.metadata.imgUrl}
-              state={Icon.Check} />
-          </a>
+        <li
+          on:click={() => {
+            projectName.set(project.metadata.name);
+            push(projectOverview(project.id));
+          }}
+          class="project-card">
+          <ProjectCard
+            title={project.metadata.name}
+            description={project.metadata.description}
+            isRegistered={false}
+            imgUrl={project.metadata.imgUrl}
+            state={Icon.Check} />
         </li>
       {/each}
     </ul>

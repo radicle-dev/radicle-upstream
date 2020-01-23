@@ -73,7 +73,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
     };
 
-    let context = schema::Context::new(dummy_repo.into(), librad_paths);
+    let context = schema::Context::new(
+        dummy_repo.into(),
+        librad_paths,
+        radicle_registry_client::Client::new_emulator(),
+    );
 
     info!("Creating GraphQL schema and context");
     let schema = schema::create();

@@ -7,6 +7,7 @@ import Commit from "./Commit.svelte";
 import Cross from "./Cross.svelte";
 import CrossBig from "./CrossBig.svelte";
 import Ellipse from "./Ellipse.svelte";
+import EllipseBig from "./EllipseBig.svelte";
 import Ellipses from "./Ellipses.svelte";
 import Feed from "./Feed.svelte";
 import File from "./File.svelte";
@@ -37,6 +38,7 @@ export default {
   Cross,
   CrossBig,
   Ellipse,
+  EllipseBig,
   Ellipses,
   Feed,
   File,

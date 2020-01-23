@@ -16,6 +16,7 @@
   import Profile from "./pages/Profile.svelte";
   import Projects from "./pages/Projects.svelte";
   import CreateProject from "./pages/CreateProject.svelte";
+  import RegisterProject from "./pages/RegisterProject.svelte";
   import Project from "./pages/Project.svelte";
   import Search from "./pages/Search.svelte";
   import Wallet from "./pages/Wallet.svelte";
@@ -44,6 +45,7 @@
     "/feed": Feed,
     "/projects": Projects,
     "/projects/new": CreateProject,
+    "/projects/:id/register": RegisterProject,
     "/projects/:id/*": Project,
     "/design-system": DesignSystem,
     "/wallet": Wallet,

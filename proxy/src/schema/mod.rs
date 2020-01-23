@@ -3,6 +3,7 @@ use std::str::FromStr;
 
 use librad::paths::Paths;
 use librad::project::{Project, ProjectId};
+use radicle_registry_client::ed25519;
 use radicle_surf as surf;
 
 /// Error definitions and type casting logic.
@@ -31,14 +32,21 @@ pub struct Context {
     dummy_repo_path: String,
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
+    /// Wrapper to interact with the Registry.
+    registry: registry::Registry,
 }
 
 impl Context {
     /// Returns a new `Context`.
-    pub const fn new(dummy_repo_path: String, librad_paths: Paths) -> Self {
+    pub const fn new(
+        dummy_repo_path: String,
+        librad_paths: Paths,
+        registry_client: radicle_registry_client::Client,
+    ) -> Self {
         Self {
             dummy_repo_path,
             librad_paths,
+            registry: registry::Registry::new(registry_client),
         }
     }
 }
@@ -73,6 +81,18 @@ impl Mutation {
             id: id.to_string().into(),
             metadata: meta.into(),
         })
+    }
+
+    fn register_project(
+        ctx: &Context,
+        domain: String,
+        name: String,
+    ) -> Result<registry::Transaction, Error> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+        // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
+        // https://github.com/graphql-rust/juniper/pull/497
+        futures::executor::block_on(ctx.registry.register_project(&fake_pair, domain, name))
     }
 }
 
@@ -377,7 +397,11 @@ mod tests {
     where
         F: FnOnce(Value, Vec<ExecutionError<DefaultScalarValue>>) -> (),
     {
-        let ctx = Context::new(REPO_PATH.into(), librad_paths);
+        let ctx = Context::new(
+            REPO_PATH.into(),
+            librad_paths,
+            radicle_registry_client::Client::new_emulator(),
+        );
         let (res, errors) =
             juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
                 .expect("test execute failed");
@@ -431,15 +455,17 @@ mod tests {
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
-                    assert_ne!(
+                    assert_eq!(
                         res,
                         graphql_value!({
-                            "metadata": {
-                                "name": "upstream",
-                                "description": "Code collaboration without intermediates.",
-                                "default_branch": "master",
-                                "img_url": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
-                            }
+                            "createProject": {
+                                "metadata": {
+                                    "name": "upstream",
+                                    "description": "Code collaboration without intermediates.",
+                                    "defaultBranch": "master",
+                                    "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                                },
+                            },
                         })
                     );
                 });
@@ -484,21 +510,56 @@ mod tests {
 
                 execute_query(librad_paths, query, &vars, |res, errors| {
                     assert_eq!(errors, []);
-                    assert_ne!(
+                    assert_eq!(
                         res,
                         graphql_value!({
-                            "metadata": {
-                                "name": "upstream",
-                                "description": "Code collaboration without intermediates.",
-                                "default_branch": "master",
-                                "img_url": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
-                            }
+                            "createProject": {
+                                "metadata": {
+                                    "name": "upstream",
+                                    "description": "Code collaboration without intermediates.",
+                                    "defaultBranch": "master",
+                                    "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                                },
+                            },
                         })
                     );
                 });
 
                 dir.close().expect("directory teardown failed");
             })
+        }
+
+        #[test]
+        fn register_project() {
+            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+                let mut vars = Variables::new();
+                vars.insert("domain".into(), InputValue::scalar("rad"));
+                vars.insert("name".into(), InputValue::scalar("upstream"));
+
+                let query = "mutation($domain: String!, $name: String!) {
+                        registerProject(domain: $domain, name: $name) {
+                            messages {
+                                ... on ProjectRegistration {
+                                    domain,
+                                    name,
+                                }
+                            },
+                        }
+                    }";
+                execute_query(librad_paths, query, &vars, |res, errors| {
+                    assert_eq!(errors, []);
+                    assert_eq!(
+                        res,
+                        graphql_value!({
+                            "registerProject": {
+                                "messages": [
+                                    { "domain": "rad", "name": "upstream" },
+                                ],
+                            },
+                        })
+                    );
+                });
+            });
         }
     }
 
