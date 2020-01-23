@@ -9,7 +9,7 @@
   "description": "Desktop client for radicle",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oscoin/mvp.git"
+    "url": "https://github.com/radicle-dev/radicle-upstream.git"
   },
   "build": {
     "appId": "radicle-upstream.monadic.xyz",
@@ -101,6 +101,11 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
+    }
+  },
+  "standard-version": {
+    "skip": {
+      "tag": true
     }
   },
   "lint-staged": {
