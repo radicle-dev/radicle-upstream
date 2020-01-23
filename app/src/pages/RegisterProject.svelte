@@ -9,6 +9,8 @@
   import TransactionSummaryStep from "../components/ProjectRegistration/TransactionSummaryStep.svelte";
 
   import { Title } from "../DesignSystem";
+  import { gql } from "apollo-boost";
+  import { getClient, mutate } from "svelte-apollo";
 
   const stepTitle = {
     1: "Register your project",
@@ -27,6 +29,57 @@
   const previousStep = () => {
     step -= 1;
   };
+
+  const client = getClient();
+
+  const REGISTER_PROJECT = gql`
+    mutation($domain: String!, $name: String!) {
+      registerProject(domain: $domain, name: $name) {
+        id
+        messages {
+          ... on ProjectRegistration {
+            domain
+            name
+          }
+        }
+        state {
+          ... on Applied {
+            block
+          }
+        }
+        timestamp
+      }
+    }
+  `;
+
+  let response;
+  let errorMessage;
+  const registerProject = async () => {
+    try {
+      response = await mutate(client, {
+        mutation: REGISTER_PROJECT,
+        variables: {
+          name: name,
+          domain: "rad"
+        }
+      });
+    } catch (error) {
+      errorMessage = error;
+    } finally {
+      nextStep();
+    }
+  };
+
+  const formatDate = (date) => {
+    let options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    };
+    return new Intl.DateTimeFormat('en-US', options).format(date)
+  }
 </script>
 
 <style>
@@ -63,13 +116,19 @@
 
       {#if step === 3}
         <ConfirmTransactionStep
-          onNextStep={nextStep}
+          onNextStep={registerProject}
           onPreviousStep={previousStep}
           {name} />
       {/if}
 
       {#if step === 4}
-        <TransactionSummaryStep {name} />
+        {#if response}
+          <TransactionSummaryStep
+            name={response.data.registerProject.messages[0].name}
+            timestamp={formatDate(response.data.registerProject.timestamp * 1000)} />
+        {:else}
+          <TransactionSummaryStep {name} {errorMessage} />
+        {/if}
       {/if}
     </div>
   </div>
