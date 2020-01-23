@@ -85,7 +85,7 @@ impl Mutation {
     fn register_project(
         ctx: &Context,
         domain: String,
-        name: String,
+        name: String
     ) -> Result<registry::Transaction, Error> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);

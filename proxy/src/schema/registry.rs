@@ -1,7 +1,9 @@
+use librad::project::{Project, ProjectId};
 use radicle_registry_client::{
     self as registry, ed25519, message, Client, ClientT, CryptoPair, String32, TransactionExtra,
     H256,
 };
+use serde_derive::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
 use crate::schema::error::{Error, ProjectValidation};
@@ -23,7 +25,7 @@ pub struct Transaction {
 }
 
 /// Required information to issue a new project registration on the [`Registry`].
-#[derive(juniper::GraphQLObject)]
+#[derive(GraphQLObject, Serialize, Deserialize)]
 pub struct ProjectRegistration {
     // TODO(xla): Use String32 type.
     /// The domain the project should be registered for.
@@ -86,6 +88,8 @@ impl Registry {
         author: &ed25519::Pair,
         domain: String,
         name: String,
+        project: Project,
+        pid: ProjectId,
     ) -> Result<Transaction, Error> {
         // Verify that inputs are valid.
         let project_name =
@@ -113,11 +117,17 @@ impl Registry {
             .await?
             .result?;
 
+        // use project ID as metadata to support two-way attestation
+        let pid_bytes = pid.to_string().as_bytes().to_vec();
+        // TODO: remove .expect() call, see: https://github.com/radicle-dev/radicle-registry/issues/185
+        let register_metadata =
+            registry::Bytes128::from_vec(pid_bytes).expect("unable construct metadata");
+
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterProject {
             id: (project_name, project_domain),
             checkpoint_id,
-            metadata: registry::Bytes128::from_vec(vec![]).expect("unable construct metadata"),
+            metadata: register_metadata,
         };
         let register_tx = registry::Transaction::new_signed(
             author,
@@ -130,12 +140,24 @@ impl Registry {
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
+        // update project meta with registry project id
+        // TODO(garbados): derive peer key from author key
+        let peer_key = librad::keys::device::Key::new();
+        let peer_id = librad::peer::PeerId::from(peer_key.public());
+        let mut meta = librad::meta::Project::new(name.as_str(), &peer_id);
+        let project_registration = ProjectRegistration { domain, name };
+        let project_registration_cbor = serde_cbor::to_vec(&project_registration)?;
+        let project_registration_str =
+            String::from_utf8(project_registration_cbor).expect("cbor not valid utf-8");
+
+        meta.add_rel(librad::meta::Relation::Label(
+            "rad".into(),
+            project_registration_str,
+        ));
+
         Ok(Transaction {
             id: juniper::ID::new(register_applied.tx_hash.to_string()),
-            messages: vec![Message::ProjectRegistration(ProjectRegistration {
-                domain: domain,
-                name: name,
-            })],
+            messages: vec![Message::ProjectRegistration(project_registration)],
             state: TransactionState::Applied(Applied {
                 block: juniper::ID::new(register_applied.block.to_string()),
             }),
