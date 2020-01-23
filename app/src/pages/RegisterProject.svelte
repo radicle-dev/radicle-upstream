@@ -10,7 +10,7 @@
 
   import { Title } from "../DesignSystem";
   import { gql } from "apollo-boost";
-  import { getClient, mutate } from "svelte-apollo"
+  import { getClient, mutate } from "svelte-apollo";
 
   const stepTitle = {
     1: "Register your project",
@@ -52,7 +52,6 @@
     }
   `;
 
-
   let response;
   let errorMessage;
   const registerProject = async () => {
@@ -63,12 +62,24 @@
           name: name,
           domain: "rad"
         }
-      })
-      step += 1;
+      });
     } catch (error) {
       errorMessage = error;
-      step += 1;
-  }}
+    } finally {
+      nextStep();
+    }
+  };
+
+  const formatDate = (date) => {
+    let options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    };
+    return new Intl.DateTimeFormat('en-US', options).format(date)
+  }
 </script>
 
 <style>
@@ -114,12 +125,10 @@
         {#if response}
           <TransactionSummaryStep
             name={response.data.registerProject.messages[0].name}
-            timestamp={response.data.registerProject.timestamp} />
+            timestamp={formatDate(response.data.registerProject.timestamp * 1000)} />
         {:else}
-          <TransactionSummaryStep
-            name={name}
-            errorMessage={errorMessage} />
-        {/if }
+          <TransactionSummaryStep {name} {errorMessage} />
+        {/if}
       {/if}
     </div>
   </div>
