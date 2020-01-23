@@ -14,6 +14,7 @@ steps:
       - "app/cypress/screenshots/**/*.png"
 
   - label: 'Test and package app on macOS'
+    if: build.branch == 'master'
     command: '.buildkite/run.sh'
     agents:
       production: "false"
