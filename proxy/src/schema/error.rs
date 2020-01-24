@@ -15,13 +15,13 @@ pub enum ProjectValidation {
     NameTooLong(String),
     /// Project names (String32) can only be 32 characters.
     DomainTooLong(String),
+    /// Project ID failed to serialize to JSON.
+    JsonSerialization(serde_json::Error),
 }
 
 /// All error variants the API will return.
 #[derive(Debug)]
 pub enum Error {
-    /// Errors during CBOR de/serialization.
-    Cbor(serde_cbor::Error),
     /// FileSystem errors from interacting with code in repository.
     FS(radicle_surf::file_system::error::Error),
     /// Originated from `radicle_surf`.
@@ -48,12 +48,6 @@ pub enum Error {
     Runtime(DispatchError),
     /// Errors from handling time.
     Time(SystemTimeError),
-}
-
-impl From<serde_cbor::Error> for Error {
-    fn from(cbor_error: serde_cbor::Error) -> Self {
-        Self::Cbor(cbor_error)
-    }
 }
 
 impl From<radicle_surf::file_system::error::Error> for Error {
@@ -296,9 +290,6 @@ fn convert_url_parse_error_to_field_error(error: &url::ParseError) -> FieldError
 impl IntoFieldError for Error {
     fn into_field_error(self) -> FieldError {
         match self {
-            Self::Cbor(cbor_error) => {
-                FieldError::new(cbor_error.to_string(), graphql_value!({ "type": "CBOR" }))
-            },
             Self::FS(fs_error) => convert_fs(&fs_error),
             Self::Git(git_error) => convert_git(&git_error),
             Self::Git2(git2_error) => convert_git2(&git2_error),
@@ -323,6 +314,9 @@ impl IntoFieldError for Error {
                 }
                 ProjectValidation::DomainTooLong(error) => {
                     FieldError::new(error, graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }))
+                }
+                ProjectValidation::JsonSerialization(error) => {
+                    FieldError::new(error, graphql_value!({ "type": "JSON_SERIALIZATION" }))
                 }
             },
             // TODO(garbados): expand via sub-match

@@ -144,15 +144,15 @@ impl Registry {
         // TODO(garbados): derive peer key from author key
         let peer_key = librad::keys::device::Key::new();
         let peer_id = librad::peer::PeerId::from(peer_key.public());
+        // TODO: project metadata cannot be altered after initialization: https://github.com/radicle-dev/radicle-link/pull/39
         let mut meta = librad::meta::Project::new(name.as_str(), &peer_id);
         let project_registration = ProjectRegistration { domain, name };
-        let project_registration_cbor = serde_cbor::to_vec(&project_registration)?;
-        let project_registration_str =
-            String::from_utf8(project_registration_cbor).expect("cbor not valid utf-8");
+        let project_registration_string = serde_json::to_string(&project_registration)
+            .map_err(ProjectValidation::JsonSerialization)?;
 
         meta.add_rel(librad::meta::Relation::Label(
             "rad".into(),
-            project_registration_str,
+            project_registration_string,
         ));
 
         Ok(Transaction {
