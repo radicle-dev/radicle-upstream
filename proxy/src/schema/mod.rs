@@ -348,6 +348,8 @@ mod tests {
     use juniper::{DefaultScalarValue, ExecutionError, Value, Variables};
     use librad::git::ProjectId;
     use librad::paths::Paths;
+    use radicle_surf::git::git2;
+    use std::env;
     use tempfile::{tempdir_in, TempDir};
 
     use crate::schema::{Context, Mutation, Query, Schema};
@@ -362,27 +364,39 @@ mod tests {
         let librad_paths = Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
         let repos_dir = tempdir_in(tmp_dir.path()).expect("unable to create repos directory");
 
+        // Craft the absolute path to git-platinum fixtures.
+        let mut platinum_path = env::current_dir().expect("unable to get working directory");
+        platinum_path.push(REPO_PATH);
+        let mut platinum_from = String::from("file://");
+        platinum_from.push_str(
+            platinum_path
+                .to_str()
+                .expect("unable to get fixtures path string"),
+        );
+        // Construct path for fixtures to clone into.
+        let platinum_into = tmp_dir.path().join("git-platinum");
+
+        // Clone a copy into temp directory.
+        let mut fetch_options = git2::FetchOptions::new();
+        fetch_options.download_tags(git2::AutotagOption::All);
+
+        let _platinum_repo = git2::build::RepoBuilder::new()
+            .branch("master")
+            .clone_local(git2::build::CloneLocal::Auto)
+            .fetch_options(fetch_options)
+            .clone(&platinum_from, platinum_into.as_path())
+            .expect("unable to clone fixtures repo");
+
         // crate::schema::git::setup_fixtures(
         //     &librad_paths,
         //     tmp_dir.path().to_str().expect("path extraction failed"),
         // )
         // .expect("fixture setup failed");
 
-        // Setup rad project for git-platinum fixture data.
-        //
-        // Remove leftover remote if present.
-        let mut platinum_config = radicle_surf::git::git2::Config::open(std::path::Path::new(
-            "../.git/modules/fixtures/git-platinum/config",
-        ))
-        .unwrap();
-        let _ = platinum_config.remove("remote.rad.fetch");
-        let _ = platinum_config.remove("remote.rad.push");
-        let _ = platinum_config.remove("remote.rad.url");
-
         // Init as rad project.
         let (platinum_id, _platinum_project) = crate::schema::git::init_project(
             &librad_paths,
-            REPO_PATH,
+            platinum_into.to_str().unwrap(),
             "git-platinum",
             "fixture data",
             "master",
