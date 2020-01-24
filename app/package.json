@@ -2,8 +2,8 @@
   "name": "radicle-upstream",
   "version": "0.0.2",
   "author": {
-    "name": "Monadic",
-    "email": "info@monadic.xyz",
+    "name": "Radicle",
+    "email": "dev@radicle.xyz",
     "url": "https://radicle.xyz"
   },
   "description": "Desktop client for radicle",
