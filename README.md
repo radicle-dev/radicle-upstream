@@ -36,16 +36,6 @@ Generally we also follow [good commit message hygene][tpope].
 
 ### Releases
 
-:warning::warning::warning:
-
-At the moment radicle-upstream is in **prototype stage** and releases should
-be considered a preview of what's to come, **use on your own risk**.
-
-Follow [radicle.community][comm] for official updates on public releases.
-
-:warning::warning::warning:
-
-
 To perform a release:
 
 1. Create a new branch for the release:
@@ -73,16 +63,7 @@ git push --tags
 
 6. Once the branch is merged into master a build will be triggered on
    Buildkite, this will build the app for both Linux and macOS. When the build
-   has completed [download the artifacts][artifacts].
-
-7. Draft a new release on [Github][releases] by pressing `Draft a new release`
-   and fill out the form:
-     - `Tag version`: pick the tag generated in step 2.
-     - `Release title`: same as tag
-     - attach binaries from step 5 (.AppImage, .snap and .dmg)
-     - check "This is a pre-release"
-
-7. Click `Publish release`
+   has completed you can download the binaries [here][artifacts].
 
 
 #### CI
