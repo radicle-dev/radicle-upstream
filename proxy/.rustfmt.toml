@@ -11,3 +11,5 @@ reorder_imports = true
 format_strings = false
 
 max_width = 100
+
+match_block_trailing_comma = true
