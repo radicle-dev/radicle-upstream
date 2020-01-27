@@ -40,11 +40,12 @@ Cutting release v0.0.11:
   ✔ git push origin release-v0.0.11
   ✔ hub pull-request -p --no-edit
 
-Now ask a peer to review: https://github.com/radicle-dev/radicle-upstream/pull/17
-  👉 https://github.com/radicle-dev/radicle-upstream/pull/17
-Don't merge this pull request after it has been accepted!
+Now ask a peer to review the following pull request,
+but don't merge it just yet:
 
-To merge the pull request and finalize release v0.0.11 run:
+  👉 https://github.com/rudolfs/test/pull/17
+
+To merge the pull request and finalize this release run:
 
   👉 yarn release:finalize v0.0.11 17
 
