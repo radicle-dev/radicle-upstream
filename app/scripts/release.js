@@ -87,7 +87,7 @@ async function main() {
     await exec(`git push --tags`);
     console.log(`  ✔ git push --tags`);
     console.log();
-    console.log(`Release ${toVersion} successfully completed! ✌️  🎉 🚀`);
+    console.log(`Release ${toVersion} successfully completed! 👏 🎉 🚀`);
     console.log();
   }
 

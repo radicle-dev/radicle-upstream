@@ -59,7 +59,7 @@ Finalizing release v0.0.11:
   ✔ git tag v0.0.11 74369ee3c078bc3688f0b668cc94a36491271d52
   ✔ git push --tags
 
-Release v0.0.11 successfully completed! ✌️  🎉 🚀
+Release v0.0.11 successfully completed! 👏 🎉 🚀
 ```
 
 3. Once the release PR branch is merged into master a build will be triggered
