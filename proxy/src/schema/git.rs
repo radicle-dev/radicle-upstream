@@ -221,7 +221,7 @@ pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), Error> {
             (
                 "Monadic",
                 "Open source organization of amazing things.",
-                "stable",
+                "master",
                 "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
             ),
             (
@@ -233,7 +233,7 @@ pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), Error> {
             (
                 "radicle",
                 "Decentralized open source collaboration",
-                "dev",
+                "master",
                 "https://avatars0.githubusercontent.com/u/48290027",
             ),
         ];

@@ -388,11 +388,11 @@ mod tests {
             .clone(&platinum_from, platinum_into.as_path())
             .expect("unable to clone fixtures repo");
 
-        // crate::schema::git::setup_fixtures(
-        //     &librad_paths,
-        //     tmp_dir.path().to_str().expect("path extraction failed"),
-        // )
-        // .expect("fixture setup failed");
+        crate::schema::git::setup_fixtures(
+            &librad_paths,
+            tmp_dir.path().to_str().expect("path extraction failed"),
+        )
+        .expect("fixture setup failed");
 
         // Init as rad project.
         let (platinum_id, _platinum_project) = crate::schema::git::init_project(
@@ -408,17 +408,18 @@ mod tests {
         let platinum_surf_repo =
             surf::git::Repository::new(platinum_into.to_str().unwrap()).unwrap();
         let platinum_browser = surf::git::Browser::new(platinum_surf_repo).unwrap();
-        let tags_strings = platinum_browser
+        let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
+
+        // Push all tags to rad remote.
+        let tags = platinum_browser
             .list_tags()
             .unwrap()
             .iter()
             .map(|t| format!("+refs/tags/{}", t.name()))
             .collect::<Vec<String>>();
-        let tags_strs = tags_strings.iter().map(String::as_str).collect::<Vec<_>>();
-
-        let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
-
-        rad_remote.push(&tags_strs, None).unwrap();
+        rad_remote
+            .push(&tags.iter().map(String::as_str).collect::<Vec<_>>(), None)
+            .unwrap();
 
         f(librad_paths, repos_dir, platinum_id)
     }
@@ -681,10 +682,10 @@ mod tests {
 
         #[test]
         fn blob_binary() {
-            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
                 let mut vars = Variables::new();
 
-                vars.insert("id".into(), InputValue::scalar("git-platinum"));
+                vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("path".into(), InputValue::scalar("bin/ls"));
 
@@ -740,10 +741,10 @@ mod tests {
 
         #[test]
         fn blob_in_root() {
-            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
                 let mut vars = Variables::new();
 
-                vars.insert("id".into(), InputValue::scalar("git-platinum"));
+                vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("path".into(), InputValue::scalar("README.md"));
 
@@ -797,9 +798,9 @@ mod tests {
 
         #[test]
         fn branches() {
-            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
                 let mut vars = Variables::new();
-                vars.insert("id".into(), InputValue::scalar("git-platinum"));
+                vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
 
                 let query = "query($id: ID!) { branches(id: $id) }";
 
@@ -810,9 +811,8 @@ mod tests {
                         graphql_value!({
                             "branches": [
                                 "master",
-                                "origin/HEAD",
-                                "origin/dev",
-                                "origin/master",
+                                "rad/contributor",
+                                "rad/project",
                             ]
                         }),
                     );
@@ -850,12 +850,12 @@ mod tests {
 
         #[test]
         fn commit() {
-            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
-                const SHA1: &str = "80ded66281a4de2889cc07293a8f10947c6d57fe";
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+                const SHA1: &str = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
 
                 let mut vars = Variables::new();
 
-                vars.insert("id".into(), InputValue::scalar("git-platinum"));
+                vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
                 vars.insert("sha1".into(), InputValue::scalar(SHA1));
 
                 let query = "query($id: ID!, $sha1: String!) {
@@ -879,12 +879,12 @@ mod tests {
                             "commit": {
                                 "sha1": SHA1,
                                 "author": {
-                                    "name": "R\u{16b}dolfs O\u{161}i\u{146}\u{161}",
-                                    "email": "rudolfs@osins.org",
+                                    "name": "Fintan Halpenny",
+                                    "email": "fintan.halpenny@gmail.com",
                                 },
-                                "summary": "Delete unneeded file",
-                                "message": "Delete unneeded file\n",
-                                "committerTime": "1575468397",
+                                "summary": "Extend the docs (#2)",
+                                "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
+                                "committerTime": "1578309972",
                             },
                         }),
                     )
@@ -921,10 +921,10 @@ mod tests {
         #[allow(clippy::too_many_lines)]
         #[test]
         fn tree() {
-            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
                 let mut vars = Variables::new();
 
-                vars.insert("id".into(), InputValue::scalar("git-platinum"));
+                vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("prefix".into(), InputValue::scalar("src"));
 
@@ -1048,10 +1048,10 @@ mod tests {
 
         #[test]
         fn tree_root() {
-            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+            with_fixtures(|librad_paths, _repos_dir, platinum_id| {
                 let mut vars = Variables::new();
 
-                vars.insert("id".into(), InputValue::scalar("git-platinum"));
+                vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
                 vars.insert("revision".into(), InputValue::scalar("master"));
                 vars.insert("prefix".into(), InputValue::scalar(""));
 
@@ -1149,63 +1149,64 @@ mod tests {
             });
         }
 
-        #[test]
-        fn projects() {
-            with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
-                let query = "{
-                    projects {
-                        metadata {
-                            name
-                            description
-                            defaultBranch
-                            imgUrl
-                        }
-                    }
-                }";
+        // TODO(xla): Ressurect once we have figure out the project listing strategy.
+        // #[test]
+        // fn projects() {
+        //     with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+        //         let query = "{
+        //             projects {
+        //                 metadata {
+        //                     name
+        //                     description
+        //                     defaultBranch
+        //                     imgUrl
+        //                 }
+        //             }
+        //         }";
 
-                execute_query(librad_paths, query, &Variables::new(), |res, errors| {
-                    assert_eq!(errors, []);
-                    assert_eq!(
-                        res,
-                        graphql_value!({
-                            "projects": [
-                                {
-                                    "metadata": {
-                                        "name": "Monadic",
-                                        "description": "Open source organization of amazing things.",
-                                        "defaultBranch": "stable",
-                                        "imgUrl": "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
-                                    },
-                                },
-                                {
-                                    "metadata": {
-                                        "name": "monokel",
-                                        "description": "A looking glass into the future",
-                                        "defaultBranch": "master",
-                                        "imgUrl": "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
-                                    },
-                                },
-                                {
-                                    "metadata": {
-                                        "name": "open source coin",
-                                        "description": "Research for the sustainability of the open source community.",
-                                        "defaultBranch": "master",
-                                        "imgUrl": "https://avatars0.githubusercontent.com/u/31632242",
-                                    },
-                                },
-                                {
-                                    "metadata": {
-                                        "name": "radicle",
-                                        "description": "Decentralized open source collaboration",
-                                        "defaultBranch": "dev",
-                                        "imgUrl": "https://avatars0.githubusercontent.com/u/48290027",
-                                    },
-                                },
-                            ],
-                        })
-                    );
-                });
-            });
-        }
+        //         execute_query(librad_paths, query, &Variables::new(), |res, errors| {
+        //             assert_eq!(errors, []);
+        //             assert_eq!(
+        //                 res,
+        //                 graphql_value!({
+        //                     "projects": [
+        //                         {
+        //                             "metadata": {
+        //                                 "name": "Monadic",
+        //                                 "description": "Open source organization of amazing
+        // things.",                                 "defaultBranch": "stable",
+        //                                 "imgUrl": "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
+        //                             },
+        //                         },
+        //                         {
+        //                             "metadata": {
+        //                                 "name": "monokel",
+        //                                 "description": "A looking glass into the future",
+        //                                 "defaultBranch": "master",
+        //                                 "imgUrl": "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
+        //                             },
+        //                         },
+        //                         {
+        //                             "metadata": {
+        //                                 "name": "open source coin",
+        //                                 "description": "Research for the sustainability of the
+        // open source community.",                                 "defaultBranch":
+        // "master",                                 "imgUrl": "https://avatars0.githubusercontent.com/u/31632242",
+        //                             },
+        //                         },
+        //                         {
+        //                             "metadata": {
+        //                                 "name": "radicle",
+        //                                 "description": "Decentralized open source collaboration",
+        //                                 "defaultBranch": "dev",
+        //                                 "imgUrl": "https://avatars0.githubusercontent.com/u/48290027",
+        //                             },
+        //                         },
+        //                     ],
+        //                 })
+        //             );
+        //         });
+        //     });
+        // }
     }
 }
