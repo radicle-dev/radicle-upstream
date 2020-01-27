@@ -24,32 +24,46 @@ Generally we also follow [good commit message hygene][tpope].
 
 To perform a release:
 
-1. Create a new branch for the release:
+1. If you haven't already, install the [`hub`][hub] cli tool.
+
+2. Run: `(cd app && yarn release)` and follow the instructions.
+   Here's what a typical release looks like:
+
 ```
-git branch release-v0.x.x && git checkout release-v0.x.x
+$ yarn release
+
+Cutting release v0.0.11:
+
+  ✔ git checkout master
+  ✔ git branch release-v0.0.11 && git checkout release-v0.0.11
+  ✔ yarn run standard-version
+  ✔ git push origin release-v0.0.11
+  ✔ hub pull-request -p --no-edit
+
+Now ask a peer to review: https://github.com/radicle-dev/radicle-upstream/pull/17
+  👉 https://github.com/radicle-dev/radicle-upstream/pull/17
+Don't merge this pull request after it has been accepted!
+
+To merge the pull request and finalize release v0.0.11 run:
+
+  👉 yarn release:finalize v0.0.11 17
+
+
+$ yarn release:finalize v0.0.11 17
+
+Finalizing release v0.0.11:
+
+  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/17/merge"
+  ✔ git checkout master && git pull
+  ✔ git tag v0.0.11 74369ee3c078bc3688f0b668cc94a36491271d52
+  ✔ git push --tags
+
+Release v0.0.11 successfully completed! ✌️  🎉 🚀
 ```
 
-2. Cut a release: `(cd app && yarn release)`
-
-4. Make a pull request from the `release-v0.x.x` branch and push the changes:
-```
-git push origin release-v0.x.x
-```
-
-5. Get your pull request reviewed and merge it into master, then tag the
-   release commit master:
-```
-git checkout master
-git pull
-
-# fill in actual version and commit SHA
-git tag v0.x.x XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-git push --tags
-```
-
-6. Once the branch is merged into master a build will be triggered on
-   Buildkite, this will build the app for both Linux and macOS. When the build
-   has completed you can download the binaries [here][artifacts].
+3. Once the release PR branch is merged into master a build will be triggered
+   on Buildkite, this will build the app for both Linux and macOS. When the
+   build has completed you can download the binaries [here][artifacts].
 
 
 ### CI setup
@@ -109,5 +123,4 @@ DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [ccs]: https://www.conventionalcommits.org/en/v1.0.0/
 [artifacts]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
-[releases]: https://github.com/radicle-dev/radicle-upstream/releases
-[comm]: https://radicle.community/
+[hub]: https://github.com/github/hub
