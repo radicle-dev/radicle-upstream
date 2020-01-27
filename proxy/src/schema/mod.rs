@@ -348,6 +348,7 @@ mod tests {
     use juniper::{DefaultScalarValue, ExecutionError, Value, Variables};
     use librad::git::ProjectId;
     use librad::paths::Paths;
+    use radicle_surf as surf;
     use radicle_surf::git::git2;
     use std::env;
     use tempfile::{tempdir_in, TempDir};
@@ -380,7 +381,7 @@ mod tests {
         let mut fetch_options = git2::FetchOptions::new();
         fetch_options.download_tags(git2::AutotagOption::All);
 
-        let _platinum_repo = git2::build::RepoBuilder::new()
+        let platinum_repo = git2::build::RepoBuilder::new()
             .branch("master")
             .clone_local(git2::build::CloneLocal::Auto)
             .fetch_options(fetch_options)
@@ -403,6 +404,21 @@ mod tests {
             "https://avatars0.githubusercontent.com/u/48290027",
         )
         .unwrap();
+
+        let platinum_surf_repo =
+            surf::git::Repository::new(platinum_into.to_str().unwrap()).unwrap();
+        let platinum_browser = surf::git::Browser::new(platinum_surf_repo).unwrap();
+        let tags_strings = platinum_browser
+            .list_tags()
+            .unwrap()
+            .iter()
+            .map(|t| format!("+refs/tags/{}", t.name()))
+            .collect::<Vec<String>>();
+        let tags_strs = tags_strings.iter().map(String::as_str).collect::<Vec<_>>();
+
+        let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
+
+        rad_remote.push(&tags_strs, None).unwrap();
 
         f(librad_paths, repos_dir, platinum_id)
     }
