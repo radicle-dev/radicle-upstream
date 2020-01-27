@@ -1,9 +1,8 @@
-use librad::project::{Project, ProjectId};
+use librad::project::ProjectId;
 use radicle_registry_client::{
     self as registry, ed25519, message, Client, ClientT, CryptoPair, String32, TransactionExtra,
     H256,
 };
-use serde_derive::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
 use crate::schema::error::{Error, ProjectValidation};
@@ -25,7 +24,7 @@ pub struct Transaction {
 }
 
 /// Required information to issue a new project registration on the [`Registry`].
-#[derive(GraphQLObject, Serialize, Deserialize)]
+#[derive(GraphQLObject)]
 pub struct ProjectRegistration {
     // TODO(xla): Use String32 type.
     /// The domain the project should be registered for.
@@ -88,7 +87,6 @@ impl Registry {
         author: &ed25519::Pair,
         domain: String,
         name: String,
-        project: Project,
         pid: ProjectId,
     ) -> Result<Transaction, Error> {
         // Verify that inputs are valid.
@@ -140,24 +138,12 @@ impl Registry {
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
-        // update project meta with registry project id
-        // TODO(garbados): derive peer key from author key
-        let peer_key = librad::keys::device::Key::new();
-        let peer_id = librad::peer::PeerId::from(peer_key.public());
-        // TODO: project metadata cannot be altered after initialization: https://github.com/radicle-dev/radicle-link/pull/39
-        let mut meta = librad::meta::Project::new(name.as_str(), &peer_id);
-        let project_registration = ProjectRegistration { domain, name };
-        let project_registration_string = serde_json::to_string(&project_registration)
-            .map_err(ProjectValidation::JsonSerialization)?;
-
-        meta.add_rel(librad::meta::Relation::Label(
-            "rad".into(),
-            project_registration_string,
-        ));
-
         Ok(Transaction {
             id: juniper::ID::new(register_applied.tx_hash.to_string()),
-            messages: vec![Message::ProjectRegistration(project_registration)],
+            messages: vec![Message::ProjectRegistration(ProjectRegistration {
+                domain,
+                name,
+            })],
             state: TransactionState::Applied(Applied {
                 block: juniper::ID::new(register_applied.block.to_string()),
             }),
