@@ -80,6 +80,11 @@ impl Registry {
         Self { client }
     }
 
+    /// List projects of the Registry.
+    pub async fn list_projects(&self) -> Result<Vec<registry::ProjectId>, Error> {
+        self.client.list_projects().await.map_err(|e| e.into())
+    }
+
     /// Register a new project on the chain.
     pub async fn register_project(
         &self,
