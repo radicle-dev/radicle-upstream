@@ -54,8 +54,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         test: args.contains("--test"),
     };
 
-    let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-    let (dummy_repo, librad_paths) = if args.test {
+    let (registry_client, dummy_repo, librad_paths) = if args.test {
+        let temp_dir = tempfile::tempdir().expect("test dir creation failed");
         let librad_paths =
             librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
@@ -65,19 +65,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .expect("fixture setup failed");
 
-        ("../fixtures/git-platinum", librad_paths)
+        (
+            radicle_registry_client::Client::new_emulator(),
+            "../fixtures/git-platinum",
+            librad_paths,
+        )
     } else {
         (
+            futures::executor::block_on(construct_registry_client()),
             "..",
             librad::paths::Paths::new().expect("librad paths failed"),
         )
     };
 
-    let context = schema::Context::new(
-        dummy_repo.into(),
-        librad_paths,
-        radicle_registry_client::Client::new_emulator(),
-    );
+    let context = schema::Context::new(dummy_repo.into(), librad_paths, registry_client);
 
     info!("Creating GraphQL schema and context");
     let schema = schema::create();
@@ -86,4 +87,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     server_warp::run(schema, context);
 
     Ok(())
+}
+
+/// Helper to set up the Registry client against devnet.
+async fn construct_registry_client() -> radicle_registry_client::Client {
+    let node_host = url17::Host::parse("35.241.138.91").expect("unable to parse URL");
+    radicle_registry_client::Client::create_with_executor(node_host)
+        .await
+        .expect("unable to construct registry client")
 }
