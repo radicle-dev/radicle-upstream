@@ -31,7 +31,7 @@ warp = "0.1"
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "0aa3fe0895c3e1b0cceef98ab27bcf1b2a669744"
+rev = "0034bd0fca27596b6fd2982ec875daa426ded120"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"

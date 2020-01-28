@@ -2,6 +2,7 @@
 
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use std::str::FromStr;
 
 use librad::meta::common::Url;
 use librad::paths::Paths;
@@ -126,8 +127,28 @@ pub struct TreeEntry {
     pub path: String,
 }
 
+/// Given a project id to a repo returns the list of branches.
+pub fn branches(librad_paths: &Paths, id: &str) -> Result<Vec<Branch>, Error> {
+    let project_id = librad::project::ProjectId::from_str(id)?;
+    let project = librad::project::Project::open(librad_paths, &project_id)?;
+    let browser = match project {
+        librad::project::Project::Git(git_project) => git_project.browser()?,
+    };
+
+    let mut branches = browser
+        .list_branches(None)
+        .expect("Getting branches failed")
+        .into_iter()
+        .map(|b| Branch(b.name.name()))
+        .collect::<Vec<Branch>>();
+
+    branches.sort();
+
+    Ok(branches)
+}
+
 /// Given a path to a repo returns the list of branches.
-pub fn branches(repo_path: &str) -> Result<Vec<Branch>, Error> {
+pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, Error> {
     let repo = surf::git::Repository::new(repo_path)?;
     let browser = surf::git::Browser::new(repo)?;
     let mut branches = browser
@@ -200,7 +221,7 @@ pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), Error> {
             (
                 "Monadic",
                 "Open source organization of amazing things.",
-                "stable",
+                "master",
                 "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
             ),
             (
@@ -212,7 +233,7 @@ pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), Error> {
             (
                 "radicle",
                 "Decentralized open source collaboration",
-                "dev",
+                "master",
                 "https://avatars0.githubusercontent.com/u/48290027",
             ),
         ];
