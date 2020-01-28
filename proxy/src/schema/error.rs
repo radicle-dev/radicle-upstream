@@ -252,6 +252,15 @@ fn convert_librad_git(error: &librad::git::Error) -> FieldError {
             }),
         ),
         librad::git::Error::Surf(surf_error) => convert_git(surf_error),
+        librad::git::Error::MissingDefaultBranch(branch, _) => FieldError::new(
+            format!(
+                "Branch {} specified as default_branch does not exist in the source repo",
+                branch
+            ),
+            graphql_value!({
+                "type": "LIBRAD_MISING_DEFAULT_BRANCH"
+            }),
+        ),
     }
 }
 
