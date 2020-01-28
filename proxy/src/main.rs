@@ -54,8 +54,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         test: args.contains("--test"),
     };
 
+    let temp_dir = tempfile::tempdir().expect("test dir creation failed");
     let (registry_client, dummy_repo, librad_paths) = if args.test {
-        let temp_dir = tempfile::tempdir().expect("test dir creation failed");
         let librad_paths =
             librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
