@@ -329,6 +329,15 @@ impl Query {
 
         Ok(projects)
     }
+
+    fn list_registry_projects(ctx: &Context) -> Result<Vec<ID>, Error> {
+        let ids = futures::executor::block_on(ctx.registry.list_projects())?;
+
+        Ok(ids
+            .iter()
+            .map(|id| ID::from(id.0.to_string()))
+            .collect::<Vec<ID>>())
+    }
 }
 
 #[cfg(test)]
