@@ -1,8 +1,9 @@
-use librad::project::ProjectId;
 use radicle_registry_client::{
     self as registry, ed25519, message, Client, ClientT, CryptoPair, String32, TransactionExtra,
     H256,
 };
+use serde_cbor::to_vec;
+use serde_derive::{Deserialize, Serialize};
 use std::convert::TryFrom;
 
 use crate::schema::error::{Error, ProjectValidation};
@@ -33,6 +34,9 @@ pub struct ProjectRegistration {
     /// The name of the project, which MUST be unique for the domain.
     pub name: String,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ProjectIdCbor(String);
 
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
@@ -87,7 +91,7 @@ impl Registry {
         author: &ed25519::Pair,
         domain: String,
         name: String,
-        pid: ProjectId,
+        maybe_pid: Option<String>,
     ) -> Result<Transaction, Error> {
         // Verify that inputs are valid.
         let project_name =
@@ -115,11 +119,16 @@ impl Registry {
             .await?
             .result?;
 
-        // use project ID as metadata to support two-way attestation
-        let pid_bytes = pid.to_string().as_bytes().to_vec();
+        let register_metadata_vec = if let Some(pid_string) = maybe_pid {
+            let pid_cbor = ProjectIdCbor(pid_string);
+            to_vec(&pid_cbor)?
+        } else {
+            vec![]
+        };
+
         // TODO: remove .expect() call, see: https://github.com/radicle-dev/radicle-registry/issues/185
         let register_metadata =
-            registry::Bytes128::from_vec(pid_bytes).expect("unable construct metadata");
+            registry::Bytes128::from_vec(register_metadata_vec).expect("unable construct metadata");
 
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterProject {
@@ -161,18 +170,24 @@ impl Registry {
     }
 }
 
-#[test]
-fn test_register_project() {
+#[cfg(test)]
+mod tests {
+    use crate::schema::registry::Registry;
+    use radicle_registry_client::ed25519;
     use radicle_registry_client::Client;
 
-    // Test that project registration submits valid transactions and they succeed.
-    let client = Client::new_emulator();
-    let registry = Registry::new(client);
-    let alice = ed25519::Pair::from_legacy_string("//Alice", None);
-    let result = futures::executor::block_on(registry.register_project(
-        &alice,
-        "hello".into(),
-        "world".into(),
-    ));
-    assert!(result.is_ok());
+    #[test]
+    fn test_register_project() {
+        // Test that project registration submits valid transactions and they succeed.
+        let client = Client::new_emulator();
+        let registry = Registry::new(client);
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+        let result = futures::executor::block_on(registry.register_project(
+            &alice,
+            "hello".into(),
+            "world".into(),
+            Some(String::from("radicle")),
+        ));
+        assert!(result.is_ok());
+    }
 }
