@@ -127,7 +127,7 @@ context("navigation", () => {
     });
 
     context("when using the vertical scrollbar", () => {
-      it("stays fixed at the top", () => {
+      it.skip("stays fixed at the top", () => {
         cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
         cy.contains("Monadic").click();
         cy.get('[data-cy="project-topbar-menu"]')

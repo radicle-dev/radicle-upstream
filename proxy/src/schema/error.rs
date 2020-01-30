@@ -263,6 +263,15 @@ fn convert_librad_git(error: &librad::git::Error) -> FieldError {
             }),
         ),
         librad::git::Error::Surf(surf_error) => convert_git(surf_error),
+        librad::git::Error::MissingDefaultBranch(branch, _) => FieldError::new(
+            format!(
+                "Branch {} specified as default_branch does not exist in the source repo",
+                branch
+            ),
+            graphql_value!({
+                "type": "LIBRAD_MISING_DEFAULT_BRANCH"
+            }),
+        ),
     }
 }
 
@@ -286,7 +295,7 @@ fn convert_librad_parse_error_to_field_error(
             ),
             librad::git::projectid::ParseError::InvalidOid(_, git2_error) => {
                 convert_git2(git2_error)
-            }
+            },
         },
     }
 }
@@ -315,7 +324,7 @@ impl IntoFieldError for Error {
             Self::Librad(librad_error) => convert_librad_git(&librad_error),
             Self::LibradParse(parse_error) => {
                 convert_librad_parse_error_to_field_error(&parse_error)
-            }
+            },
             Self::LibradProject(project_error) => match project_error {
                 librad::project::Error::Git(librad_error) => convert_librad_git(&librad_error),
             },
@@ -323,7 +332,7 @@ impl IntoFieldError for Error {
             Self::ProjectValidation(project_error) => match project_error {
                 ProjectValidation::NameTooLong(error) => {
                     FieldError::new(error, graphql_value!({ "type": "PROJECT_NAME_TOO_LONG" }))
-                }
+                },
                 ProjectValidation::DomainTooLong(error) => {
                     FieldError::new(error, graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }))
                 } /* TODO(garbados): finish two-way attestation
@@ -343,7 +352,7 @@ impl IntoFieldError for Error {
             ),
             Self::Time(error) => {
                 FieldError::new(error.to_string(), graphql_value!({ "type": "TIME" }))
-            }
+            },
         }
     }
 }

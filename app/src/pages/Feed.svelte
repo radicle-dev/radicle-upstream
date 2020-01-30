@@ -1,12 +1,47 @@
 <script>
-  import { Header, Title } from "../DesignSystem";
   import Layout from "../layouts/SidebarLayout.svelte";
+
+  import {
+    Header,
+    Text,
+    Title,
+    Icon,
+    Numeric,
+    Caption,
+    Button
+  } from "../DesignSystem";
+  import ProjectCard from "../components/ProjectCard.svelte";
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
+  import { link, push } from "svelte-spa-router";
+
+  const GET_PROJECTS = gql`
+    query Query {
+      listRegistryProjects
+    }
+  `;
+
+  const client = getClient();
+  const projects = query(client, { query: GET_PROJECTS });
+  projects.refetch();
 </script>
 
 <Layout dataCy="page">
   <Header>
     <div slot="left">
-      <Title.Big>Feed</Title.Big>
+      {#await $projects then result}
+        <ul>
+          {#each result.data.listRegistryProjects as project}
+            <li class="project-card">
+              <ProjectCard
+                title={project}
+                isRegistered={true}
+                imgUrl={'https://avatars.dicebear.com/v2/jdenticon/project1.svg'}
+                state={Icon.Check} />
+            </li>
+          {/each}
+        </ul>
+      {/await}
     </div>
   </Header>
 </Layout>

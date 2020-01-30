@@ -9,8 +9,8 @@ We currently support Linux and macOS.
 The app is written in Svelte + Electron. For our dependency management and
 script execution we use `yarn`.
 
-Code formatting is dictated by [prettier][0] and we enforce it locally on
-a pre-commit basis with [husky][1] and [lint-staged][2].
+Code formatting is dictated by [prettier][pr] and we enforce it locally on
+a pre-commit basis with [husky][hu] and [lint-staged][ls].
 
 
 ### Setup
@@ -52,12 +52,12 @@ yarn electron:start  - wait for dependency start-up and start electron without
 yarn proxy:build     - build the backend GraphQL proxy binary
 yarn proxy:start     - start the backend proxy and serve mock data
 
-yarn svelte:clean    - remove build artefacts
+yarn svelte:clean    - remove build artifacts
 yarn svelte:build    - compile svelte to JS
 yarn svelte:watch    - compile svelte to JS on every change to the code
 ```
 
 
-[0]: https://prettier.io/
-[1]: https://github.com/typicode/husky
-[2]: https://github.com/okonet/lint-staged
+[pr]: https://prettier.io/
+[hu]: https://github.com/typicode/husky
+[ls]: https://github.com/okonet/lint-staged
