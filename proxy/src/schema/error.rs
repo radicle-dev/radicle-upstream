@@ -301,7 +301,7 @@ impl IntoFieldError for Error {
         match self {
             Self::Cbor(cbor_error) => {
                 FieldError::new(cbor_error.to_string(), graphql_value!({ "type": "CBOR" }))
-            }
+            },
             Self::FS(fs_error) => convert_fs(&fs_error),
             Self::Git(git_error) => convert_git(&git_error),
             Self::Git2(git2_error) => convert_git2(&git2_error),
@@ -326,10 +326,10 @@ impl IntoFieldError for Error {
                 }
                 ProjectValidation::DomainTooLong(error) => {
                     FieldError::new(error, graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }))
-                } /* TODO(garbados): finish two-way attestation
-                   * ProjectValidation::JsonSerialization(error) => {
-                   *     FieldError::new(error, graphql_value!({ "type": "JSON_SERIALIZATION" }))
-                   * } */
+                }, /* TODO(garbados): finish two-way attestation
+                    * ProjectValidation::JsonSerialization(error) => {
+                    *     FieldError::new(error, graphql_value!({ "type": "JSON_SERIALIZATION" }))
+                    * } */
             },
             // TODO(garbados): expand via sub-match
             Self::Protocol(error) => FieldError::new(
