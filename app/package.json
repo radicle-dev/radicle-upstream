@@ -1,6 +1,16 @@
 {
   "name": "radicle-upstream",
-  "version": "0.0.1",
+  "version": "0.0.4",
+  "author": {
+    "name": "Radicle",
+    "email": "dev@radicle.xyz",
+    "url": "https://radicle.xyz"
+  },
+  "description": "Desktop client for radicle",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/radicle-dev/radicle-upstream.git"
+  },
   "build": {
     "appId": "radicle-upstream.monadic.xyz",
     "files": [
@@ -16,6 +26,12 @@
         "to": "proxy"
       }
     ],
+    "linux": {
+      "target": [
+        "Appimage",
+        "snap"
+      ]
+    },
     "mac": {
       "target": [
         "dmg"
@@ -47,6 +63,7 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-svelte": "^5.1.1",
     "rollup-plugin-terser": "^5.2.0",
+    "standard-version": "^7.1.0",
     "svelte": "^3.17.1",
     "svelte-spa-router": "^2.0.0",
     "wait-on": "^4.0.0"
@@ -57,7 +74,7 @@
     "test": "TZ='UTC' run-p --race proxy:start:test test:run",
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test cypress:open",
     "test:run": "wait-on http://localhost:8080 && yarn svelte:build && yarn cypress:run",
-    "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp ../proxy/target/release/proxy dist && electron-builder",
+    "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp ../proxy/target/release/proxy dist && electron-builder --publish never",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on http://localhost:8080 && NODE_ENV=development electron .",
     "svelte:clean": "rm -rf public/bundle.*",
     "svelte:build": "yarn svelte:clean && rollup -c",
@@ -69,7 +86,9 @@
     "proxy:start:test": "cd ../proxy && cargo run -- --source=memory --test",
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
-    "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js"
+    "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js",
+    "release": "babel-node --presets \"@babel/env\" scripts/release.js",
+    "release:finalize": "babel-node --presets \"@babel/env\" scripts/release.js --finalize"
   },
   "dependencies": {
     "@babel/runtime": "^7.8.3",
@@ -83,6 +102,11 @@
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
+    }
+  },
+  "standard-version": {
+    "skip": {
+      "tag": true
     }
   },
   "lint-staged": {
