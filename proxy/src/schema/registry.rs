@@ -35,6 +35,7 @@ pub struct ProjectRegistration {
     pub name: String,
 }
 
+/// `ProjectID` wrapper for serde de/serialization
 #[derive(Serialize, Deserialize)]
 pub struct ProjectIdCbor(String);
 
