@@ -337,8 +337,8 @@ impl IntoFieldError for Error {
                     FieldError::new(error, graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }))
                 }, /* TODO(garbados): finish two-way attestation
                     * ProjectValidation::JsonSerialization(error) => {
-                    *     FieldError::new(error, graphql_value!({ "type": "JSON_SERIALIZATION" }))
-                    * } */
+                    *     FieldError::new(error, graphql_value!({ "type": "JSON_SERIALIZATION"
+                    * })) } */
             },
             // TODO(garbados): expand via sub-match
             Self::Protocol(error) => FieldError::new(
