@@ -1,7 +1,7 @@
 [package]
 name = "proxy"
 version = "0.1.0"
-license = "GPL"
+license = "GPL-3.0-only"
 authors = ["Alexander Simmerl <xla@monadic.xyz>"]
 edition = "2018"
 description = "Proxy to serve a specialised GraphQL API to radicle-upstream."

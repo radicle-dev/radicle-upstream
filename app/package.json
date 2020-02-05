@@ -6,6 +6,7 @@
     "email": "dev@radicle.xyz",
     "url": "https://radicle.xyz"
   },
+  "license": "GPL-3.0-only",
   "description": "Desktop client for radicle",
   "repository": {
     "type": "git",
