@@ -162,7 +162,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, Error> {
     Ok(branches)
 }
 
-/// Initialize a [`librad::Project`] in the location of the given `path`.
+/// Initialize a [`librad::meta::Project`] in the location of the given `path`.
 pub fn init_project(
     librad_paths: &Paths,
     path: &str,
@@ -187,7 +187,7 @@ pub fn init_project(
     Ok((id, meta))
 }
 
-/// Initialize a [`git2::GitRepository`] at the given path.
+/// Initialize a [`git2::Repository`] at the given path.
 pub fn init_repo(path: String) -> Result<(), Error> {
     let repo = git2::Repository::init(path)?;
 
@@ -209,7 +209,7 @@ pub fn init_repo(path: String) -> Result<(), Error> {
     Ok(())
 }
 
-/// Creates a small set of projects in [`librad::Paths`].
+/// Creates a small set of projects in [`librad::paths::Paths`].
 pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), Error> {
     let infos = vec![
             (

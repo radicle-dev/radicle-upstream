@@ -93,7 +93,10 @@ impl Mutation {
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
         // https://github.com/graphql-rust/juniper/pull/497
-        futures::executor::block_on(ctx.registry.register_project(&fake_pair, domain, name, pid))
+        futures::executor::block_on(
+            ctx.registry
+                .register_project(&fake_pair, domain, name, librad_id),
+        )
     }
 }
 

@@ -37,7 +37,12 @@ pub struct ProjectRegistration {
 
 /// `ProjectID` wrapper for serde de/serialization
 #[derive(Serialize, Deserialize)]
-pub struct ProjectIdCbor(String);
+pub struct ProjectCbor {
+    /// TODO
+    pub id: String,
+    /// TODO
+    pub version: u8,
+}
 
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
@@ -126,8 +131,11 @@ impl Registry {
             .result?;
 
         let register_metadata_vec = if let Some(pid_string) = maybe_pid {
-            let pid_cbor = ProjectIdCbor(pid_string);
-            to_vec(&pid_cbor)?
+            let pid_cbor = ProjectCbor {
+                id: pid_string,
+                version: 1,
+            };
+            to_vec(&pid_cbor).expect("unable to serialize project metadata")
         } else {
             vec![]
         };
