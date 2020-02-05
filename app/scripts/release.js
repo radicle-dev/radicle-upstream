@@ -5,10 +5,12 @@ const VERSION_MATCH = /bumping version in package.json from (.*) to (.*)/;
 const PULL_REQUEST_MATCH =
   "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
 
+const SV_COMMAND = "yarn run standard-version --infile ../CHANGELOG.md";
+
 async function main() {
   console.log();
 
-  const svResult = await exec("yarn run standard-version --dry-run");
+  const svResult = await exec(`${SV_COMMAND} --dry-run`);
   const toVersion = `v${svResult.stdout.match(VERSION_MATCH)[2]}`;
 
   try {
@@ -35,8 +37,8 @@ async function main() {
       `  ✔ git branch release-${toVersion} && git checkout release-${toVersion}`
     );
 
-    await exec("yarn run standard-version");
-    console.log("  ✔ yarn run standard-version");
+    await exec(SV_COMMAND);
+    console.log(`  ✔ ${SV_COMMAND}`);
 
     await exec(`git push origin release-${toVersion}`);
     console.log(`  ✔ git push origin release-${toVersion}`);
