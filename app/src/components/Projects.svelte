@@ -1,5 +1,5 @@
 <script>
-  import { Text, Title, Icon, Numeric, Caption, Button } from "../DesignSystem";
+  import { Text, Title, Icon, Button } from "../DesignSystem";
   import ProjectCard from "./ProjectCard.svelte";
   import { projectName } from "../stores.js";
   import { createProject, projectOverview } from "../path.js";

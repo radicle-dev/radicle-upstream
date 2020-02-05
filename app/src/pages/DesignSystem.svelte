@@ -116,9 +116,9 @@
 
       <Caption>Open Source Coin</Caption>
 
-      <Numeric.Big>0123456789</Numeric.Big>
-      <Numeric.Regular>0123456789</Numeric.Regular>
-      <Numeric.Small>0123456789</Numeric.Small>
+      <Numeric size="big">0123456789</Numeric>
+      <Numeric>0123456789</Numeric>
+      <Numeric size="small">0123456789</Numeric>
 
       <Caption>Open Source Coin</Caption>
     </div>

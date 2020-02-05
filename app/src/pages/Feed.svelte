@@ -1,15 +1,7 @@
 <script>
   import Layout from "../layouts/SidebarLayout.svelte";
 
-  import {
-    Header,
-    Text,
-    Title,
-    Icon,
-    Numeric,
-    Caption,
-    Button
-  } from "../DesignSystem";
+  import { Header, Icon } from "../DesignSystem";
   import ProjectCard from "../components/ProjectCard.svelte";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
