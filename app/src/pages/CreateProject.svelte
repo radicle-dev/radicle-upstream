@@ -390,19 +390,21 @@
           </div>
           {#if isNew}
             <div class="option-body" in:slide>
-              <Text.Regular
+              <Text
                 style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose where you'd like to create the repository
-              </Text.Regular>
+              </Text>
               <DirectoryInput
                 valid={!(validations && validations.newRepositoryPath)}
                 placeholder="~/path/to/folder"
                 bind:path={newRepositoryPath} />
               {#if validations && validations.newRepositoryPath}
-                <Text.SmallBold
+                <Text
+                  size="small"
+                  weight="bold"
                   style="color: var(--color-red); margin-top: 4px">
                   {validations.newRepositoryPath[0]}
-                </Text.SmallBold>
+                </Text>
               {/if}
             </div>
           {/if}
@@ -423,24 +425,26 @@
           </div>
           {#if isExisting}
             <div class="option-body" in:slide>
-              <Text.Regular
+              <Text
                 style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose the existing repository
-              </Text.Regular>
+              </Text>
               <DirectoryInput
                 placeholder="~/path/to/folder"
                 valid={!(validations && validations.existingRepositoryPath)}
                 bind:path={existingRepositoryPath} />
               {#if validations && validations.existingRepositoryPath}
-                <Text.SmallBold
+                <Text
+                  size="small"
+                  weight="bold"
                   style="color: var(--color-red); margin-top: 4px">
                   {validations.existingRepositoryPath[0]}
-                </Text.SmallBold>
+                </Text>
               {/if}
               <div class="default-branch-row" style="margin-top: 16px">
-                <Text.Regular style="color: var(--color-darkgray)">
+                <Text style="color: var(--color-darkgray)">
                   Select the default branch
-                </Text.Regular>
+                </Text>
                 {#if localBranches.length > 0}
                   <Select
                     items={localBranches}
@@ -475,7 +479,7 @@
 
       <div class="button-row">
         <div class="footnote">
-          <Text.Small style="color: var(--color-gray)">* required</Text.Small>
+          <Text size="small" style="color: var(--color-gray)">* required</Text>
         </div>
         <Button
           dataCy="cancel-button"

@@ -2,7 +2,6 @@
   import { MAIN_IPC_CHANNEL } from "../types.js";
   import Button from "./Button.svelte";
   import Input from "./Input.svelte";
-  import Text from "./Text";
 
   export let placeholder = null;
   export let style = null;

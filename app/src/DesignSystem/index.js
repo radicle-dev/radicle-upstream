@@ -6,7 +6,7 @@ import Input from "./Input.svelte";
 import CheckboxInput from "./CheckboxInput.svelte";
 import DirectoryInput from "./DirectoryInput.svelte";
 import Numeric from "./Numeric.svelte";
-import Text from "./Text";
+import Text from "./Text.svelte";
 import Title from "./Title.svelte";
 import Avatar from "./Avatar.svelte";
 import Placeholder from "./Placeholder.svelte";

@@ -55,7 +55,7 @@
 </style>
 
 {#await $projects}
-  <Text.Regular>Loading projects...</Text.Regular>
+  <Text>Loading projects...</Text>
 {:then result}
   {#if result.data.projects.length > 0}
     <ul>
@@ -82,9 +82,9 @@
           style="color: var(--color-darkgray); margin-bottom: 13px">
           You have no projects
         </Title>
-        <Text.Regular style="color: var(--color-gray)">
+        <Text style="color: var(--color-gray)">
           Create a new project and share it with friends to get started
-        </Text.Regular>
+        </Text>
         <Button
           style="margin: 23px auto"
           variant="primary"

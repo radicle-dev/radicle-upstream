@@ -30,13 +30,13 @@
     </Title>
 
     <Placeholder style="width: 480px; height: 250px; margin-bottom: 24px" />
-    <Text.Regular
+    <Text
       style="color: var(--color-darkgray); margin-bottom: 48px; text-align:
       center;">
       Cupidatat velit incididunt cillum cillum voluptate in occaecat ipsum qui
       sunt ad et aliqua consequat. Excepteur pariatur amet sunt duis excepteur
       ullamco exercitation.
-    </Text.Regular>
+    </Text>
     <Button
       variant="primary"
       on:click={() => {

@@ -56,11 +56,11 @@
         <div class="registered">
           <Icon.Ellipse
             style="fill: var(--color-pink); position: relative; bottom: -2px;" />
-          <Text.Small>Registered</Text.Small>
+          <Text size="small">Registered</Text>
         </div>
       {/if}
     </div>
-    <Text.Regular>{description}</Text.Regular>
+    <Text>{description}</Text>
   </div>
 
   <div class="state">

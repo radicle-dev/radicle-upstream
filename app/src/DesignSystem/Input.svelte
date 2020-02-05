@@ -1,5 +1,5 @@
 <script>
-  import Text from "./Text";
+  import Text from "./Text.svelte";
 
   export let style = null;
   export let placeholder = null;
@@ -51,7 +51,7 @@
   {disabled}
   on:change />
 {#if !valid && errorMessage}
-  <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
+  <Text size="small" weight="bold" style="color: var(--color-red); margin-top: 4px">
     {errorMessage}
-  </Text.SmallBold>
+  </Text>
 {/if}

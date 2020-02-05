@@ -6,7 +6,7 @@
 </script>
 
 <style>
-  small {
+  .small {
     font-family: "GT America Mono Medium";
     font-size: 12px;
     line-height: 14px;

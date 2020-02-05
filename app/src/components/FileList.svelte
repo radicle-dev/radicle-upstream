@@ -141,20 +141,20 @@
               {:else}
                 <Icon.File />
               {/if}
-              <Text.Regular style="margin-left: 4px">
+              <Text style="margin-left: 4px">
                 {entry.info.name}
-              </Text.Regular>
+              </Text>
             </a>
           </td>
           <td class="commit-message-column">
             <a href="/commit" use:link>
-              <Text.Regular>{entry.info.lastCommit.summary}</Text.Regular>
+              <Text>{entry.info.lastCommit.summary}</Text>
             </a>
           </td>
           <td class="last-update-column">
-            <Text.Regular>
+            <Text>
               {format(entry.info.lastCommit.committerTime * 1000)}
-            </Text.Regular>
+            </Text>
           </td>
         </tr>
       {/each}

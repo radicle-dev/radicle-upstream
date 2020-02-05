@@ -33,11 +33,11 @@
 
 {#if errorMessage}
   <div class="status error">
-    <Text.Regular>Transaction was unsuccessful: {errorMessage}</Text.Regular>
+    <Text>Transaction was unsuccessful: {errorMessage}</Text>
   </div>
 {:else}
   <div class="status success">
-    <Text.Regular>Transaction succeeded on {timestamp}</Text.Regular>
+    <Text>Transaction succeeded on {timestamp}</Text>
   </div>
 {/if}
 <Row
