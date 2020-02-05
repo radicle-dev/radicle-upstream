@@ -63,12 +63,8 @@
   style="--focus-outline-color: var(--color-pink)"
   placeholder="Project name"
   bind:value={name}
-  valid={true} />
-{#if beginValidation && validations && validations.name}
-  <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
-    {validations.name[0]}
-  </Text.SmallBold>
-{/if}
+  valid={!(beginValidation && validations && validations.name)}
+  errorMessage={beginValidation && validations && validations.name && validations.name[0]} />
 
 <div class="button-row">
   <div style="display: flex; flex: 1; align-items: flex-start">

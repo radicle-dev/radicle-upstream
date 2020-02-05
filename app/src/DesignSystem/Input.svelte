@@ -1,4 +1,6 @@
 <script>
+  import Text from "./Text";
+
   export let style = null;
   export let placeholder = null;
   export let value = null;
@@ -6,6 +8,7 @@
 
   export let disabled = null;
   export let valid = true;
+  export let errorMessage = null;
 </script>
 
 <style>
@@ -47,3 +50,8 @@
   bind:value
   {disabled}
   on:change />
+{#if !valid && errorMessage}
+  <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
+    {errorMessage}
+  </Text.SmallBold>
+{/if}
