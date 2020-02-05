@@ -1,7 +1,9 @@
-# AppProxy
+# Proxy
 
-Intermediate serving a specialised API to the radicle-upstream frontend via
-GraphQL.
+A background service that implements all business logic tying together the
+radicle protocol and radicle registry. It provides a GraphQL API to the
+frontend.
+
 
 ### Run
 
@@ -13,10 +15,9 @@ To use an in-memory Radicle client, run `cargo run -- memory`.
 You can open the GraphQL explorer in the browser at `http://localhost:8080`.
 
 To use the `radicle-registry` node as the backend for the proxy run `cargo run
--- registry`. See [`radicle-registry`][run-registry] for information on how to
+-- registry`. See [`radicle-registry`][rr] for information on how to
 build and run the registry node.
 
-[run-registry]: https://github.com/radicle-dev/radicle-registry#building-and-running-the-node
 
 ### Testing
 
@@ -31,3 +32,5 @@ Then run tests as normal:
 ```bash
 $ cargo test
 ```
+
+[rr]: https://github.com/radicle-dev/radicle-registry#building-and-running-the-node

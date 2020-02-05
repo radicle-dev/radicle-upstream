@@ -1,4 +1,4 @@
-## Development
+## Workflow
 
 Our current workflow is to put our changes in feature branches which get
 submitted for review on GitHub as pull requests. Ideally a pull request is
@@ -11,12 +11,13 @@ To automate our release process as much as possible we're using
 the [conventional commits specification][ccs].
 
 Here are a couple of examples:
-
+```
   chore: remove leftover error mod reference (#74)
   fix: improve project creation validations (#76)
   feat: project creation (#70)
+```
 
-The pull request ref goes in brackets at the end.
+The pull request ref goes in brackets at the end of the subject.
 Generally we also follow [good commit message hygene][tpope].
 
 
@@ -85,7 +86,7 @@ artifact. When the tests fail, screenshots of the failing tests will be
 uploaded instead of the binary.
 
 
-### Buildkite setup
+#### Docker image updates
 
 We use a Docker image that has all of the system dependencies installed to run
 tests on Buildkite. Follow these steps if you need to update the dependencies
@@ -113,8 +114,8 @@ docker push gcr.io/opensourcecoin/radicle-upstream:0.2.1
 6. Update the image version in `pipeline.yaml`:
 ```
 DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
-
 ```
+
 7. Commit changes to `Dockerfile` and `pipeline.yaml` and push to origin, this
    should build the new branch with the updated image
 
