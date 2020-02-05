@@ -7,7 +7,7 @@ import CheckboxInput from "./CheckboxInput.svelte";
 import DirectoryInput from "./DirectoryInput.svelte";
 import Numeric from "./Numeric.svelte";
 import Text from "./Text";
-import Title from "./Title";
+import Title from "./Title.svelte";
 import Avatar from "./Avatar.svelte";
 import Placeholder from "./Placeholder.svelte";
 import Rad from "./Rad.svelte";

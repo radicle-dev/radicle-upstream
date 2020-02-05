@@ -18,9 +18,9 @@
 <Row style="margin-bottom: 48px;" active={true}>
   <div slot="left" style="display: flex; align-items: center">
     <Avatar style="margin-right: 16px" />
-    <Title.Regular style="color: var(--color-darkgray);">
+    <Title style="color: var(--color-darkgray);">
       Your personal wallet
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">
@@ -37,9 +37,9 @@
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project1.svg"
       style="margin-right: 16px"
       variant="project" />
-    <Title.Regular style="color: var(--color-darkgray)">
+    <Title style="color: var(--color-darkgray)">
       Monadic wallet
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">
@@ -53,9 +53,9 @@
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project2.svg"
       style="margin-right: 16px"
       variant="project" />
-    <Title.Regular style="color: var(--color-darkgray)">
+    <Title style="color: var(--color-darkgray)">
       Radicle wallet
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">

@@ -4,6 +4,6 @@
 
 <Header>
   <div slot="left">
-    <Title.Big>Issues</Title.Big>
+    <Title size="big">Issues</Title>
   </div>
 </Header>

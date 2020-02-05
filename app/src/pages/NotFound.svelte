@@ -6,7 +6,7 @@
 <Layout>
   <Header>
     <div slot="left">
-      <Title.Big>Not Found</Title.Big>
+      <Title size="big">Not Found</Title>
     </div>
   </Header>
 </Layout>

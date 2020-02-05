@@ -84,7 +84,7 @@
 <div class="layout">
   <div class="section">
     <div class="first-column">
-      <Title.Big>Colors</Title.Big>
+      <Title size="big">Colors</Title>
       <Text.Regular style="color: var(--color-gray)">
         Primary, secondary and grays
       </Text.Regular>
@@ -100,15 +100,15 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Typography</Title.Big>
+      <Title size="big">Typography</Title>
       <Text.Regular style="color: var(--color-gray)">
         Using GT America and GT America Mono from Grill Type
       </Text.Regular>
     </div>
     <div class="second-column">
-      <Title.Huge>Open Source Coin</Title.Huge>
-      <Title.Big>Open Source Coin</Title.Big>
-      <Title.Regular>Open Source Coin</Title.Regular>
+      <Title size="huge">Open Source Coin</Title>
+      <Title size="big">Open Source Coin</Title>
+      <Title>Open Source Coin</Title>
 
       <Text.Regular>Open Source Coin</Text.Regular>
       <Text.SmallBold>Open Source Coin</Text.SmallBold>
@@ -126,7 +126,7 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Icons</Title.Big>
+      <Title size="big">Icons</Title>
       <Text.Regular style="color: var(--color-gray)">
         Icons at 16px, 24px, 36px and 64px width and height with 2px stroke
         weight, multiple color variations
@@ -163,7 +163,7 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Buttons</Title.Big>
+      <Title size="big">Buttons</Title>
       <Text.Regular style="color: var(--color-gray)">
         Vanilla, Primary, Secondary, Cancel, disabled state
       </Text.Regular>
@@ -399,7 +399,7 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Form elements</Title.Big>
+      <Title size="big">Form elements</Title>
       <Text.Regular style="color: var(--color-gray)">
         Inputs, text areas, dropdowns, etc.
       </Text.Regular>
@@ -422,7 +422,7 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Notifications</Title.Big>
+      <Title size="big">Notifications</Title>
       <Text.Regular style="color: var(--color-gray)">
         Info, Warnings and Errors
       </Text.Regular>
@@ -446,7 +446,7 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Avatars</Title.Big>
+      <Title size="big">Avatars</Title>
       <Text.Regular style="color: var(--color-gray)">
         User, project, etc avatars in various sizes and shapes.
       </Text.Regular>

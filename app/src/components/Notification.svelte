@@ -57,9 +57,9 @@
 <div class={`notification ${level}`} {style}>
   <svelte:component this={icon} style="margin: 8px; height: 24px" />
 
-  <Title.Regular>
+  <Title>
     <slot />
-  </Title.Regular>
+  </Title>
 
   <div class="close" on:click>
     <Icon.Cross />

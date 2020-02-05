@@ -45,17 +45,17 @@
   style="background-color: var(--color-almostwhite); border-radius: 0; margin:
   -1px 0 -1px 0; border-top: none">
   <div slot="left">
-    <Title.Regular style="margin-bottom: 16px;">From</Title.Regular>
+    <Title style="margin-bottom: 16px;">From</Title>
     <div style="display: flex; align-items: center">
       <Avatar style="margin-right: 16px" size="big" variant="user" />
-      <Title.Big style="white-space: nowrap">Your personal wallet</Title.Big>
+      <Title size="big" style="white-space: nowrap">Your personal wallet</Title>
     </div>
   </div>
 </Row>
 
 <Row disabled={true} style="border-radius: 0">
   <div slot="left" style="display: flex; align-items: center">
-    <Title.Regular>Project Registration</Title.Regular>
+    <Title>Project Registration</Title>
   </div>
 
   <div slot="right" style="display: flex; align-items: center">
@@ -63,15 +63,15 @@
       style="margin-right: 8px;"
       variant="project"
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project.svg" />
-    <Title.Regular>{name}</Title.Regular>
+    <Title>{name}</Title>
   </div>
 </Row>
 
 <Row disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left" style="display: flex; align-items: center">
-    <Title.Regular style="color: var(--color-darkgray);">
+    <Title style="color: var(--color-darkgray);">
       Transaction Fee
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">
@@ -84,7 +84,7 @@
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
   <div slot="left" style="display: flex; align-items: center">
-    <Title.Big style="color: var(--color-pink);">Total</Title.Big>
+    <Title size="big" style="color: var(--color-pink);">Total</Title>
   </div>
 
   <div slot="right">

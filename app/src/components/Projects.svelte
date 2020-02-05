@@ -78,10 +78,10 @@
   {:else}
     <div class="wrapper">
       <div class="create-project">
-        <Title.Regular
+        <Title
           style="color: var(--color-darkgray); margin-bottom: 13px">
           You have no projects
-        </Title.Regular>
+        </Title>
         <Text.Regular style="color: var(--color-gray)">
           Create a new project and share it with friends to get started
         </Text.Regular>

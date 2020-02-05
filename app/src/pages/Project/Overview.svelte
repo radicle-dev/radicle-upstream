@@ -29,7 +29,7 @@
 
 <Header>
   <div slot="left">
-    <Title.Big>Overview</Title.Big>
+    <Title size="big">Overview</Title>
   </div>
 </Header>
 

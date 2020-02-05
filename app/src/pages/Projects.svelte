@@ -9,7 +9,7 @@
 <SidebarLayout dataCy="page">
   <Header style="margin-bottom: 24px">
     <div slot="left">
-      <Title.Big>My Projects</Title.Big>
+      <Title size="big">My Projects</Title>
     </div>
 
     <div slot="right">

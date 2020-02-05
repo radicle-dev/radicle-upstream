@@ -6,7 +6,7 @@
 <Layout dataCy="page">
   <Header>
     <div slot="left">
-      <Title.Big>Search</Title.Big>
+      <Title size="big">Search</Title>
     </div>
   </Header>
 </Layout>

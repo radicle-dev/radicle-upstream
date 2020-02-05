@@ -25,9 +25,9 @@
 
 <div class="wrapper">
   <div class="layout">
-    <Title.Big style="color: var(--color-darkgray); margin-bottom: 24px">
+    <Title size="big" style="color: var(--color-darkgray); margin-bottom: 24px">
       Register your project to receive donations
-    </Title.Big>
+    </Title>
 
     <Placeholder style="width: 480px; height: 250px; margin-bottom: 24px" />
     <Text.Regular

@@ -51,7 +51,7 @@
 
   <div class="container">
     <div class="first-row">
-      <Title.Regular>{title}</Title.Regular>
+      <Title>{title}</Title>
       {#if isRegistered}
         <div class="registered">
           <Icon.Ellipse

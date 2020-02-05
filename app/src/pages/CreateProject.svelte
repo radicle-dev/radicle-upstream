@@ -349,9 +349,9 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="create-project">
     <div class="create-project">
-      <Title.Big style="margin-bottom: 32px; text-align: left">
+      <Title size="big" style="margin-bottom: 32px; text-align: left">
         Create a new project
-      </Title.Big>
+      </Title>
 
       <Input
         style="--focus-outline-color: var(--color-pink)"
@@ -375,16 +375,16 @@
         valid={!(validations && validations.imageUrl)}
         errorMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
 
-      <Title.Regular style="margin: 16px 0 12px 16px; text-align: left">
+      <Title style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
-      </Title.Regular>
+      </Title>
 
       <div class="radio-selector">
         <div class="option" class:active={isNew} data-cy="new-project">
           <div class="option-header" on:click={() => (currentSelection = NEW)}>
-            <Title.Regular style="color: var(--color-darkgray)">
+            <Title style="color: var(--color-darkgray)">
               Start with a new repository
-            </Title.Regular>
+            </Title>
             <Icon.CheckCircle
               style={isNew ? 'display: block' : 'display: none'} />
           </div>
@@ -415,9 +415,9 @@
           <div
             class="option-header"
             on:click={() => (currentSelection = EXISTING)}>
-            <Title.Regular style="color: var(--color-darkgray)">
+            <Title style="color: var(--color-darkgray)">
               Continue with an existing repository
-            </Title.Regular>
+            </Title>
             <Icon.CheckCircle
               style={isExisting ? 'display: block' : 'display: none'} />
           </div>
@@ -467,9 +467,9 @@
       {#if validations && validations.currentSelection}
         <div class="validation-row">
           <Icon.Important style="margin-right: 8px;fill: var(--color-red)" />
-          <Title.Regular style="color: var(--color-red)">
+          <Title style="color: var(--color-red)">
             {validations.currentSelection[0]}
-          </Title.Regular>
+          </Title>
         </div>
       {/if}
 

@@ -51,9 +51,9 @@
 <div data-cy="topbar" class="topbar" {style}>
   <a class="project-name" href={path.projectOverview(id)} use:link>
     <img alt="Project Avatar" src={avatarUrl} />
-    <Title.Regular style="color: var(--color-purple); margin-right: 24px">
+    <Title style="color: var(--color-purple); margin-right: 24px">
       {name}
-    </Title.Regular>
+    </Title>
   </a>
 
   <ProjectTopbarMenu />

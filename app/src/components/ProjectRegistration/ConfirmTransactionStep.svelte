@@ -24,13 +24,13 @@
   style="margin-bottom: 16px; background-color: var(--color-almostwhite)"
   disabled={true}>
   <div slot="left" style="display: flex; align-items: center">
-    <Title.Regular style="color: var(--color-darkgray);">
+    <Title style="color: var(--color-darkgray);">
       Name registration
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">
-    <Title.Regular style="color: var(--color-darkgray)">“{name}”</Title.Regular>
+    <Title style="color: var(--color-darkgray)">“{name}”</Title>
   </div>
 </Row>
 
@@ -42,9 +42,9 @@
   disabled={true}
   style="border-bottom-left-radius: 0; border-bottom-right-radius: 0">
   <div slot="left" style="display: flex; align-items: center">
-    <Title.Regular style="color: var(--color-darkgray);">
+    <Title style="color: var(--color-darkgray);">
       Project Registration Fee
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">
@@ -54,9 +54,9 @@
 
 <Row disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left" style="display: flex; align-items: center">
-    <Title.Regular style="color: var(--color-darkgray);">
+    <Title style="color: var(--color-darkgray);">
       Transaction Fee
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">
@@ -69,7 +69,7 @@
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
   <div slot="left" style="display: flex; align-items: center">
-    <Title.Big style="color: var(--color-pink);">Total</Title.Big>
+    <Title size="big" style="color: var(--color-pink);">Total</Title>
   </div>
 
   <div slot="right">
@@ -84,9 +84,9 @@
 <Row disabled={true}>
   <div slot="left" style="display: flex; align-items: center">
     <Avatar style="margin-right: 16px" />
-    <Title.Regular style="color: var(--color-darkgray);">
+    <Title style="color: var(--color-darkgray);">
       Your personal wallet
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">
