@@ -1,6 +1,6 @@
 <script>
   import Row from "./Row.svelte";
-  import { Button, Title, Caption, Rad, Avatar } from "../../DesignSystem";
+  import { Button, ButtonRow, Title, Caption, Rad, Avatar } from "../../DesignSystem";
 
   export let onNextStep = null;
   export let onPreviousStep = null;
@@ -63,8 +63,8 @@
   </div>
 </Row>
 
-<div class="button-row">
-  <div style="display: flex; flex: 1; align-items: flex-start">
+<ButtonRow>
+  <div slot="left">
     <Button
       disabled={false}
       on:click={onPreviousStep}
@@ -73,6 +73,7 @@
       Back
     </Button>
   </div>
-
-  <Button disabled={false} on:click={onNextStep} variant="primary">Next</Button>
-</div>
+  <div slot="right">
+    <Button disabled={false} on:click={onNextStep} variant="primary">Next</Button>
+  </div>
+</ButtonRow>

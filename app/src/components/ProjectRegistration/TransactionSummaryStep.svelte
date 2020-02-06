@@ -1,7 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
   import Row from "./Row.svelte";
-  import { Button, Text, Title, Rad, Avatar } from "../../DesignSystem";
+  import { Button, ButtonRow, Text, Title, Rad, Avatar } from "../../DesignSystem";
 
   export let name = null;
   export let timestamp = null;
@@ -9,13 +9,6 @@
 </script>
 
 <style>
-  .button-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 48px;
-  }
-
   .status {
     padding: 12px 16px 12px 16px;
     border-top-left-radius: 4px;
@@ -92,6 +85,8 @@
   </div>
 </Row>
 
-<div class="button-row">
-  <Button disabled={false} on:click={pop} variant="primary">Home</Button>
-</div>
+<ButtonRow>
+  <div slot="right">
+    <Button disabled={false} on:click={pop} variant="primary">Home</Button>
+  </div>
+</ButtonRow>

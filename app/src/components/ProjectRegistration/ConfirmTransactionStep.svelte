@@ -1,21 +1,12 @@
 <script>
   import Row from "./Row.svelte";
-  import { Button, Title, Caption, Rad, Avatar } from "../../DesignSystem";
+  import { Button, ButtonRow, Title, Caption, Rad, Avatar } from "../../DesignSystem";
 
   export let name = null;
 
   export let onNextStep = null;
   export let onPreviousStep = null;
 </script>
-
-<style>
-  .button-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 48px;
-  }
-</style>
 
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Your order
@@ -94,8 +85,8 @@
   </div>
 </Row>
 
-<div class="button-row">
-  <div style="display: flex; flex: 1; align-items: flex-start">
+<ButtonRow>
+  <div slot="left">
     <Button
       disabled={false}
       on:click={onPreviousStep}
@@ -104,5 +95,7 @@
       Back
     </Button>
   </div>
-  <Button disabled={false} on:click={onNextStep} variant="primary">Pay</Button>
-</div>
+  <div slot="right">
+    <Button disabled={false} on:click={onNextStep} variant="primary">Pay</Button>
+  </div>
+</ButtonRow>

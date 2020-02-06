@@ -1,6 +1,6 @@
 <script>
   import validatejs from "validate.js";
-  import { Button, TextInput } from "../../DesignSystem";
+  import { Button, ButtonRow, TextInput } from "../../DesignSystem";
 
   import { pop } from "svelte-spa-router";
 
@@ -50,15 +50,6 @@
   $: validate(name);
 </script>
 
-<style>
-  .button-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 48px;
-  }
-</style>
-
 <TextInput
   style="--focus-outline-color: var(--color-pink)"
   placeholder="Project name"
@@ -66,8 +57,8 @@
   valid={!(beginValidation && validations && validations.name)}
   errorMessage={beginValidation && validations && validations.name && validations.name[0]} />
 
-<div class="button-row">
-  <div style="display: flex; flex: 1; align-items: flex-start">
+<ButtonRow>
+  <div slot="left">
     <Button
       dataCy="cancel-button"
       variant="outline"
@@ -76,5 +67,7 @@
       Cancel
     </Button>
   </div>
-  <Button disabled={!name} on:click={nextStep} variant="primary">Next</Button>
-</div>
+  <div slot="right">
+    <Button disabled={!name} on:click={nextStep} variant="primary">Next</Button>
+  </div>
+</ButtonRow>
