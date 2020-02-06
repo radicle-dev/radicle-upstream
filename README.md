@@ -4,7 +4,7 @@
 
 Upstream is a cross-platform desktop client for the radicle protocol.
 
-```
+```sh
 .
 ├── CHANGELOG.md
 ├── DEVELOPMENT.md     # guidelines for contributing to this repository

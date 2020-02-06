@@ -23,14 +23,14 @@ build and run the registry node.
 
 Before running the test suite, download the test fixtures:
 
-```bash
-$ git submodule update --recursive
+```sh
+git submodule update --recursive
 ```
 
 Then run tests as normal:
 
-```bash
-$ cargo test
+```sh
+cargo test
 ```
 
 [rr]: https://github.com/radicle-dev/radicle-registry#building-and-running-the-node

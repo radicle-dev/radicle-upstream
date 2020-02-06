@@ -1,4 +1,4 @@
-## Workflow
+# Workflow
 
 Our current workflow is to put our changes in feature branches which get
 submitted for review on GitHub as pull requests. Ideally a pull request is
@@ -21,7 +21,7 @@ The pull request ref goes in brackets at the end of the subject.
 Generally we also follow [good commit message hygene][tpope].
 
 
-### Releases
+## Releases
 
 To perform a release:
 
@@ -30,7 +30,7 @@ To perform a release:
 2. Run: `(cd app && yarn release)` and follow the instructions.
    Here's what a typical release looks like:
 
-```
+```sh
 $ yarn release
 
 Cutting release v0.0.11:
@@ -68,11 +68,11 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
    build has completed you can download the binaries [here][artifacts].
 
 
-### CI setup
+## CI setup
 
 CI is configured via:
 
-```
+```sh
 radicle-upstream/.buildkite
 .
 ├── Dockerfile
@@ -86,7 +86,7 @@ artifact. When the tests fail, screenshots of the failing tests will be
 uploaded instead of the binary.
 
 
-#### Docker image updates
+### Docker image updates
 
 We use a Docker image that has all of the system dependencies installed to run
 tests on Buildkite. Follow these steps if you need to update the dependencies
@@ -102,7 +102,7 @@ bundled in the image:
 
 4. Get the current image version from `pipeline.yaml` and build a new Docker
    image (remember to bump the version):
-```
+```sh
 cd .buildkite
 docker build . -t gcr.io/opensourcecoin/radicle-upstream:0.2.1
 docker push gcr.io/opensourcecoin/radicle-upstream:0.2.1
@@ -112,7 +112,7 @@ docker push gcr.io/opensourcecoin/radicle-upstream:0.2.1
    `docker push gcr.io/opensourcecoin/radicle-upstream:0.2.1`
 
 6. Update the image version in `pipeline.yaml`:
-```
+```yaml
 DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
 ```
 
