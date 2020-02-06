@@ -6,7 +6,7 @@
     Numeric,
     Caption,
     Icon,
-    Input,
+    TextInput,
     Select,
     CheckboxInput,
     Avatar
@@ -406,7 +406,7 @@
     </div>
     <div class="second-column">
       <div class="row">
-        <Input placeholder="Hey, I'm an input." />
+        <TextInput placeholder="Hey, I'm an input." />
       </div>
 
       <div class="row">

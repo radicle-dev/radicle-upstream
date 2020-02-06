@@ -2,7 +2,7 @@ import Button from "./Button.svelte";
 import Caption from "./Caption.svelte";
 import Header from "./Header.svelte";
 import Icon from "./Icon";
-import Input from "./Input.svelte";
+import TextInput from "./TextInput.svelte";
 import CheckboxInput from "./CheckboxInput.svelte";
 import DirectoryInput from "./DirectoryInput.svelte";
 import Numeric from "./Numeric.svelte";
@@ -18,7 +18,7 @@ export {
   Caption,
   Header,
   Icon,
-  Input,
+  TextInput,
   CheckboxInput,
   DirectoryInput,
   Numeric,

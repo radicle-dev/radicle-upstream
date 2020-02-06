@@ -15,7 +15,7 @@
     Button,
     Header,
     Icon,
-    Input,
+    TextInput,
     DirectoryInput,
     CheckboxInput,
     Text,
@@ -353,7 +353,7 @@
         Create a new project
       </Title>
 
-      <Input
+      <TextInput
         style="--focus-outline-color: var(--color-pink)"
         placeholder="Project name*"
         dataCy="name"
@@ -361,13 +361,13 @@
         valid={!(validations && validations.name)}
         errorMessage={validations && validations.name && validations.name[0]} />
 
-      <Input
+      <TextInput
         style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
         var(--color-pink)"
         placeholder="Project description"
         bind:value={description} />
 
-      <Input
+      <TextInput
         dataCy="avatar-url"
         style="--focus-outline-color: var(--color-pink)"
         placeholder="http://my-project-website.com/project-avatar.png"
