@@ -25,6 +25,27 @@ Before running tests locally you'll need to set up a test fixture repository:
 - to run the tests do: `yarn test`
 - to troubleshoot tests in the Cypress GUI, run: `yarn test:debug`
 
+To isolate single test for debugging purposes, use the `.only` method:
+```javascript
+context("a bazillion tests in this context", () => {
+  it("does one thing", () => {
+    ...
+  });
+
+  it.only("does another thing", () => {
+    ...
+  });
+
+  ...
+});
+```
+
+Then to execute just that one test, fire up the Cypress GUI: `yarn test:debug`
+and choose the respective `.spec.js` file from the list.
+
+**Note**: don't forget to remove all `.only` methods from tests before
+committing changes, otherwise the tests will be skipped on CI.
+
 
 ### Design System
 
