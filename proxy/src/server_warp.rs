@@ -7,14 +7,7 @@ use crate::schema::{Context, Schema};
 
 /// Runs the warp server with the given schema and context.
 pub fn run(schema: Schema, context: Context) {
-    let index = warp::path::end().map(|| {
-        Response::builder()
-            .header("content-type", "text/html")
-            .body(juniper::graphiql::graphiql_source("/graphql"))
-    });
-
-    let routes = index
-        .or(make_graphql_filter("graphql", schema, context))
+    let routes = make_graphql_filter("graphql", schema, context)
         .with(
             warp::cors()
                 .allow_any_origin()
