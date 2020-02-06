@@ -135,6 +135,8 @@ yarn svelte:watch     # Compile svelte to JS on every change to the code
 yarn generate:colors  # Update color CSS variables in public/colors.css from
                       # colors.json
 
+yarn graphiql         # Open GraphiQL with explorer extension in browser
+
 yarn release          # Start a two-step process to cut a new release, for more
                       # details have a look at ../DEVELOPMENT.md
 ```
