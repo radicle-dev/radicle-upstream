@@ -39,29 +39,27 @@
   -1px 0 -1px 0; border-top: none">
   <div slot="left">
     <Title style="margin-bottom: 16px;">From</Title>
-    <div style="display: flex; align-items: center">
-      <Avatar style="margin-right: 16px" size="big" variant="user" />
-      <Title size="big" style="white-space: nowrap">Your personal wallet</Title>
+    <div>
+      <Avatar size="big" variant="user" title="Your personal wallet"/>
     </div>
   </div>
 </Row>
 
 <Row disabled={true} style="border-radius: 0">
-  <div slot="left" style="display: flex; align-items: center">
+  <div slot="left">
     <Title>Project Registration</Title>
   </div>
 
-  <div slot="right" style="display: flex; align-items: center">
+  <div slot="right">
     <Avatar
-      style="margin-right: 8px;"
       variant="project"
-      imageUrl="https://avatars.dicebear.com/v2/jdenticon/project.svg" />
-    <Title>{name}</Title>
+      imageUrl="https://avatars.dicebear.com/v2/jdenticon/project.svg"
+      title={name} />
   </div>
 </Row>
 
 <Row disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
-  <div slot="left" style="display: flex; align-items: center">
+  <div slot="left">
     <Title style="color: var(--color-darkgray);">
       Transaction Fee
     </Title>
@@ -76,7 +74,7 @@
   disabled={true}
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
-  <div slot="left" style="display: flex; align-items: center">
+  <div slot="left">
     <Title size="big" style="color: var(--color-pink);">Total</Title>
   </div>
 

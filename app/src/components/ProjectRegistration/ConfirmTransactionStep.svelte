@@ -14,7 +14,7 @@
 <Row
   style="margin-bottom: 16px; background-color: var(--color-almostwhite)"
   disabled={true}>
-  <div slot="left" style="display: flex; align-items: center">
+  <div slot="left">
     <Title style="color: var(--color-darkgray);">
       Name registration
     </Title>
@@ -32,7 +32,7 @@
 <Row
   disabled={true}
   style="border-bottom-left-radius: 0; border-bottom-right-radius: 0">
-  <div slot="left" style="display: flex; align-items: center">
+  <div slot="left">
     <Title style="color: var(--color-darkgray);">
       Project Registration Fee
     </Title>
@@ -44,7 +44,7 @@
 </Row>
 
 <Row disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
-  <div slot="left" style="display: flex; align-items: center">
+  <div slot="left">
     <Title style="color: var(--color-darkgray);">
       Transaction Fee
     </Title>
@@ -59,7 +59,7 @@
   disabled={true}
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
-  <div slot="left" style="display: flex; align-items: center">
+  <div slot="left">
     <Title size="big" style="color: var(--color-pink);">Total</Title>
   </div>
 
@@ -73,11 +73,8 @@
 </Caption>
 
 <Row disabled={true}>
-  <div slot="left" style="display: flex; align-items: center">
-    <Avatar style="margin-right: 16px" />
-    <Title style="color: var(--color-darkgray);">
-      Your personal wallet
-    </Title>
+  <div slot="left">
+    <Avatar title="Your personal wallet" />
   </div>
 
   <div slot="right">

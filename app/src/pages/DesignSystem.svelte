@@ -468,6 +468,10 @@
           variant="project"
           size="big" />
       </div>
+      <div class="row">
+        <Avatar title="My name"/>
+        <Avatar size="big" title="My name"/>
+    </div>
     </div>
   </div>
 </div>
