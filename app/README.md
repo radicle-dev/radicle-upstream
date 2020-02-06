@@ -1,6 +1,6 @@
 # App
 
-A frontend written in JavaScript using Svelte and Electron.
+A UI written in JavaScript using Svelte and Electron.
 
 
 ## Development
@@ -8,6 +8,9 @@ A frontend written in JavaScript using Svelte and Electron.
 For dependency management and script execution we use `yarn`. Code formatting
 is dictated by [prettier][pr] and enforced locally on a pre-commit basis with
 [husky][hu] and [lint-staged][ls].
+
+For more pointers on how to collaborate in this repository, have a look at the
+top-level [`DEVELOPMENT.md`][de] file.
 
 
 ### Running the app
@@ -22,10 +25,9 @@ is dictated by [prettier][pr] and enforced locally on a pre-commit basis with
 Before running tests locally you'll need to set up a test fixture repository:
 `git submodule foreach "git fetch --all"`.
 
-- to run the tests do: `yarn test`
+- to run tests do: `yarn test`
 - to troubleshoot tests in the Cypress GUI, run: `yarn test:debug`
-
-To isolate single test for debugging purposes, use the `.only` method:
+- to isolate a single test for debugging purposes, use the `.only` method:
 ```javascript
 context("a bazillion tests in this context", () => {
   it("does one thing", () => {
@@ -50,42 +52,42 @@ committing changes, otherwise the tests will be skipped on CI.
 ### Design System
 
 The overall look of Upstream is governed by a style guide which is continuously
-being improved and extanded by our designers. This style guide is translated
+being improved and extended. This style guide is translated
 into code that forms a design system. The design system contains all design
 primitives which can be composed to create rich user experiences.
 
 
 #### Colors
 
-Colors amongst other design system tokens are stored in `tokens/colors.json`.
+Colors amongst other design system tokens are stored in the `tokens` folder.
 If a color gets added, removed or changed in the style guide, we have to make
-changes to `colors.json` accordingly.
+changes to `tokens/colors.json` accordingly.
 
 Entries in `colors.json` have the following shape:
 ```javascript
 {
-  "name": "pink",    // color name as defined in style guide
-  "hex": "#e074cb",  // hex color code
-  "shades": [10],    // array of auto-generated color shades
+  "name": "pink",    // Color name as defined in style guide
+  "hex": "#e074cb",  // Hex color code
+
+  "shades": [10],    // Array of auto-generated color shades
                      // possible values range from 5 to 95
                      // values should be kept to multiples of 5
 
-  "tints": [10],     // array of auto-generated color tints
+  "tints": [10],     // Array of auto-generated color tints
                      // possible values range from 5 to 95
                      // values should be kept to multiples of 5
 }
 ```
 
-When the `colors.json` file is changed, we need to re-generate all the
+When the `tokens/colors.json` file is changed, we have to re-generate all
 tints and shades via: `yarn generate:colors`. This will update the
-`public/colors.css` file. All changes to both files should be committed to the
-repository.
+`public/colors.css` file. All changes to both files should be committed.
 
 The main entry point of the electron renderer is `public/index.html`. Amongst
-other things it loads `colors.css` which, in turn, provides colors including
-their tints and shades as CSS variables to the rest of the code.
+other things it loads `public/colors.css` which, in turn, provides colors,
+including their tints and shades, as CSS variables to the rest of the code.
 
-When developing new features we should only use these CSS variables instead of
+When developing new features we should only use the CSS variables instead of
 raw color codes, like so:
 
 ```html
@@ -112,28 +114,28 @@ in: `dist/radicle-upstream-X.X.X.dmg`.
 Most commonly used yarn commands:
 
 ```sh
-yarn start            # start electron app in development mode with code
+yarn start            # Start electron app in development mode with code
                       # hot-reloading
 
-yarn test             # run cypress e2e tests
-yarn test:debug       # run tests via the cypress GUI
+yarn test             # Run cypress e2e tests
+yarn test:debug       # Run tests via the cypress GUI
 
-yarn dist             # packages the app into an installable package
+yarn dist             # Packages the app into an installable package
 
-yarn electron:start   # wait for dependency start-up and start electron without
+yarn electron:start   # Wait for dependency start-up and start electron without
                       # code hot-reloading
 
-yarn proxy:build      # build the backend GraphQL proxy binary
-yarn proxy:start      # start the backend proxy and serve mock data
+yarn proxy:build      # Build the backend GraphQL proxy binary
+yarn proxy:start      # Start the backend proxy and serve mock data
 
-yarn svelte:clean     # remove build artifacts
-yarn svelte:build     # compile svelte to JS
-yarn svelte:watch     # compile svelte to JS on every change to the code
+yarn svelte:clean     # Remove build artifacts
+yarn svelte:build     # Compile svelte to JS
+yarn svelte:watch     # Compile svelte to JS on every change to the code
 
-yarn generate:colors  # update color CSS variables in public/colors.css from
+yarn generate:colors  # Update color CSS variables in public/colors.css from
                       # colors.json
 
-yarn release          # start a two-step process to cut a new release, for more
+yarn release          # Start a two-step process to cut a new release, for more
                       # details have a look at ../DEVELOPMENT.md
 ```
 
@@ -141,3 +143,4 @@ yarn release          # start a two-step process to cut a new release, for more
 [pr]: https://prettier.io/
 [hu]: https://github.com/typicode/husky
 [ls]: https://github.com/okonet/lint-staged
+[de]: ../DEVELOPMENT.md

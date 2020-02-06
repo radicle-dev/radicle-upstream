@@ -1,8 +1,8 @@
 # Proxy
 
 A background service that implements all business logic tying together the
-radicle protocol and radicle registry. It provides a GraphQL API to the
-frontend.
+radicle code collaboration and registry protocols. It provides a GraphQL API to
+the UI.
 
 
 ### Run

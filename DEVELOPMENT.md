@@ -3,7 +3,7 @@
 Our current workflow is to put our changes in feature branches which get
 submitted for review on GitHub as pull requests. Ideally a pull request is
 small and changes only one aspect of the code at a time. After a pull request
-is reviewed by at least one peer and passes all tests it can be squash-merged
+is reviewed by at least one peer and passes all tests, it can be squash-merged
 into master.
 
 To automate our release process as much as possible we're using
@@ -81,7 +81,7 @@ radicle-upstream/.buildkite
 ```
 
 The build process is run for every commit that is pushed to GitHub. When the
-tests pass, the build process spits out and uploads an app binary as build
+tests pass, the build process spits out and uploads an app binary as a build
 artifact. When the tests fail, screenshots of the failing tests will be
 uploaded instead of the binary.
 
@@ -92,13 +92,13 @@ We use a Docker image that has all of the system dependencies installed to run
 tests on Buildkite. Follow these steps if you need to update the dependencies
 bundled in the image:
 
-1. Install [Google Cloud SDK][gc]
+1. Install [Google Cloud SDK][gc].
 
 2. Authenticate with Google Cloud: `gcloud auth configure-docker`, pick
-   `[1] opensourcecoin` when asked for which project to use
+   `[1] opensourcecoin` when asked for which project to use.
 
 3. Prepare a new docker image with all the necessary dependencies by editing:
-   `.buildkite/Dockerfile`
+   `.buildkite/Dockerfile`.
 
 4. Get the current image version from `pipeline.yaml` and build a new Docker
    image (remember to bump the version):
@@ -117,7 +117,7 @@ DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
 ```
 
 7. Commit changes to `Dockerfile` and `pipeline.yaml` and push to origin, this
-   should build the new branch with the updated image
+   should build the new branch with the updated image.
 
 
 [tpope]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
