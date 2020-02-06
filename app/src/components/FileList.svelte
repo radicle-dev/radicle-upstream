@@ -88,6 +88,15 @@
     height: 40px;
   }
 
+  .file-header {
+    padding-left: 24px;
+  }
+
+  .last-update-header {
+    text-align: right;
+    padding-right: 24px;
+  }
+
   .file-column {
     display: flex;
     align-items: center;
@@ -116,13 +125,13 @@
   <table data-cy="file-list">
     <thead>
       <tr>
-        <td style="padding-left: 24px">
+        <td class="file-header">
           <Caption>Name</Caption>
         </td>
         <td>
           <Caption>Commit Message</Caption>
         </td>
-        <td style="text-align: right;padding-right: 24px">
+        <td class="last-update-header">
           <Caption>Last Update</Caption>
         </td>
       </tr>
