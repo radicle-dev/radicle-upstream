@@ -3,7 +3,7 @@
 </script>
 
 <style>
-  header {
+  .row {
     display: flex;
     align-items: center;
   }
@@ -20,7 +20,7 @@
   }
 </style>
 
-<header {style}>
+<div class="row" {style}>
   <div class="align-left">
     <slot name="left" />
   </div>
@@ -28,4 +28,4 @@
   <div class="align-right">
     <slot name="right" />
   </div>
-</header>
+</div>

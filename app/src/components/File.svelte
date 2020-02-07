@@ -3,7 +3,7 @@
   import { revision, objectPath } from "../stores.js";
   import { BLOB } from "../types.js";
 
-  import { Icon, Title, Text } from "../DesignSystem";
+  import { Icon } from "../DesignSystem";
   import { link } from "svelte-spa-router";
   import * as path from "../path.js";
 

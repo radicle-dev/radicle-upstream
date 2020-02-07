@@ -1,5 +1,4 @@
 <script>
-  import { Icon, Text, Title } from "../DesignSystem";
   import { link } from "svelte-spa-router";
 
   export let href = null;

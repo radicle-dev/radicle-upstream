@@ -22,5 +22,5 @@
 
 <a href={`/users/${user.username}`} use:link {style}>
   <img src={user.avatar} alt="user-avatar" />
-  <Title.Regular>{user.username}</Title.Regular>
+  <Title>{user.username}</Title>
 </a>

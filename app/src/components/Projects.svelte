@@ -1,5 +1,5 @@
 <script>
-  import { Text, Title, Icon, Numeric, Caption, Button } from "../DesignSystem";
+  import { Text, Title, Icon, Button } from "../DesignSystem";
   import ProjectCard from "./ProjectCard.svelte";
   import { projectName } from "../stores.js";
   import { createProject, projectOverview } from "../path.js";
@@ -55,7 +55,7 @@
 </style>
 
 {#await $projects}
-  <Text.Regular>Loading projects...</Text.Regular>
+  <Text>Loading projects...</Text>
 {:then result}
   {#if result.data.projects.length > 0}
     <ul>
@@ -78,13 +78,13 @@
   {:else}
     <div class="wrapper">
       <div class="create-project">
-        <Title.Regular
+        <Title
           style="color: var(--color-darkgray); margin-bottom: 13px">
           You have no projects
-        </Title.Regular>
-        <Text.Regular style="color: var(--color-gray)">
+        </Title>
+        <Text style="color: var(--color-gray)">
           Create a new project and share it with friends to get started
-        </Text.Regular>
+        </Text>
         <Button
           style="margin: 23px auto"
           variant="primary"

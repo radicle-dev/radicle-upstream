@@ -1,6 +1,7 @@
 <script>
   import validatejs from "validate.js";
-  import { Button, Input, Text } from "../../DesignSystem";
+  import { Button, TextInput } from "../../DesignSystem";
+  import RowLayout from "../../layouts/helpers/Row.svelte";
 
   import { pop } from "svelte-spa-router";
 
@@ -50,28 +51,15 @@
   $: validate(name);
 </script>
 
-<style>
-  .button-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 48px;
-  }
-</style>
-
-<Input
+<TextInput
   style="--focus-outline-color: var(--color-pink)"
   placeholder="Project name"
   bind:value={name}
-  valid={true} />
-{#if beginValidation && validations && validations.name}
-  <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
-    {validations.name[0]}
-  </Text.SmallBold>
-{/if}
+  valid={!(beginValidation && validations && validations.name)}
+  errorMessage={beginValidation && validations && validations.name && validations.name[0]} />
 
-<div class="button-row">
-  <div style="display: flex; flex: 1; align-items: flex-start">
+<RowLayout style="margin-top: 48px;">
+  <div slot="left">
     <Button
       dataCy="cancel-button"
       variant="outline"
@@ -80,5 +68,7 @@
       Cancel
     </Button>
   </div>
-  <Button disabled={!name} on:click={nextStep} variant="primary">Next</Button>
-</div>
+  <div slot="right">
+    <Button disabled={!name} on:click={nextStep} variant="primary">Next</Button>
+  </div>
+</RowLayout>

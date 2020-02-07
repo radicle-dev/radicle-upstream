@@ -1,6 +1,6 @@
 <script>
   import Icon from "../DesignSystem/Icon";
-  import Numeric from "../DesignSystem/Numeric";
+  import Numeric from "./Numeric.svelte";
 
   export let amount = null;
   export let style = null;
@@ -25,17 +25,18 @@
   <div class="rad-amount">
     <Icon.EllipseBig style="fill: var(--color-pink); margin-right: 4px" />
     {#if size === 'big'}
-      <Numeric.Big style="display: inline-flex; color: var(--color-darkgray)">
-        {amount}
-      </Numeric.Big>
-    {:else}
-      <Numeric.Regular
+      <Numeric
+        size="big"
         style="display: inline-flex; color: var(--color-darkgray)">
         {amount}
-      </Numeric.Regular>
+      </Numeric>
+    {:else}
+      <Numeric style="display: inline-flex; color: var(--color-darkgray)">
+        {amount}
+      </Numeric>
     {/if}
   </div>
-  <Numeric.Regular style="color: var(--color-gray)">
+  <Numeric style="color: var(--color-gray)">
     ${amount / 10}
-  </Numeric.Regular>
+  </Numeric>
 </div>
