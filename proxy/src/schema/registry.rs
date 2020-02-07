@@ -81,7 +81,7 @@ pub struct Applied {
 #[derive(Clone)]
 pub struct Registry {
     /// Registry client, whether an emulator or otherwise.
-    client: Client,
+    pub client: Client,
 }
 
 /// Registry client wrapper methods
@@ -186,9 +186,10 @@ impl Registry {
 
 #[cfg(test)]
 mod tests {
-    use crate::schema::registry::Registry;
+    use crate::schema::registry::{Registry, ProjectCbor};
     use radicle_registry_client::ed25519;
-    use radicle_registry_client::Client;
+    use radicle_registry_client::{Client, ClientT, String32};
+    use serde_cbor::from_reader;
 
     #[test]
     fn test_register_project() {
@@ -203,5 +204,15 @@ mod tests {
             Some(String::from("radicle")),
         ));
         assert!(result.is_ok());
+        let project_name = String32::from_string("hello".into()).unwrap();
+        let project_domain = String32::from_string("world".into()).unwrap();
+        let pid = (project_name, project_domain);
+        let future_project = registry.client.get_project(pid);
+        let maybe_project = futures::executor::block_on(future_project).unwrap();
+        assert_eq!(maybe_project.is_some(), true);
+        let project = maybe_project.unwrap();
+        let metadata_vec: Vec<u8> = project.metadata.into();
+        let metadata: ProjectCbor = from_reader(&metadata_vec[..]).unwrap();
+        assert_eq!(metadata.version, 1);
     }
 }
