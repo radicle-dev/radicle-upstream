@@ -3,8 +3,6 @@
   export let size = null;
   export let weight = null;
 
-  // let sizeClass = size === "small" ? "smallSize" : "regularSize";
-  // let weightClass = size === "bold" ? "boldWeight" : "regularWeight";
   let textClass = [size, weight].join(" ");
 </script>
 
