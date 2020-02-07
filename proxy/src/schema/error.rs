@@ -15,9 +15,6 @@ pub enum ProjectValidation {
     NameTooLong(String),
     /// Project names (String32) can only be 32 characters.
     DomainTooLong(String),
-    /* TODO(garbados): finish implementing two-way attestation
-     * /// Project ID failed to serialize to JSON.
-     * JsonSerialization(serde_json::Error), */
 }
 
 /// All error variants the API will return.
@@ -324,10 +321,7 @@ impl IntoFieldError for Error {
                 },
                 ProjectValidation::DomainTooLong(error) => {
                     FieldError::new(error, graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }))
-                }, /* TODO(garbados): finish two-way attestation
-                    * ProjectValidation::JsonSerialization(error) => {
-                    *     FieldError::new(error, graphql_value!({ "type": "JSON_SERIALIZATION"
-                    * })) } */
+                },
             },
             // TODO(garbados): expand via sub-match
             Self::Protocol(error) => FieldError::new(
