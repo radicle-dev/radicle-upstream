@@ -3,7 +3,7 @@ use warp::filters::BoxedFilter;
 use warp::http::Response;
 use warp::Filter;
 
-use super::Context;
+use super::schema::Context;
 
 /// Runs the warp server with the given schema and context.
 pub fn run(
@@ -12,7 +12,7 @@ pub fn run(
     registry_client: radicle_registry_client::Client,
 ) {
     let context = Context::new(dummy_repo_path, librad_paths, registry_client);
-    let schema = super::create_schema();
+    let schema = super::schema::create();
 
     let index = warp::path::end().map(|| {
         Response::builder()
