@@ -28,12 +28,10 @@ extern crate log;
 #[macro_use]
 extern crate juniper;
 
-/// Server infrastructure used to power the API.
-mod api;
 /// Utilities to manipulate the process environment.
 mod env;
 /// Defines the schema served to the application via `GraphQL`.
-mod schema;
+mod graphql;
 
 /// Flags accepted by the proxy binary.
 struct Args {
@@ -59,7 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let librad_paths =
             librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
-        crate::schema::git::setup_fixtures(
+        graphql::git::setup_fixtures(
             &librad_paths,
             temp_dir.path().to_str().expect("path extraction failed"),
         )
@@ -78,13 +76,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
     };
 
-    let context = schema::Context::new(dummy_repo.into(), librad_paths, registry_client);
+    let context = graphql::Context::new(dummy_repo.into(), librad_paths, registry_client);
 
     info!("Creating GraphQL schema and context");
-    let schema = schema::create();
+    let schema = graphql::create();
 
-    info!("Starting HTTP server");
-    api::run(schema, context);
+    info!("Starting GraphQL HTTP API");
+    graphql::api::run(schema, context);
 
     Ok(())
 }

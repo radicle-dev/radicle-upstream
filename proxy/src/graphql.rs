@@ -6,6 +6,8 @@ use librad::project::{Project, ProjectId};
 use radicle_registry_client::ed25519;
 use radicle_surf as surf;
 
+/// Server infrastructure used to power the API.
+pub mod api;
 /// Error definitions and type casting logic.
 mod error;
 /// Git objects as `GraphQL` objects.
@@ -14,8 +16,6 @@ pub mod git;
 mod project;
 /// Logic for registering new projects.
 mod registry;
-
-use crate::schema::error::Error;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;
@@ -63,7 +63,7 @@ impl Mutation {
         metadata: project::MetadataInput,
         path: String,
         publish: bool,
-    ) -> Result<project::Project, Error> {
+    ) -> Result<project::Project, error::Error> {
         if surf::git::git2::Repository::open(path.clone()).is_err() {
             git::init_repo(path.clone())?;
         };
@@ -87,7 +87,7 @@ impl Mutation {
         ctx: &Context,
         domain: String,
         name: String,
-    ) -> Result<registry::Transaction, Error> {
+    ) -> Result<registry::Transaction, error::Error> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
@@ -105,7 +105,12 @@ impl Query {
         "1.0"
     }
 
-    fn blob(ctx: &Context, id: ID, revision: String, path: String) -> Result<git::Blob, Error> {
+    fn blob(
+        ctx: &Context,
+        id: ID,
+        revision: String,
+        path: String,
+    ) -> Result<git::Blob, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
 
@@ -121,7 +126,7 @@ impl Query {
         {
             let err_fmt = format!("{:?}", err);
 
-            return Err(Error::Git(surf::git::error::Error::NotBranch));
+            return Err(error::Error::Git(surf::git::error::Error::NotBranch));
         };
 
         let root = browser.get_directory()?;
@@ -161,7 +166,7 @@ impl Query {
         })
     }
 
-    fn commit(ctx: &Context, id: ID, sha1: String) -> Result<git::Commit, Error> {
+    fn commit(ctx: &Context, id: ID, sha1: String) -> Result<git::Commit, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
         let mut browser = match project {
@@ -174,15 +179,15 @@ impl Query {
         Ok(git::Commit::from(commit))
     }
 
-    fn branches(ctx: &Context, id: ID) -> Result<Vec<git::Branch>, Error> {
+    fn branches(ctx: &Context, id: ID) -> Result<Vec<git::Branch>, error::Error> {
         git::branches(&ctx.librad_paths, &id.to_string())
     }
 
-    fn local_branches(ctx: &Context, path: String) -> Result<Vec<git::Branch>, Error> {
+    fn local_branches(ctx: &Context, path: String) -> Result<Vec<git::Branch>, error::Error> {
         git::local_branches(&path)
     }
 
-    fn tags(ctx: &Context, id: ID) -> Result<Vec<git::Tag>, Error> {
+    fn tags(ctx: &Context, id: ID) -> Result<Vec<git::Tag>, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
         let mut browser = match project {
@@ -202,7 +207,12 @@ impl Query {
         Ok(tags)
     }
 
-    fn tree(ctx: &Context, id: ID, revision: String, prefix: String) -> Result<git::Tree, Error> {
+    fn tree(
+        ctx: &Context,
+        id: ID,
+        revision: String,
+        prefix: String,
+    ) -> Result<git::Tree, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
 
@@ -217,7 +227,7 @@ impl Query {
         {
             let err_fmt = format!("{:?}", err);
 
-            return Err(Error::Git(surf::git::error::Error::NotBranch));
+            return Err(error::Error::Git(surf::git::error::Error::NotBranch));
         };
 
         let mut path = if prefix == "/" || prefix == "" {
@@ -239,7 +249,7 @@ impl Query {
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
 
-        let entries_results: Result<Vec<git::TreeEntry>, Error> = prefix_contents
+        let entries_results: Result<Vec<git::TreeEntry>, error::Error> = prefix_contents
             .iter()
             .map(|(label, system_type)| {
                 let mut entry_path = if path.is_root() {
@@ -314,7 +324,7 @@ impl Query {
         })
     }
 
-    fn project(ctx: &Context, id: ID) -> Result<project::Project, Error> {
+    fn project(ctx: &Context, id: ID) -> Result<project::Project, error::Error> {
         let project_id = ProjectId::from_str(&id.to_string())?;
         let meta = Project::show(&ctx.librad_paths, &project_id)?;
 
@@ -324,7 +334,7 @@ impl Query {
         })
     }
 
-    fn projects(ctx: &Context) -> Result<Vec<project::Project>, Error> {
+    fn projects(ctx: &Context) -> Result<Vec<project::Project>, error::Error> {
         let mut projects = Project::list(&ctx.librad_paths)
             .map(|id| {
                 let project_meta =
@@ -342,7 +352,7 @@ impl Query {
         Ok(projects)
     }
 
-    fn list_registry_projects(ctx: &Context) -> Result<Vec<ID>, Error> {
+    fn list_registry_projects(ctx: &Context) -> Result<Vec<ID>, error::Error> {
         let ids = futures::executor::block_on(ctx.registry.list_projects())?;
 
         Ok(ids
@@ -362,7 +372,7 @@ mod tests {
     use std::env;
     use tempfile::{tempdir_in, TempDir};
 
-    use crate::schema::{Context, Mutation, Query, Schema};
+    use super::{Context, Mutation, Query, Schema};
 
     const REPO_PATH: &str = "../fixtures/git-platinum";
 
@@ -397,14 +407,14 @@ mod tests {
             .clone(&platinum_from, platinum_into.as_path())
             .expect("unable to clone fixtures repo");
 
-        crate::schema::git::setup_fixtures(
+        super::git::setup_fixtures(
             &librad_paths,
             tmp_dir.path().to_str().expect("path extraction failed"),
         )
         .expect("fixture setup failed");
 
         // Init as rad project.
-        let (platinum_id, _platinum_project) = crate::schema::git::init_project(
+        let (platinum_id, _platinum_project) = crate::graphql::git::init_project(
             &librad_paths,
             platinum_into.to_str().unwrap(),
             "git-platinum",
@@ -464,7 +474,7 @@ mod tests {
                     .expect("creating temporary directory failed");
                 let path = dir.path().to_str().expect("unable to get path");
 
-                crate::schema::git::init_repo(path.to_string()).expect("unable to create repo");
+                crate::graphql::git::init_repo(path.to_string()).expect("unable to create repo");
                 git2::Repository::init(path).expect("unable to create repo");
 
                 let mut metadata_input: IndexMap<String, InputValue> = IndexMap::new();
@@ -607,7 +617,7 @@ mod tests {
         use juniper::{InputValue, Variables};
         use pretty_assertions::assert_eq;
 
-        use crate::schema::git;
+        use crate::graphql::git;
 
         use super::{execute_query, with_fixtures};
 

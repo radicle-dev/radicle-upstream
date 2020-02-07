@@ -3,7 +3,7 @@ use warp::filters::BoxedFilter;
 use warp::http::Response;
 use warp::Filter;
 
-use crate::schema::{Context, Schema};
+use super::{Context, Schema};
 
 /// Runs the warp server with the given schema and context.
 pub fn run(schema: Schema, context: Context) {

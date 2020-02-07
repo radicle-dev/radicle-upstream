@@ -9,7 +9,7 @@ use librad::paths::Paths;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
 
-use crate::schema::error::Error;
+use super::error::Error;
 
 /// Branch name representation.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLScalarValue)]

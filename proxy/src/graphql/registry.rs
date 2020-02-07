@@ -4,7 +4,7 @@ use radicle_registry_client::{
 };
 use std::convert::TryFrom;
 
-use crate::schema::error::{Error, ProjectValidation};
+use super::error;
 
 /// A container to dissiminate and apply operations on the [`Registry`].
 #[derive(GraphQLObject)]
@@ -81,7 +81,7 @@ impl Registry {
     }
 
     /// List projects of the Registry.
-    pub async fn list_projects(&self) -> Result<Vec<registry::ProjectId>, Error> {
+    pub async fn list_projects(&self) -> Result<Vec<registry::ProjectId>, error::Error> {
         self.client.list_projects().await.map_err(|e| e.into())
     }
 
@@ -91,12 +91,12 @@ impl Registry {
         author: &ed25519::Pair,
         domain: String,
         name: String,
-    ) -> Result<Transaction, Error> {
+    ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
         let project_name =
-            String32::from_string(name.clone()).map_err(ProjectValidation::NameTooLong)?;
-        let project_domain =
-            String32::from_string(domain.clone()).map_err(ProjectValidation::DomainTooLong)?;
+            String32::from_string(name.clone()).map_err(error::ProjectValidation::NameTooLong)?;
+        let project_domain = String32::from_string(domain.clone())
+            .map_err(error::ProjectValidation::DomainTooLong)?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
