@@ -17,7 +17,7 @@
   }
 </style>
 
-<div class="button-row">
+<div {style} class="button-row">
   <div class="left-button">
     <slot name="left" />
   </div>
