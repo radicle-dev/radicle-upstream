@@ -1,7 +1,8 @@
 <script>
   import { pop } from "svelte-spa-router";
-  import Row from "./Row.svelte";
+  import TxRow from "./TxRow.svelte";
   import { Button, Text, Title, Rad, Avatar } from "../../DesignSystem";
+  import RowLayout from "../../layouts/helpers/Row.svelte";
 
   export let name = null;
   export let timestamp = null;
@@ -9,13 +10,6 @@
 </script>
 
 <style>
-  .button-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 48px;
-  }
-
   .status {
     padding: 12px 16px 12px 16px;
     border-top-left-radius: 4px;
@@ -33,65 +27,65 @@
 
 {#if errorMessage}
   <div class="status error">
-    <Text.Regular>Transaction was unsuccessful: {errorMessage}</Text.Regular>
+    <Text>Transaction was unsuccessful: {errorMessage}</Text>
   </div>
 {:else}
   <div class="status success">
-    <Text.Regular>Transaction succeeded on {timestamp}</Text.Regular>
+    <Text>Transaction succeeded on {timestamp}</Text>
   </div>
 {/if}
-<Row
+<TxRow
   disabled={true}
   style="background-color: var(--color-almostwhite); border-radius: 0; margin:
   -1px 0 -1px 0; border-top: none">
   <div slot="left">
-    <Title.Regular style="margin-bottom: 16px;">From</Title.Regular>
-    <div style="display: flex; align-items: center">
-      <Avatar style="margin-right: 16px" size="big" variant="user" />
-      <Title.Big style="white-space: nowrap">Your personal wallet</Title.Big>
+    <Title style="margin-bottom: 16px;">From</Title>
+    <div>
+      <Avatar size="big" variant="user" title="Your personal wallet"/>
     </div>
   </div>
-</Row>
+</TxRow>
 
-<Row disabled={true} style="border-radius: 0">
-  <div slot="left" style="display: flex; align-items: center">
-    <Title.Regular>Project Registration</Title.Regular>
+<TxRow disabled={true} style="border-radius: 0">
+  <div slot="left">
+    <Title>Project Registration</Title>
   </div>
 
-  <div slot="right" style="display: flex; align-items: center">
+  <div slot="right">
     <Avatar
-      style="margin-right: 8px;"
       variant="project"
-      imageUrl="https://avatars.dicebear.com/v2/jdenticon/project.svg" />
-    <Title.Regular>{name}</Title.Regular>
+      imageUrl="https://avatars.dicebear.com/v2/jdenticon/project.svg"
+      title={name} />
   </div>
-</Row>
+</TxRow>
 
-<Row disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
-  <div slot="left" style="display: flex; align-items: center">
-    <Title.Regular style="color: var(--color-darkgray);">
+<TxRow disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
+  <div slot="left">
+    <Title style="color: var(--color-darkgray);">
       Transaction Fee
-    </Title.Regular>
+    </Title>
   </div>
 
   <div slot="right">
     <Rad amount={4} style="margin-right: 24px" />
   </div>
-</Row>
+</TxRow>
 
-<Row
+<TxRow
   disabled={true}
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
-  <div slot="left" style="display: flex; align-items: center">
-    <Title.Big style="color: var(--color-pink);">Total</Title.Big>
+  <div slot="left">
+    <Title size="big" style="color: var(--color-pink);">Total</Title>
   </div>
 
   <div slot="right">
     <Rad amount={24} style="margin-right: 24px" size="big" />
   </div>
-</Row>
+</TxRow>
 
-<div class="button-row">
-  <Button disabled={false} on:click={pop} variant="primary">Home</Button>
-</div>
+<RowLayout style="margin-top: 48px;">
+  <div slot="right">
+    <Button disabled={false} on:click={pop} variant="primary">Home</Button>
+  </div>
+</RowLayout>

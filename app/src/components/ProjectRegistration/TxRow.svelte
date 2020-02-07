@@ -1,4 +1,6 @@
 <script>
+  import RowLayout from "../../layouts/helpers/Row.svelte";
+
   export let style = null;
 
   export let active = false;
@@ -14,8 +16,6 @@
     padding: 18px 16px 18px 16px;
     border: 1px solid var(--color-lightgray);
     border-radius: 4px;
-    display: flex;
-    align-items: center;
   }
 
   .row:hover {
@@ -35,26 +35,16 @@
     box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-pink));
     border: 1px solid var(--focus-outline-color, var(--color-pink));
   }
-
-  .align-left {
-    display: flex;
-    flex: 1;
-    align-items: center;
-  }
-
-  .align-right {
-    display: flex;
-    flex: 1;
-    justify-content: flex-end;
-  }
 </style>
 
 <div class={rowClass} {style}>
-  <div class="align-left">
-    <slot name="left" />
-  </div>
+  <RowLayout>
+    <div slot="left">
+      <slot name="left" />
+    </div>
 
-  <div class="align-right">
-    <slot name="right" />
-  </div>
+    <div slot="right">
+      <slot name="right" />
+    </div>
+  </RowLayout>
 </div>

@@ -102,9 +102,9 @@
         <StepCounter {step} of={4} style="margin-bottom: 16px" />
       </div>
 
-      <Title.Big style="margin-bottom: 24px; text-align: center">
+      <Title size="big" style="margin-bottom: 24px; text-align: center">
         {stepTitle[step]}
-      </Title.Big>
+      </Title>
 
       {#if step === 1}
         <PickNameStep bind:name onNextStep={nextStep} />

@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
-  import { Icon, Title, Button } from "../DesignSystem";
+  import { Icon, Title, Button, Avatar } from "../DesignSystem";
   import * as path from "../path.js";
   import ProjectTopbarMenu from "../components/ProjectTopbarMenu.svelte";
 
@@ -26,18 +26,13 @@
     border-bottom: 1px solid var(--color-lightgray);
   }
 
-  .topbar img {
-    width: 32px;
-    height: 32px;
-    margin-right: 12px;
-    margin-left: 16px;
-  }
-
   .project-name {
     display: flex;
     align-items: center;
     height: 100%;
     border-right: 1px solid var(--color-lightgray);
+    padding-left: 16px;
+    padding-right: 24px;
   }
 
   .left {
@@ -50,10 +45,11 @@
 
 <div data-cy="topbar" class="topbar" {style}>
   <a class="project-name" href={path.projectOverview(id)} use:link>
-    <img alt="Project Avatar" src={avatarUrl} />
-    <Title.Regular style="color: var(--color-purple); margin-right: 24px">
-      {name}
-    </Title.Regular>
+    <Avatar
+      style="color: var(--color-purple)"
+      title={name}
+      imageUrl={avatarUrl}
+      variant="project"/>
   </a>
 
   <ProjectTopbarMenu />

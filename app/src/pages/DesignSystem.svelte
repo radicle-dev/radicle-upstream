@@ -6,7 +6,7 @@
     Numeric,
     Caption,
     Icon,
-    Input,
+    TextInput,
     Select,
     CheckboxInput,
     Avatar
@@ -84,41 +84,41 @@
 <div class="layout">
   <div class="section">
     <div class="first-column">
-      <Title.Big>Colors</Title.Big>
-      <Text.Regular style="color: var(--color-gray)">
+      <Title size="big">Colors</Title>
+      <Text style="color: var(--color-gray)">
         Primary, secondary and grays
-      </Text.Regular>
+      </Text>
     </div>
     <div class="second-column">
       {#each colors as color}
-        <Text.Regular style="background-color: var({color})">
+        <Text style="background-color: var({color})">
           {color}
-        </Text.Regular>
+        </Text>
       {/each}
     </div>
   </div>
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Typography</Title.Big>
-      <Text.Regular style="color: var(--color-gray)">
+      <Title size="big">Typography</Title>
+      <Text style="color: var(--color-gray)">
         Using GT America and GT America Mono from Grill Type
-      </Text.Regular>
+      </Text>
     </div>
     <div class="second-column">
-      <Title.Huge>Open Source Coin</Title.Huge>
-      <Title.Big>Open Source Coin</Title.Big>
-      <Title.Regular>Open Source Coin</Title.Regular>
+      <Title size="huge">Open Source Coin</Title>
+      <Title size="big">Open Source Coin</Title>
+      <Title>Open Source Coin</Title>
 
-      <Text.Regular>Open Source Coin</Text.Regular>
-      <Text.SmallBold>Open Source Coin</Text.SmallBold>
-      <Text.Small>Open Source Coin</Text.Small>
+      <Text>Open Source Coin</Text>
+      <Text size="small" weight="bold">Open Source Coin</Text>
+      <Text size="small">Open Source Coin</Text>
 
       <Caption>Open Source Coin</Caption>
 
-      <Numeric.Big>0123456789</Numeric.Big>
-      <Numeric.Regular>0123456789</Numeric.Regular>
-      <Numeric.Small>0123456789</Numeric.Small>
+      <Numeric size="big">0123456789</Numeric>
+      <Numeric>0123456789</Numeric>
+      <Numeric size="small">0123456789</Numeric>
 
       <Caption>Open Source Coin</Caption>
     </div>
@@ -126,11 +126,11 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Icons</Title.Big>
-      <Text.Regular style="color: var(--color-gray)">
+      <Title size="big">Icons</Title>
+      <Text style="color: var(--color-gray)">
         Icons at 16px, 24px, 36px and 64px width and height with 2px stroke
         weight, multiple color variations
-      </Text.Regular>
+      </Text>
     </div>
     <div class="second-column">
       <Icon.Branch />
@@ -163,10 +163,10 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Buttons</Title.Big>
-      <Text.Regular style="color: var(--color-gray)">
+      <Title size="big">Buttons</Title>
+      <Text style="color: var(--color-gray)">
         Vanilla, Primary, Secondary, Cancel, disabled state
-      </Text.Regular>
+      </Text>
     </div>
     <div class="second-column">
       <table>
@@ -399,14 +399,14 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Form elements</Title.Big>
-      <Text.Regular style="color: var(--color-gray)">
+      <Title size="big">Form elements</Title>
+      <Text style="color: var(--color-gray)">
         Inputs, text areas, dropdowns, etc.
-      </Text.Regular>
+      </Text>
     </div>
     <div class="second-column">
       <div class="row">
-        <Input placeholder="Hey, I'm an input." />
+        <TextInput placeholder="Hey, I'm an input." />
       </div>
 
       <div class="row">
@@ -422,10 +422,10 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Notifications</Title.Big>
-      <Text.Regular style="color: var(--color-gray)">
+      <Title size="big">Notifications</Title>
+      <Text style="color: var(--color-gray)">
         Info, Warnings and Errors
-      </Text.Regular>
+      </Text>
     </div>
     <div class="second-column">
       <div class="row">
@@ -446,10 +446,10 @@
 
   <div class="section">
     <div class="first-column">
-      <Title.Big>Avatars</Title.Big>
-      <Text.Regular style="color: var(--color-gray)">
+      <Title size="big">Avatars</Title>
+      <Text style="color: var(--color-gray)">
         User, project, etc avatars in various sizes and shapes.
-      </Text.Regular>
+      </Text>
     </div>
     <div class="second-column">
       <div class="row">
@@ -468,6 +468,10 @@
           variant="project"
           size="big" />
       </div>
+      <div class="row">
+        <Avatar title="My name"/>
+        <Avatar size="big" title="My name"/>
+    </div>
     </div>
   </div>
 </div>

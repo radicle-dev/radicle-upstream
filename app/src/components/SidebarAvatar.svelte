@@ -29,5 +29,5 @@
 </a>
 
 <SidebarTooltip>
-  <Title.Regular>{title}</Title.Regular>
+  <Title>{title}</Title>
 </SidebarTooltip>
