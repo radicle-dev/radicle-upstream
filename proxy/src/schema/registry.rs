@@ -186,7 +186,7 @@ impl Registry {
 
 #[cfg(test)]
 mod tests {
-    use crate::schema::registry::{Registry, ProjectCbor};
+    use crate::schema::registry::{ProjectCbor, Registry};
     use radicle_registry_client::ed25519;
     use radicle_registry_client::{Client, ClientT, String32};
     use serde_cbor::from_reader;
