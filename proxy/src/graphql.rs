@@ -21,7 +21,7 @@ mod registry;
 pub type Schema = RootNode<'static, Query, Mutation>;
 
 /// Returns a `Schema` with the default parameterised `Query` and `Mutation`.
-pub fn create() -> Schema {
+pub fn create_schema() -> Schema {
     Schema::new(Query {}, Mutation {})
 }
 
