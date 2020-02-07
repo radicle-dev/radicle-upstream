@@ -62,13 +62,9 @@
 </script>
 
 <style>
-  .main-container {
+  .content {
     width: 1180px;
-  }
-
-  .main-layout {
     margin-top: 40px;
-    width: inherit;
   }
 
   .project-container {
@@ -79,7 +75,7 @@
     overflow-y: scroll;
   }
 
-  .content {
+  .project-topbar {
     position: absolute;
     margin: 64px 96px 64px 96px;
   }
@@ -88,7 +84,7 @@
 <div data-cy="project-layout">
   <Sidebar />
   <div data-cy="page-container" class="project-container">
-    <div class="content">
+    <div class="project-topbar">
       {#await $project then result}
         <ProjectTopbar
           style="position: fixed; top: 0;"
@@ -96,10 +92,8 @@
           id={result.data.project.id}
           name={result.data.project.metadata.name} />
         <NotificationFaucet />
-        <div class="main-container">
-          <div class="main-layout">
-            <Router {routes} />
-          </div>
+        <div class="content">
+          <Router {routes} />
         </div>
       {/await}
     </div>
