@@ -204,8 +204,8 @@ mod tests {
             Some(String::from("radicle")),
         ));
         assert!(result.is_ok());
-        let project_name = String32::from_string("hello".into()).unwrap();
-        let project_domain = String32::from_string("world".into()).unwrap();
+        let project_domain = String32::from_string("hello".into()).unwrap();
+        let project_name = String32::from_string("world".into()).unwrap();
         let pid = (project_name, project_domain);
         let future_project = registry.client.get_project(pid);
         let maybe_project = futures::executor::block_on(future_project).unwrap();
