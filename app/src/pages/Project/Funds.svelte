@@ -1,5 +1,5 @@
 <script>
-  import { Header, Text, Title, Button, Placeholder } from "../../DesignSystem";
+  import { Text, Title, Button, Placeholder } from "../../DesignSystem";
   import { registerProject } from "../../path.js";
   import { push } from "svelte-spa-router";
   import { getContext } from "svelte";

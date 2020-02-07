@@ -1,13 +1,14 @@
 <script>
   import { push } from "svelte-spa-router";
-  import { Button, Header, Icon, Title } from "../DesignSystem";
+  import { Button, Icon, Title } from "../DesignSystem";
   import Projects from "../components/Projects.svelte";
   import SidebarLayout from "../layouts/SidebarLayout.svelte";
+  import RowLayout from "../layouts/helpers/Row.svelte";
   import { createProject } from "../path.js";
 </script>
 
 <SidebarLayout dataCy="page">
-  <Header style="margin-bottom: 24px">
+  <RowLayout style="margin-bottom: 24px">
     <div slot="left">
       <Title size="big">My Projects</Title>
     </div>
@@ -24,7 +25,7 @@
         New Project
       </Button>
     </div>
-  </Header>
+  </RowLayout>
 
   <Projects />
 </SidebarLayout>

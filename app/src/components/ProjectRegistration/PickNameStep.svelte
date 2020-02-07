@@ -1,6 +1,7 @@
 <script>
   import validatejs from "validate.js";
-  import { Button, ButtonRow, TextInput } from "../../DesignSystem";
+  import { Button, TextInput } from "../../DesignSystem";
+  import RowLayout from "../../layouts/helpers/Row.svelte";
 
   import { pop } from "svelte-spa-router";
 
@@ -57,7 +58,7 @@
   valid={!(beginValidation && validations && validations.name)}
   errorMessage={beginValidation && validations && validations.name && validations.name[0]} />
 
-<ButtonRow>
+<RowLayout style="margin-top: 48px;">
   <div slot="left">
     <Button
       dataCy="cancel-button"
@@ -70,4 +71,4 @@
   <div slot="right">
     <Button disabled={!name} on:click={nextStep} variant="primary">Next</Button>
   </div>
-</ButtonRow>
+</RowLayout>

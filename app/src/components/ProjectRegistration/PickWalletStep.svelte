@@ -1,6 +1,7 @@
 <script>
-  import Row from "./Row.svelte";
-  import { Button, ButtonRow, Title, Caption, Rad, Avatar } from "../../DesignSystem";
+  import TxRow from "./TxRow.svelte";
+  import { Button, Title, Caption, Rad, Avatar } from "../../DesignSystem";
+  import RowLayout from "../../layouts/helpers/Row.svelte";
 
   export let onNextStep = null;
   export let onPreviousStep = null;
@@ -15,7 +16,7 @@
   }
 </style>
 
-<Row style="margin-bottom: 48px;" active={true}>
+<TxRow style="margin-bottom: 48px;" active={true}>
   <div slot="left">
     <Avatar title="Your personal wallet"/>
   </div>
@@ -23,12 +24,12 @@
   <div slot="right">
     <Rad amount={200} style="margin-right: 24px" />
   </div>
-</Row>
+</TxRow>
 
 <Caption style="color: var(--color-darkgray); margin-bottom: 24px">
   Project wallets
 </Caption>
-<Row style="margin-bottom: 16px">
+<TxRow style="margin-bottom: 16px">
   <div slot="left">
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project1.svg"
@@ -39,9 +40,9 @@
   <div slot="right">
     <Rad amount={2387} style="margin-right: 24px" />
   </div>
-</Row>
+</TxRow>
 
-<Row style="margin-bottom: 16px">
+<TxRow style="margin-bottom: 16px">
   <div slot="left">
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project2.svg"
@@ -52,9 +53,9 @@
   <div slot="right">
     <Rad amount={2387} style="margin-right: 24px" />
   </div>
-</Row>
+</TxRow>
 
-<ButtonRow>
+<RowLayout style="margin-top: 48px;">
   <div slot="left">
     <Button
       disabled={false}
@@ -67,4 +68,4 @@
   <div slot="right">
     <Button disabled={false} on:click={onNextStep} variant="primary">Next</Button>
   </div>
-</ButtonRow>
+</RowLayout>

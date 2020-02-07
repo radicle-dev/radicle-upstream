@@ -1,7 +1,8 @@
 <script>
   import { getContext } from "svelte";
 
-  import { Header, Title } from "../../DesignSystem";
+  import { Title } from "../../DesignSystem";
+  import RowLayout from "../../layouts/helpers/Row.svelte";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -27,11 +28,11 @@
   });
 </script>
 
-<Header>
+<RowLayout>
   <div slot="left">
     <Title size="big">Overview</Title>
   </div>
-</Header>
+</RowLayout>
 
 {#await $project}
   <h1>Loading project...</h1>

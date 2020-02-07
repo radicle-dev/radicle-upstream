@@ -1,7 +1,5 @@
 import Button from "./Button.svelte";
-import ButtonRow from "./ButtonRow.svelte";
 import Caption from "./Caption.svelte";
-import Header from "./Header.svelte";
 import Icon from "./Icon";
 import TextInput from "./TextInput.svelte";
 import CheckboxInput from "./CheckboxInput.svelte";
@@ -16,9 +14,7 @@ import Select from "./Select.svelte";
 
 export {
   Button,
-  ButtonRow,
   Caption,
-  Header,
   Icon,
   TextInput,
   CheckboxInput,

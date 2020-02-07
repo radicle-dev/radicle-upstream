@@ -13,7 +13,6 @@
   import ModalLayout from "../layouts/ModalLayout.svelte";
   import {
     Button,
-    Header,
     Icon,
     TextInput,
     DirectoryInput,
