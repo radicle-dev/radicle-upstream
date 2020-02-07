@@ -135,6 +135,7 @@ impl Registry {
                 id: pid_string,
                 version: 1,
             };
+            // TODO(garbados): unpanic
             to_vec(&pid_cbor).expect("unable to serialize project metadata")
         } else {
             vec![]
