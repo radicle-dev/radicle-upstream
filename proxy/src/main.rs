@@ -28,12 +28,12 @@ extern crate log;
 #[macro_use]
 extern crate juniper;
 
+/// Server infrastructure used to power the API.
+mod api;
 /// Utilities to manipulate the process environment.
 mod env;
 /// Defines the schema served to the application via `GraphQL`.
 mod schema;
-/// Server infrastructure used to power the API.
-mod server_warp;
 
 /// Flags accepted by the proxy binary.
 struct Args {
@@ -84,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let schema = schema::create();
 
     info!("Starting HTTP server");
-    server_warp::run(schema, context);
+    api::run(schema, context);
 
     Ok(())
 }
