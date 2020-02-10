@@ -1,7 +1,7 @@
 <script>
   import { push } from "svelte-spa-router";
   import { Button, Icon, Title } from "../DesignSystem";
-  import Projects from "../components/Projects.svelte";
+  import ProjectList from "../components/ProjectList.svelte";
   import SidebarLayout from "../layouts/SidebarLayout.svelte";
   import RowLayout from "../layouts/helpers/Row.svelte";
   import { createProject } from "../path.js";
@@ -27,5 +27,5 @@
     </div>
   </RowLayout>
 
-  <Projects />
+  <ProjectList />
 </SidebarLayout>

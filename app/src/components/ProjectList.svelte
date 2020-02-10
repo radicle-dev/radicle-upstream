@@ -78,8 +78,7 @@
   {:else}
     <div class="wrapper">
       <div class="create-project">
-        <Title
-          style="color: var(--color-darkgray); margin-bottom: 13px">
+        <Title style="color: var(--color-darkgray); margin-bottom: 13px">
           You have no projects
         </Title>
         <Text style="color: var(--color-gray)">
