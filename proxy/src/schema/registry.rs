@@ -81,7 +81,7 @@ pub struct Applied {
 #[derive(Clone)]
 pub struct Registry {
     /// Registry client, whether an emulator or otherwise.
-    pub client: Client,
+    client: Client,
 }
 
 /// Registry client wrapper methods
@@ -196,7 +196,7 @@ mod tests {
     fn test_register_project() {
         // Test that project registration submits valid transactions and they succeed.
         let client = Client::new_emulator();
-        let registry = Registry::new(client);
+        let registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
         let result = futures::executor::block_on(registry.register_project(
             &alice,
@@ -208,7 +208,7 @@ mod tests {
         let project_domain = String32::from_string("hello".into()).unwrap();
         let project_name = String32::from_string("world".into()).unwrap();
         let pid = (project_name, project_domain);
-        let future_project = registry.client.get_project(pid);
+        let future_project = client.get_project(pid);
         let maybe_project = futures::executor::block_on(future_project).unwrap();
         assert_eq!(maybe_project.is_some(), true);
         let project = maybe_project.unwrap();
