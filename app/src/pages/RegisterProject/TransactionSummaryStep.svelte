@@ -1,6 +1,6 @@
 <script>
   import { pop } from "svelte-spa-router";
-  import TxRow from "./TxRow.svelte";
+  import TxRow from "../../components/TxRow.svelte";
   import { Button, Text, Title, Rad, Avatar } from "../../DesignSystem";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 
@@ -41,7 +41,7 @@
   <div slot="left">
     <Title style="margin-bottom: 16px;">From</Title>
     <div>
-      <Avatar size="big" variant="user" title="Your personal wallet"/>
+      <Avatar size="big" variant="user" title="Your personal wallet" />
     </div>
   </div>
 </TxRow>
@@ -61,9 +61,7 @@
 
 <TxRow disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
-    <Title style="color: var(--color-darkgray);">
-      Transaction Fee
-    </Title>
+    <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
   </div>
 
   <div slot="right">

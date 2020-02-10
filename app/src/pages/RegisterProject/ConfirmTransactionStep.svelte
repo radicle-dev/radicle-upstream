@@ -1,5 +1,5 @@
 <script>
-  import TxRow from "./TxRow.svelte";
+  import TxRow from "../../components/TxRow.svelte";
   import { Button, Title, Caption, Rad, Avatar } from "../../DesignSystem";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 
@@ -16,9 +16,7 @@
   style="margin-bottom: 16px; background-color: var(--color-almostwhite)"
   disabled={true}>
   <div slot="left">
-    <Title style="color: var(--color-darkgray);">
-      Name registration
-    </Title>
+    <Title style="color: var(--color-darkgray);">Name registration</Title>
   </div>
 
   <div slot="right">
@@ -46,9 +44,7 @@
 
 <TxRow disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
-    <Title style="color: var(--color-darkgray);">
-      Transaction Fee
-    </Title>
+    <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
   </div>
 
   <div slot="right">
@@ -94,6 +90,8 @@
     </Button>
   </div>
   <div slot="right">
-    <Button disabled={false} on:click={onNextStep} variant="primary">Pay</Button>
+    <Button disabled={false} on:click={onNextStep} variant="primary">
+      Pay
+    </Button>
   </div>
 </RowLayout>

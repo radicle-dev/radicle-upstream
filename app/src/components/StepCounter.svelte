@@ -1,5 +1,5 @@
 <script>
-  import { Caption } from "../../DesignSystem";
+  import { Caption } from "../DesignSystem";
 
   export let step = null;
   export let of = null;

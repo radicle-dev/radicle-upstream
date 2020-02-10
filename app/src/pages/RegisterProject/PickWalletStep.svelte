@@ -1,5 +1,5 @@
 <script>
-  import TxRow from "./TxRow.svelte";
+  import TxRow from "../../components/TxRow.svelte";
   import { Button, Title, Caption, Rad, Avatar } from "../../DesignSystem";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 
@@ -18,7 +18,7 @@
 
 <TxRow style="margin-bottom: 48px;" active={true}>
   <div slot="left">
-    <Avatar title="Your personal wallet"/>
+    <Avatar title="Your personal wallet" />
   </div>
 
   <div slot="right">
@@ -34,7 +34,7 @@
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project1.svg"
       variant="project"
-      title="Monadic wallet"/>
+      title="Monadic wallet" />
   </div>
 
   <div slot="right">
@@ -66,6 +66,8 @@
     </Button>
   </div>
   <div slot="right">
-    <Button disabled={false} on:click={onNextStep} variant="primary">Next</Button>
+    <Button disabled={false} on:click={onNextStep} variant="primary">
+      Next
+    </Button>
   </div>
 </RowLayout>

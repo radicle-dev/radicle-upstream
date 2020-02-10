@@ -1,5 +1,5 @@
 <script>
-  import RowLayout from "../../layouts/helpers/Row.svelte";
+  import RowLayout from "../layouts/helpers/Row.svelte";
 
   export let style = null;
 

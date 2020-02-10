@@ -1,12 +1,12 @@
 <script>
   import { projectName } from "../stores.js";
   import ModalLayout from "../layouts/ModalLayout.svelte";
-  import StepCounter from "../components/ProjectRegistration/StepCounter.svelte";
+  import StepCounter from "../components/StepCounter.svelte";
 
-  import PickNameStep from "../components/ProjectRegistration/PickNameStep.svelte";
-  import PickWalletStep from "../components/ProjectRegistration/PickWalletStep.svelte";
-  import ConfirmTransactionStep from "../components/ProjectRegistration/ConfirmTransactionStep.svelte";
-  import TransactionSummaryStep from "../components/ProjectRegistration/TransactionSummaryStep.svelte";
+  import PickNameStep from "./RegisterProject/PickNameStep.svelte";
+  import PickWalletStep from "./RegisterProject/PickWalletStep.svelte";
+  import ConfirmTransactionStep from "./RegisterProject/ConfirmTransactionStep.svelte";
+  import TransactionSummaryStep from "./RegisterProject/TransactionSummaryStep.svelte";
 
   import { Title } from "../DesignSystem";
   import { gql } from "apollo-boost";
@@ -70,16 +70,16 @@
     }
   };
 
-  const formatDate = (date) => {
+  const formatDate = date => {
     let options = {
-      hour: 'numeric',
-      minute: 'numeric',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+      hour: "numeric",
+      minute: "numeric",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
     };
-    return new Intl.DateTimeFormat('en-US', options).format(date)
-  }
+    return new Intl.DateTimeFormat("en-US", options).format(date);
+  };
 </script>
 
 <style>
