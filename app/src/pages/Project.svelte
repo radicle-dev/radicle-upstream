@@ -5,8 +5,8 @@
 
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
-  import Sidebar from "../components/Sidebar.svelte";
   import ProjectTopbar from "../components/ProjectTopbar.svelte";
+  import SidebarLayout from "../layouts/SidebarLayout.svelte";
 
   import Overview from "./Project/Overview.svelte";
   import Feed from "./Project/Feed.svelte";
@@ -15,8 +15,6 @@
   import Issues from "./Project/Issues.svelte";
   import Revisions from "./Project/Revisions.svelte";
   import NotFound from "./NotFound.svelte";
-
-  import NotificationFaucet from "../components/NotificationFaucet.svelte";
 
   export let params = null;
 
@@ -61,41 +59,14 @@
   $: objectType.set(path.extractProjectSourceObjectType($location));
 </script>
 
-<style>
-  .content {
-    width: 1180px;
-    margin-top: 40px;
-  }
+<SidebarLayout style="margin-top: calc(var(--topbar-height) + 33px)">
+  {#await $project then result}
+    <ProjectTopbar
+      style="position: fixed; top: 0;"
+      avatarUrl={result.data.project.metadata.imgUrl}
+      id={result.data.project.id}
+      name={result.data.project.metadata.name} />
 
-  .project-container {
-    position: relative;
-    left: var(--sidebar-width);
-    width: calc(100vw - var(--sidebar-width));
-    height: 100%;
-    overflow-y: scroll;
-  }
-
-  .project-topbar {
-    position: absolute;
-    margin: 64px 96px 64px 96px;
-  }
-</style>
-
-<div data-cy="project-layout">
-  <Sidebar />
-  <div data-cy="page-container" class="project-container">
-    <div class="project-topbar">
-      {#await $project then result}
-        <ProjectTopbar
-          style="position: fixed; top: 0;"
-          avatarUrl={result.data.project.metadata.imgUrl}
-          id={result.data.project.id}
-          name={result.data.project.metadata.name} />
-        <NotificationFaucet />
-        <div class="content">
-          <Router {routes} />
-        </div>
-      {/await}
-    </div>
-  </div>
-</div>
+    <Router {routes} />
+  {/await}
+</SidebarLayout>

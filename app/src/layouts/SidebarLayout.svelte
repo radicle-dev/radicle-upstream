@@ -3,6 +3,7 @@
   import NotificationFaucet from "../components/NotificationFaucet.svelte";
 
   export let dataCy = null;
+  export let style = null;
 </script>
 
 <style>
@@ -16,16 +17,18 @@
 
   .content {
     margin-top: 64px;
-    margin-left: 8vw;
-    margin-right: 8vw;
+    margin-left: 96px;
+    margin-right: 96px;
   }
 </style>
 
 <div data-cy={dataCy}>
   <Sidebar />
+
   <div class="container">
-    <div class="content">
-      <NotificationFaucet />
+    <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
+
+    <div class="content" {style}>
       <slot />
     </div>
   </div>

@@ -5,6 +5,7 @@
   import { NOTIFICATION_TIMEOUT } from "../config.js";
   import { blur } from "svelte/transition";
 
+  export let style = null;
   let messages = [];
 
   const unsubscribe = notification.subscribe(message => {
@@ -48,7 +49,7 @@
   }
 </style>
 
-<div class="wrapper">
+<div class="wrapper" {style}>
   {#each messages as message}
     <div class="notification" transition:blur={{ duration: 300 }}>
       <Notification

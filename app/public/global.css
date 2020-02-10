@@ -18,5 +18,6 @@ a {
 
 :root {
   --sidebar-width: 68px;
+  --topbar-height: 61px;
   --content-min-width: 700px;
 }

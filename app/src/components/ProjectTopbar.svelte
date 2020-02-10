@@ -21,7 +21,7 @@
     justify-content: flex-start;
     background-color: var(--color-white);
     width: calc(100vw - var(--sidebar-width));
-    height: 61px;
+    height: var(--topbar-height);
     left: var(--sidebar-width);
     border-bottom: 1px solid var(--color-lightgray);
   }
