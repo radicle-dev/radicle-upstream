@@ -38,9 +38,9 @@ pub struct ProjectRegistration {
 /// `ProjectID` wrapper for serde de/serialization
 #[derive(Serialize, Deserialize)]
 pub struct Metadata {
-    /// TODO
+    /// Librad project ID.
     pub id: String,
-    /// TODO
+    /// Metadata version.
     pub version: u8,
 }
 
@@ -131,7 +131,7 @@ impl Registry {
             .result?;
 
         let register_metadata_vec = if let Some(pid_string) = maybe_pid {
-            let pid_cbor = ProjectCbor {
+            let pid_cbor = Metadata {
                 id: pid_string.to_string(),
                 version: 1,
             };
@@ -187,7 +187,7 @@ impl Registry {
 
 #[cfg(test)]
 mod tests {
-    use crate::schema::registry::{ProjectCbor, Registry};
+    use crate::schema::registry::{Metadata, Registry};
     use radicle_registry_client::ed25519;
     use radicle_registry_client::{Client, ClientT, String32};
     use serde_cbor::from_reader;
@@ -213,7 +213,7 @@ mod tests {
         assert_eq!(maybe_project.is_some(), true);
         let project = maybe_project.unwrap();
         let metadata_vec: Vec<u8> = project.metadata.into();
-        let metadata: ProjectCbor = from_reader(&metadata_vec[..]).unwrap();
+        let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
     }
 }
