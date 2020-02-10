@@ -102,7 +102,7 @@ impl Registry {
         author: &ed25519::Pair,
         domain: String,
         name: String,
-        maybe_pid: Option<String>,
+        maybe_pid: Option<librad::project::ProjectId>,
     ) -> Result<Transaction, Error> {
         // Verify that inputs are valid.
         let project_name =
@@ -132,7 +132,7 @@ impl Registry {
 
         let register_metadata_vec = if let Some(pid_string) = maybe_pid {
             let pid_cbor = ProjectCbor {
-                id: pid_string,
+                id: pid_string.to_string(),
                 version: 1,
             };
             // TODO(garbados): unpanic
@@ -202,7 +202,7 @@ mod tests {
             &alice,
             "hello".into(),
             "world".into(),
-            Some(String::from("radicle")),
+            Some(librad::git::ProjectId::new(radicle_surf::git::git2::Oid::zero()).into()),
         ));
         assert!(result.is_ok());
         let project_domain = String32::from_string("hello".into()).unwrap();
