@@ -1,7 +1,11 @@
 <script>
   import Text from "./Text.svelte";
+
+  // vanilla | primary | secondary | transparent | outline
   export let variant = "primary";
+  // big | small
   export let size = "big";
+
   export let disabled = null;
   export let icon = null;
   export let style = null;

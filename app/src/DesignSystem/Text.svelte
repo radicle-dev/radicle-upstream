@@ -1,11 +1,12 @@
 <script>
   export let style = null;
 
-  export let variant = "text"; // hugeTitle | bigTitle | title |
+  // hugeTitle | bigTitle | title |
   // text | smallText | smallTextBold |
   // code |
   // caption |
   // bigNumber | number | smallNumber
+  export let variant = "text";
 </script>
 
 <style>
