@@ -37,7 +37,7 @@ pub struct ProjectRegistration {
 
 /// `ProjectID` wrapper for serde de/serialization
 #[derive(Serialize, Deserialize)]
-pub struct ProjectCbor {
+pub struct Metadata {
     /// TODO
     pub id: String,
     /// TODO
