@@ -3,7 +3,7 @@
   import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
 
-  import { Icon } from "../DesignSystem";
+  import { Icon, Text } from "../DesignSystem";
   import CommitTeaser from "./CommitTeaser.svelte";
 
   export let projectId = null;
@@ -50,30 +50,12 @@
   header {
     display: flex;
     background-color: var(--color-almostwhite);
-    font-family: "GT America Mono Regular";
+    font-family: var(--typeface-mono-regular);
     font-size: 14px;
     height: 48px;
     align-items: center;
     padding-left: 13px;
     border-bottom: 1px solid var(--color-lightgray);
-  }
-
-  .line-numbers {
-    font-family: "GT America Mono Regular";
-    font-size: 14px;
-    background-color: var(--color-almostwhite);
-    color: var(--color-gray);
-    text-align: center;
-    flex: 0 0 49px;
-    border-right: 1px solid var(--color-lightgray);
-    user-select: none;
-  }
-
-  .code {
-    font-family: "GT America Mono Regular";
-    font-size: 14px;
-    padding-left: 8px;
-    overflow-x: scroll;
   }
 
   .container {
@@ -98,7 +80,11 @@
       {#if result.data.blob.binary}
         ఠ ͟ಠ Binary content.
       {:else}
-        <pre class="line-numbers">
+        <Text
+          variant="code"
+          style="background-color: var(--color-almostwhite); color:
+          var(--color-gray); text-align: center; flex: 0 0 49px; border-right:
+          1px solid var(--color-lightgray); user-select: none;">
           {@html result.data.blob.content
             .split('\n')
             .slice(0, -1)
@@ -106,8 +92,10 @@
               return `${index + 1}`;
             })
             .join('\n')}
-        </pre>
-        <pre class="code">{result.data.blob.content}</pre>
+        </Text>
+        <Text variant="code" style="padding-left: 8px; overflow-x: scroll">
+          {result.data.blob.content}
+        </Text>
       {/if}
     </div>
   </div>

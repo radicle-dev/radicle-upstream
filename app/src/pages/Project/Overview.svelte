@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
 
-  import { Title } from "../../DesignSystem";
+  import { Text } from "../../DesignSystem";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 
   import { gql } from "apollo-boost";
@@ -30,15 +30,15 @@
 
 <RowLayout>
   <div slot="left">
-    <Title size="big">Overview</Title>
+    <Text variant="bigTitle">Overview</Text>
   </div>
 </RowLayout>
 
 {#await $project}
-  <h1>Loading project...</h1>
+  <Text>Loading project...</Text>
 {:then result}
-  <h1>{result.data.project.metadata.name}</h1>
-  <p>{result.data.project.metadata.description}</p>
+  <Text>{result.data.project.metadata.name}</Text>
+  <Text>{result.data.project.metadata.description}</Text>
 {:catch error}
-  <p>ERROR: {error}</p>
+  <Text>ERROR: {error}</Text>
 {/await}

@@ -72,7 +72,7 @@
 
   .active a {
     color: var(--color-purple);
-    font-family: "GT America Medium";
+    font-family: var(--typeface-medium);
   }
 
   .active :global(svg) {

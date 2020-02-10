@@ -1,5 +1,5 @@
 <script>
-  import { Avatar, Icon, Title, Text } from "../DesignSystem";
+  import { Avatar, Icon, Text } from "../DesignSystem";
 
   export let title = "";
   export let description = "";
@@ -41,16 +41,16 @@
 </style>
 
 <div class="project-card">
-  <Avatar imageUrl={imgUrl} variant="project" size="big" style="margin: 16px"/>
+  <Avatar imageUrl={imgUrl} variant="project" size="big" style="margin: 16px" />
 
   <div class="container">
     <div class="first-row">
-      <Title>{title}</Title>
+      <Text variant="title">{title}</Text>
       {#if isRegistered}
         <div class="registered">
           <Icon.Ellipse
             style="fill: var(--color-pink); position: relative; bottom: -2px;" />
-          <Text size="small">Registered</Text>
+          <Text variant="smallText">Registered</Text>
         </div>
       {/if}
     </div>

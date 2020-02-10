@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title } from "../DesignSystem";
+  import { Icon, Text } from "../DesignSystem";
 
   export let icon = Icon.Info;
   export let style = null;
@@ -57,9 +57,9 @@
 <div class={`notification ${level}`} {style}>
   <svelte:component this={icon} style="margin: 8px; height: 24px" />
 
-  <Title>
+  <Text variant="title">
     <slot />
-  </Title>
+  </Text>
 
   <div class="close" on:click>
     <Icon.Cross />

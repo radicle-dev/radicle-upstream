@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
-  import { Icon, Title, Button, Avatar } from "../DesignSystem";
+  import { Icon, Button, Avatar } from "../DesignSystem";
   import * as path from "../path.js";
   import ProjectTopbarMenu from "../components/ProjectTopbarMenu.svelte";
 
@@ -49,7 +49,7 @@
       style="color: var(--color-purple)"
       title={name}
       imageUrl={avatarUrl}
-      variant="project"/>
+      variant="project" />
   </a>
 
   <ProjectTopbarMenu />

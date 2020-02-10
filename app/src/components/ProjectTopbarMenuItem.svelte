@@ -20,7 +20,7 @@
   }
 
   .item {
-    font-family: "GT America Regular";
+    font-family: var(--typeface-regular);
     font-size: 16px;
     line-height: 130%;
     color: var(--color-darkgray);
@@ -33,11 +33,11 @@
     overflow: hidden;
     visibility: hidden;
     content: var(--title);
-    font-family: "GT America Medium";
+    font-family: var(--typeface-medium);
   }
 
   .item.active {
-    font-family: "GT America Medium";
+    font-family: var(--typeface-medium);
     color: var(--color-purple);
   }
 </style>

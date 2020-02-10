@@ -2,9 +2,6 @@
   import {
     Button,
     Text,
-    Title,
-    Numeric,
-    Caption,
     Icon,
     TextInput,
     Select,
@@ -84,49 +81,45 @@
 <div class="layout">
   <div class="section">
     <div class="first-column">
-      <Title size="big">Colors</Title>
-      <Text style="color: var(--color-gray)">
-        Primary, secondary and grays
-      </Text>
+      <Text variant="bigTitle">Colors</Text>
+      <Text style="color: var(--color-gray)">Primary, secondary and grays</Text>
     </div>
     <div class="second-column">
       {#each colors as color}
-        <Text style="background-color: var({color})">
-          {color}
-        </Text>
+        <Text style="background-color: var({color})">{color}</Text>
       {/each}
     </div>
   </div>
 
   <div class="section">
     <div class="first-column">
-      <Title size="big">Typography</Title>
+      <Text variant="bigTitle">Typography</Text>
       <Text style="color: var(--color-gray)">
         Using GT America and GT America Mono from Grill Type
       </Text>
     </div>
     <div class="second-column">
-      <Title size="huge">Open Source Coin</Title>
-      <Title size="big">Open Source Coin</Title>
-      <Title>Open Source Coin</Title>
+      <Text variant="hugeTitle">Open Source Coin</Text>
+      <Text variant="bigTitle">Open Source Coin</Text>
+      <Text variant="title">Open Source Coin</Text>
 
       <Text>Open Source Coin</Text>
-      <Text size="small" weight="bold">Open Source Coin</Text>
-      <Text size="small">Open Source Coin</Text>
+      <Text variant="smallText">Open Source Coin</Text>
+      <Text variant="smallTextBold">Open Source Coin</Text>
 
-      <Caption>Open Source Coin</Caption>
+      <Text variant="code">Open Source Coin</Text>
 
-      <Numeric size="big">0123456789</Numeric>
-      <Numeric>0123456789</Numeric>
-      <Numeric size="small">0123456789</Numeric>
+      <Text variant="caption">Open Source Coin</Text>
 
-      <Caption>Open Source Coin</Caption>
+      <Text variant="bigNumber">0123456789</Text>
+      <Text variant="number">0123456789</Text>
+      <Text variant="smallNumber">0123456789</Text>
     </div>
   </div>
 
   <div class="section">
     <div class="first-column">
-      <Title size="big">Icons</Title>
+      <Text variant="bigTitle">Icons</Text>
       <Text style="color: var(--color-gray)">
         Icons at 16px, 24px, 36px and 64px width and height with 2px stroke
         weight, multiple color variations
@@ -163,7 +156,7 @@
 
   <div class="section">
     <div class="first-column">
-      <Title size="big">Buttons</Title>
+      <Text variant="bigTitle">Buttons</Text>
       <Text style="color: var(--color-gray)">
         Vanilla, Primary, Secondary, Cancel, disabled state
       </Text>
@@ -173,16 +166,16 @@
         <thead>
           <tr>
             <td>
-              <Caption>Variant</Caption>
+              <Text variant="caption">Variant</Text>
             </td>
             <td>
-              <Caption>Disabled</Caption>
+              <Text variant="caption">Disabled</Text>
             </td>
             <td>
-              <Caption>Variant</Caption>
+              <Text variant="caption">Variant</Text>
             </td>
             <td>
-              <Caption>Disabled</Caption>
+              <Text variant="caption">Disabled</Text>
             </td>
           </tr>
         </thead>
@@ -276,16 +269,16 @@
         <thead>
           <tr>
             <td>
-              <Caption>Variant</Caption>
+              <Text variant="caption">Variant</Text>
             </td>
             <td>
-              <Caption>Disabled</Caption>
+              <Text variant="caption">Disabled</Text>
             </td>
             <td>
-              <Caption>Variant</Caption>
+              <Text variant="caption">Variant</Text>
             </td>
             <td>
-              <Caption>Disabled</Caption>
+              <Text variant="caption">Disabled</Text>
             </td>
           </tr>
         </thead>
@@ -399,7 +392,7 @@
 
   <div class="section">
     <div class="first-column">
-      <Title size="big">Form elements</Title>
+      <Text variant="bigTitle">Form elements</Text>
       <Text style="color: var(--color-gray)">
         Inputs, text areas, dropdowns, etc.
       </Text>
@@ -422,10 +415,8 @@
 
   <div class="section">
     <div class="first-column">
-      <Title size="big">Notifications</Title>
-      <Text style="color: var(--color-gray)">
-        Info, Warnings and Errors
-      </Text>
+      <Text variant="bigTitle">Notifications</Text>
+      <Text style="color: var(--color-gray)">Info, Warnings and Errors</Text>
     </div>
     <div class="second-column">
       <div class="row">
@@ -446,7 +437,7 @@
 
   <div class="section">
     <div class="first-column">
-      <Title size="big">Avatars</Title>
+      <Text variant="bigTitle">Avatars</Text>
       <Text style="color: var(--color-gray)">
         User, project, etc avatars in various sizes and shapes.
       </Text>
@@ -469,9 +460,9 @@
           size="big" />
       </div>
       <div class="row">
-        <Avatar title="My name"/>
-        <Avatar size="big" title="My name"/>
-    </div>
+        <Avatar title="My name" />
+        <Avatar size="big" title="My name" />
+      </div>
     </div>
   </div>
 </div>

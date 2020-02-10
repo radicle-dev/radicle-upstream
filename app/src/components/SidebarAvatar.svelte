@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title } from "../DesignSystem";
+  import { Icon, Text } from "../DesignSystem";
   import SidebarTooltip from "./SidebarTooltip.svelte";
   import { link } from "svelte-spa-router";
 
@@ -29,5 +29,5 @@
 </a>
 
 <SidebarTooltip>
-  <Title>{title}</Title>
+  <Text variant="title">{title}</Text>
 </SidebarTooltip>

@@ -1,6 +1,6 @@
 <script>
   import { push } from "svelte-spa-router";
-  import { Button, Icon, Title } from "../DesignSystem";
+  import { Button, Icon, Text } from "../DesignSystem";
   import ProjectList from "../components/ProjectList.svelte";
   import SidebarLayout from "../layouts/SidebarLayout.svelte";
   import RowLayout from "../layouts/helpers/Row.svelte";
@@ -10,7 +10,7 @@
 <SidebarLayout dataCy="page">
   <RowLayout style="margin-bottom: 24px">
     <div slot="left">
-      <Title size="big">My Projects</Title>
+      <Text variant="bigTitle">My Projects</Text>
     </div>
 
     <div slot="right">

@@ -18,7 +18,6 @@
     DirectoryInput,
     CheckboxInput,
     Text,
-    Title,
     Select
   } from "../DesignSystem";
 
@@ -348,9 +347,9 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="create-project">
     <div class="create-project">
-      <Title size="big" style="margin-bottom: 32px; text-align: left">
+      <Text variant="bigTitle" style="margin-bottom: 32px; text-align: left">
         Create a new project
-      </Title>
+      </Text>
 
       <TextInput
         style="--focus-outline-color: var(--color-pink)"
@@ -374,23 +373,22 @@
         valid={!(validations && validations.imageUrl)}
         errorMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
 
-      <Title style="margin: 16px 0 12px 16px; text-align: left">
+      <Text variant="title" style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
-      </Title>
+      </Text>
 
       <div class="radio-selector">
         <div class="option" class:active={isNew} data-cy="new-project">
           <div class="option-header" on:click={() => (currentSelection = NEW)}>
-            <Title style="color: var(--color-darkgray)">
+            <Text variant="title" style="color: var(--color-darkgray)">
               Start with a new repository
-            </Title>
+            </Text>
             <Icon.CheckCircle
               style={isNew ? 'display: block' : 'display: none'} />
           </div>
           {#if isNew}
             <div class="option-body" in:slide>
-              <Text
-                style="margin-bottom: 12px; color: var(--color-darkgray)">
+              <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose where you'd like to create the repository
               </Text>
               <DirectoryInput
@@ -399,8 +397,7 @@
                 bind:path={newRepositoryPath} />
               {#if validations && validations.newRepositoryPath}
                 <Text
-                  size="small"
-                  weight="bold"
+                  variant="smallTextBold"
                   style="color: var(--color-red); margin-top: 4px">
                   {validations.newRepositoryPath[0]}
                 </Text>
@@ -416,16 +413,15 @@
           <div
             class="option-header"
             on:click={() => (currentSelection = EXISTING)}>
-            <Title style="color: var(--color-darkgray)">
+            <Text variant="title" style="color: var(--color-darkgray)">
               Continue with an existing repository
-            </Title>
+            </Text>
             <Icon.CheckCircle
               style={isExisting ? 'display: block' : 'display: none'} />
           </div>
           {#if isExisting}
             <div class="option-body" in:slide>
-              <Text
-                style="margin-bottom: 12px; color: var(--color-darkgray)">
+              <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose the existing repository
               </Text>
               <DirectoryInput
@@ -434,8 +430,7 @@
                 bind:path={existingRepositoryPath} />
               {#if validations && validations.existingRepositoryPath}
                 <Text
-                  size="small"
-                  weight="bold"
+                  variant="smallTextBold"
                   style="color: var(--color-red); margin-top: 4px">
                   {validations.existingRepositoryPath[0]}
                 </Text>
@@ -470,15 +465,17 @@
       {#if validations && validations.currentSelection}
         <div class="validation-row">
           <Icon.Important style="margin-right: 8px;fill: var(--color-red)" />
-          <Title style="color: var(--color-red)">
+          <Text variant="title" style="color: var(--color-red)">
             {validations.currentSelection[0]}
-          </Title>
+          </Text>
         </div>
       {/if}
 
       <div class="button-row">
         <div class="footnote">
-          <Text size="small" style="color: var(--color-gray)">* required</Text>
+          <Text variant="smallText" style="color: var(--color-gray)">
+            * required
+          </Text>
         </div>
         <Button
           dataCy="cancel-button"

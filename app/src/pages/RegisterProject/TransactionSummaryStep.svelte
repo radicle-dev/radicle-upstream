@@ -1,7 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
   import TxRow from "../../components/TxRow.svelte";
-  import { Button, Text, Title, Rad, Avatar } from "../../DesignSystem";
+  import { Button, Text, Rad, Avatar } from "../../DesignSystem";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 
   export let name = null;
@@ -39,7 +39,7 @@
   style="background-color: var(--color-almostwhite); border-radius: 0; margin:
   -1px 0 -1px 0; border-top: none">
   <div slot="left">
-    <Title style="margin-bottom: 16px;">From</Title>
+    <Text variant="title" style="margin-bottom: 16px;">From</Text>
     <div>
       <Avatar size="big" variant="user" title="Your personal wallet" />
     </div>
@@ -48,7 +48,7 @@
 
 <TxRow disabled={true} style="border-radius: 0">
   <div slot="left">
-    <Title>Project Registration</Title>
+    <Text variant="title">Project Registration</Text>
   </div>
 
   <div slot="right">
@@ -61,7 +61,9 @@
 
 <TxRow disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
-    <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
+    <Text variant="title" style="color: var(--color-darkgray);">
+      Transaction Fee
+    </Text>
   </div>
 
   <div slot="right">
@@ -74,7 +76,7 @@
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
   <div slot="left">
-    <Title size="big" style="color: var(--color-pink);">Total</Title>
+    <Text variant="bigTitle" style="color: var(--color-pink);">Total</Text>
   </div>
 
   <div slot="right">

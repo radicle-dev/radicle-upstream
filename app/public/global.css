@@ -1,39 +1,9 @@
-@font-face {
-  font-family: "GT America Bold";
-  src: url("fonts/GTAmericaBold.otf");
-}
-
-@font-face {
-  font-family: "GT America Medium";
-  src: url("fonts/GTAmericaMedium.otf");
-}
-
-@font-face {
-  font-family: "GT America Regular";
-  src: url("fonts/GTAmericaRegular.otf");
-}
-
-@font-face {
-  font-family: "GT America Mono Bold";
-  src: url("fonts/GTAmericaMonoBold.otf");
-}
-
-@font-face {
-  font-family: "GT America Mono Medium";
-  src: url("fonts/GTAmericaMonoMedium.otf");
-}
-
-@font-face {
-  font-family: "GT America Mono Regular";
-  src: url("fonts/GTAmericaMonoRegular.otf");
-}
-
 html,
 body {
-  display: flex;
-  font-family: "GT America Regular";
+  font-family: var(--typeface-regular);
   font-size: 16px;
   line-height: 24px;
+  display: flex;
   height: 100%;
   color: var(--color-black);
   -webkit-font-smoothing: antialiased;

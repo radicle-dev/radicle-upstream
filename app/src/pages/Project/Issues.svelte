@@ -1,10 +1,10 @@
 <script>
-  import { Title } from "../../DesignSystem";
+  import { Text } from "../../DesignSystem";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 </script>
 
 <RowLayout>
   <div slot="left">
-    <Title size="big">Issues</Title>
+    <Text variant="bigTitle">Issues</Text>
   </div>
 </RowLayout>

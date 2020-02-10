@@ -6,7 +6,7 @@
   import { TREE } from "../types.js";
   import * as path from "../path.js";
 
-  import { Caption, Icon, Text } from "../DesignSystem";
+  import { Icon, Text } from "../DesignSystem";
   import CommitTeaser from "./CommitTeaser.svelte";
   import { link } from "svelte-spa-router";
 
@@ -126,13 +126,13 @@
     <thead>
       <tr>
         <td class="file-header">
-          <Caption>Name</Caption>
+          <Text variant="caption">Name</Text>
         </td>
         <td>
-          <Caption>Commit Message</Caption>
+          <Text variant="caption">Commit Message</Text>
         </td>
         <td class="last-update-header">
-          <Caption>Last Update</Caption>
+          <Text variant="caption">Last Update</Text>
         </td>
       </tr>
     </thead>
@@ -150,9 +150,7 @@
               {:else}
                 <Icon.File />
               {/if}
-              <Text style="margin-left: 4px">
-                {entry.info.name}
-              </Text>
+              <Text style="margin-left: 4px">{entry.info.name}</Text>
             </a>
           </td>
           <td class="commit-message-column">
@@ -161,9 +159,7 @@
             </a>
           </td>
           <td class="last-update-column">
-            <Text>
-              {format(entry.info.lastCommit.committerTime * 1000)}
-            </Text>
+            <Text>{format(entry.info.lastCommit.committerTime * 1000)}</Text>
           </td>
         </tr>
       {/each}

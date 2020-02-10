@@ -1,11 +1,11 @@
 <script>
   import { hash } from "../hash.js";
-  import Title from "./Title.svelte"
+  import Text from "./Text.svelte";
 
   export let style = null;
 
   export let imageUrl = `https://avatars.dicebear.com/v2/avataaars/S7oswrhcNJkjzUhNW33S.svg`;
-  export let title = null
+  export let title = null;
 
   export let variant = "user"; // user | project
   export let size = "regular"; // regular | big
@@ -49,21 +49,20 @@
     display: flex;
     align-items: center;
   }
-
-  div.regular {
-    color: var(--color-darkgray);
-  }
-
-  div.big {
-    white-space: nowrap;
-  }
 </style>
 
 <div class={size} {style}>
   <img class={avatarClass} src={imageUrl} alt="user-avatar" />
-  {#if title}
-    <Title size={size}>
+
+  {#if title && size === 'regular'}
+    <Text
+      variant="title"
+      style="color: var(--color-darkgray); white-space: nowrap">
       {title}
-    </Title>
+    </Text>
+  {/if}
+
+  {#if title && size === 'big'}
+    <Text variant="bigTitle" style="white-space: nowrap">{title}</Text>
   {/if}
 </div>

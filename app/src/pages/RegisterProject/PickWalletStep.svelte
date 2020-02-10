@@ -1,6 +1,6 @@
 <script>
   import TxRow from "../../components/TxRow.svelte";
-  import { Button, Title, Caption, Rad, Avatar } from "../../DesignSystem";
+  import { Button, Text, Rad, Avatar } from "../../DesignSystem";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 
   export let onNextStep = null;
@@ -26,9 +26,11 @@
   </div>
 </TxRow>
 
-<Caption style="color: var(--color-darkgray); margin-bottom: 24px">
+<Text
+  variant="caption"
+  style="color: var(--color-darkgray); margin-bottom: 24px">
   Project wallets
-</Caption>
+</Text>
 <TxRow style="margin-bottom: 16px">
   <div slot="left">
     <Avatar

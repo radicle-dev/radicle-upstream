@@ -51,7 +51,9 @@
   {disabled}
   on:change />
 {#if !valid && errorMessage}
-  <Text size="small" weight="bold" style="color: var(--color-red); margin-top: 4px">
+  <Text
+    variant="smallTextBold"
+    style="color: var(--color-red); margin-top: 4px">
     {errorMessage}
   </Text>
 {/if}

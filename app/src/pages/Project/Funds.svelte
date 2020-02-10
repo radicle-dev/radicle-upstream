@@ -1,5 +1,5 @@
 <script>
-  import { Text, Title, Button, Placeholder } from "../../DesignSystem";
+  import { Text, Button, Placeholder } from "../../DesignSystem";
   import { registerProject } from "../../path.js";
   import { push } from "svelte-spa-router";
   import { getContext } from "svelte";
@@ -25,9 +25,11 @@
 
 <div class="wrapper">
   <div class="layout">
-    <Title size="big" style="color: var(--color-darkgray); margin-bottom: 24px">
+    <Text
+      variant="bigTitle"
+      style="color: var(--color-darkgray); margin-bottom: 24px">
       Register your project to receive donations
-    </Title>
+    </Text>
 
     <Placeholder style="width: 480px; height: 250px; margin-bottom: 24px" />
     <Text

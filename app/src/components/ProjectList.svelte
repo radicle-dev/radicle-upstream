@@ -1,5 +1,5 @@
 <script>
-  import { Text, Title, Icon, Button } from "../DesignSystem";
+  import { Text, Icon, Button } from "../DesignSystem";
   import ProjectCard from "./ProjectCard.svelte";
   import { projectName } from "../stores.js";
   import { createProject, projectOverview } from "../path.js";
@@ -78,9 +78,11 @@
   {:else}
     <div class="wrapper">
       <div class="create-project">
-        <Title style="color: var(--color-darkgray); margin-bottom: 13px">
+        <Text
+          variant="title"
+          style="color: var(--color-darkgray); margin-bottom: 13px">
           You have no projects
-        </Title>
+        </Text>
         <Text style="color: var(--color-gray)">
           Create a new project and share it with friends to get started
         </Text>

@@ -1,5 +1,5 @@
 <script>
-  import { Caption } from "../DesignSystem";
+  import { Text } from "../DesignSystem";
 
   export let step = null;
   export let of = null;
@@ -15,12 +15,14 @@
 </style>
 
 <div class="step-counter" {style}>
-  <Caption>Step</Caption>
+  <Text variant="caption">Step</Text>
   {#each range as stepNumber}
     {#if step === stepNumber}
-      <Caption>&nbsp;{stepNumber}</Caption>
+      <Text variant="caption">&nbsp;{stepNumber}</Text>
     {:else}
-      <Caption style="color: var(--color-gray)">&nbsp;{stepNumber}</Caption>
+      <Text variant="caption" style="color: var(--color-gray)">
+        &nbsp;{stepNumber}
+      </Text>
     {/if}
   {/each}
 </div>
