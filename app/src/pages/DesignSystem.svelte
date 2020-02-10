@@ -1,13 +1,5 @@
 <script>
-  import {
-    Button,
-    Text,
-    Icon,
-    TextInput,
-    Select,
-    CheckboxInput,
-    Avatar
-  } from "../DesignSystem";
+  import { Button, Text, Icon, Input, Avatar } from "../DesignSystem";
 
   import Notification from "../components/Notification.svelte";
 
@@ -399,16 +391,16 @@
     </div>
     <div class="second-column">
       <div class="row">
-        <TextInput placeholder="Hey, I'm an input." />
+        <Input.Text placeholder="Hey, I'm an input." />
       </div>
 
       <div class="row">
-        <Select items={['master', 'dev']} value={'dev'} />
-        <Select disabled items={['master', 'dev']} value={'dev'} />
+        <Input.Dropdown items={['master', 'dev']} value={'dev'} />
+        <Input.Dropdown disabled items={['master', 'dev']} value={'dev'} />
       </div>
 
       <div class="row">
-        <CheckboxInput>How about a checkbox?</CheckboxInput>
+        <Input.Checkbox>How about a checkbox?</Input.Checkbox>
       </div>
     </div>
   </div>

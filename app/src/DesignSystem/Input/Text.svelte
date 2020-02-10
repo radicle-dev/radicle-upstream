@@ -1,5 +1,5 @@
 <script>
-  import Text from "./Text.svelte";
+  import Text from "../Text.svelte";
 
   export let style = null;
   export let placeholder = null;

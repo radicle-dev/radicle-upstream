@@ -11,15 +11,7 @@
   import { slide } from "svelte/transition";
 
   import ModalLayout from "../layouts/ModalLayout.svelte";
-  import {
-    Button,
-    Icon,
-    TextInput,
-    DirectoryInput,
-    CheckboxInput,
-    Text,
-    Select
-  } from "../DesignSystem";
+  import { Button, Icon, Input, Text } from "../DesignSystem";
 
   let currentSelection;
 
@@ -351,7 +343,7 @@
         Create a new project
       </Text>
 
-      <TextInput
+      <Input.Text
         style="--focus-outline-color: var(--color-pink)"
         placeholder="Project name*"
         dataCy="name"
@@ -359,13 +351,13 @@
         valid={!(validations && validations.name)}
         errorMessage={validations && validations.name && validations.name[0]} />
 
-      <TextInput
+      <Input.Text
         style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
         var(--color-pink)"
         placeholder="Project description"
         bind:value={description} />
 
-      <TextInput
+      <Input.Text
         dataCy="avatar-url"
         style="--focus-outline-color: var(--color-pink)"
         placeholder="http://my-project-website.com/project-avatar.png"
@@ -391,7 +383,7 @@
               <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose where you'd like to create the repository
               </Text>
-              <DirectoryInput
+              <Input.Directory
                 valid={!(validations && validations.newRepositoryPath)}
                 placeholder="~/path/to/folder"
                 bind:path={newRepositoryPath} />
@@ -424,7 +416,7 @@
               <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose the existing repository
               </Text>
-              <DirectoryInput
+              <Input.Directory
                 placeholder="~/path/to/folder"
                 valid={!(validations && validations.existingRepositoryPath)}
                 bind:path={existingRepositoryPath} />
@@ -440,22 +432,22 @@
                   Select the default branch
                 </Text>
                 {#if localBranches.length > 0}
-                  <Select
+                  <Input.Dropdown
                     items={localBranches}
                     bind:value={defaultBranch}
                     style=" min-width: 240px; --focus-outline-color:
                     var(--color-pink)" />
                 {:else}
-                  <Select
+                  <Input.Dropdown
                     items={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
                     disabled
                     style="min-width: 240px" />
                 {/if}
               </div>
               <div class="publish-row">
-                <CheckboxInput bind:checked={publish}>
+                <Input.Checkbox bind:checked={publish}>
                   Publish the {defaultBranch} branch to the network
-                </CheckboxInput>
+                </Input.Checkbox>
               </div>
             </div>
           {/if}

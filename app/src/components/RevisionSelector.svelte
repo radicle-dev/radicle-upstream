@@ -4,7 +4,7 @@
   import { getClient, query } from "svelte-apollo";
 
   import { revision } from "../stores.js";
-  import { Select } from "../DesignSystem";
+  import { Input } from "../DesignSystem";
 
   const ALL_REVISIONS = gql`
     query($projectId: ID!) {
@@ -20,7 +20,7 @@
 </script>
 
 {#await $allRevisions then result}
-  <Select
+  <Input.Dropdown
     dataCy="revision-selector"
     style="margin-bottom: 24px"
     items={[...result.data.tags, ...result.data.branches].sort()}

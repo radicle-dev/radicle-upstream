@@ -1,6 +1,6 @@
 <script>
   import validatejs from "validate.js";
-  import { Button, TextInput } from "../../DesignSystem";
+  import { Button, Input } from "../../DesignSystem";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 
   import { pop } from "svelte-spa-router";
@@ -51,7 +51,7 @@
   $: validate(name);
 </script>
 
-<TextInput
+<Input.Text
   style="--focus-outline-color: var(--color-pink)"
   placeholder="Project name"
   bind:value={name}
