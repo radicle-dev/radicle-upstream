@@ -4,6 +4,7 @@ import File from "./File.svelte";
 import FileList from "./FileList.svelte";
 import FileSource from "./FileSource.svelte";
 import Folder from "./Folder.svelte";
+import GuideSection from "./GuideSection.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
@@ -21,6 +22,7 @@ import SidebarItem from "./SidebarItem.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import SidebarTooltip from "./SidebarTooltip.svelte";
 import StepCounter from "./StepCounter.svelte";
+import Swatch from "./Swatch.svelte";
 import TxRow from "./TxRow.svelte";
 import UserCard from "./UserCard.svelte";
 
@@ -31,6 +33,7 @@ export {
   FileList,
   FileSource,
   Folder,
+  GuideSection,
   Notification,
   NotificationFaucet,
   ModalLayout,
@@ -48,6 +51,7 @@ export {
   SidebarLayout,
   SidebarTooltip,
   StepCounter,
+  Swatch,
   TxRow,
   UserCard
 };
