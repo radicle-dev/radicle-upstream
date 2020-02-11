@@ -1,9 +1,8 @@
 use librad::paths::Paths;
-use librad::project::{Project, ProjectId};
 use radicle_registry_client::ed25519;
 use radicle_surf as surf;
+use std::convert::From;
 use std::convert::TryFrom;
-use std::str::FromStr;
 
 use super::project;
 use crate::coco;
@@ -89,6 +88,80 @@ impl Mutation {
     }
 }
 
+/// Encapsulates read paths in API.
+pub struct Query;
+
+#[juniper::object(Context = Context)]
+impl Query {
+    fn apiVersion() -> &str {
+        "1.0"
+    }
+
+    fn blob(
+        ctx: &Context,
+        id: juniper::ID,
+        revision: String,
+        path: String,
+    ) -> Result<coco::Blob, error::Error> {
+        coco::blob(&ctx.librad_paths, &id.to_string(), &revision, &path)
+    }
+
+    fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<coco::Commit, error::Error> {
+        coco::commit(&ctx.librad_paths, &id.to_string(), &sha1)
+    }
+
+    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<coco::Branch>, error::Error> {
+        coco::branches(&ctx.librad_paths, &id.to_string())
+    }
+
+    fn local_branches(ctx: &Context, path: String) -> Result<Vec<coco::Branch>, error::Error> {
+        coco::local_branches(&path)
+    }
+
+    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<coco::Tag>, error::Error> {
+        coco::tags(&ctx.librad_paths, &id.to_string())
+    }
+
+    fn tree(
+        ctx: &Context,
+        id: juniper::ID,
+        revision: String,
+        prefix: String,
+    ) -> Result<coco::Tree, error::Error> {
+        coco::tree(&ctx.librad_paths, &id, &revision, &prefix)
+    }
+
+    fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
+        let meta = coco::get_project_meta(&ctx.librad_paths, &id.to_string())?;
+
+        Ok(project::Project {
+            id,
+            metadata: meta.into(),
+        })
+    }
+
+    fn projects(ctx: &Context) -> Result<Vec<project::Project>, error::Error> {
+        let projects = coco::list_projects(&ctx.librad_paths)
+            .into_iter()
+            .map(|(id, meta)| project::Project {
+                id: juniper::ID::new(id.to_string()),
+                metadata: meta.into(),
+            })
+            .collect::<Vec<project::Project>>();
+
+        Ok(projects)
+    }
+
+    fn list_registry_projects(ctx: &Context) -> Result<Vec<juniper::ID>, error::Error> {
+        let ids = futures::executor::block_on(ctx.registry.list_projects())?;
+
+        Ok(ids
+            .iter()
+            .map(|id| juniper::ID::from(id.0.to_string()))
+            .collect::<Vec<juniper::ID>>())
+    }
+}
+
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
     domain: String,
@@ -160,272 +233,6 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
-
-/// Encapsulates read paths in API.
-pub struct Query;
-
-#[juniper::object(Context = Context)]
-impl Query {
-    fn apiVersion() -> &str {
-        "1.0"
-    }
-
-    fn blob(
-        ctx: &Context,
-        id: juniper::ID,
-        revision: String,
-        path: String,
-    ) -> Result<coco::Blob, error::Error> {
-        let project_id = ProjectId::from_str(&id)?;
-        let project = Project::open(&ctx.librad_paths, &project_id)?;
-
-        let mut browser = match project {
-            Project::Git(git_project) => git_project.browser()?,
-        };
-
-        // Best effort to guess the revision.
-        if let Err(err) = browser
-            .branch(surf::git::BranchName::new(&revision))
-            .or(browser.commit(surf::git::Sha1::new(&revision)))
-            .or(browser.tag(surf::git::TagName::new(&revision)))
-        {
-            let err_fmt = format!("{:?}", err);
-
-            return Err(error::Error::Git(surf::git::error::Error::NotBranch));
-        };
-
-        let root = browser.get_directory()?;
-
-        let mut p = surf::file_system::Path::from_str(&path)?;
-
-        let file = root.find_file(&p).ok_or_else(|| {
-            radicle_surf::file_system::error::Error::Path(
-                radicle_surf::file_system::error::Path::Empty,
-            )
-        })?;
-
-        let mut commit_path = surf::file_system::Path::root();
-        commit_path.append(&mut p);
-
-        let last_commit = browser
-            .last_commit(&commit_path)?
-            .map(|c| coco::Commit::from(&c));
-        let (_rest, last) = p.split_last();
-        let (binary, content) = {
-            let res = std::str::from_utf8(&file.contents);
-
-            match res {
-                Ok(content) => (false, Some(content.to_string())),
-                Err(_) => (true, None),
-            }
-        };
-
-        Ok(coco::Blob {
-            binary,
-            content,
-            info: coco::Info {
-                name: last.label,
-                object_type: coco::ObjectType::Blob,
-                last_commit,
-            },
-        })
-    }
-
-    fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<coco::Commit, error::Error> {
-        let project_id = ProjectId::from_str(&id)?;
-        let project = Project::open(&ctx.librad_paths, &project_id)?;
-        let mut browser = match project {
-            Project::Git(git_project) => git_project.browser()?,
-        };
-
-        let history = browser.get_history();
-        let commit = history.0.first();
-
-        Ok(coco::Commit::from(commit))
-    }
-
-    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<coco::Branch>, error::Error> {
-        coco::branches(&ctx.librad_paths, &id.to_string())
-    }
-
-    fn local_branches(ctx: &Context, path: String) -> Result<Vec<coco::Branch>, error::Error> {
-        coco::local_branches(&path)
-    }
-
-    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<coco::Tag>, error::Error> {
-        let project_id = ProjectId::from_str(&id)?;
-        let project = Project::open(&ctx.librad_paths, &project_id)?;
-        let mut browser = match project {
-            Project::Git(git_project) => git_project.browser()?,
-        };
-
-        let mut tag_names = browser.list_tags()?;
-        tag_names.sort();
-
-        let mut tags: Vec<coco::Tag> = tag_names
-            .into_iter()
-            .map(|tag_name| coco::Tag(tag_name.name()))
-            .collect();
-
-        tags.sort();
-
-        Ok(tags)
-    }
-
-    fn tree(
-        ctx: &Context,
-        id: juniper::ID,
-        revision: String,
-        prefix: String,
-    ) -> Result<coco::Tree, error::Error> {
-        let project_id = ProjectId::from_str(&id)?;
-        let project = Project::open(&ctx.librad_paths, &project_id)?;
-
-        let mut browser = match project {
-            Project::Git(git_project) => git_project.browser()?,
-        };
-
-        if let Err(err) = browser
-            .branch(surf::git::BranchName::new(&revision))
-            .or(browser.commit(surf::git::Sha1::new(&revision)))
-            .or(browser.tag(surf::git::TagName::new(&revision)))
-        {
-            let err_fmt = format!("{:?}", err);
-
-            return Err(error::Error::Git(surf::git::error::Error::NotBranch));
-        };
-
-        let mut path = if prefix == "/" || prefix == "" {
-            surf::file_system::Path::root()
-        } else {
-            surf::file_system::Path::from_str(&prefix)?
-        };
-
-        let root_dir = browser.get_directory()?;
-        let prefix_dir = if path.is_root() {
-            root_dir
-        } else {
-            root_dir.find_directory(&path).ok_or_else(|| {
-                radicle_surf::file_system::error::Error::Path(
-                    radicle_surf::file_system::error::Path::Empty,
-                )
-            })?
-        };
-        let mut prefix_contents = prefix_dir.list_directory();
-        prefix_contents.sort();
-
-        let entries_results: Result<Vec<coco::TreeEntry>, error::Error> = prefix_contents
-            .iter()
-            .map(|(label, system_type)| {
-                let mut entry_path = if path.is_root() {
-                    let label_path =
-                        nonempty::NonEmpty::from_slice(&[label.clone()]).ok_or_else(|| {
-                            radicle_surf::file_system::error::Error::Label(
-                                radicle_surf::file_system::error::Label::Empty,
-                            )
-                        })?;
-                    surf::file_system::Path(label_path)
-                } else {
-                    let mut p = path.clone();
-                    p.push(label.clone());
-                    p
-                };
-                let mut commit_path = surf::file_system::Path::root();
-                commit_path.append(&mut entry_path);
-
-                let last_commit = browser
-                    .last_commit(&commit_path)?
-                    .map(|c| coco::Commit::from(&c));
-                let info = coco::Info {
-                    name: label.to_string(),
-                    object_type: match system_type {
-                        surf::file_system::SystemType::Directory => coco::ObjectType::Tree,
-                        surf::file_system::SystemType::File => coco::ObjectType::Blob,
-                    },
-                    last_commit,
-                };
-
-                Ok(coco::TreeEntry {
-                    info,
-                    path: entry_path.to_string(),
-                })
-            })
-            .collect();
-
-        let mut entries = entries_results?;
-
-        // We want to ensure that in the response Tree entries come first. `Ord` being derived on
-        // the enum ensures Variant declaration order.
-        //
-        // https://doc.rust-lang.org/std/cmp/trait.Ord.html#derivable
-        entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
-
-        let last_commit = if path.is_root() {
-            Some(coco::Commit::from(browser.get_history().0.first()))
-        } else {
-            let mut commit_path = surf::file_system::Path::root();
-            commit_path.append(&mut path);
-
-            browser
-                .last_commit(&commit_path)?
-                .map(|c| coco::Commit::from(&c))
-        };
-        let name = if path.is_root() {
-            "".into()
-        } else {
-            let (_first, last) = path.split_last();
-            last.label
-        };
-        let info = coco::Info {
-            name,
-            object_type: coco::ObjectType::Tree,
-            last_commit,
-        };
-
-        Ok(coco::Tree {
-            path: prefix,
-            entries,
-            info,
-        })
-    }
-
-    fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
-        let project_id = ProjectId::from_str(&id.to_string())?;
-        let meta = Project::show(&ctx.librad_paths, &project_id)?;
-
-        Ok(project::Project {
-            id,
-            metadata: meta.into(),
-        })
-    }
-
-    fn projects(ctx: &Context) -> Result<Vec<project::Project>, error::Error> {
-        let mut projects = Project::list(&ctx.librad_paths)
-            .map(|id| {
-                let project_meta =
-                    Project::show(&ctx.librad_paths, &id).expect("unable to get project meta");
-
-                project::Project {
-                    id: id.to_string().into(),
-                    metadata: project_meta.into(),
-                }
-            })
-            .collect::<Vec<project::Project>>();
-
-        projects.sort_by(|a, b| a.metadata.name.cmp(&b.metadata.name));
-
-        Ok(projects)
-    }
-
-    fn list_registry_projects(ctx: &Context) -> Result<Vec<juniper::ID>, error::Error> {
-        let ids = futures::executor::block_on(ctx.registry.list_projects())?;
-
-        Ok(ids
-            .iter()
-            .map(|id| juniper::ID::from(id.0.to_string()))
-            .collect::<Vec<juniper::ID>>())
-    }
-}
 
 #[cfg(test)]
 mod tests {
