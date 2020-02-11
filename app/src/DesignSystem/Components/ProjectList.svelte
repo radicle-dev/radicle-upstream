@@ -3,7 +3,7 @@
 
   import ProjectCard from "./ProjectCard.svelte";
 
-  import { projectName } from "../../stores.js";
+  import { projectNameStore } from "../../stores/project.js";
   import { createProject, projectOverview } from "../../path.js";
 
   import { gql } from "apollo-boost";
@@ -65,7 +65,7 @@
       {#each result.data.projects as project}
         <li
           on:click={() => {
-            projectName.set(project.metadata.name);
+            projectNameStore.set(project.metadata.name);
             push(projectOverview(project.id));
           }}
           class="project-card">

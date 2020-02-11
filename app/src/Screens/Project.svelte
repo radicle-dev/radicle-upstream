@@ -1,6 +1,10 @@
 <script>
   import { setContext } from "svelte";
-  import { revision, objectPath, objectType } from "../stores.js";
+  import {
+    revisionStore,
+    objectPathStore,
+    objectTypeStore
+  } from "../stores/sourceBrowsing.js";
   import * as path from "../path.js";
 
   import Router from "svelte-spa-router";
@@ -53,9 +57,9 @@
     variables: { id: params.id }
   });
 
-  $: revision.set(path.extractProjectSourceRevision($location));
-  $: objectPath.set(path.extractProjectSourceObjectPath($location));
-  $: objectType.set(path.extractProjectSourceObjectType($location));
+  $: revisionStore.set(path.extractProjectSourceRevision($location));
+  $: objectPathStore.set(path.extractProjectSourceObjectPath($location));
+  $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
 </script>
 
 <SidebarLayout style="margin-top: calc(var(--topbar-height) + 33px)">

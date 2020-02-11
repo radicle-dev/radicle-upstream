@@ -1,7 +1,7 @@
 <script>
   import { onDestroy } from "svelte";
 
-  import { notification } from "../../stores.js";
+  import { notificationStore } from "../../stores/notification.js";
   import { NOTIFICATION_TIMEOUT } from "../../config.js";
 
   import Notification from "./Notification.svelte";
@@ -11,7 +11,7 @@
   export let style = null;
   let messages = [];
 
-  const unsubscribe = notification.subscribe(message => {
+  const unsubscribe = notificationStore.subscribe(message => {
     if (!message) {
       return;
     }
@@ -21,7 +21,7 @@
       ...messages,
       { id: id, message: message.text, level: message.level }
     ];
-    notification.set();
+    notificationStore.set();
     setTimeout(() => {
       remove(id);
     }, NOTIFICATION_TIMEOUT);

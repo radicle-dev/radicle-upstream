@@ -1,6 +1,9 @@
 <script>
   import { getContext } from "svelte";
-  import { revision, objectPath } from "../../stores.js";
+  import {
+    revisionStore,
+    objectPathStore
+  } from "../../stores/sourceBrowsing.js";
   import { BLOB } from "../../types.js";
 
   import { Icon } from "../Primitives";
@@ -12,7 +15,7 @@
 
   const id = getContext("projectId");
 
-  $: active = filePath === $objectPath;
+  $: active = filePath === $objectPathStore;
 </script>
 
 <style>
@@ -44,7 +47,7 @@
 </style>
 
 <div class="file" class:active>
-  <a href={path.projectSource(id, $revision, BLOB, filePath)} use:link>
+  <a href={path.projectSource(id, $revisionStore, BLOB, filePath)} use:link>
     <Icon.File />
     {name}
   </a>

@@ -7,7 +7,10 @@
   import { TREE } from "../../types.js";
   import { Icon } from "../Primitives";
   import File from "./File.svelte";
-  import { revision, objectPath } from "../../stores.js";
+  import {
+    revisionStore,
+    objectPathStore
+  } from "../../stores/sourceBrowsing.js";
   import * as path from "../../path.js";
 
   export let prefix = ""; // start sidebar tree from repository root
@@ -34,14 +37,18 @@
 
   $: sourceTree = query(getClient(), {
     query: QUERY,
-    variables: { projectId: projectId, revision: $revision, prefix: prefix }
+    variables: {
+      projectId: projectId,
+      revision: $revisionStore,
+      prefix: prefix
+    }
   });
 
   let toggle = () => {
     expanded = !expanded;
   };
 
-  $: active = prefix === $objectPath;
+  $: active = prefix === $objectPathStore;
 </script>
 
 <style>
@@ -86,7 +93,7 @@
       <div class="folder" class:active>
         <Icon.Folder dataCy={`expand-${name}`} />
         <a
-          href={path.projectSource(projectId, $revision, TREE, prefix)}
+          href={path.projectSource(projectId, $revisionStore, TREE, prefix)}
           use:link>
           {name}
         </a>
@@ -95,7 +102,7 @@
       <div class="folder" class:expanded class:active>
         <Icon.CarretBig dataCy={`expand-${name}`} on:click={toggle} />
         <a
-          href={path.projectSource(projectId, $revision, TREE, prefix)}
+          href={path.projectSource(projectId, $revisionStore, TREE, prefix)}
           use:link>
           {name}
         </a>

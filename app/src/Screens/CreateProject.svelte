@@ -4,7 +4,7 @@
   import { getClient, query, mutate } from "svelte-apollo";
   import { pop, push } from "svelte-spa-router";
 
-  import { showNotification } from "../stores.js";
+  import { showNotification } from "../stores/notification.js";
   import * as path from "../path.js";
   import { hash } from "../hash.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";

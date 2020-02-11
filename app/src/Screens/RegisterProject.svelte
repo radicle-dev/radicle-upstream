@@ -1,5 +1,5 @@
 <script>
-  import { projectName } from "../stores.js";
+  import { projectNameStore } from "../stores/project.js";
   import { ModalLayout, StepCounter } from "../DesignSystem/Components";
 
   import PickNameStep from "./RegisterProject/PickNameStep.svelte";
@@ -19,7 +19,7 @@
   };
 
   let step = 1;
-  let name = $projectName;
+  let name = $projectNameStore;
 
   const nextStep = () => {
     step += 1;

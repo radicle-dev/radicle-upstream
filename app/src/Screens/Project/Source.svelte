@@ -1,7 +1,11 @@
 <script>
   import { getContext } from "svelte";
 
-  import { objectPath, objectType, revision } from "../../stores.js";
+  import {
+    objectPathStore,
+    objectTypeStore,
+    revisionStore
+  } from "../../stores/sourceBrowsing.js";
   import { BLOB } from "../../types.js";
   import {
     FileList,
@@ -66,10 +70,16 @@
   </div>
 
   <div class="column-right">
-    {#if $objectType === BLOB}
-      <FileSource {projectId} path={$objectPath} revision={$revision} />
+    {#if $objectTypeStore === BLOB}
+      <FileSource
+        {projectId}
+        path={$objectPathStore}
+        revision={$revisionStore} />
     {:else}
-      <FileList {projectId} prefix={$objectPath} revision={$revision} />
+      <FileList
+        {projectId}
+        prefix={$objectPathStore}
+        revision={$revisionStore} />
     {/if}
   </div>
 </div>

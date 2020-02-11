@@ -3,7 +3,7 @@
   import { getContext } from "svelte";
   import { getClient, query } from "svelte-apollo";
 
-  import { revision } from "../../stores.js";
+  import { revisionStore } from "../../stores/sourceBrowsing.js";
   import { Input } from "../Primitives";
 
   const ALL_REVISIONS = gql`
@@ -24,5 +24,5 @@
     dataCy="revision-selector"
     style="margin-bottom: 24px"
     items={[...result.data.tags, ...result.data.branches].sort()}
-    bind:value={$revision} />
+    bind:value={$revisionStore} />
 {/await}
