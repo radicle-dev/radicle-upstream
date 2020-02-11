@@ -376,7 +376,7 @@
               Start with a new repository
             </Text>
             <Icon.CheckCircle
-              style={isNew ? 'display: block' : 'display: none'} />
+              style={isNew ? 'display: block; fill: var(--color-pink)' : 'display: none'} />
           </div>
           {#if isNew}
             <div class="option-body" in:slide>
@@ -409,7 +409,7 @@
               Continue with an existing repository
             </Text>
             <Icon.CheckCircle
-              style={isExisting ? 'display: block' : 'display: none'} />
+              style={isExisting ? 'display: block; fill: var(--color-pink)' : 'display: none'} />
           </div>
           {#if isExisting}
             <div class="option-body" in:slide>

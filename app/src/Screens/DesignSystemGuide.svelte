@@ -101,7 +101,9 @@
 
     <Icon.Branch />
     <Icon.Carret />
+    <Icon.CarretBig />
     <Icon.Check />
+    <Icon.CheckCircle />
     <Icon.Commit />
     <Icon.Cross />
     <Icon.CrossBig />
@@ -117,10 +119,12 @@
     <Icon.Important />
     <Icon.Inbox />
     <Icon.Info />
+    <Icon.Issues />
     <Icon.Member />
     <Icon.Minus />
     <Icon.Plus />
     <Icon.Projects />
+    <Icon.Revisions />
     <Icon.Search />
     <Icon.SearchSmall />
     <Icon.Source />

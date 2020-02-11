@@ -1,6 +1,6 @@
 <script>
-  import Sidebar from "../components/Sidebar.svelte";
-  import NotificationFaucet from "../components/NotificationFaucet.svelte";
+  import Sidebar from "./Sidebar.svelte";
+  import NotificationFaucet from "./NotificationFaucet.svelte";
 
   export let dataCy = null;
   export let style = null;
