@@ -19,6 +19,7 @@
     margin-top: 64px;
     margin-left: 96px;
     margin-right: 96px;
+    margin-bottom: 64px;
   }
 </style>
 
