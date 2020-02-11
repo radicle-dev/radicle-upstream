@@ -5,10 +5,10 @@ use radicle_registry_client::ed25519;
 use radicle_surf as surf;
 use std::str::FromStr;
 
-use super::error;
 use super::git;
 use super::project;
-use super::registry;
+use crate::error;
+use crate::registry;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = RootNode<'static, Query, Mutation>;

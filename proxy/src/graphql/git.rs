@@ -9,7 +9,7 @@ use librad::paths::Paths;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
 
-use super::error::Error;
+use crate::error;
 
 /// Branch name representation.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLScalarValue)]
@@ -128,7 +128,7 @@ pub struct TreeEntry {
 }
 
 /// Given a project id to a repo returns the list of branches.
-pub fn branches(librad_paths: &Paths, id: &str) -> Result<Vec<Branch>, Error> {
+pub fn branches(librad_paths: &Paths, id: &str) -> Result<Vec<Branch>, error::Error> {
     let project_id = librad::project::ProjectId::from_str(id)?;
     let project = librad::project::Project::open(librad_paths, &project_id)?;
     let browser = match project {
@@ -148,7 +148,7 @@ pub fn branches(librad_paths: &Paths, id: &str) -> Result<Vec<Branch>, Error> {
 }
 
 /// Given a path to a repo returns the list of branches.
-pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, Error> {
+pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
     let repo = surf::git::Repository::new(repo_path)?;
     let browser = surf::git::Browser::new(repo)?;
     let mut branches = browser
@@ -170,7 +170,7 @@ pub fn init_project(
     description: &str,
     default_branch: &str,
     img_url: &str,
-) -> Result<(librad::git::ProjectId, librad::meta::Project), Error> {
+) -> Result<(librad::git::ProjectId, librad::meta::Project), error::Error> {
     let key = librad::keys::device::Key::new();
     let peer_id = librad::peer::PeerId::from(key.public());
     let founder = librad::meta::contributor::Contributor::new();
@@ -188,7 +188,7 @@ pub fn init_project(
 }
 
 /// Initialize a [`git2::GitRepository`] at the given path.
-pub fn init_repo(path: String) -> Result<(), Error> {
+pub fn init_repo(path: String) -> Result<(), error::Error> {
     let repo = git2::Repository::init(path)?;
 
     // First use the config to initialize a commit signature for the user.
@@ -210,7 +210,7 @@ pub fn init_repo(path: String) -> Result<(), Error> {
 }
 
 /// Creates a small set of projects in [`librad::Paths`].
-pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), Error> {
+pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), error::Error> {
     let infos = vec![
             (
                 "monokel",
