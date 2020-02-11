@@ -110,16 +110,25 @@ impl Query {
         coco::commit(&ctx.librad_paths, &id.to_string(), &sha1)
     }
 
-    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<coco::Branch>, error::Error> {
-        coco::branches(&ctx.librad_paths, &id.to_string())
+    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
+        Ok(coco::branches(&ctx.librad_paths, &id.to_string())?
+            .into_iter()
+            .map(|t| t.0)
+            .collect())
     }
 
-    fn local_branches(ctx: &Context, path: String) -> Result<Vec<coco::Branch>, error::Error> {
-        coco::local_branches(&path)
+    fn local_branches(ctx: &Context, path: String) -> Result<Vec<String>, error::Error> {
+        Ok(coco::local_branches(&path)?
+            .into_iter()
+            .map(|t| t.0)
+            .collect())
     }
 
-    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<coco::Tag>, error::Error> {
-        coco::tags(&ctx.librad_paths, &id.to_string())
+    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
+        Ok(coco::tags(&ctx.librad_paths, &id.to_string())?
+            .into_iter()
+            .map(|t| t.0)
+            .collect())
     }
 
     fn tree(
@@ -162,6 +171,68 @@ impl Query {
     }
 }
 
+#[juniper::object]
+impl coco::Blob {
+    fn binary(&self) -> bool {
+        self.binary
+    }
+
+    fn content(&self) -> Option<&String> {
+        self.content.as_ref()
+    }
+
+    fn info(&self) -> &coco::Info {
+        &self.info
+    }
+}
+
+#[juniper::object]
+impl coco::Commit {
+    fn sha1(&self) -> &str {
+        &self.sha1
+    }
+
+    fn author(&self) -> &coco::Person {
+        &self.author
+    }
+
+    fn summary(&self) -> &str {
+        &self.summary
+    }
+
+    fn message(&self) -> &str {
+        &self.message
+    }
+
+    fn committer_time(&self) -> String {
+        self.committer_time.seconds().to_string()
+    }
+}
+
+#[juniper::object]
+impl coco::Info {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn object_type(&self) -> ObjectType {
+        match self.object_type {
+            coco::ObjectType::Blob => ObjectType::Blob,
+            coco::ObjectType::Tree => ObjectType::Tree,
+        }
+    }
+
+    fn last_commit(&self) -> Option<&coco::Commit> {
+        self.last_commit.as_ref()
+    }
+}
+
+#[derive(GraphQLEnum)]
+enum ObjectType {
+    Tree,
+    Blob,
+}
+
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
     domain: String,
@@ -176,6 +247,21 @@ juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
         &ProjectRegistration => match *self { Message::ProjectRegistration(ref p) => Some(p) },
     }
 });
+
+#[juniper::object]
+impl coco::Person {
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn email(&self) -> &str {
+        &self.email
+    }
+
+    fn avatar(&self) -> &str {
+        &self.avatar
+    }
+}
 
 #[juniper::object]
 impl registry::Transaction {
@@ -233,6 +319,32 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
+
+#[juniper::object]
+impl coco::Tree {
+    fn path(&self) -> &str {
+        &self.path
+    }
+
+    fn entries(&self) -> &Vec<coco::TreeEntry> {
+        self.entries.as_ref()
+    }
+
+    fn info(&self) -> &coco::Info {
+        &self.info
+    }
+}
+
+#[juniper::object]
+impl coco::TreeEntry {
+    fn info(&self) -> &coco::Info {
+        &self.info
+    }
+
+    fn path(&self) -> String {
+        self.path.clone()
+    }
+}
 
 #[cfg(test)]
 mod tests {

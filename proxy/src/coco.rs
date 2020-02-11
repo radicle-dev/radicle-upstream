@@ -16,42 +16,40 @@ use radicle_surf::git::git2;
 use crate::error;
 
 /// Branch name representation.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLScalarValue)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Branch(pub String);
 
 /// Tag name representation.
 ///
 /// We still need full tag support.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd, GraphQLScalarValue)]
+#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Tag(pub String);
 
 /// Representation of a person (e.g. committer, author, signer) from a repository. Usually
 /// extracted from a signature.
-#[derive(GraphQLObject)]
 pub struct Person {
     /// Name part of the commit signature commit.
-    name: String,
+    pub name: String,
     /// Email part of the commit signature commit.
-    email: String,
+    pub email: String,
     /// Reference (url/uri) to a persons avatar image.
-    avatar: String,
+    pub avatar: String,
 }
 
 /// Representation of a code commit.
-#[derive(GraphQLObject)]
 pub struct Commit {
     /// Identifier of the commit in the form of a sha1 hash. Often referred to as oid or object
     /// id.
-    sha1: String,
+    pub sha1: String,
     /// The author of the commit.
-    author: Person,
+    pub author: Person,
     /// The summary of the commit message body.
-    summary: String,
+    pub summary: String,
     /// The entire commit message body.
-    message: String,
+    pub message: String,
     /// The recorded time of the committer signature. This is a convenience alias until we
     /// expose the actual author and commiter signatures.
-    committer_time: String,
+    pub committer_time: git2::Time,
 }
 
 impl From<&surf::git::Commit> for Commit {
@@ -73,7 +71,7 @@ impl From<&surf::git::Commit> for Commit {
             },
             summary: commit.summary.clone(),
             message: commit.message.clone(),
-            committer_time: commit.author.time.seconds().to_string(),
+            committer_time: commit.author.time,
         }
     }
 }
@@ -81,7 +79,7 @@ impl From<&surf::git::Commit> for Commit {
 /// Git object types.
 ///
 /// `shafiul.github.io/gitbook/1_the_git_object_model.html`
-#[derive(Debug, Eq, Ord, PartialOrd, PartialEq, GraphQLEnum)]
+#[derive(Debug, Eq, Ord, PartialOrd, PartialEq)]
 pub enum ObjectType {
     /// References a list of other trees and blobs.
     Tree,
@@ -90,7 +88,6 @@ pub enum ObjectType {
 }
 
 /// Set of extra information we carry for blob and tree objects returned from the API.
-#[derive(GraphQLObject)]
 pub struct Info {
     /// Name part of an object.
     pub name: String,
@@ -101,7 +98,6 @@ pub struct Info {
 }
 
 /// File data abstraction.
-#[derive(GraphQLObject)]
 pub struct Blob {
     /// Best-effort guess if the content is binary.
     pub binary: bool,
@@ -112,7 +108,6 @@ pub struct Blob {
 }
 
 /// Result of a directory listing, carries other trees and blobs.
-#[derive(GraphQLObject)]
 pub struct Tree {
     /// Absolute path to the tree object from the repo root.
     pub path: String,
@@ -123,7 +118,6 @@ pub struct Tree {
 }
 
 /// Entry in a Tree result.
-#[derive(GraphQLObject)]
 pub struct TreeEntry {
     /// Extra info for the entry.
     pub info: Info,
