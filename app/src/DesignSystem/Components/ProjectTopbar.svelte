@@ -7,7 +7,7 @@
 
   import Avatar from "./Avatar.svelte";
   import * as path from "../../lib/path.js";
-  import ProjectTopbarMenu from "./ProjectTopbarMenu.svelte";
+  import Menu from "./ProjectTopbar/Menu.svelte";
 
   export let style = null;
 
@@ -55,7 +55,7 @@
       variant="project" />
   </a>
 
-  <ProjectTopbarMenu />
+  <Menu />
 
   <div class="left">
     <Button

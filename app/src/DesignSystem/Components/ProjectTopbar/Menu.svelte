@@ -2,11 +2,11 @@
   import { getContext } from "svelte";
   import { location } from "svelte-spa-router";
 
-  import * as path from "../../lib/path.js";
+  import * as path from "../../../lib/path.js";
 
-  import { Icon } from "../Primitives";
+  import { Icon } from "../../Primitives";
 
-  import ProjectTopbarMenuItem from "./ProjectTopbarMenuItem.svelte";
+  import MenuItem from "./MenuItem.svelte";
 
   const projectId = getContext("projectId");
 </script>
@@ -42,7 +42,7 @@
   <ul>
 
     <li>
-      <ProjectTopbarMenuItem
+      <MenuItem
         icon={Icon.Source}
         title="Source"
         href={path.projectSource(projectId)}
@@ -50,7 +50,7 @@
     </li>
 
     <li>
-      <ProjectTopbarMenuItem
+      <MenuItem
         icon={Icon.Feed}
         title="Feed"
         href={path.projectFeed(projectId)}
@@ -58,7 +58,7 @@
     </li>
 
     <li>
-      <ProjectTopbarMenuItem
+      <MenuItem
         icon={Icon.Fund}
         title="Fund"
         href={path.projectFunds(projectId)}
@@ -66,7 +66,7 @@
     </li>
 
     <li>
-      <ProjectTopbarMenuItem
+      <MenuItem
         icon={Icon.Issues}
         title="Issues"
         href={path.projectIssues(projectId)}
@@ -74,7 +74,7 @@
     </li>
 
     <li>
-      <ProjectTopbarMenuItem
+      <MenuItem
         icon={Icon.Revisions}
         title="Revisions"
         href={path.projectRevisions(projectId)}

@@ -12,8 +12,6 @@ import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
 import ProjectTopbar from "./ProjectTopbar.svelte";
-import ProjectTopbarMenu from "./ProjectTopbarMenu.svelte";
-import ProjectTopbarMenuItem from "./ProjectTopbarMenuItem.svelte";
 import Rad from "./Rad.svelte";
 import RevisionSelector from "./RevisionSelector.svelte";
 import Sidebar from "./Sidebar.svelte";
@@ -38,8 +36,6 @@ export {
   ProjectCard,
   ProjectList,
   ProjectTopbar,
-  ProjectTopbarMenu,
-  ProjectTopbarMenuItem,
   Rad,
   RevisionSelector,
   Sidebar,
