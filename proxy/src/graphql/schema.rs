@@ -1,8 +1,8 @@
-use juniper::{RootNode, ID};
 use librad::paths::Paths;
 use librad::project::{Project, ProjectId};
 use radicle_registry_client::ed25519;
 use radicle_surf as surf;
+use std::convert::TryFrom;
 use std::str::FromStr;
 
 use super::git;
@@ -11,7 +11,7 @@ use crate::error;
 use crate::registry;
 
 /// Glue to bundle our read and write APIs together.
-pub type Schema = RootNode<'static, Query, Mutation>;
+pub type Schema = juniper::RootNode<'static, Query, Mutation>;
 
 /// Returns a `Schema` with the default parameterised `Query` and `Mutation`.
 pub fn create() -> Schema {
@@ -45,6 +45,78 @@ impl Context {
 }
 
 impl juniper::Context for Context {}
+
+#[derive(juniper::GraphQLObject)]
+struct ProjectRegistration {
+    domain: String,
+    name: String,
+}
+enum Message {
+    ProjectRegistration(ProjectRegistration),
+}
+
+juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &ProjectRegistration => match *self { Message::ProjectRegistration(ref p) => Some(p) },
+    }
+});
+
+#[juniper::object]
+impl registry::Transaction {
+    fn id(&self) -> juniper::ID {
+        juniper::ID::new(self.id.to_string())
+    }
+
+    fn messages(&self) -> Vec<Message> {
+        self.messages
+            .iter()
+            .map(|m| match m {
+                registry::Message::ProjectRegistration(domain, name) => {
+                    Message::ProjectRegistration(ProjectRegistration {
+                        domain: domain.to_string(),
+                        name: name.to_string(),
+                    })
+                },
+            })
+            .collect()
+    }
+
+    fn state(&self) -> TransactionState {
+        match self.state {
+            registry::TransactionState::Applied(block_hash) => TransactionState::Applied(Applied {
+                block: juniper::ID::new(block_hash.to_string()),
+            }),
+        }
+    }
+
+    fn timestamp(&self) -> juniper::FieldResult<String> {
+        let since_epoch = i64::try_from(
+            self.timestamp
+                .duration_since(std::time::UNIX_EPOCH)?
+                .as_secs(),
+        )?;
+        let git_time = radicle_surf::git::git2::Time::new(since_epoch, 0)
+            .seconds()
+            .to_string();
+
+        Ok(git_time)
+    }
+}
+
+enum TransactionState {
+    Applied(Applied),
+}
+
+#[derive(GraphQLObject)]
+struct Applied {
+    block: juniper::ID,
+}
+
+juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
+    }
+});
 
 /// Encapsulates write path in API.
 pub struct Mutation;
@@ -100,7 +172,7 @@ impl Query {
 
     fn blob(
         ctx: &Context,
-        id: ID,
+        id: juniper::ID,
         revision: String,
         path: String,
     ) -> Result<git::Blob, error::Error> {
@@ -159,7 +231,7 @@ impl Query {
         })
     }
 
-    fn commit(ctx: &Context, id: ID, sha1: String) -> Result<git::Commit, error::Error> {
+    fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<git::Commit, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
         let mut browser = match project {
@@ -172,7 +244,7 @@ impl Query {
         Ok(git::Commit::from(commit))
     }
 
-    fn branches(ctx: &Context, id: ID) -> Result<Vec<git::Branch>, error::Error> {
+    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<git::Branch>, error::Error> {
         git::branches(&ctx.librad_paths, &id.to_string())
     }
 
@@ -180,7 +252,7 @@ impl Query {
         git::local_branches(&path)
     }
 
-    fn tags(ctx: &Context, id: ID) -> Result<Vec<git::Tag>, error::Error> {
+    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<git::Tag>, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
         let mut browser = match project {
@@ -202,7 +274,7 @@ impl Query {
 
     fn tree(
         ctx: &Context,
-        id: ID,
+        id: juniper::ID,
         revision: String,
         prefix: String,
     ) -> Result<git::Tree, error::Error> {
@@ -317,7 +389,7 @@ impl Query {
         })
     }
 
-    fn project(ctx: &Context, id: ID) -> Result<project::Project, error::Error> {
+    fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
         let project_id = ProjectId::from_str(&id.to_string())?;
         let meta = Project::show(&ctx.librad_paths, &project_id)?;
 
@@ -345,13 +417,13 @@ impl Query {
         Ok(projects)
     }
 
-    fn list_registry_projects(ctx: &Context) -> Result<Vec<ID>, error::Error> {
+    fn list_registry_projects(ctx: &Context) -> Result<Vec<juniper::ID>, error::Error> {
         let ids = futures::executor::block_on(ctx.registry.list_projects())?;
 
         Ok(ids
             .iter()
-            .map(|id| ID::from(id.0.to_string()))
-            .collect::<Vec<ID>>())
+            .map(|id| juniper::ID::from(id.0.to_string()))
+            .collect::<Vec<juniper::ID>>())
     }
 }
 

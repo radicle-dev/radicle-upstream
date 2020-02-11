@@ -1,69 +1,36 @@
 use radicle_registry_client::{
-    self as registry, ed25519, message, Client, ClientT, CryptoPair, String32, TransactionExtra,
-    H256,
+    self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, String32,
+    TransactionExtra, H256,
 };
-use std::convert::TryFrom;
+use std::time::SystemTime;
 
 use super::error;
 
 /// A container to dissiminate and apply operations on the [`Registry`].
-#[derive(GraphQLObject)]
 pub struct Transaction {
-    // TODO(xla): Use actual transaction hash type.
     /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
     /// the API consumer to query state changes of a transaction.
-    pub id: juniper::ID,
+    pub id: registry::TxHash,
     /// List of operations to be applied to the Registry. Currently limited to exactly one. We use
     /// a Vec here to accommodate future extensibility.
     pub messages: Vec<Message>,
     /// Current state of the transaction.
     pub state: TransactionState,
     /// Creation time.
-    pub timestamp: String,
-}
-
-/// Required information to issue a new project registration on the [`Registry`].
-#[derive(juniper::GraphQLObject)]
-pub struct ProjectRegistration {
-    // TODO(xla): Use String32 type.
-    /// The domain the project should be registered for.
-    pub domain: String,
-    // TODO(xla): Use String32 type.
-    /// The name of the project, which MUST be unique for the domain.
-    pub name: String,
+    pub timestamp: SystemTime,
 }
 
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
-    /// Issue a new project registration. See [`ProjectRegistration`] for the shape of the data.
-    ProjectRegistration(ProjectRegistration),
+    /// Issue a new project registration with (domain, name).
+    ProjectRegistration(String32, String32),
 }
-
-juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &ProjectRegistration => match *self { Message::ProjectRegistration(ref p) => Some(p) },
-    }
-});
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
 /// whereabouts of a given [`Transaction`].
 pub enum TransactionState {
-    /// [`Transaction`] has been applied to a block. See [`Applied`] for the shape of the data.
-    Applied(Applied),
-}
-
-juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
-    }
-});
-
-/// Signals that [`Transaction`] has been successfully applied by a Node to a block. Carries the
-/// hash of the Block for further inspection and/or tracking of propagation.
-#[derive(GraphQLObject)]
-pub struct Applied {
-    /// Block hash the [`Transaction`] has been applied to.
-    pub block: juniper::ID,
+    /// [`Transaction`] has been applied to a block, carries the hash of the block.
+    Applied(Hash),
 }
 
 /// Registry client wrapper.
@@ -120,7 +87,7 @@ impl Registry {
 
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterProject {
-            id: (project_name, project_domain),
+            id: (project_name.clone(), project_domain.clone()),
             checkpoint_id,
             metadata: registry::Bytes128::from_vec(vec![]).expect("unable construct metadata"),
         };
@@ -136,24 +103,10 @@ impl Registry {
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
         Ok(Transaction {
-            id: juniper::ID::new(register_applied.tx_hash.to_string()),
-            messages: vec![Message::ProjectRegistration(ProjectRegistration {
-                domain: domain,
-                name: name,
-            })],
-            state: TransactionState::Applied(Applied {
-                block: juniper::ID::new(register_applied.block.to_string()),
-            }),
-            timestamp: radicle_surf::git::git2::Time::new(
-                i64::try_from(
-                    std::time::SystemTime::now()
-                        .duration_since(std::time::UNIX_EPOCH)?
-                        .as_secs(),
-                )?,
-                0,
-            )
-            .seconds()
-            .to_string(),
+            id: register_applied.tx_hash,
+            messages: vec![Message::ProjectRegistration(project_domain, project_name)],
+            state: TransactionState::Applied(register_applied.block),
+            timestamp: SystemTime::now(),
         })
     }
 }
