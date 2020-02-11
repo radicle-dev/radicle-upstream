@@ -5,7 +5,7 @@
     objectPathStore,
     objectTypeStore
   } from "../stores/sourceBrowsing.js";
-  import * as path from "../path.js";
+  import * as path from "../lib/path.js";
 
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";

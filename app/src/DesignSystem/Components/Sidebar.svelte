@@ -5,7 +5,7 @@
   import SidebarItem from "./SidebarItem.svelte";
   import SidebarAvatar from "./SidebarAvatar.svelte";
 
-  import * as path from "../../path.js";
+  import * as path from "../../lib/path.js";
 </script>
 
 <style>

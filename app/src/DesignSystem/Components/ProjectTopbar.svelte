@@ -6,7 +6,7 @@
   import { Icon, Button } from "../Primitives";
 
   import Avatar from "./Avatar.svelte";
-  import * as path from "../../path.js";
+  import * as path from "../../lib/path.js";
   import ProjectTopbarMenu from "./ProjectTopbarMenu.svelte";
 
   export let style = null;

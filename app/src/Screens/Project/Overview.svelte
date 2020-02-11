@@ -5,7 +5,7 @@
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
-  import { registerProject } from "../../path.js";
+  import { registerProject } from "../../lib/path.js";
 
   const GET_PROJECT = gql`
     query Query($id: ID!) {

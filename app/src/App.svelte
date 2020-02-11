@@ -7,8 +7,8 @@
   import { setClient } from "svelte-apollo";
   import Router from "svelte-spa-router";
   import { push, pop, location } from "svelte-spa-router";
-  import * as path from "./path.js";
-  import { hash } from "./hash.js";
+  import * as path from "./lib/path.js";
+  import { hash } from "./lib/hash.js";
 
   import CreateProject from "./Screens/CreateProject.svelte";
   import DesignSystemGuide from "./Screens/DesignSystemGuide.svelte";

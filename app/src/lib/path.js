@@ -1,5 +1,5 @@
 import regexparam from "regexparam";
-import { DEFAULT_PROJECT_REVISION } from "./config.js";
+import { DEFAULT_PROJECT_REVISION } from "../config.js";
 import { BLOB, TREE } from "./types.js";
 
 export const search = _params => "/search";

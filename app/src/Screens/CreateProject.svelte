@@ -5,8 +5,8 @@
   import { pop, push } from "svelte-spa-router";
 
   import { showNotification } from "../stores/notification.js";
-  import * as path from "../path.js";
-  import { hash } from "../hash.js";
+  import * as path from "../lib/path.js";
+  import { hash } from "../lib/hash.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
   import { slide } from "svelte/transition";
 

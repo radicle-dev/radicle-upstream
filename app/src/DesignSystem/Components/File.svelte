@@ -4,11 +4,11 @@
     revisionStore,
     objectPathStore
   } from "../../stores/sourceBrowsing.js";
-  import { BLOB } from "../../types.js";
 
   import { Icon } from "../Primitives";
   import { link } from "svelte-spa-router";
-  import * as path from "../../path.js";
+  import * as path from "../../lib/path.js";
+  import { BLOB } from "../../lib/types.js";
 
   export let name = null;
   export let filePath = null;

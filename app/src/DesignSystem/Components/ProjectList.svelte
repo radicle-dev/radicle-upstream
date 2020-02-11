@@ -4,7 +4,7 @@
   import ProjectCard from "./ProjectCard.svelte";
 
   import { projectNameStore } from "../../stores/project.js";
-  import { createProject, projectOverview } from "../../path.js";
+  import { createProject, projectOverview } from "../../lib/path.js";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";

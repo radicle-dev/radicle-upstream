@@ -1,5 +1,5 @@
 <script>
-  import { hash } from "../../hash.js";
+  import { hash } from "../../lib/hash.js";
   import { Text } from "../Primitives";
 
   export let style = null;

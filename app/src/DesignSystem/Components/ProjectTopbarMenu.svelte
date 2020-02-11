@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import { location } from "svelte-spa-router";
 
-  import * as path from "../../path.js";
+  import * as path from "../../lib/path.js";
 
   import { Icon } from "../Primitives";
 

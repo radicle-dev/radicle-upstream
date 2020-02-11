@@ -2,7 +2,7 @@
   import { push } from "svelte-spa-router";
   import { Button, Flex, Icon, Text } from "../DesignSystem/Primitives";
   import { ProjectList, SidebarLayout } from "../DesignSystem/Components";
-  import { createProject } from "../path.js";
+  import { createProject } from "../lib/path.js";
 </script>
 
 <SidebarLayout dataCy="page">

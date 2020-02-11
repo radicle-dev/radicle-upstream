@@ -3,8 +3,8 @@
   import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
 
-  import { TREE } from "../../types.js";
-  import * as path from "../../path.js";
+  import { TREE } from "../../lib/types.js";
+  import * as path from "../../lib/path.js";
 
   import { Icon, Text } from "../Primitives";
   import CommitTeaser from "./CommitTeaser.svelte";

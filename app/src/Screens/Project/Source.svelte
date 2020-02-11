@@ -6,7 +6,7 @@
     objectTypeStore,
     revisionStore
   } from "../../stores/sourceBrowsing.js";
-  import { BLOB } from "../../types.js";
+  import { BLOB } from "../../lib/types.js";
   import {
     FileList,
     FileSource,
