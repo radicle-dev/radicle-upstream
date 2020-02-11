@@ -2,6 +2,7 @@
   import { getContext } from "svelte";
 
   import { Flex, Text } from "../../DesignSystem/Primitives";
+  import { SourceBrowser } from "../../DesignSystem/Components";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -27,15 +28,21 @@
   });
 </script>
 
+<style>
+  .header {
+    margin-bottom: 32px;
+  }
+</style>
+
 <Flex align="left">
   <Text variant="bigTitle">Overview</Text>
 </Flex>
 
-{#await $project}
-  <Text>Loading project...</Text>
-{:then result}
-  <Text>{result.data.project.metadata.name}</Text>
-  <Text>{result.data.project.metadata.description}</Text>
-{:catch error}
-  <Text>ERROR: {error}</Text>
-{/await}
+<div class="header">
+  {#await $project then result}
+    <Text>{result.data.project.metadata.name}</Text>
+    <Text>{result.data.project.metadata.description}</Text>
+  {/await}
+</div>
+
+<SourceBrowser />

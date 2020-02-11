@@ -1,14 +1,15 @@
 <script>
   import { getContext } from "svelte";
+  import { link } from "svelte-spa-router";
+
+  import { Icon } from "../../Primitives";
+
+  import * as path from "../../../lib/path.js";
+  import { BLOB } from "../../../lib/types.js";
   import {
     revisionStore,
     objectPathStore
-  } from "../../stores/sourceBrowsing.js";
-
-  import { Icon } from "../Primitives";
-  import { link } from "svelte-spa-router";
-  import * as path from "../../lib/path.js";
-  import { BLOB } from "../../lib/types.js";
+  } from "../../../stores/sourceBrowser.js";
 
   export let name = null;
   export let filePath = null;

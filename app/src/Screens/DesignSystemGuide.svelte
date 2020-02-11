@@ -2,7 +2,6 @@
   import { Button, Text, Icon, Input } from "../DesignSystem/Primitives";
   import {
     Avatar,
-    CommitTeaser,
     GuideSection,
     Notification,
     Placeholder,
@@ -409,17 +408,6 @@
 
     <Swatch>
       <Notification level="error">Something bad happened, halp!</Notification>
-    </Swatch>
-  </GuideSection>
-
-  <GuideSection title="Source Browsing" subTitle="Commits, files, trees, etc">
-
-    <Swatch>
-      <CommitTeaser
-        commitMessage="Clean up design system guide"
-        timestamp="2 weeks ago"
-        commitSha="7da37a6"
-        {user} />
     </Swatch>
   </GuideSection>
 

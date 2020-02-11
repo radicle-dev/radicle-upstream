@@ -2,13 +2,13 @@
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
-
-  import { TREE } from "../../lib/types.js";
-  import * as path from "../../lib/path.js";
-
-  import { Icon, Text } from "../Primitives";
-  import CommitTeaser from "./CommitTeaser.svelte";
   import { link } from "svelte-spa-router";
+
+  import { TREE } from "../../../lib/types.js";
+  import * as path from "../../../lib/path.js";
+
+  import { Icon, Text } from "../../Primitives";
+  import CommitTeaser from "./CommitTeaser.svelte";
 
   export let projectId = null;
   export let revision = null;

@@ -1,7 +1,7 @@
 <script>
-  import UserCard from "./UserCard.svelte";
   import { link } from "svelte-spa-router";
-  import { Text } from "../Primitives";
+  import { Text } from "../../Primitives";
+  import UserCard from "../UserCard.svelte";
 
   export let commitMessage = null;
   export let timestamp = null;
