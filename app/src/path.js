@@ -37,7 +37,7 @@ export const extractProjectSourceObjectType = location => {
   return type === null ? TREE : type[2];
 };
 
-export const designSystem = _params => "/design-system";
+export const designSystemGuide = _params => "/design-system-guide";
 export const createProject = _params => "/projects/new";
 export const registerProject = id => `/projects/${id}/register`;
 export const wallet = _params => "/wallet";

@@ -11,7 +11,7 @@
   import { hash } from "./hash.js";
 
   import CreateProject from "./Screens/CreateProject.svelte";
-  import DesignSystem from "./Screens/DesignSystem.svelte";
+  import DesignSystemGuide from "./Screens/DesignSystemGuide.svelte";
   import Feed from "./Screens/Feed.svelte";
   import Help from "./Screens/Help.svelte";
   import NotFound from "./Screens/NotFound.svelte";
@@ -47,7 +47,7 @@
     "/projects/new": CreateProject,
     "/projects/:id/register": RegisterProject,
     "/projects/:id/*": Project,
-    "/design-system": DesignSystem,
+    "/design-system-guide": DesignSystemGuide,
     "/wallet": Wallet,
     "/profile": Profile,
     "/help": Help,
@@ -55,10 +55,10 @@
   };
 
   hotkeys("shift+d", () => {
-    if (path.active(path.designSystem(), $location)) {
+    if (path.active(path.designSystemGuide(), $location)) {
       pop();
     }
-    push(path.designSystem());
+    push(path.designSystemGuide());
   });
 
   hotkeys("shift+/", () => {
@@ -71,7 +71,7 @@
   hotkeys("esc", () => {
     if (
       path.active(path.help(), $location) ||
-      path.active(path.designSystem(), $location)
+      path.active(path.designSystemGuide(), $location)
     ) {
       pop();
     }
