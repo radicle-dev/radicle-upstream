@@ -17,10 +17,7 @@ import ProjectTopbarMenuItem from "./ProjectTopbarMenuItem.svelte";
 import Rad from "./Rad.svelte";
 import RevisionSelector from "./RevisionSelector.svelte";
 import Sidebar from "./Sidebar.svelte";
-import SidebarAvatar from "./SidebarAvatar.svelte";
-import SidebarItem from "./SidebarItem.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
-import SidebarTooltip from "./SidebarTooltip.svelte";
 import StepCounter from "./StepCounter.svelte";
 import Swatch from "./Swatch.svelte";
 import TxRow from "./TxRow.svelte";
@@ -46,10 +43,7 @@ export {
   Rad,
   RevisionSelector,
   Sidebar,
-  SidebarAvatar,
-  SidebarItem,
   SidebarLayout,
-  SidebarTooltip,
   StepCounter,
   Swatch,
   TxRow,

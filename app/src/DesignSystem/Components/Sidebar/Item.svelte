@@ -1,9 +1,9 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { Text } from "../Primitives";
+  import { Text } from "../../Primitives";
 
-  import SidebarTooltip from "./SidebarTooltip.svelte";
+  import Tooltip from "./Tooltip.svelte";
 
   export let icon = null;
   export let title = null;
@@ -23,6 +23,6 @@
   <svelte:component this={icon} />
 </a>
 
-<SidebarTooltip>
+<Tooltip>
   <Text variant="title" style="white-space: nowrap;">{title}</Text>
-</SidebarTooltip>
+</Tooltip>

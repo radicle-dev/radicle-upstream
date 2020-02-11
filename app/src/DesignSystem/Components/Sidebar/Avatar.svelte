@@ -1,9 +1,9 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { Icon, Text } from "../Primitives";
+  import { Icon, Text } from "../../Primitives";
 
-  import SidebarTooltip from "./SidebarTooltip.svelte";
+  import Tooltip from "./Tooltip.svelte";
 
   export let image = null;
   export let title = null;
@@ -30,6 +30,6 @@
   <img class:active src={image} alt="user-avatar" />
 </a>
 
-<SidebarTooltip>
+<Tooltip>
   <Text variant="title">{title}</Text>
-</SidebarTooltip>
+</Tooltip>

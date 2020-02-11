@@ -2,8 +2,8 @@
   import { location } from "svelte-spa-router";
   import { Icon } from "../Primitives";
 
-  import SidebarItem from "./SidebarItem.svelte";
-  import SidebarAvatar from "./SidebarAvatar.svelte";
+  import Item from "./Sidebar/Item.svelte";
+  import Avatar from "./Sidebar/Avatar.svelte";
 
   import * as path from "../../lib/path.js";
 </script>
@@ -56,7 +56,7 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem
+        <Item
           icon={Icon.Search}
           title="Search"
           dataCy="search"
@@ -64,7 +64,7 @@
           active={path.active(path.search(), $location)} />
       </li>
       <li>
-        <SidebarItem
+        <Item
           icon={Icon.Feed}
           title="Feed"
           dataCy="feed"
@@ -72,7 +72,7 @@
           active={path.active(path.feed(), $location)} />
       </li>
       <li>
-        <SidebarItem
+        <Item
           icon={Icon.Projects}
           title="Projects"
           dataCy="projects"
@@ -85,7 +85,7 @@
   <nav>
     <ul>
       <li>
-        <SidebarItem
+        <Item
           icon={Icon.Plus}
           title="Create new project"
           dataCy="new-project"
@@ -93,7 +93,7 @@
           active={path.active(path.createProject(), $location)} />
       </li>
       <li>
-        <SidebarItem
+        <Item
           icon={Icon.Fund}
           title="Fund"
           dataCy="wallet"
@@ -101,7 +101,7 @@
           active={path.active(path.wallet(), $location)} />
       </li>
       <li>
-        <SidebarAvatar
+        <Avatar
           image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
           title="Profile"
           dataCy="profile"
