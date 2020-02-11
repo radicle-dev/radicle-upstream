@@ -10,17 +10,17 @@
   import * as path from "./path.js";
   import { hash } from "./hash.js";
 
-  import DesignSystem from "./pages/DesignSystem.svelte";
-  import Feed from "./pages/Feed.svelte";
-  import NotFound from "./pages/NotFound.svelte";
-  import Profile from "./pages/Profile.svelte";
-  import Projects from "./pages/Projects.svelte";
-  import CreateProject from "./pages/CreateProject.svelte";
-  import RegisterProject from "./pages/RegisterProject.svelte";
-  import Project from "./pages/Project.svelte";
-  import Search from "./pages/Search.svelte";
-  import Wallet from "./pages/Wallet.svelte";
-  import Help from "./pages/Help.svelte";
+  import CreateProject from "./Screens/CreateProject.svelte";
+  import DesignSystem from "./Screens/DesignSystem.svelte";
+  import Feed from "./Screens/Feed.svelte";
+  import Help from "./Screens/Help.svelte";
+  import NotFound from "./Screens/NotFound.svelte";
+  import Profile from "./Screens/Profile.svelte";
+  import Project from "./Screens/Project.svelte";
+  import Projects from "./Screens/Projects.svelte";
+  import RegisterProject from "./Screens/RegisterProject.svelte";
+  import Search from "./Screens/Search.svelte";
+  import Wallet from "./Screens/Wallet.svelte";
 
   import hotkeys from "hotkeys-js";
 
