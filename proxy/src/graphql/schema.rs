@@ -114,7 +114,7 @@ impl registry::Transaction {
         self.messages
             .iter()
             .map(|m| match m {
-                registry::Message::ProjectRegistration(domain, name) => {
+                registry::Message::ProjectRegistration { domain, name } => {
                     Message::ProjectRegistration(ProjectRegistration {
                         domain: domain.to_string(),
                         name: name.to_string(),

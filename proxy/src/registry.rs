@@ -23,7 +23,7 @@ pub struct Transaction {
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
     /// Issue a new project registration with (domain, name).
-    ProjectRegistration(String32, String32),
+    ProjectRegistration { domain: String32, name: String32 },
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -104,7 +104,10 @@ impl Registry {
 
         Ok(Transaction {
             id: register_applied.tx_hash,
-            messages: vec![Message::ProjectRegistration(project_domain, project_name)],
+            messages: vec![Message::ProjectRegistration {
+                domain: project_domain,
+                name: project_name,
+            }],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
         })
