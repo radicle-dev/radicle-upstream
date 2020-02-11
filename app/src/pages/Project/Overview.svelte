@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
 
-  import { Flex, Text } from "../../DesignSystem";
+  import { Flex, Text } from "../../DesignSystem/Primitives";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";

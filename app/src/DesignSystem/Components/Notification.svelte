@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Text } from "../DesignSystem";
+  import { Icon, Text } from "../Primitives";
 
   export let icon = Icon.Info;
   export let style = null;

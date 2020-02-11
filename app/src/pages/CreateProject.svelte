@@ -10,8 +10,8 @@
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
   import { slide } from "svelte/transition";
 
-  import ModalLayout from "../layouts/ModalLayout.svelte";
-  import { Button, Icon, Input, Text } from "../DesignSystem";
+  import { Button, Icon, Input, Text } from "../DesignSystem/Primitives";
+  import { ModalLayout } from "../DesignSystem/Components";
 
   let currentSelection;
 

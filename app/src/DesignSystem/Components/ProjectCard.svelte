@@ -1,6 +1,6 @@
 <script>
-  import { Icon, Text } from "../DesignSystem";
-  import Avatar from "../components/Avatar.svelte";
+  import { Icon, Text } from "../Primitives";
+  import Avatar from "./Avatar.svelte";
 
   export let title = "";
   export let description = "";

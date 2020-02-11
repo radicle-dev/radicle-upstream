@@ -3,8 +3,8 @@
   import { getContext } from "svelte";
   import { getClient, query } from "svelte-apollo";
 
-  import { revision } from "../stores.js";
-  import { Input } from "../DesignSystem";
+  import { revision } from "../../stores.js";
+  import { Input } from "../Primitives";
 
   const ALL_REVISIONS = gql`
     query($projectId: ID!) {

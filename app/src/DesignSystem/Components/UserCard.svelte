@@ -1,6 +1,6 @@
 <script>
   import { link } from "svelte-spa-router";
-  import { Text } from "../DesignSystem";
+  import { Text } from "../Primitives";
 
   export let user = null;
   export let style = null;

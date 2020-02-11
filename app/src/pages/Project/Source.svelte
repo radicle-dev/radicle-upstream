@@ -3,10 +3,12 @@
 
   import { objectPath, objectType, revision } from "../../stores.js";
   import { BLOB } from "../../types.js";
-  import FileSource from "../../components/FileSource.svelte";
-  import FileList from "../../components/FileList.svelte";
-  import RevisionSelector from "../../components/RevisionSelector.svelte";
-  import Folder from "../../components/Folder.svelte";
+  import {
+    FileList,
+    FileSource,
+    Folder,
+    RevisionSelector
+  } from "../../DesignSystem/Components";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";

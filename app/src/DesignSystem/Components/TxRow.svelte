@@ -1,5 +1,5 @@
 <script>
-  import { Flex } from "../DesignSystem";
+  import { Flex } from "../Primitives";
 
   export let style = null;
 

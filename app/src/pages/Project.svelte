@@ -5,8 +5,7 @@
 
   import Router from "svelte-spa-router";
   import { location } from "svelte-spa-router";
-  import ProjectTopbar from "../components/ProjectTopbar.svelte";
-  import SidebarLayout from "../layouts/SidebarLayout.svelte";
+  import { ProjectTopbar, SidebarLayout } from "../DesignSystem/Components";
 
   import Overview from "./Project/Overview.svelte";
   import Feed from "./Project/Feed.svelte";

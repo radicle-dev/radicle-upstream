@@ -1,9 +1,11 @@
 <script>
   import { location } from "svelte-spa-router";
-  import { Icon } from "../DesignSystem";
+  import { Icon } from "../Primitives";
+
   import SidebarItem from "./SidebarItem.svelte";
   import SidebarAvatar from "./SidebarAvatar.svelte";
-  import * as path from "../path.js";
+
+  import * as path from "../../path.js";
 </script>
 
 <style>

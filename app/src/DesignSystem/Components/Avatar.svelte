@@ -1,6 +1,6 @@
 <script>
-  import { hash } from "../hash.js";
-  import { Text } from "../DesignSystem";
+  import { hash } from "../../hash.js";
+  import { Text } from "../Primitives";
 
   export let style = null;
 

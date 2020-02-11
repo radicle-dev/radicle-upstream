@@ -1,10 +1,10 @@
 <script>
-  import { Flex, Text } from "../DesignSystem";
-  import Layout from "../layouts/SidebarLayout.svelte";
+  import { Flex, Text } from "../DesignSystem/Primitives";
+  import { SidebarLayout } from "../DesignSystem/Components";
 </script>
 
-<Layout dataCy="page">
+<SidebarLayout dataCy="page">
   <Flex align="left">
     <Text variant="bigTitle">Search</Text>
   </Flex>
-</Layout>
+</SidebarLayout>

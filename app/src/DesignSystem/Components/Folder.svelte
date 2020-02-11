@@ -4,11 +4,11 @@
   import { getClient, query } from "svelte-apollo";
   import { link } from "svelte-spa-router";
 
-  import { TREE } from "../types.js";
-  import { Icon } from "../DesignSystem";
+  import { TREE } from "../../types.js";
+  import { Icon } from "../Primitives";
   import File from "./File.svelte";
-  import { revision, objectPath } from "../stores.js";
-  import * as path from "../path.js";
+  import { revision, objectPath } from "../../stores.js";
+  import * as path from "../../path.js";
 
   export let prefix = ""; // start sidebar tree from repository root
   export let name = null;

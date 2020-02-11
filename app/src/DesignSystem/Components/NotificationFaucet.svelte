@@ -1,8 +1,11 @@
 <script>
   import { onDestroy } from "svelte";
-  import { notification } from "../stores.js";
-  import Notification from "../components/Notification.svelte";
-  import { NOTIFICATION_TIMEOUT } from "../config.js";
+
+  import { notification } from "../../stores.js";
+  import { NOTIFICATION_TIMEOUT } from "../../config.js";
+
+  import Notification from "./Notification.svelte";
+
   import { blur } from "svelte/transition";
 
   export let style = null;

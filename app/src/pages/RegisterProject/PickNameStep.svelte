@@ -1,6 +1,6 @@
 <script>
   import validatejs from "validate.js";
-  import { Button, Flex, Input } from "../../DesignSystem";
+  import { Button, Flex, Input } from "../../DesignSystem/Primitives";
 
   import { pop } from "svelte-spa-router";
 

@@ -1,8 +1,6 @@
 <script>
-  import { Button, Text, Icon, Input } from "../DesignSystem";
-
-  import Notification from "../components/Notification.svelte";
-  import Avatar from "../components/Avatar.svelte";
+  import { Button, Text, Icon, Input } from "../DesignSystem/Primitives";
+  import { Avatar, Notification } from "../DesignSystem/Components";
 
   import { link } from "svelte-spa-router";
 

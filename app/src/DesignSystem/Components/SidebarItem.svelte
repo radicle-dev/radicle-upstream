@@ -1,7 +1,9 @@
 <script>
-  import { Text } from "../DesignSystem";
-  import SidebarTooltip from "./SidebarTooltip.svelte";
   import { link } from "svelte-spa-router";
+
+  import { Text } from "../Primitives";
+
+  import SidebarTooltip from "./SidebarTooltip.svelte";
 
   export let icon = null;
   export let title = null;

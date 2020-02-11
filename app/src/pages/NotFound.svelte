@@ -1,10 +1,10 @@
 <script>
-  import { Flex, Text } from "../DesignSystem";
-  import Layout from "../layouts/SidebarLayout.svelte";
+  import { Flex, Text } from "../DesignSystem/Primitives";
+  import { SidebarLayout } from "../DesignSystem/Components";
 </script>
 
-<Layout>
+<SidebarLayout>
   <Flex align="left">
     <Text variant="bigTitle">Not Found</Text>
   </Flex>
-</Layout>
+</SidebarLayout>

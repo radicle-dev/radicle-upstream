@@ -1,7 +1,7 @@
 <script>
   import UserCard from "./UserCard.svelte";
   import { link } from "svelte-spa-router";
-  import { Text } from "../DesignSystem";
+  import { Text } from "../Primitives";
 
   export let commitMessage = null;
   export let timestamp = null;
@@ -43,9 +43,7 @@
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
     <UserCard {user} style="margin-right: 8px" />
-    <Text style="color: var(--color-darkgray)">
-      {commitMessage}
-    </Text>
+    <Text style="color: var(--color-darkgray)">{commitMessage}</Text>
   </div>
 
   <div class="align-right">

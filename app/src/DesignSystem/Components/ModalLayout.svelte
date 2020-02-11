@@ -1,6 +1,6 @@
 <script>
   import { pop } from "svelte-spa-router";
-  import { Icon } from "../DesignSystem";
+  import { Icon } from "../Primitives";
 
   export let dataCy = null;
 </script>

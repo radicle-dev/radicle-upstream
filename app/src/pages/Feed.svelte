@@ -1,8 +1,6 @@
 <script>
-  import Layout from "../layouts/SidebarLayout.svelte";
-
-  import { Flex, Icon } from "../DesignSystem";
-  import ProjectCard from "../components/ProjectCard.svelte";
+  import { Flex, Icon } from "../DesignSystem/Primitives";
+  import { ProjectCard, SidebarLayout } from "../DesignSystem/Components";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
   import { link, push } from "svelte-spa-router";
@@ -18,7 +16,7 @@
   projects.refetch();
 </script>
 
-<Layout dataCy="page">
+<SidebarLayout dataCy="page">
   <Flex align="left">
     {#await $projects then result}
       <ul>
@@ -34,4 +32,4 @@
       </ul>
     {/await}
   </Flex>
-</Layout>
+</SidebarLayout>

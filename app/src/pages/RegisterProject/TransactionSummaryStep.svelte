@@ -1,9 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
-  import TxRow from "../../components/TxRow.svelte";
-  import { Button, Flex, Text } from "../../DesignSystem";
-  import Avatar from "../../components/Avatar.svelte";
-  import Rad from "../../components/Rad.svelte";
+  import { Button, Flex, Text } from "../../DesignSystem/Primitives";
+  import { Avatar, Rad, TxRow } from "../../DesignSystem/Components";
 
   export let name = null;
   export let timestamp = null;

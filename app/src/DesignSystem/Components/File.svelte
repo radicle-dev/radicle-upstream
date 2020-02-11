@@ -1,11 +1,11 @@
 <script>
   import { getContext } from "svelte";
-  import { revision, objectPath } from "../stores.js";
-  import { BLOB } from "../types.js";
+  import { revision, objectPath } from "../../stores.js";
+  import { BLOB } from "../../types.js";
 
-  import { Icon } from "../DesignSystem";
+  import { Icon } from "../Primitives";
   import { link } from "svelte-spa-router";
-  import * as path from "../path.js";
+  import * as path from "../../path.js";
 
   export let name = null;
   export let filePath = null;

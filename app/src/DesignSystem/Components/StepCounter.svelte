@@ -1,5 +1,5 @@
 <script>
-  import { Text } from "../DesignSystem";
+  import { Text } from "../Primitives";
 
   export let step = null;
   export let of = null;

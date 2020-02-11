@@ -1,5 +1,5 @@
 <script>
-  import { MAIN_IPC_CHANNEL } from "../../types.js";
+  import { MAIN_IPC_CHANNEL } from "../../../types.js";
   import Button from "../Button.svelte";
   import TextInput from "./Text.svelte";
 

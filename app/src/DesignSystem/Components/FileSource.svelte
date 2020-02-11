@@ -3,7 +3,7 @@
   import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
 
-  import { Icon, Text } from "../DesignSystem";
+  import { Icon, Text } from "../Primitives";
   import CommitTeaser from "./CommitTeaser.svelte";
 
   export let projectId = null;

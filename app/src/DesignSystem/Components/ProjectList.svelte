@@ -1,8 +1,11 @@
 <script>
-  import { Text, Icon, Button } from "../DesignSystem";
+  import { Text, Icon, Button } from "../Primitives";
+
   import ProjectCard from "./ProjectCard.svelte";
-  import { projectName } from "../stores.js";
-  import { createProject, projectOverview } from "../path.js";
+
+  import { projectName } from "../../stores.js";
+  import { createProject, projectOverview } from "../../path.js";
+
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
   import { link, push } from "svelte-spa-router";

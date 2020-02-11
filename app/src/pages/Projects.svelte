@@ -1,8 +1,7 @@
 <script>
   import { push } from "svelte-spa-router";
-  import { Button, Flex, Icon, Text } from "../DesignSystem";
-  import ProjectList from "../components/ProjectList.svelte";
-  import SidebarLayout from "../layouts/SidebarLayout.svelte";
+  import { Button, Flex, Icon, Text } from "../DesignSystem/Primitives";
+  import { ProjectList, SidebarLayout } from "../DesignSystem/Components";
   import { createProject } from "../path.js";
 </script>
 

@@ -1,14 +1,13 @@
 <script>
   import { projectName } from "../stores.js";
-  import ModalLayout from "../layouts/ModalLayout.svelte";
-  import StepCounter from "../components/StepCounter.svelte";
+  import { ModalLayout, StepCounter } from "../DesignSystem/Components";
 
   import PickNameStep from "./RegisterProject/PickNameStep.svelte";
   import PickWalletStep from "./RegisterProject/PickWalletStep.svelte";
   import ConfirmTransactionStep from "./RegisterProject/ConfirmTransactionStep.svelte";
   import TransactionSummaryStep from "./RegisterProject/TransactionSummaryStep.svelte";
 
-  import { Text } from "../DesignSystem";
+  import { Text } from "../DesignSystem/Primitives";
   import { gql } from "apollo-boost";
   import { getClient, mutate } from "svelte-apollo";
 
