@@ -2,9 +2,15 @@
   import { Button, Text, Icon, Input } from "../DesignSystem/Primitives";
   import {
     Avatar,
-    Notification,
+    CommitTeaser,
     GuideSection,
-    Swatch
+    Notification,
+    Placeholder,
+    ProjectCard,
+    Rad,
+    StepCounter,
+    Swatch,
+    UserCard
   } from "../DesignSystem/Components";
 
   import { link } from "svelte-spa-router";
@@ -34,6 +40,11 @@
         ]),
       []
     );
+
+  const user = {
+    username: "Rudolfs Osins",
+    avatar: "https://avatars.dicebear.com/v2/jdenticon/two.svg"
+  };
 </script>
 
 <style>
@@ -356,21 +367,6 @@
 
   <Text variant="hugeTitle" style="margin-bottom: 92px">Components</Text>
 
-  <GuideSection title="Notifications" subTitle="Info, Warnings and Errors">
-
-    <Swatch>
-      <Notification>This is harmless, but you should know anyway.</Notification>
-    </Swatch>
-
-    <Swatch>
-      <Notification level="warning">This is slightly concerning.</Notification>
-    </Swatch>
-
-    <Swatch>
-      <Notification level="error">Something bad happened, halp!</Notification>
-    </Swatch>
-  </GuideSection>
-
   <GuideSection
     title="Avatars"
     subTitle="User, project, etc avatars in various sizes and shapes.">
@@ -395,6 +391,61 @@
     <Swatch>
       <Avatar title="My name" />
       <Avatar size="big" title="My name" />
+    </Swatch>
+  </GuideSection>
+
+  <GuideSection title="Notifications" subTitle="Info, Warnings and Errors">
+    <Swatch>
+      <Notification>This is harmless, but you should know anyway.</Notification>
+    </Swatch>
+
+    <Swatch>
+      <Notification level="warning">This is slightly concerning.</Notification>
+    </Swatch>
+
+    <Swatch>
+      <Notification level="error">Something bad happened, halp!</Notification>
+    </Swatch>
+  </GuideSection>
+
+  <GuideSection title="Source Browsing" subTitle="Commits, files, trees, etc">
+
+    <Swatch>
+      <CommitTeaser
+        commitMessage="Clean up design system guide"
+        timestamp="2 weeks ago"
+        commitSha="7da37a6"
+        {user} />
+    </Swatch>
+  </GuideSection>
+
+  <GuideSection title="Cards" subTitle="Project, user, etc">
+
+    <Swatch>
+      <ProjectCard
+        title="Radicle"
+        description="Best project in the world"
+        imgUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
+        isRegistered={true} />
+    </Swatch>
+
+    <Swatch>
+      <UserCard {user} />
+    </Swatch>
+  </GuideSection>
+
+  <GuideSection title="Misc" subTitle="Everything else">
+
+    <Swatch>
+      <Placeholder style="width: 300px; height: 100px" />
+    </Swatch>
+
+    <Swatch>
+      <Rad amount="200" />
+    </Swatch>
+
+    <Swatch>
+      <StepCounter step={2} of={7} />
     </Swatch>
   </GuideSection>
 </div>
