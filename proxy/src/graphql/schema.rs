@@ -5,8 +5,8 @@ use radicle_surf as surf;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
-use super::git;
 use super::project;
+use crate::coco;
 use crate::error;
 use crate::registry;
 
@@ -58,10 +58,10 @@ impl Mutation {
         publish: bool,
     ) -> Result<project::Project, error::Error> {
         if surf::git::git2::Repository::open(path.clone()).is_err() {
-            git::init_repo(path.clone())?;
+            coco::init_repo(path.clone())?;
         };
 
-        let (id, meta) = git::init_project(
+        let (id, meta) = coco::init_project(
             &ctx.librad_paths,
             &path,
             &metadata.name,
@@ -175,7 +175,7 @@ impl Query {
         id: juniper::ID,
         revision: String,
         path: String,
-    ) -> Result<git::Blob, error::Error> {
+    ) -> Result<coco::Blob, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
 
@@ -209,7 +209,7 @@ impl Query {
 
         let last_commit = browser
             .last_commit(&commit_path)?
-            .map(|c| git::Commit::from(&c));
+            .map(|c| coco::Commit::from(&c));
         let (_rest, last) = p.split_last();
         let (binary, content) = {
             let res = std::str::from_utf8(&file.contents);
@@ -220,18 +220,18 @@ impl Query {
             }
         };
 
-        Ok(git::Blob {
+        Ok(coco::Blob {
             binary,
             content,
-            info: git::Info {
+            info: coco::Info {
                 name: last.label,
-                object_type: git::ObjectType::Blob,
+                object_type: coco::ObjectType::Blob,
                 last_commit,
             },
         })
     }
 
-    fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<git::Commit, error::Error> {
+    fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<coco::Commit, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
         let mut browser = match project {
@@ -241,18 +241,18 @@ impl Query {
         let history = browser.get_history();
         let commit = history.0.first();
 
-        Ok(git::Commit::from(commit))
+        Ok(coco::Commit::from(commit))
     }
 
-    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<git::Branch>, error::Error> {
-        git::branches(&ctx.librad_paths, &id.to_string())
+    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<coco::Branch>, error::Error> {
+        coco::branches(&ctx.librad_paths, &id.to_string())
     }
 
-    fn local_branches(ctx: &Context, path: String) -> Result<Vec<git::Branch>, error::Error> {
-        git::local_branches(&path)
+    fn local_branches(ctx: &Context, path: String) -> Result<Vec<coco::Branch>, error::Error> {
+        coco::local_branches(&path)
     }
 
-    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<git::Tag>, error::Error> {
+    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<coco::Tag>, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
         let mut browser = match project {
@@ -262,9 +262,9 @@ impl Query {
         let mut tag_names = browser.list_tags()?;
         tag_names.sort();
 
-        let mut tags: Vec<git::Tag> = tag_names
+        let mut tags: Vec<coco::Tag> = tag_names
             .into_iter()
-            .map(|tag_name| git::Tag(tag_name.name()))
+            .map(|tag_name| coco::Tag(tag_name.name()))
             .collect();
 
         tags.sort();
@@ -277,7 +277,7 @@ impl Query {
         id: juniper::ID,
         revision: String,
         prefix: String,
-    ) -> Result<git::Tree, error::Error> {
+    ) -> Result<coco::Tree, error::Error> {
         let project_id = ProjectId::from_str(&id)?;
         let project = Project::open(&ctx.librad_paths, &project_id)?;
 
@@ -314,7 +314,7 @@ impl Query {
         let mut prefix_contents = prefix_dir.list_directory();
         prefix_contents.sort();
 
-        let entries_results: Result<Vec<git::TreeEntry>, error::Error> = prefix_contents
+        let entries_results: Result<Vec<coco::TreeEntry>, error::Error> = prefix_contents
             .iter()
             .map(|(label, system_type)| {
                 let mut entry_path = if path.is_root() {
@@ -335,17 +335,17 @@ impl Query {
 
                 let last_commit = browser
                     .last_commit(&commit_path)?
-                    .map(|c| git::Commit::from(&c));
-                let info = git::Info {
+                    .map(|c| coco::Commit::from(&c));
+                let info = coco::Info {
                     name: label.to_string(),
                     object_type: match system_type {
-                        surf::file_system::SystemType::Directory => git::ObjectType::Tree,
-                        surf::file_system::SystemType::File => git::ObjectType::Blob,
+                        surf::file_system::SystemType::Directory => coco::ObjectType::Tree,
+                        surf::file_system::SystemType::File => coco::ObjectType::Blob,
                     },
                     last_commit,
                 };
 
-                Ok(git::TreeEntry {
+                Ok(coco::TreeEntry {
                     info,
                     path: entry_path.to_string(),
                 })
@@ -361,14 +361,14 @@ impl Query {
         entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
 
         let last_commit = if path.is_root() {
-            Some(git::Commit::from(browser.get_history().0.first()))
+            Some(coco::Commit::from(browser.get_history().0.first()))
         } else {
             let mut commit_path = surf::file_system::Path::root();
             commit_path.append(&mut path);
 
             browser
                 .last_commit(&commit_path)?
-                .map(|c| git::Commit::from(&c))
+                .map(|c| coco::Commit::from(&c))
         };
         let name = if path.is_root() {
             "".into()
@@ -376,13 +376,13 @@ impl Query {
             let (_first, last) = path.split_last();
             last.label
         };
-        let info = git::Info {
+        let info = coco::Info {
             name,
-            object_type: git::ObjectType::Tree,
+            object_type: coco::ObjectType::Tree,
             last_commit,
         };
 
-        Ok(git::Tree {
+        Ok(coco::Tree {
             path: prefix,
             entries,
             info,
@@ -472,14 +472,14 @@ mod tests {
             .clone(&platinum_from, platinum_into.as_path())
             .expect("unable to clone fixtures repo");
 
-        super::git::setup_fixtures(
+        super::coco::setup_fixtures(
             &librad_paths,
             tmp_dir.path().to_str().expect("path extraction failed"),
         )
         .expect("fixture setup failed");
 
         // Init as rad project.
-        let (platinum_id, _platinum_project) = crate::graphql::git::init_project(
+        let (platinum_id, _platinum_project) = crate::coco::init_project(
             &librad_paths,
             platinum_into.to_str().unwrap(),
             "git-platinum",
@@ -539,7 +539,7 @@ mod tests {
                     .expect("creating temporary directory failed");
                 let path = dir.path().to_str().expect("unable to get path");
 
-                crate::graphql::git::init_repo(path.to_string()).expect("unable to create repo");
+                crate::coco::init_repo(path.to_string()).expect("unable to create repo");
                 git2::Repository::init(path).expect("unable to create repo");
 
                 let mut metadata_input: IndexMap<String, InputValue> = IndexMap::new();
@@ -682,7 +682,7 @@ mod tests {
         use juniper::{InputValue, Variables};
         use pretty_assertions::assert_eq;
 
-        use crate::graphql::git;
+        use crate::coco;
 
         use super::{execute_query, with_fixtures};
 
@@ -1187,10 +1187,10 @@ mod tests {
             with_fixtures(|librad_paths, repos_dir, _platinum_id| {
                 let repo_dir = tempfile::tempdir_in(repos_dir.path()).expect("repo dir failed");
                 let path = repo_dir.path().to_str().expect("repo path").to_string();
-                git::init_repo(path.clone()).expect("repo init failed");
+                coco::init_repo(path.clone()).expect("repo init failed");
 
                 let (project_id, _project_meta) =
-                    git::init_project(
+                    coco::init_project(
                         &librad_paths,
                         &path,
                         "upstream",

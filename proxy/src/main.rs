@@ -28,6 +28,7 @@ extern crate log;
 #[macro_use]
 extern crate juniper;
 
+mod coco;
 /// Utilities to manipulate the process environment.
 mod env;
 /// Error definitions and conversions.
@@ -61,7 +62,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let librad_paths =
             librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
-        graphql::git::setup_fixtures(
+        coco::setup_fixtures(
             &librad_paths,
             temp_dir.path().to_str().expect("path extraction failed"),
         )
