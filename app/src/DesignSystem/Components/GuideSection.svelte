@@ -20,7 +20,7 @@
 
 <div class="section">
   <div class="titles">
-    <Text variant="bigTitle">{title}</Text>
+    <Text variant="bigTitle" style="margin-bottom: 8px">{title}</Text>
     <Text style="color: var(--color-gray)">{subTitle}</Text>
   </div>
   <div class="content">
