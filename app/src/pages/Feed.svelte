@@ -1,15 +1,8 @@
 <script>
   import Layout from "../layouts/SidebarLayout.svelte";
+  import RowLayout from "../layouts/helpers/Row.svelte";
 
-  import {
-    Header,
-    Text,
-    Title,
-    Icon,
-    Numeric,
-    Caption,
-    Button
-  } from "../DesignSystem";
+  import { Icon } from "../DesignSystem";
   import ProjectCard from "../components/ProjectCard.svelte";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -27,7 +20,7 @@
 </script>
 
 <Layout dataCy="page">
-  <Header>
+  <RowLayout>
     <div slot="left">
       {#await $projects then result}
         <ul>
@@ -43,5 +36,5 @@
         </ul>
       {/await}
     </div>
-  </Header>
+  </RowLayout>
 </Layout>

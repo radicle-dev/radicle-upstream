@@ -1,12 +1,13 @@
 <script>
-  import { Header, Title } from "../DesignSystem";
+  import { Title } from "../DesignSystem";
   import Layout from "../layouts/SidebarLayout.svelte";
+  import RowLayout from "../layouts/helpers/Row.svelte";
 </script>
 
 <Layout>
-  <Header>
+  <RowLayout>
     <div slot="left">
-      <Title.Big>Not Found</Title.Big>
+      <Title size="big">Not Found</Title>
     </div>
-  </Header>
+  </RowLayout>
 </Layout>

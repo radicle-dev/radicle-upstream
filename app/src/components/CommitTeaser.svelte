@@ -43,18 +43,18 @@
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
     <UserCard {user} style="margin-right: 8px" />
-    <Text.Regular style="color: var(--color-darkgray)">
+    <Text style="color: var(--color-darkgray)">
       {commitMessage}
-    </Text.Regular>
+    </Text>
   </div>
 
   <div class="align-right">
-    <Text.Regular style="color: var(--color-darkgray)">
+    <Text style="color: var(--color-darkgray)">
       Latest commit
       <a class="commitSha" href="/projects/123/commits/{commitSha}" use:link>
         {commitSha}
       </a>
       {timestamp}
-    </Text.Regular>
+    </Text>
   </div>
 </div>

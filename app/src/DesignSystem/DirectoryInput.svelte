@@ -1,8 +1,7 @@
 <script>
   import { MAIN_IPC_CHANNEL } from "../types.js";
   import Button from "./Button.svelte";
-  import Input from "./Input.svelte";
-  import Text from "./Text";
+  import TextInput from "./TextInput.svelte";
 
   export let placeholder = null;
   export let style = null;
@@ -31,7 +30,7 @@
 </style>
 
 <div class="wrapper" {style}>
-  <Input
+  <TextInput
     {placeholder}
     value={path}
     {valid}

@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title, Text } from "../DesignSystem";
+  import { Avatar, Icon, Title, Text } from "../DesignSystem";
 
   export let title = "";
   export let description = "";
@@ -12,12 +12,6 @@
   .project-card {
     display: flex;
     width: 100%;
-  }
-
-  img {
-    width: 64px;
-    height: 64px;
-    margin: 16px;
   }
 
   .container {
@@ -47,20 +41,20 @@
 </style>
 
 <div class="project-card">
-  <img src={imgUrl} alt="Project Avatar" />
+  <Avatar imageUrl={imgUrl} variant="project" size="big" style="margin: 16px"/>
 
   <div class="container">
     <div class="first-row">
-      <Title.Regular>{title}</Title.Regular>
+      <Title>{title}</Title>
       {#if isRegistered}
         <div class="registered">
           <Icon.Ellipse
             style="fill: var(--color-pink); position: relative; bottom: -2px;" />
-          <Text.Small>Registered</Text.Small>
+          <Text size="small">Registered</Text>
         </div>
       {/if}
     </div>
-    <Text.Regular>{description}</Text.Regular>
+    <Text>{description}</Text>
   </div>
 
   <div class="state">

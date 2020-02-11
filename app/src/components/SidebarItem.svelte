@@ -22,5 +22,5 @@
 </a>
 
 <SidebarTooltip>
-  <Title.Regular style="white-space: nowrap;">{title}</Title.Regular>
+  <Title style="white-space: nowrap;">{title}</Title>
 </SidebarTooltip>

@@ -21,13 +21,46 @@ The pull request ref goes in brackets at the end of the subject.
 Generally we also follow [good commit message hygene][tpope].
 
 
+## Work coordination
+
+Work on the app and proxy can happen in parallel. However for this to work the
+teams working on both code bases have to agree on a common API. The definitive
+source-of-truth for this API is the proxy source code.
+
+To change or extend the API, first open an issue on GitHub, discuss what is
+needed and then propose proxy code changes that implement the API.
+
+We don't keep around a copy of an SDL schema file as they tend to get outdated
+quickly and it is way easier to explore the API via introspection. See the next
+section for more information on that.
+
+
+### GraphiQL explorer
+
+The introspective and self-docummenting nature of GraphQL allows us to easily
+explore our API by querying the backend. For better developer ergonomics we
+include a [static version][gs] of [GraphiQL-explorer][ge]. To see it in action:
+
+1. Start the app in development mode: `cd app && yarn start`
+2. Launch GraphiQL from a separate shell: `yarn graphiql`
+   or directly navigate to http://localhost:5000 in your browser.
+
+You can see all the possible queries and their parameters by opening the
+GraphiQL explorer sidebar, for that simply click the `Explorer` button. More
+extensive API documentation is provided in the `Docs` sidebar. You can navigate
+through all the queries and types by clicking on them.
+
+Annotations for queries, mutations, types and fields also get propagated from
+the proxy source into the `Docs` section.
+
+
 ## Releases
 
 To perform a release:
 
 1. If you haven't already, install the [`hub`][hub] cli tool.
 
-2. Run: `(cd app && yarn release)` and follow the instructions.
+2. Run: `cd app && yarn release` and follow the instructions.
    Here's what a typical release looks like:
 
 ```sh
@@ -126,3 +159,5 @@ DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
 [ccs]: https://www.conventionalcommits.org/en/v1.0.0/
 [artifacts]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
 [hub]: https://github.com/github/hub
+[ge]: https://github.com/OneGraph/graphiql-explorer
+[gs]: https://github.com/OneGraph/graphiql-with-extensions/

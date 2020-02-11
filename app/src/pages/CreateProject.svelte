@@ -13,9 +13,8 @@
   import ModalLayout from "../layouts/ModalLayout.svelte";
   import {
     Button,
-    Header,
     Icon,
-    Input,
+    TextInput,
     DirectoryInput,
     CheckboxInput,
     Text,
@@ -349,68 +348,62 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="create-project">
     <div class="create-project">
-      <Title.Big style="margin-bottom: 32px; text-align: left">
+      <Title size="big" style="margin-bottom: 32px; text-align: left">
         Create a new project
-      </Title.Big>
+      </Title>
 
-      <Input
+      <TextInput
         style="--focus-outline-color: var(--color-pink)"
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        valid={!(validations && validations.name)} />
-      {#if validations && validations.name}
-        <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
-          {validations.name[0]}
-        </Text.SmallBold>
-      {/if}
+        valid={!(validations && validations.name)}
+        errorMessage={validations && validations.name && validations.name[0]} />
 
-      <Input
+      <TextInput
         style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
         var(--color-pink)"
         placeholder="Project description"
         bind:value={description} />
 
-      <Input
+      <TextInput
         dataCy="avatar-url"
         style="--focus-outline-color: var(--color-pink)"
         placeholder="http://my-project-website.com/project-avatar.png"
         bind:value={imageUrl}
-        valid={!(validations && validations.imageUrl)} />
-      {#if validations && validations.imageUrl}
-        <Text.SmallBold style="color: var(--color-red); margin-top: 4px">
-          {validations.imageUrl[0]}
-        </Text.SmallBold>
-      {/if}
+        valid={!(validations && validations.imageUrl)}
+        errorMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
 
-      <Title.Regular style="margin: 16px 0 12px 16px; text-align: left">
+      <Title style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
-      </Title.Regular>
+      </Title>
 
       <div class="radio-selector">
         <div class="option" class:active={isNew} data-cy="new-project">
           <div class="option-header" on:click={() => (currentSelection = NEW)}>
-            <Title.Regular style="color: var(--color-darkgray)">
+            <Title style="color: var(--color-darkgray)">
               Start with a new repository
-            </Title.Regular>
+            </Title>
             <Icon.CheckCircle
               style={isNew ? 'display: block' : 'display: none'} />
           </div>
           {#if isNew}
             <div class="option-body" in:slide>
-              <Text.Regular
+              <Text
                 style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose where you'd like to create the repository
-              </Text.Regular>
+              </Text>
               <DirectoryInput
                 valid={!(validations && validations.newRepositoryPath)}
                 placeholder="~/path/to/folder"
                 bind:path={newRepositoryPath} />
               {#if validations && validations.newRepositoryPath}
-                <Text.SmallBold
+                <Text
+                  size="small"
+                  weight="bold"
                   style="color: var(--color-red); margin-top: 4px">
                   {validations.newRepositoryPath[0]}
-                </Text.SmallBold>
+                </Text>
               {/if}
             </div>
           {/if}
@@ -423,32 +416,34 @@
           <div
             class="option-header"
             on:click={() => (currentSelection = EXISTING)}>
-            <Title.Regular style="color: var(--color-darkgray)">
+            <Title style="color: var(--color-darkgray)">
               Continue with an existing repository
-            </Title.Regular>
+            </Title>
             <Icon.CheckCircle
               style={isExisting ? 'display: block' : 'display: none'} />
           </div>
           {#if isExisting}
             <div class="option-body" in:slide>
-              <Text.Regular
+              <Text
                 style="margin-bottom: 12px; color: var(--color-darkgray)">
                 Choose the existing repository
-              </Text.Regular>
+              </Text>
               <DirectoryInput
                 placeholder="~/path/to/folder"
                 valid={!(validations && validations.existingRepositoryPath)}
                 bind:path={existingRepositoryPath} />
               {#if validations && validations.existingRepositoryPath}
-                <Text.SmallBold
+                <Text
+                  size="small"
+                  weight="bold"
                   style="color: var(--color-red); margin-top: 4px">
                   {validations.existingRepositoryPath[0]}
-                </Text.SmallBold>
+                </Text>
               {/if}
               <div class="default-branch-row" style="margin-top: 16px">
-                <Text.Regular style="color: var(--color-darkgray)">
+                <Text style="color: var(--color-darkgray)">
                   Select the default branch
-                </Text.Regular>
+                </Text>
                 {#if localBranches.length > 0}
                   <Select
                     items={localBranches}
@@ -475,15 +470,15 @@
       {#if validations && validations.currentSelection}
         <div class="validation-row">
           <Icon.Important style="margin-right: 8px;fill: var(--color-red)" />
-          <Title.Regular style="color: var(--color-red)">
+          <Title style="color: var(--color-red)">
             {validations.currentSelection[0]}
-          </Title.Regular>
+          </Title>
         </div>
       {/if}
 
       <div class="button-row">
         <div class="footnote">
-          <Text.Small style="color: var(--color-gray)">* required</Text.Small>
+          <Text size="small" style="color: var(--color-gray)">* required</Text>
         </div>
         <Button
           dataCy="cancel-button"
