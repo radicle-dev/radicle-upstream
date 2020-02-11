@@ -1,9 +1,8 @@
 <script>
   import TxRow from "../../components/TxRow.svelte";
-  import { Button, Text } from "../../DesignSystem";
+  import { Button, Flex, Text } from "../../DesignSystem";
   import Avatar from "../../components/Avatar.svelte";
   import Rad from "../../components/Rad.svelte";
-  import RowLayout from "../../layouts/helpers/Row.svelte";
 
   export let onNextStep = null;
   export let onPreviousStep = null;
@@ -59,7 +58,7 @@
   </div>
 </TxRow>
 
-<RowLayout style="margin-top: 48px;">
+<Flex style="margin-top: 48px;">
   <div slot="left">
     <Button
       disabled={false}
@@ -69,9 +68,10 @@
       Back
     </Button>
   </div>
+
   <div slot="right">
     <Button disabled={false} on:click={onNextStep} variant="primary">
       Next
     </Button>
   </div>
-</RowLayout>
+</Flex>

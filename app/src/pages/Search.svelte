@@ -1,13 +1,10 @@
 <script>
-  import { Text } from "../DesignSystem";
+  import { Flex, Text } from "../DesignSystem";
   import Layout from "../layouts/SidebarLayout.svelte";
-  import RowLayout from "../layouts/helpers/Row.svelte";
 </script>
 
 <Layout dataCy="page">
-  <RowLayout>
-    <div slot="left">
-      <Text variant="bigTitle">Search</Text>
-    </div>
-  </RowLayout>
+  <Flex align="left">
+    <Text variant="bigTitle">Search</Text>
+  </Flex>
 </Layout>

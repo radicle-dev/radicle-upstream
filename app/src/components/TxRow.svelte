@@ -1,5 +1,5 @@
 <script>
-  import RowLayout from "../layouts/helpers/Row.svelte";
+  import { Flex } from "../DesignSystem";
 
   export let style = null;
 
@@ -38,7 +38,7 @@
 </style>
 
 <div class={rowClass} {style}>
-  <RowLayout>
+  <Flex>
     <div slot="left">
       <slot name="left" />
     </div>
@@ -46,5 +46,5 @@
     <div slot="right">
       <slot name="right" />
     </div>
-  </RowLayout>
+  </Flex>
 </div>

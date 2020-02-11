@@ -1,10 +1,7 @@
 <script>
-  import { Text } from "../../DesignSystem";
-  import RowLayout from "../../layouts/helpers/Row.svelte";
+  import { Flex, Text } from "../../DesignSystem";
 </script>
 
-<RowLayout>
-  <div slot="left">
-    <Text variant="bigTitle">Revisions</Text>
-  </div>
-</RowLayout>
+<Flex align="left">
+  <Text variant="bigTitle">Revisions</Text>
+</Flex>
