@@ -46,6 +46,49 @@ impl Context {
 
 impl juniper::Context for Context {}
 
+/// Encapsulates write path in API.
+pub struct Mutation;
+
+#[juniper::object(Context = Context)]
+impl Mutation {
+    fn create_project(
+        ctx: &Context,
+        metadata: project::MetadataInput,
+        path: String,
+        publish: bool,
+    ) -> Result<project::Project, error::Error> {
+        if surf::git::git2::Repository::open(path.clone()).is_err() {
+            git::init_repo(path.clone())?;
+        };
+
+        let (id, meta) = git::init_project(
+            &ctx.librad_paths,
+            &path,
+            &metadata.name,
+            &metadata.description,
+            &metadata.default_branch,
+            &metadata.img_url,
+        )?;
+
+        Ok(project::Project {
+            id: id.to_string().into(),
+            metadata: meta.into(),
+        })
+    }
+
+    fn register_project(
+        ctx: &Context,
+        domain: String,
+        name: String,
+    ) -> Result<registry::Transaction, error::Error> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+        // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
+        // https://github.com/graphql-rust/juniper/pull/497
+        futures::executor::block_on(ctx.registry.register_project(&fake_pair, domain, name))
+    }
+}
+
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
     domain: String,
@@ -117,49 +160,6 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
-
-/// Encapsulates write path in API.
-pub struct Mutation;
-
-#[juniper::object(Context = Context)]
-impl Mutation {
-    fn create_project(
-        ctx: &Context,
-        metadata: project::MetadataInput,
-        path: String,
-        publish: bool,
-    ) -> Result<project::Project, error::Error> {
-        if surf::git::git2::Repository::open(path.clone()).is_err() {
-            git::init_repo(path.clone())?;
-        };
-
-        let (id, meta) = git::init_project(
-            &ctx.librad_paths,
-            &path,
-            &metadata.name,
-            &metadata.description,
-            &metadata.default_branch,
-            &metadata.img_url,
-        )?;
-
-        Ok(project::Project {
-            id: id.to_string().into(),
-            metadata: meta.into(),
-        })
-    }
-
-    fn register_project(
-        ctx: &Context,
-        domain: String,
-        name: String,
-    ) -> Result<registry::Transaction, error::Error> {
-        // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
-        // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
-        // https://github.com/graphql-rust/juniper/pull/497
-        futures::executor::block_on(ctx.registry.register_project(&fake_pair, domain, name))
-    }
-}
 
 /// Encapsulates read paths in API.
 pub struct Query;
