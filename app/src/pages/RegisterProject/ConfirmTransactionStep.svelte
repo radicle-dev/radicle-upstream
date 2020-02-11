@@ -1,6 +1,8 @@
 <script>
   import TxRow from "../../components/TxRow.svelte";
-  import { Button, Text, Rad, Avatar } from "../../DesignSystem";
+  import { Button, Text } from "../../DesignSystem";
+  import Avatar from "../../components/Avatar.svelte";
+  import Rad from "../../components/Rad.svelte";
   import RowLayout from "../../layouts/helpers/Row.svelte";
 
   export let name = null;

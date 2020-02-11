@@ -1,6 +1,6 @@
 <script>
   import { hash } from "../hash.js";
-  import Text from "./Text.svelte";
+  import { Text } from "../DesignSystem";
 
   export let style = null;
 

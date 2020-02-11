@@ -1,6 +1,5 @@
 <script>
-  import Icon from "../DesignSystem/Icon";
-  import Text from "./Text.svelte";
+  import { Icon, Text } from "../DesignSystem";
 
   export let amount = null;
   export let style = null;

@@ -2,7 +2,8 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
-  import { Icon, Button, Avatar } from "../DesignSystem";
+  import { Icon, Button } from "../DesignSystem";
+  import Avatar from "../components/Avatar.svelte";
   import * as path from "../path.js";
   import ProjectTopbarMenu from "../components/ProjectTopbarMenu.svelte";
 
