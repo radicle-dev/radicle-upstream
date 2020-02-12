@@ -36,7 +36,7 @@ pub struct Metadata {
 pub enum Message {
     /// Issue a new project registration with (domain, name).
     ProjectRegistration {
-        /// Domain part o the project id.
+        /// Domain part of the project id.
         domain: String32,
         /// Actual project name, unique for domain.
         name: String32,
