@@ -2,6 +2,8 @@ use radicle_registry_client::{
     self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, String32,
     TransactionExtra, H256,
 };
+use serde_cbor::to_vec;
+use serde_derive::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 use super::error;
@@ -18,6 +20,15 @@ pub struct Transaction {
     pub state: TransactionState,
     /// Creation time.
     pub timestamp: SystemTime,
+}
+
+/// `ProjectID` wrapper for serde de/serialization
+#[derive(Serialize, Deserialize)]
+pub struct Metadata {
+    /// Librad project ID.
+    pub id: String,
+    /// Metadata version.
+    pub version: u8,
 }
 
 /// Possible messages a [`Transaction`] can carry.
@@ -63,6 +74,7 @@ impl Registry {
         author: &ed25519::Pair,
         domain: String,
         name: String,
+        maybe_project_id: Option<librad::project::ProjectId>,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
         let project_name =
@@ -90,11 +102,26 @@ impl Registry {
             .await?
             .result?;
 
+        let register_metadata_vec = if let Some(pid_string) = maybe_project_id {
+            let pid_cbor = Metadata {
+                id: pid_string.to_string(),
+                version: 1,
+            };
+            // TODO(garbados): unpanic
+            to_vec(&pid_cbor).expect("unable to serialize project metadata")
+        } else {
+            vec![]
+        };
+
+        // TODO: remove .expect() call, see: https://github.com/radicle-dev/radicle-registry/issues/185
+        let register_metadata =
+            registry::Bytes128::from_vec(register_metadata_vec).expect("unable construct metadata");
+
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterProject {
             id: (project_name.clone(), project_domain.clone()),
             checkpoint_id,
-            metadata: registry::Bytes128::from_vec(vec![]).expect("unable construct metadata"),
+            metadata: register_metadata,
         };
         let register_tx = registry::Transaction::new_signed(
             author,
@@ -119,18 +146,35 @@ impl Registry {
     }
 }
 
-#[test]
-fn test_register_project() {
-    use radicle_registry_client::Client;
+#[cfg(test)]
+mod tests {
+    use crate::registry::{Metadata, Registry};
+    use radicle_registry_client::ed25519;
+    use radicle_registry_client::{Client, ClientT, String32};
+    use serde_cbor::from_reader;
 
-    // Test that project registration submits valid transactions and they succeed.
-    let client = Client::new_emulator();
-    let registry = Registry::new(client);
-    let alice = ed25519::Pair::from_legacy_string("//Alice", None);
-    let result = futures::executor::block_on(registry.register_project(
-        &alice,
-        "hello".into(),
-        "world".into(),
-    ));
-    assert!(result.is_ok());
+    #[test]
+    fn test_register_project() {
+        // Test that project registration submits valid transactions and they succeed.
+        let client = Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+        let result = futures::executor::block_on(registry.register_project(
+            &alice,
+            "hello".into(),
+            "world".into(),
+            Some(librad::git::ProjectId::new(radicle_surf::git::git2::Oid::zero()).into()),
+        ));
+        assert!(result.is_ok());
+        let project_domain = String32::from_string("hello".into()).unwrap();
+        let project_name = String32::from_string("world".into()).unwrap();
+        let pid = (project_name, project_domain);
+        let future_project = client.get_project(pid);
+        let maybe_project = futures::executor::block_on(future_project).unwrap();
+        assert_eq!(maybe_project.is_some(), true);
+        let project = maybe_project.unwrap();
+        let metadata_vec: Vec<u8> = project.metadata.into();
+        let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
+        assert_eq!(metadata.version, 1);
+    }
 }

@@ -3,6 +3,7 @@ use radicle_registry_client::ed25519;
 use radicle_surf as surf;
 use std::convert::From;
 use std::convert::TryFrom;
+use std::str::FromStr;
 
 use super::project;
 use crate::coco;
@@ -81,12 +82,23 @@ impl Mutation {
         ctx: &Context,
         domain: String,
         name: String,
+        maybe_librad_id_input: Option<juniper::ID>,
     ) -> Result<registry::Transaction, error::Error> {
+        let maybe_librad_id = maybe_librad_id_input.map(|id| {
+            librad::project::ProjectId::from_str(&id.to_string())
+                .expect("unable to parse project id")
+        });
+
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
         // https://github.com/graphql-rust/juniper/pull/497
-        futures::executor::block_on(ctx.registry.register_project(&fake_pair, domain, name))
+        futures::executor::block_on(ctx.registry.register_project(
+            &fake_pair,
+            domain,
+            name,
+            maybe_librad_id,
+        ))
     }
 }
 
