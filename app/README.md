@@ -56,9 +56,10 @@ being improved and extended. This style guide is translated into code that
 forms a design system. The design system contains all design primitives which
 can be composed to create rich user experiences.
 
-Most of the components defined by the design system can be conveniently seen
-on one page within the app UI by pressing `[shift]` + `[D]`. This will bring up
-the Design System Guide modal. To close the modal, hit `[ESC]`.
+Most of the components defined by the design system can be conveniently seen on
+one page within the app UI by pressing <kbd>shift</kbd> + <kbd>D</kbd>. This
+will bring up the Design System Guide modal. To close the modal, hit
+<kbd>ESC</kbd>.
 
 The purpose of the Guide is to be able to see how changes to components affect
 all variations in one glance. Newly created components should be added to the
@@ -129,7 +130,7 @@ contain common data fetching and routing for the sub-screens.
 
 When multiple screens share the same layout, it should be extracted into a
 separate component. Layout components are suffixed with "Layout", like so:
-"DesignSystem/Components/ModalLayout.svelte".
+`DesignSystem/Components/ModalLayout.svelt`.
 
 File and directory name casing:
   - Svelte components and directories containing components - PascalCase

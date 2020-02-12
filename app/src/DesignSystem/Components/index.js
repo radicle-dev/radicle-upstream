@@ -1,5 +1,5 @@
 import Avatar from "./Avatar.svelte";
-import GuideSection from "./GuideSection.svelte";
+import DesignSystemGuideSection from "./DesignSystemGuideSection.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
@@ -18,7 +18,7 @@ import UserCard from "./UserCard.svelte";
 
 export {
   Avatar,
-  GuideSection,
+  DesignSystemGuideSection,
   Notification,
   NotificationFaucet,
   ModalLayout,

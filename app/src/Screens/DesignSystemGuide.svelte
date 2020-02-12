@@ -2,7 +2,7 @@
   import { Button, Text, Icon, Input } from "../DesignSystem/Primitives";
   import {
     Avatar,
-    GuideSection,
+    DesignSystemGuideSection as Section,
     Notification,
     Placeholder,
     ProjectCard,
@@ -65,14 +65,14 @@
 <div class="layout">
   <Text variant="hugeTitle" style="margin-bottom: 92px">Primitives</Text>
 
-  <GuideSection title="Colors" subTitle="Primary, secondary and grays">
+  <Section title="Colors" subTitle="Primary, secondary and grays">
 
     {#each colors as color}
       <Text style="background-color: var({color})">{color}</Text>
     {/each}
-  </GuideSection>
+  </Section>
 
-  <GuideSection
+  <Section
     title="Typography"
     subTitle="Using GT America and GT America Mono from Grill Type">
 
@@ -91,9 +91,9 @@
     <Text variant="bigNumber">0123456789</Text>
     <Text variant="number">0123456789</Text>
     <Text variant="smallNumber">0123456789</Text>
-  </GuideSection>
+  </Section>
 
-  <GuideSection
+  <Section
     title="Icons"
     subTitle="Icons at 16px, 24px, 36px and 64px width and height with 2px
     stroke weight, multiple color variations">
@@ -127,9 +127,9 @@
     <Icon.Search />
     <Icon.SearchSmall />
     <Icon.Source />
-  </GuideSection>
+  </Section>
 
-  <GuideSection
+  <Section
     title="Buttons"
     subTitle="Vanilla, Primary, Secondary, Cancel, disabled state">
 
@@ -348,11 +348,9 @@
         </td>
       </tr>
     </table>
-  </GuideSection>
+  </Section>
 
-  <GuideSection
-    title="Form elements"
-    subTitle="Inputs, text areas, dropdowns, etc.">
+  <Section title="Form elements" subTitle="Inputs, text areas, dropdowns, etc.">
 
     <Swatch>
       <Input.Text placeholder="Hey, I'm an input." />
@@ -366,11 +364,11 @@
     <Swatch>
       <Input.Checkbox>How about a checkbox?</Input.Checkbox>
     </Swatch>
-  </GuideSection>
+  </Section>
 
   <Text variant="hugeTitle" style="margin-bottom: 92px">Components</Text>
 
-  <GuideSection
+  <Section
     title="Avatars"
     subTitle="User, project, etc avatars in various sizes and shapes.">
 
@@ -395,9 +393,9 @@
       <Avatar title="My name" />
       <Avatar size="big" title="My name" />
     </Swatch>
-  </GuideSection>
+  </Section>
 
-  <GuideSection title="Notifications" subTitle="Info, Warnings and Errors">
+  <Section title="Notifications" subTitle="Info, Warnings and Errors">
     <Swatch>
       <Notification>This is harmless, but you should know anyway.</Notification>
     </Swatch>
@@ -409,9 +407,9 @@
     <Swatch>
       <Notification level="error">Something bad happened, halp!</Notification>
     </Swatch>
-  </GuideSection>
+  </Section>
 
-  <GuideSection title="Cards" subTitle="Project, user, etc">
+  <Section title="Cards" subTitle="Project, user, etc">
 
     <Swatch>
       <ProjectCard
@@ -424,9 +422,9 @@
     <Swatch>
       <UserCard {user} />
     </Swatch>
-  </GuideSection>
+  </Section>
 
-  <GuideSection title="Misc" subTitle="Everything else">
+  <Section title="Misc" subTitle="Everything else">
 
     <Swatch>
       <Placeholder style="width: 300px; height: 100px" />
@@ -439,5 +437,5 @@
     <Swatch>
       <StepCounter step={2} of={7} />
     </Swatch>
-  </GuideSection>
+  </Section>
 </div>
