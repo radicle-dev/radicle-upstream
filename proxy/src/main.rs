@@ -1,39 +1,9 @@
-//! Proxy to serve a specialised `GraphQL` API to radicle-upstream.
-
-#![deny(missing_docs, unused_import_braces, unused_qualifications, warnings)]
-#![deny(
-    clippy::all,
-    // clippy::cargo,
-    clippy::nursery,
-    clippy::pedantic,
-    clippy::restriction,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used
-)]
-// TODO(xla): Handle all Results properly and never panic outside of main.
-// TODO(xla): Remove exception for or_fun_call lint.
-// TODO(xla): Remove let_underscore_must_use once the issue is resolved: https://github.com/rust-lang/rust-clippy/issues/4980
-#![allow(
-    clippy::implicit_return,
-    // clippy::let_underscore_must_use,
-    clippy::option_expect_used,
-    clippy::or_fun_call,
-    clippy::result_expect_used,
-    clippy::unseparated_literal_suffix
-)]
-
 #[macro_use]
 extern crate log;
 
-#[macro_use]
-extern crate juniper;
-
-/// Utilities to manipulate the process environment.
-mod env;
-/// Defines the schema served to the application via `GraphQL`.
-mod schema;
-/// Server infrastructure used to power the API.
-mod server_warp;
+use proxy::coco;
+use proxy::env;
+use proxy::graphql;
 
 /// Flags accepted by the proxy binary.
 struct Args {
@@ -59,7 +29,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let librad_paths =
             librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
-        crate::schema::git::setup_fixtures(
+        coco::setup_fixtures(
             &librad_paths,
             temp_dir.path().to_str().expect("path extraction failed"),
         )
@@ -78,13 +48,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
     };
 
-    let context = schema::Context::new(dummy_repo.into(), librad_paths, registry_client);
-
-    info!("Creating GraphQL schema and context");
-    let schema = schema::create();
-
-    info!("Starting HTTP server");
-    server_warp::run(schema, context);
+    info!("Starting GraphQL HTTP API");
+    graphql::api::run(dummy_repo.into(), librad_paths, registry_client);
 
     Ok(())
 }
