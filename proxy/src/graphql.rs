@@ -5,4 +5,4 @@ mod error;
 /// Radicle projects as `GraphQL` objects.
 mod project;
 /// Query and mutation surface of the `GraphQL` API.
-mod schema;
+pub mod schema;

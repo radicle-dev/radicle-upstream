@@ -125,6 +125,7 @@ pub struct TreeEntry {
     pub path: String,
 }
 
+/// TODO(xla): Add documentation.
 pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob, error::Error> {
     let project_id = project::ProjectId::from_str(&id)?;
     let project = project::Project::open(&paths, &project_id)?;
@@ -210,6 +211,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
     Ok(branches)
 }
 
+/// TODO(xla): Add documentation.
 pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Error> {
     let project_id = project::ProjectId::from_str(&id)?;
     let project = project::Project::open(paths, &project_id)?;
@@ -225,6 +227,7 @@ pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Erro
     Ok(Commit::from(commit))
 }
 
+/// TODO(xla): Add documentation.
 pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
     let project_id = project::ProjectId::from_str(&id)?;
     let project = project::Project::open(&paths, &project_id)?;
@@ -245,6 +248,7 @@ pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
     Ok(tags)
 }
 
+/// TODO(xla): Add documentation.
 pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tree, error::Error> {
     let project_id = project::ProjectId::from_str(&id)?;
     let project = project::Project::open(&paths, &project_id)?;
@@ -351,6 +355,7 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
     })
 }
 
+/// TODO(xla): Add documentation.
 pub fn get_project_meta(paths: &Paths, id: &str) -> Result<meta::Project, error::Error> {
     let project_id = project::ProjectId::from_str(id)?;
     let meta = project::Project::show(&paths, &project_id)?;
@@ -358,6 +363,7 @@ pub fn get_project_meta(paths: &Paths, id: &str) -> Result<meta::Project, error:
     Ok(meta)
 }
 
+/// TODO(xla): Add documentation.
 pub fn list_projects(paths: &Paths) -> Vec<(project::ProjectId, meta::Project)> {
     let mut projects = project::Project::list(&paths)
         .map(|id| {
