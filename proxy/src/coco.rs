@@ -1,6 +1,7 @@
 //! Abstractions and utilities for git interactions through the API.
 
 use std::collections::hash_map::DefaultHasher;
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
@@ -17,13 +18,25 @@ use crate::error;
 
 /// Branch name representation.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Branch(pub String);
+pub struct Branch(String);
+
+impl fmt::Display for Branch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 /// Tag name representation.
 ///
 /// We still need full tag support.
 #[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Tag(pub String);
+pub struct Tag(String);
+
+impl fmt::Display for Tag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 /// Representation of a person (e.g. committer, author, signer) from a repository. Usually
 /// extracted from a signature.
@@ -40,7 +53,7 @@ pub struct Person {
 pub struct Commit {
     /// Identifier of the commit in the form of a sha1 hash. Often referred to as oid or object
     /// id.
-    pub sha1: String,
+    pub sha1: git2::Oid,
     /// The author of the commit.
     pub author: Person,
     /// The summary of the commit message body.
@@ -63,7 +76,7 @@ impl From<&surf::git::Commit> for Commit {
         );
 
         Self {
-            sha1: commit.id.to_string(),
+            sha1: commit.id,
             author: Person {
                 name: commit.author.name.clone(),
                 email: commit.author.email.clone(),
@@ -99,12 +112,18 @@ pub struct Info {
 
 /// File data abstraction.
 pub struct Blob {
-    /// Best-effort guess if the content is binary.
-    pub binary: bool,
     /// Actual content of the file, if the content is ASCII.
-    pub content: Option<String>,
+    pub content: BlobContent,
     /// Extra info for the file.
     pub info: Info,
+}
+
+/// Variants of blob content.
+pub enum BlobContent {
+    /// Content is ASCII and can be passed as a string.
+    Ascii(String),
+    /// Content is binary and needs special treatment.
+    Binary,
 }
 
 /// Result of a directory listing, carries other trees and blobs.
@@ -139,10 +158,11 @@ pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob,
     };
 
     // Best effort to guess the revision.
-    if let Err(_err) = browser
+    if browser
         .branch(surf::git::BranchName::new(revision))
         .or(browser.commit(surf::git::Sha1::new(revision)))
         .or(browser.tag(surf::git::TagName::new(revision)))
+        .is_err()
     {
         return Err(error::Error::Git(surf::git::error::Error::NotBranch));
     };
@@ -160,17 +180,12 @@ pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob,
 
     let last_commit = browser.last_commit(&commit_path)?.map(|c| Commit::from(&c));
     let (_rest, last) = p.split_last();
-    let (binary, content) = {
-        let res = std::str::from_utf8(&file.contents);
-
-        match res {
-            Ok(content) => (false, Some(content.to_string())),
-            Err(_) => (true, None),
-        }
+    let content = match std::str::from_utf8(&file.contents) {
+        Ok(content) => BlobContent::Ascii(content.to_string()),
+        Err(_) => BlobContent::Binary,
     };
 
     Ok(Blob {
-        binary,
         content,
         info: Info {
             name: last.label,
@@ -255,8 +270,7 @@ pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    let mut tag_names = browser.list_tags()?;
-    tag_names.sort();
+    let tag_names = browser.list_tags()?;
 
     let mut tags: Vec<Tag> = tag_names
         .into_iter()
@@ -281,10 +295,11 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    if let Err(_err) = browser
+    if browser
         .branch(surf::git::BranchName::new(revision))
         .or(browser.commit(surf::git::Sha1::new(revision)))
         .or(browser.tag(surf::git::TagName::new(revision)))
+        .is_err()
     {
         return Err(error::Error::Git(surf::git::error::Error::NotBranch));
     };

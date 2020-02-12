@@ -127,21 +127,21 @@ impl Query {
     fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
         Ok(coco::branches(&ctx.librad_paths, &id.to_string())?
             .into_iter()
-            .map(|t| t.0)
+            .map(|t| t.to_string())
             .collect())
     }
 
     fn local_branches(ctx: &Context, path: String) -> Result<Vec<String>, error::Error> {
         Ok(coco::local_branches(&path)?
             .into_iter()
-            .map(|t| t.0)
+            .map(|t| t.to_string())
             .collect())
     }
 
     fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
         Ok(coco::tags(&ctx.librad_paths, &id.to_string())?
             .into_iter()
-            .map(|t| t.0)
+            .map(|t| t.to_string())
             .collect())
     }
 
@@ -188,11 +188,17 @@ impl Query {
 #[juniper::object]
 impl coco::Blob {
     fn binary(&self) -> bool {
-        self.binary
+        match &self.content {
+            coco::BlobContent::Ascii(_content) => false,
+            coco::BlobContent::Binary => true,
+        }
     }
 
-    fn content(&self) -> Option<&String> {
-        self.content.as_ref()
+    fn content(&self) -> Option<String> {
+        match &self.content {
+            coco::BlobContent::Ascii(content) => Some(content.clone()),
+            coco::BlobContent::Binary => None,
+        }
     }
 
     fn info(&self) -> &coco::Info {
@@ -202,8 +208,8 @@ impl coco::Blob {
 
 #[juniper::object]
 impl coco::Commit {
-    fn sha1(&self) -> &str {
-        &self.sha1
+    fn sha1(&self) -> String {
+        self.sha1.to_string()
     }
 
     fn author(&self) -> &coco::Person {

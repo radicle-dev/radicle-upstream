@@ -1,12 +1,13 @@
-use radicle_registry_client::{
-    self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, String32,
-    TransactionExtra, H256,
-};
 use serde_cbor::to_vec;
 use serde_derive::{Deserialize, Serialize};
 use std::time::SystemTime;
 
-use super::error;
+use radicle_registry_client::{
+    self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, String32,
+    TransactionExtra, H256,
+};
+
+use crate::error;
 
 /// A container to dissiminate and apply operations on the [`Registry`].
 pub struct Transaction {
