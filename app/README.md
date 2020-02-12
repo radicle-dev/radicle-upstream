@@ -52,9 +52,126 @@ committing changes, otherwise the tests will be skipped on CI.
 ### Design System
 
 The overall look of Upstream is governed by a style guide which is continuously
-being improved and extended. This style guide is translated
-into code that forms a design system. The design system contains all design
-primitives which can be composed to create rich user experiences.
+being improved and extended. This style guide is translated into code that
+forms a design system. The design system contains all design primitives which
+can be composed to create rich user experiences.
+
+Most of the components defined by the design system can be conveniently seen
+on one page within the app UI by pressing `[shift]` + `[D]`. This will bring up
+the Design System Guide modal. To close the modal, hit `[ESC]`.
+
+The purpose of the Guide is to be able to see how changes to components affect
+all variations in one glance. Newly created components should be added to the
+Guide, explaining all the different variations and use cases a component can be
+used.
+
+
+#### File structure
+
+To be able to find code and make changes quickly we organize our components in
+groups defined by use-case, re-usability and complexity. These groups are:
+
+  - `DesignSystem/Primitives`: simple, yet highly reusable components like
+    typography, buttons, form elements, spacing, positioning and other
+    utilities.
+
+    Components in this group are usually just wrappers around standard HTML
+    elements with custom styling.
+
+    There are currently two ways of organizing primitives:
+
+      - all-in-one components where the type of the component is passed down
+        via a `variant` prop. This is for components which have a very
+        similar markup, but whose styling differs across variants.
+        Examples in this category are: buttons, typography and positioning
+        helpers.
+
+      - namespaced components, where the markup is very different across
+        variants, like: form elements and icons.
+
+    To figure which way to write a new primitive component, start by looking at
+    how it's going to be used in the code and then go for the better
+    ergonomics.
+
+    All public primitives are exported via a central `index.js` file, which
+    makes usage as easy as:
+
+    ```
+    <script>
+      import { Button, Text, Icon, Input } from "../DesignSystem/Primitives";
+    </script>
+
+    <Icon.Home />
+    <Button variant="secondary">OK</Button>
+    <Text variant="hugeTitle">Radicle</Text>
+    ```
+
+
+  - `DesignSystem/Components`: reusable low-to-high complexity components,
+    layouts and single-use fragments which are extracted from screens or other
+    components for the sake of code readability.
+
+    Sub-folders in this category should only be created for breaking up larger
+    components into smaller fragments. If a component is broken up in
+    fragments, make sure to only export the component for public use, not the
+    fragments.
+
+    Single-use components that are extracted from screens and used by only one
+    screen should be prefixed with the name of the screen, for example:
+    `DesignSystemGuideSection.svelte`.
+
+
+There is a third group of components, which is not part of the Design System:
+"Screens". Screens bring together components from the Design System forming
+what a user sees in the UI as a whole screen. More complex UX flows can be
+broken down into multiple sub-screens, in this case a top-level screen should
+contain common data fetching and routing for the sub-screens.
+
+When multiple screens share the same layout, it should be extracted into a
+separate component. Layout components are suffixed with "Layout", like so:
+"DesignSystem/Components/ModalLayout.svelte".
+
+File and directory name casing:
+  - Svelte components and directories containing components - PascalCase
+  - everything else: `*.js` files and folders - camelCase
+
+```
+.
+├── App.svelte                     # Root component
+├── DesignSystem
+│   ├── Components
+│   │   ├── Avatar.svelte          # Simple component
+│   │   ├── Sidebar                # Folder containing fragments of Sidebar
+│   │   │   ├── Avatar.svelte      # These are private to Sidebar.svelte
+│   │   │   ├── Item.svelte        # and should not be exported via index.js
+│   │   │   └── Tooltip.svelte
+│   │   ├── Sidebar.svelte
+│   │   ├── SidebarLayout.svelte   # Layout containing a sidebar
+│   │   └── index.js               # Defines which components for public use
+│   └── Primitives
+│       ├── Button.svelte          # Single-file component
+│       ├── Icon                   # Name-spaced components
+│       │   ├── Branch.svelte
+│       │   └── index.js
+│       └── index.js
+├── Screens
+│   ├── Profile.svelte             # Simple screen
+│   ├── Project                    # Project sub-screens
+│   │   ├── Feed.svelte
+│   │   └── Source.svelte
+│   ├── Project.svelte             # Data fetching and routing for project sub-screens
+│   └── Wallet.svelte
+├── config.js                      # Configuration constants
+├── index.js                       # UI entry-point, loaded by the main renderer
+├── lib                            # Reusable logic that doesn't fit components
+│   ├── hash.js
+│   ├── path.js
+│   └── types.js
+└── stores                         # Svelte stores grouped by use-case
+    ├── notification.js
+    ├── project.js
+    └── sourceBrowser.js
+```
 
 
 #### Colors
