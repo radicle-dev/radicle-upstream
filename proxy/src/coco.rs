@@ -125,10 +125,14 @@ pub struct TreeEntry {
     pub path: String,
 }
 
-/// TODO(xla): Add documentation.
+/// Returns the [`Blob`] for a file at `revision` under `path`.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interactions fail.
 pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob, error::Error> {
-    let project_id = project::ProjectId::from_str(&id)?;
-    let project = project::Project::open(&paths, &project_id)?;
+    let project_id = project::ProjectId::from_str(id)?;
+    let project = project::Project::open(paths, &project_id)?;
 
     let mut browser = match project {
         project::Project::Git(git_project) => git_project.browser()?,
@@ -136,16 +140,16 @@ pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob,
 
     // Best effort to guess the revision.
     if let Err(_err) = browser
-        .branch(surf::git::BranchName::new(&revision))
-        .or(browser.commit(surf::git::Sha1::new(&revision)))
-        .or(browser.tag(surf::git::TagName::new(&revision)))
+        .branch(surf::git::BranchName::new(revision))
+        .or(browser.commit(surf::git::Sha1::new(revision)))
+        .or(browser.tag(surf::git::TagName::new(revision)))
     {
         return Err(error::Error::Git(surf::git::error::Error::NotBranch));
     };
 
     let root = browser.get_directory()?;
 
-    let mut p = surf::file_system::Path::from_str(&path)?;
+    let mut p = surf::file_system::Path::from_str(path)?;
 
     let file = root.find_file(&p).ok_or_else(|| {
         radicle_surf::file_system::error::Error::Path(radicle_surf::file_system::error::Path::Empty)
@@ -177,6 +181,10 @@ pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob,
 }
 
 /// Given a project id to a repo returns the list of branches.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn branches(paths: &Paths, id: &str) -> Result<Vec<Branch>, error::Error> {
     let project_id = project::ProjectId::from_str(id)?;
     let project = project::Project::open(paths, &project_id)?;
@@ -197,6 +205,10 @@ pub fn branches(paths: &Paths, id: &str) -> Result<Vec<Branch>, error::Error> {
 }
 
 /// Given a path to a repo returns the list of branches.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
     let repo = surf::git::Repository::new(repo_path)?;
     let browser = surf::git::Browser::new(repo)?;
@@ -211,9 +223,13 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
     Ok(branches)
 }
 
-/// TODO(xla): Add documentation.
+/// Retrieves the [`Commit`] for the given `sha1`.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Error> {
-    let project_id = project::ProjectId::from_str(&id)?;
+    let project_id = project::ProjectId::from_str(id)?;
     let project = project::Project::open(paths, &project_id)?;
     let mut browser = match project {
         project::Project::Git(git_project) => git_project.browser()?,
@@ -227,10 +243,14 @@ pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Erro
     Ok(Commit::from(commit))
 }
 
-/// TODO(xla): Add documentation.
+/// Retrieves the list of [`Tag`] for the given project `id`.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
-    let project_id = project::ProjectId::from_str(&id)?;
-    let project = project::Project::open(&paths, &project_id)?;
+    let project_id = project::ProjectId::from_str(id)?;
+    let project = project::Project::open(paths, &project_id)?;
     let browser = match project {
         project::Project::Git(git_project) => git_project.browser()?,
     };
@@ -248,19 +268,23 @@ pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
     Ok(tags)
 }
 
-/// TODO(xla): Add documentation.
+/// Retrieve the [`Tree`] for the given `revision` and directory `prefix`.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if any of the surf interactions fail.
 pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tree, error::Error> {
-    let project_id = project::ProjectId::from_str(&id)?;
-    let project = project::Project::open(&paths, &project_id)?;
+    let project_id = project::ProjectId::from_str(id)?;
+    let project = project::Project::open(paths, &project_id)?;
 
     let mut browser = match project {
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
     if let Err(_err) = browser
-        .branch(surf::git::BranchName::new(&revision))
-        .or(browser.commit(surf::git::Sha1::new(&revision)))
-        .or(browser.tag(surf::git::TagName::new(&revision)))
+        .branch(surf::git::BranchName::new(revision))
+        .or(browser.commit(surf::git::Sha1::new(revision)))
+        .or(browser.tag(surf::git::TagName::new(revision)))
     {
         return Err(error::Error::Git(surf::git::error::Error::NotBranch));
     };
@@ -268,7 +292,7 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
     let mut path = if prefix == "/" || prefix == "" {
         surf::file_system::Path::root()
     } else {
-        surf::file_system::Path::from_str(&prefix)?
+        surf::file_system::Path::from_str(prefix)?
     };
 
     let root_dir = browser.get_directory()?;
@@ -355,21 +379,26 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
     })
 }
 
-/// TODO(xla): Add documentation.
+/// Retrieves project metadata.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project for the given `id` doesn't exist.
 pub fn get_project_meta(paths: &Paths, id: &str) -> Result<meta::Project, error::Error> {
     let project_id = project::ProjectId::from_str(id)?;
-    let meta = project::Project::show(&paths, &project_id)?;
+    let meta = project::Project::show(paths, &project_id)?;
 
     Ok(meta)
 }
 
-/// TODO(xla): Add documentation.
+/// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
+#[must_use]
 pub fn list_projects(paths: &Paths) -> Vec<(project::ProjectId, meta::Project)> {
-    let mut projects = project::Project::list(&paths)
+    let mut projects = project::Project::list(paths)
         .map(|id| {
             (
                 id.clone(),
-                project::Project::show(&paths, &id).expect("unable to get project meta"),
+                project::Project::show(paths, &id).expect("unable to get project meta"),
             )
         })
         .collect::<Vec<(project::ProjectId, meta::Project)>>();
@@ -379,7 +408,12 @@ pub fn list_projects(paths: &Paths) -> Vec<(project::ProjectId, meta::Project)> 
     projects
 }
 
-/// Initialize a [`Project`] in the location of the given `path`.
+/// Initialize a [`librad::project::Project`] in the location of the given `path`.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the git2 repository is not present for the `path` or any of the
+/// librad interactions fail.
 pub fn init_project(
     librad_paths: &Paths,
     path: &str,
@@ -404,7 +438,11 @@ pub fn init_project(
     Ok((id, meta))
 }
 
-/// Initialize a [`git2::GitRepository`] at the given path.
+/// Initialize a [`radicle_surf::git::git2::Repository`] at the given path.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if any of the git interactions break.
 pub fn init_repo(path: String) -> Result<(), error::Error> {
     let repo = git2::Repository::init(path)?;
 
@@ -427,6 +465,11 @@ pub fn init_repo(path: String) -> Result<(), error::Error> {
 }
 
 /// Creates a small set of projects in [`Paths`].
+///
+/// # Errors
+///
+/// Will error if filesystem access is not granted or broken for the configured
+/// [`librad::paths::Paths`].
 pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), error::Error> {
     let infos = vec![
             (

@@ -23,7 +23,12 @@ pub struct Transaction {
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
     /// Issue a new project registration with (domain, name).
-    ProjectRegistration { domain: String32, name: String32 },
+    ProjectRegistration {
+        /// Domain part o the project id.
+        domain: String32,
+        /// Actual project name, unique for domain.
+        name: String32,
+    },
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and

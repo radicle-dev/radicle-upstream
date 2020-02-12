@@ -13,6 +13,7 @@ use crate::registry;
 pub type Schema = juniper::RootNode<'static, Query, Mutation>;
 
 /// Returns a `Schema` with the default parameterised `Query` and `Mutation`.
+#[must_use]
 pub fn create() -> Schema {
     Schema::new(Query {}, Mutation {})
 }
@@ -30,6 +31,7 @@ pub struct Context {
 
 impl Context {
     /// Returns a new `Context`.
+    #[must_use]
     pub const fn new(
         dummy_repo_path: String,
         librad_paths: Paths,
@@ -227,18 +229,29 @@ impl coco::Info {
     }
 }
 
+/// Git object types.
+///
+/// <https://git-scm.com/book/en/v2/Git-Internals-Git-Objects>
 #[derive(GraphQLEnum)]
 enum ObjectType {
+    /// Directory tree.
     Tree,
+    /// Text or binary blob of a file.
     Blob,
 }
 
+/// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
+    /// Domain namespace.
     domain: String,
+    /// Actual project name, unique under domain.
     name: String,
 }
+
+/// Message types supproted in transactions.
 enum Message {
+    /// Registration of a new project.
     ProjectRegistration(ProjectRegistration),
 }
 
@@ -305,12 +318,16 @@ impl registry::Transaction {
     }
 }
 
+/// States a transaction can go through.
 enum TransactionState {
+    /// The transaction has been applied to a block.
     Applied(Applied),
 }
 
+/// Context for a chain applied transaction.
 #[derive(GraphQLObject)]
 struct Applied {
+    /// Block hash the transaction was included in.
     block: juniper::ID,
 }
 
