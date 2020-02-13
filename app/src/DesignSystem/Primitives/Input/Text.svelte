@@ -42,18 +42,20 @@
   }
 </style>
 
-<input
-  data-cy={dataCy}
-  class:invalid={!valid}
-  {placeholder}
-  {style}
-  bind:value
-  {disabled}
-  on:change />
-{#if !valid && errorMessage}
-  <Text
-    variant="smallTextBold"
-    style="color: var(--color-red); margin-top: 4px">
-    {errorMessage}
-  </Text>
-{/if}
+<div {style}>
+  <input
+    data-cy={dataCy}
+    class:invalid={!valid}
+    {placeholder}
+    bind:value
+    {disabled}
+    on:change />
+
+  {#if !valid && errorMessage}
+    <Text
+      variant="smallTextBold"
+      style="color: var(--color-red); margin-top: 4px">
+      {errorMessage}
+    </Text>
+  {/if}
+</div>

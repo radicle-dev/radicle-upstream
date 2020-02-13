@@ -7,6 +7,7 @@
   export let style = null;
   export let valid = true;
   export let path = null;
+  export let errorMessage = null;
 
   let files;
 
@@ -25,17 +26,18 @@
 <style>
   .wrapper {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
   }
 </style>
 
 <div class="wrapper" {style}>
   <TextInput
     {placeholder}
+    {errorMessage}
     value={path}
     {valid}
     disabled
-    style="margin-right: 16px" />
+    style="margin-right: 16px; flex: 1" />
 
   <Button variant="primary" on:click={openFileDialog}>Choose</Button>
 </div>

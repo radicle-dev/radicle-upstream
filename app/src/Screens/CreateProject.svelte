@@ -385,15 +385,9 @@
               </Text>
               <Input.Directory
                 valid={!(validations && validations.newRepositoryPath)}
+                errorMessage={validations && validations.newRepositoryPath && validations.newRepositoryPath[0]}
                 placeholder="~/path/to/folder"
                 bind:path={newRepositoryPath} />
-              {#if validations && validations.newRepositoryPath}
-                <Text
-                  variant="smallTextBold"
-                  style="color: var(--color-red); margin-top: 4px">
-                  {validations.newRepositoryPath[0]}
-                </Text>
-              {/if}
             </div>
           {/if}
         </div>
@@ -419,14 +413,8 @@
               <Input.Directory
                 placeholder="~/path/to/folder"
                 valid={!(validations && validations.existingRepositoryPath)}
+                errorMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
                 bind:path={existingRepositoryPath} />
-              {#if validations && validations.existingRepositoryPath}
-                <Text
-                  variant="smallTextBold"
-                  style="color: var(--color-red); margin-top: 4px">
-                  {validations.existingRepositoryPath[0]}
-                </Text>
-              {/if}
               <div class="default-branch-row" style="margin-top: 16px">
                 <Text style="color: var(--color-darkgray)">
                   Select the default branch

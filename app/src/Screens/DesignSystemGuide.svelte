@@ -358,7 +358,22 @@
     </Swatch>
 
     <Swatch>
+      <Input.Text placeholder="Hey, I'm a full-width input." style="flex: 1" />
+    </Swatch>
+
+    <Swatch>
+      <Input.Text
+        placeholder="And I'm an input with a validation error."
+        style="flex: 1"
+        valid={false}
+        errorMessage="Well, that didn't go well..." />
+    </Swatch>
+
+    <Swatch>
       <Input.Dropdown items={['master', 'dev']} value={'dev'} />
+    </Swatch>
+
+    <Swatch>
       <Input.Dropdown disabled items={['master', 'dev']} value={'dev'} />
     </Swatch>
 
