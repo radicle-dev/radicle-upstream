@@ -164,7 +164,7 @@ mod tests {
             &alice,
             "hello".into(),
             "world".into(),
-            Some(librad::git::ProjectId::new(radicle_surf::git::git2::Oid::zero()).into()),
+            Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
         ));
         assert!(result.is_ok());
         let project_domain = String32::from_string("hello".into()).unwrap();
