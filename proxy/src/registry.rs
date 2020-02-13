@@ -36,10 +36,10 @@ pub struct Metadata {
 pub enum Message {
     /// Issue a new project registration with (domain, name).
     ProjectRegistration {
-        /// Domain part of the project id.
-        domain: String32,
         /// Actual project name, unique for domain.
         name: String32,
+        /// Domain part of the project id.
+        org_id: String32,
     },
 }
 
@@ -73,15 +73,15 @@ impl Registry {
     pub async fn register_project(
         &self,
         author: &ed25519::Pair,
-        domain: String,
         name: String,
+        org_id: String,
         maybe_project_id: Option<librad::project::ProjectId>,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
         let project_name =
             String32::from_string(name.clone()).map_err(error::ProjectValidation::NameTooLong)?;
-        let project_domain = String32::from_string(domain.clone())
-            .map_err(error::ProjectValidation::DomainTooLong)?;
+        let org_id =
+            String32::from_string(org_id.clone()).map_err(error::ProjectValidation::OrgTooLong)?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
@@ -120,7 +120,7 @@ impl Registry {
 
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterProject {
-            id: (project_name.clone(), project_domain.clone()),
+            id: (org_id.clone(), project_name.clone()),
             checkpoint_id,
             metadata: register_metadata,
         };
@@ -138,8 +138,8 @@ impl Registry {
         Ok(Transaction {
             id: register_applied.tx_hash,
             messages: vec![Message::ProjectRegistration {
-                domain: project_domain,
                 name: project_name,
+                org_id: org_id,
             }],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
@@ -162,17 +162,17 @@ mod tests {
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
         let result = futures::executor::block_on(registry.register_project(
             &alice,
-            "hello".into(),
-            "world".into(),
+            "radicle".into(),
+            "monadic".into(),
             Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
         ));
         assert!(result.is_ok());
-        let project_domain = String32::from_string("hello".into()).unwrap();
-        let project_name = String32::from_string("world".into()).unwrap();
-        let pid = (project_name, project_domain);
+        let org_id = String32::from_string("monadic".into()).unwrap();
+        let project_name = String32::from_string("radicle".into()).unwrap();
+        let pid = (org_id, project_name);
         let future_project = client.get_project(pid);
         let maybe_project = futures::executor::block_on(future_project).unwrap();
-        assert_eq!(maybe_project.is_some(), true);
+        assert!(maybe_project.is_some());
         let project = maybe_project.unwrap();
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
