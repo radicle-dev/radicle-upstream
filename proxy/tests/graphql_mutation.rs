@@ -3,8 +3,8 @@ extern crate juniper;
 
 use indexmap::IndexMap;
 use juniper::{InputValue, Variables};
+use librad::surf::git::git2;
 use pretty_assertions::assert_eq;
-use radicle_surf::git::git2;
 
 mod common;
 use proxy::coco;

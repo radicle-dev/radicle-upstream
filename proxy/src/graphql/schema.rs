@@ -1,9 +1,11 @@
-use librad::paths::Paths;
-use radicle_registry_client::ed25519;
-use radicle_surf as surf;
 use std::convert::From;
 use std::convert::TryFrom;
 use std::str::FromStr;
+
+use librad::paths::Paths;
+use librad::surf;
+use librad::surf::git::git2;
+use radicle_registry_client::ed25519;
 
 use super::project;
 use crate::coco;
@@ -328,9 +330,7 @@ impl registry::Transaction {
                 .duration_since(std::time::UNIX_EPOCH)?
                 .as_secs(),
         )?;
-        let git_time = radicle_surf::git::git2::Time::new(since_epoch, 0)
-            .seconds()
-            .to_string();
+        let git_time = git2::Time::new(since_epoch, 0).seconds().to_string();
 
         Ok(git_time)
     }

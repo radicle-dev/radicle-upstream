@@ -1,9 +1,9 @@
 //! Domain errors returned by the API.
 
 use librad::meta::common::url;
+use librad::surf;
+use librad::surf::git::git2;
 use radicle_registry_client::{DispatchError, Error as ProtocolError};
-use radicle_surf as surf;
-use radicle_surf::git::git2;
 use std::time::SystemTimeError;
 
 /// Project problems.
@@ -19,7 +19,7 @@ pub enum ProjectValidation {
 #[derive(Debug)]
 pub enum Error {
     /// FileSystem errors from interacting with code in repository.
-    FS(radicle_surf::file_system::error::Error),
+    FS(surf::file_system::error::Error),
     /// Originated from `radicle_surf`.
     Git(surf::git::error::Error),
     /// Originated from `radicle_surf::git::git2`.
@@ -46,8 +46,8 @@ pub enum Error {
     Time(SystemTimeError),
 }
 
-impl From<radicle_surf::file_system::error::Error> for Error {
-    fn from(fs_error: radicle_surf::file_system::error::Error) -> Self {
+impl From<surf::file_system::error::Error> for Error {
+    fn from(fs_error: surf::file_system::error::Error) -> Self {
         Self::FS(fs_error)
     }
 }
