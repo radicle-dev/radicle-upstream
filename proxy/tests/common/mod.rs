@@ -1,9 +1,9 @@
 use juniper::{DefaultScalarValue, ExecutionError, Value, Variables};
 use librad::git::ProjectId;
 use librad::paths::Paths;
-use radicle_surf as surf;
-use radicle_surf::git::git2;
+use librad::surf;
 use std::env;
+use surf::git::git2;
 use tempfile::{tempdir_in, TempDir};
 
 use proxy::coco;

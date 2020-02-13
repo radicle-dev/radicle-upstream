@@ -11,8 +11,8 @@ use librad::meta::{self, common::Url};
 use librad::paths::Paths;
 use librad::peer;
 use librad::project;
-use radicle_surf as surf;
-use radicle_surf::git::git2;
+use librad::surf;
+use librad::surf::git::git2;
 
 use crate::error;
 
@@ -165,7 +165,7 @@ pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob,
     let mut p = surf::file_system::Path::from_str(path)?;
 
     let file = root.find_file(&p).ok_or_else(|| {
-        radicle_surf::file_system::error::Error::Path(radicle_surf::file_system::error::Path::Empty)
+        surf::file_system::error::Error::Path(surf::file_system::error::Path::Empty)
     })?;
 
     let mut commit_path = surf::file_system::Path::root();
@@ -243,10 +243,10 @@ pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Erro
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    browser.commit(radicle_surf::git::Oid::from_str(sha1)?)?;
+    browser.commit(surf::git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
-    let commit = history.0.first();
+    let commit = history.first();
 
     Ok(Commit::from(commit))
 }
@@ -301,9 +301,7 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
         root_dir
     } else {
         root_dir.find_directory(&path).ok_or_else(|| {
-            radicle_surf::file_system::error::Error::Path(
-                radicle_surf::file_system::error::Path::Empty,
-            )
+            surf::file_system::error::Error::Path(surf::file_system::error::Path::Empty)
         })?
     };
     let mut prefix_contents = prefix_dir.list_directory();
@@ -315,8 +313,8 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
             let mut entry_path = if path.is_root() {
                 let label_path =
                     nonempty::NonEmpty::from_slice(&[label.clone()]).ok_or_else(|| {
-                        radicle_surf::file_system::error::Error::Label(
-                            radicle_surf::file_system::error::Label::Empty,
+                        surf::file_system::error::Error::Label(
+                            surf::file_system::error::Label::Empty,
                         )
                     })?;
                 surf::file_system::Path(label_path)
@@ -354,7 +352,7 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
     entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
 
     let last_commit = if path.is_root() {
-        Some(Commit::from(browser.get().0.first()))
+        Some(Commit::from(browser.get().first()))
     } else {
         let mut commit_path = surf::file_system::Path::root();
         commit_path.append(&mut path);

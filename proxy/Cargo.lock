@@ -2460,7 +2460,6 @@ dependencies = [
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=8689536f7e30d5e4839141658d2357e2cc550755)",
- "radicle-surf 0.2.1 (git+https://github.com/radicle-dev/radicle-surf.git?rev=5c04b846cf53763a70bf0c168ce40293bbce0bd6)",
  "rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_cbor 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",

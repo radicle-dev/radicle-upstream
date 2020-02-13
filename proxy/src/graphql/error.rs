@@ -1,6 +1,6 @@
 use librad::meta::common::url;
-use radicle_surf as surf;
-use radicle_surf::git::git2;
+use librad::surf;
+use librad::surf::git::git2;
 
 use crate::error;
 
@@ -53,15 +53,15 @@ impl juniper::IntoFieldError for error::Error {
 }
 
 /// Helper to convert `radicle_surf` `FileSystem` error to `juniper::FieldError`.
-fn convert_fs(error: &radicle_surf::file_system::error::Error) -> juniper::FieldError {
+fn convert_fs(error: &surf::file_system::error::Error) -> juniper::FieldError {
     let error_str = match &error {
-        radicle_surf::file_system::error::Error::Label(label_error) => match label_error {
-            radicle_surf::file_system::error::Label::ContainsSlash => "Label contains slashes",
-            radicle_surf::file_system::error::Label::Empty => "Label is empty",
-            radicle_surf::file_system::error::Label::InvalidUTF8 => "Label is not valid utf8",
+        surf::file_system::error::Error::Label(label_error) => match label_error {
+            surf::file_system::error::Label::ContainsSlash => "Label contains slashes",
+            surf::file_system::error::Label::Empty => "Label is empty",
+            surf::file_system::error::Label::InvalidUTF8 => "Label is not valid utf8",
         },
-        radicle_surf::file_system::error::Error::Path(path_error) => match path_error {
-            radicle_surf::file_system::error::Path::Empty => "Path is empty",
+        surf::file_system::error::Error::Path(path_error) => match path_error {
+            surf::file_system::error::Path::Empty => "Path is empty",
         },
     };
 
