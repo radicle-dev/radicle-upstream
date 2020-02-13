@@ -7,11 +7,11 @@
     ProjectCard,
     Rad,
     StepCounter,
-    Swatch,
     UserCard
   } from "../DesignSystem/Components";
 
   import Section from "./DesignSystemGuide/Section.svelte";
+  import Swatch from "./DesignSystemGuide/Swatch.svelte";
 
   import { link } from "svelte-spa-router";
 
