@@ -9,9 +9,9 @@ use std::time::SystemTimeError;
 /// Project problems.
 #[derive(Debug)]
 pub enum ProjectValidation {
-    /// Project names (String32) can only be 32 characters.
+    /// Project names (String32) can only be 32 bytes.
     NameTooLong(String),
-    /// Project names (String32) can only be 32 characters.
+    /// Project names (String32) can only be 32 bytes.
     DomainTooLong(String),
 }
 
