@@ -8,7 +8,7 @@
 
   export let disabled = null;
   export let valid = true;
-  export let errorMessage = null;
+  export let validationMessage = null;
 </script>
 
 <style>
@@ -51,11 +51,11 @@
     {disabled}
     on:change />
 
-  {#if !valid && errorMessage}
+  {#if !valid && validationMessage}
     <Text
       variant="smallTextBold"
       style="color: var(--color-red); margin-top: 4px">
-      {errorMessage}
+      {validationMessage}
     </Text>
   {/if}
 </div>

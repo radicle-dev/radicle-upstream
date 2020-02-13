@@ -7,7 +7,7 @@
   export let style = null;
   export let valid = true;
   export let path = null;
-  export let errorMessage = null;
+  export let validationMessage = null;
 
   let files;
 
@@ -33,7 +33,7 @@
 <div class="wrapper" {style}>
   <TextInput
     {placeholder}
-    {errorMessage}
+    {validationMessage}
     value={path}
     {valid}
     disabled

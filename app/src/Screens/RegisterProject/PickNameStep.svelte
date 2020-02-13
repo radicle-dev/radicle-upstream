@@ -55,7 +55,7 @@
   placeholder="Project name"
   bind:value={name}
   valid={!(beginValidation && validations && validations.name)}
-  errorMessage={beginValidation && validations && validations.name && validations.name[0]} />
+  validationMessage={beginValidation && validations && validations.name && validations.name[0]} />
 
 <Flex style="margin-top: 48px;">
   <div slot="left">

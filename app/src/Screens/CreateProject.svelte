@@ -349,7 +349,7 @@
         dataCy="name"
         bind:value={name}
         valid={!(validations && validations.name)}
-        errorMessage={validations && validations.name && validations.name[0]} />
+        validationMessage={validations && validations.name && validations.name[0]} />
 
       <Input.Text
         style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
@@ -363,7 +363,7 @@
         placeholder="http://my-project-website.com/project-avatar.png"
         bind:value={imageUrl}
         valid={!(validations && validations.imageUrl)}
-        errorMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
+        validationMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
 
       <Text variant="title" style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
@@ -385,7 +385,7 @@
               </Text>
               <Input.Directory
                 valid={!(validations && validations.newRepositoryPath)}
-                errorMessage={validations && validations.newRepositoryPath && validations.newRepositoryPath[0]}
+                validationMessage={validations && validations.newRepositoryPath && validations.newRepositoryPath[0]}
                 placeholder="~/path/to/folder"
                 bind:path={newRepositoryPath} />
             </div>
@@ -413,7 +413,7 @@
               <Input.Directory
                 placeholder="~/path/to/folder"
                 valid={!(validations && validations.existingRepositoryPath)}
-                errorMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
+                validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
                 bind:path={existingRepositoryPath} />
               <div class="default-branch-row" style="margin-top: 16px">
                 <Text style="color: var(--color-darkgray)">

@@ -366,7 +366,7 @@
         placeholder="And I'm an input with a validation error."
         style="flex: 1"
         valid={false}
-        errorMessage="Well, that didn't go well..." />
+        validationMessage="Well, that didn't go well..." />
     </Swatch>
 
     <Swatch>
