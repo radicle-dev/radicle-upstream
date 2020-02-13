@@ -2,7 +2,6 @@
   import { Button, Text, Icon, Input } from "../DesignSystem/Primitives";
   import {
     Avatar,
-    DesignSystemGuideSection as Section,
     Notification,
     Placeholder,
     ProjectCard,
@@ -11,6 +10,8 @@
     Swatch,
     UserCard
   } from "../DesignSystem/Components";
+
+  import Section from "./DesignSystemGuide/Section.svelte";
 
   import { link } from "svelte-spa-router";
 
