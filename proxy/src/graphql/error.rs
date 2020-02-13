@@ -86,22 +86,22 @@ fn convert_io(error: &std::io::Error) -> juniper::FieldError {
 /// Helper to convert a `radicle_surf` Git error to `juniper::FieldError`.
 fn convert_git(error: &surf::git::error::Error) -> juniper::FieldError {
     match error {
-        surf::git::error::Error::EmptyCommitHistory => juniper::FieldError::new(
-            "Repository has an empty commit history.",
-            graphql_value!({
-                "type": "GIT_EMPTY_COMMIT_HISTORY"
-            }),
-        ),
-        surf::git::error::Error::NotBranch => juniper::FieldError::new(
-            "Not a known branch.",
+        surf::git::error::Error::NotBranch(branch) => juniper::FieldError::new(
+            format!("branch '{}' not known", branch.name()),
             graphql_value!({
                 "type": "GIT_NOT_BRANCH"
             }),
         ),
-        surf::git::error::Error::NotTag => juniper::FieldError::new(
-            "Not a known tag.",
+        surf::git::error::Error::NotTag(tag) => juniper::FieldError::new(
+            format!("tag '{}' not known", tag.name()),
             graphql_value!({
                 "type": "GIT_NOT_TAG"
+            }),
+        ),
+        surf::git::error::Error::RevParseFailure(rev) => juniper::FieldError::new(
+            format!("revspec '{}' malformed", rev),
+            graphql_value!({
+                "type": "GIT_REV_PARSE"
             }),
         ),
         surf::git::error::Error::Utf8Error(_utf8_error) => juniper::FieldError::new(
@@ -111,13 +111,13 @@ fn convert_git(error: &surf::git::error::Error) -> juniper::FieldError {
             }),
         ),
         surf::git::error::Error::FileSystem(fs_error) => convert_fs(fs_error),
-        surf::git::error::Error::FileDiffException => juniper::FieldError::new(
-            "Diff failed.",
+        surf::git::error::Error::LastCommitException => juniper::FieldError::new(
+            "last commit failed",
             graphql_value!({
-                "type": "GIT_FILE_DIFF"
+                "type": "GIT_LAST_COMMIT"
             }),
         ),
-        surf::git::error::Error::Internal(error) => juniper::FieldError::new(
+        surf::git::error::Error::Git(error) => juniper::FieldError::new(
             format!("Internal Git error: {:?}", error),
             graphql_value!({
                 "type": "GIT_INTERNAL"

@@ -158,14 +158,7 @@ pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob,
     };
 
     // Best effort to guess the revision.
-    if browser
-        .branch(surf::git::BranchName::new(revision))
-        .or(browser.commit(surf::git::Sha1::new(revision)))
-        .or(browser.tag(surf::git::TagName::new(revision)))
-        .is_err()
-    {
-        return Err(error::Error::Git(surf::git::error::Error::NotBranch));
-    };
+    browser.revspec(revision)?;
 
     let root = browser.get_directory()?;
 
@@ -188,7 +181,7 @@ pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob,
     Ok(Blob {
         content,
         info: Info {
-            name: last.label,
+            name: last.to_string(),
             object_type: ObjectType::Blob,
             last_commit,
         },
@@ -211,7 +204,7 @@ pub fn branches(paths: &Paths, id: &str) -> Result<Vec<Branch>, error::Error> {
         .list_branches(None)
         .expect("Getting branches failed")
         .into_iter()
-        .map(|b| Branch(b.name.name()))
+        .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
 
     branches.sort();
@@ -230,7 +223,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
     let mut branches = browser
         .list_branches(None)?
         .into_iter()
-        .map(|b| Branch(b.name.name()))
+        .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
 
     branches.sort();
@@ -250,9 +243,9 @@ pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Erro
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    browser.commit(radicle_surf::git::Sha1::new(sha1))?;
+    browser.commit(radicle_surf::git::Oid::from_str(sha1)?)?;
 
-    let history = browser.get_history();
+    let history = browser.get();
     let commit = history.0.first();
 
     Ok(Commit::from(commit))
@@ -274,7 +267,7 @@ pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
 
     let mut tags: Vec<Tag> = tag_names
         .into_iter()
-        .map(|tag_name| Tag(tag_name.name()))
+        .map(|tag_name| Tag(tag_name.name().to_string()))
         .collect();
 
     tags.sort();
@@ -295,14 +288,7 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    if browser
-        .branch(surf::git::BranchName::new(revision))
-        .or(browser.commit(surf::git::Sha1::new(revision)))
-        .or(browser.tag(surf::git::TagName::new(revision)))
-        .is_err()
-    {
-        return Err(error::Error::Git(surf::git::error::Error::NotBranch));
-    };
+    browser.revspec(revision)?;
 
     let mut path = if prefix == "/" || prefix == "" {
         surf::file_system::Path::root()
@@ -368,7 +354,7 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
     entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
 
     let last_commit = if path.is_root() {
-        Some(Commit::from(browser.get_history().0.first()))
+        Some(Commit::from(browser.get().0.first()))
     } else {
         let mut commit_path = surf::file_system::Path::root();
         commit_path.append(&mut path);
@@ -379,7 +365,7 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
         "".into()
     } else {
         let (_first, last) = path.split_last();
-        last.label
+        last.to_string()
     };
     let info = Info {
         name,
