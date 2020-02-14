@@ -210,7 +210,7 @@ fn convert_librad_parse_error_to_field_error(
             ),
             librad::git::projectid::ParseError::InvalidOid(_, git2_error) => {
                 convert_git2(git2_error)
-            }
+            },
         },
     }
 }
