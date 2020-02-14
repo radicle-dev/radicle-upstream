@@ -263,10 +263,10 @@ enum ObjectType {
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
-    /// Domain namespace.
-    domain: String,
-    /// Actual project name, unique under domain.
-    name: String,
+    /// Actual project name, unique under org.
+    project_name: String,
+    /// The org under which to register the project.
+    org_id: String,
 }
 
 /// Message types supproted in transactions.
@@ -306,12 +306,13 @@ impl registry::Transaction {
         self.messages
             .iter()
             .map(|m| match m {
-                registry::Message::ProjectRegistration { domain, name } => {
-                    Message::ProjectRegistration(ProjectRegistration {
-                        domain: domain.to_string(),
-                        name: name.to_string(),
-                    })
-                },
+                registry::Message::ProjectRegistration {
+                    project_name,
+                    org_id,
+                } => Message::ProjectRegistration(ProjectRegistration {
+                    project_name: name.to_string(),
+                    org_id: org_id.to_string(),
+                }),
             })
             .collect()
     }

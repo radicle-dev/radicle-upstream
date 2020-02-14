@@ -123,15 +123,15 @@ fn create_project() {
 fn register_project() {
     common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
-        vars.insert("domain".into(), InputValue::scalar("rad"));
-        vars.insert("name".into(), InputValue::scalar("upstream"));
+        vars.insert("org_id".into(), InputValue::scalar("monadic"));
+        vars.insert("project_name".into(), InputValue::scalar("upstream"));
 
-        let query = "mutation($domain: String!, $name: String!) {
-                        registerProject(domain: $domain, name: $name) {
+        let query = "mutation($project_name: String!, $org_id: String!) {
+                        registerProject(project_name: $project_name, org_id: $org_id) {
                             messages {
                                 ... on ProjectRegistration {
-                                    domain,
-                                    name,
+                                    project_name,
+                                    org_id
                                 }
                             },
                         }
@@ -143,7 +143,7 @@ fn register_project() {
                 graphql_value!({
                     "registerProject": {
                         "messages": [
-                            { "domain": "rad", "name": "upstream" },
+                            { "project_name": "upstream", "org_id": "monadic" },
                         ],
                     },
                 })

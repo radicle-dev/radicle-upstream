@@ -3,8 +3,8 @@ use serde_derive::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 use radicle_registry_client::{
-    self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, String32,
-    TransactionExtra, H256,
+    self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, OrgId, ProjectName,
+    String32, TransactionExtra, H256,
 };
 
 use crate::error;
@@ -34,12 +34,12 @@ pub struct Metadata {
 
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
-    /// Issue a new project registration with (domain, name).
+    /// Issue a new project registration with a given name under a given org.
     ProjectRegistration {
-        /// Actual project name, unique for domain.
-        name: String32,
-        /// Domain part of the project id.
-        org_id: String32,
+        /// Actual project name, unique for org.
+        project_name: ProjectName,
+        /// The Org in which to register the project.
+        org_id: OrgId,
     },
 }
 
@@ -138,7 +138,7 @@ impl Registry {
         Ok(Transaction {
             id: register_applied.tx_hash,
             messages: vec![Message::ProjectRegistration {
-                name: project_name,
+                project_name: project_name,
                 org_id: org_id,
             }],
             state: TransactionState::Applied(register_applied.block),
