@@ -310,7 +310,7 @@ impl registry::Transaction {
                     project_name,
                     org_id,
                 } => Message::ProjectRegistration(ProjectRegistration {
-                    project_name: name.to_string(),
+                    project_name: project_name.to_string(),
                     org_id: org_id.to_string(),
                 }),
             })
