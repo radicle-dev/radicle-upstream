@@ -6,7 +6,7 @@ use warp::Filter;
 use super::schema::Context;
 
 /// Runs the warp server with the given schema and context.
-pub fn run(
+pub async fn run(
     dummy_repo_path: String,
     librad_paths: librad::paths::Paths,
     registry_client: radicle_registry_client::Client,
@@ -34,7 +34,7 @@ pub fn run(
         )
         .with(warp::log("proxy"));
 
-    warp::serve(routes).run(([127, 0, 0, 1], 8080))
+    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await
 }
 
 /// Filter for the graphql endpoint.
@@ -57,7 +57,7 @@ where
         serde_json::to_vec(&request.execute(&schema, &context))
     };
 
-    warp::post2()
+    warp::post()
         .and(warp::path(path))
         .and(context_extractor)
         .and(warp::body::json())

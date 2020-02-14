@@ -13,14 +13,15 @@ struct Args {
     test: bool,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env::set_if_unset("RUST_BACKTRACE", "full");
     env::set_if_unset("RUST_LOG", "info");
     pretty_env_logger::init();
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        _source_type: args.value_from_str("--source")?,
+        _source_type: args.value_from_str("--source").unwrap(),
         test: args.contains("--test"),
     };
 
@@ -48,8 +49,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
     };
 
+    tokio::spawn(graphql::api::run(
+        dummy_repo.into(),
+        librad_paths.clone(),
+        registry_client.clone(),
+    ));
+
     info!("Starting GraphQL HTTP API");
-    graphql::api::run(dummy_repo.into(), librad_paths, registry_client);
+    graphql::api::run(dummy_repo.into(), librad_paths, registry_client).await;
 
     Ok(())
 }
