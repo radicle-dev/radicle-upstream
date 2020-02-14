@@ -95,6 +95,9 @@
     "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js",
     "release": "babel-node --presets \"@babel/env\" scripts/release.js",
     "release:finalize": "babel-node --presets \"@babel/env\" scripts/release.js --finalize",
+    "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
+    "prettier:check": "yarn prettier --check",
+    "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore"
   },
   "dependencies": {
