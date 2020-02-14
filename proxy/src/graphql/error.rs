@@ -20,7 +20,7 @@ impl juniper::IntoFieldError for error::Error {
             Self::Librad(librad_error) => convert_librad_git(&librad_error),
             Self::LibradParse(parse_error) => {
                 convert_librad_parse_error_to_field_error(&parse_error)
-            }
+            },
             Self::LibradProject(project_error) => match project_error {
                 librad::project::Error::Git(librad_error) => convert_librad_git(&librad_error),
             },
@@ -47,7 +47,7 @@ impl juniper::IntoFieldError for error::Error {
             ),
             Self::Time(error) => {
                 juniper::FieldError::new(error.to_string(), graphql_value!({ "type": "TIME" }))
-            }
+            },
         }
     }
 }
