@@ -1,5 +1,5 @@
 <script>
-  import Text from "./Text.svelte";
+  import Title from "./Title.svelte";
 
   // vanilla | primary | secondary | transparent | outline
   export let variant = "primary";
@@ -170,7 +170,7 @@
 
 <button data-cy={dataCy} class={buttonClass} {disabled} on:click {style}>
   <svelte:component this={icon} />
-  <Text variant="title">
+  <Title>
     <slot />
-  </Text>
+  </Title>
 </button>

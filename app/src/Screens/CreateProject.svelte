@@ -10,7 +10,7 @@
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
   import { slide } from "svelte/transition";
 
-  import { Button, Icon, Input, Text } from "../DesignSystem/Primitives";
+  import { Button, Icon, Input, Text, Title } from "../DesignSystem/Primitives";
   import { ModalLayout } from "../DesignSystem/Components";
 
   let currentSelection;
@@ -339,9 +339,9 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="create-project">
     <div class="create-project">
-      <Text variant="bigTitle" style="margin-bottom: 32px; text-align: left">
+      <Title variant="big" style="margin-bottom: 32px; text-align: left">
         Create a new project
-      </Text>
+      </Title>
 
       <Input.Text
         style="--focus-outline-color: var(--color-pink)"
@@ -365,16 +365,16 @@
         valid={!(validations && validations.imageUrl)}
         validationMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
 
-      <Text variant="title" style="margin: 16px 0 12px 16px; text-align: left">
+      <Title style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
-      </Text>
+      </Title>
 
       <div class="radio-selector">
         <div class="option" class:active={isNew} data-cy="new-project">
           <div class="option-header" on:click={() => (currentSelection = NEW)}>
-            <Text variant="title" style="color: var(--color-darkgray)">
+            <Title style="color: var(--color-darkgray)">
               Start with a new repository
-            </Text>
+            </Title>
             <Icon.CheckCircle
               style={isNew ? 'display: block; fill: var(--color-pink)' : 'display: none'} />
           </div>
@@ -399,9 +399,9 @@
           <div
             class="option-header"
             on:click={() => (currentSelection = EXISTING)}>
-            <Text variant="title" style="color: var(--color-darkgray)">
+            <Title style="color: var(--color-darkgray)">
               Continue with an existing repository
-            </Text>
+            </Title>
             <Icon.CheckCircle
               style={isExisting ? 'display: block; fill: var(--color-pink)' : 'display: none'} />
           </div>
@@ -445,15 +445,15 @@
       {#if validations && validations.currentSelection}
         <div class="validation-row">
           <Icon.Important style="margin-right: 8px;fill: var(--color-red)" />
-          <Text variant="title" style="color: var(--color-red)">
+          <Title style="color: var(--color-red)">
             {validations.currentSelection[0]}
-          </Text>
+          </Title>
         </div>
       {/if}
 
       <div class="button-row">
         <div class="footnote">
-          <Text variant="smallText" style="color: var(--color-gray)">
+          <Text variant="small" style="color: var(--color-gray)">
             * required
           </Text>
         </div>

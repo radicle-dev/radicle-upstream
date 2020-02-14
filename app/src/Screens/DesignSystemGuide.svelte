@@ -1,5 +1,14 @@
 <script>
-  import { Button, Text, Icon, Input } from "../DesignSystem/Primitives";
+  import {
+    Button,
+    Code,
+    Caption,
+    Icon,
+    Input,
+    Text,
+    Title,
+    Numeric
+  } from "../DesignSystem/Primitives";
   import {
     Avatar,
     Notification,
@@ -64,7 +73,7 @@
 </style>
 
 <div class="layout">
-  <Text variant="hugeTitle" style="margin-bottom: 92px">Primitives</Text>
+  <Title variant="huge" style="margin-bottom: 92px">Primitives</Title>
 
   <Section title="Colors" subTitle="Primary, secondary and grays">
 
@@ -77,21 +86,20 @@
     title="Typography"
     subTitle="Using GT America and GT America Mono from Grill Type">
 
-    <Text variant="hugeTitle">Open Source Coin</Text>
-    <Text variant="bigTitle">Open Source Coin</Text>
-    <Text variant="title">Open Source Coin</Text>
+    <Title variant="huge">Open Source Coin</Title>
+    <Title variant="big">Open Source Coin</Title>
+    <Title>Open Source Coin</Title>
 
     <Text>Open Source Coin</Text>
-    <Text variant="smallText">Open Source Coin</Text>
-    <Text variant="smallTextBold">Open Source Coin</Text>
+    <Text variant="small">Open Source Coin</Text>
+    <Text variant="smallBold">Open Source Coin</Text>
 
-    <Text variant="code">Open Source Coin</Text>
+    <Caption variant="table">Open Source Coin</Caption>
+    <Code>Open Source Coin</Code>
 
-    <Text variant="caption">Open Source Coin</Text>
-
-    <Text variant="bigNumber">0123456789</Text>
-    <Text variant="number">0123456789</Text>
-    <Text variant="smallNumber">0123456789</Text>
+    <Numeric variant="big">0123456789</Numeric>
+    <Numeric>0123456789</Numeric>
+    <Numeric variant="small">0123456789</Numeric>
   </Section>
 
   <Section
@@ -138,16 +146,16 @@
       <thead>
         <tr>
           <td>
-            <Text variant="caption">Variant</Text>
+            <Caption>Variant</Caption>
           </td>
           <td>
-            <Text variant="caption">Disabled</Text>
+            <Caption>Disabled</Caption>
           </td>
           <td>
-            <Text variant="caption">Variant</Text>
+            <Caption>Variant</Caption>
           </td>
           <td>
-            <Text variant="caption">Disabled</Text>
+            <Caption>Disabled</Caption>
           </td>
         </tr>
       </thead>
@@ -235,16 +243,16 @@
       <thead>
         <tr>
           <td>
-            <Text variant="caption">Variant</Text>
+            <Caption>Variant</Caption>
           </td>
           <td>
-            <Text variant="caption">Disabled</Text>
+            <Caption>Disabled</Caption>
           </td>
           <td>
-            <Text variant="caption">Variant</Text>
+            <Caption>Variant</Caption>
           </td>
           <td>
-            <Text variant="caption">Disabled</Text>
+            <Caption>Disabled</Caption>
           </td>
         </tr>
       </thead>
@@ -382,7 +390,7 @@
     </Swatch>
   </Section>
 
-  <Text variant="hugeTitle" style="margin-bottom: 92px">Components</Text>
+  <Title variant="huge" style="margin-bottom: 92px">Components</Title>
 
   <Section
     title="Avatars"

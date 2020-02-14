@@ -1,6 +1,6 @@
 <script>
   import { pop } from "svelte-spa-router";
-  import { Button, Flex, Text } from "../../DesignSystem/Primitives";
+  import { Button, Flex, Text, Title } from "../../DesignSystem/Primitives";
   import { Avatar, Rad, TxRow } from "../../DesignSystem/Components";
 
   export let name = null;
@@ -38,7 +38,7 @@
   style="background-color: var(--color-almostwhite); border-radius: 0; margin:
   -1px 0 -1px 0; border-top: none">
   <div slot="left">
-    <Text variant="title" style="margin-bottom: 16px;">From</Text>
+    <Title style="margin-bottom: 16px;">From</Title>
     <div>
       <Avatar size="big" variant="user" title="Your personal wallet" />
     </div>
@@ -47,7 +47,7 @@
 
 <TxRow disabled={true} style="border-radius: 0">
   <div slot="left">
-    <Text variant="title">Project Registration</Text>
+    <Title>Project Registration</Title>
   </div>
 
   <div slot="right">
@@ -60,9 +60,7 @@
 
 <TxRow disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
-    <Text variant="title" style="color: var(--color-darkgray);">
-      Transaction Fee
-    </Text>
+    <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
   </div>
 
   <div slot="right">
@@ -75,7 +73,7 @@
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
   <div slot="left">
-    <Text variant="bigTitle" style="color: var(--color-pink);">Total</Text>
+    <Title variant="big" style="color: var(--color-pink);">Total</Title>
   </div>
 
   <div slot="right">

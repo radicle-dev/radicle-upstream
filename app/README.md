@@ -108,7 +108,7 @@ directory:
 
     <Icon.Home />
     <Button variant="secondary">OK</Button>
-    <Text variant="hugeTitle">Radicle</Text>
+    <Title variant="huge">Radicle</Title>
     ```
 
   - `Components`: reusable low-to-high complexity components and layouts.

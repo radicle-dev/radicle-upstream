@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Text } from "../Primitives";
+  import { Icon, Text, Title } from "../Primitives";
   import Avatar from "./Avatar.svelte";
 
   export let title = "";
@@ -46,12 +46,12 @@
 
   <div class="container">
     <div class="first-row">
-      <Text variant="title">{title}</Text>
+      <Title>{title}</Title>
       {#if isRegistered}
         <div class="registered">
           <Icon.Ellipse
             style="fill: var(--color-pink); position: relative; bottom: -2px;" />
-          <Text variant="smallText">Registered</Text>
+          <Text variant="small">Registered</Text>
         </div>
       {/if}
     </div>

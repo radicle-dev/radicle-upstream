@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Text } from "../Primitives";
+  import { Icon, Numeric } from "../Primitives";
 
   export let amount = null;
   export let style = null;
@@ -24,18 +24,16 @@
   <div class="rad-amount">
     <Icon.EllipseBig style="fill: var(--color-pink); margin-right: 4px" />
     {#if size === 'big'}
-      <Text
-        variant="bigNumber"
+      <Numeric
+        variant="big"
         style="display: inline-flex; color: var(--color-darkgray)">
         {amount}
-      </Text>
+      </Numeric>
     {:else}
-      <Text
-        variant="number"
-        style="display: inline-flex; color: var(--color-darkgray)">
+      <Numeric style="display: inline-flex; color: var(--color-darkgray)">
         {amount}
-      </Text>
+      </Numeric>
     {/if}
   </div>
-  <Text variant="number" style="color: var(--color-gray)">${amount / 10}</Text>
+  <Numeric style="color: var(--color-gray)">${amount / 10}</Numeric>
 </div>

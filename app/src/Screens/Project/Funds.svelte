@@ -1,5 +1,5 @@
 <script>
-  import { Text, Button } from "../../DesignSystem/Primitives";
+  import { Button, Text, Title } from "../../DesignSystem/Primitives";
   import { Placeholder } from "../../DesignSystem/Components";
 
   import { registerProject } from "../../lib/path.js";
@@ -27,11 +27,11 @@
 
 <div class="wrapper">
   <div class="layout">
-    <Text
-      variant="bigTitle"
+    <Title
+      variant="big"
       style="color: var(--color-darkgray); margin-bottom: 24px">
       Register your project to receive donations
-    </Text>
+    </Title>
 
     <Placeholder style="width: 480px; height: 250px; margin-bottom: 24px" />
     <Text

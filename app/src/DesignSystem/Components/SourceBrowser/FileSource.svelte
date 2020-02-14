@@ -3,7 +3,7 @@
   import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
 
-  import { Icon, Text } from "../../Primitives";
+  import { Icon, Code } from "../../Primitives";
   import CommitTeaser from "./CommitTeaser.svelte";
 
   export let projectId = null;
@@ -58,6 +58,24 @@
     border-bottom: 1px solid var(--color-lightgray);
   }
 
+  .line-numbers {
+    font-family: "GT America Mono Regular";
+    font-size: 14px;
+    background-color: var(--color-almostwhite);
+    color: var(--color-gray);
+    text-align: center;
+    flex: 0 0 49px;
+    border-right: 1px solid var(--color-lightgray);
+    user-select: none;
+  }
+
+  .code {
+    font-family: "GT America Mono Regular";
+    font-size: 14px;
+    padding-left: 8px;
+    overflow-x: scroll;
+  }
+
   .container {
     display: flex;
   }
@@ -80,11 +98,7 @@
       {#if result.data.blob.binary}
         ఠ ͟ಠ Binary content.
       {:else}
-        <Text
-          variant="code"
-          style="background-color: var(--color-almostwhite); color:
-          var(--color-gray); text-align: center; flex: 0 0 49px; border-right:
-          1px solid var(--color-lightgray); user-select: none;">
+        <pre class="line-numbers">
           {@html result.data.blob.content
             .split('\n')
             .slice(0, -1)
@@ -92,10 +106,8 @@
               return `${index + 1}`;
             })
             .join('\n')}
-        </Text>
-        <Text variant="code" style="padding-left: 8px; overflow-x: scroll">
-          {result.data.blob.content}
-        </Text>
+        </pre>
+        <pre class="code">{result.data.blob.content}</pre>
       {/if}
     </div>
   </div>

@@ -1,6 +1,6 @@
 <script>
   import { link } from "svelte-spa-router";
-  import { Text } from "../Primitives";
+  import { Title } from "../Primitives";
 
   export let user = null;
   export let style = null;
@@ -22,5 +22,5 @@
 
 <a href={`/users/${user.username}`} use:link {style}>
   <img src={user.avatar} alt="user-avatar" />
-  <Text variant="title">{user.username}</Text>
+  <Title>{user.username}</Title>
 </a>

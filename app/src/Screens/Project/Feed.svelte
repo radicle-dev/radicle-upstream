@@ -1,7 +1,7 @@
 <script>
-  import { Flex, Text } from "../../DesignSystem/Primitives";
+  import { Flex, Title } from "../../DesignSystem/Primitives";
 </script>
 
 <Flex align="left">
-  <Text variant="bigTitle">Feeds</Text>
+  <Title variant="big">Feeds</Title>
 </Flex>

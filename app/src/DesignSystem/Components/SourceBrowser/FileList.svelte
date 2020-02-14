@@ -7,7 +7,7 @@
   import { TREE } from "../../../lib/types.js";
   import * as path from "../../../lib/path.js";
 
-  import { Icon, Text } from "../../Primitives";
+  import { Caption, Icon, Text } from "../../Primitives";
   import CommitTeaser from "./CommitTeaser.svelte";
 
   export let projectId = null;
@@ -126,13 +126,13 @@
     <thead>
       <tr>
         <td class="file-header">
-          <Text variant="caption">Name</Text>
+          <Caption>Name</Caption>
         </td>
         <td>
-          <Text variant="caption">Commit Message</Text>
+          <Caption>Commit Message</Caption>
         </td>
         <td class="last-update-header">
-          <Text variant="caption">Last Update</Text>
+          <Caption>Last Update</Caption>
         </td>
       </tr>
     </thead>

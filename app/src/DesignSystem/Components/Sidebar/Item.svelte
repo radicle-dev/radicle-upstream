@@ -1,7 +1,7 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { Text } from "../../Primitives";
+  import { Title } from "../../Primitives";
 
   import Tooltip from "./Tooltip.svelte";
 
@@ -24,5 +24,5 @@
 </a>
 
 <Tooltip>
-  <Text variant="title" style="white-space: nowrap;">{title}</Text>
+  <Title style="white-space: nowrap;">{title}</Title>
 </Tooltip>

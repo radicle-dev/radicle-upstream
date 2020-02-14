@@ -1,6 +1,6 @@
 <script>
   import { hash } from "../../lib/hash.js";
-  import { Text } from "../Primitives";
+  import { Title } from "../Primitives";
 
   export let style = null;
 
@@ -55,14 +55,12 @@
   <img class={avatarClass} src={imageUrl} alt="user-avatar" />
 
   {#if title && size === 'regular'}
-    <Text
-      variant="title"
-      style="color: var(--color-darkgray); white-space: nowrap">
+    <Title style="color: var(--color-darkgray); white-space: nowrap">
       {title}
-    </Text>
+    </Title>
   {/if}
 
   {#if title && size === 'big'}
-    <Text variant="bigTitle" style="white-space: nowrap">{title}</Text>
+    <Title variant="big" style="white-space: nowrap">{title}</Title>
   {/if}
 </div>

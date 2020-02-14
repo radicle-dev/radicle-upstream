@@ -1,7 +1,7 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { Icon, Text } from "../../Primitives";
+  import { Icon, Title } from "../../Primitives";
 
   import Tooltip from "./Tooltip.svelte";
 
@@ -31,5 +31,5 @@
 </a>
 
 <Tooltip>
-  <Text variant="title">{title}</Text>
+  <Title>{title}</Title>
 </Tooltip>

@@ -7,7 +7,7 @@
   import ConfirmTransactionStep from "./RegisterProject/ConfirmTransactionStep.svelte";
   import TransactionSummaryStep from "./RegisterProject/TransactionSummaryStep.svelte";
 
-  import { Text } from "../DesignSystem/Primitives";
+  import { Title } from "../DesignSystem/Primitives";
   import { gql } from "apollo-boost";
   import { getClient, mutate } from "svelte-apollo";
 
@@ -101,9 +101,9 @@
         <StepCounter {step} of={4} style="margin-bottom: 16px" />
       </div>
 
-      <Text variant="bigTitle" style="margin-bottom: 24px; text-align: center">
+      <Title variant="big" style="margin-bottom: 24px; text-align: center">
         {stepTitle[step]}
-      </Text>
+      </Title>
 
       {#if step === 1}
         <PickNameStep bind:name onNextStep={nextStep} />

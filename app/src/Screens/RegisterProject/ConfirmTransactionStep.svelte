@@ -1,5 +1,5 @@
 <script>
-  import { Button, Flex, Text } from "../../DesignSystem/Primitives";
+  import { Button, Caption, Flex, Title } from "../../DesignSystem/Primitives";
   import { Avatar, Rad, TxRow } from "../../DesignSystem/Components";
 
   export let name = null;
@@ -8,38 +8,32 @@
   export let onPreviousStep = null;
 </script>
 
-<Text
-  variant="caption"
-  style="color: var(--color-darkgray); margin-bottom: 16px">
+<Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Your order
-</Text>
+</Caption>
 <TxRow
   style="margin-bottom: 16px; background-color: var(--color-almostwhite)"
   disabled={true}>
   <div slot="left">
-    <Text variant="title" style="color: var(--color-darkgray);">
-      Name registration
-    </Text>
+    <Title style="color: var(--color-darkgray);">Name registration</Title>
   </div>
 
   <div slot="right">
-    <Text variant="title" style="color: var(--color-darkgray)">“{name}”</Text>
+    <Title style="color: var(--color-darkgray)">“{name}”</Title>
   </div>
 </TxRow>
 
-<Text
-  variant="caption"
-  style="color: var(--color-darkgray); margin-bottom: 16px">
+<Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Order cost
-</Text>
+</Caption>
 
 <TxRow
   disabled={true}
   style="border-bottom-left-radius: 0; border-bottom-right-radius: 0">
   <div slot="left">
-    <Text variant="title" style="color: var(--color-darkgray);">
+    <Title style="color: var(--color-darkgray);">
       Project Registration Fee
-    </Text>
+    </Title>
   </div>
 
   <div slot="right">
@@ -49,9 +43,7 @@
 
 <TxRow disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
-    <Text variant="title" style="color: var(--color-darkgray);">
-      Transaction Fee
-    </Text>
+    <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
   </div>
 
   <div slot="right">
@@ -64,7 +56,7 @@
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
   <div slot="left">
-    <Text variant="bigTitle" style="color: var(--color-pink);">Total</Text>
+    <Title variant="big" style="color: var(--color-pink);">Total</Title>
   </div>
 
   <div slot="right">
@@ -72,11 +64,9 @@
   </div>
 </TxRow>
 
-<Text
-  variant="caption"
-  style="color: var(--color-darkgray); margin-bottom: 16px">
+<Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Paid by
-</Text>
+</Caption>
 
 <TxRow disabled={true}>
   <div slot="left">

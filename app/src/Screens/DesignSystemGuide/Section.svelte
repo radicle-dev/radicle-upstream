@@ -1,5 +1,5 @@
 <script>
-  import { Text } from "../../DesignSystem/Primitives";
+  import { Text, Title } from "../../DesignSystem/Primitives";
 
   export let title = null;
   export let subTitle = null;
@@ -20,7 +20,7 @@
 
 <div class="section">
   <div class="titles">
-    <Text variant="bigTitle" style="margin-bottom: 8px">{title}</Text>
+    <Title variant="big" style="margin-bottom: 8px">{title}</Title>
     <Text style="color: var(--color-gray)">{subTitle}</Text>
   </div>
   <div class="content">

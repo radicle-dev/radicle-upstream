@@ -1,5 +1,5 @@
 <script>
-  import { Text } from "../Primitives";
+  import { Caption } from "../Primitives";
 
   export let step = null;
   export let of = null;
@@ -15,14 +15,12 @@
 </style>
 
 <div class="step-counter" {style}>
-  <Text variant="caption">Step</Text>
+  <Caption>Step</Caption>
   {#each range as stepNumber}
     {#if step === stepNumber}
-      <Text variant="caption">&nbsp;{stepNumber}</Text>
+      <Caption>&nbsp;{stepNumber}</Caption>
     {:else}
-      <Text variant="caption" style="color: var(--color-gray)">
-        &nbsp;{stepNumber}
-      </Text>
+      <Caption style="color: var(--color-gray)">&nbsp;{stepNumber}</Caption>
     {/if}
   {/each}
 </div>

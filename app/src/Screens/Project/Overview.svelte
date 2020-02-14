@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
 
-  import { Flex, Text } from "../../DesignSystem/Primitives";
+  import { Flex, Text, Title } from "../../DesignSystem/Primitives";
   import { SourceBrowser } from "../../DesignSystem/Components";
 
   import { gql } from "apollo-boost";
@@ -35,7 +35,7 @@
 </style>
 
 <Flex align="left">
-  <Text variant="bigTitle">Overview</Text>
+  <Title variant="big">Overview</Title>
 </Flex>
 
 <div class="header">

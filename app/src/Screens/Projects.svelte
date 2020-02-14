@@ -1,6 +1,6 @@
 <script>
   import { push } from "svelte-spa-router";
-  import { Button, Flex, Icon, Text } from "../DesignSystem/Primitives";
+  import { Button, Flex, Icon, Title } from "../DesignSystem/Primitives";
   import { ProjectList, SidebarLayout } from "../DesignSystem/Components";
   import { createProject } from "../lib/path.js";
 </script>
@@ -8,7 +8,7 @@
 <SidebarLayout dataCy="page">
   <Flex style="margin-bottom: 24px">
     <div slot="left">
-      <Text variant="bigTitle">My Projects</Text>
+      <Title variant="big">My Projects</Title>
     </div>
 
     <div slot="right">

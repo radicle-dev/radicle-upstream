@@ -1,10 +1,10 @@
 <script>
-  import { Flex, Text } from "../../DesignSystem/Primitives";
+  import { Flex, Title } from "../../DesignSystem/Primitives";
   import { SourceBrowser } from "../../DesignSystem/Components";
 </script>
 
 <Flex align="left" style="margin-bottom: 32px">
-  <Text variant="bigTitle">Source</Text>
+  <Title variant="big">Source</Title>
 </Flex>
 
 <SourceBrowser />
