@@ -20,7 +20,7 @@ async function main() {
       console.log("Please install missing dependencies:");
       console.log("  - https://github.com/github/hub");
     } else {
-      raise;
+      throw error;
     }
   }
 
