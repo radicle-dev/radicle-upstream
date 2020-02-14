@@ -52,6 +52,64 @@ impl juniper::IntoFieldError for error::Error {
     }
 }
 
+#[derive(juniper::GraphQLEnum)]
+/// TODO
+pub enum Extensions {
+    /// TODO
+    FS,
+    /// TODO
+    IO,
+    /// TODO
+    GitNotBranch,
+    /// TODO
+    GitNotTag,
+    /// TODO
+    GitRevParse,
+    /// TODO
+    GitLastCommit,
+    /// TODO
+    GitStringConversion,
+    /// TODO
+    GitInternal,
+    /// TODO
+    Git2,
+    /// TODO
+    LibradMissingPgpAddr,
+    /// TODO
+    LibradMissingPgpUserId,
+    /// TODO
+    LibradProjectExists,
+    /// TODO
+    LibradNoSuchProject,
+    /// TODO
+    LibradLibgit,
+    /// TODO
+    LibradIo,
+    /// TODO
+    LibradSerde,
+    /// TODO
+    LibradPgp,
+    /// TODO
+    LibradSurf,
+    /// TODO
+    LibradMissingDefaultBranch,
+    /// TODO
+    LibradParseGit,
+    /// TODO
+    LibradParseInvalidBackend,
+    /// TODO
+    LibradParseInvalidFormat,
+    /// TODO
+    LibradParseInvalidOid,
+    /// TODO
+    UrlParse,
+}
+
+#[derive(GraphQLObject)]
+struct Extension {
+    r#type: Extensions,
+}
+
 /// Helper to convert `radicle_surf` `FileSystem` error to `juniper::FieldError`.
 fn convert_fs(error: &surf::file_system::error::Error) -> juniper::FieldError {
     let error_str = match &error {
@@ -65,12 +123,11 @@ fn convert_fs(error: &surf::file_system::error::Error) -> juniper::FieldError {
         },
     };
 
-    juniper::FieldError::new(
-        error_str,
-        graphql_value!({
-            "type": "FS"
-        }),
-    )
+    let value = juniper::Value::Scalar(Extensions::FS);
+    let extension = juniper::Value::object(
+        vec![("type", value)].into_iter().collect()
+    );
+    juniper::FieldError::new(error_str, extension)
 }
 
 /// Helper to convert `std::io::Error` to `juniper::FieldError`.
