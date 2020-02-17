@@ -119,6 +119,8 @@ fn create_project() {
     })
 }
 
+//TODO(nuno): test register_org
+
 #[test]
 fn register_project() {
     common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {

@@ -80,6 +80,14 @@ impl Mutation {
         })
     }
 
+    fn register_org(ctx: &Context, org_id: String) -> Result<registry::Transaction, error::Error> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+        // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
+        // https://github.com/graphql-rust/juniper/pull/497
+        futures::executor::block_on(ctx.registry.register_org(&fake_pair, org_id))
+    }
+
     fn register_project(
         ctx: &Context,
         domain: String,
@@ -260,6 +268,13 @@ enum ObjectType {
     Blob,
 }
 
+/// Contextual information for an org registration message.
+#[derive(juniper::GraphQLObject)]
+struct OrgRegistration {
+    /// The ID of the org.
+    org_id: String,
+}
+
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
@@ -271,13 +286,23 @@ struct ProjectRegistration {
 
 /// Message types supproted in transactions.
 enum Message {
+    /// Registration of a new org.
+    OrgRegistration(OrgRegistration),
+
     /// Registration of a new project.
     ProjectRegistration(ProjectRegistration),
 }
 
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
-        &ProjectRegistration => match *self { Message::ProjectRegistration(ref p) => Some(p) },
+        &ProjectRegistration => match *self {
+            Message::ProjectRegistration(ref p) => Some(p),
+            _ => None
+        },
+        &OrgRegistration => match *self {
+            Message::OrgRegistration(ref p) => Some(p),
+            _ => None
+        },
     }
 });
 
@@ -306,6 +331,11 @@ impl registry::Transaction {
         self.messages
             .iter()
             .map(|m| match m {
+                registry::Message::OrgRegistration { org_id } => {
+                    Message::OrgRegistration(OrgRegistration {
+                        org_id: org_id.to_string(),
+                    })
+                },
                 registry::Message::ProjectRegistration {
                     project_name,
                     org_id,

@@ -41,6 +41,12 @@ pub enum Message {
         /// The Org in which to register the project.
         org_id: OrgId,
     },
+
+    /// Issue a new org registration with a given id.
+    OrgRegistration {
+        /// The ID of the org
+        org_id: OrgId,
+    },
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -69,6 +75,38 @@ impl Registry {
         self.client.list_projects().await.map_err(|e| e.into())
     }
 
+    pub async fn register_org(
+        &self,
+        author: &ed25519::Pair,
+        org_id: String,
+    ) -> Result<Transaction, error::Error> {
+        // Verify that inputs are valid.
+        let org_id =
+            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+
+        // Prepare and submit project registration transaction.
+        let register_message = message::RegisterOrg {
+            org_id: org_id.clone(),
+        };
+        let register_tx = registry::Transaction::new_signed(
+            author,
+            register_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+            },
+        );
+        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
+        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
+
+        Ok(Transaction {
+            id: register_applied.tx_hash,
+            messages: vec![Message::OrgRegistration { org_id: org_id }],
+            state: TransactionState::Applied(register_applied.block),
+            timestamp: SystemTime::now(),
+        })
+    }
+
     /// Register a new project on the chain.
     pub async fn register_project(
         &self,
@@ -78,8 +116,8 @@ impl Registry {
         maybe_project_id: Option<librad::project::ProjectId>,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let project_name =
-            ProjectName::from_string(name.clone()).map_err(|_| error::ProjectValidation::NameTooLong)?;
+        let project_name = ProjectName::from_string(name.clone())
+            .map_err(|_| error::ProjectValidation::NameTooLong)?;
         let org_id =
             OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
 
@@ -160,6 +198,10 @@ mod tests {
         let client = Client::new_emulator();
         let registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let org_result =
+            futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        assert!(org_result.is_ok());
         let result = futures::executor::block_on(registry.register_project(
             &alice,
             "radicle".into(),
