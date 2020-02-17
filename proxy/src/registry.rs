@@ -257,13 +257,14 @@ mod tests {
         let registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
-
         // Register the org
-        let registration = futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        let registration =
+            futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
         assert!(registration.is_ok());
 
         // Unregister the org
-        let unregistration = futures::executor::block_on(registry.unregister_org(&alice, "monadic".into()));
+        let unregistration =
+            futures::executor::block_on(registry.unregister_org(&alice, "monadic".into()));
         assert!(unregistration.is_ok());
     }
 
