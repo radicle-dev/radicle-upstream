@@ -60,7 +60,9 @@
 
 <TxRow disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
-    <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
+    <Title style="color: var(--color-darkgray);">
+      Transaction Fee
+    </Title>
   </div>
 
   <div slot="right">

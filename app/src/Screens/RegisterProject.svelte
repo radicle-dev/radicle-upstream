@@ -71,11 +71,11 @@
 
   const formatDate = date => {
     let options = {
-      hour: "numeric",
-      minute: "numeric",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
     };
     return new Intl.DateTimeFormat("en-US", options).format(date);
   };
