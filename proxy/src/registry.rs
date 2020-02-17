@@ -4,7 +4,7 @@ use std::time::SystemTime;
 
 use radicle_registry_client::{
     self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, OrgId, ProjectName,
-    String32, TransactionExtra, H256,
+    TransactionExtra, H256,
 };
 
 use crate::error;
@@ -79,9 +79,9 @@ impl Registry {
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
         let project_name =
-            String32::from_string(name.clone()).map_err(error::ProjectValidation::NameTooLong)?;
+            ProjectName::from_string(name.clone()).map_err(|_| error::ProjectValidation::NameTooLong)?;
         let org_id =
-            String32::from_string(org_id.clone()).map_err(error::ProjectValidation::OrgTooLong)?;
+            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
@@ -120,7 +120,7 @@ impl Registry {
 
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterProject {
-            id: (org_id.clone(), project_name.clone()),
+            project_id: (org_id.clone(), project_name.clone()),
             checkpoint_id,
             metadata: register_metadata,
         };

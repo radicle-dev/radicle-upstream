@@ -10,9 +10,9 @@ use std::time::SystemTimeError;
 #[derive(Debug)]
 pub enum ProjectValidation {
     /// Project names (String32) can only be at most 32 bytes.
-    NameTooLong(String),
+    NameTooLong,
     /// Org ids (String32) can only be at most 32 bytes.
-    OrgTooLong(String),
+    OrgTooLong,
 }
 
 /// All error variants the API will return.
