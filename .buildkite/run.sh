@@ -73,6 +73,12 @@ echo "--- Run proxy lints"
 (cd proxy && time cargo check --all --all-features --all-targets)
 (cd proxy && time cargo clippy --all --all-features --all-targets)
 
+echo "--- Run app eslint checks"
+(cd app && time yarn lint)
+
+echo "--- Run app prettier checks"
+(cd app && time yarn prettier:check)
+
 echo "--- Starting proxy daemon and runing app tests"
 (cd app && time ELECTRON_ENABLE_LOGGING=1 yarn test)
 
