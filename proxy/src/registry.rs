@@ -158,7 +158,8 @@ impl Registry {
 
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterProject {
-            project_id: (org_id.clone(), project_name.clone()),
+            project_name: project_name.clone(),
+            org_id: org_id.clone(),
             checkpoint_id,
             metadata: register_metadata,
         };

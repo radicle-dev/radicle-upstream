@@ -2502,7 +2502,7 @@ dependencies = [
  "pico-args 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_assertions 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pretty_env_logger 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc)",
+ "radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd)",
  "rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_cbor 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2559,7 +2559,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-client"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc#28381718bd7115eb5823920d896d2fe7c0e870fc"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd#7a09917a7ec112c914a2a6981991fa9e67fa37dd"
 dependencies = [
  "async-std 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "async-trait 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2574,8 +2574,8 @@ dependencies = [
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "pallet-transaction-payment 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
  "parity-scale-codec 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "radicle-registry-core 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc)",
- "radicle-registry-runtime 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc)",
+ "radicle-registry-core 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd)",
+ "radicle-registry-runtime 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd)",
  "sc-rpc-api 0.8.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
  "sp-core 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
  "sp-io 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
@@ -2590,7 +2590,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-core"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc#28381718bd7115eb5823920d896d2fe7c0e870fc"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd#7a09917a7ec112c914a2a6981991fa9e67fa37dd"
 dependencies = [
  "parity-scale-codec 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2601,7 +2601,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-runtime"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc#28381718bd7115eb5823920d896d2fe7c0e870fc"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd#7a09917a7ec112c914a2a6981991fa9e67fa37dd"
 dependencies = [
  "frame-executive 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
  "frame-support 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
@@ -2614,7 +2614,7 @@ dependencies = [
  "pallet-timestamp 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
  "pallet-transaction-payment 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
  "parity-scale-codec 1.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "radicle-registry-core 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc)",
+ "radicle-registry-core 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp-api 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
  "sp-block-builder 2.0.0 (git+https://github.com/paritytech/substrate?rev=09abd3b436ea568a47ec4fc47f933728d8cf466b)",
@@ -4574,9 +4574,9 @@ dependencies = [
 "checksum quote 0.6.13 (registry+https://github.com/rust-lang/crates.io-index)" = "6ce23b6b870e8f94f81fb0a363d65d86675884b34a09043c81e5562f11c1f8e1"
 "checksum quote 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "053a8c8bcc71fcce321828dc897a98ab9760bef03a4fc36693c231e5b3216cfe"
 "checksum radicle-keystore 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=4cedafaeb46deee4ec11d0e4b779a1a0d124d599)" = "<none>"
-"checksum radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc)" = "<none>"
-"checksum radicle-registry-core 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc)" = "<none>"
-"checksum radicle-registry-runtime 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=28381718bd7115eb5823920d896d2fe7c0e870fc)" = "<none>"
+"checksum radicle-registry-client 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd)" = "<none>"
+"checksum radicle-registry-core 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd)" = "<none>"
+"checksum radicle-registry-runtime 0.0.0 (git+https://github.com/radicle-dev/radicle-registry.git?rev=7a09917a7ec112c914a2a6981991fa9e67fa37dd)" = "<none>"
 "checksum radicle-surf 0.2.1 (git+https://github.com/radicle-dev/radicle-surf.git?rev=5c04b846cf53763a70bf0c168ce40293bbce0bd6)" = "<none>"
 "checksum rand 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)" = "6d71dacdc3c88c1fde3885a3be3fbab9f35724e6ce99467f7d9c5026132184ca"
 "checksum rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)" = "6a6b1679d49b24bbfe0c803429aa1874472f50d9b363131f0e89fc356b544d03"
