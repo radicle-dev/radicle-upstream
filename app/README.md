@@ -103,7 +103,7 @@ directory:
 
     ```
     <script>
-      import { Button, Text, Icon, Input } from "../DesignSystem/Primitives";
+      import { Button, Title, Icon, Input } from "../DesignSystem/Primitives";
     </script>
 
     <Icon.Home />
@@ -118,19 +118,41 @@ directory:
     fragments, make sure to only export the component which is intended for
     public use.
 
+    As in `Primitives`, all publicly usable components are exported via
+    `index.js`:
+
+    ```
+    <script>
+      import { Avatar, Placeholder, Rad } from "../DesignSystem/Components";
+    </script>
+
+    <Avatar size="big" title="My name" />
+    <Placeholder style="width: 300px; height: 100px" />
+    <Rad amount="200" />
+    ```
 
 Next to `DesignSystem`, you'll find a directory called `Screens`. Screens bring
 together components from the Design System forming what a user in the UI sees
 as a whole screen. More complex screens can be broken down into multiple
 fragments, in this case the screen will contain data fetching and routing logic
 for the fragments. Fragments should be placed in a directory named after the
-screen.
+screen, like so:
+
+```
+.
+├── RegisterProject                    # fragments
+│   ├── ConfirmTransactionStep.svelte
+│   ├── PickNameStep.svelte
+│   ├── PickWalletStep.svelte
+│   └── TransactionSummaryStep.svelte
+└── RegisterProject.svelte             # screen
+```
 
 When multiple screens share the same layout, it should be extracted into a
-separate component. Layout components are suffixed with "Layout", like so:
+separate component. Layout components are suffixed with "Layout":
 `DesignSystem/Components/ModalLayout.svelt`.
 
-File and directory name casing:
+File and directory name casing is as follows:
   - Svelte components and directories containing components - PascalCase
   - everything else: `*.js` files and folders - camelCase
 
