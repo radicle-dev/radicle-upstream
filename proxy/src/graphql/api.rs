@@ -32,36 +32,43 @@ pub async fn run(
 }
 
 /// Filter for the graphql endpoint.
-fn make_graphql_filter<Query, Mutation, Context>(
+fn make_graphql_filter<Context, Mutation, Query>(
     schema: juniper::RootNode<'static, Query, Mutation>,
     context_extractor: filters::BoxedFilter<(Context,)>,
 ) -> filters::BoxedFilter<(http::Response<Vec<u8>>,)>
 where
-    Context: Send + 'static,
-    Query: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
+    Context: Clone + Send + Sync + 'static,
     Mutation: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
+    Query: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
 {
     let schema = Arc::new(schema);
 
-    let handle_request = |context: Context, request: juniper::http::GraphQLRequest| async move {
-        let schema = schema.clone();
-
-        match serde_json::to_vec(&request.execute(&schema, &context)) {
-            Ok(body) => Ok(http::Response::builder()
-                .header("content-type", "application/json; charset=utf-8")
-                .body(body)
-                .unwrap()),
-            Err(_) => Ok(http::Response::builder()
-                .status(warp::http::StatusCode::INTERNAL_SERVER_ERROR)
-                .body(Vec::new())
-                .unwrap()),
-        }
-    };
-
     warp::post()
-        .and(context_extractor.clone())
+        .map(move || schema.clone())
+        .and(context_extractor)
         .and(warp::body::json())
         .and_then(handle_request)
-        // .and(build_response)
         .boxed()
+}
+
+async fn handle_request<Context, Mutation, Query>(
+    schema: Arc<juniper::RootNode<'static, Query, Mutation>>,
+    context: Context,
+    request: juniper::http::GraphQLRequest,
+) -> Result<http::Response<Vec<u8>>, std::convert::Infallible>
+where
+    Context: Clone + Send + Sync + 'static,
+    Mutation: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
+    Query: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
+{
+    match serde_json::to_vec(&request.execute(&schema, &context)) {
+        Ok(body) => Ok(http::Response::builder()
+            .header("content-type", "application/json; charset=utf-8")
+            .body(body)
+            .unwrap()),
+        Err(_) => Ok(http::Response::builder()
+            .status(warp::http::StatusCode::INTERNAL_SERVER_ERROR)
+            .body(Vec::new())
+            .unwrap()),
+    }
 }
