@@ -123,13 +123,13 @@ fn create_project() {
 fn register_org() {
     common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
-        vars.insert("org_id".into(), InputValue::scalar("monadic"));
+        vars.insert("orgId".into(), InputValue::scalar("monadic"));
 
-        let query = "mutation($org_id: String!) {
-                        registerOrg(org_id: $org_id) {
+        let query = "mutation($orgId: String!) {
+                        registerOrg(orgId: $orgId) {
                             messages {
                                 ... on OrgRegistration {
-                                    org_id
+                                    orgId
                                 }
                             },
                         }
@@ -141,7 +141,7 @@ fn register_org() {
                 graphql_value!({
                     "registerOrg": {
                         "messages": [
-                            { "org_id": "monadic" },
+                            { "orgId": "monadic" },
                         ],
                     },
                 })
@@ -154,15 +154,15 @@ fn register_org() {
 fn register_project() {
     common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
-        vars.insert("org_id".into(), InputValue::scalar("monadic"));
-        vars.insert("project_name".into(), InputValue::scalar("upstream"));
+        vars.insert("orgId".into(), InputValue::scalar("monadic"));
+        vars.insert("projectName".into(), InputValue::scalar("upstream"));
 
-        let query = "mutation($project_name: String!, $org_id: String!) {
-                        registerProject(project_name: $project_name, org_id: $org_id) {
+        let query = "mutation($projectName: String!, $orgId: String!) {
+                        registerProject(projectName: $projectName, orgId: $orgId) {
                             messages {
                                 ... on ProjectRegistration {
-                                    project_name,
-                                    org_id
+                                    projectName,
+                                    orgId
                                 }
                             },
                         }
@@ -174,7 +174,7 @@ fn register_project() {
                 graphql_value!({
                     "registerProject": {
                         "messages": [
-                            { "project_name": "upstream", "org_id": "monadic" },
+                            { "projectName": "upstream", "orgId": "monadic" },
                         ],
                     },
                 })
