@@ -120,37 +120,6 @@ fn create_project() {
 }
 
 #[test]
-fn register_org() {
-    common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
-        let mut vars = Variables::new();
-        vars.insert("orgId".into(), InputValue::scalar("monadic"));
-
-        let query = "mutation($orgId: String!) {
-                        registerOrg(orgId: $orgId) {
-                            messages {
-                                ... on OrgRegistration {
-                                    orgId
-                                }
-                            },
-                        }
-                    }";
-        common::execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "registerOrg": {
-                        "messages": [
-                            { "orgId": "monadic" },
-                        ],
-                    },
-                })
-            );
-        });
-    });
-}
-
-#[test]
 fn register_project() {
     common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
