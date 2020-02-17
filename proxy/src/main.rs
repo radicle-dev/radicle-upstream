@@ -21,20 +21,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        _source_type: args.value_from_str("--source").unwrap(),
+        _source_type: args.value_from_str("--source")?,
         test: args.contains("--test"),
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
     let (registry_client, dummy_repo, librad_paths) = if args.test {
-        let librad_paths =
-            librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
+        let librad_paths = librad::paths::Paths::from_root(temp_dir.path())?;
 
         coco::setup_fixtures(
             &librad_paths,
             temp_dir.path().to_str().expect("path extraction failed"),
         )
-        .expect("fixture setup failed");
+        .expect("fixture creation failed");
 
         (
             radicle_registry_client::Client::new_emulator(),
@@ -42,10 +41,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             librad_paths,
         )
     } else {
+        let node_host = url17::Host::parse("35.241.138.91")?;
         (
-            futures::executor::block_on(construct_registry_client()),
+            radicle_registry_client::Client::create_with_executor(node_host)
+                .await
+                .expect("registry client creation failed"),
             "..",
-            librad::paths::Paths::new().expect("librad paths failed"),
+            librad::paths::Paths::new()?,
         )
     };
 
@@ -59,12 +61,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     graphql::api::run(dummy_repo.into(), librad_paths, registry_client).await;
 
     Ok(())
-}
-
-/// Helper to set up the Registry client against devnet.
-async fn construct_registry_client() -> radicle_registry_client::Client {
-    let node_host = url17::Host::parse("35.241.138.91").expect("unable to parse URL");
-    radicle_registry_client::Client::create_with_executor(node_host)
-        .await
-        .expect("unable to construct registry client")
 }
