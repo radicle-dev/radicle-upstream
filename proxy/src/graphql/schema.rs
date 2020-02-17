@@ -90,8 +90,8 @@ impl Mutation {
 
     fn register_project(
         ctx: &Context,
-        domain: String,
-        name: String,
+        project_name: String,
+        org_id: String,
         maybe_librad_id_input: Option<juniper::ID>,
     ) -> Result<registry::Transaction, error::Error> {
         let maybe_librad_id = maybe_librad_id_input.map(|id| {
@@ -105,8 +105,8 @@ impl Mutation {
         // https://github.com/graphql-rust/juniper/pull/497
         futures::executor::block_on(ctx.registry.register_project(
             &fake_pair,
-            domain,
-            name,
+            project_name,
+            org_id,
             maybe_librad_id,
         ))
     }
