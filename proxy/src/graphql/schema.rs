@@ -337,12 +337,12 @@ impl registry::Transaction {
         self.messages
             .iter()
             .map(|m| match m {
-                registry::Message::OrgRegistration { org_id } => {
+                registry::Message::OrgRegistration(org_id) => {
                     Message::OrgRegistration(OrgRegistration {
                         org_id: org_id.to_string(),
                     })
                 },
-                registry::Message::OrgUnregistration { org_id } => {
+                registry::Message::OrgUnregistration(org_id) => {
                     Message::OrgUnregistration(OrgUnregistration {
                         org_id: org_id.to_string(),
                     })

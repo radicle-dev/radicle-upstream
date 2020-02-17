@@ -43,16 +43,11 @@ pub enum Message {
     },
 
     /// Issue a new org registration with a given id.
-    OrgRegistration {
-        /// The ID of the org
-        org_id: OrgId,
-    },
+    #[allow(dead_code)]
+    OrgRegistration(OrgId),
 
     /// Issue an org unregistration with a given id.
-    OrgUnregistration {
-        /// The ID of the org to unregister.
-        org_id: OrgId,
-    },
+    OrgUnregistration(OrgId),
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -81,6 +76,7 @@ impl Registry {
         self.client.list_projects().await.map_err(|e| e.into())
     }
 
+    #[allow(dead_code)]
     pub async fn register_org(
         &self,
         author: &ed25519::Pair,
@@ -107,7 +103,7 @@ impl Registry {
 
         Ok(Transaction {
             id: register_applied.tx_hash,
-            messages: vec![Message::OrgRegistration { org_id: org_id }],
+            messages: vec![Message::OrgRegistration(org_id)],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
         })
@@ -140,7 +136,7 @@ impl Registry {
 
         Ok(Transaction {
             id: unregister_applied.tx_hash,
-            messages: vec![Message::OrgUnregistration { org_id: org_id }],
+            messages: vec![Message::OrgUnregistration(org_id)],
             state: TransactionState::Applied(unregister_applied.block),
             timestamp: SystemTime::now(),
         })
