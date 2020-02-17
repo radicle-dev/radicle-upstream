@@ -101,7 +101,7 @@ directory:
     All public primitives are exported via a central `index.js` file, which
     makes consumption straightforward:
 
-    ```
+    ```html
     <script>
       import { Button, Title, Icon, Input } from "../DesignSystem/Primitives";
     </script>
@@ -121,7 +121,7 @@ directory:
     As in `Primitives`, all publicly usable components are exported via
     `index.js`:
 
-    ```
+    ```html
     <script>
       import { Avatar, Placeholder, Rad } from "../DesignSystem/Components";
     </script>
@@ -138,7 +138,7 @@ fragments, in this case the screen will contain data fetching and routing logic
 for the fragments. Fragments should be placed in a directory named after the
 screen, like so:
 
-```
+```sh
 .
 ├── RegisterProject                    # fragments
 │   ├── ConfirmTransactionStep.svelte
@@ -156,7 +156,7 @@ File and directory name casing is as follows:
   - Svelte components and directories containing components - PascalCase
   - everything else: `*.js` files and folders - camelCase
 
-```
+```sh
 .
 ├── App.svelte                     # Root component
 ├── DesignSystem
@@ -195,6 +195,61 @@ File and directory name casing is as follows:
 ```
 
 
+#### CSS
+
+The main entry point of the electron renderer is `public/index.html`. Any
+global styling which is not managed by Svelte should be imported there:
+
+```html
+<link rel="stylesheet" href="reset.css" />       <!-- style resets -->
+<link rel="stylesheet" href="colors.css" />      <!-- color CSS variables -->
+<link rel="stylesheet" href="typography.css" />  <!-- font-face setup and typography CSS variables -->
+<link rel="stylesheet" href="global.css" />      <!-- global CSS rules -->
+<link rel="stylesheet" href="bundle.css" />      <!-- Svelte component CSS -->
+```
+
+To avoid extra wrappers for positioning and spacing, and to allow style
+overrides, components expose a `style` prop:
+
+```html
+  <Rad amount={200} style="margin-right: 24px" size="big" />
+
+  <Input.Dropdown
+    items={localBranches}
+    bind:value={defaultBranch}
+    style="min-width: 240px; --focus-outline-color: var(--color-pink)" />
+```
+
+For very common alignment cases we have a helper component called `Flex`, which
+offers two ways of aligning things:
+
+  - via the `align` prop;
+  - or by using slots.
+
+If there is only one element to align, use the `align` prop, otherwise use
+slots.
+
+```html
+<Flex align="left">
+  <Title variant="big">Issues</Title>
+</Flex>
+
+<Flex style="margin-top: 48px;">
+  <div slot="left">
+    <Button style="margin-right: 24px">
+      Back
+    </Button>
+  </div>
+
+  <div slot="right">
+    <Button variant="primary">
+      Pay
+    </Button>
+  </div>
+</Flex>
+```
+
+
 #### Colors
 
 Colors amongst other design system tokens are stored in the `tokens` folder.
@@ -217,13 +272,10 @@ Entries in `colors.json` have the following shape:
 }
 ```
 
-When the `tokens/colors.json` file is changed, we have to re-generate all
-tints and shades via: `yarn generate:colors`. This will update the
-`public/colors.css` file. All changes to both files should be committed.
-
-The main entry point of the electron renderer is `public/index.html`. Amongst
-other things it loads `public/colors.css` which, in turn, provides colors,
-including their tints and shades, as CSS variables to the rest of the code.
+When the `tokens/colors.json` file is changed, we have to re-generate all tints
+and shades via: `yarn generate:colors`. This will update the global color CSS
+variables in `public/colors.css`. All changes to both files should be
+committed.
 
 When developing new features we should only use the CSS variables instead of
 raw color codes, like so:
