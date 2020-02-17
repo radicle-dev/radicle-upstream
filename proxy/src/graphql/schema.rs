@@ -80,14 +80,6 @@ impl Mutation {
         })
     }
 
-    fn register_org(ctx: &Context, org_id: String) -> Result<registry::Transaction, error::Error> {
-        // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
-        // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
-        // https://github.com/graphql-rust/juniper/pull/497
-        futures::executor::block_on(ctx.registry.register_org(&fake_pair, org_id))
-    }
-
     fn register_project(
         ctx: &Context,
         project_name: String,
