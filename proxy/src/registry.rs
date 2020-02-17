@@ -47,6 +47,12 @@ pub enum Message {
         /// The ID of the org
         org_id: OrgId,
     },
+
+    /// Issue an org unregistration with a given id.
+    OrgUnregistration {
+        /// The ID of the org to unregister.
+        org_id: OrgId,
+    },
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -103,6 +109,39 @@ impl Registry {
             id: register_applied.tx_hash,
             messages: vec![Message::OrgRegistration { org_id: org_id }],
             state: TransactionState::Applied(register_applied.block),
+            timestamp: SystemTime::now(),
+        })
+    }
+
+    #[allow(dead_code)]
+    pub async fn unregister_org(
+        &self,
+        author: &ed25519::Pair,
+        org_id: String,
+    ) -> Result<Transaction, error::Error> {
+        // Verify that inputs are valid.
+        let org_id =
+            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+
+        // Prepare and submit project registration transaction.
+        let unregister_message = message::UnregisterOrg {
+            org_id: org_id.clone(),
+        };
+        let register_tx = registry::Transaction::new_signed(
+            author,
+            unregister_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+            },
+        );
+        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
+        let unregister_applied = self.client.submit_transaction(register_tx).await?.await?;
+
+        Ok(Transaction {
+            id: unregister_applied.tx_hash,
+            messages: vec![Message::OrgUnregistration { org_id: org_id }],
+            state: TransactionState::Applied(unregister_applied.block),
             timestamp: SystemTime::now(),
         })
     }
@@ -209,6 +248,23 @@ mod tests {
         let org = maybe_org.unwrap();
         assert_eq!(org.id, org_id);
         assert_eq!(org.members.len(), 1);
+    }
+
+    #[test]
+    fn test_unregister_org() {
+        // Test that org unregistration submits valid transactions and they succeed.
+        let client = Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+
+        // Register the org
+        let registration = futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        assert!(registration.is_ok());
+
+        // Unregister the org
+        let unregistration = futures::executor::block_on(registry.unregister_org(&alice, "monadic".into()));
+        assert!(unregistration.is_ok());
     }
 
     #[test]

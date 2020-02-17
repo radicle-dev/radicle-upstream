@@ -275,6 +275,13 @@ struct OrgRegistration {
     org_id: String,
 }
 
+/// Contextual information for an org unregistration message.
+#[derive(juniper::GraphQLObject)]
+struct OrgUnregistration {
+    /// The ID of the org.
+    org_id: String,
+}
+
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
@@ -289,6 +296,9 @@ enum Message {
     /// Registration of a new org.
     OrgRegistration(OrgRegistration),
 
+    /// Registration of a new org.
+    OrgUnregistration(OrgUnregistration),
+
     /// Registration of a new project.
     ProjectRegistration(ProjectRegistration),
 }
@@ -300,7 +310,11 @@ juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
             _ => None
         },
         &OrgRegistration => match *self {
-            Message::OrgRegistration(ref p) => Some(p),
+            Message::OrgRegistration(ref o) => Some(o),
+            _ => None
+        },
+        &OrgUnregistration => match *self {
+            Message::OrgUnregistration(ref o) => Some(o),
             _ => None
         },
     }
@@ -333,6 +347,11 @@ impl registry::Transaction {
             .map(|m| match m {
                 registry::Message::OrgRegistration { org_id } => {
                     Message::OrgRegistration(OrgRegistration {
+                        org_id: org_id.to_string(),
+                    })
+                },
+                registry::Message::OrgUnregistration { org_id } => {
+                    Message::OrgUnregistration(OrgUnregistration {
                         org_id: org_id.to_string(),
                     })
                 },
