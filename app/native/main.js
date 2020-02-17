@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
-import { MAIN_IPC_CHANNEL } from "../src/types.js";
+import { MAIN_IPC_CHANNEL } from "../src/lib/types.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
