@@ -51,12 +51,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
     };
 
-    tokio::spawn(graphql::api::run(
-        dummy_repo.into(),
-        librad_paths.clone(),
-        registry_client.clone(),
-    ));
-
     info!("Starting GraphQL HTTP API");
     graphql::api::run(dummy_repo.into(), librad_paths, registry_client).await;
 

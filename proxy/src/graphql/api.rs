@@ -1,9 +1,9 @@
 use std::sync::Arc;
-use warp::filters::BoxedFilter;
-use warp::http::Response;
+use warp::filters;
+use warp::http;
 use warp::Filter;
 
-use super::schema::Context;
+use super::schema;
 
 /// Runs the warp server with the given schema and context.
 pub async fn run(
@@ -11,17 +11,11 @@ pub async fn run(
     librad_paths: librad::paths::Paths,
     registry_client: radicle_registry_client::Client,
 ) {
-    let context = Context::new(dummy_repo_path, librad_paths, registry_client);
-    let schema = super::schema::create();
-
-    let index = warp::path::end().map(|| {
-        Response::builder()
-            .header("content-type", "text/html")
-            .body(juniper::graphiql::graphiql_source("/graphql"))
-    });
-
-    let routes = index
-        .or(make_graphql_filter("graphql", schema, context))
+    let context = schema::Context::new(dummy_repo_path, librad_paths, registry_client);
+    let state = warp::any().map(move || context.clone());
+    let graphql_filter = make_graphql_filter(schema::create(), state.boxed());
+    let routes = warp::path("graphql")
+        .and(graphql_filter)
         .with(
             warp::cors()
                 .allow_any_origin()
@@ -32,50 +26,42 @@ pub async fn run(
                     warp::http::Method::OPTIONS,
                 ]),
         )
-        .with(warp::log("proxy"));
+        .with(warp::log("proxy::api"));
 
     warp::serve(routes).run(([127, 0, 0, 1], 8080)).await
 }
 
 /// Filter for the graphql endpoint.
 fn make_graphql_filter<Query, Mutation, Context>(
-    path: &'static str,
     schema: juniper::RootNode<'static, Query, Mutation>,
-    ctx: Context,
-) -> BoxedFilter<(impl warp::Reply,)>
+    context_extractor: filters::BoxedFilter<(Context,)>,
+) -> filters::BoxedFilter<(http::Response<Vec<u8>>,)>
 where
-    Context: juniper::Context + Clone + Send + Sync + 'static,
+    Context: Send + 'static,
     Query: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
     Mutation: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
 {
     let schema = Arc::new(schema);
-    let context_extractor = warp::any().map(move || -> Context { ctx.clone() });
 
-    let handle_request = move |context: Context,
-                               request: juniper::http::GraphQLRequest|
-          -> Result<Vec<u8>, serde_json::Error> {
-        serde_json::to_vec(&request.execute(&schema, &context))
+    let handle_request = |context: Context, request: juniper::http::GraphQLRequest| async move {
+        let schema = schema.clone();
+
+        match serde_json::to_vec(&request.execute(&schema, &context)) {
+            Ok(body) => Ok(http::Response::builder()
+                .header("content-type", "application/json; charset=utf-8")
+                .body(body)
+                .unwrap()),
+            Err(_) => Ok(http::Response::builder()
+                .status(warp::http::StatusCode::INTERNAL_SERVER_ERROR)
+                .body(Vec::new())
+                .unwrap()),
+        }
     };
 
     warp::post()
-        .and(warp::path(path))
-        .and(context_extractor)
+        .and(context_extractor.clone())
         .and(warp::body::json())
-        .map(handle_request)
-        .map(build_response)
+        .and_then(handle_request)
+        // .and(build_response)
         .boxed()
-}
-
-/// Helper for standard response shape.
-fn build_response(response: Result<Vec<u8>, serde_json::Error>) -> Response<Vec<u8>> {
-    match response {
-        Ok(body) => warp::http::Response::builder()
-            .header("content-type", "application/json; charset=utf-8")
-            .body(body)
-            .expect("response is valid"),
-        Err(_) => warp::http::Response::builder()
-            .status(warp::http::StatusCode::INTERNAL_SERVER_ERROR)
-            .body(Vec::new())
-            .expect("status code is valid"),
-    }
 }
