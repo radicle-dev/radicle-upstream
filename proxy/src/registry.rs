@@ -193,6 +193,25 @@ mod tests {
     use serde_cbor::from_reader;
 
     #[test]
+    fn test_register_org() {
+        // Test that org registration submits valid transactions and they succeed.
+        let client = Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let result =
+            futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        assert!(result.is_ok());
+
+        let org_id = String32::from_string("monadic".into()).unwrap();
+        let maybe_org = futures::executor::block_on(client.get_org(org_id.clone())).unwrap();
+        assert!(maybe_org.is_some());
+        let org = maybe_org.unwrap();
+        assert_eq!(org.id, org_id);
+        assert_eq!(org.members.len(), 1);
+    }
+
+    #[test]
     fn test_register_project() {
         // Test that project registration submits valid transactions and they succeed.
         let client = Client::new_emulator();
@@ -211,11 +230,13 @@ mod tests {
         assert!(result.is_ok());
         let org_id = String32::from_string("monadic".into()).unwrap();
         let project_name = String32::from_string("radicle".into()).unwrap();
-        let pid = (org_id, project_name);
+        let pid = (org_id.clone(), project_name.clone());
         let future_project = client.get_project(pid);
         let maybe_project = futures::executor::block_on(future_project).unwrap();
         assert!(maybe_project.is_some());
         let project = maybe_project.unwrap();
+        assert_eq!(project.name, project_name);
+        assert_eq!(project.org_id, org_id);
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
