@@ -35,7 +35,7 @@ pub async fn run(
 fn make_graphql_filter<Context, Mutation, Query>(
     schema: juniper::RootNode<'static, Query, Mutation>,
     context_extractor: filters::BoxedFilter<(Context,)>,
-) -> filters::BoxedFilter<(http::Response<Vec<u8>>,)>
+) -> impl Filter<Extract = (http::Response<Vec<u8>>,), Error = warp::Rejection> + Clone
 where
     Context: Clone + Send + Sync + 'static,
     Mutation: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
@@ -48,7 +48,6 @@ where
         .and(context_extractor)
         .and(warp::body::json())
         .and_then(handle_request)
-        .boxed()
 }
 
 async fn handle_request<Context, Mutation, Query>(
