@@ -230,8 +230,7 @@ mod tests {
         assert!(result.is_ok());
         let org_id = String32::from_string("monadic".into()).unwrap();
         let project_name = String32::from_string("radicle".into()).unwrap();
-        let pid = (org_id.clone(), project_name.clone());
-        let future_project = client.get_project(pid);
+        let future_project = client.get_project(project_name.clone(), org_id.clone());
         let maybe_project = futures::executor::block_on(future_project).unwrap();
         assert!(maybe_project.is_some());
         let project = maybe_project.unwrap();
