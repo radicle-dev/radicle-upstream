@@ -123,8 +123,7 @@
       {#if step === 4}
         {#if response}
           <TransactionSummaryStep
-            projectName={response.data.registerProject.messages[0].project_name}
-            orgId={response.data.registerProject.messages[0].org_id}
+            name={response.data.registerProject.messages[0].project_name}
             timestamp={formatDate(response.data.registerProject.timestamp * 1000)} />
         {:else}
           <TransactionSummaryStep {name} {errorMessage} />
