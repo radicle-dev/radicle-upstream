@@ -199,8 +199,7 @@ mod tests {
         let registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let result =
-            futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        let result = futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
         assert!(result.is_ok());
 
         let org_id = String32::from_string("monadic".into()).unwrap();
