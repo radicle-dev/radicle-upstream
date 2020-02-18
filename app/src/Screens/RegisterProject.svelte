@@ -58,8 +58,8 @@
       response = await mutate(client, {
         mutation: REGISTER_PROJECT,
         variables: {
-          name: name,
-          domain: "rad"
+          project_name: project_name,
+          org_id: org_id
         }
       });
     } catch (error) {
@@ -123,7 +123,7 @@
       {#if step === 4}
         {#if response}
           <TransactionSummaryStep
-            name={response.data.registerProject.messages[0].name}
+            name={response.data.registerProject.messages[0].project_name}
             timestamp={formatDate(response.data.registerProject.timestamp * 1000)} />
         {:else}
           <TransactionSummaryStep {name} {errorMessage} />

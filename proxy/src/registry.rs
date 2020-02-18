@@ -3,7 +3,7 @@ use serde_derive::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 use radicle_registry_client::{
-    self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, String32,
+    self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, OrgId, ProjectName,
     TransactionExtra, H256,
 };
 
@@ -34,13 +34,20 @@ pub struct Metadata {
 
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
-    /// Issue a new project registration with (domain, name).
+    /// Issue a new project registration with a given name under a given org.
     ProjectRegistration {
-        /// Domain part of the project id.
-        domain: String32,
-        /// Actual project name, unique for domain.
-        name: String32,
+        /// Actual project name, unique for org.
+        project_name: ProjectName,
+        /// The Org in which to register the project.
+        org_id: OrgId,
     },
+
+    /// Issue a new org registration with a given id.
+    #[allow(dead_code)]
+    OrgRegistration(OrgId),
+
+    /// Issue an org unregistration with a given id.
+    OrgUnregistration(OrgId),
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -69,19 +76,85 @@ impl Registry {
         self.client.list_projects().await.map_err(|e| e.into())
     }
 
+    #[allow(dead_code)]
+    pub async fn register_org(
+        &self,
+        author: &ed25519::Pair,
+        org_id: String,
+    ) -> Result<Transaction, error::Error> {
+        // Verify that inputs are valid.
+        let org_id =
+            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+
+        // Prepare and submit project registration transaction.
+        let register_message = message::RegisterOrg {
+            org_id: org_id.clone(),
+        };
+        let register_tx = registry::Transaction::new_signed(
+            author,
+            register_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+            },
+        );
+        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
+        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
+
+        Ok(Transaction {
+            id: register_applied.tx_hash,
+            messages: vec![Message::OrgRegistration(org_id)],
+            state: TransactionState::Applied(register_applied.block),
+            timestamp: SystemTime::now(),
+        })
+    }
+
+    #[allow(dead_code)]
+    pub async fn unregister_org(
+        &self,
+        author: &ed25519::Pair,
+        org_id: String,
+    ) -> Result<Transaction, error::Error> {
+        // Verify that inputs are valid.
+        let org_id =
+            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+
+        // Prepare and submit project registration transaction.
+        let unregister_message = message::UnregisterOrg {
+            org_id: org_id.clone(),
+        };
+        let register_tx = registry::Transaction::new_signed(
+            author,
+            unregister_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+            },
+        );
+        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
+        let unregister_applied = self.client.submit_transaction(register_tx).await?.await?;
+
+        Ok(Transaction {
+            id: unregister_applied.tx_hash,
+            messages: vec![Message::OrgUnregistration(org_id)],
+            state: TransactionState::Applied(unregister_applied.block),
+            timestamp: SystemTime::now(),
+        })
+    }
+
     /// Register a new project on the chain.
     pub async fn register_project(
         &self,
         author: &ed25519::Pair,
-        domain: String,
         name: String,
+        org_id: String,
         maybe_project_id: Option<librad::project::ProjectId>,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let project_name =
-            String32::from_string(name.clone()).map_err(error::ProjectValidation::NameTooLong)?;
-        let project_domain = String32::from_string(domain.clone())
-            .map_err(error::ProjectValidation::DomainTooLong)?;
+        let project_name = ProjectName::from_string(name.clone())
+            .map_err(|_| error::ProjectValidation::NameTooLong)?;
+        let org_id =
+            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
@@ -120,7 +193,8 @@ impl Registry {
 
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterProject {
-            id: (project_name.clone(), project_domain.clone()),
+            project_name: project_name.clone(),
+            org_id: org_id.clone(),
             checkpoint_id,
             metadata: register_metadata,
         };
@@ -138,8 +212,8 @@ impl Registry {
         Ok(Transaction {
             id: register_applied.tx_hash,
             messages: vec![Message::ProjectRegistration {
-                domain: project_domain,
-                name: project_name,
+                project_name: project_name,
+                org_id: org_id,
             }],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
@@ -155,25 +229,66 @@ mod tests {
     use serde_cbor::from_reader;
 
     #[test]
+    fn test_register_org() {
+        // Test that org registration submits valid transactions and they succeed.
+        let client = Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let result = futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        assert!(result.is_ok());
+
+        let org_id = String32::from_string("monadic".into()).unwrap();
+        let maybe_org = futures::executor::block_on(client.get_org(org_id.clone())).unwrap();
+        assert!(maybe_org.is_some());
+        let org = maybe_org.unwrap();
+        assert_eq!(org.id, org_id);
+        assert_eq!(org.members.len(), 1);
+    }
+
+    #[test]
+    fn test_unregister_org() {
+        // Test that org unregistration submits valid transactions and they succeed.
+        let client = Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the org
+        let registration =
+            futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        assert!(registration.is_ok());
+
+        // Unregister the org
+        let unregistration =
+            futures::executor::block_on(registry.unregister_org(&alice, "monadic".into()));
+        assert!(unregistration.is_ok());
+    }
+
+    #[test]
     fn test_register_project() {
         // Test that project registration submits valid transactions and they succeed.
         let client = Client::new_emulator();
         let registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let org_result =
+            futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        assert!(org_result.is_ok());
         let result = futures::executor::block_on(registry.register_project(
             &alice,
-            "hello".into(),
-            "world".into(),
+            "radicle".into(),
+            "monadic".into(),
             Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
         ));
         assert!(result.is_ok());
-        let project_domain = String32::from_string("hello".into()).unwrap();
-        let project_name = String32::from_string("world".into()).unwrap();
-        let pid = (project_name, project_domain);
-        let future_project = client.get_project(pid);
+        let org_id = String32::from_string("monadic".into()).unwrap();
+        let project_name = String32::from_string("radicle".into()).unwrap();
+        let future_project = client.get_project(project_name.clone(), org_id.clone());
         let maybe_project = futures::executor::block_on(future_project).unwrap();
-        assert_eq!(maybe_project.is_some(), true);
+        assert!(maybe_project.is_some());
         let project = maybe_project.unwrap();
+        assert_eq!(project.name, project_name);
+        assert_eq!(project.org_id, org_id);
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);

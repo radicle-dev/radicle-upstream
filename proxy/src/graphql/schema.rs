@@ -82,8 +82,8 @@ impl Mutation {
 
     fn register_project(
         ctx: &Context,
-        domain: String,
-        name: String,
+        project_name: String,
+        org_id: String,
         maybe_librad_id_input: Option<juniper::ID>,
     ) -> Result<registry::Transaction, error::Error> {
         let maybe_librad_id = maybe_librad_id_input.map(|id| {
@@ -97,8 +97,8 @@ impl Mutation {
         // https://github.com/graphql-rust/juniper/pull/497
         futures::executor::block_on(ctx.registry.register_project(
             &fake_pair,
-            domain,
-            name,
+            project_name,
+            org_id,
             maybe_librad_id,
         ))
     }
@@ -260,24 +260,55 @@ enum ObjectType {
     Blob,
 }
 
+/// Contextual information for an org registration message.
+#[derive(juniper::GraphQLObject)]
+struct OrgRegistration {
+    /// The ID of the org.
+    org_id: String,
+}
+
+/// Contextual information for an org unregistration message.
+#[derive(juniper::GraphQLObject)]
+struct OrgUnregistration {
+    /// The ID of the org.
+    org_id: String,
+}
+
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
-    /// Domain namespace.
-    domain: String,
-    /// Actual project name, unique under domain.
-    name: String,
+    /// Actual project name, unique under org.
+    project_name: String,
+    /// The org under which to register the project.
+    org_id: String,
 }
 
 /// Message types supproted in transactions.
 enum Message {
+    /// Registration of a new org.
+    OrgRegistration(OrgRegistration),
+
+    /// Registration of a new org.
+    OrgUnregistration(OrgUnregistration),
+
     /// Registration of a new project.
     ProjectRegistration(ProjectRegistration),
 }
 
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
-        &ProjectRegistration => match *self { Message::ProjectRegistration(ref p) => Some(p) },
+        &ProjectRegistration => match *self {
+            Message::ProjectRegistration(ref p) => Some(p),
+            _ => None
+        },
+        &OrgRegistration => match *self {
+            Message::OrgRegistration(ref o) => Some(o),
+            _ => None
+        },
+        &OrgUnregistration => match *self {
+            Message::OrgUnregistration(ref o) => Some(o),
+            _ => None
+        },
     }
 });
 
@@ -306,12 +337,23 @@ impl registry::Transaction {
         self.messages
             .iter()
             .map(|m| match m {
-                registry::Message::ProjectRegistration { domain, name } => {
-                    Message::ProjectRegistration(ProjectRegistration {
-                        domain: domain.to_string(),
-                        name: name.to_string(),
+                registry::Message::OrgRegistration(org_id) => {
+                    Message::OrgRegistration(OrgRegistration {
+                        org_id: org_id.to_string(),
                     })
                 },
+                registry::Message::OrgUnregistration(org_id) => {
+                    Message::OrgUnregistration(OrgUnregistration {
+                        org_id: org_id.to_string(),
+                    })
+                },
+                registry::Message::ProjectRegistration {
+                    project_name,
+                    org_id,
+                } => Message::ProjectRegistration(ProjectRegistration {
+                    project_name: project_name.to_string(),
+                    org_id: org_id.to_string(),
+                }),
             })
             .collect()
     }
