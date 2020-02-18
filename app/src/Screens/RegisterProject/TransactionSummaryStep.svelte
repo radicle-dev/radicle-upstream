@@ -3,7 +3,7 @@
   import { Button, Flex, Text, Title } from "../../DesignSystem/Primitives";
   import { Avatar, Rad, TxRow } from "../../DesignSystem/Components";
 
-  export let name = null;
+  export let projectName = null;
   export let timestamp = null;
   export let errorMessage = null;
 </script>
@@ -54,7 +54,7 @@
     <Avatar
       variant="project"
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project.svg"
-      title={name} />
+      title={projectName} />
   </div>
 </TxRow>
 

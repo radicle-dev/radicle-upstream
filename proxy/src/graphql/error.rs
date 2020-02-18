@@ -26,13 +26,13 @@ impl juniper::IntoFieldError for error::Error {
             },
             Self::Url(url_error) => convert_url_parse_error_to_field_error(&url_error),
             Self::ProjectValidation(project_error) => match project_error {
-                error::ProjectValidation::NameTooLong(error) => juniper::FieldError::new(
-                    error,
+                error::ProjectValidation::NameTooLong => juniper::FieldError::new(
+                    "A Project name can only be at most 32 bytes long",
                     graphql_value!({ "type": "PROJECT_NAME_TOO_LONG" }),
                 ),
-                error::ProjectValidation::DomainTooLong(error) => juniper::FieldError::new(
-                    error,
-                    graphql_value!({ "type": "PROJECT_DOMAIN_TOO_LONG" }),
+                error::ProjectValidation::OrgTooLong => juniper::FieldError::new(
+                    "An Org Id can only be at most 32 bytes long",
+                    graphql_value!({ "type": "ORG_TOO_LONG" }),
                 ),
             },
             // TODO(garbados): expand via sub-match
