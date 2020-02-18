@@ -6,9 +6,8 @@
   } from "apollo-cache-inmemory";
   import { setClient } from "svelte-apollo";
   import Router from "svelte-spa-router";
-  import { push, pop, location } from "svelte-spa-router";
-  import * as path from "./lib/path.js";
   import { hash } from "./lib/hash.js";
+  import { initializeHotkeys } from "./lib/hotkeys.js";
 
   import CreateProject from "./Screens/CreateProject.svelte";
   import DesignSystemGuide from "./Screens/DesignSystemGuide.svelte";
@@ -22,7 +21,7 @@
   import Search from "./Screens/Search.svelte";
   import Wallet from "./Screens/Wallet.svelte";
 
-  import hotkeys from "hotkeys-js";
+  initializeHotkeys();
 
   const client = new ApolloClient({
     uri: "http://127.0.0.1:8080/graphql",
@@ -53,29 +52,6 @@
     "/help": Help,
     "*": NotFound
   };
-
-  hotkeys("shift+d", () => {
-    if (path.active(path.designSystemGuide(), $location)) {
-      pop();
-    }
-    push(path.designSystemGuide());
-  });
-
-  hotkeys("shift+/", () => {
-    if (path.active(path.help(), $location)) {
-      pop();
-    }
-    push(path.help());
-  });
-
-  hotkeys("esc", () => {
-    if (
-      path.active(path.help(), $location) ||
-      path.active(path.designSystemGuide(), $location)
-    ) {
-      pop();
-    }
-  });
 </script>
 
 <Router {routes} />
