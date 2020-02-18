@@ -19,7 +19,7 @@
   };
 
   let step = 1;
-  let name = $projectNameStore;
+  let projectName = $projectNameStore;
 
   const nextStep = () => {
     step += 1;
@@ -32,13 +32,13 @@
   const client = getClient();
 
   const REGISTER_PROJECT = gql`
-    mutation($domain: String!, $name: String!) {
-      registerProject(domain: $domain, name: $name) {
+    mutation($orgId: String!, $projectName: String!) {
+      registerProject(orgId: $orgId, projectName: $projectName) {
         id
         messages {
           ... on ProjectRegistration {
-            domain
-            name
+            projectName
+            orgId
           }
         }
         state {
@@ -58,8 +58,8 @@
       response = await mutate(client, {
         mutation: REGISTER_PROJECT,
         variables: {
-          project_name: project_name,
-          org_id: org_id
+          projectName: projectName,
+          orgId: "rad123"
         }
       });
     } catch (error) {
@@ -106,7 +106,7 @@
       </Title>
 
       {#if step === 1}
-        <PickNameStep bind:name onNextStep={nextStep} />
+        <PickNameStep bind:projectName onNextStep={nextStep} />
       {/if}
 
       {#if step === 2}
@@ -117,16 +117,16 @@
         <ConfirmTransactionStep
           onNextStep={registerProject}
           onPreviousStep={previousStep}
-          {name} />
+          {projectName} />
       {/if}
 
       {#if step === 4}
         {#if response}
           <TransactionSummaryStep
-            name={response.data.registerProject.messages[0].project_name}
+            projectName={response.data.registerProject.messages[0].project_name}
             timestamp={formatDate(response.data.registerProject.timestamp * 1000)} />
         {:else}
-          <TransactionSummaryStep {name} {errorMessage} />
+          <TransactionSummaryStep {projectName} {errorMessage} />
         {/if}
       {/if}
     </div>

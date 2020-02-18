@@ -16,7 +16,7 @@
     onNextStep();
   };
 
-  export let name = "";
+  export let projectName = "";
   let beginValidation = false;
 
   validatejs.options = {
@@ -25,7 +25,7 @@
 
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
   const constraints = {
-    name: {
+    projectName: {
       presence: {
         message: "Project name is required",
         allowEmpty: false
@@ -44,18 +44,18 @@
       return;
     }
 
-    validations = validatejs({ name: name }, constraints);
+    validations = validatejs({ projectName: projectName }, constraints);
   };
 
-  $: validate(name);
+  $: validate(projectName);
 </script>
 
 <Input.Text
   style="--focus-outline-color: var(--color-pink)"
   placeholder="Project name"
-  bind:value={name}
-  valid={!(beginValidation && validations && validations.name)}
-  validationMessage={beginValidation && validations && validations.name && validations.name[0]} />
+  bind:value={projectName}
+  valid={!(beginValidation && validations && validations.projectName)}
+  validationMessage={beginValidation && validations && validations.projectName && validations.projectName[0]} />
 
 <Flex style="margin-top: 48px;">
   <div slot="left">
@@ -69,6 +69,8 @@
   </div>
 
   <div slot="right">
-    <Button disabled={!name} on:click={nextStep} variant="primary">Next</Button>
+    <Button disabled={!projectName} on:click={nextStep} variant="primary">
+      Next
+    </Button>
   </div>
 </Flex>
