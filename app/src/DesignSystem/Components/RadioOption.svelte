@@ -5,6 +5,7 @@
 
   export let title = "";
   export let active = false;
+  export let dataCy = "";
 
   const dispatch = createEventDispatcher();
 
@@ -50,7 +51,7 @@
   }
 </style>
 
-<div class="option" class:active data-cy="new-project">
+<div class="option" class:active data-cy={dataCy}>
   <div class="option-header" on:click={onClick}>
     <Title style="color: var(--color-darkgray)">{title}</Title>
     <Icon.CheckCircle

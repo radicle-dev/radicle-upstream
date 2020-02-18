@@ -354,7 +354,7 @@
           title="Continue with an existing repository"
           active={isExisting}
           on:selected={() => (currentSelection = EXISTING)}
-          data-cy="existing-project">
+          dataCy="existing-project">
           <div slot="option-body">
             <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
               Choose the existing repository
