@@ -10,7 +10,6 @@
   const dispatch = createEventDispatcher();
 
   function onClick() {
-    console.log("on click dispatch");
     dispatch("selected");
   }
 </script>
