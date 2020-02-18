@@ -18,7 +18,7 @@
     Text,
     Title
   } from "../DesignSystem/Primitives";
-  import { ModalLayout } from "../DesignSystem/Components";
+  import { ModalLayout, RadioOption } from "../DesignSystem/Components";
 
   let currentSelection;
 
@@ -276,40 +276,6 @@
     width: 540px;
   }
 
-  .option {
-    border: 1px solid var(--color-lightgray);
-    margin-bottom: 16px;
-    border-radius: 4px;
-  }
-
-  .option.active {
-    box-shadow: 0 0 0 1px var(--color-pink);
-    border: 1px solid var(--color-pink);
-  }
-
-  .option:hover {
-    outline: none;
-    box-shadow: 0 0 0 1px var(--color-pink);
-    border: 1px solid var(--color-pink);
-  }
-
-  .option-header {
-    display: flex;
-    justify-content: space-between;
-    height: 72px;
-    align-items: center;
-    padding: 0 24px 0 24px;
-    cursor: pointer;
-    user-select: none;
-  }
-
-  .option-body {
-    border-top: 1px solid var(--color-lightgray);
-    background-color: var(--color-almostwhite);
-    padding: 16px 22px 24px 22px;
-    border-radius: 0 0 4px 4px;
-  }
-
   .double-button {
     display: flex;
     flex-direction: row;
@@ -367,76 +333,61 @@
       </Title>
 
       <div class="radio-selector">
-        <div class="option" class:active={isNew} data-cy="new-project">
-          <div class="option-header" on:click={() => (currentSelection = NEW)}>
-            <Title style="color: var(--color-darkgray)">
-              Start with a new repository
-            </Title>
-            <Icon.CheckCircle
-              style={isNew ? 'display: block; fill: var(--color-pink)' : 'display: none'} />
+        <RadioOption
+          title="Start with a new repository"
+          active={isNew}
+          on:selected={() => (currentSelection = NEW)}
+          dataCy="new-project">
+          <div slot="option-body">
+            <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
+              Choose where you'd like to create the repository
+            </Text>
+            <Input.Directory
+              valid={!(validations && validations.newRepositoryPath)}
+              validationMessage={validations && validations.newRepositoryPath && validations.newRepositoryPath[0]}
+              placeholder="~/path/to/folder"
+              bind:path={newRepositoryPath} />
           </div>
-          {#if isNew}
-            <div class="option-body" in:slide>
-              <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
-                Choose where you'd like to create the repository
-              </Text>
-              <Input.Directory
-                valid={!(validations && validations.newRepositoryPath)}
-                validationMessage={validations && validations.newRepositoryPath && validations.newRepositoryPath[0]}
-                placeholder="~/path/to/folder"
-                bind:path={newRepositoryPath} />
-            </div>
-          {/if}
-        </div>
+        </RadioOption>
 
-        <div
-          class="option"
-          class:active={isExisting}
+        <RadioOption
+          title="Continue with an existing repository"
+          active={isExisting}
+          on:selected={() => (currentSelection = EXISTING)}
           data-cy="existing-project">
-          <div
-            class="option-header"
-            on:click={() => (currentSelection = EXISTING)}>
-            <Title style="color: var(--color-darkgray)">
-              Continue with an existing repository
-            </Title>
-            <Icon.CheckCircle
-              style={isExisting ? 'display: block; fill: var(--color-pink)' : 'display: none'} />
-          </div>
-          {#if isExisting}
-            <div class="option-body" in:slide>
-              <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
-                Choose the existing repository
+          <div slot="option-body">
+            <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
+              Choose the existing repository
+            </Text>
+            <Input.Directory
+              placeholder="~/path/to/folder"
+              valid={!(validations && validations.existingRepositoryPath)}
+              validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
+              bind:path={existingRepositoryPath} />
+            <div class="default-branch-row" style="margin-top: 16px">
+              <Text style="color: var(--color-darkgray)">
+                Select the default branch
               </Text>
-              <Input.Directory
-                placeholder="~/path/to/folder"
-                valid={!(validations && validations.existingRepositoryPath)}
-                validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
-                bind:path={existingRepositoryPath} />
-              <div class="default-branch-row" style="margin-top: 16px">
-                <Text style="color: var(--color-darkgray)">
-                  Select the default branch
-                </Text>
-                {#if localBranches.length > 0}
-                  <Input.Dropdown
-                    items={localBranches}
-                    bind:value={defaultBranch}
-                    style=" min-width: 240px; --focus-outline-color:
-                    var(--color-pink)" />
-                {:else}
-                  <Input.Dropdown
-                    items={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
-                    disabled
-                    style="min-width: 240px" />
-                {/if}
-              </div>
-              <div class="publish-row">
-                <Input.Checkbox bind:checked={publish}>
-                  Publish the {defaultBranch} branch to the network
-                </Input.Checkbox>
-              </div>
+              {#if localBranches.length > 0}
+                <Input.Dropdown
+                  items={localBranches}
+                  bind:value={defaultBranch}
+                  style=" min-width: 240px; --focus-outline-color:
+                  var(--color-pink)" />
+              {:else}
+                <Input.Dropdown
+                  items={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
+                  disabled
+                  style="min-width: 240px" />
+              {/if}
             </div>
-          {/if}
-        </div>
+            <div class="publish-row">
+              <Input.Checkbox bind:checked={publish}>
+                Publish the {defaultBranch} branch to the network
+              </Input.Checkbox>
+            </div>
+          </div>
+        </RadioOption>
       </div>
 
       {#if validations && validations.currentSelection}
