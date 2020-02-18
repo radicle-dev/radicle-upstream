@@ -10,7 +10,14 @@
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
   import { slide } from "svelte/transition";
 
-  import { Button, Icon, Input, Text, Title } from "../DesignSystem/Primitives";
+  import {
+    Button,
+    Flex,
+    Icon,
+    Input,
+    Text,
+    Title
+  } from "../DesignSystem/Primitives";
   import { ModalLayout } from "../DesignSystem/Components";
 
   let currentSelection;
@@ -303,11 +310,9 @@
     border-radius: 0 0 4px 4px;
   }
 
-  .button-row {
+  .double-button {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 32px;
+    flex-direction: row;
   }
 
   .default-branch-row {
@@ -320,14 +325,6 @@
   .publish-row {
     display: flex;
     align-items: center;
-  }
-
-  .footnote {
-    display: flex;
-    flex: 1;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding-left: 15px;
   }
 
   .validation-row {
@@ -451,27 +448,33 @@
         </div>
       {/if}
 
-      <div class="button-row">
-        <div class="footnote">
-          <Text variant="small" style="color: var(--color-gray)">
+      <Flex style="margin-top: 32px">
+        <div slot="left">
+          <Text
+            variant="small"
+            style="color: var(--color-gray); padding-left: 15px;">
             * required
           </Text>
         </div>
-        <Button
-          dataCy="cancel-button"
-          variant="transparent"
-          on:click={pop}
-          style="margin-right: 24px;">
-          Cancel
-        </Button>
-        <Button
-          dataCy="create-project-button"
-          disabled={!(name && currentSelection)}
-          variant="primary"
-          on:click={createProject}>
-          Create project
-        </Button>
-      </div>
+        <div slot="right">
+          <div class="double-button">
+            <Button
+              dataCy="cancel-button"
+              variant="transparent"
+              on:click={pop}
+              style="margin-right: 24px;">
+              Cancel
+            </Button>
+            <Button
+              dataCy="create-project-button"
+              disabled={!(name && currentSelection)}
+              variant="primary"
+              on:click={createProject}>
+              Create project
+            </Button>
+          </div>
+        </div>
+      </Flex>
     </div>
   </div>
 </ModalLayout>
