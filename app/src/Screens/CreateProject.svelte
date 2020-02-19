@@ -46,7 +46,7 @@
   };
 
   const isEmpty = v => {
-    return ["", null, undefined].includes(v);
+    return validatejs.isEmpty(v);
   };
 
   validatejs.validators.optional = (value, options) => {
@@ -182,7 +182,7 @@
     beginValidation = true;
     validate();
 
-    if (validations !== undefined) {
+    if (!isEmpty(validations)) {
       return;
     }
 
