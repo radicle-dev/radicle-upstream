@@ -45,12 +45,10 @@
     fullMessages: false
   };
 
-  const isEmpty = v => {
-    return validatejs.isEmpty(v);
-  };
-
   validatejs.validators.optional = (value, options) => {
-    return !isEmpty(value) ? validatejs.single(value, options) : null;
+    return !validatejs.isEmpty(value)
+      ? validatejs.single(value, options)
+      : null;
   };
 
   validatejs.validators.validateNewRepositoryPath = (
@@ -63,7 +61,7 @@
       return;
     }
 
-    if (isEmpty(value)) {
+    if (validatejs.isEmpty(value)) {
       return "Pick a directory for the new project";
     }
 
@@ -82,7 +80,7 @@
       return;
     }
 
-    if (isEmpty(value)) {
+    if (validatejs.isEmpty(value)) {
       return "Pick an existing repository for the new project";
     }
 
@@ -182,7 +180,7 @@
     beginValidation = true;
     validate();
 
-    if (!isEmpty(validations)) {
+    if (!validatejs.isEmpty(validations)) {
       return;
     }
 
@@ -336,7 +334,7 @@
         <RadioOption
           title="Start with a new repository"
           active={isNew}
-          on:selected={() => (currentSelection = NEW)}
+          on:click={() => (currentSelection = NEW)}
           dataCy="new-project">
           <div slot="option-body">
             <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
@@ -353,7 +351,7 @@
         <RadioOption
           title="Continue with an existing repository"
           active={isExisting}
-          on:selected={() => (currentSelection = EXISTING)}
+          on:click={() => (currentSelection = EXISTING)}
           dataCy="existing-project">
           <div slot="option-body">
             <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
@@ -372,7 +370,7 @@
                 <Input.Dropdown
                   items={localBranches}
                   bind:value={defaultBranch}
-                  style=" min-width: 240px; --focus-outline-color:
+                  style="min-width: 240px; --focus-outline-color:
                   var(--color-pink)" />
               {:else}
                 <Input.Dropdown

@@ -1,17 +1,10 @@
 <script>
   import { Icon, Title } from "../Primitives";
-  import { createEventDispatcher } from "svelte";
   import { slide } from "svelte/transition";
 
-  export let title = "";
+  export let title = null;
   export let active = false;
-  export let dataCy = "";
-
-  const dispatch = createEventDispatcher();
-
-  function onClick() {
-    dispatch("selected");
-  }
+  export let dataCy = null;
 </script>
 
 <style>
@@ -32,7 +25,7 @@
     border: 1px solid var(--color-pink);
   }
 
-  .option-header {
+  .header {
     display: flex;
     justify-content: space-between;
     height: 72px;
@@ -42,7 +35,7 @@
     user-select: none;
   }
 
-  .option-body {
+  .body {
     border-top: 1px solid var(--color-lightgray);
     background-color: var(--color-almostwhite);
     padding: 16px 22px 24px 22px;
@@ -51,13 +44,13 @@
 </style>
 
 <div class="option" class:active data-cy={dataCy}>
-  <div class="option-header" on:click={onClick}>
+  <div class="header" on:click>
     <Title style="color: var(--color-darkgray)">{title}</Title>
     <Icon.CheckCircle
       style={active ? 'display: block; fill: var(--color-pink)' : 'display: none'} />
   </div>
   {#if active}
-    <div class="option-body" in:slide>
+    <div class="body" in:slide>
       <slot name="option-body" />
     </div>
   {/if}
