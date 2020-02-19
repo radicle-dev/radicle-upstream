@@ -1,5 +1,10 @@
 <script>
-  import validatejs from "validate.js";
+  import {
+    validatejs,
+    isEmpty,
+    VALID_NAME_MATCH,
+    invalid
+  } from "../../lib/validate.js";
   import { Button, Flex, Input } from "../../DesignSystem/Primitives";
 
   import { pop } from "svelte-spa-router";
@@ -10,7 +15,7 @@
     beginValidation = true;
     validate();
 
-    if (!validatejs.isEmpty(validations)) {
+    if (!isEmpty(validations)) {
       return;
     }
     onNextStep();
@@ -23,7 +28,6 @@
     fullMessages: false
   };
 
-  const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
   const constraints = {
     name: {
       presence: {
@@ -37,7 +41,7 @@
     }
   };
 
-  let validations = false;
+  let validations = undefined;
 
   const validate = () => {
     if (!beginValidation) {
@@ -54,8 +58,8 @@
   style="--focus-outline-color: var(--color-pink)"
   placeholder="Project name"
   bind:value={name}
-  valid={!(beginValidation && validations && validations.name)}
-  validationMessage={beginValidation && validations && validations.name && validations.name[0]} />
+  valid={!(beginValidation && invalid(validations, 'name'))}
+  validationMessage={beginValidation && invalid(validations, 'name')} />
 
 <Flex style="margin-top: 48px;">
   <div slot="left">

@@ -1,5 +1,4 @@
 <script>
-  import validatejs from "validate.js";
   import { gql } from "apollo-boost";
   import { getClient, query, mutate } from "svelte-apollo";
   import { pop, push } from "svelte-spa-router";
@@ -7,6 +6,12 @@
   import { showNotification } from "../stores/notification.js";
   import * as path from "../lib/path.js";
   import { hash } from "../lib/hash.js";
+  import {
+    validatejs,
+    isEmpty,
+    VALID_NAME_MATCH,
+    invalid
+  } from "../lib/validate.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
   import { slide } from "svelte/transition";
 
@@ -36,17 +41,11 @@
   let existingRepositoryPath = "";
   let imageUrl = "";
 
-  const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
-
-  let validations = false;
+  let validations = undefined;
   let beginValidation = false;
 
   validatejs.options = {
     fullMessages: false
-  };
-
-  const isEmpty = v => {
-    return validatejs.isEmpty(v);
   };
 
   validatejs.validators.optional = (value, options) => {
@@ -311,8 +310,8 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        valid={!(validations && validations.name)}
-        validationMessage={validations && validations.name && validations.name[0]} />
+        valid={!invalid(validations, 'name')}
+        validationMessage={invalid(validations, 'name')} />
 
       <Input.Text
         style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
@@ -325,8 +324,8 @@
         style="--focus-outline-color: var(--color-pink)"
         placeholder="http://my-project-website.com/project-avatar.png"
         bind:value={imageUrl}
-        valid={!(validations && validations.imageUrl)}
-        validationMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
+        valid={!invalid(validations, 'imageUrl')}
+        validationMessage={invalid(validations, 'imageUrl')} />
 
       <Title style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
@@ -343,8 +342,8 @@
               Choose where you'd like to create the repository
             </Text>
             <Input.Directory
-              valid={!(validations && validations.newRepositoryPath)}
-              validationMessage={validations && validations.newRepositoryPath && validations.newRepositoryPath[0]}
+              valid={!invalid(validations, 'newRepositoryPath')}
+              validationMessage={invalid(validations, 'newRepositoryPath')}
               placeholder="~/path/to/folder"
               bind:path={newRepositoryPath} />
           </div>
@@ -361,8 +360,8 @@
             </Text>
             <Input.Directory
               placeholder="~/path/to/folder"
-              valid={!(validations && validations.existingRepositoryPath)}
-              validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
+              valid={!invalid(validations, 'existingRepositoryPath')}
+              validationMessage={invalid(validations, 'existingRepositoryPath')}
               bind:path={existingRepositoryPath} />
             <div class="default-branch-row" style="margin-top: 16px">
               <Text style="color: var(--color-darkgray)">
@@ -390,11 +389,11 @@
         </RadioOption>
       </div>
 
-      {#if validations && validations.currentSelection}
+      {#if invalid(validations, 'currentSelection')}
         <div class="validation-row">
           <Icon.Important style="margin-right: 8px;fill: var(--color-red)" />
           <Title style="color: var(--color-red)">
-            {validations.currentSelection[0]}
+            {invalid(validations, 'currentSelection')}
           </Title>
         </div>
       {/if}
