@@ -2,7 +2,7 @@
   import { Button, Caption, Flex, Title } from "../../DesignSystem/Primitives";
   import { Avatar, Rad, TxRow } from "../../DesignSystem/Components";
 
-  export let name = null;
+  export let projectName = null;
 
   export let onNextStep = null;
   export let onPreviousStep = null;
@@ -19,7 +19,7 @@
   </div>
 
   <div slot="right">
-    <Title style="color: var(--color-darkgray)">“{name}”</Title>
+    <Title style="color: var(--color-darkgray)">“{projectName}”</Title>
   </div>
 </TxRow>
 
