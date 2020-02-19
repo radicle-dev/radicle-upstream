@@ -13,9 +13,11 @@ pub async fn run(
 ) {
     let context = schema::Context::new(dummy_repo_path, librad_paths, registry_client);
     let state = warp::any().map(move || context.clone());
-    let graphql_filter = make_graphql_filter(schema::create(), state.boxed());
+    let graphql_filter = make_graphql_filter(schema::create(), state.clone().boxed());
+    let test_filter = make_graphql_filter(schema::create_test(), state.boxed());
     let routes = warp::path("graphql")
         .and(graphql_filter)
+        .or(warp::path("control").and(test_filter))
         .with(
             warp::cors()
                 .allow_any_origin()

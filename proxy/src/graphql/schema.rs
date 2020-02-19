@@ -21,6 +21,15 @@ pub fn create() -> Schema {
     Schema::new(Query {}, Mutation {})
 }
 
+/// Bundles `Query` and `Mutation` used for controlling test state.
+pub type Test = juniper::RootNode<'static, Query, Mutation>;
+
+/// Returns the [`TestSchema`] used for controlling test state.
+#[must_use]
+pub fn create_test() -> Test {
+    Test::new(Query {}, Mutation {})
+}
+
 /// Container for data access from handlers.
 #[derive(Clone)]
 pub struct Context {
