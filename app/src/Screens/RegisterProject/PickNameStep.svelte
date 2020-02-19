@@ -10,7 +10,7 @@
     beginValidation = true;
     validate();
 
-    if (validations !== undefined) {
+    if (!validatejs.isEmpty(validations)) {
       return;
     }
     onNextStep();

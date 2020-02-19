@@ -6,15 +6,6 @@
   export let onPreviousStep = null;
 </script>
 
-<style>
-  .button-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-top: 48px;
-  }
-</style>
-
 <TxRow style="margin-bottom: 48px;" active={true}>
   <div slot="left">
     <Avatar title="Your personal wallet" />
