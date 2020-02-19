@@ -6,23 +6,22 @@
   } from "apollo-cache-inmemory";
   import { setClient } from "svelte-apollo";
   import Router from "svelte-spa-router";
-  import { push, pop, location } from "svelte-spa-router";
-  import * as path from "./path.js";
-  import { hash } from "./hash.js";
+  import { hash } from "./lib/hash.js";
+  import { initializeHotkeys } from "./lib/hotkeys.js";
 
-  import DesignSystem from "./pages/DesignSystem.svelte";
-  import Feed from "./pages/Feed.svelte";
-  import NotFound from "./pages/NotFound.svelte";
-  import Profile from "./pages/Profile.svelte";
-  import Projects from "./pages/Projects.svelte";
-  import CreateProject from "./pages/CreateProject.svelte";
-  import RegisterProject from "./pages/RegisterProject.svelte";
-  import Project from "./pages/Project.svelte";
-  import Search from "./pages/Search.svelte";
-  import Wallet from "./pages/Wallet.svelte";
-  import Help from "./pages/Help.svelte";
+  import CreateProject from "./Screens/CreateProject.svelte";
+  import DesignSystemGuide from "./Screens/DesignSystemGuide.svelte";
+  import Feed from "./Screens/Feed.svelte";
+  import Help from "./Screens/Help.svelte";
+  import NotFound from "./Screens/NotFound.svelte";
+  import Profile from "./Screens/Profile.svelte";
+  import Project from "./Screens/Project.svelte";
+  import Projects from "./Screens/Projects.svelte";
+  import RegisterProject from "./Screens/RegisterProject.svelte";
+  import Search from "./Screens/Search.svelte";
+  import Wallet from "./Screens/Wallet.svelte";
 
-  import hotkeys from "hotkeys-js";
+  initializeHotkeys();
 
   const client = new ApolloClient({
     uri: "http://127.0.0.1:8080/graphql",
@@ -47,35 +46,12 @@
     "/projects/new": CreateProject,
     "/projects/:id/register": RegisterProject,
     "/projects/:id/*": Project,
-    "/design-system": DesignSystem,
+    "/design-system-guide": DesignSystemGuide,
     "/wallet": Wallet,
     "/profile": Profile,
     "/help": Help,
     "*": NotFound
   };
-
-  hotkeys("shift+d", () => {
-    if (path.active(path.designSystem(), $location)) {
-      pop();
-    }
-    push(path.designSystem());
-  });
-
-  hotkeys("shift+/", () => {
-    if (path.active(path.help(), $location)) {
-      pop();
-    }
-    push(path.help());
-  });
-
-  hotkeys("esc", () => {
-    if (
-      path.active(path.help(), $location) ||
-      path.active(path.designSystem(), $location)
-    ) {
-      pop();
-    }
-  });
 </script>
 
 <Router {routes} />
