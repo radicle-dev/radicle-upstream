@@ -10,7 +10,7 @@ packages for both platforms, however for now a good way to explore the project
 is to read the documentation and have a go at building it locally.
 
 The [UI][ui] is written in JavaScript using Svelte and Electron and the node
-[proxy][proxy] logic is implemented in rust.
+[proxy][pr] logic is implemented in rust.
 
 A good entry-point for exploration is [`DEVELOPMENT.md`][de], where you'll find
 information on how to build Upstream from source. The final build package
