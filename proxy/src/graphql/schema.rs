@@ -1,5 +1,6 @@
 use std::convert::From;
 use std::convert::TryFrom;
+use std::env;
 use std::str::FromStr;
 
 use librad::paths::Paths;
@@ -58,6 +59,44 @@ impl Context {
 }
 
 impl juniper::Context for Context {}
+
+/// Control mutations.
+pub struct TestMutation;
+
+#[juniper::object(Context = Context)]
+impl TestMutation {
+    fn create_project_with_fixture(
+        ctx: &Context,
+        metadata: project::MetadataInput,
+    ) -> Result<project::Project, error::Error> {
+        // Craft the absolute path to git-platinum fixtures.
+        let mut platinum_path = env::current_dir().expect("unable to get working directory");
+        platinum_path.push("../fixtures/git-platinum");
+        let mut platinum_from = String::from("file://");
+        platinum_from.push_str(
+            platinum_path
+                .to_str()
+                .expect("unable to get fixtures path string"),
+        );
+
+        let (id, meta) = coco::init_project(
+            &ctx.librad_paths,
+            &platinum_from,
+            &metadata.name,
+            &metadata.description,
+            &metadata.default_branch,
+            &metadata.img_url,
+        )?;
+
+        Ok(project::Project {
+            id: id.to_string().into(),
+            metadata: meta.into(),
+        })
+    }
+}
+
+/// Control query endpoints.
+pub struct TestQuery;
 
 /// Encapsulates write path in API.
 pub struct Mutation;
