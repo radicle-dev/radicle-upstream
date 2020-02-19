@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import path from "path";
-import { MAIN_IPC_CHANNEL } from "../src/lib/types.js";
+import { MAIN_IPC_CHANNEL } from "../ui/lib/types.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -68,7 +68,7 @@ const startProxy = () => {
     return;
   }
 
-  const proxyPath = path.join(__dirname, "../../proxy");
+  const proxyPath = path.join(__dirname, "../proxy");
   const { execFile } = require("child_process");
   proxyChildProcess = execFile(
     proxyPath,
