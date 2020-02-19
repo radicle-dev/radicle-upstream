@@ -13,7 +13,7 @@ top-level [`DEVELOPMENT.md`][de] file.
 ### Running the app
 
 1. Get the code: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
-2. Install dependencies: `cd radicle-upstream/app && yarn install`.
+2. Install dependencies: `cd radicle-upstream && yarn install`.
 3. Start the app in development mode: `yarn start`.
 
 

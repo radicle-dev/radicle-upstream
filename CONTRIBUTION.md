@@ -41,7 +41,7 @@ The introspective and self-docummenting nature of GraphQL allows us to easily
 explore our API by querying the backend. For better developer ergonomics we
 include a [static version][gs] of [GraphiQL-explorer][ge]. To see it in action:
 
-1. Start the app in development mode: `cd app && yarn start`
+1. Start the app in development mode: `yarn start`
 2. Launch GraphiQL from a separate shell: `yarn graphiql`
    or directly navigate to http://localhost:5000 in your browser.
 
@@ -60,7 +60,7 @@ To perform a release:
 
 1. If you haven't already, install the [`hub`][hub] cli tool.
 
-2. Run: `cd app && yarn release` and follow the instructions.
+2. Run: `yarn release` and follow the instructions.
    Here's what a typical release looks like:
 
 ```sh
