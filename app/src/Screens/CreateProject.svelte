@@ -8,7 +8,6 @@
   import * as path from "../lib/path.js";
   import { hash } from "../lib/hash.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
-  import { slide } from "svelte/transition";
 
   import {
     Button,

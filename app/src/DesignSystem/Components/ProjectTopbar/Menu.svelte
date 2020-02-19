@@ -33,9 +33,6 @@
   nav :global(li:hover .icon svg) {
     fill: var(--color-purple);
   }
-  .source-tree {
-    margin-top: 8px;
-  }
 </style>
 
 <nav data-cy="project-topbar-menu">

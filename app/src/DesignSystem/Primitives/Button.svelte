@@ -11,7 +11,7 @@
   export let style = null;
   export let dataCy = null;
 
-  let iconClass = icon ? (size === "big" ? "icon" : "icon-small") : null;
+  const iconClass = icon ? (size === "big" ? "icon" : "icon-small") : null;
 
   // we want to dynamically change whether a button is disabled or not
   $: disabledClass = disabled ? "disabled" : null;
