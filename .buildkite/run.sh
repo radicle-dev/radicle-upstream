@@ -41,7 +41,7 @@ export CARGO_BUILD_INCREMENTAL=false
 export SCCACHE_CACHE_SIZE="1G"
 
 echo "--- Installing yarn dependencies"
-(cd app && time yarn install)
+time yarn install
 
 echo "--- Loading proxy/target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"
@@ -56,11 +56,11 @@ else
 fi
 
 echo "--- Updating submodules"
-(cd app && time git submodule update --init --recursive)
-(cd app && time git submodule foreach "git fetch --all")
+time git submodule update --init --recursive
+time git submodule foreach "git fetch --all"
 
 echo "--- Set custom git config"
-(cp .buildkite/.gitconfig "$HOME/")
+cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
 
 echo "--- Run cargo fmt"
@@ -74,13 +74,13 @@ echo "--- Run proxy lints"
 (cd proxy && time cargo clippy --all --all-features --all-targets)
 
 echo "--- Run app eslint checks"
-(cd app && time yarn lint)
+time yarn lint
 
 echo "--- Run app prettier checks"
-(cd app && time yarn prettier:check)
+time yarn prettier:check
 
 echo "--- Starting proxy daemon and runing app tests"
-(cd app && time ELECTRON_ENABLE_LOGGING=1 yarn test)
+time ELECTRON_ENABLE_LOGGING=1 yarn test
 
 echo "--- Packaging and uploading app binaries"
-(cd app && time yarn dist)
+time yarn dist
