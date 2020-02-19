@@ -20,6 +20,7 @@
 
   let step = 1;
   let projectName = $projectNameStore;
+  let orgId = "monadic"; // TODO(rudolfs): get the proper org id!
 
   const nextStep = () => {
     step += 1;
@@ -59,7 +60,7 @@
         mutation: REGISTER_PROJECT,
         variables: {
           projectName: projectName,
-          orgId: "rad123"
+          orgId: orgId
         }
       });
     } catch (error) {
