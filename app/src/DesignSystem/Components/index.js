@@ -7,6 +7,7 @@ import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
 import ProjectTopbar from "./ProjectTopbar.svelte";
 import Rad from "./Rad.svelte";
+import RadioOption from "./RadioOption.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import SourceBrowser from "./SourceBrowser.svelte";
@@ -24,6 +25,7 @@ export {
   ProjectList,
   ProjectTopbar,
   Rad,
+  RadioOption,
   Sidebar,
   SidebarLayout,
   SourceBrowser,
