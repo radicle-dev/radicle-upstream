@@ -73,7 +73,7 @@ is dictated by [prettier][pr] and enforced locally on a pre-commit basis with
 Before running tests locally you'll need to set up a test fixture repository:
 `git submodule foreach "git fetch --all"`.
 
-- to run tests do: `yarn test`
+- to run tests call: `yarn test`
 - to troubleshoot tests in the Cypress GUI, run: `yarn test:debug`
 - to isolate a single test for debugging purposes, use the `.only` method:
 ```javascript
