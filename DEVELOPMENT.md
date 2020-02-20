@@ -439,9 +439,8 @@ to the test fixture repository.*
 
 Our CI infrastructure runs on [Buildkite][bk]. The build process is run for
 every commit which is pushed to GitHub. When tests pass, the build process
-spits uploads an Upstream binary as a build artifact. If the UI end-to-end
-tests fail, screenshots of the failing tests will be uploaded instead of the
-binary.
+uploads the Upstream binary as a build artifact. If the UI end-to-end tests
+fail, screenshots of the failing tests are uploaded instead of the binary.
 
 All relevant configuration can be found here:
 
