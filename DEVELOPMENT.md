@@ -23,7 +23,7 @@ Generally we also follow [good commit message hygene][tp].
 
 ## Work coordination
 
-Work on the UI and proxy can happen in parallel. However for this to work the
+Work on the UI and proxy can happen in parallel. However for this to work, the
 teams working on both code bases have to agree on a common API. The definitive
 source-of-truth for this API is the proxy source code.
 
