@@ -70,8 +70,11 @@ is dictated by [prettier][pr] and enforced locally on a pre-commit basis with
 
 ### Running tests
 
-Before running tests locally you'll need to set up a test fixture repository:
-`git submodule foreach "git fetch --all"`.
+Before running tests locally you'll need to set up the test fixture repository:
+```sh
+git submodule update --init --remote
+git submodule foreach "git fetch --all"
+```
 
 - to run tests call: `yarn test`
 - to troubleshoot tests in the Cypress GUI, run: `yarn test:debug`
