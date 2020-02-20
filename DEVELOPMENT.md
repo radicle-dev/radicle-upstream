@@ -480,7 +480,10 @@ DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
 
 To perform a release:
 
-1. If you haven't already, install the [`hub`][hb] cli tool.
+1. If you haven't already, install the [`hub`][hb] cli tool. We use `hub` in
+   our release automation script to create a pull-request off of a release
+   branch and later for merging that branch into master and closing the
+   pull-request.
 
 2. Run: `yarn release` and follow the instructions.
    Here's what a typical release looks like:
