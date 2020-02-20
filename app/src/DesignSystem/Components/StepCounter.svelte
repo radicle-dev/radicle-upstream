@@ -5,7 +5,7 @@
   export let of = null;
   export let style = null;
 
-  let range = [...Array(of)].map((_, i) => ++i);
+  const range = [...Array(of)].map((_, i) => ++i);
 </script>
 
 <style>

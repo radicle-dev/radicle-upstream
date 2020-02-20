@@ -16,7 +16,7 @@
       return;
     }
 
-    let id = Math.random();
+    const id = Math.random();
     messages = [
       ...messages,
       { id: id, message: message.text, level: message.level }

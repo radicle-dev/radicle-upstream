@@ -9,8 +9,6 @@
   export let path = null;
   export let validationMessage = null;
 
-  let files;
-
   // We have to be able to select empty directories when we create new
   // projects. Unfortunately we can't use the HTML5 open dialog via
   // <input type="file"> for this. Although it lets us select directories,

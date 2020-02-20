@@ -20,7 +20,7 @@
 
   let step = 1;
   let projectName = $projectNameStore;
-  let orgId = "monadic"; // TODO(rudolfs): get the proper org id!
+  const orgId = "monadic"; // TODO(rudolfs): get the proper org id!
 
   const nextStep = () => {
     step += 1;
@@ -71,7 +71,7 @@
   };
 
   const formatDate = date => {
-    let options = {
+    const options = {
       hour: "numeric",
       minute: "numeric",
       day: "numeric",

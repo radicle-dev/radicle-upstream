@@ -1,5 +1,4 @@
 <script>
-  import { hash } from "../../lib/hash.js";
   import { Title } from "../Primitives";
 
   export let style = null;

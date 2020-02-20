@@ -1,7 +1,7 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { Icon, Title } from "../../Primitives";
+  import { Title } from "../../Primitives";
 
   import Tooltip from "./Tooltip.svelte";
 

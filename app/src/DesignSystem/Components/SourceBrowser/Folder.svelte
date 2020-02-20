@@ -45,7 +45,7 @@
     }
   });
 
-  let toggle = () => {
+  const toggle = () => {
     expanded = !expanded;
   };
 
@@ -114,7 +114,7 @@
       {#each result.data.tree.entries as entry}
         {#if entry.info.objectType === TREE}
           <svelte:self
-            prefix={entry.path + '/'}
+            prefix={`${entry.path}/`}
             name={entry.info.name}
             firstEntry={false} />
         {:else}

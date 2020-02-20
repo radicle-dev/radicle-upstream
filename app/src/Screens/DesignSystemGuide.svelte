@@ -22,9 +22,7 @@
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
 
-  import { link } from "svelte-spa-router";
-
-  let colors = Array.from(document.styleSheets)
+  const colors = Array.from(document.styleSheets)
     .filter(
       sheet =>
         sheet.href === null || sheet.href.startsWith(window.location.origin)
