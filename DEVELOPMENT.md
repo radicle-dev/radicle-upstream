@@ -244,7 +244,7 @@ File and directory name casing is as follows:
 
 #### State
 
-State shared across multiple component fragments which together build a more
+State shared across multiple Screen fragments which together build a more
 complex feature should be extracted into a separate store file. A store file
 can contain one or more Svelte stores, as well as other methods that act on
 the stores.
