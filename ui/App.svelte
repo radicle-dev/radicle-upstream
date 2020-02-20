@@ -9,17 +9,17 @@
   import { hash } from "./lib/hash.js";
   import { initializeHotkeys } from "./lib/hotkeys.js";
 
-  import CreateProject from "./Screens/CreateProject.svelte";
-  import DesignSystemGuide from "./Screens/DesignSystemGuide.svelte";
-  import Feed from "./Screens/Feed.svelte";
-  import Help from "./Screens/Help.svelte";
-  import NotFound from "./Screens/NotFound.svelte";
-  import Profile from "./Screens/Profile.svelte";
-  import Project from "./Screens/Project.svelte";
-  import Projects from "./Screens/Projects.svelte";
-  import RegisterProject from "./Screens/RegisterProject.svelte";
-  import Search from "./Screens/Search.svelte";
-  import Wallet from "./Screens/Wallet.svelte";
+  import CreateProject from "./Screen/CreateProject.svelte";
+  import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
+  import Feed from "./Screen/Feed.svelte";
+  import Help from "./Screen/Help.svelte";
+  import NotFound from "./Screen/NotFound.svelte";
+  import Profile from "./Screen/Profile.svelte";
+  import Project from "./Screen/Project.svelte";
+  import Projects from "./Screen/Projects.svelte";
+  import RegisterProject from "./Screen/RegisterProject.svelte";
+  import Search from "./Screen/Search.svelte";
+  import Wallet from "./Screen/Wallet.svelte";
 
   initializeHotkeys();
 

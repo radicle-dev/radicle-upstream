@@ -154,7 +154,7 @@ directory:
 
     ```html
     <script>
-      import { Button, Title, Icon, Input } from "../DesignSystem/Primitives";
+      import { Button, Title, Icon, Input } from "../DesignSystem/Primitive";
     </script>
 
     <Icon.Home />
@@ -203,15 +203,17 @@ When multiple screens share the same layout, it should be extracted into a
 separate component. Layout components are suffixed with "Layout":
 `DesignSystem/Components/ModalLayout.svelt`.
 
-File and directory name casing is as follows:
+File and directory naming is as follows:
   - Svelte components and directories containing components - PascalCase
   - everything else: `*.js` files and folders - camelCase
+  - files and folders should all be singular as they represent a type, not the
+    content
 
 ```sh
 .
 ├── App.svelte                     # Root component
 ├── DesignSystem
-│   ├── Components
+│   ├── Component
 │   │   ├── Avatar.svelte          # Simple component
 │   │   ├── Sidebar                # Folder containing fragments of Sidebar
 │   │   │   ├── Avatar.svelte      # These are private to Sidebar.svelte
@@ -220,13 +222,13 @@ File and directory name casing is as follows:
 │   │   ├── Sidebar.svelte
 │   │   ├── SidebarLayout.svelte   # Layout containing a sidebar
 │   │   └── index.js               # Defines which components for public use
-│   └── Primitives
+│   └── Primitive
 │       ├── Button.svelte          # Single-file component
 │       ├── Icon                   # Name-spaced components
 │       │   ├── Branch.svelte
 │       │   └── index.js
 │       └── index.js
-├── Screens
+├── Screen
 │   ├── Profile.svelte             # Simple screen
 │   ├── Project                    # Project screen fragments
 │   │   ├── Feed.svelte
@@ -238,8 +240,8 @@ File and directory name casing is as follows:
 ├── lib                            # Reusable logic that doesn't fit components
 │   ├── hash.js
 │   ├── path.js
-│   └── types.js
-└── stores                         # Svelte stores grouped by use-case
+│   └── type.js
+└── store                          # Svelte stores grouped by use-case
     ├── notification.js
     ├── project.js
     └── sourceBrowser.js
