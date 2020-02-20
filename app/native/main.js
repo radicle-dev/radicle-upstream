@@ -72,7 +72,7 @@ const startProxy = () => {
   const { execFile } = require("child_process");
   proxyChildProcess = execFile(
     proxyPath,
-    ["--source=memory"],
+    ["--registry=emulator"],
     (error, stdout, _stderr) => {
       if (error) {
         console.log(error);
