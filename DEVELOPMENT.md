@@ -206,8 +206,8 @@ separate component. Layout components are suffixed with "Layout":
 File and directory naming is as follows:
   - Svelte components and directories containing components - PascalCase
   - everything else: `*.js` files and folders - camelCase
-  - files and folders should all be singular as they represent a type, not the
-    content
+  - all folders in `/ui` should be named in singular form as they represent a
+    type, not content
 
 ```sh
 .
