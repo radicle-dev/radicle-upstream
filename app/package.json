@@ -124,8 +124,12 @@
     "*.{js,css,json,html}": [
       "prettier --write"
     ],
+    "*.js": [
+      "eslint --fix"
+    ],
     "*.svelte": [
-      "prettier --plugin-search-dir=. --write"
+      "prettier --plugin-search-dir=. --write",
+      "eslint --fix"
     ]
   }
 }
