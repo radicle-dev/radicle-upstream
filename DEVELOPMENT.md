@@ -431,7 +431,7 @@ git submodule foreach "git fetch --all"
 
 Then run tests as usual: `cargo test`.
 
-💡 *You'll have to run the previous commands every time there are any updates
+💡 *You'll have to run the submodule commands every time there are any updates
 to the test fixture repository.*
 
 
