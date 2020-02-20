@@ -20,10 +20,10 @@ If you have questions or would like to get in touch, check out
 
 
 [ba]: https://badge.buildkite.com/4fb43c6b471ab7cc26509eae235b0e4bbbaace11cc1848eae6.svg?branch=master
-[st]: https://buildkite.com/monadic/radicle-upstream
-[ui]: ui
-[sv]: https://svelte.dev
-[ru]: https://www.rust-lang.org
-[pr]: proxy
 [de]: DEVELOPMENT.md
+[pr]: proxy
 [rc]: https://radicle.community
+[ru]: https://www.rust-lang.org
+[st]: https://buildkite.com/monadic/radicle-upstream
+[sv]: https://svelte.dev
+[ui]: ui
