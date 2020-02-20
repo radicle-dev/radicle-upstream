@@ -491,10 +491,9 @@ build times. If you need to update this image, proceed as follows:
 
 ## Releases
 
-Before you begin: if you haven't already, install the [`hub`][hb] cli tool. We
-use `hub` in our release automation script to create a pull-request off of a
-release branch and later for merging this branch into master and closing the
-pull-request.
+Before you begin: install the [`hub`][hb] cli tool. We use `hub` in our release
+automation script to create a pull-request off of a release branch and later
+for merging this branch into master and closing the pull-request.
 
 To perform a release run: `git checkout master && yarn release` and follow the
 instructions.
