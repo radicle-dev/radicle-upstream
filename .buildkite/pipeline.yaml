@@ -9,9 +9,9 @@ steps:
       DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
       SHARED_MASTER_CACHE: true
     artifact_paths:
-      - "app/dist/*.AppImage"
-      - "app/dist/*.snap"
-      - "app/cypress/screenshots/**/*.png"
+      - "dist/*.AppImage"
+      - "dist/*.snap"
+      - "cypress/screenshots/**/*.png"
 
   - label: 'Test and package app on macOS'
     if: build.branch == 'master'
@@ -21,5 +21,5 @@ steps:
       platform: "macos"
     timeout_in_minutes: 60
     artifact_paths:
-      - "app/dist/*.dmg"
-      - "app/cypress/screenshots/**/*.png"
+      - "dist/*.dmg"
+      - "cypress/screenshots/**/*.png"
