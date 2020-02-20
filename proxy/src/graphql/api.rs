@@ -10,21 +10,23 @@ pub async fn run(
     dummy_repo_path: String,
     librad_paths: librad::paths::Paths,
     registry_client: radicle_registry_client::Client,
+    enable_control: bool,
 ) {
     let context = schema::Context::new(dummy_repo_path, librad_paths, registry_client);
     let state = warp::any().map(move || context.clone());
     let graphql_filter = make_graphql_filter(schema::create(), state.clone().boxed());
     let control_filter = make_graphql_filter(schema::create_test(), state.boxed());
     let routes = warp::path("control")
-        .map(|| false)
-        .and_then(|is_true| async {
-            if is_true {
+        .map(move || enable_control)
+        .and_then(|enable_control| async move {
+            if enable_control {
                 Ok(())
             } else {
                 Err(warp::reject::not_found())
             }
         })
-        .and_then(control_filter)
+        .untuple_one()
+        .and(control_filter)
         .or(warp::path("graphql").and(graphql_filter))
         .with(
             warp::cors()

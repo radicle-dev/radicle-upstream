@@ -52,7 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     info!("Starting GraphQL HTTP API");
-    graphql::api::run(dummy_repo.into(), librad_paths, registry_client).await;
+    graphql::api::run(dummy_repo.into(), librad_paths, registry_client, args.test).await;
 
     Ok(())
 }
