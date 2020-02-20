@@ -25,7 +25,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let registry_client = match args.registry.as_str() {
-        "devent" => radicle_registry_client::Client::new_emulator(),
+        "devnet" => radicle_registry_client::Client::new_emulator(),
         "emulator" => futures::executor::block_on(construct_registry_client()),
         _ => panic!(format!("unknown registry source '{}'", args.registry)),
     };
