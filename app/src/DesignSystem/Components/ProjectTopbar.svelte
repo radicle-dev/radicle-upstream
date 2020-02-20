@@ -1,9 +1,8 @@
 <script>
-  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
 
-  import { Icon, Button } from "../Primitives";
+  import { Button } from "../Primitives";
 
   import Avatar from "./Avatar.svelte";
   import * as path from "../../lib/path.js";

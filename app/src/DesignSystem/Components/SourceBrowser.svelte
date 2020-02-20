@@ -16,7 +16,7 @@
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
 
-  let projectId = getContext("projectId");
+  const projectId = getContext("projectId");
 
   const GET_PROJECT = gql`
     query Query($id: ID!) {

@@ -3,7 +3,6 @@
   import { ProjectCard, SidebarLayout } from "../DesignSystem/Components";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
-  import { link, push } from "svelte-spa-router";
 
   const GET_PROJECTS = gql`
     query Query {

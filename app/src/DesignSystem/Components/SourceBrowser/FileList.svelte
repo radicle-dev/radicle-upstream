@@ -142,7 +142,7 @@
         <tr>
           <td class="file-column">
             <a
-              href={path.projectSource(projectId, revision, entry.info.objectType, entry.info.objectType === TREE ? entry.path + '/' : entry.path)}
+              href={path.projectSource(projectId, revision, entry.info.objectType, entry.info.objectType === TREE ? `${entry.path}/` : entry.path)}
               data-cy={`open-${entry.info.name}`}
               use:link>
               {#if entry.info.objectType === TREE}
