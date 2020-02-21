@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        registry: args.value_from_str("--source")?,
+        registry: args.value_from_str("--registry")?,
         test: args.contains("--test"),
     };
 
