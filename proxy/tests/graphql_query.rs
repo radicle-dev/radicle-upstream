@@ -383,14 +383,14 @@ fn tree() {
                             "name": "src",
                             "objectType": "TREE",
                             "lastCommit": {
-                                "sha1": "3873745c8f6ffb45c990eb23b491d4b4b6182f95",
+                                "sha1": "a57846bbc8ced6587bf8329fc4bce970eb7b757e",
                                 "author": {
-                                    "name": "Fintan Halpenny",
-                                    "email": "fintan.halpenny@gmail.com",
+                                    "name": "Rūdolfs Ošiņš",
+                                    "email": "rudolfs@osins.org",
                                 },
-                                "summary": "Extend the docs (#2)",
-                                "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                                "committerTime": "1578309972",
+                                "summary": "Remove src/Folder.svelte (#3)",
+                                "message": "Remove src/Folder.svelte (#3)\n\nIt was a bad idea to have an actual source file which is used by\r\nradicle-upstream in the fixtures repository. It gets in the way of\r\nlinting and editors pick it up as a regular source file by accident.",
+                                "committerTime": "1582198877",
                             },
                         },
                         "entries": [
@@ -408,23 +408,6 @@ fn tree() {
                                         "summary": "Extend the docs (#2)",
                                         "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
                                         "committerTime": "1578309972",
-                                    },
-                                },
-                            },
-                            {
-                                "path": "src/Folder.svelte",
-                                "info": {
-                                    "name": "Folder.svelte",
-                                    "objectType": "BLOB",
-                                    "lastCommit": {
-                                        "sha1": "e24124b7538658220b5aaf3b6ef53758f0a106dc",
-                                        "author": {
-                                            "name": "Rūdolfs Ošiņš",
-                                            "email": "rudolfs@osins.org",
-                                        },
-                                        "summary": "Move examples to \"src\"",
-                                        "message": "Move examples to \"src\"\n",
-                                        "committerTime": "1575283266",
                                     },
                                 },
                             },
