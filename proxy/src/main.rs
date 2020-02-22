@@ -8,7 +8,7 @@ use proxy::graphql;
 /// Flags accepted by the proxy binary.
 struct Args {
     /// Signaling which backend type to use.
-    _source_type: String,
+    registry: String,
     /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
 }
@@ -20,12 +20,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
-        _source_type: args.value_from_str("--source")?,
+        registry: args.value_from_str("--registry")?,
         test: args.contains("--test"),
     };
 
+    let registry_client = match args.registry.as_str() {
+        "devnet" => radicle_registry_client::Client::new_emulator(),
+        "emulator" => futures::executor::block_on(construct_registry_client()),
+        _ => panic!(format!("unknown registry source '{}'", args.registry)),
+    };
+
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-    let (registry_client, dummy_repo, librad_paths) = if args.test {
+    let (dummy_repo, librad_paths) = if args.test {
         let librad_paths =
             librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
@@ -35,14 +41,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .expect("fixture setup failed");
 
-        (
-            radicle_registry_client::Client::new_emulator(),
-            "../fixtures/git-platinum",
-            librad_paths,
-        )
+        ("../fixtures/git-platinum", librad_paths)
     } else {
         (
-            futures::executor::block_on(construct_registry_client()),
             "..",
             librad::paths::Paths::new().expect("librad paths failed"),
         )
