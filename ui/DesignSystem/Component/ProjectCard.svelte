@@ -14,7 +14,6 @@
   }
 
   .container {
-    margin: 16px 0 16px 0;
     display: flex;
     flex: 1;
     flex-direction: column;

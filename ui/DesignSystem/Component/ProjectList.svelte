@@ -35,6 +35,7 @@
     flex: 1;
     border-bottom: 1px solid var(--color-lightgray);
     cursor: pointer;
+    padding: 22px 15px 26px 12px;
   }
 
   li:hover {
