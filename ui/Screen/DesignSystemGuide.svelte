@@ -110,6 +110,7 @@
     <Icon.CarretBig />
     <Icon.Check />
     <Icon.CheckCircle />
+    <Icon.CheckScallop />
     <Icon.Commit />
     <Icon.Cross />
     <Icon.CrossBig />

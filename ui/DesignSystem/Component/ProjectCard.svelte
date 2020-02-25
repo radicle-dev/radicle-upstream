@@ -43,9 +43,8 @@
       <Title>{title}</Title>
       {#if isRegistered}
         <div class="registered">
-          <Icon.CheckCircle
-            style="fill: var(--color-pink); position: relative; bottom: -2px;
-            width: 16px; height: 16px;" />
+          <Icon.CheckScallop
+            style="fill: var(--color-pink); position: relative; bottom: -3px;" />
         </div>
       {/if}
     </div>

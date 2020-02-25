@@ -3,6 +3,7 @@ import Carret from "./Carret.svelte";
 import CarretBig from "./CarretBig.svelte";
 import Check from "./Check.svelte";
 import CheckCircle from "./CheckCircle.svelte";
+import CheckScallop from "./CheckScallop.svelte";
 import Commit from "./Commit.svelte";
 import Cross from "./Cross.svelte";
 import CrossBig from "./CrossBig.svelte";
@@ -35,6 +36,7 @@ export default {
   CarretBig,
   Check,
   CheckCircle,
+  CheckScallop,
   Commit,
   Cross,
   CrossBig,
