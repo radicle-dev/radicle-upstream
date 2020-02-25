@@ -1,9 +1,7 @@
 <script>
   import { location } from "svelte-spa-router";
-  import { Icon } from "../Primitive";
-
-  import Item from "./Sidebar/Item.svelte";
-  import Avatar from "./Sidebar/Avatar.svelte";
+  import { link } from "svelte-spa-router";
+  import { Icon, Title } from "../Primitive";
 
   import * as path from "../../lib/path.js";
 </script>
@@ -15,14 +13,14 @@
     background-color: #eeeeef;
     position: fixed;
     padding-top: 31px;
-    z-index: 1000;
+    z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
     border-right: 1px solid #e3e3e3;
   }
 
-  li {
+  .item {
     width: 36px;
     height: 36px;
     margin-bottom: 12px;
@@ -32,7 +30,7 @@
     align-items: center;
   }
 
-  .menu-item:hover:before {
+  .item:hover:before {
     position: absolute;
     content: "";
     width: 4px;
@@ -44,7 +42,7 @@
     border-bottom-right-radius: 2px;
   }
 
-  .menu-item.active:before {
+  .item.active:before {
     position: absolute;
     content: "";
     width: 4px;
@@ -56,18 +54,12 @@
     border-bottom-right-radius: 2px;
   }
 
-  .wrapper :global(li .show-on-hover) {
-    opacity: 0;
-    display: none;
-  }
-
   .wrapper :global(li:hover svg) {
     fill: var(--color-purple);
   }
 
-  .wrapper :global(li:hover .show-on-hover) {
-    opacity: 1;
-    display: inline-block;
+  .item.active :global(svg) {
+    fill: var(--color-purple);
   }
 
   .divider {
@@ -80,37 +72,100 @@
     width: 100%;
     background-color: var(--color-gray);
   }
+
+  .item:hover .tooltip {
+    opacity: 1;
+    transition: 0.3s;
+  }
+
+  .tooltip {
+    user-select: none;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-lightgray);
+    color: var(--color-darkgray);
+    text-align: center;
+    border-radius: 2px;
+    padding: 4px 10px 6px 8px;
+    box-shadow: 0px 4px 8px rgba(51, 51, 51, 0.08);
+
+    position: absolute;
+    opacity: 0;
+    top: 2px;
+    left: 48px;
+    pointer-events: none;
+  }
+
+  .tooltip:after,
+  .tooltip:before {
+    right: 100%;
+    top: 50%;
+    border: solid transparent;
+    content: "";
+    height: 0;
+    width: 0;
+    position: absolute;
+  }
+
+  .tooltip:after {
+    border-right-color: var(--color-white);
+    border-width: 6px;
+    margin-top: -6px;
+  }
+
+  .tooltip:before {
+    border-right-color: var(--color-lightgray);
+    border-width: 7px;
+    margin-top: -7px;
+  }
+
+  a {
+    display: flex;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+  }
 </style>
 
 <div class="wrapper" data-cy="sidebar">
-  <ul class="top-menu">
-    <li class="menu-item" class:active={path.active(path.search(), $location)}>
-      <Item
-        icon={Icon.Search}
-        title="Search"
-        dataCy="search"
-        href={path.search()}
-        active={path.active(path.search(), $location)} />
+  <ul>
+    <li class="item" class:active={path.active(path.search(), $location)}>
+      <a href={path.search()} use:link>
+        <Icon.Search />
+      </a>
+
+      <div class="tooltip">
+        <Title style="white-space: nowrap;">Search</Title>
+      </div>
     </li>
-    <li class="menu-item" class:active={path.active(path.network(), $location)}>
-      <Item
-        icon={Icon.Peer}
-        title="Network"
-        dataCy="network"
-        href={path.network()}
-        active={path.active(path.network(), $location)} />
+
+    <li class="item" class:active={path.active(path.network(), $location)}>
+      <a href={path.network()} use:link>
+        <Icon.Peer />
+      </a>
+
+      <div class="tooltip">
+        <Title style="white-space: nowrap;">Network</Title>
+      </div>
     </li>
+
     <li class="divider">
       <div class="line" />
     </li>
-    <li
-      class="menu-item"
-      class:active={path.active(path.projects(), $location)}>
-      <Avatar
-        image="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
-        title="Profile"
-        dataCy="profile"
-        href={path.projects()} />
+
+    <li class="item" class:active={path.active(path.projects(), $location)}>
+      <a href={path.projects()} use:link>
+        <img
+          class="user-avatar"
+          src="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
+          alt="user-avatar" />
+      </a>
+
+      <div class="tooltip">
+        <Title>Profile</Title>
+      </div>
     </li>
   </ul>
 </div>
