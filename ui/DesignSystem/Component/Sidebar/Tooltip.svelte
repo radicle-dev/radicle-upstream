@@ -12,8 +12,8 @@
     /* Position the tooltip */
     position: absolute;
     z-index: 1;
-    top: -3px;
-    left: 46px;
+    top: 2px;
+    left: 48px;
   }
 
   .tooltip:after,
