@@ -11,7 +11,7 @@
 
   import CreateProject from "./Screen/CreateProject.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
-  import Feed from "./Screen/Feed.svelte";
+  import Network from "./Screen/Network.svelte";
   import Help from "./Screen/Help.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Profile from "./Screen/Profile.svelte";
@@ -41,7 +41,7 @@
 
   const routes = {
     "/search": Search,
-    "/feed": Feed,
+    "/network": Network,
     "/projects": Projects,
     "/projects/new": CreateProject,
     "/projects/:id/register": RegisterProject,

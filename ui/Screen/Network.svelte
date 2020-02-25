@@ -1,4 +1,5 @@
 <script>
+  import { Title } from "../DesignSystem/Primitive";
   import { Flex, Icon } from "../DesignSystem/Primitive";
   import { ProjectCard, SidebarLayout } from "../DesignSystem/Component";
   import { gql } from "apollo-boost";
@@ -16,6 +17,8 @@
 </script>
 
 <SidebarLayout dataCy="page">
+  <Title variant="big">Network</Title>
+
   <Flex align="left">
     {#await $projects then result}
       <ul>

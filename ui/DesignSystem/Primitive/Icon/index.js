@@ -21,6 +21,7 @@ import Info from "./Info.svelte";
 import Issues from "./Issues.svelte";
 import Member from "./Member.svelte";
 import Minus from "./Minus.svelte";
+import Peer from "./Peer.svelte";
 import Plus from "./Plus.svelte";
 import Projects from "./Projects.svelte";
 import Revisions from "./Revisions.svelte";
@@ -52,6 +53,7 @@ export default {
   Issues,
   Member,
   Minus,
+  Peer,
   Plus,
   Projects,
   Revisions,

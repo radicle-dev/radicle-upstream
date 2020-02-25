@@ -14,6 +14,10 @@
 </script>
 
 <style>
+  a {
+    display: flex;
+  }
+
   a.active :global(svg) {
     fill: var(--color-purple);
   }

@@ -3,7 +3,7 @@ import { DEFAULT_PROJECT_REVISION } from "../config.js";
 import { BLOB, TREE } from "./types.js";
 
 export const search = _params => "/search";
-export const feed = _params => "/feed";
+export const network = _params => "/network";
 export const projects = _params => "/projects";
 export const projectOverview = id => `/projects/${id}/overview`;
 export const projectFeed = id => `/projects/${id}/feed`;

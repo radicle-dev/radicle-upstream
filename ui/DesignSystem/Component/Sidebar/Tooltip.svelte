@@ -1,39 +1,50 @@
 <style>
-  div {
-    background-color: var(--color-darkgray);
-    color: var(--color-white);
+  .tooltip {
+    user-select: none;
+    background-color: var(--color-white);
+    border: 1px solid var(--color-lightgray);
+    color: var(--color-darkgray);
     text-align: center;
     border-radius: 2px;
-    padding: 8px 12px;
-    transition: opacity 100ms ease;
+    padding: 4px 10px 6px 8px;
+    box-shadow: 0px 4px 8px rgba(51, 51, 51, 0.08);
 
     /* Position the tooltip */
     position: absolute;
     z-index: 1;
-    top: -6px;
-    left: 40px;
+    top: -3px;
+    left: 46px;
   }
 
-  div:before {
-    content: "";
-    display: block;
-    width: 0;
+  .tooltip:after,
+  .tooltip:before {
+    right: 100%;
+    top: 50%;
+    border: solid transparent;
+    content: " ";
     height: 0;
+    width: 0;
     position: absolute;
-
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-right: 6px solid var(--color-darkgray);
-    left: -6px;
-
-    top: 12px;
+    pointer-events: none;
   }
 
-  div:hover {
+  .tooltip:after {
+    border-right-color: var(--color-white);
+    border-width: 6px;
+    margin-top: -6px;
+  }
+
+  .tooltip:before {
+    border-right-color: var(--color-lightgray);
+    border-width: 7px;
+    margin-top: -7px;
+  }
+
+  .tooltip:hover {
     opacity: 0;
   }
 </style>
 
-<div class="show-on-hover">
+<div class="tooltip show-on-hover">
   <slot />
 </div>

@@ -8,26 +8,24 @@
   export let image = null;
   export let title = null;
   export let href = null;
-  export let active = null;
 
   export let dataCy = null;
 </script>
 
 <style>
   img {
-    width: 34px;
-    height: 34px;
-    border-radius: 17px;
-    border: 2px solid transparent;
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
   }
 
-  .active {
-    border: 2px solid var(--color-purple);
+  a {
+    display: flex;
   }
 </style>
 
 <a {href} use:link data-cy={dataCy}>
-  <img class:active src={image} alt="user-avatar" />
+  <img src={image} alt="user-avatar" />
 </a>
 
 <Tooltip>
