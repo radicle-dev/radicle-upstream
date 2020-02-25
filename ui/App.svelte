@@ -11,15 +11,13 @@
 
   import CreateProject from "./Screen/CreateProject.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
-  import Network from "./Screen/Network.svelte";
   import Help from "./Screen/Help.svelte";
+  import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
-  import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Projects from "./Screen/Projects.svelte";
   import RegisterProject from "./Screen/RegisterProject.svelte";
   import Search from "./Screen/Search.svelte";
-  import Wallet from "./Screen/Wallet.svelte";
 
   initializeHotkeys();
 
@@ -47,8 +45,6 @@
     "/projects/:id/register": RegisterProject,
     "/projects/:id/*": Project,
     "/design-system-guide": DesignSystemGuide,
-    "/wallet": Wallet,
-    "/profile": Profile,
     "/help": Help,
     "*": NotFound
   };
