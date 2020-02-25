@@ -131,7 +131,10 @@
 
 <div class="wrapper" data-cy="sidebar">
   <ul>
-    <li class="item" class:active={path.active(path.search(), $location)}>
+    <li
+      class="item"
+      data-cy="search"
+      class:active={path.active(path.search(), $location)}>
       <a href={path.search()} use:link>
         <Icon.Search />
       </a>
@@ -141,7 +144,10 @@
       </div>
     </li>
 
-    <li class="item" class:active={path.active(path.network(), $location)}>
+    <li
+      class="item"
+      data-cy="network"
+      class:active={path.active(path.network(), $location)}>
       <a href={path.network()} use:link>
         <Icon.Peer />
       </a>
@@ -155,7 +161,10 @@
       <div class="line" />
     </li>
 
-    <li class="item" class:active={path.active(path.projects(), $location)}>
+    <li
+      class="item"
+      data-cy="profile"
+      class:active={path.active(path.projects(), $location)}>
       <a href={path.projects()} use:link>
         <img
           class="user-avatar"
