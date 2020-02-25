@@ -34,11 +34,11 @@
 
   .menu-item:hover:before {
     position: absolute;
-    content: " ";
+    content: "";
     width: 4px;
     height: 44px;
     background-color: var(--color-gray);
-    top: -5px;
+    top: -4px;
     left: -16px;
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
@@ -46,11 +46,11 @@
 
   .menu-item.active:before {
     position: absolute;
-    content: " ";
+    content: "";
     width: 4px;
     height: 44px;
     background-color: var(--color-purple);
-    top: -5px;
+    top: -4px;
     left: -16px;
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
