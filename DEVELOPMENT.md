@@ -376,7 +376,7 @@ will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|snap}`.
 
 ## Proxy
 
-All of Upstream's business tying together the radicle code collaboration and
+All of Upstream's business logic tying together the radicle code collaboration and
 registry protocols is provided to the UI via [GraphQL][gq] by a rust binary called
 the proxy. It uses [warp][wa] to serve a [Juniper][ju] powered API providing all necessary
 queries and mutations.
@@ -417,11 +417,11 @@ tests check Rust book [test chapter][rt].
 ### File structure
 
 We understand the GraphQL API as one potential surface to expose the
-Application domain logic. Therefore we try to treat it as thin layer exposing
+Application domain logic. Therefore we try to treat it as a thin layer exposing
 well-typed entities. The heavy lifting is done in the modules named after the
 protocols we consume - `CoCo` for code collaboration and `Registry` for global
-unique entries for users, projects and organistions. By isolating concerns in
-this weay, we hope to enable ease-of-contribution to downstream teams.
+unique entries for users, projects and organisations. By isolating concerns
+this way, we hope to enable ease-of-contribution to downstream teams.
 Empowering them to reflect changes in their public APIs easily with code
 contributions to Upstream.
 
