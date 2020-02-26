@@ -128,6 +128,7 @@
     <Icon.Issues />
     <Icon.Member />
     <Icon.Minus />
+    <Icon.Peer />
     <Icon.Plus />
     <Icon.Projects />
     <Icon.Revisions />
