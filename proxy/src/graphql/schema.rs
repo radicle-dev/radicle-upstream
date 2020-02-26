@@ -22,15 +22,6 @@ pub fn create() -> Schema {
     Schema::new(Query {}, Mutation {})
 }
 
-/// Bundles `Query` and `Mutation` used for controlling test state.
-pub type Test = juniper::RootNode<'static, Query, TestMutation>;
-
-/// Returns the [`TestSchema`] used for controlling test state.
-#[must_use]
-pub fn create_test() -> Test {
-    Test::new(Query {}, TestMutation {})
-}
-
 /// Container for data access from handlers.
 #[derive(Clone)]
 pub struct Context {
@@ -60,65 +51,13 @@ impl Context {
 
 impl juniper::Context for Context {}
 
-/// Control mutations.
-pub struct TestMutation;
-
-#[juniper::object(Context = Context)]
-impl TestMutation {
-    fn create_project_with_fixture(
-        ctx: &Context,
-        metadata: project::MetadataInput,
-    ) -> Result<project::Project, error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
-
-        // Craft the absolute path to git-platinum fixtures.
-        let mut platinum_path = env::current_dir().expect("unable to get working directory");
-        platinum_path.push("../fixtures/git-platinum");
-        let mut platinum_from = String::from("file://");
-        platinum_from.push_str(
-            platinum_path
-                .to_str()
-                .expect("unable to get fixtures path string"),
-        );
-
-        // Construct path for fixtures to clone into.
-        let platinum_into = tmp_dir.path().join("git-platinum");
-
-        // Clone a copy into temp directory.
-        let mut fetch_options = git2::FetchOptions::new();
-        fetch_options.download_tags(git2::AutotagOption::All);
-
-        let platinum_repo = git2::build::RepoBuilder::new()
-            .branch("master")
-            .clone_local(git2::build::CloneLocal::Auto)
-            .fetch_options(fetch_options)
-            .clone(&platinum_from, platinum_into.as_path())
-            .expect("unable to clone fixtures repo");
-
-        let (id, meta) = coco::init_project(
-            &ctx.librad_paths,
-            &platinum_into.to_str().unwrap(),
-            &metadata.name,
-            &metadata.description,
-            &metadata.default_branch,
-            &metadata.img_url,
-        )?;
-
-        Ok(project::Project {
-            id: id.to_string().into(),
-            metadata: meta.into(),
-        })
-    }
-}
-
-/// Control query endpoints.
-pub struct TestQuery;
-
 /// Encapsulates write path in API.
 pub struct Mutation;
 
-#[juniper::object(Context = Context)]
+#[juniper::object(
+    Context = Context,
+    name = "UpstreamMutation",
+)]
 impl Mutation {
     fn create_project(
         ctx: &Context,
@@ -172,7 +111,10 @@ impl Mutation {
 /// Encapsulates read paths in API.
 pub struct Query;
 
-#[juniper::object(Context = Context)]
+#[juniper::object(
+    Context = Context,
+    name = "UpstreamQuery",
+)]
 impl Query {
     fn apiVersion() -> &str {
         "1.0"
@@ -251,6 +193,81 @@ impl Query {
             .collect::<Vec<juniper::ID>>())
     }
 }
+
+/// Bundles `Query` and `Mutation` used for controlling raw state.
+pub type Control = juniper::RootNode<'static, ControlQuery, ControlMutation>;
+
+/// Returns the [`Control`] schema used for controlling raw state.
+#[must_use]
+pub fn create_control() -> Control {
+    Control::new(ControlQuery {}, ControlMutation {})
+}
+
+/// Control mutations.
+pub struct ControlMutation;
+
+#[juniper::object(
+    Context = Context,
+    name = "ControlMutation",
+    description = "Mutations to control raw proxy state.",
+)]
+impl ControlMutation {
+    fn create_project_with_fixture(
+        ctx: &Context,
+        metadata: project::MetadataInput,
+    ) -> Result<project::Project, error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+
+        // Craft the absolute path to git-platinum fixtures.
+        let mut platinum_path = env::current_dir().expect("unable to get working directory");
+        platinum_path.push("../fixtures/git-platinum");
+        let mut platinum_from = String::from("file://");
+        platinum_from.push_str(
+            platinum_path
+                .to_str()
+                .expect("unable to get fixtures path string"),
+        );
+
+        // Construct path for fixtures to clone into.
+        let platinum_into = tmp_dir.path().join("git-platinum");
+
+        // Clone a copy into temp directory.
+        let mut fetch_options = git2::FetchOptions::new();
+        fetch_options.download_tags(git2::AutotagOption::All);
+
+        let platinum_repo = git2::build::RepoBuilder::new()
+            .branch("master")
+            .clone_local(git2::build::CloneLocal::Auto)
+            .fetch_options(fetch_options)
+            .clone(&platinum_from, platinum_into.as_path())
+            .expect("unable to clone fixtures repo");
+
+        let (id, meta) = coco::init_project(
+            &ctx.librad_paths,
+            &platinum_into.to_str().unwrap(),
+            &metadata.name,
+            &metadata.description,
+            &metadata.default_branch,
+            &metadata.img_url,
+        )?;
+
+        Ok(project::Project {
+            id: id.to_string().into(),
+            metadata: meta.into(),
+        })
+    }
+}
+
+/// Control query endpoints.
+pub struct ControlQuery;
+
+#[juniper::object(
+    Context = Context,
+    name = "ControlQuery",
+    description = "Queries to access raw proxy state.",
+)]
+impl ControlQuery {}
 
 #[juniper::object]
 impl coco::Blob {

@@ -15,7 +15,7 @@ pub async fn run(
     let context = schema::Context::new(dummy_repo_path, librad_paths, registry_client);
     let state = warp::any().map(move || context.clone());
     let graphql_filter = make_graphql_filter(schema::create(), state.clone().boxed());
-    let control_filter = make_graphql_filter(schema::create_test(), state.boxed());
+    let control_filter = make_graphql_filter(schema::create_control(), state.boxed());
     let routes = warp::path("control")
         .map(move || enable_control)
         .and_then(|enable_control| async move {
