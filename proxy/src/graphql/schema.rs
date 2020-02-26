@@ -69,6 +69,9 @@ impl TestMutation {
         ctx: &Context,
         metadata: project::MetadataInput,
     ) -> Result<project::Project, error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+
         // Craft the absolute path to git-platinum fixtures.
         let mut platinum_path = env::current_dir().expect("unable to get working directory");
         platinum_path.push("../fixtures/git-platinum");
@@ -79,9 +82,23 @@ impl TestMutation {
                 .expect("unable to get fixtures path string"),
         );
 
+        // Construct path for fixtures to clone into.
+        let platinum_into = tmp_dir.path().join("git-platinum");
+
+        // Clone a copy into temp directory.
+        let mut fetch_options = git2::FetchOptions::new();
+        fetch_options.download_tags(git2::AutotagOption::All);
+
+        let platinum_repo = git2::build::RepoBuilder::new()
+            .branch("master")
+            .clone_local(git2::build::CloneLocal::Auto)
+            .fetch_options(fetch_options)
+            .clone(&platinum_from, platinum_into.as_path())
+            .expect("unable to clone fixtures repo");
+
         let (id, meta) = coco::init_project(
             &ctx.librad_paths,
-            &platinum_from,
+            &platinum_into.to_str().unwrap(),
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,

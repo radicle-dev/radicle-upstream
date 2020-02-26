@@ -28,6 +28,7 @@ where
             .to_str()
             .expect("unable to get fixtures path string"),
     );
+
     // Construct path for fixtures to clone into.
     let platinum_into = tmp_dir.path().join("git-platinum");
 
