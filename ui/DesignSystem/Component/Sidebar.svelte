@@ -169,7 +169,7 @@
     <li
       class="item"
       data-cy="profile"
-      class:active={path.active(path.projects(), $location)}>
+      class:active={path.active(path.projects(), $location, true)}>
       <a href={path.projects()} use:link>
         <Avatar size="medium" variant="user" />
       </a>
