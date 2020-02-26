@@ -392,7 +392,7 @@ application package by [electron-builder][eb].
 
 ### Running the proxy in stand-alone mode
 
-To start the proxy binary, run: `cd proxy && cargo run -- --source=memory`.
+To start the proxy binary, run: `cd proxy && cargo run -- --registry=emulator`.
 After that the GraphQL API is served on `http://127.0.0.1:8080/graphql`.
 
 
