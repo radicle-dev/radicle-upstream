@@ -374,6 +374,76 @@ be used so changes to global styling can be applied in a central place.
 You can build and package Upstream with: `yarn dist`. The generated package
 will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|snap}`.
 
+## Proxy
+
+All of Upstream's business tying together the radicle code collaboration and
+registry protocols is provided to the UI via [GraphQL][gq] by a rust binary called
+the proxy. It uses [warp][wa] to serve a [Juniper][ju] powered API providing all necessary
+queries and mutations.
+
+For dependency managament and execution of common taks we use [Cargo][co]. To
+get up to speed with common functionality and manifest file intricacies consult
+the exhaustive [Cargo Book][cb].
+
+The proxy binary's lifecycle is managed by the main renderer of the UI in:
+`native/main.js`. When running `yarn dist` it is bundled together into an
+application package by [electron-builder][eb].
+
+
+### Running the proxy in stand-alone mode
+
+To start the proxy binary, run: `cd proxy && cargo run -- --source=memory`.
+After that the GraphQL API is served on `http://127.0.0.1:8080/graphql`.
+
+
+### Testing
+
+The proxy and UI share the same test fixtures, if you haven't done it already,
+set up the test fixtures like so:
+
+```sh
+git submodule update --init --remote
+git submodule foreach "git fetch --all"
+```
+
+Then run tests as usual: `cargo test --all-features --all-targets`.
+
+We strive for two kind of tests, the classic unit tests inside of the
+implementation files. Additionally we have a suit of integration tests esp. to
+assert the API the proxy provides from a high-level consumer perspective, these
+can be found under `proxy/tests`. To find out where to place and how to layout
+tests check Rust book [test chapter][rt].
+
+### File structure
+
+We understand the GraphQL API as one potential surface to expose the
+Application domain logic. Therefore we try to treat it as thin layer exposing
+well-typed entities. The heavy lifting is done in the modules named after the
+protocols we consume - `CoCo` for code collaboration and `Registry` for global
+unique entries for users, projects and organistions. By isolating concerns in
+this weay, we hope to enable ease-of-contribution to downstream teams.
+Empowering them to reflect changes in their public APIs easily with code
+contributions to Upstream.
+
+```
+proxy/src/
+├── coco.rs
+├── env.rs
+├── error.rs
+├── graphql
+│   ├── api.rs
+│   ├── error.rs
+│   ├── project.rs
+│   └── schema.rs
+├── graphql.rs
+├── lib.rs
+├── main.rs
+└── registry.rs
+```
+
+💡 *You'll have to run the submodule commands every time there are any updates
+to the test fixture repository.*
+
 
 ## Scripts
 
@@ -400,40 +470,6 @@ yarn prettier:check   # Check UI code formatting
 yarn prettier:write   # Auto-format UI code
 yarn lint             # Check UI code for linting errors
 ```
-
-
-## Proxy
-
-All Upstream business logic tying together the radicle code collaboration and
-registry protocols is provided to the UI via GraphQL by a rust binary called
-the proxy.
-
-The proxy binary's lifecycle is managed by the main renderer of the UI in:
-`native/main.js`. When running `yarn dist` it is bundled together into an
-application package by [electron-builder][eb].
-
-
-### Running the proxy in stand-alone mode
-
-To start the proxy binary, run: `cd proxy && cargo run -- --source=memory`.
-After that the GraphQL API is served on `http://127.0.0.1:8080/graphql`.
-
-
-### Testing
-
-The proxy and UI share the same test fixtures, if you haven't done it already,
-set up the test fixtures like so:
-
-```sh
-git submodule update --init --remote
-git submodule foreach "git fetch --all"
-```
-
-Then run tests as usual: `cargo test`.
-
-💡 *You'll have to run the submodule commands every time there are any updates
-to the test fixture repository.*
-
 
 ## CI setup
 
@@ -542,18 +578,24 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 
 [ar]: https://buildkite.com/monadic/radicle-upstream/builds?branch=master
 [bk]: https://buildkite.com/monadic/radicle-upstream
+[cb]: https://doc.rust-lang.org/cargo/
 [cc]: https://www.conventionalcommits.org/en/v1.0.0
 [cl]: https://gist.github.com/Rich-Harris/0f910048478c2a6505d1c32185b61934
+[co]: https://github.com/rust-lang/cargo
 [cs]: https://help.github.com/en/github/authenticating-to-github/signing-commits
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
-[ge]: https://github.com/OneGraph/graphiql-explorer
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
+[ge]: https://github.com/OneGraph/graphiql-explorer
 [gs]: https://github.com/OneGraph/graphiql-with-extensions
+[gq]: https://graphql.org/
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
+[ju]: https://github.com/graphql-rust/juniper
 [ls]: https://github.com/okonet/lint-staged
 [pr]: https://prettier.io
+[rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
 [se]: https://svelte.dev
 [sv]: https://github.com/conventional-changelog/standard-version
 [tp]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
+[wa]: https://github.com/seanmonstar/warp
