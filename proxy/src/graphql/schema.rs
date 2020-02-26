@@ -257,6 +257,14 @@ impl ControlMutation {
             metadata: meta.into(),
         })
     }
+
+    fn nuke_coco_state(ctx: &Context) -> Result<&str, error::Error> {
+        std::fs::remove_dir_all(ctx.librad_paths.keys_dir())?;
+        std::fs::remove_dir_all(ctx.librad_paths.profiles_dir())?;
+        std::fs::remove_dir_all(ctx.librad_paths.projects_dir())?;
+
+        Ok("ok")
+    }
 }
 
 /// Control query endpoints.
