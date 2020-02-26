@@ -2,6 +2,7 @@
   import { location } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
   import { Icon, Title } from "../Primitive";
+  import Avatar from "../Component/Avatar.svelte";
 
   import * as path from "../../lib/path.js";
 </script>
@@ -166,10 +167,7 @@
       data-cy="profile"
       class:active={path.active(path.projects(), $location)}>
       <a href={path.projects()} use:link>
-        <img
-          class="user-avatar"
-          src="https://avatars2.githubusercontent.com/u/2326909?s=400&v=4"
-          alt="user-avatar" />
+        <Avatar size="medium" variant="user" />
       </a>
 
       <div class="tooltip">
