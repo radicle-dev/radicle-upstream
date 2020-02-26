@@ -1,18 +1,15 @@
 <script>
-  import { push } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
 
-  import { Button } from "../Primitive";
-
   import Avatar from "./Avatar.svelte";
-  import * as path from "../../lib/path.js";
-  import Menu from "./ProjectTopbar/Menu.svelte";
+  import Menu from "./Topbar/Menu.svelte";
 
   export let style = null;
 
   export let avatarUrl = null;
-  export let id = null;
   export let name = null;
+  export let href = null;
+  export let menuItems = [];
 </script>
 
 <style>
@@ -28,7 +25,7 @@
     border-bottom: 1px solid var(--color-lightgray);
   }
 
-  .project-name {
+  .name {
     display: flex;
     align-items: center;
     height: 100%;
@@ -46,7 +43,7 @@
 </style>
 
 <div data-cy="topbar" class="topbar" {style}>
-  <a class="project-name" href={path.projectOverview(id)} use:link>
+  <a class="name" {href} use:link>
     <Avatar
       style="color: var(--color-purple)"
       title={name}
@@ -54,16 +51,9 @@
       variant="project" />
   </a>
 
-  <Menu />
+  <Menu items={menuItems} />
 
   <div class="left">
-    <Button
-      variant="secondary"
-      size="small"
-      on:click={() => {
-        push(path.registerProject(id));
-      }}>
-      Register
-    </Button>
+    <slot />
   </div>
 </div>

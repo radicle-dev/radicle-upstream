@@ -106,12 +106,14 @@
     stroke weight, multiple color variations">
 
     <Icon.Badge />
+    <Icon.ArrowUp />
     <Icon.Branch />
     <Icon.Carret />
     <Icon.CarretBig />
     <Icon.Check />
     <Icon.CheckCircle />
     <Icon.Commit />
+    <Icon.Copy />
     <Icon.Cross />
     <Icon.CrossBig />
     <Icon.Ellipse />
