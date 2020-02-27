@@ -105,12 +105,12 @@
     subTitle="Icons at 16px, 24px, 36px and 64px width and height with 2px
     stroke weight, multiple color variations">
 
+    <Icon.Badge />
     <Icon.Branch />
     <Icon.Carret />
     <Icon.CarretBig />
     <Icon.Check />
     <Icon.CheckCircle />
-    <Icon.CheckScallop />
     <Icon.Commit />
     <Icon.Cross />
     <Icon.CrossBig />

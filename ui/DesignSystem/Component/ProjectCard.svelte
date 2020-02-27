@@ -45,7 +45,7 @@
       <Title>{title}</Title>
       {#if isRegistered}
         <div class="registered">
-          <Icon.CheckScallop
+          <Icon.Badge
             style="fill: var(--color-pink); position: relative; bottom: -3px;" />
         </div>
       {/if}
