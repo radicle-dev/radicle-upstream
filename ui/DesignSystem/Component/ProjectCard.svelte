@@ -18,11 +18,13 @@
     flex: 1;
     flex-direction: column;
     justify-content: center;
+    width: 10%;
   }
 
   .first-row {
     display: flex;
     margin-bottom: 2px;
+    white-space: nowrap;
   }
 
   .registered {
@@ -48,7 +50,11 @@
         </div>
       {/if}
     </div>
-    <Text style="color: var(--color-gray);">{description}</Text>
+    <Text
+      style="color: var(--color-gray); white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis;">
+      {description}
+    </Text>
   </div>
 
   <div class="stats">

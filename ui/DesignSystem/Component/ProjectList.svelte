@@ -1,5 +1,5 @@
 <script>
-  import { Text, Icon, Button } from "../Primitive";
+  import { Text, Button } from "../Primitive";
 
   import ProjectCard from "./ProjectCard.svelte";
 
@@ -29,9 +29,14 @@
 </script>
 
 <style>
+  ul {
+    min-width: 500px;
+  }
+
   li {
     display: flex;
     width: 100%;
+    height: 96px;
     flex: 1;
     border-bottom: 1px solid var(--color-lightgray);
     cursor: pointer;
@@ -73,9 +78,7 @@
           <ProjectCard
             title={project.metadata.name}
             description={project.metadata.description}
-            isRegistered={false}
-            imgUrl={project.metadata.imgUrl}
-            state={Icon.Check} />
+            isRegistered={false} />
         </li>
       {/each}
     </ul>
