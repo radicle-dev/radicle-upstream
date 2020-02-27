@@ -439,7 +439,6 @@
       <ProjectCard
         title="Radicle"
         description="Best project in the world"
-        imgUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
         isRegistered={true} />
     </Swatch>
 

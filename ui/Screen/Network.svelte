@@ -1,6 +1,6 @@
 <script>
   import { Title } from "../DesignSystem/Primitive";
-  import { Flex, Icon } from "../DesignSystem/Primitive";
+  import { Flex } from "../DesignSystem/Primitive";
   import { ProjectCard, SidebarLayout } from "../DesignSystem/Component";
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -24,11 +24,7 @@
       <ul>
         {#each result.data.listRegistryProjects as project}
           <li class="project-card">
-            <ProjectCard
-              title={project}
-              isRegistered={true}
-              imgUrl={'https://avatars.dicebear.com/v2/jdenticon/project1.svg'}
-              state={Icon.Check} />
+            <ProjectCard title={project} isRegistered={true} />
           </li>
         {/each}
       </ul>
