@@ -1,12 +1,10 @@
 <script>
   import { Icon, Text, Title } from "../Primitive";
-  import Avatar from "./Avatar.svelte";
+  import Stat from "./Stat.svelte";
 
   export let title = "";
   export let description = "";
-  export let imgUrl = "";
   export let isRegistered = false;
-  export let state = Icon.Check;
 </script>
 
 <style>
@@ -16,25 +14,25 @@
   }
 
   .container {
-    margin: 16px 0 16px 0;
     display: flex;
     flex: 1;
     flex-direction: column;
     justify-content: center;
+    width: 10%;
   }
 
   .first-row {
     display: flex;
     margin-bottom: 2px;
+    white-space: nowrap;
   }
 
   .registered {
     display: flex;
-    color: var(--color-pink);
-    margin-left: 16px;
+    margin-left: 9px;
   }
 
-  .state {
+  .stats {
     display: flex;
     align-items: center;
     margin-right: 24px;
@@ -42,23 +40,26 @@
 </style>
 
 <div class="project-card">
-  <Avatar imageUrl={imgUrl} variant="project" size="big" style="margin: 16px" />
-
   <div class="container">
     <div class="first-row">
       <Title>{title}</Title>
       {#if isRegistered}
         <div class="registered">
-          <Icon.Ellipse
-            style="fill: var(--color-pink); position: relative; bottom: -2px;" />
-          <Text variant="small">Registered</Text>
+          <Icon.Badge
+            style="fill: var(--color-pink); position: relative; bottom: -3px;" />
         </div>
       {/if}
     </div>
-    <Text>{description}</Text>
+    <Text
+      style="color: var(--color-gray); white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis;">
+      {description}
+    </Text>
   </div>
 
-  <div class="state">
-    <svelte:component this={state} />
+  <div class="stats">
+    <Stat icon={Icon.Commit} count="1.1k" style="margin-right: 24px;" />
+    <Stat icon={Icon.Branch} count="60" style="margin-right: 24px;" />
+    <Stat icon={Icon.Member} count="3" />
   </div>
 </div>

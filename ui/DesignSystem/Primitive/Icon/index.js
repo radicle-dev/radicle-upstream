@@ -1,3 +1,4 @@
+import Badge from "./Badge.svelte";
 import Branch from "./Branch.svelte";
 import Carret from "./Carret.svelte";
 import CarretBig from "./CarretBig.svelte";
@@ -30,6 +31,7 @@ import SearchSmall from "./SearchSmall.svelte";
 import Source from "./Source.svelte";
 
 export default {
+  Badge,
   Branch,
   Carret,
   CarretBig,
