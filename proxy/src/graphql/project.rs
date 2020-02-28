@@ -65,10 +65,20 @@ impl From<meta::Project> for Metadata {
 
 /// Radicle project for sharing and collaborating.
 #[derive(GraphQLObject)]
-#[graphql(description = "Radicle project")]
+#[graphql(description = "Project")]
 pub struct Project {
     /// Unique identifier of the project in the network.
     pub id: juniper::ID,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
+    /// Coarse set of statistics for the project source code.
+    pub stats: Stats,
+}
+
+#[derive(GraphQLObject)]
+#[graphql(name = "ProjectStats")]
+pub struct Stats {
+    pub branches: i32,
+    pub commits: i32,
+    pub contributors: i32,
 }

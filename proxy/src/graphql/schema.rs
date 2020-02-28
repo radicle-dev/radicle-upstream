@@ -108,6 +108,11 @@ impl Mutation {
         Ok(project::Project {
             id: id.to_string().into(),
             metadata: meta.into(),
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -193,6 +198,11 @@ impl Query {
         Ok(project::Project {
             id,
             metadata: meta.into(),
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -202,6 +212,11 @@ impl Query {
             .map(|(id, meta)| project::Project {
                 id: juniper::ID::new(id.to_string()),
                 metadata: meta.into(),
+                stats: project::Stats {
+                    branches: 11,
+                    commits: 267,
+                    contributors: 8,
+                },
             })
             .collect::<Vec<project::Project>>();
 

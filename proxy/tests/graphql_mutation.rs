@@ -138,6 +138,11 @@ fn create_project() {
                                 defaultBranch
                                 imgUrl
                             }
+                            stats {
+                                branches
+                                commits
+                                contributors
+                            }
                         }
                     }";
 
@@ -152,6 +157,11 @@ fn create_project() {
                             "description": "Code collaboration without intermediates.",
                             "defaultBranch": "master",
                             "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                        },
+                        "stats": {
+                            "branches": 11,
+                            "commits": 267,
+                            "contributors": 8,
                         },
                     },
                 })
