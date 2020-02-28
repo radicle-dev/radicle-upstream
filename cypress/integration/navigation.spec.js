@@ -1,4 +1,9 @@
 context("navigation", () => {
+  before(() => {
+    cy.nukeAllState();
+    cy.createProjectWithFixture();
+  });
+
   beforeEach(() => {
     cy.visit("./public/index.html#/projects");
   });
@@ -9,10 +14,7 @@ context("navigation", () => {
     });
 
     it("shows the four default mock projects", () => {
-      cy.contains("monokel").should("exist");
       cy.contains("Monadic").should("exist");
-      cy.contains("open source coin").should("exist");
-      cy.contains("radicle").should("exist");
     });
   });
 
@@ -42,19 +44,19 @@ context("navigation", () => {
   context("project topbar", () => {
     it("opens the project overview by default", () => {
       cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
-      cy.contains("monokel").click();
+      cy.contains("Monadic").click();
 
       cy.get("h2")
         .contains("Overview")
         .should("exist");
       cy.get("[data-cy=topbar]").within(() => {
-        cy.contains("monokel").should("exist");
+        cy.contains("Monadic").should("exist");
       });
     });
 
     it("provides navigation to all sub-sections of a project", () => {
       cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
-      cy.contains("monokel").click();
+      cy.contains("Monadic").click();
 
       cy.get("h2")
         .contains("Overview")
@@ -127,7 +129,7 @@ context("navigation", () => {
     });
 
     context("when using the vertical scrollbar", () => {
-      it.skip("stays fixed at the top", () => {
+      it("stays fixed at the top", () => {
         cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
         cy.contains("Monadic").click();
         cy.get('[data-cy="project-topbar-menu"]')
@@ -138,7 +140,7 @@ context("navigation", () => {
           cy.get("[data-cy=expand-src]").click();
           cy.contains("Eval.hs").click();
         });
-        cy.get("[data-cy=page-container]").scrollTo("bottom");
+        cy.get("[data-cy=scrollable-content]").scrollTo("bottom");
 
         cy.get("[data-cy=project-topbar-menu]").should("be.inViewport");
       });

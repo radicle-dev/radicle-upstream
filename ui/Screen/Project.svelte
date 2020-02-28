@@ -62,7 +62,9 @@
   $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
 </script>
 
-<SidebarLayout style="margin-top: calc(var(--topbar-height) + 33px)">
+<SidebarLayout
+  style="margin-top: calc(var(--topbar-height) + 33px)"
+  dataCy="page-container">
   {#await $project then result}
     <ProjectTopbar
       style="position: fixed; top: 0;"
