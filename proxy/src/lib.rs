@@ -33,5 +33,6 @@ pub mod env;
 pub mod error;
 /// Defines the schema served to the application via `GraphQL`.
 pub mod graphql;
+mod identity;
 /// Intergrations on the Regstriy.
 mod registry;

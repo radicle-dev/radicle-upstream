@@ -7,10 +7,12 @@ use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client::ed25519;
 
-use super::project;
 use crate::coco;
 use crate::error;
+use crate::identity;
 use crate::registry;
+
+use super::project;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = juniper::RootNode<'static, Query, Mutation>;
@@ -46,28 +48,6 @@ impl Context {
 
 impl juniper::Context for Context {}
 
-/// The users personal identifying metadata and keys.
-#[derive(GraphQLObject)]
-struct Identity {
-    /// The librad id.
-    pub id: juniper::ID,
-    /// Unambiguous identifier pointing at this identity.
-    pub shareable_entity_identifier: juniper::ID,
-    /// Bundle of user provided data.
-    pub metadata: IdentityMetadata,
-}
-
-/// User maintained information for an identity, which can evolve over time.
-#[derive(GraphQLObject)]
-struct IdentityMetadata {
-    /// Similar to a nickname, the users chosen short identifier.
-    pub handle: String,
-    /// A longer name to display, e.g.: full name.
-    pub display_name: Option<String>,
-    /// Url of an image the user wants to present alongside this [`Identity`].
-    pub avatar_url: Option<String>,
-}
-
 /// Encapsulates write path in API.
 pub struct Mutation;
 
@@ -78,11 +58,11 @@ impl Mutation {
         handle: String,
         display_name: Option<String>,
         avatar_url: Option<String>,
-    ) -> Result<Identity, error::Error> {
-        Ok(Identity {
-            id: juniper::ID::new("123abcd.git"),
-            shareable_entity_identifier: juniper::ID::new(format!("{}@123abcd.git", handle)),
-            metadata: IdentityMetadata {
+    ) -> Result<identity::Identity, error::Error> {
+        Ok(identity::Identity {
+            id: "123abcd.git".into(),
+            shareable_entity_identifier: format!("{}@123abcd.git", handle),
+            metadata: identity::Metadata {
                 handle,
                 display_name,
                 avatar_url,
@@ -254,11 +234,14 @@ impl Query {
             .collect::<Vec<juniper::ID>>())
     }
 
-    fn identity(_ctx: &Context, id: juniper::ID) -> Result<Option<Identity>, error::Error> {
-        Ok(Some(Identity {
-            id: id.clone(),
-            shareable_entity_identifier: juniper::ID::new(format!("cloudhead@{}", id.to_string())),
-            metadata: IdentityMetadata {
+    fn identity(
+        _ctx: &Context,
+        id: juniper::ID,
+    ) -> Result<Option<identity::Identity>, error::Error> {
+        Ok(Some(identity::Identity {
+            id: id.to_string(),
+            shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
+            metadata: identity::Metadata {
                 handle: "cloudhead".into(),
                 display_name: Some("Alexis Sellier".into()),
                 avatar_url: Some("https://avatars1.githubusercontent.com/u/4077".into()),
@@ -526,5 +509,35 @@ impl coco::TreeEntry {
 
     fn path(&self) -> String {
         self.path.clone()
+    }
+}
+
+#[juniper::object]
+impl identity::Identity {
+    fn id(&self) -> juniper::ID {
+        juniper::ID::new(&self.id)
+    }
+
+    fn shareable_entity_identifier(&self) -> juniper::ID {
+        juniper::ID::new(&self.shareable_entity_identifier)
+    }
+
+    fn metadata(&self) -> &identity::Metadata {
+        &self.metadata
+    }
+}
+
+#[juniper::object(name = "IdentityMetadata")]
+impl identity::Metadata {
+    fn avatar_url(&self) -> Option<&String> {
+        self.avatar_url.as_ref()
+    }
+
+    fn display_name(&self) -> Option<&String> {
+        self.display_name.as_ref()
+    }
+
+    fn handle(&self) -> &str {
+        &self.handle
     }
 }
