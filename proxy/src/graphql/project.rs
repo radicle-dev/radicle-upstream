@@ -63,6 +63,13 @@ impl From<meta::Project> for Metadata {
     }
 }
 
+#[derive(GraphQLEnum)]
+pub enum Registered {
+    Not,
+    Org,
+    User,
+}
+
 /// Radicle project for sharing and collaborating.
 #[derive(GraphQLObject)]
 #[graphql(description = "Project")]
@@ -71,6 +78,8 @@ pub struct Project {
     pub id: juniper::ID,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
+    /// Signals if a project is on the Registry.
+    pub registered: Registered,
     /// Coarse set of statistics for the project source code.
     pub stats: Stats,
 }
