@@ -206,3 +206,36 @@ fn register_project() {
         });
     });
 }
+
+#[test]
+fn register_user() {
+    common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+        let mut vars = Variables::new();
+        vars.insert("handle".into(), InputValue::scalar("cloudhead"));
+        vars.insert("id".into(), InputValue::scalar("123abcd.git"));
+
+        let query = "mutation($handle: ID!, $id: ID!) {
+                        registerUser(handle: $handle, id: $id) {
+                            messages {
+                                ... on UserRegistration {
+                                    handle,
+                                    id,
+                                }
+                            },
+                        }
+                    }";
+        common::execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "registerUser": {
+                        "messages": [
+                            { "handle": "cloudhead", "id": "123abcd.git" },
+                        ],
+                    },
+                })
+            );
+        });
+    });
+}

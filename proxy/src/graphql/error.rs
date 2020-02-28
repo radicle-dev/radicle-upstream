@@ -35,6 +35,16 @@ impl juniper::IntoFieldError for error::Error {
                     graphql_value!({ "type": "ORG_TOO_LONG" }),
                 ),
             },
+            Self::UserValidation(user_error) => match user_error {
+                error::UserValidation::HandleTooLong => juniper::FieldError::new(
+                    "A user handle can only be at most 32 bytes long",
+                    graphql_value!({ "type": "HANDLE_TOO_LONG" }),
+                ),
+                error::UserValidation::IdTooLong => juniper::FieldError::new(
+                    "A user id can only be at most 32 bytes long",
+                    graphql_value!({ "type": "ID_TOO_LONG" }),
+                ),
+            },
             // TODO(garbados): expand via sub-match
             Self::Protocol(error) => juniper::FieldError::new(
                 error.to_string(),

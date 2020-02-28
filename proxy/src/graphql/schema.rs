@@ -139,6 +139,28 @@ impl Mutation {
             maybe_librad_id,
         ))
     }
+
+    // pub struct Transaction {
+    //     pub id: registry::TxHash,
+    //     pub messages: Vec<Message>,
+    //     pub state: TransactionState,
+    //     pub timestamp: SystemTime,
+    // }
+
+    fn register_user(
+        ctx: &Context,
+        handle: juniper::ID,
+        id: juniper::ID,
+    ) -> Result<registry::Transaction, error::Error> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+
+        futures::executor::block_on(ctx.registry.register_user(
+            &fake_pair,
+            handle.to_string(),
+            id.to_string(),
+        ))
+    }
 }
 
 /// Encapsulates read paths in API.
@@ -348,6 +370,12 @@ struct ProjectRegistration {
     org_id: String,
 }
 
+#[derive(juniper::GraphQLObject)]
+struct UserRegistration {
+    handle: juniper::ID,
+    id: juniper::ID,
+}
+
 /// Message types supproted in transactions.
 enum Message {
     /// Registration of a new org.
@@ -358,6 +386,8 @@ enum Message {
 
     /// Registration of a new project.
     ProjectRegistration(ProjectRegistration),
+
+    UserRegistration(UserRegistration),
 }
 
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
@@ -374,6 +404,10 @@ juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
             Message::OrgUnregistration(ref o) => Some(o),
             _ => None
         },
+        &UserRegistration => match *self {
+            Message::UserRegistration(ref o) => Some(o),
+            _ => None,
+        }
     }
 });
 
@@ -419,6 +453,12 @@ impl registry::Transaction {
                     project_name: project_name.to_string(),
                     org_id: org_id.to_string(),
                 }),
+                registry::Message::UserRegistration { handle, id } => {
+                    Message::UserRegistration(UserRegistration {
+                        handle: juniper::ID::new(handle.to_string()),
+                        id: juniper::ID::new(id.to_string()),
+                    })
+                },
             })
             .collect()
     }

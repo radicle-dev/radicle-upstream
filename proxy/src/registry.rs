@@ -32,6 +32,8 @@ pub struct Metadata {
     pub version: u8,
 }
 
+type UserHandle = registry::String32;
+
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
     /// Issue a new project registration with a given name under a given org.
@@ -48,6 +50,11 @@ pub enum Message {
 
     /// Issue an org unregistration with a given id.
     OrgUnregistration(OrgId),
+
+    UserRegistration {
+        handle: UserHandle,
+        id: registry::String32,
+    },
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -138,6 +145,28 @@ impl Registry {
             id: unregister_applied.tx_hash,
             messages: vec![Message::OrgUnregistration(org_id)],
             state: TransactionState::Applied(unregister_applied.block),
+            timestamp: SystemTime::now(),
+        })
+    }
+
+    pub async fn register_user(
+        &self,
+        _author: &ed25519::Pair,
+        handle: String,
+        id: String,
+    ) -> Result<Transaction, error::Error> {
+        let message_handle = registry::String32::from_string(handle)
+            .map_err(|_| error::UserValidation::HandleTooLong)?;
+        let message_id = registry::String32::from_string(id)
+            .map_err(|_| error::UserValidation::HandleTooLong)?;
+
+        Ok(Transaction {
+            id: registry::H256::random(),
+            messages: vec![Message::UserRegistration {
+                handle: message_handle,
+                id: message_id,
+            }],
+            state: TransactionState::Applied(registry::H256::random()),
             timestamp: SystemTime::now(),
         })
     }
@@ -292,5 +321,19 @@ mod tests {
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
+    }
+
+    #[test]
+    fn register_user() {
+        let client = Client::new_emulator();
+        let registry = Registry::new(client);
+        let robo = ed25519::Pair::from_legacy_string("//Android", None);
+
+        let res = futures::executor::block_on(registry.register_user(
+            &robo,
+            "cloudhead".into(),
+            "123abcd.git".into(),
+        ));
+        assert!(res.is_ok());
     }
 }
