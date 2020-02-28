@@ -50,11 +50,42 @@ impl Context {
 
 impl juniper::Context for Context {}
 
+#[derive(GraphQLObject)]
+struct Identity {
+    pub id: juniper::ID,
+    pub shareable_entity_identifier: juniper::ID,
+    pub metadata: IdentityMetadata,
+}
+
+#[derive(GraphQLObject)]
+struct IdentityMetadata {
+    pub handle: String,
+    pub display_name: Option<String>,
+    pub avatar_url: Option<String>,
+}
+
 /// Encapsulates write path in API.
 pub struct Mutation;
 
 #[juniper::object(Context = Context)]
 impl Mutation {
+    fn create_identity(
+        _ctx: &Context,
+        handle: String,
+        display_name: Option<String>,
+        avatar_url: Option<String>,
+    ) -> Result<Identity, error::Error> {
+        Ok(Identity {
+            id: juniper::ID::new("123abcd.git"),
+            shareable_entity_identifier: juniper::ID::new(format!("{}@123abcd.git", handle)),
+            metadata: IdentityMetadata {
+                handle,
+                display_name,
+                avatar_url,
+            },
+        })
+    }
+
     fn create_project(
         ctx: &Context,
         metadata: project::MetadataInput,

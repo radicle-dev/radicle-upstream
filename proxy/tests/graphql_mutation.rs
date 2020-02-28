@@ -10,6 +10,49 @@ mod common;
 use proxy::coco;
 
 #[test]
+fn create_identity() {
+    common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+        let mut vars = Variables::new();
+        vars.insert("handle".into(), InputValue::scalar("cloudhead"));
+        vars.insert("displayName".into(), InputValue::scalar("Alexis Sellier"));
+        vars.insert(
+            "avatarUrl".into(),
+            InputValue::scalar("https://avatars1.githubusercontent.com/u/4077"),
+        );
+
+        let query = "mutation($handle: String!, $displayName: String, $avatarUrl: String) {
+                createIdentity(handle: $handle, displayName: $displayName, avatarUrl: $avatarUrl) {
+                    id
+                    shareableEntityIdentifier
+                    metadata {
+                        handle
+                        displayName
+                        avatarUrl
+                    }
+                }
+            }";
+
+        common::execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "createIdentity": {
+                        "id": "123abcd.git",
+                        "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                        "metadata": {
+                            "handle": "cloudhead",
+                            "displayName": "Alexis Sellier",
+                            "avatarUrl": "https://avatars1.githubusercontent.com/u/4077",
+                        },
+                    },
+                })
+            );
+        });
+    });
+}
+
+#[test]
 fn create_project_existing_repo() {
     common::with_fixtures(|librad_paths, repos_dir, _platinum_id| {
         let dir =
