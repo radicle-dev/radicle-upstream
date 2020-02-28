@@ -1,4 +1,4 @@
-//! Domain errors returned by the API.
+//! Domain errors.
 
 use librad::meta::common::url;
 use librad::surf;

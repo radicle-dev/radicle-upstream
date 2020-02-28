@@ -10,9 +10,8 @@ use radicle_registry_client::ed25519;
 use crate::coco;
 use crate::error;
 use crate::identity;
+use crate::project;
 use crate::registry;
-
-use super::project;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = juniper::RootNode<'static, Query, Mutation>;
@@ -72,7 +71,7 @@ impl Mutation {
 
     fn create_project(
         ctx: &Context,
-        metadata: project::MetadataInput,
+        metadata: ProjectMetadataInput,
         path: String,
         publish: bool,
     ) -> Result<project::Project, error::Error> {
@@ -90,7 +89,7 @@ impl Mutation {
         )?;
 
         Ok(project::Project {
-            id: id.to_string().into(),
+            id: librad::project::ProjectId::from(id),
             metadata: meta.into(),
             registered: project::Registered::Not,
             stats: project::Stats {
@@ -196,7 +195,7 @@ impl Query {
         let meta = coco::get_project_meta(&ctx.librad_paths, &id.to_string())?;
 
         Ok(project::Project {
-            id,
+            id: librad::project::ProjectId::from_str(&id.to_string())?,
             metadata: meta.into(),
             registered: project::Registered::Not,
             stats: project::Stats {
@@ -211,7 +210,7 @@ impl Query {
         let projects = coco::list_projects(&ctx.librad_paths)
             .into_iter()
             .map(|(id, meta)| project::Project {
-                id: juniper::ID::new(id.to_string()),
+                id,
                 metadata: meta.into(),
                 registered: project::Registered::Not,
                 stats: project::Stats {
@@ -395,6 +394,73 @@ impl identity::Metadata {
 
     fn handle(&self) -> &str {
         &self.handle
+    }
+}
+
+/// Input object capturing the fields we need to create project metadata.
+#[derive(GraphQLInputObject)]
+#[graphql(description = "Input object for project metadata")]
+pub struct ProjectMetadataInput {
+    /// Project name.
+    pub name: String,
+    /// High-level description of the project.
+    pub description: String,
+    /// Default branch for checkouts, often used as mainline as well.
+    pub default_branch: String,
+    /// Image url for the project.
+    pub img_url: String,
+}
+
+#[juniper::object]
+impl project::Project {
+    fn id(&self) -> juniper::ID {
+        juniper::ID::new(&self.id.to_string())
+    }
+
+    fn metadata(&self) -> &project::Metadata {
+        &self.metadata
+    }
+
+    fn registered(&self) -> &project::Registered {
+        &self.registered
+    }
+
+    fn stats(&self) -> &project::Stats {
+        &self.stats
+    }
+}
+
+#[juniper::object(name = "ProjectMetadata")]
+impl project::Metadata {
+    fn default_branch(&self) -> &str {
+        &self.default_branch
+    }
+
+    fn description(&self) -> &str {
+        &self.description
+    }
+
+    fn img_url(&self) -> &str {
+        &self.img_url
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+#[juniper::object(name = "ProjectStats")]
+impl project::Stats {
+    fn branches(&self) -> i32 {
+        i32::try_from(self.branches).unwrap()
+    }
+
+    fn commits(&self) -> i32 {
+        i32::try_from(self.commits).unwrap()
+    }
+
+    fn contributors(&self) -> i32 {
+        i32::try_from(self.contributors).unwrap()
     }
 }
 

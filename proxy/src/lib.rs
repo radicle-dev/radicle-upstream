@@ -27,12 +27,10 @@
 extern crate juniper;
 
 pub mod coco;
-/// Utilities to manipulate the process environment.
 pub mod env;
-/// Error definitions and conversions.
 pub mod error;
-/// Defines the schema served to the application via `GraphQL`.
 pub mod graphql;
 mod identity;
+mod project;
 /// Intergrations on the Regstriy.
 mod registry;
