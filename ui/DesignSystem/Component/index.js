@@ -12,6 +12,7 @@ import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import SourceBrowser from "./SourceBrowser.svelte";
 import StepCounter from "./StepCounter.svelte";
+import Transaction from "./Transaction.svelte";
 import TxRow from "./TxRow.svelte";
 import UserCard from "./UserCard.svelte";
 
@@ -30,6 +31,7 @@ export {
   SidebarLayout,
   SourceBrowser,
   StepCounter,
+  Transaction,
   TxRow,
   UserCard
 };

@@ -3,19 +3,19 @@
 
   export let style = null;
 
+  export let variant = "single"; // top || middle || bottom
   export let active = false;
   export let disabled = false;
 
   $: disabledClass = disabled ? "disabled" : null;
   $: activeClass = active ? "active" : null;
-  $: rowClass = ["row", activeClass, disabledClass].join(" ");
+  $: rowClass = ["row", activeClass, disabledClass, variant].join(" ");
 </script>
 
 <style>
   .row {
     padding: 18px 16px 18px 16px;
     border: 1px solid var(--color-lightgray);
-    border-radius: 4px;
   }
 
   .row:hover {
@@ -34,6 +34,24 @@
   .row.active {
     box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-pink));
     border: 1px solid var(--focus-outline-color, var(--color-pink));
+  }
+
+  .single {
+    border-radius: 4px;
+  }
+
+  .bottom {
+    border-radius: 0 0 4px 4px;
+  }
+
+  .middle {
+    border-radius: 0 0 0 0;
+    margin-bottom: -1px;
+  }
+
+  .top {
+    margin-bottom: -1px;
+    border-radius: 4px 4px 0 0;
   }
 </style>
 
