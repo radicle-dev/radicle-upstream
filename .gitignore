@@ -9,3 +9,4 @@ cypress/screenshots
 cypress/fixtures/example.json
 proxy/target
 proxy/**/*.rs.bk
+schema.gql
