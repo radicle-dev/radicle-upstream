@@ -34,4 +34,4 @@ pub mod error;
 /// Defines the schema served to the application via `GraphQL`.
 pub mod graphql;
 /// Intergrations on the Regstriy.
-mod registry;
+pub mod registry;

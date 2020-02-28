@@ -32,6 +32,7 @@ pub struct Metadata {
     pub version: u8,
 }
 
+/// Unique handle a user can register.
 type UserHandle = registry::String32;
 
 /// Possible messages a [`Transaction`] can carry.
