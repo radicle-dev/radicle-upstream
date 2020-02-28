@@ -52,8 +52,11 @@ pub enum Message {
     /// Issue an org unregistration with a given id.
     OrgUnregistration(OrgId),
 
+    /// Issue a user registration for a given handle storing the corresponding identity id.
     UserRegistration {
+        /// Globally unique user handle.
         handle: UserHandle,
+        /// Identity id originated from librad.
         id: registry::String32,
     },
 }
@@ -75,6 +78,7 @@ pub struct Registry {
 /// Registry client wrapper methods
 impl Registry {
     /// Wrap a registry client.
+    #[must_use]
     pub const fn new(client: Client) -> Self {
         Self { client }
     }
@@ -84,6 +88,7 @@ impl Registry {
         self.client.list_projects().await.map_err(|e| e.into())
     }
 
+    /// Create a new unique Org on the Registry.
     #[allow(dead_code)]
     pub async fn register_org(
         &self,
@@ -117,6 +122,7 @@ impl Registry {
         })
     }
 
+    /// Remove a registered Org from the Registry.
     #[allow(dead_code)]
     pub async fn unregister_org(
         &self,
@@ -146,28 +152,6 @@ impl Registry {
             id: unregister_applied.tx_hash,
             messages: vec![Message::OrgUnregistration(org_id)],
             state: TransactionState::Applied(unregister_applied.block),
-            timestamp: SystemTime::now(),
-        })
-    }
-
-    pub async fn register_user(
-        &self,
-        _author: &ed25519::Pair,
-        handle: String,
-        id: String,
-    ) -> Result<Transaction, error::Error> {
-        let message_handle = registry::String32::from_string(handle)
-            .map_err(|_| error::UserValidation::HandleTooLong)?;
-        let message_id = registry::String32::from_string(id)
-            .map_err(|_| error::UserValidation::HandleTooLong)?;
-
-        Ok(Transaction {
-            id: registry::H256::random(),
-            messages: vec![Message::UserRegistration {
-                handle: message_handle,
-                id: message_id,
-            }],
-            state: TransactionState::Applied(registry::H256::random()),
             timestamp: SystemTime::now(),
         })
     }
@@ -246,6 +230,29 @@ impl Registry {
                 org_id: org_id,
             }],
             state: TransactionState::Applied(register_applied.block),
+            timestamp: SystemTime::now(),
+        })
+    }
+
+    /// Create a new unique user on the Registry.
+    pub async fn register_user(
+        &self,
+        _author: &ed25519::Pair,
+        handle: String,
+        id: String,
+    ) -> Result<Transaction, error::Error> {
+        let message_handle = registry::String32::from_string(handle)
+            .map_err(|_| error::UserValidation::HandleTooLong)?;
+        let message_id = registry::String32::from_string(id)
+            .map_err(|_| error::UserValidation::HandleTooLong)?;
+
+        Ok(Transaction {
+            id: registry::H256::random(),
+            messages: vec![Message::UserRegistration {
+                handle: message_handle,
+                id: message_id,
+            }],
+            state: TransactionState::Applied(registry::H256::random()),
             timestamp: SystemTime::now(),
         })
     }

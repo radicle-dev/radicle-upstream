@@ -63,10 +63,14 @@ impl From<meta::Project> for Metadata {
     }
 }
 
+/// Shows if a project exists on the Registry and distinguishes between Org and User owned.
 #[derive(GraphQLEnum)]
 pub enum Registered {
+    /// Project is not present on the Registry.
     Not,
+    /// Project is registered under an Org.
     Org,
+    /// Project is registered under a User.
     User,
 }
 
@@ -84,10 +88,14 @@ pub struct Project {
     pub stats: Stats,
 }
 
+/// Coarse statistics for the Project source code.
 #[derive(GraphQLObject)]
 #[graphql(name = "ProjectStats")]
 pub struct Stats {
+    /// Amount of known branches.
     pub branches: i32,
+    /// Number of commits on the default branch.
     pub commits: i32,
+    /// Amount of unique commiters on the default branch.
     pub contributors: i32,
 }

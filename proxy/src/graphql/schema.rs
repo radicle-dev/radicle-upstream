@@ -50,17 +50,25 @@ impl Context {
 
 impl juniper::Context for Context {}
 
+/// The users personal identifying metadata and keys.
 #[derive(GraphQLObject)]
 struct Identity {
+    /// The librad id.
     pub id: juniper::ID,
+    /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: juniper::ID,
+    /// Bundle of user provided data.
     pub metadata: IdentityMetadata,
 }
 
+/// User maintained information for an identity, which can evolve over time.
 #[derive(GraphQLObject)]
 struct IdentityMetadata {
+    /// Similar to a nickname, the users chosen short identifier.
     pub handle: String,
+    /// A longer name to display, e.g.: full name.
     pub display_name: Option<String>,
+    /// Url of an image the user wants to present alongside this [`Identity`].
     pub avatar_url: Option<String>,
 }
 
@@ -370,9 +378,12 @@ struct ProjectRegistration {
     org_id: String,
 }
 
+/// Payload of a user registration message.
 #[derive(juniper::GraphQLObject)]
 struct UserRegistration {
+    /// The chosen unique handle to be registered.
     handle: juniper::ID,
+    /// The id of the librad identity.
     id: juniper::ID,
 }
 
@@ -387,26 +398,27 @@ enum Message {
     /// Registration of a new project.
     ProjectRegistration(ProjectRegistration),
 
+    /// Registration of a new user.
     UserRegistration(UserRegistration),
 }
 
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
-        &ProjectRegistration => match *self {
-            Message::ProjectRegistration(ref p) => Some(p),
-            _ => None
-        },
         &OrgRegistration => match *self {
             Message::OrgRegistration(ref o) => Some(o),
-            _ => None
+            Message::OrgUnregistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
         },
         &OrgUnregistration => match *self {
             Message::OrgUnregistration(ref o) => Some(o),
-            _ => None
+            Message::OrgRegistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
+        },
+        &ProjectRegistration => match *self {
+            Message::ProjectRegistration(ref p) => Some(p),
+            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::UserRegistration(..) => None,
         },
         &UserRegistration => match *self {
             Message::UserRegistration(ref o) => Some(o),
-            _ => None,
+            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::ProjectRegistration(..) => None,
         }
     }
 });
