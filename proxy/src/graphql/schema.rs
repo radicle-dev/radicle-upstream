@@ -2,6 +2,7 @@ use std::convert::From;
 use std::convert::TryFrom;
 use std::env;
 use std::str::FromStr;
+use std::sync;
 
 use librad::paths::Paths;
 use librad::surf;
@@ -30,13 +31,13 @@ pub struct Context {
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
     /// Wrapper to interact with the Registry.
-    registry: registry::Registry,
+    registry: sync::Arc<sync::RwLock<registry::Registry>>,
 }
 
 impl Context {
     /// Returns a new `Context`.
     #[must_use]
-    pub const fn new(
+    pub fn new(
         dummy_repo_path: String,
         librad_paths: Paths,
         registry_client: radicle_registry_client::Client,
@@ -44,7 +45,7 @@ impl Context {
         Self {
             dummy_repo_path,
             librad_paths,
-            registry: registry::Registry::new(registry_client),
+            registry: sync::Arc::new(sync::RwLock::new(registry::Registry::new(registry_client))),
         }
     }
 }
@@ -99,7 +100,7 @@ impl Mutation {
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
         // https://github.com/graphql-rust/juniper/pull/497
-        futures::executor::block_on(ctx.registry.register_project(
+        futures::executor::block_on(ctx.registry.read().unwrap().register_project(
             &fake_pair,
             project_name,
             org_id,
@@ -185,7 +186,7 @@ impl Query {
     }
 
     fn list_registry_projects(ctx: &Context) -> Result<Vec<juniper::ID>, error::Error> {
-        let ids = futures::executor::block_on(ctx.registry.list_projects())?;
+        let ids = futures::executor::block_on(ctx.registry.read().unwrap().list_projects())?;
 
         Ok(ids
             .iter()
@@ -258,12 +259,21 @@ impl ControlMutation {
         })
     }
 
-    fn nuke_coco_state(ctx: &Context) -> Result<&str, error::Error> {
+    fn nuke_coco_state(ctx: &Context) -> Result<bool, error::Error> {
         std::fs::remove_dir_all(ctx.librad_paths.keys_dir())?;
         std::fs::remove_dir_all(ctx.librad_paths.profiles_dir())?;
         std::fs::remove_dir_all(ctx.librad_paths.projects_dir())?;
 
-        Ok("ok")
+        Ok(true)
+    }
+
+    fn nuke_registry_state(ctx: &Context) -> Result<bool, error::Error> {
+        ctx.registry
+            .write()
+            .unwrap()
+            .reset(radicle_registry_client::Client::new_emulator());
+
+        Ok(true)
     }
 }
 
