@@ -327,74 +327,6 @@ enum ObjectType {
     Blob,
 }
 
-/// Contextual information for an org registration message.
-#[derive(juniper::GraphQLObject)]
-struct OrgRegistration {
-    /// The ID of the org.
-    org_id: juniper::ID,
-}
-
-/// Contextual information for an org unregistration message.
-#[derive(juniper::GraphQLObject)]
-struct OrgUnregistration {
-    /// The ID of the org.
-    org_id: juniper::ID,
-}
-
-/// Contextual information for a project registration message.
-#[derive(juniper::GraphQLObject)]
-struct ProjectRegistration {
-    /// Actual project name, unique under org.
-    project_name: juniper::ID,
-    /// The org under which to register the project.
-    org_id: juniper::ID,
-}
-
-/// Payload of a user registration message.
-#[derive(juniper::GraphQLObject)]
-struct UserRegistration {
-    /// The chosen unique handle to be registered.
-    handle: juniper::ID,
-    /// The id of the librad identity.
-    id: juniper::ID,
-}
-
-/// Message types supproted in transactions.
-enum Message {
-    /// Registration of a new org.
-    OrgRegistration(OrgRegistration),
-
-    /// Registration of a new org.
-    OrgUnregistration(OrgUnregistration),
-
-    /// Registration of a new project.
-    ProjectRegistration(ProjectRegistration),
-
-    /// Registration of a new user.
-    UserRegistration(UserRegistration),
-}
-
-juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &OrgRegistration => match *self {
-            Message::OrgRegistration(ref o) => Some(o),
-            Message::OrgUnregistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
-        },
-        &OrgUnregistration => match *self {
-            Message::OrgUnregistration(ref o) => Some(o),
-            Message::OrgRegistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
-        },
-        &ProjectRegistration => match *self {
-            Message::ProjectRegistration(ref p) => Some(p),
-            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::UserRegistration(..) => None,
-        },
-        &UserRegistration => match *self {
-            Message::UserRegistration(ref o) => Some(o),
-            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::ProjectRegistration(..) => None,
-        }
-    }
-});
-
 #[juniper::object]
 impl coco::Person {
     fn name(&self) -> &str {
@@ -407,6 +339,62 @@ impl coco::Person {
 
     fn avatar(&self) -> &str {
         &self.avatar
+    }
+}
+
+#[juniper::object]
+impl coco::Tree {
+    fn path(&self) -> &str {
+        &self.path
+    }
+
+    fn entries(&self) -> &Vec<coco::TreeEntry> {
+        self.entries.as_ref()
+    }
+
+    fn info(&self) -> &coco::Info {
+        &self.info
+    }
+}
+
+#[juniper::object]
+impl coco::TreeEntry {
+    fn info(&self) -> &coco::Info {
+        &self.info
+    }
+
+    fn path(&self) -> String {
+        self.path.clone()
+    }
+}
+
+#[juniper::object]
+impl identity::Identity {
+    fn id(&self) -> juniper::ID {
+        juniper::ID::new(&self.id)
+    }
+
+    fn shareable_entity_identifier(&self) -> juniper::ID {
+        juniper::ID::new(&self.shareable_entity_identifier)
+    }
+
+    fn metadata(&self) -> &identity::Metadata {
+        &self.metadata
+    }
+}
+
+#[juniper::object(name = "IdentityMetadata")]
+impl identity::Metadata {
+    fn avatar_url(&self) -> Option<&String> {
+        self.avatar_url.as_ref()
+    }
+
+    fn display_name(&self) -> Option<&String> {
+        self.display_name.as_ref()
+    }
+
+    fn handle(&self) -> &str {
+        &self.handle
     }
 }
 
@@ -467,6 +455,74 @@ impl registry::Transaction {
     }
 }
 
+/// Message types supproted in transactions.
+enum Message {
+    /// Registration of a new org.
+    OrgRegistration(OrgRegistration),
+
+    /// Registration of a new org.
+    OrgUnregistration(OrgUnregistration),
+
+    /// Registration of a new project.
+    ProjectRegistration(ProjectRegistration),
+
+    /// Registration of a new user.
+    UserRegistration(UserRegistration),
+}
+
+juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &OrgRegistration => match *self {
+            Message::OrgRegistration(ref o) => Some(o),
+            Message::OrgUnregistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
+        },
+        &OrgUnregistration => match *self {
+            Message::OrgUnregistration(ref o) => Some(o),
+            Message::OrgRegistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
+        },
+        &ProjectRegistration => match *self {
+            Message::ProjectRegistration(ref p) => Some(p),
+            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::UserRegistration(..) => None,
+        },
+        &UserRegistration => match *self {
+            Message::UserRegistration(ref o) => Some(o),
+            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::ProjectRegistration(..) => None,
+        }
+    }
+});
+
+/// Contextual information for an org registration message.
+#[derive(juniper::GraphQLObject)]
+struct OrgRegistration {
+    /// The ID of the org.
+    org_id: juniper::ID,
+}
+
+/// Contextual information for an org unregistration message.
+#[derive(juniper::GraphQLObject)]
+struct OrgUnregistration {
+    /// The ID of the org.
+    org_id: juniper::ID,
+}
+
+/// Contextual information for a project registration message.
+#[derive(juniper::GraphQLObject)]
+struct ProjectRegistration {
+    /// Actual project name, unique under org.
+    project_name: juniper::ID,
+    /// The org under which to register the project.
+    org_id: juniper::ID,
+}
+
+/// Payload of a user registration message.
+#[derive(juniper::GraphQLObject)]
+struct UserRegistration {
+    /// The chosen unique handle to be registered.
+    handle: juniper::ID,
+    /// The id of the librad identity.
+    id: juniper::ID,
+}
+
 /// States a transaction can go through.
 enum TransactionState {
     /// The transaction has been applied to a block.
@@ -485,59 +541,3 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
-
-#[juniper::object]
-impl coco::Tree {
-    fn path(&self) -> &str {
-        &self.path
-    }
-
-    fn entries(&self) -> &Vec<coco::TreeEntry> {
-        self.entries.as_ref()
-    }
-
-    fn info(&self) -> &coco::Info {
-        &self.info
-    }
-}
-
-#[juniper::object]
-impl coco::TreeEntry {
-    fn info(&self) -> &coco::Info {
-        &self.info
-    }
-
-    fn path(&self) -> String {
-        self.path.clone()
-    }
-}
-
-#[juniper::object]
-impl identity::Identity {
-    fn id(&self) -> juniper::ID {
-        juniper::ID::new(&self.id)
-    }
-
-    fn shareable_entity_identifier(&self) -> juniper::ID {
-        juniper::ID::new(&self.shareable_entity_identifier)
-    }
-
-    fn metadata(&self) -> &identity::Metadata {
-        &self.metadata
-    }
-}
-
-#[juniper::object(name = "IdentityMetadata")]
-impl identity::Metadata {
-    fn avatar_url(&self) -> Option<&String> {
-        self.avatar_url.as_ref()
-    }
-
-    fn display_name(&self) -> Option<&String> {
-        self.display_name.as_ref()
-    }
-
-    fn handle(&self) -> &str {
-        &self.handle
-    }
-}
