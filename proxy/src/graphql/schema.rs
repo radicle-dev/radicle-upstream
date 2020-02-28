@@ -235,6 +235,18 @@ impl Query {
             .collect::<Vec<juniper::ID>>())
     }
 
+    fn identity(_ctx: &Context, id: juniper::ID) -> Result<Option<Identity>, error::Error> {
+        Ok(Some(Identity {
+            id: id.clone(),
+            shareable_entity_identifier: juniper::ID::new(format!("cloudhead@{}", id.to_string())),
+            metadata: IdentityMetadata {
+                handle: "cloudhead".into(),
+                display_name: Some("Alexis Sellier".into()),
+                avatar_url: Some("https://avatars1.githubusercontent.com/u/4077".into()),
+            },
+        }))
+    }
+
     fn user(_ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
         Ok(None)
     }

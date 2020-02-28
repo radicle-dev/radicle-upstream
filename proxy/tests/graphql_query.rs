@@ -540,6 +540,44 @@ fn project() {
 }
 
 #[test]
+fn identity() {
+    common::with_fixtures(|librad_paths, _repo_dir, _platinum_id| {
+        let mut vars = Variables::new();
+        vars.insert("id".into(), InputValue::scalar("123abcd.git"));
+
+        let query = "query($id: ID!) {
+                identity(id: $id) {
+                    id
+                    shareableEntityIdentifier
+                    metadata {
+                        handle
+                        displayName
+                        avatarUrl
+                    }
+                }
+            }";
+
+        common::execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "identity": {
+                        "id": "123abcd.git",
+                        "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                        "metadata": {
+                            "handle": "cloudhead",
+                            "displayName": "Alexis Sellier",
+                            "avatarUrl": "https://avatars1.githubusercontent.com/u/4077",
+                        },
+                    },
+                })
+            );
+        });
+    });
+}
+
+#[test]
 fn user() {
     common::with_fixtures(|librad_paths, _repo_dir, _platinum_id| {
         let mut vars = Variables::new();
