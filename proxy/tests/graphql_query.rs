@@ -539,6 +539,23 @@ fn project() {
     });
 }
 
+#[test]
+fn user() {
+    common::with_fixtures(|librad_paths, _repo_dir, _platinum_id| {
+        let mut vars = Variables::new();
+        vars.insert("handle".into(), InputValue::scalar("cloudhead"));
+
+        let query = "query($handle: ID!) {
+            user(handle: $handle)
+        }";
+
+        common::execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(res, graphql_value!({ "user": None }));
+        });
+    });
+}
+
 // TODO(xla): Ressurect once we have figure out the project listing strategy.
 // #[test]
 // fn projects() {

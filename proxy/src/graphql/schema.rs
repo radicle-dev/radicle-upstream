@@ -234,6 +234,10 @@ impl Query {
             .map(|id| juniper::ID::from(id.0.to_string()))
             .collect::<Vec<juniper::ID>>())
     }
+
+    fn user(_ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
+        Ok(None)
+    }
 }
 
 #[juniper::object]
