@@ -24,8 +24,6 @@ pub fn create() -> Schema {
 /// Container for data access from handlers.
 #[derive(Clone)]
 pub struct Context {
-    /// Intermediate repo used to serve dummy data to be presented to the API consumer.
-    dummy_repo_path: String,
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
     /// Wrapper to interact with the Registry.
@@ -36,12 +34,10 @@ impl Context {
     /// Returns a new `Context`.
     #[must_use]
     pub const fn new(
-        dummy_repo_path: String,
         librad_paths: Paths,
         registry_client: radicle_registry_client::Client,
     ) -> Self {
         Self {
-            dummy_repo_path,
             librad_paths,
             registry: registry::Registry::new(registry_client),
         }
@@ -147,13 +143,6 @@ impl Mutation {
             maybe_librad_id,
         ))
     }
-
-    // pub struct Transaction {
-    //     pub id: registry::TxHash,
-    //     pub messages: Vec<Message>,
-    //     pub state: TransactionState,
-    //     pub timestamp: SystemTime,
-    // }
 
     fn register_user(
         ctx: &Context,
@@ -359,23 +348,23 @@ enum ObjectType {
 #[derive(juniper::GraphQLObject)]
 struct OrgRegistration {
     /// The ID of the org.
-    org_id: String,
+    org_id: juniper::ID,
 }
 
 /// Contextual information for an org unregistration message.
 #[derive(juniper::GraphQLObject)]
 struct OrgUnregistration {
     /// The ID of the org.
-    org_id: String,
+    org_id: juniper::ID,
 }
 
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
     /// Actual project name, unique under org.
-    project_name: String,
+    project_name: juniper::ID,
     /// The org under which to register the project.
-    org_id: String,
+    org_id: juniper::ID,
 }
 
 /// Payload of a user registration message.
@@ -450,20 +439,20 @@ impl registry::Transaction {
             .map(|m| match m {
                 registry::Message::OrgRegistration(org_id) => {
                     Message::OrgRegistration(OrgRegistration {
-                        org_id: org_id.to_string(),
+                        org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
                 registry::Message::OrgUnregistration(org_id) => {
                     Message::OrgUnregistration(OrgUnregistration {
-                        org_id: org_id.to_string(),
+                        org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
                 registry::Message::ProjectRegistration {
                     project_name,
                     org_id,
                 } => Message::ProjectRegistration(ProjectRegistration {
-                    project_name: project_name.to_string(),
-                    org_id: org_id.to_string(),
+                    project_name: juniper::ID::new(project_name.to_string()),
+                    org_id: juniper::ID::new(org_id.to_string()),
                 }),
                 registry::Message::UserRegistration { handle, id } => {
                     Message::UserRegistration(UserRegistration {

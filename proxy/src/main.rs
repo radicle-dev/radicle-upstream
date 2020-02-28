@@ -31,7 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-    let (dummy_repo, librad_paths) = if args.test {
+    let librad_paths = if args.test {
         let librad_paths =
             librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
@@ -41,16 +41,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .expect("fixture setup failed");
 
-        ("../fixtures/git-platinum", librad_paths)
+        librad_paths
     } else {
-        (
-            "..",
-            librad::paths::Paths::new().expect("librad paths failed"),
-        )
+        librad::paths::Paths::new().expect("librad paths failed")
     };
 
     info!("Starting GraphQL HTTP API");
-    graphql::api::run(dummy_repo.into(), librad_paths, registry_client);
+    graphql::api::run(librad_paths, registry_client);
 
     Ok(())
 }
