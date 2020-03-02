@@ -6,12 +6,8 @@ use warp::Filter;
 use super::schema::Context;
 
 /// Runs the warp server with the given schema and context.
-pub fn run(
-    dummy_repo_path: String,
-    librad_paths: librad::paths::Paths,
-    registry_client: radicle_registry_client::Client,
-) {
-    let context = Context::new(dummy_repo_path, librad_paths, registry_client);
+pub fn run(librad_paths: librad::paths::Paths, registry_client: radicle_registry_client::Client) {
+    let context = Context::new(librad_paths, registry_client);
     let schema = super::schema::create();
 
     let index = warp::path::end().map(|| {

@@ -24,8 +24,6 @@ pub fn create() -> Schema {
 /// Container for data access from handlers.
 #[derive(Clone)]
 pub struct Context {
-    /// Intermediate repo used to serve dummy data to be presented to the API consumer.
-    dummy_repo_path: String,
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
     /// Wrapper to interact with the Registry.
@@ -36,12 +34,10 @@ impl Context {
     /// Returns a new `Context`.
     #[must_use]
     pub const fn new(
-        dummy_repo_path: String,
         librad_paths: Paths,
         registry_client: radicle_registry_client::Client,
     ) -> Self {
         Self {
-            dummy_repo_path,
             librad_paths,
             registry: registry::Registry::new(registry_client),
         }
@@ -50,11 +46,50 @@ impl Context {
 
 impl juniper::Context for Context {}
 
+/// The users personal identifying metadata and keys.
+#[derive(GraphQLObject)]
+struct Identity {
+    /// The librad id.
+    pub id: juniper::ID,
+    /// Unambiguous identifier pointing at this identity.
+    pub shareable_entity_identifier: juniper::ID,
+    /// Bundle of user provided data.
+    pub metadata: IdentityMetadata,
+}
+
+/// User maintained information for an identity, which can evolve over time.
+#[derive(GraphQLObject)]
+struct IdentityMetadata {
+    /// Similar to a nickname, the users chosen short identifier.
+    pub handle: String,
+    /// A longer name to display, e.g.: full name.
+    pub display_name: Option<String>,
+    /// Url of an image the user wants to present alongside this [`Identity`].
+    pub avatar_url: Option<String>,
+}
+
 /// Encapsulates write path in API.
 pub struct Mutation;
 
 #[juniper::object(Context = Context)]
 impl Mutation {
+    fn create_identity(
+        _ctx: &Context,
+        handle: String,
+        display_name: Option<String>,
+        avatar_url: Option<String>,
+    ) -> Result<Identity, error::Error> {
+        Ok(Identity {
+            id: juniper::ID::new("123abcd.git"),
+            shareable_entity_identifier: juniper::ID::new(format!("{}@123abcd.git", handle)),
+            metadata: IdentityMetadata {
+                handle,
+                display_name,
+                avatar_url,
+            },
+        })
+    }
+
     fn create_project(
         ctx: &Context,
         metadata: project::MetadataInput,
@@ -77,6 +112,12 @@ impl Mutation {
         Ok(project::Project {
             id: id.to_string().into(),
             metadata: meta.into(),
+            registered: false,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -100,6 +141,21 @@ impl Mutation {
             project_name,
             org_id,
             maybe_librad_id,
+        ))
+    }
+
+    fn register_user(
+        ctx: &Context,
+        handle: juniper::ID,
+        id: juniper::ID,
+    ) -> Result<registry::Transaction, error::Error> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+
+        futures::executor::block_on(ctx.registry.register_user(
+            &fake_pair,
+            handle.to_string(),
+            id.to_string(),
         ))
     }
 }
@@ -162,6 +218,12 @@ impl Query {
         Ok(project::Project {
             id,
             metadata: meta.into(),
+            registered: false,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -171,6 +233,12 @@ impl Query {
             .map(|(id, meta)| project::Project {
                 id: juniper::ID::new(id.to_string()),
                 metadata: meta.into(),
+                registered: false,
+                stats: project::Stats {
+                    branches: 11,
+                    commits: 267,
+                    contributors: 8,
+                },
             })
             .collect::<Vec<project::Project>>();
 
@@ -184,6 +252,22 @@ impl Query {
             .iter()
             .map(|id| juniper::ID::from(id.0.to_string()))
             .collect::<Vec<juniper::ID>>())
+    }
+
+    fn identity(_ctx: &Context, id: juniper::ID) -> Result<Option<Identity>, error::Error> {
+        Ok(Some(Identity {
+            id: id.clone(),
+            shareable_entity_identifier: juniper::ID::new(format!("cloudhead@{}", id.to_string())),
+            metadata: IdentityMetadata {
+                handle: "cloudhead".into(),
+                display_name: Some("Alexis Sellier".into()),
+                avatar_url: Some("https://avatars1.githubusercontent.com/u/4077".into()),
+            },
+        }))
+    }
+
+    fn user(_ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
+        Ok(None)
     }
 }
 
@@ -264,23 +348,32 @@ enum ObjectType {
 #[derive(juniper::GraphQLObject)]
 struct OrgRegistration {
     /// The ID of the org.
-    org_id: String,
+    org_id: juniper::ID,
 }
 
 /// Contextual information for an org unregistration message.
 #[derive(juniper::GraphQLObject)]
 struct OrgUnregistration {
     /// The ID of the org.
-    org_id: String,
+    org_id: juniper::ID,
 }
 
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistration {
     /// Actual project name, unique under org.
-    project_name: String,
+    project_name: juniper::ID,
     /// The org under which to register the project.
-    org_id: String,
+    org_id: juniper::ID,
+}
+
+/// Payload of a user registration message.
+#[derive(juniper::GraphQLObject)]
+struct UserRegistration {
+    /// The chosen unique handle to be registered.
+    handle: juniper::ID,
+    /// The id of the librad identity.
+    id: juniper::ID,
 }
 
 /// Message types supproted in transactions.
@@ -293,22 +386,29 @@ enum Message {
 
     /// Registration of a new project.
     ProjectRegistration(ProjectRegistration),
+
+    /// Registration of a new user.
+    UserRegistration(UserRegistration),
 }
 
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
-        &ProjectRegistration => match *self {
-            Message::ProjectRegistration(ref p) => Some(p),
-            _ => None
-        },
         &OrgRegistration => match *self {
             Message::OrgRegistration(ref o) => Some(o),
-            _ => None
+            Message::OrgUnregistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
         },
         &OrgUnregistration => match *self {
             Message::OrgUnregistration(ref o) => Some(o),
-            _ => None
+            Message::OrgRegistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
         },
+        &ProjectRegistration => match *self {
+            Message::ProjectRegistration(ref p) => Some(p),
+            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::UserRegistration(..) => None,
+        },
+        &UserRegistration => match *self {
+            Message::UserRegistration(ref o) => Some(o),
+            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::ProjectRegistration(..) => None,
+        }
     }
 });
 
@@ -339,21 +439,27 @@ impl registry::Transaction {
             .map(|m| match m {
                 registry::Message::OrgRegistration(org_id) => {
                     Message::OrgRegistration(OrgRegistration {
-                        org_id: org_id.to_string(),
+                        org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
                 registry::Message::OrgUnregistration(org_id) => {
                     Message::OrgUnregistration(OrgUnregistration {
-                        org_id: org_id.to_string(),
+                        org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
                 registry::Message::ProjectRegistration {
                     project_name,
                     org_id,
                 } => Message::ProjectRegistration(ProjectRegistration {
-                    project_name: project_name.to_string(),
-                    org_id: org_id.to_string(),
+                    project_name: juniper::ID::new(project_name.to_string()),
+                    org_id: juniper::ID::new(org_id.to_string()),
                 }),
+                registry::Message::UserRegistration { handle, id } => {
+                    Message::UserRegistration(UserRegistration {
+                        handle: juniper::ID::new(handle.to_string()),
+                        id: juniper::ID::new(id.to_string()),
+                    })
+                },
             })
             .collect()
     }

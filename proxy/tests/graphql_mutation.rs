@@ -10,6 +10,49 @@ mod common;
 use proxy::coco;
 
 #[test]
+fn create_identity() {
+    common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+        let mut vars = Variables::new();
+        vars.insert("handle".into(), InputValue::scalar("cloudhead"));
+        vars.insert("displayName".into(), InputValue::scalar("Alexis Sellier"));
+        vars.insert(
+            "avatarUrl".into(),
+            InputValue::scalar("https://avatars1.githubusercontent.com/u/4077"),
+        );
+
+        let query = "mutation($handle: String!, $displayName: String, $avatarUrl: String) {
+                createIdentity(handle: $handle, displayName: $displayName, avatarUrl: $avatarUrl) {
+                    id
+                    shareableEntityIdentifier
+                    metadata {
+                        handle
+                        displayName
+                        avatarUrl
+                    }
+                }
+            }";
+
+        common::execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "createIdentity": {
+                        "id": "123abcd.git",
+                        "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                        "metadata": {
+                            "handle": "cloudhead",
+                            "displayName": "Alexis Sellier",
+                            "avatarUrl": "https://avatars1.githubusercontent.com/u/4077",
+                        },
+                    },
+                })
+            );
+        });
+    });
+}
+
+#[test]
 fn create_project_existing_repo() {
     common::with_fixtures(|librad_paths, repos_dir, _platinum_id| {
         let dir =
@@ -95,6 +138,12 @@ fn create_project() {
                                 defaultBranch
                                 imgUrl
                             }
+                            registered
+                            stats {
+                                branches
+                                commits
+                                contributors
+                            }
                         }
                     }";
 
@@ -109,6 +158,12 @@ fn create_project() {
                             "description": "Code collaboration without intermediates.",
                             "defaultBranch": "master",
                             "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                        },
+                        "registered": false,
+                        "stats": {
+                            "branches": 11,
+                            "commits": 267,
+                            "contributors": 8,
                         },
                     },
                 })
@@ -144,6 +199,39 @@ fn register_project() {
                     "registerProject": {
                         "messages": [
                             { "projectName": "upstream", "orgId": "monadic" },
+                        ],
+                    },
+                })
+            );
+        });
+    });
+}
+
+#[test]
+fn register_user() {
+    common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+        let mut vars = Variables::new();
+        vars.insert("handle".into(), InputValue::scalar("cloudhead"));
+        vars.insert("id".into(), InputValue::scalar("123abcd.git"));
+
+        let query = "mutation($handle: ID!, $id: ID!) {
+                        registerUser(handle: $handle, id: $id) {
+                            messages {
+                                ... on UserRegistration {
+                                    handle,
+                                    id,
+                                }
+                            },
+                        }
+                    }";
+        common::execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "registerUser": {
+                        "messages": [
+                            { "handle": "cloudhead", "id": "123abcd.git" },
                         ],
                     },
                 })

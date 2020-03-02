@@ -8,7 +8,7 @@
     clippy::pedantic,
     clippy::restriction,
     clippy::option_unwrap_used,
-    clippy::result_unwrap_used
+    clippy::result_unwrap_used,
 )]
 // TODO(xla): Handle all Results properly and never panic outside of main.
 // TODO(xla): Remove exception for or_fun_call lint.
