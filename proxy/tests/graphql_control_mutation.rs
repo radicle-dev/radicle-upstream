@@ -42,6 +42,6 @@ fn nuke_coco_state() {
         .expect("query execution failed");
 
         assert_eq!(errors, []);
-        assert_eq!(res, graphql_value!(true));
+        assert_eq!(res, graphql_value!({"nukeCocoState": true }));
     }
 }

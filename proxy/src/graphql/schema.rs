@@ -28,7 +28,7 @@ pub fn create() -> Schema {
 #[derive(Clone)]
 pub struct Context {
     /// Root on the filesystem for the librad config and storage paths.
-    librad_paths: Paths,
+    librad_paths: sync::Arc<sync::RwLock<Paths>>,
     /// Wrapper to interact with the Registry.
     registry: sync::Arc<sync::RwLock<registry::Registry>>,
 }
@@ -38,7 +38,7 @@ impl Context {
     #[must_use]
     pub fn new(librad_paths: Paths, registry_client: radicle_registry_client::Client) -> Self {
         Self {
-            librad_paths,
+            librad_paths: sync::Arc::new(sync::RwLock::new(librad_paths)),
             registry: sync::Arc::new(sync::RwLock::new(registry::Registry::new(registry_client))),
         }
     }
@@ -82,7 +82,7 @@ impl Mutation {
         };
 
         let (id, meta) = coco::init_project(
-            &ctx.librad_paths,
+            &ctx.librad_paths.read().unwrap(),
             &path,
             &metadata.name,
             &metadata.description,
@@ -153,18 +153,25 @@ impl Query {
         revision: String,
         path: String,
     ) -> Result<coco::Blob, error::Error> {
-        coco::blob(&ctx.librad_paths, &id.to_string(), &revision, &path)
+        coco::blob(
+            &ctx.librad_paths.read().unwrap(),
+            &id.to_string(),
+            &revision,
+            &path,
+        )
     }
 
     fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<coco::Commit, error::Error> {
-        coco::commit(&ctx.librad_paths, &id.to_string(), &sha1)
+        coco::commit(&ctx.librad_paths.read().unwrap(), &id.to_string(), &sha1)
     }
 
     fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
-        Ok(coco::branches(&ctx.librad_paths, &id.to_string())?
-            .into_iter()
-            .map(|t| t.to_string())
-            .collect())
+        Ok(
+            coco::branches(&ctx.librad_paths.read().unwrap(), &id.to_string())?
+                .into_iter()
+                .map(|t| t.to_string())
+                .collect(),
+        )
     }
 
     fn local_branches(ctx: &Context, path: String) -> Result<Vec<String>, error::Error> {
@@ -175,10 +182,12 @@ impl Query {
     }
 
     fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
-        Ok(coco::tags(&ctx.librad_paths, &id.to_string())?
-            .into_iter()
-            .map(|t| t.to_string())
-            .collect())
+        Ok(
+            coco::tags(&ctx.librad_paths.read().unwrap(), &id.to_string())?
+                .into_iter()
+                .map(|t| t.to_string())
+                .collect(),
+        )
     }
 
     fn tree(
@@ -187,11 +196,11 @@ impl Query {
         revision: String,
         prefix: String,
     ) -> Result<coco::Tree, error::Error> {
-        coco::tree(&ctx.librad_paths, &id, &revision, &prefix)
+        coco::tree(&ctx.librad_paths.read().unwrap(), &id, &revision, &prefix)
     }
 
     fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
-        let meta = coco::get_project_meta(&ctx.librad_paths, &id.to_string())?;
+        let meta = coco::get_project_meta(&ctx.librad_paths.read().unwrap(), &id.to_string())?;
 
         Ok(project::Project {
             id: librad::project::ProjectId::from_str(&id.to_string())?,
@@ -200,7 +209,7 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, error::Error> {
-        let projects = coco::list_projects(&ctx.librad_paths)
+        let projects = coco::list_projects(&ctx.librad_paths.read().unwrap())
             .into_iter()
             .map(|(id, meta)| project::Project {
                 id,
@@ -290,7 +299,7 @@ impl ControlMutation {
             .expect("unable to clone fixtures repo");
 
         let (id, meta) = coco::init_project(
-            &ctx.librad_paths,
+            &ctx.librad_paths.read().unwrap(),
             platinum_into.to_str().unwrap(),
             &metadata.name,
             &metadata.description,
@@ -305,9 +314,12 @@ impl ControlMutation {
     }
 
     fn nuke_coco_state(ctx: &Context) -> Result<bool, error::Error> {
-        std::fs::remove_dir_all(ctx.librad_paths.keys_dir())?;
-        std::fs::remove_dir_all(ctx.librad_paths.profiles_dir())?;
-        std::fs::remove_dir_all(ctx.librad_paths.projects_dir())?;
+        let tmp_dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
+        let new_paths = Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
+
+        let mut librad_paths = ctx.librad_paths.write().unwrap();
+
+        *librad_paths = new_paths;
 
         Ok(true)
     }
