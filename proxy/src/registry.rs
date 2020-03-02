@@ -244,7 +244,7 @@ impl Registry {
         let message_handle = registry::String32::from_string(handle)
             .map_err(|_| error::UserValidation::HandleTooLong)?;
         let message_id = registry::String32::from_string(id)
-            .map_err(|_| error::UserValidation::HandleTooLong)?;
+            .map_err(|_| error::UserValidation:: IdTooLong)?;
 
         Ok(Transaction {
             id: registry::H256::random(),

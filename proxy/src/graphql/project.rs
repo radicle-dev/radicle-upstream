@@ -74,7 +74,7 @@ pub enum Registered {
     User,
 }
 
-/// Radicle project for sharing and collaborating.
+/// Project for sharing and collaborating.
 #[derive(GraphQLObject)]
 #[graphql(description = "Project")]
 pub struct Project {
