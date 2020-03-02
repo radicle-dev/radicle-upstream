@@ -1,3 +1,5 @@
+//! Utilities to manipulate the process environment.
+
 use std::env::{set_var, var};
 
 /// Convenience function for setting env vars only if they are unset.

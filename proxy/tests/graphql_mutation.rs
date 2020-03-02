@@ -76,16 +76,17 @@ fn create_project_existing_repo() {
         vars.insert("path".into(), InputValue::scalar(path));
         vars.insert("publish".into(), InputValue::scalar(false));
 
-        let query = "mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
-                        createProject(metadata: $metadata, path: $path, publish: $publish) {
-                            metadata {
-                                name
-                                description
-                                defaultBranch
-                                imgUrl
-                            }
-                        }
-                    }";
+        let query =
+            "mutation($metadata: ProjectMetadataInput!, $path: String!, $publish: Boolean!) {
+                createProject(metadata: $metadata, path: $path, publish: $publish) {
+                    metadata {
+                        name
+                        description
+                        defaultBranch
+                        imgUrl
+                    }
+                }
+            }";
 
         common::execute_query(librad_paths, query, &vars, |res, errors| {
             assert_eq!(errors, []);
@@ -130,22 +131,23 @@ fn create_project() {
         vars.insert("path".into(), InputValue::scalar(path));
         vars.insert("publish".into(), InputValue::scalar(false));
 
-        let query = "mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
-                        createProject(metadata: $metadata, path: $path, publish: $publish) {
-                            metadata {
-                                name
-                                description
-                                defaultBranch
-                                imgUrl
-                            }
-                            registered
-                            stats {
-                                branches
-                                commits
-                                contributors
-                            }
-                        }
-                    }";
+        let query =
+            "mutation($metadata: ProjectMetadataInput!, $path: String!, $publish: Boolean!) {
+                createProject(metadata: $metadata, path: $path, publish: $publish) {
+                    metadata {
+                        name
+                        description
+                        defaultBranch
+                        imgUrl
+                    }
+                    registered
+                    stats {
+                        branches
+                        commits
+                        contributors
+                    }
+                }
+            }";
 
         common::execute_query(librad_paths, query, &vars, |res, errors| {
             assert_eq!(errors, []);

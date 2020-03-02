@@ -1,4 +1,4 @@
-//! Domain errors returned by the API.
+//! Proxy library errors usable for caller control flow and additional context for API responses.
 
 use librad::meta::common::url;
 use librad::surf;
