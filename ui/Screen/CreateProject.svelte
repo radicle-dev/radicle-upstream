@@ -399,7 +399,7 @@
       <Flex style="margin-top: 32px">
         <div slot="left">
           <Text
-            variant="small"
+            variant="tiny"
             style="color: var(--color-gray); padding-left: 15px;">
             * required
           </Text>
