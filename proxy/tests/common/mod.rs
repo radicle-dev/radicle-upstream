@@ -82,7 +82,6 @@ where
     F: FnOnce(Value, Vec<ExecutionError<DefaultScalarValue>>) -> (),
 {
     let ctx = Context::new(
-        REPO_PATH.into(),
         librad_paths,
         radicle_registry_client::Client::new_emulator(),
     );
