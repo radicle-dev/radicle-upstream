@@ -9,7 +9,7 @@
   import { blur } from "svelte/transition";
 
   export let style = null;
-  let messages = null;
+  let messages = [];
 
   const unsubscribe = notificationStore.subscribe(message => {
     if (!message) {

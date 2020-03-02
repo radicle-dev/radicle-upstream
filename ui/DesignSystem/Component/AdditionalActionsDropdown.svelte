@@ -14,6 +14,11 @@
     expanded = false;
   };
 
+  const handleItemSelection = item => {
+    hideModal();
+    item.event();
+  };
+
   export let menuItems = null;
   export let headerTitle = null;
 </script>
@@ -45,7 +50,6 @@
     right: 0;
     width: 240px;
     margin-top: 15px;
-
     background-color: white;
     box-shadow: 0px 4px 8px rgba(51, 51, 51, 0.08);
     border-radius: 4px;
@@ -56,7 +60,6 @@
     border-bottom: solid 1px var(--color-lightgray);
     display: flex;
     cursor: pointer;
-
     color: var(--color-gray);
   }
 
@@ -70,7 +73,6 @@
 
   .menu-item {
     display: flex;
-
     padding: 8px 12px;
     color: var(--color-darkgray);
   }
@@ -93,7 +95,7 @@
         </div>
         <div class="menu">
           {#each menuItems as item}
-            <div class="menu-item" on:click={item.event}>
+            <div class="menu-item" on:click={handleItemSelection(item)}>
               <svelte:component this={item.icon} style="margin-right: 12px" />
               <p>{item.title}</p>
             </div>

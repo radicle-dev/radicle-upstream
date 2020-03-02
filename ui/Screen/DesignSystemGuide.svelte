@@ -68,7 +68,7 @@
     {
       title: "Send something",
       icon: Icon.ArrowUp,
-      event: () => console.log("event(Send Something")
+      event: () => console.log("event(Send Something)")
     }
   ];
 </script>
