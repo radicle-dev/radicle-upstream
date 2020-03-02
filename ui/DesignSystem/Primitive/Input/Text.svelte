@@ -52,7 +52,7 @@
     on:change />
 
   {#if !valid && validationMessage}
-    <Text variant="smallBold" style="color: var(--color-red); margin-top: 4px">
+    <Text variant="small" style="color: var(--color-red); margin-top: 4px">
       {validationMessage}
     </Text>
   {/if}

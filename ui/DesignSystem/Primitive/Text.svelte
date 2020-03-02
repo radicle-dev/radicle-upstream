@@ -1,7 +1,7 @@
 <script>
   export let style = null;
 
-  export let variant = "regular"; // regular | small | smallBold
+  export let variant = "regular"; // regular | small | tiny
 </script>
 
 <style>
@@ -12,13 +12,13 @@
   }
 
   .small {
-    font-family: var(--typeface-regular);
+    font-family: var(--typeface-medium);
     font-size: 14px;
     line-height: 20px;
   }
 
-  .smallBold {
-    font-family: var(--typeface-medium);
+  .tiny {
+    font-family: var(--typeface-regular);
     font-size: 14px;
     line-height: 20px;
   }
