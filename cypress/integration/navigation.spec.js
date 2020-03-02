@@ -34,7 +34,7 @@ context("navigation", () => {
 
   context("project topbar", () => {
     it("opens the project overview by default", () => {
-      cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
+      cy.get('[data-cy="sidebar"] [data-cy="profile"]').click();
       cy.contains("Monadic").click();
 
       cy.get("h2")
@@ -46,7 +46,7 @@ context("navigation", () => {
     });
 
     it("provides navigation to all sub-sections of a project", () => {
-      cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
+      cy.get('[data-cy="sidebar"] [data-cy="profile"]').click();
       cy.contains("Monadic").click();
 
       cy.get("h2")
@@ -121,7 +121,7 @@ context("navigation", () => {
 
     context("when using the vertical scrollbar", () => {
       it("stays fixed at the top", () => {
-        cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
+        cy.get('[data-cy="sidebar"] [data-cy="profile"]').click();
         cy.contains("Monadic").click();
         cy.get('[data-cy="project-topbar-menu"]')
           .get('a[title="ProjectSource"]')
