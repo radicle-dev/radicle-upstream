@@ -23,21 +23,12 @@ context("navigation", () => {
       cy.get('[data-cy="sidebar"] [data-cy="search"]').click();
       cy.get('[data-cy="page"]').should("contain", "Search");
 
-      cy.get('[data-cy="sidebar"] [data-cy="feed"]').click();
-      cy.get('[data-cy="page"]').should("contain", "Feed");
-
-      cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
-      cy.get('[data-cy="page"]').should("contain", "Projects");
-      cy.get('[data-cy="page"]').should("contain", "New Project");
-
-      cy.get('[data-cy="sidebar"] [data-cy="wallet"]').click();
-      cy.get('[data-cy="page"]').should("contain", "Wallet");
+      cy.get('[data-cy="sidebar"] [data-cy="network"]').click();
+      cy.get('[data-cy="page"]').should("contain", "Network");
 
       cy.get('[data-cy="sidebar"] [data-cy="profile"]').click();
-      cy.get('[data-cy="page"]').should("contain", "Profile");
-
-      cy.get('[data-cy="sidebar"] [data-cy="new-project"]').click();
-      cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");
+      cy.get('[data-cy="page"]').should("contain", "My Projects");
+      cy.get('[data-cy="page"]').should("contain", "New Project");
     });
   });
 
@@ -117,7 +108,7 @@ context("navigation", () => {
   context("projects page", () => {
     context("clicking on the project name", () => {
       it("navigates to project overview", () => {
-        cy.get('[data-cy="sidebar"] [data-cy="projects"]').click();
+        cy.get('[data-cy="sidebar"] [data-cy="profile"]').click();
         cy.contains("Monadic").click();
         cy.get('[data-cy="project-topbar-menu"]')
           .get('a[title="ProjectSource"]')

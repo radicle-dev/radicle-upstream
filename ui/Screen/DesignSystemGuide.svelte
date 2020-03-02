@@ -105,6 +105,7 @@
     subTitle="Icons at 16px, 24px, 36px and 64px width and height with 2px
     stroke weight, multiple color variations">
 
+    <Icon.Badge />
     <Icon.Branch />
     <Icon.Carret />
     <Icon.CarretBig />
@@ -128,6 +129,7 @@
     <Icon.Issues />
     <Icon.Member />
     <Icon.Minus />
+    <Icon.Peer />
     <Icon.Plus />
     <Icon.Projects />
     <Icon.Revisions />
@@ -437,7 +439,6 @@
       <ProjectCard
         title="Radicle"
         description="Best project in the world"
-        imgUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
         isRegistered={true} />
     </Swatch>
 

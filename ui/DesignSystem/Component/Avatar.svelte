@@ -7,7 +7,7 @@
   export let title = null;
 
   export let variant = "user"; // user | project
-  export let size = "regular"; // regular | big
+  export let size = "regular"; // regular | medium | big
 
   $: avatarClass = [variant, size].join(" ");
 </script>
@@ -18,6 +18,12 @@
     width: 34px;
     height: 34px;
     border-radius: 17px;
+  }
+
+  .user.medium {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
   }
 
   .user.big {
@@ -40,13 +46,10 @@
     height: 64px;
   }
 
-  img {
-    margin-right: 16px;
-  }
-
   div {
     display: flex;
     align-items: center;
+    justify-content: center;
   }
 </style>
 
@@ -54,12 +57,16 @@
   <img class={avatarClass} src={imageUrl} alt="user-avatar" />
 
   {#if title && size === 'regular'}
-    <Title style="color: var(--color-darkgray); white-space: nowrap">
+    <Title
+      style="color: var(--color-darkgray); white-space: nowrap; margin-left:
+      16px">
       {title}
     </Title>
   {/if}
 
   {#if title && size === 'big'}
-    <Title variant="big" style="white-space: nowrap">{title}</Title>
+    <Title variant="big" style="white-space: nowrap; margin-left: 16px">
+      {title}
+    </Title>
   {/if}
 </div>

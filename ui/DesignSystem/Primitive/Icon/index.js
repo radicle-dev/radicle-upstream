@@ -1,3 +1,4 @@
+import Badge from "./Badge.svelte";
 import Branch from "./Branch.svelte";
 import Carret from "./Carret.svelte";
 import CarretBig from "./CarretBig.svelte";
@@ -21,6 +22,7 @@ import Info from "./Info.svelte";
 import Issues from "./Issues.svelte";
 import Member from "./Member.svelte";
 import Minus from "./Minus.svelte";
+import Peer from "./Peer.svelte";
 import Plus from "./Plus.svelte";
 import Projects from "./Projects.svelte";
 import Revisions from "./Revisions.svelte";
@@ -29,6 +31,7 @@ import SearchSmall from "./SearchSmall.svelte";
 import Source from "./Source.svelte";
 
 export default {
+  Badge,
   Branch,
   Carret,
   CarretBig,
@@ -52,6 +55,7 @@ export default {
   Issues,
   Member,
   Minus,
+  Peer,
   Plus,
   Projects,
   Revisions,
