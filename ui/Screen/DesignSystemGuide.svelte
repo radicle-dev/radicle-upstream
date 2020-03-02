@@ -97,35 +97,35 @@
       <Title variant="medium">Open Source Coin</Title>
     </TypographySwatch>
 
-    <TypographySwatch title="Title">
+    <TypographySwatch title="regular Title">
       <Title>Open Source Coin</Title>
     </TypographySwatch>
 
-    <TypographySwatch title="Text">
+    <TypographySwatch title="regular Text">
       <Text>Open Source Coin</Text>
-    </TypographySwatch>
-
-    <TypographySwatch title="smallBold Text">
-      <Text variant="smallBold">Open Source Coin</Text>
     </TypographySwatch>
 
     <TypographySwatch title="small Text">
       <Text variant="small">Open Source Coin</Text>
     </TypographySwatch>
 
-    <TypographySwatch title="Caption">
-      <Caption variant="table">Open Source Coin</Caption>
+    <TypographySwatch title="tiny Text">
+      <Text variant="tiny">Open Source Coin</Text>
     </TypographySwatch>
 
     <TypographySwatch title="Code">
-      <Code>open source coin</Code>
+      <Code>Open Source Coin</Code>
+    </TypographySwatch>
+
+    <TypographySwatch title="Caption">
+      <Caption>Open Source Coin</Caption>
     </TypographySwatch>
 
     <TypographySwatch title="big Numeric">
       <Numeric variant="big">0123456789</Numeric>
     </TypographySwatch>
 
-    <TypographySwatch title="Numeric">
+    <TypographySwatch title="regular Numeric">
       <Numeric>0123456789</Numeric>
     </TypographySwatch>
 

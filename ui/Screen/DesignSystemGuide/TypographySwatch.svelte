@@ -17,7 +17,7 @@
 
 <div class="swatch">
   <div class="title">
-    <Text variant="small" style="color: var(--color-gray)">{title}</Text>
+    <Text variant="tiny" style="color: var(--color-gray)">{title}</Text>
   </div>
   <slot />
 </div>
