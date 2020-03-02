@@ -10,6 +10,7 @@
     Numeric
   } from "../DesignSystem/Primitive";
   import {
+    AdditionalActionsDropdown,
     Avatar,
     Notification,
     Placeholder,
@@ -52,6 +53,24 @@
     username: "Rudolfs Osins",
     avatar: "https://avatars.dicebear.com/v2/jdenticon/two.svg"
   };
+
+  const dropdownMenuItems = [
+    {
+      title: "Add something",
+      icon: Icon.Plus,
+      event: () => console.log("event(Add Something)")
+    },
+    {
+      title: "Add something else",
+      icon: Icon.Plus,
+      event: () => console.log("event(Add Something Else)")
+    },
+    {
+      title: "Send something",
+      icon: Icon.ArrowUp,
+      event: () => console.log("event(Send Something")
+    }
+  ];
 </script>
 
 <style>
@@ -461,6 +480,12 @@
 
     <Swatch>
       <StepCounter step={2} of={7} />
+    </Swatch>
+
+    <Swatch>
+      <AdditionalActionsDropdown
+        headerTitle="Copy this title"
+        menuItems={dropdownMenuItems} />
     </Swatch>
   </Section>
 </div>

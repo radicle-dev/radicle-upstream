@@ -9,7 +9,7 @@
   export let avatarUrl = null;
   export let name = null;
   export let href = null;
-  export let menuItems = [];
+  export let menuItems = null;
 </script>
 
 <style>

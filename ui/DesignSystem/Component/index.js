@@ -1,4 +1,4 @@
-import AdditionalActionsButton from "./AdditionalActionsButton.svelte";
+import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Avatar from "./Avatar.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
@@ -17,7 +17,7 @@ import TxRow from "./TxRow.svelte";
 import UserCard from "./UserCard.svelte";
 
 export {
-  AdditionalActionsButton,
+  AdditionalActionsDropdown,
   Avatar,
   Notification,
   NotificationFaucet,

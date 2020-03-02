@@ -1,8 +1,5 @@
 <script>
   import ClickOutside from "svelte-click-outside";
-  import { push } from "svelte-spa-router";
-
-  import { createProject } from "../../lib/path.js";
 
   import { Icon } from "../Primitive";
 
@@ -17,25 +14,8 @@
     expanded = false;
   };
 
-  const menuItems = [
-    {
-      title: "New project",
-      icon: Icon.Plus,
-      event: () => push(createProject())
-    },
-    {
-      title: "New member",
-      icon: Icon.Plus,
-      event: () => console.log("New Member")
-    },
-    {
-      title: "Send funds",
-      icon: Icon.ArrowUp,
-      event: () => console.log("Send funds")
-    }
-  ];
-
-  const orgName = "%radicle";
+  export let menuItems = null;
+  export let headerTitle = null;
 </script>
 
 <style>
@@ -108,7 +88,7 @@
     {#if expanded}
       <div class="modal" hidden={!expanded}>
         <div class="header">
-          <p>{orgName}</p>
+          <p>{headerTitle}</p>
           <svelte:component this={Icon.Copy} style="margin-left: 8px;" />
         </div>
         <div class="menu">

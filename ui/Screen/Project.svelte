@@ -8,11 +8,7 @@
   import * as path from "../lib/path.js";
 
   import Router, { location, push } from "svelte-spa-router";
-  import {
-    AdditionalActionsButton,
-    SidebarLayout,
-    Topbar
-  } from "../DesignSystem/Component";
+  import { SidebarLayout, Topbar } from "../DesignSystem/Component";
   import { Button, Icon } from "../DesignSystem/Primitive";
 
   import Overview from "./Project/Overview.svelte";
@@ -116,7 +112,6 @@
         }}>
         <span>Register</span>
       </Button>
-      <AdditionalActionsButton />
     </Topbar>
     <Router {routes} />
   {/await}

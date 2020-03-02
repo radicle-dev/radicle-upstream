@@ -4,7 +4,7 @@
 
   import MenuItem from "./MenuItem.svelte";
 
-  export let items = [];
+  export let items = null;
 </script>
 
 <style>
