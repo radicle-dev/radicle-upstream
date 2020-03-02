@@ -1,4 +1,5 @@
-//! Abstractions for projectsI.
+//! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
+//! abstraction.
 
 use librad::meta;
 use librad::project;
