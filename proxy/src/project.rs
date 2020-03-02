@@ -48,25 +48,12 @@ impl From<meta::Project> for Metadata {
     }
 }
 
-/// Shows if a project exists on the Registry and distinguishes between Org and User owned.
-#[derive(GraphQLEnum)]
-pub enum Registered {
-    /// Project is not present on the Registry.
-    Not,
-    /// Project is registered under an Org.
-    Org,
-    /// Project is registered under a User.
-    User,
-}
-
 /// Radicle project for sharing and collaborating.
 pub struct Project {
     /// Unique identifier of the project in the network.
     pub id: project::ProjectId,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
-    /// Signals if a project is on the Registry.
-    pub registered: Registered,
     /// Coarse set of statistics for the project source code.
     pub stats: Stats,
 }

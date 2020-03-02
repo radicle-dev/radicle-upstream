@@ -91,7 +91,6 @@ impl Mutation {
         Ok(project::Project {
             id: librad::project::ProjectId::from(id),
             metadata: meta.into(),
-            registered: project::Registered::Not,
             stats: project::Stats {
                 branches: 11,
                 commits: 267,
@@ -197,7 +196,6 @@ impl Query {
         Ok(project::Project {
             id: librad::project::ProjectId::from_str(&id.to_string())?,
             metadata: meta.into(),
-            registered: project::Registered::Not,
             stats: project::Stats {
                 branches: 11,
                 commits: 267,
@@ -212,7 +210,6 @@ impl Query {
             .map(|(id, meta)| project::Project {
                 id,
                 metadata: meta.into(),
-                registered: project::Registered::Not,
                 stats: project::Stats {
                     branches: 11,
                     commits: 267,
@@ -420,9 +417,8 @@ impl project::Project {
     fn metadata(&self) -> &project::Metadata {
         &self.metadata
     }
-
-    fn registered(&self) -> &project::Registered {
-        &self.registered
+    fn registered(&self) -> ProjectRegistered {
+        ProjectRegistered::Not
     }
 
     fn stats(&self) -> &project::Stats {
@@ -462,6 +458,13 @@ impl project::Stats {
     fn contributors(&self) -> i32 {
         i32::try_from(self.contributors).unwrap()
     }
+}
+
+/// Shows if a project exists on the Registry and distinguishes between Org and User owned.
+#[derive(GraphQLEnum)]
+pub enum ProjectRegistered {
+    /// Project is not present on the Registry.
+    Not,
 }
 
 #[juniper::object]
