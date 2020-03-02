@@ -26,8 +26,6 @@ pub fn create() -> Schema {
 /// Container for data access from handlers.
 #[derive(Clone)]
 pub struct Context {
-    /// Intermediate repo used to serve dummy data to be presented to the API consumer.
-    dummy_repo_path: String,
     /// Root on the filesystem for the librad config and storage paths.
     librad_paths: Paths,
     /// Wrapper to interact with the Registry.
@@ -37,13 +35,8 @@ pub struct Context {
 impl Context {
     /// Returns a new `Context`.
     #[must_use]
-    pub fn new(
-        dummy_repo_path: String,
-        librad_paths: Paths,
-        registry_client: radicle_registry_client::Client,
-    ) -> Self {
+    pub fn new(librad_paths: Paths, registry_client: radicle_registry_client::Client) -> Self {
         Self {
-            dummy_repo_path,
             librad_paths,
             registry: sync::Arc::new(sync::RwLock::new(registry::Registry::new(registry_client))),
         }

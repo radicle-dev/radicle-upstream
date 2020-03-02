@@ -7,12 +7,11 @@ use super::schema;
 
 /// Runs the warp server with the given schema and context.
 pub async fn run(
-    dummy_repo_path: String,
     librad_paths: librad::paths::Paths,
     registry_client: radicle_registry_client::Client,
     enable_control: bool,
 ) {
-    let context = schema::Context::new(dummy_repo_path, librad_paths, registry_client);
+    let context = schema::Context::new(librad_paths, registry_client);
     let state = warp::any().map(move || context.clone());
     let graphql_filter = make_graphql_filter(schema::create(), state.clone().boxed());
     let control_filter = make_graphql_filter(schema::create_control(), state.boxed());
