@@ -81,9 +81,7 @@
     {/each}
   </Section>
 
-  <Section
-    title="Typography"
-    subTitle="Using GT America and GT America Mono from Grill Type">
+  <Section title="Typography" subTitle="Using Inter and Source Code Pro fonts">
 
     <TypographySwatch title="huge Title">
       <Title variant="huge">Open Source Coin</Title>
