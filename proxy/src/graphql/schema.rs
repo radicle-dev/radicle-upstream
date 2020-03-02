@@ -417,8 +417,8 @@ impl project::Project {
     fn metadata(&self) -> &project::Metadata {
         &self.metadata
     }
-    fn registered(&self) -> ProjectRegistered {
-        ProjectRegistered::Not
+    fn registered(&self) -> bool {
+        false
     }
 
     fn stats(&self) -> &project::Stats {

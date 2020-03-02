@@ -34,6 +34,10 @@ We don't keep around a copy of an SDL schema file as they tend to get outdated
 quickly and it is way easier to explore the API via introspection. You can read
 more on that in the [GraphiQL Explorer](#graphiql-explorer) section below.
 
+If you need the schema to guide you writing new queries or mutations, you can
+extract the latest schema version from the proxy via `yarn generate:schema`.
+It'll be saved into `./schema.gql`.
+
 
 ## UI
 
@@ -390,6 +394,9 @@ yarn dist             # Bundles Upstream into an installable package
 
 yarn generate:colors  # Update color CSS variables in public/colors.css from
                       # colors.json
+
+yern generate:schema  # Start proxy and save the latest GraphQL schema
+                      # in ./schema.gql
 
 yarn graphiql         # Open GraphiQL with explorer extension in browser
 

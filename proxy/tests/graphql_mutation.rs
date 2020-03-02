@@ -161,7 +161,7 @@ fn create_project() {
                             "defaultBranch": "master",
                             "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
                         },
-                        "registered": "NOT",
+                        "registered": false,
                         "stats": {
                             "branches": 11,
                             "commits": 267,
