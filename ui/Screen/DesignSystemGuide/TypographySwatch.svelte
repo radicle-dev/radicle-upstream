@@ -1,0 +1,23 @@
+<script>
+  import { Text } from "../../DesignSystem/Primitive";
+  export let title = null;
+</script>
+
+<style>
+  .title {
+    width: 8em;
+  }
+
+  .swatch {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 14px;
+  }
+</style>
+
+<div class="swatch">
+  <div class="title">
+    <Text variant="small" style="color: var(--color-gray)">{title}</Text>
+  </div>
+  <slot />
+</div>
