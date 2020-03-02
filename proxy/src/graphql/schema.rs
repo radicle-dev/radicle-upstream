@@ -307,6 +307,22 @@ impl ControlMutation {
             &metadata.img_url,
         )?;
 
+        let platinum_surf_repo =
+            surf::git::Repository::new(platinum_into.to_str().unwrap()).unwrap();
+        let platinum_browser = surf::git::Browser::new(platinum_surf_repo).unwrap();
+        let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
+
+        // Push all tags to rad remote.
+        let tags = platinum_browser
+            .list_tags()
+            .unwrap()
+            .iter()
+            .map(|t| format!("+refs/tags/{}", t.name()))
+            .collect::<Vec<String>>();
+        rad_remote
+            .push(&tags.iter().map(String::as_str).collect::<Vec<_>>(), None)
+            .unwrap();
+
         Ok(project::Project {
             id: id.into(),
             metadata: meta.into(),
