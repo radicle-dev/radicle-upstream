@@ -165,7 +165,11 @@
   `;
 
   const CREATE_PROJECT = gql`
-    mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
+    mutation(
+      $metadata: ProjectMetadataInput!
+      $path: String!
+      $publish: Boolean!
+    ) {
       createProject(metadata: $metadata, path: $path, publish: $publish) {
         id
         metadata {
