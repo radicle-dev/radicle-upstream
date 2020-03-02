@@ -448,15 +448,15 @@ impl project::Metadata {
 #[juniper::object(name = "ProjectStats")]
 impl project::Stats {
     fn branches(&self) -> i32 {
-        i32::try_from(self.branches).unwrap()
+        i32::try_from(self.branches).expect("unable to convert branches number")
     }
 
     fn commits(&self) -> i32 {
-        i32::try_from(self.commits).unwrap()
+        i32::try_from(self.commits).expect("unable to convert branches number")
     }
 
     fn contributors(&self) -> i32 {
-        i32::try_from(self.contributors).unwrap()
+        i32::try_from(self.contributors).expect("unable to convert branches number")
     }
 }
 
