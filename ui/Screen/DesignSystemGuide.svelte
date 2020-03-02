@@ -118,7 +118,7 @@
     </TypographySwatch>
 
     <TypographySwatch title="Code">
-      <Code>open source Coin</Code>
+      <Code>open source coin</Code>
     </TypographySwatch>
 
     <TypographySwatch title="big Numeric">
