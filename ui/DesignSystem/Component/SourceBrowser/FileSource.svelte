@@ -59,7 +59,7 @@
   }
 
   .line-numbers {
-    font-family: "GT America Mono Regular";
+    font-family: var(--typeface-mono-regular);
     font-size: 14px;
     background-color: var(--color-almostwhite);
     color: var(--color-gray);
@@ -70,7 +70,7 @@
   }
 
   .code {
-    font-family: "GT America Mono Regular";
+    font-family: var(--typeface-mono-regular);
     font-size: 14px;
     padding-left: 8px;
     overflow-x: scroll;
