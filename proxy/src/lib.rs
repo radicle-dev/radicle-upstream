@@ -8,7 +8,7 @@
     clippy::pedantic,
     clippy::restriction,
     clippy::option_unwrap_used,
-    clippy::result_unwrap_used
+    clippy::result_unwrap_used,
 )]
 // TODO(xla): Handle all Results properly and never panic outside of main.
 // TODO(xla): Remove exception for or_fun_call lint.
@@ -27,11 +27,10 @@
 extern crate juniper;
 
 pub mod coco;
-/// Utilities to manipulate the process environment.
 pub mod env;
-/// Error definitions and conversions.
 pub mod error;
-/// Defines the schema served to the application via `GraphQL`.
 pub mod graphql;
+mod identity;
+mod project;
 /// Intergrations on the Regstriy.
 mod registry;

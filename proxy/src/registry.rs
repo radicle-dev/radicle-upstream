@@ -32,6 +32,9 @@ pub struct Metadata {
     pub version: u8,
 }
 
+/// Unique handle a user can register.
+type UserHandle = registry::String32;
+
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
     /// Issue a new project registration with a given name under a given org.
@@ -48,6 +51,14 @@ pub enum Message {
 
     /// Issue an org unregistration with a given id.
     OrgUnregistration(OrgId),
+
+    /// Issue a user registration for a given handle storing the corresponding identity id.
+    UserRegistration {
+        /// Globally unique user handle.
+        handle: UserHandle,
+        /// Identity id originated from librad.
+        id: registry::String32,
+    },
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -67,6 +78,7 @@ pub struct Registry {
 /// Registry client wrapper methods
 impl Registry {
     /// Wrap a registry client.
+    #[must_use]
     pub const fn new(client: Client) -> Self {
         Self { client }
     }
@@ -80,6 +92,7 @@ impl Registry {
         self.client.list_projects().await.map_err(|e| e.into())
     }
 
+    /// Create a new unique Org on the Registry.
     #[allow(dead_code)]
     pub async fn register_org(
         &self,
@@ -113,6 +126,7 @@ impl Registry {
         })
     }
 
+    /// Remove a registered Org from the Registry.
     #[allow(dead_code)]
     pub async fn unregister_org(
         &self,
@@ -223,6 +237,29 @@ impl Registry {
             timestamp: SystemTime::now(),
         })
     }
+
+    /// Create a new unique user on the Registry.
+    pub async fn register_user(
+        &self,
+        _author: &ed25519::Pair,
+        handle: String,
+        id: String,
+    ) -> Result<Transaction, error::Error> {
+        let message_handle = registry::String32::from_string(handle)
+            .map_err(|_| error::UserValidation::HandleTooLong)?;
+        let message_id =
+            registry::String32::from_string(id).map_err(|_| error::UserValidation::IdTooLong)?;
+
+        Ok(Transaction {
+            id: registry::H256::random(),
+            messages: vec![Message::UserRegistration {
+                handle: message_handle,
+                id: message_id,
+            }],
+            state: TransactionState::Applied(registry::H256::random()),
+            timestamp: SystemTime::now(),
+        })
+    }
 }
 
 #[cfg(test)]
@@ -296,5 +333,19 @@ mod tests {
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
+    }
+
+    #[test]
+    fn register_user() {
+        let client = Client::new_emulator();
+        let registry = Registry::new(client);
+        let robo = ed25519::Pair::from_legacy_string("//Android", None);
+
+        let res = futures::executor::block_on(registry.register_user(
+            &robo,
+            "cloudhead".into(),
+            "123abcd.git".into(),
+        ));
+        assert!(res.is_ok());
     }
 }

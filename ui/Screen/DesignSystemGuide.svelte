@@ -21,6 +21,7 @@
 
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
+  import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
 
   const colors = Array.from(document.styleSheets)
     .filter(
@@ -80,24 +81,59 @@
     {/each}
   </Section>
 
-  <Section
-    title="Typography"
-    subTitle="Using GT America and GT America Mono from Grill Type">
+  <Section title="Typography" subTitle="Using Inter and Source Code Pro fonts">
 
-    <Title variant="huge">Open Source Coin</Title>
-    <Title variant="big">Open Source Coin</Title>
-    <Title>Open Source Coin</Title>
+    <TypographySwatch title="huge Title">
+      <Title variant="huge">Open Source Coin</Title>
+    </TypographySwatch>
 
-    <Text>Open Source Coin</Text>
-    <Text variant="small">Open Source Coin</Text>
-    <Text variant="smallBold">Open Source Coin</Text>
+    <TypographySwatch title="big Title">
+      <Title variant="big">Open Source Coin</Title>
+    </TypographySwatch>
 
-    <Caption variant="table">Open Source Coin</Caption>
-    <Code>Open Source Coin</Code>
+    <TypographySwatch title="medium Title">
+      <Title variant="medium">Open Source Coin</Title>
+    </TypographySwatch>
 
-    <Numeric variant="big">0123456789</Numeric>
-    <Numeric>0123456789</Numeric>
-    <Numeric variant="small">0123456789</Numeric>
+    <TypographySwatch title="regular Title">
+      <Title>Open Source Coin</Title>
+    </TypographySwatch>
+
+    <TypographySwatch title="regular Text">
+      <Text>Open Source Coin</Text>
+    </TypographySwatch>
+
+    <TypographySwatch title="small Text">
+      <Text variant="small">Open Source Coin</Text>
+    </TypographySwatch>
+
+    <TypographySwatch title="tiny Text">
+      <Text variant="tiny">Open Source Coin</Text>
+    </TypographySwatch>
+
+    <TypographySwatch title="Code">
+      <Code>Open Source Coin</Code>
+    </TypographySwatch>
+
+    <TypographySwatch title="Caption">
+      <Caption>Open Source Coin</Caption>
+    </TypographySwatch>
+
+    <TypographySwatch title="big Numeric">
+      <Numeric variant="big">0123456789</Numeric>
+    </TypographySwatch>
+
+    <TypographySwatch title="regular Numeric">
+      <Numeric>0123456789</Numeric>
+    </TypographySwatch>
+
+    <TypographySwatch title="small Numeric">
+      <Numeric variant="small">0123456789</Numeric>
+    </TypographySwatch>
+
+    <TypographySwatch title="tiny Numeric">
+      <Numeric variant="tiny">0123456789</Numeric>
+    </TypographySwatch>
   </Section>
 
   <Section

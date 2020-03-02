@@ -165,7 +165,11 @@
   `;
 
   const CREATE_PROJECT = gql`
-    mutation($metadata: MetadataInput!, $path: String!, $publish: Boolean!) {
+    mutation(
+      $metadata: ProjectMetadataInput!
+      $path: String!
+      $publish: Boolean!
+    ) {
       createProject(metadata: $metadata, path: $path, publish: $publish) {
         id
         metadata {
@@ -399,7 +403,7 @@
       <Flex style="margin-top: 32px">
         <div slot="left">
           <Text
-            variant="small"
+            variant="tiny"
             style="color: var(--color-gray); padding-left: 15px;">
             * required
           </Text>

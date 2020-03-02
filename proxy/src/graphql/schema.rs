@@ -9,9 +9,10 @@ use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client::ed25519;
 
-use super::project;
 use crate::coco;
 use crate::error;
+use crate::identity;
+use crate::project;
 use crate::registry;
 
 /// Glue to bundle our read and write APIs together.
@@ -53,9 +54,26 @@ pub struct Mutation;
     name = "UpstreamMutation",
 )]
 impl Mutation {
+    fn create_identity(
+        _ctx: &Context,
+        handle: String,
+        display_name: Option<String>,
+        avatar_url: Option<String>,
+    ) -> Result<identity::Identity, error::Error> {
+        Ok(identity::Identity {
+            id: "123abcd.git".into(),
+            shareable_entity_identifier: format!("{}@123abcd.git", handle),
+            metadata: identity::Metadata {
+                handle,
+                display_name,
+                avatar_url,
+            },
+        })
+    }
+
     fn create_project(
         ctx: &Context,
-        metadata: project::MetadataInput,
+        metadata: ProjectMetadataInput,
         path: String,
         publish: bool,
     ) -> Result<project::Project, error::Error> {
@@ -73,7 +91,7 @@ impl Mutation {
         )?;
 
         Ok(project::Project {
-            id: id.to_string().into(),
+            id: librad::project::ProjectId::from(id),
             metadata: meta.into(),
         })
     }
@@ -98,6 +116,21 @@ impl Mutation {
             project_name,
             org_id,
             maybe_librad_id,
+        ))
+    }
+
+    fn register_user(
+        ctx: &Context,
+        handle: juniper::ID,
+        id: juniper::ID,
+    ) -> Result<registry::Transaction, error::Error> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+
+        futures::executor::block_on(ctx.registry.read().unwrap().register_user(
+            &fake_pair,
+            handle.to_string(),
+            id.to_string(),
         ))
     }
 }
@@ -161,7 +194,7 @@ impl Query {
         let meta = coco::get_project_meta(&ctx.librad_paths, &id.to_string())?;
 
         Ok(project::Project {
-            id,
+            id: librad::project::ProjectId::from_str(&id.to_string())?,
             metadata: meta.into(),
         })
     }
@@ -170,7 +203,7 @@ impl Query {
         let projects = coco::list_projects(&ctx.librad_paths)
             .into_iter()
             .map(|(id, meta)| project::Project {
-                id: juniper::ID::new(id.to_string()),
+                id,
                 metadata: meta.into(),
             })
             .collect::<Vec<project::Project>>();
@@ -185,6 +218,25 @@ impl Query {
             .iter()
             .map(|id| juniper::ID::from(id.0.to_string()))
             .collect::<Vec<juniper::ID>>())
+    }
+
+    fn identity(
+        _ctx: &Context,
+        id: juniper::ID,
+    ) -> Result<Option<identity::Identity>, error::Error> {
+        Ok(Some(identity::Identity {
+            id: id.to_string(),
+            shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
+            metadata: identity::Metadata {
+                handle: "cloudhead".into(),
+                display_name: Some("Alexis Sellier".into()),
+                avatar_url: Some("https://avatars1.githubusercontent.com/u/4077".into()),
+            },
+        }))
+    }
+
+    fn user(_ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
+        Ok(None)
     }
 }
 
@@ -208,7 +260,7 @@ pub struct ControlMutation;
 impl ControlMutation {
     fn create_project_with_fixture(
         ctx: &Context,
-        metadata: project::MetadataInput,
+        metadata: ProjectMetadataInput,
     ) -> Result<project::Project, error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
@@ -239,7 +291,7 @@ impl ControlMutation {
 
         let (id, meta) = coco::init_project(
             &ctx.librad_paths,
-            &platinum_into.to_str().unwrap(),
+            platinum_into.to_str().unwrap(),
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
@@ -247,7 +299,7 @@ impl ControlMutation {
         )?;
 
         Ok(project::Project {
-            id: id.to_string().into(),
+            id: id.into(),
             metadata: meta.into(),
         })
     }
@@ -353,58 +405,6 @@ enum ObjectType {
     Blob,
 }
 
-/// Contextual information for an org registration message.
-#[derive(juniper::GraphQLObject)]
-struct OrgRegistration {
-    /// The ID of the org.
-    org_id: String,
-}
-
-/// Contextual information for an org unregistration message.
-#[derive(juniper::GraphQLObject)]
-struct OrgUnregistration {
-    /// The ID of the org.
-    org_id: String,
-}
-
-/// Contextual information for a project registration message.
-#[derive(juniper::GraphQLObject)]
-struct ProjectRegistration {
-    /// Actual project name, unique under org.
-    project_name: String,
-    /// The org under which to register the project.
-    org_id: String,
-}
-
-/// Message types supproted in transactions.
-enum Message {
-    /// Registration of a new org.
-    OrgRegistration(OrgRegistration),
-
-    /// Registration of a new org.
-    OrgUnregistration(OrgUnregistration),
-
-    /// Registration of a new project.
-    ProjectRegistration(ProjectRegistration),
-}
-
-juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &ProjectRegistration => match *self {
-            Message::ProjectRegistration(ref p) => Some(p),
-            _ => None
-        },
-        &OrgRegistration => match *self {
-            Message::OrgRegistration(ref o) => Some(o),
-            _ => None
-        },
-        &OrgUnregistration => match *self {
-            Message::OrgUnregistration(ref o) => Some(o),
-            _ => None
-        },
-    }
-});
-
 #[juniper::object]
 impl coco::Person {
     fn name(&self) -> &str {
@@ -419,76 +419,6 @@ impl coco::Person {
         &self.avatar
     }
 }
-
-#[juniper::object]
-impl registry::Transaction {
-    fn id(&self) -> juniper::ID {
-        juniper::ID::new(self.id.to_string())
-    }
-
-    fn messages(&self) -> Vec<Message> {
-        self.messages
-            .iter()
-            .map(|m| match m {
-                registry::Message::OrgRegistration(org_id) => {
-                    Message::OrgRegistration(OrgRegistration {
-                        org_id: org_id.to_string(),
-                    })
-                },
-                registry::Message::OrgUnregistration(org_id) => {
-                    Message::OrgUnregistration(OrgUnregistration {
-                        org_id: org_id.to_string(),
-                    })
-                },
-                registry::Message::ProjectRegistration {
-                    project_name,
-                    org_id,
-                } => Message::ProjectRegistration(ProjectRegistration {
-                    project_name: project_name.to_string(),
-                    org_id: org_id.to_string(),
-                }),
-            })
-            .collect()
-    }
-
-    fn state(&self) -> TransactionState {
-        match self.state {
-            registry::TransactionState::Applied(block_hash) => TransactionState::Applied(Applied {
-                block: juniper::ID::new(block_hash.to_string()),
-            }),
-        }
-    }
-
-    fn timestamp(&self) -> juniper::FieldResult<String> {
-        let since_epoch = i64::try_from(
-            self.timestamp
-                .duration_since(std::time::UNIX_EPOCH)?
-                .as_secs(),
-        )?;
-        let git_time = git2::Time::new(since_epoch, 0).seconds().to_string();
-
-        Ok(git_time)
-    }
-}
-
-/// States a transaction can go through.
-enum TransactionState {
-    /// The transaction has been applied to a block.
-    Applied(Applied),
-}
-
-/// Context for a chain applied transaction.
-#[derive(GraphQLObject)]
-struct Applied {
-    /// Block hash the transaction was included in.
-    block: juniper::ID,
-}
-
-juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
-    }
-});
 
 #[juniper::object]
 impl coco::Tree {
@@ -515,3 +445,254 @@ impl coco::TreeEntry {
         self.path.clone()
     }
 }
+
+#[juniper::object]
+impl identity::Identity {
+    fn id(&self) -> juniper::ID {
+        juniper::ID::new(&self.id)
+    }
+
+    fn shareable_entity_identifier(&self) -> juniper::ID {
+        juniper::ID::new(&self.shareable_entity_identifier)
+    }
+
+    fn metadata(&self) -> &identity::Metadata {
+        &self.metadata
+    }
+}
+
+#[juniper::object(name = "IdentityMetadata")]
+impl identity::Metadata {
+    fn avatar_url(&self) -> Option<&String> {
+        self.avatar_url.as_ref()
+    }
+
+    fn display_name(&self) -> Option<&String> {
+        self.display_name.as_ref()
+    }
+
+    fn handle(&self) -> &str {
+        &self.handle
+    }
+}
+
+/// Input object capturing the fields we need to create project metadata.
+#[derive(GraphQLInputObject)]
+#[graphql(description = "Input object for project metadata")]
+pub struct ProjectMetadataInput {
+    /// Project name.
+    pub name: String,
+    /// High-level description of the project.
+    pub description: String,
+    /// Default branch for checkouts, often used as mainline as well.
+    pub default_branch: String,
+    /// Image url for the project.
+    pub img_url: String,
+}
+
+#[juniper::object]
+impl project::Project {
+    fn id(&self) -> juniper::ID {
+        juniper::ID::new(&self.id.to_string())
+    }
+
+    fn metadata(&self) -> &project::Metadata {
+        &self.metadata
+    }
+    fn registered(&self) -> bool {
+        false
+    }
+
+    fn stats(&self) -> &project::Stats {
+        &project::Stats {
+            branches: 11,
+            commits: 267,
+            contributors: 8,
+        }
+    }
+}
+
+#[juniper::object(name = "ProjectMetadata")]
+impl project::Metadata {
+    fn default_branch(&self) -> &str {
+        &self.default_branch
+    }
+
+    fn description(&self) -> &str {
+        &self.description
+    }
+
+    fn img_url(&self) -> &str {
+        &self.img_url
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+}
+
+#[juniper::object(name = "ProjectStats")]
+impl project::Stats {
+    fn branches(&self) -> i32 {
+        i32::try_from(self.branches).expect("unable to convert branches number")
+    }
+
+    fn commits(&self) -> i32 {
+        i32::try_from(self.commits).expect("unable to convert branches number")
+    }
+
+    fn contributors(&self) -> i32 {
+        i32::try_from(self.contributors).expect("unable to convert branches number")
+    }
+}
+
+/// Shows if a project exists on the Registry and distinguishes between Org and User owned.
+#[derive(GraphQLEnum)]
+pub enum ProjectRegistered {
+    /// Project is not present on the Registry.
+    Not,
+}
+
+#[juniper::object]
+impl registry::Transaction {
+    fn id(&self) -> juniper::ID {
+        juniper::ID::new(self.id.to_string())
+    }
+
+    fn messages(&self) -> Vec<Message> {
+        self.messages
+            .iter()
+            .map(|m| match m {
+                registry::Message::OrgRegistration(org_id) => {
+                    Message::OrgRegistration(OrgRegistration {
+                        org_id: juniper::ID::new(org_id.to_string()),
+                    })
+                },
+                registry::Message::OrgUnregistration(org_id) => {
+                    Message::OrgUnregistration(OrgUnregistration {
+                        org_id: juniper::ID::new(org_id.to_string()),
+                    })
+                },
+                registry::Message::ProjectRegistration {
+                    project_name,
+                    org_id,
+                } => Message::ProjectRegistration(ProjectRegistration {
+                    project_name: juniper::ID::new(project_name.to_string()),
+                    org_id: juniper::ID::new(org_id.to_string()),
+                }),
+                registry::Message::UserRegistration { handle, id } => {
+                    Message::UserRegistration(UserRegistration {
+                        handle: juniper::ID::new(handle.to_string()),
+                        id: juniper::ID::new(id.to_string()),
+                    })
+                },
+            })
+            .collect()
+    }
+
+    fn state(&self) -> TransactionState {
+        match self.state {
+            registry::TransactionState::Applied(block_hash) => TransactionState::Applied(Applied {
+                block: juniper::ID::new(block_hash.to_string()),
+            }),
+        }
+    }
+
+    fn timestamp(&self) -> juniper::FieldResult<String> {
+        let since_epoch = i64::try_from(
+            self.timestamp
+                .duration_since(std::time::UNIX_EPOCH)?
+                .as_secs(),
+        )?;
+        let git_time = git2::Time::new(since_epoch, 0).seconds().to_string();
+
+        Ok(git_time)
+    }
+}
+
+/// Message types supproted in transactions.
+enum Message {
+    /// Registration of a new org.
+    OrgRegistration(OrgRegistration),
+
+    /// Registration of a new org.
+    OrgUnregistration(OrgUnregistration),
+
+    /// Registration of a new project.
+    ProjectRegistration(ProjectRegistration),
+
+    /// Registration of a new user.
+    UserRegistration(UserRegistration),
+}
+
+juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &OrgRegistration => match *self {
+            Message::OrgRegistration(ref o) => Some(o),
+            Message::OrgUnregistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
+        },
+        &OrgUnregistration => match *self {
+            Message::OrgUnregistration(ref o) => Some(o),
+            Message::OrgRegistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
+        },
+        &ProjectRegistration => match *self {
+            Message::ProjectRegistration(ref p) => Some(p),
+            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::UserRegistration(..) => None,
+        },
+        &UserRegistration => match *self {
+            Message::UserRegistration(ref o) => Some(o),
+            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::ProjectRegistration(..) => None,
+        }
+    }
+});
+
+/// Contextual information for an org registration message.
+#[derive(juniper::GraphQLObject)]
+struct OrgRegistration {
+    /// The ID of the org.
+    org_id: juniper::ID,
+}
+
+/// Contextual information for an org unregistration message.
+#[derive(juniper::GraphQLObject)]
+struct OrgUnregistration {
+    /// The ID of the org.
+    org_id: juniper::ID,
+}
+
+/// Contextual information for a project registration message.
+#[derive(juniper::GraphQLObject)]
+struct ProjectRegistration {
+    /// Actual project name, unique under org.
+    project_name: juniper::ID,
+    /// The org under which to register the project.
+    org_id: juniper::ID,
+}
+
+/// Payload of a user registration message.
+#[derive(juniper::GraphQLObject)]
+struct UserRegistration {
+    /// The chosen unique handle to be registered.
+    handle: juniper::ID,
+    /// The id of the librad identity.
+    id: juniper::ID,
+}
+
+/// States a transaction can go through.
+enum TransactionState {
+    /// The transaction has been applied to a block.
+    Applied(Applied),
+}
+
+/// Context for a chain applied transaction.
+#[derive(GraphQLObject)]
+struct Applied {
+    /// Block hash the transaction was included in.
+    block: juniper::ID,
+}
+
+juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
+    }
+});

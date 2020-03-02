@@ -1,26 +1,32 @@
 <script>
   export let style = null;
 
-  export let variant = "regular"; // small | regular | big
+  export let variant = "regular"; // tiny | small | regular | big
 </script>
 
 <style>
   .big {
     font-family: var(--typeface-mono-bold);
     font-size: 22px;
-    line-height: 27px;
+    line-height: 28px;
   }
 
   .regular {
     font-family: var(--typeface-mono-medium);
     font-size: 16px;
-    line-height: 19px;
+    line-height: 20px;
   }
 
   .small {
     font-family: var(--typeface-mono-medium);
+    font-size: 14px;
+    line-height: 18px;
+  }
+
+  .tiny {
+    font-family: var(--typeface-mono-medium);
     font-size: 12px;
-    line-height: 14px;
+    line-height: 15px;
   }
 </style>
 

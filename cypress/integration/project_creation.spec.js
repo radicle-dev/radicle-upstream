@@ -12,6 +12,13 @@ context("project creation", () => {
       cy.get('[data-cy="create-project"] [data-cy="cancel-button"]').click();
       cy.contains("My Projects").should("exist");
     });
+
+    it("can be closed by pressing escape key", () => {
+      cy.get('[data-cy="new-project-button"]').click();
+      cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");
+      cy.get("body").type("{esc}");
+      cy.contains("My Projects").should("exist");
+    });
   });
 
   context("validations", () => {

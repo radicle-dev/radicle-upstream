@@ -1,19 +1,17 @@
 <script>
   export let style = null;
-
-  export let variant = "table";
 </script>
 
 <style>
-  .table {
+  .caption {
     font-family: var(--typeface-medium);
     font-size: 13px;
     line-height: 16px;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
   }
 </style>
 
-<h4 class={variant} {style}>
+<h4 class="caption" {style}>
   <slot />
 </h4>
