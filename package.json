@@ -110,7 +110,6 @@
     "graphql": "^14.6.0",
     "hotkeys-js": "^3.7.3",
     "svelte-apollo": "^0.3.0",
-    "svelte-click-outside": "^1.0.0",
     "timeago.js": "^4.0.2",
     "validate.js": "^0.13.1"
   },

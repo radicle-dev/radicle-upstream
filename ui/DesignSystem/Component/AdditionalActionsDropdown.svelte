@@ -1,7 +1,5 @@
 <script>
-  import ClickOutside from "svelte-click-outside";
-
-  import { Icon } from "../Primitive";
+  import { ClickOutside, Icon } from "../Primitive";
 
   let triggerEl;
   let expanded = false;
