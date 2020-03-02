@@ -112,7 +112,7 @@ impl Mutation {
         Ok(project::Project {
             id: id.to_string().into(),
             metadata: meta.into(),
-            registered: project::Registered::Not,
+            registered: false,
             stats: project::Stats {
                 branches: 11,
                 commits: 267,
@@ -218,7 +218,7 @@ impl Query {
         Ok(project::Project {
             id,
             metadata: meta.into(),
-            registered: project::Registered::Not,
+            registered: false,
             stats: project::Stats {
                 branches: 11,
                 commits: 267,
@@ -233,7 +233,7 @@ impl Query {
             .map(|(id, meta)| project::Project {
                 id: juniper::ID::new(id.to_string()),
                 metadata: meta.into(),
-                registered: project::Registered::Not,
+                registered: false,
                 stats: project::Stats {
                     branches: 11,
                     commits: 267,
