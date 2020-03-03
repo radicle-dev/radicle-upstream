@@ -49,6 +49,33 @@ where
     )
     .expect("fixture setup failed");
 
+    let platinum_surf_repo = surf::git::Repository::new(platinum_into.to_str().unwrap()).unwrap();
+    let platinum_browser = surf::git::Browser::new(platinum_surf_repo).unwrap();
+
+    let tags = platinum_browser
+        .list_tags()
+        .unwrap()
+        .iter()
+        .map(|t| format!("+refs/tags/{}", t.name()))
+        .collect::<Vec<String>>();
+
+    {
+        let branches = platinum_repo
+            .branches(Some(git2::BranchType::Remote))
+            .unwrap();
+
+        for branch in branches {
+            let (branch, _branch_type) = branch.unwrap();
+            let name = &branch.name().unwrap().unwrap()[7..];
+            let oid = branch.get().target().unwrap();
+            let commit = platinum_repo.find_commit(oid).unwrap();
+
+            if name != "master" {
+                platinum_repo.branch(name, &commit, false).unwrap();
+            }
+        }
+    }
+
     // Init as rad project.
     let (platinum_id, _platinum_project) = crate::coco::init_project(
         &librad_paths,
@@ -59,20 +86,18 @@ where
         "https://avatars0.githubusercontent.com/u/48290027",
     )
     .unwrap();
-
-    let platinum_surf_repo = surf::git::Repository::new(platinum_into.to_str().unwrap()).unwrap();
-    let platinum_browser = surf::git::Browser::new(platinum_surf_repo).unwrap();
     let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
 
     // Push all tags to rad remote.
-    let tags = platinum_browser
-        .list_tags()
-        .unwrap()
-        .iter()
-        .map(|t| format!("+refs/tags/{}", t.name()))
-        .collect::<Vec<String>>();
     rad_remote
         .push(&tags.iter().map(String::as_str).collect::<Vec<_>>(), None)
+        .unwrap();
+    rad_remote
+        .push(
+            // &branches.iter().map(String::as_str).collect::<Vec<_>>(),
+            &["+refs/heads/dev"],
+            None,
+        )
         .unwrap();
 
     f(librad_paths, repos_dir, platinum_id)

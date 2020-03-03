@@ -272,7 +272,6 @@ impl ControlMutation {
         metadata: ProjectMetadataInput,
     ) -> Result<project::Project, error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
 
         // Craft the absolute path to git-platinum fixtures.
         let mut platinum_path = env::current_dir().expect("unable to get working directory");
@@ -298,29 +297,56 @@ impl ControlMutation {
             .clone(&platinum_from, platinum_into.as_path())
             .expect("unable to clone fixtures repo");
 
-        let (id, meta) = coco::init_project(
-            &ctx.librad_paths.read().unwrap(),
-            platinum_into.to_str().unwrap(),
-            &metadata.name,
-            &metadata.description,
-            &metadata.default_branch,
-            &metadata.img_url,
-        )?;
-
         let platinum_surf_repo =
             surf::git::Repository::new(platinum_into.to_str().unwrap()).unwrap();
         let platinum_browser = surf::git::Browser::new(platinum_surf_repo).unwrap();
-        let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
 
-        // Push all tags to rad remote.
         let tags = platinum_browser
             .list_tags()
             .unwrap()
             .iter()
             .map(|t| format!("+refs/tags/{}", t.name()))
             .collect::<Vec<String>>();
+
+        {
+            let branches = platinum_repo
+                .branches(Some(git2::BranchType::Remote))
+                .unwrap();
+
+            for branch in branches {
+                let (branch, _branch_type) = branch.unwrap();
+                let name = &branch.name().unwrap().unwrap()[7..];
+                let oid = branch.get().target().unwrap();
+                let commit = platinum_repo.find_commit(oid).unwrap();
+
+                if name != "master" {
+                    platinum_repo.branch(name, &commit, false).unwrap();
+                }
+            }
+        }
+
+        // Init as rad project.
+        let (id, meta) = crate::coco::init_project(
+            &ctx.librad_paths.read().unwrap(),
+            platinum_into.to_str().unwrap(),
+            "git-platinum",
+            "fixture data",
+            "master",
+            "https://avatars0.githubusercontent.com/u/48290027",
+        )
+        .unwrap();
+        let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
+
+        // Push all tags to rad remote.
         rad_remote
             .push(&tags.iter().map(String::as_str).collect::<Vec<_>>(), None)
+            .unwrap();
+        rad_remote
+            .push(
+                // &branches.iter().map(String::as_str).collect::<Vec<_>>(),
+                &["+refs/heads/dev"],
+                None,
+            )
             .unwrap();
 
         Ok(project::Project {
