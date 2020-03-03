@@ -15,6 +15,7 @@
     Placeholder,
     ProjectCard,
     Rad,
+    Row,
     StepCounter,
     UserCard
   } from "../DesignSystem/Component";
@@ -56,7 +57,6 @@
 </script>
 
 <style>
-  div,
   table {
     margin-bottom: 32px;
   }
@@ -480,6 +480,52 @@
 
     <Swatch>
       <UserCard {user} />
+    </Swatch>
+  </Section>
+
+  <Section title="Transaction Row" subTitle="Single row and combined">
+    <Swatch>
+      <Row style="width:100%" disabled={false}>
+        <div slot="left">
+          <Title>Your Wallet</Title>
+        </div>
+
+        <div slot="right">
+          <Avatar title="user" />
+        </div>
+      </Row>
+    </Swatch>
+
+    <Swatch>
+      <div style="flex-direction: column; width: 100%">
+        <Row variant="top">
+          <div slot="left">
+            <Title>Cost 1</Title>
+          </div>
+
+          <div slot="right">
+            <Rad amount={4} style="margin-right: 24px" />
+          </div>
+        </Row>
+        <Row variant="middle">
+          <div slot="left">
+            <Title>Cost 2</Title>
+          </div>
+
+          <div slot="right">
+            <Rad amount={4} style="margin-right: 24px" />
+          </div>
+        </Row>
+        <Row variant="bottom">
+          <div slot="left">
+            <Title>Total</Title>
+          </div>
+
+          <div slot="right">
+            <Rad amount={8} style="margin-right: 24px" size="big" />
+          </div>
+        </Row>
+      </div>
     </Swatch>
   </Section>
 
