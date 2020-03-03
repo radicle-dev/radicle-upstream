@@ -6,7 +6,7 @@
   export let onPreviousStep = null;
 </script>
 
-<Row style="margin-bottom: 48px;" active={true}>
+<Row style="margin-bottom: 48px;" active={true} disabled={false}>
   <div slot="left">
     <Avatar title="Your personal wallet" />
   </div>
@@ -21,7 +21,7 @@
   style="color: var(--color-darkgray); margin-bottom: 24px">
   Project wallets
 </Text>
-<Row style="margin-bottom: 16px">
+<Row style="margin-bottom: 16px" disabled={false}>
   <div slot="left">
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project1.svg"
@@ -34,7 +34,7 @@
   </div>
 </Row>
 
-<Row style="margin-bottom: 16px">
+<Row style="margin-bottom: 16px" disabled={false}>
   <div slot="left">
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project2.svg"

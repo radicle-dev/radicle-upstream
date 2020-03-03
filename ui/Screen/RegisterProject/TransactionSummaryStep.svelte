@@ -34,7 +34,6 @@
   </div>
 {/if}
 <Row
-  disabled={true}
   style="background-color: var(--color-almostwhite); border-radius: 0; margin:
   -1px 0 -1px 0; border-top: none">
   <div slot="left">
@@ -45,7 +44,7 @@
   </div>
 </Row>
 
-<Row disabled={true} style="border-radius: 0">
+<Row style="border-radius: 0">
   <div slot="left">
     <Title>Project Registration</Title>
   </div>
@@ -58,7 +57,7 @@
   </div>
 </Row>
 
-<Row disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
+<Row style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
     <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
   </div>
@@ -69,7 +68,6 @@
 </Row>
 
 <Row
-  disabled={true}
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
   <div slot="left">

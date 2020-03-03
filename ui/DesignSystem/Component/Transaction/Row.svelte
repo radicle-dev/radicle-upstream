@@ -5,7 +5,7 @@
 
   export let variant = "single"; // top || middle || bottom
   export let active = false;
-  export let disabled = false;
+  export let disabled = true;
 
   $: disabledClass = disabled ? "disabled" : null;
   $: activeClass = active ? "active" : null;

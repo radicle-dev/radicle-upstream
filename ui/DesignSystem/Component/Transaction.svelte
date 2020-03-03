@@ -25,7 +25,7 @@
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Your transaction
 </Caption>
-<Row style="margin-bottom: 32px;" disabled={true}>
+<Row style="margin-bottom: 32px;">
   <div slot="left">
     <Title>{tx.message}</Title>
   </div>
@@ -43,10 +43,7 @@
 </Caption>
 
 {#if tx.stake}
-  <Row
-    disabled={true}
-    variant="top"
-    style="background-color: var(--color-almostwhite)">
+  <Row variant="top" style="background-color: var(--color-almostwhite)">
     <div slot="left">
       <Title>{tx.stake}</Title>
     </div>
@@ -57,10 +54,7 @@
   </Row>
 {/if}
 
-<Row
-  disabled={true}
-  variant={feePosition}
-  style="background-color: var(--color-almostwhite)">
+<Row variant={feePosition} style="background-color: var(--color-almostwhite)">
   <div slot="left">
     <Title>Transaction Fee</Title>
   </div>
@@ -71,7 +65,6 @@
 </Row>
 
 <Row
-  disabled={true}
   variant="bottom"
   style="margin-bottom: 32px; background-color: var(--color-almostwhite)">
   <div slot="left">
@@ -87,7 +80,7 @@
   Paid by
 </Caption>
 
-<Row disabled={true} style="background-color: var(--color-almostwhite)">
+<Row style="background-color: var(--color-almostwhite)">
   <div slot="left">
     <Avatar title={tx.payer.name} imageUrl={tx.payer.avatar} />
   </div>
