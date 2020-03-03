@@ -1,5 +1,5 @@
 <script>
-  import { Button } from "../../DesignSystem/Primitive";
+  import { Button, Flex } from "../../DesignSystem/Primitive";
   import { Transaction } from "../../DesignSystem/Component";
 
   export let projectName = null;

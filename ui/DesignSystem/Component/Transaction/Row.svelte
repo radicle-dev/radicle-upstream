@@ -1,5 +1,5 @@
 <script>
-  import { Flex } from "../Primitive";
+  import { Flex } from "../../Primitive";
 
   export let style = null;
 
@@ -45,7 +45,6 @@
   }
 
   .middle {
-    border-radius: 0 0 0 0;
     margin-bottom: -1px;
   }
 

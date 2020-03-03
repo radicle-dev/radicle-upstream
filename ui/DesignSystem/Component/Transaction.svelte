@@ -2,7 +2,7 @@
   import { Caption, Title } from "../../DesignSystem/Primitive";
   import Avatar from "./Avatar.svelte";
   import Rad from "./Rad.svelte";
-  import TxRow from "./TxRow.svelte";
+  import TxRow from "./Transaction/Row.svelte";
 
   export let txMessage = null;
   export let subjectName = null;
