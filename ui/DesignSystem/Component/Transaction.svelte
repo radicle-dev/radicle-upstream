@@ -2,7 +2,7 @@
   import { Caption, Title } from "../../DesignSystem/Primitive";
   import Avatar from "./Avatar.svelte";
   import Rad from "./Rad.svelte";
-  import TxRow from "./Transaction/Row.svelte";
+  import Row from "./Transaction/Row.svelte";
 
   // tx = {
   //   message: "transaction message",
@@ -17,7 +17,7 @@
   //     avatar: "avatar of the owner (optional)"
   //   }
   // }
-  export let tx = {};
+  export let tx = null;
 
   const feePosition = tx.stake ? "middle" : "top";
 </script>
@@ -25,7 +25,7 @@
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Your transaction
 </Caption>
-<TxRow style="margin-bottom: 32px;" disabled={true}>
+<Row style="margin-bottom: 32px;" disabled={true}>
   <div slot="left">
     <Title>{tx.message}</Title>
   </div>
@@ -33,17 +33,17 @@
   <div slot="right">
     <Avatar
       title={tx.subject.name}
-      imgUrl={tx.subject.avatar}
+      imageUrl={tx.subject.avatar}
       variant={tx.subject.kind} />
   </div>
-</TxRow>
+</Row>
 
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Transaction cost
 </Caption>
 
 {#if tx.stake}
-  <TxRow
+  <Row
     disabled={true}
     variant="top"
     style="background-color: var(--color-almostwhite)">
@@ -54,10 +54,10 @@
     <div slot="right">
       <Rad amount={20} style="margin-right: 24px" />
     </div>
-  </TxRow>
+  </Row>
 {/if}
 
-<TxRow
+<Row
   disabled={true}
   variant={feePosition}
   style="background-color: var(--color-almostwhite)">
@@ -68,9 +68,9 @@
   <div slot="right">
     <Rad amount={4} style="margin-right: 24px" size="big" />
   </div>
-</TxRow>
+</Row>
 
-<TxRow
+<Row
   disabled={true}
   variant="bottom"
   style="margin-bottom: 32px; background-color: var(--color-almostwhite)">
@@ -81,18 +81,18 @@
   <div slot="right">
     <Rad amount={24} style="margin-right: 24px" size="big" />
   </div>
-</TxRow>
+</Row>
 
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Paid by
 </Caption>
 
-<TxRow disabled={true} style="background-color: var(--color-almostwhite)">
+<Row disabled={true} style="background-color: var(--color-almostwhite)">
   <div slot="left">
-    <Avatar title={tx.payer.name} imgUrl={tx.payer.avatar} />
+    <Avatar title={tx.payer.name} imageUrl={tx.payer.avatar} />
   </div>
 
   <div slot="right">
     <Rad amount={200} style="margin-right: 24px" size="big" />
   </div>
-</TxRow>
+</Row>

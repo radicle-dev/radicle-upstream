@@ -1,12 +1,12 @@
 <script>
   import { Button, Flex, Text } from "../../DesignSystem/Primitive";
-  import { Avatar, Rad, TxRow } from "../../DesignSystem/Component";
+  import { Avatar, Rad, Row } from "../../DesignSystem/Component";
 
   export let onNextStep = null;
   export let onPreviousStep = null;
 </script>
 
-<TxRow style="margin-bottom: 48px;" active={true}>
+<Row style="margin-bottom: 48px;" active={true}>
   <div slot="left">
     <Avatar title="Your personal wallet" />
   </div>
@@ -14,14 +14,14 @@
   <div slot="right">
     <Rad amount={200} style="margin-right: 24px" />
   </div>
-</TxRow>
+</Row>
 
 <Text
   variant="caption"
   style="color: var(--color-darkgray); margin-bottom: 24px">
   Project wallets
 </Text>
-<TxRow style="margin-bottom: 16px">
+<Row style="margin-bottom: 16px">
   <div slot="left">
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project1.svg"
@@ -32,9 +32,9 @@
   <div slot="right">
     <Rad amount={2387} style="margin-right: 24px" />
   </div>
-</TxRow>
+</Row>
 
-<TxRow style="margin-bottom: 16px">
+<Row style="margin-bottom: 16px">
   <div slot="left">
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project2.svg"
@@ -45,7 +45,7 @@
   <div slot="right">
     <Rad amount={2387} style="margin-right: 24px" />
   </div>
-</TxRow>
+</Row>
 
 <Flex style="margin-top: 48px;">
   <div slot="left">
