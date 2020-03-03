@@ -1,6 +1,6 @@
 <script>
   import ClickOutside from "svelte-click-outside";
-  import { Icon } from "../Primitive";
+  import { Icon, Text } from "../Primitive";
 
   let triggerEl;
   let expanded = false;
@@ -49,9 +49,11 @@
     right: 0;
     width: 240px;
     margin-top: 15px;
-    background-color: white;
-    box-shadow: 0px 4px 8px rgba(51, 51, 51, 0.08);
+    background-color: var(--color-white);
+    box-shadow: 0px 4px 8px var(--color-light-shadow-gray);
     border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--color-lightgray);
   }
 
   .header {
@@ -89,14 +91,14 @@
     {#if expanded}
       <div class="modal" hidden={!expanded}>
         <div class="header">
-          <p>{headerTitle}</p>
+          <Text>{headerTitle}</Text>
           <svelte:component this={Icon.Copy} style="margin-left: 8px;" />
         </div>
         <div class="menu">
           {#each menuItems as item}
             <div class="menu-item" on:click={handleItemSelection(item)}>
               <svelte:component this={item.icon} style="margin-right: 12px" />
-              <p>{item.title}</p>
+              <Text>{item.title}</Text>
             </div>
           {/each}
         </div>

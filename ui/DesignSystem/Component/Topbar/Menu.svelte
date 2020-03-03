@@ -8,34 +8,34 @@
 </script>
 
 <style>
-  ul {
+  .menu-list {
     height: 100%;
     align-items: center;
     display: flex;
     flex-direction: row;
   }
 
-  li {
+  .menu-list-item {
     margin-left: 24px;
     margin-right: 8px;
     align-items: center;
     line-height: 100%;
   }
 
-  nav :global(li:hover p) {
+  nav :global(.menu-list-item:hover p) {
     color: var(--color-purple) !important;
     font-family: var(--typeface-medium);
   }
 
-  nav :global(li:hover .icon svg) {
+  nav :global(.menu-list-item:hover .icon svg) {
     fill: var(--color-purple);
   }
 </style>
 
 <nav data-cy="project-topbar-menu">
-  <ul>
+  <ul class="menu-list">
     {#each items as item, i}
-      <li>
+      <li class="menu-list-item">
         <MenuItem
           icon={item.icon}
           title={item.title}

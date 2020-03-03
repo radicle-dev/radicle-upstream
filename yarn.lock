@@ -7014,9 +7014,9 @@ svelte-apollo@^0.3.0:
     apollo-utilities "^1.2.1"
     svelte-observable "^0.4.0"
 
-"svelte-click-outside@https://github.com/sarahscott/svelte-click-outside":
+"svelte-click-outside@https://github.com/radicle-dev/svelte-click-outside#10e47e6359f943d45b72c2f3fc7ccc8036b60fac":
   version "1.0.0"
-  resolved "https://github.com/sarahscott/svelte-click-outside#a250f4980130f77078c29e530522b020379dc109"
+  resolved "https://github.com/radicle-dev/svelte-click-outside#10e47e6359f943d45b72c2f3fc7ccc8036b60fac"
 
 svelte-observable@^0.4.0:
   version "0.4.0"
