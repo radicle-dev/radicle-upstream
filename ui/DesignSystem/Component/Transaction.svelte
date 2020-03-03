@@ -17,7 +17,7 @@
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Your transaction
 </Caption>
-<TxRow style="margin-bottom: 16px;" disabled={true}>
+<TxRow style="margin-bottom: 32px;" disabled={true}>
   <div slot="left">
     <Title>{txMessage}</Title>
   </div>
@@ -62,7 +62,7 @@
 <TxRow
   disabled={true}
   variant="bottom"
-  style="margin-bottom: 16px; background-color: var(--color-almostwhite)">
+  style="margin-bottom: 32px; background-color: var(--color-almostwhite)">
   <div slot="left">
     <Title style="color: var(--color-pink);" variant="big">Total</Title>
   </div>
