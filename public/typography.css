@@ -1,38 +1,38 @@
 @font-face {
-  font-family: "GT America Bold";
-  src: url("fonts/GTAmericaBold.otf");
+  font-family: "Inter Bold";
+  src: url("fonts/Inter-Bold.otf");
 }
 
 @font-face {
-  font-family: "GT America Medium";
-  src: url("fonts/GTAmericaMedium.otf");
+  font-family: "Inter SemiBold";
+  src: url("fonts/Inter-SemiBold.otf");
 }
 
 @font-face {
-  font-family: "GT America Regular";
-  src: url("fonts/GTAmericaRegular.otf");
+  font-family: "Inter Regular";
+  src: url("fonts/Inter-Regular.otf");
 }
 
 @font-face {
-  font-family: "GT America Mono Bold";
-  src: url("fonts/GTAmericaMonoBold.otf");
+  font-family: "SourceCodePro Bold";
+  src: url("fonts/SourceCodePro-Bold.otf");
 }
 
 @font-face {
-  font-family: "GT America Mono Medium";
-  src: url("fonts/GTAmericaMonoMedium.otf");
+  font-family: "SourceCodePro SemiBold";
+  src: url("fonts/SourceCodePro-Semibold.otf");
 }
 
 @font-face {
-  font-family: "GT America Mono Regular";
-  src: url("fonts/GTAmericaMonoRegular.otf");
+  font-family: "SourceCodePro Regular";
+  src: url("fonts/SourceCodePro-Regular.otf");
 }
 
 :root {
-  --typeface-bold: "GT America Bold";
-  --typeface-medium: "GT America Medium";
-  --typeface-regular: "GT America Regular";
-  --typeface-mono-bold: "GT America Mono Bold";
-  --typeface-mono-medium: "GT America Mono Medium";
-  --typeface-mono-regular: "GT America Mono Regular";
+  --typeface-bold: "Inter Bold";
+  --typeface-medium: "Inter SemiBold";
+  --typeface-regular: "Inter Regular";
+  --typeface-mono-bold: "SourceCodePro Bold";
+  --typeface-mono-medium: "SourceCodePro SemiBold";
+  --typeface-mono-regular: "SourceCodePro Regular";
 }

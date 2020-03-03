@@ -5,7 +5,8 @@
 <style>
   .code {
     font-family: var(--typeface-mono-regular);
-    font-size: 14px;
+    font-size: 16px;
+    line-height: 20px;
   }
 </style>
 
