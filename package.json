@@ -71,6 +71,7 @@
     "sirv-cli": "^0.4.5",
     "standard-version": "^7.1.0",
     "svelte": "^3.18.1",
+    "svelte-click-outside": "https://github.com/sarahscott/svelte-click-outside",
     "svelte-spa-router": "^2.0.0",
     "wait-on": "^4.0.0"
   },

@@ -7014,6 +7014,10 @@ svelte-apollo@^0.3.0:
     apollo-utilities "^1.2.1"
     svelte-observable "^0.4.0"
 
+"svelte-click-outside@https://github.com/sarahscott/svelte-click-outside":
+  version "1.0.0"
+  resolved "https://github.com/sarahscott/svelte-click-outside#a250f4980130f77078c29e530522b020379dc109"
+
 svelte-observable@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/svelte-observable/-/svelte-observable-0.4.0.tgz#74756e42fa3516c154d53f4244fa9cf691854224"

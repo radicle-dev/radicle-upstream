@@ -1,5 +1,6 @@
 <script>
-  import { ClickOutside, Icon } from "../Primitive";
+  import ClickOutside from "svelte-click-outside";
+  import { Icon } from "../Primitive";
 
   let triggerEl;
   let expanded = false;
@@ -84,7 +85,7 @@
   <button bind:this={triggerEl} on:click={toggleModal}>
     <svelte:component this={Icon.Ellipses} />
   </button>
-  <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]}>
+  <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
     {#if expanded}
       <div class="modal" hidden={!expanded}>
         <div class="header">
