@@ -87,7 +87,7 @@
     text-align: center;
     border-radius: 2px;
     padding: 4px 10px 6px 8px;
-    box-shadow: 0px 4px 8px rgba(51, 51, 51, 0.08);
+    box-shadow: 0px 4px 8px var(--color-lightgray-opacity-08);
 
     position: absolute;
     opacity: 0;

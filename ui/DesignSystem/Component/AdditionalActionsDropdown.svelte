@@ -50,7 +50,7 @@
     width: 240px;
     margin-top: 15px;
     background-color: var(--color-white);
-    box-shadow: 0px 4px 8px var(--color-light-shadow-gray);
+    box-shadow: 0px 4px 8px var(--color-lightgray-opacity-08);
     border-radius: 4px;
     cursor: pointer;
     border: 1px solid var(--color-lightgray);
