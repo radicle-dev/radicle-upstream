@@ -4,14 +4,22 @@
   import Rad from "./Rad.svelte";
   import TxRow from "./Transaction/Row.svelte";
 
-  export let txMessage = null;
-  export let subjectName = null;
-  export let subjectAvatar = null;
-  export let stakeName = null;
-  export let payerName = null;
-  export let payerAvatar = null;
+  // tx = {
+  //   message: "transaction message",
+  //   stake: "name of stake (optional)",
+  //   subject: {
+  //     name: "name of the transaction target",
+  //     kind: "project" || "user"
+  //     avatar: "avatar url of the target (optional)"
+  //   },
+  //   payer: {
+  //     name: "name of the owner of the paying wallet"
+  //     avatar: "avatar of the owner (optional)"
+  //   }
+  // }
+  export let tx = {};
 
-  const feePosition = stakeName ? "middle" : "top";
+  const feePosition = tx.stake ? "middle" : "top";
 </script>
 
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
@@ -19,11 +27,14 @@
 </Caption>
 <TxRow style="margin-bottom: 32px;" disabled={true}>
   <div slot="left">
-    <Title>{txMessage}</Title>
+    <Title>{tx.message}</Title>
   </div>
 
   <div slot="right">
-    <Avatar title={subjectName} imgUrl={subjectAvatar} />
+    <Avatar
+      title={tx.subject.name}
+      imgUrl={tx.subject.avatar}
+      variant={tx.subject.kind} />
   </div>
 </TxRow>
 
@@ -31,13 +42,13 @@
   Transaction cost
 </Caption>
 
-{#if stakeName}
+{#if tx.stake}
   <TxRow
     disabled={true}
     variant="top"
     style="background-color: var(--color-almostwhite)">
     <div slot="left">
-      <Title>{stakeName}</Title>
+      <Title>{tx.stake}</Title>
     </div>
 
     <div slot="right">
@@ -78,7 +89,7 @@
 
 <TxRow disabled={true} style="background-color: var(--color-almostwhite)">
   <div slot="left">
-    <Avatar title={payerName} imgUrl={payerAvatar} />
+    <Avatar title={tx.payer.name} imgUrl={tx.payer.avatar} />
   </div>
 
   <div slot="right">

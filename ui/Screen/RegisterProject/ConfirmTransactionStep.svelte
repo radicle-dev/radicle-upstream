@@ -6,13 +6,22 @@
 
   export let onNextStep = null;
   export let onPreviousStep = null;
+
+  const tx = {
+    message: "Name registration",
+    stake: "Project Registration Fee",
+    subject: {
+      name: projectName,
+      kind: "project"
+    },
+    payer: {
+      name: "cloudhead",
+      kind: "user"
+    }
+  };
 </script>
 
-<Transaction
-  txMessage="Name registration"
-  subjectName={projectName}
-  stakeName="Project Registration Fee"
-  payerName="cloudhead" />
+<Transaction {tx} />
 
 <Flex style="margin-top: 48px;">
   <div slot="left">
