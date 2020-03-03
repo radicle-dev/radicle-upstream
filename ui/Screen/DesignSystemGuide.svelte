@@ -435,6 +435,27 @@
     </Swatch>
 
     <Swatch>
+      <Input.Handle
+        placeholder="Enter user name"
+        valid={true}
+        validationMessage="Handle already taken">
+        <Avatar
+          imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg" />
+      </Input.Handle>
+    </Swatch>
+
+    <Swatch>
+      <Input.Handle
+        placeholder="Enter user name."
+        valid={false}
+        validationMessage="Handle already taken"
+        value="myUser">
+        <Avatar
+          imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg" />
+      </Input.Handle>
+    </Swatch>
+
+    <Swatch>
       <Input.Dropdown items={['master', 'dev']} value={'dev'} />
     </Swatch>
 
