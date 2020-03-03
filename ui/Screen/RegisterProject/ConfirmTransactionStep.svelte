@@ -9,7 +9,7 @@
 
   const tx = {
     message: "Name registration",
-    stake: "Project Registration Fee",
+    stake: "Project registration fee",
     subject: {
       name: projectName,
       kind: "project"
@@ -23,7 +23,7 @@
 
 <Transaction {tx} />
 
-<Flex style="margin-top: 48px;">
+<Flex style="margin-top: 32px;">
   <div slot="left">
     <Button
       disabled={false}

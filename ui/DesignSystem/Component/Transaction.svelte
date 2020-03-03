@@ -49,7 +49,7 @@
     </div>
 
     <div slot="right">
-      <Rad amount={20} style="margin-right: 24px" />
+      <Rad amount={20} />
     </div>
   </Row>
 {/if}
@@ -60,7 +60,7 @@
   </div>
 
   <div slot="right">
-    <Rad amount={4} style="margin-right: 24px" size="big" />
+    <Rad amount={4} size="big" />
   </div>
 </Row>
 
@@ -72,7 +72,7 @@
   </div>
 
   <div slot="right">
-    <Rad amount={24} style="margin-right: 24px" size="big" />
+    <Rad amount={24} size="big" />
   </div>
 </Row>
 
@@ -86,6 +86,6 @@
   </div>
 
   <div slot="right">
-    <Rad amount={200} style="margin-right: 24px" size="big" />
+    <Rad amount={200} size="big" />
   </div>
 </Row>

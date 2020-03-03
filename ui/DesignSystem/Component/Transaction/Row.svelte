@@ -14,8 +14,13 @@
 
 <style>
   .row {
-    padding: 18px 16px 18px 16px;
+    padding-left: 16px;
+    padding-right: 16px;
     border: 1px solid var(--color-lightgray);
+    height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .row:hover {
@@ -37,11 +42,11 @@
   }
 
   .single {
-    border-radius: 4px;
+    border-radius: 2px;
   }
 
   .bottom {
-    border-radius: 0 0 4px 4px;
+    border-radius: 0 0 2px 2px;
   }
 
   .middle {
@@ -50,7 +55,7 @@
 
   .top {
     margin-bottom: -1px;
-    border-radius: 4px 4px 0 0;
+    border-radius: 2px 2px 0 0;
   }
 </style>
 

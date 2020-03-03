@@ -504,7 +504,7 @@
           </div>
 
           <div slot="right">
-            <Rad amount={4} style="margin-right: 24px" />
+            <Rad amount={4} />
           </div>
         </Row>
         <Row variant="middle">
@@ -513,7 +513,7 @@
           </div>
 
           <div slot="right">
-            <Rad amount={4} style="margin-right: 24px" />
+            <Rad amount={4} />
           </div>
         </Row>
         <Row variant="bottom">
@@ -522,7 +522,7 @@
           </div>
 
           <div slot="right">
-            <Rad amount={8} style="margin-right: 24px" size="big" />
+            <Rad amount={8} size="big" />
           </div>
         </Row>
       </div>
