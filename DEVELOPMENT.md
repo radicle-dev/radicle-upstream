@@ -447,6 +447,9 @@ files and integration tests. The integration tests are meant to assert correctne
 of the API provided by the proxy, these can be found under `proxy/tests`. To find
 out where to place and how to lay out tests, check the Rust book [test chapter][rt].
 
+💡 *You'll have to run the submodule commands every time there are any updates
+to the test fixture repository.*
+
 ### File structure
 
 The GraphQL API exposes the application's domain logic. Therefore we try to treat
@@ -474,10 +477,6 @@ proxy/src/
 ├── main.rs
 └── registry.rs
 ```
-
-💡 *You'll have to run the submodule commands every time there are any updates
-to the test fixture repository.*
-
 
 ## Scripts
 
