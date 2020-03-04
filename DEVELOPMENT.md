@@ -484,24 +484,31 @@ To get a list of all available script commands, run: `yarn run`.
 Here is a list of the most commonly used ones:
 
 ```sh
-yarn start            # Start Upstream in development mode
+yarn start                # Start Upstream in development mode
 
-yarn test             # Run Cypress end-to-end tests
-yarn test:debug       # Show the Cypress GUI, handy for visual debugging
+yarn test                 # Run Cypress end-to-end tests
+yarn test:debug           # Show the Cypress GUI, handy for visual debugging
 
-yarn dist             # Bundles Upstream into an installable package
+yarn dist                 # Bundles Upstream into an installable package
 
-yarn generate:colors  # Update color CSS variables in public/colors.css from
-                      # colors.json
+yarn generate:colors      # Update color CSS variables in public/colors.css from
+                          # colors.json
 
-yarn graphiql         # Open GraphiQL with explorer extension in browser
+yarn graphiql             # Open GraphiQL with explorer extension in browser
 
-yarn release          # Start a two-step process to cut a new release, for more
-                      # details have a look at ../DEVELOPMENT.md
+yarn release              # Start a two-step process to cut a new release, for more
+                          # details have a look at ../DEVELOPMENT.md
 
-yarn prettier:check   # Check UI code formatting
-yarn prettier:write   # Auto-format UI code
-yarn lint             # Check UI code for linting errors
+yarn prettier:check       # Check UI code formatting
+yarn prettier:write       # Auto-format UI code
+yarn lint                 # Check UI code for linting errors
+
+yarn proxy:build          # Build the proxy binary
+yarn proxy:build:release  # Build the release version of the proxy, stripped of
+debug symbols
+yarn proxy:start          # Start only the proxy with its default configuration
+yarn proxy:start:test     # Start the proxy in test mode, where state is
+isolated and lives in memory or temporary directories
 ```
 
 ## CI setup
