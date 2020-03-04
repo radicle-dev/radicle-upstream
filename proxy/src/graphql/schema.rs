@@ -329,10 +329,10 @@ impl ControlMutation {
         let (id, meta) = crate::coco::init_project(
             &ctx.librad_paths.read().unwrap(),
             platinum_into.to_str().unwrap(),
-            "git-platinum",
-            "fixture data",
-            "master",
-            "https://avatars0.githubusercontent.com/u/48290027",
+            &metadata.name,
+            &metadata.description,
+            &metadata.default_branch,
+            &metadata.img_url,
         )
         .unwrap();
         let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
