@@ -1,7 +1,7 @@
 <script>
   import Text from "../Text.svelte";
   import Icon from "../Icon";
-  import Avatar from "../../Component/Avatar.svelte";
+  import Avatar from "../Avatar.svelte";
 
   export let style = null;
   export let placeholder = null;

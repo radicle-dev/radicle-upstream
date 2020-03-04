@@ -1,5 +1,5 @@
 <script>
-  import { Title } from "../Primitive";
+  import Title from "./Title.svelte";
 
   export let style = null;
 

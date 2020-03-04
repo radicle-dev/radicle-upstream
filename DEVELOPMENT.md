@@ -188,10 +188,9 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { Avatar, Placeholder, Rad } from "../DesignSystem/Component";
+      import { Placeholder, Rad } from "../DesignSystem/Component";
     </script>
 
-    <Avatar size="big" title="My name" />
     <Placeholder style="width: 300px; height: 100px" />
     <Rad amount="200" />
     ```
@@ -229,7 +228,7 @@ Finally, our file and directory naming rules are as follows:
 ├── App.svelte                     # Root component
 ├── DesignSystem
 │   ├── Component
-│   │   ├── Avatar.svelte          # Simple component
+│   │   ├── Rad.svelte             # Simple component
 │   │   ├── Sidebar                # Folder containing Sidebar fragments
 │   │   │   ├── Avatar.svelte      # These are private to Sidebar.svelte
 │   │   │   ├── Item.svelte        # and should not be exported via index.js

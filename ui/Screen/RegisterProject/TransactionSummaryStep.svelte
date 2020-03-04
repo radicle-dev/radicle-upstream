@@ -1,7 +1,13 @@
 <script>
   import { pop } from "svelte-spa-router";
-  import { Button, Flex, Text, Title } from "../../DesignSystem/Primitive";
-  import { Avatar, Rad, Row } from "../../DesignSystem/Component";
+  import {
+    Avatar,
+    Button,
+    Flex,
+    Text,
+    Title
+  } from "../../DesignSystem/Primitive";
+  import { Rad, Row } from "../../DesignSystem/Component";
 
   export let projectName = null;
   export let timestamp = null;

@@ -1,5 +1,6 @@
 <script>
   import {
+    Avatar,
     Button,
     Code,
     Caption,
@@ -11,7 +12,6 @@
   } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
-    Avatar,
     Notification,
     Placeholder,
     ProjectCard,

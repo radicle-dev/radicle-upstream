@@ -1,7 +1,7 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import Avatar from "./Avatar.svelte";
+  import Avatar from "../Primitive";
   import Menu from "./Topbar/Menu.svelte";
 
   export let style = null;

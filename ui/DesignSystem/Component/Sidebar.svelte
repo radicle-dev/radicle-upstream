@@ -1,8 +1,7 @@
 <script>
   import { location } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
-  import { Icon, Title } from "../Primitive";
-  import Avatar from "../Component/Avatar.svelte";
+  import { Avatar, Icon, Title } from "../Primitive";
 
   import * as path from "../../lib/path.js";
 </script>
