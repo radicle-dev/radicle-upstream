@@ -78,15 +78,12 @@ const startProxy = () => {
   proxyChildProcess = execFile(
     proxyPath,
     ["--registry=emulator"],
-    (error, stdout, _stderr) => {
+    (error, _stdout, _stderr) => {
       if (error) {
         console.log(error);
       }
-      console.log(stdout);
     }
   );
-
-  console.log(proxyChildProcess);
 };
 
 app.on("will-quit", () => {
