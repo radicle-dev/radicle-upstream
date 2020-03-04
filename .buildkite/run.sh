@@ -58,7 +58,7 @@ fi
 echo "--- Updating submodules"
 time git submodule update --init --recursive
 time git submodule foreach "git fetch --all"
-time git submodule foreach "git checkout -b dev -t origin/dev"
+time git submodule foreach "git checkout -f -b dev -t origin/dev"
 time git submodule foreach "git checkout master"
 
 echo "--- Set custom git config"
