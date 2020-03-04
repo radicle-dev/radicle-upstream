@@ -15,7 +15,6 @@ futures = { version = "0.3", features = [ "compat" ] }
 hex = "0.4"
 juniper = "0.14"
 juniper_codegen = "0.14"
-juniper_warp = "0.5"
 log = "0.4"
 nonempty = "0.2"
 pico-args = "0.3"
@@ -26,9 +25,10 @@ serde_cbor = "0.11.1"
 serde_derive = "1.0"
 serde_json = "1.0"
 tempfile = "3.1"
+tokio = { version = "0.2", features = [ "macros" ] }
 url17 = { package = "url", version = "1.7" }
 url = "2.1"
-warp = "0.1"
+warp = "0.2"
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"

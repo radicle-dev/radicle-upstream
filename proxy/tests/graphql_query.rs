@@ -217,6 +217,7 @@ fn branches() {
                 res,
                 graphql_value!({
                     "branches": [
+                        "dev",
                         "master",
                         "rad/contributor",
                         "rad/project",
@@ -244,6 +245,7 @@ fn local_branches() {
                 res,
                 graphql_value!({
                     "localBranches": [
+                        "dev",
                         "master",
                         "origin/HEAD",
                         "origin/dev",
