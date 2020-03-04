@@ -5,7 +5,7 @@ const VERSION_MATCH = /bumping version in package.json from (.*) to (.*)/;
 const PULL_REQUEST_MATCH =
   "https://github.com/radicle-dev/radicle-upstream/pull/(.*)";
 
-const SV_COMMAND = "yarn run standard-version --infile ../CHANGELOG.md";
+const SV_COMMAND = "yarn run standard-version --infile ./CHANGELOG.md";
 
 async function main() {
   console.log();
