@@ -53,7 +53,7 @@
     </div>
   {/if}
 
-  <div style={`--title: "${title}"`} class="item" class:active>{title}</div>
+  <p style={`--title: "${title}"`} class="item" class:active>{title}</p>
 </a>
 
 {#if active}
