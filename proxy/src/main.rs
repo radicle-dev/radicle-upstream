@@ -13,7 +13,8 @@ struct Args {
     test: bool,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env::set_if_unset("RUST_BACKTRACE", "full");
     env::set_if_unset("RUST_LOG", "info");
     pretty_env_logger::init();
@@ -24,14 +25,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         test: args.contains("--test"),
     };
 
+    let devnet_host = url17::Host::parse("35.241.138.91")?;
     let registry_client = match args.registry.as_str() {
         "devnet" => radicle_registry_client::Client::new_emulator(),
-        "emulator" => futures::executor::block_on(construct_registry_client()),
+        "emulator" => radicle_registry_client::Client::create_with_executor(devnet_host)
+            .await
+            .expect("unable to construct devnet client"),
         _ => panic!(format!("unknown registry source '{}'", args.registry)),
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-    let (dummy_repo, librad_paths) = if args.test {
+    let librad_paths = if args.test {
         let librad_paths =
             librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
 
@@ -39,26 +43,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &librad_paths,
             temp_dir.path().to_str().expect("path extraction failed"),
         )
-        .expect("fixture setup failed");
+        .expect("fixture creation failed");
 
-        ("../fixtures/git-platinum", librad_paths)
+        librad_paths
     } else {
-        (
-            "..",
-            librad::paths::Paths::new().expect("librad paths failed"),
-        )
+        librad::paths::Paths::new()?
     };
 
     info!("Starting GraphQL HTTP API");
-    graphql::api::run(dummy_repo.into(), librad_paths, registry_client);
+    graphql::api::run(librad_paths, registry_client, args.test).await;
 
     Ok(())
-}
-
-/// Helper to set up the Registry client against devnet.
-async fn construct_registry_client() -> radicle_registry_client::Client {
-    let node_host = url17::Host::parse("35.241.138.91").expect("unable to parse URL");
-    radicle_registry_client::Client::create_with_executor(node_host)
-        .await
-        .expect("unable to construct registry client")
 }

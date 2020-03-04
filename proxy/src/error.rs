@@ -1,4 +1,4 @@
-//! Domain errors returned by the API.
+//! Proxy library errors usable for caller control flow and additional context for API responses.
 
 use librad::meta::common::url;
 use librad::surf;
@@ -13,6 +13,15 @@ pub enum ProjectValidation {
     NameTooLong,
     /// Org ids (String32) can only be at most 32 bytes.
     OrgTooLong,
+}
+
+/// Validation errors for inputs of user registrations.
+#[derive(Debug)]
+pub enum UserValidation {
+    /// Given handle is too long.
+    HandleTooLong,
+    /// Given id is too long.
+    IdTooLong,
 }
 
 /// All error variants the API will return.
@@ -38,6 +47,8 @@ pub enum Error {
     Url(url::ParseError),
     /// Project name validation.
     ProjectValidation(ProjectValidation),
+    /// User registration validation errors.
+    UserValidation(UserValidation),
     /// Issues with the Radicle protocol.
     Protocol(ProtocolError),
     /// Issues with the Radicle runtime.
@@ -115,6 +126,12 @@ impl From<DispatchError> for Error {
 impl From<ProjectValidation> for Error {
     fn from(error: ProjectValidation) -> Self {
         Self::ProjectValidation(error)
+    }
+}
+
+impl From<UserValidation> for Error {
+    fn from(error: UserValidation) -> Self {
+        Self::UserValidation(error)
     }
 }
 

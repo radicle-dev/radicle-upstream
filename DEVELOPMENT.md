@@ -34,6 +34,10 @@ We don't keep around a copy of an SDL schema file as they tend to get outdated
 quickly and it is way easier to explore the API via introspection. You can read
 more on that in the [GraphiQL Explorer](#graphiql-explorer) section below.
 
+If you need the schema to guide you writing new queries or mutations, you can
+extract the latest schema version from the proxy via `yarn generate:schema`.
+It'll be saved into `./schema.gql`.
+
 
 ## UI
 
@@ -373,6 +377,36 @@ be used so changes to global styling can be applied in a central place.
 
 You can build and package Upstream with: `yarn dist`. The generated package
 will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|snap}`.
+
+## Scripts
+
+To get a list of all available script commands, run: `yarn run`.
+Here is a list of the most commonly used ones:
+
+```sh
+yarn start            # Start Upstream in development mode
+
+yarn test             # Run Cypress end-to-end tests
+yarn test:debug       # Show the Cypress GUI, handy for visual debugging
+
+yarn dist             # Bundles Upstream into an installable package
+
+yarn generate:colors  # Update color CSS variables in public/colors.css from
+                      # colors.json
+
+yarn generate:schema  # Start proxy and save the latest GraphQL schema
+                      # in ./schema.gql
+
+yarn graphiql         # Open GraphiQL with explorer extension in browser
+
+yarn release          # Start a two-step process to cut a new release, for more
+                      # details have a look at ../DEVELOPMENT.md
+
+yarn prettier:check   # Check UI code formatting
+yarn prettier:write   # Auto-format UI code
+yarn lint             # Check UI code for linting errors
+```
+
 
 ## Proxy
 

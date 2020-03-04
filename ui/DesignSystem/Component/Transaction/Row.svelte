@@ -1,21 +1,26 @@
 <script>
-  import { Flex } from "../Primitive";
+  import { Flex } from "../../Primitive";
 
   export let style = null;
 
+  export let variant = "single"; // top || middle || bottom
   export let active = false;
-  export let disabled = false;
+  export let disabled = true;
 
   $: disabledClass = disabled ? "disabled" : null;
   $: activeClass = active ? "active" : null;
-  $: rowClass = ["row", activeClass, disabledClass].join(" ");
+  $: rowClass = ["row", activeClass, disabledClass, variant].join(" ");
 </script>
 
 <style>
   .row {
-    padding: 18px 16px 18px 16px;
+    padding-left: 16px;
+    padding-right: 16px;
     border: 1px solid var(--color-lightgray);
-    border-radius: 4px;
+    height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .row:hover {
@@ -34,6 +39,23 @@
   .row.active {
     box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-pink));
     border: 1px solid var(--focus-outline-color, var(--color-pink));
+  }
+
+  .single {
+    border-radius: 2px;
+  }
+
+  .bottom {
+    border-radius: 0 0 2px 2px;
+  }
+
+  .middle {
+    margin-bottom: -1px;
+  }
+
+  .top {
+    margin-bottom: -1px;
+    border-radius: 2px 2px 0 0;
   }
 </style>
 

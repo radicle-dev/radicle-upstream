@@ -10,17 +10,20 @@
     Numeric
   } from "../DesignSystem/Primitive";
   import {
+    AdditionalActionsDropdown,
     Avatar,
     Notification,
     Placeholder,
     ProjectCard,
     Rad,
+    Row,
     StepCounter,
     UserCard
   } from "../DesignSystem/Component";
 
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
+  import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
 
   const colors = Array.from(document.styleSheets)
     .filter(
@@ -52,10 +55,27 @@
     username: "Rudolfs Osins",
     avatar: "https://avatars.dicebear.com/v2/jdenticon/two.svg"
   };
+
+  const dropdownMenuItems = [
+    {
+      title: "Add something",
+      icon: Icon.Plus,
+      event: () => console.log("event(Add Something)")
+    },
+    {
+      title: "Add something else",
+      icon: Icon.Plus,
+      event: () => console.log("event(Add Something Else)")
+    },
+    {
+      title: "Send something",
+      icon: Icon.ArrowUp,
+      event: () => console.log("event(Send Something)")
+    }
+  ];
 </script>
 
 <style>
-  div,
   table {
     margin-bottom: 32px;
   }
@@ -80,24 +100,59 @@
     {/each}
   </Section>
 
-  <Section
-    title="Typography"
-    subTitle="Using GT America and GT America Mono from Grill Type">
+  <Section title="Typography" subTitle="Using Inter and Source Code Pro fonts">
 
-    <Title variant="huge">Open Source Coin</Title>
-    <Title variant="big">Open Source Coin</Title>
-    <Title>Open Source Coin</Title>
+    <TypographySwatch title="huge Title">
+      <Title variant="huge">Open Source Coin</Title>
+    </TypographySwatch>
 
-    <Text>Open Source Coin</Text>
-    <Text variant="small">Open Source Coin</Text>
-    <Text variant="smallBold">Open Source Coin</Text>
+    <TypographySwatch title="big Title">
+      <Title variant="big">Open Source Coin</Title>
+    </TypographySwatch>
 
-    <Caption variant="table">Open Source Coin</Caption>
-    <Code>Open Source Coin</Code>
+    <TypographySwatch title="medium Title">
+      <Title variant="medium">Open Source Coin</Title>
+    </TypographySwatch>
 
-    <Numeric variant="big">0123456789</Numeric>
-    <Numeric>0123456789</Numeric>
-    <Numeric variant="small">0123456789</Numeric>
+    <TypographySwatch title="regular Title">
+      <Title>Open Source Coin</Title>
+    </TypographySwatch>
+
+    <TypographySwatch title="regular Text">
+      <Text>Open Source Coin</Text>
+    </TypographySwatch>
+
+    <TypographySwatch title="small Text">
+      <Text variant="small">Open Source Coin</Text>
+    </TypographySwatch>
+
+    <TypographySwatch title="tiny Text">
+      <Text variant="tiny">Open Source Coin</Text>
+    </TypographySwatch>
+
+    <TypographySwatch title="Code">
+      <Code>Open Source Coin</Code>
+    </TypographySwatch>
+
+    <TypographySwatch title="Caption">
+      <Caption>Open Source Coin</Caption>
+    </TypographySwatch>
+
+    <TypographySwatch title="big Numeric">
+      <Numeric variant="big">0123456789</Numeric>
+    </TypographySwatch>
+
+    <TypographySwatch title="regular Numeric">
+      <Numeric>0123456789</Numeric>
+    </TypographySwatch>
+
+    <TypographySwatch title="small Numeric">
+      <Numeric variant="small">0123456789</Numeric>
+    </TypographySwatch>
+
+    <TypographySwatch title="tiny Numeric">
+      <Numeric variant="tiny">0123456789</Numeric>
+    </TypographySwatch>
   </Section>
 
   <Section
@@ -105,12 +160,15 @@
     subTitle="Icons at 16px, 24px, 36px and 64px width and height with 2px
     stroke weight, multiple color variations">
 
+    <Icon.Badge />
+    <Icon.ArrowUp />
     <Icon.Branch />
     <Icon.Carret />
     <Icon.CarretBig />
     <Icon.Check />
     <Icon.CheckCircle />
     <Icon.Commit />
+    <Icon.Copy />
     <Icon.Cross />
     <Icon.CrossBig />
     <Icon.Ellipse />
@@ -128,6 +186,7 @@
     <Icon.Issues />
     <Icon.Member />
     <Icon.Minus />
+    <Icon.Peer />
     <Icon.Plus />
     <Icon.Projects />
     <Icon.Revisions />
@@ -437,12 +496,57 @@
       <ProjectCard
         title="Radicle"
         description="Best project in the world"
-        imgUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
         isRegistered={true} />
     </Swatch>
 
     <Swatch>
       <UserCard {user} />
+    </Swatch>
+  </Section>
+
+  <Section title="Transaction Row" subTitle="Single row and combined">
+    <Swatch>
+      <Row style="width:100%" disabled={false}>
+        <div slot="left">
+          <Title>Your Wallet</Title>
+        </div>
+
+        <div slot="right">
+          <Avatar title="user" />
+        </div>
+      </Row>
+    </Swatch>
+
+    <Swatch>
+      <div style="flex-direction: column; width: 100%">
+        <Row variant="top">
+          <div slot="left">
+            <Title>Cost 1</Title>
+          </div>
+
+          <div slot="right">
+            <Rad amount={4} />
+          </div>
+        </Row>
+        <Row variant="middle">
+          <div slot="left">
+            <Title>Cost 2</Title>
+          </div>
+
+          <div slot="right">
+            <Rad amount={4} />
+          </div>
+        </Row>
+        <Row variant="bottom">
+          <div slot="left">
+            <Title>Total</Title>
+          </div>
+
+          <div slot="right">
+            <Rad amount={8} size="big" />
+          </div>
+        </Row>
+      </div>
     </Swatch>
   </Section>
 
@@ -458,6 +562,12 @@
 
     <Swatch>
       <StepCounter step={2} of={7} />
+    </Swatch>
+
+    <Swatch>
+      <AdditionalActionsDropdown
+        headerTitle="Copy this title"
+        menuItems={dropdownMenuItems} />
     </Swatch>
   </Section>
 </div>
