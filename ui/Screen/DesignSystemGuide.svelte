@@ -193,6 +193,7 @@
     <Icon.Search />
     <Icon.SearchSmall />
     <Icon.Source />
+    <Icon.Spinner />
   </Section>
 
   <Section
@@ -439,6 +440,28 @@
         placeholder="Enter user name"
         style="width: 100%"
         valid={true}
+        variant="register"
+        on:input={() => {
+          console.log('event(Input changed)');
+        }} />
+    </Swatch>
+
+    <Swatch>
+      <Input.Text
+        placeholder="Enter user name"
+        style="width: 100%"
+        valid={true}
+        value="user123"
+        variant="register" />
+    </Swatch>
+
+    <Swatch>
+      <Input.Text
+        placeholder="Enter user name"
+        style="width: 100%"
+        valid={true}
+        validationPending="true"
+        value="user123"
         variant="register" />
     </Swatch>
 

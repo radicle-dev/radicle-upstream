@@ -12,6 +12,7 @@
   export let valid = true;
   export let validationMessage = null;
   export let variant = "plain"; // plain || register
+  export let validationPending = false;
 </script>
 
 <style>
@@ -62,12 +63,13 @@
 <div {style} class="wrapper">
   <input
     data-cy={dataCy}
-    class:invalid={!valid}
+    class:invalid={!valid && !validationPending}
     class:register={variant === 'register'}
     {placeholder}
     bind:value
     {disabled}
-    on:change />
+    on:change
+    on:input />
   {#if variant === 'register'}
     <Avatar
       variant="user"
@@ -76,7 +78,19 @@
       absolute; top: 0px; left: 8px" />
   {/if}
 
-  {#if !valid && validationMessage}
+  {#if variant === 'register'}
+    {#if validationPending}
+      <Icon.Spinner
+        style="justify-content: flex-start; position: absolute; top: 13px;
+        right: 15px;" />
+    {:else if value && valid}
+      <Icon.CheckCircle
+        style="fill: var(--color-green); justify-content: flex-start; position:
+        absolute; top: 13px; right: 15px;" />
+    {/if}
+  {/if}
+
+  {#if !validationPending && !valid && validationMessage}
     <Icon.Important
       style="fill: var(--color-red); justify-content: flex-start; position:
       absolute; top: 13px; right: 15px;" />
