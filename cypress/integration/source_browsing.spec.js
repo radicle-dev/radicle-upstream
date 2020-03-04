@@ -60,7 +60,7 @@ context("source code browsing", () => {
       });
     });
 
-    it.only("shows contents of the root folder for the latest revision", () => {
+    it("shows contents of the root folder for the latest revision", () => {
       // the default revision is selected
       cy.get("[data-cy=revision-selector]").should("have.value", "master");
 
