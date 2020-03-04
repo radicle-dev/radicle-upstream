@@ -435,24 +435,21 @@
     </Swatch>
 
     <Swatch>
-      <Input.Handle
+      <Input.Text
         placeholder="Enter user name"
+        style="width: 100%"
         valid={true}
-        validationMessage="Handle already taken">
-        <Avatar
-          imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg" />
-      </Input.Handle>
+        variant="register" />
     </Swatch>
 
     <Swatch>
-      <Input.Handle
+      <Input.Text
         placeholder="Enter user name."
+        style="width: 100%"
         valid={false}
         validationMessage="Handle already taken"
-        value="myUser">
-        <Avatar
-          imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg" />
-      </Input.Handle>
+        value="myUser"
+        variant="register" />
     </Swatch>
 
     <Swatch>
