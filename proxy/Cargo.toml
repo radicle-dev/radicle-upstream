@@ -13,8 +13,6 @@ repository = "git@github.com:radicle-dev/radicle-upstream.git"
 [dependencies]
 futures = { version = "0.3", features = [ "compat" ] }
 hex = "0.4"
-juniper = "0.14"
-juniper_codegen = "0.14"
 log = "0.4"
 nonempty = "0.2"
 pico-args = "0.3"
@@ -29,6 +27,16 @@ tokio = { version = "0.2", features = [ "macros" ] }
 url17 = { package = "url", version = "1.7" }
 url = "2.1"
 warp = "0.2"
+
+[dependencies.juniper]
+git = "https://github.com/graphql-rust/juniper.git"
+rev = "15e9bffa8493df2e753f667114f073df0bbdaa5d"
+features = [ "async" ]
+
+[dependencies.juniper_codegen]
+git = "https://github.com/graphql-rust/juniper.git"
+rev = "15e9bffa8493df2e753f667114f073df0bbdaa5d"
+features = [ "async" ]
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"

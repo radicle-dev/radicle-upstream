@@ -48,7 +48,7 @@ impl juniper::Context for Context {}
 /// Encapsulates write path in API.
 pub struct Mutation;
 
-#[juniper::object(
+#[juniper::graphql_object(
     Context = Context,
     name = "UpstreamMutation",
 )]
@@ -140,7 +140,7 @@ impl Mutation {
 /// Encapsulates read paths in API.
 pub struct Query;
 
-#[juniper::object(
+#[juniper::graphql_object(
     Context = Context,
     name = "UpstreamQuery",
 )]
@@ -298,7 +298,7 @@ pub fn create_control() -> Control {
 /// Control mutations.
 pub struct ControlMutation;
 
-#[juniper::object(
+#[juniper::graphql_object(
     Context = Context,
     name = "ControlMutation",
     description = "Mutations to control raw proxy state.",
@@ -352,14 +352,14 @@ impl ControlMutation {
 /// Control query endpoints.
 pub struct ControlQuery;
 
-#[juniper::object(
+#[juniper::graphql_object(
     Context = Context,
     name = "ControlQuery",
     description = "Queries to access raw proxy state.",
 )]
 impl ControlQuery {}
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl coco::Blob {
     fn binary(&self) -> bool {
         match &self.content {
@@ -380,7 +380,7 @@ impl coco::Blob {
     }
 }
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl coco::Commit {
     fn sha1(&self) -> String {
         self.sha1.to_string()
@@ -403,7 +403,7 @@ impl coco::Commit {
     }
 }
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl coco::Info {
     fn name(&self) -> &str {
         &self.name
@@ -432,7 +432,7 @@ enum ObjectType {
     Blob,
 }
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl coco::Person {
     fn name(&self) -> &str {
         &self.name
@@ -447,7 +447,7 @@ impl coco::Person {
     }
 }
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl coco::Tree {
     fn path(&self) -> &str {
         &self.path
@@ -462,7 +462,7 @@ impl coco::Tree {
     }
 }
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl coco::TreeEntry {
     fn info(&self) -> &coco::Info {
         &self.info
@@ -473,7 +473,7 @@ impl coco::TreeEntry {
     }
 }
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl identity::Identity {
     fn id(&self) -> juniper::ID {
         juniper::ID::new(&self.id)
@@ -488,7 +488,7 @@ impl identity::Identity {
     }
 }
 
-#[juniper::object(name = "IdentityMetadata")]
+#[juniper::graphql_object(name = "IdentityMetadata")]
 impl identity::Metadata {
     fn avatar_url(&self) -> Option<&String> {
         self.avatar_url.as_ref()
@@ -517,7 +517,7 @@ pub struct ProjectMetadataInput {
     pub img_url: String,
 }
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl project::Project {
     fn id(&self) -> juniper::ID {
         juniper::ID::new(&self.id.to_string())
@@ -539,7 +539,7 @@ impl project::Project {
     }
 }
 
-#[juniper::object(name = "ProjectMetadata")]
+#[juniper::graphql_object(name = "ProjectMetadata")]
 impl project::Metadata {
     fn default_branch(&self) -> &str {
         &self.default_branch
@@ -558,7 +558,7 @@ impl project::Metadata {
     }
 }
 
-#[juniper::object(name = "ProjectStats")]
+#[juniper::graphql_object(name = "ProjectStats")]
 impl project::Stats {
     fn branches(&self) -> i32 {
         i32::try_from(self.branches).expect("unable to convert branches number")
@@ -580,7 +580,7 @@ pub enum ProjectRegistered {
     Not,
 }
 
-#[juniper::object]
+#[juniper::graphql_object]
 impl registry::Transaction {
     fn id(&self) -> juniper::ID {
         juniper::ID::new(self.id.to_string())
@@ -639,39 +639,47 @@ impl registry::Transaction {
 
 /// Message types supproted in transactions.
 enum Message {
-    /// Registration of a new org.
+    /// Registration of a new organisation.
     OrgRegistration(OrgRegistration),
-
-    /// Registration of a new org.
+    /// Unregister an existing organisation.
     OrgUnregistration(OrgUnregistration),
-
-    /// Registration of a new project.
+    /// Register a new project.
     ProjectRegistration(ProjectRegistration),
-
-    /// Registration of a new user.
+    /// Register a new user.
     UserRegistration(UserRegistration),
 }
 
-juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &OrgRegistration => match *self {
-            Message::OrgRegistration(ref o) => Some(o),
-            Message::OrgUnregistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
-        },
-        &OrgUnregistration => match *self {
-            Message::OrgUnregistration(ref o) => Some(o),
-            Message::OrgRegistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
-        },
-        &ProjectRegistration => match *self {
-            Message::ProjectRegistration(ref p) => Some(p),
-            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::UserRegistration(..) => None,
-        },
-        &UserRegistration => match *self {
-            Message::UserRegistration(ref o) => Some(o),
-            Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::ProjectRegistration(..) => None,
+#[juniper::graphql_union]
+impl Message {
+    fn resolve(&self) {
+        match self {
+            OrgRegistration => match *self {
+                Message::OrgRegistration(ref m) => Some(m),
+                Message::OrgUnregistration(..)
+                | Message::ProjectRegistration(..)
+                | Message::UserRegistration(..) => None,
+            },
+            OrgUnregistration => match *self {
+                Message::OrgUnregistration(ref m) => Some(m),
+                Message::OrgRegistration(..)
+                | Message::ProjectRegistration(..)
+                | Message::UserRegistration(..) => None,
+            },
+            ProjectRegistration => match *self {
+                Message::ProjectRegistration(ref m) => Some(m),
+                Message::OrgRegistration(..)
+                | Message::OrgUnregistration(..)
+                | Message::UserRegistration(..) => None,
+            },
+            UserRegistration => match *self {
+                Message::UserRegistration(ref m) => Some(m),
+                Message::OrgRegistration(..)
+                | Message::OrgUnregistration(..)
+                | Message::ProjectRegistration(..) => None,
+            },
         }
     }
-});
+}
 
 /// Contextual information for an org registration message.
 #[derive(juniper::GraphQLObject)]
@@ -711,15 +719,20 @@ enum TransactionState {
     Applied(Applied),
 }
 
+#[juniper::graphql_union]
+impl TransactionState {
+    fn resolve(&self) {
+        match self {
+            Applied => match *self {
+                TransactionState::Applied(ref s) => Some(s),
+            },
+        }
+    }
+}
+
 /// Context for a chain applied transaction.
 #[derive(GraphQLObject)]
 struct Applied {
     /// Block hash the transaction was included in.
     block: juniper::ID,
 }
-
-juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
-    }
-});
