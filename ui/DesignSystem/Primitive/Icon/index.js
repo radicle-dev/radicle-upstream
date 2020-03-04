@@ -1,10 +1,12 @@
 import Badge from "./Badge.svelte";
+import ArrowUp from "./ArrowUp.svelte";
 import Branch from "./Branch.svelte";
 import Carret from "./Carret.svelte";
 import CarretBig from "./CarretBig.svelte";
 import Check from "./Check.svelte";
 import CheckCircle from "./CheckCircle.svelte";
 import Commit from "./Commit.svelte";
+import Copy from "./Copy.svelte";
 import Cross from "./Cross.svelte";
 import CrossBig from "./CrossBig.svelte";
 import Ellipse from "./Ellipse.svelte";
@@ -32,12 +34,14 @@ import Source from "./Source.svelte";
 
 export default {
   Badge,
+  ArrowUp,
   Branch,
   Carret,
   CarretBig,
   Check,
   CheckCircle,
   Commit,
+  Copy,
   Cross,
   CrossBig,
   Ellipse,
