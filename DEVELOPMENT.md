@@ -415,7 +415,7 @@ registry protocols is provided to the UI via [GraphQL][gq] by a rust binary call
 the proxy. It uses [warp][wa] to serve a [Juniper][ju] powered API providing all necessary
 queries and mutations.
 
-For dependency managament and execution of common taks we use [Cargo][co]. To
+For dependency management and execution of common tasks we use [Cargo][co]. To
 get up to speed with common functionality and manifest file intricacies consult
 the exhaustive [Cargo Book][cb].
 
@@ -442,11 +442,10 @@ git submodule foreach "git fetch --all"
 
 Then run tests as usual: `cargo test --all-features --all-targets`.
 
-We strive for two kind of tests, the classic unit tests inside of the
-implementation files. Additionally we have a suit of integration tests esp. to
-assert the API the proxy provides from a high-level consumer perspective, these
-can be found under `proxy/tests`. To find out where to place and how to layout
-tests check Rust book [test chapter][rt].
+We strive for two kinds of tests: classic unit tests contained in implementation
+files and integration tests. The integration tests are meant to assert correctness
+of the API provided by the proxy, these can be found under `proxy/tests`. To find
+out where to place and how to lay out tests, check the Rust book [test chapter][rt].
 
 ### File structure
 
