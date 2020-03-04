@@ -1,6 +1,7 @@
 //! Abstractions and utilities for git interactions through the API.
 
 use std::collections::hash_map::DefaultHasher;
+use std::env;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
@@ -461,6 +462,94 @@ pub fn init_repo(path: String) -> Result<(), error::Error> {
     repo.commit(Some("HEAD"), &sig, &sig, "Initial commit", &tree, &[])?;
 
     Ok(())
+}
+
+/// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
+/// branch.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of the
+/// coco project.
+pub fn replicate_platinum(
+    tmp_dir: &tempfile::TempDir,
+    librad_paths: &Paths,
+    name: &str,
+    description: &str,
+    default_branch: &str,
+    img_url: &str,
+) -> Result<(git::ProjectId, meta::Project), error::Error> {
+    // Craft the absolute path to git-platinum fixtures.
+    let mut platinum_path = env::current_dir()?;
+    platinum_path.push("../fixtures/git-platinum");
+    let mut platinum_from = String::from("file://");
+    platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
+
+    // Construct path for fixtures to clone into.
+    let platinum_into = tmp_dir.path().join("git-platinum");
+
+    // Clone a copy into temp directory.
+    let mut fetch_options = git2::FetchOptions::new();
+    fetch_options.download_tags(git2::AutotagOption::All);
+
+    let platinum_repo = git2::build::RepoBuilder::new()
+        .branch("master")
+        .clone_local(git2::build::CloneLocal::Auto)
+        .fetch_options(fetch_options)
+        .clone(&platinum_from, platinum_into.as_path())
+        .expect("unable to clone fixtures repo");
+
+    let platinum_surf_repo = surf::git::Repository::new(
+        platinum_into
+            .to_str()
+            .expect("unable to convert into string"),
+    )?;
+    let platinum_browser = surf::git::Browser::new(platinum_surf_repo)?;
+
+    let tags = platinum_browser
+        .list_tags()
+        .expect("unable to get list of tags")
+        .iter()
+        .map(|t| format!("+refs/tags/{}", t.name()))
+        .collect::<Vec<String>>();
+
+    {
+        let branches = platinum_repo.branches(Some(git2::BranchType::Remote))?;
+
+        for branch in branches {
+            let (branch, _branch_type) = branch?;
+            let name = &branch
+                .name()
+                .expect("unable to get branch name")
+                .expect("branch not present")
+                .get(7..)
+                .expect("unable to extract branch name");
+            let oid = branch.get().target().expect("can't find OID");
+            let commit = platinum_repo.find_commit(oid)?;
+
+            if *name != "master" {
+                platinum_repo.branch(name, &commit, false)?;
+            }
+        }
+    }
+
+    // Init as rad project.
+    let (id, meta) = init_project(
+        librad_paths,
+        platinum_into.to_str().expect("unable to get path"),
+        name,
+        description,
+        default_branch,
+        img_url,
+    )?;
+    let mut rad_remote = platinum_repo.find_remote("rad")?;
+
+    // Push all tags to rad remote.
+    rad_remote.push(&tags.iter().map(String::as_str).collect::<Vec<_>>(), None)?;
+    // Push dev branch.
+    rad_remote.push(&["+refs/heads/dev"], None)?;
+
+    Ok((id, meta))
 }
 
 /// Creates a small set of projects in [`Paths`].

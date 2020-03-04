@@ -1,6 +1,5 @@
 use std::convert::From;
 use std::convert::TryFrom;
-use std::env;
 use std::str::FromStr;
 use std::sync;
 
@@ -82,7 +81,9 @@ impl Mutation {
         };
 
         let (id, meta) = coco::init_project(
-            &ctx.librad_paths.read().unwrap(),
+            &ctx.librad_paths
+                .read()
+                .expect("unable to acquire read lock"),
             &path,
             &metadata.name,
             &metadata.description,
@@ -111,12 +112,12 @@ impl Mutation {
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
         // https://github.com/graphql-rust/juniper/pull/497
-        futures::executor::block_on(ctx.registry.read().unwrap().register_project(
-            &fake_pair,
-            project_name,
-            org_id,
-            maybe_librad_id,
-        ))
+        futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .register_project(&fake_pair, project_name, org_id, maybe_librad_id),
+        )
     }
 
     fn register_user(
@@ -127,11 +128,12 @@ impl Mutation {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
 
-        futures::executor::block_on(ctx.registry.read().unwrap().register_user(
-            &fake_pair,
-            handle.to_string(),
-            id.to_string(),
-        ))
+        futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .register_user(&fake_pair, handle.to_string(), id.to_string()),
+        )
     }
 }
 
@@ -154,7 +156,9 @@ impl Query {
         path: String,
     ) -> Result<coco::Blob, error::Error> {
         coco::blob(
-            &ctx.librad_paths.read().unwrap(),
+            &ctx.librad_paths
+                .read()
+                .expect("unable to acquire read lock"),
             &id.to_string(),
             &revision,
             &path,
@@ -162,16 +166,25 @@ impl Query {
     }
 
     fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<coco::Commit, error::Error> {
-        coco::commit(&ctx.librad_paths.read().unwrap(), &id.to_string(), &sha1)
+        coco::commit(
+            &ctx.librad_paths
+                .read()
+                .expect("unable to acquire read lock"),
+            &id.to_string(),
+            &sha1,
+        )
     }
 
     fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
-        Ok(
-            coco::branches(&ctx.librad_paths.read().unwrap(), &id.to_string())?
-                .into_iter()
-                .map(|t| t.to_string())
-                .collect(),
-        )
+        Ok(coco::branches(
+            &ctx.librad_paths
+                .read()
+                .expect("unable to acquire read lock"),
+            &id.to_string(),
+        )?
+        .into_iter()
+        .map(|t| t.to_string())
+        .collect())
     }
 
     fn local_branches(ctx: &Context, path: String) -> Result<Vec<String>, error::Error> {
@@ -182,12 +195,15 @@ impl Query {
     }
 
     fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
-        Ok(
-            coco::tags(&ctx.librad_paths.read().unwrap(), &id.to_string())?
-                .into_iter()
-                .map(|t| t.to_string())
-                .collect(),
-        )
+        Ok(coco::tags(
+            &ctx.librad_paths
+                .read()
+                .expect("unable to acquire read lock"),
+            &id.to_string(),
+        )?
+        .into_iter()
+        .map(|t| t.to_string())
+        .collect())
     }
 
     fn tree(
@@ -196,11 +212,23 @@ impl Query {
         revision: String,
         prefix: String,
     ) -> Result<coco::Tree, error::Error> {
-        coco::tree(&ctx.librad_paths.read().unwrap(), &id, &revision, &prefix)
+        coco::tree(
+            &ctx.librad_paths
+                .read()
+                .expect("unable to acquire read lock"),
+            &id,
+            &revision,
+            &prefix,
+        )
     }
 
     fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
-        let meta = coco::get_project_meta(&ctx.librad_paths.read().unwrap(), &id.to_string())?;
+        let meta = coco::get_project_meta(
+            &ctx.librad_paths
+                .read()
+                .expect("unable to acquire read lock"),
+            &id.to_string(),
+        )?;
 
         Ok(project::Project {
             id: librad::project::ProjectId::from_str(&id.to_string())?,
@@ -209,19 +237,28 @@ impl Query {
     }
 
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, error::Error> {
-        let projects = coco::list_projects(&ctx.librad_paths.read().unwrap())
-            .into_iter()
-            .map(|(id, meta)| project::Project {
-                id,
-                metadata: meta.into(),
-            })
-            .collect::<Vec<project::Project>>();
+        let projects = coco::list_projects(
+            &ctx.librad_paths
+                .read()
+                .expect("unable to acquire read lock"),
+        )
+        .into_iter()
+        .map(|(id, meta)| project::Project {
+            id,
+            metadata: meta.into(),
+        })
+        .collect::<Vec<project::Project>>();
 
         Ok(projects)
     }
 
     fn list_registry_projects(ctx: &Context) -> Result<Vec<juniper::ID>, error::Error> {
-        let ids = futures::executor::block_on(ctx.registry.read().unwrap().list_projects())?;
+        let ids = futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .list_projects(),
+        )?;
 
         Ok(ids
             .iter()
@@ -272,82 +309,18 @@ impl ControlMutation {
         metadata: ProjectMetadataInput,
     ) -> Result<project::Project, error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-
-        // Craft the absolute path to git-platinum fixtures.
-        let mut platinum_path = env::current_dir().expect("unable to get working directory");
-        platinum_path.push("../fixtures/git-platinum");
-        let mut platinum_from = String::from("file://");
-        platinum_from.push_str(
-            platinum_path
-                .to_str()
-                .expect("unable to get fixtures path string"),
-        );
-
-        // Construct path for fixtures to clone into.
-        let platinum_into = tmp_dir.path().join("git-platinum");
-
-        // Clone a copy into temp directory.
-        let mut fetch_options = git2::FetchOptions::new();
-        fetch_options.download_tags(git2::AutotagOption::All);
-
-        let platinum_repo = git2::build::RepoBuilder::new()
-            .branch("master")
-            .clone_local(git2::build::CloneLocal::Auto)
-            .fetch_options(fetch_options)
-            .clone(&platinum_from, platinum_into.as_path())
-            .expect("unable to clone fixtures repo");
-
-        let platinum_surf_repo =
-            surf::git::Repository::new(platinum_into.to_str().unwrap()).unwrap();
-        let platinum_browser = surf::git::Browser::new(platinum_surf_repo).unwrap();
-
-        let tags = platinum_browser
-            .list_tags()
-            .unwrap()
-            .iter()
-            .map(|t| format!("+refs/tags/{}", t.name()))
-            .collect::<Vec<String>>();
-
-        {
-            let branches = platinum_repo
-                .branches(Some(git2::BranchType::Remote))
-                .unwrap();
-
-            for branch in branches {
-                let (branch, _branch_type) = branch.unwrap();
-                let name = &branch.name().unwrap().unwrap()[7..];
-                let oid = branch.get().target().unwrap();
-                let commit = platinum_repo.find_commit(oid).unwrap();
-
-                if name != "master" {
-                    platinum_repo.branch(name, &commit, false).unwrap();
-                }
-            }
-        }
-
-        // Init as rad project.
-        let (id, meta) = crate::coco::init_project(
-            &ctx.librad_paths.read().unwrap(),
-            platinum_into.to_str().unwrap(),
+        let paths = &ctx
+            .librad_paths
+            .read()
+            .expect("unable to acquire lock for librad paths");
+        let (id, meta) = coco::replicate_platinum(
+            &tmp_dir,
+            paths,
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
             &metadata.img_url,
-        )
-        .unwrap();
-        let mut rad_remote = platinum_repo.find_remote("rad").unwrap();
-
-        // Push all tags to rad remote.
-        rad_remote
-            .push(&tags.iter().map(String::as_str).collect::<Vec<_>>(), None)
-            .unwrap();
-        rad_remote
-            .push(
-                // &branches.iter().map(String::as_str).collect::<Vec<_>>(),
-                &["+refs/heads/dev"],
-                None,
-            )
-            .unwrap();
+        )?;
 
         Ok(project::Project {
             id: id.into(),
@@ -359,7 +332,7 @@ impl ControlMutation {
         let tmp_dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
         let new_paths = Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
 
-        let mut librad_paths = ctx.librad_paths.write().unwrap();
+        let mut librad_paths = ctx.librad_paths.write().expect("unable to get write lock");
 
         *librad_paths = new_paths;
 
@@ -369,7 +342,7 @@ impl ControlMutation {
     fn nuke_registry_state(ctx: &Context) -> Result<bool, error::Error> {
         ctx.registry
             .write()
-            .unwrap()
+            .expect("unable to get write lock")
             .reset(radicle_registry_client::Client::new_emulator());
 
         Ok(true)

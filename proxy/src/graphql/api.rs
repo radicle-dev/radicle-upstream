@@ -55,12 +55,13 @@ where
     let schema = Arc::new(schema);
 
     warp::post()
-        .map(move || schema.clone())
+        .map(move || Arc::<juniper::RootNode<'static, Query, Mutation>>::clone(&schema))
         .and(context_extractor)
         .and(warp::body::json())
         .and_then(handle_request)
 }
 
+/// Executes the request and crafts the serialised response.
 async fn handle_request<Context, Mutation, Query>(
     schema: Arc<juniper::RootNode<'static, Query, Mutation>>,
     context: Context,
@@ -75,10 +76,10 @@ where
         Ok(body) => Ok(http::Response::builder()
             .header("content-type", "application/json; charset=utf-8")
             .body(body)
-            .unwrap()),
+            .expect("unable to build response")),
         Err(_) => Ok(http::Response::builder()
             .status(warp::http::StatusCode::INTERNAL_SERVER_ERROR)
             .body(Vec::new())
-            .unwrap()),
+            .expect("unable to build response")),
     }
 }
