@@ -1,7 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
   import { Button, Flex, Text, Title } from "../../DesignSystem/Primitive";
-  import { Avatar, Rad, TxRow } from "../../DesignSystem/Component";
+  import { Avatar, Rad, Row } from "../../DesignSystem/Component";
 
   export let projectName = null;
   export let timestamp = null;
@@ -33,8 +33,7 @@
     <Text>Transaction succeeded on {timestamp}</Text>
   </div>
 {/if}
-<TxRow
-  disabled={true}
+<Row
   style="background-color: var(--color-almostwhite); border-radius: 0; margin:
   -1px 0 -1px 0; border-top: none">
   <div slot="left">
@@ -43,9 +42,9 @@
       <Avatar size="big" variant="user" title="Your personal wallet" />
     </div>
   </div>
-</TxRow>
+</Row>
 
-<TxRow disabled={true} style="border-radius: 0">
+<Row style="border-radius: 0">
   <div slot="left">
     <Title>Project Registration</Title>
   </div>
@@ -56,9 +55,9 @@
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project.svg"
       title={projectName} />
   </div>
-</TxRow>
+</Row>
 
-<TxRow disabled={true} style="border-radius: 0; margin: -1px 0 -1px 0">
+<Row style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
     <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
   </div>
@@ -66,10 +65,9 @@
   <div slot="right">
     <Rad amount={4} style="margin-right: 24px" />
   </div>
-</TxRow>
+</Row>
 
-<TxRow
-  disabled={true}
+<Row
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
   <div slot="left">
@@ -79,7 +77,7 @@
   <div slot="right">
     <Rad amount={24} style="margin-right: 24px" size="big" />
   </div>
-</TxRow>
+</Row>
 
 <Flex align="right" style="margin-top: 48px;">
   <Button disabled={false} on:click={pop} variant="primary">Home</Button>
