@@ -452,9 +452,11 @@ out where to place and how to lay out tests, check the Rust book [test chapter][
 We understand the GraphQL API as one potential surface to expose the
 Application domain logic. Therefore we try to treat it as a thin layer exposing
 well-typed entities. The heavy lifting is done in the modules named after the
-protocols we consume - `CoCo` for code collaboration and `Registry` for global
-unique entries for users, projects and organisations. By isolating concerns
-this way, we hope to enable ease-of-contribution to downstream teams.
+protocols we consume - [radicle-link](https://github.com/radicle-dev/radicle-link),
+through it [radicle-surf](https://github.com/radicle-dev/radicle-surf/), for code
+collaboration and [radicle-registry](https://github.com/radicle-dev/radicle-registry/)
+for global unique entries for users, projects and organisations. By isolating
+concerns this way, we hope to enable ease-of-contribution to downstream teams.
 Empowering them to reflect changes in their public APIs easily with code
 contributions to Upstream.
 
