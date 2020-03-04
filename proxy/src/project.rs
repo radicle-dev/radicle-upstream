@@ -55,8 +55,6 @@ pub struct Project {
     pub id: project::ProjectId,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
-    /// Coarse set of statistics for the project source code.
-    pub stats: Stats,
 }
 
 /// Coarse statistics for the Project source code.

@@ -83,6 +83,12 @@ impl Registry {
         Self { client }
     }
 
+    /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
+    /// to a different nework.
+    pub fn reset(&mut self, client: Client) {
+        self.client = client;
+    }
+
     /// List projects of the Registry.
     pub async fn list_projects(&self) -> Result<Vec<registry::ProjectId>, error::Error> {
         self.client.list_projects().await.map_err(|e| e.into())

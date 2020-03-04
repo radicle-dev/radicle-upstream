@@ -26,7 +26,7 @@
 <div data-cy={dataCy}>
   <Sidebar />
 
-  <div class="container">
+  <div class="container" data-cy="scrollable-content">
     <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 
     <div class="content" {style}>
