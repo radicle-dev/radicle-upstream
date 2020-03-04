@@ -325,12 +325,6 @@ impl ControlMutation {
             }
         }
 
-        coco::setup_fixtures(
-            &ctx.librad_paths.read().unwrap(),
-            tmp_dir.path().to_str().expect("path extraction failed"),
-        )
-        .expect("fixture setup failed");
-
         // Init as rad project.
         let (id, meta) = crate::coco::init_project(
             &ctx.librad_paths.read().unwrap(),
