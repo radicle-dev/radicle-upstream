@@ -440,6 +440,9 @@ git submodule update --init --remote
 git submodule foreach "git fetch --all"
 ```
 
+💡 *You'll have to run the submodule commands every time there are any updates
+to the test fixture repository.*
+
 Then run tests as usual: `cargo test --all-features --all-targets`.
 
 We strive for two kinds of tests: classic unit tests contained in implementation
@@ -447,20 +450,15 @@ files and integration tests. The integration tests are meant to assert correctne
 of the API provided by the proxy, these can be found under `proxy/tests`. To find
 out where to place and how to lay out tests, check the Rust book [test chapter][rt].
 
-💡 *You'll have to run the submodule commands every time there are any updates
-to the test fixture repository.*
-
 ### File structure
 
 The GraphQL API exposes the application's domain logic. Therefore we try to treat
 it as a thin layer exposing well-typed entities. The heavy lifting is done in the
-modules named after the protocols we consume - [radicle-link](https://github.com/radicle-dev/radicle-link),
-through it [radicle-surf](https://github.com/radicle-dev/radicle-surf/), for code
-collaboration and [radicle-registry](https://github.com/radicle-dev/radicle-registry/)
-for global unique entries for users, projects and organisations. By isolating
-concerns this way, we hope to enable ease-of-contribution to downstream teams.
-Empowering them to reflect changes in their public APIs easily with code
-contributions to Upstream.
+modules named after the protocols we consume - [radicle-link][rl] through it
+[radicle-surf][rs], for code collaboration and [radicle-registry][rr] for global
+unique entries for users, projects and organisations. By isolating concerns this
+way, we hope to enable ease-of-contribution to downstream teams. Empowering them
+to reflect changes in their public APIs easily with code contributions to Upstream.
 
 ```
 proxy/src/
@@ -504,11 +502,9 @@ yarn prettier:write       # Auto-format UI code
 yarn lint                 # Check UI code for linting errors
 
 yarn proxy:build          # Build the proxy binary
-yarn proxy:build:release  # Build the release version of the proxy, stripped of
-debug symbols
+yarn proxy:build:release  # Build the release version of the proxy, stripped of debug symbols
 yarn proxy:start          # Start only the proxy with its default configuration
-yarn proxy:start:test     # Start the proxy in test mode, where state is
-isolated and lives in memory or temporary directories
+yarn proxy:start:test     # Start the proxy in test mode, where state is isolated and lives in memory or temporary directories
 ```
 
 ## CI setup
@@ -634,6 +630,9 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [ju]: https://github.com/graphql-rust/juniper
 [ls]: https://github.com/okonet/lint-staged
 [pr]: https://prettier.io
+[rl]: https://github.com/radicle-dev/radicle-link
+[rr]: https://github.com/radicle-dev/radicle-registry
+[rs]: https://github.com/radicle-dev/radicle-surf/
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
 [se]: https://svelte.dev
 [sv]: https://github.com/conventional-changelog/standard-version
