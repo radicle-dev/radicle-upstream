@@ -91,17 +91,19 @@ context("source code browsing", () => {
   context("page view", () => {
     context("revision selector", () => {
       it("allows switching to a different branch", () => {
-        cy.get("[data-cy=revision-selector]").should("have.value", "master");
-
-        cy.get("[data-cy=revision-selector]").select("origin/dev");
+        cy.get("[data-cy=revision-selector]").select("dev");
         cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
+
+        cy.get("[data-cy=revision-selector]").select("master");
+        cy.contains("here-we-are-on-a-dev-branch.lol").should("not.exist");
       });
 
       it("allows switching to a different tag", () => {
-        cy.get("[data-cy=revision-selector]").should("have.value", "master");
-
         cy.get("[data-cy=revision-selector]").select("v0.4.0");
         cy.contains("test-file-deletion.txt").should("exist");
+
+        cy.get("[data-cy=revision-selector]").select("v0.5.0");
+        cy.contains("test-file-deletion.txt").should("not.exist");
       });
     });
 
