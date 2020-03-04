@@ -5,6 +5,7 @@
 
   import { Input } from "../../Primitive";
   import { revisionStore } from "../../../store/sourceBrowser.js";
+  import { HIDDEN_BRANCHES } from "../../../config.js";
 
   const ALL_REVISIONS = gql`
     query($projectId: ID!) {
@@ -23,6 +24,8 @@
   <Input.Dropdown
     dataCy="revision-selector"
     style="margin-bottom: 24px"
-    items={[...result.data.tags, ...result.data.branches].sort()}
+    items={[...result.data.tags, ...result.data.branches
+        .filter(branch => !HIDDEN_BRANCHES.includes(branch))
+        .sort()]}
     bind:value={$revisionStore} />
 {/await}
