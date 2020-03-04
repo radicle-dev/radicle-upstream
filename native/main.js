@@ -4,6 +4,11 @@ import { MAIN_IPC_CHANNEL } from "../ui/lib/types.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
+// The default value of app.allowRendererProcessReuse is deprecated, it is
+// currently "false".  It will change to be "true" in Electron 9.  For more
+// information please check https://github.com/electron/electron/issues/18397
+app.allowRendererProcessReuse = true;
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
