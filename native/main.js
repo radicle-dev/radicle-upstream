@@ -68,7 +68,7 @@ const startProxy = () => {
     return;
   }
 
-  const proxyPath = path.join(__dirname, "../proxy");
+  const proxyPath = path.join(__dirname, "../../proxy");
   const { execFile } = require("child_process");
   proxyChildProcess = execFile(
     proxyPath,
