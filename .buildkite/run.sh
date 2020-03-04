@@ -58,6 +58,7 @@ fi
 echo "--- Updating submodules"
 time git submodule update --init --recursive
 time git submodule foreach "git fetch --all"
+time git submodule foreach "git checkout -b dev -t origin/dev"
 
 echo "--- Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
