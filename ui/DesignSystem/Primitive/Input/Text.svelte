@@ -34,7 +34,7 @@
   }
 
   input.register {
-    padding: 0 16px 0 54px;
+    padding: 0 46px 0 54px;
   }
 
   input:focus {
@@ -75,25 +75,25 @@
       variant="user"
       size="small"
       style="width: 32px; height: 48px; justify-content: flex-start; position:
-      absolute; top: 0px; left: 8px" />
+      absolute; top: 0px; left: 10px" />
   {/if}
 
   {#if variant === 'register'}
     {#if validationPending}
       <Icon.Spinner
-        style="justify-content: flex-start; position: absolute; top: 13px;
-        right: 15px;" />
+        style="justify-content: flex-start; position: absolute; top: 12px;
+        right: 10px;" />
     {:else if value && valid}
       <Icon.CheckCircle
         style="fill: var(--color-green); justify-content: flex-start; position:
-        absolute; top: 13px; right: 15px;" />
+        absolute; top: 12px; right: 10px;" />
     {/if}
   {/if}
 
   {#if !validationPending && !valid && validationMessage}
     <Icon.Important
       style="fill: var(--color-red); justify-content: flex-start; position:
-      absolute; top: 13px; right: 15px;" />
+      absolute; top: 12px; right: 10px;" />
     <div class="validation-row">
       <Text style="color: var(--color-red);">{validationMessage}</Text>
     </div>
