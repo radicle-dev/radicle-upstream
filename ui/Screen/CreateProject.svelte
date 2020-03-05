@@ -273,8 +273,8 @@
   }
 
   .create-project {
-    text-align: left;
-    width: 540px;
+    text-align: center;
+    flex: 1;
   }
 
   .double-button {
