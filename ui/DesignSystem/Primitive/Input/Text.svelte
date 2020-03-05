@@ -11,7 +11,7 @@
   export let disabled = null;
   export let valid = true;
   export let validationMessage = null;
-  export let variant = "plain"; // plain || register
+  export let variant = "vanilla"; // plain | handle
   export let validationPending = false;
 </script>
 
@@ -33,7 +33,7 @@
     background-color: var(--color-white);
   }
 
-  input.register {
+  input.handle {
     padding: 0 46px 0 54px;
   }
 
@@ -64,13 +64,13 @@
   <input
     data-cy={dataCy}
     class:invalid={!valid && !validationPending}
-    class:register={variant === 'register'}
+    class:handle={variant === 'handle'}
     {placeholder}
     bind:value
     {disabled}
     on:change
     on:input />
-  {#if variant === 'register'}
+  {#if variant === 'handle'}
     <Avatar
       variant="user"
       size="small"
@@ -78,7 +78,7 @@
       absolute; top: 0px; left: 10px" />
   {/if}
 
-  {#if variant === 'register'}
+  {#if variant === 'handle'}
     {#if validationPending}
       <Icon.Spinner
         style="justify-content: flex-start; position: absolute; top: 12px;

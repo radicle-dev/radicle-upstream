@@ -440,7 +440,7 @@
         placeholder="Enter user name"
         style="width: 100%"
         valid={true}
-        variant="register"
+        variant="handle"
         on:input={() => {
           console.log('event(Input changed)');
         }} />
@@ -452,7 +452,7 @@
         style="width: 100%"
         valid={true}
         value="user123"
-        variant="register" />
+        variant="handle" />
     </Swatch>
 
     <Swatch>
@@ -462,7 +462,7 @@
         valid={true}
         validationPending="true"
         value="user123"
-        variant="register" />
+        variant="handle" />
     </Swatch>
 
     <Swatch>
@@ -472,7 +472,7 @@
         valid={false}
         validationMessage="Handle already taken"
         value="myUser"
-        variant="register" />
+        variant="handle" />
     </Swatch>
 
     <Swatch>
