@@ -2,6 +2,20 @@
   export let style = null;
 </script>
 
+<style>
+  svg {
+    animation: rotate 5s infinite linear;
+  }
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(359deg);
+    }
+  }
+</style>
+
 <svg
   {style}
   width="24"
@@ -32,12 +46,4 @@
     23.9214 12.8014 24 12 24C11.1986 24 10.4155 23.9214 9.65806 23.7716ZM18.6674
     21.9788L17.5548 20.3168C18.6461 19.5862 19.5862 18.6461 20.3168
     17.5547L21.9788 18.6674C21.1027 19.976 19.976 21.1027 18.6674 21.9788Z" />
-  <animateTransform
-    attributeName="transform"
-    attributeType="XML"
-    type="rotate"
-    from="0"
-    to="360"
-    dur="5s"
-    repeatCount="indefinite" />
 </svg>
