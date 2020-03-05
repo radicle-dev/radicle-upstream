@@ -99,7 +99,7 @@
   <div class="wrapper">
     <div class="register-project">
       <div style="display: flex; justify-content: center">
-        <StepCounter {step} of={4} style="margin-bottom: 16px" />
+        <StepCounter {step} of={[1, 2, 3, 4]} style="margin-bottom: 16px" />
       </div>
 
       <Title variant="big" style="margin-bottom: 24px; text-align: center">

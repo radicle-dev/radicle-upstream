@@ -1,26 +1,48 @@
 <script>
-  import { Caption } from "../Primitive";
+  import { Icon, Title } from "../Primitive";
 
   export let step = null;
   export let of = null;
   export let style = null;
-
-  const range = [...Array(of)].map((_, i) => ++i);
 </script>
 
 <style>
   .step-counter {
     display: inline-flex;
+    align-items: flex-end;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    width: 15px;
+    color: var(--color-gray);
+  }
+
+  .step.active {
+    color: var(--color-radblue);
   }
 </style>
 
 <div class="step-counter" {style}>
-  <Caption>Step</Caption>
-  {#each range as stepNumber}
-    {#if step === stepNumber}
-      <Caption>&nbsp;{stepNumber}</Caption>
-    {:else}
-      <Caption style="color: var(--color-gray)">&nbsp;{stepNumber}</Caption>
+  {#each of as stepName, index}
+    {#if index > 0}
+      <svg height="15" width="126">
+        <line
+          x1="0"
+          y1="7.5"
+          x2="126"
+          y2="7.5"
+          style="stroke: var(--color-gray); stroke-width: 1" />
+      </svg>
     {/if}
+    <div class="step" class:active={step === index + 1}>
+      <Title
+        style="color: inherit; margin-bottom: 14px; align-self: center;
+        white-space: nowrap;">
+        {stepName}
+      </Title>
+      <Icon.StepCounter active={step === index + 1} />
+    </div>
   {/each}
 </div>
