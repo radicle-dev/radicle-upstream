@@ -95,10 +95,7 @@
       style="fill: var(--color-red); justify-content: flex-start; position:
       absolute; top: 13px; right: 15px;" />
     <div class="validation-row">
-      <Icon.Important style="fill: var(--color-red); margin-right: 8px;" />
-      <Text variant="small" style="color: var(--color-red);">
-        {validationMessage}
-      </Text>
+      <Text style="color: var(--color-red);">{validationMessage}</Text>
     </div>
   {/if}
 </div>
