@@ -32,6 +32,7 @@ import Search from "./Search.svelte";
 import SearchSmall from "./SearchSmall.svelte";
 import Source from "./Source.svelte";
 import Spinner from "./Spinner.svelte";
+import StepCounter from "./StepCounter.svelte";
 
 export default {
   Badge,
@@ -67,5 +68,6 @@ export default {
   Search,
   SearchSmall,
   Source,
-  Spinner
+  Spinner,
+  StepCounter
 };
