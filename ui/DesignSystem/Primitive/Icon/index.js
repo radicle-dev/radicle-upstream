@@ -31,6 +31,7 @@ import Revisions from "./Revisions.svelte";
 import Search from "./Search.svelte";
 import SearchSmall from "./SearchSmall.svelte";
 import Source from "./Source.svelte";
+import Spinner from "./Spinner.svelte";
 
 export default {
   Badge,
@@ -65,5 +66,6 @@ export default {
   Revisions,
   Search,
   SearchSmall,
-  Source
+  Source,
+  Spinner
 };

@@ -1,5 +1,6 @@
 <script>
   import {
+    Avatar,
     Button,
     Code,
     Caption,
@@ -11,7 +12,6 @@
   } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
-    Avatar,
     Notification,
     Placeholder,
     ProjectCard,
@@ -193,6 +193,7 @@
     <Icon.Search />
     <Icon.SearchSmall />
     <Icon.Source />
+    <Icon.Spinner />
   </Section>
 
   <Section
@@ -432,6 +433,46 @@
         style="flex: 1"
         valid={false}
         validationMessage="Well, that didn't go well..." />
+    </Swatch>
+
+    <Swatch>
+      <Input.Text
+        placeholder="Enter user name"
+        style="width: 100%"
+        valid={true}
+        variant="handle"
+        on:input={() => {
+          console.log('event(Input changed)');
+        }} />
+    </Swatch>
+
+    <Swatch>
+      <Input.Text
+        placeholder="Enter user name"
+        style="width: 100%"
+        valid={true}
+        value="user123"
+        variant="handle" />
+    </Swatch>
+
+    <Swatch>
+      <Input.Text
+        placeholder="Enter user name"
+        style="width: 100%"
+        valid={true}
+        validationPending="true"
+        value="user123"
+        variant="handle" />
+    </Swatch>
+
+    <Swatch>
+      <Input.Text
+        placeholder="Enter user name."
+        style="width: 100%"
+        valid={false}
+        validationMessage="Handle already taken"
+        value="myUser"
+        variant="handle" />
     </Swatch>
 
     <Swatch>

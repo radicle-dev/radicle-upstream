@@ -1,6 +1,5 @@
 <script>
-  import { Caption, Title } from "../../DesignSystem/Primitive";
-  import Avatar from "./Avatar.svelte";
+  import { Avatar, Caption, Title } from "../../DesignSystem/Primitive";
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
 

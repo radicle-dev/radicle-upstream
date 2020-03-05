@@ -1,6 +1,6 @@
 <script>
-  import { Button, Flex, Text } from "../../DesignSystem/Primitive";
-  import { Avatar, Rad, Row } from "../../DesignSystem/Component";
+  import { Avatar, Button, Flex, Text } from "../../DesignSystem/Primitive";
+  import { Rad, Row } from "../../DesignSystem/Component";
 
   export let onNextStep = null;
   export let onPreviousStep = null;
