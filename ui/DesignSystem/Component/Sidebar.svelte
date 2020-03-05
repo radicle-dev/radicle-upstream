@@ -126,12 +126,6 @@
     width: 100%;
     height: 100%;
   }
-
-  .user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 18px;
-  }
 </style>
 
 <div class="wrapper" data-cy="sidebar">
@@ -177,6 +171,12 @@
       <div class="tooltip">
         <Title>Profile</Title>
       </div>
+    </li>
+
+    <li class="item">
+      <a href={path.createUser()} use:link>
+        <Icon.Plus />
+      </a>
     </li>
   </ul>
 </div>
