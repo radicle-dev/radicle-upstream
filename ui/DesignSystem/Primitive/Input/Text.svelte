@@ -11,7 +11,7 @@
   export let disabled = null;
   export let valid = true;
   export let validationMessage = null;
-  export let variant = "vanilla"; // plain | handle
+  export let variant = "vanilla"; // vanilla | handle
   export let validationPending = false;
 </script>
 
