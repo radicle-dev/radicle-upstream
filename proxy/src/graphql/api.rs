@@ -43,36 +43,42 @@ pub async fn run(
 }
 
 /// Filter for the graphql endpoint.
-fn make_graphql_filter<Context, Mutation, Query>(
-    schema: juniper::RootNode<'static, Query, Mutation>,
+fn make_graphql_filter<'a, Context, Mutation, Query, S>(
+    schema: &'a juniper::RootNode<'a, Query, Mutation, S>,
     context_extractor: filters::BoxedFilter<(Context,)>,
 ) -> impl Filter<Extract = (http::Response<Vec<u8>>,), Error = warp::Rejection> + Clone
 where
-    Context: Clone + Send + Sync + 'static,
-    Mutation: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
-    Query: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
+    S: juniper::ScalarValue + Send + Sync + 'static,
+    Context: Send + Sync + 'static,
+    Query: juniper::GraphQLTypeAsync<S, Context = Context> + Send + Sync + 'static,
+    Query::TypeInfo: Send + Sync,
+    Mutation: juniper::GraphQLTypeAsync<S, Context = Context> + Send + Sync + 'static,
+    Mutation::TypeInfo: Send + Sync,
 {
     let schema = Arc::new(schema);
 
     warp::post()
-        .map(move || Arc::<juniper::RootNode<'static, Query, Mutation>>::clone(&schema))
+        .map(move || Arc::<&'a juniper::RootNode<'a, Query, Mutation>>::clone(&schema))
         .and(context_extractor)
         .and(warp::body::json())
         .and_then(handle_request)
 }
 
 /// Executes the request and crafts the serialised response.
-async fn handle_request<Context, Mutation, Query>(
-    schema: Arc<juniper::RootNode<'static, Query, Mutation>>,
+async fn handle_request<'a, Context, Mutation, Query, S>(
+    schema: &'a juniper::RootNode<'a, Query, Mutation, S>,
     context: Context,
     request: juniper::http::GraphQLRequest,
 ) -> Result<http::Response<Vec<u8>>, std::convert::Infallible>
 where
-    Context: Clone + Send + Sync + 'static,
-    Mutation: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
-    Query: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
+    S: juniper::ScalarValue + Send + Sync + 'static,
+    Context: Send + Sync + 'static,
+    Query: juniper::GraphQLTypeAsync<S, Context = Context> + Send + Sync + 'static,
+    Query::TypeInfo: Send + Sync,
+    Mutation: juniper::GraphQLTypeAsync<S, Context = Context> + Send + Sync + 'static,
+    Mutation::TypeInfo: Send + Sync,
 {
-    match serde_json::to_vec(&request.execute(&schema, &context)) {
+    match serde_json::to_vec(&request.execute_async(schema, &context).await) {
         Ok(body) => Ok(http::Response::builder()
             .header("content-type", "application/json; charset=utf-8")
             .body(body)

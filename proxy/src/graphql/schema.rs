@@ -20,7 +20,7 @@ pub type Schema = juniper::RootNode<'static, Query, Mutation>;
 /// Returns a `Schema` with the default parameterised `Query` and `Mutation`.
 #[must_use]
 pub fn create() -> Schema {
-    Schema::new(Query {}, Mutation {})
+    juniper::RootNode::new(Query, Mutation)
 }
 
 /// Container for data access from handlers.
