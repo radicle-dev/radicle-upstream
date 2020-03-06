@@ -17,6 +17,7 @@
   import Project from "./Screen/Project.svelte";
   import Projects from "./Screen/Projects.svelte";
   import RegisterProject from "./Screen/RegisterProject.svelte";
+  import RegisterUser from "./Screen/RegisterUser.svelte";
   import Search from "./Screen/Search.svelte";
 
   initializeHotkeys();
@@ -46,6 +47,7 @@
     "/projects/:id/*": Project,
     "/design-system-guide": DesignSystemGuide,
     "/help": Help,
+    "/register-user": RegisterUser,
     "*": NotFound
   };
 </script>
