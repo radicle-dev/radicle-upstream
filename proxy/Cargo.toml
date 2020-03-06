@@ -29,13 +29,13 @@ url = "2.1"
 warp = "0.2"
 
 [dependencies.juniper]
-git = "https://github.com/graphql-rust/juniper.git"
-rev = "15e9bffa8493df2e753f667114f073df0bbdaa5d"
+git = "https://github.com/radicle-dev/juniper.git"
+rev = "bdb3182a05dd22e0072ffc5e777e055ee10dc938"
 features = [ "async" ]
 
 [dependencies.juniper_codegen]
-git = "https://github.com/graphql-rust/juniper.git"
-rev = "15e9bffa8493df2e753f667114f073df0bbdaa5d"
+git = "https://github.com/radicle-dev/juniper.git"
+rev = "bdb3182a05dd22e0072ffc5e777e055ee10dc938"
 features = [ "async" ]
 
 [dependencies.librad]

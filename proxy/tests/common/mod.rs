@@ -34,8 +34,14 @@ where
         librad_paths,
         radicle_registry_client::Client::new_emulator(),
     );
-    let (res, errors) = juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
-        .expect("test execute failed");
+    let (res, errors) = futures::executor::block_on(juniper::execute_async(
+        query,
+        None,
+        &Schema::new(Query, Mutation),
+        vars,
+        &ctx,
+    ))
+    .expect("test execute failed");
 
     f(res, errors);
 }

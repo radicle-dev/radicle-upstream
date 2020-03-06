@@ -85,7 +85,7 @@ impl Registry {
 
     /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
     /// to a different nework.
-    pub fn reset(&mut self, client: Client) {
+    pub async fn reset(&mut self, client: Client) {
         self.client = client;
     }
 
