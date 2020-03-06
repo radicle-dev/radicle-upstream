@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title } from "../Primitive";
+  import { Icon, Line, Title } from "../Primitive";
 
   export let selectedStep = null;
   export let steps = null;
@@ -27,14 +27,7 @@
 <div class="step-counter" {style}>
   {#each steps as stepName, index}
     {#if index > 0}
-      <svg height="15" width="126">
-        <line
-          x1="0"
-          y1="7.5"
-          x2="126"
-          y2="7.5"
-          style="stroke: var(--color-gray); stroke-width: 1" />
-      </svg>
+      <Line height="15" width="126" />
     {/if}
     <div class="step" class:active={selectedStep === index + 1}>
       <Title
