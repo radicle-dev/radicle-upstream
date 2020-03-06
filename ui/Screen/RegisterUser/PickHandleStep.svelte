@@ -35,6 +35,7 @@
   };
 
   let validations = false;
+  let timeout = null;
 
   const validate = async () => {
     validating = true;
@@ -43,7 +44,8 @@
       validating = false;
     } else {
       // TODO(merle): Use actual avaiability query and move it into validations
-      setTimeout(() => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
         validating = false;
       }, 3000);
     }
@@ -59,7 +61,6 @@
   valid={!(validations && validations.handle)}
   validationMessage={validations && validations.handle && validations.handle[0]}
   variant="handle"
-  on:input={validate}
   validationPending={validating} />
 
 <Flex style="margin-top: 48px;">
