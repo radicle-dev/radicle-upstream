@@ -7,9 +7,6 @@
   export let onNextStep = null;
 
   const nextStep = () => {
-    beginValidation = true;
-    validate();
-
     if (!validatejs.isEmpty(validations)) {
       return;
     }
@@ -17,7 +14,7 @@
   };
 
   export let handle = "";
-  let beginValidation = false;
+  let validating = false;
 
   validatejs.options = {
     fullMessages: false
@@ -39,12 +36,17 @@
 
   let validations = false;
 
-  const validate = () => {
-    if (!beginValidation) {
-      return;
+  const validate = async () => {
+    validating = true;
+    validations = await validatejs({ handle: handle }, constraints);
+    if (!validatejs.isEmpty(validations)) {
+      validating = false;
+    } else {
+      // TODO(merle): Use actual avaiability query and move it into validations
+      setTimeout(() => {
+        validating = false;
+      }, 3000);
     }
-
-    validations = validatejs({ handle: handle }, constraints);
   };
 
   $: validate(handle);
@@ -54,8 +56,11 @@
   style="--focus-outline-color: var(--color-pink)"
   placeholder="User handle"
   bind:value={handle}
-  valid={!(beginValidation && validations && validations.handle)}
-  validationMessage={beginValidation && validations && validations.handle && validations.handle[0]} />
+  valid={!(validations && validations.handle)}
+  validationMessage={validations && validations.handle && validations.handle[0]}
+  variant="handle"
+  on:input={validate}
+  validationPending={validating} />
 
 <Flex style="margin-top: 48px;">
   <div slot="left">
@@ -69,7 +74,10 @@
   </div>
 
   <div slot="right">
-    <Button disabled={!handle} on:click={nextStep} variant="primary">
+    <Button
+      disabled={!handle || validating || validations}
+      on:click={nextStep}
+      variant="primary">
       Next
     </Button>
   </div>
