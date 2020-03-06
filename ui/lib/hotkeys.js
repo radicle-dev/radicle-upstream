@@ -11,6 +11,14 @@ export const initializeHotkeys = () => {
     push(path.designSystemGuide());
   });
 
+  // temporary hotkey to open user registration
+  hotkeys("shift+t", () => {
+    if (path.active(path.registerUser(), get(location))) {
+      pop();
+    }
+    push(path.registerUser());
+  });
+
   hotkeys("shift+/", () => {
     if (path.active(path.help(), get(location))) {
       pop();
