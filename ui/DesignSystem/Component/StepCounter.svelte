@@ -20,7 +20,7 @@
   }
 
   .step.active {
-    color: var(--color-radblue);
+    color: var(--color-blue);
   }
 </style>
 
