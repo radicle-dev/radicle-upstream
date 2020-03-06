@@ -1,8 +1,8 @@
 <script>
   import { Icon, Title } from "../Primitive";
 
-  export let step = null;
-  export let of = null;
+  export let selectedStep = null;
+  export let steps = null;
   export let style = null;
 </script>
 
@@ -25,7 +25,7 @@
 </style>
 
 <div class="step-counter" {style}>
-  {#each of as stepName, index}
+  {#each steps as stepName, index}
     {#if index > 0}
       <svg height="15" width="126">
         <line
@@ -36,13 +36,13 @@
           style="stroke: var(--color-gray); stroke-width: 1" />
       </svg>
     {/if}
-    <div class="step" class:active={step === index + 1}>
+    <div class="step" class:active={selectedStep === index + 1}>
       <Title
         style="color: inherit; margin-bottom: 14px; align-self: center;
         white-space: nowrap;">
         {stepName}
       </Title>
-      <Icon.StepCounter active={step === index + 1} />
+      <Icon.StepCounter active={selectedStep === index + 1} />
     </div>
   {/each}
 </div>

@@ -602,7 +602,7 @@
     </Swatch>
 
     <Swatch>
-      <StepCounter step={1} of={['Step 1', 'Step 2', 'Step 3']} />
+      <StepCounter selectedStep={1} steps={['Step 1', 'Step 2', 'Step 3']} />
     </Swatch>
 
     <Swatch>
