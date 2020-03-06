@@ -173,7 +173,7 @@
     </li>
 
     <li class="item">
-      <a href={path.createUser()} use:link>
+      <a href={path.createIdentity()} use:link>
         <Icon.Plus />
       </a>
     </li>

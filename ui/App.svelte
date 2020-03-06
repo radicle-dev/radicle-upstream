@@ -18,7 +18,7 @@
   import Projects from "./Screen/Projects.svelte";
   import RegisterProject from "./Screen/RegisterProject.svelte";
   import Search from "./Screen/Search.svelte";
-  import CreateUser from "./Screen/CreateUser.svelte";
+  import CreateIdentity from "./Screen/CreateIdentity.svelte";
 
   initializeHotkeys();
 
@@ -39,7 +39,7 @@
   setClient(client);
 
   const routes = {
-    "/user/new": CreateUser,
+    "/identity/new": CreateIdentity,
     "/search": Search,
     "/network": Network,
     "/projects": Projects,
