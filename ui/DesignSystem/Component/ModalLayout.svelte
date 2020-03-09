@@ -3,6 +3,7 @@
   import { Icon } from "../Primitive";
 
   export let dataCy = null;
+  export let onClose = null;
 </script>
 
 <style>
@@ -25,7 +26,7 @@
 </style>
 
 <div class="close">
-  <Icon.CrossBig on:click={pop} />
+  <Icon.CrossBig on:click={onClose || pop} />
 </div>
 
 <div class="wrapper" data-cy={dataCy}>

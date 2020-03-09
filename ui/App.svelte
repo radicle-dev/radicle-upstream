@@ -12,6 +12,7 @@
   import CreateProject from "./Screen/CreateProject.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
+  import CreateIdentitySuccess from "./Screen/CreateIdentitySuccess.svelte";
   import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Project from "./Screen/Project.svelte";
@@ -40,6 +41,7 @@
 
   const routes = {
     "/identity/new": CreateIdentity,
+    "/identity/success": CreateIdentitySuccess,
     "/search": Search,
     "/network": Network,
     "/projects": Projects,
