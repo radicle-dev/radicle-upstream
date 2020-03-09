@@ -26,6 +26,7 @@
 #[macro_use]
 extern crate juniper;
 
+pub mod avatar;
 pub mod coco;
 pub mod env;
 pub mod error;
