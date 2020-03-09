@@ -7,7 +7,7 @@
   export let title = null;
 
   export let variant = "user"; // user | project
-  export let size = "regular"; // regular | medium | big
+  export let size = "regular"; // regular | medium | big | xl
 
   $: avatarClass = [variant, size].join(" ");
 </script>
@@ -30,6 +30,12 @@
     width: 68px;
     height: 68px;
     border-radius: 34px;
+  }
+
+  .user.xl {
+    width: 72px;
+    height: 72px;
+    border-radius: 36px;
   }
 
   .project {
