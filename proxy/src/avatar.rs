@@ -1,6 +1,8 @@
 //! Org and user avatar generation.
 
 /// Emoji whitelist.
+///
+/// Note that these are `str` and not `char` because an emoji can span multiple unicode scalars.
 const EMOJIS: &[&str] = &[
     "⌚️", "📱", "📲", "💻", "⌨️", "💽", "💾", "💿", "📀", "📼", "📷", "📸", "📹", "🎥", "🎞", "📞",
     "☎️", "📟", "📠", "📺", "📻", "⏰", "🕰", "⌛️", "⏳", "📡", "🔋", "🔌", "💡", "🔦", "💸", "💵",
