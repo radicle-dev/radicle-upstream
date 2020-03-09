@@ -73,10 +73,10 @@ impl Color {
     }
 
     /// Ligthen a color by an amount between `-1.0` and `1.0`.
-    /// Panics if the amount isn't in that range.
     fn lighten(self, amount: f32) -> Self {
-        assert!(amount <= 1.0);
-        assert!(amount >= -1.0);
+        // Constrain range to -1 .. 1.
+        let amount = f32::max(amount, -1.0);
+        let amount = f32::min(amount, 1.0);
 
         let x = (amount.abs() * (0xff as f32)) as u8;
 
