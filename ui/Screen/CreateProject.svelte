@@ -7,6 +7,7 @@
   import { showNotification } from "../store/notification.js";
   import * as path from "../lib/path.js";
   import { hash } from "../lib/hash.js";
+  import { SINGLE_WORD_MATCH } from "../lib/validationHelpers.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
 
   import {
@@ -34,8 +35,6 @@
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
   let imageUrl = "";
-
-  const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
 
   let validations = false;
   let beginValidation = false;
@@ -102,7 +101,7 @@
         allowEmpty: false
       },
       format: {
-        pattern: VALID_NAME_MATCH,
+        pattern: SINGLE_WORD_MATCH,
         message: "Project name should match [a-z0-9][a-z0-9_-]+"
       }
     },
