@@ -14,7 +14,11 @@
   };
 
   export let handle = "";
+
   let validating = false;
+  let validations = false;
+  let timeout = null;
+  let delay = 0;
 
   validatejs.options = {
     fullMessages: false
@@ -34,9 +38,6 @@
     }
   };
 
-  let validations = false;
-  let timeout = null;
-
   const validate = async () => {
     validating = true;
     validations = await validatejs({ handle: handle }, constraints);
@@ -44,11 +45,12 @@
       validating = false;
     } else {
       // TODO(merle): Use actual avaiability & avatar query
-      // TODO(merle): No timeout on load
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         validating = false;
-      }, 3000);
+      }, delay);
+      // set the delay after the first validation on load
+      delay = 3000;
     }
   };
 
