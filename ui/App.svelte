@@ -12,14 +12,14 @@
   import CreateProject from "./Screen/CreateProject.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
-  import CreateIdentitySuccess from "./Screen/CreateIdentitySuccess.svelte";
+  import CreateIdentitySuccess from "./Screen/IdentityCreationSuccess.svelte";
   import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Project from "./Screen/Project.svelte";
   import Projects from "./Screen/Projects.svelte";
   import RegisterProject from "./Screen/RegisterProject.svelte";
   import Search from "./Screen/Search.svelte";
-  import CreateIdentity from "./Screen/CreateIdentity.svelte";
+  import CreateIdentity from "./Screen/IdentityCreation.svelte";
 
   initializeHotkeys();
 

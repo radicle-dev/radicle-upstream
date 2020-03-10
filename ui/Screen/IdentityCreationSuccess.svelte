@@ -56,17 +56,21 @@
         <!-- TODO: actually link to handle registration flow -->
         <a class="registration-link" href="#">register it.</a>
       </Text>
-      <div class="identity-card">
-        <Avatar size="xl" />
-        <div class="identity-card-text-container">
-          {#if $currentIdentityStore && $currentIdentityStore.displayName}
-            <Title>{$currentIdentityStore.displayName}</Title>
-          {/if}
-          <Text style="color: var(--color-darkgray);">
-            {$currentIdentityStore && $currentIdentityStore.shareableEntityIdentifier}
-          </Text>
+      {#if $currentIdentityStore}
+        <div class="identity-card">
+          <Avatar
+            size="xl"
+            imageUrl={$currentIdentityStore.avatarUrl || undefined} />
+          <div class="identity-card-text-container">
+            {#if $currentIdentityStore.displayName}
+              <Title>{$currentIdentityStore.displayName}</Title>
+            {/if}
+            <Text style="color: var(--color-darkgray);">
+              {$currentIdentityStore.shareableEntityIdentifier}
+            </Text>
+          </div>
         </div>
-      </div>
+      {/if}
 
       <Button on:click={onClose}>Go to profile</Button>
     </div>
