@@ -11,7 +11,7 @@ export const initializeHotkeys = () => {
     push(path.designSystemGuide());
   });
 
-  // temporary hotkey to open user registration
+  // TODO(merle): Remove temporary hotkey to open user registration
   hotkeys("shift+t", () => {
     if (path.active(path.registerUser(), get(location))) {
       pop();
