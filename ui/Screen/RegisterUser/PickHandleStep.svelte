@@ -3,6 +3,8 @@
   import { Button, Flex, Input } from "../../DesignSystem/Primitive";
 
   import { pop } from "svelte-spa-router";
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
 
   export let onNextStep = null;
 
@@ -19,6 +21,28 @@
   let validations = false;
   let timeout = null;
   let delay = 0;
+  const client = getClient();
+
+  const GET_USER = gql`
+    query Query($handle: ID!) {
+      user(handle: $handle)
+    }
+  `;
+
+  const validateHandleAvailability = async () => {
+    try {
+      const response = await query(client, {
+        query: GET_USER,
+        variables: { handle: handle }
+      });
+      const result = await response.result();
+      if (await result.data.user) {
+        validations = { handle: ["Handle already taken"] };
+      }
+    } catch (error) {
+      validations = { handle: [error] };
+    }
+  };
 
   validatejs.options = {
     fullMessages: false
@@ -40,13 +64,14 @@
 
   const validate = async () => {
     validating = true;
-    validations = await validatejs({ handle: handle }, constraints);
+    validations = validatejs({ handle: handle }, constraints);
     if (!validatejs.isEmpty(validations)) {
       validating = false;
     } else {
-      // TODO(merle): Use actual avaiability & avatar query
+      // TODO(merle): Add avatar query
       clearTimeout(timeout);
-      timeout = setTimeout(() => {
+      timeout = setTimeout(async () => {
+        await validateHandleAvailability();
         validating = false;
       }, delay);
       // set the delay after the first validation on load
