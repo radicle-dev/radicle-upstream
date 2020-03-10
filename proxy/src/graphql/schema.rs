@@ -291,7 +291,12 @@ impl Query {
     }
 
     fn user(_ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
-        Ok(None)
+        if handle == juniper::ID::new("cloudhead") {
+            Ok(None)
+        } else {
+            Ok(Some(juniper::ID::new("1234")))
+        }
+
     }
 }
 
