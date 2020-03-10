@@ -55,7 +55,6 @@
   $: validate(handle);
 </script>
 
-<!-- TODO(merle): check outline color -->
 <Input.Text
   style="--focus-outline-color: var(--color-pink)"
   placeholder="User handle"

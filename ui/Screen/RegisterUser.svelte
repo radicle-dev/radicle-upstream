@@ -9,12 +9,6 @@
   import { getClient, mutate } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
-  const stepTitle = {
-    // TODO(merle): Check titles with Julien
-    1: "Register your handle",
-    2: "Register a handle"
-  };
-
   let step = 1;
   let handle = "cloudhead"; // TODO(merle): Get actual user profile (id, name, avatar)
   const id = "1234";
@@ -87,7 +81,7 @@
       </div>
 
       <Title variant="big" style="margin: 48px 0 24px 0; text-align: center">
-        {stepTitle[step]}
+        Register your handle
       </Title>
 
       {#if step === 1}

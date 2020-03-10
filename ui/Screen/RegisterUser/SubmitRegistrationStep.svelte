@@ -24,7 +24,6 @@
 <Transaction {tx} style="margin-top: 32px;" />
 
 <Flex style="margin-top: 32px;" align="right">
-  <!-- TODO(merle): "Cancel" button in figma -->
   <Button
     disabled={false}
     on:click={onPreviousStep}
