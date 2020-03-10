@@ -4,7 +4,7 @@
   import PickHandleStep from "./RegisterUser/PickHandleStep.svelte";
   import SubmitRegistrationStep from "./RegisterUser/SubmitRegistrationStep.svelte";
 
-  import { Title } from "../DesignSystem/Primitive";
+  import { Text, Title } from "../DesignSystem/Primitive";
   import { gql } from "apollo-boost";
   import { getClient, mutate } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
@@ -16,7 +16,7 @@
   };
 
   let step = 1;
-  let handle = "cloudhead"; // TODO(merle): Get actual user profile
+  let handle = "cloudhead"; // TODO(merle): Get actual user profile (id, name, avatar)
   const id = "1234";
 
   const nextStep = () => {
@@ -54,8 +54,6 @@
         }
       });
     } catch (error) {
-      // TODO(merle): Should an immediately failed transaction be shown
-      // differently than pending ones?
       errorMessage = error;
       console.log("Register user error: ", errorMessage);
     } finally {
@@ -88,11 +86,15 @@
           style="margin-bottom: 16px" />
       </div>
 
-      <Title variant="big" style="margin-bottom: 24px; text-align: center">
+      <Title variant="big" style="margin: 48px 0 24px 0; text-align: center">
         {stepTitle[step]}
       </Title>
 
       {#if step === 1}
+        <Text style="color: var(--color-gray); margin: 16px 0 24px 0;">
+          Registering your handle makes it unique and allows others to easily
+          find you.
+        </Text>
         <PickHandleStep bind:handle onNextStep={nextStep} />
       {/if}
 

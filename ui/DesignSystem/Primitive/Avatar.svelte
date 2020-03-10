@@ -61,6 +61,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--color-darkgray);
   }
 
   .avatar {
@@ -94,11 +95,7 @@
   {/if}
 
   {#if title && size === 'regular'}
-    <Title
-      style="color: var(--color-darkgray); white-space: nowrap; margin-left:
-      16px">
-      {title}
-    </Title>
+    <Title style="white-space: nowrap; margin-left: 16px">{title}</Title>
   {/if}
 
   {#if title && size === 'big'}

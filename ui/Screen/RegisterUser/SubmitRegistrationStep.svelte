@@ -21,22 +21,18 @@
   };
 </script>
 
-<Transaction {tx} />
+<Transaction {tx} style="margin-top: 32px;" />
 
-<Flex style="margin-top: 32px;">
-  <div slot="left">
-    <Button
-      disabled={false}
-      on:click={onPreviousStep}
-      variant="outline"
-      style="margin-right: 24px">
-      Back
-    </Button>
-  </div>
-
-  <div slot="right">
-    <Button disabled={false} on:click={onNextStep} variant="primary">
-      Submit transaction
-    </Button>
-  </div>
+<Flex style="margin-top: 32px;" align="right">
+  <!-- TODO(merle): "Cancel" button in figma -->
+  <Button
+    disabled={false}
+    on:click={onPreviousStep}
+    variant="transparent"
+    style="margin-right: 24px">
+    Back
+  </Button>
+  <Button disabled={false} on:click={onNextStep} variant="primary">
+    Submit transaction
+  </Button>
 </Flex>

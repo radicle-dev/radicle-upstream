@@ -33,7 +33,8 @@
     <Avatar
       title={tx.subject.name}
       imageUrl={tx.subject.avatar}
-      variant={tx.subject.kind} />
+      variant={tx.subject.kind}
+      style="color: var(--color-black)" />
   </div>
 </Row>
 
@@ -81,7 +82,10 @@
 
 <Row style="background-color: var(--color-almostwhite)">
   <div slot="left">
-    <Avatar title={tx.payer.name} imageUrl={tx.payer.avatar} />
+    <Avatar
+      title={tx.payer.name}
+      imageUrl={tx.payer.avatar}
+      style="color: var(--color-black)" />
   </div>
 
   <div slot="right">

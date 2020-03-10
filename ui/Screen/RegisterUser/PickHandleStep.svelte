@@ -43,7 +43,8 @@
     if (!validatejs.isEmpty(validations)) {
       validating = false;
     } else {
-      // TODO(merle): Use actual avaiability query and move it into validations
+      // TODO(merle): Use actual avaiability & avatar query
+      // TODO(merle): No timeout on load
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         validating = false;
@@ -54,6 +55,7 @@
   $: validate(handle);
 </script>
 
+<!-- TODO(merle): check outline color -->
 <Input.Text
   style="--focus-outline-color: var(--color-pink)"
   placeholder="User handle"
@@ -63,23 +65,18 @@
   variant="handle"
   validationPending={validating} />
 
-<Flex style="margin-top: 48px;">
-  <div slot="left">
-    <Button
-      dataCy="cancel-button"
-      variant="outline"
-      on:click={pop}
-      style="margin-right: 24px;">
-      Cancel
-    </Button>
-  </div>
-
-  <div slot="right">
-    <Button
-      disabled={!handle || validating || validations}
-      on:click={nextStep}
-      variant="primary">
-      Next
-    </Button>
-  </div>
+<Flex style="margin-top: 32px;" align="right">
+  <Button
+    dataCy="cancel-button"
+    variant="transparent"
+    on:click={pop}
+    style="margin-right: 24px;">
+    Cancel
+  </Button>
+  <Button
+    disabled={!handle || validating || validations}
+    on:click={nextStep}
+    variant="primary">
+    Next
+  </Button>
 </Flex>
