@@ -296,7 +296,6 @@ impl Query {
         } else {
             Ok(Some(juniper::ID::new("1234")))
         }
-
     }
 }
 
