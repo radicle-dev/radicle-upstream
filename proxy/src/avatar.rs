@@ -19,7 +19,7 @@ const EMOJIS: &[&str] = &[
 
 /// An emoji.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Emoji(&'static str);
+pub struct Emoji(pub &'static str);
 
 /// An avatar.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

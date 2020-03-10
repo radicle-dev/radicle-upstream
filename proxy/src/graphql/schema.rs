@@ -8,6 +8,7 @@ use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client::ed25519;
 
+use crate::avatar;
 use crate::coco;
 use crate::error;
 use crate::identity;
@@ -147,6 +148,10 @@ pub struct Query;
 impl Query {
     fn apiVersion() -> &str {
         "1.0"
+    }
+
+    fn avatar(handle: juniper::ID) -> Result<avatar::Avatar, error::Error> {
+        Ok(avatar::Avatar::from(&handle.to_string()))
     }
 
     fn blob(
@@ -358,6 +363,32 @@ pub struct ControlQuery;
     description = "Queries to access raw proxy state.",
 )]
 impl ControlQuery {}
+
+#[juniper::object]
+impl avatar::Avatar {
+    fn background(&self) -> avatar::Color {
+        self.background
+    }
+
+    fn emoji(&self) -> &str {
+        &self.emoji.0
+    }
+}
+
+#[juniper::object]
+impl avatar::Color {
+    fn r() -> i32 {
+        self.r as i32
+    }
+
+    fn g() -> i32 {
+        self.g as i32
+    }
+
+    fn b() -> i32 {
+        self.b as i32
+    }
+}
 
 #[juniper::object]
 impl coco::Blob {
