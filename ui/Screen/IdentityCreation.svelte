@@ -57,13 +57,14 @@
     validations = validatejs(
       {
         handle: handle,
-        displayName: displayName
+        displayName: displayName,
+        avatarUrl: avatarUrl
       },
       constraints
     );
   };
 
-  $: validate(handle, displayName);
+  $: validate(handle, displayName, avatarUrl);
 
   const client = getClient();
 
@@ -158,8 +159,9 @@
       <Input.Text
         placeholder="Avatar url"
         bind:value={avatarUrl}
-        style="margin: 16px 0 32px 0;" />
-
+        style="margin: 16px 0 32px 0;"
+        validationMessage={validations && validations.avatarUrl && validations.avatarUrl[0]}
+        valid={!(validations && validations.avatarUrl)} />
       <div class="buttons">
         <Button variant="transparent" size="big" style="margin-right: 16px;">
           Cancel
