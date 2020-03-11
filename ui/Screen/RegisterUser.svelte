@@ -38,6 +38,8 @@
   let response;
   let errorMessage;
   const registerUser = async () => {
+    // TODO(merle): Remove log statements and add error and success handling
+    // once tx handling is in place
     console.log("Register handle, id ", handle, id);
     try {
       response = await mutate(client, {
