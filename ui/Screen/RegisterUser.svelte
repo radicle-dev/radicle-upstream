@@ -1,13 +1,13 @@
 <script>
+  import { gql } from "apollo-boost";
+  import { getClient, mutate } from "svelte-apollo";
+  import { pop } from "svelte-spa-router";
+
+  import { Text, Title } from "../DesignSystem/Primitive";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
 
   import PickHandleStep from "./RegisterUser/PickHandleStep.svelte";
   import SubmitRegistrationStep from "./RegisterUser/SubmitRegistrationStep.svelte";
-
-  import { Text, Title } from "../DesignSystem/Primitive";
-  import { gql } from "apollo-boost";
-  import { getClient, mutate } from "svelte-apollo";
-  import { pop } from "svelte-spa-router";
 
   let step = 1;
   let handle = "cloudhead"; // TODO(merle): Get actual user profile (id, name, avatar)
