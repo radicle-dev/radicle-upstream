@@ -370,8 +370,8 @@ impl avatar::Avatar {
         self.background
     }
 
-    fn emoji(&self) -> &str {
-        &self.emoji.0
+    fn emoji(&self) -> String {
+        self.emoji.to_string()
     }
 }
 

@@ -1,5 +1,7 @@
 //! Org and user avatar generation.
 
+use std::fmt;
+
 /// Emoji whitelist.
 ///
 /// Note that these are `str` and not `char` because an emoji can span multiple unicode scalars.
@@ -19,7 +21,13 @@ const EMOJIS: &[&str] = &[
 
 /// An emoji.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct Emoji(pub &'static str);
+pub struct Emoji(&'static str);
+
+impl fmt::Display for Emoji {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 /// An avatar.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
