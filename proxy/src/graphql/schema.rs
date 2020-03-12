@@ -150,8 +150,11 @@ impl Query {
         "1.0"
     }
 
-    fn avatar(handle: juniper::ID) -> Result<avatar::Avatar, error::Error> {
-        Ok(avatar::Avatar::from(&handle.to_string()))
+    fn avatar(handle: juniper::ID, usage: String) -> Result<avatar::Avatar, error::Error> {
+        let usage =
+            avatar::Usage::from_str(usage.as_str()).map_err(|e| error::Error::InvalidQuery(e))?;
+
+        Ok(avatar::Avatar::from(&handle.to_string(), usage))
     }
 
     fn blob(
@@ -519,7 +522,7 @@ impl identity::Identity {
     }
 
     fn avatar_fallback(&self) -> avatar::Avatar {
-        avatar::Avatar::from(&self.metadata.handle)
+        avatar::Avatar::from(&self.metadata.handle, avatar::Usage::User)
     }
 }
 

@@ -58,6 +58,10 @@ impl juniper::IntoFieldError for error::Error {
             Self::Time(error) => {
                 juniper::FieldError::new(error.to_string(), graphql_value!({ "type": "TIME" }))
             },
+            Self::InvalidQuery(error) => juniper::FieldError::new(
+                error.to_string(),
+                graphql_value!({ "type": "INVALID_QUERY" }),
+            ),
         }
     }
 }
