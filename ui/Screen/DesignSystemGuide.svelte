@@ -56,6 +56,15 @@
     avatar: "https://avatars.dicebear.com/v2/jdenticon/two.svg"
   };
 
+  const avatarFallback = {
+    emoji: "🌱",
+    background: {
+      r: 20,
+      g: 40,
+      b: 100
+    }
+  };
+
   const dropdownMenuItems = [
     {
       title: "Add something",
@@ -495,8 +504,8 @@
     subTitle="User, project, etc avatars in various sizes and shapes.">
 
     <Swatch>
-      <Avatar />
-      <Avatar size="big" />
+      <Avatar handle="user123" />
+      <Avatar size="big" handle="user123" />
       <Avatar
         imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg" />
       <Avatar
@@ -512,8 +521,8 @@
     </Swatch>
 
     <Swatch>
-      <Avatar title="My name" />
-      <Avatar size="big" title="My name" />
+      <Avatar title="My name" {avatarFallback} />
+      <Avatar size="big" title="My name" handle="user123" />
     </Swatch>
   </Section>
 
@@ -553,7 +562,7 @@
         </div>
 
         <div slot="right">
-          <Avatar title="user" />
+          <Avatar title="user" handle="user123" />
         </div>
       </Row>
     </Swatch>
