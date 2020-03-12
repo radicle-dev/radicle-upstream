@@ -593,6 +593,14 @@ fn identity() {
                         displayName
                         avatarUrl
                     }
+                    avatarFallback {
+                        emoji
+                        background {
+                            r
+                            g
+                            b
+                        }
+                    }
                 }
             }";
 
@@ -609,6 +617,14 @@ fn identity() {
                             "displayName": "Alexis Sellier",
                             "avatarUrl": "https://avatars1.githubusercontent.com/u/4077",
                         },
+                        "avatarFallback": {
+                            "emoji": "🧱",
+                            "background": {
+                                "r": 24,
+                                "g": 105,
+                                "b": 216,
+                            },
+                        }
                     },
                 })
             );

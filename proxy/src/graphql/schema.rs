@@ -517,6 +517,10 @@ impl identity::Identity {
     fn metadata(&self) -> &identity::Metadata {
         &self.metadata
     }
+
+    fn avatar_fallback(&self) -> avatar::Avatar {
+        avatar::Avatar::from(&self.metadata.handle)
+    }
 }
 
 #[juniper::object(name = "IdentityMetadata")]
