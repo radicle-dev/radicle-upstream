@@ -378,15 +378,15 @@ impl avatar::Avatar {
 #[juniper::object]
 impl avatar::Color {
     fn r() -> i32 {
-        self.r as i32
+        i32::from(self.r)
     }
 
     fn g() -> i32 {
-        self.g as i32
+        i32::from(self.g)
     }
 
     fn b() -> i32 {
-        self.b as i32
+        i32::from(self.b)
     }
 }
 

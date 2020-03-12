@@ -1,3 +1,5 @@
+#![allow(clippy::as_conversions, clippy::float_arithmetic)]
+
 //! Org and user avatar generation.
 
 use std::fmt;
@@ -5,6 +7,7 @@ use std::fmt;
 /// Emoji whitelist.
 ///
 /// Note that these are `str` and not `char` because an emoji can span multiple unicode scalars.
+#[allow(clippy::non_ascii_literal)]
 const EMOJIS: &[&str] = &[
     "⌚️", "📱", "📲", "💻", "⌨️", "💽", "💾", "💿", "📀", "📼", "📷", "📸", "📹", "🎥", "🎞", "📞",
     "☎️", "📟", "📠", "📺", "📻", "⏰", "🕰", "⌛️", "⏳", "📡", "🔋", "🔌", "💡", "🔦", "💸", "💵",
@@ -40,6 +43,7 @@ pub struct Avatar {
 
 impl Avatar {
     /// Generate an avatar from an input string.
+    #[must_use]
     pub fn from(input: &str) -> Self {
         Self {
             emoji: generate_emoji(input),
@@ -58,18 +62,20 @@ pub struct Color {
     /// The blue channel.
     pub b: u8,
 
-    // The alpha is here to facilitate working with `u32` values.
-    // We don't use it as part of the output.
+    /// The alpha is here to facilitate working with `u32` values.
+    /// We don't use it as part of the output.
     a: u8,
 }
 
 impl Color {
     /// Create a new color from individual channels.
-    pub fn new(r: u8, g: u8, b: u8) -> Self {
+    #[must_use]
+    pub const fn new(r: u8, g: u8, b: u8) -> Self {
         Self { r, g, b, a: 0x0 }
     }
 
     /// Compute the lightness of a color.
+    #[must_use]
     pub fn lightness(&self) -> f32 {
         let r = self.r as f32;
         let g = self.g as f32;
@@ -142,11 +148,11 @@ fn compress_color(c: Color) -> Color {
 /// platforms.
 fn hash(input: &str) -> u64 {
     let bytes = input.bytes();
-    let mut hash: u64 = 0xcbf29ce484222325; // FNV offset basis.
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325; // FNV offset basis.
 
     for byte in bytes {
-        hash = hash ^ (byte as u64);
-        hash = hash.wrapping_mul(0x100000001b3);
+        hash ^= u64::from(byte);
+        hash = hash.wrapping_mul(0x100_0000_01b3);
     }
 
     hash
@@ -169,7 +175,7 @@ mod test {
 
     #[test]
     fn test_avatar_hash() {
-        assert_eq!(hash("chongo was here!\n\0"), 0xc33bce57bef63eaf);
+        assert_eq!(hash("chongo was here!\n\0"), 0xc33b_ce57_bef6_3eaf);
     }
 
     #[test]
