@@ -22,6 +22,43 @@ fn api_version() {
 }
 
 #[test]
+fn avatar() {
+    with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+        let mut vars = Variables::new();
+
+        vars.insert("handle".into(), InputValue::scalar("cloudhead"));
+
+        let query = "query($handle: ID!) {
+            avatar(handle: $handle) {
+                emoji
+                background {
+                    r
+                    g
+                    b
+                }
+            }
+        }";
+
+        execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "avatar": {
+                        "emoji": "🧱",
+                        "background": {
+                            "r": 24,
+                            "g": 105,
+                            "b": 216,
+                        },
+                    }
+                })
+            );
+        });
+    })
+}
+
+#[test]
 fn blob() {
     with_fixtures(|librad_paths, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
@@ -556,6 +593,14 @@ fn identity() {
                         displayName
                         avatarUrl
                     }
+                    avatarFallback {
+                        emoji
+                        background {
+                            r
+                            g
+                            b
+                        }
+                    }
                 }
             }";
 
@@ -572,6 +617,14 @@ fn identity() {
                             "displayName": "Alexis Sellier",
                             "avatarUrl": "https://avatars1.githubusercontent.com/u/4077",
                         },
+                        "avatarFallback": {
+                            "emoji": "🧱",
+                            "background": {
+                                "r": 24,
+                                "g": 105,
+                                "b": 216,
+                            },
+                        }
                     },
                 })
             );

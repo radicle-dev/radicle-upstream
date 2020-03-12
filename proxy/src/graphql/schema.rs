@@ -8,6 +8,7 @@ use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client::ed25519;
 
+use crate::avatar;
 use crate::coco;
 use crate::error;
 use crate::identity;
@@ -147,6 +148,10 @@ pub struct Query;
 impl Query {
     fn apiVersion() -> &str {
         "1.0"
+    }
+
+    fn avatar(handle: juniper::ID) -> Result<avatar::Avatar, error::Error> {
+        Ok(avatar::Avatar::from(&handle.to_string()))
     }
 
     fn blob(
@@ -360,6 +365,32 @@ pub struct ControlQuery;
 impl ControlQuery {}
 
 #[juniper::object]
+impl avatar::Avatar {
+    fn background(&self) -> avatar::Color {
+        self.background
+    }
+
+    fn emoji(&self) -> String {
+        self.emoji.to_string()
+    }
+}
+
+#[juniper::object]
+impl avatar::Color {
+    fn r() -> i32 {
+        i32::from(self.r)
+    }
+
+    fn g() -> i32 {
+        i32::from(self.g)
+    }
+
+    fn b() -> i32 {
+        i32::from(self.b)
+    }
+}
+
+#[juniper::object]
 impl coco::Blob {
     fn binary(&self) -> bool {
         match &self.content {
@@ -485,6 +516,10 @@ impl identity::Identity {
 
     fn metadata(&self) -> &identity::Metadata {
         &self.metadata
+    }
+
+    fn avatar_fallback(&self) -> avatar::Avatar {
+        avatar::Avatar::from(&self.metadata.handle)
     }
 }
 
