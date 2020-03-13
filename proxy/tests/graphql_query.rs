@@ -45,7 +45,7 @@ fn avatar() {
                 res,
                 graphql_value!({
                     "avatar": {
-                        "emoji": "🧱",
+                        "emoji": "📐",
                         "background": {
                             "r": 24,
                             "g": 105,
@@ -618,7 +618,7 @@ fn identity() {
                             "avatarUrl": "https://avatars1.githubusercontent.com/u/4077",
                         },
                         "avatarFallback": {
-                            "emoji": "🧱",
+                            "emoji": "🚡",
                             "background": {
                                 "r": 24,
                                 "g": 105,

@@ -151,7 +151,11 @@ impl Query {
     }
 
     fn avatar(handle: juniper::ID) -> Result<avatar::Avatar, error::Error> {
-        Ok(avatar::Avatar::from(&handle.to_string()))
+        Ok(avatar::Avatar::from(
+            &handle.to_string(),
+            // TODO(cloudhead): Usage should be supplied by caller.
+            avatar::Usage::Any,
+        ))
     }
 
     fn blob(
@@ -519,7 +523,7 @@ impl identity::Identity {
     }
 
     fn avatar_fallback(&self) -> avatar::Avatar {
-        avatar::Avatar::from(&self.metadata.handle)
+        avatar::Avatar::from(&self.metadata.handle, avatar::Usage::User)
     }
 }
 
