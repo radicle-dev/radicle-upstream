@@ -16,6 +16,7 @@
   export let variant = "user"; // user | project
   export let size = "regular"; // regular | medium | big
 
+  // TODO(merle): Move request into PickHandleStep component
   const GET_AVATAR = gql`
     query Query($handle: ID!) {
       avatar(handle: $handle) {
