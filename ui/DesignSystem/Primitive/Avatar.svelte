@@ -99,7 +99,11 @@
 
 <div class={`container ${size}`} {style}>
   {#if imageUrl}
-    <img class={avatarClass} src={imageUrl} alt="user-avatar" />
+    <img
+      class={avatarClass}
+      src={imageUrl}
+      alt="user-avatar"
+      onerror="this.style.display='none'" />
   {:else if avatarFallback}
     <div
       class={`avatar ${avatarClass}`}
