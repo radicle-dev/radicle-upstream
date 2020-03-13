@@ -56,12 +56,21 @@
     avatar: "https://avatars.dicebear.com/v2/jdenticon/two.svg"
   };
 
-  const avatarFallback = {
-    emoji: "🌱",
+  const avatarFallback1 = {
+    emoji: "📐",
     background: {
-      r: 20,
-      g: 40,
-      b: 100
+      r: 24,
+      g: 105,
+      b: 216
+    }
+  };
+
+  const avatarFallback2 = {
+    emoji: "🛠",
+    background: {
+      r: 181,
+      g: 25,
+      b: 111
     }
   };
 
@@ -457,6 +466,7 @@
 
     <Swatch>
       <Input.Text
+        avatar={avatarFallback1}
         placeholder="Enter user name"
         style="width: 100%"
         valid={true}
@@ -466,6 +476,7 @@
 
     <Swatch>
       <Input.Text
+        avatar={avatarFallback1}
         placeholder="Enter user name"
         style="width: 100%"
         valid={true}
@@ -476,6 +487,7 @@
 
     <Swatch>
       <Input.Text
+        avatar={avatarFallback2}
         placeholder="Enter user name."
         style="width: 100%"
         valid={false}
@@ -504,12 +516,11 @@
     subTitle="User, project, etc avatars in various sizes and shapes.">
 
     <Swatch>
-      <Avatar handle="user123" />
-      <Avatar size="big" {avatarFallback} />
+      <Avatar avatarFallback={avatarFallback1} />
+      <Avatar size="big" avatarFallback={avatarFallback1} />
+      <Avatar imageUrl="https://avatars1.githubusercontent.com/u/40774" />
       <Avatar
-        imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg" />
-      <Avatar
-        imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774"
         size="big" />
       <Avatar
         imageUrl="https://avatars.dicebear.com/v2/jdenticon/one.svg"
@@ -521,8 +532,8 @@
     </Swatch>
 
     <Swatch>
-      <Avatar title="My name" {avatarFallback} />
-      <Avatar size="big" title="My name" handle="user123" />
+      <Avatar title="My name" avatarFallback={avatarFallback2} />
+      <Avatar size="big" title="My name" avatarFallback={avatarFallback2} />
     </Swatch>
   </Section>
 
@@ -562,7 +573,7 @@
         </div>
 
         <div slot="right">
-          <Avatar title="user" handle="user123" />
+          <Avatar title="user" avatarFallback={avatarFallback1} />
         </div>
       </Row>
     </Swatch>

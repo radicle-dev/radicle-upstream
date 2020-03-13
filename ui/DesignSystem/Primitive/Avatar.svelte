@@ -1,44 +1,16 @@
 <script>
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
-
   import Title from "./Title.svelte";
 
   export let style = null;
 
   // the hierarchy of usage for the following avatars is:
-  // imageUrl > avatarFallback > handle
+  // imageUrl > avatarFallback
   export let imageUrl = null;
   export let avatarFallback = null; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
-  export let handle = null; // handle for querying the fallback avatar
   export let title = null;
 
   export let variant = "user"; // user | project
   export let size = "regular"; // regular | medium | big
-
-  // TODO(merle): Move request into PickHandleStep component
-  const GET_AVATAR = gql`
-    query Query($handle: ID!) {
-      avatar(handle: $handle) {
-        emoji
-        background {
-          r
-          g
-          b
-        }
-      }
-    }
-  `;
-
-  const client = getClient();
-
-  let avatar = null;
-  if (handle) {
-    avatar = query(client, {
-      query: GET_AVATAR,
-      variables: { handle: handle }
-    });
-  }
 
   const fmt = background => {
     return `rgb(${background.r}, ${background.g}, ${background.b})`;
@@ -113,16 +85,6 @@
         {avatarFallback.emoji}
       </Title>
     </div>
-  {:else if avatar}
-    {#await $avatar then result}
-      <div
-        class={`avatar ${avatarClass}`}
-        style="background: {fmt(result.data.avatar.background)}">
-        <Title variant={size} style="min-width: 27px; text-align: end;">
-          {result.data.avatar.emoji}
-        </Title>
-      </div>
-    {/await}
   {:else}
     <!-- TODO: Remove when all avatars use the new fallback data or add placeholder -->
     <img
