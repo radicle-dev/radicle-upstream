@@ -10,7 +10,18 @@
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
 
   let step = 1;
-  let handle = "cloudhead"; // TODO(merle): Get actual user profile (id, name, avatar)
+  // TODO(merle): Get actual user profile (id, name, imageUrl, avatarFallback)
+  let handle = "cloudhead";
+  const avatarFallback = {
+    emoji: "📐",
+    background: {
+      r: 24,
+      g: 105,
+      b: 216
+    }
+  };
+  const imageUrl = null;
+
   const id = "1234";
 
   const nextStep = () => {
@@ -91,7 +102,11 @@
           Registering your handle makes it unique and allows others to easily
           find you.
         </Text>
-        <PickHandleStep bind:handle onNextStep={nextStep} />
+        <PickHandleStep
+          {avatarFallback}
+          {imageUrl}
+          bind:handle
+          onNextStep={nextStep} />
       {/if}
 
       {#if step === 2}

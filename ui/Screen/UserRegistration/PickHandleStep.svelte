@@ -16,6 +16,8 @@
   };
 
   export let handle = "";
+  export let imageUrl = null;
+  export let avatarFallback = null;
 
   let validating = false;
   let validations = false;
@@ -26,6 +28,19 @@
   const GET_USER = gql`
     query Query($handle: ID!) {
       user(handle: $handle)
+    }
+  `;
+
+  const GET_AVATAR = gql`
+    query Query($handle: ID!) {
+      avatar(handle: $handle) {
+        emoji
+        background {
+          r
+          g
+          b
+        }
+      }
     }
   `;
 
@@ -42,6 +57,15 @@
     } catch (error) {
       validations = { handle: [error] };
     }
+  };
+
+  const updateAvatarFallback = async () => {
+    const response = await query(client, {
+      query: GET_AVATAR,
+      variables: { handle: handle }
+    });
+    const result = await response.result();
+    avatarFallback = await result.data.avatar;
   };
 
   validatejs.options = {
@@ -71,6 +95,7 @@
       // TODO(merle): Add avatar query
       clearTimeout(timeout);
       timeout = setTimeout(async () => {
+        updateAvatarFallback();
         await validateHandleAvailability();
         validating = false;
       }, delay);
@@ -83,6 +108,8 @@
 </script>
 
 <Input.Text
+  {avatarFallback}
+  {imageUrl}
   style="--focus-outline-color: var(--color-pink)"
   placeholder="User handle"
   bind:value={handle}
