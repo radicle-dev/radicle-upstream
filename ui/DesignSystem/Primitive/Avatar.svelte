@@ -54,18 +54,10 @@
     border-radius: 17px;
   }
 
-  .avatar.user.regular {
-    line-height: 34px;
-  }
-
   .user.medium {
     width: 36px;
     height: 36px;
     border-radius: 18px;
-  }
-
-  .avatar.user.medium {
-    line-height: 36px;
   }
 
   .user.big {
@@ -87,17 +79,9 @@
     height: 32px;
   }
 
-  .avatar.project.regular {
-    line-height: 32px;
-  }
-
   .project.big {
     width: 64px;
     height: 64px;
-  }
-
-  .avatar.project.big {
-    line-height: 64px;
   }
 
   .container {
@@ -107,7 +91,9 @@
   }
 
   .avatar {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 </style>
 
@@ -118,7 +104,7 @@
     <div
       class={`avatar ${avatarClass}`}
       style="background: {fmt(avatarFallback.background)}">
-      <Title variant={size} style="line-height: inherit">
+      <Title variant={size} style="min-width: 27px; text-align: end;">
         {avatarFallback.emoji}
       </Title>
     </div>
@@ -127,7 +113,7 @@
       <div
         class={`avatar ${avatarClass}`}
         style="background: {fmt(result.data.avatar.background)}">
-        <Title variant={size} style="line-height: inherit">
+        <Title variant={size} style="min-width: 27px; text-align: end;">
           {result.data.avatar.emoji}
         </Title>
       </div>

@@ -505,7 +505,7 @@
 
     <Swatch>
       <Avatar handle="user123" />
-      <Avatar size="big" handle="user123" />
+      <Avatar size="big" {avatarFallback} />
       <Avatar
         imageUrl="https://avatars.dicebear.com/v2/avataaars/gWIIBkeCYYZFCPhBp3Cl.svg" />
       <Avatar
