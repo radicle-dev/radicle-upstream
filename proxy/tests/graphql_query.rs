@@ -615,7 +615,7 @@ fn identity() {
                         "metadata": {
                             "handle": "cloudhead",
                             "displayName": "Alexis Sellier",
-                            "avatarUrl": "https://avatars1.githubusercontent.com/u/4077",
+                            "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
                         },
                         "avatarFallback": {
                             "emoji": "🚡",
