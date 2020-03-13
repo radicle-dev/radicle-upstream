@@ -68,7 +68,7 @@ pub enum Usage {
     User,
     /// An org avatar.
     Org,
-    /// An generic avatar.
+    /// A generic avatar.
     Any,
 }
 
