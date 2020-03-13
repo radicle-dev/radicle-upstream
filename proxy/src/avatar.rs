@@ -68,18 +68,8 @@ pub enum Usage {
     User,
     /// An org avatar.
     Org,
-}
-
-impl std::str::FromStr for Usage {
-    type Err = String;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "user" => Ok(Self::User),
-            "org" => Ok(Self::Org),
-            other => Err(format!("`{}` is not a valid avatar usage string", other)),
-        }
-    }
+    /// An generic avatar.
+    Any,
 }
 
 /// An avatar.
@@ -180,7 +170,7 @@ fn generate_emoji(input: &str, usage: Usage) -> Emoji {
                 Emoji(EMOJIS_USER[ix - EMOJIS.len()])
             }
         },
-        Usage::Org => Emoji(EMOJIS[ix as usize % EMOJIS.len()]),
+        Usage::Any | Usage::Org => Emoji(EMOJIS[ix as usize % EMOJIS.len()]),
     }
 }
 

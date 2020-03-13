@@ -55,8 +55,6 @@ pub enum Error {
     Runtime(DispatchError),
     /// Errors from handling time.
     Time(SystemTimeError),
-    /// Invalid query.
-    InvalidQuery(String),
 }
 
 impl From<surf::file_system::error::Error> for Error {

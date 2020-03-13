@@ -150,11 +150,12 @@ impl Query {
         "1.0"
     }
 
-    fn avatar(handle: juniper::ID, usage: String) -> Result<avatar::Avatar, error::Error> {
-        let usage =
-            avatar::Usage::from_str(usage.as_str()).map_err(|e| error::Error::InvalidQuery(e))?;
-
-        Ok(avatar::Avatar::from(&handle.to_string(), usage))
+    fn avatar(handle: juniper::ID) -> Result<avatar::Avatar, error::Error> {
+        Ok(avatar::Avatar::from(
+            &handle.to_string(),
+            // TODO(cloudhead): Usage should be supplied by caller.
+            avatar::Usage::Any,
+        ))
     }
 
     fn blob(
