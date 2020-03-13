@@ -285,7 +285,7 @@ impl Query {
             metadata: identity::Metadata {
                 handle: "cloudhead".into(),
                 display_name: Some("Alexis Sellier".into()),
-                avatar_url: Some("https://avatars1.githubusercontent.com/u/4077".into()),
+                avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
             },
         }))
     }

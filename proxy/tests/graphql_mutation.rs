@@ -17,7 +17,7 @@ fn create_identity() {
         vars.insert("displayName".into(), InputValue::scalar("Alexis Sellier"));
         vars.insert(
             "avatarUrl".into(),
-            InputValue::scalar("https://avatars1.githubusercontent.com/u/4077"),
+            InputValue::scalar("https://avatars1.githubusercontent.com/u/40774"),
         );
 
         let query = "mutation($handle: String!, $displayName: String, $avatarUrl: String) {
@@ -43,7 +43,7 @@ fn create_identity() {
                         "metadata": {
                             "handle": "cloudhead",
                             "displayName": "Alexis Sellier",
-                            "avatarUrl": "https://avatars1.githubusercontent.com/u/4077",
+                            "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
                         },
                     },
                 })

@@ -3,11 +3,18 @@
 
   export let style = null;
 
-  export let imageUrl = `https://avatars.dicebear.com/v2/avataaars/S7oswrhcNJkjzUhNW33S.svg`;
+  // the hierarchy of usage for the following avatars is:
+  // imageUrl > avatarFallback
+  export let imageUrl = null;
+  export let avatarFallback = null; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
   export let title = null;
 
   export let variant = "user"; // user | project
   export let size = "regular"; // regular | medium | big
+
+  const fmt = background => {
+    return `rgb(${background.r}, ${background.g}, ${background.b})`;
+  };
 
   $: avatarClass = [variant, size].join(" ");
 </script>
@@ -32,6 +39,10 @@
     border-radius: 34px;
   }
 
+  .avatar.user.big {
+    line-height: 68px;
+  }
+
   .project {
     border-radius: 2px;
   }
@@ -46,15 +57,41 @@
     height: 64px;
   }
 
-  div {
+  .container {
     display: flex;
     align-items: center;
     justify-content: center;
   }
+
+  .avatar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 </style>
 
-<div class={size} {style}>
-  <img class={avatarClass} src={imageUrl} alt="user-avatar" />
+<div class={`container ${size}`} {style}>
+  {#if imageUrl}
+    <img
+      class={avatarClass}
+      src={imageUrl}
+      alt="user-avatar"
+      onerror="this.style.display='none'" />
+  {:else if avatarFallback}
+    <div
+      class={`avatar ${avatarClass}`}
+      style="background: {fmt(avatarFallback.background)}">
+      <Title variant={size} style="min-width: 27px; text-align: end;">
+        {avatarFallback.emoji}
+      </Title>
+    </div>
+  {:else}
+    <!-- TODO: Remove when all avatars use the new fallback data or add placeholder -->
+    <img
+      class={avatarClass}
+      src="https://avatars.dicebear.com/v2/avataaars/S7oswrhcNJkjzUhNW33S.svg"
+      alt="user-avatar" />
+  {/if}
 
   {#if title && size === 'regular'}
     <Title
