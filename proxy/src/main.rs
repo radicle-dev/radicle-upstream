@@ -27,10 +27,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let devnet_host = url17::Host::parse("35.241.138.91")?;
     let registry_client = match args.registry.as_str() {
-        "devnet" => radicle_registry_client::Client::new_emulator(),
-        "emulator" => radicle_registry_client::Client::create_with_executor(devnet_host)
+        "devnet" => radicle_registry_client::Client::create_with_executor(devnet_host)
             .await
             .expect("unable to construct devnet client"),
+        "emulator" => radicle_registry_client::Client::new_emulator(),
         _ => panic!(format!("unknown registry source '{}'", args.registry)),
     };
 
