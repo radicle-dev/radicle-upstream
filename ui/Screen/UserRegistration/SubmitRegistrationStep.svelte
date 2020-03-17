@@ -31,13 +31,18 @@
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
+    dataCy="back-button"
     disabled={false}
     on:click={onPreviousStep}
     variant="transparent"
     style="margin-right: 24px">
     Back
   </Button>
-  <Button disabled={false} on:click={onNextStep} variant="primary">
+  <Button
+    dataCy="submit-button"
+    disabled={false}
+    on:click={onNextStep}
+    variant="primary">
     Submit transaction
   </Button>
 </Flex>

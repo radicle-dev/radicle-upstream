@@ -27,7 +27,7 @@
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Your transaction
 </Caption>
-<Row style="margin-bottom: 32px;">
+<Row style="margin-bottom: 32px;" dataCy="tx-summary">
   <div slot="left">
     <Title>{tx.message}</Title>
   </div>

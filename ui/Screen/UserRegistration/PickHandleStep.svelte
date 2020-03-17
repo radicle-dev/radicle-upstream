@@ -110,6 +110,7 @@
 </script>
 
 <Input.Text
+  dataCy="handle"
   {avatarFallback}
   {imageUrl}
   style="--focus-outline-color: var(--color-pink)"
@@ -129,6 +130,7 @@
     Cancel
   </Button>
   <Button
+    dataCy="next-button"
     disabled={!handle || validating || validations}
     on:click={nextStep}
     variant="primary">

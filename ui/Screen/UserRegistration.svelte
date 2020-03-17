@@ -83,9 +83,9 @@
   }
 </style>
 
-<ModalLayout>
+<ModalLayout dataCy="page">
   <div class="wrapper">
-    <div class="register-user">
+    <div class="register-user" data-cy="register-user">
       <div style="display: flex; justify-content: center">
         <StepCounter
           selectedStep={step}

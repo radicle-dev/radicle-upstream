@@ -31,6 +31,7 @@ export const initializeHotkeys = () => {
       path.active(path.help(), get(location)) ||
       path.active(path.designSystemGuide(), get(location)) ||
       path.active(path.createProject(), get(location)) ||
+      path.active(path.registerUser(), get(location)) ||
       path.active(path.registerProject("**"), get(location), true)
     ) {
       pop();
