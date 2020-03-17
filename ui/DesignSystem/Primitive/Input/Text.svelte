@@ -78,7 +78,7 @@
       {imageUrl}
       variant="user"
       size="regular"
-      style="width: 32px; height: 48px; justify-content: flex-start; position:
+      style="width: 34px; height: 48px; justify-content: flex-start; position:
       absolute; top: 0px; left: 10px" />
   {/if}
 

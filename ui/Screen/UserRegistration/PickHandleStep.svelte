@@ -88,11 +88,13 @@
 
   const validate = async () => {
     validating = true;
+    if (!handle) {
+      avatarFallback = null;
+    }
     validations = validatejs({ handle: handle }, constraints);
     if (!validatejs.isEmpty(validations)) {
       validating = false;
     } else {
-      // TODO(merle): Add avatar query
       clearTimeout(timeout);
       timeout = setTimeout(async () => {
         updateAvatarFallback();
@@ -100,7 +102,7 @@
         validating = false;
       }, delay);
       // set the delay after the first validation on load
-      delay = 3000;
+      delay = 1000;
     }
   };
 
