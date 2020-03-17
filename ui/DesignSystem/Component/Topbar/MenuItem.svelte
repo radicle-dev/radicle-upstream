@@ -9,7 +9,7 @@
 
 <style>
   .icon {
-    margin-right: 16px;
+    margin-right: 12px;
     align-items: center;
     padding-top: 1px;
   }

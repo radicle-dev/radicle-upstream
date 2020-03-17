@@ -57,7 +57,7 @@ const createWindow = () => {
   }
 
   mainWindow.loadURL(
-    `file://${path.join(__dirname, "../public/index.html#/projects")}`
+    `file://${path.join(__dirname, "../public/index.html#/profile")}`
   );
   mainWindow.on("closed", () => {
     if (watcher) {

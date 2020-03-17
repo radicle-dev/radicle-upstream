@@ -48,7 +48,7 @@
       style="color: var(--color-purple)"
       title={name}
       imageUrl={avatarUrl}
-      variant="project" />
+      variant="user" />
   </a>
 
   <Menu items={menuItems} />

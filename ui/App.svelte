@@ -1,5 +1,6 @@
 <script>
-  import ApolloClient from "apollo-boost";
+  import ApolloClient, { gql } from "apollo-boost";
+  import { query } from "svelte-apollo";
   import {
     InMemoryCache,
     defaultDataIdFromObject
@@ -8,12 +9,17 @@
   import Router from "svelte-spa-router";
   import { hash } from "./lib/hash.js";
   import { initializeHotkeys } from "./lib/hotkeys.js";
+  import {
+    identityHandleStore,
+    identityAvatarUrlStore
+  } from "./store/identity.js";
 
   import CreateProject from "./Screen/CreateProject.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
   import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
+  import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import Projects from "./Screen/Projects.svelte";
   import RegisterProject from "./Screen/RegisterProject.svelte";
@@ -37,9 +43,43 @@
 
   setClient(client);
 
+  const GET_IDENTITY = gql`
+    query Query($id: ID!) {
+      identity(id: $id) {
+        id
+        metadata {
+          avatarUrl
+          displayName
+          handle
+        }
+        shareableEntityIdentifier
+      }
+    }
+  `;
+
+  const getIdentity = async () => {
+    try {
+      const response = await query(client, {
+        query: GET_IDENTITY,
+        variables: { id: "123" }
+      });
+      const result = await response.result();
+      if (result.data.identity) {
+        identityHandleStore.set(result.data.identity.metadata.handle);
+        identityAvatarUrlStore.set(result.data.identity.metadata.avatarUrl);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  getIdentity();
+
   const routes = {
     "/search": Search,
     "/network": Network,
+    "/profile": Profile,
+    "/profile/*": Profile,
     "/projects": Projects,
     "/projects/new": CreateProject,
     "/projects/:id/register": RegisterProject,

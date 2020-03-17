@@ -2,9 +2,9 @@ import regexparam from "regexparam";
 import { DEFAULT_PROJECT_REVISION } from "../config.js";
 import { BLOB, TREE } from "./types.js";
 
-export const search = _params => "/search";
-export const network = _params => "/network";
-export const projects = _params => "/projects";
+export const search = () => "/search";
+export const network = () => "/network";
+export const projects = () => "/projects";
 export const projectOverview = id => `/projects/${id}/overview`;
 export const projectFeed = id => `/projects/${id}/feed`;
 export const projectIssues = id => `/projects/${id}/issues`;
@@ -37,12 +37,15 @@ export const extractProjectSourceObjectType = location => {
   return type === null ? TREE : type[2];
 };
 
-export const designSystemGuide = _params => "/design-system-guide";
-export const createProject = _params => "/projects/new";
+export const designSystemGuide = () => "/design-system-guide";
+export const createProject = () => "/projects/new";
 export const registerProject = id => `/projects/${id}/register`;
-export const wallet = _params => "/wallet";
-export const profile = _params => "/profile";
-export const help = _params => "/help";
+export const wallet = () => "/wallet";
+export const profile = () => "/profile";
+export const profileProjects = () => "/profile/projects";
+export const profileWallet = () => "/profile/wallet";
+export const profileSettings = () => "/profile/settings";
+export const help = () => "/help";
 
 export const active = (path, location, loose = false) => {
   return regexparam(path, loose).pattern.test(location);

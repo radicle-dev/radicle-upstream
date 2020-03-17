@@ -30,6 +30,7 @@ import Projects from "./Projects.svelte";
 import Revisions from "./Revisions.svelte";
 import Search from "./Search.svelte";
 import SearchSmall from "./SearchSmall.svelte";
+import Settings from "./Settings.svelte";
 import Source from "./Source.svelte";
 import Spinner from "./Spinner.svelte";
 import StepCounter from "./StepCounter.svelte";
@@ -67,6 +68,7 @@ export default {
   Revisions,
   Search,
   SearchSmall,
+  Settings,
   Source,
   Spinner,
   StepCounter

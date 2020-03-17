@@ -2,6 +2,7 @@
   import { location } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
   import { Avatar, Icon, Title } from "../Primitive";
+  import { identityAvatarUrlStore } from "../../store/identity.js";
 
   import * as path from "../../lib/path.js";
 </script>
@@ -168,9 +169,12 @@
     <li
       class="item"
       data-cy="profile"
-      class:active={path.active(path.projects(), $location, true)}>
-      <a href={path.projects()} use:link>
-        <Avatar size="medium" variant="user" />
+      class:active={path.active(path.profile(), $location, true)}>
+      <a href={path.profileProjects()} use:link>
+        <Avatar
+          imageUrl={$identityAvatarUrlStore}
+          size="medium"
+          variant="user" />
       </a>
 
       <div class="tooltip">

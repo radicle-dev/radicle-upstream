@@ -210,6 +210,7 @@
     <Icon.Revisions />
     <Icon.Search />
     <Icon.SearchSmall />
+    <Icon.Settings />
     <Icon.Source />
     <Icon.Spinner />
   </Section>
