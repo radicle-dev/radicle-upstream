@@ -8,12 +8,15 @@
   //   stake: "name of stake (optional)",
   //   subject: {
   //     name: "name of the transaction target",
-  //     kind: "project" || "user"
-  //     avatar: "avatar url of the target (optional)"
+  //     kind: "project" || "user",
+  //     avatarFallback: "avatar fallback of the target",
+  //     imageUrl: "avatar url of the target (optional)"
   //   },
   //   payer: {
   //     name: "name of the owner of the paying wallet"
-  //     avatar: "avatar of the owner (optional)"
+  //     avatar: "avatar of the owner (optional)",
+  //     avatarFallback: "avatar fallback of the owner",
+  //     imageUrl: "avatar url of the owner (optional)"
   //   }
   // }
   export let tx = null;
@@ -32,7 +35,8 @@
   <div slot="right">
     <Avatar
       title={tx.subject.name}
-      imageUrl={tx.subject.avatar}
+      imageUrl={tx.subject.imageUrl}
+      avatarFallback={tx.subject.avatarFallback}
       variant={tx.subject.kind}
       style="color: var(--color-black)" />
   </div>
@@ -84,7 +88,8 @@
   <div slot="left">
     <Avatar
       title={tx.payer.name}
-      imageUrl={tx.payer.avatar}
+      imageUrl={tx.payer.imageUrl}
+      avatarFallback={tx.payer.avatarFallback}
       style="color: var(--color-black)" />
   </div>
 

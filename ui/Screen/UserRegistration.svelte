@@ -12,7 +12,7 @@
   let step = 1;
   // TODO(merle): Get actual user profile (id, name, imageUrl, avatarFallback)
   let handle = "cloudhead";
-  const avatarFallback = {
+  let avatarFallback = {
     emoji: "📐",
     background: {
       r: 24,
@@ -103,7 +103,7 @@
           find you.
         </Text>
         <PickHandleStep
-          {avatarFallback}
+          bind:avatarFallback
           {imageUrl}
           bind:handle
           onNextStep={nextStep} />
@@ -113,7 +113,9 @@
         <SubmitRegistrationStep
           onNextStep={registerUser}
           onPreviousStep={previousStep}
-          {handle} />
+          {handle}
+          {avatarFallback}
+          {imageUrl} />
       {/if}
     </div>
   </div>

@@ -3,6 +3,8 @@
   import { Transaction } from "../../DesignSystem/Component";
 
   export let handle = null;
+  export let avatarFallback = null;
+  export let imageUrl = null;
 
   export let onNextStep = null;
   export let onPreviousStep = null;
@@ -12,11 +14,15 @@
     stake: "Handle registration deposit",
     subject: {
       name: handle,
-      kind: "user"
+      kind: "user",
+      avatarFallback: avatarFallback,
+      imageUrl: imageUrl
     },
     payer: {
       name: handle,
-      kind: "user"
+      kind: "user",
+      avatarFallback: avatarFallback,
+      imageUrl: imageUrl
     }
   };
 </script>
