@@ -218,19 +218,19 @@ fn blob_in_root() {
                 res,
                 graphql_value!({
                     "blob": {
-                        "content": "This repository is a data source for the Upstream front-end tests.\n",
+                        "content": "This repository is a data source for the Upstream front-end tests and the\n[`radicle-surf`](https://github.com/radicle-dev/git-platinum) unit tests.\n",
                         "info": {
                             "name": "README.md",
                             "objectType": "BLOB",
                             "lastCommit": {
-                                "sha1": "d3464e33d75c75c99bfb90fa2e9d16efc0b7d0e3",
+                                "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
                                 "author": {
-                                    "name": "Rūdolfs Ošiņš",
-                                    "email": "rudolfs@osins.org",
+                                    "name": "Alexander Simmerl",
+                                    "email": "a.simmerl@gmail.com",
                                 },
-                                "summary": "Initial commit FTW!",
-                                "message": "Initial commit FTW!\n",
-                                "committerTime": "1575282266",
+                                "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
+                                "message": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig\n\nUpdated README",
+                                "committerTime": "1584367899",
                             },
                         },
                     }
@@ -422,14 +422,14 @@ fn tree() {
                             "name": "src",
                             "objectType": "TREE",
                             "lastCommit": {
-                                "sha1": "a57846bbc8ced6587bf8329fc4bce970eb7b757e",
+                                "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
                                 "author": {
-                                    "name": "Rūdolfs Ošiņš",
-                                    "email": "rudolfs@osins.org",
+                                    "name": "Alexander Simmerl",
+                                    "email": "a.simmerl@gmail.com",
                                 },
-                                "summary": "Remove src/Folder.svelte (#3)",
-                                "message": "Remove src/Folder.svelte (#3)\n\nIt was a bad idea to have an actual source file which is used by\r\nradicle-upstream in the fixtures repository. It gets in the way of\r\nlinting and editors pick it up as a regular source file by accident.",
-                                "committerTime": "1582198877",
+                                "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
+                                "message": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig\n\nUpdated README",
+                                "committerTime": "1584367899",
                             },
                         },
                         "entries": [
@@ -439,14 +439,14 @@ fn tree() {
                                     "name": "Eval.hs",
                                     "objectType": "BLOB",
                                     "lastCommit": {
-                                        "sha1": "3873745c8f6ffb45c990eb23b491d4b4b6182f95",
+                                        "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
                                         "author": {
-                                            "name": "Fintan Halpenny",
-                                            "email": "fintan.halpenny@gmail.com",
+                                            "name": "Alexander Simmerl",
+                                            "email": "a.simmerl@gmail.com",
                                         },
-                                        "summary": "Extend the docs (#2)",
-                                        "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                                        "committerTime": "1578309972",
+                                        "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
+                                        "message": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig\n\nUpdated README",
+                                        "committerTime": "1584367899",
                                     },
                                 },
                             },
