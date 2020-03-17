@@ -22,9 +22,12 @@
     clippy::result_expect_used,
     clippy::unseparated_literal_suffix
 )]
+#![feature(proc_macro_hygiene, decl_macro)]
 
 #[macro_use]
 extern crate juniper;
+#[macro_use]
+extern crate rocket;
 
 pub mod avatar;
 pub mod coco;
@@ -35,3 +38,4 @@ mod identity;
 mod project;
 /// Intergrations on the Regstriy.
 mod registry;
+pub mod rest;
