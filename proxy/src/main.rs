@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     info!("Starting GraphQL HTTP API");
-    rest::run();
+    rest::run(librad_paths, registry_client);
 
     Ok(())
 }

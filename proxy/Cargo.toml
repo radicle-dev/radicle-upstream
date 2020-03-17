@@ -39,6 +39,11 @@ rev = "4cedafaeb46deee4ec11d0e4b779a1a0d124d599"
 git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "ffa1e394775528503e8e3f37622106121e1f8148"
 
+[dependencies.rocket_contrib]
+version = "0.4.4"
+default-features = false
+features = ["json"]
+
 [dev-dependencies]
 indexmap = "1.3"
 pretty_assertions = "0.6"
