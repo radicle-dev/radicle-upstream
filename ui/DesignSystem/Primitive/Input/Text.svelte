@@ -72,7 +72,7 @@
     {disabled}
     on:change
     on:input />
-  {#if variant === 'handle' && value && avatarFallback}
+  {#if variant === 'handle'}
     <Avatar
       {avatarFallback}
       {imageUrl}

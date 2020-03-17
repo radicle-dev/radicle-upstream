@@ -87,11 +87,9 @@
       </Title>
     </div>
   {:else}
-    <!-- TODO: Remove when all avatars use the new fallback data or add placeholder -->
-    <img
-      class={avatarClass}
-      src="https://avatars.dicebear.com/v2/avataaars/S7oswrhcNJkjzUhNW33S.svg"
-      alt="user-avatar" />
+    <div
+      class={`avatar ${avatarClass}`}
+      style="background: var(--color-lightgray)" />
   {/if}
 
   {#if title && size === 'regular'}
