@@ -10,7 +10,7 @@
   export let title = null;
 
   export let variant = "user"; // user | project
-  export let size = "regular"; // regular | medium | big
+  export let size = "regular"; // regular | medium | big | huge
 
   const fmt = background => {
     return `rgb(${background.r}, ${background.g}, ${background.b})`;
@@ -37,6 +37,12 @@
     width: 68px;
     height: 68px;
     border-radius: 34px;
+  }
+
+  .user.huge {
+    width: 72px;
+    height: 72px;
+    border-radius: 36px;
   }
 
   .avatar.user.big {

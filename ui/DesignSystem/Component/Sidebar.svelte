@@ -171,11 +171,5 @@
         <Title>Profile</Title>
       </div>
     </li>
-
-    <li class="item">
-      <a href={path.createIdentity()} use:link>
-        <Icon.Plus />
-      </a>
-    </li>
   </ul>
 </div>
