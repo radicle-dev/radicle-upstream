@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.5...v0.0.6) (2020-03-18)
+
+
+### Features
+
+* extend Avatar with new fallback data ([#221](https://github.com/radicle-dev/radicle-upstream/issues/221)) ([fc2f7bd](https://github.com/radicle-dev/radicle-upstream/commit/fc2f7bdcd571b86e8c32a9333d67bbc2574d1b30))
+* Integrate transaction fees ([#227](https://github.com/radicle-dev/radicle-upstream/issues/227)) ([e1b7572](https://github.com/radicle-dev/radicle-upstream/commit/e1b7572a0364e81f43ae2541c53663ca82f6000b)), closes [radicle-dev/radicle-registry#255](https://github.com/radicle-dev/radicle-registry/issues/255)
+* new step counter ([#210](https://github.com/radicle-dev/radicle-upstream/issues/210)) ([a807551](https://github.com/radicle-dev/radicle-upstream/commit/a807551fc7bb06d8bfe8c1a6c2a94a0eb0687115))
+* user handle input component ([#205](https://github.com/radicle-dev/radicle-upstream/issues/205)) ([fa782ee](https://github.com/radicle-dev/radicle-upstream/commit/fa782ee0ad98a0df48ea3fcbcbe62765c25af8f9))
+* user handle registration modal ([#216](https://github.com/radicle-dev/radicle-upstream/issues/216)) ([eade724](https://github.com/radicle-dev/radicle-upstream/commit/eade7241e3892334697cb7411edd0a6b5688b863))
+
+
+### Bug Fixes
+
+* add official avatar list and usage ([#222](https://github.com/radicle-dev/radicle-upstream/issues/222)) ([660fa31](https://github.com/radicle-dev/radicle-upstream/commit/660fa313cd88a3f08aa944f2f31d5084ed1f8e8f))
+* swap proxy flags to respect emulator ([#223](https://github.com/radicle-dev/radicle-upstream/issues/223)) ([1a8a5c8](https://github.com/radicle-dev/radicle-upstream/commit/1a8a5c8f88e7c91f9175970287d2908ee8fb07f3))
+
 ### [0.0.5](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.1...v0.0.5) (2020-03-04)
 
 
