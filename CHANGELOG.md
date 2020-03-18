@@ -8,7 +8,9 @@ All notable changes to this project will be documented in this file. See [standa
 ### Features
 
 * extend Avatar with new fallback data ([#221](https://github.com/radicle-dev/radicle-upstream/issues/221)) ([fc2f7bd](https://github.com/radicle-dev/radicle-upstream/commit/fc2f7bdcd571b86e8c32a9333d67bbc2574d1b30))
-* Integrate transaction fees ([#227](https://github.com/radicle-dev/radicle-upstream/issues/227)) ([e1b7572](https://github.com/radicle-dev/radicle-upstream/commit/e1b7572a0364e81f43ae2541c53663ca82f6000b)), closes [radicle-dev/radicle-registry#255](https://github.com/radicle-dev/radicle-registry/issues/255)
+* extend schema with avatar fallback ([#218](https://github.com/radicle-dev/radicle-upstream/issues/218)) ([0593af7](https://github.com/radicle-dev/radicle-upstream/commit/0593af7bbfc6e55a54698516f2eef02ba1e97f99))
+* integrate transaction fees ([#227](https://github.com/radicle-dev/radicle-upstream/issues/227)) ([e1b7572](https://github.com/radicle-dev/radicle-upstream/commit/e1b7572a0364e81f43ae2541c53663ca82f6000b)), closes [radicle-dev/radicle-registry#255](https://github.com/radicle-dev/radicle-registry/issues/255)
+* implement basic avatar generation ([#217](https://github.com/radicle-dev/radicle-upstream/issues/217)) ([aa88f62](https://github.com/radicle-dev/radicle-upstream/commit/aa88f62343ef35b5d03a6ad5d15149537c4edb0b))
 * new step counter ([#210](https://github.com/radicle-dev/radicle-upstream/issues/210)) ([a807551](https://github.com/radicle-dev/radicle-upstream/commit/a807551fc7bb06d8bfe8c1a6c2a94a0eb0687115))
 * user handle input component ([#205](https://github.com/radicle-dev/radicle-upstream/issues/205)) ([fa782ee](https://github.com/radicle-dev/radicle-upstream/commit/fa782ee0ad98a0df48ea3fcbcbe62765c25af8f9))
 * user handle registration modal ([#216](https://github.com/radicle-dev/radicle-upstream/issues/216)) ([eade724](https://github.com/radicle-dev/radicle-upstream/commit/eade7241e3892334697cb7411edd0a6b5688b863))
