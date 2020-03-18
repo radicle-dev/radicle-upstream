@@ -12,7 +12,8 @@
   export let valid = true;
   export let validationMessage = null;
   export let variant = "vanilla"; // vanilla | handle
-  export let avatar = null;
+  export let imageUrl = null;
+  export let avatarFallback = null;
   export let validationPending = false;
 </script>
 
@@ -71,12 +72,13 @@
     {disabled}
     on:change
     on:input />
-  {#if variant === 'handle' && value && avatar}
+  {#if variant === 'handle'}
     <Avatar
-      avatarFallback={avatar}
+      {avatarFallback}
+      {imageUrl}
       variant="user"
       size="regular"
-      style="width: 32px; height: 48px; justify-content: flex-start; position:
+      style="width: 34px; height: 48px; justify-content: flex-start; position:
       absolute; top: 0px; left: 10px" />
   {/if}
 

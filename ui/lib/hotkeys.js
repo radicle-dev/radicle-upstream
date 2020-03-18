@@ -11,6 +11,14 @@ export const initializeHotkeys = () => {
     push(path.designSystemGuide());
   });
 
+  // TODO(merle): Remove temporary hotkey to open user registration
+  hotkeys("shift+t", () => {
+    if (path.active(path.registerUser(), get(location))) {
+      pop();
+    }
+    push(path.registerUser());
+  });
+
   hotkeys("shift+/", () => {
     if (path.active(path.help(), get(location))) {
       pop();
@@ -23,6 +31,7 @@ export const initializeHotkeys = () => {
       path.active(path.help(), get(location)) ||
       path.active(path.designSystemGuide(), get(location)) ||
       path.active(path.createProject(), get(location)) ||
+      path.active(path.registerUser(), get(location)) ||
       path.active(path.registerProject("**"), get(location), true)
     ) {
       pop();

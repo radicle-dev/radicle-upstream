@@ -46,6 +46,7 @@ export const profileProjects = () => "/profile/projects";
 export const profileWallet = () => "/profile/wallet";
 export const profileSettings = () => "/profile/settings";
 export const help = () => "/help";
+export const registerUser = () => "/user-registration";
 
 export const active = (path, location, loose = false) => {
   return regexparam(path, loose).pattern.test(location);
