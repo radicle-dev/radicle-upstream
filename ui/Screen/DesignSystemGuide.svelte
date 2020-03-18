@@ -212,6 +212,14 @@
     <Icon.SearchSmall />
     <Icon.Source />
     <Icon.Spinner />
+    <Icon.TxState />
+    <Icon.TxState progress={1} />
+    <Icon.TxState progress={2} />
+    <Icon.TxState progress={3} />
+    <Icon.TxState progress={4} />
+    <Icon.TxState progress={5} />
+    <Icon.TxState state="success" />
+    <Icon.TxState state="error" />
   </Section>
 
   <Section
