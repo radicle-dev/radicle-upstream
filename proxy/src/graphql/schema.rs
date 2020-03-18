@@ -110,14 +110,16 @@ impl Mutation {
         });
 
         // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+        let fake_pair = ed25519::Pair::from_legacy_string("//Alice", None);
+        // TODO(xla): Use real fee defined by the user.
+        let fake_fee = 100;
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
         // https://github.com/graphql-rust/juniper/pull/497
         futures::executor::block_on(
             ctx.registry
                 .read()
                 .expect("unable to acquire read lock")
-                .register_project(&fake_pair, project_name, org_id, maybe_librad_id),
+                .register_project(&fake_pair, project_name, org_id, maybe_librad_id, fake_fee),
         )
     }
 
