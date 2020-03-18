@@ -466,7 +466,8 @@
 
     <Swatch>
       <Input.Text
-        avatar={avatarFallback1}
+        avatarFallback={avatarFallback1}
+        imageUrl="https://avatars1.githubusercontent.com/u/40774"
         placeholder="Enter user name"
         style="width: 100%"
         valid={true}
@@ -476,7 +477,7 @@
 
     <Swatch>
       <Input.Text
-        avatar={avatarFallback1}
+        avatarFallback={avatarFallback1}
         placeholder="Enter user name"
         style="width: 100%"
         valid={true}
@@ -487,7 +488,7 @@
 
     <Swatch>
       <Input.Text
-        avatar={avatarFallback2}
+        avatarFallback={avatarFallback2}
         placeholder="Enter user name."
         style="width: 100%"
         valid={false}

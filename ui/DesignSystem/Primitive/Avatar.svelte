@@ -61,6 +61,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--color-darkgray);
   }
 
   .avatar {
@@ -86,19 +87,13 @@
       </Title>
     </div>
   {:else}
-    <!-- TODO: Remove when all avatars use the new fallback data or add placeholder -->
-    <img
-      class={avatarClass}
-      src="https://avatars.dicebear.com/v2/avataaars/S7oswrhcNJkjzUhNW33S.svg"
-      alt="user-avatar" />
+    <div
+      class={`avatar ${avatarClass}`}
+      style="background: var(--color-lightgray)" />
   {/if}
 
   {#if title && size === 'regular'}
-    <Title
-      style="color: var(--color-darkgray); white-space: nowrap; margin-left:
-      16px">
-      {title}
-    </Title>
+    <Title style="white-space: nowrap; margin-left: 16px">{title}</Title>
   {/if}
 
   {#if title && size === 'big'}
