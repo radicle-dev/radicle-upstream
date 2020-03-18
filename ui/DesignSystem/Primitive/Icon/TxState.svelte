@@ -32,7 +32,7 @@
 
 <style>
   .blink {
-    animation: blink 2s infinite linear;
+    animation: blink 1.5s infinite linear;
   }
 
   .opaque {
