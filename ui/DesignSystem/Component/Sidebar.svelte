@@ -1,8 +1,8 @@
 <script>
   import { location } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
-  import { Avatar, Icon, Title } from "../Primitive";
-  import { identityAvatarUrlStore } from "../../store/identity.js";
+  import { Icon, Title } from "../Primitive";
+  import IdentityAvatar from "./IdentityAvatar.svelte";
 
   import * as path from "../../lib/path.js";
 </script>
@@ -126,12 +126,6 @@
     width: 100%;
     height: 100%;
   }
-
-  .user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 18px;
-  }
 </style>
 
 <div class="wrapper" data-cy="sidebar">
@@ -171,10 +165,7 @@
       data-cy="profile"
       class:active={path.active(path.profile(), $location, true)}>
       <a href={path.profileProjects()} use:link>
-        <Avatar
-          imageUrl={$identityAvatarUrlStore}
-          size="medium"
-          variant="user" />
+        <IdentityAvatar size="medium" showTitle={false} />
       </a>
 
       <div class="tooltip">

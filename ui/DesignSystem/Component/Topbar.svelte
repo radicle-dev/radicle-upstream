@@ -1,13 +1,11 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { Avatar } from "../Primitive";
+  import IdentityAvatar from "./IdentityAvatar.svelte";
   import Menu from "./Topbar/Menu.svelte";
 
   export let style = null;
 
-  export let avatarUrl = null;
-  export let name = null;
   export let href = null;
   export let menuItems = null;
 </script>
@@ -44,11 +42,10 @@
 
 <div data-cy="topbar" class="topbar" {style}>
   <a class="name" {href} use:link>
-    <Avatar
-      style="color: var(--color-purple)"
-      title={name}
-      imageUrl={avatarUrl}
-      variant="user" />
+    <IdentityAvatar
+      showTitle={true}
+      size={'regular'}
+      style="color: var(--color-purple)" />
   </a>
 
   <Menu items={menuItems} />

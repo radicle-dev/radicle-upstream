@@ -3,10 +3,6 @@
   import { Icon } from "../DesignSystem/Primitive";
   import Router from "svelte-spa-router";
   import * as path from "../lib/path.js";
-  import {
-    identityHandleStore,
-    identityAvatarUrlStore
-  } from "../store/identity.js";
 
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
@@ -48,8 +44,6 @@
   dataCy="page-container">
   <Topbar
     style="position: fixed; top: 0;"
-    name={$identityHandleStore}
-    avatarUrl={$identityAvatarUrlStore}
     href={path.profileProjects()}
     menuItems={topbarMenuItems()} />
   <Router {routes} />

@@ -22,9 +22,9 @@
 <style>
   img,
   .user.regular {
-    width: 34px;
-    height: 34px;
-    border-radius: 17px;
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
   }
 
   .user.medium {
@@ -92,7 +92,7 @@
       style="background: var(--color-lightgray)" />
   {/if}
 
-  {#if title && size === 'regular'}
+  {#if title && (size === 'regular' || size === 'medium')}
     <Title style="white-space: nowrap; margin-left: 16px">{title}</Title>
   {/if}
 

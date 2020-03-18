@@ -10,8 +10,9 @@
   import { hash } from "./lib/hash.js";
   import { initializeHotkeys } from "./lib/hotkeys.js";
   import {
-    identityHandleStore,
-    identityAvatarUrlStore
+    identityAvatarUrlStore,
+    identityAvatarFallbackStore,
+    identityHandleStore
   } from "./store/identity.js";
 
   import CreateProject from "./Screen/CreateProject.svelte";
@@ -48,6 +49,14 @@
     query Query($id: ID!) {
       identity(id: $id) {
         id
+        avatarFallback {
+          background {
+            b
+            g
+            r
+          }
+          emoji
+        }
         metadata {
           avatarUrl
           displayName
@@ -66,8 +75,9 @@
       });
       const result = await response.result();
       if (result.data.identity) {
-        identityHandleStore.set(result.data.identity.metadata.handle);
         identityAvatarUrlStore.set(result.data.identity.metadata.avatarUrl);
+        identityAvatarFallbackStore.set(result.data.identity.avatarFallback);
+        identityHandleStore.set(result.data.identity.metadata.handle);
       }
     } catch (error) {
       console.log(error);
