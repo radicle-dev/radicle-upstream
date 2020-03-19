@@ -31,6 +31,7 @@ pub mod coco;
 pub mod env;
 pub mod error;
 pub mod graphql;
+mod http;
 mod identity;
 mod project;
 /// Intergrations on the Regstriy.

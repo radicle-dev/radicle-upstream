@@ -3,11 +3,13 @@
 
 use librad::meta;
 use librad::project;
+use serde_derive;
 
 /// Metadata key used to store an image url for a project.
 const IMG_URL_LABEL: &str = "img_url";
 
 /// Object the API returns for project metadata.
+#[derive(serde_derive::Deserialize, serde_derive::Serialize)]
 pub struct Metadata {
     /// Project name.
     pub name: String,
@@ -50,6 +52,7 @@ impl From<meta::Project> for Metadata {
 }
 
 /// Radicle project for sharing and collaborating.
+#[derive(serde_derive::Deserialize, serde_derive::Serialize)]
 pub struct Project {
     /// Unique identifier of the project in the network.
     pub id: project::ProjectId,
