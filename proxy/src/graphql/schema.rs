@@ -6,7 +6,7 @@ use std::sync;
 use librad::paths::Paths;
 use librad::surf;
 use librad::surf::git::git2;
-use radicle_registry_client::ed25519;
+use radicle_registry_client::{ed25519, CryptoPair as _};
 
 use crate::avatar;
 use crate::coco;
@@ -117,8 +117,8 @@ impl Mutation {
         // https://github.com/graphql-rust/juniper/pull/497
         futures::executor::block_on(
             ctx.registry
-                .write()
-                .expect("unable to acquire write lock")
+                .read()
+                .expect("unable to acquire read lock")
                 .register_project(&fake_pair, project_name, org_id, maybe_librad_id, fake_fee),
         )
     }
@@ -132,7 +132,6 @@ impl Mutation {
         let fake_pair =
             ed25519::Pair::from_legacy_string(&format!("//{}", handle.to_string()), None);
 
-        use radicle_registry_client::CryptoPair;
         // Give new account some dough so we can perform transactions.
         futures::executor::block_on(
             ctx.registry
@@ -141,7 +140,7 @@ impl Mutation {
                 .prepay_account(fake_pair.public(), 1000),
         )?;
 
-        // TODO(xla): Use real fee define dby the user.
+        // TODO(xla): Use real fee defined by the user.
         let fee = 100;
 
         futures::executor::block_on(
@@ -306,17 +305,13 @@ impl Query {
     }
 
     fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
-        let maybe_handle = futures::executor::block_on(
+        Ok(futures::executor::block_on(
             ctx.registry
                 .read()
                 .expect("unable to acquire read lock")
                 .get_user(handle.to_string()),
-        )?;
-
-        match maybe_handle {
-            Some(handle) => Ok(Some(juniper::ID::new(handle))),
-            None => Ok(None),
-        }
+        )?
+        .map(juniper::ID::new))
     }
 }
 

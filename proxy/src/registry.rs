@@ -247,6 +247,7 @@ impl Registry {
         Ok(self.client.get_user(user_id).await?.map(|_user| handle))
     }
 
+    /// Graciously pay some tokens to the recipient out of Alices pocket.
     pub async fn prepay_account(
         &self,
         recipient: registry::AccountId,
