@@ -4,7 +4,7 @@
   import ProjectCard from "./ProjectCard.svelte";
 
   import { projectNameStore } from "../../store/project.js";
-  import { createProject, projectOverview } from "../../lib/path.js";
+  import { createProject, projectSource } from "../../lib/path.js";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -72,7 +72,7 @@
         <li
           on:click={() => {
             projectNameStore.set(project.metadata.name);
-            push(projectOverview(project.id));
+            push(projectSource(project.id));
           }}
           class="project-card">
           <ProjectCard

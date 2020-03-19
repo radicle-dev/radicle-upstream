@@ -11,9 +11,6 @@
   import { SidebarLayout, Topbar } from "../DesignSystem/Component";
   import { Button, Icon } from "../DesignSystem/Primitive";
 
-  import Overview from "./Project/Overview.svelte";
-  import Feed from "./Project/Feed.svelte";
-  import Funds from "./Project/Funds.svelte";
   import Source from "./Project/Source.svelte";
   import Issues from "./Project/Issues.svelte";
   import Revisions from "./Project/Revisions.svelte";
@@ -24,10 +21,7 @@
   setContext("projectId", params.id);
 
   const routes = {
-    "/projects/:id/": Overview,
-    "/projects/:id/overview": Overview,
-    "/projects/:id/feed": Feed,
-    "/projects/:id/funds": Funds,
+    "/projects/:id/": Source,
     "/projects/:id/source": Source,
     "/projects/:id/source/*": Source,
     "/projects/:id/issues": Issues,
@@ -63,25 +57,13 @@
 
   const topbarMenuItems = projectId => [
     {
-      icon: Icon.Source,
+      icon: Icon.Home,
       title: "Source",
       href: path.projectSource(projectId),
       looseActiveStateMatching: true
     },
     {
-      icon: Icon.Feed,
-      title: "Feed",
-      href: path.projectFeed(projectId),
-      looseActiveStateMatching: false
-    },
-    {
-      icon: Icon.Fund,
-      title: "Fund",
-      href: path.projectFunds(projectId),
-      looseActiveStateMatching: false
-    },
-    {
-      icon: Icon.Issues,
+      icon: Icon.Issue,
       title: "Issues",
       href: path.projectIssues(projectId),
       looseActiveStateMatching: false

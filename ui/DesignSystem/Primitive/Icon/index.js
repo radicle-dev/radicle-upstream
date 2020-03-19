@@ -5,6 +5,7 @@ import Carret from "./Carret.svelte";
 import CarretBig from "./CarretBig.svelte";
 import Check from "./Check.svelte";
 import CheckCircle from "./CheckCircle.svelte";
+import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
 import Cross from "./Cross.svelte";
@@ -21,7 +22,7 @@ import Home from "./Home.svelte";
 import Important from "./Important.svelte";
 import Inbox from "./Inbox.svelte";
 import Info from "./Info.svelte";
-import Issues from "./Issues.svelte";
+import Issue from "./Issue.svelte";
 import Member from "./Member.svelte";
 import Minus from "./Minus.svelte";
 import Peer from "./Peer.svelte";
@@ -43,6 +44,7 @@ export default {
   CarretBig,
   Check,
   CheckCircle,
+  CloseIssue,
   Commit,
   Copy,
   Cross,
@@ -59,7 +61,7 @@ export default {
   Important,
   Inbox,
   Info,
-  Issues,
+  Issue,
   Member,
   Minus,
   Peer,
