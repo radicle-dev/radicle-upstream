@@ -302,7 +302,7 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="create-project">
     <div class="create-project">
-      <Title variant="big" style="margin-bottom: 32px; text-align: left">
+      <Title variant="big" style="margin-bottom: 32px;">
         Create a new project
       </Title>
 
@@ -339,7 +339,9 @@
           on:click={() => (currentSelection = NEW)}
           dataCy="new-project">
           <div slot="option-body">
-            <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
+            <Text
+              style="margin-bottom: 12px; color: var(--color-darkgray);
+              text-align: left">
               Choose where you'd like to create the repository
             </Text>
             <Input.Directory
