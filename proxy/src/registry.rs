@@ -247,6 +247,21 @@ impl Registry {
         Ok(self.client.get_user(user_id).await?.map(|_user| handle))
     }
 
+    pub async fn prepay_account(
+        &self,
+        recipient: registry::AccountId,
+        balance: Balance,
+    ) -> Result<(), error::Error> {
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let _tx_applied = self
+            .client
+            .sign_and_submit_message(&alice, message::Transfer { recipient, balance }, 1)
+            .await?;
+
+        Ok(())
+    }
+
     /// Create a new unique user on the Registry.
     pub async fn register_user(
         &self,
@@ -292,9 +307,7 @@ mod tests {
     use std::convert::TryFrom;
 
     use crate::registry::{Metadata, Registry};
-    use radicle_registry_client::{
-        ed25519, message, AccountId, Balance, Client, ClientT, OrgId, ProjectName,
-    };
+    use radicle_registry_client::{ed25519, Client, ClientT, OrgId, ProjectName};
 
     use serde_cbor::from_reader;
 
@@ -334,7 +347,7 @@ mod tests {
         let org = futures::executor::block_on(client.get_org(org_id.clone()))
             .unwrap()
             .unwrap();
-        futures::executor::block_on(transfer(&client, &alice, org.account_id.clone(), 1000));
+        futures::executor::block_on(registry.prepay_account(org.account_id.clone(), 1000)).unwrap();
 
         // Unregister the org
         let unregistration =
@@ -359,7 +372,7 @@ mod tests {
         let org = futures::executor::block_on(client.get_org(org_id.clone()))
             .unwrap()
             .unwrap();
-        futures::executor::block_on(transfer(&client, &alice, org.account_id.clone(), 1000));
+        futures::executor::block_on(registry.prepay_account(org.account_id.clone(), 1000)).unwrap();
 
         // Register the project
         let result = futures::executor::block_on(registry.register_project(
@@ -396,23 +409,5 @@ mod tests {
             100,
         ));
         assert!(res.is_ok());
-    }
-
-    pub async fn transfer(
-        client: &Client,
-        donator: &ed25519::Pair,
-        recipient: AccountId,
-        value: Balance,
-    ) {
-        let _tx_applied = client
-            .sign_and_submit_message(
-                &donator,
-                message::Transfer {
-                    recipient,
-                    balance: value,
-                },
-                1,
-            )
-            .await;
     }
 }

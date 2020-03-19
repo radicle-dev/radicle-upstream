@@ -11,7 +11,7 @@
 
   let step = 1;
   // TODO(merle): Get actual user profile (id, name, imageUrl, avatarFallback)
-  let handle = "cloudhead";
+  let handle = "";
   let avatarFallback = {
     emoji: "📐",
     background: {

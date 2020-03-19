@@ -74,3 +74,19 @@ Cypress.Commands.add(
     });
   }
 );
+
+Cypress.Commands.add("registerUser", (handle = "nope", id = "123abcd.git") => {
+  client.mutate({
+    variables: {
+      handle: handle,
+      id: id
+    },
+    mutation: gql`
+      mutation RegisterUser($handle: String, $id: String) {
+        registerUser(handle: $handle, id: $id) {
+          handle
+        }
+      }
+    `
+  });
+});
