@@ -241,6 +241,12 @@ impl Registry {
         })
     }
 
+    /// Try to retrieve user from the Registry by handle.
+    pub async fn get_user(&self, handle: String) -> Result<Option<String>, error::Error> {
+        let user_id = UserId::try_from(handle.clone())?;
+        Ok(self.client.get_user(user_id).await?.map(|_user| handle))
+    }
+
     /// Create a new unique user on the Registry.
     pub async fn register_user(
         &self,

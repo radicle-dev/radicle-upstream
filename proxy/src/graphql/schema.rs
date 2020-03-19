@@ -294,12 +294,14 @@ impl Query {
         }))
     }
 
-    fn user(_ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
-        if handle == juniper::ID::new("cloudhead") {
-            Ok(None)
-        } else {
-            Ok(Some(juniper::ID::new("1234")))
-        }
+    fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
+        Ok(futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .get_user(handle.to_string()),
+        )?
+        .map(juniper::ID::new))
     }
 }
 
