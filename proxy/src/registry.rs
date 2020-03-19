@@ -103,7 +103,7 @@ impl Registry {
         // Verify that inputs are valid.
         let org_id = OrgId::try_from(org_id.clone())?;
 
-        // Prepare and submit project registration transaction.
+        // Prepare and submit org registration transaction.
         let register_message = message::RegisterOrg {
             org_id: org_id.clone(),
         };
@@ -138,7 +138,7 @@ impl Registry {
         // Verify that inputs are valid.
         let org_id = OrgId::try_from(org_id.clone())?;
 
-        // Prepare and submit project registration transaction.
+        // Prepare and submit org unregistration transaction.
         let unregister_message = message::UnregisterOrg {
             org_id: org_id.clone(),
         };
@@ -259,7 +259,7 @@ impl Registry {
         let user_id = UserId::try_from(handle.clone())?;
         let id = registry::String32::from_string(id)?;
 
-        // Prepare and submit project registration transaction.
+        // Prepare and submit user registration transaction.
         let register_message = message::RegisterUser {
             user_id: user_id.clone(),
         };
