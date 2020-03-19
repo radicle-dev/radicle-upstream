@@ -3,7 +3,7 @@
 use librad::meta::common::url;
 use librad::surf;
 use librad::surf::git::git2;
-use radicle_registry_client::{DispatchError, Error as ProtocolError};
+use radicle_registry_client as registry;
 use std::time::SystemTimeError;
 
 /// Project problems.
@@ -35,6 +35,14 @@ pub enum Error {
     Git2(git2::Error),
     /// Integer conversion failed.
     IntConversion(std::num::TryFromIntError),
+    /// Length limitation on String32 has been exceeded.
+    InordinateString32(),
+    /// Org id input is invalid, variant carries the reason.
+    InvalidOrgId(String),
+    /// Project name input is invalid, variant carries the reason.
+    InvalidProjectName(String),
+    /// User id input is invalid, variant carries the reason.
+    InvalidUserId(String),
     /// Originated from `librad`.
     Librad(librad::git::Error),
     /// Parse error for `librad::project::ProjectId`.
@@ -50,9 +58,9 @@ pub enum Error {
     /// User registration validation errors.
     UserValidation(UserValidation),
     /// Issues with the Radicle protocol.
-    Protocol(ProtocolError),
+    Protocol(registry::Error),
     /// Issues with the Radicle runtime.
-    Runtime(DispatchError),
+    Runtime(registry::DispatchError),
     /// Errors from handling time.
     Time(SystemTimeError),
 }
@@ -111,15 +119,39 @@ impl From<url::ParseError> for Error {
     }
 }
 
-impl From<ProtocolError> for Error {
-    fn from(error: ProtocolError) -> Self {
+impl From<registry::DispatchError> for Error {
+    fn from(error: registry::DispatchError) -> Self {
+        Self::Runtime(error)
+    }
+}
+
+impl From<registry::Error> for Error {
+    fn from(error: registry::Error) -> Self {
         Self::Protocol(error)
     }
 }
 
-impl From<DispatchError> for Error {
-    fn from(error: DispatchError) -> Self {
-        Self::Runtime(error)
+impl From<registry::string32::InordinateStringError> for Error {
+    fn from(_invalid_string: registry::string32::InordinateStringError) -> Self {
+        Self::InordinateString32()
+    }
+}
+
+impl From<registry::InvalidOrgIdError> for Error {
+    fn from(invalid_org_id: registry::InvalidOrgIdError) -> Self {
+        Self::InvalidOrgId(invalid_org_id.to_string())
+    }
+}
+
+impl From<registry::InvalidProjectNameError> for Error {
+    fn from(invalid_project_name: registry::InvalidProjectNameError) -> Self {
+        Self::InvalidProjectName(invalid_project_name.to_string())
+    }
+}
+
+impl From<registry::InvalidUserIdError> for Error {
+    fn from(invalid_user_id: registry::InvalidUserIdError) -> Self {
+        Self::InvalidUserId(invalid_user_id.to_string())
     }
 }
 

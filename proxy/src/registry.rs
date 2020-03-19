@@ -104,8 +104,7 @@ impl Registry {
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id =
-            OrgId::try_from(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+        let org_id = OrgId::try_from(org_id.clone())?;
 
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterOrg {
@@ -140,8 +139,7 @@ impl Registry {
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id =
-            OrgId::try_from(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+        let org_id = OrgId::try_from(org_id.clone())?;
 
         // Prepare and submit project registration transaction.
         let unregister_message = message::UnregisterOrg {
@@ -177,10 +175,8 @@ impl Registry {
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let project_name = ProjectName::try_from(name.clone())
-            .map_err(|_| error::ProjectValidation::NameTooLong)?;
-        let org_id =
-            OrgId::try_from(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+        let project_name = ProjectName::try_from(name.clone())?;
+        let org_id = OrgId::try_from(org_id.clone())?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
@@ -255,10 +251,8 @@ impl Registry {
         handle: String,
         id: String,
     ) -> Result<Transaction, error::Error> {
-        let message_handle = registry::String32::from_string(handle)
-            .map_err(|_| error::UserValidation::HandleTooLong)?;
-        let message_id =
-            registry::String32::from_string(id).map_err(|_| error::UserValidation::IdTooLong)?;
+        let message_handle = registry::String32::from_string(handle)?;
+        let message_id = registry::String32::from_string(id)?;
 
         Ok(Transaction {
             id: registry::H256::random(),
