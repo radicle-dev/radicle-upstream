@@ -56,6 +56,14 @@ make sure only properly formatted and linted code lands into master.
 
 ### Running Upstream
 
+On macOS you'll have to install some external dependencies, to be able to
+compile everything:
+```
+xcode-select --install
+sudo xcodebuild -license
+brew install pkgconfig nettle
+```
+
 1. Get the code: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
 2. Install dependencies: `cd radicle-upstream && yarn install`.
 3. Start Upstream in development mode: `yarn start`.
