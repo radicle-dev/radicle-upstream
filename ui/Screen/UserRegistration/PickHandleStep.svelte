@@ -46,7 +46,8 @@
     try {
       const response = await query(client, {
         query: GET_USER,
-        variables: { handle: handle }
+        variables: { handle: handle },
+        fetchPolicy: "network-only"
       });
       const result = await response.result();
       if (await result.data.user) {
