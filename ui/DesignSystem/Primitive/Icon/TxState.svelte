@@ -1,6 +1,6 @@
 <script>
   export let style = null;
-  export let state = "pending"; // error | pending \ success
+  export let state = "pending"; // error | pending | success
   export let progress = null; // 0..6 (number of confirmed steps)
 
   const stateToColor = {
