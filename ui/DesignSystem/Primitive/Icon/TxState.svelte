@@ -3,12 +3,13 @@
   export let state = "pending"; // error | pending \ success
   export let progress = null; // 0..6 (number of confirmed steps)
 
-  let color = "var(--color-orange)";
-  if (state === "success") {
-    color = "var(--color-green)";
-  } else if (state === "error") {
-    color = "var(--color-red)";
-  }
+  const stateToColor = {
+    pending: "var(--color-orange)",
+    success: "var(--color-green)",
+    error: "var(--color-red)"
+  };
+
+  const color = stateToColor[state];
 
   const done = step => {
     return progress ? step <= progress : state === "success";
