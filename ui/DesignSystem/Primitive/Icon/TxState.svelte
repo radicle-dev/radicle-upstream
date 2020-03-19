@@ -1,7 +1,7 @@
 <script>
   export let style = null;
   export let state = "pending"; // error | pending \ success
-  export let progress = null; // 0..6 (number of confirmed steps in state pending)
+  export let progress = null; // 0..6 (number of confirmed steps)
 
   let color = "var(--color-orange)";
   if (state === "success") {
@@ -11,20 +11,12 @@
   }
 
   const done = step => {
-    if (state == "success") {
-      // all steps are done
-      return true;
-    } else if (state == "error") {
-      // all steps are undone
-      return false;
-    } else {
-      return step <= progress;
-    }
+    return progress ? step <= progress : state === "success";
   };
 
-  // blink animation only happens on state pending
+  // blink animation only happens if progress is provided
   const inProgress = step => {
-    if (state === "pending") {
+    if (progress) {
       return step === progress + 1;
     }
   };
