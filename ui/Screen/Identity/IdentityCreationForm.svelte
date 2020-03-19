@@ -4,15 +4,18 @@
   import validatejs from "validate.js";
 
   import {
-    IMAGE_FILENAME,
-    NAME_MATCH,
-    SINGLE_WORD_MATCH
-  } from "../../lib/validationHelpers.js";
-  import { setCurrentIdentity } from "../../store/identity.js";
+    avatarUrlStore,
+    displayNameStore,
+    handleStore,
+    shareableEntityIdentifierStore
+  } from "../../store/identity.js";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
   export let onSuccess, onError;
+
+  const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
+  const DISPLAY_NAME_MATCH = "^[a-z0-9 ]+$";
 
   let handle,
     displayName,
@@ -24,6 +27,12 @@
     fullMessages: false
   };
 
+  validatejs.validators.optional = (value, options) => {
+    return !validatejs.isEmpty(value)
+      ? validatejs.single(value, options)
+      : null;
+  };
+
   const constraints = {
     handle: {
       presence: {
@@ -31,20 +40,25 @@
         allowEmpty: false
       },
       format: {
-        pattern: SINGLE_WORD_MATCH,
-        message: "Handle should match [a-z0-9][a-z0-9_-]+"
+        pattern: new RegExp(HANDLE_MATCH, "i"),
+        message: `Handle should match ${HANDLE_MATCH}`
       }
     },
     displayName: {
-      format: {
-        pattern: NAME_MATCH,
-        message: "Display name should match [a-z0-9]"
+      optional: {
+        format: {
+          pattern: new RegExp(DISPLAY_NAME_MATCH, "i"),
+          message: `Display name should match ${DISPLAY_NAME_MATCH}`
+        }
       }
     },
     avatarUrl: {
-      format: {
-        pattern: IMAGE_FILENAME,
-        message: "Avatar URL should be a valid image filename"
+      optional: {
+        url: {
+          schemes: ["http", "https"],
+          message: "Not a valid avatar URL",
+          allowLocal: false
+        }
       }
     }
   };
@@ -104,12 +118,13 @@
       });
 
       const responseData = response.data.createIdentity;
-      setCurrentIdentity({
-        handle: responseData.metadata.handle,
-        displayName: responseData.metadata.displayName,
-        avatarUrl: responseData.metadata.avatarUrl,
-        shareableEntityIdentifier: responseData.shareableEntityIdentifier
-      });
+
+      handleStore.set(responseData.metadata.handle);
+      displayNameStore.set(responseData.metadata.displayName);
+      avatarUrlStore.set(responseData.metadata.avatarUrl);
+      shareableEntityIdentifierStore.set(
+        responseData.shareableEntityIdentifier
+      );
 
       if (onSuccess) onSuccess();
     } catch (error) {

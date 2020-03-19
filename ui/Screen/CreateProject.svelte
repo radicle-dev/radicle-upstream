@@ -7,7 +7,6 @@
   import { showNotification } from "../store/notification.js";
   import * as path from "../lib/path.js";
   import { hash } from "../lib/hash.js";
-  import { SINGLE_WORD_MATCH } from "../lib/validationHelpers.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
 
   import {
@@ -24,6 +23,8 @@
 
   const NEW = "new";
   const EXISTING = "existing";
+
+  const projectNameMatch = "^[a-z0-9][a-z0-9_-]+$";
 
   $: isNew = currentSelection === NEW;
   $: isExisting = currentSelection === EXISTING;
@@ -101,8 +102,8 @@
         allowEmpty: false
       },
       format: {
-        pattern: SINGLE_WORD_MATCH,
-        message: "Project name should match [a-z0-9][a-z0-9_-]+"
+        pattern: new RegExp(projectNameMatch, "i"),
+        message: `Project name should match ${projectNameMatch}`
       }
     },
     imageUrl: {

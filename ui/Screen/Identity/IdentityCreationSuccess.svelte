@@ -2,7 +2,12 @@
   import { link } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
-  import { currentIdentityStore } from "../../store/identity.js";
+  import {
+    avatarUrlStore,
+    displayNameStore,
+    handleStore,
+    shareableEntityIdentifierStore
+  } from "../../store/identity.js";
 
   import { Avatar, Button, Text, Title } from "../../DesignSystem/Primitive";
 
@@ -56,21 +61,15 @@
         register it.
       </a>
     </Text>
-    {#if $currentIdentityStore}
-      <div class="identity-card">
-        <Avatar
-          size="huge"
-          imageUrl={$currentIdentityStore.avatarUrl || undefined} />
-        <div class="identity-card-text-container">
-          <Title>
-            {$currentIdentityStore.displayName || $currentIdentityStore.handle}
-          </Title>
-          <Text style="color: var(--color-darkgray);">
-            {$currentIdentityStore.shareableEntityIdentifier}
-          </Text>
-        </div>
+    <div class="identity-card">
+      <Avatar size="huge" imageUrl={$avatarUrlStore || undefined} />
+      <div class="identity-card-text-container">
+        <Title>{$displayNameStore || $handleStore}</Title>
+        <Text style="color: var(--color-darkgray);">
+          {$shareableEntityIdentifierStore}
+        </Text>
       </div>
-    {/if}
+    </div>
 
     <Button on:click={onClose}>Go to profile</Button>
   </div>
