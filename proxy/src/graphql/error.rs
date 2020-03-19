@@ -10,13 +10,37 @@ impl juniper::IntoFieldError for error::Error {
             Self::FS(fs_error) => convert_fs(&fs_error),
             Self::Git(git_error) => convert_git(&git_error),
             Self::Git2(git2_error) => convert_git2(&git2_error),
+            Self::Io(io_error) => convert_io(&io_error),
             Self::IntConversion(int_error) => juniper::FieldError::new(
                 int_error.to_string(),
                 graphql_value!({
                     "type": "INT_CONVERSION",
                 }),
             ),
-            Self::Io(io_error) => convert_io(&io_error),
+            Self::InordinateString32() => juniper::FieldError::new(
+                "String too long",
+                graphql_value!({
+                    "type": "STRING_TOO_LONG",
+                }),
+            ),
+            Self::InvalidOrgId(reason) => juniper::FieldError::new(
+                reason,
+                graphql_value!({
+                    "type": "INVALID_ORG_ID",
+                }),
+            ),
+            Self::InvalidProjectName(reason) => juniper::FieldError::new(
+                reason,
+                graphql_value!({
+                    "type": "INVALID_PROJECT_NAME",
+                }),
+            ),
+            Self::InvalidUserId(reason) => juniper::FieldError::new(
+                reason,
+                graphql_value!({
+                    "type": "INVALID_USER_ID",
+                }),
+            ),
             Self::Librad(librad_error) => convert_librad_git(&librad_error),
             Self::LibradParse(parse_error) => {
                 convert_librad_parse_error_to_field_error(&parse_error)
