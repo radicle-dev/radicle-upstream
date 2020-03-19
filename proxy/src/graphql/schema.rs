@@ -129,13 +129,15 @@ impl Mutation {
         id: juniper::ID,
     ) -> Result<registry::Transaction, error::Error> {
         // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+        let fake_pair = ed25519::Pair::from_legacy_string("//Alice", None);
+        // TODO(xla): Use real fee define dby the user.
+        let fee = 100;
 
         futures::executor::block_on(
             ctx.registry
                 .read()
                 .expect("unable to acquire read lock")
-                .register_user(&fake_pair, handle.to_string(), id.to_string()),
+                .register_user(&fake_pair, handle.to_string(), id.to_string(), fee),
         )
     }
 }
@@ -746,7 +748,7 @@ struct ProjectRegistration {
 struct UserRegistration {
     /// The chosen unique handle to be registered.
     handle: juniper::ID,
-    /// The id of the librad identity.
+    /// The id of the coco identity.
     id: juniper::ID,
 }
 
