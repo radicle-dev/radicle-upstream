@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
 
-  import { Flex, Text, Title } from "../../DesignSystem/Primitive";
+  import { Text, Title } from "../../DesignSystem/Primitive";
   import { SourceBrowser } from "../../DesignSystem/Component";
 
   import { gql } from "apollo-boost";
@@ -33,13 +33,9 @@
   }
 </style>
 
-<Flex align="left">
-  <Title variant="big">Overview</Title>
-</Flex>
-
 <div class="header">
   {#await $project then result}
-    <Text>{result.data.project.metadata.name}</Text>
+    <Title variant="big">{result.data.project.metadata.name}</Title>
     <Text>{result.data.project.metadata.description}</Text>
   {/await}
 </div>
