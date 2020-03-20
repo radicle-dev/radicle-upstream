@@ -559,6 +559,7 @@
 
     <Swatch>
       <ProjectCard
+        projectId="2fFdyRzay2Rew9CpjEunPLp2PWe7HSvXWB3AJ.git"
         title="Radicle"
         description="Best project in the world"
         isRegistered={true} />
