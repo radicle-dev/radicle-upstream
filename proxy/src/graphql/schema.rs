@@ -384,7 +384,7 @@ impl ControlMutation {
     ) -> Result<registry::Transaction, error::Error> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = ed25519::Pair::from_legacy_string("//Alice", None);
-        // TODO(xla): Use real fee define dby the user.
+        // TODO(xla): Use real fee defined by the user.
         let fee = 100;
 
         futures::executor::block_on(
