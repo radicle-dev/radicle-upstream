@@ -1,10 +1,11 @@
 use serde_cbor::to_vec;
 use serde_derive::{Deserialize, Serialize};
+use std::convert::TryFrom;
 use std::time::SystemTime;
 
 use radicle_registry_client::{
-    self as registry, ed25519, message, Client, ClientT, CryptoPair, Hash, OrgId, ProjectName,
-    TransactionExtra, H256,
+    self as registry, ed25519, message, Balance, Client, ClientT, CryptoPair, Hash, OrgId,
+    ProjectName, TransactionExtra, H256,
 };
 
 use crate::error;
@@ -100,10 +101,10 @@ impl Registry {
         &self,
         author: &ed25519::Pair,
         org_id: String,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id =
-            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+        let org_id = OrgId::try_from(org_id.clone())?;
 
         // Prepare and submit project registration transaction.
         let register_message = message::RegisterOrg {
@@ -115,6 +116,7 @@ impl Registry {
             TransactionExtra {
                 genesis_hash: self.client.genesis_hash(),
                 nonce: self.client.account_nonce(&author.public()).await?,
+                fee,
             },
         );
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
@@ -134,10 +136,10 @@ impl Registry {
         &self,
         author: &ed25519::Pair,
         org_id: String,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id =
-            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+        let org_id = OrgId::try_from(org_id.clone())?;
 
         // Prepare and submit project registration transaction.
         let unregister_message = message::UnregisterOrg {
@@ -149,6 +151,7 @@ impl Registry {
             TransactionExtra {
                 genesis_hash: self.client.genesis_hash(),
                 nonce: self.client.account_nonce(&author.public()).await?,
+                fee,
             },
         );
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
@@ -169,12 +172,11 @@ impl Registry {
         name: String,
         org_id: String,
         maybe_project_id: Option<librad::project::ProjectId>,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let project_name = ProjectName::from_string(name.clone())
-            .map_err(|_| error::ProjectValidation::NameTooLong)?;
-        let org_id =
-            OrgId::from_string(org_id.clone()).map_err(|_| error::ProjectValidation::OrgTooLong)?;
+        let project_name = ProjectName::try_from(name.clone())?;
+        let org_id = OrgId::try_from(org_id.clone())?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
@@ -187,6 +189,7 @@ impl Registry {
             TransactionExtra {
                 genesis_hash: self.client.genesis_hash(),
                 nonce: self.client.account_nonce(&author.public()).await?,
+                fee,
             },
         );
         let checkpoint_id = self
@@ -224,6 +227,7 @@ impl Registry {
             TransactionExtra {
                 genesis_hash: self.client.genesis_hash(),
                 nonce: self.client.account_nonce(&author.public()).await?,
+                fee,
             },
         );
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
@@ -247,10 +251,8 @@ impl Registry {
         handle: String,
         id: String,
     ) -> Result<Transaction, error::Error> {
-        let message_handle = registry::String32::from_string(handle)
-            .map_err(|_| error::UserValidation::HandleTooLong)?;
-        let message_id =
-            registry::String32::from_string(id).map_err(|_| error::UserValidation::IdTooLong)?;
+        let message_handle = registry::String32::from_string(handle)?;
+        let message_id = registry::String32::from_string(id)?;
 
         Ok(Transaction {
             id: registry::H256::random(),
@@ -266,9 +268,13 @@ impl Registry {
 
 #[cfg(test)]
 mod tests {
+    use std::convert::TryFrom;
+
     use crate::registry::{Metadata, Registry};
-    use radicle_registry_client::ed25519;
-    use radicle_registry_client::{Client, ClientT, String32};
+    use radicle_registry_client::{
+        ed25519, message, AccountId, Balance, Client, ClientT, OrgId, ProjectName,
+    };
+
     use serde_cbor::from_reader;
 
     #[test]
@@ -278,10 +284,11 @@ mod tests {
         let registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let result = futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+        let result =
+            futures::executor::block_on(registry.register_org(&alice, "monadic".into(), 10));
         assert!(result.is_ok());
 
-        let org_id = String32::from_string("monadic".into()).unwrap();
+        let org_id = OrgId::try_from("monadic").unwrap();
         let maybe_org = futures::executor::block_on(client.get_org(org_id.clone())).unwrap();
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
@@ -297,13 +304,20 @@ mod tests {
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
+        let org_id = OrgId::try_from("monadic").unwrap();
         let registration =
-            futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+            futures::executor::block_on(registry.register_org(&alice, org_id.clone().into(), 10));
         assert!(registration.is_ok());
+
+        // The org needs funds to submit transactions.
+        let org = futures::executor::block_on(client.get_org(org_id.clone()))
+            .unwrap()
+            .unwrap();
+        futures::executor::block_on(transfer(&client, &alice, org.account_id.clone(), 1000));
 
         // Unregister the org
         let unregistration =
-            futures::executor::block_on(registry.unregister_org(&alice, "monadic".into()));
+            futures::executor::block_on(registry.unregister_org(&alice, "monadic".into(), 10));
         assert!(unregistration.is_ok());
     }
 
@@ -314,18 +328,29 @@ mod tests {
         let registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
+        // Register the org
+        let org_id = OrgId::try_from("monadic").unwrap();
         let org_result =
-            futures::executor::block_on(registry.register_org(&alice, "monadic".into()));
+            futures::executor::block_on(registry.register_org(&alice, org_id.clone().into(), 10));
         assert!(org_result.is_ok());
+
+        // The org needs funds to submit transactions.
+        let org = futures::executor::block_on(client.get_org(org_id.clone()))
+            .unwrap()
+            .unwrap();
+        futures::executor::block_on(transfer(&client, &alice, org.account_id.clone(), 1000));
+
+        // Register the project
         let result = futures::executor::block_on(registry.register_project(
             &alice,
             "radicle".into(),
-            "monadic".into(),
+            org_id.into(),
             Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
+            10,
         ));
         assert!(result.is_ok());
-        let org_id = String32::from_string("monadic".into()).unwrap();
-        let project_name = String32::from_string("radicle".into()).unwrap();
+        let org_id = OrgId::try_from("monadic").unwrap();
+        let project_name = ProjectName::try_from("radicle").unwrap();
         let future_project = client.get_project(project_name.clone(), org_id.clone());
         let maybe_project = futures::executor::block_on(future_project).unwrap();
         assert!(maybe_project.is_some());
@@ -349,5 +374,23 @@ mod tests {
             "123abcd.git".into(),
         ));
         assert!(res.is_ok());
+    }
+
+    pub async fn transfer(
+        client: &Client,
+        donator: &ed25519::Pair,
+        recipient: AccountId,
+        value: Balance,
+    ) {
+        let _tx_applied = client
+            .sign_and_submit_message(
+                &donator,
+                message::Transfer {
+                    recipient,
+                    balance: value,
+                },
+                1,
+            )
+            .await;
     }
 }

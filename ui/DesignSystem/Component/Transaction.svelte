@@ -8,12 +8,15 @@
   //   stake: "name of stake (optional)",
   //   subject: {
   //     name: "name of the transaction target",
-  //     kind: "project" || "user"
-  //     avatar: "avatar url of the target (optional)"
+  //     kind: "project" || "user",
+  //     avatarFallback: "avatar fallback of the target",
+  //     imageUrl: "avatar url of the target (optional)"
   //   },
   //   payer: {
   //     name: "name of the owner of the paying wallet"
-  //     avatar: "avatar of the owner (optional)"
+  //     avatar: "avatar of the owner (optional)",
+  //     avatarFallback: "avatar fallback of the owner",
+  //     imageUrl: "avatar url of the owner (optional)"
   //   }
   // }
   export let tx = null;
@@ -24,7 +27,7 @@
 <Caption style="color: var(--color-darkgray); margin-bottom: 16px">
   Your transaction
 </Caption>
-<Row style="margin-bottom: 32px;">
+<Row style="margin-bottom: 32px;" dataCy="tx-summary">
   <div slot="left">
     <Title>{tx.message}</Title>
   </div>
@@ -32,8 +35,10 @@
   <div slot="right">
     <Avatar
       title={tx.subject.name}
-      imageUrl={tx.subject.avatar}
-      variant={tx.subject.kind} />
+      imageUrl={tx.subject.imageUrl}
+      avatarFallback={tx.subject.avatarFallback}
+      variant={tx.subject.kind}
+      style="color: var(--color-black)" />
   </div>
 </Row>
 
@@ -81,7 +86,11 @@
 
 <Row style="background-color: var(--color-almostwhite)">
   <div slot="left">
-    <Avatar title={tx.payer.name} imageUrl={tx.payer.avatar} />
+    <Avatar
+      title={tx.payer.name}
+      imageUrl={tx.payer.imageUrl}
+      avatarFallback={tx.payer.avatarFallback}
+      style="color: var(--color-black)" />
   </div>
 
   <div slot="right">

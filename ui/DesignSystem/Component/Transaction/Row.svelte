@@ -2,6 +2,7 @@
   import { Flex } from "../../Primitive";
 
   export let style = null;
+  export let dataCy = null;
 
   export let variant = "single"; // top || middle || bottom
   export let active = false;
@@ -59,7 +60,7 @@
   }
 </style>
 
-<div class={rowClass} {style}>
+<div class={rowClass} {style} data-cy={dataCy}>
   <Flex>
     <div slot="left">
       <slot name="left" />

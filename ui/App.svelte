@@ -17,6 +17,7 @@
   import Project from "./Screen/Project.svelte";
   import Projects from "./Screen/Projects.svelte";
   import RegisterProject from "./Screen/RegisterProject.svelte";
+  import UserRegistration from "./Screen/UserRegistration.svelte";
   import Search from "./Screen/Search.svelte";
   import CreateIdentity from "./Screen/IdentityCreation.svelte";
 
@@ -48,6 +49,7 @@
     "/projects/:id/*": Project,
     "/design-system-guide": DesignSystemGuide,
     "/help": Help,
+    "/user-registration": UserRegistration,
     "*": NotFound
   };
 </script>
