@@ -1,10 +1,27 @@
 <script>
+  import { push } from "svelte-spa-router";
   import { Icon, Text, Title } from "../Primitive";
+  import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
   import Stat from "./Stat.svelte";
+  import { registerProject } from "../../lib/path.js";
 
+  export let projectId = null;
   export let title = "";
   export let description = "";
   export let isRegistered = false;
+
+  const dropdownMenuItems = [
+    {
+      title: "Share project",
+      icon: Icon.ArrowUp,
+      event: () => console.log(`event(share-project(${projectId}))`)
+    },
+    {
+      title: "Register project",
+      icon: Icon.Register,
+      event: () => push(registerProject(projectId))
+    }
+  ];
 </script>
 
 <style>
@@ -32,10 +49,9 @@
     margin-left: 9px;
   }
 
-  .stats {
+  .right {
     display: flex;
     align-items: center;
-    margin-right: 24px;
   }
 </style>
 
@@ -57,9 +73,13 @@
     </Text>
   </div>
 
-  <div class="stats">
-    <Stat icon={Icon.Commit} count="1.1k" style="margin-right: 24px;" />
-    <Stat icon={Icon.Branch} count="60" style="margin-right: 24px;" />
-    <Stat icon={Icon.Member} count="3" />
+  <div class="right">
+    <Stat icon={Icon.Commit} count="1.1k" style="margin-right: 32px;" />
+    <Stat icon={Icon.Branch} count="60" style="margin-right: 32px;" />
+    <Stat icon={Icon.Member} count="3" style="margin-right: 44px;" />
+
+    <AdditionalActionsDropdown
+      headerTitle={projectId}
+      menuItems={dropdownMenuItems} />
   </div>
 </div>

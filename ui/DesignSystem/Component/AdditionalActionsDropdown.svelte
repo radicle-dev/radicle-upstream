@@ -84,8 +84,8 @@
   }
 </style>
 
-<div class="container" {style}>
-  <button bind:this={triggerEl} on:click={toggleModal}>
+<div class="container" {style} on:click|stopPropagation>
+  <button bind:this={triggerEl} on:click|stopPropagation={toggleModal}>
     <svelte:component this={Icon.Ellipses} />
   </button>
   <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
@@ -101,7 +101,9 @@
         </div>
         <div class="menu">
           {#each menuItems as item}
-            <div class="menu-item" on:click={handleItemSelection(item)}>
+            <div
+              class="menu-item"
+              on:click|stopPropagation={handleItemSelection(item)}>
               <svelte:component this={item.icon} style="margin-right: 12px" />
               <Text>{item.title}</Text>
             </div>

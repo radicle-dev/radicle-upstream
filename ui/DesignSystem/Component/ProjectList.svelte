@@ -76,6 +76,7 @@
           }}
           class="project-card">
           <ProjectCard
+            projectId={project.id}
             title={project.metadata.name}
             description={project.metadata.description}
             isRegistered={false} />
