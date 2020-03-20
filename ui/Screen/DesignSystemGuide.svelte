@@ -19,6 +19,7 @@
     Row,
     StepCounter,
     TrackToggle,
+    TxPipeline,
     UserCard
   } from "../DesignSystem/Component";
 
@@ -634,6 +635,10 @@
         </Row>
       </div>
     </Swatch>
+  </Section>
+
+  <Section title="Transaction Pipeline" subTitle="...">
+    <TxPipeline />
   </Section>
 
   <Section title="Misc" subTitle="Everything else">

@@ -17,6 +17,7 @@ import StepCounter from "./StepCounter.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
 import Transaction from "./Transaction.svelte";
+import TxPipeline from "./TxPipeline.svelte";
 import Row from "./Transaction/Row.svelte";
 import UserCard from "./UserCard.svelte";
 
@@ -40,6 +41,7 @@ export {
   Topbar,
   TrackToggle,
   Transaction,
+  TxPipeline,
   Row,
   UserCard
 };
