@@ -218,15 +218,14 @@
     subTitle="Icons at 24px and 32px width and height with animations and
     reactive coloring.">
     <Icon.Spinner />
-    <Icon.TxState />
-    <Icon.TxState progress={1} />
-    <Icon.TxState progress={2} />
-    <Icon.TxState progress={3} />
-    <Icon.TxState progress={4} />
-    <Icon.TxState progress={5} />
-    <Icon.TxState state="success" />
-    <Icon.TxState state="error" />
-    <Icon.TxState state="error" progress={3} />
+    <Icon.TxState state="positive" />
+    <Icon.TxState progress={0} />
+    <Icon.TxState progress={10} />
+    <Icon.TxState progress={100 / 3} />
+    <Icon.TxState state="negative" progress={0} />
+    <Icon.TxState state="negative" progress={80} />
+    <Icon.TxState state="negative" progress={100} />
+    <Icon.TxState state="negative" />
   </Section>
 
   <Section

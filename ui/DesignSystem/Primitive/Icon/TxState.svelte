@@ -1,40 +1,44 @@
 <script>
   export let style = null;
-  export let state = "pending"; // error | pending | success
-  export let progress = null; // 0..6 (number of confirmed steps)
+  export let state = "caution"; // negative | caution | positive
+  export let progress = null; // 0-100% of progress, overwrites the defaults
 
   const stateToColor = {
-    pending: "var(--color-orange)",
-    success: "var(--color-green)",
-    error: "var(--color-red)"
+    caution: "var(--color-orange)",
+    positive: "var(--color-green)",
+    negative: "var(--color-red)"
   };
 
   const color = stateToColor[state];
 
-  const done = step => {
-    return progress ? step <= progress : state === "success";
+  const defaultDashLength = {
+    caution: progress || 100 / 6,
+    positive: 100,
+    negative: 0
   };
 
-  // blink animation only happens if progress is provided
-  const inProgress = step => {
-    if (progress) {
-      return step === progress + 1;
-    }
-  };
+  const dashLength =
+    progress === 0 ? 100 / 6 : progress || defaultDashLength[state];
+
+  const rotate = progress === 0;
 </script>
 
 <style>
-  .blink {
-    animation: blink 1.5s infinite linear;
-  }
-
   .opaque {
-    opacity: 0.35;
+    opacity: 0.3;
   }
 
-  @keyframes blink {
-    50% {
-      opacity: 1;
+  .rotate {
+    transform-origin: 16px 16px;
+    animation: rotate 5s infinite linear;
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(359deg);
     }
   }
 </style>
@@ -46,48 +50,23 @@
   viewBox="0 0 32 32"
   fill="none"
   xmlns="http://www.w3.org/2000/svg">
-  <path
-    class:opaque={!done(1)}
-    class:blink={inProgress(1)}
-    d="M29.1428 6.81764C26.4911 3.00657 22.2241 0.403526 17.3335
-    0V4.01853C20.7449 4.39569 23.7253 6.20286 25.662 8.82731L29.1428 6.81764Z"
-    fill={color} />
-  <path
-    class:opaque={!done(2)}
-    class:blink={inProgress(2)}
-    d="M32.0001 15.9454C32.0001 18.3844 31.4544 20.6959 30.4784 22.7646L26.9974
-    20.7548C27.6423 19.2824 28.0001 17.6557 28.0001 15.9454C28.0001 14.2349
-    27.6422 12.6081 26.9973 11.1356L30.4782 9.12585C31.4544 11.1946 32.0001
-    13.5062 32.0001 15.9454Z"
-    fill={color} />
-  <path
-    class:opaque={!done(3)}
-    class:blink={inProgress(3)}
-    d="M17.3335 31.8908C22.2242 31.4873 26.4913 28.8841 29.143 25.0729L25.6622
-    23.0632C23.7255 25.6878 20.745 27.4951 17.3335 27.8723V31.8908Z"
-    fill={color} />
-  <path
-    class:opaque={!done(4)}
-    class:blink={inProgress(4)}
-    d="M2.85693 25.073C5.50876 28.8843 9.77588 31.4874 14.6667
-    31.8908V27.8723C11.2551 27.4952 8.27453 25.688 6.33778 23.0634L2.85693
-    25.073Z"
-    fill={color} />
-  <path
-    class:opaque={!done(5)}
-    class:blink={inProgress(5)}
-    d="M1.52196 9.12573L5.00289 11.1354C4.35793 12.608 4.00005 14.2349 4.00005
-    15.9454C4.00005 17.6558 4.35788 19.2826 5.00276 20.755L1.52183
-    22.7648C0.545761 20.6961 0 18.3845 0 15.9454C0 13.5062 0.545811 11.1945
-    1.52196 9.12573Z"
-    fill={color} />
-  <path
-    class:opaque={!done(6)}
-    class:blink={inProgress(6)}
-    d="M14.667 4.01852C11.2555 4.39559 8.27503 6.20274 6.33828 8.8272L2.85742
-    6.81753C5.50927 3.00644 9.7763 0.403428 14.667 0V4.01852Z"
-    fill={color} />
-  {#if state === 'success'}
+  <circle
+    class="opaque"
+    cx="16"
+    cy="16"
+    r="14"
+    stroke={color}
+    stroke-width="4" />
+  <circle
+    class:rotate
+    cx="16"
+    cy="16"
+    r="14"
+    transform="rotate(-90, 16, 16)"
+    stroke={color}
+    stroke-width="4"
+    stroke-dasharray={`calc(${dashLength} * 87.96/100), 87.96`} />
+  {#if state === 'positive'}
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
@@ -97,7 +76,7 @@
       15.2929C9.68342 14.9024 10.3166 14.9024 10.7071 15.2929L14 18.5858L20.2929
       12.2929C20.6834 11.9024 21.3166 11.9024 21.7071 12.2929Z"
       fill={color} />
-  {:else if state === 'error'}
+  {:else if state === 'negative'}
     <path
       d="M16.505 21C16.1072 21 15.7257 20.842 15.4444 20.5607C15.163 20.2794
       15.005 19.8978 15.005 19.5C15.005 19.1022 15.163 18.7207 15.4444
