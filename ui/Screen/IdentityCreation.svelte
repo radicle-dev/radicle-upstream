@@ -39,7 +39,9 @@
 <ModalLayout>
   {#if currentStep === steps.WELCOME}
     <div class="container">
-      <Button on:click={nextStep}>Get started</Button>
+      <Button on:click={nextStep} dataCy="get-started-button">
+        Get started
+      </Button>
     </div>
   {:else if currentStep === steps.FORM}
     <IdentityCreationForm onSuccess={nextStep} {onError} />

@@ -41,35 +41,35 @@ context("project creation", () => {
         // spaces are not allowed
         cy.get('[data-cy="page"] [data-cy="name"]').type("no spaces");
         cy.get('[data-cy="page"]').contains(
-          "Project name should match [a-z0-9][a-z0-9_-]+"
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // special characters are disallowed
         cy.get('[data-cy="page"] [data-cy="name"]').clear();
         cy.get('[data-cy="page"] [data-cy="name"]').type("$bad");
         cy.get('[data-cy="page"]').contains(
-          "Project name should match [a-z0-9][a-z0-9_-]+"
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // can't start with an underscore
         cy.get('[data-cy="page"] [data-cy="name"]').clear();
         cy.get('[data-cy="page"] [data-cy="name"]').type("_nein");
         cy.get('[data-cy="page"]').contains(
-          "Project name should match [a-z0-9][a-z0-9_-]+"
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // can't start with a dash
         cy.get('[data-cy="page"] [data-cy="name"]').clear();
         cy.get('[data-cy="page"] [data-cy="name"]').type("-nope");
         cy.get('[data-cy="page"]').contains(
-          "Project name should match [a-z0-9][a-z0-9_-]+"
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // has to be at least two characters long
         cy.get('[data-cy="page"] [data-cy="name"]').clear();
         cy.get('[data-cy="page"] [data-cy="name"]').type("x");
         cy.get('[data-cy="page"]').contains(
-          "Project name should match [a-z0-9][a-z0-9_-]+"
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
       });
     });

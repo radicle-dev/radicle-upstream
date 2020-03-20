@@ -56,7 +56,7 @@
       optional: {
         url: {
           schemes: ["http", "https"],
-          message: "Not a valid avatar URL",
+          message: "Not a valid image URL",
           allowLocal: false
         }
       }
@@ -147,7 +147,7 @@
 </style>
 
 <div class="container">
-  <div>
+  <div data-cy="form">
     <Title variant="big" style="text-align: center;">Create an identity</Title>
     <Text style="margin: 20px 0; color: var(--color-gray);">
       An identity is required to interact on the radicle network. Multiple
@@ -156,17 +156,20 @@
     <Input.Text
       placeholder="Enter a handle*"
       bind:value={handle}
+      dataCy="handle"
       valid={!(validations && validations.handle)}
       validationMessage={validations && validations.handle && validations.handle[0]} />
     <Input.Text
       placeholder="Add a display name"
       bind:value={displayName}
+      dataCy="display-name"
       valid={!(validations && validations.displayName)}
       validationMessage={validations && validations.displayName && validations.displayName[0]}
       style="margin-top: 16px;" />
     <Input.Text
       placeholder="Avatar url"
       bind:value={avatarUrl}
+      dataCy="avatar-url"
       style="margin: 16px 0 32px 0;"
       validationMessage={validations && validations.avatarUrl && validations.avatarUrl[0]}
       valid={!(validations && validations.avatarUrl)} />
@@ -175,6 +178,7 @@
         Cancel
       </Button>
       <Button
+        dataCy="create-id-button"
         disabled={!handle || validations}
         size="big"
         on:click={createIdentity}>
