@@ -18,6 +18,7 @@
     Rad,
     Row,
     StepCounter,
+    TrackToggle,
     UserCard
   } from "../DesignSystem/Component";
 
@@ -634,6 +635,10 @@
       <AdditionalActionsDropdown
         headerTitle="Copy this title"
         menuItems={dropdownMenuItems} />
+    </Swatch>
+
+    <Swatch>
+      <TrackToggle peerCount="2.3k" />
     </Swatch>
   </Section>
 </div>
