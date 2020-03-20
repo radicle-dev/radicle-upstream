@@ -52,7 +52,6 @@ impl From<meta::Project> for Metadata {
 }
 
 /// Radicle project for sharing and collaborating.
-#[derive(serde_derive::Deserialize, serde_derive::Serialize)]
 pub struct Project {
     /// Unique identifier of the project in the network.
     pub id: project::ProjectId,

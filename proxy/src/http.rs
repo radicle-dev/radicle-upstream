@@ -1,5 +1,6 @@
 #![allow(warnings, missing_docs)]
 
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 use serde_derive::Serialize;
 use std::convert::Infallible;
 use std::str::FromStr;
@@ -15,6 +16,14 @@ pub async fn run() {
     warp::serve(routes).run(([127, 0, 0, 1], 8090)).await
 }
 
+impl reject::Reject for error::Error {}
+
+impl From<error::Error> for Rejection {
+    fn from(err: error::Error) -> Rejection {
+        reject::custom(err)
+    }
+}
+
 #[derive(Serialize)]
 struct Error {
     message: &'static str,
@@ -23,7 +32,7 @@ struct Error {
 
 async fn rejection_handle(err: Rejection) -> Result<impl Reply, Infallible> {
     let (code, variant, message) = (
-        StatusCode::INTERNAL_SERVER_ERROR,
+        StatusCode::NOT_IMPLEMENTED,
         "INTERNAL_ERROR",
         "Something went wrong",
     );
@@ -36,7 +45,7 @@ pub fn routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
     list_filter().or(get_filter())
 }
 
-fn get_filter() -> impl Filter<Extract = impl Reply, Error = error::Error> + Clone {
+fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / String).and(get()).and_then(get_project)
 }
 
@@ -44,8 +53,12 @@ fn list_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
     path!("projects").and(get()).and_then(projects)
 }
 
-async fn get_project(id: String) -> Result<impl Reply, error::Error> {
-    Ok(reply::json(&project::Project {
+async fn get_project(id: String) -> Result<impl Reply, Rejection> {
+    Ok(reply::json(&foo(id)?))
+}
+
+fn foo(id: String) -> Result<project::Project, error::Error> {
+    Ok(project::Project {
         id: librad::project::ProjectId::from_str(&id)?,
         metadata: project::Metadata {
             name: "Upstream".into(),
@@ -53,12 +66,24 @@ async fn get_project(id: String) -> Result<impl Reply, error::Error> {
             default_branch: "master".into(),
             img_url: "https://avatars0.githubusercontent.com/u/48290027".into(),
         },
-    }))
+    })
 }
 
 async fn projects() -> Result<impl Reply, Infallible> {
     let content: Vec<String> = vec![];
     Ok(reply::json(&content))
+}
+
+impl Serialize for project::Project {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Project", 2)?;
+        state.serialize_field("id", &self.id.to_string())?;
+        state.serialize_field("metadata", &self.metadata)?;
+        state.end()
+    }
 }
 
 #[cfg(test)]
@@ -71,11 +96,13 @@ mod tests {
         let api = super::routes();
         let res = request()
             .method("GET")
-            .path("/projects/123")
+            .path("/projects/123.git")
             .reply(&api)
             .await;
 
-        assert_eq!(res.status(), StatusCode::NOT_FOUND);
+        println!("{:?}", res);
+
+        assert_eq!(res.status(), StatusCode::OK);
     }
 
     #[tokio::test]
