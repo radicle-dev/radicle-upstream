@@ -2,14 +2,27 @@
   export let style = null;
   export let state = "caution"; // negative | caution | positive
   export let progress = null; // 0-100% of progress, overwrites the defaults
+  export let variant = "regular"; // small | regular
 
-  const stateToColor = {
+  const size = {
+    regular: 32,
+    small: 16
+  }[variant];
+
+  const strokeWidth = {
+    regular: 4,
+    small: 2
+  }[variant];
+
+  const center = size / 2;
+  const radius = size / 2 - strokeWidth / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  const color = {
     caution: "var(--color-orange)",
     positive: "var(--color-green)",
     negative: "var(--color-red)"
-  };
-
-  const color = stateToColor[state];
+  }[state];
 
   const defaultDashLength = {
     caution: progress || 100 / 6,
@@ -29,7 +42,7 @@
   }
 
   .rotate {
-    transform-origin: 16px 16px;
+    transform-origin: var(--origin);
     animation: rotate 5s infinite linear;
   }
 
@@ -45,27 +58,29 @@
 
 <svg
   {style}
-  width="32"
-  height="32"
-  viewBox="0 0 32 32"
+  width={size}
+  height={size}
+  viewBox="0 0 {size}
+  {size}"
   fill="none"
   xmlns="http://www.w3.org/2000/svg">
   <circle
     class="opaque"
-    cx="16"
-    cy="16"
-    r="14"
+    cx={center}
+    cy={center}
+    r={radius}
     stroke={color}
-    stroke-width="4" />
+    stroke-width={strokeWidth} />
   <circle
+    style="--origin: {center}px {center}px"
     class:rotate
-    cx="16"
-    cy="16"
-    r="14"
-    transform="rotate(-90, 16, 16)"
+    cx={center}
+    cy={center}
+    r={radius}
+    transform="rotate(-90, {center}, {center})"
     stroke={color}
-    stroke-width="4"
-    stroke-dasharray={`calc(${dashLength} * 87.96/100), 87.96`} />
+    stroke-width={strokeWidth}
+    stroke-dasharray="{(dashLength * circumference) / 100}, {circumference}" />
   {#if state === 'positive'}
     <path
       fill-rule="evenodd"

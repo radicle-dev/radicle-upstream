@@ -219,6 +219,7 @@
     reactive coloring.">
     <Icon.Spinner />
     <Icon.TxState state="positive" />
+    <Icon.TxState progress={0} variant="small" />
     <Icon.TxState progress={0} />
     <Icon.TxState progress={10} />
     <Icon.TxState progress={100 / 3} />
