@@ -1,13 +1,5 @@
 <script>
-  import { link } from "svelte-spa-router";
-
-  import IdentityAvatar from "./IdentityAvatar.svelte";
-  import Menu from "./Topbar/Menu.svelte";
-
   export let style = null;
-
-  export let href = null;
-  export let menuItems = null;
 </script>
 
 <style>
@@ -22,35 +14,10 @@
     left: var(--sidebar-width);
     border-bottom: 1px solid var(--color-lightgray);
   }
-
-  .name {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    border-right: 1px solid var(--color-lightgray);
-    padding-left: 16px;
-    padding-right: 24px;
-  }
-
-  .left {
-    display: flex;
-    flex: 1;
-    justify-content: flex-end;
-    margin-right: 16px;
-  }
 </style>
 
 <div data-cy="topbar" class="topbar" {style}>
-  <a class="name" {href} use:link>
-    <IdentityAvatar
-      showTitle={true}
-      size={'regular'}
-      style="color: var(--color-purple)" />
-  </a>
-
-  <Menu items={menuItems} />
-
-  <div class="left">
-    <slot />
-  </div>
+  <slot name="left" />
+  <slot name="middle" />
+  <slot name="right" />
 </div>

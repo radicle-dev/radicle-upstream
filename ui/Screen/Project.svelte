@@ -1,4 +1,5 @@
 <script>
+  import { link } from "svelte-spa-router";
   import { setContext } from "svelte";
   import {
     revisionStore,
@@ -8,7 +9,11 @@
   import * as path from "../lib/path.js";
 
   import Router, { location, push } from "svelte-spa-router";
-  import { SidebarLayout, Topbar } from "../DesignSystem/Component";
+  import {
+    SidebarLayout,
+    Topbar,
+    IdentityAvatar
+  } from "../DesignSystem/Component";
   import { Button, Icon } from "../DesignSystem/Primitive";
 
   import Source from "./Project/Source.svelte";
@@ -87,15 +92,23 @@
       name={result.data.project.metadata.name}
       href={path.projectOverview(result.data.project.id)}
       menuItems={topbarMenuItems(result.data.project.id)}>
-      <Button
-        variant="secondary"
-        size="small"
-        style="margin-right: 16px"
-        on:click={() => {
-          push(path.registerProject(result.data.project.id));
-        }}>
-        <span>Register</span>
-      </Button>
+      <a slot="left" class="name" href={path.profileProjects()} use:link>
+        <IdentityAvatar
+          showTitle={true}
+          size={'regular'}
+          style="color: var(--color-purple)" />
+      </a>
+      <div slot="right">
+        <Button
+          variant="secondary"
+          size="small"
+          style="margin-right: 16px"
+          on:click={() => {
+            push(path.registerProject(result.data.project.id));
+          }}>
+          <span>Register</span>
+        </Button>
+      </div>
     </Topbar>
     <Router {routes} />
   {/await}

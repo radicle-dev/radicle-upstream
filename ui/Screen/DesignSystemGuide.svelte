@@ -179,12 +179,14 @@
     stroke weight, multiple color variations">
 
     <Icon.Badge />
+    <Icon.ArrowDown />
     <Icon.ArrowUp />
     <Icon.Branch />
     <Icon.Carret />
     <Icon.CarretBig />
     <Icon.Check />
     <Icon.CheckCircle />
+    <Icon.CloseIssue />
     <Icon.Commit />
     <Icon.Copy />
     <Icon.Cross />
@@ -201,12 +203,12 @@
     <Icon.Important />
     <Icon.Inbox />
     <Icon.Info />
-    <Icon.Issues />
     <Icon.Member />
     <Icon.Minus />
     <Icon.Peer />
     <Icon.Plus />
     <Icon.Projects />
+    <Icon.Register />
     <Icon.Revisions />
     <Icon.Search />
     <Icon.SearchSmall />

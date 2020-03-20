@@ -1,4 +1,5 @@
 import Badge from "./Badge.svelte";
+import ArrowDown from "./ArrowDown.svelte";
 import ArrowUp from "./ArrowUp.svelte";
 import Branch from "./Branch.svelte";
 import Carret from "./Carret.svelte";
@@ -8,6 +9,7 @@ import CheckCircle from "./CheckCircle.svelte";
 import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
+import CopyToClipboard from "./CopyToClipboard.svelte";
 import Cross from "./Cross.svelte";
 import CrossBig from "./CrossBig.svelte";
 import Ellipse from "./Ellipse.svelte";
@@ -28,6 +30,7 @@ import Minus from "./Minus.svelte";
 import Peer from "./Peer.svelte";
 import Plus from "./Plus.svelte";
 import Projects from "./Projects.svelte";
+import Register from "./Register.svelte";
 import Revisions from "./Revisions.svelte";
 import Search from "./Search.svelte";
 import SearchSmall from "./SearchSmall.svelte";
@@ -38,6 +41,7 @@ import StepCounter from "./StepCounter.svelte";
 
 export default {
   Badge,
+  ArrowDown,
   ArrowUp,
   Branch,
   Carret,
@@ -47,6 +51,7 @@ export default {
   CloseIssue,
   Commit,
   Copy,
+  CopyToClipboard,
   Cross,
   CrossBig,
   Ellipse,
@@ -67,6 +72,7 @@ export default {
   Peer,
   Plus,
   Projects,
+  Register,
   Revisions,
   Search,
   SearchSmall,

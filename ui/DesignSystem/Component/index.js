@@ -1,4 +1,5 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
+import HorizontalMenu from "./HorizontalMenu.svelte";
 import IdentityAvatar from "./IdentityAvatar.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
@@ -19,6 +20,7 @@ import UserCard from "./UserCard.svelte";
 
 export {
   AdditionalActionsDropdown,
+  HorizontalMenu,
   IdentityAvatar,
   Notification,
   NotificationFaucet,

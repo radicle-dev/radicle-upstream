@@ -18,6 +18,7 @@
     item.event();
   };
 
+  export let style = null;
   export let menuItems = null;
   export let headerTitle = null;
 </script>
@@ -40,7 +41,7 @@
   }
 
   button:hover {
-    background-color: var(--color-lightgray-tint-10);
+    background-color: var(--color-almostwhite);
   }
 
   .modal {
@@ -79,11 +80,11 @@
   }
 
   .menu-item:hover {
-    background-color: var(--color-lightgray-tint-10);
+    background-color: var(--color-almostwhite);
   }
 </style>
 
-<div class="container">
+<div class="container" {style}>
   <button bind:this={triggerEl} on:click={toggleModal}>
     <svelte:component this={Icon.Ellipses} />
   </button>
@@ -91,8 +92,12 @@
     {#if expanded}
       <div class="modal" hidden={!expanded}>
         <div class="header">
-          <Text>{headerTitle}</Text>
-          <svelte:component this={Icon.Copy} style="margin-left: 8px;" />
+          <Text
+            style="width: 200px; white-space: nowrap; overflow: hidden;
+            text-overflow: ellipsis;">
+            {headerTitle}
+          </Text>
+          <Icon.Copy style="margin-left: 8px;" />
         </div>
         <div class="menu">
           {#each menuItems as item}
@@ -105,5 +110,4 @@
       </div>
     {/if}
   </ClickOutside>
-
 </div>

@@ -1,8 +1,8 @@
 <script>
   import { location } from "svelte-spa-router";
-  import * as path from "../../../lib/path.js";
+  import * as path from "../../lib/path.js";
 
-  import MenuItem from "./MenuItem.svelte";
+  import MenuItem from "./HorizontalMenu/MenuItem.svelte";
 
   export let items = null;
 </script>
