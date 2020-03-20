@@ -14,6 +14,7 @@ import SidebarLayout from "./SidebarLayout.svelte";
 import SourceBrowser from "./SourceBrowser.svelte";
 import StepCounter from "./StepCounter.svelte";
 import Topbar from "./Topbar.svelte";
+import TrackToggle from "./TrackToggle.svelte";
 import Transaction from "./Transaction.svelte";
 import Row from "./Transaction/Row.svelte";
 import UserCard from "./UserCard.svelte";
@@ -35,6 +36,7 @@ export {
   SourceBrowser,
   StepCounter,
   Topbar,
+  TrackToggle,
   Transaction,
   Row,
   UserCard

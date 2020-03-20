@@ -90,6 +90,7 @@
 <SidebarLayout
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="page-container">
+
   <Topbar style="position: fixed; top: 0;">
     <a slot="left" class="name" href={path.profileProjects()} use:link>
       <IdentityAvatar
@@ -110,5 +111,6 @@
         menuItems={dropdownMenuItems} />
     </div>
   </Topbar>
+
   <Router routes={screenRoutes} />
 </SidebarLayout>
