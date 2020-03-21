@@ -6,7 +6,7 @@ use std::sync;
 use librad::paths::Paths;
 use librad::surf;
 use librad::surf::git::git2;
-use radicle_registry_client::ed25519;
+use radicle_registry_client::{ed25519, CryptoPair as _};
 
 use crate::avatar;
 use crate::coco;
@@ -129,13 +129,25 @@ impl Mutation {
         id: juniper::ID,
     ) -> Result<registry::Transaction, error::Error> {
         // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
+        let fake_pair =
+            ed25519::Pair::from_legacy_string(&format!("//{}", handle.to_string()), None);
+
+        // Give new account some dough so we can perform transactions.
+        futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .prepay_account(fake_pair.public(), 1000),
+        )?;
+
+        // TODO(xla): Use real fee defined by the user.
+        let fee = 100;
 
         futures::executor::block_on(
             ctx.registry
                 .read()
                 .expect("unable to acquire read lock")
-                .register_user(&fake_pair, handle.to_string(), id.to_string()),
+                .register_user(&fake_pair, handle.to_string(), id.to_string(), fee),
         )
     }
 }
@@ -292,12 +304,14 @@ impl Query {
         }))
     }
 
-    fn user(_ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
-        if handle == juniper::ID::new("cloudhead") {
-            Ok(None)
-        } else {
-            Ok(Some(juniper::ID::new("1234")))
-        }
+    fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
+        Ok(futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .get_user(handle.to_string()),
+        )?
+        .map(juniper::ID::new))
     }
 }
 
@@ -361,6 +375,24 @@ impl ControlMutation {
             .reset(radicle_registry_client::Client::new_emulator());
 
         Ok(true)
+    }
+
+    fn register_user(
+        ctx: &Context,
+        handle: juniper::ID,
+        id: juniper::ID,
+    ) -> Result<registry::Transaction, error::Error> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = ed25519::Pair::from_legacy_string("//Alice", None);
+        // TODO(xla): Use real fee defined by the user.
+        let fee = 100;
+
+        futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .register_user(&fake_pair, handle.to_string(), id.to_string(), fee),
+        )
     }
 }
 
@@ -746,7 +778,7 @@ struct ProjectRegistration {
 struct UserRegistration {
     /// The chosen unique handle to be registered.
     handle: juniper::ID,
-    /// The id of the librad identity.
+    /// The id of the coco identity.
     id: juniper::ID,
 }
 
