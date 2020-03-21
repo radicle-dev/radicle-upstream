@@ -1,7 +1,6 @@
 #![allow(warnings, missing_docs)]
 
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-use serde_derive::Serialize;
 use std::convert::Infallible;
 use std::str::FromStr;
 use warp::http::StatusCode;
@@ -24,7 +23,7 @@ impl From<error::Error> for Rejection {
     }
 }
 
-#[derive(Serialize)]
+#[derive(serde_derive::Serialize)]
 struct Error {
     message: &'static str,
     variant: &'static str,
@@ -99,8 +98,6 @@ mod tests {
             .path("/projects/123.git")
             .reply(&api)
             .await;
-
-        println!("{:?}", res);
 
         assert_eq!(res.status(), StatusCode::OK);
     }

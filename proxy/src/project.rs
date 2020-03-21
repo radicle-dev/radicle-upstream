@@ -3,7 +3,6 @@
 
 use librad::meta;
 use librad::project;
-use serde_derive;
 
 /// Metadata key used to store an image url for a project.
 const IMG_URL_LABEL: &str = "img_url";
