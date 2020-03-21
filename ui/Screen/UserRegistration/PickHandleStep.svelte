@@ -21,8 +21,6 @@
 
   let validating = false;
   let validations = false;
-  let timeout = null;
-  let delay = 0;
   const client = getClient();
 
   const GET_USER = gql`
@@ -48,7 +46,8 @@
     try {
       const response = await query(client, {
         query: GET_USER,
-        variables: { handle: handle }
+        variables: { handle: handle },
+        fetchPolicy: "network-only"
       });
       const result = await response.result();
       if (await result.data.user) {
@@ -95,14 +94,9 @@
     if (!validatejs.isEmpty(validations)) {
       validating = false;
     } else {
-      clearTimeout(timeout);
-      timeout = setTimeout(async () => {
-        updateAvatarFallback();
-        await validateHandleAvailability();
-        validating = false;
-      }, delay);
-      // set the delay after the first validation on load
-      delay = 1000;
+      updateAvatarFallback();
+      await validateHandleAvailability();
+      validating = false;
     }
   };
 

@@ -5,7 +5,7 @@ use std::time::SystemTime;
 
 use radicle_registry_client::{
     self as registry, ed25519, message, Balance, Client, ClientT, CryptoPair, Hash, OrgId,
-    ProjectName, TransactionExtra, H256,
+    ProjectName, TransactionExtra, UserId, H256,
 };
 
 use crate::error;
@@ -33,9 +33,6 @@ pub struct Metadata {
     pub version: u8,
 }
 
-/// Unique handle a user can register.
-type UserHandle = registry::String32;
-
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
     /// Issue a new project registration with a given name under a given org.
@@ -56,7 +53,7 @@ pub enum Message {
     /// Issue a user registration for a given handle storing the corresponding identity id.
     UserRegistration {
         /// Globally unique user handle.
-        handle: UserHandle,
+        handle: UserId,
         /// Identity id originated from librad.
         id: registry::String32,
     },
@@ -106,7 +103,7 @@ impl Registry {
         // Verify that inputs are valid.
         let org_id = OrgId::try_from(org_id.clone())?;
 
-        // Prepare and submit project registration transaction.
+        // Prepare and submit org registration transaction.
         let register_message = message::RegisterOrg {
             org_id: org_id.clone(),
         };
@@ -141,7 +138,7 @@ impl Registry {
         // Verify that inputs are valid.
         let org_id = OrgId::try_from(org_id.clone())?;
 
-        // Prepare and submit project registration transaction.
+        // Prepare and submit org unregistration transaction.
         let unregister_message = message::UnregisterOrg {
             org_id: org_id.clone(),
         };
@@ -244,23 +241,63 @@ impl Registry {
         })
     }
 
+    /// Try to retrieve user from the Registry by handle.
+    pub async fn get_user(&self, handle: String) -> Result<Option<String>, error::Error> {
+        let user_id = UserId::try_from(handle.clone())?;
+        Ok(self.client.get_user(user_id).await?.map(|_user| handle))
+    }
+
+    /// Graciously pay some tokens to the recipient out of Alices pocket.
+    pub async fn prepay_account(
+        &self,
+        recipient: registry::AccountId,
+        balance: Balance,
+    ) -> Result<(), error::Error> {
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let _tx_applied = self
+            .client
+            .sign_and_submit_message(&alice, message::Transfer { recipient, balance }, 1)
+            .await?;
+
+        Ok(())
+    }
+
     /// Create a new unique user on the Registry.
     pub async fn register_user(
         &self,
-        _author: &ed25519::Pair,
+        author: &ed25519::Pair,
         handle: String,
         id: String,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
-        let message_handle = registry::String32::from_string(handle)?;
-        let message_id = registry::String32::from_string(id)?;
+        // Verify that inputs are valid.
+        let user_id = UserId::try_from(handle.clone())?;
+        let id = registry::String32::from_string(id)?;
+
+        // Prepare and submit user registration transaction.
+        let register_message = message::RegisterUser {
+            user_id: user_id.clone(),
+        };
+        let register_tx = registry::Transaction::new_signed(
+            author,
+            register_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+                fee,
+            },
+        );
+        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
+        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
         Ok(Transaction {
-            id: registry::H256::random(),
+            id: register_applied.tx_hash,
             messages: vec![Message::UserRegistration {
-                handle: message_handle,
-                id: message_id,
+                handle: user_id,
+                id,
             }],
-            state: TransactionState::Applied(registry::H256::random()),
+            state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
         })
     }
@@ -271,9 +308,7 @@ mod tests {
     use std::convert::TryFrom;
 
     use crate::registry::{Metadata, Registry};
-    use radicle_registry_client::{
-        ed25519, message, AccountId, Balance, Client, ClientT, OrgId, ProjectName,
-    };
+    use radicle_registry_client::{ed25519, Client, ClientT, OrgId, ProjectName};
 
     use serde_cbor::from_reader;
 
@@ -313,7 +348,7 @@ mod tests {
         let org = futures::executor::block_on(client.get_org(org_id.clone()))
             .unwrap()
             .unwrap();
-        futures::executor::block_on(transfer(&client, &alice, org.account_id.clone(), 1000));
+        futures::executor::block_on(registry.prepay_account(org.account_id.clone(), 1000)).unwrap();
 
         // Unregister the org
         let unregistration =
@@ -338,7 +373,7 @@ mod tests {
         let org = futures::executor::block_on(client.get_org(org_id.clone()))
             .unwrap()
             .unwrap();
-        futures::executor::block_on(transfer(&client, &alice, org.account_id.clone(), 1000));
+        futures::executor::block_on(registry.prepay_account(org.account_id.clone(), 1000)).unwrap();
 
         // Register the project
         let result = futures::executor::block_on(registry.register_project(
@@ -366,31 +401,14 @@ mod tests {
     fn register_user() {
         let client = Client::new_emulator();
         let registry = Registry::new(client);
-        let robo = ed25519::Pair::from_legacy_string("//Android", None);
+        let robo = ed25519::Pair::from_legacy_string("//Alice", None);
 
         let res = futures::executor::block_on(registry.register_user(
             &robo,
             "cloudhead".into(),
             "123abcd.git".into(),
+            100,
         ));
         assert!(res.is_ok());
-    }
-
-    pub async fn transfer(
-        client: &Client,
-        donator: &ed25519::Pair,
-        recipient: AccountId,
-        value: Balance,
-    ) {
-        let _tx_applied = client
-            .sign_and_submit_message(
-                &donator,
-                message::Transfer {
-                    recipient,
-                    balance: value,
-                },
-                1,
-            )
-            .await;
     }
 }
