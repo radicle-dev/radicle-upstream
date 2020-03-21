@@ -26,6 +26,7 @@ export const initializeHotkeys = () => {
     push(path.help());
   });
 
+  // TODO(sarah): Remove temporary hotkey for identity creation
   hotkeys("shift+i", () => {
     if (path.active(path.createIdentity(), get(location))) {
       pop();

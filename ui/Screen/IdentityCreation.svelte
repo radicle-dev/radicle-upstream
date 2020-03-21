@@ -44,8 +44,8 @@
       </Button>
     </div>
   {:else if currentStep === steps.FORM}
-    <IdentityCreationForm onSuccess={nextStep} {onError} />
+    <IdentityCreationForm onSuccess={nextStep} {onError} onCancel={pop} />
   {:else if currentStep === steps.SUCCESS}
-    <IdentityCreationSuccess onClose={() => replace('/projects')} />
+    <IdentityCreationSuccess onClose={() => replace('/projects')} {onError} />
   {/if}
 </ModalLayout>

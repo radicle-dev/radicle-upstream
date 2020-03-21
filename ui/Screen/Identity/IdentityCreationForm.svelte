@@ -12,7 +12,9 @@
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
-  export let onSuccess, onError;
+  export let onSuccess,
+    onCancel,
+    onError = null;
 
   const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
   const DISPLAY_NAME_MATCH = "^[a-z0-9 ]+$";
@@ -174,7 +176,11 @@
       validationMessage={validations && validations.avatarUrl && validations.avatarUrl[0]}
       valid={!(validations && validations.avatarUrl)} />
     <div class="buttons">
-      <Button variant="transparent" size="big" style="margin-right: 16px;">
+      <Button
+        variant="transparent"
+        size="big"
+        style="margin-right: 16px;"
+        on:click={onCancel}>
         Cancel
       </Button>
       <Button
