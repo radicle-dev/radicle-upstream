@@ -1,4 +1,11 @@
-#![allow(clippy::as_conversions, clippy::float_arithmetic)]
+#![allow(
+    clippy::as_conversions,
+    clippy::cast_possible_truncation,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss,
+    clippy::float_arithmetic,
+    clippy::integer_arithmetic
+)]
 
 //! Org and user avatar generation.
 
@@ -116,34 +123,35 @@ impl Color {
 
     /// Compute the lightness of a color.
     #[must_use]
-    pub fn lightness(&self) -> f32 {
-        let r = self.r as f32;
-        let g = self.g as f32;
-        let b = self.b as f32;
-        let n = 0xff as f32;
+    pub fn lightness(self) -> f32 {
+        let r = f32::from(self.r);
+        let g = f32::from(self.g);
+        let b = f32::from(self.b);
+        let n = 255_f32;
 
         // This isn't perceptual lightness, but whatever.
         (r / n + g / n + b / n) / 3.
     }
 
     /// Ligthen a color by an amount between `-1.0` and `1.0`.
+    #[allow(clippy::shadow_reuse)]
     fn lighten(self, amount: f32) -> Self {
         // Constrain range to -1 .. 1.
         let amount = f32::max(amount, -1.0);
         let amount = f32::min(amount, 1.0);
 
-        let x = (amount.abs() * (0xff as f32)) as u8;
+        let x = (amount.abs() * (255_f32)) as u8;
 
         if amount >= 0. {
-            let r = self.r.checked_add(x).unwrap_or(0xff);
-            let g = self.g.checked_add(x).unwrap_or(0xff);
-            let b = self.b.checked_add(x).unwrap_or(0xff);
+            let r = self.r.saturating_add(x);
+            let g = self.g.saturating_add(x);
+            let b = self.b.saturating_add(x);
 
             Self::new(r, g, b)
         } else {
-            let r = self.r.checked_sub(x).unwrap_or(0x0);
-            let g = self.g.checked_sub(x).unwrap_or(0x0);
-            let b = self.b.checked_sub(x).unwrap_or(0x0);
+            let r = self.r.saturating_sub(x);
+            let g = self.g.saturating_sub(x);
+            let b = self.b.saturating_sub(x);
 
             Self::new(r, g, b)
         }
@@ -157,6 +165,7 @@ impl From<u32> for Color {
 }
 
 /// Generate an emoji from an input.
+#[allow(clippy::shadow_reuse)]
 fn generate_emoji(input: &str, usage: Usage) -> Emoji {
     let ix = hash(input);
 
@@ -167,10 +176,18 @@ fn generate_emoji(input: &str, usage: Usage) -> Emoji {
             if let Some(s) = EMOJIS.get(ix) {
                 Emoji(s)
             } else {
-                Emoji(EMOJIS_USER[ix - EMOJIS.len()])
+                Emoji(
+                    EMOJIS_USER
+                        .get(ix - EMOJIS.len())
+                        .expect("index of out of range"),
+                )
             }
         },
-        Usage::Any | Usage::Org => Emoji(EMOJIS[ix as usize % EMOJIS.len()]),
+        Usage::Any | Usage::Org => Emoji(
+            EMOJIS
+                .get(ix as usize % EMOJIS.len())
+                .expect("index of out of range"),
+        ),
     }
 }
 
@@ -209,9 +226,10 @@ fn hash(input: &str) -> u64 {
     hash
 }
 
+#[allow(clippy::float_cmp, clippy::non_ascii_literal)]
 #[cfg(test)]
 mod test {
-    use super::*;
+    use super::{generate_color, generate_emoji, hash, Avatar, Color, Emoji, Usage};
 
     #[test]
     fn test_avatar() {
