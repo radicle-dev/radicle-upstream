@@ -87,6 +87,8 @@ impl Serialize for project::Project {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
+    use serde_json::{json, Value};
     use warp::http::StatusCode;
     use warp::test::request;
 
@@ -99,7 +101,19 @@ mod tests {
             .reply(&api)
             .await;
 
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = json!({
+            "id": "1230000000000000000000000000000000000000.git",
+            "metadata": {
+                "default_branch": "master",
+                "description": "Desktop client for radicle.",
+                "img_url": "https://avatars0.githubusercontent.com/u/48290027",
+                "name": "Upstream",
+            },
+        });
+
         assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, want);
     }
 
     #[tokio::test]
@@ -107,7 +121,10 @@ mod tests {
         let api = super::routes();
         let res = request().method("GET").path("/projects").reply(&api).await;
 
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = json!([]);
+
         assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(res.body(), "[]");
+        assert_eq!(have, want);
     }
 }
