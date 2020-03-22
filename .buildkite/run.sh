@@ -41,7 +41,7 @@ export CARGO_BUILD_INCREMENTAL=false
 export SCCACHE_CACHE_SIZE="1G"
 
 echo "--- Installing yarn dependencies"
-time yarn --verbose install
+time yarn install
 
 echo "--- Loading proxy/target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"
