@@ -41,7 +41,6 @@ export CARGO_BUILD_INCREMENTAL=false
 export SCCACHE_CACHE_SIZE="1G"
 
 echo "--- Installing yarn dependencies"
-time sudo apt-get install -y nodejs
 time yarn --verbose install
 
 echo "--- Loading proxy/target cache"
