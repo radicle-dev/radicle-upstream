@@ -9,6 +9,7 @@ use warp::{get, path, reject, reply, Filter, Rejection, Reply};
 use crate::error;
 use crate::project;
 
+/// Main entry point for HTTP API.
 pub async fn run() -> Result<(), error::Error> {
     let librad_paths = librad::paths::Paths::new()?;
 
@@ -21,17 +22,19 @@ pub async fn run() -> Result<(), error::Error> {
 impl reject::Reject for error::Error {}
 
 impl From<error::Error> for Rejection {
-    fn from(err: error::Error) -> Rejection {
+    fn from(err: error::Error) -> Self {
         reject::custom(err)
     }
 }
 
+/// Error type to carry context for failed requests.
 #[derive(serde_derive::Serialize)]
 struct Error {
     message: &'static str,
     variant: &'static str,
 }
 
+/// Handler to convert [`error::Error`] to [`Error`] response.
 async fn rejection_handle(err: Rejection) -> Result<impl Reply, Infallible> {
     let (code, variant, message) = (
         StatusCode::NOT_IMPLEMENTED,
@@ -43,6 +46,7 @@ async fn rejection_handle(err: Rejection) -> Result<impl Reply, Infallible> {
     Ok(reply::with_status(res, code))
 }
 
+/// Combination of all routes.
 pub fn routes(
     paths: librad::paths::Paths,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
