@@ -3,6 +3,10 @@
 
 use librad::meta;
 use librad::project;
+use std::str::FromStr;
+
+use crate::coco;
+use crate::error;
 
 /// Metadata key used to store an image url for a project.
 const IMG_URL_LABEL: &str = "img_url";
@@ -66,4 +70,14 @@ pub struct Stats {
     pub commits: u32,
     /// Amount of unique commiters on the default branch.
     pub contributors: u32,
+}
+
+/// TODO(xla): Add documentation.
+pub async fn get(paths: &librad::paths::Paths, id: &str) -> Result<Project, error::Error> {
+    let meta = coco::get_project_meta(paths, id)?;
+
+    Ok(Project {
+        id: librad::project::ProjectId::from_str(&id.to_string())?,
+        metadata: meta.into(),
+    })
 }
