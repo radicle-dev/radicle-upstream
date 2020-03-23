@@ -6,9 +6,12 @@
   import { registerProject } from "../../lib/path.js";
 
   export let projectId = null;
-  export let title = "";
-  export let description = "";
+  export let title = null;
+  export let description = null;
   export let isRegistered = false;
+  export let commitCount = null;
+  export let branchCount = null;
+  export let memberCount = null;
 
   const dropdownMenuItems = [
     {
@@ -74,9 +77,9 @@
   </div>
 
   <div class="right">
-    <Stat icon={Icon.Commit} count="1.1k" style="margin-right: 32px;" />
-    <Stat icon={Icon.Branch} count="60" style="margin-right: 32px;" />
-    <Stat icon={Icon.Member} count="3" style="margin-right: 44px;" />
+    <Stat icon={Icon.Commit} count={commitCount} style="margin-right: 32px;" />
+    <Stat icon={Icon.Branch} count={branchCount} style="margin-right: 32px;" />
+    <Stat icon={Icon.Member} count={memberCount} style="margin-right: 44px;" />
 
     <AdditionalActionsDropdown menuItems={dropdownMenuItems} />
   </div>

@@ -19,6 +19,12 @@
           name
           imgUrl
         }
+        registered
+        stats {
+          branches
+          commits
+          contributors
+        }
       }
     }
   `;
@@ -79,7 +85,10 @@
             projectId={project.id}
             title={project.metadata.name}
             description={project.metadata.description}
-            isRegistered={false} />
+            isRegistered={project.registered}
+            commitCount={project.stats.commits}
+            branchCount={project.stats.branches}
+            memberCount={project.stats.contributors} />
         </li>
       {/each}
     </ul>
