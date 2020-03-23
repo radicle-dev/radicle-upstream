@@ -1,14 +1,11 @@
-use librad::paths::Paths;
-use librad::project;
-use librad::surf;
-use librad::surf::git::git2;
 use radicle_registry_client::ed25519;
 use rocket::http;
-use rocket::response;
 use rocket::State;
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
+use crate::coco;
 use crate::registry::Registry;
 use crate::rest::lib::Ok;
 
@@ -32,7 +29,7 @@ struct ProjectCreationForm {
 #[derive(Serialize)]
 struct ProjectJson {
     id: String,
-
+    metadata: crate::project::Metadata,
 }
 
 // #[post("/projects", format = "json", data = "<form>")]
@@ -63,26 +60,27 @@ struct ProjectJson {
 
 #[get("/project/<project_id>")]
 /// TODO
-fn get_project(project_id: String) -> String {
-    let meta = coco::get_project_meta(
-        &ctx.librad_paths
-            .read()
-            .expect("unable to acquire read lock"),
-        &id.to_string(),
-    ).expect("could not retrieve project meta");
+fn get_project(project_id: String, librad_paths: State<librad::paths::Paths>) -> Json<ProjectJson> {
+    let meta = coco::get_project_meta(&librad_paths, &project_id)
+        .expect("could not retrieve project meta");
 
-
-    Json(NewProject({ project: project::Project {
-        id: librad::project::ProjectId::from(id),
+    let id = librad::project::ProjectId::from_str(project_id.as_str()).expect("invalid project ID");
+    let project = crate::project::Project {
+        id,
         metadata: meta.into(),
-    }}))
+    };
+
+    Json(ProjectJson {
+        id: project_id,
+        metadata: project.metadata,
+    })
 }
 
 #[derive(Deserialize)]
 /// Form data structure
 struct ProjectRegistrationForm {
     org_id: String,
-    librad_id: String
+    librad_id: String,
 }
 
 #[post("/project/<project_id>/register", format = "json", data = "<form>")]
@@ -95,9 +93,7 @@ fn register_project(
     // TODO(xla): Get keypair from persistent storage.
     let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
     // TODO(garbados): convert string to `librad::project::ProjectId`.
-    let librad_id = form.librad_id.map(|id| {
-        project::ProjectId::from_str(&id)
-    });
+    let librad_id = form.librad_id.map(|id| project::ProjectId::from_str(&id));
     registry.register_project(&fake_pair, project_id, form.org_id, librad_id);
     Json(Ok::new())
 }

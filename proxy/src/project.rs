@@ -3,11 +3,13 @@
 
 use librad::meta;
 use librad::project;
+use serde::{Deserialize, Serialize};
 
 /// Metadata key used to store an image url for a project.
 const IMG_URL_LABEL: &str = "img_url";
 
 /// Object the API returns for project metadata.
+#[derive(Serialize)]
 pub struct Metadata {
     /// Project name.
     pub name: String,
