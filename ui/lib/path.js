@@ -5,11 +5,8 @@ import { BLOB, TREE } from "./types.js";
 export const search = () => "/search";
 export const network = () => "/network";
 export const projects = () => "/projects";
-export const projectOverview = id => `/projects/${id}/overview`;
-export const projectFeed = id => `/projects/${id}/feed`;
 export const projectIssues = id => `/projects/${id}/issues`;
 export const projectRevisions = id => `/projects/${id}/revisions`;
-export const projectFunds = id => `/projects/${id}/funds`;
 export const projectSource = (id, revision, objectType, path) => {
   if (revision && path) {
     return `/projects/${id}/source/${revision}/${objectType}/${path}`;
@@ -40,7 +37,6 @@ export const extractProjectSourceObjectType = location => {
 export const designSystemGuide = () => "/design-system-guide";
 export const createProject = () => "/projects/new";
 export const registerProject = id => `/projects/${id}/register`;
-export const wallet = () => "/wallet";
 export const profile = () => "/profile";
 export const profileProjects = () => "/profile/projects";
 export const profileWallet = () => "/profile/wallet";

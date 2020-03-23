@@ -208,7 +208,7 @@
         }
       });
 
-      push(path.projectOverview(response.data.createProject.id));
+      push(path.projectSource(response.data.createProject.id));
       showNotification({
         text: `Project ${response.data.createProject.metadata.name} successfully created`,
         level: "info"
