@@ -1,11 +1,10 @@
 <script>
-  import { getClient, query } from "svelte-apollo";
-  import { gql } from "apollo-boost";
   import { link } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
   import {
     avatarUrlStore,
+    avatarFallbackStore,
     displayNameStore,
     handleStore,
     shareableEntityIdentifierStore
@@ -13,40 +12,7 @@
 
   import { Avatar, Button, Text, Title } from "../../DesignSystem/Primitive";
 
-  export let onClose,
-    onError = null;
-
-  const client = getClient();
-  let avatarFallback = null;
-
-  const getAvatarUrl = async () => {
-    // no need to make this request if we've already got a URL
-    if ($avatarUrlStore) return;
-
-    try {
-      const GET_AVATAR = gql`
-        query Query($handle: ID!) {
-          avatar(handle: $handle) {
-            emoji
-            background {
-              r
-              g
-              b
-            }
-          }
-        }
-      `;
-
-      const avatarFallbackResponse = await query(client, {
-        query: GET_AVATAR,
-        variables: { handle: $handleStore }
-      }).result();
-
-      avatarFallback = avatarFallbackResponse.data.avatar;
-    } catch (error) {
-      onError(error);
-    }
-  };
+  export let onClose;
 </script>
 
 <style>
@@ -97,9 +63,10 @@
       </a>
     </Text>
     <div class="identity-card">
-      {#await getAvatarUrl() then result}
-        <Avatar size="huge" imageUrl={$avatarUrlStore} {avatarFallback} />
-      {/await}
+      <Avatar
+        size="huge"
+        imageUrl={$avatarUrlStore}
+        avatarFallback={$avatarFallbackStore} />
       <div class="identity-card-text-container">
         <Title>{$displayNameStore || $handleStore}</Title>
         <Text style="color: var(--color-darkgray);">

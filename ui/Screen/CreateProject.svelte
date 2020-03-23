@@ -359,8 +359,10 @@
           on:click={() => (currentSelection = EXISTING)}
           dataCy="existing-project">
           <div slot="option-body">
-            <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
-              Choose the existing repository
+            <Text
+              style="margin-bottom: 12px; color: var(--color-darkgray);
+              text-align:left">
+              Choose an existing repository
             </Text>
             <Input.Directory
               placeholder="~/path/to/folder"

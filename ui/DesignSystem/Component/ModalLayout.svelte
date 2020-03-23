@@ -3,7 +3,8 @@
   import { Icon } from "../Primitive";
 
   export let dataCy = null;
-  export let onClose = null;
+  export let hideCloseButton = null;
+  export let onClose = pop;
 </script>
 
 <style>
@@ -25,9 +26,11 @@
   }
 </style>
 
-<div class="close">
-  <Icon.CrossBig on:click={onClose || pop} />
-</div>
+{#if !hideCloseButton}
+  <div class="close">
+    <Icon.CrossBig on:click={onClose} />
+  </div>
+{/if}
 
 <div class="wrapper" data-cy={dataCy}>
   <div class="content">

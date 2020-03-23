@@ -5,6 +5,7 @@
 
   import {
     avatarUrlStore,
+    avatarFallbackStore,
     displayNameStore,
     handleStore,
     shareableEntityIdentifierStore
@@ -92,6 +93,14 @@
       ) {
         id
         shareableEntityIdentifier
+        avatarFallback {
+          emoji
+          background {
+            r
+            g
+            b
+          }
+        }
         metadata {
           handle
           displayName
@@ -124,13 +133,14 @@
       handleStore.set(responseData.metadata.handle);
       displayNameStore.set(responseData.metadata.displayName);
       avatarUrlStore.set(responseData.metadata.avatarUrl);
+      avatarFallbackStore.set(responseData.avatarFallback);
       shareableEntityIdentifierStore.set(
         responseData.shareableEntityIdentifier
       );
 
       if (onSuccess) onSuccess();
     } catch (error) {
-      if (onError) onError();
+      if (onError) onError(error);
     }
   };
 </script>
