@@ -79,6 +79,16 @@
     color: var(--color-darkgray);
   }
 
+  .menu-item:first-of-type {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+  }
+
+  .menu-item:last-of-type {
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+  }
+
   .menu-item:hover {
     background-color: var(--color-almostwhite);
   }
