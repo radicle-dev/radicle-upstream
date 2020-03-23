@@ -1,5 +1,7 @@
+use librad::surf;
 use radicle_registry_client::ed25519;
 use rocket::http;
+use rocket::request::Form;
 use rocket::State;
 use rocket_contrib::json::Json;
 use serde::{Deserialize, Serialize};
@@ -32,31 +34,37 @@ struct ProjectJson {
     metadata: crate::project::Metadata,
 }
 
-// #[post("/projects", format = "json", data = "<form>")]
-// /// TODO
-// fn create_project(
-//     librad_paths: State<Paths>,
-//     form: Json<ProjectRegistrationForm>,
-// ) -> Json<ProjectJson> {
-//     // TODO parse body for project params
-//     if surf::git::git2::Repository::open(form.path.clone()).is_err() {
-//         coco::init_repo(form.path.clone())?;
-//     };
-//
-//     let (id, meta) = coco::init_project(
-//         librad_paths.read().expect("unable to acquire read lock"),
-//         &form.path,
-//         &form.name,
-//         &form.description,
-//         &form.default_branch,
-//         &form.img_url,
-//     )?;
-//
-//     Json(ProjectJson { project: project::Project::Git {
-//         id: librad::project::ProjectId::from(id),
-//         metadata: meta.into(),
-//     }})
-// }
+#[post("/projects", format = "json", data = "<form>")]
+/// TODO
+fn create_project(
+    librad_paths: State<librad::paths::Paths>,
+    form: Json<ProjectCreationForm>,
+) -> Json<ProjectJson> {
+    // TODO parse body for project params
+    if surf::git::git2::Repository::open(form.0.path.clone()).is_err() {
+        coco::init_repo(form.0.path.clone()).expect("could not init repo");
+    };
+
+    let (id, meta) = coco::init_project(
+        &librad_paths,
+        &form.0.path,
+        &form.0.name,
+        &form.0.description,
+        &form.0.default_branch,
+        &form.0.img_url,
+    )
+    .expect("could not init project");
+
+    let project = crate::project::Project {
+        id: id.into(),
+        metadata: meta.into(),
+    };
+
+    Json(ProjectJson {
+        id: id.to_string(),
+        metadata: project.metadata,
+    })
+}
 
 #[get("/project/<project_id>")]
 /// TODO
@@ -92,9 +100,9 @@ fn register_project(
 ) -> Json<Ok> {
     // TODO(xla): Get keypair from persistent storage.
     let fake_pair = ed25519::Pair::from_legacy_string("//Robot", None);
-    // TODO(garbados): convert string to `librad::project::ProjectId`.
-    let librad_id = form.librad_id.map(|id| project::ProjectId::from_str(&id));
-    registry.register_project(&fake_pair, project_id, form.org_id, librad_id);
+    let librad_id = librad::project::ProjectId::from_str(form.0.librad_id.as_str())
+        .expect("could not convert librad ID to project ID");
+    registry.register_project(&fake_pair, project_id, form.0.org_id, Some(librad_id));
     Json(Ok::new())
 }
 
