@@ -410,7 +410,6 @@ fn tree() {
                         },
                     }
                 }";
-
         execute_query(librad_paths, query, &vars, |res, errors| {
             assert_eq!(errors, []);
             assert_eq!(
@@ -522,6 +521,34 @@ fn tree_root() {
                         ],
                     }
                 }),
+            );
+        });
+    });
+}
+
+#[test]
+fn list_transactions() {
+    with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+        let mut vars = Variables::new();
+        vars.insert("ids".into(), InputValue::list(vec![]));
+        let query = "query($ids: [ID!]!) {
+            listTransactions(ids: $ids) {
+                messages {
+                    ... on ProjectRegistration {
+                        projectName,
+                        orgId
+                    }
+                },
+            }
+        }";
+
+        execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({
+                    "listTransactions": [],
+                })
             );
         });
     });

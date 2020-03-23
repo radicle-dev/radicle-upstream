@@ -1,5 +1,6 @@
 use serde_cbor::to_vec;
 use serde_derive::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::time::SystemTime;
 
@@ -11,6 +12,7 @@ use radicle_registry_client::{
 use crate::error;
 
 /// A container to dissiminate and apply operations on the [`Registry`].
+#[derive(Clone)]
 pub struct Transaction {
     /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
     /// the API consumer to query state changes of a transaction.
@@ -34,6 +36,7 @@ pub struct Metadata {
 }
 
 /// Possible messages a [`Transaction`] can carry.
+#[derive(Clone)]
 pub enum Message {
     /// Issue a new project registration with a given name under a given org.
     ProjectRegistration {
@@ -61,6 +64,7 @@ pub enum Message {
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
 /// whereabouts of a given [`Transaction`].
+#[derive(Clone)]
 pub enum TransactionState {
     /// [`Transaction`] has been applied to a block, carries the hash of the block.
     Applied(Hash),
@@ -71,20 +75,26 @@ pub enum TransactionState {
 pub struct Registry {
     /// Registry client, whether an emulator or otherwise.
     client: Client,
+    /// Cached transactions.
+    transactions: HashMap<registry::TxHash, Transaction>,
 }
 
 /// Registry client wrapper methods
 impl Registry {
     /// Wrap a registry client.
     #[must_use]
-    pub const fn new(client: Client) -> Self {
-        Self { client }
+    pub fn new(client: Client) -> Self {
+        Self {
+            client,
+            transactions: HashMap::new(),
+        }
     }
 
     /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
     /// to a different nework.
     pub fn reset(&mut self, client: Client) {
         self.client = client;
+        self.transactions = HashMap::new();
     }
 
     /// List projects of the Registry.
@@ -92,10 +102,23 @@ impl Registry {
         self.client.list_projects().await.map_err(|e| e.into())
     }
 
+    /// Returns all cached transactions.
+    pub async fn list_transactions(
+        &self,
+        ids: Vec<registry::TxHash>,
+    ) -> Result<Vec<Transaction>, error::Error> {
+        Ok(self
+            .transactions
+            .values()
+            .cloned()
+            .filter(|tx| ids.iter().any(|id| *id == tx.id))
+            .collect::<Vec<Transaction>>())
+    }
+
     /// Create a new unique Org on the Registry.
     #[allow(dead_code)]
     pub async fn register_org(
-        &self,
+        &mut self,
         author: &ed25519::Pair,
         org_id: String,
         fee: Balance,
@@ -118,19 +141,22 @@ impl Registry {
         );
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
-
-        Ok(Transaction {
+        let tx = Transaction {
             id: register_applied.tx_hash,
             messages: vec![Message::OrgRegistration(org_id)],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
-        })
+        };
+
+        self.transactions.insert(tx.id, tx.clone());
+
+        Ok(tx)
     }
 
     /// Remove a registered Org from the Registry.
     #[allow(dead_code)]
     pub async fn unregister_org(
-        &self,
+        &mut self,
         author: &ed25519::Pair,
         org_id: String,
         fee: Balance,
@@ -154,17 +180,21 @@ impl Registry {
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
         let unregister_applied = self.client.submit_transaction(register_tx).await?.await?;
 
-        Ok(Transaction {
+        let tx = Transaction {
             id: unregister_applied.tx_hash,
             messages: vec![Message::OrgUnregistration(org_id)],
             state: TransactionState::Applied(unregister_applied.block),
             timestamp: SystemTime::now(),
-        })
+        };
+
+        self.transactions.insert(tx.id, tx.clone());
+
+        Ok(tx)
     }
 
     /// Register a new project on the chain.
     pub async fn register_project(
-        &self,
+        &mut self,
         author: &ed25519::Pair,
         name: String,
         org_id: String,
@@ -230,7 +260,7 @@ impl Registry {
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
-        Ok(Transaction {
+        let tx = Transaction {
             id: register_applied.tx_hash,
             messages: vec![Message::ProjectRegistration {
                 project_name: project_name,
@@ -238,7 +268,11 @@ impl Registry {
             }],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
-        })
+        };
+
+        self.transactions.insert(tx.id, tx.clone());
+
+        Ok(tx)
     }
 
     /// Try to retrieve user from the Registry by handle.
@@ -265,7 +299,7 @@ impl Registry {
 
     /// Create a new unique user on the Registry.
     pub async fn register_user(
-        &self,
+        &mut self,
         author: &ed25519::Pair,
         handle: String,
         id: String,
@@ -291,7 +325,7 @@ impl Registry {
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
-        Ok(Transaction {
+        let tx = Transaction {
             id: register_applied.tx_hash,
             messages: vec![Message::UserRegistration {
                 handle: user_id,
@@ -299,7 +333,11 @@ impl Registry {
             }],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
-        })
+        };
+
+        self.transactions.insert(tx.id, tx.clone());
+
+        Ok(tx)
     }
 }
 
@@ -316,7 +354,7 @@ mod tests {
     fn test_register_org() {
         // Test that org registration submits valid transactions and they succeed.
         let client = Client::new_emulator();
-        let registry = Registry::new(client.clone());
+        let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
         let result =
@@ -335,7 +373,7 @@ mod tests {
     fn test_unregister_org() {
         // Test that org unregistration submits valid transactions and they succeed.
         let client = Client::new_emulator();
-        let registry = Registry::new(client.clone());
+        let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
@@ -360,7 +398,7 @@ mod tests {
     fn test_register_project() {
         // Test that project registration submits valid transactions and they succeed.
         let client = Client::new_emulator();
-        let registry = Registry::new(client.clone());
+        let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
@@ -400,7 +438,7 @@ mod tests {
     #[test]
     fn register_user() {
         let client = Client::new_emulator();
-        let registry = Registry::new(client);
+        let mut registry = Registry::new(client);
         let robo = ed25519::Pair::from_legacy_string("//Alice", None);
 
         let res = futures::executor::block_on(registry.register_user(

@@ -117,8 +117,8 @@ impl Mutation {
         // https://github.com/graphql-rust/juniper/pull/497
         futures::executor::block_on(
             ctx.registry
-                .read()
-                .expect("unable to acquire read lock")
+                .write()
+                .expect("unable to acquire write lock")
                 .register_project(&fake_pair, project_name, org_id, maybe_librad_id, fake_fee),
         )
     }
@@ -145,8 +145,8 @@ impl Mutation {
 
         futures::executor::block_on(
             ctx.registry
-                .read()
-                .expect("unable to acquire read lock")
+                .write()
+                .expect("unable to acquire write lock")
                 .register_user(&fake_pair, handle.to_string(), id.to_string(), fee),
         )
     }
@@ -289,6 +289,23 @@ impl Query {
             .collect::<Vec<juniper::ID>>())
     }
 
+    fn list_transactions(
+        ctx: &Context,
+        ids: Vec<juniper::ID>,
+    ) -> Result<Vec<registry::Transaction>, error::Error> {
+        let tx_ids = ids
+            .iter()
+            .map(|id| radicle_registry_client::TxHash::from_slice(id.to_string().as_bytes()))
+            .collect();
+
+        Ok(futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .list_transactions(tx_ids),
+        )?)
+    }
+
     fn identity(
         _ctx: &Context,
         id: juniper::ID,
@@ -389,8 +406,8 @@ impl ControlMutation {
 
         futures::executor::block_on(
             ctx.registry
-                .read()
-                .expect("unable to acquire read lock")
+                .write()
+                .expect("unable to acquire write lock")
                 .register_user(&fake_pair, handle.to_string(), id.to_string(), fee),
         )
     }
