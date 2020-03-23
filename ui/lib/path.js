@@ -1,9 +1,23 @@
 import regexparam from "regexparam";
+
 import { DEFAULT_PROJECT_REVISION } from "../config.js";
 import { BLOB, TREE } from "./types.js";
 
+const PROJECT_SOURCE_PATH_MATCH = new RegExp(
+  `/source/(.*)/(${BLOB}|${TREE})/(.*)`
+);
+
 export const search = () => "/search";
 export const network = () => "/network";
+
+export const profile = () => "/profile";
+export const profileProjects = () => "/profile/projects";
+export const profileWallet = () => "/profile/wallet";
+export const profileSettings = () => "/profile/settings";
+export const registerUser = () => "/user-registration";
+
+export const createProject = () => "/projects/new";
+export const registerProject = id => `/projects/${id}/register`;
 export const projectIssues = id => `/projects/${id}/issues`;
 export const projectRevisions = id => `/projects/${id}/revisions`;
 export const projectSource = (id, revision, objectType, path) => {
@@ -14,9 +28,12 @@ export const projectSource = (id, revision, objectType, path) => {
   }
 };
 
-const PROJECT_SOURCE_PATH_MATCH = new RegExp(
-  `/source/(.*)/(${BLOB}|${TREE})/(.*)`
-);
+export const designSystemGuide = () => "/design-system-guide";
+export const help = () => "/help";
+
+export const active = (path, location, loose = false) => {
+  return regexparam(path, loose).pattern.test(location);
+};
 
 export const extractProjectSourceRevision = location => {
   const rev = location.match(PROJECT_SOURCE_PATH_MATCH);
@@ -31,18 +48,4 @@ export const extractProjectSourceObjectPath = location => {
 export const extractProjectSourceObjectType = location => {
   const type = location.match(PROJECT_SOURCE_PATH_MATCH);
   return type === null ? TREE : type[2];
-};
-
-export const designSystemGuide = () => "/design-system-guide";
-export const createProject = () => "/projects/new";
-export const registerProject = id => `/projects/${id}/register`;
-export const profile = () => "/profile";
-export const profileProjects = () => "/profile/projects";
-export const profileWallet = () => "/profile/wallet";
-export const profileSettings = () => "/profile/settings";
-export const help = () => "/help";
-export const registerUser = () => "/user-registration";
-
-export const active = (path, location, loose = false) => {
-  return regexparam(path, loose).pattern.test(location);
 };
