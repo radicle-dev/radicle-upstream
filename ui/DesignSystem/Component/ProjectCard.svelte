@@ -78,8 +78,6 @@
     <Stat icon={Icon.Branch} count="60" style="margin-right: 32px;" />
     <Stat icon={Icon.Member} count="3" style="margin-right: 44px;" />
 
-    <AdditionalActionsDropdown
-      headerTitle={projectId}
-      menuItems={dropdownMenuItems} />
+    <AdditionalActionsDropdown menuItems={dropdownMenuItems} />
   </div>
 </div>

@@ -101,14 +101,17 @@
   <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
     {#if expanded}
       <div class="modal" hidden={!expanded}>
-        <div class="header">
-          <Text
-            style="width: 200px; white-space: nowrap; overflow: hidden;
-            text-overflow: ellipsis;">
-            {headerTitle}
-          </Text>
-          <Icon.Copy style="margin-left: 8px;" />
-        </div>
+        {#if headerTitle}
+          <div class="header">
+            <Text
+              style="width: 200px; white-space: nowrap; overflow: hidden;
+              text-overflow: ellipsis;">
+              {headerTitle}
+            </Text>
+            <Icon.Copy style="margin-left: 8px;" />
+          </div>
+        {/if}
+
         <div class="menu">
           {#each menuItems as item}
             <div
