@@ -44,6 +44,9 @@ context("user registration", () => {
   context("validations", () => {
     beforeEach(() => {
       cy.visit("./public/index.html#/user-registration");
+
+      cy.nukeAllState();
+      cy.registerUser();
     });
 
     context("handle", () => {

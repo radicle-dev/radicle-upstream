@@ -1,13 +1,9 @@
 <script>
   import ApolloClient, { gql } from "apollo-boost";
   import { query } from "svelte-apollo";
-  import {
-    InMemoryCache,
-    defaultDataIdFromObject
-  } from "apollo-cache-inmemory";
+  import { InMemoryCache } from "apollo-cache-inmemory";
   import { setClient } from "svelte-apollo";
   import Router from "svelte-spa-router";
-  import { hash } from "./lib/hash.js";
   import { initializeHotkeys } from "./lib/hotkeys.js";
   import {
     identityAvatarUrlStore,
@@ -31,16 +27,20 @@
 
   const client = new ApolloClient({
     uri: "http://127.0.0.1:8080/graphql",
-    cache: new InMemoryCache({
-      dataIdFromObject: object => {
-        switch (object.__typename) {
-          case "Project":
-            return hash(JSON.stringify(object));
-          default:
-            return defaultDataIdFromObject(object);
-        }
+    cache: new InMemoryCache(),
+    defaultOptions: {
+      watchQuery: {
+        fetchPolicy: "no-cache",
+        errorPolicy: "ignore"
+      },
+      query: {
+        fetchPolicy: "no-cache",
+        errorPolicy: "all"
+      },
+      mutate: {
+        errorPolicy: "all"
       }
-    })
+    }
   });
 
   setClient(client);
