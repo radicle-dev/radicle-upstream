@@ -16,6 +16,11 @@ export const profileWallet = () => "/profile/wallet";
 export const profileSettings = () => "/profile/settings";
 export const registerUser = () => "/user-registration";
 
+export const orgs = id => `/orgs/${id}`;
+export const orgProjects = id => `/orgs/${id}/projects`;
+export const orgFund = id => `/orgs/${id}/fund`;
+export const orgMembers = id => `/orgs/${id}/members`;
+
 export const createProject = () => "/projects/new";
 export const registerProject = id => `/projects/${id}/register`;
 export const projectIssues = id => `/projects/${id}/issues`;

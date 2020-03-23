@@ -52,6 +52,11 @@
     height: 32px;
   }
 
+  .project.medium {
+    width: 36px;
+    height: 36px;
+  }
+
   .project.big {
     width: 64px;
     height: 64px;

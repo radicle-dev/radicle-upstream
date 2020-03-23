@@ -1,10 +1,79 @@
 <script>
   import { location } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
-  import { Icon, Title } from "../Primitive";
+  import { Avatar, Icon, Title } from "../Primitive";
   import IdentityAvatar from "./IdentityAvatar.svelte";
+  import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
   import * as path from "../../lib/path.js";
+
+  /* TODO(rudolfs): fetch the actual org list */
+  const orgs = {
+    data: {
+      orgs: [
+        {
+          id: "%monadic",
+          metadata: {
+            name: "monadic",
+            avatarUrl:
+              "https://avatars1.githubusercontent.com/u/48515895?s=200&v=4"
+          },
+          avatarFallback: {
+            background: {
+              b: 216,
+              g: 105,
+              r: 24
+            },
+            emoji: "🚡"
+          }
+        },
+        {
+          id: "%sveltejs",
+          metadata: {
+            name: "sveltejs",
+            avatarUrl:
+              "https://avatars2.githubusercontent.com/u/23617963?s=200&v=4"
+          },
+          avatarFallback: {
+            background: {
+              b: 216,
+              g: 105,
+              r: 24
+            },
+            emoji: "🚡"
+          }
+        },
+        {
+          id: "%radicle",
+          metadata: {
+            name: "radicle-org"
+          },
+          avatarFallback: {
+            background: {
+              r: 179,
+              g: 167,
+              b: 164
+            },
+            emoji: "🦂"
+          }
+        },
+        {
+          id: "%monocleorg",
+          metadata: {
+            name: "monocleorg"
+          },
+          avatarFallback: {
+            background: {
+              r: 255,
+              g: 43,
+              b: 59
+            },
+            emoji: "🦄"
+          }
+        }
+      ]
+    }
+  };
 </script>
 
 <style>
@@ -31,7 +100,7 @@
     align-items: center;
   }
 
-  .item:hover:before {
+  .indicator:hover:before {
     position: absolute;
     content: "";
     width: 4px;
@@ -43,7 +112,7 @@
     border-bottom-right-radius: 2px;
   }
 
-  .item.active:before {
+  .indicator.active:before {
     position: absolute;
     content: "";
     width: 4px;
@@ -59,7 +128,7 @@
     fill: var(--color-purple);
   }
 
-  .item.active :global(svg) {
+  .indicator.active :global(svg) {
     fill: var(--color-purple);
   }
 
@@ -80,6 +149,7 @@
   }
 
   .tooltip {
+    white-space: nowrap;
     user-select: none;
     background-color: var(--color-black);
     color: var(--color-white);
@@ -122,7 +192,7 @@
 <div class="wrapper" data-cy="sidebar">
   <ul>
     <li
-      class="item"
+      class="item indicator"
       data-cy="search"
       class:active={path.active(path.search(), $location)}>
       <a href={path.search()} use:link>
@@ -135,7 +205,7 @@
     </li>
 
     <li
-      class="item"
+      class="item indicator"
       data-cy="network"
       class:active={path.active(path.network(), $location)}>
       <a href={path.network()} use:link>
@@ -152,7 +222,7 @@
     </li>
 
     <li
-      class="item"
+      class="item indicator"
       data-cy="profile"
       class:active={path.active(path.profile(), $location, true)}>
       <a href={path.profileProjects()} use:link>
@@ -161,6 +231,30 @@
 
       <div class="tooltip">
         <Title>Profile</Title>
+      </div>
+    </li>
+
+    {#each orgs.data.orgs as org}
+      <li class="item indicator">
+        <a href={path.orgs(org.id)} use:link>
+          <Avatar
+            imageUrl={org.metadata.avatarUrl}
+            avatarFallback={org.avatarFallback}
+            variant="project"
+            size="medium" />
+        </a>
+
+        <div class="tooltip">
+          <Title>{org.metadata.name}</Title>
+        </div>
+      </li>
+    {/each}
+
+    <li class="item">
+      <AddOrgButton on:click={() => console.log('event(add-org)')} />
+
+      <div class="tooltip">
+        <Title>Add org</Title>
       </div>
     </li>
   </ul>

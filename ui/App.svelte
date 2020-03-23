@@ -16,6 +16,7 @@
   import Help from "./Screen/Help.svelte";
   import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
+  import Org from "./Screen/Org.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import RegisterProject from "./Screen/RegisterProject.svelte";
@@ -90,6 +91,7 @@
     "/network": Network,
     "/profile": Profile,
     "/profile/*": Profile,
+    "/orgs/*": Org,
     "/projects/new": CreateProject,
     "/projects/:id/register": RegisterProject,
     "/projects/:id/*": Project,
