@@ -3,6 +3,7 @@ extern crate log;
 
 use proxy::coco;
 use proxy::env;
+use proxy::graphql;
 use proxy::rest;
 
 /// Flags accepted by the proxy binary.
@@ -51,6 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     info!("Starting GraphQL HTTP API");
+    graphql::api::run(librad_paths, registry_client, args.test).await;
     rest::run(librad_paths, registry_client);
 
     Ok(())

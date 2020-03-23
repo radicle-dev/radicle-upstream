@@ -1,0 +1,26 @@
+# docs: https://rocket.rs/v0.4/guide/configuration/
+# params: https://api.rocket.rs/v0.4/rocket/config/struct.ConfigBuilder.html
+
+[development]
+address = "localhost"
+port = 8000
+workers = 2
+keep_alive = 5
+log = "debug"
+limits = { forms = 32768 }
+
+[staging]
+address = "localhost"
+port = 8000
+workers = 2
+keep_alive = 5
+log = "normal"
+limits = { forms = 32768 }
+
+[production]
+address = "localhost"
+port = 8000
+workers = 2
+keep_alive = 5
+log = "critical"
+limits = { forms = 32768 }

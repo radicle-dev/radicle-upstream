@@ -438,7 +438,7 @@ pub fn init_project(
     Ok((id, meta))
 }
 
-/// Initialize a [`radicle_surf::git::git2::Repository`] at the given path.
+/// Initialize a (FIXME: add type) at the given path.
 ///
 /// # Errors
 ///

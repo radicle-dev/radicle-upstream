@@ -1,8 +1,14 @@
 //! Defines the proxy's REST API.
 
+/// REST API utilities.
+mod lib;
+
 /// Route handlers for the Org entity.
+mod branches;
+mod commits;
 mod orgs;
 mod projects;
+mod users;
 
 use crate::registry::Registry;
 
@@ -14,8 +20,11 @@ pub fn run(
     let client = Registry::new(registry_client);
     let mut router = routes![];
     // add entity modules one by one
+    router.extend(branches::router());
+    router.extend(commits::router());
     router.extend(orgs::router());
     router.extend(projects::router());
+    router.extend(users::router());
     // mount the api endpoint
     rocket::ignite()
         .manage(librad_paths)
