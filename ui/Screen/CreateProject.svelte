@@ -214,7 +214,7 @@
         level: "info"
       });
     } catch (error) {
-      push(path.projects());
+      push(path.profile());
       showNotification({
         text: "Could not create project",
         level: "error"

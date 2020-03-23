@@ -4,7 +4,6 @@ import { BLOB, TREE } from "./types.js";
 
 export const search = () => "/search";
 export const network = () => "/network";
-export const projects = () => "/projects";
 export const projectIssues = id => `/projects/${id}/issues`;
 export const projectRevisions = id => `/projects/${id}/revisions`;
 export const projectSource = (id, revision, objectType, path) => {
