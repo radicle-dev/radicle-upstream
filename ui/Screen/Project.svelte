@@ -1,14 +1,11 @@
 <script>
-  import { link } from "svelte-spa-router";
   import { setContext } from "svelte";
-  import {
-    revisionStore,
-    objectPathStore,
-    objectTypeStore
-  } from "../store/sourceBrowser.js";
-  import * as path from "../lib/path.js";
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
+  import Router, { link, location, push } from "svelte-spa-router";
 
-  import Router, { location, push } from "svelte-spa-router";
+  import { Icon } from "../DesignSystem/Primitive";
+
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
@@ -17,11 +14,22 @@
     TrackToggle,
     IdentityAvatar
   } from "../DesignSystem/Component";
-  import { Icon } from "../DesignSystem/Primitive";
+
+  import {
+    revisionStore,
+    objectPathStore,
+    objectTypeStore
+  } from "../store/sourceBrowser.js";
+
+  import * as path from "../lib/path.js";
 
   import Source from "./Project/Source.svelte";
   import Issues from "./Project/Issues.svelte";
   import Revisions from "./Project/Revisions.svelte";
+
+  import SourceMenu from "./Project/SourceMenu.svelte";
+  import IssuesMenu from "./Project/IssuesMenu.svelte";
+  import RevisionsMenu from "./Project/RevisionsMenu.svelte";
 
   const routes = {
     "/projects/:id/": Source,
@@ -31,14 +39,6 @@
     "/projects/:id/revisions": Revisions
   };
 
-  import SourceMenu from "./Project/SourceMenu.svelte";
-  import IssuesMenu from "./Project/IssuesMenu.svelte";
-  import RevisionsMenu from "./Project/RevisionsMenu.svelte";
-
-  export let params = null;
-
-  setContext("projectId", params.id);
-
   const menuRoutes = {
     "/projects/:id/": SourceMenu,
     "/projects/:id/source": SourceMenu,
@@ -47,8 +47,8 @@
     "/projects/:id/revisions": RevisionsMenu
   };
 
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
+  export let params = null;
+  setContext("projectId", params.id);
 
   const GET_PROJECT = gql`
     query Query($id: ID!) {
@@ -68,10 +68,6 @@
     query: GET_PROJECT,
     variables: { id: params.id }
   });
-
-  $: revisionStore.set(path.extractProjectSourceRevision($location));
-  $: objectPathStore.set(path.extractProjectSourceObjectPath($location));
-  $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
 
   const topbarMenuItems = projectId => [
     {
@@ -111,6 +107,10 @@
       event: () => console.log("event(new-revision)")
     }
   ];
+
+  $: revisionStore.set(path.extractProjectSourceRevision($location));
+  $: objectPathStore.set(path.extractProjectSourceObjectPath($location));
+  $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
 </script>
 
 <style>
