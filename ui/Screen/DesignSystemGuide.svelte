@@ -211,7 +211,22 @@
     <Icon.Search />
     <Icon.SearchSmall />
     <Icon.Source />
+  </Section>
+
+  <Section
+    title="Complex icons"
+    subTitle="Icons at 24px and 32px width and height with animations and
+    reactive coloring.">
     <Icon.Spinner />
+    <Icon.TxState state="positive" />
+    <Icon.TxState progress={0} variant="small" />
+    <Icon.TxState progress={0} />
+    <Icon.TxState progress={10} />
+    <Icon.TxState progress={100 / 3} />
+    <Icon.TxState state="negative" progress={0} />
+    <Icon.TxState state="negative" progress={80} />
+    <Icon.TxState state="negative" progress={100} />
+    <Icon.TxState state="negative" />
   </Section>
 
   <Section
