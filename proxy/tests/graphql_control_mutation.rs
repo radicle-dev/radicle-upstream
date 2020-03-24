@@ -3,7 +3,6 @@ extern crate juniper;
 
 use librad::paths;
 use pretty_assertions::assert_eq;
-use radicle_registry_client;
 
 use proxy::graphql::schema;
 use proxy::registry;

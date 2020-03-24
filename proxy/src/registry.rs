@@ -122,7 +122,7 @@ impl Registry {
                 if ids.is_empty() {
                     true
                 } else {
-                    ids.iter().any(|id| *id == tx.id)
+                    ids.contains(&tx.id)
                 }
             })
             .collect::<Vec<Transaction>>())
