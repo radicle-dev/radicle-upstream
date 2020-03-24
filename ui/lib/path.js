@@ -43,6 +43,7 @@ export const registerProject = id => `/projects/${id}/register`;
 export const wallet = _params => "/wallet";
 export const profile = _params => "/profile";
 export const help = _params => "/help";
+export const createIdentity = _params => "/identity/new";
 export const registerUser = _params => "/user-registration";
 
 export const active = (path, location, loose = false) => {

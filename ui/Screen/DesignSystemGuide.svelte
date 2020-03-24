@@ -545,6 +545,7 @@
         imageUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
         variant="project"
         size="big" />
+      <Avatar size="huge" avatarFallback={avatarFallback2} />
     </Swatch>
 
     <Swatch>
