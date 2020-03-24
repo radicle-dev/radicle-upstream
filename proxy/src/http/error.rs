@@ -1,3 +1,6 @@
+//! Recovery and conversion of [`error::Error`] to proper JSON responses, which expose variants
+//! for API consumers to act on.
+
 use std::convert::Infallible;
 use warp::http::StatusCode;
 use warp::{reject, reply, Rejection, Reply};
@@ -27,8 +30,13 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
         if err.is_not_found() {
             (StatusCode::NOT_FOUND, "NOT_FOUND", "Resource not found")
         } else if let Some(err) = err.find::<error::Error>() {
-            // TODO(xla): Match all variants and properly transform.
-            (StatusCode::BAD_REQUEST, "BAD_REQUEST", "Incorrect input")
+            match err {
+                _ => {
+                    // TODO(xla): Match all variants and properly transform similar to
+                    // gaphql::error.
+                    (StatusCode::BAD_REQUEST, "BAD_REQUEST", "Incorrect input")
+                },
+            }
         } else {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,

@@ -1,3 +1,5 @@
+//! Endpoints and serialisations for [`project::Project`] related types.
+
 use serde::ser::SerializeStruct as _;
 use std::convert::Infallible;
 use warp::{get, path, reply, Filter, Rejection, Reply};
@@ -11,36 +13,43 @@ pub fn filters(
     list_filter().or(get_filter(paths))
 }
 
+/// GET /projects/<id>
 fn get_filter(
     paths: librad::paths::Paths,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / String)
         .and(path::end())
         .and(get())
-        .and(with_paths(paths))
-        .and_then(get_project)
+        .and(super::with_paths(paths))
+        .and_then(handler::get)
 }
 
+/// GET /projects
 fn list_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(path::end())
         .and(get())
-        .and_then(projects)
+        .and_then(handler::list)
 }
 
-fn with_paths(
-    paths: librad::paths::Paths,
-) -> impl Filter<Extract = (librad::paths::Paths,), Error = Infallible> + Clone {
-    warp::any().map(move || paths.clone())
-}
+/// Project handlers to implement conversion and translation between core domain and http request
+/// fullfilment.
+mod handler {
+    use std::convert::Infallible;
+    use warp::{reply, Rejection, Reply};
 
-async fn get_project(id: String, paths: librad::paths::Paths) -> Result<impl Reply, Rejection> {
-    Ok(reply::json(&project::get(&paths, id.as_ref()).await?))
-}
+    use crate::project;
 
-async fn projects() -> Result<impl Reply, Infallible> {
-    let content: Vec<String> = vec![];
-    Ok(reply::json(&content))
+    /// Get the [`project::Project`] for the given `id`.
+    pub async fn get(id: String, paths: librad::paths::Paths) -> Result<impl Reply, Rejection> {
+        Ok(reply::json(&project::get(&paths, id.as_ref()).await?))
+    }
+
+    /// List all known projects.
+    pub async fn list() -> Result<impl Reply, Infallible> {
+        let content: Vec<String> = vec![];
+        Ok(reply::json(&content))
+    }
 }
 
 impl serde::Serialize for project::Project {

@@ -15,3 +15,10 @@ pub async fn run(librad_paths: &librad::paths::Paths) {
 
     warp::serve(api).run(([127, 0, 0, 1], 8090)).await;
 }
+
+/// State filter to expose the [`librad::paths::Paths`] to handlers.
+pub fn with_paths(
+    paths: librad::paths::Paths,
+) -> impl Filter<Extract = (librad::paths::Paths,), Error = Infallible> + Clone {
+    warp::any().map(move || paths.clone())
+}
