@@ -674,11 +674,23 @@
   </Section>
 
   <Section title="Transaction Pipeline" subTitle="...">
-    <Swatch>
-      <TxPipeline transactions={txs1} />
-      <TxPipeline transactions={txs2} />
-      <TxPipeline transactions={txs3} />
-    </Swatch>
+    <div style="display: flex;">
+      <div style="position: relative; height: 200px; width: 280px;">
+        <TxPipeline
+          transactions={txs1}
+          style="position: absolute; bottom: 0; right: 0;" />
+      </div>
+      <div style="position: relative; height: 200px; width: 280px;">
+        <TxPipeline
+          transactions={txs2}
+          style="position: absolute; bottom: 0; right: 0;" />
+      </div>
+      <div style="position: relative; height: 200px; width: 280px;">
+        <TxPipeline
+          transactions={txs3}
+          style="position: absolute; bottom: 0; right: 0;" />
+      </div>
+    </div>
   </Section>
 
   <Section title="Misc" subTitle="Everything else">

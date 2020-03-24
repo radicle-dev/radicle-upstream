@@ -2,6 +2,7 @@
   import { Flex, Icon, Text } from "../Primitive";
   // TODO: Make component responsive to transactions change
   export let transactions = null;
+  export let style = null;
 
   const stateToColor = {
     pending: "var(--color-orange)",
@@ -35,7 +36,6 @@
 
   const fillSummary = () => {
     transactions.forEach(tx => {
-      console.log(tx);
       txSummary[tx.state].count += 1;
       txSummary[tx.state].progress += tx.progress || 0;
     });
@@ -80,7 +80,6 @@
 </script>
 
 <style>
-  /* TODO: Anchor pipeline to the bottom */
   .pipeline {
     border: 1px solid var(--color-lightgray);
     border-radius: 4px;
@@ -112,7 +111,7 @@
   }
 </style>
 
-<div class="pipeline">
+<div class="pipeline" {style}>
   <div class="cards" class:hidden>
     {#each transactions as tx}
       <!-- TODO: Link card to tx detail view -->
