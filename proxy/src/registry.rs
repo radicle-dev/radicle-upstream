@@ -35,6 +35,13 @@ pub struct Metadata {
 
 /// Possible messages a [`Transaction`] can carry.
 pub enum Message {
+    /// Issue a new org registration with a given id.
+    #[allow(dead_code)]
+    OrgRegistration(OrgId),
+
+    /// Issue an org unregistration with a given id.
+    OrgUnregistration(OrgId),
+
     /// Issue a new project registration with a given name under a given org.
     ProjectRegistration {
         /// Actual project name, unique for org.
@@ -42,13 +49,6 @@ pub enum Message {
         /// The Org in which to register the project.
         org_id: OrgId,
     },
-
-    /// Issue a new org registration with a given id.
-    #[allow(dead_code)]
-    OrgRegistration(OrgId),
-
-    /// Issue an org unregistration with a given id.
-    OrgUnregistration(OrgId),
 
     /// Issue a user registration for a given handle storing the corresponding identity id.
     UserRegistration {
