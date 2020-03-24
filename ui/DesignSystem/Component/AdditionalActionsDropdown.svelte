@@ -1,5 +1,7 @@
 <script>
   import ClickOutside from "svelte-click-outside";
+
+  import { copyToClipboard } from "../../lib/nativeUtils.js";
   import { Icon, Text } from "../Primitive";
 
   let triggerEl;
@@ -90,7 +92,7 @@
   <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
     {#if expanded}
       <div class="modal" hidden={!expanded}>
-        <div class="header">
+        <div class="header" on:click={() => copyToClipboard(headerTitle)}>
           <Text>{headerTitle}</Text>
           <svelte:component this={Icon.Copy} style="margin-left: 8px;" />
         </div>
