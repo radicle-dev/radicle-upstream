@@ -93,6 +93,42 @@
       event: () => console.log("event(Send Something)")
     }
   ];
+
+  const txs1 = [
+    {
+      message: "Project registration",
+      state: "pending",
+      progress: 50
+    },
+    {
+      message: "Member registration",
+      state: "error"
+    },
+    {
+      message: "Org registration",
+      state: "success"
+    }
+  ];
+
+  const txs2 = [
+    {
+      message: "Project registration",
+      state: "pending",
+      progress: 70
+    },
+    {
+      message: "Org registration",
+      state: "pending",
+      progress: 0
+    }
+  ];
+
+  const txs3 = [
+    {
+      message: "Org registration",
+      state: "success"
+    }
+  ];
 </script>
 
 <style>
@@ -638,7 +674,11 @@
   </Section>
 
   <Section title="Transaction Pipeline" subTitle="...">
-    <TxPipeline />
+    <Swatch>
+      <TxPipeline transactions={txs1} />
+      <TxPipeline transactions={txs2} />
+      <TxPipeline transactions={txs3} />
+    </Swatch>
   </Section>
 
   <Section title="Misc" subTitle="Everything else">
