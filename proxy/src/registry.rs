@@ -1,3 +1,5 @@
+//! Integrations with the radicle Registry.
+
 use serde_cbor::to_vec;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -102,6 +104,11 @@ impl Registry {
         self.client.list_projects().await.map_err(|e| e.into())
     }
 
+    /// Caches a transaction locally in the Registry.
+    pub async fn cache_transaction(&mut self, tx: Transaction) {
+        self.transactions.insert(tx.id, tx);
+    }
+
     /// Returns all cached transactions.
     pub async fn list_transactions(
         &self,
@@ -111,7 +118,13 @@ impl Registry {
             .transactions
             .values()
             .cloned()
-            .filter(|tx| ids.iter().any(|id| *id == tx.id))
+            .filter(|tx| {
+                if ids.is_empty() {
+                    true
+                } else {
+                    ids.iter().any(|id| *id == tx.id)
+                }
+            })
             .collect::<Vec<Transaction>>())
     }
 
@@ -148,7 +161,7 @@ impl Registry {
             timestamp: SystemTime::now(),
         };
 
-        self.transactions.insert(tx.id, tx.clone());
+        self.cache_transaction(tx.clone()).await;
 
         Ok(tx)
     }
@@ -187,7 +200,7 @@ impl Registry {
             timestamp: SystemTime::now(),
         };
 
-        self.transactions.insert(tx.id, tx.clone());
+        self.cache_transaction(tx.clone()).await;
 
         Ok(tx)
     }
@@ -270,7 +283,7 @@ impl Registry {
             timestamp: SystemTime::now(),
         };
 
-        self.transactions.insert(tx.id, tx.clone());
+        self.cache_transaction(tx.clone()).await;
 
         Ok(tx)
     }
@@ -335,7 +348,7 @@ impl Registry {
             timestamp: SystemTime::now(),
         };
 
-        self.transactions.insert(tx.id, tx.clone());
+        self.cache_transaction(tx.clone()).await;
 
         Ok(tx)
     }
@@ -343,15 +356,62 @@ impl Registry {
 
 #[cfg(test)]
 mod tests {
-    use std::convert::TryFrom;
-
-    use crate::registry::{Metadata, Registry};
-    use radicle_registry_client::{ed25519, Client, ClientT, OrgId, ProjectName};
-
+    use radicle_registry_client::{ed25519, Client, ClientT, Hash, OrgId, ProjectName, TxHash};
     use serde_cbor::from_reader;
+    use std::convert::TryFrom as _;
+    use std::time;
 
-    #[test]
-    fn test_register_org() {
+    use super::{Metadata, Registry, Transaction, TransactionState};
+
+    #[tokio::test]
+    async fn list_transactions() {
+        let client = Client::new_emulator();
+        let mut registry = Registry::new(client);
+
+        let tx = Transaction {
+            id: TxHash::random(),
+            messages: vec![],
+            state: TransactionState::Applied(Hash::random()),
+            timestamp: time::SystemTime::now(),
+        };
+
+        registry.cache_transaction(tx.clone()).await;
+
+        for _ in 0..9 {
+            let tx = Transaction {
+                id: TxHash::random(),
+                messages: vec![],
+                state: TransactionState::Applied(Hash::random()),
+                timestamp: time::SystemTime::now(),
+            };
+
+            registry.cache_transaction(tx.clone()).await;
+        }
+
+        // Get all transactions.
+        {
+            let txs = registry.list_transactions(Vec::new()).await.unwrap();
+            assert_eq!(txs.len(), 10);
+        }
+
+        // Get single transaction.
+        {
+            let txs = registry.list_transactions(vec![tx.id]).await.unwrap();
+            assert_eq!(txs.len(), 1);
+        }
+
+        // Filter and get none.
+        {
+            let txs = registry
+                .list_transactions(vec![TxHash::random()])
+                .await
+                .unwrap();
+            assert_eq!(txs.len(), 0);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_register_org() {
         // Test that org registration submits valid transactions and they succeed.
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
@@ -362,15 +422,15 @@ mod tests {
         assert!(result.is_ok());
 
         let org_id = OrgId::try_from("monadic").unwrap();
-        let maybe_org = futures::executor::block_on(client.get_org(org_id.clone())).unwrap();
+        let maybe_org = client.get_org(org_id.clone()).await.unwrap();
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.id, org_id);
         assert_eq!(org.members.len(), 1);
     }
 
-    #[test]
-    fn test_unregister_org() {
+    #[tokio::test]
+    async fn test_unregister_org() {
         // Test that org unregistration submits valid transactions and they succeed.
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
@@ -378,8 +438,9 @@ mod tests {
 
         // Register the org
         let org_id = OrgId::try_from("monadic").unwrap();
-        let registration =
-            futures::executor::block_on(registry.register_org(&alice, org_id.clone().into(), 10));
+        let registration = registry
+            .register_org(&alice, org_id.clone().into(), 10)
+            .await;
         assert!(registration.is_ok());
 
         // The org needs funds to submit transactions.
@@ -394,8 +455,8 @@ mod tests {
         assert!(unregistration.is_ok());
     }
 
-    #[test]
-    fn test_register_project() {
+    #[tokio::test]
+    async fn test_register_project() {
         // Test that project registration submits valid transactions and they succeed.
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
@@ -403,8 +464,9 @@ mod tests {
 
         // Register the org
         let org_id = OrgId::try_from("monadic").unwrap();
-        let org_result =
-            futures::executor::block_on(registry.register_org(&alice, org_id.clone().into(), 10));
+        let org_result = registry
+            .register_org(&alice, org_id.clone().into(), 10)
+            .await;
         assert!(org_result.is_ok());
 
         // The org needs funds to submit transactions.
@@ -435,18 +497,15 @@ mod tests {
         assert_eq!(metadata.version, 1);
     }
 
-    #[test]
-    fn register_user() {
+    #[tokio::test]
+    async fn register_user() {
         let client = Client::new_emulator();
         let mut registry = Registry::new(client);
         let robo = ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let res = futures::executor::block_on(registry.register_user(
-            &robo,
-            "cloudhead".into(),
-            "123abcd.git".into(),
-            100,
-        ));
+        let res = registry
+            .register_user(&robo, "cloudhead".into(), "123abcd.git".into(), 100)
+            .await;
         assert!(res.is_ok());
     }
 }

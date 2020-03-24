@@ -3,15 +3,17 @@ use warp::filters;
 use warp::http;
 use warp::Filter;
 
+use crate::registry;
+
 use super::schema;
 
 /// Runs the warp server with the given schema and context.
 pub async fn run(
     librad_paths: librad::paths::Paths,
-    registry_client: radicle_registry_client::Client,
+    registry: registry::Registry,
     enable_control: bool,
 ) {
-    let context = schema::Context::new(librad_paths, registry_client);
+    let context = schema::Context::new(librad_paths, registry);
     let state = warp::any().map(move || context.clone());
     let graphql_filter = make_graphql_filter(schema::create(), state.clone().boxed());
     let control_filter = make_graphql_filter(schema::create_control(), state.boxed());

@@ -3,11 +3,16 @@ extern crate juniper;
 
 use juniper::{InputValue, Variables};
 use pretty_assertions::assert_eq;
+use std::str::FromStr as _;
+use std::time;
+
+use proxy::coco;
+use proxy::graphql::schema;
+use proxy::registry;
 
 mod common;
 
 use common::{execute_query, with_fixtures};
-use proxy::coco;
 
 #[test]
 fn api_version() {
@@ -526,12 +531,29 @@ fn tree_root() {
     });
 }
 
-#[test]
-fn list_transactions() {
-    with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
-        let mut vars = Variables::new();
-        vars.insert("ids".into(), InputValue::list(vec![]));
-        let query = "query($ids: [ID!]!) {
+#[tokio::test]
+async fn list_transactions() {
+    let tmp_dir = tempfile::tempdir().unwrap();
+    let librad_paths = librad::paths::Paths::from_root(tmp_dir.path()).unwrap();
+    let mut registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+
+    let tx = registry::Transaction {
+        id: radicle_registry_client::TxHash::random(),
+        messages: vec![registry::Message::ProjectRegistration {
+            project_name: radicle_registry_client::ProjectName::from_str("upstream").unwrap(),
+            org_id: radicle_registry_client::OrgId::from_str("radicle").unwrap(),
+        }],
+        state: registry::TransactionState::Applied(radicle_registry_client::Hash::random()),
+        timestamp: time::SystemTime::now(),
+    };
+
+    registry.cache_transaction(tx.clone()).await;
+
+    let ctx = schema::Context::new(librad_paths, registry);
+
+    let mut vars = Variables::new();
+    vars.insert("ids".into(), InputValue::list(vec![]));
+    let query = "query($ids: [ID!]!) {
             listTransactions(ids: $ids) {
                 messages {
                     ... on ProjectRegistration {
@@ -542,16 +564,31 @@ fn list_transactions() {
             }
         }";
 
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "listTransactions": [],
-                })
-            );
-        });
-    });
+    let (res, errors) = juniper::execute(
+        query,
+        None,
+        &schema::Schema::new(schema::Query, schema::Mutation),
+        &vars,
+        &ctx,
+    )
+    .unwrap();
+
+    assert_eq!(errors, []);
+    assert_eq!(
+        res,
+        graphql_value!({
+            "listTransactions": [
+                {
+                    "messages": [
+                        {
+                            "projectName": "upstream",
+                            "orgId": "radicle",
+                        },
+                    ],
+                }
+            ],
+        })
+    );
 }
 
 #[test]

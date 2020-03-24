@@ -36,10 +36,10 @@ pub struct Context {
 impl Context {
     /// Returns a new `Context`.
     #[must_use]
-    pub fn new(librad_paths: Paths, registry_client: radicle_registry_client::Client) -> Self {
+    pub fn new(librad_paths: Paths, registry: registry::Registry) -> Self {
         Self {
             librad_paths: sync::Arc::new(sync::RwLock::new(librad_paths)),
-            registry: sync::Arc::new(sync::RwLock::new(registry::Registry::new(registry_client))),
+            registry: sync::Arc::new(sync::RwLock::new(registry)),
         }
     }
 }

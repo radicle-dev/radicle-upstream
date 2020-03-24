@@ -3,16 +3,20 @@ extern crate juniper;
 
 use librad::paths;
 use pretty_assertions::assert_eq;
-use radicle_registry_client as registry;
+use radicle_registry_client;
 
 use proxy::graphql::schema;
+use proxy::registry;
 
 #[test]
 fn nuke_coco_state() {
     let tmp_dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
     let librad_paths = paths::Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
 
-    let ctx = schema::Context::new(librad_paths, registry::Client::new_emulator());
+    let ctx = schema::Context::new(
+        librad_paths,
+        registry::Registry::new(radicle_registry_client::Client::new_emulator()),
+    );
 
     let query = "mutation {nukeCocoState}";
 
