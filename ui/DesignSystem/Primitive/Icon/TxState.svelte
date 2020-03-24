@@ -18,7 +18,7 @@
   const radius = size / 2 - strokeWidth / 2;
   const circumference = 2 * Math.PI * radius;
 
-  const color = {
+  $: color = {
     caution: "var(--color-orange)",
     positive: "var(--color-green)",
     negative: "var(--color-red)"
@@ -30,10 +30,10 @@
     negative: 0
   };
 
-  const dashLength =
+  $: dashLength =
     progress === 0 ? 100 / 6 : progress || defaultDashLength[state];
 
-  const rotate = progress === 0;
+  $: rotate = progress === 0;
 </script>
 
 <style>
