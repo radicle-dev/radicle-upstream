@@ -10,7 +10,7 @@ mod error;
 mod project;
 
 /// Main entry point for HTTP API.
-pub async fn run(librad_paths: &librad::paths::Paths) {
+pub async fn run(librad_paths: librad::paths::Paths) {
     let api = path("v1").and(project::filters(librad_paths.clone()).recover(error::recover));
 
     warp::serve(api).run(([127, 0, 0, 1], 8090)).await;
