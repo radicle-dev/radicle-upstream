@@ -33,5 +33,4 @@ pub mod error;
 pub mod graphql;
 mod identity;
 mod project;
-/// Intergrations on the Regstriy.
-mod registry;
+pub mod registry;
