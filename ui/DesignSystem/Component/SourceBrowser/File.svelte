@@ -5,7 +5,7 @@
   import { Icon } from "../../Primitive";
 
   import * as path from "../../../lib/path.js";
-  import { BLOB } from "../../../lib/types.js";
+  import { BLOB } from "../../../../native/types.js";
   import {
     revisionStore,
     objectPathStore

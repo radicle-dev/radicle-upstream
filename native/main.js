@@ -1,9 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, clipboard } from "electron";
 import path from "path";
-import {
-  IPC_DIALOG_SHOWOPENDIALOG,
-  IPC_CLIPBOARD_WRITETEXT
-} from "../ui/lib/types.js";
+import { IPC_DIALOG_SHOWOPENDIALOG, IPC_CLIPBOARD_WRITETEXT } from "./types.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
