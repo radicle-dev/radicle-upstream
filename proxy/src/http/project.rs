@@ -337,7 +337,7 @@ mod tests {
             "https://avatars0.githubusercontent.com/u/48290027",
         )
         .unwrap();
-        let project = project::get(&librad_paths, id.to_string()).await.unwrap();
+        let project = project::get(&librad_paths, &id.to_string()).await.unwrap();
 
         let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)));
         let res = request()
