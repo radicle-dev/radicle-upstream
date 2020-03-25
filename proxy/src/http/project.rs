@@ -3,6 +3,8 @@
 use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
 use serde::{Deserialize, Serialize, Serializer};
 use std::convert::Infallible;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use warp::{path, reply, Filter, Rejection, Reply};
 
 use crate::project;
@@ -11,7 +13,7 @@ use crate::registry;
 /// Combination of all routes.
 pub fn filters(
     paths: librad::paths::Paths,
-    registry: registry::Registry,
+    registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter()
         .or(create_filter(paths.clone()))
@@ -52,7 +54,7 @@ fn list_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 
 /// POST /projects/register
 fn register_filter(
-    registry: registry::Registry,
+    registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / "register")
         .and(path::end())
@@ -69,6 +71,8 @@ mod handler {
     use librad::surf;
     use radicle_registry_client::{ed25519, Balance};
     use std::convert::Infallible;
+    use std::sync::Arc;
+    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -116,7 +120,7 @@ mod handler {
 
     /// Register a project on the Registry.
     pub async fn register(
-        registry: registry::Registry,
+        registry: Arc<RwLock<registry::Registry>>,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
@@ -124,14 +128,12 @@ mod handler {
         // TODO(xla): Use real fee defined by the user.
         let fake_fee: Balance = 100;
 
-        Ok(reply::with_status(
-            reply::json(
-                &registry
-                    .register_project(&fake_pair, input.project_name, input.org_id, None, fake_fee)
-                    .await?,
-            ),
-            StatusCode::CREATED,
-        ))
+        let mut reg = registry.write().await;
+        let tx = reg
+            .register_project(&fake_pair, input.project_name, input.org_id, None, fake_fee)
+            .await?;
+
+        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
     }
 }
 
@@ -256,7 +258,9 @@ mod tests {
     use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
+    use std::sync::Arc;
     use tempfile::tempdir_in as _;
+    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
@@ -274,7 +278,7 @@ mod tests {
         let dir = tempfile::tempdir_in(repos_dir.path()).unwrap();
         let path = dir.path().to_str().unwrap();
 
-        let api = super::filters(librad_paths.clone(), registry);
+        let api = super::filters(librad_paths.clone(), Arc::new(RwLock::new(registry)));
         let res = request()
             .method("POST")
             .path("/projects")
@@ -328,7 +332,7 @@ mod tests {
         )
         .unwrap();
 
-        let api = super::filters(librad_paths, registry);
+        let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)));
         let res = request()
             .method("GET")
             .path(&format!("/projects/{}", id.to_string()))
@@ -356,7 +360,7 @@ mod tests {
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
 
-        let api = super::filters(librad_paths, registry);
+        let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)));
         let res = request().method("GET").path("/projects").reply(&api).await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -370,9 +374,11 @@ mod tests {
     async fn register() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        )));
 
-        let api = super::filters(librad_paths, registry);
+        let api = super::filters(librad_paths, registry.clone());
         let res = request()
             .method("POST")
             .path("/projects/register")
@@ -384,13 +390,39 @@ mod tests {
             .reply(&api)
             .await;
 
-        println!("{:?}", res.body());
+        let txs = registry
+            .write()
+            .await
+            .list_transactions(vec![])
+            .await
+            .unwrap();
+        let tx = txs.first().unwrap();
+
+        let block_hash = if let registry::TransactionState::Applied(block_hash) = tx.state {
+            block_hash
+        } else {
+            radicle_registry_client::Hash::random()
+        };
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
+            "id": tx.id.to_string(),
             "messages": [
-                {},
+                {
+                    "ProjectRegistration": {
+                        "org_id": "radicle",
+                        "project_name": "upstream",
+                    }
+                },
             ],
+            "state": {
+                "block_hash": block_hash.to_string(),
+                "type": "TransactionApplied",
+            },
+            "timestamp": {
+                "nanos_since_epoch": tx.timestamp.duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos(),
+                "secs_since_epoch": tx.timestamp.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as u64,
+            },
         });
 
         assert_eq!(res.status(), StatusCode::CREATED);

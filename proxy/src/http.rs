@@ -4,6 +4,8 @@ use librad::paths;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::convert::Infallible;
 use std::str::FromStr;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use warp::http::StatusCode;
 use warp::{get, path, reject, reply, Filter, Rejection, Reply};
 
@@ -13,9 +15,9 @@ mod error;
 mod project;
 
 /// Main entry point for HTTP API.
-pub async fn run(librad_paths: paths::Paths, registry: registry::Registry) {
-    let api = path("v1")
-        .and(project::filters(librad_paths.clone(), registry.clone()).recover(error::recover));
+pub async fn run(librad_paths: paths::Paths, registry: Arc<RwLock<registry::Registry>>) {
+    let api =
+        path("v1").and(project::filters(librad_paths.clone(), registry).recover(error::recover));
 
     // TODO(xla): Pass down as configuration with sane defaults.
     warp::serve(api).run(([127, 0, 0, 1], 8090)).await;
@@ -30,7 +32,7 @@ pub fn with_paths(
 
 /// State filter to expose the [`registry::Registry`] to handlers.
 pub fn with_registry(
-    registry: registry::Registry,
-) -> impl Filter<Extract = (registry::Registry,), Error = Infallible> + Clone {
+    registry: Arc<RwLock<registry::Registry>>,
+) -> impl Filter<Extract = (Arc<RwLock<registry::Registry>>,), Error = Infallible> + Clone {
     warp::any().map(move || registry.clone())
 }
