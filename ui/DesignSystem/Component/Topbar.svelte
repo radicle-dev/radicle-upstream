@@ -14,10 +14,30 @@
     left: var(--sidebar-width);
     border-bottom: 1px solid var(--color-lightgray);
   }
+
+  .left {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    border-right: 1px solid var(--color-lightgray);
+    padding-left: 16px;
+    padding-right: 24px;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: flex-end;
+  }
 </style>
 
 <div data-cy="topbar" class="topbar" {style}>
-  <slot name="left" />
+  <div class="left">
+    <slot name="left" />
+  </div>
   <slot name="middle" />
-  <slot name="right" />
+  <div class="right">
+    <slot name="right" />
+  </div>
 </div>

@@ -113,30 +113,12 @@
   $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
 </script>
 
-<style>
-  .name {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    border-right: 1px solid var(--color-lightgray);
-    padding-left: 16px;
-    padding-right: 24px;
-  }
-
-  .right {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    justify-content: flex-end;
-  }
-</style>
-
 <SidebarLayout
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="page-container">
   {#await $project then result}
     <Topbar style="position: fixed; top: 0;">
-      <a slot="left" class="name" href={path.profileProjects()} use:link>
+      <a slot="left" href={path.profileProjects()} use:link>
         <IdentityAvatar
           showTitle={true}
           size={'regular'}
@@ -147,7 +129,7 @@
         <HorizontalMenu items={topbarMenuItems(params.id)} />
       </div>
 
-      <div slot="right" class="right">
+      <div slot="right" style="display: flex">
         <Router routes={menuRoutes} />
         <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
         <AdditionalActionsDropdown
