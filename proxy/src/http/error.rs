@@ -19,9 +19,9 @@ impl From<error::Error> for Rejection {
 #[derive(serde_derive::Serialize)]
 struct Error {
     /// Human readable message to convery error case.
-    message: &'static str,
+    message: String,
     /// The triggered error variant.
-    variant: &'static str,
+    variant: String,
 }
 
 /// Handler to convert [`error::Error`] to [`Error`] response.
