@@ -1,4 +1,7 @@
 <script>
+  /* TODO(rudolfs): this is a placeholder for now, implement this component
+                    according to UX */
+
   import { Code, Icon, Title } from "../Primitive";
 
   export let style = null;
