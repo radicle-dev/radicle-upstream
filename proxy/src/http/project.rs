@@ -1,5 +1,6 @@
 //! Endpoints and serialisations for [`project::Project`] related types.
 
+use librad::paths::Paths;
 use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
 use serde::{Deserialize, Serialize, Serializer};
 use std::convert::Infallible;
@@ -12,19 +13,17 @@ use crate::registry;
 
 /// Combination of all routes.
 pub fn filters(
-    paths: librad::paths::Paths,
+    paths: Paths,
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    list_filter()
+    list_filter(paths.clone())
         .or(create_filter(paths.clone()))
         .or(get_filter(paths))
         .or(register_filter(registry))
 }
 
 /// POST /projects
-fn create_filter(
-    paths: librad::paths::Paths,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn create_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(path::end())
         .and(warp::post())
@@ -34,9 +33,7 @@ fn create_filter(
 }
 
 /// GET /projects/<id>
-fn get_filter(
-    paths: librad::paths::Paths,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / String)
         .and(path::end())
         .and(warp::get())
@@ -45,10 +42,11 @@ fn get_filter(
 }
 
 /// GET /projects
-fn list_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(path::end())
         .and(warp::get())
+        .and(super::with_paths(paths))
         .and_then(handler::list)
 }
 
@@ -113,9 +111,16 @@ mod handler {
     }
 
     /// List all known projects.
-    pub async fn list() -> Result<impl Reply, Infallible> {
-        let content: Vec<String> = vec![];
-        Ok(reply::json(&content))
+    pub async fn list(paths: paths::Paths) -> Result<impl Reply, Infallible> {
+        let projects = coco::list_projects(&paths)
+            .into_iter()
+            .map(|(id, meta)| project::Project {
+                id,
+                metadata: meta.into(),
+            })
+            .collect::<Vec<project::Project>>();
+
+        Ok(reply::json(&projects))
     }
 
     /// Register a project on the Registry.
@@ -266,6 +271,7 @@ mod tests {
 
     use crate::coco;
     use crate::error;
+    use crate::project;
     use crate::registry;
 
     #[tokio::test]
@@ -360,11 +366,21 @@ mod tests {
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
 
+        coco::setup_fixtures(&librad_paths, tmp_dir.path().as_os_str().to_str().unwrap());
+
+        let projects = coco::list_projects(&librad_paths)
+            .into_iter()
+            .map(|(id, meta)| project::Project {
+                id,
+                metadata: meta.into(),
+            })
+            .collect::<Vec<project::Project>>();
+
         let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)));
         let res = request().method("GET").path("/projects").reply(&api).await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = json!([]);
+        let want = json!(projects);
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, want);
