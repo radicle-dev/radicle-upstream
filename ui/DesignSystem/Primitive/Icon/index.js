@@ -38,6 +38,7 @@ import Settings from "./Settings.svelte";
 import Source from "./Source.svelte";
 import Spinner from "./Spinner.svelte";
 import StepCounter from "./StepCounter.svelte";
+import TxState from "./TxState.svelte";
 
 export default {
   Badge,
@@ -79,5 +80,6 @@ export default {
   Settings,
   Source,
   Spinner,
-  StepCounter
+  StepCounter,
+  TxState
 };

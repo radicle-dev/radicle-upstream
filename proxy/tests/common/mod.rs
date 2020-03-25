@@ -5,6 +5,7 @@ use tempfile::{tempdir_in, TempDir};
 
 use proxy::coco;
 use proxy::graphql::schema::{Context, Mutation, Query, Schema};
+use proxy::registry;
 
 pub fn with_fixtures<F>(f: F)
 where
@@ -32,7 +33,7 @@ where
 {
     let ctx = Context::new(
         librad_paths,
-        radicle_registry_client::Client::new_emulator(),
+        registry::Registry::new(radicle_registry_client::Client::new_emulator()),
     );
     let (res, errors) = juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
         .expect("test execute failed");

@@ -15,6 +15,7 @@ export const profileProjects = () => "/profile/projects";
 export const profileWallet = () => "/profile/wallet";
 export const profileSettings = () => "/profile/settings";
 export const registerUser = () => "/user-registration";
+export const createIdentity = _params => "/identity/new";
 
 export const orgs = id => `/orgs/${id}`;
 export const orgProjects = id => `/orgs/${id}/projects`;
