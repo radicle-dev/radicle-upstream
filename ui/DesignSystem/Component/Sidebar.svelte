@@ -8,72 +8,7 @@
   import * as path from "../../lib/path.js";
 
   /* TODO(rudolfs): fetch the actual org list */
-  const orgs = {
-    data: {
-      orgs: [
-        {
-          id: "%monadic",
-          metadata: {
-            name: "monadic",
-            avatarUrl:
-              "https://avatars1.githubusercontent.com/u/48515895?s=200&v=4"
-          },
-          avatarFallback: {
-            background: {
-              b: 216,
-              g: 105,
-              r: 24
-            },
-            emoji: "🚡"
-          }
-        },
-        {
-          id: "%sveltejs",
-          metadata: {
-            name: "sveltejs",
-            avatarUrl:
-              "https://avatars2.githubusercontent.com/u/23617963?s=200&v=4"
-          },
-          avatarFallback: {
-            background: {
-              b: 216,
-              g: 105,
-              r: 24
-            },
-            emoji: "🚡"
-          }
-        },
-        {
-          id: "%radicle",
-          metadata: {
-            name: "radicle-org"
-          },
-          avatarFallback: {
-            background: {
-              r: 179,
-              g: 167,
-              b: 164
-            },
-            emoji: "🦂"
-          }
-        },
-        {
-          id: "%monocleorg",
-          metadata: {
-            name: "monocleorg"
-          },
-          avatarFallback: {
-            background: {
-              r: 255,
-              g: 43,
-              b: 59
-            },
-            emoji: "🦄"
-          }
-        }
-      ]
-    }
-  };
+  import { orgMocks } from "../../lib/orgMocks.js";
 </script>
 
 <style>
@@ -234,8 +169,10 @@
       </div>
     </li>
 
-    {#each orgs.data.orgs as org}
-      <li class="item indicator">
+    {#each orgMocks.data.orgs as org}
+      <li
+        class="item indicator"
+        class:active={path.active(path.orgs(org.id), $location, true)}>
         <a href={path.orgProjects(org.id)} use:link>
           <Avatar
             imageUrl={org.metadata.avatarUrl}

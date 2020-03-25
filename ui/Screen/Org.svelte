@@ -2,14 +2,14 @@
   import Router, { link } from "svelte-spa-router";
   import { setContext } from "svelte";
   import * as path from "../lib/path.js";
-  import { Icon } from "../DesignSystem/Primitive";
+  import { orgMocks } from "../lib/orgMocks.js";
+  import { Avatar, Icon } from "../DesignSystem/Primitive";
 
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
     SidebarLayout,
-    Topbar,
-    IdentityAvatar
+    Topbar
   } from "../DesignSystem/Component";
 
   import Projects from "./Org/Projects.svelte";
@@ -19,6 +19,11 @@
   export let params = null;
 
   setContext("orgId", params.id);
+
+  /* TODO(rudolfs): replace with actual org metadata lookup */
+  $: org = orgMocks.data.orgs.find(org => {
+    return org.id === params.id;
+  });
 
   const routes = {
     "/orgs/:id": Projects,
@@ -83,10 +88,11 @@
   dataCy="page-container">
   <Topbar style="position: fixed; top: 0;">
     <a slot="left" href={path.profileProjects()} use:link>
-      <IdentityAvatar
-        showTitle={true}
-        size={'regular'}
-        style="color: var(--color-purple)" />
+      <Avatar
+        title={org.metadata.name}
+        imageUrl={org.metadata.avatarUrl}
+        avatarFallback={org.avatarFallback}
+        variant="project" />
     </a>
 
     <div slot="middle">
