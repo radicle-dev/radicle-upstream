@@ -337,6 +337,7 @@ mod tests {
             "https://avatars0.githubusercontent.com/u/48290027",
         )
         .unwrap();
+        let project = project::get(&librad_paths, id.to_string()).await.unwrap();
 
         let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)));
         let res = request()
@@ -346,15 +347,7 @@ mod tests {
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = json!({
-            "id": id.to_string(),
-            "metadata": {
-                "default_branch": "master",
-                "description": "Desktop client for radicle.",
-                "img_url": "https://avatars0.githubusercontent.com/u/48290027",
-                "name": "Upstream",
-            },
-        });
+        let want = json!(project);
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, want);
@@ -421,25 +414,7 @@ mod tests {
         };
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = json!({
-            "id": tx.id.to_string(),
-            "messages": [
-                {
-                    "ProjectRegistration": {
-                        "org_id": "radicle",
-                        "project_name": "upstream",
-                    }
-                },
-            ],
-            "state": {
-                "block_hash": block_hash.to_string(),
-                "type": "TransactionApplied",
-            },
-            "timestamp": {
-                "nanos_since_epoch": tx.timestamp.duration_since(std::time::UNIX_EPOCH).unwrap().subsec_nanos(),
-                "secs_since_epoch": tx.timestamp.duration_since(std::time::UNIX_EPOCH).unwrap().as_secs() as u64,
-            },
-        });
+        let want = json!(tx);
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, want);
