@@ -95,6 +95,7 @@ impl Mutation {
         Ok(project::Project {
             id: librad::project::ProjectId::from(id),
             metadata: meta.into(),
+            registration: None,
         })
     }
 
@@ -256,6 +257,7 @@ impl Query {
         Ok(project::Project {
             id: librad::project::ProjectId::from_str(&id.to_string())?,
             metadata: meta.into(),
+            registration: None,
         })
     }
 
@@ -269,6 +271,7 @@ impl Query {
         .map(|(id, meta)| project::Project {
             id,
             metadata: meta.into(),
+            registration: None,
         })
         .collect::<Vec<project::Project>>();
 
@@ -371,6 +374,7 @@ impl ControlMutation {
         Ok(project::Project {
             id: id.into(),
             metadata: meta.into(),
+            registration: None,
         })
     }
 
@@ -620,8 +624,23 @@ impl project::Project {
     fn metadata(&self) -> &project::Metadata {
         &self.metadata
     }
-    fn registered(&self) -> bool {
-        false
+    fn registered(&self) -> Option<ProjectRegistration> {
+        if let Some(registration) = &self.registration {
+            match registration {
+                project::Registration::Org(org_id) => {
+                    Some(ProjectRegistration::Org(OrgRegistration {
+                        org_id: juniper::ID::new(org_id.to_string()),
+                    }))
+                },
+                project::Registration::User(user_id) => {
+                    Some(ProjectRegistration::User(UserRegistration {
+                        user_id: juniper::ID::new(user_id.to_string()),
+                    }))
+                },
+            }
+        } else {
+            None
+        }
     }
 
     fn stats(&self) -> &project::Stats {
@@ -652,6 +671,47 @@ impl project::Metadata {
     }
 }
 
+/// Union to represent possible registration states of a project.
+// TODO(xla): Remove attribute once integrated.
+#[allow(dead_code)]
+enum ProjectRegistration {
+    /// Project is registered under an Org.
+    Org(OrgRegistration),
+    /// Project is registered under a User.
+    User(UserRegistration),
+}
+
+juniper::graphql_union!(ProjectRegistration: () where Scalar = <S> |&self| {
+    instance_resolvers: |_| {
+        &OrgRegistration => match *self {
+            ProjectRegistration::Org(ref o) => Some(o),
+            ProjectRegistration::User(..) => None,
+        },
+        &UserRegistration => match *self {
+            ProjectRegistration::User(ref o) => Some(o),
+            ProjectRegistration::Org(..) => None,
+        },
+    }
+    });
+
+/// Context data for a not registered project, there are none.
+#[derive(juniper::GraphQLObject)]
+struct NotRegistration {}
+
+/// Context data for a project registered under an Org.
+#[derive(juniper::GraphQLObject)]
+struct OrgRegistration {
+    /// The id of the Org.
+    org_id: juniper::ID,
+}
+
+/// Context data for a proejct registered under a User.
+#[derive(juniper::GraphQLObject)]
+struct UserRegistration {
+    /// The id of the User.
+    user_id: juniper::ID,
+}
+
 #[juniper::object(name = "ProjectStats")]
 impl project::Stats {
     fn branches(&self) -> i32 {
@@ -667,13 +727,6 @@ impl project::Stats {
     }
 }
 
-/// Shows if a project exists on the Registry and distinguishes between Org and User owned.
-#[derive(GraphQLEnum)]
-pub enum ProjectRegistered {
-    /// Project is not present on the Registry.
-    Not,
-}
-
 #[juniper::object]
 impl registry::Transaction {
     fn id(&self) -> juniper::ID {
@@ -685,24 +738,24 @@ impl registry::Transaction {
             .iter()
             .map(|m| match m {
                 registry::Message::OrgRegistration(org_id) => {
-                    Message::OrgRegistration(OrgRegistration {
+                    Message::OrgRegistration(OrgRegistrationMessage {
                         org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
                 registry::Message::OrgUnregistration(org_id) => {
-                    Message::OrgUnregistration(OrgUnregistration {
+                    Message::OrgUnregistration(OrgUnregistrationMessage {
                         org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
                 registry::Message::ProjectRegistration {
                     project_name,
                     org_id,
-                } => Message::ProjectRegistration(ProjectRegistration {
+                } => Message::ProjectRegistration(ProjectRegistrationMessage {
                     project_name: juniper::ID::new(project_name.to_string()),
                     org_id: juniper::ID::new(org_id.to_string()),
                 }),
                 registry::Message::UserRegistration { handle, id } => {
-                    Message::UserRegistration(UserRegistration {
+                    Message::UserRegistration(UserRegistrationMessage {
                         handle: juniper::ID::new(handle.to_string()),
                         id: juniper::ID::new(id.to_string()),
                     })
@@ -734,33 +787,33 @@ impl registry::Transaction {
 /// Message types supproted in transactions.
 enum Message {
     /// Registration of a new org.
-    OrgRegistration(OrgRegistration),
+    OrgRegistration(OrgRegistrationMessage),
 
     /// Registration of a new org.
-    OrgUnregistration(OrgUnregistration),
+    OrgUnregistration(OrgUnregistrationMessage),
 
     /// Registration of a new project.
-    ProjectRegistration(ProjectRegistration),
+    ProjectRegistration(ProjectRegistrationMessage),
 
     /// Registration of a new user.
-    UserRegistration(UserRegistration),
+    UserRegistration(UserRegistrationMessage),
 }
 
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
-        &OrgRegistration => match *self {
+        &OrgRegistrationMessage => match *self {
             Message::OrgRegistration(ref o) => Some(o),
             Message::OrgUnregistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
         },
-        &OrgUnregistration => match *self {
+        &OrgUnregistrationMessage => match *self {
             Message::OrgUnregistration(ref o) => Some(o),
             Message::OrgRegistration(..) | Message::ProjectRegistration(..) | Message::UserRegistration(..) => None,
         },
-        &ProjectRegistration => match *self {
+        &ProjectRegistrationMessage => match *self {
             Message::ProjectRegistration(ref p) => Some(p),
             Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::UserRegistration(..) => None,
         },
-        &UserRegistration => match *self {
+        &UserRegistrationMessage => match *self {
             Message::UserRegistration(ref o) => Some(o),
             Message::OrgRegistration(..) | Message::OrgUnregistration(..) | Message::ProjectRegistration(..) => None,
         }
@@ -769,21 +822,21 @@ juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
 
 /// Contextual information for an org registration message.
 #[derive(juniper::GraphQLObject)]
-struct OrgRegistration {
+struct OrgRegistrationMessage {
     /// The ID of the org.
     org_id: juniper::ID,
 }
 
 /// Contextual information for an org unregistration message.
 #[derive(juniper::GraphQLObject)]
-struct OrgUnregistration {
+struct OrgUnregistrationMessage {
     /// The ID of the org.
     org_id: juniper::ID,
 }
 
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
-struct ProjectRegistration {
+struct ProjectRegistrationMessage {
     /// Actual project name, unique under org.
     project_name: juniper::ID,
     /// The org under which to register the project.
@@ -792,7 +845,7 @@ struct ProjectRegistration {
 
 /// Payload of a user registration message.
 #[derive(juniper::GraphQLObject)]
-struct UserRegistration {
+struct UserRegistrationMessage {
     /// The chosen unique handle to be registered.
     handle: juniper::ID,
     /// The id of the coco identity.

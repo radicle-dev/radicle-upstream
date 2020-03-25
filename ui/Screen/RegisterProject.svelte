@@ -37,7 +37,7 @@
       registerProject(orgId: $orgId, projectName: $projectName) {
         id
         messages {
-          ... on ProjectRegistration {
+          ... on ProjectRegistrationMessage {
             projectName
             orgId
           }
