@@ -1,8 +1,8 @@
 <script>
   import ClickOutside from "svelte-click-outside";
 
-  import { copyToClipboard } from "../../lib/nativeUtils.js";
   import { Icon, Text } from "../Primitive";
+  import Copyable from "./Copyable.svelte";
 
   let triggerEl;
   let expanded = false;
@@ -61,9 +61,6 @@
   .header {
     padding: 12px;
     border-bottom: solid 1px var(--color-lightgray);
-    display: flex;
-    cursor: pointer;
-    color: var(--color-gray);
   }
 
   .header:hover {
@@ -92,9 +89,8 @@
   <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
     {#if expanded}
       <div class="modal" hidden={!expanded}>
-        <div class="header" on:click={() => copyToClipboard(headerTitle)}>
-          <Text>{headerTitle}</Text>
-          <svelte:component this={Icon.Copy} style="margin-left: 8px;" />
+        <div class="header">
+          <Copyable>{headerTitle}</Copyable>
         </div>
         <div class="menu">
           {#each menuItems as item}

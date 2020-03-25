@@ -1,7 +1,6 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { AdditionalActionsDropdown } from "../Component";
   import { Avatar } from "../Primitive";
   import Menu from "./Topbar/Menu.svelte";
 
@@ -57,7 +56,4 @@
   <div class="left">
     <slot />
   </div>
-  <AdditionalActionsDropdown
-    headerTitle="copy me"
-    menuItems={[{ title: 'A Title' }]} />
 </div>
