@@ -34,5 +34,4 @@ pub mod graphql;
 mod http;
 mod identity;
 mod project;
-/// Intergrations on the Regstriy.
-mod registry;
+pub mod registry;

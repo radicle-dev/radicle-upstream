@@ -26,13 +26,22 @@ export const initializeHotkeys = () => {
     push(path.help());
   });
 
+  // TODO(sarah): Remove temporary hotkey for identity creation
+  hotkeys("shift+i", () => {
+    if (path.active(path.createIdentity(), get(location))) {
+      pop();
+    }
+    push(path.createIdentity());
+  });
+
   hotkeys("esc", () => {
     if (
       path.active(path.help(), get(location)) ||
       path.active(path.designSystemGuide(), get(location)) ||
       path.active(path.createProject(), get(location)) ||
-      path.active(path.registerUser(), get(location)) ||
-      path.active(path.registerProject("**"), get(location), true)
+      path.active(path.registerProject("**"), get(location), true) ||
+      path.active(path.createIdentity(), get(location)) ||
+      path.active(path.registerUser(), get(location))
     ) {
       pop();
     }

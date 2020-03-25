@@ -24,6 +24,8 @@
   const NEW = "new";
   const EXISTING = "existing";
 
+  const projectNameMatch = "^[a-z0-9][a-z0-9_-]+$";
+
   $: isNew = currentSelection === NEW;
   $: isExisting = currentSelection === EXISTING;
 
@@ -34,8 +36,6 @@
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
   let imageUrl = "";
-
-  const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
 
   let validations = false;
   let beginValidation = false;
@@ -102,8 +102,8 @@
         allowEmpty: false
       },
       format: {
-        pattern: VALID_NAME_MATCH,
-        message: "Project name should match [a-z0-9][a-z0-9_-]+"
+        pattern: new RegExp(projectNameMatch, "i"),
+        message: `Project name should match ${projectNameMatch}`
       }
     },
     imageUrl: {
@@ -273,8 +273,8 @@
   }
 
   .create-project {
-    text-align: left;
-    width: 540px;
+    text-align: center;
+    flex: 1;
   }
 
   .double-button {
@@ -303,7 +303,7 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="create-project">
     <div class="create-project">
-      <Title variant="big" style="margin-bottom: 32px; text-align: left">
+      <Title variant="big" style="margin-bottom: 32px;">
         Create a new project
       </Title>
 
@@ -340,7 +340,9 @@
           on:click={() => (currentSelection = NEW)}
           dataCy="new-project">
           <div slot="option-body">
-            <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
+            <Text
+              style="margin-bottom: 12px; color: var(--color-darkgray);
+              text-align: left">
               Choose where you'd like to create the repository
             </Text>
             <Input.Directory
@@ -357,8 +359,10 @@
           on:click={() => (currentSelection = EXISTING)}
           dataCy="existing-project">
           <div slot="option-body">
-            <Text style="margin-bottom: 12px; color: var(--color-darkgray)">
-              Choose the existing repository
+            <Text
+              style="margin-bottom: 12px; color: var(--color-darkgray);
+              text-align:left">
+              Choose an existing repository
             </Text>
             <Input.Directory
               placeholder="~/path/to/folder"
