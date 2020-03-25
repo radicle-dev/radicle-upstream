@@ -1,5 +1,5 @@
 <script>
-  import { getDirectoryPath } from "../../../../native/utils.js";
+  import { getDirectoryPath } from "../../../../native/ipc.js";
 
   import Button from "../Button.svelte";
   import TextInput from "./Text.svelte";

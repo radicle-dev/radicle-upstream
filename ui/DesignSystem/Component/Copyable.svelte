@@ -1,6 +1,6 @@
 <script>
   // TODO(sarah): write tests for this once it's implemented in the ui somewhere
-  import { copyToClipboard } from "../../../native/utils.js";
+  import { copyToClipboard } from "../../../native/ipc.js";
 
   let slotContent;
 
