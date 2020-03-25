@@ -3,6 +3,13 @@
   import { getClient, mutate } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
+  import {
+    avatarUrlStore,
+    avatarFallbackStore,
+    handleStore,
+    idStore
+  } from "../store/identity.js";
+
   import { Text, Title } from "../DesignSystem/Primitive";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
 
@@ -10,19 +17,11 @@
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
 
   let step = 1;
-  // TODO(merle): Get actual user profile (id, name, imageUrl, avatarFallback)
-  let handle = "cloudhead";
-  let avatarFallback = {
-    emoji: "📐",
-    background: {
-      r: 24,
-      g: 105,
-      b: 216
-    }
-  };
-  const imageUrl = null;
 
-  const id = "1234";
+  let handle = $handleStore;
+  let avatarFallback = $avatarFallbackStore;
+  const imageUrl = $avatarUrlStore;
+  const id = $idStore;
 
   const nextStep = () => {
     step += 1;

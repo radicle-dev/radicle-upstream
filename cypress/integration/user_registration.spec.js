@@ -23,6 +23,7 @@ context("user registration", () => {
     it("moves through the views by pressing navigation buttons", () => {
       // 1 -> 2
       cy.get('[data-cy="register-user"] [data-cy="handle"]').should("exist");
+      cy.get('[data-cy="page"] [data-cy="handle"]').type("testy");
       cy.get('[data-cy="register-user"] [data-cy="next-button"]').click();
       cy.get('[data-cy="register-user"] [data-cy="tx-summary"]').should(
         "exist"
