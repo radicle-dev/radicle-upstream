@@ -579,7 +579,10 @@
         projectId="2fFdyRzay2Rew9CpjEunPLp2PWe7HSvXWB3AJ.git"
         title="Radicle"
         description="Best project in the world"
-        isRegistered={true} />
+        isRegistered={true}
+        commitCount={'2.5k'}
+        branchCount={'25'}
+        memberCount={'245'} />
     </Swatch>
 
     <Swatch>
