@@ -100,6 +100,7 @@ mod handler {
             reply::json(&project::Project {
                 id: librad::project::ProjectId::from(id),
                 metadata: meta.into(),
+                registration: None,
             }),
             StatusCode::CREATED,
         ))
@@ -117,6 +118,7 @@ mod handler {
             .map(|(id, meta)| project::Project {
                 id,
                 metadata: meta.into(),
+                registration: None,
             })
             .collect::<Vec<project::Project>>();
 
@@ -366,6 +368,7 @@ mod tests {
             .map(|(id, meta)| project::Project {
                 id,
                 metadata: meta.into(),
+                registration: None,
             })
             .collect::<Vec<project::Project>>();
 

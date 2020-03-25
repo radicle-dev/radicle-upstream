@@ -3,6 +3,7 @@
 
 use librad::meta;
 use librad::project;
+use radicle_registry_client as registry;
 use std::str::FromStr;
 
 use crate::coco;
@@ -60,6 +61,19 @@ pub struct Project {
     pub id: project::ProjectId,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
+    /// Informs if the project is present in the Registry and under what top-level entity it can be
+    /// found.
+    pub registration: Option<Registration>,
+}
+
+/// Variants for possible registration states of a project.
+// TODO(xla): Remove once properly integrated.
+#[allow(dead_code)]
+pub enum Registration {
+    /// Project is registered under an Org.
+    Org(registry::OrgId),
+    /// Project is registered under a User.
+    User(registry::UserId),
 }
 
 /// Coarse statistics for the Project source code.
@@ -77,7 +91,8 @@ pub async fn get(paths: &librad::paths::Paths, id: &str) -> Result<Project, erro
     let meta = coco::get_project_meta(paths, id)?;
 
     Ok(Project {
-        id: librad::project::ProjectId::from_str(&id.to_string())?,
+        id: librad::project::ProjectId::from_str(id)?,
         metadata: meta.into(),
+        registration: None,
     })
 }

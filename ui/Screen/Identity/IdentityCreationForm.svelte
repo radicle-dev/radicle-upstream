@@ -8,6 +8,7 @@
     avatarFallbackStore,
     displayNameStore,
     handleStore,
+    idStore,
     shareableEntityIdentifierStore
   } from "../../store/identity.js";
 
@@ -130,6 +131,7 @@
 
       const responseData = response.data.createIdentity;
 
+      idStore.set(responseData.id);
       handleStore.set(responseData.metadata.handle);
       displayNameStore.set(responseData.metadata.displayName);
       avatarUrlStore.set(responseData.metadata.avatarUrl);

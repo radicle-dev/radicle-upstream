@@ -556,7 +556,7 @@ async fn list_transactions() {
     let query = "query($ids: [ID!]!) {
             listTransactions(ids: $ids) {
                 messages {
-                    ... on ProjectRegistration {
+                    ... on ProjectRegistrationMessage {
                         projectName,
                         orgId
                     }
@@ -609,16 +609,26 @@ fn project() {
                     )
                     .expect("project init failed");
 
+        let id = project_id.to_string();
         let mut vars = Variables::new();
-        vars.insert("id".into(), InputValue::scalar(project_id.to_string()));
+        vars.insert("id".into(), InputValue::scalar(id.clone()));
 
         let query = "query($id: ID!) {
                     project(id: $id) {
+                        id
                         metadata {
                             name
                             description
                             defaultBranch
                             imgUrl
+                        }
+                        registered {
+                            ... on OrgRegistration {
+                                orgId
+                            }
+                            ... on UserRegistration {
+                                userId
+                            }
                         }
                     }
                 }";
@@ -629,12 +639,14 @@ fn project() {
                 res,
                 graphql_value!({
                     "project": {
+                        "id": id,
                         "metadata": {
                             "name": "upstream",
                             "description": "Code collaboration without intermediates.",
                             "defaultBranch": "master",
                             "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
                         },
+                        "registered": None,
                     },
                 })
             );
