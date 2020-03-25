@@ -25,7 +25,6 @@ pub fn filters(
 /// POST /projects
 fn create_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
-        .and(path::end())
         .and(warp::post())
         .and(super::with_paths(paths))
         .and(warp::body::json())
@@ -35,7 +34,6 @@ fn create_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Reje
 /// GET /projects/<id>
 fn get_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / String)
-        .and(path::end())
         .and(warp::get())
         .and(super::with_paths(paths))
         .and_then(handler::get)
@@ -44,7 +42,6 @@ fn get_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejecti
 /// GET /projects
 fn list_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
-        .and(path::end())
         .and(warp::get())
         .and(super::with_paths(paths))
         .and_then(handler::list)
@@ -55,7 +52,6 @@ fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / "register")
-        .and(path::end())
         .and(warp::post())
         .and(super::with_registry(registry))
         .and(warp::body::json())
