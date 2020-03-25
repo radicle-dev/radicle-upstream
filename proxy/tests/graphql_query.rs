@@ -556,7 +556,7 @@ async fn list_transactions() {
     let query = "query($ids: [ID!]!) {
             listTransactions(ids: $ids) {
                 messages {
-                    ... on ProjectRegistration {
+                    ... on ProjectRegistrationMessage {
                         projectName,
                         orgId
                     }
