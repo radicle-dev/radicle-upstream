@@ -20,6 +20,7 @@
     clippy::option_expect_used,
     clippy::or_fun_call,
     clippy::result_expect_used,
+    clippy::shadow_reuse,
     clippy::unseparated_literal_suffix
 )]
 

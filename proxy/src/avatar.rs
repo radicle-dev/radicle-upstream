@@ -134,7 +134,6 @@ impl Color {
     }
 
     /// Ligthen a color by an amount between `-1.0` and `1.0`.
-    #[allow(clippy::shadow_reuse)]
     fn lighten(self, amount: f32) -> Self {
         // Constrain range to -1 .. 1.
         let amount = f32::max(amount, -1.0);
@@ -165,7 +164,6 @@ impl From<u32> for Color {
 }
 
 /// Generate an emoji from an input.
-#[allow(clippy::shadow_reuse)]
 fn generate_emoji(input: &str, usage: Usage) -> Emoji {
     let ix = hash(input);
 
