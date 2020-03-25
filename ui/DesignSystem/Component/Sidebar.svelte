@@ -236,7 +236,7 @@
 
     {#each orgs.data.orgs as org}
       <li class="item indicator">
-        <a href={path.orgs(org.id)} use:link>
+        <a href={path.orgProjects(org.id)} use:link>
           <Avatar
             imageUrl={org.metadata.avatarUrl}
             avatarFallback={org.avatarFallback}

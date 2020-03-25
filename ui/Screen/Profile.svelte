@@ -100,11 +100,9 @@
         size={'regular'}
         style="color: var(--color-purple)" />
     </a>
-
     <div slot="middle">
       <HorizontalMenu items={topbarMenuItems} />
     </div>
-
     <div slot="right" class="right">
       <Router routes={menuRoutes} />
       <AdditionalActionsDropdown

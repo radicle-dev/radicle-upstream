@@ -1,6 +1,7 @@
 <script>
-  /* TODO(rudolfs): replace with org project list */
-  import { ProjectList } from "../../DesignSystem/Component";
+  import { Flex, Title } from "../../DesignSystem/Primitive";
 </script>
 
-<ProjectList />
+<Flex align="left">
+  <Title variant="big">Projects</Title>
+</Flex>

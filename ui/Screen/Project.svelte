@@ -144,7 +144,7 @@
       </a>
 
       <div slot="middle">
-        <HorizontalMenu items={topbarMenuItems()} />
+        <HorizontalMenu items={topbarMenuItems(params.id)} />
       </div>
 
       <div slot="right" class="right">

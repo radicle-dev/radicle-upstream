@@ -21,7 +21,7 @@
   setContext("orgId", params.id);
 
   const routes = {
-    "/orgs/:id/": Projects,
+    "/orgs/:id": Projects,
     "/orgs/:id/projects": Projects,
     "/orgs/:id/fund": Fund,
     "/orgs/:id/members": Members
@@ -108,7 +108,7 @@
     </a>
 
     <div slot="middle">
-      <HorizontalMenu items={topbarMenuItems()} />
+      <HorizontalMenu items={topbarMenuItems(params.id)} />
     </div>
 
     <div slot="right" class="right">
