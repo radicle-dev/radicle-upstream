@@ -127,7 +127,7 @@ impl Color {
         let r = f32::from(self.r);
         let g = f32::from(self.g);
         let b = f32::from(self.b);
-        let n = 255_f32;
+        let n = f32::from(u8::max_value());
 
         // This isn't perceptual lightness, but whatever.
         (r / n + g / n + b / n) / 3.
