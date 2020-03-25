@@ -58,7 +58,7 @@
       This is your peer-to-peer identity. Even though your radicleID is unique,
       your handle isn't. To get a unique handle, you have to
       <!-- TODO(sarah): actually link to handle registration flow -->
-      <a class="registration-link" href={path.projects()} use:link>
+      <a class="registration-link" href={path.profile()} use:link>
         register it.
       </a>
     </Text>

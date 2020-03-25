@@ -58,11 +58,13 @@
   const dropdownMenuItems = [
     {
       title: "New project",
+      dataCy: "new-project",
       icon: Icon.Plus,
       event: () => push(path.createProject())
     },
     {
       title: "Register handle",
+      dataCy: "register-handle",
       icon: Icon.Register,
       event: () => push(path.registerUser())
     }
@@ -89,7 +91,7 @@
 
 <SidebarLayout
   style="margin-top: calc(var(--topbar-height) + 33px)"
-  dataCy="page-container">
+  dataCy="profile-screen">
 
   <Topbar style="position: fixed; top: 0;">
     <a slot="left" class="name" href={path.profileProjects()} use:link>
@@ -106,6 +108,7 @@
     <div slot="right" class="right">
       <Router routes={menuRoutes} />
       <AdditionalActionsDropdown
+        dataCy="profile-context-menu"
         style="margin: 0 24px 0 16px"
         headerTitle="cloudhead@ViJQHAdeZoiEbaE5vv83dpjEun.rad"
         menuItems={dropdownMenuItems} />

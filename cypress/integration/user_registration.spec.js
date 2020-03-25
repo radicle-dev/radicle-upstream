@@ -1,8 +1,12 @@
 context("user registration", () => {
   context("modal navigation", () => {
     beforeEach(() => {
-      cy.visit("./public/index.html#/projects");
+      cy.visit("./public/index.html#/profile");
       cy.get("body").type("{shift}t");
+      cy.get('[data-cy="profile-context-menu"]').click();
+      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click({
+        force: true
+      });
     });
 
     // TODO(merle): Replace opening via hotkey
@@ -10,13 +14,13 @@ context("user registration", () => {
     it("can be closed by pressing cancel", () => {
       cy.get('[data-cy="page"] [data-cy="register-user"]').should("exist");
       cy.get('[data-cy="register-user"] [data-cy="cancel-button"]').click();
-      cy.contains("My Projects").should("exist");
+      cy.get('[data-cy="profile-screen"]').should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
       cy.get('[data-cy="page"] [data-cy="register-user"]').should("exist");
       cy.get("body").type("{esc}");
-      cy.contains("My Projects").should("exist");
+      cy.get('[data-cy="profile-screen"]').should("exist");
     });
 
     // navigation between pick handle (1) and submit tx (2) steps
@@ -37,7 +41,7 @@ context("user registration", () => {
       );
       // 2 -> close modal
       cy.get('[data-cy="register-user"] [data-cy="submit-button"]').click();
-      cy.contains("My Projects").should("exist");
+      cy.get('[data-cy="profile-screen"]').should("exist");
     });
   });
 

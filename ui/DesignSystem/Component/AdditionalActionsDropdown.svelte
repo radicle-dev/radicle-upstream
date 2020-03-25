@@ -18,6 +18,7 @@
     item.event();
   };
 
+  export let dataCy = null;
   export let style = null;
   export let menuItems = null;
   export let headerTitle = null;
@@ -94,7 +95,7 @@
   }
 </style>
 
-<div class="container" {style} on:click|stopPropagation>
+<div data-cy={dataCy} class="container" {style} on:click|stopPropagation>
   <button bind:this={triggerEl} on:click|stopPropagation={toggleModal}>
     <svelte:component this={Icon.Ellipses} />
   </button>
@@ -112,9 +113,10 @@
           </div>
         {/if}
 
-        <div class="menu">
-          {#each menuItems as item}
+        <div class="menu" data-cy="dropdown-menu">
+          {#each menuItems as item, index}
             <div
+              data-cy={item.dataCy}
               class="menu-item"
               on:click|stopPropagation={handleItemSelection(item)}>
               <svelte:component this={item.icon} style="margin-right: 12px" />

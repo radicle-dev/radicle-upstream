@@ -1,23 +1,29 @@
 context("project creation", () => {
   context("project creation modal", () => {
     beforeEach(() => {
-      cy.visit("./public/index.html#/projects");
+      cy.visit("./public/index.html#/profile");
     });
 
     // TODO(rudolfs): test empty project listing has wording and button
 
-    it("can be opened via the projects page and closed by pressing cancel", () => {
-      cy.get('[data-cy="new-project-button"]').click();
+    it("can be opened via the profile context menu and closed by pressing cancel", () => {
+      cy.get('[data-cy="profile-context-menu"]').click();
+      cy.get('[data-cy="dropdown-menu"] [data-cy="new-project"]').click({
+        force: true
+      });
       cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");
       cy.get('[data-cy="create-project"] [data-cy="cancel-button"]').click();
-      cy.contains("My Projects").should("exist");
+      cy.get('[data-cy="profile-screen"]').should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
-      cy.get('[data-cy="new-project-button"]').click();
+      cy.get('[data-cy="profile-context-menu"]').click();
+      cy.get('[data-cy="dropdown-menu"] [data-cy="new-project"]').click({
+        force: true
+      });
       cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");
       cy.get("body").type("{esc}");
-      cy.contains("My Projects").should("exist");
+      cy.get('[data-cy="profile-screen"]').should("exist");
     });
   });
 

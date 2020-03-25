@@ -1,9 +1,11 @@
 <script>
   import { pop, replace } from "svelte-spa-router";
 
+  import * as path from "../lib/path.js";
   import { showNotification } from "../store/notification.js";
   import { ModalLayout, Placeholder } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
+
   import IdentityCreationForm from "./Identity/IdentityCreationForm.svelte";
   import IdentityCreationSuccess from "./Identity/IdentityCreationSuccess.svelte";
 
@@ -68,6 +70,6 @@
       {onError}
       onCancel={returnToWelcomeStep} />
   {:else if currentStep === steps.SUCCESS}
-    <IdentityCreationSuccess onClose={() => replace('/projects')} />
+    <IdentityCreationSuccess onClose={() => replace(path.profile())} />
   {/if}
 </ModalLayout>
