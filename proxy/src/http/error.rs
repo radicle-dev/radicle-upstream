@@ -45,7 +45,10 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             )
         }
     };
-    let res = reply::json(&Error { message, variant });
+    let res = reply::json(&Error {
+        message: message.to_string(),
+        variant: variant.to_string(),
+    });
 
     Ok(reply::with_status(res, code))
 }
