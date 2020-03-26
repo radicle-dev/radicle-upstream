@@ -1,5 +1,6 @@
 <script>
-  import { MAIN_IPC_CHANNEL } from "../../../lib/types.js";
+  import { getDirectoryPath } from "../../../../native/ipc.js";
+
   import Button from "../Button.svelte";
   import TextInput from "./Text.svelte";
 
@@ -9,15 +10,8 @@
   export let path = null;
   export let validationMessage = null;
 
-  // We have to be able to select empty directories when we create new
-  // projects. Unfortunately we can't use the HTML5 open dialog via
-  // <input type="file"> for this. Although it lets us select directories,
-  // it doesn't fire an event when an empty directory is selected.
-  //
-  // The workaround is to use the electron native open dialog. As a bonus we
-  // can configure it to allow users to create new directories.
   const openFileDialog = async () => {
-    path = await window.electron.ipcRenderer.invoke(MAIN_IPC_CHANNEL);
+    path = await getDirectoryPath();
   };
 </script>
 

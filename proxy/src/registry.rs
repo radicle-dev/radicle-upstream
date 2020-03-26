@@ -354,6 +354,7 @@ impl Registry {
     }
 }
 
+#[allow(clippy::panic, clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod tests {
     use radicle_registry_client::{ed25519, Client, ClientT, Hash, OrgId, ProjectName, TxHash};
@@ -444,7 +445,7 @@ mod tests {
         assert!(registration.is_ok());
 
         // The org needs funds to submit transactions.
-        let org = futures::executor::block_on(client.get_org(org_id.clone()))
+        let org = futures::executor::block_on(client.get_org(org_id))
             .unwrap()
             .unwrap();
         futures::executor::block_on(registry.prepay_account(org.account_id.clone(), 1000)).unwrap();

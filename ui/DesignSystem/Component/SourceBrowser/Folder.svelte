@@ -12,7 +12,7 @@
     objectPathStore
   } from "../../../store/sourceBrowser.js";
   import * as path from "../../../lib/path.js";
-  import { TREE } from "../../../lib/types.js";
+  import { TREE } from "../../../../native/types.js";
 
   export let prefix = ""; // start sidebar tree from repository root
   export let name = null;
