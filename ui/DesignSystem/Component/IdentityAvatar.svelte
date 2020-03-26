@@ -9,6 +9,7 @@
   export let showTitle = false;
   export let style = null;
   export let size = null;
+  export let titleSuffix = null;
 </script>
 
 <Avatar
@@ -16,5 +17,5 @@
   {size}
   avatarFallback={$identityAvatarFallbackStore}
   imageUrl={$identityAvatarUrlStore}
-  title={showTitle ? $identityHandleStore : null}
+  title={showTitle ? (titleSuffix ? $identityHandleStore + titleSuffix : $identityHandleStore) : null}
   variant="user" />

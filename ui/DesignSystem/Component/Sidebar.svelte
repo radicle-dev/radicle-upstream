@@ -161,7 +161,7 @@
       data-cy="profile"
       class:active={path.active(path.profile(), $location, true)}>
       <a href={path.profileProjects()} use:link>
-        <IdentityAvatar size="medium" showTitle={false} />
+        <IdentityAvatar size="medium" />
       </a>
 
       <div class="tooltip">

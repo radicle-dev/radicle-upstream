@@ -9,10 +9,10 @@
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
+    ProjectAvatar,
     SidebarLayout,
     Topbar,
-    TrackToggle,
-    IdentityAvatar
+    TrackToggle
   } from "../DesignSystem/Component";
 
   import {
@@ -55,9 +55,23 @@
       project(id: $id) {
         id
         metadata {
-          name
+          defaultBranch
           description
           imgUrl
+          name
+        }
+        registered {
+          ... on OrgRegistration {
+            orgId
+          }
+          ... on UserRegistration {
+            userId
+          }
+        }
+        stats {
+          branches
+          commits
+          contributors
         }
       }
     }
@@ -118,11 +132,12 @@
   dataCy="page-container">
   {#await $project then result}
     <Topbar style="position: fixed; top: 0;">
-      <a slot="left" href={path.profileProjects()} use:link>
-        <IdentityAvatar
-          showTitle={true}
-          size={'regular'}
-          style="color: var(--color-purple)" />
+      <a slot="left" href={path.projectSource(params.id)} use:link>
+        <!-- TODO(rudolfs): show whether the project is registered under user or org -->
+        <ProjectAvatar
+          title={result.data.project.metadata.name}
+          user={result.data.project.registered}
+          org={result.data.project.registered} />
       </a>
 
       <div slot="middle">

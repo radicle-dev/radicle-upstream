@@ -103,13 +103,16 @@
       style="background: var(--color-lightgray)" />
   {/if}
 
-  {#if title && (size === 'regular' || size === 'medium')}
-    <Title style="white-space: nowrap; margin-left: 16px">{title}</Title>
-  {/if}
-
-  {#if title && size === 'big'}
-    <Title variant="big" style="white-space: nowrap; margin-left: 16px">
-      {title}
-    </Title>
+  {#if title}
+    {#if size === 'big'}
+      <Title variant="big" style="white-space: nowrap; margin-left: 12px">
+        {title}
+      </Title>
+    {:else}
+      <Title
+        style="white-space: nowrap; margin-left: 12px; color: var(--color-black)">
+        {title}
+      </Title>
+    {/if}
   {/if}
 </div>
