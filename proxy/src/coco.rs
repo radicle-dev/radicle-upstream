@@ -420,18 +420,17 @@ pub fn init_project(
     name: &str,
     description: &str,
     default_branch: &str,
-    img_url: &str,
+    img_url: Url,
 ) -> Result<(git::ProjectId, meta::Project), error::Error> {
     let key = keys::device::Key::new();
     let peer_id = peer::PeerId::from(key.public());
     let founder = meta::contributor::Contributor::new();
     let sources = git2::Repository::open(std::path::Path::new(path))?;
-    let img = Url::parse(img_url)?;
     let mut meta = meta::Project::new(name, &peer_id);
 
     meta.description = Some(description.to_string());
     meta.default_branch = default_branch.to_string();
-    meta.add_rel(meta::Relation::Url("img_url".to_string(), img));
+    meta.add_rel(meta::Relation::Url("img_url".to_string(), img_url));
 
     let id = git::GitProject::init(librad_paths, &key, &sources, meta.clone(), founder)?;
 
@@ -477,7 +476,7 @@ pub fn replicate_platinum(
     name: &str,
     description: &str,
     default_branch: &str,
-    img_url: &str,
+    img_url: Url,
 ) -> Result<(git::ProjectId, meta::Project), error::Error> {
     // Craft the absolute path to git-platinum fixtures.
     let mut platinum_path = env::current_dir()?;
@@ -564,25 +563,25 @@ pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), error::Err
                 "monokel",
                 "A looking glass into the future",
                 "master",
-                "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
+                Url::parse("https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg")?,
             ),
             (
                 "Monadic",
                 "Open source organization of amazing things.",
                 "master",
-                "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
+                Url::parse("https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg")?,
             ),
             (
                 "open source coin",
                 "Research for the sustainability of the open source community.",
                 "master",
-                "https://avatars0.githubusercontent.com/u/31632242",
+                Url::parse("https://avatars0.githubusercontent.com/u/31632242")?,
             ),
             (
                 "radicle",
                 "Decentralized open source collaboration",
                 "master",
-                "https://avatars0.githubusercontent.com/u/48290027",
+                Url::parse("https://avatars0.githubusercontent.com/u/48290027")?,
             ),
         ];
 

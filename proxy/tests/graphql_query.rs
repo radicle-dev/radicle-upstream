@@ -2,6 +2,7 @@
 extern crate juniper;
 
 use juniper::{InputValue, Variables};
+use librad::meta::Url;
 use pretty_assertions::assert_eq;
 use std::str::FromStr as _;
 use std::time;
@@ -605,7 +606,7 @@ fn project() {
                         "upstream",
                         "Code collaboration without intermediates.",
                         "master",
-                        "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
+                        Url::parse("https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png").unwrap(),
                     )
                     .expect("project init failed");
 

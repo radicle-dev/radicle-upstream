@@ -1,5 +1,6 @@
 //! Endpoints and serialisations for [`project::Project`] related types.
 
+use librad::meta::Url;
 use librad::paths::Paths;
 use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
 use serde::{Deserialize, Serialize, Serializer};
@@ -89,7 +90,7 @@ mod handler {
             &input.metadata.name,
             &input.metadata.description,
             &input.metadata.default_branch,
-            &input.metadata.img_url,
+            input.metadata.img_url,
         )?;
 
         Ok(reply::with_status(
@@ -242,7 +243,7 @@ pub struct MetadataInput {
     /// Configured default branch.
     default_branch: String,
     /// Display image of the project.
-    img_url: String,
+    img_url: Url,
 }
 
 /// Bundled input data for project registration.
@@ -258,6 +259,7 @@ pub struct RegisterInput {
 
 #[cfg(test)]
 mod tests {
+    use librad::meta::Url;
     use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
@@ -292,7 +294,8 @@ mod tests {
                     name: "Upstream".into(),
                     description: "Desktop client for radicle.".into(),
                     default_branch: "master".into(),
-                    img_url: "https://avatars0.githubusercontent.com/u/48290027".into(),
+                    img_url: Url::parse("https://avatars0.githubusercontent.com/u/48290027")
+                        .unwrap(),
                 },
             })
             .reply(&api)
@@ -332,7 +335,7 @@ mod tests {
             "Upstream",
             "Desktop client for radicle.",
             "master",
-            "https://avatars0.githubusercontent.com/u/48290027",
+            Url::parse("https://avatars0.githubusercontent.com/u/48290027").unwrap(),
         )
         .unwrap();
         let project = project::get(&librad_paths, &id.to_string()).await.unwrap();

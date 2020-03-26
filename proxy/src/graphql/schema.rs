@@ -3,6 +3,7 @@ use std::convert::TryFrom;
 use std::str::FromStr;
 use std::sync;
 
+use librad::meta::Url;
 use librad::paths::Paths;
 use librad::surf;
 use librad::surf::git::git2;
@@ -89,7 +90,7 @@ impl Mutation {
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
-            &metadata.img_url,
+            Url::parse(&metadata.img_url)?,
         )?;
 
         Ok(project::Project {
@@ -368,7 +369,7 @@ impl ControlMutation {
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
-            &metadata.img_url,
+            Url::parse(&metadata.img_url)?,
         )?;
 
         Ok(project::Project {
