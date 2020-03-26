@@ -15,11 +15,6 @@
 
   const dropdownMenuItems = [
     {
-      title: "Share project",
-      icon: Icon.ArrowUp,
-      event: () => console.log(`event(share-project(${projectId}))`)
-    },
-    {
       title: "Register project",
       icon: Icon.Register,
       event: () => push(registerProject(projectId))
@@ -81,6 +76,8 @@
     <Stat icon={Icon.Branch} count={branchCount} style="margin-right: 32px;" />
     <Stat icon={Icon.Member} count={memberCount} style="margin-right: 44px;" />
 
-    <AdditionalActionsDropdown menuItems={dropdownMenuItems} />
+    <AdditionalActionsDropdown
+      headerTitle={projectId}
+      menuItems={dropdownMenuItems} />
   </div>
 </div>
