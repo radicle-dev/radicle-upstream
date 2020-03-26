@@ -2,39 +2,35 @@ export const orgMocks = {
   data: {
     orgs: [
       {
-        id: "monadic",
+        id: "%monadic",
         metadata: {
-          name: "monadic",
-          avatarUrl:
-            "https://avatars1.githubusercontent.com/u/48515895?s=200&v=4"
+          name: "monadic"
         },
         avatarFallback: {
+          emoji: "☔️",
           background: {
-            b: 216,
-            g: 105,
-            r: 24
-          },
-          emoji: "🚡"
+            b: 61,
+            g: 187,
+            r: 148
+          }
         }
       },
       {
-        id: "sveltejs",
+        id: "%sveltejs",
         metadata: {
-          name: "sveltejs",
-          avatarUrl:
-            "https://avatars2.githubusercontent.com/u/23617963?s=200&v=4"
+          name: "sveltejs"
         },
         avatarFallback: {
+          emoji: "🚊",
           background: {
-            b: 216,
-            g: 105,
-            r: 24
-          },
-          emoji: "🚡"
+            b: 112,
+            g: 27,
+            r: 205
+          }
         }
       },
       {
-        id: "radicle",
+        id: "%radicle",
         metadata: {
           name: "radicle-org"
         },
@@ -48,7 +44,7 @@ export const orgMocks = {
         }
       },
       {
-        id: "monocleorg",
+        id: "%monocleorg",
         metadata: {
           name: "monocleorg"
         },
