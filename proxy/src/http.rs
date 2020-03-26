@@ -18,7 +18,7 @@ pub async fn run(librad_paths: paths::Paths, reg: registry::Registry) {
     );
 
     // TODO(xla): Pass down as configuration with sane defaults.
-    warp::serve(api).run(([127, 0, 0, 1], 8090)).await;
+    warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 }
 
 /// State filter to expose the [`librad::paths::Paths`] to handlers.
