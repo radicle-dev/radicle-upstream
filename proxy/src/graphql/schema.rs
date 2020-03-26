@@ -68,6 +68,7 @@ impl Mutation {
                 display_name,
                 avatar_url,
             },
+            registered: None,
         })
     }
 
@@ -321,6 +322,7 @@ impl Query {
                 display_name: Some("Alexis Sellier".into()),
                 avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
             },
+            registered: None,
         }))
     }
 
@@ -579,6 +581,12 @@ impl identity::Identity {
 
     fn metadata(&self) -> &identity::Metadata {
         &self.metadata
+    }
+
+    fn registered(&self) -> Option<juniper::ID> {
+        self.registered
+            .as_ref()
+            .map(|r| juniper::ID::new(r.to_string()))
     }
 
     fn avatar_fallback(&self) -> avatar::Avatar {
