@@ -39,7 +39,7 @@
     return txs.map(tx => {
       return {
         id: tx.id,
-        message: "User registrsation",
+        message: "User registration",
         state: "pending",
         progress: 0
       };
@@ -48,6 +48,7 @@
 </script>
 
 {#await $transactions then result}
+  <!-- TODO(merle): Remove logging -->
   {console.log(result)}
   {#if result.data.listTransactions.transactions.length > 0}
     <TxAccordion

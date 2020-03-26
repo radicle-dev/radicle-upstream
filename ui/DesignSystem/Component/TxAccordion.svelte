@@ -83,7 +83,12 @@
   .pipeline {
     border: 1px solid var(--color-lightgray);
     border-radius: 4px;
+    box-shadow: 0px 4px 8px var(--color-lightgray-opacity-08);
     width: 274px;
+  }
+
+  .negative {
+    border: 1px solid var(--color-red);
   }
 
   .cards {
@@ -113,7 +118,7 @@
   }
 </style>
 
-<div class="pipeline" {style}>
+<div class="pipeline" class:negative={iconState === 'negative'} {style}>
   <div class="cards" class:hidden>
     {#each transactions as tx}
       <!-- TODO: Link card to tx detail view -->
