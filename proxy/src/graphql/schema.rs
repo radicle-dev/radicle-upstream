@@ -296,18 +296,21 @@ impl Query {
     fn list_transactions(
         ctx: &Context,
         ids: Vec<juniper::ID>,
-    ) -> Result<Vec<registry::Transaction>, error::Error> {
+    ) -> Result<ListTransactions, error::Error> {
         let tx_ids = ids
             .iter()
             .map(|id| radicle_registry_client::TxHash::from_slice(id.to_string().as_bytes()))
             .collect();
 
-        Ok(futures::executor::block_on(
-            ctx.registry
-                .read()
-                .expect("unable to acquire read lock")
-                .list_transactions(tx_ids),
-        )?)
+        Ok(ListTransactions {
+            transactions: futures::executor::block_on(
+                ctx.registry
+                    .read()
+                    .expect("unable to acquire read lock")
+                    .list_transactions(tx_ids),
+            )?,
+            thresholds: registry::Registry::thresholds(),
+        })
     }
 
     fn identity(
@@ -732,6 +735,36 @@ impl project::Stats {
 
     fn contributors(&self) -> i32 {
         i32::try_from(self.contributors).expect("unable to convert branches number")
+    }
+}
+
+/// Response wrapper for listTransactions query.
+struct ListTransactions {
+    /// The configured Registry thresholds for transaction acceptance stages.
+    thresholds: registry::Thresholds,
+    /// The known and cached transactions.
+    transactions: Vec<registry::Transaction>,
+}
+
+#[juniper::object]
+impl ListTransactions {
+    fn transactions(&self) -> &Vec<registry::Transaction> {
+        &self.transactions
+    }
+
+    fn thresholds(&self) -> &registry::Thresholds {
+        &self.thresholds
+    }
+}
+
+#[juniper::object]
+impl registry::Thresholds {
+    fn confirmation(&self) -> i32 {
+        i32::try_from(self.confirmation).expect("conversion failed")
+    }
+
+    fn settlement(&self) -> i32 {
+        i32::try_from(self.settlement).expect("conversion failed")
     }
 }
 

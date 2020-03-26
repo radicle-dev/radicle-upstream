@@ -555,12 +555,18 @@ async fn list_transactions() {
     vars.insert("ids".into(), InputValue::list(vec![]));
     let query = "query($ids: [ID!]!) {
             listTransactions(ids: $ids) {
-                messages {
-                    ... on ProjectRegistrationMessage {
-                        projectName,
-                        orgId
-                    }
-                },
+                transactions {
+                    messages {
+                        ... on ProjectRegistrationMessage {
+                            projectName,
+                            orgId
+                        }
+                    },
+                }
+                thresholds {
+                    confirmation
+                    settlement
+                }
             }
         }";
 
@@ -577,16 +583,22 @@ async fn list_transactions() {
     assert_eq!(
         res,
         graphql_value!({
-            "listTransactions": [
-                {
-                    "messages": [
-                        {
-                            "projectName": "upstream",
-                            "orgId": "radicle",
-                        },
-                    ],
-                }
-            ],
+            "listTransactions": {
+                "transactions": [
+                    {
+                        "messages": [
+                            {
+                                "projectName": "upstream",
+                                "orgId": "radicle",
+                            },
+                        ],
+                    }
+                ],
+                "thresholds": {
+                    "confirmation": 3,
+                    "settlement": 9,
+                },
+            },
         })
     );
 }
