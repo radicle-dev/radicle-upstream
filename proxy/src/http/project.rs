@@ -4,10 +4,9 @@ use librad::meta::Url;
 use librad::paths::Paths;
 use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
 use serde::{Deserialize, Serialize, Serializer};
-use std::convert::Infallible;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use warp::{path, reply, Filter, Rejection, Reply};
+use warp::{path, Filter, Rejection, Reply};
 
 use crate::project;
 use crate::registry;
@@ -64,7 +63,7 @@ fn register_filter(
 mod handler {
     use librad::paths;
     use librad::surf;
-    use radicle_registry_client::{ed25519, Balance};
+    use radicle_registry_client::Balance;
     use std::convert::Infallible;
     use std::sync::Arc;
     use tokio::sync::RwLock;
@@ -264,13 +263,11 @@ mod tests {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
-    use tempfile::tempdir_in as _;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
     use crate::coco;
-    use crate::error;
     use crate::project;
     use crate::registry;
 
@@ -329,7 +326,7 @@ mod tests {
         let path = repo_dir.path().to_str().unwrap().to_string();
         coco::init_repo(path.clone()).unwrap();
 
-        let (id, meta) = coco::init_project(
+        let (id, _meta) = coco::init_project(
             &librad_paths,
             &path,
             "Upstream",
@@ -348,10 +345,9 @@ mod tests {
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = json!(project);
 
         assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, want);
+        assert_eq!(have, json!(project));
     }
 
     #[tokio::test]
@@ -360,7 +356,7 @@ mod tests {
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
 
-        coco::setup_fixtures(&librad_paths, tmp_dir.path().as_os_str().to_str().unwrap());
+        coco::setup_fixtures(&librad_paths, tmp_dir.path().as_os_str().to_str().unwrap()).unwrap();
 
         let projects = coco::list_projects(&librad_paths)
             .into_iter()
@@ -375,10 +371,9 @@ mod tests {
         let res = request().method("GET").path("/projects").reply(&api).await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = json!(projects);
 
         assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, want);
+        assert_eq!(have, json!(projects));
     }
 
     #[tokio::test]
@@ -389,7 +384,10 @@ mod tests {
             radicle_registry_client::Client::new_emulator(),
         )));
 
-        let api = super::filters(librad_paths, registry.clone());
+        let api = super::filters(
+            librad_paths,
+            Arc::<RwLock<registry::Registry>>::clone(&registry),
+        );
         let res = request()
             .method("POST")
             .path("/projects/register")
@@ -409,16 +407,9 @@ mod tests {
             .unwrap();
         let tx = txs.first().unwrap();
 
-        let block_hash = if let registry::TransactionState::Applied(block_hash) = tx.state {
-            block_hash
-        } else {
-            radicle_registry_client::Hash::random()
-        };
-
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = json!(tx);
 
         assert_eq!(res.status(), StatusCode::CREATED);
-        assert_eq!(have, want);
+        assert_eq!(have, json!(tx));
     }
 }

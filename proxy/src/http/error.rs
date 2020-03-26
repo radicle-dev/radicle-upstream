@@ -59,7 +59,6 @@ mod tests {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use warp::reply::Reply as _;
-    use warp::test::request;
     use warp::Rejection;
 
     #[tokio::test]
