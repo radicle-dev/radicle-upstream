@@ -557,6 +557,7 @@ async fn list_transactions() {
             listTransactions(ids: $ids) {
                 messages {
                     ... on ProjectRegistrationMessage {
+                        kind,
                         projectName,
                         orgId
                     }
@@ -581,6 +582,7 @@ async fn list_transactions() {
                 {
                     "messages": [
                         {
+                            "kind": "PROJECT_REGISTRATION",
                             "projectName": "upstream",
                             "orgId": "radicle",
                         },
