@@ -1,6 +1,7 @@
 <script>
   import Sidebar from "./Sidebar.svelte";
   import NotificationFaucet from "./NotificationFaucet.svelte";
+  import TxCenter from "./TxCenter.svelte";
 
   export let dataCy = null;
   export let style = null;
@@ -33,4 +34,5 @@
       <slot />
     </div>
   </div>
+  <TxCenter />
 </div>

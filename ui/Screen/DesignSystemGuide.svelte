@@ -18,8 +18,12 @@
     Rad,
     Row,
     StepCounter,
+<<<<<<< HEAD
     TrackToggle,
     TxPipeline,
+=======
+    TxAccordion,
+>>>>>>> Integrate tx center in sidebar layout & query
     UserCard
   } from "../DesignSystem/Component";
 
@@ -673,20 +677,20 @@
     </Swatch>
   </Section>
 
-  <Section title="Transaction Pipeline" subTitle="...">
+  <Section title="Transaction Center" subTitle="...">
     <div style="display: flex;">
       <div style="position: relative; height: 200px; width: 280px;">
-        <TxPipeline
+        <TxAccordion
           transactions={txs1}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
       <div style="position: relative; height: 200px; width: 280px;">
-        <TxPipeline
+        <TxAccordion
           transactions={txs2}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
       <div style="position: relative; height: 200px; width: 280px;">
-        <TxPipeline
+        <TxAccordion
           transactions={txs3}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>

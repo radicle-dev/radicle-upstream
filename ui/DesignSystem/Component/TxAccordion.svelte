@@ -98,6 +98,8 @@
 
   .summary {
     height: 56px;
+    background-color: var(--color-white);
+    border-radius: 3px;
   }
 
   .description {
