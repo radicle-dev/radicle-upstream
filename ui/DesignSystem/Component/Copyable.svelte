@@ -4,7 +4,12 @@
 
   let slotContent;
 
-  const copy = () => copyToClipboard(slotContent.textContent);
+  const copy = () => {
+    copyToClipboard(slotContent.textContent.trim());
+    afterCopy();
+  };
+
+  export let afterCopy = () => {};
 </script>
 
 <style>

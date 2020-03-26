@@ -1,5 +1,6 @@
 <script>
   import ClickOutside from "svelte-click-outside";
+  import { fade } from "svelte/transition";
 
   import { Icon, Text } from "../Primitive";
   import Copyable from "./Copyable.svelte";
@@ -13,6 +14,16 @@
 
   const hideModal = () => {
     expanded = false;
+  };
+
+  let copyIcon = Icon.Copy;
+
+  const afterCopy = () => {
+    copyIcon = Icon.Check;
+    setTimeout(() => {
+      copyIcon = Icon.Copy;
+      hideModal();
+    }, 250);
   };
 
   const handleItemSelection = item => {
@@ -103,16 +114,18 @@
   </button>
   <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
     {#if expanded}
-      <div class="modal" hidden={!expanded}>
+      <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
         {#if headerTitle}
-          <Copyable>
+          <Copyable {afterCopy}>
             <div class="header">
               <Text
                 style="white-space: nowrap; overflow: hidden; text-overflow:
                 ellipsis; max-width: 170px;">
                 {headerTitle}
               </Text>
-              <Icon.Copy style="margin-left: 8px; min-width: 16px;" />
+              <svelte:component
+                this={copyIcon}
+                style="margin-left: 8px; min-width: 16px;" />
             </div>
           </Copyable>
         {/if}
