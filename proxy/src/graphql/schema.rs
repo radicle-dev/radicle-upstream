@@ -780,11 +780,13 @@ impl registry::Transaction {
             .map(|m| match m {
                 registry::Message::OrgRegistration(org_id) => {
                     Message::OrgRegistration(OrgRegistrationMessage {
+                        kind: MessageKind::OrgRegistration,
                         org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
                 registry::Message::OrgUnregistration(org_id) => {
                     Message::OrgUnregistration(OrgUnregistrationMessage {
+                        kind: MessageKind::OrgUnregistration,
                         org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
@@ -792,11 +794,13 @@ impl registry::Transaction {
                     project_name,
                     org_id,
                 } => Message::ProjectRegistration(ProjectRegistrationMessage {
+                    kind: MessageKind::ProjectRegistration,
                     project_name: juniper::ID::new(project_name.to_string()),
                     org_id: juniper::ID::new(org_id.to_string()),
                 }),
                 registry::Message::UserRegistration { handle, id } => {
                     Message::UserRegistration(UserRegistrationMessage {
+                        kind: MessageKind::UserRegistration,
                         handle: juniper::ID::new(handle.to_string()),
                         id: juniper::ID::new(id.to_string()),
                     })
@@ -840,6 +844,22 @@ enum Message {
     UserRegistration(UserRegistrationMessage),
 }
 
+/// Kind of the transaction message.
+#[derive(juniper::GraphQLEnum)]
+enum MessageKind {
+    /// Registration of a new org.
+    OrgRegistration,
+
+    /// Registration of a new org.
+    OrgUnregistration,
+
+    /// Registration of a new project.
+    ProjectRegistration,
+
+    /// Registration of a new user.
+    UserRegistration,
+}
+
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
         &OrgRegistrationMessage => match *self {
@@ -864,6 +884,8 @@ juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
 /// Contextual information for an org registration message.
 #[derive(juniper::GraphQLObject)]
 struct OrgRegistrationMessage {
+    /// Field to distinguish [`Message`] types.
+    kind: MessageKind,
     /// The ID of the org.
     org_id: juniper::ID,
 }
@@ -871,6 +893,8 @@ struct OrgRegistrationMessage {
 /// Contextual information for an org unregistration message.
 #[derive(juniper::GraphQLObject)]
 struct OrgUnregistrationMessage {
+    /// Field to distinguish [`Message`] types.
+    kind: MessageKind,
     /// The ID of the org.
     org_id: juniper::ID,
 }
@@ -878,6 +902,8 @@ struct OrgUnregistrationMessage {
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistrationMessage {
+    /// Field to distinguish [`Message`] types.
+    kind: MessageKind,
     /// Actual project name, unique under org.
     project_name: juniper::ID,
     /// The org under which to register the project.
@@ -887,6 +913,8 @@ struct ProjectRegistrationMessage {
 /// Payload of a user registration message.
 #[derive(juniper::GraphQLObject)]
 struct UserRegistrationMessage {
+    /// Field to distinguish [`Message`] types.
+    kind: MessageKind,
     /// The chosen unique handle to be registered.
     handle: juniper::ID,
     /// The id of the coco identity.
