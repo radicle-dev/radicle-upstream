@@ -1,6 +1,8 @@
 <script>
   import ClickOutside from "svelte-click-outside";
+
   import { Icon, Text } from "../Primitive";
+  import Copyable from "./Copyable.svelte";
 
   let triggerEl;
   let expanded = false;
@@ -57,11 +59,11 @@
   }
 
   .header {
-    padding: 12px;
+    padding: 12px 16px;
     border-bottom: solid 1px var(--color-lightgray);
-    display: flex;
-    cursor: pointer;
     color: var(--color-gray);
+    display: flex;
+    justify-content: space-between;
   }
 
   .header:hover {
@@ -90,10 +92,18 @@
   <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
     {#if expanded}
       <div class="modal" hidden={!expanded}>
-        <div class="header">
-          <Text>{headerTitle}</Text>
-          <svelte:component this={Icon.Copy} style="margin-left: 8px;" />
-        </div>
+        <Copyable>
+          <div class="header">
+            <Text
+              style="white-space: nowrap; overflow: hidden; text-overflow:
+              ellipsis; max-width: 170px;">
+              {headerTitle}
+            </Text>
+            <svelte:component
+              this={Icon.Copy}
+              style="margin-left: 8px; min-width: 16px;" />
+          </div>
+        </Copyable>
         <div class="menu">
           {#each menuItems as item}
             <div class="menu-item" on:click={handleItemSelection(item)}>

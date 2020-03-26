@@ -1,4 +1,5 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
+import Copyable from "./Copyable.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
@@ -18,6 +19,7 @@ import UserCard from "./UserCard.svelte";
 
 export {
   AdditionalActionsDropdown,
+  Copyable,
   Notification,
   NotificationFaucet,
   ModalLayout,
