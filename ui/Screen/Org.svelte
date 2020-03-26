@@ -87,7 +87,7 @@
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="page-container">
   <Topbar style="position: fixed; top: 0;">
-    <a slot="left" href={path.profileProjects()} use:link>
+    <a slot="left" href={path.orgProjects(params.id)} use:link>
       <Avatar
         title={org.metadata.name}
         imageUrl={org.metadata.avatarUrl}
