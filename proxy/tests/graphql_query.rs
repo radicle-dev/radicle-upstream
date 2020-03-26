@@ -669,6 +669,7 @@ fn identity() {
                         displayName
                         avatarUrl
                     }
+                    registered
                     avatarFallback {
                         emoji
                         background {
@@ -693,6 +694,7 @@ fn identity() {
                             "displayName": "Alexis Sellier",
                             "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
                         },
+                        "registered": None,
                         "avatarFallback": {
                             "emoji": "🚡",
                             "background": {
