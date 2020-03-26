@@ -1,7 +1,7 @@
 import regexparam from "regexparam";
 
 import { DEFAULT_PROJECT_REVISION } from "../config.js";
-import { BLOB, TREE } from "./types.js";
+import { BLOB, TREE } from "../../native/types.js";
 
 const PROJECT_SOURCE_PATH_MATCH = new RegExp(
   `/source/(.*)/(${BLOB}|${TREE})/(.*)`

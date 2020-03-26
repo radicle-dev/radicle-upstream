@@ -4,7 +4,7 @@
   import { format } from "timeago.js";
   import { link } from "svelte-spa-router";
 
-  import { TREE } from "../../../lib/types.js";
+  import { TREE } from "../../../../native/types.js";
   import * as path from "../../../lib/path.js";
 
   import { Caption, Icon, Text } from "../../Primitive";

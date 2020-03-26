@@ -72,6 +72,14 @@ pub enum TransactionState {
     Applied(Hash),
 }
 
+/// Configured thresholds for acceptance criteria of transaction progress.
+pub struct Thresholds {
+    /// Number of blocks after which a [`Transaction`] is assumed to be confirmed.
+    pub confirmation: u64,
+    /// Number of blocks after which a [`Transaction`] is assumed to be settled.
+    pub settlement: u64,
+}
+
 /// Registry client wrapper.
 #[derive(Clone)]
 pub struct Registry {
@@ -352,8 +360,18 @@ impl Registry {
 
         Ok(tx)
     }
+
+    /// Returns the configured thresholds for [`Transaction`] acceptance stages.
+    #[must_use]
+    pub const fn thresholds() -> Thresholds {
+        Thresholds {
+            confirmation: 3,
+            settlement: 9,
+        }
+    }
 }
 
+#[allow(clippy::panic, clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod tests {
     use radicle_registry_client::{ed25519, Client, ClientT, Hash, OrgId, ProjectName, TxHash};
@@ -444,7 +462,7 @@ mod tests {
         assert!(registration.is_ok());
 
         // The org needs funds to submit transactions.
-        let org = futures::executor::block_on(client.get_org(org_id.clone()))
+        let org = futures::executor::block_on(client.get_org(org_id))
             .unwrap()
             .unwrap();
         futures::executor::block_on(registry.prepay_account(org.account_id.clone(), 1000)).unwrap();

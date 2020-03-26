@@ -15,11 +15,19 @@
       projects {
         id
         metadata {
+          defaultBranch
+          imgUrl
           description
           name
-          imgUrl
         }
-        registered
+        registered {
+          ... on OrgRegistration {
+            orgId
+          }
+          ... on UserRegistration {
+            userId
+          }
+        }
         stats {
           branches
           commits

@@ -36,7 +36,7 @@
     mutation($handle: ID!, $id: ID!) {
       registerUser(handle: $handle, id: $id) {
         messages {
-          ... on UserRegistration {
+          ... on UserRegistrationMessage {
             handle
             id
           }

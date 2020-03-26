@@ -7,7 +7,7 @@
     revisionStore
   } from "../../store/sourceBrowser.js";
 
-  import { BLOB } from "../../lib/types.js";
+  import { BLOB } from "../../../native/types.js";
   import FileList from "./SourceBrowser/FileList.svelte";
   import FileSource from "./SourceBrowser/FileSource.svelte";
   import Folder from "./SourceBrowser/Folder.svelte";

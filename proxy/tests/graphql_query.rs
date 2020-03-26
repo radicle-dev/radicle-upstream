@@ -555,12 +555,19 @@ async fn list_transactions() {
     vars.insert("ids".into(), InputValue::list(vec![]));
     let query = "query($ids: [ID!]!) {
             listTransactions(ids: $ids) {
-                messages {
-                    ... on ProjectRegistration {
-                        projectName,
-                        orgId
-                    }
-                },
+                transactions {
+                    messages {
+                        ... on ProjectRegistrationMessage {
+                            kind,
+                            projectName,
+                            orgId
+                        }
+                    },
+                }
+                thresholds {
+                    confirmation
+                    settlement
+                }
             }
         }";
 
@@ -577,16 +584,23 @@ async fn list_transactions() {
     assert_eq!(
         res,
         graphql_value!({
-            "listTransactions": [
-                {
-                    "messages": [
-                        {
-                            "projectName": "upstream",
-                            "orgId": "radicle",
-                        },
-                    ],
-                }
-            ],
+            "listTransactions": {
+                "transactions": [
+                    {
+                        "messages": [
+                            {
+                                "kind": "PROJECT_REGISTRATION",
+                                "projectName": "upstream",
+                                "orgId": "radicle",
+                            },
+                        ],
+                    }
+                ],
+                "thresholds": {
+                    "confirmation": 3,
+                    "settlement": 9,
+                },
+            },
         })
     );
 }
@@ -609,16 +623,26 @@ fn project() {
                     )
                     .expect("project init failed");
 
+        let id = project_id.to_string();
         let mut vars = Variables::new();
-        vars.insert("id".into(), InputValue::scalar(project_id.to_string()));
+        vars.insert("id".into(), InputValue::scalar(id.clone()));
 
         let query = "query($id: ID!) {
                     project(id: $id) {
+                        id
                         metadata {
                             name
                             description
                             defaultBranch
                             imgUrl
+                        }
+                        registered {
+                            ... on OrgRegistration {
+                                orgId
+                            }
+                            ... on UserRegistration {
+                                userId
+                            }
                         }
                     }
                 }";
@@ -629,12 +653,14 @@ fn project() {
                 res,
                 graphql_value!({
                     "project": {
+                        "id": id,
                         "metadata": {
                             "name": "upstream",
                             "description": "Code collaboration without intermediates.",
                             "defaultBranch": "master",
                             "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
                         },
+                        "registered": None,
                     },
                 })
             );
@@ -657,6 +683,7 @@ fn identity() {
                         displayName
                         avatarUrl
                     }
+                    registered
                     avatarFallback {
                         emoji
                         background {
@@ -681,6 +708,7 @@ fn identity() {
                             "displayName": "Alexis Sellier",
                             "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
                         },
+                        "registered": None,
                         "avatarFallback": {
                             "emoji": "🚡",
                             "background": {

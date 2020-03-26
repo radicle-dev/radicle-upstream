@@ -1,6 +1,8 @@
 <script>
   import ClickOutside from "svelte-click-outside";
+
   import { Icon, Text } from "../Primitive";
+  import Copyable from "./Copyable.svelte";
 
   let triggerEl;
   let expanded = false;
@@ -59,11 +61,11 @@
   }
 
   .header {
-    padding: 12px;
+    padding: 12px 16px;
     border-bottom: solid 1px var(--color-lightgray);
-    display: flex;
-    cursor: pointer;
     color: var(--color-gray);
+    display: flex;
+    justify-content: space-between;
   }
 
   .header:hover {
@@ -103,14 +105,16 @@
     {#if expanded}
       <div class="modal" hidden={!expanded}>
         {#if headerTitle}
-          <div class="header">
-            <Text
-              style="width: 200px; white-space: nowrap; overflow: hidden;
-              text-overflow: ellipsis;">
-              {headerTitle}
-            </Text>
-            <Icon.Copy style="margin-left: 8px;" />
-          </div>
+          <Copyable>
+            <div class="header">
+              <Text
+                style="white-space: nowrap; overflow: hidden; text-overflow:
+                ellipsis; max-width: 170px;">
+                {headerTitle}
+              </Text>
+              <Icon.Copy style="margin-left: 8px; min-width: 16px;" />
+            </div>
+          </Copyable>
         {/if}
 
         <div class="menu" data-cy="dropdown-menu">

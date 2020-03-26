@@ -29,6 +29,7 @@ fn create_identity() {
                         displayName
                         avatarUrl
                     }
+                    registered
                 }
             }";
 
@@ -45,6 +46,7 @@ fn create_identity() {
                             "displayName": "Alexis Sellier",
                             "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
                         },
+                        "registered": None,
                     },
                 })
             );
@@ -140,7 +142,14 @@ fn create_project() {
                         defaultBranch
                         imgUrl
                     }
-                    registered
+                    registered {
+                        ... on OrgRegistration {
+                            orgId
+                        }
+                        ... on UserRegistration {
+                            userId
+                        }
+                    }
                     stats {
                         branches
                         commits
@@ -161,7 +170,7 @@ fn create_project() {
                             "defaultBranch": "master",
                             "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
                         },
-                        "registered": false,
+                        "registered": None,
                         "stats": {
                             "branches": 11,
                             "commits": 267,
@@ -186,7 +195,7 @@ fn register_project() {
         let query = "mutation($projectName: String!, $orgId: String!) {
                         registerProject(projectName: $projectName, orgId: $orgId) {
                             messages {
-                                ... on ProjectRegistration {
+                                ... on ProjectRegistrationMessage {
                                     projectName,
                                     orgId
                                 }
@@ -219,7 +228,7 @@ fn register_user() {
         let query = "mutation($handle: ID!, $id: ID!) {
                         registerUser(handle: $handle, id: $id) {
                             messages {
-                                ... on UserRegistration {
+                                ... on UserRegistrationMessage {
                                     handle,
                                     id,
                                 }

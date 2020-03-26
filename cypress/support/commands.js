@@ -85,7 +85,7 @@ Cypress.Commands.add("registerUser", (handle = "nope", id = "123abcd.git") => {
       mutation RegisterUser($handle: ID!, $id: ID!) {
         registerUser(handle: $handle, id: $id) {
           messages {
-            ... on UserRegistration {
+            ... on UserRegistrationMessage {
               handle
               id
             }
