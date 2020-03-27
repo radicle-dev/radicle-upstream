@@ -9,6 +9,7 @@ context("project creation", () => {
     it("can be opened via the profile context menu and closed by pressing cancel", () => {
       cy.get('[data-cy="profile-context-menu"]').click();
       cy.get('[data-cy="dropdown-menu"] [data-cy="new-project"]').click({
+        // TODO(rudolfs): remove this once #246 is fixed
         force: true
       });
       cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");
@@ -19,6 +20,7 @@ context("project creation", () => {
     it("can be closed by pressing escape key", () => {
       cy.get('[data-cy="profile-context-menu"]').click();
       cy.get('[data-cy="dropdown-menu"] [data-cy="new-project"]').click({
+        // TODO(rudolfs): remove this once #246 is fixed
         force: true
       });
       cy.get('[data-cy="page"] [data-cy="create-project"]').should("exist");

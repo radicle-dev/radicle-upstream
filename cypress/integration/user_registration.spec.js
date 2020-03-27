@@ -5,6 +5,7 @@ context("user registration", () => {
       cy.get("body").type("{shift}t");
       cy.get('[data-cy="profile-context-menu"]').click();
       cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click({
+        // TODO(rudolfs): remove this once #246 is fixed
         force: true
       });
     });
