@@ -1,6 +1,4 @@
 <script>
-  import { link } from "svelte-spa-router";
-
   export let href = null;
   export let icon = null;
   export let title = null;
@@ -42,7 +40,7 @@
   }
 </style>
 
-<a {href} use:link>
+<a href={`#${href}`}>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-purple)" />
