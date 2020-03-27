@@ -1,6 +1,6 @@
 <script>
-  import { Avatar, Icon } from "../Primitive";
-  import IdentityAvatar from "./IdentityAvatar.svelte";
+  import { Avatar, Icon } from "../../DesignSystem/Primitive";
+  import { IdentityAvatar } from "../../DesignSystem/Component";
 
   export let org = null;
   export let user = null;

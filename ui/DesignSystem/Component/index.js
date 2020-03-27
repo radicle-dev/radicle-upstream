@@ -6,7 +6,6 @@ import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
 import Placeholder from "./Placeholder.svelte";
-import ProjectAvatar from "./ProjectAvatar.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
 import Rad from "./Rad.svelte";
@@ -30,7 +29,6 @@ export {
   NotificationFaucet,
   ModalLayout,
   Placeholder,
-  ProjectAvatar,
   ProjectCard,
   ProjectList,
   Rad,

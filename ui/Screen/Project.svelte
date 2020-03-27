@@ -9,7 +9,6 @@
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
-    ProjectAvatar,
     SidebarLayout,
     Topbar,
     TrackToggle
@@ -22,6 +21,8 @@
   } from "../store/sourceBrowser.js";
 
   import * as path from "../lib/path.js";
+
+  import Breadcrumb from "./Project/Breadcrumb.svelte";
 
   import Source from "./Project/Source.svelte";
   import Issues from "./Project/Issues.svelte";
@@ -134,7 +135,7 @@
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.projectSource(params.id)} use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->
-        <ProjectAvatar
+        <Breadcrumb
           title={result.data.project.metadata.name}
           user={result.data.project.registered}
           org={result.data.project.registered} />
