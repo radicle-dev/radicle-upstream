@@ -40,6 +40,8 @@
   }
 </style>
 
+<!-- svelte-spa-router link action is not reactive and breaks if the href
+     changes dynamically, this is why we have to spell out the href manually -->
 <a href={`#${href}`}>
   {#if active}
     <div class="icon">
