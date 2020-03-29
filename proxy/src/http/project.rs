@@ -8,6 +8,7 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::notification;
 use crate::project;
 use crate::registry;
 
@@ -15,11 +16,12 @@ use crate::registry;
 pub fn filters(
     paths: Paths,
     registry: Arc<RwLock<registry::Registry>>,
+    subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(paths.clone())
         .or(create_filter(paths.clone()))
         .or(get_filter(paths))
-        .or(register_filter(registry))
+        .or(register_filter(registry, subscriptions))
 }
 
 /// POST /projects
@@ -50,11 +52,13 @@ fn list_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Reject
 /// POST /projects/register
 fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
+    subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / "register")
         .and(warp::post())
         .and(super::with_registry(registry))
         .and(warp::body::json())
+        .and(super::with_subscriptions(subscriptions))
         .and_then(handler::register)
 }
 
@@ -71,6 +75,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::notification;
     use crate::project;
     use crate::registry;
 
@@ -125,6 +130,7 @@ mod handler {
     pub async fn register(
         registry: Arc<RwLock<registry::Registry>>,
         input: super::RegisterInput,
+        subscriptions: notification::Subscriptions,
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -135,6 +141,10 @@ mod handler {
         let tx = reg
             .register_project(&fake_pair, input.project_name, input.org_id, None, fake_fee)
             .await?;
+
+        subscriptions
+            .broadcast(notification::Notification::Transaction(tx.clone()))
+            .await;
 
         Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
     }
@@ -256,8 +266,9 @@ pub struct RegisterInput {
     maybe_coco_id: Option<String>,
 }
 
+#[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
-mod tests {
+mod test {
     use librad::meta::Url;
     use librad::paths::Paths;
     use pretty_assertions::assert_eq;
@@ -268,6 +279,7 @@ mod tests {
     use warp::test::request;
 
     use crate::coco;
+    use crate::notification;
     use crate::project;
     use crate::registry;
 
@@ -276,12 +288,17 @@ mod tests {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let subscriptions = notification::Subscriptions::default();
 
         let repos_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
         let dir = tempfile::tempdir_in(repos_dir.path()).unwrap();
         let path = dir.path().to_str().unwrap();
 
-        let api = super::filters(librad_paths.clone(), Arc::new(RwLock::new(registry)));
+        let api = super::filters(
+            librad_paths.clone(),
+            Arc::new(RwLock::new(registry)),
+            subscriptions,
+        );
         let res = request()
             .method("POST")
             .path("/projects")
@@ -321,6 +338,7 @@ mod tests {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let subscriptions = notification::Subscriptions::default();
 
         let repo_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
         let path = repo_dir.path().to_str().unwrap().to_string();
@@ -337,7 +355,7 @@ mod tests {
         .unwrap();
         let project = project::get(&librad_paths, &id.to_string()).await.unwrap();
 
-        let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)));
+        let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)), subscriptions);
         let res = request()
             .method("GET")
             .path(&format!("/projects/{}", id.to_string()))
@@ -355,6 +373,7 @@ mod tests {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let subscriptions = notification::Subscriptions::default();
 
         coco::setup_fixtures(&librad_paths, tmp_dir.path().as_os_str().to_str().unwrap()).unwrap();
 
@@ -367,7 +386,7 @@ mod tests {
             })
             .collect::<Vec<project::Project>>();
 
-        let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)));
+        let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)), subscriptions);
         let res = request().method("GET").path("/projects").reply(&api).await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -383,10 +402,12 @@ mod tests {
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
+        let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
             librad_paths,
             Arc::<RwLock<registry::Registry>>::clone(&registry),
+            subscriptions,
         );
         let res = request()
             .method("POST")

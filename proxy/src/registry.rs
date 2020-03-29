@@ -14,7 +14,7 @@ use radicle_registry_client::{
 use crate::error;
 
 /// A container to dissiminate and apply operations on the [`Registry`].
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Transaction {
     /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
     /// the API consumer to query state changes of a transaction.
@@ -38,7 +38,7 @@ pub struct Metadata {
 }
 
 /// Possible messages a [`Transaction`] can carry.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
     /// Issue a new org registration with a given id.
     #[allow(dead_code)]
@@ -66,7 +66,7 @@ pub enum Message {
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
 /// whereabouts of a given [`Transaction`].
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TransactionState {
     /// [`Transaction`] has been applied to a block, carries the hash of the block.
     Applied(Hash),

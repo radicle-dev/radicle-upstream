@@ -50,9 +50,14 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
         variant: variant.to_string(),
     });
 
-    Ok(reply::with_status(res, code))
+    Ok(reply::with_header(
+        reply::with_status(res, code),
+        "content-type",
+        "application/json",
+    ))
 }
 
+#[allow(clippy::result_unwrap_used)]
 #[cfg(test)]
 mod tests {
     use futures::stream::TryStreamExt;

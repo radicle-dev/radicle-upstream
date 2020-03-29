@@ -34,5 +34,6 @@ pub mod error;
 pub mod graphql;
 pub mod http;
 mod identity;
+mod notification;
 mod project;
 pub mod registry;
