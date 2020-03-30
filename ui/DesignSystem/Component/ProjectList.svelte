@@ -52,13 +52,13 @@
     width: 100%;
     height: 96px;
     flex: 1;
-    border-bottom: 1px solid var(--color-lightgray);
+    border-bottom: 1px solid var(--color-foreground-level-3);
     cursor: pointer;
     padding: 22px 15px 26px 12px;
   }
 
   li:hover {
-    background-color: var(--color-almostwhite);
+    background-color: var(--color-foreground-level-1);
   }
 
   li:last-child {
@@ -105,10 +105,10 @@
       <div class="create-project">
         <Text
           variant="title"
-          style="color: var(--color-darkgray); margin-bottom: 13px">
+          style="color: var(--color-foreground-level-6); margin-bottom: 13px">
           You have no projects
         </Text>
-        <Text style="color: var(--color-gray)">
+        <Text style="color: var(--color-foreground-level-5)">
           Create a new project and share it with friends to get started
         </Text>
         <Button

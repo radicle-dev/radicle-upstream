@@ -72,7 +72,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
   }
 
   .avatar {
@@ -100,7 +100,7 @@
   {:else}
     <div
       class={`avatar ${avatarClass}`}
-      style="background: var(--color-lightgray)" />
+      style="background: var(--color-foreground-level-3)" />
   {/if}
 
   {#if title}
@@ -110,7 +110,8 @@
       </Title>
     {:else}
       <Title
-        style="white-space: nowrap; margin-left: 12px; color: var(--color-black)">
+        style="white-space: nowrap; margin-left: 12px; color:
+        var(--color-foreground)">
         {title}
       </Title>
     {/if}

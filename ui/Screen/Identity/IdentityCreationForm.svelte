@@ -163,7 +163,7 @@
 <div class="container">
   <div data-cy="form">
     <Title variant="big" style="text-align: center;">Create an identity</Title>
-    <Text style="margin: 20px 0; color: var(--color-gray);">
+    <Text style="margin: 20px 0; color: var(--color-foreground-level-5);">
       An identity is required to interact on the radicle network. Multiple
       devices can be linked to a single identity.
     </Text>

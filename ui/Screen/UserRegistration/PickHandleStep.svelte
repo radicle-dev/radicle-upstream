@@ -107,7 +107,7 @@
   dataCy="handle"
   {avatarFallback}
   {imageUrl}
-  style="--focus-outline-color: var(--color-pink)"
+  style="--focus-outline-color: var(--color-primary)"
   placeholder="User handle"
   bind:value={handle}
   valid={!(validations && validations.handle)}

@@ -305,7 +305,7 @@ overrides, components expose a `style` prop:
   <Input.Dropdown
     items={localBranches}
     bind:value={defaultBranch}
-    style="min-width: 240px; --focus-outline-color: var(--color-pink)" />
+    style="min-width: 240px; --focus-outline-color: var(--color-primary)" />
 ```
 
 For very common alignment cases we have a helper primitive called `<Flex>`.
@@ -370,8 +370,8 @@ be used so changes to global styling can be applied in a central place.
 ```html
 <style>
   button {
-    background-color: var(--color-black);
-    border-color: var(--color-orange-tint-65);
+    background-color: var(--color-foreground);
+    border-color: var(--color-caution-tint-65);
   }
 </style>
 

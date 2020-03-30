@@ -23,12 +23,12 @@
   }
 
   nav :global(.menu-list-item:hover p) {
-    color: var(--color-purple) !important;
+    color: var(--color-secondary) !important;
     font-family: var(--typeface-medium);
   }
 
   nav :global(.menu-list-item:hover .icon svg) {
-    fill: var(--color-purple);
+    fill: var(--color-secondary);
   }
 </style>
 

@@ -24,7 +24,7 @@
     display: flex;
     cursor: pointer;
     margin: 0 4px 12px 8px;
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
     flex: 1;
   }
 
@@ -38,12 +38,12 @@
   }
 
   .active a {
-    color: var(--color-purple);
+    color: var(--color-secondary);
     font-family: var(--typeface-medium);
   }
 
   .active :global(svg) {
-    fill: var(--color-purple);
+    fill: var(--color-secondary);
   }
 </style>
 

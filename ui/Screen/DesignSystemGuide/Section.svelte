@@ -21,7 +21,7 @@
 <div class="section">
   <div class="titles">
     <Title variant="big" style="margin-bottom: 8px">{title}</Title>
-    <Text style="color: var(--color-gray)">{subTitle}</Text>
+    <Text style="color: var(--color-foreground-level-5)">{subTitle}</Text>
   </div>
   <div class="content">
     <slot />

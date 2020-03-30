@@ -8,18 +8,18 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    background-color: var(--color-white);
+    background-color: var(--color-background);
     width: calc(100vw - var(--sidebar-width));
     height: var(--topbar-height);
     left: var(--sidebar-width);
-    border-bottom: 1px solid var(--color-lightgray);
+    border-bottom: 1px solid var(--color-foreground-level-3);
   }
 
   .left {
     display: flex;
     align-items: center;
     height: 100%;
-    border-right: 1px solid var(--color-lightgray);
+    border-right: 1px solid var(--color-foreground-level-3);
     padding-left: 16px;
     padding-right: 24px;
   }

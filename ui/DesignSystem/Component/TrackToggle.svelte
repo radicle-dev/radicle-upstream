@@ -14,21 +14,21 @@
     height: 36px;
     align-items: center;
     border-radius: 2px;
-    border: 1px solid var(--color-blue);
-    background-color: var(--color-white);
-    color: var(--color-white);
+    border: 1px solid var(--color-tertiary-level-6);
+    background-color: var(--color-background);
+    color: var(--color-background);
   }
 
   .left {
-    background-color: var(--color-blue);
+    background-color: var(--color-tertiary-level-6);
     display: flex;
     height: 36px;
     align-items: center;
   }
 
   .right {
-    background-color: var(--color-white);
-    color: var(--color-blue);
+    background-color: var(--color-background);
+    color: var(--color-tertiary-level-6);
     height: 34px;
     align-items: center;
     display: flex;
@@ -37,7 +37,7 @@
 
 <div class="toggle" {style}>
   <div class="left">
-    <Icon.Peer style="fill: var(--color-white); margin: 0 8px 0 12px" />
+    <Icon.Peer style="fill: var(--color-background); margin: 0 8px 0 12px" />
     <Title style="margin-right: 8px">Track</Title>
   </div>
   <div class="right">

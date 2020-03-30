@@ -21,12 +21,12 @@
 <style>
   button {
     white-space: nowrap;
-    background-color: var(--color-lightgray);
+    background-color: var(--color-foreground-level-3);
     border-radius: 4px;
     border-style: solid;
     border-width: 1px;
-    border-color: var(--color-lightgray);
-    color: var(--color-darkgray);
+    border-color: var(--color-foreground-level-3);
+    color: var(--color-foreground-level-6);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -54,117 +54,117 @@
   }
 
   button :global(svg) {
-    fill: var(--color-darkgray);
+    fill: var(--color-foreground-level-6);
     margin-right: 8px;
   }
 
   .primary :global(svg),
   .secondary :global(svg) {
-    fill: var(--color-white);
+    fill: var(--color-background);
   }
 
   .disabled :global(svg) {
-    fill: var(--color-gray);
+    fill: var(--color-foreground-level-5);
   }
 
   button:hover {
-    background-color: var(--color-lightgray-tint-10);
-    border-color: var(--color-lightgray-tint-10);
+    background-color: var(--color-foreground-level-3-tint-10);
+    border-color: var(--color-foreground-level-3-tint-10);
   }
 
   button:active {
-    background-color: var(--color-lightgray-shade-10);
-    border-color: var(--color-lightgray-shade-10);
+    background-color: var(--color-foreground-level-3-shade-10);
+    border-color: var(--color-foreground-level-3-shade-10);
   }
 
   .primary {
-    background-color: var(--color-pink);
-    border-color: var(--color-pink);
-    color: var(--color-white);
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-background);
   }
 
   .primary:hover {
-    background-color: var(--color-pink-tint-10);
-    border-color: var(--color-pink-tint-10);
-    color: var(--color-white);
+    background-color: var(--color-primary-tint-10);
+    border-color: var(--color-primary-tint-10);
+    color: var(--color-background);
   }
 
   .primary:active {
-    background-color: var(--color-pink-shade-10);
-    border-color: var(--color-pink-shade-10);
-    color: var(--color-white);
+    background-color: var(--color-primary-shade-10);
+    border-color: var(--color-primary-shade-10);
+    color: var(--color-background);
   }
 
   .secondary {
-    background-color: var(--color-purple);
-    border-color: var(--color-purple);
-    color: var(--color-white);
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: var(--color-background);
   }
 
   .secondary:hover {
-    background-color: var(--color-purple-tint-10);
-    border-color: var(--color-purple-tint-10);
-    color: var(--color-white);
+    background-color: var(--color-secondary-tint-10);
+    border-color: var(--color-secondary-tint-10);
+    color: var(--color-background);
   }
 
   .secondary:active {
-    background-color: var(--color-purple-shade-10);
-    border-color: var(--color-purple-shade-10);
-    color: var(--color-white);
+    background-color: var(--color-secondary-shade-10);
+    border-color: var(--color-secondary-shade-10);
+    color: var(--color-background);
   }
 
   .transparent {
-    background-color: var(--color-white);
-    border-color: var(--color-white);
-    color: var(--color-darkgray);
+    background-color: var(--color-background);
+    border-color: var(--color-background);
+    color: var(--color-foreground-level-6);
   }
 
   .transparent:hover {
-    background-color: var(--color-lightgray-tint-10);
-    border-color: var(--color-lightgray-tint-10);
-    color: var(--color-darkgray);
+    background-color: var(--color-foreground-level-3-tint-10);
+    border-color: var(--color-foreground-level-3-tint-10);
+    color: var(--color-foreground-level-6);
   }
 
   .transparent:active {
-    background-color: var(--color-lightgray-shade-10);
-    border-color: var(--color-lightgray-shade-10);
-    color: var(--color-darkgray);
+    background-color: var(--color-foreground-level-3-shade-10);
+    border-color: var(--color-foreground-level-3-shade-10);
+    color: var(--color-foreground-level-6);
   }
 
   .outline {
-    background-color: var(--color-white);
-    border-color: var(--color-lightgray);
-    color: var(--color-darkgray);
+    background-color: var(--color-background);
+    border-color: var(--color-foreground-level-3);
+    color: var(--color-foreground-level-6);
   }
 
   .outline:hover {
-    background-color: var(--color-lightgray-tint-10);
-    border-color: var(--color-lightgray-tint-10);
-    color: var(--color-darkgray);
+    background-color: var(--color-foreground-level-3-tint-10);
+    border-color: var(--color-foreground-level-3-tint-10);
+    color: var(--color-foreground-level-6);
   }
 
   .outline:active {
-    background-color: var(--color-lightgray-shade-10);
-    border-color: var(--color-lightgray-shade-10);
-    color: var(--color-darkgray);
+    background-color: var(--color-foreground-level-3-shade-10);
+    border-color: var(--color-foreground-level-3-shade-10);
+    color: var(--color-foreground-level-6);
   }
 
   .disabled {
-    background-color: var(--color-lightgray);
-    border-color: var(--color-lightgray);
-    color: var(--color-gray);
+    background-color: var(--color-foreground-level-3);
+    border-color: var(--color-foreground-level-3);
+    color: var(--color-foreground-level-5);
   }
 
   .disabled:hover {
-    background-color: var(--color-lightgray);
-    border-color: var(--color-lightgray);
-    color: var(--color-gray);
+    background-color: var(--color-foreground-level-3);
+    border-color: var(--color-foreground-level-3);
+    color: var(--color-foreground-level-5);
   }
 
   .disabled:active {
-    background-color: var(--color-lightgray);
-    border-color: var(--color-lightgray);
-    color: var(--color-gray);
+    background-color: var(--color-foreground-level-3);
+    border-color: var(--color-foreground-level-3);
+    color: var(--color-foreground-level-5);
   }
 </style>
 

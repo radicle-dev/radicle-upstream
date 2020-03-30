@@ -97,7 +97,8 @@
       </Title>
 
       {#if step === 1}
-        <Text style="color: var(--color-gray); margin: 16px 0 24px 0;">
+        <Text
+          style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
           Registering your handle makes it unique and allows others to easily
           find you.
         </Text>

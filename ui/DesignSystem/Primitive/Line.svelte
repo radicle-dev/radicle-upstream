@@ -10,6 +10,9 @@
   export let y2 = height / 2;
 </script>
 
-<svg style="stroke: var(--color-gray); stroke-width: 1" {height} {width}>
+<svg
+  style="stroke: var(--color-foreground-level-5); stroke-width: 1"
+  {height}
+  {width}>
   <line {style} {x1} {y1} {x2} {y2} />
 </svg>

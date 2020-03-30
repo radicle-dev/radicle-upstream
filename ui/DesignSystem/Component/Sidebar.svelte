@@ -40,7 +40,7 @@
     content: "";
     width: 4px;
     height: 44px;
-    background-color: var(--color-gray);
+    background-color: var(--color-foreground-level-5);
     top: -4px;
     left: -16px;
     border-top-right-radius: 2px;
@@ -52,7 +52,7 @@
     content: "";
     width: 4px;
     height: 44px;
-    background-color: var(--color-purple);
+    background-color: var(--color-secondary);
     top: -4px;
     left: -16px;
     border-top-right-radius: 2px;
@@ -60,11 +60,11 @@
   }
 
   .wrapper :global(li:hover svg) {
-    fill: var(--color-purple);
+    fill: var(--color-secondary);
   }
 
   .indicator.active :global(svg) {
-    fill: var(--color-purple);
+    fill: var(--color-secondary);
   }
 
   .divider {
@@ -75,7 +75,7 @@
   .line {
     height: 1px;
     width: 100%;
-    background-color: var(--color-gray);
+    background-color: var(--color-foreground-level-5);
   }
 
   .item:hover .tooltip {
@@ -86,8 +86,8 @@
   .tooltip {
     white-space: nowrap;
     user-select: none;
-    background-color: var(--color-black);
-    color: var(--color-white);
+    background-color: var(--color-foreground);
+    color: var(--color-background);
     text-align: center;
     border-radius: 2px;
     padding: 4px 8px 6px 8px;
@@ -108,7 +108,7 @@
 
     border-top: 6px solid transparent;
     border-bottom: 6px solid transparent;
-    border-right: 6px solid var(--color-black);
+    border-right: 6px solid var(--color-foreground);
     left: -6px;
     border-top-left-radius: 30%;
 

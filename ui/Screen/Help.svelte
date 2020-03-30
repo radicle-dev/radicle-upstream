@@ -15,7 +15,7 @@
   }
 
   kbd {
-    border: 1px solid var(--color-darkgray);
+    border: 1px solid var(--color-foreground-level-6);
     padding: 4px 8px 4px 8px;
     border-radius: 2px;
   }
