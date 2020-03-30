@@ -13,7 +13,7 @@ colorTokens.map(color => {
   colorCss += `  --color-${color.name}: ${color.hex};\n`;
 });
 
-colorCss += "}";
+colorCss += "}\n";
 
 const pathToFile = path.resolve(__dirname, "../public/colors.css");
 
