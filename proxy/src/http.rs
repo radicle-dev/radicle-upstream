@@ -16,14 +16,14 @@ mod project;
 pub async fn run(librad_paths: paths::Paths, reg: registry::Registry) {
     let subscriptions = crate::notification::Subscriptions::default();
 
-    let api = path("v1").and(
-        notification::filters(subscriptions.clone()).or(project::filters(
+    let routes = notification::filters(subscriptions.clone())
+        .or(project::filters(
             librad_paths.clone(),
             Arc::new(RwLock::new(reg)),
             subscriptions,
-        )
-        .recover(error::recover)),
-    );
+        ))
+        .recover(error::recover);
+    let api = path("v1").and(routes).with(warp::log("proxy::http"));
 
     // TODO(xla): Pass down as configuration with sane defaults.
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;

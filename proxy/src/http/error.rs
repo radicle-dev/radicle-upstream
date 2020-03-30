@@ -26,6 +26,8 @@ struct Error {
 
 /// Handler to convert [`error::Error`] to [`Error`] response.
 pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
+    log::error!("{:?}", err);
+
     let (code, variant, message) = {
         if err.is_not_found() {
             (StatusCode::NOT_FOUND, "NOT_FOUND", "Resource not found")

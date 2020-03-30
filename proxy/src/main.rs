@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate log;
-
 use proxy::coco;
 use proxy::env;
 use proxy::http;
@@ -51,7 +48,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         librad::paths::Paths::new()?
     };
 
-    info!("Starting HTTP API");
+    log::info!("Starting HTTP API");
     http::run(librad_paths, registry::Registry::new(registry_client)).await;
 
     Ok(())
