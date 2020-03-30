@@ -3,30 +3,29 @@
  * `tokens/colors.json` and re-generate this file by running the yarn script. */
 
 :root {
-  --color-secondary-tint-10: #7777ff;
+  --color-primary: #ff55ff;
+  --color-primary-level-2: #ff87ff;
+  --color-primary-level-6: #663b66;
   --color-secondary: #5555ff;
-  --color-secondary-shade-10: #3333ff;
-  --color-tertiary-level-6: #499494;
-  --color-positive: #53db53;
-  --color-caution-tint-65: #ffffff;
-  --color-caution: #ffc555;
-  --color-negative-tint-55: #ffffff;
-  --color-negative: #ff5555;
-  --color-negative-level-6: #803d3d;
+  --color-secondary-level-6: #313166;
   --color-secondary-level-2: #bfbffc;
   --color-tertiary: #55ffff;
-  --color-positive-level-2-tint-75: #ffffff;
-  --color-positive-level-2: #b5ffb5;
+  --color-tertiary-level-6: #499494;
+  --color-caution: #ffc555;
+  --color-caution-level-1: #fff6e5;
   --color-caution-level-2: #ffe5b2;
-  --color-primary-tint-10: #ff77ff;
-  --color-primary: #ff55ff;
-  --color-primary-shade-10: #ff33ff;
-  --color-foreground: #28333d;
-  --color-foreground-level-6: #546474;
-  --color-foreground-level-5: #90a0af;
-  --color-foreground-level-3-tint-10: #dfe5eb;
-  --color-foreground-level-3: #c5d1db;
-  --color-foreground-level-3-shade-10: #abbdcb;
-  --color-foreground-level-1: #f8f8f8;
+  --color-positive: #53db53;
+  --color-positive-level-2: #b5ffb5;
+  --color-positive-level-1: #e3ffe3;
+  --color-negative: #ff5555;
+  --color-negative-level-1: #ffeded;
+  --color-negative-level-6: #803d3d;
   --color-background: #ffffff;
+  --color-foreground: #28333d;
+  --color-foreground-level-1: #f8f8f8;
+  --color-foreground-level-2: #ebeff3;
+  --color-foreground-level-3: #c5d1db;
+  --color-foreground-level-4: #a9b9c7;
+  --color-foreground-level-5: #90a0af;
+  --color-foreground-level-6: #546474;
 }

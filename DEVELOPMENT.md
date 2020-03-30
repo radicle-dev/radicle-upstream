@@ -349,14 +349,6 @@ Entries in `colors.json` have the following shape:
 {
   "name": "pink",    // Color name as defined in style guide
   "hex": "#e074cb",  // Hex color code
-
-  "shades": [10],    // Array of auto-generated color shades,
-                     // possible values range from 5 to 95,
-                     // values should be kept to multiples of 5.
-
-  "tints": [10],     // Array of auto-generated color tints,
-                     // possible values range from 5 to 95,
-                     // values should be kept to multiples of 5.
 }
 ```
 
@@ -371,7 +363,7 @@ be used so changes to global styling can be applied in a central place.
 <style>
   button {
     background-color: var(--color-foreground);
-    border-color: var(--color-caution-tint-65);
+    border-color: var(--color-caution-level-1);
   }
 </style>
 

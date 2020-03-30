@@ -1,33 +1,6 @@
-import Color from "color";
 import colorTokens from "../tokens/colors.json";
 import fs from "fs";
 import path from "path";
-
-const generateTints = (color, range) => {
-  if (!range) return;
-
-  return range
-    .map(tint => {
-      return `  --color-${color.name}-tint-${tint}: ${Color(color.hex)
-        .lighten(tint / 100)
-        .hex()
-        .toLowerCase()};\n`;
-    })
-    .join("");
-};
-
-const generateShades = (color, range) => {
-  if (!range) return;
-
-  return range
-    .map(shade => {
-      return `  --color-${color.name}-shade-${shade}: ${Color(color.hex)
-        .darken(shade / 100)
-        .hex()
-        .toLowerCase()};\n`;
-    })
-    .join("");
-};
 
 let colorCss = `
 /* This file is auto-generated via \`yarn generate:colors\`, don't edit this
@@ -38,13 +11,7 @@ let colorCss = `
 `;
 
 colorTokens.map(color => {
-  const tints = generateTints(color, color.tints);
-
-  const primary = `  --color-${color.name}: ${color.hex};\n`;
-
-  const shades = generateShades(color, color.shades);
-
-  colorCss += [tints, primary, shades].join("");
+  colorCss += `  --color-${color.name}: ${color.hex};\n`;
 });
 
 colorCss += "}";

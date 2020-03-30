@@ -19,7 +19,7 @@
   .info {
     border: 1px solid var(--color-positive);
     color: var(--color-positive);
-    background-color: var(--color-positive-level-2-tint-75);
+    background-color: var(--color-positive-level-1);
   }
 
   .notification.info :global(svg) {
@@ -29,7 +29,7 @@
   .warning {
     border: 1px solid var(--color-caution);
     color: var(--color-caution);
-    background-color: var(--color-caution-tint-65);
+    background-color: var(--color-caution-level-1);
   }
 
   .notification.warning :global(svg) {
@@ -39,7 +39,7 @@
   .error {
     border: 1px solid var(--color-negative-level-6);
     color: var(--color-negative-level-6);
-    background-color: var(--color-negative-tint-55);
+    background-color: var(--color-negative-level-1);
   }
 
   .notification.error :global(svg) {
