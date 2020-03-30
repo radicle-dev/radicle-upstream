@@ -4,7 +4,7 @@
   import ProjectCard from "./ProjectCard.svelte";
 
   import { projectNameStore } from "../../store/project.js";
-  import { createProject, projectOverview } from "../../lib/path.js";
+  import { createProject, projectSource } from "../../lib/path.js";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -15,9 +15,23 @@
       projects {
         id
         metadata {
+          defaultBranch
+          imgUrl
           description
           name
-          imgUrl
+        }
+        registered {
+          ... on OrgRegistration {
+            orgId
+          }
+          ... on UserRegistration {
+            userId
+          }
+        }
+        stats {
+          branches
+          commits
+          contributors
         }
       }
     }
@@ -72,13 +86,17 @@
         <li
           on:click={() => {
             projectNameStore.set(project.metadata.name);
-            push(projectOverview(project.id));
+            push(projectSource(project.id));
           }}
           class="project-card">
           <ProjectCard
+            projectId={project.id}
             title={project.metadata.name}
             description={project.metadata.description}
-            isRegistered={false} />
+            isRegistered={project.registered}
+            commitCount={project.stats.commits}
+            branchCount={project.stats.branches}
+            memberCount={project.stats.contributors} />
         </li>
       {/each}
     </ul>

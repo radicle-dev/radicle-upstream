@@ -22,9 +22,9 @@
 <style>
   img,
   .user.regular {
-    width: 34px;
-    height: 34px;
-    border-radius: 17px;
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
   }
 
   .user.medium {
@@ -56,6 +56,11 @@
   .project.regular {
     width: 32px;
     height: 32px;
+  }
+
+  .project.medium {
+    width: 36px;
+    height: 36px;
   }
 
   .project.big {
@@ -98,13 +103,16 @@
       style="background: var(--color-lightgray)" />
   {/if}
 
-  {#if title && size === 'regular'}
-    <Title style="white-space: nowrap; margin-left: 16px">{title}</Title>
-  {/if}
-
-  {#if title && size === 'big'}
-    <Title variant="big" style="white-space: nowrap; margin-left: 16px">
-      {title}
-    </Title>
+  {#if title}
+    {#if size === 'big'}
+      <Title variant="big" style="white-space: nowrap; margin-left: 12px">
+        {title}
+      </Title>
+    {:else}
+      <Title
+        style="white-space: nowrap; margin-left: 12px; color: var(--color-black)">
+        {title}
+      </Title>
+    {/if}
   {/if}
 </div>

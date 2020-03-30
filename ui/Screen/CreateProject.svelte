@@ -208,13 +208,13 @@
         }
       });
 
-      push(path.projectOverview(response.data.createProject.id));
+      push(path.projectSource(response.data.createProject.id));
       showNotification({
         text: `Project ${response.data.createProject.metadata.name} successfully created`,
         level: "info"
       });
     } catch (error) {
-      push(path.projects());
+      push(path.profile());
       showNotification({
         text: "Could not create project",
         level: "error"

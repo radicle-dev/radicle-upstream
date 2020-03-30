@@ -3,11 +3,11 @@
 
   import * as path from "../../lib/path.js";
   import {
-    avatarUrlStore,
-    avatarFallbackStore,
-    displayNameStore,
-    handleStore,
-    shareableEntityIdentifierStore
+    identityAvatarUrlStore,
+    identityAvatarFallbackStore,
+    identityDisplayNameStore,
+    identityHandleStore,
+    identityShareableEntityIdentifierStore
   } from "../../store/identity.js";
 
   import { Avatar, Button, Text, Title } from "../../DesignSystem/Primitive";
@@ -58,19 +58,19 @@
       This is your peer-to-peer identity. Even though your radicleID is unique,
       your handle isn't. To get a unique handle, you have to
       <!-- TODO(sarah): actually link to handle registration flow -->
-      <a class="registration-link" href={path.projects()} use:link>
+      <a class="registration-link" href={path.registerUser()} use:link>
         register it.
       </a>
     </Text>
     <div class="identity-card">
       <Avatar
         size="huge"
-        imageUrl={$avatarUrlStore}
-        avatarFallback={$avatarFallbackStore} />
+        imageUrl={$identityAvatarUrlStore}
+        avatarFallback={$identityAvatarFallbackStore} />
       <div class="identity-card-text-container">
-        <Title>{$displayNameStore || $handleStore}</Title>
+        <Title>{$identityDisplayNameStore || $identityHandleStore}</Title>
         <Text style="color: var(--color-darkgray);">
-          {$shareableEntityIdentifierStore}
+          {$identityShareableEntityIdentifierStore}
         </Text>
       </div>
     </div>

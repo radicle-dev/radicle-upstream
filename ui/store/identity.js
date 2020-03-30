@@ -1,8 +1,8 @@
 import { writable } from "svelte/store";
 
-export const avatarUrlStore = writable(null);
-export const avatarFallbackStore = writable(null);
-export const displayNameStore = writable(null);
-export const handleStore = writable(null);
-export const idStore = writable(null);
-export const shareableEntityIdentifierStore = writable(null);
+export const identityAvatarUrlStore = writable(null);
+export const identityAvatarFallbackStore = writable(null);
+export const identityDisplayNameStore = writable(null);
+export const identityHandleStore = writable(null);
+export const identityIdStore = writable(null);
+export const identityShareableEntityIdentifierStore = writable(null);

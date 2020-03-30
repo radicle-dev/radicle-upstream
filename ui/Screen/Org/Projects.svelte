@@ -3,5 +3,5 @@
 </script>
 
 <Flex align="left">
-  <Title variant="big">Feeds</Title>
+  <Title variant="big">Projects</Title>
 </Flex>

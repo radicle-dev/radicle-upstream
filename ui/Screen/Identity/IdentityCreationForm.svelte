@@ -4,12 +4,12 @@
   import validatejs from "validate.js";
 
   import {
-    avatarUrlStore,
-    avatarFallbackStore,
-    displayNameStore,
-    handleStore,
-    idStore,
-    shareableEntityIdentifierStore
+    identityAvatarUrlStore,
+    identityAvatarFallbackStore,
+    identityDisplayNameStore,
+    identityHandleStore,
+    identityIdStore,
+    identityShareableEntityIdentifierStore
   } from "../../store/identity.js";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
@@ -131,12 +131,12 @@
 
       const responseData = response.data.createIdentity;
 
-      idStore.set(responseData.id);
-      handleStore.set(responseData.metadata.handle);
-      displayNameStore.set(responseData.metadata.displayName);
-      avatarUrlStore.set(responseData.metadata.avatarUrl);
-      avatarFallbackStore.set(responseData.avatarFallback);
-      shareableEntityIdentifierStore.set(
+      identityAvatarUrlStore.set(responseData.metadata.avatarUrl);
+      identityAvatarFallbackStore.set(responseData.avatarFallback);
+      identityDisplayNameStore.set(responseData.metadata.displayName);
+      identityHandleStore.set(responseData.metadata.handle);
+      identityIdStore.set(responseData.id);
+      identityShareableEntityIdentifierStore.set(
         responseData.shareableEntityIdentifier
       );
 

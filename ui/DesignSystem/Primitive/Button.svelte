@@ -116,19 +116,19 @@
   .transparent {
     background-color: var(--color-white);
     border-color: var(--color-white);
-    color: var(--color-gray);
+    color: var(--color-darkgray);
   }
 
   .transparent:hover {
     background-color: var(--color-lightgray-tint-10);
     border-color: var(--color-lightgray-tint-10);
-    color: var(--color-gray);
+    color: var(--color-darkgray);
   }
 
   .transparent:active {
     background-color: var(--color-lightgray-shade-10);
     border-color: var(--color-lightgray-shade-10);
-    color: var(--color-gray);
+    color: var(--color-darkgray);
   }
 
   .outline {

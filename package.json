@@ -72,7 +72,7 @@
     "standard-version": "^7.1.0",
     "svelte": "^3.20.1",
     "svelte-click-outside": "https://github.com/radicle-dev/svelte-click-outside#10e47e6359f943d45b72c2f3fc7ccc8036b60fac",
-    "svelte-spa-router": "^2.0.0",
+    "svelte-spa-router": "^2.1.0",
     "wait-on": "^4.0.1"
   },
   "scripts": {

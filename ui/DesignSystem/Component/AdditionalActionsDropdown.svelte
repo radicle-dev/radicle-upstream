@@ -1,5 +1,6 @@
 <script>
   import ClickOutside from "svelte-click-outside";
+  import { fade } from "svelte/transition";
 
   import { Icon, Text } from "../Primitive";
   import Copyable from "./Copyable.svelte";
@@ -15,11 +16,23 @@
     expanded = false;
   };
 
+  let copyIcon = Icon.Copy;
+
+  const afterCopy = () => {
+    copyIcon = Icon.Check;
+    setTimeout(() => {
+      copyIcon = Icon.Copy;
+      hideModal();
+    }, 250);
+  };
+
   const handleItemSelection = item => {
     hideModal();
     item.event();
   };
 
+  export let dataCy = null;
+  export let style = null;
   export let menuItems = null;
   export let headerTitle = null;
 </script>
@@ -42,7 +55,7 @@
   }
 
   button:hover {
-    background-color: var(--color-lightgray-tint-10);
+    background-color: var(--color-almostwhite);
   }
 
   .modal {
@@ -80,33 +93,49 @@
     color: var(--color-darkgray);
   }
 
+  .menu-item:first-of-type {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+  }
+
+  .menu-item:last-of-type {
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+  }
+
   .menu-item:hover {
-    background-color: var(--color-lightgray-tint-10);
+    background-color: var(--color-almostwhite);
   }
 </style>
 
-<div class="container">
-  <button bind:this={triggerEl} on:click={toggleModal}>
+<div data-cy={dataCy} class="container" {style} on:click|stopPropagation>
+  <button bind:this={triggerEl} on:click|stopPropagation={toggleModal}>
     <svelte:component this={Icon.Ellipses} />
   </button>
   <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
     {#if expanded}
-      <div class="modal" hidden={!expanded}>
-        <Copyable>
-          <div class="header">
-            <Text
-              style="white-space: nowrap; overflow: hidden; text-overflow:
-              ellipsis; max-width: 170px;">
-              {headerTitle}
-            </Text>
-            <svelte:component
-              this={Icon.Copy}
-              style="margin-left: 8px; min-width: 16px;" />
-          </div>
-        </Copyable>
-        <div class="menu">
-          {#each menuItems as item}
-            <div class="menu-item" on:click={handleItemSelection(item)}>
+      <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
+        {#if headerTitle}
+          <Copyable {afterCopy}>
+            <div class="header">
+              <Text
+                style="white-space: nowrap; overflow: hidden; text-overflow:
+                ellipsis; max-width: 170px;">
+                {headerTitle}
+              </Text>
+              <svelte:component
+                this={copyIcon}
+                style="margin-left: 8px; min-width: 16px;" />
+            </div>
+          </Copyable>
+        {/if}
+
+        <div class="menu" data-cy="dropdown-menu">
+          {#each menuItems as item, index}
+            <div
+              data-cy={item.dataCy}
+              class="menu-item"
+              on:click|stopPropagation={handleItemSelection(item)}>
               <svelte:component this={item.icon} style="margin-right: 12px" />
               <Text>{item.title}</Text>
             </div>
@@ -115,5 +144,4 @@
       </div>
     {/if}
   </ClickOutside>
-
 </div>

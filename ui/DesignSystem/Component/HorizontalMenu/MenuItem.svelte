@@ -1,6 +1,4 @@
 <script>
-  import { link } from "svelte-spa-router";
-
   export let href = null;
   export let icon = null;
   export let title = null;
@@ -9,7 +7,7 @@
 
 <style>
   .icon {
-    margin-right: 16px;
+    margin-right: 12px;
     align-items: center;
     padding-top: 1px;
   }
@@ -42,7 +40,9 @@
   }
 </style>
 
-<a {href} use:link title={`Project${title}`}>
+<!-- svelte-spa-router link action is not reactive and breaks if the href
+     changes dynamically, this is why we have to spell out the href manually -->
+<a href={`#${href}`}>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-purple)" />
