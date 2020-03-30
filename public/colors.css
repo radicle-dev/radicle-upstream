@@ -36,3 +36,38 @@
   --color-foreground-level-5: #90a0af;
   --color-foreground-level-6: #546474;
 }
+
+[data-theme="darkMode"] {
+  --color-primary: #ff55ff;
+  --color-primary-level-1: #382847;
+  --color-primary-level-2: #62326d;
+  --color-primary-level-6: #ffd4ff;
+  --color-secondary: #5555ff;
+  --color-secondary-level-1: #212847;
+  --color-secondary-level-2: #2c326d;
+  --color-secondary-level-6: #e3e3ff;
+  --color-tertiary: #55ffff;
+  --color-tertiary-level-1: #214047;
+  --color-tertiary-level-2: #2c326d;
+  --color-tertiary-level-6: #e3e3ff;
+  --color-positive: #53db53;
+  --color-positive-level-1: #21402f;
+  --color-positive-level-2: #2c6837;
+  --color-positive-level-6: #e3ffe3;
+  --color-caution: #ffc555;
+  --color-caution-level-1: #2f312d;
+  --color-caution-level-2: #524a34;
+  --color-caution-level-6: #ffefcf;
+  --color-negative: #ff5555;
+  --color-negative-level-1: #38282f;
+  --color-negative-level-2: #623237;
+  --color-negative-level-6: #ffd4d4;
+  --color-background: #182129;
+  --color-foreground: #ffffff;
+  --color-foreground-level-1: #242e38;
+  --color-foreground-level-2: #29343d;
+  --color-foreground-level-3: #333e47;
+  --color-foreground-level-4: #5e6d7a;
+  --color-foreground-level-5: #8594a1;
+  --color-foreground-level-6: #d3dee8;
+}
