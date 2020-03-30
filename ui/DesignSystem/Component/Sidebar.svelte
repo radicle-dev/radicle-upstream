@@ -15,14 +15,13 @@
   .wrapper {
     width: var(--sidebar-width);
     height: 100%;
-    background-color: #eeeeef;
+    background-color: var(--color-foreground-level-2);
     position: fixed;
     padding-top: 31px;
     z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-right: 1px solid #e3e3e3;
   }
 
   .item {
