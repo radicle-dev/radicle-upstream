@@ -1,3 +1,5 @@
+// TODO(rudolfs): fetch colors from Figma
+// https://github.com/radicle-dev/radicle-upstream/issues/241
 import colorTokens from "../tokens/colors.json";
 import fs from "fs";
 import path from "path";
