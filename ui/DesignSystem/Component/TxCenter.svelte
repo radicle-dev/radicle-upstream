@@ -4,7 +4,6 @@
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
 
-  // TODO(merle): Query for messages
   const GET_TRANSACTIONS = gql`
     query Query($ids: [ID!]!) {
       listTransactions(ids: $ids) {
@@ -16,6 +15,20 @@
             }
           }
           timestamp
+          messages {
+            ... on OrgRegistrationMessage {
+              kind
+            }
+            ... on OrgUnregistrationMessage {
+              kind
+            }
+            ... on ProjectRegistrationMessage {
+              kind
+            }
+            ... on UserRegistrationMessage {
+              kind
+            }
+          }
         }
         thresholds {
           confirmation
@@ -31,15 +44,22 @@
     variables: {
       ids: []
     },
-    fetchPolicy: "network-only"
+    fetchPolicy: "no-cache"
   });
+
+  const formatMessage = {
+    USER_REGISTRATION: "User registration",
+    ORG_REGISTRATION: "Org registration",
+    ORG_UNREGISTRATION: "Org unregistration",
+    PROJECT_REGISTRATION: "Project registration"
+  };
 
   // TODO(merle): Use actual data
   const formatTxs = txs => {
     return txs.map(tx => {
       return {
         id: tx.id,
-        message: "User registration",
+        message: formatMessage[tx.messages[0].kind],
         state: "pending",
         progress: 0
       };
