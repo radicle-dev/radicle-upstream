@@ -5,9 +5,9 @@
   export let style = null;
 
   const stateToColor = {
-    pending: "var(--color-orange)",
-    success: "var(--color-green)",
-    error: "var(--color-red)"
+    pending: "var(--color-caution)",
+    success: "var(--color-positive)",
+    error: "var(--color-negative)"
   };
 
   const stateToDescription = {
@@ -81,29 +81,29 @@
 
 <style>
   .pipeline {
-    border: 1px solid var(--color-lightgray);
+    border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    box-shadow: 0px 4px 8px var(--color-lightgray-opacity-08);
+    box-shadow: 0px 4px 8px var(--color-foreground-level-3-opacity-08);
     width: 274px;
   }
 
   .negative {
-    border: 1px solid var(--color-red);
+    border: 1px solid var(--color-negative);
   }
 
   .cards {
-    background-color: var(--color-almostwhite);
+    background-color: var(--color-foreground-level-1);
     border-radius: 3px 3px 0 0;
   }
 
   .card {
-    border-bottom: 1px solid var(--color-lightgray);
+    border-bottom: 1px solid var(--color-foreground-level-3);
     height: 64px;
   }
 
   .summary {
     height: 56px;
-    background-color: var(--color-white);
+    background-color: var(--color-background);
     border-radius: 3px;
   }
 
