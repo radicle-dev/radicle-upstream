@@ -1,7 +1,4 @@
 <script>
-  import ApolloClient from "apollo-boost";
-  import { InMemoryCache } from "apollo-cache-inmemory";
-  import { setClient } from "svelte-apollo";
   import Router from "svelte-spa-router";
   import { initializeHotkeys } from "./lib/hotkeys.js";
 
@@ -18,26 +15,6 @@
   import CreateIdentity from "./Screen/IdentityCreation.svelte";
 
   initializeHotkeys();
-
-  const client = new ApolloClient({
-    uri: "http://127.0.0.1:8080/graphql",
-    cache: new InMemoryCache(),
-    defaultOptions: {
-      watchQuery: {
-        fetchPolicy: "no-cache",
-        errorPolicy: "ignore"
-      },
-      query: {
-        fetchPolicy: "no-cache",
-        errorPolicy: "all"
-      },
-      mutate: {
-        errorPolicy: "all"
-      }
-    }
-  });
-
-  setClient(client);
 
   const routes = {
     "/identity/new": CreateIdentity,

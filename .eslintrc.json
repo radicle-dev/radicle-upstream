@@ -1,6 +1,10 @@
 {
-  "extends": ["eslint:recommended"],
-  "plugins": ["svelte3"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": ["svelte3", "@typescript-eslint"],
   "overrides": [
     {
       "files": ["**/*.svelte"],

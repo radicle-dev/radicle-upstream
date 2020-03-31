@@ -1,5 +1,5 @@
 <script>
-  import { projectNameStore } from "../store/project.js";
+  import { projectNameStore } from "../store/project.ts";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
 
   import PickNameStep from "./RegisterProject/PickNameStep.svelte";
