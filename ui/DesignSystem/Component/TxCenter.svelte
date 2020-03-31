@@ -48,8 +48,6 @@
 </script>
 
 {#await $transactions then result}
-  <!-- TODO(merle): Remove logging -->
-  {console.log(result)}
   {#if result.data.listTransactions.transactions.length > 0}
     <TxAccordion
       transactions={formatTxs(result.data.listTransactions.transactions)}
