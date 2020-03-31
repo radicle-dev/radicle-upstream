@@ -55,7 +55,7 @@
   }
 
   button:hover {
-    background-color: var(--color-almostwhite);
+    background-color: var(--color-foreground-level-1);
   }
 
   .modal {
@@ -64,23 +64,23 @@
     right: 0;
     width: 240px;
     margin-top: 15px;
-    background-color: var(--color-white);
-    box-shadow: 0px 4px 8px var(--color-lightgray-opacity-08);
+    background-color: var(--color-background);
+    box-shadow: 0px 4px 8px var(--color-foreground-level-3-opacity-08);
     border-radius: 4px;
     cursor: pointer;
-    border: 1px solid var(--color-lightgray);
+    border: 1px solid var(--color-foreground-level-3);
   }
 
   .header {
     padding: 12px 16px;
-    border-bottom: solid 1px var(--color-lightgray);
-    color: var(--color-gray);
+    border-bottom: solid 1px var(--color-foreground-level-3);
+    color: var(--color-foreground-level-5);
     display: flex;
     justify-content: space-between;
   }
 
   .header:hover {
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
   }
 
   .menu {
@@ -90,7 +90,7 @@
   .menu-item {
     display: flex;
     padding: 8px 12px;
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
   }
 
   .menu-item:first-of-type {
@@ -104,7 +104,7 @@
   }
 
   .menu-item:hover {
-    background-color: var(--color-almostwhite);
+    background-color: var(--color-foreground-level-1);
   }
 </style>
 

@@ -15,5 +15,5 @@
 
 <div class="stat" {style}>
   <svelte:component this={icon} style="margin-right: 4px;" />
-  <Numeric style="color: var(--color-darkgray);">{count}</Numeric>
+  <Numeric style="color: var(--color-foreground-level-6);">{count}</Numeric>
 </div>

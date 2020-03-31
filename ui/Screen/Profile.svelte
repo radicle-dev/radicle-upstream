@@ -80,7 +80,7 @@
       <IdentityAvatar
         showTitle={true}
         size={'regular'}
-        style="color: var(--color-purple)" />
+        style="color: var(--color-secondary)" />
     </a>
     <div slot="middle">
       <HorizontalMenu items={topbarMenuItems} />

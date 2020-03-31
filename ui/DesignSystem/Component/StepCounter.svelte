@@ -16,11 +16,11 @@
     display: flex;
     flex-direction: column;
     width: 15px;
-    color: var(--color-gray);
+    color: var(--color-foreground-level-5);
   }
 
   .step.active {
-    color: var(--color-blue);
+    color: var(--color-tertiary-level-6);
   }
 </style>
 

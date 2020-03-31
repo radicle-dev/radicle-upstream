@@ -2,6 +2,7 @@ import hotkeys from "hotkeys-js";
 import { get } from "svelte/store";
 import { push, pop, location } from "svelte-spa-router";
 import * as path from "./path.js";
+import { colorConfig } from "../../tokens/colors.js";
 
 export const initializeHotkeys = () => {
   hotkeys("shift+d", () => {
@@ -16,6 +17,18 @@ export const initializeHotkeys = () => {
       pop();
     }
     push(path.help());
+  });
+
+  hotkeys("shift+c", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+
+    const nextTheme = colorConfig.themes
+      .map(theme => theme.name)
+      .filter(e => e !== currentTheme)
+      .pop();
+    document.documentElement.setAttribute("data-theme", nextTheme);
+
+    console.log(`Switch to ${nextTheme}`);
   });
 
   // TODO(sarah): Remove temporary hotkey for identity creation

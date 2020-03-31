@@ -19,9 +19,9 @@
   const circumference = 2 * Math.PI * radius;
 
   $: color = {
-    caution: "var(--color-orange)",
-    positive: "var(--color-green)",
-    negative: "var(--color-red)"
+    caution: "var(--color-caution)",
+    positive: "var(--color-positive)",
+    negative: "var(--color-negative)"
   }[state];
 
   const defaultDashLength = {

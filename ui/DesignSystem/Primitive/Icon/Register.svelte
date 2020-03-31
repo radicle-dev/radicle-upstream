@@ -6,7 +6,7 @@
   {style}
   width="24"
   height="24"
-  fill="var(--color-gray)"
+  fill="var(--color-foreground-level-5)"
   viewBox="0 0 24 24"
   xmlns="http://www.w3.org/2000/svg">
   <rect x="7" y="7" width="5" height="1" rx="0.5" />

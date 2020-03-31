@@ -65,9 +65,9 @@
 
   thead tr {
     height: 36px;
-    background-color: var(--color-almostwhite);
-    color: var(--color-darkgray);
-    border: 1px solid var(--color-lightgray);
+    background-color: var(--color-foreground-level-1);
+    color: var(--color-foreground-level-6);
+    border: 1px solid var(--color-foreground-level-3);
     border-radius: 2px;
   }
 
@@ -76,7 +76,7 @@
   }
 
   tbody tr:hover {
-    background-color: var(--color-almostwhite);
+    background-color: var(--color-foreground-level-1);
   }
 
   a {
@@ -104,11 +104,11 @@
   }
 
   .commit-message-column {
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
   }
 
   .last-update-column {
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
     text-align: right;
     padding-right: 12px;
   }

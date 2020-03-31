@@ -21,7 +21,7 @@
     font-family: var(--typeface-regular);
     font-size: 16px;
     line-height: 130%;
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
   }
 
   .item::after {
@@ -36,7 +36,7 @@
 
   .item.active {
     font-family: var(--typeface-medium);
-    color: var(--color-purple);
+    color: var(--color-secondary);
   }
 </style>
 
@@ -45,7 +45,7 @@
 <a href={`#${href}`}>
   {#if active}
     <div class="icon">
-      <svelte:component this={icon} style="fill: var(--color-purple)" />
+      <svelte:component this={icon} style="fill: var(--color-secondary)" />
     </div>
   {:else}
     <div class="icon">

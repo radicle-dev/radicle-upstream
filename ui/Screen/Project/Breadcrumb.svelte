@@ -21,14 +21,14 @@
       title={`${user.name} / ${title}`}
       variant="user" />
 
-    <Icon.Badge style="margin-left: 6px; fill: var(--color-pink);" />
+    <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
   {:else if org}
     <Avatar
       avatarFallback={org.avatarFallback}
       title={`${org.name} / ${title}`}
       variant="project" />
 
-    <Icon.Badge style="margin-left: 6px; fill: var(--color-pink);" />
+    <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}
     <IdentityAvatar showTitle={true} titleSuffix={` / ${title}`} />
   {/if}

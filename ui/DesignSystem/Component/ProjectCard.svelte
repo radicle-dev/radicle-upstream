@@ -60,13 +60,13 @@
       {#if isRegistered}
         <div class="registered">
           <Icon.Badge
-            style="fill: var(--color-pink); position: relative; bottom: -3px;" />
+            style="fill: var(--color-primary); position: relative; bottom: -3px;" />
         </div>
       {/if}
     </div>
     <Text
-      style="color: var(--color-gray); white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis;">
+      style="color: var(--color-foreground-level-5); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;">
       {description}
     </Text>
   </div>

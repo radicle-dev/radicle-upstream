@@ -17,7 +17,7 @@
   .row {
     padding-left: 16px;
     padding-right: 16px;
-    border: 1px solid var(--color-lightgray);
+    border: 1px solid var(--color-foreground-level-3);
     height: 72px;
     display: flex;
     flex-direction: column;
@@ -26,20 +26,20 @@
 
   .row:hover {
     outline: none;
-    box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-pink));
-    border: 1px solid var(--focus-outline-color, var(--color-pink));
+    box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-primary));
+    border: 1px solid var(--focus-outline-color, var(--color-primary));
     cursor: pointer;
   }
 
   .row.disabled {
     box-shadow: none;
-    border: 1px solid var(--color-lightgray);
+    border: 1px solid var(--color-foreground-level-3);
     cursor: default;
   }
 
   .row.active {
-    box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-pink));
-    border: 1px solid var(--focus-outline-color, var(--color-pink));
+    box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-primary));
+    border: 1px solid var(--focus-outline-color, var(--color-primary));
   }
 
   .single {

@@ -22,18 +22,21 @@
 
 <div class="wrapper" {style}>
   <div class="rad-amount">
-    <Icon.EllipseBig style="fill: var(--color-pink); margin-right: 4px" />
+    <Icon.EllipseBig style="fill: var(--color-primary); margin-right: 4px" />
     {#if size === 'big'}
       <Numeric
         variant="big"
-        style="display: inline-flex; color: var(--color-darkgray)">
+        style="display: inline-flex; color: var(--color-foreground-level-6)">
         {amount}
       </Numeric>
     {:else}
-      <Numeric style="display: inline-flex; color: var(--color-darkgray)">
+      <Numeric
+        style="display: inline-flex; color: var(--color-foreground-level-6)">
         {amount}
       </Numeric>
     {/if}
   </div>
-  <Numeric style="color: var(--color-gray)">${amount / 10}</Numeric>
+  <Numeric style="color: var(--color-foreground-level-5)">
+    ${amount / 10}
+  </Numeric>
 </div>

@@ -5,14 +5,14 @@ body {
   line-height: 24px;
   display: flex;
   height: 100%;
-  color: var(--color-black);
-  background-color: var(--color-white);
+  color: var(--color-foreground);
+  background-color: var(--color-background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 a {
-  color: var(--color-black);
+  color: var(--color-foreground);
   cursor: pointer;
   text-decoration: none;
 }
@@ -21,5 +21,5 @@ a {
   --sidebar-width: 68px;
   --topbar-height: 61px;
   --content-min-width: 700px;
-  --color-lightgray-opacity-08: rgba(51, 51, 51, 0.08);
+  --color-foreground-level-3-opacity-08: rgba(77, 82, 86, 0.08);
 }
