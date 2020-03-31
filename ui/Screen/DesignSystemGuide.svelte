@@ -18,12 +18,8 @@
     Rad,
     Row,
     StepCounter,
-<<<<<<< HEAD
     TrackToggle,
-    TxPipeline,
-=======
     TxAccordion,
->>>>>>> Integrate tx center in sidebar layout & query
     UserCard
   } from "../DesignSystem/Component";
 
