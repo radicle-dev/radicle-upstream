@@ -342,19 +342,46 @@ use slots:
 
 Colors amongst other design system tokens are stored in the `tokens` folder.
 If a color gets added, removed or changed in the style guide, we have to make
-changes to `tokens/colors.json` accordingly.
+changes to `tokens/colors.js` accordingly.
 
-Entries in `colors.json` have the following shape:
+Read more about the colors used in Upstream in the [Color System post][cg].
+
+The design system supports multiple color palettes via themes. You can rotate
+through the available themes by pressing <kbd>SHIFT</kbd> + <kbd>C</kbd> from
+within Upstream.
+
+Entries in `colors.js` have the following shape:
 ```javascript
-{
-  "name": "pink",    // Color name as defined in style guide
-  "hex": "#e074cb",  // Hex color code
-}
+export const colorConfig = {
+  defaultTheme: "lightMode",
+  themes: [
+    {
+      name: "lightMode",
+      colors: [
+        { name: "primary", hex: "#ff55ff" },
+        { name: "primary-level-1", hex: "#ffd4ff" },
+        { name: "primary-level-2", hex: "#ff87ff" },
+        { name: "primary-level-6", hex: "#663b66" },
+        // ...
+      ]
+    },
+    {
+      name: "darkMode",
+      colors: [
+        { name: "primary", hex: "#ff55ff" },
+        { name: "primary-level-1", hex: "#382847" },
+        { name: "primary-level-2", hex: "#62326d" },
+        { name: "primary-level-6", hex: "#ffd4ff" },
+        // ...
+      ]
+    }
+  ]
+};
 ```
 
-When `tokens/colors.json` is changed, we have to re-generate all tints and
-shades via: `yarn generate:colors`. This will update the global color CSS
-variables in `public/colors.css`. Changes to both files should be committed.
+When `tokens/colors.js` is changed, we have to re-generate all tints and shades
+via: `yarn generate:colors`. This will update the global color CSS variables in
+`public/colors.css`. Changes to both files should be committed.
 
 Throughout the codebase we use only CSS variables. Raw color codes should not
 be used so changes to global styling can be applied in a central place.
@@ -391,7 +418,7 @@ yarn test:debug       # Show the Cypress GUI, handy for visual debugging
 yarn dist             # Bundles Upstream into an installable package
 
 yarn generate:colors  # Update color CSS variables in public/colors.css from
-                      # colors.json
+                      # colors.js
 
 yarn generate:schema  # Start proxy and save the latest GraphQL schema
                       # in ./schema.gql
@@ -489,7 +516,7 @@ yarn test:debug           # Show the Cypress GUI, handy for visual debugging
 yarn dist                 # Bundles Upstream into an installable package
 
 yarn generate:colors      # Update color CSS variables in public/colors.css from
-                          # colors.json
+                          # colors.js
 
 yarn graphiql             # Open GraphiQL with explorer extension in browser
 
@@ -615,6 +642,7 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [bk]: https://buildkite.com/monadic/radicle-upstream
 [cb]: https://doc.rust-lang.org/cargo/
 [cc]: https://www.conventionalcommits.org/en/v1.0.0
+[cg]: https://radicle.community/t/color-system/166
 [cl]: https://gist.github.com/Rich-Harris/0f910048478c2a6505d1c32185b61934
 [co]: https://github.com/rust-lang/cargo
 [cs]: https://help.github.com/en/github/authenticating-to-github/signing-commits

@@ -5,8 +5,8 @@ import fs from "fs";
 import path from "path";
 
 let colorCss = `/* This file is auto-generated via \`yarn generate:colors\`, don't edit this
- * file manually. If you have to make changes to the color tokens edit
- * \`tokens/colors.json\` and re-generate this file by running the yarn script. */
+ * file manually. If you have to make changes to the color tokens, edit
+ * \`tokens/colors.js\` and re-generate this file by running the yarn script. */
 
 `;
 
