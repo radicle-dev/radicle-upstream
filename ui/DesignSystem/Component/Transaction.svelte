@@ -1,9 +1,10 @@
 <script>
-  import { Avatar, Caption, Title } from "../../DesignSystem/Primitive";
+  import { Avatar, Caption, Text, Title } from "../../DesignSystem/Primitive";
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
 
   // tx = {
+  //   id: transaction id (optional),
   //   message: "transaction message",
   //   stake: "name of stake (optional)",
   //   subject: {
@@ -27,7 +28,7 @@
 <Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Your transaction
 </Caption>
-<Row style="margin-bottom: 32px;" dataCy="tx-summary">
+<Row dataCy="tx-summary" variant={tx.id ? 'top' : 'single'}>
   <div slot="left">
     <Title>{tx.message}</Title>
   </div>
@@ -42,7 +43,19 @@
   </div>
 </Row>
 
-<Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
+{#if tx.id}
+  <Row
+    variant="bottom"
+    style="height: 32px; background-color: var(--color-foreground-level-1)">
+    <div slot="left">
+      <Text variant="tiny">{tx.id}</Text>
+    </div>
+  </Row>
+{/if}
+
+<Caption
+  style="color: var(--color-foreground-level-6); margin-bottom: 16px;
+  margin-top: 32px;">
   Transaction cost
 </Caption>
 

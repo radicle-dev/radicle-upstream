@@ -1,5 +1,7 @@
 <script>
   import { Flex, Icon, Text } from "../Primitive";
+  import * as path from "../../lib/path.js";
+  import { link } from "svelte-spa-router";
   // TODO: Make component responsive to transactions change
   export let transactions = null;
   export let style = null;
@@ -141,8 +143,10 @@
             </Flex>
           </div>
           <div slot="right">
-            <Icon.CarretBig
-              style="vertical-align: middle; margin-right: 16px;" />
+            <a href={path.transactions(tx.id)} use:link>
+              <Icon.CarretBig
+                style="vertical-align: middle; margin-right: 16px;" />
+            </a>
           </div>
         </Flex>
       </div>
