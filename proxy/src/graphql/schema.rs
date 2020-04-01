@@ -69,6 +69,7 @@ impl Mutation {
                 display_name,
                 avatar_url,
             },
+            registered: None,
         })
     }
 
@@ -296,18 +297,21 @@ impl Query {
     fn list_transactions(
         ctx: &Context,
         ids: Vec<juniper::ID>,
-    ) -> Result<Vec<registry::Transaction>, error::Error> {
+    ) -> Result<ListTransactions, error::Error> {
         let tx_ids = ids
             .iter()
             .map(|id| radicle_registry_client::TxHash::from_slice(id.to_string().as_bytes()))
             .collect();
 
-        Ok(futures::executor::block_on(
-            ctx.registry
-                .read()
-                .expect("unable to acquire read lock")
-                .list_transactions(tx_ids),
-        )?)
+        Ok(ListTransactions {
+            transactions: futures::executor::block_on(
+                ctx.registry
+                    .read()
+                    .expect("unable to acquire read lock")
+                    .list_transactions(tx_ids),
+            )?,
+            thresholds: registry::Registry::thresholds(),
+        })
     }
 
     fn identity(
@@ -322,6 +326,7 @@ impl Query {
                 display_name: Some("Alexis Sellier".into()),
                 avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
             },
+            registered: None,
         }))
     }
 
@@ -582,6 +587,12 @@ impl identity::Identity {
         &self.metadata
     }
 
+    fn registered(&self) -> Option<juniper::ID> {
+        self.registered
+            .as_ref()
+            .map(|r| juniper::ID::new(r.to_string()))
+    }
+
     fn avatar_fallback(&self) -> avatar::Avatar {
         avatar::Avatar::from(&self.metadata.handle, avatar::Usage::User)
     }
@@ -728,6 +739,36 @@ impl project::Stats {
     }
 }
 
+/// Response wrapper for listTransactions query.
+struct ListTransactions {
+    /// The configured Registry thresholds for transaction acceptance stages.
+    thresholds: registry::Thresholds,
+    /// The known and cached transactions.
+    transactions: Vec<registry::Transaction>,
+}
+
+#[juniper::object]
+impl ListTransactions {
+    fn transactions(&self) -> &Vec<registry::Transaction> {
+        &self.transactions
+    }
+
+    fn thresholds(&self) -> &registry::Thresholds {
+        &self.thresholds
+    }
+}
+
+#[juniper::object]
+impl registry::Thresholds {
+    fn confirmation(&self) -> i32 {
+        i32::try_from(self.confirmation).expect("conversion failed")
+    }
+
+    fn settlement(&self) -> i32 {
+        i32::try_from(self.settlement).expect("conversion failed")
+    }
+}
+
 #[juniper::object]
 impl registry::Transaction {
     fn id(&self) -> juniper::ID {
@@ -740,11 +781,13 @@ impl registry::Transaction {
             .map(|m| match m {
                 registry::Message::OrgRegistration(org_id) => {
                     Message::OrgRegistration(OrgRegistrationMessage {
+                        kind: MessageKind::OrgRegistration,
                         org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
                 registry::Message::OrgUnregistration(org_id) => {
                     Message::OrgUnregistration(OrgUnregistrationMessage {
+                        kind: MessageKind::OrgUnregistration,
                         org_id: juniper::ID::new(org_id.to_string()),
                     })
                 },
@@ -752,11 +795,13 @@ impl registry::Transaction {
                     project_name,
                     org_id,
                 } => Message::ProjectRegistration(ProjectRegistrationMessage {
+                    kind: MessageKind::ProjectRegistration,
                     project_name: juniper::ID::new(project_name.to_string()),
                     org_id: juniper::ID::new(org_id.to_string()),
                 }),
                 registry::Message::UserRegistration { handle, id } => {
                     Message::UserRegistration(UserRegistrationMessage {
+                        kind: MessageKind::UserRegistration,
                         handle: juniper::ID::new(handle.to_string()),
                         id: juniper::ID::new(id.to_string()),
                     })
@@ -800,6 +845,22 @@ enum Message {
     UserRegistration(UserRegistrationMessage),
 }
 
+/// Kind of the transaction message.
+#[derive(juniper::GraphQLEnum)]
+enum MessageKind {
+    /// Registration of a new org.
+    OrgRegistration,
+
+    /// Registration of a new org.
+    OrgUnregistration,
+
+    /// Registration of a new project.
+    ProjectRegistration,
+
+    /// Registration of a new user.
+    UserRegistration,
+}
+
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
         &OrgRegistrationMessage => match *self {
@@ -824,6 +885,8 @@ juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
 /// Contextual information for an org registration message.
 #[derive(juniper::GraphQLObject)]
 struct OrgRegistrationMessage {
+    /// Field to distinguish [`Message`] types.
+    kind: MessageKind,
     /// The ID of the org.
     org_id: juniper::ID,
 }
@@ -831,6 +894,8 @@ struct OrgRegistrationMessage {
 /// Contextual information for an org unregistration message.
 #[derive(juniper::GraphQLObject)]
 struct OrgUnregistrationMessage {
+    /// Field to distinguish [`Message`] types.
+    kind: MessageKind,
     /// The ID of the org.
     org_id: juniper::ID,
 }
@@ -838,6 +903,8 @@ struct OrgUnregistrationMessage {
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistrationMessage {
+    /// Field to distinguish [`Message`] types.
+    kind: MessageKind,
     /// Actual project name, unique under org.
     project_name: juniper::ID,
     /// The org under which to register the project.
@@ -847,6 +914,8 @@ struct ProjectRegistrationMessage {
 /// Payload of a user registration message.
 #[derive(juniper::GraphQLObject)]
 struct UserRegistrationMessage {
+    /// Field to distinguish [`Message`] types.
+    kind: MessageKind,
     /// The chosen unique handle to be registered.
     handle: juniper::ID,
     /// The id of the coco identity.

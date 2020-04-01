@@ -1,51 +1,78 @@
 <script>
   import { setContext } from "svelte";
+  import { gql } from "apollo-boost";
+  import { getClient, query } from "svelte-apollo";
+  import Router, { link, location, push } from "svelte-spa-router";
+
+  import { Icon } from "../DesignSystem/Primitive";
+
+  import {
+    AdditionalActionsDropdown,
+    HorizontalMenu,
+    SidebarLayout,
+    Topbar,
+    TrackToggle
+  } from "../DesignSystem/Component";
+
   import {
     revisionStore,
     objectPathStore,
     objectTypeStore
   } from "../store/sourceBrowser.js";
+
   import * as path from "../lib/path.js";
 
-  import Router, { location, push } from "svelte-spa-router";
-  import { SidebarLayout, Topbar } from "../DesignSystem/Component";
-  import { Button, Icon } from "../DesignSystem/Primitive";
+  import Breadcrumb from "./Project/Breadcrumb.svelte";
 
-  import Overview from "./Project/Overview.svelte";
-  import Feed from "./Project/Feed.svelte";
-  import Funds from "./Project/Funds.svelte";
   import Source from "./Project/Source.svelte";
   import Issues from "./Project/Issues.svelte";
   import Revisions from "./Project/Revisions.svelte";
-  import NotFound from "./NotFound.svelte";
 
-  export let params = null;
-
-  setContext("projectId", params.id);
+  import SourceMenu from "./Project/SourceMenu.svelte";
+  import IssuesMenu from "./Project/IssuesMenu.svelte";
+  import RevisionsMenu from "./Project/RevisionsMenu.svelte";
 
   const routes = {
-    "/projects/:id/": Overview,
-    "/projects/:id/overview": Overview,
-    "/projects/:id/feed": Feed,
-    "/projects/:id/funds": Funds,
+    "/projects/:id/": Source,
     "/projects/:id/source": Source,
     "/projects/:id/source/*": Source,
     "/projects/:id/issues": Issues,
-    "/projects/:id/revisions": Revisions,
-    "*": NotFound
+    "/projects/:id/revisions": Revisions
   };
 
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
+  const menuRoutes = {
+    "/projects/:id/": SourceMenu,
+    "/projects/:id/source": SourceMenu,
+    "/projects/:id/source/*": SourceMenu,
+    "/projects/:id/issues": IssuesMenu,
+    "/projects/:id/revisions": RevisionsMenu
+  };
+
+  export let params = null;
+  setContext("projectId", params.id);
 
   const GET_PROJECT = gql`
     query Query($id: ID!) {
       project(id: $id) {
         id
         metadata {
-          name
+          defaultBranch
           description
           imgUrl
+          name
+        }
+        registered {
+          ... on OrgRegistration {
+            orgId
+          }
+          ... on UserRegistration {
+            userId
+          }
+        }
+        stats {
+          branches
+          commits
+          contributors
         }
       }
     }
@@ -57,31 +84,15 @@
     variables: { id: params.id }
   });
 
-  $: revisionStore.set(path.extractProjectSourceRevision($location));
-  $: objectPathStore.set(path.extractProjectSourceObjectPath($location));
-  $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
-
   const topbarMenuItems = projectId => [
     {
-      icon: Icon.Source,
+      icon: Icon.Home,
       title: "Source",
       href: path.projectSource(projectId),
       looseActiveStateMatching: true
     },
     {
-      icon: Icon.Feed,
-      title: "Feed",
-      href: path.projectFeed(projectId),
-      looseActiveStateMatching: false
-    },
-    {
-      icon: Icon.Fund,
-      title: "Fund",
-      href: path.projectFunds(projectId),
-      looseActiveStateMatching: false
-    },
-    {
-      icon: Icon.Issues,
+      icon: Icon.Issue,
       title: "Issues",
       href: path.projectIssues(projectId),
       looseActiveStateMatching: false
@@ -93,27 +104,55 @@
       looseActiveStateMatching: false
     }
   ];
+
+  const dropdownMenuItems = [
+    {
+      title: "Register project",
+      icon: Icon.Register,
+      event: () => push(path.registerProject(params.id))
+    },
+    {
+      title: "New issue",
+      icon: Icon.Issue,
+      event: () => console.log("event(new-issue)")
+    },
+    {
+      title: "New revision",
+      icon: Icon.Revisions,
+      event: () => console.log("event(new-revision)")
+    }
+  ];
+
+  $: revisionStore.set(path.extractProjectSourceRevision($location));
+  $: objectPathStore.set(path.extractProjectSourceObjectPath($location));
+  $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
 </script>
 
 <SidebarLayout
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="page-container">
   {#await $project then result}
-    <Topbar
-      style="position: fixed; top: 0;"
-      avatarUrl={result.data.project.metadata.imgUrl}
-      name={result.data.project.metadata.name}
-      href={path.projectOverview(result.data.project.id)}
-      menuItems={topbarMenuItems(result.data.project.id)}>
-      <Button
-        variant="secondary"
-        size="small"
-        style="margin-right: 16px"
-        on:click={() => {
-          push(path.registerProject(result.data.project.id));
-        }}>
-        <span>Register</span>
-      </Button>
+    <Topbar style="position: fixed; top: 0;">
+      <a slot="left" href={path.projectSource(params.id)} use:link>
+        <!-- TODO(rudolfs): show whether the project is registered under user or org -->
+        <Breadcrumb
+          title={result.data.project.metadata.name}
+          user={result.data.project.registered}
+          org={result.data.project.registered} />
+      </a>
+
+      <div slot="middle">
+        <HorizontalMenu items={topbarMenuItems(params.id)} />
+      </div>
+
+      <div slot="right" style="display: flex">
+        <Router routes={menuRoutes} />
+        <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
+        <AdditionalActionsDropdown
+          style="margin: 0 24px 0 16px"
+          headerTitle={params.id}
+          menuItems={dropdownMenuItems} />
+      </div>
     </Topbar>
     <Router {routes} />
   {/await}

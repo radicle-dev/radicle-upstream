@@ -22,11 +22,11 @@
   }
 
   .error {
-    background-color: var(--color-red);
+    background-color: var(--color-negative);
   }
 
   .success {
-    background-color: var(--color-green);
+    background-color: var(--color-positive);
   }
 </style>
 
@@ -40,8 +40,8 @@
   </div>
 {/if}
 <Row
-  style="background-color: var(--color-almostwhite); border-radius: 0; margin:
-  -1px 0 -1px 0; border-top: none">
+  style="background-color: var(--color-foreground-level-1); border-radius: 0;
+  margin: -1px 0 -1px 0; border-top: none">
   <div slot="left">
     <Title style="margin-bottom: 16px;">From</Title>
     <div>
@@ -65,7 +65,9 @@
 
 <Row style="border-radius: 0; margin: -1px 0 -1px 0">
   <div slot="left">
-    <Title style="color: var(--color-darkgray);">Transaction Fee</Title>
+    <Title style="color: var(--color-foreground-level-6);">
+      Transaction Fee
+    </Title>
   </div>
 
   <div slot="right">
@@ -77,7 +79,7 @@
   style="margin-bottom: 16px; border-top-left-radius: 0;
   border-top-right-radius: 0">
   <div slot="left">
-    <Title variant="big" style="color: var(--color-pink);">Total</Title>
+    <Title variant="big" style="color: var(--color-primary);">Total</Title>
   </div>
 
   <div slot="right">

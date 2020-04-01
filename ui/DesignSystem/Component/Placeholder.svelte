@@ -6,7 +6,7 @@
   rect,
   path {
     fill: none;
-    stroke: var(--color-lightgray);
+    stroke: var(--color-foreground-level-3);
     stroke-width: 1px;
     vector-effect: non-scaling-stroke;
     shape-rendering: geometricPrecision;

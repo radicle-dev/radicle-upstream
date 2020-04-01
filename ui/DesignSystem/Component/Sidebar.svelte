@@ -2,22 +2,26 @@
   import { location } from "svelte-spa-router";
   import { link } from "svelte-spa-router";
   import { Avatar, Icon, Title } from "../Primitive";
+  import IdentityAvatar from "./IdentityAvatar.svelte";
+  import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
   import * as path from "../../lib/path.js";
+
+  /* TODO(rudolfs): fetch the actual org list */
+  import { orgMocks } from "../../lib/orgMocks.js";
 </script>
 
 <style>
   .wrapper {
     width: var(--sidebar-width);
     height: 100%;
-    background-color: #eeeeef;
+    background-color: var(--color-foreground-level-2);
     position: fixed;
     padding-top: 31px;
     z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border-right: 1px solid #e3e3e3;
   }
 
   .item {
@@ -30,24 +34,24 @@
     align-items: center;
   }
 
-  .item:hover:before {
+  .indicator:hover:before {
     position: absolute;
     content: "";
     width: 4px;
     height: 44px;
-    background-color: var(--color-gray);
+    background-color: var(--color-foreground-level-5);
     top: -4px;
     left: -16px;
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
   }
 
-  .item.active:before {
+  .indicator.active:before {
     position: absolute;
     content: "";
     width: 4px;
     height: 44px;
-    background-color: var(--color-purple);
+    background-color: var(--color-secondary);
     top: -4px;
     left: -16px;
     border-top-right-radius: 2px;
@@ -55,11 +59,11 @@
   }
 
   .wrapper :global(li:hover svg) {
-    fill: var(--color-purple);
+    fill: var(--color-secondary);
   }
 
-  .item.active :global(svg) {
-    fill: var(--color-purple);
+  .indicator.active :global(svg) {
+    fill: var(--color-secondary);
   }
 
   .divider {
@@ -70,7 +74,7 @@
   .line {
     height: 1px;
     width: 100%;
-    background-color: var(--color-gray);
+    background-color: var(--color-foreground-level-5);
   }
 
   .item:hover .tooltip {
@@ -79,14 +83,13 @@
   }
 
   .tooltip {
+    white-space: nowrap;
     user-select: none;
-    background-color: var(--color-white);
-    border: 1px solid var(--color-lightgray);
-    color: var(--color-darkgray);
+    background-color: var(--color-foreground);
+    color: var(--color-background);
     text-align: center;
     border-radius: 2px;
-    padding: 4px 10px 6px 8px;
-    box-shadow: 0px 4px 8px var(--color-lightgray-opacity-08);
+    padding: 4px 8px 6px 8px;
 
     position: absolute;
     opacity: 0;
@@ -95,27 +98,20 @@
     pointer-events: none;
   }
 
-  .tooltip:after,
   .tooltip:before {
-    right: 100%;
-    top: 50%;
-    border: solid transparent;
     content: "";
-    height: 0;
+    display: block;
     width: 0;
+    height: 0;
     position: absolute;
-  }
 
-  .tooltip:after {
-    border-right-color: var(--color-white);
-    border-width: 6px;
-    margin-top: -6px;
-  }
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
+    border-right: 6px solid var(--color-foreground);
+    left: -6px;
+    border-top-left-radius: 30%;
 
-  .tooltip:before {
-    border-right-color: var(--color-lightgray);
-    border-width: 7px;
-    margin-top: -7px;
+    top: 10px;
   }
 
   a {
@@ -130,7 +126,7 @@
 <div class="wrapper" data-cy="sidebar">
   <ul>
     <li
-      class="item"
+      class="item indicator"
       data-cy="search"
       class:active={path.active(path.search(), $location)}>
       <a href={path.search()} use:link>
@@ -143,7 +139,7 @@
     </li>
 
     <li
-      class="item"
+      class="item indicator"
       data-cy="network"
       class:active={path.active(path.network(), $location)}>
       <a href={path.network()} use:link>
@@ -160,15 +156,41 @@
     </li>
 
     <li
-      class="item"
+      class="item indicator"
       data-cy="profile"
-      class:active={path.active(path.projects(), $location, true)}>
-      <a href={path.projects()} use:link>
-        <Avatar size="medium" variant="user" />
+      class:active={path.active(path.profile(), $location, true)}>
+      <a href={path.profileProjects()} use:link>
+        <IdentityAvatar size="medium" />
       </a>
 
       <div class="tooltip">
         <Title>Profile</Title>
+      </div>
+    </li>
+
+    {#each orgMocks.data.orgs as org}
+      <li
+        class="item indicator"
+        class:active={path.active(path.orgs(org.id), $location, true)}>
+        <a href={path.orgProjects(org.id)} use:link>
+          <Avatar
+            imageUrl={org.metadata.avatarUrl}
+            avatarFallback={org.avatarFallback}
+            variant="project"
+            size="medium" />
+        </a>
+
+        <div class="tooltip">
+          <Title>{org.metadata.name}</Title>
+        </div>
+      </li>
+    {/each}
+
+    <li class="item">
+      <AddOrgButton on:click={() => console.log('event(add-org)')} />
+
+      <div class="tooltip">
+        <Title>Add org</Title>
       </div>
     </li>
   </ul>

@@ -22,9 +22,9 @@
 <style>
   img,
   .user.regular {
-    width: 34px;
-    height: 34px;
-    border-radius: 17px;
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
   }
 
   .user.medium {
@@ -58,6 +58,11 @@
     height: 32px;
   }
 
+  .project.medium {
+    width: 36px;
+    height: 36px;
+  }
+
   .project.big {
     width: 64px;
     height: 64px;
@@ -67,7 +72,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
   }
 
   .avatar {
@@ -95,16 +100,20 @@
   {:else}
     <div
       class={`avatar ${avatarClass}`}
-      style="background: var(--color-lightgray)" />
+      style="background: var(--color-foreground-level-3)" />
   {/if}
 
-  {#if title && size === 'regular'}
-    <Title style="white-space: nowrap; margin-left: 16px">{title}</Title>
-  {/if}
-
-  {#if title && size === 'big'}
-    <Title variant="big" style="white-space: nowrap; margin-left: 16px">
-      {title}
-    </Title>
+  {#if title}
+    {#if size === 'big'}
+      <Title variant="big" style="white-space: nowrap; margin-left: 12px">
+        {title}
+      </Title>
+    {:else}
+      <Title
+        style="white-space: nowrap; margin-left: 12px; color:
+        var(--color-foreground)">
+        {title}
+      </Title>
+    {/if}
   {/if}
 </div>

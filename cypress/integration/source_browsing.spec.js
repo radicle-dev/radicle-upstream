@@ -4,7 +4,7 @@ before(() => {
 });
 
 beforeEach(() => {
-  cy.visit("./public/index.html#/projects");
+  cy.visit("./public/index.html#/profile");
   cy.contains("Monadic").click();
   cy.contains("Source").click();
 });

@@ -1,5 +1,6 @@
 <script>
   import ClickOutside from "svelte-click-outside";
+  import { fade } from "svelte/transition";
 
   import { Icon, Text } from "../Primitive";
   import Copyable from "./Copyable.svelte";
@@ -15,11 +16,23 @@
     expanded = false;
   };
 
+  let copyIcon = Icon.Copy;
+
+  const afterCopy = () => {
+    copyIcon = Icon.Check;
+    setTimeout(() => {
+      copyIcon = Icon.Copy;
+      hideModal();
+    }, 250);
+  };
+
   const handleItemSelection = item => {
     hideModal();
     item.event();
   };
 
+  export let dataCy = null;
+  export let style = null;
   export let menuItems = null;
   export let headerTitle = null;
 </script>
@@ -42,7 +55,7 @@
   }
 
   button:hover {
-    background-color: var(--color-lightgray-tint-10);
+    background-color: var(--color-foreground-level-1);
   }
 
   .modal {
@@ -51,23 +64,23 @@
     right: 0;
     width: 240px;
     margin-top: 15px;
-    background-color: var(--color-white);
-    box-shadow: 0px 4px 8px var(--color-lightgray-opacity-08);
+    background-color: var(--color-background);
+    box-shadow: 0px 4px 8px var(--color-foreground-level-3-opacity-08);
     border-radius: 4px;
     cursor: pointer;
-    border: 1px solid var(--color-lightgray);
+    border: 1px solid var(--color-foreground-level-3);
   }
 
   .header {
     padding: 12px 16px;
-    border-bottom: solid 1px var(--color-lightgray);
-    color: var(--color-gray);
+    border-bottom: solid 1px var(--color-foreground-level-3);
+    color: var(--color-foreground-level-5);
     display: flex;
     justify-content: space-between;
   }
 
   .header:hover {
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
   }
 
   .menu {
@@ -77,36 +90,52 @@
   .menu-item {
     display: flex;
     padding: 8px 12px;
-    color: var(--color-darkgray);
+    color: var(--color-foreground-level-6);
+  }
+
+  .menu-item:first-of-type {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+  }
+
+  .menu-item:last-of-type {
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
   }
 
   .menu-item:hover {
-    background-color: var(--color-lightgray-tint-10);
+    background-color: var(--color-foreground-level-1);
   }
 </style>
 
-<div class="container">
-  <button bind:this={triggerEl} on:click={toggleModal}>
+<div data-cy={dataCy} class="container" {style} on:click|stopPropagation>
+  <button bind:this={triggerEl} on:click|stopPropagation={toggleModal}>
     <svelte:component this={Icon.Ellipses} />
   </button>
   <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
     {#if expanded}
-      <div class="modal" hidden={!expanded}>
-        <Copyable>
-          <div class="header">
-            <Text
-              style="white-space: nowrap; overflow: hidden; text-overflow:
-              ellipsis; max-width: 170px;">
-              {headerTitle}
-            </Text>
-            <svelte:component
-              this={Icon.Copy}
-              style="margin-left: 8px; min-width: 16px;" />
-          </div>
-        </Copyable>
-        <div class="menu">
-          {#each menuItems as item}
-            <div class="menu-item" on:click={handleItemSelection(item)}>
+      <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
+        {#if headerTitle}
+          <Copyable {afterCopy}>
+            <div class="header">
+              <Text
+                style="white-space: nowrap; overflow: hidden; text-overflow:
+                ellipsis; max-width: 170px;">
+                {headerTitle}
+              </Text>
+              <svelte:component
+                this={copyIcon}
+                style="margin-left: 8px; min-width: 16px;" />
+            </div>
+          </Copyable>
+        {/if}
+
+        <div class="menu" data-cy="dropdown-menu">
+          {#each menuItems as item, index}
+            <div
+              data-cy={item.dataCy}
+              class="menu-item"
+              on:click|stopPropagation={handleItemSelection(item)}>
               <svelte:component this={item.icon} style="margin-right: 12px" />
               <Text>{item.title}</Text>
             </div>
@@ -115,5 +144,4 @@
       </div>
     {/if}
   </ClickOutside>
-
 </div>

@@ -24,7 +24,7 @@
   const feePosition = tx.stake ? "middle" : "top";
 </script>
 
-<Caption style="color: var(--color-darkgray); margin-bottom: 16px">
+<Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Your transaction
 </Caption>
 <Row style="margin-bottom: 32px;" dataCy="tx-summary">
@@ -38,16 +38,16 @@
       imageUrl={tx.subject.imageUrl}
       avatarFallback={tx.subject.avatarFallback}
       variant={tx.subject.kind}
-      style="color: var(--color-black)" />
+      style="color: var(--color-foreground)" />
   </div>
 </Row>
 
-<Caption style="color: var(--color-darkgray); margin-bottom: 16px">
+<Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Transaction cost
 </Caption>
 
 {#if tx.stake}
-  <Row variant="top" style="background-color: var(--color-almostwhite)">
+  <Row variant="top" style="background-color: var(--color-foreground-level-1)">
     <div slot="left">
       <Title>{tx.stake}</Title>
     </div>
@@ -58,7 +58,9 @@
   </Row>
 {/if}
 
-<Row variant={feePosition} style="background-color: var(--color-almostwhite)">
+<Row
+  variant={feePosition}
+  style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Title>Transaction Fee</Title>
   </div>
@@ -70,9 +72,9 @@
 
 <Row
   variant="bottom"
-  style="margin-bottom: 32px; background-color: var(--color-almostwhite)">
+  style="margin-bottom: 32px; background-color: var(--color-foreground-level-1)">
   <div slot="left">
-    <Title style="color: var(--color-pink);" variant="big">Total</Title>
+    <Title style="color: var(--color-primary);" variant="big">Total</Title>
   </div>
 
   <div slot="right">
@@ -80,17 +82,17 @@
   </div>
 </Row>
 
-<Caption style="color: var(--color-darkgray); margin-bottom: 16px">
+<Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Paid by
 </Caption>
 
-<Row style="background-color: var(--color-almostwhite)">
+<Row style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Avatar
       title={tx.payer.name}
       imageUrl={tx.payer.imageUrl}
       avatarFallback={tx.payer.avatarFallback}
-      style="color: var(--color-black)" />
+      style="color: var(--color-foreground)" />
   </div>
 
   <div slot="right">

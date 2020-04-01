@@ -208,13 +208,13 @@
         }
       });
 
-      push(path.projectOverview(response.data.createProject.id));
+      push(path.projectSource(response.data.createProject.id));
       showNotification({
         text: `Project ${response.data.createProject.metadata.name} successfully created`,
         level: "info"
       });
     } catch (error) {
-      push(path.projects());
+      push(path.profile());
       showNotification({
         text: "Could not create project",
         level: "error"
@@ -308,7 +308,7 @@
       </Title>
 
       <Input.Text
-        style="--focus-outline-color: var(--color-pink)"
+        style="--focus-outline-color: var(--color-primary)"
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
@@ -317,13 +317,13 @@
 
       <Input.Text
         style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
-        var(--color-pink)"
+        var(--color-primary)"
         placeholder="Project description"
         bind:value={description} />
 
       <Input.Text
         dataCy="avatar-url"
-        style="--focus-outline-color: var(--color-pink)"
+        style="--focus-outline-color: var(--color-primary)"
         placeholder="http://my-project-website.com/project-avatar.png"
         bind:value={imageUrl}
         valid={!(validations && validations.imageUrl)}
@@ -341,8 +341,8 @@
           dataCy="new-project">
           <div slot="option-body">
             <Text
-              style="margin-bottom: 12px; color: var(--color-darkgray);
-              text-align: left">
+              style="margin-bottom: 12px; color:
+              var(--color-foreground-level-6); text-align: left">
               Choose where you'd like to create the repository
             </Text>
             <Input.Directory
@@ -360,8 +360,8 @@
           dataCy="existing-project">
           <div slot="option-body">
             <Text
-              style="margin-bottom: 12px; color: var(--color-darkgray);
-              text-align:left">
+              style="margin-bottom: 12px; color:
+              var(--color-foreground-level-6); text-align:left">
               Choose an existing repository
             </Text>
             <Input.Directory
@@ -370,7 +370,7 @@
               validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
               bind:path={existingRepositoryPath} />
             <div class="default-branch-row" style="margin-top: 16px">
-              <Text style="color: var(--color-darkgray)">
+              <Text style="color: var(--color-foreground-level-6)">
                 Select the default branch
               </Text>
               {#if localBranches.length > 0}
@@ -378,7 +378,7 @@
                   items={localBranches}
                   bind:value={defaultBranch}
                   style="min-width: 240px; --focus-outline-color:
-                  var(--color-pink)" />
+                  var(--color-primary)" />
               {:else}
                 <Input.Dropdown
                   items={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
@@ -397,8 +397,9 @@
 
       {#if validations && validations.currentSelection}
         <div class="validation-row">
-          <Icon.Important style="margin-right: 8px;fill: var(--color-red)" />
-          <Title style="color: var(--color-red)">
+          <Icon.Important
+            style="margin-right: 8px;fill: var(--color-negative)" />
+          <Title style="color: var(--color-negative)">
             {validations.currentSelection[0]}
           </Title>
         </div>
@@ -408,7 +409,7 @@
         <div slot="left">
           <Text
             variant="tiny"
-            style="color: var(--color-gray); padding-left: 15px;">
+            style="color: var(--color-foreground-level-5); padding-left: 15px;">
             * required
           </Text>
         </div>

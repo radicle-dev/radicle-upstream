@@ -18,6 +18,7 @@
     Rad,
     Row,
     StepCounter,
+    TrackToggle,
     UserCard
   } from "../DesignSystem/Component";
 
@@ -179,12 +180,14 @@
     stroke weight, multiple color variations">
 
     <Icon.Badge />
+    <Icon.ArrowDown />
     <Icon.ArrowUp />
     <Icon.Branch />
     <Icon.Carret />
     <Icon.CarretBig />
     <Icon.Check />
     <Icon.CheckCircle />
+    <Icon.CloseIssue />
     <Icon.Commit />
     <Icon.Copy />
     <Icon.Cross />
@@ -201,15 +204,16 @@
     <Icon.Important />
     <Icon.Inbox />
     <Icon.Info />
-    <Icon.Issues />
     <Icon.Member />
     <Icon.Minus />
     <Icon.Peer />
     <Icon.Plus />
     <Icon.Projects />
+    <Icon.Register />
     <Icon.Revisions />
     <Icon.Search />
     <Icon.SearchSmall />
+    <Icon.Settings />
     <Icon.Source />
   </Section>
 
@@ -572,9 +576,13 @@
 
     <Swatch>
       <ProjectCard
+        projectId="2fFdyRzay2Rew9CpjEunPLp2PWe7HSvXWB3AJ.git"
         title="Radicle"
         description="Best project in the world"
-        isRegistered={true} />
+        isRegistered={true}
+        commitCount={'2.5k'}
+        branchCount={'25'}
+        memberCount={'245'} />
     </Swatch>
 
     <Swatch>
@@ -646,6 +654,10 @@
       <AdditionalActionsDropdown
         headerTitle="Copy this title"
         menuItems={dropdownMenuItems} />
+    </Swatch>
+
+    <Swatch>
+      <TrackToggle peerCount="2.3k" />
     </Swatch>
   </Section>
 </div>

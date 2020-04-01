@@ -4,7 +4,7 @@
   import ProjectCard from "./ProjectCard.svelte";
 
   import { projectNameStore } from "../../store/project.js";
-  import { createProject, projectOverview } from "../../lib/path.js";
+  import { createProject, projectSource } from "../../lib/path.js";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -15,9 +15,23 @@
       projects {
         id
         metadata {
+          defaultBranch
+          imgUrl
           description
           name
-          imgUrl
+        }
+        registered {
+          ... on OrgRegistration {
+            orgId
+          }
+          ... on UserRegistration {
+            userId
+          }
+        }
+        stats {
+          branches
+          commits
+          contributors
         }
       }
     }
@@ -38,13 +52,13 @@
     width: 100%;
     height: 96px;
     flex: 1;
-    border-bottom: 1px solid var(--color-lightgray);
+    border-bottom: 1px solid var(--color-foreground-level-3);
     cursor: pointer;
     padding: 22px 15px 26px 12px;
   }
 
   li:hover {
-    background-color: var(--color-almostwhite);
+    background-color: var(--color-foreground-level-1);
   }
 
   li:last-child {
@@ -72,13 +86,17 @@
         <li
           on:click={() => {
             projectNameStore.set(project.metadata.name);
-            push(projectOverview(project.id));
+            push(projectSource(project.id));
           }}
           class="project-card">
           <ProjectCard
+            projectId={project.id}
             title={project.metadata.name}
             description={project.metadata.description}
-            isRegistered={false} />
+            isRegistered={project.registered}
+            commitCount={project.stats.commits}
+            branchCount={project.stats.branches}
+            memberCount={project.stats.contributors} />
         </li>
       {/each}
     </ul>
@@ -87,10 +105,10 @@
       <div class="create-project">
         <Text
           variant="title"
-          style="color: var(--color-darkgray); margin-bottom: 13px">
+          style="color: var(--color-foreground-level-6); margin-bottom: 13px">
           You have no projects
         </Text>
-        <Text style="color: var(--color-gray)">
+        <Text style="color: var(--color-foreground-level-5)">
           Create a new project and share it with friends to get started
         </Text>
         <Button
