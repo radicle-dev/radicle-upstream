@@ -61,7 +61,7 @@
     return {
       id: tx.id,
       message: formatMessage[kind],
-      stake: `${formatMessage[kind]  } deposit`,
+      stake: `${formatMessage[kind]} deposit`,
       // TODO(merle): Retrieve actual data for subject and payer
       subject: {
         name: "handle",
@@ -94,11 +94,12 @@
 
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
-    <!-- TODO(merle): Remove overflow hidden, when number id clarified -->
     <Title
       variant="big"
-      style="margin-bottom: 24px; white-space: nowrap; overflow: hidden;">
-      Transaction #{params.id}
+      style="margin-bottom: 24px; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; color: var(--color-foreground-level-5)">
+      <span style="color: var(--color-foreground)">Transaction</span>
+      {params.id}
     </Title>
     {#await $transactions then result}
       <!-- TODO(merle): Add transaction status bar -->
