@@ -32,7 +32,6 @@
   let name;
   let description = "";
   let defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
-  let publish = true;
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
   let imageUrl = "";
@@ -204,7 +203,7 @@
             defaultBranch: defaultBranch
           },
           path: isNew ? newRepositoryPath : existingRepositoryPath,
-          publish: isNew ? true : publish
+          publish: true
         }
       });
 
@@ -286,12 +285,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
-  }
-
-  .publish-row {
-    display: flex;
-    align-items: center;
+    margin-top: 16px;
   }
 
   .validation-row {
@@ -369,7 +363,7 @@
               valid={!(validations && validations.existingRepositoryPath)}
               validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
               bind:path={existingRepositoryPath} />
-            <div class="default-branch-row" style="margin-top: 16px">
+            <div class="default-branch-row">
               <Text style="color: var(--color-foreground-level-6)">
                 Select the default branch
               </Text>
@@ -385,11 +379,6 @@
                   disabled
                   style="min-width: 240px" />
               {/if}
-            </div>
-            <div class="publish-row">
-              <Input.Checkbox bind:checked={publish}>
-                Publish the {defaultBranch} branch to the network
-              </Input.Checkbox>
             </div>
           </div>
         </RadioOption>
@@ -427,7 +416,7 @@
               disabled={!(name && currentSelection)}
               variant="primary"
               on:click={createProject}>
-              Create project
+              Publish project
             </Button>
           </div>
         </div>
