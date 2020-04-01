@@ -2,7 +2,7 @@
   import { push } from "svelte-spa-router";
 
   import { projects, projectNameStore } from "../../store/project.ts";
-  import { createProject, projectOverview } from "../../lib/path.js";
+  import { createProject, projectSource } from "../../lib/path.js";
 
   import { Text, Button } from "../Primitive";
   import ProjectCard from "./ProjectCard.svelte";
@@ -18,13 +18,13 @@
     width: 100%;
     height: 96px;
     flex: 1;
-    border-bottom: 1px solid var(--color-lightgray);
+    border-bottom: 1px solid var(--color-foreground-level-3);
     cursor: pointer;
     padding: 22px 15px 26px 12px;
   }
 
   li:hover {
-    background-color: var(--color-almostwhite);
+    background-color: var(--color-foreground-level-1);
   }
 
   li:last-child {
@@ -49,7 +49,7 @@
       <li
         on:click={() => {
           projectNameStore.set(project.metadata.name);
-          push(projectOverview(project.id));
+          push(projectSource(project.id));
         }}
         class="project-card">
         <ProjectCard

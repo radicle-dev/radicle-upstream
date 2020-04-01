@@ -7,8 +7,9 @@
   import Help from "./Screen/Help.svelte";
   import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
+  import Org from "./Screen/Org.svelte";
+  import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
-  import Projects from "./Screen/Projects.svelte";
   import RegisterProject from "./Screen/RegisterProject.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
   import Search from "./Screen/Search.svelte";
@@ -20,7 +21,10 @@
     "/identity/new": CreateIdentity,
     "/search": Search,
     "/network": Network,
-    "/projects": Projects,
+    "/profile": Profile,
+    "/profile/*": Profile,
+    "/orgs/:id": Org,
+    "/orgs/:id/*": Org,
     "/projects/new": CreateProject,
     "/projects/:id/register": RegisterProject,
     "/projects/:id/*": Project,

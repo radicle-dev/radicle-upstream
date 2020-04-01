@@ -72,6 +72,14 @@ pub enum TransactionState {
     Applied(Hash),
 }
 
+/// Configured thresholds for acceptance criteria of transaction progress.
+pub struct Thresholds {
+    /// Number of blocks after which a [`Transaction`] is assumed to be confirmed.
+    pub confirmation: u64,
+    /// Number of blocks after which a [`Transaction`] is assumed to be settled.
+    pub settlement: u64,
+}
+
 /// Registry client wrapper.
 #[derive(Clone)]
 pub struct Registry {
@@ -351,6 +359,15 @@ impl Registry {
         self.cache_transaction(tx.clone()).await;
 
         Ok(tx)
+    }
+
+    /// Returns the configured thresholds for [`Transaction`] acceptance stages.
+    #[must_use]
+    pub const fn thresholds() -> Thresholds {
+        Thresholds {
+            confirmation: 3,
+            settlement: 9,
+        }
     }
 }
 

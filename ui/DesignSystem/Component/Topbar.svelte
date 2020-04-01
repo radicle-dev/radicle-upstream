@@ -1,15 +1,5 @@
 <script>
-  import { link } from "svelte-spa-router";
-
-  import { Avatar } from "../Primitive";
-  import Menu from "./Topbar/Menu.svelte";
-
   export let style = null;
-
-  export let avatarUrl = null;
-  export let name = null;
-  export let href = null;
-  export let menuItems = null;
 </script>
 
 <style>
@@ -18,42 +8,36 @@
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
-    background-color: var(--color-white);
+    background-color: var(--color-background);
     width: calc(100vw - var(--sidebar-width));
     height: var(--topbar-height);
     left: var(--sidebar-width);
-    border-bottom: 1px solid var(--color-lightgray);
-  }
-
-  .name {
-    display: flex;
-    align-items: center;
-    height: 100%;
-    border-right: 1px solid var(--color-lightgray);
-    padding-left: 16px;
-    padding-right: 24px;
+    border-bottom: 1px solid var(--color-foreground-level-3);
   }
 
   .left {
     display: flex;
-    flex: 1;
+    align-items: center;
+    height: 100%;
+    border-right: 1px solid var(--color-foreground-level-3);
+    padding-left: 16px;
+    padding-right: 24px;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    width: 100%;
     justify-content: flex-end;
-    margin-right: 16px;
   }
 </style>
 
 <div data-cy="topbar" class="topbar" {style}>
-  <a class="name" {href} use:link>
-    <Avatar
-      style="color: var(--color-purple)"
-      title={name}
-      imageUrl={avatarUrl}
-      variant="project" />
-  </a>
-
-  <Menu items={menuItems} />
-
   <div class="left">
-    <slot />
+    <slot name="left" />
+  </div>
+  <slot name="middle" />
+  <div class="right">
+    <slot name="right" />
   </div>
 </div>

@@ -4,10 +4,10 @@
   import { pop } from "svelte-spa-router";
 
   import {
-    avatarUrlStore,
-    avatarFallbackStore,
-    handleStore,
-    idStore
+    identityAvatarUrlStore,
+    identityAvatarFallbackStore,
+    identityHandleStore,
+    identityIdStore
   } from "../store/identity.js";
 
   import { Text, Title } from "../DesignSystem/Primitive";
@@ -18,10 +18,10 @@
 
   let step = 1;
 
-  let handle = $handleStore;
-  let avatarFallback = $avatarFallbackStore;
-  const imageUrl = $avatarUrlStore;
-  const id = $idStore;
+  let handle = $identityHandleStore;
+  let avatarFallback = $identityAvatarFallbackStore;
+  const imageUrl = $identityAvatarUrlStore;
+  const id = $identityIdStore;
 
   const nextStep = () => {
     step += 1;
@@ -97,7 +97,8 @@
       </Title>
 
       {#if step === 1}
-        <Text style="color: var(--color-gray); margin: 16px 0 24px 0;">
+        <Text
+          style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
           Registering your handle makes it unique and allows others to easily
           find you.
         </Text>

@@ -1,6 +1,6 @@
 {
   "name": "radicle-upstream",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "author": {
     "name": "radicle team",
     "email": "dev@radicle.xyz",
@@ -50,7 +50,6 @@
     "apollo": "^2.24.0",
     "babel-eslint": "^10.1.0",
     "chokidar": "^3.3.1",
-    "color": "^3.1.2",
     "cypress": "^4.1.0",
     "electron": "^8.0.3",
     "electron-builder": "^22.3.6",
@@ -75,7 +74,7 @@
     "standard-version": "^7.1.0",
     "svelte": "^3.20.1",
     "svelte-click-outside": "https://github.com/radicle-dev/svelte-click-outside#10e47e6359f943d45b72c2f3fc7ccc8036b60fac",
-    "svelte-spa-router": "^2.0.0",
+    "svelte-spa-router": "^2.1.0",
     "typescript": "3.8.3",
     "wait-on": "^4.0.1"
   },
@@ -106,7 +105,7 @@
     "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
-    "lint": "eslint . --ignore-path .gitignore --ext .ts"
+    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte"
   },
   "dependencies": {
     "@babel/runtime": "^7.8.4",

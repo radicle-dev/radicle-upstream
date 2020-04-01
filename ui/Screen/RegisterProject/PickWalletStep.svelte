@@ -18,7 +18,7 @@
 
 <Text
   variant="caption"
-  style="color: var(--color-darkgray); margin-bottom: 24px">
+  style="color: var(--color-foreground-level-6); margin-bottom: 24px">
   Project wallets
 </Text>
 <Row style="margin-bottom: 16px" disabled={false}>

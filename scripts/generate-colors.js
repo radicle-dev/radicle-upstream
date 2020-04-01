@@ -1,53 +1,28 @@
-import Color from "color";
-import colorTokens from "../tokens/colors.json";
+// TODO(rudolfs): fetch colors from Figma
+// https://github.com/radicle-dev/radicle-upstream/issues/241
+import { colorConfig } from "../tokens/colors.js";
 import fs from "fs";
 import path from "path";
 
-const generateTints = (color, range) => {
-  if (!range) return;
+let colorCss = `/* This file is auto-generated via \`yarn generate:colors\`, don't edit this
+ * file manually. If you have to make changes to the color tokens, edit
+ * \`tokens/colors.js\` and re-generate this file by running the yarn script. */
 
-  return range
-    .map(tint => {
-      return `  --color-${color.name}-tint-${tint}: ${Color(color.hex)
-        .lighten(tint / 100)
-        .hex()
-        .toLowerCase()};\n`;
-    })
-    .join("");
-};
-
-const generateShades = (color, range) => {
-  if (!range) return;
-
-  return range
-    .map(shade => {
-      return `  --color-${color.name}-shade-${shade}: ${Color(color.hex)
-        .darken(shade / 100)
-        .hex()
-        .toLowerCase()};\n`;
-    })
-    .join("");
-};
-
-let colorCss = `
-/* This file is auto-generated via \`yarn generate:colors\`, don't edit this
- * file manually. If you have to make changes to the color tokens edit
- * \`tokens/colors.json\` and re-generate this file by running the yarn script. */
-
-:root {
 `;
 
-colorTokens.map(color => {
-  const tints = generateTints(color, color.tints);
+colorConfig.themes.map(theme => {
+  if (theme.name === colorConfig.defaultTheme) {
+    colorCss += ":root {\n";
+  } else {
+    colorCss += `\n[data-theme="${theme.name}"] {\n`;
+  }
 
-  const primary = `  --color-${color.name}: ${color.hex};\n`;
+  theme.colors.map(color => {
+    colorCss += `  --color-${color.name}: ${color.hex};\n`;
+  });
 
-  const shades = generateShades(color, color.shades);
-
-  colorCss += [tints, primary, shades].join("");
+  colorCss += "}\n";
 });
-
-colorCss += "}";
 
 const pathToFile = path.resolve(__dirname, "../public/colors.css");
 

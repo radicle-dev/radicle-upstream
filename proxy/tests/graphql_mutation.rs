@@ -29,6 +29,7 @@ fn create_identity() {
                         displayName
                         avatarUrl
                     }
+                    registered
                 }
             }";
 
@@ -45,6 +46,7 @@ fn create_identity() {
                             "displayName": "Alexis Sellier",
                             "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
                         },
+                        "registered": None,
                     },
                 })
             );

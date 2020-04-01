@@ -4,14 +4,16 @@ context("identity creation", () => {
   });
 
   const openModal = () => {
-    cy.visit("./public/index.html#/projects");
+    cy.visit("./public/index.html#/search");
     cy.get("body").type("{shift}i");
   };
 
   context("modal", () => {
     it("can be closed by pressing escape key", () => {
       cy.get("body").type("{esc}");
-      cy.contains("My Projects").should("exist");
+      cy.get("h2")
+        .contains("Search")
+        .should("exist");
     });
   });
 

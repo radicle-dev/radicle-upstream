@@ -3,11 +3,11 @@
 
   import * as path from "../../lib/path.js";
   import {
-    avatarUrlStore,
-    avatarFallbackStore,
-    displayNameStore,
-    handleStore,
-    shareableEntityIdentifierStore
+    identityAvatarUrlStore,
+    identityAvatarFallbackStore,
+    identityDisplayNameStore,
+    identityHandleStore,
+    identityShareableEntityIdentifierStore
   } from "../../store/identity.js";
 
   import { Avatar, Button, Text, Title } from "../../DesignSystem/Primitive";
@@ -31,7 +31,7 @@
   .identity-card {
     display: flex;
     align-items: center;
-    background-color: var(--color-almostwhite);
+    background-color: var(--color-foreground-level-1);
     padding: 24px;
     margin-bottom: 34px;
     width: 100%;
@@ -43,34 +43,34 @@
   }
 
   .registration-link {
-    color: var(--color-purple);
+    color: var(--color-secondary);
   }
 
   .registration-link:hover {
-    color: var(--color-gray);
+    color: var(--color-foreground-level-5);
   }
 </style>
 
 <div class="container">
   <div class="content">
     <Title variant="big" style="text-align: center;">Identity created ✨</Title>
-    <Text style="margin: 20px 0; color: var(--color-gray);">
+    <Text style="margin: 20px 0; color: var(--color-foreground-level-5);">
       This is your peer-to-peer identity. Even though your radicleID is unique,
       your handle isn't. To get a unique handle, you have to
       <!-- TODO(sarah): actually link to handle registration flow -->
-      <a class="registration-link" href={path.projects()} use:link>
+      <a class="registration-link" href={path.registerUser()} use:link>
         register it.
       </a>
     </Text>
     <div class="identity-card">
       <Avatar
         size="huge"
-        imageUrl={$avatarUrlStore}
-        avatarFallback={$avatarFallbackStore} />
+        imageUrl={$identityAvatarUrlStore}
+        avatarFallback={$identityAvatarFallbackStore} />
       <div class="identity-card-text-container">
-        <Title>{$displayNameStore || $handleStore}</Title>
-        <Text style="color: var(--color-darkgray);">
-          {$shareableEntityIdentifierStore}
+        <Title>{$identityDisplayNameStore || $identityHandleStore}</Title>
+        <Text style="color: var(--color-foreground-level-6);">
+          {$identityShareableEntityIdentifierStore}
         </Text>
       </div>
     </div>

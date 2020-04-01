@@ -556,12 +556,19 @@ async fn list_transactions() {
     vars.insert("ids".into(), InputValue::list(vec![]));
     let query = "query($ids: [ID!]!) {
             listTransactions(ids: $ids) {
-                messages {
-                    ... on ProjectRegistrationMessage {
-                        projectName,
-                        orgId
-                    }
-                },
+                transactions {
+                    messages {
+                        ... on ProjectRegistrationMessage {
+                            kind,
+                            projectName,
+                            orgId
+                        }
+                    },
+                }
+                thresholds {
+                    confirmation
+                    settlement
+                }
             }
         }";
 
@@ -578,16 +585,23 @@ async fn list_transactions() {
     assert_eq!(
         res,
         graphql_value!({
-            "listTransactions": [
-                {
-                    "messages": [
-                        {
-                            "projectName": "upstream",
-                            "orgId": "radicle",
-                        },
-                    ],
-                }
-            ],
+            "listTransactions": {
+                "transactions": [
+                    {
+                        "messages": [
+                            {
+                                "kind": "PROJECT_REGISTRATION",
+                                "projectName": "upstream",
+                                "orgId": "radicle",
+                            },
+                        ],
+                    }
+                ],
+                "thresholds": {
+                    "confirmation": 3,
+                    "settlement": 9,
+                },
+            },
         })
     );
 }
@@ -670,6 +684,7 @@ fn identity() {
                         displayName
                         avatarUrl
                     }
+                    registered
                     avatarFallback {
                         emoji
                         background {
@@ -694,6 +709,7 @@ fn identity() {
                             "displayName": "Alexis Sellier",
                             "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
                         },
+                        "registered": None,
                         "avatarFallback": {
                             "emoji": "🚡",
                             "background": {

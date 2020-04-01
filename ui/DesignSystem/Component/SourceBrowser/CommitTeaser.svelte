@@ -18,7 +18,7 @@
     height: 36px;
     padding: 0 12px 0 12px;
     border-radius: 2px;
-    border: 1px solid var(--color-lightgray);
+    border: 1px solid var(--color-foreground-level-3);
     white-space: nowrap;
     min-width: var(--content-min-width);
   }
@@ -36,18 +36,18 @@
   }
 
   .commitSha {
-    color: var(--color-purple);
+    color: var(--color-secondary);
   }
 </style>
 
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
     <UserCard {user} style="margin-right: 8px" />
-    <Text style="color: var(--color-darkgray)">{commitMessage}</Text>
+    <Text style="color: var(--color-foreground-level-6)">{commitMessage}</Text>
   </div>
 
   <div class="align-right">
-    <Text style="color: var(--color-darkgray)">
+    <Text style="color: var(--color-foreground-level-6)">
       Latest commit
       <a class="commitSha" href="/projects/123/commits/{commitSha}" use:link>
         {commitSha}
