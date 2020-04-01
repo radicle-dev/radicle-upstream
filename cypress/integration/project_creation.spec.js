@@ -82,14 +82,6 @@ context("project creation", () => {
       });
     });
 
-    context("avatar url", () => {
-      it("prevents user from submitting an invalid avatar URL", () => {
-        // shows a validation message when avatar URL is not a valid URL
-        cy.get('[data-cy="page"] [data-cy="avatar-url"]').type("htttp");
-        cy.get('[data-cy="page"]').contains("Not a valid avatar URL");
-      });
-    });
-
     context("new repository", () => {
       it("prevents the user from picking an invalid directory", () => {
         // shows a validation message when new project path is empty

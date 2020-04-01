@@ -71,7 +71,6 @@ fn create_project_existing_repo() {
             InputValue::scalar("Code collaboration without intermediates."),
         );
         metadata_input.insert("defaultBranch".into(), InputValue::scalar("master"));
-        metadata_input.insert("imgUrl".into(), InputValue::scalar("https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png"));
 
         let mut vars = Variables::new();
         vars.insert("metadata".into(), InputValue::object(metadata_input));
@@ -85,7 +84,6 @@ fn create_project_existing_repo() {
                         name
                         description
                         defaultBranch
-                        imgUrl
                     }
                 }
             }";
@@ -100,7 +98,6 @@ fn create_project_existing_repo() {
                             "name": "upstream",
                             "description": "Code collaboration without intermediates.",
                             "defaultBranch": "master",
-                            "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
                         },
                     },
                 })
@@ -126,7 +123,6 @@ fn create_project() {
             InputValue::scalar("Code collaboration without intermediates."),
         );
         metadata_input.insert("defaultBranch".into(), InputValue::scalar("master"));
-        metadata_input.insert("imgUrl".into(), InputValue::scalar("https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png"));
 
         let mut vars = Variables::new();
         vars.insert("metadata".into(), InputValue::object(metadata_input));
@@ -140,7 +136,6 @@ fn create_project() {
                         name
                         description
                         defaultBranch
-                        imgUrl
                     }
                     registered {
                         ... on OrgRegistration {
@@ -168,7 +163,6 @@ fn create_project() {
                             "name": "upstream",
                             "description": "Code collaboration without intermediates.",
                             "defaultBranch": "master",
-                            "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
                         },
                         "registered": None,
                         "stats": {

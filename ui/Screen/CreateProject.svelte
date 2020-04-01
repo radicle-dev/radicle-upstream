@@ -6,7 +6,6 @@
 
   import { showNotification } from "../store/notification.js";
   import * as path from "../lib/path.js";
-  import { hash } from "../lib/hash.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
 
   import {
@@ -34,7 +33,6 @@
   let defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
-  let imageUrl = "";
 
   let validations = false;
   let beginValidation = false;
@@ -105,15 +103,6 @@
         message: `Project name should match ${projectNameMatch}`
       }
     },
-    imageUrl: {
-      optional: {
-        url: {
-          schemes: ["http", "https"],
-          message: "Not a valid avatar URL",
-          allowLocal: false
-        }
-      }
-    },
     currentSelection: {
       presence: {
         message:
@@ -136,7 +125,6 @@
     validations = validatejs(
       {
         name: name,
-        imageUrl: imageUrl,
         currentSelection: currentSelection,
         newRepositoryPath: newRepositoryPath,
         existingRepositoryPath: existingRepositoryPath
@@ -149,7 +137,6 @@
   // only needed to make the function reactive to when they're changed.
   $: validate(
     name,
-    imageUrl,
     currentSelection,
     newRepositoryPath,
     existingRepositoryPath
@@ -195,11 +182,6 @@
           metadata: {
             name: name,
             description: description,
-            imgUrl:
-              imageUrl ||
-              `https://avatars.dicebear.com/v2/jdenticon/${hash(
-                name + description
-              )}.svg`,
             defaultBranch: defaultBranch
           },
           path: isNew ? newRepositoryPath : existingRepositoryPath,
@@ -314,14 +296,6 @@
         var(--color-primary)"
         placeholder="Project description"
         bind:value={description} />
-
-      <Input.Text
-        dataCy="avatar-url"
-        style="--focus-outline-color: var(--color-primary)"
-        placeholder="http://my-project-website.com/project-avatar.png"
-        bind:value={imageUrl}
-        valid={!(validations && validations.imageUrl)}
-        validationMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
 
       <Title style="margin: 16px 0 12px 16px; text-align: left">
         Select one:

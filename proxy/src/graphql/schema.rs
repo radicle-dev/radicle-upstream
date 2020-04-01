@@ -90,7 +90,6 @@ impl Mutation {
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
-            &metadata.img_url,
         )?;
 
         Ok(project::Project {
@@ -373,7 +372,6 @@ impl ControlMutation {
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
-            &metadata.img_url,
         )?;
 
         Ok(project::Project {
@@ -622,8 +620,6 @@ pub struct ProjectMetadataInput {
     pub description: String,
     /// Default branch for checkouts, often used as mainline as well.
     pub default_branch: String,
-    /// Image url for the project.
-    pub img_url: String,
 }
 
 #[juniper::object]
@@ -671,10 +667,6 @@ impl project::Metadata {
 
     fn description(&self) -> &str {
         &self.description
-    }
-
-    fn img_url(&self) -> &str {
-        &self.img_url
     }
 
     fn name(&self) -> &str {
