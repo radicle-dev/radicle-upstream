@@ -66,7 +66,7 @@
   }
 
   .folder :global(svg:hover) {
-    background-color: #eeeeef;
+    background-color: var(--color-foreground-level-2);
     border-radius: 2px;
   }
 
