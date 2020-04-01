@@ -20,6 +20,7 @@
     StepCounter,
     TrackToggle,
     TransactionAccordion,
+    TransactionStatusbar,
     UserCard
   } from "../DesignSystem/Component";
 
@@ -673,7 +674,9 @@
     </Swatch>
   </Section>
 
-  <Section title="Transaction Center" subTitle="...">
+  <Section
+    title="Transaction Accordion"
+    subTitle="Expandable list of current transactions and their states.">
     <div style="display: flex;">
       <div style="position: relative; height: 200px; width: 280px;">
         <TransactionAccordion
@@ -691,6 +694,16 @@
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
     </div>
+  </Section>
+
+  <Section
+    title="Transaction Statusbar"
+    subtitle="Statusbar for the transaction detail screen in variants positive,
+    caution and negative.">
+    <TransactionStatusbar />
+    <TransactionStatusbar progress={30} />
+    <TransactionStatusbar variant="negative" />
+    <TransactionStatusbar variant="positive" />
   </Section>
 
   <Section title="Misc" subTitle="Everything else">
