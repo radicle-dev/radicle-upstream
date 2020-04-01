@@ -1,10 +1,11 @@
 <script>
-  import { Text, Button } from "../Primitive";
+  import { Flex, Text, Button } from "../Primitive";
 
   import ProjectCard from "./ProjectCard.svelte";
+  import Placeholder from "./Placeholder.svelte";
 
   import { projectNameStore } from "../../store/project.js";
-  import { createProject, projectSource } from "../../lib/path.js";
+  import * as path from "../../lib/path.js";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -73,7 +74,7 @@
 
   .create-project {
     text-align: center;
-    width: 240px;
+    width: 480px;
   }
 </style>
 
@@ -86,7 +87,7 @@
         <li
           on:click={() => {
             projectNameStore.set(project.metadata.name);
-            push(projectSource(project.id));
+            push(path.projectSource(project.id));
           }}
           class="project-card">
           <ProjectCard
@@ -103,22 +104,28 @@
   {:else}
     <div class="wrapper">
       <div class="create-project">
-        <Text
-          variant="title"
-          style="color: var(--color-foreground-level-6); margin-bottom: 13px">
-          You have no projects
-        </Text>
+        <Placeholder style="width: 420px; height: 217px;" />
         <Text style="color: var(--color-foreground-level-5)">
-          Create a new project and share it with friends to get started
+          There's nothing here yet, get started by creating your first project
+          or register your identity on the Registry.
         </Text>
-        <Button
-          style="margin: 23px auto"
-          variant="primary"
-          on:click={() => {
-            push(createProject());
-          }}>
-          Create a new project
-        </Button>
+        <Flex align="center" style="margin-top: 27px;">
+          <Button
+            variant="vanilla"
+            style="margin-right: 16px;"
+            on:click={() => {
+              push(path.createProject());
+            }}>
+            Start a new project
+          </Button>
+          <Button
+            variant="vanilla"
+            on:click={() => {
+              push(path.registerUser());
+            }}>
+            Register radicleID
+          </Button>
+        </Flex>
       </div>
     </div>
   {/if}
