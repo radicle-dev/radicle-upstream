@@ -1,6 +1,6 @@
 <script>
-  import { Flex, Icon, Text } from "../Primitive";
-  import * as path from "../../lib/path.js";
+  import { Flex, Icon, Text } from "../../Primitive";
+  import * as path from "../../../lib/path.js";
   import { link } from "svelte-spa-router";
   // TODO: Make component responsive to transactions change
   export let transactions = null;

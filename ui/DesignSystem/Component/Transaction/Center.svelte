@@ -1,5 +1,5 @@
 <script>
-  import TxAccordion from "./TxAccordion.svelte";
+  import Accordion from "./Accordion.svelte";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -69,7 +69,7 @@
 
 {#await $transactions then result}
   {#if result.data.listTransactions.transactions.length > 0}
-    <TxAccordion
+    <Accordion
       transactions={formatTxs(result.data.listTransactions.transactions)}
       style="position: absolute; bottom: 32px; right: 32px;" />
   {/if}

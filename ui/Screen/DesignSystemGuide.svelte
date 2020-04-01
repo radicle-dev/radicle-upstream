@@ -19,7 +19,7 @@
     Row,
     StepCounter,
     TrackToggle,
-    TxAccordion,
+    TransactionAccordion,
     UserCard
   } from "../DesignSystem/Component";
 
@@ -676,17 +676,17 @@
   <Section title="Transaction Center" subTitle="...">
     <div style="display: flex;">
       <div style="position: relative; height: 200px; width: 280px;">
-        <TxAccordion
+        <TransactionAccordion
           transactions={txs1}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
       <div style="position: relative; height: 200px; width: 280px;">
-        <TxAccordion
+        <TransactionAccordion
           transactions={txs2}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
       <div style="position: relative; height: 200px; width: 280px;">
-        <TxAccordion
+        <TransactionAccordion
           transactions={txs3}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
