@@ -612,15 +612,14 @@ fn project() {
         let path = repo_dir.path().to_str().expect("repo path").to_string();
         coco::init_repo(path.clone()).expect("repo init failed");
 
-        let (project_id, _project_meta) =
-                    coco::init_project(
-                        &librad_paths,
-                        &path,
-                        "upstream",
-                        "Code collaboration without intermediates.",
-                        "master",
-                    )
-                    .expect("project init failed");
+        let (project_id, _project_meta) = coco::init_project(
+            &librad_paths,
+            &path,
+            "upstream",
+            "Code collaboration without intermediates.",
+            "master",
+        )
+        .expect("project init failed");
 
         let id = project_id.to_string();
         let mut vars = Variables::new();

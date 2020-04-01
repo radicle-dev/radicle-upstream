@@ -555,27 +555,23 @@ pub fn replicate_platinum(
 /// [`librad::paths::Paths`].
 pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), error::Error> {
     let infos = vec![
-            (
-                "monokel",
-                "A looking glass into the future",
-                "master",
-            ),
-            (
-                "Monadic",
-                "Open source organization of amazing things.",
-                "master",
-            ),
-            (
-                "open source coin",
-                "Research for the sustainability of the open source community.",
-                "master",
-            ),
-            (
-                "radicle",
-                "Decentralized open source collaboration",
-                "master",
-            ),
-        ];
+        ("monokel", "A looking glass into the future", "master"),
+        (
+            "Monadic",
+            "Open source organization of amazing things.",
+            "master",
+        ),
+        (
+            "open source coin",
+            "Research for the sustainability of the open source community.",
+            "master",
+        ),
+        (
+            "radicle",
+            "Decentralized open source collaboration",
+            "master",
+        ),
+    ];
 
     for info in infos {
         let path = format!("{}/{}/{}", root, "repos", info.0);
