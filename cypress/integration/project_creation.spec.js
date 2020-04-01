@@ -107,7 +107,7 @@ context("project creation", () => {
 
         // shows a validation message when existing project path is empty
         cy.get('[data-cy="page"] [data-cy="existing-project"]')
-          .contains("Pick an existing repository for the new project")
+          .contains("Pick a directory with an existing repository")
           .should("exist");
 
         // TODO(rudolfs): test empty directory validation
@@ -125,7 +125,7 @@ context("project creation", () => {
         cy.get('[data-cy="page"] [data-cy="existing-project"]').click();
         // shows a validation message when existing project path is empty
         cy.get('[data-cy="page"] [data-cy="existing-project"]')
-          .contains("Pick an existing repository for the new project")
+          .contains("Pick a directory with an existing repository")
           .should("exist");
       });
     });

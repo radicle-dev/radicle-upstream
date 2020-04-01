@@ -64,7 +64,7 @@
     }
 
     if (!localBranchesError.match("could not find repository")) {
-      return "The directory should not contain an existing repository";
+      return "The directory should be empty";
     }
   };
 
@@ -79,11 +79,11 @@
     }
 
     if (validatejs.isEmpty(value)) {
-      return "Pick an existing repository for the new project";
+      return "Pick a directory with an existing repository";
     }
 
     if (localBranchesError.match("could not find repository")) {
-      return "The directory should contain a valid git repository";
+      return "The directory should contain a git repository";
     }
 
     if (
