@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 use librad::git;
 use librad::keys;
-use librad::meta::{self};
+use librad::meta;
 use librad::paths::Paths;
 use librad::peer;
 use librad::project;
