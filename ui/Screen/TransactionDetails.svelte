@@ -3,7 +3,7 @@
   import { getClient, query } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
-  import { Button, Title } from "../DesignSystem/Primitive";
+  import { Button } from "../DesignSystem/Primitive";
   import {
     ModalLayout,
     Transaction,
@@ -98,17 +98,10 @@
 
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
-    <Title
-      variant="big"
-      style="margin-bottom: 24px; white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis; color: var(--color-foreground-level-5)">
-      <span style="color: var(--color-foreground)">Transaction</span>
-      {params.id}
-    </Title>
     {#await $transactions then result}
       <!-- TODO(merle): Retrieve actual data for variant, progress & timestamp -->
       <TransactionStatusbar
-        style="margin-bottom: 32px;"
+        style="margin-bottom: 32px; margin-top: 96px;"
         variant="caution"
         progress={0}
         time={result.data.listTransactions.transactions[0].timestamp} />
