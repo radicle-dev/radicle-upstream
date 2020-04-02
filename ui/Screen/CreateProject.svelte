@@ -390,7 +390,7 @@
               disabled={!(name && currentSelection)}
               variant="primary"
               on:click={createProject}>
-              Publish project
+              Create project
             </Button>
           </div>
         </div>
