@@ -612,16 +612,14 @@ fn project() {
         let path = repo_dir.path().to_str().expect("repo path").to_string();
         coco::init_repo(path.clone()).expect("repo init failed");
 
-        let (project_id, _project_meta) =
-                    coco::init_project(
-                        &librad_paths,
-                        &path,
-                        "upstream",
-                        "Code collaboration without intermediates.",
-                        "master",
-                        "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
-                    )
-                    .expect("project init failed");
+        let (project_id, _project_meta) = coco::init_project(
+            &librad_paths,
+            &path,
+            "upstream",
+            "Code collaboration without intermediates.",
+            "master",
+        )
+        .expect("project init failed");
 
         let id = project_id.to_string();
         let mut vars = Variables::new();
@@ -634,7 +632,6 @@ fn project() {
                             name
                             description
                             defaultBranch
-                            imgUrl
                         }
                         registered {
                             ... on OrgRegistration {
@@ -658,7 +655,6 @@ fn project() {
                             "name": "upstream",
                             "description": "Code collaboration without intermediates.",
                             "defaultBranch": "master",
-                            "imgUrl": "https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/app/public/icon.png",
                         },
                         "registered": None,
                     },
@@ -751,7 +747,6 @@ fn user() {
 //                     name
 //                     description
 //                     defaultBranch
-//                     imgUrl
 //                 }
 //             }
 //         }";
@@ -767,7 +762,6 @@ fn user() {
 //                                 "name": "Monadic",
 //                                 "description": "Open source organization of amazing
 // things.",                                 "defaultBranch": "stable",
-//                                 "imgUrl": "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
 //                             },
 //                         },
 //                         {
@@ -775,7 +769,6 @@ fn user() {
 //                                 "name": "monokel",
 //                                 "description": "A looking glass into the future",
 //                                 "defaultBranch": "master",
-//                                 "imgUrl": "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
 //                             },
 //                         },
 //                         {
@@ -783,7 +776,6 @@ fn user() {
 //                                 "name": "open source coin",
 //                                 "description": "Research for the sustainability of the
 // open source community.",                                 "defaultBranch":
-// "master",                                 "imgUrl": "https://avatars0.githubusercontent.com/u/31632242",
 //                             },
 //                         },
 //                         {
@@ -791,7 +783,6 @@ fn user() {
 //                                 "name": "radicle",
 //                                 "description": "Decentralized open source collaboration",
 //                                 "defaultBranch": "dev",
-//                                 "imgUrl": "https://avatars0.githubusercontent.com/u/48290027",
 //                             },
 //                         },
 //                     ],

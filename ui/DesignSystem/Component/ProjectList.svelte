@@ -16,7 +16,6 @@
         id
         metadata {
           defaultBranch
-          imgUrl
           description
           name
         }

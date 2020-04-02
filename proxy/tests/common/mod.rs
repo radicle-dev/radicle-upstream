@@ -20,7 +20,6 @@ where
         "git-platinum",
         "fixture data",
         "master",
-        "https://avatars0.githubusercontent.com/u/48290027",
     )
     .unwrap();
 
