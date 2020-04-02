@@ -6,7 +6,6 @@
 
   import { showNotification } from "../store/notification.js";
   import * as path from "../lib/path.js";
-  import { hash } from "../lib/hash.js";
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
 
   import {
@@ -32,10 +31,8 @@
   let name;
   let description = "";
   let defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
-  let publish = true;
   let newRepositoryPath = "";
   let existingRepositoryPath = "";
-  let imageUrl = "";
 
   let validations = false;
   let beginValidation = false;
@@ -65,7 +62,7 @@
     }
 
     if (!localBranchesError.match("could not find repository")) {
-      return "The directory should not contain an existing repository";
+      return "The directory should be empty";
     }
   };
 
@@ -80,11 +77,11 @@
     }
 
     if (validatejs.isEmpty(value)) {
-      return "Pick an existing repository for the new project";
+      return "Pick a directory with an existing repository";
     }
 
     if (localBranchesError.match("could not find repository")) {
-      return "The directory should contain a valid git repository";
+      return "The directory should contain a git repository";
     }
 
     if (
@@ -104,15 +101,6 @@
       format: {
         pattern: new RegExp(projectNameMatch, "i"),
         message: `Project name should match ${projectNameMatch}`
-      }
-    },
-    imageUrl: {
-      optional: {
-        url: {
-          schemes: ["http", "https"],
-          message: "Not a valid avatar URL",
-          allowLocal: false
-        }
       }
     },
     currentSelection: {
@@ -137,7 +125,6 @@
     validations = validatejs(
       {
         name: name,
-        imageUrl: imageUrl,
         currentSelection: currentSelection,
         newRepositoryPath: newRepositoryPath,
         existingRepositoryPath: existingRepositoryPath
@@ -150,7 +137,6 @@
   // only needed to make the function reactive to when they're changed.
   $: validate(
     name,
-    imageUrl,
     currentSelection,
     newRepositoryPath,
     existingRepositoryPath
@@ -196,15 +182,10 @@
           metadata: {
             name: name,
             description: description,
-            imgUrl:
-              imageUrl ||
-              `https://avatars.dicebear.com/v2/jdenticon/${hash(
-                name + description
-              )}.svg`,
             defaultBranch: defaultBranch
           },
           path: isNew ? newRepositoryPath : existingRepositoryPath,
-          publish: isNew ? true : publish
+          publish: true
         }
       });
 
@@ -286,12 +267,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
-  }
-
-  .publish-row {
-    display: flex;
-    align-items: center;
+    margin-top: 16px;
   }
 
   .validation-row {
@@ -320,14 +296,6 @@
         var(--color-primary)"
         placeholder="Project description"
         bind:value={description} />
-
-      <Input.Text
-        dataCy="avatar-url"
-        style="--focus-outline-color: var(--color-primary)"
-        placeholder="http://my-project-website.com/project-avatar.png"
-        bind:value={imageUrl}
-        valid={!(validations && validations.imageUrl)}
-        validationMessage={validations && validations.imageUrl && validations.imageUrl[0]} />
 
       <Title style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
@@ -369,7 +337,7 @@
               valid={!(validations && validations.existingRepositoryPath)}
               validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
               bind:path={existingRepositoryPath} />
-            <div class="default-branch-row" style="margin-top: 16px">
+            <div class="default-branch-row">
               <Text style="color: var(--color-foreground-level-6)">
                 Select the default branch
               </Text>
@@ -385,11 +353,6 @@
                   disabled
                   style="min-width: 240px" />
               {/if}
-            </div>
-            <div class="publish-row">
-              <Input.Checkbox bind:checked={publish}>
-                Publish the {defaultBranch} branch to the network
-              </Input.Checkbox>
             </div>
           </div>
         </RadioOption>
