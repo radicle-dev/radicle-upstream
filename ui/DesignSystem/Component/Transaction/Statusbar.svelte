@@ -1,17 +1,20 @@
 <script>
+  import { format } from "timeago.js";
+
   import { Icon, Text } from "../../Primitive";
 
   export let style = null;
   export let variant = "caution"; // caution | negative | positive
   export let progress = 0; // only applys on variant: caution
+  export let time = null;
 
   const text = {
     caution:
       progress === 0
         ? "Waiting for confirmation"
         : "Waiting for transaction to settle",
-    negative: "Transaction failed at 2:22am Today",
-    positive: "Transaction settled at 2:22am Today"
+    negative: `Transaction failed ${  format(time * 1000)}`,
+    positive: `Transaction settled ${  format(time * 1000)}`
   };
 </script>
 

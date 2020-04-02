@@ -702,8 +702,11 @@
     caution and negative.">
     <TransactionStatusbar style="margin-bottom: 5px;" />
     <TransactionStatusbar progress={30} style="margin-bottom: 5px;" />
-    <TransactionStatusbar variant="negative" style="margin-bottom: 5px;" />
-    <TransactionStatusbar variant="positive" />
+    <TransactionStatusbar
+      variant="negative"
+      style="margin-bottom: 5px;"
+      time="1585819617" />
+    <TransactionStatusbar variant="positive" time="1585819617" />
   </Section>
 
   <Section title="Misc" subTitle="Everything else">
