@@ -1,4 +1,5 @@
-import * as event from './event'
+import * as event from './eventLoop'
+import { GlobalMessageKind } from './messages'
 import { Writable, writable, derived } from 'svelte/store'
 
 export interface Project {
@@ -39,7 +40,7 @@ export type Msg = FetchList | ListFetched
 // Could use Api.fetchList() here, but this way we can demonstrate the event loop
 const projectsStore: Writable<ProjectsStore> = writable(
   { projects: [] },
-  set => event.emit({ kind: event.Kind.Project, msg: { kind: Kind.FetchList } })
+  set => event.emit({ kind: GlobalMessageKind.Project, msg: { kind: Kind.FetchList } })
 )
 
 // Read-only store accessible to components
@@ -71,7 +72,7 @@ namespace Api {
       .then(data => {
         console.log(data)
         event.emit({
-          kind: event.Kind.Project,
+          kind: GlobalMessageKind.Project,
           msg: {
             kind: Kind.ListFetched,
             projects: data,

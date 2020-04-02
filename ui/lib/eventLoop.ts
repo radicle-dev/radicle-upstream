@@ -1,6 +1,8 @@
 import * as notification from './notification'
 import * as project from './project'
 
+import { GlobalMessage, GlobalMessageKind } from './messages'
+
 import { Writable, derived, readable } from 'svelte/store'
 
 export enum Kind {
@@ -24,17 +26,17 @@ export interface ProjectMsg extends MsgInterface {
 
 export type Msg = NotificationMsg | ProjectMsg;
 
-function update(msg: Msg) {
+function update(msg: GlobalMessage) {
   switch (msg.kind) {
-    case Kind.Notification:
+    case GlobalMessageKind.Notification:
       // notification.update(state.notification, msg.msg)
       break
-    case Kind.Project:
+    case GlobalMessageKind.Project:
       project.update(msg.msg)
       break
   }
 }
 
-export function emit(msg: Msg): void {
+export function emit(msg: GlobalMessage): void {
   update(msg)
 }
