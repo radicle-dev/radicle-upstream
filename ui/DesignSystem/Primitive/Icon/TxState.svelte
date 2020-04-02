@@ -2,15 +2,17 @@
   export let style = null;
   export let state = "caution"; // negative | caution | positive
   export let progress = null; // 0-100% of progress, overwrites the defaults
-  export let variant = "regular"; // small | regular
+  export let variant = "regular"; // small | regular | inverted
 
   const size = {
     regular: 32,
+    inverted: 24,
     small: 16
   }[variant];
 
   const strokeWidth = {
     regular: 4,
+    inverted: 6,
     small: 2
   }[variant];
 
@@ -69,7 +71,7 @@
     cx={center}
     cy={center}
     r={radius}
-    stroke={color}
+    stroke={variant === 'inverted' ? 'var(--color-background)' : color}
     stroke-width={strokeWidth} />
   <circle
     style="--origin: {center}px {center}px"
@@ -78,9 +80,12 @@
     cy={center}
     r={radius}
     transform="rotate(-90, {center}, {center})"
-    stroke={color}
+    stroke={variant === 'inverted' ? 'var(--color-background)' : color}
     stroke-width={strokeWidth}
     stroke-dasharray="{(dashLength * circumference) / 100}, {circumference}" />
+  {#if variant === 'inverted'}
+    <circle cx={center} cy={center} r={radius} fill={color} />
+  {/if}
   {#if state === 'positive'}
     <path
       fill-rule="evenodd"

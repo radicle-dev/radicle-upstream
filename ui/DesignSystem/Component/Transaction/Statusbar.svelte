@@ -37,9 +37,16 @@
 </style>
 
 <div {style} class="statusbar {variant}">
-  <!-- TODO(merle): Add inverted color icons -->
-  <Icon.TxState
-    style="margin: 12px; background-color: var(--color-background)"
-    state={variant} />
+  {#if variant === 'negative'}
+    <Icon.Important style="margin: 12px; fill: var(--color-background)" />
+  {:else if variant === 'positive'}
+    <Icon.CheckCircle style="margin: 12px; fill: var(--color-background)" />
+  {:else}
+    <Icon.TxState
+      variant="inverted"
+      {progress}
+      style="margin: 12px; fill: var(--color-background)"
+      state={variant} />
+  {/if}
   <Text variant="tiny" style="align-self: center;">{text[variant]}</Text>
 </div>
