@@ -1,5 +1,5 @@
 <script>
-  import { projectNameStore } from "../store/project.ts";
+  import { currentProjectName } from "../store/project.ts";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
 
   import PickNameStep from "./RegisterProject/PickNameStep.svelte";
@@ -19,7 +19,7 @@
   };
 
   let step = 1;
-  let projectName = $projectNameStore;
+  let projectName = $currentProjectName;
   const orgId = "monadic"; // TODO(rudolfs): get the proper org id!
 
   const nextStep = () => {

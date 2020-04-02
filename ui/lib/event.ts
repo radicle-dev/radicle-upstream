@@ -1,53 +1,40 @@
 import * as notification from './notification'
 import * as project from './project'
 
+import { Writable, derived, readable } from 'svelte/store'
+
 export enum Kind {
-  Notification,
-  Project,
+  Notification = 'notification',
+  Project = 'project',
 }
 
 interface MsgInterface {
   kind: Kind;
 }
 
-export interface Notification extends MsgInterface {
+export interface NotificationMsg extends MsgInterface {
   kind: Kind.Notification;
   msg: notification.Msg;
 }
 
-export interface Project extends MsgInterface {
+export interface ProjectMsg extends MsgInterface {
   kind: Kind.Project;
   msg: project.Msg;
 }
 
-export type Msg = Notification | Project;
+export type Msg = NotificationMsg | ProjectMsg;
 
-type State = {
-  notification: notification.State,
-  project: project.State,
-};
-
-let state: State = {
-  notification: notification.init(),
-  project: project.init(),
-};
-
-function update(state: State, msg: Msg): State {
-  console.log("update", msg)
-
+function update(msg: Msg) {
   switch (msg.kind) {
     case Kind.Notification:
-      state.notification = notification.update(state.notification, msg.msg)
+      // notification.update(state.notification, msg.msg)
       break
     case Kind.Project:
-      state.project = project.update(state.project, msg.msg)
+      project.update(msg.msg)
       break
   }
-
-  return state
 }
 
 export function emit(msg: Msg): void {
-  console.log(msg);
-  state = update(state, msg) 
+  update(msg)
 }

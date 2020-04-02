@@ -1,19 +1,17 @@
-import { readable, writable } from "svelte/store"
+import { writable, Writable } from "svelte/store"
 
-import * as event from '../lib/event'
-import * as project from '../lib/project'
+// Perhaps it'd make sense to use project.id for routing
+interface CurrentProjectStore {
+  name: string
+}
 
-export const projectNameStore = writable(null)
+const createCurrentProjectStore = () => {
+  const { subscribe, set, update }: Writable<CurrentProjectStore | null> = writable(null)
 
-const projectsState: project.Project[] = [];
+  return {
+    subscribe,
+    update: (name: string) => update(() => { return { name } })
+  }
+}
 
-export const projects = readable(projectsState, set => {
-  event.emit({
-    kind: event.Kind.Project,
-    msg: {
-      kind: project.Kind.FetchList,
-    },
-  });
-
-  return (): void => set([])
-})
+export const currentProjectName = createCurrentProjectStore()

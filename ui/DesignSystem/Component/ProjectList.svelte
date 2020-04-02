@@ -1,7 +1,8 @@
 <script>
   import { push } from "svelte-spa-router";
 
-  import { projects, projectNameStore } from "../../store/project.ts";
+  import { projects } from "../../lib/project.ts";
+  import { currentProjectName } from "../../store/project.ts";
   import { createProject, projectSource } from "../../lib/path.js";
 
   import { Text, Button } from "../Primitive";
@@ -48,7 +49,7 @@
     {#each $projects as project}
       <li
         on:click={() => {
-          projectNameStore.set(project.metadata.name);
+          currentProjectName.update(project.name);
           push(projectSource(project.id));
         }}
         class="project-card">
