@@ -1,5 +1,10 @@
 <script>
-  import { Avatar, Caption, Text, Title } from "../../DesignSystem/Primitive";
+  import {
+    Avatar,
+    Caption,
+    Numeric,
+    Title
+  } from "../../DesignSystem/Primitive";
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
 
@@ -48,7 +53,9 @@
     variant="bottom"
     style="height: 32px; background-color: var(--color-foreground-level-1)">
     <div slot="left">
-      <Text variant="tiny">{tx.id}</Text>
+      <Numeric variant="tiny" style="color: var(--color-foreground-level-6)">
+        {tx.id}
+      </Numeric>
     </div>
   </Row>
 {/if}

@@ -4,7 +4,11 @@
   import { pop } from "svelte-spa-router";
 
   import { Button, Title } from "../DesignSystem/Primitive";
-  import { ModalLayout, Transaction } from "../DesignSystem/Component";
+  import {
+    ModalLayout,
+    Transaction,
+    TransactionStatusbar
+  } from "../DesignSystem/Component";
 
   export let params = null;
 
@@ -102,7 +106,12 @@
       {params.id}
     </Title>
     {#await $transactions then result}
-      <!-- TODO(merle): Add transaction status bar -->
+      <!-- TODO(merle): Retrieve actual data for variant, progress & timestamp -->
+      <TransactionStatusbar
+        style="margin-bottom: 32px;"
+        variant="caution"
+        progress={0}
+        time={result.data.listTransactions.transactions[0].timestamp} />
       <Transaction
         tx={formatTx(result.data.listTransactions.transactions[0])} />
     {/await}
