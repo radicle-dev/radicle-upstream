@@ -104,26 +104,38 @@
     <div class="wrapper">
       <div class="create-project">
         <Placeholder style="width: 420px; height: 217px;" />
-        <Text style="color: var(--color-foreground-level-5)">
-          There's nothing here yet, get started by creating your first project
-          or register your identity on the Registry.
-        </Text>
-        <Flex align="center" style="margin-top: 27px;">
-          <Button
-            variant="vanilla"
-            style="margin-right: 16px;"
-            on:click={() => {
-              push(path.createProject());
-            }}>
-            Start a new project
-          </Button>
-          <Button
-            variant="vanilla"
-            on:click={() => {
-              push(path.registerUser());
-            }}>
-            Register radicleID
-          </Button>
+        <Flex style="margin-top: 27px;">
+          <div slot="left" style="align-items: center; justify-content: center">
+            <Text
+              style="margin-bottom: 24px; text-align: left; color:
+              var(--color-foreground-level-6);">
+              Create a new project because that's why you're here.
+            </Text>
+            <Button
+              variant="vanilla"
+              on:click={() => {
+                push(path.createProject());
+              }}>
+              Start a new project
+            </Button>
+          </div>
+          <div
+            slot="right"
+            style="margin-left: 24px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center">
+            <Text
+              style="margin-bottom: 24px; text-align: left; color:
+              var(--color-foreground-level-6);">
+              Register so your friends can find you!
+            </Text>
+            <Button
+              variant="vanilla"
+              on:click={() => {
+                push(path.registerUser());
+              }}>
+              Register handle
+            </Button>
+          </div>
         </Flex>
       </div>
     </div>
