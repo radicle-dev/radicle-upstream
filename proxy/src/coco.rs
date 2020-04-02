@@ -8,7 +8,7 @@ use std::str::FromStr;
 
 use librad::git;
 use librad::keys;
-use librad::meta::{self, common::Url};
+use librad::meta;
 use librad::paths::Paths;
 use librad::peer;
 use librad::project;
@@ -420,18 +420,15 @@ pub fn init_project(
     name: &str,
     description: &str,
     default_branch: &str,
-    img_url: &str,
 ) -> Result<(git::ProjectId, meta::Project), error::Error> {
     let key = keys::device::Key::new();
     let peer_id = peer::PeerId::from(key.public());
     let founder = meta::contributor::Contributor::new();
     let sources = git2::Repository::open(std::path::Path::new(path))?;
-    let img = Url::parse(img_url)?;
     let mut meta = meta::Project::new(name, &peer_id);
 
     meta.description = Some(description.to_string());
     meta.default_branch = default_branch.to_string();
-    meta.add_rel(meta::Relation::Url("img_url".to_string(), img));
 
     let id = git::GitProject::init(librad_paths, &key, &sources, meta.clone(), founder)?;
 
@@ -477,7 +474,6 @@ pub fn replicate_platinum(
     name: &str,
     description: &str,
     default_branch: &str,
-    img_url: &str,
 ) -> Result<(git::ProjectId, meta::Project), error::Error> {
     // Craft the absolute path to git-platinum fixtures.
     let mut platinum_path = env::current_dir()?;
@@ -540,7 +536,6 @@ pub fn replicate_platinum(
         name,
         description,
         default_branch,
-        img_url,
     )?;
     let mut rad_remote = platinum_repo.find_remote("rad")?;
 
@@ -560,38 +555,30 @@ pub fn replicate_platinum(
 /// [`librad::paths::Paths`].
 pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), error::Error> {
     let infos = vec![
-            (
-                "monokel",
-                "A looking glass into the future",
-                "master",
-                "https://res.cloudinary.com/juliendonck/image/upload/v1557488019/Frame_2_bhz6eq.svg",
-            ),
-            (
-                "Monadic",
-                "Open source organization of amazing things.",
-                "master",
-                "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg",
-            ),
-            (
-                "open source coin",
-                "Research for the sustainability of the open source community.",
-                "master",
-                "https://avatars0.githubusercontent.com/u/31632242",
-            ),
-            (
-                "radicle",
-                "Decentralized open source collaboration",
-                "master",
-                "https://avatars0.githubusercontent.com/u/48290027",
-            ),
-        ];
+        ("monokel", "A looking glass into the future", "master"),
+        (
+            "Monadic",
+            "Open source organization of amazing things.",
+            "master",
+        ),
+        (
+            "open source coin",
+            "Research for the sustainability of the open source community.",
+            "master",
+        ),
+        (
+            "radicle",
+            "Decentralized open source collaboration",
+            "master",
+        ),
+    ];
 
     for info in infos {
         let path = format!("{}/{}/{}", root, "repos", info.0);
         std::fs::create_dir_all(path.clone())?;
 
         init_repo(path.clone())?;
-        init_project(librad_paths, &path, info.0, info.1, info.2, info.3)?;
+        init_project(librad_paths, &path, info.0, info.1, info.2)?;
     }
 
     Ok(())

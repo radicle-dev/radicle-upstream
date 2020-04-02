@@ -99,7 +99,9 @@
       style="fill: var(--color-negative); justify-content: flex-start; position:
       absolute; top: 12px; right: 10px;" />
     <div class="validation-row">
-      <Text style="color: var(--color-negative);">{validationMessage}</Text>
+      <Text style="color: var(--color-negative); text-align: left;">
+        {validationMessage}
+      </Text>
     </div>
   {/if}
 </div>
