@@ -10,6 +10,7 @@
   import { Icon } from "../DesignSystem/Primitive";
   import Router from "svelte-spa-router";
   import * as path from "../lib/path.js";
+  import { identityShareableEntityIdentifierStore } from "../store/identity.js";
 
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
@@ -90,7 +91,7 @@
       <AdditionalActionsDropdown
         dataCy="profile-context-menu"
         style="margin: 0 24px 0 16px"
-        headerTitle="cloudhead@ViJQHAdeZoiEbaE5vv83dpjEun.rad"
+        headerTitle={$identityShareableEntityIdentifierStore}
         menuItems={dropdownMenuItems} />
     </div>
   </Topbar>
