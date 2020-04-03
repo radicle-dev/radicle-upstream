@@ -706,11 +706,11 @@ fn identity() {
                         },
                         "registered": None,
                         "avatarFallback": {
-                            "emoji": "🚡",
+                            "emoji": "💡",
                             "background": {
-                                "r": 24,
-                                "g": 105,
-                                "b": 216,
+                                "r": 122,
+                                "g": 112,
+                                "b": 90,
                             },
                         }
                     },

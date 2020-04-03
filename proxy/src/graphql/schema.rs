@@ -591,7 +591,7 @@ impl identity::Identity {
     }
 
     fn avatar_fallback(&self) -> avatar::Avatar {
-        avatar::Avatar::from(&self.metadata.handle, avatar::Usage::User)
+        avatar::Avatar::from(&self.id, avatar::Usage::User)
     }
 }
 
