@@ -32,9 +32,10 @@ fn avatar() {
         let mut vars = Variables::new();
 
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
+        vars.insert("usage".into(), InputValue::Enum("IDENTITY".to_string()));
 
-        let query = "query($handle: ID!) {
-            avatar(handle: $handle) {
+        let query = "query($handle: ID!, $usage: AvatarUsage!) {
+            avatar(handle: $handle, usage: $usage) {
                 emoji
                 background {
                     r
@@ -50,7 +51,7 @@ fn avatar() {
                 res,
                 graphql_value!({
                     "avatar": {
-                        "emoji": "📐",
+                        "emoji": "🚡",
                         "background": {
                             "r": 24,
                             "g": 105,

@@ -30,8 +30,8 @@
   `;
 
   const GET_AVATAR = gql`
-    query Query($handle: ID!) {
-      avatar(handle: $handle) {
+    query Query($handle: ID!, $usage: AvatarUsage) {
+      avatar(handle: $handle, usage: $usage) {
         emoji
         background {
           r
@@ -61,7 +61,7 @@
   const updateAvatarFallback = async () => {
     const response = await query(client, {
       query: GET_AVATAR,
-      variables: { handle: handle }
+      variables: { handle: handle, usage: "IDENITYT" }
     });
     const result = await response.result();
     avatarFallback = await result.data.avatar;
