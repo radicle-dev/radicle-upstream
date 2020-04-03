@@ -1,21 +1,8 @@
-import * as event from './eventLoop'
+import { emit } from './event'
 import { GlobalMessageKind } from './messages'
-import { Writable, writable, derived } from 'svelte/store'
+import { RemoteData, RemoteDataStatus, createRemoteDataStore, derivedStore } from './RemoteDataStore'
 
-export interface Project {
-  id: any
-  metadata: {
-    name: string
-    default_branch: string
-    description?: string
-    img_url?: string
-  }
-}
-
-interface ProjectsStore {
-  projects: Project[]
-}
-
+// Anything related to event loop & messages
 export enum Kind {
   FetchList,
   ListFetched
@@ -36,30 +23,48 @@ interface ListFetched extends MsgInterface {
 
 export type Msg = FetchList | ListFetched
 
-
-// Could use Api.fetchList() here, but this way we can demonstrate the event loop
-const projectsStore: Writable<ProjectsStore> = writable(
-  { projects: [] },
-  set => event.emit({ kind: GlobalMessageKind.Project, msg: { kind: Kind.FetchList } })
-)
-
-// Read-only store accessible to components
-export const projects = derived(
-  projectsStore,
-  $projectsStore => $projectsStore.projects
-)
-
+// Similar to reducer in Redux
 export function update(msg: Msg) {
   switch (msg.kind) {
     case Kind.FetchList:
       Api.fetchList();
+      projectsStore.updateStatus(RemoteDataStatus.Loading)
       break;
     case Kind.ListFetched:
-      projectsStore.set({ projects: msg.projects });
+      projectsStore.update((state: any) => state = { status: RemoteDataStatus.Success, data: { projects: msg.projects } });
       break;
   }
 }
 
+// Store management & type definitions
+
+export interface Project {
+  id: any
+  metadata: {
+    name: string
+    default_branch: string
+    description?: string
+    img_url?: string
+  }
+}
+
+interface ProjectData extends RemoteData {
+  data: {
+    projects: Project[]
+  }
+}
+
+const initialState: ProjectData = { status: RemoteDataStatus.NotAsked, data: { projects: [] } }
+const projectsStore = createRemoteDataStore(
+  initialState,
+  () => emit({
+    kind: GlobalMessageKind.Project,
+    msg: { kind: Kind.FetchList }
+  })
+)
+
+// Read-only store accessible to components
+export const projects = derivedStore(projectsStore)
 
 namespace Api {
   export function fetchList(): void {
@@ -70,14 +75,16 @@ namespace Api {
     })
       .then(res => res.json())
       .then(data => {
-        console.log(data)
-        event.emit({
-          kind: GlobalMessageKind.Project,
-          msg: {
-            kind: Kind.ListFetched,
-            projects: data,
-          }
-        })
+        // simulate a loading time
+        const loading = setTimeout(() => {
+          emit({
+            kind: GlobalMessageKind.Project,
+            msg: {
+              kind: Kind.ListFetched,
+              projects: data,
+            }
+          })
+        }, 4000)
       })
   }
 }
