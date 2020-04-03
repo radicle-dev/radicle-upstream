@@ -21,11 +21,11 @@
 <style>
   button {
     white-space: nowrap;
-    background-color: var(--color-foreground-level-3);
+    background-color: var(--color-foreground-level-4);
     border-radius: 4px;
     border-style: solid;
     border-width: 1px;
-    border-color: var(--color-foreground-level-3);
+    border-color: var(--color-foreground-level-4);
     color: var(--color-foreground-level-6);
     cursor: pointer;
     display: flex;
