@@ -1,7 +1,7 @@
 <script>
   import { Flex, Icon, Text } from "../../Primitive";
   import * as path from "../../../lib/path.js";
-  import { link } from "svelte-spa-router";
+  import { push } from "svelte-spa-router";
   // TODO: Make component responsive to transactions change
   export let transactions = null;
   export let style = null;
@@ -87,6 +87,7 @@
     border-radius: 4px;
     box-shadow: 0px 4px 8px var(--color-foreground-level-3-opacity-08);
     width: 274px;
+    cursor: pointer;
   }
 
   .negative {
@@ -123,7 +124,11 @@
 <div class="pipeline" class:negative={iconState === 'negative'} {style}>
   <div class="cards" class:hidden>
     {#each transactions as tx}
-      <div class="card">
+      <div
+        class="card"
+        on:click={() => {
+          push(path.transactions(tx.id));
+        }}>
         <Flex>
           <div slot="left">
             <Flex align="left">
@@ -142,10 +147,10 @@
             </Flex>
           </div>
           <div slot="right">
-            <a href={path.transactions(tx.id)} use:link>
-              <Icon.CarretBig
-                style="vertical-align: middle; margin-right: 16px;" />
-            </a>
+            <!-- <a href={path.transactions(tx.id)} use:link> -->
+            <Icon.CarretBig
+              style="vertical-align: middle; margin-right: 16px;" />
+            <!-- </a> -->
           </div>
         </Flex>
       </div>
