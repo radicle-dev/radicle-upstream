@@ -539,6 +539,7 @@ async fn list_transactions() {
 
     let tx = registry::Transaction {
         id: radicle_registry_client::TxHash::random(),
+        costs: registry::TransactionCosts { deposit: 0, fee: 0 },
         messages: vec![registry::Message::ProjectRegistration {
             project_name: radicle_registry_client::ProjectName::from_str("upstream").unwrap(),
             org_id: radicle_registry_client::OrgId::from_str("radicle").unwrap(),

@@ -312,6 +312,25 @@ impl Query {
         })
     }
 
+    fn transaction_costs(
+        ctx: &Context,
+        messages: Vec<Message>,
+    ) -> Result<registry::TransactionCosts, error::Error> {
+        let costs = futures::executor::block_on(
+            ctx.registry
+                .read()
+                .expect("unable to acquire read lock")
+                .transaction_costs(
+                    messages
+                        .iter()
+                        .map(|msg| msg.to_registry().expect("unable to transform message"))
+                        .collect::<Vec<registry::Message>>(),
+                ),
+        )?;
+
+        Ok(costs)
+    }
+
     fn identity(
         _ctx: &Context,
         id: juniper::ID,
@@ -676,7 +695,6 @@ impl project::Metadata {
 
 /// Union to represent possible registration states of a project.
 // TODO(xla): Remove attribute once integrated.
-#[allow(dead_code)]
 enum ProjectRegistration {
     /// Project is registered under an Org.
     Org(OrgRegistration),
@@ -766,39 +784,12 @@ impl registry::Transaction {
         juniper::ID::new(self.id.to_string())
     }
 
+    fn costs(&self) -> &registry::TransactionCosts {
+        &self.costs
+    }
+
     fn messages(&self) -> Vec<Message> {
-        self.messages
-            .iter()
-            .map(|m| match m {
-                registry::Message::OrgRegistration(org_id) => {
-                    Message::OrgRegistration(OrgRegistrationMessage {
-                        kind: MessageKind::OrgRegistration,
-                        org_id: juniper::ID::new(org_id.to_string()),
-                    })
-                },
-                registry::Message::OrgUnregistration(org_id) => {
-                    Message::OrgUnregistration(OrgUnregistrationMessage {
-                        kind: MessageKind::OrgUnregistration,
-                        org_id: juniper::ID::new(org_id.to_string()),
-                    })
-                },
-                registry::Message::ProjectRegistration {
-                    project_name,
-                    org_id,
-                } => Message::ProjectRegistration(ProjectRegistrationMessage {
-                    kind: MessageKind::ProjectRegistration,
-                    project_name: juniper::ID::new(project_name.to_string()),
-                    org_id: juniper::ID::new(org_id.to_string()),
-                }),
-                registry::Message::UserRegistration { handle, id } => {
-                    Message::UserRegistration(UserRegistrationMessage {
-                        kind: MessageKind::UserRegistration,
-                        handle: juniper::ID::new(handle.to_string()),
-                        id: juniper::ID::new(id.to_string()),
-                    })
-                },
-            })
-            .collect()
+        self.messages.iter().map(Message::from).collect()
     }
 
     fn state(&self) -> TransactionState {
@@ -852,6 +843,74 @@ enum MessageKind {
     UserRegistration,
 }
 
+impl From<&registry::Message> for Message {
+    fn from(msg: &registry::Message) -> Self {
+        match msg {
+            registry::Message::OrgRegistration(org_id) => {
+                Self::OrgRegistration(OrgRegistrationMessage {
+                    kind: MessageKind::OrgRegistration,
+                    org_id: juniper::ID::new(org_id.to_string()),
+                })
+            },
+            registry::Message::OrgUnregistration(org_id) => {
+                Self::OrgUnregistration(OrgUnregistrationMessage {
+                    kind: MessageKind::OrgUnregistration,
+                    org_id: juniper::ID::new(org_id.to_string()),
+                })
+            },
+            registry::Message::ProjectRegistration {
+                project_name,
+                org_id,
+            } => Self::ProjectRegistration(ProjectRegistrationMessage {
+                kind: MessageKind::ProjectRegistration,
+                project_name: juniper::ID::new(project_name.to_string()),
+                org_id: juniper::ID::new(org_id.to_string()),
+            }),
+            registry::Message::UserRegistration { handle, id } => {
+                Self::UserRegistration(UserRegistrationMessage {
+                    kind: MessageKind::UserRegistration,
+                    handle: juniper::ID::new(handle.to_string()),
+                    id: juniper::ID::new(id.to_string()),
+                })
+            },
+        }
+    }
+}
+
+impl Message {
+    /// Transforms the message into a [`registry::Message`].
+    fn to_registry(&self) -> Result<registry::Message, error::Error> {
+        let msg = match self {
+            Self::OrgRegistration(m) => registry::Message::OrgRegistration(
+                radicle_registry_client::OrgId::try_from(m.org_id.to_string())?,
+            ),
+            Self::OrgUnregistration(org_unregistration) => registry::Message::OrgUnregistration(
+                radicle_registry_client::OrgId::try_from(org_unregistration.org_id.to_string())?,
+            ),
+            Self::ProjectRegistration(project_registration) => {
+                registry::Message::ProjectRegistration {
+                    org_id: radicle_registry_client::OrgId::try_from(
+                        project_registration.org_id.to_string(),
+                    )?,
+                    project_name: radicle_registry_client::ProjectName::try_from(
+                        project_registration.project_name.to_string(),
+                    )?,
+                }
+            },
+            Self::UserRegistration(user_registration) => registry::Message::UserRegistration {
+                handle: radicle_registry_client::UserId::try_from(
+                    user_registration.handle.to_string(),
+                )?,
+                id: radicle_registry_client::String32::from_string(
+                    user_registration.id.to_string(),
+                )?,
+            },
+        };
+
+        Ok(msg)
+    }
+}
+
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
         &OrgRegistrationMessage => match *self {
@@ -890,7 +949,6 @@ struct OrgUnregistrationMessage {
     /// The ID of the org.
     org_id: juniper::ID,
 }
-
 /// Contextual information for a project registration message.
 #[derive(juniper::GraphQLObject)]
 struct ProjectRegistrationMessage {
@@ -913,6 +971,17 @@ struct UserRegistrationMessage {
     id: juniper::ID,
 }
 
+#[juniper::object]
+impl registry::TransactionCosts {
+    fn deposit(&self) -> i32 {
+        i32::try_from(self.deposit).expect("conversion failed")
+    }
+
+    fn fee(&self) -> i32 {
+        i32::try_from(self.fee).expect("conversion failed")
+    }
+}
+
 /// States a transaction can go through.
 enum TransactionState {
     /// The transaction has been applied to a block.
@@ -931,3 +1000,9 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
+
+impl juniper::FromInputValue for Message {
+    fn from_input_value(_value: &juniper::InputValue) -> Option<Self> {
+        None
+    }
+}

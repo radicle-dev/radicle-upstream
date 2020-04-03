@@ -19,6 +19,8 @@ pub struct Transaction {
     /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
     /// the API consumer to query state changes of a transaction.
     pub id: registry::TxHash,
+    /// Deposit and fees spent for the transaction.
+    pub costs: TransactionCosts,
     /// List of operations to be applied to the Registry. Currently limited to exactly one. We use
     /// a Vec here to accommodate future extensibility.
     pub messages: Vec<Message>,
@@ -62,6 +64,15 @@ pub enum Message {
         /// Identity id originated from librad.
         id: registry::String32,
     },
+}
+
+/// Breakdown of costs of a [`Transaction`].
+#[derive(Clone)]
+pub struct TransactionCosts {
+    /// Deposit held for registrations.
+    pub deposit: u64,
+    /// Cost for the transaction to be processed and included.
+    pub fee: u64,
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -164,6 +175,7 @@ impl Registry {
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
         let tx = Transaction {
             id: register_applied.tx_hash,
+            costs: TransactionCosts { deposit: 0, fee: 0 },
             messages: vec![Message::OrgRegistration(org_id)],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
@@ -203,6 +215,7 @@ impl Registry {
 
         let tx = Transaction {
             id: unregister_applied.tx_hash,
+            costs: TransactionCosts { deposit: 0, fee: 0 },
             messages: vec![Message::OrgUnregistration(org_id)],
             state: TransactionState::Applied(unregister_applied.block),
             timestamp: SystemTime::now(),
@@ -283,6 +296,7 @@ impl Registry {
 
         let tx = Transaction {
             id: register_applied.tx_hash,
+            costs: TransactionCosts { deposit: 0, fee: 0 },
             messages: vec![Message::ProjectRegistration {
                 project_name: project_name,
                 org_id: org_id,
@@ -348,6 +362,7 @@ impl Registry {
 
         let tx = Transaction {
             id: register_applied.tx_hash,
+            costs: TransactionCosts { deposit: 0, fee: 0 },
             messages: vec![Message::UserRegistration {
                 handle: user_id,
                 id,
@@ -369,6 +384,17 @@ impl Registry {
             settlement: 9,
         }
     }
+
+    /// Returns the cost estimate of a transaction which includes the given messages.
+    pub async fn transaction_costs(
+        &self,
+        _messages: Vec<Message>,
+    ) -> Result<TransactionCosts, error::Error> {
+        Ok(TransactionCosts {
+            deposit: 1000,
+            fee: 100,
+        })
+    }
 }
 
 #[allow(clippy::panic, clippy::option_unwrap_used, clippy::result_unwrap_used)]
@@ -379,7 +405,7 @@ mod tests {
     use std::convert::TryFrom as _;
     use std::time;
 
-    use super::{Metadata, Registry, Transaction, TransactionState};
+    use super::{Metadata, Registry, Transaction, TransactionCosts, TransactionState};
 
     #[tokio::test]
     async fn list_transactions() {
@@ -388,6 +414,7 @@ mod tests {
 
         let tx = Transaction {
             id: TxHash::random(),
+            costs: TransactionCosts { deposit: 0, fee: 0 },
             messages: vec![],
             state: TransactionState::Applied(Hash::random()),
             timestamp: time::SystemTime::now(),
@@ -398,6 +425,7 @@ mod tests {
         for _ in 0..9 {
             let tx = Transaction {
                 id: TxHash::random(),
+                costs: TransactionCosts { deposit: 0, fee: 0 },
                 messages: vec![],
                 state: TransactionState::Applied(Hash::random()),
                 timestamp: time::SystemTime::now(),
