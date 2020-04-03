@@ -123,7 +123,6 @@
 <div class="pipeline" class:negative={iconState === 'negative'} {style}>
   <div class="cards" class:hidden>
     {#each transactions as tx}
-      <!-- TODO: Link card to tx detail view -->
       <div class="card">
         <Flex>
           <div slot="left">

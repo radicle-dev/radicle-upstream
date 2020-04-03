@@ -3,6 +3,13 @@
   import { getClient, query } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
+  import {
+    identityAvatarUrlStore,
+    identityAvatarFallbackStore,
+    identityDisplayNameStore,
+    identityHandleStore
+  } from "../store/identity.js";
+
   import { Button } from "../DesignSystem/Primitive";
   import {
     ModalLayout,
@@ -55,9 +62,19 @@
 
   const formatMessage = {
     USER_REGISTRATION: "User registration",
-    ORG_REGISTRATION: "Org registration",
-    ORG_UNREGISTRATION: "Org unregistration",
     PROJECT_REGISTRATION: "Project registration"
+  };
+
+  const formatSubject = msg => {
+    return {
+      name:
+        msg.kind === "USER_REGISTRATION"
+          ? msg.handle
+          : `${$identityHandleStore} / ${msg.projectName}`,
+      kind: "user",
+      avatarFallback: $identityAvatarFallbackStore,
+      imageUrl: $identityAvatarUrlStore
+    };
   };
 
   const formatTx = tx => {
@@ -66,18 +83,12 @@
       id: tx.id,
       message: formatMessage[kind],
       stake: `${formatMessage[kind]} deposit`,
-      // TODO(merle): Retrieve actual data for subject and payer
-      subject: {
-        name: "handle",
-        kind: "user",
-        avatarFallback: null,
-        imageUrl: null
-      },
+      subject: formatSubject(tx.messages[0]),
       payer: {
-        name: "handle",
+        name: $identityDisplayNameStore || $identityHandleStore,
         kind: "user",
-        avatarFallback: null,
-        imageUrl: null
+        avatarFallback: $identityAvatarFallbackStore,
+        imageUrl: $identityAvatarUrlStore
       }
     };
   };

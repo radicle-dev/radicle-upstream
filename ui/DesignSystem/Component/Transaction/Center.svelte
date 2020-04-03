@@ -9,19 +9,8 @@
       listTransactions(ids: $ids) {
         transactions {
           id
-          state {
-            ... on Applied {
-              block
-            }
-          }
           timestamp
           messages {
-            ... on OrgRegistrationMessage {
-              kind
-            }
-            ... on OrgUnregistrationMessage {
-              kind
-            }
             ... on ProjectRegistrationMessage {
               kind
             }
@@ -29,10 +18,6 @@
               kind
             }
           }
-        }
-        thresholds {
-          confirmation
-          settlement
         }
       }
     }
@@ -49,8 +34,6 @@
 
   const formatMessage = {
     USER_REGISTRATION: "User registration",
-    ORG_REGISTRATION: "Org registration",
-    ORG_UNREGISTRATION: "Org unregistration",
     PROJECT_REGISTRATION: "Project registration"
   };
 
