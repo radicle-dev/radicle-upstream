@@ -26,7 +26,8 @@ mkdir -p "$CACHE_FOLDER/yarn"
 mkdir -p "$CACHE_FOLDER/cargo"
 mkdir -p "$CACHE_FOLDER/rustup"
 
-npm config set cache $CACHE_FOLDER/npm --global
+
+export NPM_CONFIG_CACHE="$CACHE_FOLDER/npm"
 export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
 export CARGO_HOME="$CACHE_FOLDER/cargo"
 export RUSTUP_HOME="$CACHE_FOLDER/rustup"
