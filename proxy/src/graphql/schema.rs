@@ -925,6 +925,12 @@ impl Message {
     }
 }
 
+impl juniper::FromInputValue for Message {
+    fn from_input_value(_value: &juniper::InputValue) -> Option<Self> {
+        None
+    }
+}
+
 juniper::graphql_union!(Message: () where Scalar = <S> |&self| {
     instance_resolvers: |_| {
         &OrgRegistrationMessage => match *self {
@@ -1014,9 +1020,3 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
-
-impl juniper::FromInputValue for Message {
-    fn from_input_value(_value: &juniper::InputValue) -> Option<Self> {
-        None
-    }
-}

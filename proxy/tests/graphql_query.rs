@@ -739,6 +739,36 @@ fn user() {
     });
 }
 
+#[test]
+fn transaction_costs() {
+    common::with_fixtures(|librad_paths, _repo_dir, _platinum_id| {
+        let mut message = indexmap::IndexMap::new();
+        message.insert("kind", InputValue::scalar("ORG_REGISTRATION"));
+        message.insert("orgId", InputValue::scalar("radicle-dev"));
+
+        let mut vars = Variables::new();
+        vars.insert(
+            "messages".into(),
+            InputValue::list(vec![InputValue::object(message)]),
+        );
+
+        let query = "query($messages: [Message!]!) {
+            transactionCosts(messages: $messages) {
+                deposit
+                fee
+            }
+        }";
+
+        common::execute_query(librad_paths, query, &vars, |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(
+                res,
+                graphql_value!({ "transactionCosts": { "deposit": 0, "fee": 0 } })
+            );
+        });
+    });
+}
+
 // TODO(xla): Ressurect once we have figure out the project listing strategy.
 // #[test]
 // fn projects() {
