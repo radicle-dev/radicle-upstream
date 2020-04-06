@@ -165,11 +165,14 @@ impl Query {
         "1.0"
     }
 
-    fn avatar(handle: juniper::ID) -> Result<avatar::Avatar, error::Error> {
+    fn avatar(handle: juniper::ID, usage: AvatarUsage) -> Result<avatar::Avatar, error::Error> {
         Ok(avatar::Avatar::from(
             &handle.to_string(),
-            // TODO(cloudhead): Usage should be supplied by caller.
-            avatar::Usage::Any,
+            match usage {
+                AvatarUsage::Any => avatar::Usage::Any,
+                AvatarUsage::Identity => avatar::Usage::Identity,
+                AvatarUsage::Org => avatar::Usage::Org,
+            },
         ))
     }
 
@@ -475,6 +478,17 @@ impl avatar::Color {
     }
 }
 
+/// Application of the requested avatar.
+#[derive(GraphQLEnum)]
+pub enum AvatarUsage {
+    /// No specific use-case.
+    Any,
+    /// To be displayed for an [`identity::Identity`].
+    Identity,
+    /// To be displyed for an org.
+    Org,
+}
+
 #[juniper::object]
 impl coco::Blob {
     fn binary(&self) -> bool {
@@ -610,7 +624,7 @@ impl identity::Identity {
     }
 
     fn avatar_fallback(&self) -> avatar::Avatar {
-        avatar::Avatar::from(&self.metadata.handle, avatar::Usage::User)
+        avatar::Avatar::from(&self.id, avatar::Usage::Identity)
     }
 }
 

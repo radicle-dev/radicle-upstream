@@ -1,10 +1,11 @@
 <script>
-  import { Text, Button } from "../Primitive";
+  import { Flex, Text, Button } from "../Primitive";
 
   import ProjectCard from "./ProjectCard.svelte";
+  import Placeholder from "./Placeholder.svelte";
 
   import { projectNameStore } from "../../store/project.js";
-  import { createProject, projectSource } from "../../lib/path.js";
+  import * as path from "../../lib/path.js";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -72,7 +73,7 @@
 
   .create-project {
     text-align: center;
-    width: 240px;
+    width: 480px;
   }
 </style>
 
@@ -85,7 +86,7 @@
         <li
           on:click={() => {
             projectNameStore.set(project.metadata.name);
-            push(projectSource(project.id));
+            push(path.projectSource(project.id));
           }}
           class="project-card">
           <ProjectCard
@@ -102,22 +103,40 @@
   {:else}
     <div class="wrapper">
       <div class="create-project">
-        <Text
-          variant="title"
-          style="color: var(--color-foreground-level-6); margin-bottom: 13px">
-          You have no projects
-        </Text>
-        <Text style="color: var(--color-foreground-level-5)">
-          Create a new project and share it with friends to get started
-        </Text>
-        <Button
-          style="margin: 23px auto"
-          variant="primary"
-          on:click={() => {
-            push(createProject());
-          }}>
-          Create a new project
-        </Button>
+        <Placeholder style="width: 420px; height: 217px;" />
+        <Flex style="margin-top: 27px;">
+          <div slot="left" style="align-items: center; justify-content: center">
+            <Text
+              style="margin-bottom: 24px; text-align: left; color:
+              var(--color-foreground-level-6);">
+              Create a new project because that's why you're here.
+            </Text>
+            <Button
+              variant="vanilla"
+              on:click={() => {
+                push(path.createProject());
+              }}>
+              Start a new project
+            </Button>
+          </div>
+          <div
+            slot="right"
+            style="margin-left: 24px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center">
+            <Text
+              style="margin-bottom: 24px; text-align: left; color:
+              var(--color-foreground-level-6);">
+              Register so your friends can find you!
+            </Text>
+            <Button
+              variant="vanilla"
+              on:click={() => {
+                push(path.registerUser());
+              }}>
+              Register handle
+            </Button>
+          </div>
+        </Flex>
       </div>
     </div>
   {/if}
