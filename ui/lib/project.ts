@@ -1,6 +1,7 @@
 import { emit } from './event'
 import { GlobalMessageKind } from './messages'
-import { RemoteData, RemoteDataStatus, createRemoteDataStore, derivedStore } from './RemoteDataStore'
+import { RemoteData, RemoteDataStatus, createRemoteDataStore } from './RemoteDataStore'
+import { debug } from 'svelte/internal';
 
 // Anything related to event loop & messages
 export enum Kind {
@@ -31,6 +32,7 @@ export function update(msg: Msg) {
       projectsStore.updateStatus(RemoteDataStatus.Loading)
       break;
     case Kind.ListFetched:
+      console.log(msg.projects)
       projectsStore.update((state: any) => state = { status: RemoteDataStatus.Success, data: { projects: msg.projects } });
       break;
   }
@@ -48,13 +50,15 @@ export interface Project {
   }
 }
 
-interface ProjectData extends RemoteData {
+interface ProjectListResponse extends RemoteData {
   data: {
     projects: Project[]
   }
 }
 
-const initialState: ProjectData = { status: RemoteDataStatus.NotAsked, data: { projects: [] } }
+// TODO(sos): status should be NotAsked by default in RemoteData
+// only things project.ts should do are define the shape of the response & error states
+const initialState: ProjectListResponse = { status: RemoteDataStatus.NotAsked, data: { projects: [] } }
 const projectsStore = createRemoteDataStore(
   initialState,
   () => emit({
@@ -64,7 +68,7 @@ const projectsStore = createRemoteDataStore(
 )
 
 // Read-only store accessible to components
-export const projects = derivedStore(projectsStore)
+export const projects = projectsStore.readable
 
 namespace Api {
   export function fetchList(): void {

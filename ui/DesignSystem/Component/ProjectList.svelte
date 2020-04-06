@@ -7,6 +7,8 @@
 
   import { Text, Button } from "../Primitive";
   import ProjectCard from "./ProjectCard.svelte";
+
+  console.log($projects.status);
 </script>
 
 <style>
@@ -101,18 +103,17 @@
 
 <!-- 
   SuccessEmpty state could work like this:
-  {#if status === 'Loading'}
-    loading state
-  {#else if status === 'Success'}
+  {#if status === 'LOADING'}
+    <Loading />
+  {#else if status === 'SUCCESS'}
     render with data
-  {#else if status === 'SuccessEmpty'}
-    confidently render empty state
+    <List />
   {#else if status === 'Failure'}
     error state
   {/if} 
 -->
 
-{#if $projects.status === 'Loading'}
+{#if $projects.status === 'LOADING'}
   <div class="loading">
     <p class="loading-text">LOADING</p>
     <iframe
@@ -124,7 +125,7 @@
       class="loading-gif"
       allowFullScreen />
   </div>
-{:else if $projects.status === 'Success'}
+{:else if $projects.status === 'SUCCESS'}
   {#if $projects.data.projects.length > 0}
     <ul>
       {#each $projects.data.projects as project}
@@ -164,6 +165,6 @@
       </div>
     </div>
   {/if}
-{:else if $projects.status === 'Failure'}
+{:else if $projects.status === 'FAILURE'}
   <Text>{`Error`}</Text>
 {/if}
