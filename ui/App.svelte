@@ -8,7 +8,8 @@
   import {
     identityAvatarUrlStore,
     identityAvatarFallbackStore,
-    identityHandleStore
+    identityHandleStore,
+    identityShareableEntityIdentifierStore
   } from "./store/identity.js";
 
   import CreateProject from "./Screen/CreateProject.svelte";
@@ -66,6 +67,9 @@
         identityAvatarUrlStore.set(result.data.identity.metadata.avatarUrl);
         identityAvatarFallbackStore.set(result.data.identity.avatarFallback);
         identityHandleStore.set(result.data.identity.metadata.handle);
+        identityShareableEntityIdentifierStore.set(
+          result.data.identity.shareableEntityIdentifier
+        );
       }
     } catch (error) {
       console.log(error);
