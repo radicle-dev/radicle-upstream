@@ -35,3 +35,4 @@ pub mod graphql;
 mod identity;
 mod project;
 pub mod registry;
+mod session;

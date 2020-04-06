@@ -722,6 +722,30 @@ fn identity() {
 }
 
 #[test]
+fn session() {
+    common::with_fixtures(|librad_paths, _repo_dir, _platinum_id| {
+        let query = "query {
+            session {
+                identity {
+                    id
+                    metadata {
+                        handle
+                        displayName
+                        avatarUrl
+                    }
+                    registered
+                }
+            }
+        }";
+
+        common::execute_query(librad_paths, query, &Variables::new(), |res, errors| {
+            assert_eq!(errors, []);
+            assert_eq!(res, graphql_value!({ "session": { "identity": None } }));
+        });
+    });
+}
+
+#[test]
 fn user() {
     common::with_fixtures(|librad_paths, _repo_dir, _platinum_id| {
         let mut vars = Variables::new();

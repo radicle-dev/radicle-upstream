@@ -14,6 +14,7 @@ use crate::error;
 use crate::identity;
 use crate::project;
 use crate::registry;
+use crate::session;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = juniper::RootNode<'static, Query, Mutation>;
@@ -329,6 +330,10 @@ impl Query {
             },
             registered: None,
         }))
+    }
+
+    fn session(_ctx: &Context) -> Result<session::Session, error::Error> {
+        Ok(session::Session { identity: None })
     }
 
     fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
@@ -945,3 +950,10 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
+
+#[juniper::object]
+impl session::Session {
+    fn identity(&self) -> Option<&identity::Identity> {
+        self.identity.as_ref()
+    }
+}
