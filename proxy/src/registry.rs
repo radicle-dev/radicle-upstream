@@ -176,7 +176,7 @@ impl Registry {
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
         let tx = Transaction {
             id: register_applied.tx_hash,
-            costs: TransactionCosts { deposit: 0, fee: 0 },
+            costs: TransactionCosts { deposit: 1, fee: 1 },
             messages: vec![Message::OrgRegistration(org_id)],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
@@ -216,7 +216,7 @@ impl Registry {
 
         let tx = Transaction {
             id: unregister_applied.tx_hash,
-            costs: TransactionCosts { deposit: 0, fee: 0 },
+            costs: TransactionCosts { deposit: 1, fee: 1 },
             messages: vec![Message::OrgUnregistration(org_id)],
             state: TransactionState::Applied(unregister_applied.block),
             timestamp: SystemTime::now(),
@@ -297,7 +297,7 @@ impl Registry {
 
         let tx = Transaction {
             id: register_applied.tx_hash,
-            costs: TransactionCosts { deposit: 0, fee: 0 },
+            costs: TransactionCosts { deposit: 1, fee: 1 },
             messages: vec![Message::ProjectRegistration {
                 project_name: project_name,
                 org_id: org_id,
@@ -363,7 +363,7 @@ impl Registry {
 
         let tx = Transaction {
             id: register_applied.tx_hash,
-            costs: TransactionCosts { deposit: 0, fee: 0 },
+            costs: TransactionCosts { deposit: 1, fee: 1 },
             messages: vec![Message::UserRegistration {
                 handle: user_id,
                 id,
@@ -386,7 +386,7 @@ impl Registry {
         }
     }
 
-    /// Returns the cost estimate of a transaction which includes the given messages.
+    /// Returns the lower cost bounds for a transaction to be accpeted.
     pub async fn transaction_costs(
         &self,
         _messages: Vec<Message>,
@@ -415,7 +415,7 @@ mod tests {
 
         let tx = Transaction {
             id: TxHash::random(),
-            costs: TransactionCosts { deposit: 0, fee: 0 },
+            costs: TransactionCosts { deposit: 1, fee: 1 },
             messages: vec![],
             state: TransactionState::Applied(Hash::random()),
             timestamp: time::SystemTime::now(),
@@ -426,7 +426,7 @@ mod tests {
         for _ in 0..9 {
             let tx = Transaction {
                 id: TxHash::random(),
-                costs: TransactionCosts { deposit: 0, fee: 0 },
+                costs: TransactionCosts { deposit: 1, fee: 1 },
                 messages: vec![],
                 state: TransactionState::Applied(Hash::random()),
                 timestamp: time::SystemTime::now(),
