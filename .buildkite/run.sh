@@ -21,10 +21,12 @@ else
   echo "HOME=$HOME"
 fi
 
+mkdir -p "$CACHE_FOLDER/npm"
 mkdir -p "$CACHE_FOLDER/yarn"
 mkdir -p "$CACHE_FOLDER/cargo"
 mkdir -p "$CACHE_FOLDER/rustup"
 
+npm config set cache $CACHE_FOLDER/npm --global
 export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
 export CARGO_HOME="$CACHE_FOLDER/cargo"
 export RUSTUP_HOME="$CACHE_FOLDER/rustup"
