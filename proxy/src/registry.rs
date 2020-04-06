@@ -19,7 +19,7 @@ pub struct Transaction {
     /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
     /// the API consumer to query state changes of a transaction.
     pub id: registry::TxHash,
-    /// Deposit and fees spent for the transaction.
+    /// Deposit and fees charged for the transaction.
     pub costs: TransactionCosts,
     /// List of operations to be applied to the Registry. Currently limited to exactly one. We use
     /// a Vec here to accommodate future extensibility.
@@ -71,7 +71,8 @@ pub enum Message {
 pub struct TransactionCosts {
     /// Deposit held for registrations.
     pub deposit: u64,
-    /// Cost for the transaction to be processed and included.
+    /// Transaction fee defined by the user. The higher the fee, the higher the priority
+    /// given to the transaction. It needs to be at least the minimum accepted by the registry.
     pub fee: u64,
 }
 
