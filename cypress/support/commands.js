@@ -25,6 +25,17 @@ Cypress.Commands.add("nukeRegistryState", () => {
   });
 });
 
+Cypress.Commands.add("nukeSessionState", () => {
+  console.log("Nuking Session state");
+  client.mutate({
+    mutation: gql`
+      mutation {
+        nukeSessionState
+      }
+    `
+  });
+});
+
 Cypress.Commands.add("nukeAllState", () => {
   console.log("Nuking CoCo and Registry state");
   client.mutate({
@@ -32,6 +43,7 @@ Cypress.Commands.add("nukeAllState", () => {
       mutation {
         nukeCocoState
         nukeRegistryState
+        nukeSessionState
       }
     `
   });
