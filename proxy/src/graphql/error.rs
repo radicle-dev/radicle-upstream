@@ -7,6 +7,12 @@ use crate::error;
 impl juniper::IntoFieldError for error::Error {
     fn into_field_error(self) -> juniper::FieldError {
         match self {
+            Self::IdentityExists(id) => juniper::FieldError::new(
+                format!("an identity exists already: '{}'", id),
+                graphql_value!({
+                    "type": "IDENTITY_EXISTS",
+                }),
+            ),
             Self::FS(fs_error) => convert_fs(&fs_error),
             Self::Git(git_error) => convert_git(&git_error),
             Self::Git2(git2_error) => convert_git2(&git2_error),

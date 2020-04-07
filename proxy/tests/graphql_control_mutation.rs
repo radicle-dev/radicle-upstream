@@ -11,10 +11,12 @@ use proxy::registry;
 fn nuke_coco_state() {
     let tmp_dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
     let librad_paths = paths::Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
+    let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
 
     let ctx = schema::Context::new(
         librad_paths,
         registry::Registry::new(radicle_registry_client::Client::new_emulator()),
+        store,
     );
 
     let query = "mutation {nukeCocoState}";

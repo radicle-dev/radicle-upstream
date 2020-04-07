@@ -11,9 +11,10 @@ use super::schema;
 pub async fn run(
     librad_paths: librad::paths::Paths,
     registry: registry::Registry,
+    store: kv::Store,
     enable_control: bool,
 ) {
-    let context = schema::Context::new(librad_paths, registry);
+    let context = schema::Context::new(librad_paths, registry, store);
     let state = warp::any().map(move || context.clone());
     let graphql_filter = make_graphql_filter(schema::create(), state.clone().boxed());
     let control_filter = make_graphql_filter(schema::create_control(), state.boxed());

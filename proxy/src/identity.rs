@@ -2,6 +2,8 @@
 
 use radicle_registry_client::UserId;
 
+use crate::error;
+
 /// The users personal identifying metadata and keys.
 pub struct Identity {
     /// The librad id.
@@ -22,4 +24,33 @@ pub struct Metadata {
     pub display_name: Option<String>,
     /// Url of an image the user wants to present alongside this [`Identity`].
     pub avatar_url: Option<String>,
+}
+
+/// Creates a new identity.
+///
+/// # Errors
+pub fn create(
+    store: &kv::Store,
+    handle: String,
+    display_name: Option<String>,
+    avatar_url: Option<String>,
+) -> Result<Identity, error::Error> {
+    let bucket = store
+        .bucket::<kv::Raw, String>(Some("session"))
+        .expect("unable to get bucket");
+
+    if let Some(id) = bucket.get("identity").expect("unable to fetch identity") {
+        return Err(error::Error::IdentityExists(id));
+    }
+
+    Ok(Identity {
+        id: "123abcd.git".into(),
+        shareable_entity_identifier: format!("{}@123abcd.git", handle),
+        metadata: Metadata {
+            handle,
+            display_name,
+            avatar_url,
+        },
+        registered: None,
+    })
 }

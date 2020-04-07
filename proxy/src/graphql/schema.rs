@@ -32,15 +32,18 @@ pub struct Context {
     librad_paths: sync::Arc<sync::RwLock<Paths>>,
     /// Wrapper to interact with the Registry.
     registry: sync::Arc<sync::RwLock<registry::Registry>>,
+
+    store: sync::Arc<sync::RwLock<kv::Store>>,
 }
 
 impl Context {
     /// Returns a new `Context`.
     #[must_use]
-    pub fn new(librad_paths: Paths, registry: registry::Registry) -> Self {
+    pub fn new(librad_paths: Paths, registry: registry::Registry, store: kv::Store) -> Self {
         Self {
             librad_paths: sync::Arc::new(sync::RwLock::new(librad_paths)),
             registry: sync::Arc::new(sync::RwLock::new(registry)),
+            store: sync::Arc::new(sync::RwLock::new(store)),
         }
     }
 }
@@ -56,21 +59,14 @@ pub struct Mutation;
 )]
 impl Mutation {
     fn create_identity(
-        _ctx: &Context,
+        ctx: &Context,
         handle: String,
         display_name: Option<String>,
         avatar_url: Option<String>,
     ) -> Result<identity::Identity, error::Error> {
-        Ok(identity::Identity {
-            id: "123abcd.git".into(),
-            shareable_entity_identifier: format!("{}@123abcd.git", handle),
-            metadata: identity::Metadata {
-                handle,
-                display_name,
-                avatar_url,
-            },
-            registered: None,
-        })
+        let store = ctx.store.read().expect("unable to acquire read lock");
+
+        identity::create(&store, handle, display_name, avatar_url)
     }
 
     fn create_project(
