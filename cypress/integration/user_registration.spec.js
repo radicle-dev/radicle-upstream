@@ -30,17 +30,13 @@ context("user registration", () => {
       cy.get('[data-cy="register-user"] [data-cy="handle"]').should("exist");
       cy.get('[data-cy="page"] [data-cy="handle"]').type("testy");
       cy.get('[data-cy="register-user"] [data-cy="next-button"]').click();
-      cy.get('[data-cy="register-user"] [data-cy="tx-summary"]').should(
-        "exist"
-      );
+      cy.get('[data-cy="register-user"] [data-cy="summary"]').should("exist");
       // 2 -> 1
       cy.get('[data-cy="register-user"] [data-cy="back-button"]').click();
       cy.get('[data-cy="register-user"] [data-cy="handle"]').should("exist");
       // 1 -> 2
       cy.get('[data-cy="register-user"] [data-cy="next-button"]').click();
-      cy.get('[data-cy="register-user"] [data-cy="tx-summary"]').should(
-        "exist"
-      );
+      cy.get('[data-cy="register-user"] [data-cy="summary"]').should("exist");
       // 2 -> close modal
       cy.get('[data-cy="register-user"] [data-cy="submit-button"]').click();
       cy.get('[data-cy="profile-screen"]').should("exist");

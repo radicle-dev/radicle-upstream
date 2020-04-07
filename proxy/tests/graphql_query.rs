@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate juniper;
 
+use hex::ToHex;
 use juniper::{InputValue, Variables};
 use pretty_assertions::assert_eq;
 use std::str::FromStr as _;
@@ -553,7 +554,10 @@ async fn list_transactions() {
     let ctx = schema::Context::new(librad_paths, registry);
 
     let mut vars = Variables::new();
-    vars.insert("ids".into(), InputValue::list(vec![]));
+    vars.insert(
+        "ids".into(),
+        InputValue::list(vec![InputValue::scalar(tx.id.encode_hex::<String>())]),
+    );
     let query = "query($ids: [ID!]!) {
             listTransactions(ids: $ids) {
                 transactions {

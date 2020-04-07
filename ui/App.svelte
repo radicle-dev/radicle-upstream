@@ -23,6 +23,7 @@
   import RegisterProject from "./Screen/RegisterProject.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
   import Search from "./Screen/Search.svelte";
+  import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import CreateIdentity from "./Screen/IdentityCreation.svelte";
 
   initializeHotkeys();
@@ -105,6 +106,7 @@
     "/design-system-guide": DesignSystemGuide,
     "/help": Help,
     "/user-registration": UserRegistration,
+    "/transactions/:id": TransactionDetails,
     "*": NotFound
   };
 </script>
