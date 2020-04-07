@@ -70,6 +70,6 @@
       {onError}
       onCancel={returnToWelcomeStep} />
   {:else if currentStep === steps.SUCCESS}
-    <IdentityCreationSuccess onClose={() => replace(path.profile())} />
+    <IdentityCreationSuccess onClose={() => replace(path.profileProjects())} />
   {/if}
 </ModalLayout>

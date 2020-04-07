@@ -71,12 +71,12 @@ impl fmt::Display for Emoji {
 /// Avatar usage.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Usage {
-    /// A user avatar.
-    User,
-    /// An org avatar.
-    Org,
     /// A generic avatar.
     Any,
+    /// An [`identity::Identity`] avatar.
+    Identity,
+    /// An org avatar.
+    Org,
 }
 
 /// An avatar.
@@ -168,7 +168,7 @@ fn generate_emoji(input: &str, usage: Usage) -> Emoji {
     let ix = hash(input);
 
     match usage {
-        Usage::User => {
+        Usage::Identity => {
             let ix = ix as usize % (EMOJIS.len() + EMOJIS_USER.len());
 
             if let Some(s) = EMOJIS.get(ix) {
@@ -232,7 +232,7 @@ mod test {
     #[test]
     fn test_avatar() {
         assert_eq!(
-            Avatar::from("cloudhead", Usage::User),
+            Avatar::from("cloudhead", Usage::Identity),
             Avatar {
                 emoji: Emoji("🚡"),
                 background: Color::new(24, 105, 216)
@@ -247,7 +247,7 @@ mod test {
 
     #[test]
     fn test_avatar_emoji() {
-        assert_eq!(generate_emoji("cloudhead", Usage::User), Emoji("🚡"));
+        assert_eq!(generate_emoji("cloudhead", Usage::Identity), Emoji("🚡"));
         assert_eq!(generate_emoji("radicle", Usage::Org), Emoji("📍"));
     }
 

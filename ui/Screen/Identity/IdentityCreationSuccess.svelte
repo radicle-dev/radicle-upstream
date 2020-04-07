@@ -10,9 +10,25 @@
     identityShareableEntityIdentifierStore
   } from "../../store/identity.js";
 
-  import { Avatar, Button, Text, Title } from "../../DesignSystem/Primitive";
+  import {
+    Avatar,
+    Button,
+    Flex,
+    Icon,
+    Text,
+    Title
+  } from "../../DesignSystem/Primitive";
+  import { Copyable } from "../../DesignSystem/Component";
 
   export let onClose;
+  let copyIcon = Icon.Copy;
+
+  const afterCopy = () => {
+    copyIcon = Icon.Check;
+    setTimeout(() => {
+      copyIcon = Icon.Copy;
+    }, 2000);
+  };
 </script>
 
 <style>
@@ -69,9 +85,17 @@
         avatarFallback={$identityAvatarFallbackStore} />
       <div class="identity-card-text-container">
         <Title>{$identityDisplayNameStore || $identityHandleStore}</Title>
-        <Text style="color: var(--color-foreground-level-6);">
-          {$identityShareableEntityIdentifierStore}
-        </Text>
+        <Copyable {afterCopy}>
+          <Flex align="left">
+            <Text
+              style="color: var(--color-foreground-level-6); white-space:
+              nowrap; overflow: hidden; text-overflow: ellipsis; max-width:
+              350px;">
+              {$identityShareableEntityIdentifierStore}
+            </Text>
+            <svelte:component this={copyIcon} style="margin-left: 8px;" />
+          </Flex>
+        </Copyable>
       </div>
     </div>
 

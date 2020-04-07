@@ -58,7 +58,6 @@
         metadata {
           defaultBranch
           description
-          imgUrl
           name
         }
         registered {
