@@ -7,6 +7,7 @@ export enum RemoteDataStatus {
   Success = 'SUCCESS'
 }
 
+//TODO(sos): flesh out what errors should look like
 type Error = string
 
 export type RemoteData<T> =
