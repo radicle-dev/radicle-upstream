@@ -7,8 +7,6 @@
 
   import { Text, Button } from "../Primitive";
   import ProjectCard from "./ProjectCard.svelte";
-
-  console.log($projects.status);
 </script>
 
 <style>
@@ -108,7 +106,7 @@
   {#else if status === 'SUCCESS'}
     render with data
     <List />
-  {#else if status === 'Failure'}
+  {#else if status === 'ERROR'}
     error state
   {/if} 
 -->
@@ -126,9 +124,9 @@
       allowFullScreen />
   </div>
 {:else if $projects.status === 'SUCCESS'}
-  {#if $projects.data.projects.length > 0}
+  {#if $projects.data.length > 0}
     <ul>
-      {#each $projects.data.projects as project}
+      {#each $projects.data as project}
         <li
           on:click={() => {
             currentProjectName.update(project.name);
@@ -165,6 +163,6 @@
       </div>
     </div>
   {/if}
-{:else if $projects.status === 'FAILURE'}
+{:else if $projects.status === 'ERROR'}
   <Text>{`Error`}</Text>
 {/if}

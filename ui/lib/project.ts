@@ -29,11 +29,10 @@ export function update(msg: Msg) {
   switch (msg.kind) {
     case Kind.FetchList:
       Api.fetchList();
-      projectsStore.updateStatus(RemoteDataStatus.Loading)
+      projectsStore.update(RemoteDataStatus.Loading)
       break;
     case Kind.ListFetched:
-      console.log(msg.projects)
-      projectsStore.update((state: any) => state = { status: RemoteDataStatus.Success, data: { projects: msg.projects } });
+      projectsStore.update(RemoteDataStatus.Success, msg.projects);
       break;
   }
 }
@@ -50,15 +49,11 @@ export interface Project {
   }
 }
 
-interface ProjectListResponse extends RemoteData {
-  data: {
-    projects: Project[]
-  }
-}
+type ProjectListResponse = Project[]
 
 // TODO(sos): status should be NotAsked by default in RemoteData
 // only things project.ts should do are define the shape of the response & error states
-const initialState: ProjectListResponse = { status: RemoteDataStatus.NotAsked, data: { projects: [] } }
+const initialState: ProjectListResponse = []
 const projectsStore = createRemoteDataStore(
   initialState,
   () => emit({
@@ -69,7 +64,6 @@ const projectsStore = createRemoteDataStore(
 
 // Read-only store accessible to components
 export const projects = projectsStore.readable
-
 namespace Api {
   export function fetchList(): void {
     fetch(
