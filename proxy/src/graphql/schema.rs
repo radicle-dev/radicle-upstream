@@ -29,11 +29,11 @@ pub fn create() -> Schema {
 #[derive(Clone)]
 pub struct Context {
     /// Root on the filesystem for the librad config and storage paths.
-    librad_paths: sync::Arc<sync::RwLock<Paths>>,
+    pub librad_paths: sync::Arc<sync::RwLock<Paths>>,
     /// Wrapper to interact with the Registry.
-    registry: sync::Arc<sync::RwLock<registry::Registry>>,
-
-    store: sync::Arc<sync::RwLock<kv::Store>>,
+    pub registry: sync::Arc<sync::RwLock<registry::Registry>>,
+    /// Handle to maintain local persistancce and caching.
+    pub store: sync::Arc<sync::RwLock<kv::Store>>,
 }
 
 impl Context {

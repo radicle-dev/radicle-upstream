@@ -11,7 +11,7 @@ use proxy::registry;
 pub fn with_fixtures<F>(f: F)
 where
     F: FnOnce(
-        Paths,
+        &Context,
         TempDir,
         ProjectId,
     ) -> (
@@ -40,7 +40,7 @@ where
         store,
     );
 
-    let (query, vars, expect_errors, expect_res) = f(librad_paths, repos_dir, platinum_id);
+    let (query, vars, expect_errors, expect_res) = f(&ctx, repos_dir, platinum_id);
 
     let (res, errors) = juniper::execute(query, None, &Schema::new(Query, Mutation), &vars, &ctx)
         .expect("test execute failed");

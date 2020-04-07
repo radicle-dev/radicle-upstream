@@ -15,7 +15,7 @@ use common::with_fixtures;
 
 #[test]
 fn api_version() {
-    with_fixtures(|_librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let query = "query { apiVersion }";
         let res = graphql_value!({ "apiVersion": "1.0" });
 
@@ -25,7 +25,7 @@ fn api_version() {
 
 #[test]
 fn avatar() {
-    with_fixtures(|_librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
@@ -58,7 +58,7 @@ fn avatar() {
 
 #[test]
 fn blob() {
-    with_fixtures(|_librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -119,7 +119,7 @@ fn blob() {
 
 #[test]
 fn blob_binary() {
-    with_fixtures(|_librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -173,7 +173,7 @@ fn blob_binary() {
 
 #[test]
 fn blob_in_root() {
-    with_fixtures(|_librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -225,7 +225,7 @@ fn blob_in_root() {
 
 #[test]
 fn branches() {
-    with_fixtures(|_librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
 
@@ -245,7 +245,7 @@ fn branches() {
 
 #[test]
 fn local_branches() {
-    with_fixtures(|_librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert(
             "path".into(),
@@ -269,7 +269,7 @@ fn local_branches() {
 
 #[test]
 fn commit() {
-    with_fixtures(|_librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         const SHA1: &str = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
 
         let mut vars = Variables::new();
@@ -308,7 +308,7 @@ fn commit() {
 
 #[test]
 fn tags() {
-    with_fixtures(|_librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
 
@@ -330,7 +330,7 @@ fn tags() {
 #[allow(clippy::too_many_lines)]
 #[test]
 fn tree() {
-    with_fixtures(|_librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -435,7 +435,7 @@ fn tree() {
 
 #[test]
 fn tree_root() {
-    with_fixtures(|_librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -483,7 +483,7 @@ fn tree_root() {
 #[tokio::test]
 async fn list_transactions() {
     let tmp_dir = tempfile::tempdir().unwrap();
-    let librad_paths = librad::paths::Paths::from_root(tmp_dir.path()).unwrap();
+    let ctx = librad::paths::Paths::from_root(tmp_dir.path()).unwrap();
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
     let mut registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
 
@@ -499,7 +499,7 @@ async fn list_transactions() {
 
     registry.cache_transaction(tx.clone()).await;
 
-    let ctx = schema::Context::new(librad_paths, registry, store);
+    let ctx = schema::Context::new(ctx, registry, store);
 
     let mut vars = Variables::new();
     vars.insert("ids".into(), InputValue::list(vec![]));
@@ -557,13 +557,13 @@ async fn list_transactions() {
 
 #[test]
 fn project() {
-    with_fixtures(|librad_paths, repos_dir, _platinum_id| {
+    with_fixtures(|ctx, repos_dir, _platinum_id| {
         let repo_dir = tempfile::tempdir_in(repos_dir.path()).expect("repo dir failed");
         let path = repo_dir.path().to_str().expect("repo path").to_string();
         coco::init_repo(path.clone()).expect("repo init failed");
 
         let (project_id, _project_meta) = coco::init_project(
-            &librad_paths,
+            &ctx.librad_paths.read().unwrap(),
             &path,
             "upstream",
             "Code collaboration without intermediates.",
@@ -611,7 +611,7 @@ fn project() {
 
 #[test]
 fn identity() {
-    with_fixtures(|_librad_paths, _repo_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repo_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("id".into(), InputValue::scalar("123abcd.git"));
 
@@ -662,7 +662,7 @@ fn identity() {
 
 #[test]
 fn session() {
-    with_fixtures(|_librad_paths, _repo_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repo_dir, _platinum_id| {
         let query = "query {
             session {
                 identity {
@@ -684,7 +684,7 @@ fn session() {
 
 #[test]
 fn user() {
-    with_fixtures(|_librad_paths, _repo_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repo_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
 
@@ -700,7 +700,7 @@ fn user() {
 // TODO(xla): Ressurect once we have figure out the project listing strategy.
 // #[test]
 // fn projects() {
-//     with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+//     with_fixtures(|ctx, _repos_dir, _platinum_id| {
 //         let query = "{
 //             projects {
 //                 metadata {
@@ -711,7 +711,7 @@ fn user() {
 //             }
 //         }";
 
-//         execute_query(librad_paths, query, &Variables::new(), |res, errors| {
+//         execute_query(ctx, query, &Variables::new(), |res, errors| {
 //             assert_eq!(errors, []);
 //             assert_eq!(
 //                 res,

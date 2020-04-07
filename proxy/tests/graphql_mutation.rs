@@ -12,7 +12,7 @@ use common::with_fixtures;
 
 #[test]
 fn create_identity() {
-    with_fixtures(|_librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
         vars.insert("displayName".into(), InputValue::scalar("Alexis Sellier"));
@@ -52,7 +52,7 @@ fn create_identity() {
 
 #[test]
 fn create_identity_existing() {
-    with_fixtures(|_librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
         vars.insert("displayName".into(), InputValue::scalar("Alexis Sellier"));
@@ -76,7 +76,7 @@ fn create_identity_existing() {
 
 #[test]
 fn create_project_existing_repo() {
-    with_fixtures(|_librad_paths, repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, repos_dir, _platinum_id| {
         let dir =
             tempfile::tempdir_in(repos_dir.path()).expect("creating temporary directory failed");
         let path = dir.path().to_str().expect("unable to get path");
@@ -123,7 +123,7 @@ fn create_project_existing_repo() {
 
 #[test]
 fn create_project() {
-    with_fixtures(|_librad_paths, repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, repos_dir, _platinum_id| {
         let dir =
             tempfile::tempdir_in(repos_dir.path()).expect("creating temporary directory failed");
         let path = dir.path().to_str().expect("unable to get path");
@@ -187,7 +187,7 @@ fn create_project() {
 
 #[test]
 fn register_project() {
-    with_fixtures(|_librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("orgId".into(), InputValue::scalar("monadic"));
         vars.insert("projectName".into(), InputValue::scalar("upstream"));
@@ -215,7 +215,7 @@ fn register_project() {
 
 #[test]
 fn register_user() {
-    with_fixtures(|_librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
         vars.insert("id".into(), InputValue::scalar("123abcd.git"));
