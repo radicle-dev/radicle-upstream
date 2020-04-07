@@ -24,6 +24,7 @@ interface ListFetched extends MsgInterface {
 
 export type Msg = FetchList | ListFetched
 
+// TODO(sos): error state
 // Similar to reducer in Redux
 export function update(msg: Msg) {
   switch (msg.kind) {
@@ -64,6 +65,7 @@ const projectsStore = createRemoteDataStore(
 
 // Read-only store accessible to components
 export const projects = projectsStore.readable
+
 namespace Api {
   export function fetchList(): void {
     fetch(

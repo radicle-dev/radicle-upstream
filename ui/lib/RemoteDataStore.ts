@@ -1,4 +1,4 @@
-import { derived, writable, Readable, Writable } from 'svelte/store';
+import { derived, writable, Readable } from 'svelte/store';
 
 export enum RemoteDataStatus {
   NotAsked = 'NOT_ASKED',
@@ -34,6 +34,8 @@ interface RemoteDataStore<T> extends Readable<RemoteData<T>> { // a Readable sto
   readable: Readable<RemoteData<T>>
 }
 
+// TODO(sos): value now redundant beyond defining type T; fix this
+// also fix (set: any)
 export const createRemoteDataStore = <T>(value: T, start?: (set: any) => void): RemoteDataStore<T> => {
   const initialState = { status: RemoteDataStatus.NotAsked } as RemoteData<T>
   const internalStore = writable(initialState, start)
