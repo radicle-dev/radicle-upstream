@@ -9,6 +9,7 @@
     identityHandleStore,
     identityIdStore
   } from "../store/identity.js";
+  import { showNotification } from "../store/notification.js";
 
   import { Text, Title } from "../DesignSystem/Primitive";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
@@ -45,14 +46,9 @@
     }
   `;
 
-  let response;
-  let errorMessage;
   const registerUser = async () => {
-    // TODO(merle): Remove log statements and add error and success handling
-    // once tx handling is in place
-    console.log("Register handle, id ", handle, id);
     try {
-      response = await mutate(client, {
+      await mutate(client, {
         mutation: REGISTER_USER,
         variables: {
           handle: handle,
@@ -60,10 +56,11 @@
         }
       });
     } catch (error) {
-      errorMessage = error;
-      console.log("Register user error: ", errorMessage);
+      showNotification({
+        text: `Could not register user: ${error}`,
+        level: "error"
+      });
     } finally {
-      console.log("Register user respone", response);
       pop();
     }
   };
