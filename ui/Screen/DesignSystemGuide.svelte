@@ -628,7 +628,7 @@
     </Swatch>
   </Section>
 
-  <Section title="Transaction Row" subTitle="Single row and combined">
+  <Section title="Transaction" subTitle="Row, Accordion and Statusbar">
     <Swatch>
       <Row style="width:100%" disabled={false}>
         <div slot="left">
@@ -672,41 +672,38 @@
         </Row>
       </div>
     </Swatch>
-  </Section>
 
-  <Section
-    title="Transaction Accordion"
-    subTitle="Expandable list of current transactions and their states.">
-    <div style="display: flex;">
-      <div style="position: relative; height: 200px; width: 280px;">
-        <TransactionAccordion
-          transactions={transactions1}
-          style="position: absolute; bottom: 0; right: 0;" />
+    <Swatch>
+      <div style="display: flex;">
+        <div style="position: relative; height: 200px; width: 280px;">
+          <TransactionAccordion
+            transactions={transactions1}
+            style="position: absolute; bottom: 0; right: 0;" />
+        </div>
+        <div style="position: relative; height: 200px; width: 280px;">
+          <TransactionAccordion
+            transactions={transactions2}
+            style="position: absolute; bottom: 0; right: 0;" />
+        </div>
+        <div style="position: relative; height: 200px; width: 280px;">
+          <TransactionAccordion
+            transactions={transactions3}
+            style="position: absolute; bottom: 0; right: 0;" />
+        </div>
       </div>
-      <div style="position: relative; height: 200px; width: 280px;">
-        <TransactionAccordion
-          transactions={transactions2}
-          style="position: absolute; bottom: 0; right: 0;" />
-      </div>
-      <div style="position: relative; height: 200px; width: 280px;">
-        <TransactionAccordion
-          transactions={transactions3}
-          style="position: absolute; bottom: 0; right: 0;" />
-      </div>
-    </div>
-  </Section>
+    </Swatch>
 
-  <Section
-    title="Transaction Statusbar"
-    subTitle="Statusbar for the transaction detail screen in variants positive,
-    caution and negative.">
-    <TransactionStatusbar style="margin-bottom: 5px;" />
-    <TransactionStatusbar progress={30} style="margin-bottom: 5px;" />
-    <TransactionStatusbar
-      variant="negative"
-      style="margin-bottom: 5px;"
-      time="1585819617" />
-    <TransactionStatusbar variant="positive" time="1585819617" />
+    <Swatch>
+      <div style="flex-direction: column; width: 100%">
+        <TransactionStatusbar style="margin-bottom: 5px;" />
+        <TransactionStatusbar progress={30} style="margin-bottom: 5px;" />
+        <TransactionStatusbar
+          variant="negative"
+          style="margin-bottom: 5px;"
+          time="1585819617" />
+        <TransactionStatusbar variant="positive" time="1585819617" />
+      </div>
+    </Swatch>
   </Section>
 
   <Section title="Misc" subTitle="Everything else">
