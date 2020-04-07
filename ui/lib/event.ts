@@ -1,7 +1,6 @@
 import * as notification from './notification'
 import * as project from './project'
 import { GlobalMessage, GlobalMessageKind } from './messages'
-import { Readable, Writable, writable } from 'svelte/store'
 
 export enum Kind {
   Notification = 'notification',

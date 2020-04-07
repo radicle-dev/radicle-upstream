@@ -141,7 +141,6 @@
       {/each}
     </ul>
   {:else}
-    <!-- SuccessEmpty state -->
     <div class="wrapper">
       <div class="create-project">
         <Text
