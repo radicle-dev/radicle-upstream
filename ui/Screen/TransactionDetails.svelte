@@ -77,13 +77,13 @@
     };
   };
 
-  const formatTx = tx => {
-    const kind = tx.messages[0].kind;
+  const formatTransaction = transaction => {
+    const kind = transaction.messages[0].kind;
     return {
-      id: tx.id,
+      id: transaction.id,
       message: formatMessage[kind],
       stake: `${formatMessage[kind]} deposit`,
-      subject: formatSubject(tx.messages[0]),
+      subject: formatSubject(transaction.messages[0]),
       payer: {
         name: $identityDisplayNameStore || $identityHandleStore,
         kind: "user",
@@ -117,7 +117,7 @@
         progress={0}
         time={result.data.listTransactions.transactions[0].timestamp} />
       <Transaction
-        tx={formatTx(result.data.listTransactions.transactions[0])} />
+        transaction={formatTransaction(result.data.listTransactions.transactions[0])} />
     {/await}
 
     <div class="button-row">

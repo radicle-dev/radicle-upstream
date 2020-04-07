@@ -30,45 +30,45 @@
     error: "failed"
   };
 
-  const txSummary = {
+  const summary = {
     pending: { count: 0, progress: 0 },
     success: { count: 0, progress: 0 },
     error: { count: 0, progress: 0 }
   };
 
   const fillSummary = () => {
-    transactions.forEach(tx => {
-      txSummary[tx.state].count += 1;
-      txSummary[tx.state].progress += tx.progress || 0;
+    transactions.forEach(transaction => {
+      summary[transaction.state].count += 1;
+      summary[transaction.state].progress += transaction.progress || 0;
     });
-    txSummary["success"].progress = txSummary["success"].count * 100;
+    summary["success"].progress = summary["success"].count * 100;
   };
 
   fillSummary();
 
   const progressSummary =
-    txSummary["error"].count === transactions.length
+    summary["error"].count === transactions.length
       ? null
-      : (txSummary["pending"].progress + txSummary["success"].progress) /
+      : (summary["pending"].progress + summary["success"].progress) /
         transactions.length;
 
   const iconState =
-    txSummary["error"].count > 0
+    summary["error"].count > 0
       ? "negative"
-      : txSummary["pending"].count > 0
+      : summary["pending"].count > 0
       ? "caution"
       : "positive";
 
   const summaryState =
-    txSummary["pending"].count > 0
+    summary["pending"].count > 0
       ? "pending"
-      : txSummary["error"].count > 0
+      : summary["error"].count > 0
       ? "error"
       : "success";
 
   const summaryText = () => {
-    if (txSummary[summaryState].count > 1) {
-      return `${txSummary[summaryState].count} Transactions ${stateToSummary[summaryState]}`;
+    if (summary[summaryState].count > 1) {
+      return `${summary[summaryState].count} Transactions ${stateToSummary[summaryState]}`;
     } else {
       return `Transaction ${stateToSummary[summaryState]}`;
     }
@@ -123,25 +123,27 @@
 
 <div class="pipeline" class:negative={iconState === 'negative'} {style}>
   <div class="cards" class:hidden>
-    {#each transactions as tx}
+    {#each transactions as transaction}
       <div
         class="card"
         on:click={() => {
-          push(path.transactions(tx.id));
+          push(path.transactions(transaction.id));
         }}>
         <Flex>
           <div slot="left">
             <Flex align="left">
-              <Icon.TxState
-                state={stateToIconState[tx.state]}
-                progress={tx.progress}
+              <Icon.TransactionState
+                state={stateToIconState[transaction.state]}
+                progress={transaction.progress}
                 style="margin: 14px 14px 14px 18px;" />
               <div class="description">
                 <Text variant="small" style="width: max-content;">
-                  {tx.message}
+                  {transaction.message}
                 </Text>
-                <Text variant="small" style="color: {stateToColor[tx.state]}">
-                  {stateToDescription[tx.state]}
+                <Text
+                  variant="small"
+                  style="color: {stateToColor[transaction.state]}">
+                  {stateToDescription[transaction.state]}
                 </Text>
               </div>
             </Flex>
@@ -158,7 +160,7 @@
     <Flex>
       <div slot="left">
         <Flex align="left">
-          <Icon.TxState
+          <Icon.TransactionState
             style="margin: 12px 12px 12px 18px;"
             progress={progressSummary}
             state={iconState} />

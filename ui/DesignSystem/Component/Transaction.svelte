@@ -8,7 +8,7 @@
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
 
-  // tx = {
+  // transaction = {
   //   id: transaction id (optional),
   //   message: "transaction message",
   //   stake: "name of stake (optional)",
@@ -25,36 +25,36 @@
   //     imageUrl: "avatar url of the owner (optional)"
   //   }
   // }
-  export let tx = null;
+  export let transaction = null;
 
-  const feePosition = tx.stake ? "middle" : "top";
+  const feePosition = transaction.stake ? "middle" : "top";
 </script>
 
 <Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Your transaction
 </Caption>
-<Row dataCy="tx-summary" variant={tx.id ? 'top' : 'single'}>
+<Row dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
   <div slot="left">
-    <Title>{tx.message}</Title>
+    <Title>{transaction.message}</Title>
   </div>
 
   <div slot="right">
     <Avatar
-      title={tx.subject.name}
-      imageUrl={tx.subject.imageUrl}
-      avatarFallback={tx.subject.avatarFallback}
-      variant={tx.subject.kind}
+      title={transaction.subject.name}
+      imageUrl={transaction.subject.imageUrl}
+      avatarFallback={transaction.subject.avatarFallback}
+      variant={transaction.subject.kind}
       style="color: var(--color-foreground)" />
   </div>
 </Row>
 
-{#if tx.id}
+{#if transaction.id}
   <Row
     variant="bottom"
     style="height: 32px; background-color: var(--color-foreground-level-1)">
     <div slot="left">
       <Numeric variant="tiny" style="color: var(--color-foreground-level-6)">
-        {tx.id}
+        {transaction.id}
       </Numeric>
     </div>
   </Row>
@@ -66,10 +66,10 @@
   Transaction cost
 </Caption>
 
-{#if tx.stake}
+{#if transaction.stake}
   <Row variant="top" style="background-color: var(--color-foreground-level-1)">
     <div slot="left">
-      <Title>{tx.stake}</Title>
+      <Title>{transaction.stake}</Title>
     </div>
 
     <div slot="right">
@@ -109,9 +109,9 @@
 <Row style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Avatar
-      title={tx.payer.name}
-      imageUrl={tx.payer.imageUrl}
-      avatarFallback={tx.payer.avatarFallback}
+      title={transaction.payer.name}
+      imageUrl={transaction.payer.imageUrl}
+      avatarFallback={transaction.payer.avatarFallback}
       style="color: var(--color-foreground)" />
   </div>
 

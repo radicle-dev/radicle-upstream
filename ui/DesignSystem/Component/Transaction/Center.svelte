@@ -38,11 +38,11 @@
   };
 
   // TODO(merle): Use actual data
-  const formatTxs = txs => {
-    return txs.map(tx => {
+  const formatTransactions = transactions => {
+    return transactions.map(transaction => {
       return {
-        id: tx.id,
-        message: formatMessage[tx.messages[0].kind],
+        id: transaction.id,
+        message: formatMessage[transaction.messages[0].kind],
         state: "pending",
         progress: 0
       };
@@ -53,7 +53,7 @@
 {#await $transactions then result}
   {#if result.data.listTransactions.transactions.length > 0}
     <Accordion
-      transactions={formatTxs(result.data.listTransactions.transactions)}
+      transactions={formatTransactions(result.data.listTransactions.transactions)}
       style="position: absolute; bottom: 32px; right: 32px;" />
   {/if}
 {/await}

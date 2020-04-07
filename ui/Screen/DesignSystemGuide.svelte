@@ -95,7 +95,7 @@
     }
   ];
 
-  const txs1 = [
+  const transactions1 = [
     {
       message: "Project registration",
       state: "pending",
@@ -111,7 +111,7 @@
     }
   ];
 
-  const txs2 = [
+  const transactions2 = [
     {
       message: "Project registration",
       state: "pending",
@@ -124,7 +124,7 @@
     }
   ];
 
-  const txs3 = [
+  const transactions3 = [
     {
       message: "Org registration",
       state: "success"
@@ -260,15 +260,15 @@
     subTitle="Icons at 24px and 32px width and height with animations and
     reactive coloring.">
     <Icon.Spinner />
-    <Icon.TxState state="positive" />
-    <Icon.TxState progress={0} variant="small" />
-    <Icon.TxState progress={0} />
-    <Icon.TxState progress={10} />
-    <Icon.TxState progress={100 / 3} />
-    <Icon.TxState state="negative" progress={0} />
-    <Icon.TxState state="negative" progress={80} />
-    <Icon.TxState state="negative" progress={100} />
-    <Icon.TxState state="negative" />
+    <Icon.TransactionState state="positive" />
+    <Icon.TransactionState progress={0} variant="small" />
+    <Icon.TransactionState progress={0} />
+    <Icon.TransactionState progress={10} />
+    <Icon.TransactionState progress={100 / 3} />
+    <Icon.TransactionState state="negative" progress={0} />
+    <Icon.TransactionState state="negative" progress={80} />
+    <Icon.TransactionState state="negative" progress={100} />
+    <Icon.TransactionState state="negative" />
   </Section>
 
   <Section
@@ -680,17 +680,17 @@
     <div style="display: flex;">
       <div style="position: relative; height: 200px; width: 280px;">
         <TransactionAccordion
-          transactions={txs1}
+          transactions={transactions1}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
       <div style="position: relative; height: 200px; width: 280px;">
         <TransactionAccordion
-          transactions={txs2}
+          transactions={transactions2}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
       <div style="position: relative; height: 200px; width: 280px;">
         <TransactionAccordion
-          transactions={txs3}
+          transactions={transactions3}
           style="position: absolute; bottom: 0; right: 0;" />
       </div>
     </div>
