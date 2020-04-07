@@ -1,19 +1,11 @@
 import { derived, writable, Readable, Writable } from 'svelte/store';
 
-// TODO(sos): uppercase enums
 export enum RemoteDataStatus {
   NotAsked = 'NOT_ASKED',
   Loading = 'LOADING',
   Error = 'ERROR',
   Success = 'SUCCESS'
 }
-
-//TODO(sos): generics for data and error state
-// export interface RemoteData {
-//   status: RemoteDataStatus,
-//   data?: any
-//   error?: any
-// }
 
 type Error = string
 
