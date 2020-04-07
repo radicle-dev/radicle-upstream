@@ -10,6 +10,21 @@ pub struct Session {
     pub identity: Option<identity::Identity>,
 }
 
+/// Resets the session state.
+///
+/// # Errors
+///
+/// Errors if the state on disk can't be accessed.
+pub fn clear(store: &kv::Store) -> Result<(), error::Error> {
+    let bucket = store
+        .bucket::<kv::Raw, String>(Some("session"))
+        .expect("unable to get session bucket");
+
+    bucket.clear().expect("unable to clear session bucket");
+
+    Ok(())
+}
+
 /// Reads the current session.
 ///
 /// # Errors

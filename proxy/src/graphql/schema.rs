@@ -409,6 +409,12 @@ impl ControlMutation {
         Ok(true)
     }
 
+    fn nuke_session_state(ctx: &Context) -> Result<bool, error::Error> {
+        session::clear(&ctx.store.read().expect("unable to acquire read lock"))?;
+
+        Ok(true)
+    }
+
     fn register_user(
         ctx: &Context,
         handle: juniper::ID,
