@@ -66,7 +66,20 @@ impl Mutation {
     ) -> Result<identity::Identity, error::Error> {
         let store = ctx.store.read().expect("unable to acquire read lock");
 
-        identity::create(&store, handle, display_name, avatar_url)
+        if let Some(identity) = session::get(&store)?.identity {
+            return Err(error::Error::IdentityExists(identity.id));
+        }
+
+        let id = identity::create(handle, display_name, avatar_url)?;
+
+        session::set(
+            &store,
+            session::Session {
+                identity: Some(id.clone()),
+            },
+        )?;
+
+        Ok(id)
     }
 
     fn create_project(
@@ -316,20 +329,11 @@ impl Query {
         _ctx: &Context,
         id: juniper::ID,
     ) -> Result<Option<identity::Identity>, error::Error> {
-        Ok(Some(identity::Identity {
-            id: id.to_string(),
-            shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
-            metadata: identity::Metadata {
-                handle: "cloudhead".into(),
-                display_name: Some("Alexis Sellier".into()),
-                avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
-            },
-            registered: None,
-        }))
+        identity::get(id.to_string().as_ref())
     }
 
-    fn session(_ctx: &Context) -> Result<session::Session, error::Error> {
-        Ok(session::Session { identity: None })
+    fn session(ctx: &Context) -> Result<session::Session, error::Error> {
+        session::get(&ctx.store.read().expect("unable to acquire read lock"))
     }
 
     fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {

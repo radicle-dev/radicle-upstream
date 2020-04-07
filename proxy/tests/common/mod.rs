@@ -1,4 +1,4 @@
-use juniper::{DefaultScalarValue, ExecutionError, Value, Variables};
+use juniper::{DefaultScalarValue, FieldError, Value, Variables};
 use librad::git::ProjectId;
 use librad::paths::Paths;
 use pretty_assertions::assert_eq;
@@ -17,7 +17,7 @@ where
     ) -> (
         &'static str,
         Variables,
-        Option<Vec<ExecutionError<DefaultScalarValue>>>,
+        Option<Vec<FieldError<DefaultScalarValue>>>,
         Value,
     ),
 {
@@ -35,7 +35,7 @@ where
     .unwrap();
 
     let ctx = Context::new(
-        librad_paths.clone(),
+        librad_paths,
         registry::Registry::new(radicle_registry_client::Client::new_emulator()),
         store,
     );
@@ -46,7 +46,13 @@ where
         .expect("test execute failed");
 
     if let Some(expect) = expect_errors {
-        assert_eq!(errors, expect);
+        assert_eq!(
+            errors
+                .iter()
+                .map(|e| e.error())
+                .collect::<Vec<&FieldError>>(),
+            expect.iter().map(|e| e).collect::<Vec<&FieldError>>(),
+        );
     } else {
         assert_eq!(errors, []);
     }

@@ -6,6 +6,8 @@ use juniper::{InputValue, Variables};
 use librad::surf::git::git2;
 
 use proxy::coco;
+use proxy::identity;
+use proxy::session;
 
 mod common;
 use common::with_fixtures;
@@ -52,7 +54,17 @@ fn create_identity() {
 
 #[test]
 fn create_identity_existing() {
-    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
+    with_fixtures(|ctx, _repos_dir, _platinum_id| {
+        // Create identity first and store session.
+        {
+            let id = identity::create("cloudhead".into(), None, None).unwrap();
+            session::set(
+                &ctx.store.read().unwrap(),
+                session::Session { identity: Some(id) },
+            )
+            .unwrap();
+        }
+
         let mut vars = Variables::new();
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
         vars.insert("displayName".into(), InputValue::scalar("Alexis Sellier"));
@@ -66,11 +78,12 @@ fn create_identity_existing() {
                     id
                 }
             }";
-        let res = graphql_value!({
-            "error": "foo",
-        });
+        let errs = vec![juniper::FieldError::new(
+            "an identity exists already: '123abcd.git'",
+            graphql_value!({ "type": "IDENTITY_EXISTS" }),
+        )];
 
-        (query, vars, None, res)
+        (query, vars, Some(errs), graphql_value!(None))
     });
 }
 
