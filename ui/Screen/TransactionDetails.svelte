@@ -9,6 +9,10 @@
     identityDisplayNameStore,
     identityHandleStore
   } from "../store/identity.js";
+  import {
+    USER_REGISTRATION,
+    PROJECT_REGISTRATION
+  } from "../../native/types.js";
 
   import { Button } from "../DesignSystem/Primitive";
   import {
@@ -60,15 +64,19 @@
     fetchPolicy: "no-cache"
   });
 
-  const formatMessage = {
-    USER_REGISTRATION: "User registration",
-    PROJECT_REGISTRATION: "Project registration"
+  const formatMessage = kind => {
+    switch (kind) {
+      case USER_REGISTRATION:
+        return "User registration";
+      case PROJECT_REGISTRATION:
+        return "Project registration";
+    }
   };
 
   const formatSubject = msg => {
     return {
       name:
-        msg.kind === "USER_REGISTRATION"
+        msg.kind === USER_REGISTRATION
           ? msg.handle
           : `${$identityHandleStore} / ${msg.projectName}`,
       kind: "user",
@@ -81,8 +89,8 @@
     const kind = transaction.messages[0].kind;
     return {
       id: transaction.id,
-      message: formatMessage[kind],
-      stake: `${formatMessage[kind]} deposit`,
+      message: formatMessage(kind),
+      stake: `${formatMessage(kind)} deposit`,
       subject: formatSubject(transaction.messages[0]),
       payer: {
         name: $identityDisplayNameStore || $identityHandleStore,

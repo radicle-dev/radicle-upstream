@@ -1,6 +1,11 @@
 <script>
   import Accordion from "./Accordion.svelte";
 
+  import {
+    USER_REGISTRATION,
+    PROJECT_REGISTRATION
+  } from "../../../../native/types.js";
+
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
 
@@ -32,9 +37,13 @@
     fetchPolicy: "no-cache"
   });
 
-  const formatMessage = {
-    USER_REGISTRATION: "User registration",
-    PROJECT_REGISTRATION: "Project registration"
+  const formatMessage = kind => {
+    switch (kind) {
+      case USER_REGISTRATION:
+        return "User registration";
+      case PROJECT_REGISTRATION:
+        return "Project registration";
+    }
   };
 
   // TODO(merle): Use actual data
@@ -42,7 +51,7 @@
     return transactions.map(transaction => {
       return {
         id: transaction.id,
-        message: formatMessage[transaction.messages[0].kind],
+        message: formatMessage(transaction.messages[0].kind),
         state: "pending",
         progress: 0
       };
