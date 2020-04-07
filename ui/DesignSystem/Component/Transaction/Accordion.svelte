@@ -171,9 +171,7 @@
         </Flex>
       </div>
       <div slot="right">
-        <Icon.Source
-          style="vertical-align: middle; transform: rotate(90deg); margin-right:
-          16px;" />
+        <Icon.Expand style="vertical-align: middle; margin-right: 16px;" />
       </div>
     </Flex>
   </div>

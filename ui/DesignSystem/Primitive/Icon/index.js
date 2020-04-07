@@ -15,6 +15,7 @@ import CrossBig from "./CrossBig.svelte";
 import Ellipse from "./Ellipse.svelte";
 import EllipseBig from "./EllipseBig.svelte";
 import Ellipses from "./Ellipses.svelte";
+import Expand from "./Expand.svelte";
 import Feed from "./Feed.svelte";
 import File from "./File.svelte";
 import Folder from "./Folder.svelte";
@@ -58,6 +59,7 @@ export default {
   Ellipse,
   EllipseBig,
   Ellipses,
+  Expand,
   Feed,
   File,
   Folder,
