@@ -31,7 +31,7 @@
 
   /* TODO(xla): Remove query as the fallback avatar is not updated anymore. */
   const GET_AVATAR = gql`
-    query Query($handle: ID!, $usage: AvatarUsage) {
+    query Query($handle: ID!, $usage: AvatarUsage!) {
       avatar(handle: $handle, usage: $usage) {
         emoji
         background {

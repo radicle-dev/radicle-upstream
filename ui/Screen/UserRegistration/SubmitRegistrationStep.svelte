@@ -27,7 +27,7 @@
   };
 </script>
 
-<Transaction {transaction} style="margin-top: 32px;" />
+<Transaction {transaction} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
