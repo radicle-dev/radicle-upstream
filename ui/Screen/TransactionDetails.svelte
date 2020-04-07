@@ -96,7 +96,7 @@
 
 <style>
   .transaction {
-    margin-top: 48px;
+    margin: 48px 0 32px 0;
   }
 
   .button-row {

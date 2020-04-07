@@ -77,7 +77,7 @@
   let hidden = true;
 
   const hideCards = () => {
-    hidden = hidden ? false : true;
+    hidden = !hidden;
   };
 </script>
 
@@ -88,6 +88,7 @@
     box-shadow: 0px 4px 8px var(--color-foreground-level-3-opacity-08);
     width: 274px;
     cursor: pointer;
+    user-select: none;
   }
 
   .negative {

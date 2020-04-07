@@ -698,7 +698,7 @@
 
   <Section
     title="Transaction Statusbar"
-    subtitle="Statusbar for the transaction detail screen in variants positive,
+    subTitle="Statusbar for the transaction detail screen in variants positive,
     caution and negative.">
     <TransactionStatusbar style="margin-bottom: 5px;" />
     <TransactionStatusbar progress={30} style="margin-bottom: 5px;" />
