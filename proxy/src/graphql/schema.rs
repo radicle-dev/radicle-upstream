@@ -1,3 +1,4 @@
+use hex::ToHex;
 use std::convert::From;
 use std::convert::TryFrom;
 use std::str::FromStr;
@@ -311,7 +312,7 @@ impl Query {
     ) -> Result<ListTransactions, error::Error> {
         let tx_ids = ids
             .iter()
-            .map(|id| radicle_registry_client::TxHash::from_slice(id.to_string().as_bytes()))
+            .map(|id| radicle_registry_client::TxHash::from_str(&id.to_string()).unwrap())
             .collect();
 
         Ok(ListTransactions {
@@ -788,7 +789,7 @@ impl registry::Thresholds {
 #[juniper::object]
 impl registry::Transaction {
     fn id(&self) -> juniper::ID {
-        juniper::ID::new(self.id.to_string())
+        juniper::ID::new(self.id.encode_hex::<String>())
     }
 
     fn messages(&self) -> Vec<Message> {

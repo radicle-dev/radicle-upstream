@@ -7,7 +7,7 @@
   export let onNextStep = null;
   export let onPreviousStep = null;
 
-  const tx = {
+  const transaction = {
     message: "Name registration",
     stake: "Project registration fee",
     subject: {
@@ -21,7 +21,7 @@
   };
 </script>
 
-<Transaction {tx} />
+<Transaction {transaction} />
 
 <Flex style="margin-top: 32px;">
   <div slot="left">
