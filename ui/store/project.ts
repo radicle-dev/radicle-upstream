@@ -14,4 +14,4 @@ const createCurrentProjectStore = () => {
   }
 }
 
-export const currentProjectName = createCurrentProjectStore()
+export const projectNameStore = createCurrentProjectStore()

@@ -13,7 +13,6 @@
         metadata {
           name
           description
-          imgUrl
         }
       }
     }

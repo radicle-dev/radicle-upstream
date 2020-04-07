@@ -29,9 +29,10 @@
     }
   `;
 
+  /* TODO(xla): Remove query as the fallback avatar is not updated anymore. */
   const GET_AVATAR = gql`
-    query Query($handle: ID!) {
-      avatar(handle: $handle) {
+    query Query($handle: ID!, $usage: AvatarUsage!) {
+      avatar(handle: $handle, usage: $usage) {
         emoji
         background {
           r
@@ -61,7 +62,7 @@
   const updateAvatarFallback = async () => {
     const response = await query(client, {
       query: GET_AVATAR,
-      variables: { handle: handle }
+      variables: { handle: handle, usage: "IDENTITY" }
     });
     const result = await response.result();
     avatarFallback = await result.data.avatar;

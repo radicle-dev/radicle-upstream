@@ -42,29 +42,25 @@ Cypress.Commands.add(
   (
     name = "Monadic",
     description = "Monadic is currently supporting radicle.",
-    defaultBranch = "master",
-    imgUrl = "https://res.cloudinary.com/juliendonck/image/upload/v1549554598/monadic-icon_myhdjk.svg"
+    defaultBranch = "master"
   ) => {
     client.mutate({
       variables: {
         name: name,
         description: description,
-        defaultBranch: defaultBranch,
-        imgUrl: imgUrl
+        defaultBranch: defaultBranch
       },
       mutation: gql`
         mutation CreateProjectWithFixture(
           $name: String!
           $description: String!
           $defaultBranch: String!
-          $imgUrl: String!
         ) {
           createProjectWithFixture(
             metadata: {
               name: $name
               description: $description
               defaultBranch: $defaultBranch
-              imgUrl: $imgUrl
             }
           ) {
             id

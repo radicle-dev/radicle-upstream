@@ -19,6 +19,8 @@
     Row,
     StepCounter,
     TrackToggle,
+    TransactionAccordion,
+    TransactionStatusbar,
     UserCard
   } from "../DesignSystem/Component";
 
@@ -90,6 +92,42 @@
       title: "Send something",
       icon: Icon.ArrowUp,
       event: () => console.log("event(Send Something)")
+    }
+  ];
+
+  const transactions1 = [
+    {
+      message: "Project registration",
+      state: "pending",
+      progress: 50
+    },
+    {
+      message: "Member registration",
+      state: "error"
+    },
+    {
+      message: "Org registration",
+      state: "success"
+    }
+  ];
+
+  const transactions2 = [
+    {
+      message: "Project registration",
+      state: "pending",
+      progress: 70
+    },
+    {
+      message: "Org registration",
+      state: "pending",
+      progress: 0
+    }
+  ];
+
+  const transactions3 = [
+    {
+      message: "Org registration",
+      state: "success"
     }
   ];
 </script>
@@ -222,15 +260,15 @@
     subTitle="Icons at 24px and 32px width and height with animations and
     reactive coloring.">
     <Icon.Spinner />
-    <Icon.TxState state="positive" />
-    <Icon.TxState progress={0} variant="small" />
-    <Icon.TxState progress={0} />
-    <Icon.TxState progress={10} />
-    <Icon.TxState progress={100 / 3} />
-    <Icon.TxState state="negative" progress={0} />
-    <Icon.TxState state="negative" progress={80} />
-    <Icon.TxState state="negative" progress={100} />
-    <Icon.TxState state="negative" />
+    <Icon.TransactionState state="positive" />
+    <Icon.TransactionState progress={0} variant="small" />
+    <Icon.TransactionState progress={0} />
+    <Icon.TransactionState progress={10} />
+    <Icon.TransactionState progress={100 / 3} />
+    <Icon.TransactionState state="negative" progress={0} />
+    <Icon.TransactionState state="negative" progress={80} />
+    <Icon.TransactionState state="negative" progress={100} />
+    <Icon.TransactionState state="negative" />
   </Section>
 
   <Section
@@ -590,7 +628,7 @@
     </Swatch>
   </Section>
 
-  <Section title="Transaction Row" subTitle="Single row and combined">
+  <Section title="Transaction" subTitle="Row, Accordion and Statusbar">
     <Swatch>
       <Row style="width:100%" disabled={false}>
         <div slot="left">
@@ -632,6 +670,38 @@
             <Rad amount={8} size="big" />
           </div>
         </Row>
+      </div>
+    </Swatch>
+
+    <Swatch>
+      <div style="display: flex;">
+        <div style="position: relative; height: 200px; width: 280px;">
+          <TransactionAccordion
+            transactions={transactions1}
+            style="position: absolute; bottom: 0; right: 0;" />
+        </div>
+        <div style="position: relative; height: 200px; width: 280px;">
+          <TransactionAccordion
+            transactions={transactions2}
+            style="position: absolute; bottom: 0; right: 0;" />
+        </div>
+        <div style="position: relative; height: 200px; width: 280px;">
+          <TransactionAccordion
+            transactions={transactions3}
+            style="position: absolute; bottom: 0; right: 0;" />
+        </div>
+      </div>
+    </Swatch>
+
+    <Swatch>
+      <div style="flex-direction: column; width: 100%">
+        <TransactionStatusbar style="margin-bottom: 5px;" />
+        <TransactionStatusbar progress={30} style="margin-bottom: 5px;" />
+        <TransactionStatusbar
+          variant="negative"
+          style="margin-bottom: 5px;"
+          time="1585819617" />
+        <TransactionStatusbar variant="positive" time="1585819617" />
       </div>
     </Swatch>
   </Section>

@@ -82,14 +82,6 @@ context("project creation", () => {
       });
     });
 
-    context("avatar url", () => {
-      it("prevents user from submitting an invalid avatar URL", () => {
-        // shows a validation message when avatar URL is not a valid URL
-        cy.get('[data-cy="page"] [data-cy="avatar-url"]').type("htttp");
-        cy.get('[data-cy="page"]').contains("Not a valid avatar URL");
-      });
-    });
-
     context("new repository", () => {
       it("prevents the user from picking an invalid directory", () => {
         // shows a validation message when new project path is empty
@@ -107,7 +99,7 @@ context("project creation", () => {
 
         // shows a validation message when existing project path is empty
         cy.get('[data-cy="page"] [data-cy="existing-project"]')
-          .contains("Pick an existing repository for the new project")
+          .contains("Pick a directory with an existing repository")
           .should("exist");
 
         // TODO(rudolfs): test empty directory validation
@@ -125,7 +117,7 @@ context("project creation", () => {
         cy.get('[data-cy="page"] [data-cy="existing-project"]').click();
         // shows a validation message when existing project path is empty
         cy.get('[data-cy="page"] [data-cy="existing-project"]')
-          .contains("Pick an existing repository for the new project")
+          .contains("Pick a directory with an existing repository")
           .should("exist");
       });
     });

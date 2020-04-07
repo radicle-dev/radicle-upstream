@@ -1,9 +1,9 @@
+use hex::ToHex;
 use std::convert::From;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use std::sync;
 
-use librad::meta::Url;
 use librad::paths::Paths;
 use librad::surf;
 use librad::surf::git::git2;
@@ -91,7 +91,6 @@ impl Mutation {
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
-            Url::parse(&metadata.img_url)?,
         )?;
 
         Ok(project::Project {
@@ -167,11 +166,14 @@ impl Query {
         "1.0"
     }
 
-    fn avatar(handle: juniper::ID) -> Result<avatar::Avatar, error::Error> {
+    fn avatar(handle: juniper::ID, usage: AvatarUsage) -> Result<avatar::Avatar, error::Error> {
         Ok(avatar::Avatar::from(
             &handle.to_string(),
-            // TODO(cloudhead): Usage should be supplied by caller.
-            avatar::Usage::Any,
+            match usage {
+                AvatarUsage::Any => avatar::Usage::Any,
+                AvatarUsage::Identity => avatar::Usage::Identity,
+                AvatarUsage::Org => avatar::Usage::Org,
+            },
         ))
     }
 
@@ -300,7 +302,7 @@ impl Query {
     ) -> Result<ListTransactions, error::Error> {
         let tx_ids = ids
             .iter()
-            .map(|id| radicle_registry_client::TxHash::from_slice(id.to_string().as_bytes()))
+            .map(|id| radicle_registry_client::TxHash::from_str(&id.to_string()).unwrap())
             .collect();
 
         Ok(ListTransactions {
@@ -374,7 +376,6 @@ impl ControlMutation {
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
-            Url::parse(&metadata.img_url)?,
         )?;
 
         Ok(project::Project {
@@ -457,6 +458,17 @@ impl avatar::Color {
     fn b() -> i32 {
         i32::from(self.b)
     }
+}
+
+/// Application of the requested avatar.
+#[derive(GraphQLEnum)]
+pub enum AvatarUsage {
+    /// No specific use-case.
+    Any,
+    /// To be displayed for an [`identity::Identity`].
+    Identity,
+    /// To be displyed for an org.
+    Org,
 }
 
 #[juniper::object]
@@ -594,7 +606,7 @@ impl identity::Identity {
     }
 
     fn avatar_fallback(&self) -> avatar::Avatar {
-        avatar::Avatar::from(&self.metadata.handle, avatar::Usage::User)
+        avatar::Avatar::from(&self.id, avatar::Usage::Identity)
     }
 }
 
@@ -623,8 +635,6 @@ pub struct ProjectMetadataInput {
     pub description: String,
     /// Default branch for checkouts, often used as mainline as well.
     pub default_branch: String,
-    /// Image url for the project.
-    pub img_url: String,
 }
 
 #[juniper::object]
@@ -672,10 +682,6 @@ impl project::Metadata {
 
     fn description(&self) -> &str {
         &self.description
-    }
-
-    fn img_url(&self) -> &str {
-        &self.img_url
     }
 
     fn name(&self) -> &str {
@@ -772,7 +778,7 @@ impl registry::Thresholds {
 #[juniper::object]
 impl registry::Transaction {
     fn id(&self) -> juniper::ID {
-        juniper::ID::new(self.id.to_string())
+        juniper::ID::new(self.id.encode_hex::<String>())
     }
 
     fn messages(&self) -> Vec<Message> {

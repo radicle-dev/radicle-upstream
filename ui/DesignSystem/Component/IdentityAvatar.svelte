@@ -9,18 +9,12 @@
   export let showTitle = false;
   export let style = null;
   export let size = null;
-  export let titleSuffix = null;
-
-  $: title =
-    showTitle &&
-    ((titleSuffix && $identityHandleStore + titleSuffix) ||
-      $identityHandleStore);
 </script>
 
 <Avatar
   {style}
   {size}
-  {title}
+  title={showTitle && $identityHandleStore}
   avatarFallback={$identityAvatarFallbackStore}
   imageUrl={$identityAvatarUrlStore}
   variant="user" />

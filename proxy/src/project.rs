@@ -9,9 +9,6 @@ use std::str::FromStr;
 use crate::coco;
 use crate::error;
 
-/// Metadata key used to store an image url for a project.
-const IMG_URL_LABEL: &str = "img_url";
-
 /// Object the API returns for project metadata.
 #[derive(serde_derive::Deserialize, serde_derive::Serialize)]
 pub struct Metadata {
@@ -21,36 +18,14 @@ pub struct Metadata {
     pub description: String,
     /// Default branch for checkouts, often used as mainline as well.
     pub default_branch: String,
-    /// Image url for the project.
-    pub img_url: String,
 }
 
 impl From<meta::Project> for Metadata {
     fn from(project_meta: meta::Project) -> Self {
-        let img_url = project_meta
-            .rel
-            .into_iter()
-            .filter_map(|r| {
-                if let meta::Relation::Url(label, url) = r {
-                    Some((label, url))
-                } else {
-                    None
-                }
-            })
-            .find_map(|(label, url)| {
-                if *label == *IMG_URL_LABEL {
-                    Some(url.to_string())
-                } else {
-                    None
-                }
-            })
-            .unwrap_or_else(|| "".to_string());
-
         Self {
             name: project_meta.name.unwrap_or_else(|| "name unknown".into()),
             description: project_meta.description.unwrap_or_else(|| "".into()),
             default_branch: project_meta.default_branch,
-            img_url,
         }
     }
 }

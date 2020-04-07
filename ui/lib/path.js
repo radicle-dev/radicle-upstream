@@ -34,6 +34,8 @@ export const projectSource = (id, revision, objectType, path) => {
   }
 };
 
+export const transactions = id => `/transactions/${id}`;
+
 export const designSystemGuide = () => "/design-system-guide";
 export const help = () => "/help";
 

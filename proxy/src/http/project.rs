@@ -1,6 +1,5 @@
 //! Endpoints and serialisations for [`project::Project`] related types.
 
-use librad::meta::Url;
 use librad::paths::Paths;
 use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
 use serde::{Deserialize, Serialize, Serializer};
@@ -94,7 +93,6 @@ mod handler {
             &input.metadata.name,
             &input.metadata.description,
             &input.metadata.default_branch,
-            input.metadata.img_url,
         )?;
 
         Ok(reply::with_status(
@@ -251,8 +249,6 @@ pub struct MetadataInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
-    /// Display image of the project.
-    img_url: Url,
 }
 
 /// Bundled input data for project registration.
@@ -269,7 +265,6 @@ pub struct RegisterInput {
 #[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
-    use librad::meta::Url;
     use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
@@ -308,8 +303,6 @@ mod test {
                     name: "Upstream".into(),
                     description: "Desktop client for radicle.".into(),
                     default_branch: "master".into(),
-                    img_url: Url::parse("https://avatars0.githubusercontent.com/u/48290027")
-                        .unwrap(),
                 },
             })
             .reply(&api)
@@ -324,7 +317,6 @@ mod test {
             "metadata": {
                 "default_branch": "master",
                 "description": "Desktop client for radicle.",
-                "img_url": "https://avatars0.githubusercontent.com/u/48290027",
                 "name": "Upstream",
             },
         });
@@ -350,7 +342,6 @@ mod test {
             "Upstream",
             "Desktop client for radicle.",
             "master",
-            Url::parse("https://avatars0.githubusercontent.com/u/48290027").unwrap(),
         )
         .unwrap();
         let project = project::get(&librad_paths, &id.to_string()).await.unwrap();

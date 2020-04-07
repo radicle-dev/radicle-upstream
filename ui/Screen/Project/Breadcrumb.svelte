@@ -1,6 +1,5 @@
 <script>
-  import { Avatar, Icon } from "../../DesignSystem/Primitive";
-  import { IdentityAvatar } from "../../DesignSystem/Component";
+  import { Avatar, Icon, Title } from "../../DesignSystem/Primitive";
 
   export let org = null;
   export let user = null;
@@ -30,6 +29,7 @@
 
     <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}
-    <IdentityAvatar showTitle={true} titleSuffix={` / ${title}`} />
+    <Icon.Projects />
+    <Title style="white-space: nowrap; margin-left: 8px;">{title}</Title>
   {/if}
 </div>

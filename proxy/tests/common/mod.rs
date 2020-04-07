@@ -1,6 +1,5 @@
 use juniper::{DefaultScalarValue, ExecutionError, Value, Variables};
 use librad::git::ProjectId;
-use librad::meta::Url;
 use librad::paths::Paths;
 use tempfile::{tempdir_in, TempDir};
 
@@ -21,7 +20,6 @@ where
         "git-platinum",
         "fixture data",
         "master",
-        Url::parse("https://avatars0.githubusercontent.com/u/48290027").unwrap(),
     )
     .unwrap();
 

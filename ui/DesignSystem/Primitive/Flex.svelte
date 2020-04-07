@@ -14,6 +14,12 @@
     flex: 1;
   }
 
+  .align-center {
+    display: flex;
+    justify-content: center;
+    flex: 1;
+  }
+
   .align-right {
     display: flex;
     flex: 1;
