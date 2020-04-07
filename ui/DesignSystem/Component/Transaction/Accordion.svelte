@@ -131,23 +131,21 @@
           push(path.transactions(transaction.id));
         }}>
         <Flex>
-          <div slot="left">
-            <Flex align="left">
-              <Icon.TransactionState
-                state={stateToIconState[transaction.state]}
-                progress={transaction.progress}
-                style="margin: 14px 14px 14px 18px;" />
-              <div class="description">
-                <Text variant="small" style="width: max-content;">
-                  {transaction.message}
-                </Text>
-                <Text
-                  variant="small"
-                  style="color: {stateToColor[transaction.state]}">
-                  {stateToDescription[transaction.state]}
-                </Text>
-              </div>
-            </Flex>
+          <div slot="left" style="display: flex;">
+            <Icon.TransactionState
+              state={stateToIconState[transaction.state]}
+              progress={transaction.progress}
+              style="margin: 14px 14px 14px 18px;" />
+            <div class="description">
+              <Text variant="small" style="width: max-content;">
+                {transaction.message}
+              </Text>
+              <Text
+                variant="small"
+                style="color: {stateToColor[transaction.state]}">
+                {stateToDescription[transaction.state]}
+              </Text>
+            </div>
           </div>
           <div slot="right">
             <Icon.CarretBig
@@ -159,16 +157,14 @@
   </div>
   <div class="summary" on:click={hideCards}>
     <Flex>
-      <div slot="left">
-        <Flex align="left">
-          <Icon.TransactionState
-            style="margin: 12px 12px 12px 18px;"
-            progress={progressSummary}
-            state={iconState} />
-          <Text variant="small" style="width: max-content; align-self: center;">
-            {summaryText()}
-          </Text>
-        </Flex>
+      <div slot="left" style="display: flex;">
+        <Icon.TransactionState
+          style="margin: 12px 12px 12px 18px;"
+          progress={progressSummary}
+          state={iconState} />
+        <Text variant="small" style="width: max-content; align-self: center;">
+          {summaryText()}
+        </Text>
       </div>
       <div slot="right">
         <Icon.Expand style="vertical-align: middle; margin-right: 16px;" />
