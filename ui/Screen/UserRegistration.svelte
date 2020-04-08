@@ -15,8 +15,6 @@
   let step = 1;
 
   let handle = $identity.handle;
-  let avatarFallback = $identity.avatarFallback;
-  const imageUrl = $identity.avatarUrl;
   const id = $identity.id;
 
   const nextStep = () => {
@@ -94,20 +92,14 @@
           Registering your handle makes it unique and allows others to easily
           find you.
         </Text>
-        <PickHandleStep
-          bind:avatarFallback
-          {imageUrl}
-          bind:handle
-          onNextStep={nextStep} />
+        <PickHandleStep bind:handle onNextStep={nextStep} />
       {/if}
 
       {#if step === 2}
         <SubmitRegistrationStep
           onNextStep={registerUser}
           onPreviousStep={previousStep}
-          {handle}
-          {avatarFallback}
-          {imageUrl} />
+          {handle} />
       {/if}
     </div>
   </div>
