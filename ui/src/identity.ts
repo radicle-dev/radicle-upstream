@@ -1,6 +1,6 @@
 import { emit } from "./event";
 import * as message from "./message";
-import { createRemoteDataStore } from "./RemoteDataStore";
+import { createStore } from "./remote";
 
 export interface Avatar {
   background: {
@@ -22,7 +22,7 @@ export interface Identity {
   avatarFallback: Avatar;
 };
 
-const identityStore = createRemoteDataStore<Identity>();
+const identityStore = createStore<Identity>();
 
 export const identity = identityStore.readable;
 

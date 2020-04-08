@@ -1,7 +1,7 @@
 import { Error } from "./error";
 import { emit } from "./event";
 import * as message from "./message";
-import { createRemoteDataStore } from "./RemoteDataStore";
+import { createStore } from "./remote";
 
 export interface Transaction {
   id: string;
@@ -9,7 +9,7 @@ export interface Transaction {
 
 type Transactions = Transaction[];
 
-const transactionsStore = createRemoteDataStore<Transactions>(
+const transactionsStore = createStore<Transactions>(
   () => emit({
       kind: message.Kind.Transaction,
       msg: { kind: Kind.FetchList, ids: [] }

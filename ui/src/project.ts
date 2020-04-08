@@ -2,7 +2,7 @@ import { writable } from "svelte/store";
 
 import { emit } from "./event";
 import * as message from "./message";
-import { createRemoteDataStore } from "./RemoteDataStore";
+import { createStore } from "./remote";
 
 // Store management & type definitions
 
@@ -17,7 +17,7 @@ export interface Project {
 
 type Projects = Project[]
 
-const projectsStore = createRemoteDataStore<Projects>(
+const projectsStore = createStore<Projects>(
   () => emit({
     kind: message.Kind.Project,
     msg: { kind: Kind.FetchList }
