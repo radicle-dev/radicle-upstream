@@ -60,9 +60,7 @@ const createWindow = () => {
     });
   }
 
-  mainWindow.loadURL(
-    `file://${path.join(__dirname, "../public/index.html#/profile")}`
-  );
+  mainWindow.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
   mainWindow.on("closed", () => {
     if (watcher) {
       watcher.close();
