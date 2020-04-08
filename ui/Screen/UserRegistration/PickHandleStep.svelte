@@ -1,5 +1,9 @@
 <script>
   import validatejs from "validate.js";
+  import {
+    identityAvatarUrlStore,
+    identityAvatarFallbackStore
+  } from "../../store/identity.js";
   import { Button, Flex, Input } from "../../DesignSystem/Primitive";
 
   import { pop } from "svelte-spa-router";
@@ -16,8 +20,6 @@
   };
 
   export let handle = "";
-  export let imageUrl = null;
-  export let avatarFallback = null;
 
   let validating = false;
   let validations = false;
@@ -26,20 +28,6 @@
   const GET_USER = gql`
     query Query($handle: ID!) {
       user(handle: $handle)
-    }
-  `;
-
-  /* TODO(xla): Remove query as the fallback avatar is not updated anymore. */
-  const GET_AVATAR = gql`
-    query Query($handle: ID!, $usage: AvatarUsage!) {
-      avatar(handle: $handle, usage: $usage) {
-        emoji
-        background {
-          r
-          g
-          b
-        }
-      }
     }
   `;
 
@@ -57,15 +45,6 @@
     } catch (error) {
       validations = { handle: [error] };
     }
-  };
-
-  const updateAvatarFallback = async () => {
-    const response = await query(client, {
-      query: GET_AVATAR,
-      variables: { handle: handle, usage: "IDENTITY" }
-    });
-    const result = await response.result();
-    avatarFallback = await result.data.avatar;
   };
 
   validatejs.options = {
@@ -88,14 +67,10 @@
 
   const validate = async () => {
     validating = true;
-    if (!handle) {
-      avatarFallback = null;
-    }
     validations = validatejs({ handle: handle }, constraints);
     if (!validatejs.isEmpty(validations)) {
       validating = false;
     } else {
-      updateAvatarFallback();
       await validateHandleAvailability();
       validating = false;
     }
@@ -106,8 +81,8 @@
 
 <Input.Text
   dataCy="handle"
-  {avatarFallback}
-  {imageUrl}
+  avatarFallback={$identityAvatarFallbackStore}
+  imageUrl={$identityAvatarUrlStore}
   style="--focus-outline-color: var(--color-primary)"
   placeholder="User handle"
   bind:value={handle}
