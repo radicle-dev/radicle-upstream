@@ -1,6 +1,7 @@
 before(() => {
   cy.nukeAllState();
   cy.createProjectWithFixture();
+  cy.createIdentity();
 });
 
 beforeEach(() => {

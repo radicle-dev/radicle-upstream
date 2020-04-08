@@ -1,8 +1,8 @@
 context("user registration", () => {
   context("modal navigation", () => {
     beforeEach(() => {
-      cy.visit("./public/index.html#/profile");
-      cy.get("body").type("{shift}t");
+      cy.createIdentity();
+      cy.visit("./public/index.html");
       cy.get('[data-cy="profile-context-menu"]').click();
       cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click({
         // TODO(rudolfs): remove this once #246 is fixed
@@ -45,10 +45,13 @@ context("user registration", () => {
 
   context("validations", () => {
     beforeEach(() => {
-      cy.visit("./public/index.html#/user-registration");
-
-      cy.nukeAllState();
-      cy.registerUser();
+      cy.createIdentity();
+      cy.visit("./public/index.html");
+      cy.get('[data-cy="profile-context-menu"]').click();
+      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click({
+        // TODO(rudolfs): remove this once #246 is fixed
+        force: true
+      });
     });
 
     context("handle", () => {
@@ -94,7 +97,7 @@ context("user registration", () => {
       });
 
       // TODO(merle): Add test setup, when mocks are replaced
-      it("prevents the user from registering an unavailable handle", () => {
+      it.skip("prevents the user from registering an unavailable handle", () => {
         // shows a validation message when handle is not available
         cy.get('[data-cy="page"] [data-cy="handle"]').clear();
         cy.get('[data-cy="page"] [data-cy="handle"]').type("nope");

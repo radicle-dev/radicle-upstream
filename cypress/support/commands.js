@@ -1,11 +1,14 @@
 import ApolloClient from "apollo-boost";
 import { gql } from "apollo-boost";
 
-const client = new ApolloClient({ uri: "http://localhost:8080/control" });
+const controlClient = new ApolloClient({
+  uri: "http://localhost:8080/control"
+});
+const apiClient = new ApolloClient({ uri: "http://localhost:8080/graphql" });
 
 Cypress.Commands.add("nukeCocoState", () => {
   console.log("Nuking CoCo state");
-  client.mutate({
+  controlClient.mutate({
     mutation: gql`
       mutation {
         nukeCocoState
@@ -16,7 +19,7 @@ Cypress.Commands.add("nukeCocoState", () => {
 
 Cypress.Commands.add("nukeRegistryState", () => {
   console.log("Nuking Registry state");
-  client.mutate({
+  controlClient.mutate({
     mutation: gql`
       mutation {
         nukeRegistryState
@@ -27,7 +30,7 @@ Cypress.Commands.add("nukeRegistryState", () => {
 
 Cypress.Commands.add("nukeSessionState", () => {
   console.log("Nuking Session state");
-  client.mutate({
+  controlClient.mutate({
     mutation: gql`
       mutation {
         nukeSessionState
@@ -38,7 +41,7 @@ Cypress.Commands.add("nukeSessionState", () => {
 
 Cypress.Commands.add("nukeAllState", () => {
   console.log("Nuking CoCo and Registry state");
-  client.mutate({
+  controlClient.mutate({
     mutation: gql`
       mutation {
         nukeCocoState
@@ -56,7 +59,7 @@ Cypress.Commands.add(
     description = "Monadic is currently supporting radicle.",
     defaultBranch = "master"
   ) => {
-    client.mutate({
+    controlClient.mutate({
       variables: {
         name: name,
         description: description,
@@ -84,7 +87,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add("registerUser", (handle = "nope", id = "123abcd.git") => {
-  client.mutate({
+  controlClient.mutate({
     variables: {
       handle: handle,
       id: id
@@ -103,3 +106,45 @@ Cypress.Commands.add("registerUser", (handle = "nope", id = "123abcd.git") => {
     `
   });
 });
+
+Cypress.Commands.add(
+  "createIdentity",
+  (
+    handle = "secretariat",
+    displayName = "Christopher Chenery",
+    avatarUrl = null
+  ) => {
+    apiClient.mutate({
+      variables: {
+        handle: handle,
+        displayName: displayName,
+        avatarUrl: avatarUrl
+      },
+      mutation: gql`
+        mutation($handle: String!, $displayName: String, $avatarUrl: String) {
+          createIdentity(
+            handle: $handle
+            displayName: $displayName
+            avatarUrl: $avatarUrl
+          ) {
+            id
+            shareableEntityIdentifier
+            avatarFallback {
+              emoji
+              background {
+                r
+                g
+                b
+              }
+            }
+            metadata {
+              handle
+              displayName
+              avatarUrl
+            }
+          }
+        }
+      `
+    });
+  }
+);
