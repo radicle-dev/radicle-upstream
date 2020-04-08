@@ -3,12 +3,7 @@
   import { getClient, mutate } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityHandleStore,
-    identityIdStore
-  } from "../store/identity.js";
+  import { identityHandleStore, identityIdStore } from "../store/identity.js";
   import { showNotification } from "../store/notification.js";
 
   import { Text, Title } from "../DesignSystem/Primitive";
@@ -20,8 +15,6 @@
   let step = 1;
 
   let handle = $identityHandleStore;
-  let avatarFallback = $identityAvatarFallbackStore;
-  const imageUrl = $identityAvatarUrlStore;
   const id = $identityIdStore;
 
   const nextStep = () => {
@@ -99,20 +92,14 @@
           Registering your handle makes it unique and allows others to easily
           find you.
         </Text>
-        <PickHandleStep
-          bind:avatarFallback
-          {imageUrl}
-          bind:handle
-          onNextStep={nextStep} />
+        <PickHandleStep bind:handle onNextStep={nextStep} />
       {/if}
 
       {#if step === 2}
         <SubmitRegistrationStep
           onNextStep={registerUser}
           onPreviousStep={previousStep}
-          {handle}
-          {avatarFallback}
-          {imageUrl} />
+          {handle} />
       {/if}
     </div>
   </div>
