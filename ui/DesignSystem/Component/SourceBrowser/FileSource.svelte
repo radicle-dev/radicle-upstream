@@ -85,7 +85,7 @@
   <CommitTeaser
     user={{ username: result.data.blob.info.lastCommit.author.name, avatar: result.data.blob.info.lastCommit.author.avatar }}
     commitMessage={result.data.blob.info.lastCommit.summary}
-    commitSha={result.data.blob.info.lastCommit.sha1.substring(0, 7)}
+    commitSha={result.data.blob.info.lastCommit.sha1}
     timestamp={format(result.data.blob.info.lastCommit.committerTime * 1000)}
     style="margin-bottom: 24px" />
 

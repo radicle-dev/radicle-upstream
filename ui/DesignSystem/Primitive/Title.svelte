@@ -17,6 +17,12 @@
     line-height: 29px;
   }
 
+  .large {
+    font-family: var(--typeface-bold);
+    font-size: 20px;
+    line-height: 24px;
+  }
+
   .medium {
     font-family: var(--typeface-bold);
     font-size: 16px;

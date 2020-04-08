@@ -25,6 +25,12 @@
     flex: 1;
     justify-content: flex-end;
   }
+
+  .align-space-between {
+    display: flex;
+    justify-content: space-between;
+    flex: 1;
+  }
 </style>
 
 {#if align !== null}
