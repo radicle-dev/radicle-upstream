@@ -1,4 +1,4 @@
-//! Endpoints and serialisations for [`project::Project`] related types.
+//! Endpoints and serialisation for [`project::Project`] related types.
 
 use librad::paths::Paths;
 use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
@@ -67,7 +67,6 @@ mod handler {
     use librad::paths;
     use librad::surf;
     use radicle_registry_client::Balance;
-    use std::convert::Infallible;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -111,7 +110,7 @@ mod handler {
     }
 
     /// List all known projects.
-    pub async fn list(paths: paths::Paths) -> Result<impl Reply, Infallible> {
+    pub async fn list(paths: paths::Paths) -> Result<impl Reply, Rejection> {
         let projects = coco::list_projects(&paths)
             .into_iter()
             .map(|(id, meta)| project::Project {

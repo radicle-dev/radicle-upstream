@@ -79,7 +79,7 @@
     "wait-on": "^4.0.1"
   },
   "scripts": {
-    "start": "run-p --race svelte:watch proxy:start graphiql:serve electron:start",
+    "start": "run-p --race svelte:watch proxy:start:test graphiql:serve electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' run-p --race proxy:start:test test:run",
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test cypress:open",

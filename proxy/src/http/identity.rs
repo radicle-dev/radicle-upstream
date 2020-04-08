@@ -7,7 +7,7 @@ use warp::{path, Filter, Rejection, Reply};
 use crate::avatar;
 use crate::identity;
 
-/// Combination of identity all routes.
+/// Combination of all identity routes.
 pub fn filters() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter().or(create_filter())
 }

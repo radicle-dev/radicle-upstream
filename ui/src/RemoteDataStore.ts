@@ -1,5 +1,7 @@
 import { derived, writable, Readable } from 'svelte/store';
 
+import { Error } from "./error";
+
 export enum RemoteDataStatus {
   NotAsked = 'NOT_ASKED',
   Loading = 'LOADING',
@@ -7,14 +9,11 @@ export enum RemoteDataStatus {
   Success = 'SUCCESS'
 }
 
-//TODO(sos): flesh out what errors should look like; consumers should define them
-type Error = string
-
 export type RemoteData<T> =
   { status: RemoteDataStatus.NotAsked } |
   { status: RemoteDataStatus.Loading } |
   { status: RemoteDataStatus.Success, data: T } |
-  { status: RemoteDataStatus.Error, error: Error }
+  { status: RemoteDataStatus.Error, error: Error };
 
 
 // A RemoteDataStore is a typesafe svelte readable store that exposes `updateStatus`

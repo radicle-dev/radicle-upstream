@@ -12,18 +12,21 @@ mod error;
 mod identity;
 mod notification;
 mod project;
+mod transaction;
 
 /// Main entry point for HTTP API.
 pub async fn run(librad_paths: paths::Paths, reg: registry::Registry) {
+    let registry = Arc::new(RwLock::new(reg));
     let subscriptions = crate::notification::Subscriptions::default();
 
     let routes = identity::filters()
         .or(notification::filters(subscriptions.clone()))
         .or(project::filters(
             librad_paths.clone(),
-            Arc::new(RwLock::new(reg)),
+            Arc::<RwLock<registry::Registry>>::clone(&registry),
             subscriptions,
         ))
+        .or(transaction::filters(registry))
         .recover(error::recover);
     let api = path("v1").and(routes).with(warp::log("proxy::http"));
 

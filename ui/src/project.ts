@@ -45,7 +45,7 @@ interface FetchList extends MsgInterface {
 
 interface ListFetched extends MsgInterface {
   kind: Kind.ListFetched;
-  projects: Project[];
+  projects: Projects;
 }
 
 export type Msg = FetchList | ListFetched
@@ -83,6 +83,6 @@ namespace Api {
             }
           })
         }, 4000)
-      })
+      });
   }
 }

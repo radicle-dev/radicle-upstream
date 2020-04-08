@@ -1,41 +1,13 @@
 <script>
+  import { transactions } from "../../../src/transaction.ts";
+
+  import { Text } from "../../Primitive";
   import Accordion from "./Accordion.svelte";
 
   import {
     USER_REGISTRATION,
     PROJECT_REGISTRATION
   } from "../../../../native/types.js";
-
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
-
-  const GET_TRANSACTIONS = gql`
-    query Query($ids: [ID!]!) {
-      listTransactions(ids: $ids) {
-        transactions {
-          id
-          timestamp
-          messages {
-            ... on ProjectRegistrationMessage {
-              kind
-            }
-            ... on UserRegistrationMessage {
-              kind
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  const client = getClient();
-  const transactions = query(client, {
-    query: GET_TRANSACTIONS,
-    variables: {
-      ids: []
-    },
-    fetchPolicy: "no-cache"
-  });
 
   const formatMessage = kind => {
     switch (kind) {
@@ -59,10 +31,12 @@
   };
 </script>
 
-{#await $transactions then result}
-  {#if result.data.listTransactions.transactions.length > 0}
+{#if $transactions.status === 'SUCCESS'}
+  {#if $transactions.data.length > 0}
     <Accordion
-      transactions={formatTransactions(result.data.listTransactions.transactions)}
+      transactions={formatTransactions($transactions.data)}
       style="position: absolute; bottom: 32px; right: 32px;" />
   {/if}
-{/await}
+{:else if $transactions.status === 'ERROR'}
+  <Text>Transactions errored</Text>
+{/if}

@@ -2,6 +2,7 @@ import * as identity from "./identity";
 import * as notification from "./notification";
 import * as project from "./project"
 import * as message from "./message"
+import * as transaction from "./transaction"
 
 export enum Kind {
   Notification = "notification",
@@ -36,6 +37,9 @@ function update(msg: message.Msg) {
       break;
     case message.Kind.Project:
       project.update(msg.msg);
+      break;
+    case message.Kind.Transaction:
+      transaction.update(msg.msg);
       break;
   }
 }
