@@ -1,6 +1,33 @@
-import { emit } from './event'
-import * as message from './message'
-import { createRemoteDataStore } from './RemoteDataStore'
+import { writable } from "svelte/store";
+
+import { emit } from "./event";
+import * as message from "./message";
+import { createRemoteDataStore } from "./RemoteDataStore";
+
+// Store management & type definitions
+
+export interface Project {
+  id: string;
+  metadata: {
+    name: string;
+    default_branch: string;
+    description?: string;
+  };
+};
+
+type Projects = Project[]
+
+const projectsStore = createRemoteDataStore<Projects>(
+  () => emit({
+    kind: message.Kind.Project,
+    msg: { kind: Kind.FetchList }
+  })
+)
+
+// Read-only store accessible to components
+export const projects = projectsStore.readable;
+
+export const projectNameStore = writable(null);
 
 // Anything related to event loop & messages
 export enum Kind {
@@ -36,29 +63,6 @@ export function update(msg: Msg) {
       break;
   }
 }
-
-// Store management & type definitions
-
-export interface Project {
-  id: string;
-  metadata: {
-    name: string;
-    default_branch: string;
-    description?: string;
-  };
-};
-
-type Projects = Project[]
-
-const projectsStore = createRemoteDataStore<Projects>(
-  () => emit({
-    kind: message.Kind.Project,
-    msg: { kind: Kind.FetchList }
-  })
-)
-
-// Read-only store accessible to components
-export const projects = projectsStore.readable;
 
 namespace Api {
   export function fetchList(): void {

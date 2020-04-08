@@ -10,7 +10,7 @@
   import { Icon } from "../DesignSystem/Primitive";
   import Router from "svelte-spa-router";
   import * as path from "../lib/path.js";
-  import { identity } from "../lib/identity.ts";
+  import { identity } from "../src/identity.ts";
 
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";

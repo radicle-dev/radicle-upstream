@@ -2,7 +2,7 @@
   import { link } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
-  import { identity } from "../../lib/identity.ts";
+  import { identity } from "../../src/identity.ts";
 
   import {
     Avatar,
@@ -23,8 +23,6 @@
       copyIcon = Icon.Copy;
     }, 2000);
   };
-
-  $: console.log($identity);
 </script>
 
 <style>
@@ -77,7 +75,7 @@
     <div class="identity-card">
       <Avatar
         size="huge"
-        imageUrl={$identity.data.avatarUrl}
+        imageUrl={$identity.data.metadata.avatarUrl}
         avatarFallback={$identity.data.avatarFallback} />
       <div class="identity-card-text-container">
         <Title>

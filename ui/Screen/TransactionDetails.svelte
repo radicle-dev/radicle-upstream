@@ -3,7 +3,7 @@
   import { getClient, query } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
-  import { identity } from "../lib/identity.ts";
+  import { identity } from "../src/identity.ts";
   import {
     USER_REGISTRATION,
     PROJECT_REGISTRATION

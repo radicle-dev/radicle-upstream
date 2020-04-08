@@ -1,9 +1,9 @@
 <script>
   import validatejs from "validate.js";
 
-  import { emit } from "../../lib/event.ts";
-  import { Kind as IdentityKind, identity } from "../../lib/identity.ts";
-  import * as message from "../../lib/message.ts";
+  import { emit } from "../../src/event.ts";
+  import { Kind as IdentityKind, identity } from "../../src/identity.ts";
+  import * as message from "../../src/message.ts";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 

@@ -1,5 +1,5 @@
 <script>
-  import { identity } from "../../lib/identity.ts";
+  import { identity } from "../../src/identity.ts";
 
   import { Avatar, Text } from "../Primitive";
 

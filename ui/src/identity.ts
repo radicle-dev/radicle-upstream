@@ -2,6 +2,15 @@ import { emit } from "./event";
 import * as message from "./message";
 import { createRemoteDataStore } from "./RemoteDataStore";
 
+export interface Avatar {
+  background: {
+    r: number;
+    g: number;
+    b: number;
+  };
+  emoji: string;
+}
+
 export interface Identity {
   id: string;
   metadata: {
@@ -9,6 +18,8 @@ export interface Identity {
     displayName?: string;
     avatarUrl?: string;
   };
+  registered?: string;
+  avatarFallback: Avatar;
 };
 
 const identityStore = createRemoteDataStore<Identity>();

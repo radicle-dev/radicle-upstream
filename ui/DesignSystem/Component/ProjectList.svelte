@@ -1,8 +1,7 @@
 <script>
   import { push } from "svelte-spa-router";
 
-  import { projects } from "../../lib/project.ts";
-  import { projectNameStore } from "../../store/project.ts";
+  import { projects, projectNameStore } from "../../src/project.ts";
   import * as path from "../../lib/path.js";
 
   import { Flex, Text, Button } from "../Primitive";
