@@ -1,20 +1,25 @@
 <script>
-  import { Avatar } from "../Primitive";
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityHandleStore
-  } from "../../store/identity.js";
+  import { identity } from "../../lib/identity.ts";
+
+  import { Avatar, Text } from "../Primitive";
 
   export let showTitle = false;
   export let style = null;
   export let size = null;
 </script>
 
-<Avatar
-  {style}
-  {size}
-  title={showTitle && $identityHandleStore}
-  avatarFallback={$identityAvatarFallbackStore}
-  imageUrl={$identityAvatarUrlStore}
-  variant="user" />
+{#if $identity.status === 'NOT_ASKED'}
+  <Text>NOT ASKED...</Text>
+{:else if $identity.status === 'LOADING'}
+  <Text>LOADING...</Text>
+{:else if $identity.status === 'SUCCESS'}
+  <Avatar
+    {style}
+    {size}
+    title={showTitle && $identity.data.metadata.handle}
+    avatarFallback={$identity.data.metadata.avatarFallback}
+    imageUrl={$identity.data.metadata.avatarUrl}
+    variant="user" />
+{:else if $identity.status === 'ERROR'}
+  <Text>{`Error`}</Text>
+{/if}

@@ -31,9 +31,9 @@ interface RemoteDataStore<T> extends Readable<RemoteData<T>> { // a Readable sto
 type UpdateableStatus = RemoteDataStatus.Loading | RemoteDataStatus.Success | RemoteDataStatus.Error
 
 interface Update<T> {
-  (status: RemoteDataStatus.Loading): void
-  (status: RemoteDataStatus.Success, payload: T): void
-  (status: RemoteDataStatus.Error, payload: Error): void
+  (status: RemoteDataStatus.Loading): void;
+  (status: RemoteDataStatus.Success, payload: T): void;
+  (status: RemoteDataStatus.Error, payload: Error): void;
 }
 
 // TODO(sos): add @param docs here, consider making generic type T required

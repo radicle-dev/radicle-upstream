@@ -61,8 +61,10 @@ impl Mutation {
         display_name: Option<String>,
         avatar_url: Option<String>,
     ) -> Result<identity::Identity, error::Error> {
+        let id = "123abcd.git";
+
         Ok(identity::Identity {
-            id: "123abcd.git".into(),
+            id: id.into(),
             shareable_entity_identifier: format!("{}@123abcd.git", handle),
             metadata: identity::Metadata {
                 handle,
@@ -70,6 +72,7 @@ impl Mutation {
                 avatar_url,
             },
             registered: None,
+            avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
         })
     }
 
@@ -302,7 +305,10 @@ impl Query {
     ) -> Result<ListTransactions, error::Error> {
         let tx_ids = ids
             .iter()
-            .map(|id| radicle_registry_client::TxHash::from_str(&id.to_string()).unwrap())
+            .map(|id| {
+                radicle_registry_client::TxHash::from_str(&id.to_string())
+                    .expect("unable to get hash from string")
+            })
             .collect();
 
         Ok(ListTransactions {
@@ -329,6 +335,7 @@ impl Query {
                 avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
             },
             registered: None,
+            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
         }))
     }
 
@@ -606,7 +613,7 @@ impl identity::Identity {
     }
 
     fn avatar_fallback(&self) -> avatar::Avatar {
-        avatar::Avatar::from(&self.id, avatar::Usage::Identity)
+        self.avatar_fallback
     }
 }
 

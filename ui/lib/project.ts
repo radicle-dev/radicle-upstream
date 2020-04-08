@@ -1,11 +1,11 @@
 import { emit } from './event'
-import { GlobalMessageKind } from './messages'
+import * as message from './message'
 import { createRemoteDataStore } from './RemoteDataStore'
 
 // Anything related to event loop & messages
 export enum Kind {
-  FetchList,
-  ListFetched
+  FetchList = "FETCH_LIST",
+  ListFetched = "LIST_FETCHED",
 }
 
 interface MsgInterface {
@@ -40,26 +40,25 @@ export function update(msg: Msg) {
 // Store management & type definitions
 
 export interface Project {
-  id: any
+  id: string;
   metadata: {
-    name: string
-    default_branch: string
-    description?: string
-    img_url?: string
-  }
-}
+    name: string;
+    default_branch: string;
+    description?: string;
+  };
+};
 
-type ProjectListResponse = Project[]
+type Projects = Project[]
 
-const projectsStore = createRemoteDataStore<ProjectListResponse>(
+const projectsStore = createRemoteDataStore<Projects>(
   () => emit({
-    kind: GlobalMessageKind.Project,
+    kind: message.Kind.Project,
     msg: { kind: Kind.FetchList }
   })
 )
 
 // Read-only store accessible to components
-export const projects = projectsStore.readable
+export const projects = projectsStore.readable;
 
 namespace Api {
   export function fetchList(): void {
@@ -73,7 +72,7 @@ namespace Api {
         // simulate a loading time
         const loading = setTimeout(() => {
           emit({
-            kind: GlobalMessageKind.Project,
+            kind: message.Kind.Project,
             msg: {
               kind: Kind.ListFetched,
               projects: data,

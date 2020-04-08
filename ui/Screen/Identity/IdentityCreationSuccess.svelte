@@ -2,13 +2,7 @@
   import { link } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityDisplayNameStore,
-    identityHandleStore,
-    identityShareableEntityIdentifierStore
-  } from "../../store/identity.js";
+  import { identity } from "../../lib/identity.ts";
 
   import {
     Avatar,
@@ -29,6 +23,8 @@
       copyIcon = Icon.Copy;
     }, 2000);
   };
+
+  $: console.log($identity);
 </script>
 
 <style>
@@ -81,17 +77,19 @@
     <div class="identity-card">
       <Avatar
         size="huge"
-        imageUrl={$identityAvatarUrlStore}
-        avatarFallback={$identityAvatarFallbackStore} />
+        imageUrl={$identity.data.avatarUrl}
+        avatarFallback={$identity.data.avatarFallback} />
       <div class="identity-card-text-container">
-        <Title>{$identityDisplayNameStore || $identityHandleStore}</Title>
+        <Title>
+          {$identity.data.metadata.displayName || $identity.data.metadata.handle}
+        </Title>
         <Copyable {afterCopy}>
           <Flex align="left">
             <Text
               style="color: var(--color-foreground-level-6); white-space:
               nowrap; overflow: hidden; text-overflow: ellipsis; max-width:
               350px;">
-              {$identityShareableEntityIdentifierStore}
+              {$identity.data.shareableEntityIdentifier}
             </Text>
             <svelte:component this={copyIcon} style="margin-left: 8px;" />
           </Flex>

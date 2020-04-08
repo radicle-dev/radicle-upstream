@@ -1,10 +1,11 @@
-import * as notification from './notification'
-import * as project from './project'
-import { GlobalMessage, GlobalMessageKind } from './messages'
+import * as identity from "./identity";
+import * as notification from "./notification";
+import * as project from "./project"
+import * as message from "./message"
 
 export enum Kind {
-  Notification = 'notification',
-  Project = 'project',
+  Notification = "notification",
+  Project = "project",
 }
 
 interface MsgInterface {
@@ -23,20 +24,22 @@ export interface ProjectMsg extends MsgInterface {
 
 export type Msg = NotificationMsg | ProjectMsg;
 
-function update(msg: GlobalMessage) {
-  console.log(msg)
+function update(msg: message.Msg) {
+  console.log(msg.kind, msg.msg.kind, msg.msg);
+
   switch (msg.kind) {
-    case GlobalMessageKind.Notification:
+    case message.Kind.Identity:
+      identity.update(msg.msg);
+      break;
+    case message.Kind.Notification:
       // notification.update(state.notification, msg.msg)
-      break
-    case GlobalMessageKind.Project:
-      project.update(msg.msg)
-      break
+      break;
+    case message.Kind.Project:
+      project.update(msg.msg);
+      break;
   }
 }
 
-export function emit(msg: GlobalMessage): void {
+export function emit(msg: message.Msg): void {
   update(msg)
 }
-
-// single routing table 

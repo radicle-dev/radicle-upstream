@@ -1,7 +1,6 @@
 <script>
   import Sidebar from "./Sidebar.svelte";
   import NotificationFaucet from "./NotificationFaucet.svelte";
-  import TransactionCenter from "./Transaction/Center.svelte";
 
   export let dataCy = null;
   export let style = null;
@@ -34,5 +33,4 @@
       <slot />
     </div>
   </div>
-  <TransactionCenter />
 </div>

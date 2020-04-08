@@ -2,6 +2,8 @@
 
 use radicle_registry_client::UserId;
 
+use crate::avatar;
+
 /// The users personal identifying metadata and keys.
 pub struct Identity {
     /// The librad id.
@@ -12,6 +14,7 @@ pub struct Identity {
     pub metadata: Metadata,
     /// Indicator if the identity is registered on the Registry.
     pub registered: Option<UserId>,
+    pub avatar_fallback: avatar::Avatar,
 }
 
 /// User maintained information for an identity, which can evolve over time.

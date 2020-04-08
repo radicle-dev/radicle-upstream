@@ -9,6 +9,7 @@ use warp::{path, Filter};
 use crate::registry;
 
 mod error;
+mod identity;
 mod notification;
 mod project;
 
@@ -16,7 +17,8 @@ mod project;
 pub async fn run(librad_paths: paths::Paths, reg: registry::Registry) {
     let subscriptions = crate::notification::Subscriptions::default();
 
-    let routes = notification::filters(subscriptions.clone())
+    let routes = identity::filters()
+        .or(notification::filters(subscriptions.clone()))
         .or(project::filters(
             librad_paths.clone(),
             Arc::new(RwLock::new(reg)),

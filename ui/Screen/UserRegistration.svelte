@@ -3,12 +3,7 @@
   import { getClient, mutate } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityHandleStore,
-    identityIdStore
-  } from "../store/identity.js";
+  import { identity } from "../lib/identity.ts";
   import { showNotification } from "../store/notification.js";
 
   import { Text, Title } from "../DesignSystem/Primitive";
@@ -19,10 +14,10 @@
 
   let step = 1;
 
-  let handle = $identityHandleStore;
-  let avatarFallback = $identityAvatarFallbackStore;
-  const imageUrl = $identityAvatarUrlStore;
-  const id = $identityIdStore;
+  let handle = $identity.handle;
+  let avatarFallback = $identity.avatarFallback;
+  const imageUrl = $identity.avatarUrl;
+  const id = $identity.id;
 
   const nextStep = () => {
     step += 1;

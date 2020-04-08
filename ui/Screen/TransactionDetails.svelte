@@ -3,12 +3,7 @@
   import { getClient, query } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityDisplayNameStore,
-    identityHandleStore
-  } from "../store/identity.js";
+  import { identity } from "../lib/identity.ts";
   import {
     USER_REGISTRATION,
     PROJECT_REGISTRATION
@@ -78,10 +73,10 @@
       name:
         msg.kind === USER_REGISTRATION
           ? msg.handle
-          : `${$identityHandleStore} / ${msg.projectName}`,
+          : `${$identity.handle} / ${msg.projectName}`,
       kind: "user",
-      avatarFallback: $identityAvatarFallbackStore,
-      imageUrl: $identityAvatarUrlStore
+      avatarFallback: $identity.avatarFallback,
+      imageUrl: $identity.avatarUrl
     };
   };
 
@@ -93,10 +88,10 @@
       stake: `${formatMessage(kind)} deposit`,
       subject: formatSubject(transaction.messages[0]),
       payer: {
-        name: $identityDisplayNameStore || $identityHandleStore,
+        name: $identity.displayName || $identity.Handle,
         kind: "user",
-        avatarFallback: $identityAvatarFallbackStore,
-        imageUrl: $identityAvatarUrlStore
+        avatarFallback: $identity.avatarFallback,
+        imageUrl: $identity.avatarUrl
       }
     };
   };
