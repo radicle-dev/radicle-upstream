@@ -1,3 +1,5 @@
+//! Endpoints and serialisation for [`identity::Identity`] related types.
+
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use warp::{path, Filter, Rejection, Reply};

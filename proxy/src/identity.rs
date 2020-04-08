@@ -14,6 +14,7 @@ pub struct Identity {
     pub metadata: Metadata,
     /// Indicator if the identity is registered on the Registry.
     pub registered: Option<UserId>,
+    /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
     pub avatar_fallback: avatar::Avatar,
 }
 
