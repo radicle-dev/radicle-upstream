@@ -54,8 +54,10 @@ mod handler {
     }
 }
 
+/// Bundled input data for a transaction listing.
 #[derive(Deserialize, Serialize)]
 pub struct ListInput {
+    /// The transaction ids that the list should be filtered by.
     ids: Vec<String>,
 }
 
