@@ -1,11 +1,9 @@
 <script>
   import { gql } from "apollo-boost";
-  import { link } from "svelte-spa-router";
   import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
 
   import { showNotification } from "../../store/notification.js";
-  import * as path from "../../lib/path.js";
 
   import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
 
@@ -87,6 +85,9 @@
     font-weight: bold;
     color: var(--color-foreground);
   }
+  .hash {
+    font-family: var(--typeface-mono-regular);
+  }
 
   /* TODO(cloudhead): These should be global */
   a {
@@ -148,9 +149,7 @@
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
           Commit
-          <a href={path.projectCommit(projectId, commit.sha1)} use:link>
-            {commit.sha1}
-          </a>
+          <span class="hash">{commit.sha1}</span>
         </p>
       </div>
     </Flex>
