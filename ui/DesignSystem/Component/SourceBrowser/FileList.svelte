@@ -116,6 +116,7 @@
 
 {#await $sourceTree then result}
   <CommitTeaser
+    {projectId}
     user={{ username: result.data.tree.info.lastCommit.author.name, avatar: result.data.tree.info.lastCommit.author.avatar }}
     commitMessage={result.data.tree.info.lastCommit.summary}
     commitSha={result.data.tree.info.lastCommit.sha1}

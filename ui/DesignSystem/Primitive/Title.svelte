@@ -1,7 +1,7 @@
 <script>
   export let style = null;
 
-  export let variant = "regular"; // regular | medium | big | huge
+  export let variant = "regular"; // regular | medium | large | big | huge
 </script>
 
 <style>

@@ -83,6 +83,7 @@
 
 {#await $source then result}
   <CommitTeaser
+    {projectId}
     user={{ username: result.data.blob.info.lastCommit.author.name, avatar: result.data.blob.info.lastCommit.author.avatar }}
     commitMessage={result.data.blob.info.lastCommit.summary}
     commitSha={result.data.blob.info.lastCommit.sha1}

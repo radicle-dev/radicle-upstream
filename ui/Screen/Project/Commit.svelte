@@ -1,6 +1,5 @@
 <script>
-  import { Title, Flex } from "../../DesignSystem/Primitive";
-  import { Icon } from "../../DesignSystem/Primitive";
+  import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
   import { gql } from "apollo-boost";
   import { link } from "svelte-spa-router";
   import { showNotification } from "../../store/notification.js";

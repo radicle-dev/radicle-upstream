@@ -1,12 +1,10 @@
 <script>
-  import { getContext } from "svelte";
   import { link } from "svelte-spa-router";
   import { Text } from "../../Primitive";
   import UserCard from "../UserCard.svelte";
   import * as path from "../../../lib/path.js";
 
-  const projectId = getContext("projectId");
-
+  export let projectId = null;
   export let commitMessage = null;
   export let timestamp = null;
   export let commitSha = null;
