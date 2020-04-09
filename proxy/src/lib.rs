@@ -23,6 +23,7 @@
     clippy::shadow_reuse,
     clippy::unseparated_literal_suffix
 )]
+#![feature(str_strip)]
 
 #[macro_use]
 extern crate juniper;

@@ -68,6 +68,17 @@ pub struct Commit {
     pub committer_time: git2::Time,
 }
 
+impl Commit {
+    /// Returns the commit description text. This is the text after the one-lsummary.
+    pub fn description(&self) -> &str {
+        &self
+            .message
+            .strip_prefix(&self.summary)
+            .unwrap_or(&self.message)
+            .trim()
+    }
+}
+
 impl From<&surf::git::Commit> for Commit {
     fn from(commit: &surf::git::Commit) -> Self {
         let avatar = |input: &String| {

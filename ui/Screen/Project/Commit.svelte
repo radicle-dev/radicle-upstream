@@ -26,7 +26,7 @@
           name
         }
         committerTime
-        message
+        description
         sha1
         summary
       }
@@ -64,7 +64,7 @@
     border-radius: 4px;
     padding: 1.5rem;
   }
-  .message {
+  .description {
     font-family: var(--typeface-mono-regular);
   }
   .field {
@@ -119,7 +119,9 @@
         </span>
       </div>
     </Flex>
-    <pre class="message" style="margin-bottom: 1rem">{commit.message}</pre>
+    <pre class="description" style="margin-bottom: 1rem">
+      {commit.description}
+    </pre>
     <hr />
     <Flex style="align-items: flex-end">
       <div slot="left">

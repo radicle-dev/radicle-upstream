@@ -506,6 +506,10 @@ impl coco::Commit {
         &self.summary
     }
 
+    fn description(&self) -> &str {
+        self.description()
+    }
+
     fn message(&self) -> &str {
         &self.message
     }
