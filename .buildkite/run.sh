@@ -19,15 +19,19 @@ else
 
   echo "CACHE_FOLDER=$CACHE_FOLDER"
   echo "HOME=$HOME"
+
+  # When cypress is installed via yarn it runs a script that runs npm in a
+  # sub-command which in turn tries to install cypress in /build. Our linux CI
+  # host is configured to have free space only available in /cache.
+  # To work around this we're symlinking /build -> /cache/build
+  mkdir -p "$CACHE_FOLDER/build"
+  ln -s "$CACHE_FOLDER/build" /build
 fi
 
 mkdir -p "$CACHE_FOLDER/yarn"
 mkdir -p "$CACHE_FOLDER/cargo"
 mkdir -p "$CACHE_FOLDER/rustup"
 
-# cypress npm install workaround
-mkdir -p "$CACHE_FOLDER/build"
-ln -s "$CACHE_FOLDER/build" /build
 
 export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
 export CARGO_HOME="$CACHE_FOLDER/cargo"
