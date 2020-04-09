@@ -15,12 +15,10 @@
     query($projectId: ID!, $commitHash: String!) {
       commit(id: $projectId, sha1: $commitHash) {
         author {
-          avatar
           email
           name
         }
         committer {
-          avatar
           email
           name
         }
