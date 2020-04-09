@@ -15,6 +15,7 @@
   import { showNotification } from "./store/notification.js";
 
   import CreateProject from "./Screen/CreateProject.svelte";
+  import Blank from "./Screen/Blank.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
   import Network from "./Screen/Network.svelte";
@@ -94,6 +95,7 @@
   getIdentity();
 
   const routes = {
+    "/": Blank,
     "/identity/new": CreateIdentity,
     "/search": Search,
     "/network": Network,

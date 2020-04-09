@@ -46,8 +46,10 @@ const createWindow = () => {
     }
   });
 
-  mainWindow.maximize();
-  mainWindow.show();
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.maximize();
+    mainWindow.show();
+  });
 
   let watcher;
   if (isDev) {
