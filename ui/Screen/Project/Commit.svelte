@@ -12,7 +12,7 @@
   const projectId = params.id;
   const commitHash = params.hash;
 
-  const QUERY = gql`
+  const GET_COMMIT = gql`
     query($projectId: ID!, $commitHash: String!) {
       commit(id: $projectId, sha1: $commitHash) {
         author {
@@ -36,7 +36,7 @@
   async function fetchCommit() {
     try {
       const response = await query(getClient(), {
-        query: QUERY,
+        query: GET_COMMIT,
         variables: {
           projectId: projectId,
           commitHash: commitHash
