@@ -52,15 +52,19 @@
     justify-content: center;
     align-items: center;
     flex-direction: column;
-    margin-top: 233px;
+    height: 100%;
   }
 </style>
 
 <ModalLayout hideCloseButton={currentStep === steps.WELCOME} {onClose}>
   {#if currentStep === steps.WELCOME}
     <div class="container">
-      <Placeholder style="width: 800px; height: 400px; margin-bottom: 20px;" />
-      <Button on:click={nextStep} dataCy="get-started-button">
+      <Placeholder
+        style="flex-shrink: 0; width: 800px; height: 400px; margin-bottom: 20px;" />
+      <Button
+        style="flex-shrink: 0; margin-bottom: 24px;"
+        on:click={nextStep}
+        dataCy="get-started-button">
         Get started
       </Button>
     </div>
