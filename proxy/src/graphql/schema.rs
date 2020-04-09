@@ -510,6 +510,10 @@ impl coco::Commit {
         &self.message
     }
 
+    fn committer(&self) -> &coco::Person {
+        &self.committer
+    }
+
     fn committer_time(&self) -> String {
         self.committer_time.seconds().to_string()
     }

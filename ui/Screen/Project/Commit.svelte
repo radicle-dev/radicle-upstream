@@ -20,6 +20,11 @@
           email
           name
         }
+        committer {
+          avatar
+          email
+          name
+        }
         committerTime
         message
         sha1
@@ -121,7 +126,13 @@
           <span class="author">{commit.author.name}</span>
           <span class="email">&lt;{commit.author.email}&gt;</span>
         </p>
-        <!-- TODO(cloudhead): "Comitted by" -->
+        {#if commit.committer.email != commit.author.email}
+          <p class="field">
+            Committed by
+            <span class="author">{commit.committer.name}</span>
+            <span class="email">&lt;{commit.committer.email}&gt;</span>
+          </p>
+        {/if}
       </div>
       <div slot="right">
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
