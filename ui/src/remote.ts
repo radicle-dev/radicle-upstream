@@ -12,8 +12,8 @@ export enum Status {
 export type Data<T> =
   { status: Status.NotAsked } |
   { status: Status.Loading } |
-  { status: Status.Success, data: T } |
-  { status: Status.Error, error: Error };
+  { status: Status.Success; data: T } |
+  { status: Status.Error; error: Error };
 
 
 // A Store is a typesafe svelte readable store that exposes `updateStatus`
@@ -22,10 +22,10 @@ export type Data<T> =
 //
 // a Readable store of Remote Data based on type T
 export interface Store<T> extends Readable<Data<T>> {
-  loading: () => void,
-  success: (response: T) => void,
-  error: (error: Error) => void,
-  readable: Readable<Data<T>>
+  loading: () => void;
+  success: (response: T) => void;
+  error: (error: Error) => void;
+  readable: Readable<Data<T>>;
 }
 
 // We should only be updating in this direction: NotAsked => Loading, Loading -> Success | Error
@@ -64,12 +64,12 @@ export const createStore = <T>(
 
   return {
     subscribe,
-    success: (response: T) => updateInternalStore(
+    success: (response: T): void => updateInternalStore(
       Status.Success,
       response
     ),
-    loading: () => updateInternalStore(Status.Loading),
-    error: (error: Error) => updateInternalStore(
+    loading: (): void => updateInternalStore(Status.Loading),
+    error: (error: Error): void => updateInternalStore(
       Status.Error,
       error
     ),

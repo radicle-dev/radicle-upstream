@@ -12,7 +12,7 @@ export enum Kind {
 }
 
 export type Msg =
-  | { kind: Kind.Identity, msg: identity.Msg }
-  | { kind: Kind.Notification, msg: notification.Msg }
-  | { kind: Kind.Project, msg: project.Msg }
-  | { kind: Kind.Transaction, msg: transaction.Msg };
+  | { kind: Kind.Identity; msg: identity.Msg }
+  | { kind: Kind.Notification; msg: notification.Msg }
+  | { kind: Kind.Project; msg: project.Msg }
+  | { kind: Kind.Transaction; msg: transaction.Msg };

@@ -25,7 +25,7 @@ export interface ProjectMsg extends MsgInterface {
 
 export type Msg = NotificationMsg | ProjectMsg;
 
-function update(msg: message.Msg) {
+function update(msg: message.Msg): void {
   console.log(msg.kind, msg.msg.kind, msg.msg);
 
   switch (msg.kind) {

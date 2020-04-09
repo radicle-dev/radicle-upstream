@@ -1,5 +1,4 @@
-import { emit } from "./event";
-import * as message from "./message";
+import * as api from "./api";
 import { createStore } from "./remote";
 
 export interface Avatar {
@@ -34,7 +33,7 @@ export enum Kind {
 }
 
 interface Message {
-  kind: Kind,
+  kind: Kind;
 }
 
 interface Create extends Message {
@@ -44,74 +43,37 @@ interface Create extends Message {
   avatarUrl?: string;
 }
 
-interface Created extends Message {
-  kind: Kind.Created;
-  identity: Identity;
-}
-
 interface Fetch extends Message {
   kind: Kind.Fetch;
   id: string;
 }
 
-interface Fetched extends Message {
-  kind: Kind.Fetched;
-  identity: Identity;
-}
+export type Msg = Create | Fetch;
 
-export type Msg = Create | Created | Fetch | Fetched;
+interface CreateInput {
+  handle: string;
+  displayName?: string;
+  avatarUrl?: string;
+}
 
 export function update(msg: Msg): void {
   switch (msg.kind) {
     case Kind.Create:
-      Api.create(msg.handle, msg.displayName, msg.avatarUrl);
       identityStore.loading();
-      break;
-    case Kind.Created:
-      identityStore.success(msg.identity);
+      api.post<CreateInput, Identity>("identities", {
+        handle: msg.handle,
+        displayName: msg.displayName,
+        avatarUrl: msg.avatarUrl
+      })
+        .then(identityStore.success)
+        .catch(identityStore.error)
+
       break;
     case Kind.Fetch:
-      Api.get(msg.id);
       identityStore.loading();
+      api.get<Identity>(`identities/${msg.id}`)
+        .then(identityStore.success)
+        .catch(identityStore.error)
       break;
-    case Kind.Fetched:
-      identityStore.success(msg.identity);
-      break;
-  }
-}
-
-declare module Api {
-  export function create(handle: string, displayName?: string, avatarUrl?: string): void {
-    fetch("http://localhost:8080/v1/identities", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ handle, displayName, avatarUrl })
-    })
-      .then(res => res.json())
-      .then((data: Identity) => {
-        emit({
-          kind: message.Kind.Identity,
-          msg: {
-            kind: Kind.Created,
-            identity: data,
-          },
-        })
-      })
-  }
-
-  export function get(id: string): void {
-    fetch(`http://localhost:8080/v1/identities/${id}`, { method: "GET" })
-      .then(res => res.json())
-      .then((data: Identity) => {
-        emit({
-          kind: message.Kind.Identity,
-          msg: {
-            kind: Kind.Fetched,
-            identity: data,
-          },
-        })
-      })
   }
 }
