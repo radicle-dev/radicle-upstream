@@ -1,5 +1,5 @@
 <script>
-  import { Title, Flex, Code } from "../../DesignSystem/Primitive";
+  import { Title, Flex } from "../../DesignSystem/Primitive";
   import { Icon } from "../../DesignSystem/Primitive";
   import { gql } from "apollo-boost";
   import { link } from "svelte-spa-router";
@@ -64,6 +64,9 @@
     border-radius: 4px;
     padding: 1.5rem;
   }
+  .message {
+    font-family: var(--typeface-mono-regular);
+  }
   .field {
     color: var(--color-foreground-level-6);
     margin-bottom: 0.5rem;
@@ -116,8 +119,7 @@
         </span>
       </div>
     </Flex>
-    <!-- TODO(cloudhead): Should be <pre> -->
-    <Code variant="code" style="margin-bottom: 1rem">{commit.message}</Code>
+    <pre class="message" style="margin-bottom: 1rem">{commit.message}</pre>
     <hr />
     <Flex style="align-items: flex-end">
       <div slot="left">
