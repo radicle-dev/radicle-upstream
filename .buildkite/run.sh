@@ -25,6 +25,9 @@ mkdir -p "$CACHE_FOLDER/yarn"
 mkdir -p "$CACHE_FOLDER/cargo"
 mkdir -p "$CACHE_FOLDER/rustup"
 
+# cypress npm install workaround
+mkdir -p "$CACHE_FOLDER/build"
+ln -s "$CACHE_FOLDER/build" /build
 
 export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
 export CARGO_HOME="$CACHE_FOLDER/cargo"
