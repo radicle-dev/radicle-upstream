@@ -111,8 +111,8 @@
           Committed to
           <span class="branch">
             <Icon.Branch
-              color="foreground-level-6"
-              style="vertical-align: bottom" />
+              style="vertical-align: bottom; fill:
+              var(--color-foreground-level-6)" />
             {commit.branch}
           </span>
           {format(commit.committerTime)}
