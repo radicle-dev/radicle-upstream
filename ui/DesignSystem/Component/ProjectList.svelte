@@ -77,9 +77,7 @@
   }
 </style>
 
-{#await $projects}
-  <Text>Loading projects...</Text>
-{:then result}
+{#await $projects then result}
   {#if result.data.projects.length > 0}
     <ul>
       {#each result.data.projects as project}
