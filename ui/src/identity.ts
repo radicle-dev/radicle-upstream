@@ -20,7 +20,7 @@ export interface Identity {
   };
   registered?: string;
   avatarFallback: Avatar;
-};
+}
 
 const identityStore = createStore<Identity>();
 
@@ -31,33 +31,33 @@ export enum Kind {
   Created = "CREATED",
   Fetch = "FETCH",
   Fetched = "FETCHED",
-};
+}
 
 interface Message {
   kind: Kind,
-};
+}
 
 interface Create extends Message {
   kind: Kind.Create;
   handle: string;
   displayName?: string;
   avatarUrl?: string;
-};
+}
 
 interface Created extends Message {
   kind: Kind.Created;
   identity: Identity;
-};
+}
 
 interface Fetch extends Message {
   kind: Kind.Fetch;
   id: string;
-};
+}
 
 interface Fetched extends Message {
   kind: Kind.Fetched;
   identity: Identity;
-};
+}
 
 export type Msg = Create | Created | Fetch | Fetched;
 
@@ -78,9 +78,9 @@ export function update(msg: Msg): void {
       identityStore.success(msg.identity);
       break;
   }
-};
+}
 
-namespace Api {
+declare module Api {
   export function create(handle: string, displayName?: string, avatarUrl?: string): void {
     fetch("http://localhost:8080/v1/identities", {
       method: "POST",

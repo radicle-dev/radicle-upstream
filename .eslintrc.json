@@ -1,15 +1,43 @@
 {
-  "extends": ["eslint:recommended"],
-  "plugins": ["svelte3"],
   "overrides": [
     {
+      "env": {
+        "browser": true,
+        "es6": true,
+        "node": true
+      },
       "files": ["**/*.svelte"],
-      "processor": "svelte3/svelte3"
+      "extends": ["eslint:recommended"],
+      "processor": "svelte3/svelte3",
+      "plugins": ["svelte3"],
+      "parser": "babel-eslint",
+      "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "modules": true,
+          "experimentalObjectRestSpread": true
+        }
+      }
+    },
+    {
+      "files": ["**/*.ts"],
+      "plugins": ["@typescript-eslint"],
+      "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking"
+      ],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "project": "./tsconfig.json"
+      }
     }
   ],
-  "parser": "babel-eslint",
   "env": {
     "browser": true,
+    "es6": true,
     "node": true
   },
   "rules": {

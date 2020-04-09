@@ -1,5 +1,5 @@
 export enum Variant {
-  NotFound = "NOT_FOUND";
+  NotFound = "NOT_FOUND",
 }
 
 export interface Error {

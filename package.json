@@ -45,8 +45,8 @@
     "@babel/node": "^7.8.4",
     "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/preset-env": "^7.8.6",
-    "@typescript-eslint/eslint-plugin": "^2.26.0",
-    "@typescript-eslint/parser": "^2.26.0",
+    "@typescript-eslint/eslint-plugin": "^2.27.0",
+    "@typescript-eslint/parser": "^2.27.0",
     "apollo": "^2.24.0",
     "babel-eslint": "^10.1.0",
     "chokidar": "^3.3.1",
@@ -79,7 +79,7 @@
     "wait-on": "^4.0.1"
   },
   "scripts": {
-    "start": "run-p --race svelte:watch proxy:start graphiql:serve electron:start",
+    "start": "run-p --race svelte:watch proxy:start:test graphiql:serve electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' run-p --race proxy:start:test test:run",
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test cypress:open",
@@ -105,7 +105,7 @@
     "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
-    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte"
+    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts"
   },
   "dependencies": {
     "@babel/runtime": "^7.8.4",
@@ -135,6 +135,9 @@
     ],
     "*.svelte": [
       "prettier --plugin-search-dir=. --write",
+      "eslint --fix"
+    ],
+    "*.ts": [
       "eslint --fix"
     ]
   }

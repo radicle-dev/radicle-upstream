@@ -1,3 +1,4 @@
+import * as api from "./api";
 import { Error } from "./error";
 import { emit } from "./event";
 import * as message from "./message";
@@ -57,31 +58,12 @@ interface ListInput {
 
 namespace Api {
   export function list(input: ListInput): void {
-    fetch("http://localhost:8080/v1/transactions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(input)
-    })
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        } else {
-          throw res;
-        }
-      })
-      .then((data: Transactions) => {
-        emit({
-          kind: message.Kind.Transaction,
-          msg: {
-            kind: Kind.ListFetched,
-            transactions: data,
-          },
-        });
-      })
-      .catch((error: Response) => {
-        error.json().then((err: Error) => transactionsStore.error(err));
-      })
+      api.post<Transactions>("transactions", input)
+        .then((transactions: Transactions) => {
+          transactionsStore.success(transactions);
+        })
+        .catch((err: Error) => {
+          transactionsStore.error(err);
+        })
   }
 }

@@ -21,7 +21,7 @@ export type Data<T> =
 // it only accepts data that conforms to the `RemoteData` interface
 //
 // a Readable store of Remote Data based on type T
-interface Store<T> extends Readable<Data<T>> {
+export interface Store<T> extends Readable<Data<T>> {
   loading: () => void,
   success: (response: T) => void,
   error: (error: Error) => void,

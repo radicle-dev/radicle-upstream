@@ -29,6 +29,8 @@
       };
     });
   };
+
+  $: console.log($transactions);
 </script>
 
 {#if $transactions.status === 'SUCCESS'}
