@@ -1,11 +1,13 @@
 <script>
-  import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
   import { gql } from "apollo-boost";
   import { link } from "svelte-spa-router";
-  import { showNotification } from "../../store/notification.js";
   import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
+
+  import { showNotification } from "../../store/notification.js";
   import * as path from "../../lib/path.js";
+
+  import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
 
   export let params = null;
   const projectId = params.id;
