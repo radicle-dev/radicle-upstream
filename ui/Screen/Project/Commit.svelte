@@ -108,14 +108,19 @@
       </div>
       <div slot="right">
         <span class="field">
-          Committed to
+          <!-- NOTE(cloudhead): These awful margin hacks are here because
+          there is a bug in prettier that breaks our HTML if we try to format
+          it differently. -->
+          <span style="margin-right: -1ch">Committed to</span>
           <span class="branch">
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-6)" />
-            {commit.branch}
+            <span style="margin-left: -0.5ch">{commit.branch}</span>
           </span>
-          {format(commit.committerTime)}
+          <span style="margin-left: -0.5ch">
+            {format(commit.committerTime)}
+          </span>
         </span>
       </div>
     </Flex>
