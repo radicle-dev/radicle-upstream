@@ -92,40 +92,46 @@
 
 {#await fetchCommit() then commit}
   <header>
-    <Flex align="space-between">
-      <Title variant="large" style="margin-bottom: 1rem">
-        {commit.summary}
-      </Title>
-      <span class="field">
-        Committed to
-        <span class="branch">
-          <Icon.Branch
-            color="foreground-level-6"
-            style="vertical-align: bottom" />
-          {commit.branch}
+    <Flex style="align-items: flex-start">
+      <div slot="left">
+        <Title variant="large" style="margin-bottom: 1rem">
+          {commit.summary}
+        </Title>
+      </div>
+      <div slot="right">
+        <span class="field">
+          Committed to
+          <span class="branch">
+            <Icon.Branch
+              color="foreground-level-6"
+              style="vertical-align: bottom" />
+            {commit.branch}
+          </span>
+          {format(commit.committerTime)}
         </span>
-        {format(commit.committerTime)}
-      </span>
+      </div>
     </Flex>
     <!-- TODO(cloudhead): Should be <pre> -->
     <Code variant="code" style="margin-bottom: 1rem">{commit.message}</Code>
     <hr />
-    <Flex align="space-between">
-      <div>
+    <Flex style="align-items: flex-end">
+      <div slot="left">
         <p class="field">
           Authored by
           <span class="author">{commit.author.name}</span>
           <span class="email">&lt;{commit.author.email}&gt;</span>
         </p>
+        <!-- TODO(cloudhead): "Comitted by" -->
       </div>
-      <Flex align="left" style="align-items: flex-end">
+      <div slot="right">
+        <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
           Commit
           <a href={path.projectCommit(projectId, commit.sha1)} use:link>
             {commit.sha1}
           </a>
         </p>
-      </Flex>
+      </div>
     </Flex>
   </header>
 {/await}
