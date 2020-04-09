@@ -64,7 +64,7 @@
 
   const getIdentity = async () => {
     try {
-      const response = await query(client, {
+      const response = query(client, {
         query: GET_IDENTITY
       });
       const result = await response.result();
