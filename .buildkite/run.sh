@@ -21,12 +21,13 @@ else
   echo "HOME=$HOME"
 fi
 
+mkdir -p "$CACHE_FOLDER/cypress"
 mkdir -p "$CACHE_FOLDER/npm"
 mkdir -p "$CACHE_FOLDER/yarn"
 mkdir -p "$CACHE_FOLDER/cargo"
 mkdir -p "$CACHE_FOLDER/rustup"
 
-
+export CYPRESS_CACHE_FOLDER="$CACHE_FOLDER/cypress"
 export NPM_CONFIG_CACHE="$CACHE_FOLDER/npm"
 export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
 export CARGO_HOME="$CACHE_FOLDER/cargo"
