@@ -26,6 +26,7 @@ export interface Store<T> extends Readable<Data<T>> {
   success: (response: T) => void;
   error: (error: Error) => void;
   readable: Readable<Data<T>>;
+  start: (start: Starter) => void;
 }
 
 // We should only be updating in this direction: NotAsked => Loading, Loading -> Success | Error
@@ -37,12 +38,13 @@ interface Update<T> {
   (status: Status.Error, payload: Error): void;
 }
 
+declare type Starter = () => void;
+
 // TODO(sos): add @param docs here, consider making generic type T required
-export const createStore = <T>(
-  start?: () => void
-): Store<T> => {
+export const createStore = <T>(): Store<T> => {
+  let starter: Starter | null;
   const initialState = { status: Status.NotAsked } as Data<T>
-  const internalStore = writable(initialState, start)
+  const internalStore = writable(initialState, () => { starter && starter() })
   const { subscribe, update } = internalStore
 
   const updateInternalStore: Update<T> = (status: UpdateableStatus, payload?: T | Error) => {
@@ -73,6 +75,9 @@ export const createStore = <T>(
       Status.Error,
       error
     ),
-    readable: derived(internalStore, $store => $store)
+    readable: derived(internalStore, $store => $store),
+    start: (start: Starter): void => {
+      starter = start;
+    }
   }
 }

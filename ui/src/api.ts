@@ -1,6 +1,6 @@
 const request = (endpoint: string, init?: object): Request => {
   return new Request(
-      `http://localhost:8081/v1/${endpoint}`,
+      `http://localhost:8080/v1/${endpoint}`,
       {
         headers: {
           "Content-Type": "application/json"

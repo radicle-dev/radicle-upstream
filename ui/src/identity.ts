@@ -32,13 +32,15 @@ enum Kind {
   Fetch = "FETCH",
 }
 
-interface Create {
+interface Create extends event.Event<Kind> {
+  kind: Kind.Create;
   handle: string;
   displayName?: string;
   avatarUrl?: string;
 }
 
-interface Fetch {
+interface Fetch extends event.Event<Kind> {
+  kind: Kind.Fetch;
   id: string;
 }
 
@@ -50,14 +52,14 @@ interface CreateInput {
   avatarUrl?: string;
 }
 
-function update(event: event.Event<Kind, Msg>): void {
-  switch (event.kind) {
+function update(msg: Msg): void {
+  switch (msg.kind) {
     case Kind.Create:
       identityStore.loading();
       api.post<CreateInput, Identity>("identities", {
-        handle: event.msg!.handle,
-        displayName: event.msg!.displayName,
-        avatarUrl: event.msg!.avatarUrl
+        handle: msg.handle,
+        displayName: msg.displayName,
+        avatarUrl: msg.avatarUrl
       })
         .then(identityStore.success)
         .catch(identityStore.error)
@@ -65,7 +67,7 @@ function update(event: event.Event<Kind, Msg>): void {
       break;
     case Kind.Fetch:
       identityStore.loading();
-      api.get<Identity>(`identities/${event.msg!.id}`)
+      api.get<Identity>(`identities/${msg.id}`)
         .then(identityStore.success)
         .catch(identityStore.error)
 

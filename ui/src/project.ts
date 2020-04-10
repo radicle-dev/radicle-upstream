@@ -16,17 +16,25 @@ export interface Project {
 
 type Projects = Project[]
 
-const projectsStore = remote.createStore<Projects>(fetchList)
+// State.
+const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
 
 export const projectNameStore = writable(null);
 
-// Events.
-export enum Kind {
+// State transitions.
+enum Kind {
   FetchList = "FETCH_LIST",
 }
 
-export function update(msg: event.Event<Kind, void>): void {
+interface Fetch extends event.Event<Kind> {
+  kind: Kind.FetchList;
+}
+
+type Msg = Fetch;
+
+const update = (msg: Msg): void => {
+  console.log("project.update", msg)
   switch (msg.kind) {
     case Kind.FetchList:
       projectsStore.loading()
@@ -38,4 +46,9 @@ export function update(msg: event.Event<Kind, void>): void {
   }
 }
 
-const fetchList = event.create<Kind, void>(Kind.FetchList, update)
+// Events.
+
+const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
+
+// Fetch initial list when the store has been subcribed to for the first time.
+projectsStore.start(fetchList);

@@ -9,9 +9,7 @@ export interface Transaction {
 
 type Transactions = Transaction[];
 
-const transactionsStore = remote.createStore<Transactions>(
-  () => fetchList({ ids: [] })
-);
+const transactionsStore = remote.createStore<Transactions>();
 
 export const transactions = transactionsStore.readable;
 
@@ -20,7 +18,7 @@ export enum Kind {
   FetchList = "FETCH_LIST",
 }
 
-interface FetchList {
+interface FetchList extends event.Event<Kind> {
   ids: Array<string>;
 }
 
@@ -30,11 +28,11 @@ interface ListInput {
   ids: Array<string>;
 }
 
-export function update(event: event.Event<Kind, Msg>): void {
-  switch (event.kind) {
+export function update(msg: Msg): void {
+  switch (msg.kind) {
     case Kind.FetchList:
       transactionsStore.loading();
-      api.post<ListInput, Transactions>("transactions", { ids: event.msg!.ids })
+      api.post<ListInput, Transactions>("transactions", { ids: msg.ids })
         .then(transactionsStore.success)
         .catch(transactionsStore.error);
 
@@ -43,3 +41,6 @@ export function update(event: event.Event<Kind, Msg>): void {
 }
 
 const fetchList = event.create<Kind, Msg>(Kind.FetchList, update)
+
+// Fetch initial list when the store has been subcribed to for the first time.
+transactionsStore.start(() => { fetchList({ ids: [] }) });
