@@ -39,6 +39,8 @@ pub struct Project {
     /// Informs if the project is present in the Registry and under what top-level entity it can be
     /// found.
     pub registration: Option<Registration>,
+    /// High-level statistics about the project.
+    pub stats: Stats,
 }
 
 /// Variants for possible registration states of a project.
@@ -69,5 +71,10 @@ pub async fn get(paths: &librad::paths::Paths, id: &str) -> Result<Project, erro
         id: librad::project::ProjectId::from_str(id)?,
         metadata: meta.into(),
         registration: None,
+        stats: Stats {
+            branches: 11,
+            commits: 267,
+            contributors: 8,
+        },
     })
 }

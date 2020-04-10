@@ -100,6 +100,11 @@ impl Mutation {
             id: librad::project::ProjectId::from(id),
             metadata: meta.into(),
             registration: None,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -265,6 +270,11 @@ impl Query {
             id: librad::project::ProjectId::from_str(&id.to_string())?,
             metadata: meta.into(),
             registration: None,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -279,6 +289,11 @@ impl Query {
             id,
             metadata: meta.into(),
             registration: None,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
         .collect::<Vec<project::Project>>();
 
@@ -389,6 +404,11 @@ impl ControlMutation {
             id: id.into(),
             metadata: meta.into(),
             registration: None,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -673,11 +693,7 @@ impl project::Project {
     }
 
     fn stats(&self) -> &project::Stats {
-        &project::Stats {
-            branches: 11,
-            commits: 267,
-            contributors: 8,
-        }
+        &self.stats
     }
 }
 

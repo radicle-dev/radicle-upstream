@@ -28,7 +28,7 @@ pub async fn run(librad_paths: paths::Paths, reg: registry::Registry) {
             Arc::<RwLock<registry::Registry>>::clone(&registry),
             subscriptions,
         ))
-        // .or(transaction::filters(registry))
+        .or(transaction::filters(registry))
         .recover(error::recover);
     let api = path("v1").and(routes).with(warp::log("proxy::http"));
 

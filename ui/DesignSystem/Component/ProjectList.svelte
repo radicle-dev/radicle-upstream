@@ -136,7 +136,8 @@
           <ProjectCard
             title={project.metadata.name}
             description={project.metadata.description}
-            isRegistered={false} />
+            isRegistered={false}
+            stats={project.stats} />
         </li>
       {/each}
     </ul>

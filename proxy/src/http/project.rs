@@ -99,6 +99,11 @@ mod handler {
                 id: librad::project::ProjectId::from(id),
                 metadata: meta.into(),
                 registration: None,
+                stats: project::Stats {
+                    branches: 11,
+                    commits: 267,
+                    contributors: 8,
+                },
             }),
             StatusCode::CREATED,
         ))
@@ -117,6 +122,11 @@ mod handler {
                 id,
                 metadata: meta.into(),
                 registration: None,
+                stats: project::Stats {
+                    branches: 11,
+                    commits: 267,
+                    contributors: 8,
+                },
             })
             .collect::<Vec<project::Project>>();
 
@@ -152,9 +162,43 @@ impl Serialize for project::Project {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Project", 2)?;
+        let mut state = serializer.serialize_struct("Project", 4)?;
         state.serialize_field("id", &self.id.to_string())?;
         state.serialize_field("metadata", &self.metadata)?;
+        state.serialize_field("registration", &self.registration)?;
+        state.serialize_field("stats", &self.stats)?;
+        state.end()
+    }
+}
+
+impl Serialize for project::Registration {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::Org(org_id) => {
+                serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
+            },
+            Self::User(user_id) => serializer.serialize_newtype_variant(
+                "Registration",
+                1,
+                "User",
+                &user_id.to_string(),
+            ),
+        }
+    }
+}
+
+impl Serialize for project::Stats {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Stats", 3)?;
+        state.serialize_field("branches", &self.branches)?;
+        state.serialize_field("commits", &self.commits)?;
+        state.serialize_field("contributors", &self.contributors)?;
         state.end()
     }
 }
@@ -318,6 +362,12 @@ mod test {
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
             },
+            "registration": Value::Null,
+            "stats": {
+                "branches": 11,
+                "commits": 267,
+                "contributors": 8,
+            },
         });
 
         assert_eq!(res.status(), StatusCode::CREATED);
@@ -373,6 +423,11 @@ mod test {
                 id,
                 metadata: meta.into(),
                 registration: None,
+                stats: project::Stats {
+                    branches: 11,
+                    commits: 267,
+                    contributors: 8,
+                },
             })
             .collect::<Vec<project::Project>>();
 
