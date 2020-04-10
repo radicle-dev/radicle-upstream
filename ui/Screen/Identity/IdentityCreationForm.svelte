@@ -1,9 +1,7 @@
 <script>
   import validatejs from "validate.js";
 
-  import { emit } from "../../src/event.ts";
-  import { Kind as IdentityKind, identity } from "../../src/identity.ts";
-  import * as message from "../../src/message.ts";
+  import * as identity from "../../src/identity.ts";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
@@ -139,14 +137,10 @@
           beginValidation = true;
           validate();
           if (!validatejs.isEmpty(validations)) return;
-          emit({
-            kind: message.Kind.Identity,
-            msg: {
-              kind: IdentityKind.Create,
-              handle: handle,
-              displayName: displayName,
-              avatarUrl: avatarUrl
-            }
+          identity.create({
+            handle: handle,
+            displayName: displayName,
+            avatarUrl: avatarUrl
           });
         }}>
         Create

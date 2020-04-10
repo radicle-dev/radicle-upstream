@@ -1,6 +1,8 @@
 import * as api from "./api";
-import { createStore } from "./remote";
+import * as event from "./event";
+import * as remote from "./remote";
 
+// Types.
 export interface Avatar {
   background: {
     r: number;
@@ -21,34 +23,26 @@ export interface Identity {
   avatarFallback: Avatar;
 }
 
-const identityStore = createStore<Identity>();
-
+const identityStore = remote.createStore<Identity>();
 export const identity = identityStore.readable;
 
-export enum Kind {
+// Events.
+enum Kind {
   Create = "CREATE",
-  Created = "CREATED",
   Fetch = "FETCH",
-  Fetched = "FETCHED",
 }
 
-interface Message {
-  kind: Kind;
-}
-
-interface Create extends Message {
-  kind: Kind.Create;
+interface Create {
   handle: string;
   displayName?: string;
   avatarUrl?: string;
 }
 
-interface Fetch extends Message {
-  kind: Kind.Fetch;
+interface Fetch {
   id: string;
 }
 
-export type Msg = Create | Fetch;
+type Msg = Create | Fetch;
 
 interface CreateInput {
   handle: string;
@@ -56,14 +50,14 @@ interface CreateInput {
   avatarUrl?: string;
 }
 
-export function update(msg: Msg): void {
-  switch (msg.kind) {
+function update(event: event.Event<Kind, Msg>): void {
+  switch (event.kind) {
     case Kind.Create:
       identityStore.loading();
       api.post<CreateInput, Identity>("identities", {
-        handle: msg.handle,
-        displayName: msg.displayName,
-        avatarUrl: msg.avatarUrl
+        handle: event.msg!.handle,
+        displayName: event.msg!.displayName,
+        avatarUrl: event.msg!.avatarUrl
       })
         .then(identityStore.success)
         .catch(identityStore.error)
@@ -71,9 +65,12 @@ export function update(msg: Msg): void {
       break;
     case Kind.Fetch:
       identityStore.loading();
-      api.get<Identity>(`identities/${msg.id}`)
+      api.get<Identity>(`identities/${event.msg!.id}`)
         .then(identityStore.success)
         .catch(identityStore.error)
+
       break;
   }
 }
+
+export const create = event.create<Kind, Msg>(Kind.Create, update) 

@@ -1,28 +1,10 @@
 import { writable } from "svelte/store";
 
 import * as api from "./api";
-import { emit } from "./event";
-import * as message from "./message";
-import { createStore } from "./remote";
+import * as event from "./event";
+import * as remote from "./remote";
 
-// Anything related to event loop & messages
-export enum Kind {
-  FetchList = "FETCH_LIST",
-  ListFetched = "LIST_FETCHED",
-}
-
-interface MsgInterface {
-  kind: Kind;
-}
-
-interface FetchList extends MsgInterface {
-  kind: Kind.FetchList;
-}
-
-export type Msg = FetchList
-
-// Store management & type definitions
-
+// Types.
 export interface Project {
   id: string;
   metadata: {
@@ -34,21 +16,17 @@ export interface Project {
 
 type Projects = Project[]
 
-const projectsStore = createStore<Projects>(
-  () => emit({
-    kind: message.Kind.Project,
-    msg: { kind: Kind.FetchList }
-  })
-)
-
-// Read-only store accessible to components
+const projectsStore = remote.createStore<Projects>(fetchList)
 export const projects = projectsStore.readable;
 
 export const projectNameStore = writable(null);
 
-// TODO(sos): error state
-// Similar to reducer in Redux
-export function update(msg: Msg): void {
+// Events.
+export enum Kind {
+  FetchList = "FETCH_LIST",
+}
+
+export function update(msg: event.Event<Kind, void>): void {
   switch (msg.kind) {
     case Kind.FetchList:
       projectsStore.loading()
@@ -59,3 +37,5 @@ export function update(msg: Msg): void {
       break;
   }
 }
+
+const fetchList = event.create<Kind, void>(Kind.FetchList, update)
