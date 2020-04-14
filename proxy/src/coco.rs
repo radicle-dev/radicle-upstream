@@ -69,7 +69,7 @@ pub struct Commit {
 }
 
 impl Commit {
-    /// Returns the commit description text. This is the text after the one-lsummary.
+    /// Returns the commit description text. This is the text after the one-line summary.
     pub fn description(&self) -> &str {
         &self
             .message
