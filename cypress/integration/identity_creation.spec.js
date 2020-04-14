@@ -6,10 +6,9 @@ context("identity creation", () => {
 
   context("modal", () => {
     it("can't be closed by pressing escape key", () => {
+      cy.get('[data-cy="get-started-button"]').should("exist");
       cy.get("body").type("{esc}");
-      cy.get("button")
-        .contains("Get started")
-        .should("exist");
+      cy.get('[data-cy="get-started-button"]').should("exist");
     });
   });
 
