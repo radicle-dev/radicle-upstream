@@ -61,30 +61,50 @@ pub struct Commit {
     pub summary: String,
     /// The entire commit message body.
     pub message: String,
+    /// The committer of the commit.
+    pub committer: Person,
     /// The recorded time of the committer signature. This is a convenience alias until we
     /// expose the actual author and commiter signatures.
     pub committer_time: git2::Time,
 }
 
+impl Commit {
+    /// Returns the commit description text. This is the text after the one-line summary.
+    pub fn description(&self) -> &str {
+        &self
+            .message
+            .strip_prefix(&self.summary)
+            .unwrap_or(&self.message)
+            .trim()
+    }
+}
+
 impl From<&surf::git::Commit> for Commit {
     fn from(commit: &surf::git::Commit) -> Self {
-        let mut s = DefaultHasher::new();
-        commit.author.email.hash(&mut s);
+        let avatar = |input: &String| {
+            let mut s = DefaultHasher::new();
+            input.hash(&mut s);
 
-        let avatar = format!(
-            "https://avatars.dicebear.com/v2/jdenticon/{}.svg",
-            s.finish().to_string()
-        );
+            format!(
+                "https://avatars.dicebear.com/v2/jdenticon/{}.svg",
+                s.finish().to_string()
+            )
+        };
 
         Self {
             sha1: commit.id,
             author: Person {
                 name: commit.author.name.clone(),
                 email: commit.author.email.clone(),
-                avatar,
+                avatar: avatar(&commit.author.email),
             },
             summary: commit.summary.clone(),
             message: commit.message.clone(),
+            committer: Person {
+                name: commit.committer.name.clone(),
+                email: commit.committer.email.clone(),
+                avatar: avatar(&commit.committer.email),
+            },
             committer_time: commit.author.time,
         }
     }

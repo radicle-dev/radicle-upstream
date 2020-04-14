@@ -1,7 +1,7 @@
 <script>
   export let style = null;
 
-  export let variant = "regular"; // regular | medium | big | huge
+  export let variant = "regular"; // regular | medium | large | big | huge
 </script>
 
 <style>
@@ -15,6 +15,12 @@
     font-family: var(--typeface-bold);
     font-size: 24px;
     line-height: 29px;
+  }
+
+  .large {
+    font-family: var(--typeface-bold);
+    font-size: 20px;
+    line-height: 24px;
   }
 
   .medium {

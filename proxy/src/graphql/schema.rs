@@ -506,8 +506,16 @@ impl coco::Commit {
         &self.summary
     }
 
+    fn description(&self) -> &str {
+        self.description()
+    }
+
     fn message(&self) -> &str {
         &self.message
+    }
+
+    fn committer(&self) -> &coco::Person {
+        &self.committer
     }
 
     fn committer_time(&self) -> String {

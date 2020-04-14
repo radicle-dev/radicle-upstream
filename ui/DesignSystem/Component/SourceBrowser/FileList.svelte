@@ -116,9 +116,10 @@
 
 {#await $sourceTree then result}
   <CommitTeaser
+    {projectId}
     user={{ username: result.data.tree.info.lastCommit.author.name, avatar: result.data.tree.info.lastCommit.author.avatar }}
     commitMessage={result.data.tree.info.lastCommit.summary}
-    commitSha={result.data.tree.info.lastCommit.sha1.substring(0, 7)}
+    commitSha={result.data.tree.info.lastCommit.sha1}
     timestamp={format(result.data.tree.info.lastCommit.committerTime * 1000)}
     style="margin-bottom: 24px" />
 

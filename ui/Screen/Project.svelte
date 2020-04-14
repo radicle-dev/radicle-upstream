@@ -27,6 +27,7 @@
   import Source from "./Project/Source.svelte";
   import Issues from "./Project/Issues.svelte";
   import Revisions from "./Project/Revisions.svelte";
+  import Commit from "./Project/Commit.svelte";
 
   import SourceMenu from "./Project/SourceMenu.svelte";
   import IssuesMenu from "./Project/IssuesMenu.svelte";
@@ -37,6 +38,7 @@
     "/projects/:id/source": Source,
     "/projects/:id/source/*": Source,
     "/projects/:id/issues": Issues,
+    "/projects/:id/commits/:hash": Commit,
     "/projects/:id/revisions": Revisions
   };
 
