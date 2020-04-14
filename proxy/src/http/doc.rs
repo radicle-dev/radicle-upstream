@@ -36,8 +36,19 @@ const INDEX_HTML: &str = r#"
   <rapi-doc 
     spec-url = "/docs/openapi.json"
     render-style = "read"
-    defualt-schema-tab = "model"
+    default-schema-tab = "model"
     schema-style = "table"
+    sort-tags = true
+    sort-endpoints-by = "path"
+    schema-description-expanded = false
+    show-info = false
+    show-header = false
+    allow-authentication = false
+    allow-server-selection = false
+
+    nav-bg-color = '#3e4b54'
+    nav-accent-color = '#fd6964'
+    primary-color = '#ea526f'
     >
   </rapi-doc>
 </body> 
