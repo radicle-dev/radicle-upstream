@@ -11,6 +11,7 @@ use crate::error;
 
 /// Object the API returns for project metadata.
 #[derive(serde_derive::Deserialize, serde_derive::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Project name.
     pub name: String,

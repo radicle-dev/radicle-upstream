@@ -1,8 +1,9 @@
 //! Unidirectional updates about significant state changes.
 
+use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::notification::Subscriptions;
+use crate::notification::{Notification, Subscriptions};
 
 /// SSE based notification endpoints.
 pub fn filters(
@@ -19,26 +20,45 @@ fn stream_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("notifications")
         .and(warp::get())
+        .and(document::document(document::description(
+            "SSE stream of incoming notifications",
+        )))
+        .and(document::document(document::tag("Notification")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(Notification::document()).mime("text/event-stream"),
+            )
+            .description("Creation succeeded"),
+        ))
         .and(super::with_subscriptions(subscriptions))
         .and_then(handler::stream)
 }
 
 /// GET /notifications/test/index.html
 fn test_html_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("notifications" / "test" / "index.html").map(|| {
-        warp::http::Response::builder()
-            .header("content-type", "text/html; charset=utf-8")
-            .body(TEST_HTML)
-    })
+    path!("notifications" / "test" / "index.html")
+        .and(warp::get())
+        .and(document::document(document::description("Test HTML")))
+        .and(document::document(document::tag("Notification")))
+        .map(|| {
+            warp::http::Response::builder()
+                .header("content-type", "text/html; charset=utf-8")
+                .body(TEST_HTML)
+        })
 }
 
 /// GET /notifications/test/index.js
 fn test_js_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("notifications" / "test" / "index.js").map(|| {
-        warp::http::Response::builder()
-            .header("content-type", "text/javascript; charset=utf-8")
-            .body(TEST_JS)
-    })
+    path!("notifications" / "test" / "index.js")
+        .and(warp::get())
+        .and(document::document(document::description("Test JS")))
+        .and(document::document(document::tag("Notification")))
+        .map(|| {
+            warp::http::Response::builder()
+                .header("content-type", "text/javascript; charset=utf-8")
+                .body(TEST_JS)
+        })
 }
 
 /// Notification handlers to serve SSE based stream of updates.
@@ -67,6 +87,13 @@ mod handler {
         subscriber.map(|notification| match notification {
             Notification::Transaction(tx) => Ok((event("TRANSACTION"), json(tx))),
         })
+    }
+}
+
+// TODO(xla): Document x-events properly.
+impl ToDocumentedType for Notification {
+    fn document() -> document::DocumentedType {
+        document::string()
     }
 }
 

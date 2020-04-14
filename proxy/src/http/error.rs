@@ -2,6 +2,7 @@
 //! for API consumers to act on.
 
 use std::convert::Infallible;
+use warp::document::{self, ToDocumentedType};
 use warp::http::StatusCode;
 use warp::{reject, reply, Rejection, Reply};
 
@@ -17,11 +18,30 @@ impl From<error::Error> for Rejection {
 
 /// Error type to carry context for failed requests.
 #[derive(serde_derive::Serialize)]
-struct Error {
+pub struct Error {
     /// Human readable message to convery error case.
     message: String,
     /// The triggered error variant.
     variant: String,
+}
+
+impl ToDocumentedType for Error {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert(
+            "message".into(),
+            document::string()
+                .description("Human readable description of the error case")
+                .example("Malformed ID, supported charactes: [a-zA-Z0-9]"),
+        );
+        properties.insert(
+            "variant".into(),
+            document::string()
+                .description("Enum of the error for the client to vary on")
+                .example("INVALID_ID"),
+        );
+        properties.into()
+    }
 }
 
 /// Handler to convert [`error::Error`] to [`Error`] response.

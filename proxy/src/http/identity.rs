@@ -2,6 +2,7 @@
 
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
+use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
@@ -17,13 +18,46 @@ fn create_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clo
     path!("identities")
         .and(warp::post())
         .and(warp::body::json())
+        .and(document::document(document::description(
+            "Create a new unique Identity",
+        )))
+        .and(document::document(document::tag("Identity")))
+        .and(document::document(
+            document::body(CreateInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(identity::Identity::document()).mime("application/json"),
+            )
+            .description("Creation succeeded"),
+        ))
         .and_then(handler::create)
 }
 
 /// GET /identities/<id>
 fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("identities" / String)
+    path("identities")
+        .and(document::param::<String>("id", "Unique ID of the Identity"))
         .and(warp::get())
+        .and(document::document(document::description(
+            "Find Identity by ID",
+        )))
+        .and(document::document(document::tag("Identity")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(identity::Identity::document()).mime("application/json"),
+            )
+            .description("Successful retrieval"),
+        ))
+        .and(document::document(
+            document::response(
+                404,
+                document::body(super::error::Error::document()).mime("application/json"),
+            )
+            .description("Identity not found"),
+        ))
         .and_then(handler::get)
 }
 
@@ -93,6 +127,35 @@ impl Serialize for identity::Identity {
     }
 }
 
+impl ToDocumentedType for identity::Identity {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(5);
+        properties.insert("avatarFallback".into(), avatar::Avatar::document());
+        properties.insert(
+            "id".into(),
+            document::string()
+                .description("The id of the Identity")
+                .example("123abcd.git"),
+        );
+        properties.insert("metadata".into(), identity::Metadata::document());
+        properties.insert(
+            "registered".into(),
+            document::string()
+                .description("ID of the user on the Registry")
+                .example("cloudhead")
+                .nullable(true),
+        );
+        properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("upstream://coco/identity/cloudhead@123abcd.git"),
+        );
+
+        document::DocumentedType::from(properties).description("Unique identity")
+    }
+}
+
 impl Serialize for identity::Metadata {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -107,6 +170,35 @@ impl Serialize for identity::Metadata {
     }
 }
 
+impl ToDocumentedType for identity::Metadata {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "handle".into(),
+            document::string()
+                .description("User chosen nickname")
+                .example("cloudhead"),
+        );
+        properties.insert(
+            "displayName".into(),
+            document::string()
+                .description("Long-form name to be displayed next to the Identity")
+                .example("Alexis Sellier")
+                .nullable(true),
+        );
+        properties.insert(
+            "avatarUrl".into(),
+            document::string()
+                .description("Location of the image to shown as the avatar of the Idenityt")
+                .example("https://avatars1.githubusercontent.com/u/40774")
+                .nullable(true),
+        );
+
+        document::DocumentedType::from(properties)
+            .description("User provided metadata attached to the Identity")
+    }
+}
+
 impl Serialize for avatar::Avatar {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -117,6 +209,22 @@ impl Serialize for avatar::Avatar {
         state.serialize_field("emoji", &self.emoji.to_string())?;
 
         state.end()
+    }
+}
+
+impl ToDocumentedType for avatar::Avatar {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert("background".into(), avatar::Color::document());
+        properties.insert(
+            "emoji".into(),
+            document::string()
+                .description("String containing the actual emoji codepoint to display")
+                .example("💡"),
+        );
+
+        document::DocumentedType::from(properties)
+            .description("Generated avatar based on unique information")
     }
 }
 
@@ -134,6 +242,30 @@ impl Serialize for avatar::Color {
     }
 }
 
+impl ToDocumentedType for avatar::Color {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "r".into(),
+            document::string().description("Red value").example(122),
+        );
+        properties.insert(
+            "g".into(),
+            document::string().description("Green value").example(112),
+        );
+        properties.insert(
+            "b".into(),
+            document::string()
+                .description("Blue value".to_string())
+                .example(90),
+        );
+
+        document::DocumentedType::from(properties).description("RGB color")
+    }
+}
+
+// TODO(xla): Implement Deserialize on identity::Metadata and drop this type entirely, this will
+// help to avoid duplicate efforts for documentation.
 /// Bundled input data for identity creation.
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -144,6 +276,35 @@ pub struct CreateInput {
     display_name: Option<String>,
     /// A url to an image that can be displayed for the identity.
     avatar_url: Option<String>,
+}
+
+impl ToDocumentedType for CreateInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "handle".into(),
+            document::string()
+                .description("User chosen nickname")
+                .example("cloudhead"),
+        );
+        properties.insert(
+            "displayName".into(),
+            document::string()
+                .description("Long-form name to be displayed next to the Identity")
+                .example("Alexis Sellier")
+                .nullable(true),
+        );
+        properties.insert(
+            "avatarUrl".into(),
+            document::string()
+                .description("Location of the image to shown as the avatar of the Idenityt")
+                .example("https://avatars1.githubusercontent.com/u/40774")
+                .nullable(true),
+        );
+
+        document::DocumentedType::from(properties)
+            .description("User provided metadata attached to the Identity")
+    }
 }
 
 #[allow(clippy::non_ascii_literal, clippy::result_unwrap_used)]

@@ -1,10 +1,13 @@
 //! Endpoints and serialisation for [`project::Project`] related types.
 
 use librad::paths::Paths;
-use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
+use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
+use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::notification;
@@ -29,6 +32,20 @@ fn create_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Reje
         .and(warp::post())
         .and(super::with_paths(paths))
         .and(warp::body::json())
+        .and(document::document(document::description(
+            "Create a new project",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(
+            document::body(CreateInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(project::Project::document()).mime("application/json"),
+            )
+            .description("Creation succeeded"),
+        ))
         .and_then(handler::create)
 }
 
@@ -37,6 +54,24 @@ fn get_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejecti
     path!("projects" / String)
         .and(warp::get())
         .and(super::with_paths(paths))
+        .and(document::document(document::description(
+            "Find Project by ID",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(project::Project::document()).mime("application/json"),
+            )
+            .description("Project found"),
+        ))
+        .and(document::document(
+            document::response(
+                404,
+                document::body(super::error::Error::document()).mime("application/json"),
+            )
+            .description("Project not found"),
+        ))
         .and_then(handler::get)
 }
 
@@ -45,6 +80,18 @@ fn list_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Reject
     path!("projects")
         .and(warp::get())
         .and(super::with_paths(paths))
+        .and(document::document(document::description("List projects")))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(
+                    document::array(project::Project::document()).description("List of projects"),
+                )
+                .mime("application/json"),
+            )
+            .description("Creation succeeded"),
+        ))
         .and_then(handler::list)
 }
 
@@ -58,6 +105,24 @@ fn register_filter(
         .and(super::with_registry(registry))
         .and(warp::body::json())
         .and(super::with_subscriptions(subscriptions))
+        .and(document::document(document::description(
+            "Register a Project on the Registry",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(
+            document::body(RegisterInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(
+                    document::array(registry::Transaction::document())
+                        .description("RegisterProject transaction"),
+                )
+                .mime("application/json"),
+            )
+            .description("Creation succeeded"),
+        ))
         .and_then(handler::register)
 }
 
@@ -171,6 +236,50 @@ impl Serialize for project::Project {
     }
 }
 
+impl ToDocumentedType for project::Project {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(4);
+        properties.insert(
+            "id".into(),
+            document::string()
+                .description("ID of the project")
+                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
+        );
+        properties.insert("metadata".into(), project::Metadata::document());
+        properties.insert("registration".into(), project::Registration::document());
+        properties.insert("stats".into(), project::Stats::document());
+
+        document::DocumentedType::from(properties)
+            .description("Radicle project for sharing and collaborating")
+    }
+}
+
+impl ToDocumentedType for project::Metadata {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(3);
+        properties.insert(
+            "name".into(),
+            document::string()
+                .description("Project name")
+                .example("upstream"),
+        );
+        properties.insert(
+            "description".into(),
+            document::string()
+                .description("High-level description of the Project")
+                .example("Desktop client for radicle"),
+        );
+        properties.insert(
+            "defaultBranch".into(),
+            document::string()
+                .description("Default branch for checkouts, often used as mainline as well")
+                .example("master"),
+        );
+
+        document::DocumentedType::from(properties).description("Project metadata")
+    }
+}
+
 impl Serialize for project::Registration {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -190,6 +299,34 @@ impl Serialize for project::Registration {
     }
 }
 
+impl ToDocumentedType for project::Registration {
+    fn document() -> document::DocumentedType {
+        let org = {
+            let mut fields = HashMap::with_capacity(1);
+            fields.insert(
+                "org".into(),
+                document::string().description("Org id").example("monadic"),
+            );
+            document::DocumentedType::from(fields).description("Registered under an Org")
+        };
+        let user = {
+            let mut fields = HashMap::with_capacity(1);
+            fields.insert(
+                "user".into(),
+                document::string().description("User id").example("monadic"),
+            );
+            document::DocumentedType::from(fields).description("Registered under a Useer")
+        };
+
+        document::one_of(vec![org, user])
+            .description("Variants for possible registration states of a Project on the Registry")
+            .example(Self::Org(
+                radicle_registry_client::OrgId::try_from("monadic")
+                    .expect("unable to parse org id"),
+            ))
+    }
+}
+
 impl Serialize for project::Stats {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -203,78 +340,36 @@ impl Serialize for project::Stats {
     }
 }
 
-impl Serialize for registry::Transaction {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Transaction", 4)?;
-        state.serialize_field("id", &self.id.to_string())?;
-        state.serialize_field("messages", &self.messages)?;
-        state.serialize_field("state", &self.state)?;
-        state.serialize_field("timestamp", &self.timestamp)?;
-        state.end()
-    }
-}
+impl ToDocumentedType for project::Stats {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(3);
+        properties.insert(
+            "branches".into(),
+            document::string()
+                .description("Amount of known branches")
+                .example(11),
+        );
+        properties.insert(
+            "commits".into(),
+            document::string()
+                .description("Numbner of commits in the default branch")
+                .example(267),
+        );
+        properties.insert(
+            "contributors".into(),
+            document::string()
+                .description("Amount of unique commiters on the default branch")
+                .example(8),
+        );
 
-impl Serialize for registry::Message {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::OrgRegistration(org_id) => serializer.serialize_newtype_variant(
-                "Message",
-                0,
-                "OrgRegistration",
-                &org_id.to_string(),
-            ),
-            Self::OrgUnregistration(org_id) => serializer.serialize_newtype_variant(
-                "Message",
-                1,
-                "OrgUnregistration",
-                &org_id.to_string(),
-            ),
-            Self::ProjectRegistration {
-                org_id,
-                project_name,
-            } => {
-                let mut sv =
-                    serializer.serialize_struct_variant("Message", 2, "ProjectRegistration", 2)?;
-                sv.serialize_field("org_id", &org_id.to_string())?;
-                sv.serialize_field("project_name", &project_name.to_string())?;
-                sv.end()
-            },
-            Self::UserRegistration { handle, id } => {
-                let mut sv =
-                    serializer.serialize_struct_variant("Message", 3, "UserRegistration", 2)?;
-                sv.serialize_field("handle", &handle.to_string())?;
-                sv.serialize_field("id", &id.to_string())?;
-                sv.end()
-            },
-        }
-    }
-}
-
-impl Serialize for registry::TransactionState {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Applied(block_hash) => {
-                let mut state = serializer.serialize_struct("TransactionApplied", 2)?;
-                state.serialize_field("type", "TransactionApplied")?;
-                state.serialize_field("block_hash", &block_hash.to_string())?;
-
-                state.end()
-            },
-        }
+        document::DocumentedType::from(properties)
+            .description("Coarse statistics for the Project source code")
     }
 }
 
 /// Bundled input data for project creation.
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateInput {
     /// Location on the filesystem of the project, an empty directory means we set up a fresh git
     /// repo at the path before initialising the project.
@@ -283,8 +378,24 @@ pub struct CreateInput {
     metadata: MetadataInput,
 }
 
+impl ToDocumentedType for CreateInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert(
+            "path".into(),
+            document::string()
+                .description("Filesystem location of the git repository")
+                .example("/home/xla/dev/src/github.com/radicle-dev/radicle-upstream"),
+        );
+        properties.insert("metadata".into(), MetadataInput::document());
+
+        document::DocumentedType::from(properties).description("Input for project creation")
+    }
+}
+
 /// User provided metadata for project manipulation.
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MetadataInput {
     /// Name of the proejct.
     name: String,
@@ -294,8 +405,35 @@ pub struct MetadataInput {
     default_branch: String,
 }
 
+impl ToDocumentedType for MetadataInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "name".into(),
+            document::string()
+                .description("Name of the project")
+                .example("upstream"),
+        );
+        properties.insert(
+            "description".into(),
+            document::string()
+                .description("Long-form text describing the project")
+                .example("Desktop client for radicle"),
+        );
+        properties.insert(
+            "defaultBranch".into(),
+            document::string()
+                .description("Projects mainline branch")
+                .example("stable"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for project creation")
+    }
+}
+
 /// Bundled input data for project registration.
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RegisterInput {
     /// Id of the Org the project will be registered under.
     org_id: String,
@@ -303,6 +441,32 @@ pub struct RegisterInput {
     project_name: String,
     /// Optionally passed coco id to store for attestion.
     maybe_coco_id: Option<String>,
+}
+
+impl ToDocumentedType for RegisterInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "org_id".into(),
+            document::string()
+                .description("ID of the Org the project will be registered under")
+                .example("monadic"),
+        );
+        properties.insert(
+            "projectName".into(),
+            document::string()
+                .description("Unique name under the Org of the project")
+                .example("upstream"),
+        );
+        properties.insert(
+            "maybeCocoId".into(),
+            document::string()
+                .description("Optionally passed coco id to store for attestion")
+                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for project creation")
+    }
 }
 
 #[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
@@ -358,7 +522,7 @@ mod test {
         let want = json!({
             "id": id.to_string(),
             "metadata": {
-                "default_branch": "master",
+                "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
             },

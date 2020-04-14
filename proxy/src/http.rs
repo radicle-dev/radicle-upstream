@@ -10,6 +10,7 @@ use warp::{path, Filter};
 
 use crate::registry;
 
+mod doc;
 mod error;
 mod identity;
 mod notification;
@@ -21,19 +22,25 @@ pub async fn run(librad_paths: paths::Paths, reg: registry::Registry) {
     let registry = Arc::new(RwLock::new(reg));
     let subscriptions = crate::notification::Subscriptions::default();
 
-    let routes = identity::filters()
-        .or(notification::filters(subscriptions.clone()))
-        .or(project::filters(
-            librad_paths.clone(),
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions,
-        ))
-        .or(transaction::filters(registry))
+    let api = path("v1").and(
+        identity::filters()
+            .or(notification::filters(subscriptions.clone()))
+            .or(project::filters(
+                librad_paths.clone(),
+                Arc::<RwLock<registry::Registry>>::clone(&registry),
+                subscriptions,
+            ))
+            .or(transaction::filters(registry)),
+    );
+    // let docs = path("docs").and(doc::filters(&api));
+    let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));
+    let routes = api
+        .or(docs)
+        .with(warp::log("proxy::http"))
         .recover(error::recover);
-    let api = path("v1").and(routes).with(warp::log("proxy::http"));
 
     // TODO(xla): Pass down as configuration with sane defaults.
-    warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
+    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
 }
 
 /// State filter to expose the [`librad::paths::Paths`] to handlers.
