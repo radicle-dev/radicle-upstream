@@ -41,7 +41,8 @@
         returnToWelcomeStep();
         return;
       case steps.SUCCESS:
-        pop();
+        replace(path.profileProjects());
+        return;
     }
   };
 </script>
