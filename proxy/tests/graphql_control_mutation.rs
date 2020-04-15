@@ -3,6 +3,8 @@ extern crate juniper;
 
 use librad::paths;
 use pretty_assertions::assert_eq;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use proxy::graphql::schema;
 use proxy::registry;
@@ -13,8 +15,10 @@ fn nuke_coco_state() {
     let librad_paths = paths::Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
 
     let ctx = schema::Context::new(
-        librad_paths,
-        registry::Registry::new(radicle_registry_client::Client::new_emulator()),
+        Arc::new(RwLock::new(librad_paths)),
+        Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        ))),
     );
 
     let query = "mutation {nukeCocoState}";

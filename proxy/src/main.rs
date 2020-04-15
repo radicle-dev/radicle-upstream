@@ -1,5 +1,10 @@
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use warp::Filter;
+
 use proxy::coco;
 use proxy::env;
+use proxy::graphql;
 use proxy::http;
 use proxy::registry;
 
@@ -49,7 +54,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     log::info!("Starting HTTP API");
-    http::run(librad_paths, registry::Registry::new(registry_client)).await;
+
+    let lib_paths = Arc::new(RwLock::new(librad_paths));
+    let reg = Arc::new(RwLock::new(registry::Registry::new(registry_client)));
+    let routes = graphql::api::routes(lib_paths.clone(), reg.clone(), args.test)
+        .or(http::routes(lib_paths, reg));
+
+    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
 
     Ok(())
 }

@@ -16,18 +16,20 @@ use crate::registry;
 
 /// Combination of all routes.
 pub fn filters(
-    paths: Paths,
+    paths: Arc<RwLock<Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    list_filter(paths.clone())
-        .or(create_filter(paths.clone()))
+    list_filter(Arc::<RwLock<Paths>>::clone(&paths))
+        .or(create_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(get_filter(paths))
         .or(register_filter(registry, subscriptions))
 }
 
 /// POST /projects
-fn create_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn create_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
         .and(super::with_paths(paths))
@@ -50,7 +52,9 @@ fn create_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Reje
 }
 
 /// GET /projects/<id>
-fn get_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / String)
         .and(warp::get())
         .and(super::with_paths(paths))
@@ -76,7 +80,9 @@ fn get_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejecti
 }
 
 /// GET /projects
-fn list_filter(paths: Paths) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
         .and(super::with_paths(paths))
@@ -129,7 +135,7 @@ fn register_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use librad::paths;
+    use librad::paths::Paths;
     use librad::surf;
     use radicle_registry_client::Balance;
     use std::sync::Arc;
@@ -144,13 +150,14 @@ mod handler {
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        paths: paths::Paths,
+        librad_paths: Arc<RwLock<Paths>>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         if surf::git::git2::Repository::open(input.path.clone()).is_err() {
             coco::init_repo(input.path.clone())?;
         };
 
+        let paths = librad_paths.read().await;
         let (id, meta) = coco::init_project(
             &paths,
             &input.path,
@@ -175,12 +182,17 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(id: String, paths: paths::Paths) -> Result<impl Reply, Rejection> {
+    pub async fn get(
+        id: String,
+        librad_paths: Arc<RwLock<Paths>>,
+    ) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
         Ok(reply::json(&project::get(&paths, id.as_ref()).await?))
     }
 
     /// List all known projects.
-    pub async fn list(paths: paths::Paths) -> Result<impl Reply, Rejection> {
+    pub async fn list(librad_paths: Arc<RwLock<Paths>>) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
         let projects = coco::list_projects(&paths)
             .into_iter()
             .map(|(id, meta)| project::Project {
@@ -497,7 +509,7 @@ mod test {
         let path = dir.path().to_str().unwrap();
 
         let api = super::filters(
-            librad_paths.clone(),
+            Arc::new(RwLock::new(librad_paths.clone())),
             Arc::new(RwLock::new(registry)),
             subscriptions,
         );
@@ -559,7 +571,11 @@ mod test {
         .unwrap();
         let project = project::get(&librad_paths, &id.to_string()).await.unwrap();
 
-        let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths)),
+            Arc::new(RwLock::new(registry)),
+            subscriptions,
+        );
         let res = request()
             .method("GET")
             .path(&format!("/projects/{}", id.to_string()))
@@ -595,7 +611,11 @@ mod test {
             })
             .collect::<Vec<project::Project>>();
 
-        let api = super::filters(librad_paths, Arc::new(RwLock::new(registry)), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths)),
+            Arc::new(RwLock::new(registry)),
+            subscriptions,
+        );
         let res = request().method("GET").path("/projects").reply(&api).await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -607,14 +627,14 @@ mod test {
     #[tokio::test]
     async fn register() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path()).unwrap()));
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
-            librad_paths,
+            Arc::<RwLock<Paths>>::clone(&librad_paths),
             Arc::<RwLock<registry::Registry>>::clone(&registry),
             subscriptions,
         );

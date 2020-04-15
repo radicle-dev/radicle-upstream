@@ -1,7 +1,9 @@
 use juniper::{DefaultScalarValue, ExecutionError, Value, Variables};
 use librad::git::ProjectId;
 use librad::paths::Paths;
+use std::sync::Arc;
 use tempfile::{tempdir_in, TempDir};
+use tokio::sync::RwLock;
 
 use proxy::coco;
 use proxy::graphql::schema::{Context, Mutation, Query, Schema};
@@ -31,8 +33,10 @@ where
     F: FnOnce(Value, Vec<ExecutionError<DefaultScalarValue>>) -> (),
 {
     let ctx = Context::new(
-        librad_paths,
-        registry::Registry::new(radicle_registry_client::Client::new_emulator()),
+        Arc::new(RwLock::new(librad_paths)),
+        Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        ))),
     );
     let (res, errors) = juniper::execute(query, None, &Schema::new(Query, Mutation), vars, &ctx)
         .expect("test execute failed");

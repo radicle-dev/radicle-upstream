@@ -212,6 +212,7 @@ impl Serialize for avatar::Avatar {
     }
 }
 
+#[allow(clippy::non_ascii_literal)]
 impl ToDocumentedType for avatar::Avatar {
     fn document() -> document::DocumentedType {
         let mut properties = std::collections::HashMap::with_capacity(2);

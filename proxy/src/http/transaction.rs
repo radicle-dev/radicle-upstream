@@ -1,5 +1,6 @@
 //! Endpoints and serialisation for [`registry::Transaction`] related types.
 
+use hex::ToHex;
 use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
@@ -81,7 +82,7 @@ impl Serialize for registry::Transaction {
         S: Serializer,
     {
         let mut state = serializer.serialize_struct("Transaction", 4)?;
-        state.serialize_field("id", &self.id.to_string())?;
+        state.serialize_field("id", &self.id.encode_hex::<String>())?;
         state.serialize_field("messages", &self.messages)?;
         state.serialize_field("state", &self.state)?;
         state.serialize_field("timestamp", &self.timestamp)?;
@@ -115,7 +116,7 @@ impl ToDocumentedType for registry::Transaction {
             "id".into(),
             document::string()
                 .description("Unique identifier")
-                .example("0x7079…f93b"),
+                .example("0x7079...f93b"),
         );
         properties.insert(
             "messages".into(),
@@ -211,7 +212,7 @@ impl ToDocumentedType for ListInput {
     fn document() -> document::DocumentedType {
         let id = document::string()
             .description("Transaction ID")
-            .example("0x7079…f93b");
+            .example("0x7079...f93b");
 
         let mut properties = HashMap::with_capacity(1);
         properties.insert(

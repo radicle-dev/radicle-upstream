@@ -5,7 +5,9 @@ use hex::ToHex;
 use juniper::{InputValue, Variables};
 use pretty_assertions::assert_eq;
 use std::str::FromStr as _;
+use std::sync::Arc;
 use std::time;
+use tokio::sync::RwLock;
 
 use proxy::coco;
 use proxy::graphql::schema;
@@ -551,7 +553,10 @@ async fn list_transactions() {
 
     registry.cache_transaction(tx.clone()).await;
 
-    let ctx = schema::Context::new(librad_paths, registry);
+    let ctx = schema::Context::new(
+        Arc::new(RwLock::new(librad_paths)),
+        Arc::new(RwLock::new(registry)),
+    );
 
     let mut vars = Variables::new();
     vars.insert(

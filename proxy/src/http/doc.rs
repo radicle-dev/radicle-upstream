@@ -1,5 +1,8 @@
+//! Infrastructure to provide `OpenAPI` documentation for the exposed endpoints.
+
 use warp::{document, path, reply, Filter, Rejection, Reply};
 
+/// Combination of all doc routes.
 pub fn filters<F: Filter>(
     routes: &F,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -25,6 +28,7 @@ pub fn describe_filter<F: Filter>(
     path!("openapi.json").map(move || reply::json(&docs))
 }
 
+/// Static HTML served for the docs endpoint.
 const INDEX_HTML: &str = r#"
 <!doctype html>
 <html>
