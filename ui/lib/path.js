@@ -33,6 +33,7 @@ export const projectSource = (id, revision, objectType, path) => {
     return `/projects/${id}/source`;
   }
 };
+export const projectCommit = (id, hash) => `/projects/${id}/commits/${hash}`;
 
 export const transactions = id => `/transactions/${id}`;
 

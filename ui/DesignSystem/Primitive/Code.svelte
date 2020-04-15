@@ -8,7 +8,7 @@
   .code {
     font-family: var(--typeface-mono-regular);
     font-size: 16px;
-    line-height: 20px;
+    line-height: 1.4em;
   }
 
   .medium {

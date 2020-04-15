@@ -2,7 +2,9 @@
   import { link } from "svelte-spa-router";
   import { Text } from "../../Primitive";
   import UserCard from "../UserCard.svelte";
+  import * as path from "../../../lib/path.js";
 
+  export let projectId = null;
   export let commitMessage = null;
   export let timestamp = null;
   export let commitSha = null;
@@ -49,8 +51,11 @@
   <div class="align-right">
     <Text style="color: var(--color-foreground-level-6)">
       Latest commit
-      <a class="commitSha" href="/projects/123/commits/{commitSha}" use:link>
-        {commitSha}
+      <a
+        class="commitSha"
+        href={path.projectCommit(projectId, commitSha)}
+        use:link>
+        {commitSha.substring(0, 7)}
       </a>
       {timestamp}
     </Text>
