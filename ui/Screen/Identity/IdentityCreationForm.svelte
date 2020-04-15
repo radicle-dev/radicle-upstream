@@ -1,7 +1,7 @@
 <script>
   import validatejs from "validate.js";
 
-  import * as identity from "../../src/identity.ts";
+  import { create, identity } from "../../src/identity.ts";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
@@ -137,7 +137,7 @@
           beginValidation = true;
           validate();
           if (!validatejs.isEmpty(validations)) return;
-          identity.create({
+          create({
             handle: handle,
             displayName: displayName,
             avatarUrl: avatarUrl

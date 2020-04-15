@@ -33,17 +33,7 @@ pub fn routes(
         .untuple_one()
         .and(control_filter)
         .or(warp::path("graphql").and(graphql_filter))
-        .with(
-            warp::cors()
-                .allow_any_origin()
-                .allow_headers(&[warp::http::header::CONTENT_TYPE])
-                .allow_methods(&[
-                    warp::http::Method::GET,
-                    warp::http::Method::POST,
-                    warp::http::Method::OPTIONS,
-                ]),
-        )
-        .with(warp::log("proxy::api"))
+        .with(warp::log("proxy::graphql"))
 }
 
 /// Filter for the graphql endpoint.

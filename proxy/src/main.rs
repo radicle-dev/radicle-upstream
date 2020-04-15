@@ -69,7 +69,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Arc::new(RwLock::new(store)),
         args.test,
     )
-    .or(http::routes(lib_paths, reg));
+    .or(http::routes(lib_paths, reg))
+    .with(
+        warp::cors()
+            .allow_any_origin()
+            .allow_headers(&[warp::http::header::CONTENT_TYPE])
+            .allow_methods(&[
+                warp::http::Method::GET,
+                warp::http::Method::POST,
+                warp::http::Method::OPTIONS,
+            ]),
+    );
 
     warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
 
