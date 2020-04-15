@@ -13,9 +13,10 @@ use super::schema;
 pub fn routes(
     librad_paths: Arc<RwLock<librad::paths::Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
+    store: Arc<RwLock<kv::Store>>,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    let context = schema::Context::new(librad_paths, registry);
+    let context = schema::Context::new(librad_paths, registry, store);
     let state = warp::any().map(move || context.clone());
     let graphql_filter = make_graphql_filter(schema::create(), state.clone().boxed());
     let control_filter = make_graphql_filter(schema::create_control(), state.boxed());

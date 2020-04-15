@@ -1,9 +1,12 @@
+before(() => {
+  cy.nukeAllState();
+  cy.createIdentity();
+  cy.createProjectWithFixture();
+  cy.visit("./public/index.html");
+});
+
 context("project creation", () => {
   context("project creation modal", () => {
-    beforeEach(() => {
-      cy.visit("./public/index.html#/profile");
-    });
-
     // TODO(rudolfs): test empty project listing has wording and button
 
     it("can be opened via the profile context menu and closed by pressing cancel", () => {
@@ -31,12 +34,20 @@ context("project creation", () => {
 
   context("validations", () => {
     beforeEach(() => {
-      cy.visit("./public/index.html#/projects/new");
+      cy.get('[data-cy="profile-context-menu"]').click();
+      cy.get('[data-cy="dropdown-menu"] [data-cy="new-project"]').click({
+        // TODO(rudolfs): remove this once #246 is fixed
+        force: true
+      });
 
       // Set up minimal form input to show validations
       cy.get('[data-cy="page"] [data-cy="name"]').type("this-name-is-valid");
       cy.get('[data-cy="page"] [data-cy="new-project"]').click();
       cy.get('[data-cy="page"] [data-cy="create-project-button"]').click();
+    });
+
+    afterEach(() => {
+      cy.get("body").type("{esc}", { force: true });
     });
 
     context("name", () => {

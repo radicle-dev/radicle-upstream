@@ -3,6 +3,6 @@
 /// Server infrastructure used to power the API.
 pub mod api;
 /// Mappings to juniper errors.
-mod error;
+pub mod error;
 /// Query and mutation surface of the `GraphQL` API.
 pub mod schema;

@@ -27,6 +27,8 @@ pub enum UserValidation {
 /// All error variants the API will return.
 #[derive(Debug)]
 pub enum Error {
+    /// Returned when an attempt to create an identity was made and there is one present.
+    IdentityExists(String),
     /// FileSystem errors from interacting with code in repository.
     FS(surf::file_system::error::Error),
     /// Originated from `radicle_surf`.

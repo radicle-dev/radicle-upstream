@@ -1,5 +1,5 @@
 <script>
-  import { link } from "svelte-spa-router";
+  import { push, replace } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
   import { identity } from "../../src/identity.ts";
@@ -54,6 +54,7 @@
 
   .registration-link {
     color: var(--color-secondary);
+    cursor: pointer;
   }
 
   .registration-link:hover {
@@ -67,10 +68,14 @@
     <Text style="margin: 20px 0; color: var(--color-foreground-level-5);">
       This is your peer-to-peer identity. Even though your radicleID is unique,
       your handle isn't. To get a unique handle, you have to
-      <!-- TODO(sarah): actually link to handle registration flow -->
-      <a class="registration-link" href={path.registerUser()} use:link>
+      <span
+        class="registration-link"
+        on:click={() => {
+          replace(path.profileProjects());
+          push(path.registerUser());
+        }}>
         register it.
-      </a>
+      </span>
     </Text>
     <div class="identity-card">
       <Avatar

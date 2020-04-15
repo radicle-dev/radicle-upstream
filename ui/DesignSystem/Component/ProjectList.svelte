@@ -99,18 +99,6 @@
   }
 </style>
 
-<!-- 
-  SuccessEmpty state could work like this:
-  {#if status === 'LOADING'}
-    <Loading />
-  {#else if status === 'SUCCESS'}
-    render with data
-    <List />
-  {#else if status === 'ERROR'}
-    error state
-  {/if} 
--->
-
 {#if $projects.status === 'LOADING'}
   <div class="loading">
     <p class="loading-text">LOADING</p>

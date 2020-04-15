@@ -16,6 +16,7 @@ use crate::error;
 use crate::identity;
 use crate::project;
 use crate::registry;
+use crate::session;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = juniper::RootNode<'static, Query, Mutation>;
@@ -30,9 +31,11 @@ pub fn create() -> Schema {
 #[derive(Clone)]
 pub struct Context {
     /// Root on the filesystem for the librad config and storage paths.
-    librad_paths: Arc<RwLock<Paths>>,
+    pub librad_paths: Arc<RwLock<Paths>>,
     /// Wrapper to interact with the Registry.
     registry: Arc<RwLock<registry::Registry>>,
+    /// Handle to maintain local persistancce and caching.
+    pub store: Arc<RwLock<kv::Store>>,
 }
 
 impl Context {
@@ -41,10 +44,12 @@ impl Context {
     pub fn new(
         librad_paths: Arc<RwLock<Paths>>,
         registry: Arc<RwLock<registry::Registry>>,
+        store: Arc<RwLock<kv::Store>>,
     ) -> Self {
         Self {
             librad_paths,
             registry,
+            store,
         }
     }
 }
@@ -60,24 +65,27 @@ pub struct Mutation;
 )]
 impl Mutation {
     fn create_identity(
-        _ctx: &Context,
+        ctx: &Context,
         handle: String,
         display_name: Option<String>,
         avatar_url: Option<String>,
     ) -> Result<identity::Identity, error::Error> {
-        let id = "123abcd.git";
+        let store = futures::executor::block_on(ctx.store.read());
 
-        Ok(identity::Identity {
-            id: id.into(),
-            shareable_entity_identifier: format!("{}@123abcd.git", handle),
-            metadata: identity::Metadata {
-                handle,
-                display_name,
-                avatar_url,
+        if let Some(identity) = session::get(&store)?.identity {
+            return Err(error::Error::IdentityExists(identity.id));
+        }
+
+        let id = identity::create(handle, display_name, avatar_url)?;
+
+        session::set(
+            &store,
+            session::Session {
+                identity: Some(id.clone()),
             },
-            registered: None,
-            avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
-        })
+        )?;
+
+        Ok(id)
     }
 
     fn create_project(
@@ -324,17 +332,11 @@ impl Query {
         _ctx: &Context,
         id: juniper::ID,
     ) -> Result<Option<identity::Identity>, error::Error> {
-        Ok(Some(identity::Identity {
-            id: id.to_string(),
-            shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
-            metadata: identity::Metadata {
-                handle: "cloudhead".into(),
-                display_name: Some("Alexis Sellier".into()),
-                avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
-            },
-            registered: None,
-            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
-        }))
+        identity::get(id.to_string().as_ref())
+    }
+
+    fn session(ctx: &Context) -> Result<session::Session, error::Error> {
+        session::get(&futures::executor::block_on(ctx.store.read()))
     }
 
     fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
@@ -403,6 +405,12 @@ impl ControlMutation {
     fn nuke_registry_state(ctx: &Context) -> Result<bool, error::Error> {
         futures::executor::block_on(ctx.registry.write())
             .reset(radicle_registry_client::Client::new_emulator());
+
+        Ok(true)
+    }
+
+    fn nuke_session_state(ctx: &Context) -> Result<bool, error::Error> {
+        session::clear(&futures::executor::block_on(ctx.store.read()))?;
 
         Ok(true)
     }
@@ -954,3 +962,10 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
+
+#[juniper::object]
+impl session::Session {
+    fn identity(&self) -> Option<&identity::Identity> {
+        self.identity.as_ref()
+    }
+}

@@ -52,13 +52,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         librad::paths::Paths::new()?
     };
+    let store = if args.test {
+        kv::Store::new(kv::Config::new(temp_dir.path().join("store")))?
+    } else {
+        let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
+        kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?
+    };
 
-    log::info!("Starting HTTP API");
+    log::info!("Starting API");
 
     let lib_paths = Arc::new(RwLock::new(librad_paths));
     let reg = Arc::new(RwLock::new(registry::Registry::new(registry_client)));
-    let routes = graphql::api::routes(lib_paths.clone(), reg.clone(), args.test)
-        .or(http::routes(lib_paths, reg));
+    let routes = graphql::api::routes(
+        lib_paths.clone(),
+        reg.clone(),
+        Arc::new(RwLock::new(store)),
+        args.test,
+    )
+    .or(http::routes(lib_paths, reg));
 
     warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
 

@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.7...v0.0.8) (2020-04-15)
+
+
+### Features
+
+* **proxy:** make avatar generation id based ([#267](https://github.com/radicle-dev/radicle-upstream/issues/267)) ([ba38a86](https://github.com/radicle-dev/radicle-upstream/commit/ba38a86b36b9d9cb8353eadb90dda2599f0702f3)), closes [#230](https://github.com/radicle-dev/radicle-upstream/issues/230)
+* **ui:** fetch identity on app boot ([#266](https://github.com/radicle-dev/radicle-upstream/issues/266)) ([08b1c15](https://github.com/radicle-dev/radicle-upstream/commit/08b1c15d46018732863a9214476f3bf9f3282349))
+* **ui:** single commit view header ([#278](https://github.com/radicle-dev/radicle-upstream/issues/278)) ([4d674f3](https://github.com/radicle-dev/radicle-upstream/commit/4d674f33838af19880e7de9772f404a7f38dc6ed))
+* **ui:** implement transaction center and detail view ([#242](https://github.com/radicle-dev/radicle-upstream/issues/242)) ([3cf62b6](https://github.com/radicle-dev/radicle-upstream/commit/3cf62b6aa73322152209d195e4be0390e18dd8a3))
+* **ui:** align project creation UX to new designs ([#264](https://github.com/radicle-dev/radicle-upstream/issues/264)) ([c98a082](https://github.com/radicle-dev/radicle-upstream/commit/c98a0829cc889bebd756490aebe92b77e86da55e))
+* **ui:** adjust misc Basic user identity I visuals ([#263](https://github.com/radicle-dev/radicle-upstream/issues/263)) ([80d938a](https://github.com/radicle-dev/radicle-upstream/commit/80d938a34bcc90bc407db8af9bf18439d9e49f83))
+
+
+### Bug Fixes
+
+* **infra:** revert to latest version of git-platinum ([#273](https://github.com/radicle-dev/radicle-upstream/issues/273)) ([f540430](https://github.com/radicle-dev/radicle-upstream/commit/f540430b4bd40a1632eec988e292a3f69b90838b))
+
 ### [0.0.7](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.5...v0.0.7) (2020-04-01)
 
 

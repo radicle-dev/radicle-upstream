@@ -4,14 +4,17 @@ extern crate juniper;
 use indexmap::IndexMap;
 use juniper::{InputValue, Variables};
 use librad::surf::git::git2;
-use pretty_assertions::assert_eq;
+
+use proxy::coco;
+use proxy::identity;
+use proxy::session;
 
 mod common;
-use proxy::coco;
+use common::with_fixtures;
 
 #[test]
 fn create_identity() {
-    common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
         vars.insert("displayName".into(), InputValue::scalar("Alexis Sellier"));
@@ -32,31 +35,61 @@ fn create_identity() {
                     registered
                 }
             }";
-
-        common::execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "createIdentity": {
-                        "id": "123abcd.git",
-                        "shareableEntityIdentifier": "cloudhead@123abcd.git",
-                        "metadata": {
-                            "handle": "cloudhead",
-                            "displayName": "Alexis Sellier",
-                            "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
-                        },
-                        "registered": None,
-                    },
-                })
-            );
+        let res = graphql_value!({
+            "createIdentity": {
+                "id": "123abcd.git",
+                "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                "metadata": {
+                    "handle": "cloudhead",
+                    "displayName": "Alexis Sellier",
+                    "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
+                },
+                "registered": None,
+            },
         });
+
+        (query, vars, None, res)
+    });
+}
+
+#[test]
+fn create_identity_existing() {
+    with_fixtures(|ctx, _repos_dir, _platinum_id| {
+        // Create identity first and store session.
+        {
+            let id = identity::create("cloudhead".into(), None, None).unwrap();
+            session::set(
+                &futures::executor::block_on(ctx.store.read()),
+                session::Session { identity: Some(id) },
+            )
+            .unwrap();
+        }
+
+        let mut vars = Variables::new();
+        vars.insert("handle".into(), InputValue::scalar("cloudhead"));
+        vars.insert("displayName".into(), InputValue::scalar("Alexis Sellier"));
+        vars.insert(
+            "avatarUrl".into(),
+            InputValue::scalar("https://avatars1.githubusercontent.com/u/40774"),
+        );
+
+        let query = "mutation($handle: String!, $displayName: String, $avatarUrl: String) {
+                createIdentity(handle: $handle, displayName: $displayName, avatarUrl: $avatarUrl) {
+                    id
+                }
+            }";
+        let errs = vec![juniper::FieldError::new(
+            "an identity exists already: '123abcd.git'",
+            graphql_value!({ "type": "IDENTITY_EXISTS" }),
+        )];
+
+        (query, vars, Some(errs), graphql_value!(None))
     });
 }
 
 #[test]
 fn create_project_existing_repo() {
-    common::with_fixtures(|librad_paths, repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, repos_dir, _platinum_id| {
         let dir =
             tempfile::tempdir_in(repos_dir.path()).expect("creating temporary directory failed");
         let path = dir.path().to_str().expect("unable to get path");
@@ -87,30 +120,23 @@ fn create_project_existing_repo() {
                     }
                 }
             }";
-
-        common::execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "createProject": {
-                        "metadata": {
-                            "name": "upstream",
-                            "description": "Code collaboration without intermediates.",
-                            "defaultBranch": "master",
-                        },
-                    },
-                })
-            );
+        let res = graphql_value!({
+            "createProject": {
+                "metadata": {
+                    "name": "upstream",
+                    "description": "Code collaboration without intermediates.",
+                    "defaultBranch": "master",
+                },
+            },
         });
 
-        dir.close().expect("directory teardown failed");
+        (query, vars, None, res)
     })
 }
 
 #[test]
 fn create_project() {
-    common::with_fixtures(|librad_paths, repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, repos_dir, _platinum_id| {
         let dir =
             tempfile::tempdir_in(repos_dir.path()).expect("creating temporary directory failed");
         let path = dir.path().to_str().expect("unable to get path");
@@ -152,36 +178,29 @@ fn create_project() {
                     }
                 }
             }";
-
-        common::execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "createProject": {
-                        "metadata": {
-                            "name": "upstream",
-                            "description": "Code collaboration without intermediates.",
-                            "defaultBranch": "master",
-                        },
-                        "registered": None,
-                        "stats": {
-                            "branches": 11,
-                            "commits": 267,
-                            "contributors": 8,
-                        },
-                    },
-                })
-            );
+        let res = graphql_value!({
+            "createProject": {
+                "metadata": {
+                    "name": "upstream",
+                    "description": "Code collaboration without intermediates.",
+                    "defaultBranch": "master",
+                },
+                "registered": None,
+                "stats": {
+                    "branches": 11,
+                    "commits": 267,
+                    "contributors": 8,
+                },
+            },
         });
 
-        dir.close().expect("directory teardown failed");
+        (query, vars, None, res)
     })
 }
 
 #[test]
 fn register_project() {
-    common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("orgId".into(), InputValue::scalar("monadic"));
         vars.insert("projectName".into(), InputValue::scalar("upstream"));
@@ -196,25 +215,20 @@ fn register_project() {
                             },
                         }
                     }";
-        common::execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "registerProject": {
-                        "messages": [
-                            { "projectName": "upstream", "orgId": "monadic" },
-                        ],
-                    },
-                })
-            );
+        let res = graphql_value!({
+            "registerProject": {
+                "messages": [
+                    { "projectName": "upstream", "orgId": "monadic" },
+                ],
+            },
         });
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn register_user() {
-    common::with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
         vars.insert("id".into(), InputValue::scalar("123abcd.git"));
@@ -229,18 +243,14 @@ fn register_user() {
                             },
                         }
                     }";
-        common::execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "registerUser": {
-                        "messages": [
-                            { "handle": "cloudhead", "id": "123abcd.git" },
-                        ],
-                    },
-                })
-            );
+        let res = graphql_value!({
+            "registerUser": {
+                "messages": [
+                    { "handle": "cloudhead", "id": "123abcd.git" },
+                ],
+            },
         });
+
+        (query, vars, None, res)
     });
 }

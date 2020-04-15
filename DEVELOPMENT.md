@@ -291,7 +291,6 @@ the file where any global styling not managed by Svelte should be imported:
 ```html
 <link rel="stylesheet" href="reset.css" />       <!-- style resets -->
 <link rel="stylesheet" href="colors.css" />      <!-- color CSS variables -->
-<link rel="stylesheet" href="typography.css" />  <!-- font-face setup and typography CSS variables -->
 <link rel="stylesheet" href="global.css" />      <!-- global CSS rules -->
 <link rel="stylesheet" href="bundle.css" />      <!-- compiled Svelte component CSS -->
 ```

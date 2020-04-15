@@ -6,10 +6,83 @@
 
     <title>Radicle Upstream</title>
 
+    <!-- Prevents font load related flickering on boot -->
+    <link rel="preload" href="fonts/Inter-Bold.otf" as="font" type="font/otf" />
+    <link
+      rel="preload"
+      href="fonts/Inter-SemiBold.otf"
+      as="font"
+      type="font/otf"
+    />
+    <link
+      rel="preload"
+      href="fonts/Inter-Regular.otf"
+      as="font"
+      type="font/otf"
+    />
+    <link
+      rel="preload"
+      href="fonts/SourceCodePro-Bold.otf"
+      as="font"
+      type="font/otf"
+    />
+    <link
+      rel="preload"
+      href="fonts/SourceCodePro-Semibold.otf"
+      as="font"
+      type="font/otf"
+    />
+    <link
+      rel="preload"
+      href="fonts/SourceCodePro-Regular.otf"
+      as="font"
+      type="font/otf"
+    />
+
+    <style>
+      @font-face {
+        font-family: "Inter Bold";
+        src: url("fonts/Inter-Bold.otf");
+      }
+
+      @font-face {
+        font-family: "Inter SemiBold";
+        src: url("fonts/Inter-SemiBold.otf");
+      }
+
+      @font-face {
+        font-family: "Inter Regular";
+        src: url("fonts/Inter-Regular.otf");
+      }
+
+      @font-face {
+        font-family: "SourceCodePro Bold";
+        src: url("fonts/SourceCodePro-Bold.otf");
+      }
+
+      @font-face {
+        font-family: "SourceCodePro SemiBold";
+        src: url("fonts/SourceCodePro-Semibold.otf");
+      }
+
+      @font-face {
+        font-family: "SourceCodePro Regular";
+        src: url("fonts/SourceCodePro-Regular.otf");
+      }
+
+      :root {
+        --typeface-bold: "Inter Bold";
+        --typeface-medium: "Inter SemiBold";
+        --typeface-regular: "Inter Regular";
+        --typeface-mono-bold: "SourceCodePro Bold";
+        --typeface-mono-medium: "SourceCodePro SemiBold";
+        --typeface-mono-regular: "SourceCodePro Regular";
+      }
+    </style>
+
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="stylesheet" href="reset.css" />
     <link rel="stylesheet" href="colors.css" />
-    <link rel="stylesheet" href="typography.css" />
     <link rel="stylesheet" href="global.css" />
     <link rel="stylesheet" href="bundle.css" />
 
