@@ -15,6 +15,7 @@ use crate::error;
 use crate::identity;
 use crate::project;
 use crate::registry;
+use crate::session;
 
 /// Glue to bundle our read and write APIs together.
 pub type Schema = juniper::RootNode<'static, Query, Mutation>;
@@ -29,18 +30,21 @@ pub fn create() -> Schema {
 #[derive(Clone)]
 pub struct Context {
     /// Root on the filesystem for the librad config and storage paths.
-    librad_paths: sync::Arc<sync::RwLock<Paths>>,
+    pub librad_paths: sync::Arc<sync::RwLock<Paths>>,
     /// Wrapper to interact with the Registry.
-    registry: sync::Arc<sync::RwLock<registry::Registry>>,
+    pub registry: sync::Arc<sync::RwLock<registry::Registry>>,
+    /// Handle to maintain local persistancce and caching.
+    pub store: sync::Arc<sync::RwLock<kv::Store>>,
 }
 
 impl Context {
     /// Returns a new `Context`.
     #[must_use]
-    pub fn new(librad_paths: Paths, registry: registry::Registry) -> Self {
+    pub fn new(librad_paths: Paths, registry: registry::Registry, store: kv::Store) -> Self {
         Self {
             librad_paths: sync::Arc::new(sync::RwLock::new(librad_paths)),
             registry: sync::Arc::new(sync::RwLock::new(registry)),
+            store: sync::Arc::new(sync::RwLock::new(store)),
         }
     }
 }
@@ -56,21 +60,27 @@ pub struct Mutation;
 )]
 impl Mutation {
     fn create_identity(
-        _ctx: &Context,
+        ctx: &Context,
         handle: String,
         display_name: Option<String>,
         avatar_url: Option<String>,
     ) -> Result<identity::Identity, error::Error> {
-        Ok(identity::Identity {
-            id: "123abcd.git".into(),
-            shareable_entity_identifier: format!("{}@123abcd.git", handle),
-            metadata: identity::Metadata {
-                handle,
-                display_name,
-                avatar_url,
+        let store = ctx.store.read().expect("unable to acquire read lock");
+
+        if let Some(identity) = session::get(&store)?.identity {
+            return Err(error::Error::IdentityExists(identity.id));
+        }
+
+        let id = identity::create(handle, display_name, avatar_url)?;
+
+        session::set(
+            &store,
+            session::Session {
+                identity: Some(id.clone()),
             },
-            registered: None,
-        })
+        )?;
+
+        Ok(id)
     }
 
     fn create_project(
@@ -320,16 +330,11 @@ impl Query {
         _ctx: &Context,
         id: juniper::ID,
     ) -> Result<Option<identity::Identity>, error::Error> {
-        Ok(Some(identity::Identity {
-            id: id.to_string(),
-            shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
-            metadata: identity::Metadata {
-                handle: "cloudhead".into(),
-                display_name: Some("Alexis Sellier".into()),
-                avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
-            },
-            registered: None,
-        }))
+        identity::get(id.to_string().as_ref())
+    }
+
+    fn session(ctx: &Context) -> Result<session::Session, error::Error> {
+        session::get(&ctx.store.read().expect("unable to acquire read lock"))
     }
 
     fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
@@ -401,6 +406,12 @@ impl ControlMutation {
             .write()
             .expect("unable to get write lock")
             .reset(radicle_registry_client::Client::new_emulator());
+
+        Ok(true)
+    }
+
+    fn nuke_session_state(ctx: &Context) -> Result<bool, error::Error> {
+        session::clear(&ctx.store.read().expect("unable to acquire read lock"))?;
 
         Ok(true)
     }
@@ -954,3 +965,10 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
+
+#[juniper::object]
+impl session::Session {
+    fn identity(&self) -> Option<&identity::Identity> {
+        self.identity.as_ref()
+    }
+}

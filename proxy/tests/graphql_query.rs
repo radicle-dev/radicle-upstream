@@ -12,24 +12,21 @@ use proxy::graphql::schema;
 use proxy::registry;
 
 mod common;
-
-use common::{execute_query, with_fixtures};
+use common::with_fixtures;
 
 #[test]
 fn api_version() {
-    with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let query = "query { apiVersion }";
+        let res = graphql_value!({ "apiVersion": "1.0" });
 
-        execute_query(librad_paths, query, &Variables::new(), |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(res, graphql_value!({ "apiVersion": "1.0" }));
-        });
+        (query, Variables::new(), None, res)
     });
 }
 
 #[test]
 fn avatar() {
-    with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
@@ -45,29 +42,24 @@ fn avatar() {
                 }
             }
         }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "avatar": {
-                        "emoji": "🚡",
-                        "background": {
-                            "r": 24,
-                            "g": 105,
-                            "b": 216,
-                        },
-                    }
-                })
-            );
+        let res = graphql_value!({
+            "avatar": {
+                "emoji": "🚡",
+                "background": {
+                    "r": 24,
+                    "g": 105,
+                    "b": 216,
+                },
+            }
         });
+
+        (query, vars, None, res)
     })
 }
 
 #[test]
 fn blob() {
-    with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -94,15 +86,10 @@ fn blob() {
                         },
                     }
                 }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "blob": {
-                        "binary": false,
-                        "content": "  ;;;;;        ;;;;;        ;;;;;
+        let res = graphql_value!({
+            "blob": {
+                "binary": false,
+                "content": "  ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
@@ -110,30 +97,30 @@ fn blob() {
  ':::::'      ':::::'      ':::::'
    ':`          ':`          ':`
 ",
-                        "info": {
-                            "name": "arrows.txt",
-                            "objectType": "BLOB",
-                            "lastCommit": {
-                                "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
-                                "author": {
-                                    "name": "Rūdolfs Ošiņš",
-                                    "email": "rudolfs@osins.org",
-                                },
-                                "summary": "Add text files",
-                                "message": "Add text files\n",
-                                "committerTime": "1575283425",
-                            },
+                "info": {
+                    "name": "arrows.txt",
+                    "objectType": "BLOB",
+                    "lastCommit": {
+                        "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
+                        "author": {
+                            "name": "Rūdolfs Ošiņš",
+                            "email": "rudolfs@osins.org",
                         },
-                    }
-                }),
-            );
+                        "summary": "Add text files",
+                        "message": "Add text files\n",
+                        "committerTime": "1575283425",
+                    },
+                },
+            }
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn blob_binary() {
-    with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -160,39 +147,34 @@ fn blob_binary() {
                         },
                     }
                 }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "blob": {
-                        "binary": true,
-                        "content": None,
-                        "info": {
-                            "name": "ls",
-                            "objectType": "BLOB",
-                            "lastCommit": {
-                                "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
-                                "author": {
-                                    "name": "Rūdolfs Ošiņš",
-                                    "email": "rudolfs@osins.org",
-                                },
-                                "summary": "Add some binary files",
-                                "message": "Add some binary files\n",
-                                "committerTime": "1575282964",
-                            },
+        let res = graphql_value!({
+            "blob": {
+                "binary": true,
+                "content": None,
+                "info": {
+                    "name": "ls",
+                    "objectType": "BLOB",
+                    "lastCommit": {
+                        "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
+                        "author": {
+                            "name": "Rūdolfs Ošiņš",
+                            "email": "rudolfs@osins.org",
                         },
-                    }
-                }),
-            );
+                        "summary": "Add some binary files",
+                        "message": "Add some binary files\n",
+                        "committerTime": "1575282964",
+                    },
+                },
+            }
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn blob_in_root() {
-    with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -218,63 +200,53 @@ fn blob_in_root() {
                         },
                     }
                 }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "blob": {
-                        "content": "This repository is a data source for the Upstream front-end tests and the\n[`radicle-surf`](https://github.com/radicle-dev/git-platinum) unit tests.\n",
-                        "info": {
-                            "name": "README.md",
-                            "objectType": "BLOB",
-                            "lastCommit": {
-                                "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
-                                "author": {
-                                    "name": "Alexander Simmerl",
-                                    "email": "a.simmerl@gmail.com",
-                                },
-                                "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
-                                "message": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig\n\nUpdated README",
-                                "committerTime": "1584367899",
-                            },
+        let res = graphql_value!({
+            "blob": {
+                "content": "This repository is a data source for the Upstream front-end tests and the\n[`radicle-surf`](https://github.com/radicle-dev/git-platinum) unit tests.\n",
+                "info": {
+                    "name": "README.md",
+                    "objectType": "BLOB",
+                    "lastCommit": {
+                        "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
+                        "author": {
+                            "name": "Alexander Simmerl",
+                            "email": "a.simmerl@gmail.com",
                         },
-                    }
-                }),
-            );
+                        "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
+                        "message": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig\n\nUpdated README",
+                        "committerTime": "1584367899",
+                    },
+                },
+            }
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn branches() {
-    with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
 
         let query = "query($id: ID!) { branches(id: $id) }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "branches": [
-                        "dev",
-                        "master",
-                        "rad/contributor",
-                        "rad/project",
-                    ]
-                }),
-            );
+        let res = graphql_value!({
+            "branches": [
+                "dev",
+                "master",
+                "rad/contributor",
+                "rad/project",
+            ]
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn local_branches() {
-    with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert(
             "path".into(),
@@ -282,28 +254,23 @@ fn local_branches() {
         );
 
         let query = "query($path: String!) { localBranches(path: $path) }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "localBranches": [
-                        "dev",
-                        "master",
-                        "origin/HEAD",
-                        "origin/dev",
-                        "origin/master",
-                    ]
-                }),
-            );
+        let res = graphql_value!({
+            "localBranches": [
+                "dev",
+                "master",
+                "origin/HEAD",
+                "origin/dev",
+                "origin/master",
+            ]
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn commit() {
-    with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         const SHA1: &str = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
 
         let mut vars = Variables::new();
@@ -323,58 +290,48 @@ fn commit() {
                         committerTime,
                     }
                 }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "commit": {
-                        "sha1": SHA1,
-                        "author": {
-                            "name": "Fintan Halpenny",
-                            "email": "fintan.halpenny@gmail.com",
-                        },
-                        "summary": "Extend the docs (#2)",
-                        "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                        "committerTime": "1578309972",
-                    },
-                }),
-            )
+        let res = graphql_value!({
+            "commit": {
+                "sha1": SHA1,
+                "author": {
+                    "name": "Fintan Halpenny",
+                    "email": "fintan.halpenny@gmail.com",
+                },
+                "summary": "Extend the docs (#2)",
+                "message": "Extend the docs (#2)\n\nI want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
+                "committerTime": "1578309972",
+            },
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn tags() {
-    with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
 
         let query = "query($id: ID!) { tags(id: $id) }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "tags": [
-                        "v0.1.0",
-                        "v0.2.0",
-                        "v0.3.0",
-                        "v0.4.0",
-                        "v0.5.0",
-                    ]
-                }),
-            )
+        let res = graphql_value!({
+            "tags": [
+                "v0.1.0",
+                "v0.2.0",
+                "v0.3.0",
+                "v0.4.0",
+                "v0.5.0",
+            ]
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[allow(clippy::too_many_lines)]
 #[test]
 fn tree() {
-    with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -417,16 +374,29 @@ fn tree() {
                         },
                     }
                 }";
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "tree": {
-                        "path": "src",
+        let res = graphql_value!({
+            "tree": {
+                "path": "src",
+                "info": {
+                    "name": "src",
+                    "objectType": "TREE",
+                    "lastCommit": {
+                        "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
+                        "author": {
+                            "name": "Alexander Simmerl",
+                            "email": "a.simmerl@gmail.com",
+                        },
+                        "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
+                        "message": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig\n\nUpdated README",
+                        "committerTime": "1584367899",
+                    },
+                },
+                "entries": [
+                    {
+                        "path": "src/Eval.hs",
                         "info": {
-                            "name": "src",
-                            "objectType": "TREE",
+                            "name": "Eval.hs",
+                            "objectType": "BLOB",
                             "lastCommit": {
                                 "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
                                 "author": {
@@ -438,52 +408,35 @@ fn tree() {
                                 "committerTime": "1584367899",
                             },
                         },
-                        "entries": [
-                            {
-                                "path": "src/Eval.hs",
-                                "info": {
-                                    "name": "Eval.hs",
-                                    "objectType": "BLOB",
-                                    "lastCommit": {
-                                        "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
-                                        "author": {
-                                            "name": "Alexander Simmerl",
-                                            "email": "a.simmerl@gmail.com",
-                                        },
-                                        "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
-                                        "message": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig\n\nUpdated README",
-                                        "committerTime": "1584367899",
-                                    },
+                    },
+                    {
+                        "path": "src/memory.rs",
+                        "info": {
+                            "name": "memory.rs",
+                            "objectType": "BLOB",
+                            "lastCommit": {
+                                "sha1": "e24124b7538658220b5aaf3b6ef53758f0a106dc",
+                                "author": {
+                                    "name": "Rūdolfs Ošiņš",
+                                    "email": "rudolfs@osins.org",
                                 },
+                                "summary": "Move examples to \"src\"",
+                                "message": "Move examples to \"src\"\n",
+                                "committerTime": "1575283266",
                             },
-                            {
-                                "path": "src/memory.rs",
-                                "info": {
-                                    "name": "memory.rs",
-                                    "objectType": "BLOB",
-                                    "lastCommit": {
-                                        "sha1": "e24124b7538658220b5aaf3b6ef53758f0a106dc",
-                                        "author": {
-                                            "name": "Rūdolfs Ošiņš",
-                                            "email": "rudolfs@osins.org",
-                                        },
-                                        "summary": "Move examples to \"src\"",
-                                        "message": "Move examples to \"src\"\n",
-                                        "committerTime": "1575283266",
-                                    },
-                                },
-                            },
-                        ],
-                    }
-                }),
-            );
+                        },
+                    },
+                ],
+            }
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn tree_root() {
-    with_fixtures(|librad_paths, _repos_dir, platinum_id| {
+    with_fixtures(|_ctx, _repos_dir, platinum_id| {
         let mut vars = Variables::new();
 
         vars.insert("id".into(), InputValue::scalar(platinum_id.to_string()));
@@ -505,38 +458,34 @@ fn tree_root() {
                         },
                     }
                 }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "tree": {
-                        "path": "",
-                        "info": {
-                            "name": "",
-                            "objectType": "TREE",
-                        },
-                        "entries": [
-                            { "path": "bin", "info": { "objectType": "TREE" } },
-                            { "path": "src", "info": { "objectType": "TREE" } },
-                            { "path": "text", "info": { "objectType": "TREE" } },
-                            { "path": "this", "info": { "objectType": "TREE" } },
-                            { "path": ".i-am-well-hidden", "info": { "objectType": "BLOB" } },
-                            { "path": ".i-too-am-hidden", "info": { "objectType": "BLOB" } },
-                            { "path": "README.md", "info": { "objectType": "BLOB" } },
-                        ],
-                    }
-                }),
-            );
+        let res = graphql_value!({
+            "tree": {
+                "path": "",
+                "info": {
+                    "name": "",
+                    "objectType": "TREE",
+                },
+                "entries": [
+                    { "path": "bin", "info": { "objectType": "TREE" } },
+                    { "path": "src", "info": { "objectType": "TREE" } },
+                    { "path": "text", "info": { "objectType": "TREE" } },
+                    { "path": "this", "info": { "objectType": "TREE" } },
+                    { "path": ".i-am-well-hidden", "info": { "objectType": "BLOB" } },
+                    { "path": ".i-too-am-hidden", "info": { "objectType": "BLOB" } },
+                    { "path": "README.md", "info": { "objectType": "BLOB" } },
+                ],
+            }
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[tokio::test]
 async fn list_transactions() {
     let tmp_dir = tempfile::tempdir().unwrap();
-    let librad_paths = librad::paths::Paths::from_root(tmp_dir.path()).unwrap();
+    let ctx = librad::paths::Paths::from_root(tmp_dir.path()).unwrap();
+    let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
     let mut registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
 
     let tx = registry::Transaction {
@@ -551,7 +500,7 @@ async fn list_transactions() {
 
     registry.cache_transaction(tx.clone()).await;
 
-    let ctx = schema::Context::new(librad_paths, registry);
+    let ctx = schema::Context::new(ctx, registry, store);
 
     let mut vars = Variables::new();
     vars.insert(
@@ -612,13 +561,13 @@ async fn list_transactions() {
 
 #[test]
 fn project() {
-    with_fixtures(|librad_paths, repos_dir, _platinum_id| {
+    with_fixtures(|ctx, repos_dir, _platinum_id| {
         let repo_dir = tempfile::tempdir_in(repos_dir.path()).expect("repo dir failed");
         let path = repo_dir.path().to_str().expect("repo path").to_string();
         coco::init_repo(path.clone()).expect("repo init failed");
 
         let (project_id, _project_meta) = coco::init_project(
-            &librad_paths,
+            &ctx.librad_paths.read().unwrap(),
             &path,
             "upstream",
             "Code collaboration without intermediates.",
@@ -648,30 +597,25 @@ fn project() {
                         }
                     }
                 }";
-
-        execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "project": {
-                        "id": id,
-                        "metadata": {
-                            "name": "upstream",
-                            "description": "Code collaboration without intermediates.",
-                            "defaultBranch": "master",
-                        },
-                        "registered": None,
-                    },
-                })
-            );
+        let res = graphql_value!({
+            "project": {
+                "id": id,
+                "metadata": {
+                    "name": "upstream",
+                    "description": "Code collaboration without intermediates.",
+                    "defaultBranch": "master",
+                },
+                "registered": None,
+            },
         });
+
+        (query, vars, None, res)
     });
 }
 
 #[test]
 fn identity() {
-    common::with_fixtures(|librad_paths, _repo_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repo_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("id".into(), InputValue::scalar("123abcd.git"));
 
@@ -695,57 +639,72 @@ fn identity() {
                     }
                 }
             }";
-
-        common::execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(
-                res,
-                graphql_value!({
-                    "identity": {
-                        "id": "123abcd.git",
-                        "shareableEntityIdentifier": "cloudhead@123abcd.git",
-                        "metadata": {
-                            "handle": "cloudhead",
-                            "displayName": "Alexis Sellier",
-                            "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
-                        },
-                        "registered": None,
-                        "avatarFallback": {
-                            "emoji": "💡",
-                            "background": {
-                                "r": 122,
-                                "g": 112,
-                                "b": 90,
-                            },
-                        }
+        let res = graphql_value!({
+            "identity": {
+                "id": "123abcd.git",
+                "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                "metadata": {
+                    "handle": "cloudhead",
+                    "displayName": "Alexis Sellier",
+                    "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
+                },
+                "registered": None,
+                "avatarFallback": {
+                    "emoji": "💡",
+                    "background": {
+                        "r": 122,
+                        "g": 112,
+                        "b": 90,
                     },
-                })
-            );
+                }
+            },
         });
+
+        (query, vars, None, res)
+    });
+}
+
+#[test]
+fn session() {
+    with_fixtures(|_ctx, _repo_dir, _platinum_id| {
+        let query = "query {
+            session {
+                identity {
+                    id
+                    metadata {
+                        handle
+                        displayName
+                        avatarUrl
+                    }
+                    registered
+                }
+            }
+        }";
+        let res = graphql_value!({ "session": { "identity": None } });
+
+        (query, Variables::new(), None, res)
     });
 }
 
 #[test]
 fn user() {
-    common::with_fixtures(|librad_paths, _repo_dir, _platinum_id| {
+    with_fixtures(|_ctx, _repo_dir, _platinum_id| {
         let mut vars = Variables::new();
         vars.insert("handle".into(), InputValue::scalar("cloudhead"));
 
         let query = "query($handle: ID!) {
             user(handle: $handle)
         }";
+        let res = graphql_value!({ "user": None });
 
-        common::execute_query(librad_paths, query, &vars, |res, errors| {
-            assert_eq!(errors, []);
-            assert_eq!(res, graphql_value!({ "user": None }));
-        });
+        (query, vars, None, res)
     });
 }
 
 // TODO(xla): Ressurect once we have figure out the project listing strategy.
 // #[test]
 // fn projects() {
-//     with_fixtures(|librad_paths, _repos_dir, _platinum_id| {
+//     with_fixtures(|ctx, _repos_dir, _platinum_id| {
 //         let query = "{
 //             projects {
 //                 metadata {
@@ -756,7 +715,7 @@ fn user() {
 //             }
 //         }";
 
-//         execute_query(librad_paths, query, &Variables::new(), |res, errors| {
+//         execute_query(ctx, query, &Variables::new(), |res, errors| {
 //             assert_eq!(errors, []);
 //             assert_eq!(
 //                 res,

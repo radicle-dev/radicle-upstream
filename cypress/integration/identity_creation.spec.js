@@ -1,25 +1,19 @@
 context("identity creation", () => {
   beforeEach(() => {
-    openModal();
+    cy.nukeSessionState();
+    cy.visit("./public/index.html");
   });
 
-  const openModal = () => {
-    cy.visit("./public/index.html#/search");
-    cy.get("body").type("{shift}i");
-  };
-
   context("modal", () => {
-    it("can be closed by pressing escape key", () => {
+    it("can't be closed by pressing escape key", () => {
+      cy.get('[data-cy="get-started-button"]').should("exist");
       cy.get("body").type("{esc}");
-      cy.get("h2")
-        .contains("Search")
-        .should("exist");
+      cy.get('[data-cy="get-started-button"]').should("exist");
     });
   });
 
   context("validations", () => {
     beforeEach(() => {
-      openModal();
       cy.get('[data-cy="get-started-button"]').click();
       cy.get('[data-cy="form"] [data-cy="handle"]').type("_rafalca");
       cy.get('[data-cy="form"] [data-cy="display-name"]').type(

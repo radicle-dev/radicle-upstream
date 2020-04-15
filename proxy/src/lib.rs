@@ -33,6 +33,7 @@ pub mod coco;
 pub mod env;
 pub mod error;
 pub mod graphql;
-mod identity;
+pub mod identity;
 mod project;
 pub mod registry;
+pub mod session;

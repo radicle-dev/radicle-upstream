@@ -50,11 +50,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         librad::paths::Paths::new()?
     };
+    let store = if args.test {
+        kv::Store::new(kv::Config::new(temp_dir.path().join("store")))?
+    } else {
+        let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
+        kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?
+    };
 
     info!("Starting GraphQL HTTP API");
     graphql::api::run(
         librad_paths,
         registry::Registry::new(registry_client),
+        store,
         args.test,
     )
     .await;

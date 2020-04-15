@@ -46,8 +46,10 @@ const createWindow = () => {
     }
   });
 
-  mainWindow.maximize();
-  mainWindow.show();
+  mainWindow.once("ready-to-show", () => {
+    mainWindow.maximize();
+    mainWindow.show();
+  });
 
   let watcher;
   if (isDev) {
@@ -60,9 +62,7 @@ const createWindow = () => {
     });
   }
 
-  mainWindow.loadURL(
-    `file://${path.join(__dirname, "../public/index.html#/profile")}`
-  );
+  mainWindow.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
   mainWindow.on("closed", () => {
     if (watcher) {
       watcher.close();
