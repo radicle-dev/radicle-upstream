@@ -29,7 +29,7 @@ export const projectRevisions = id => `/projects/${id}/revisions`;
 export const projectSource = (id, revision, objectType, path) => {
   if (revision && path) {
     return `/projects/${id}/source/${revision}/${objectType}/${
-      objectType === TREE ? `${path  }/` : path
+      objectType === TREE ? `${path}/` : path
     }`;
   } else {
     return `/projects/${id}/source`;
