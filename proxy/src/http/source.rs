@@ -214,13 +214,9 @@ impl Serialize for coco::ObjectType {
 
 impl ToDocumentedType for coco::ObjectType {
     fn document() -> document::DocumentedType {
-        document::string_enum(vec!["BLOB".to_string(), "TREE".to_string()])
-            // document::one_of(vec![
-            //     document::string().description("Blob object").title("BLOB"),
-            //     document::string().description("Tree object").title("TREE"),
-            // ])
+        document::enum_string(vec!["BLOB".to_string(), "TREE".to_string()])
             .description("Object type variants")
-            .example(Self::Tree)
+            .example(Self::Blob)
     }
 }
 
@@ -289,19 +285,21 @@ mod test {
         )
         .unwrap();
         let revision = "master";
-        let path = "text/arrows.txt";
-        let want = coco::blob(&librad_paths, &platinum_id.to_string(), revision, path).unwrap();
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
 
-        let api = super::filters(Arc::new(RwLock::new(librad_paths)));
-        let res = request()
-            .method("GET")
-            .path(&format!("/blob/{}/{}/{}", platinum_id, revision, path,))
-            .reply(&api)
-            .await;
+        for path in &["text/arrows.txt", "bin/ls"] {
+            let want = coco::blob(&librad_paths, &platinum_id.to_string(), revision, path).unwrap();
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
+            let res = request()
+                .method("GET")
+                .path(&format!("/blob/{}/{}/{}", platinum_id, revision, path,))
+                .reply(&api)
+                .await;
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
+            let have: Value = serde_json::from_slice(res.body()).unwrap();
+
+            assert_eq!(res.status(), StatusCode::OK);
+            assert_eq!(have, json!(want));
+        }
     }
 }
