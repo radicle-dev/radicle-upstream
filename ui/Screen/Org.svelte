@@ -1,5 +1,5 @@
 <script>
-  import Router, { link } from "svelte-spa-router";
+  import Router, { link, push } from "svelte-spa-router";
   import { setContext } from "svelte";
   import * as path from "../lib/path.js";
   import { orgMocks } from "../lib/orgMocks.js";
@@ -68,7 +68,7 @@
     {
       title: "Add project",
       icon: Icon.Plus,
-      event: () => console.log("event(add-project-to-org)")
+      event: () => push(path.registerProject(null, params.id))
     },
     {
       title: "Add member",

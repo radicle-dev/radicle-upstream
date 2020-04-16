@@ -10,6 +10,7 @@
     identityAvatarUrlStore,
     identityAvatarFallbackStore,
     identityHandleStore,
+    identityIdStore,
     identityShareableEntityIdentifierStore
   } from "./store/identity.js";
   import { showNotification } from "./store/notification.js";
@@ -23,7 +24,7 @@
   import Org from "./Screen/Org.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
-  import RegisterProject from "./Screen/RegisterProject.svelte";
+  import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
   import Search from "./Screen/Search.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
@@ -76,6 +77,7 @@
           result.data.session.identity.avatarFallback
         );
         identityHandleStore.set(result.data.session.identity.metadata.handle);
+        identityIdStore.set(result.data.session.identity.id);
         identityShareableEntityIdentifierStore.set(
           result.data.session.identity.shareableEntityIdentifier
         );
@@ -104,7 +106,7 @@
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
     "/projects/new": CreateProject,
-    "/projects/:id/register": RegisterProject,
+    "/projects/:projectId/register/:entityId": ProjectRegistration,
     "/projects/:id/*": Project,
     "/design-system-guide": DesignSystemGuide,
     "/help": Help,

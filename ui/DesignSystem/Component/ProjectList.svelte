@@ -5,6 +5,7 @@
   import Placeholder from "./Placeholder.svelte";
 
   import { projectNameStore } from "../../store/project.js";
+  import { identityIdStore } from "../../store/identity.js";
   import * as path from "../../lib/path.js";
 
   import { gql } from "apollo-boost";
@@ -40,6 +41,11 @@
   const client = getClient();
   const projects = query(client, { query: GET_PROJECTS });
   projects.refetch();
+
+  // TODO(rudolfs): entityId should be set to either the Org or our own
+  // identity ID in the future when we refactor this component to be used for
+  // Orgs
+  $: entityId = $identityIdStore;
 </script>
 
 <style>
@@ -89,6 +95,7 @@
           class="project-card">
           <ProjectCard
             projectId={project.id}
+            {entityId}
             title={project.metadata.name}
             description={project.metadata.description}
             isRegistered={project.registered}

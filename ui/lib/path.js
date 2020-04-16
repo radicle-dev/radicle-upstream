@@ -23,7 +23,8 @@ export const orgFund = id => `/orgs/${id}/fund`;
 export const orgMembers = id => `/orgs/${id}/members`;
 
 export const createProject = () => "/projects/new";
-export const registerProject = id => `/projects/${id}/register`;
+export const registerProject = (projectId, entityId) =>
+  `/projects/${projectId}/register/${entityId}`;
 export const projectIssues = id => `/projects/${id}/issues`;
 export const projectRevisions = id => `/projects/${id}/revisions`;
 export const projectSource = (id, revision, objectType, path) => {
