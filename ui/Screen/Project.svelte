@@ -14,11 +14,7 @@
     TrackToggle
   } from "../DesignSystem/Component";
 
-  import {
-    revisionStore,
-    objectPathStore,
-    objectTypeStore
-  } from "../store/sourceBrowser.js";
+  import { updateSourcePath } from "../src/sourceBrowser.ts";
 
   import * as path from "../lib/path.js";
 
@@ -124,9 +120,7 @@
     }
   ];
 
-  $: revisionStore.set(path.extractProjectSourceRevision($location));
-  $: objectPathStore.set(path.extractProjectSourceObjectPath($location));
-  $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
+  $: updateSourcePath({ newPath: $location });
 </script>
 
 <SidebarLayout

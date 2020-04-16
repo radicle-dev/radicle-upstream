@@ -125,7 +125,8 @@ const filterRevisions = (revisions: { tags: string[]; branches: string[] }) => [
 
 
 enum Kind {
-  UpdateRevision = "CHANGE_REVISION"
+  UpdateRevision = "UPDATE_REVISION",
+  UpdateSourcePath = "UPDATE_SOURCE_PATH"
 }
 
 interface UpdateRevision extends Event<Kind> {
@@ -133,7 +134,12 @@ interface UpdateRevision extends Event<Kind> {
   newRevision: string;
 }
 
-type Msg = UpdateRevision
+interface UpdateSourcePath extends Event<Kind> {
+  kind: Kind.UpdateSourcePath;
+  newPath: string;
+}
+
+type Msg = UpdateRevision | UpdateSourcePath
 
 function update(msg: Msg): void {
   switch (msg.kind) {
@@ -144,7 +150,11 @@ function update(msg: Msg): void {
       //   .then(sourceBrowserStore.success)
       //   .catch(sourceBrowserStore.error)
       break
+    case Kind.UpdateSourcePath:
+      console.log('updating source path: ', msg.newPath)
+    // sourceBrowserStore.success()
   }
 }
 
 export const updateRevision = createEvent<Kind, Msg>(Kind.UpdateRevision, update)
+export const updateSourcePath = createEvent<Kind, Msg>(Kind.UpdateSourcePath, update)
