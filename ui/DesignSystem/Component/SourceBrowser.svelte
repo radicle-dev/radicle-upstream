@@ -1,8 +1,6 @@
 <script>
   import { getContext } from "svelte";
 
-  import { objectPathStore, revisionStore } from "../../store/sourceBrowser.js";
-
   import { sourceBrowser, updateRevision } from "../../src/sourceBrowser.ts";
 
   import { BLOB, TREE } from "../../../native/types.js";
@@ -79,9 +77,8 @@
       {:else if $sourceBrowser.data.sourceObject.type === TREE}
         <FileList
           {projectId}
-          prefix={$objectPathStore}
-          revision={$revisionStore} />
-        <!-- else something is very wrong, show error -->
+          tree={$sourceBrowser.data.sourceObject}
+          revision={$sourceBrowser.data.currentRevision} />
       {/if}
     </div>
   </div>
