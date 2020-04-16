@@ -111,14 +111,14 @@ const dummySourceBrowser = {
     ]
   },
   currentRevision: 'master',
-  sourceObject: anotherTree
+  object: anotherTree
 }
 
 const store = createStore<SourceBrowser>()
 store.success(dummySourceBrowser)
 export const source = store.readable
 
-// TODO(sos or xla): filter revisions before passing to store
+// TODO(sos): filter revisions before passing to store
 const filterRevisions = (revisions: { tags: string[]; branches: string[] }) => [
   ...revisions.tags,
   ...revisions.branches.filter(branch => !HIDDEN_BRANCHES.includes(branch))
