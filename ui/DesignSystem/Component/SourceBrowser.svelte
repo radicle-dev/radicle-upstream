@@ -1,13 +1,13 @@
 <script>
   import { getContext } from "svelte";
 
-  import { sourceBrowser, updateRevision } from "../../src/sourceBrowser.ts";
-
   import { BLOB, TREE } from "../../../native/types.js";
+  import { source, updateRevision } from "../../src/sourceBrowser.ts";
+
+  import { Input } from "../Primitive";
   import FileList from "./SourceBrowser/FileList.svelte";
   import FileSource from "./SourceBrowser/FileSource.svelte";
   import Folder from "./SourceBrowser/Folder.svelte";
-  import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -56,14 +56,16 @@
   }
 </style>
 
-{#if $sourceBrowser.status === 'LOADING'}
+{#if $source.status === 'LOADING'}
   <p>loading.....</p>
-{:else if $sourceBrowser.status === 'SUCCESS'}
+{:else if $source.status === 'SUCCESS'}
   <div class="container" {style}>
     <div class="column-left">
-      <RevisionSelector
-        revisions={$sourceBrowser.data.revisions.branches}
-        onSelect={revision => updateRevision({ newRevision: revision })} />
+      <Input.Dropdown
+        dataCy="revision-selector"
+        style="margin-bottom: 24px"
+        items={$source.data.revisions.branches}
+        on:select={revision => updateRevision({ newRevision: revision })} />
       {#await $project then result}
         <div class="source-tree" data-cy="source-tree">
           <Folder name={result.data.project.metadata.name} />
@@ -72,16 +74,16 @@
     </div>
 
     <div class="column-right">
-      {#if $sourceBrowser.data.sourceObject.type === BLOB}
-        <FileSource blob={$sourceBrowser.data.sourceObject} {projectId} />
-      {:else if $sourceBrowser.data.sourceObject.type === TREE}
+      {#if $source.data.sourceObject.type === BLOB}
+        <FileSource blob={$source.data.sourceObject} {projectId} />
+      {:else if $source.data.sourceObject.type === TREE}
         <FileList
           {projectId}
-          tree={$sourceBrowser.data.sourceObject}
-          revision={$sourceBrowser.data.currentRevision} />
+          tree={$source.data.sourceObject}
+          revision={$source.data.currentRevision} />
       {/if}
     </div>
   </div>
-{:else if $sourceBrowser.status === 'ERROR'}
-  <p>{`error: ${$sourceBrowser.error.message}`}</p>
+{:else if $source.status === 'ERROR'}
+  <p>{`error: ${$source.error.message}`}</p>
 {/if}

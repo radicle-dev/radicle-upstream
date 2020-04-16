@@ -4,13 +4,14 @@ import { get } from './api'
 
 import { HIDDEN_BRANCHES } from "../config"
 
-export enum SourceObjectType {
+export enum ObjectType {
   Blob = 'BLOB',
   Tree = 'TREE'
 }
 
 interface Info {
   name: string;
+  objectType: ObjectType;
   lastCommit: {
     author: {
       name: string;
@@ -22,21 +23,18 @@ interface Info {
   };
 }
 
-interface SourceObject {
+interface Object {
   path: string;
-  type: SourceObjectType;
   info: Info;
 }
 
-interface Blob extends SourceObject {
-  type: SourceObjectType.Blob;
-  binary?: string;
+interface Blob extends Object {
+  binary?: boolean;
   content: string;
 }
 
-interface Tree extends SourceObject {
-  type: SourceObjectType.Tree;
-  entries: SourceObject[];
+interface Tree extends Object {
+  entries: Record<string, any>[];
 }
 
 interface SourceBrowser {
@@ -45,15 +43,15 @@ interface SourceBrowser {
     branches?: string[];
   };
   currentRevision: string;
-  sourceObject: SourceObject;
+  sourceObject: Record<string, any>;
 }
 
 const aBlob: Blob = {
-  type: SourceObjectType.Blob,
   path: '~/elsewhere/radicle-upstream/src/file.sth',
   content: "for i in array i++\n\nfor x in y x--",
   info: {
     name: "index.html",
+    objectType: ObjectType.Blob,
     lastCommit: {
       author: {
         name: "rafalca romney",
@@ -68,10 +66,10 @@ const aBlob: Blob = {
 }
 
 const aTree: Tree = {
-  type: SourceObjectType.Tree,
   path: '~/elsewhere/radicle-upstream/src',
   info: {
     name: "src",
+    objectType: ObjectType.Tree,
     lastCommit: {
       author: {
         name: "rafalca romney",
@@ -87,10 +85,10 @@ const aTree: Tree = {
 }
 
 const anotherTree: Tree = {
-  type: SourceObjectType.Tree,
   path: '~/elsewhere/radicle-upstream',
   info: {
     name: "radicle-upstream",
+    objectType: ObjectType.Tree,
     lastCommit: {
       author: {
         name: "rafalca romney",
@@ -116,13 +114,15 @@ const dummySourceBrowser = {
   sourceObject: anotherTree
 }
 
-const sourceBrowserStore = createStore<SourceBrowser>()
-sourceBrowserStore.success(dummySourceBrowser)
-export const sourceBrowser = sourceBrowserStore.readable
+const store = createStore<SourceBrowser>()
+store.success(dummySourceBrowser)
+export const source = store.readable
 
 // TODO(sos or xla): filter revisions before passing to store
-const filterRevisions = (revisions: { tags: string[]; branches: string[] }) => [...revisions.tags, ...revisions.branches.filter(branch => !HIDDEN_BRANCHES.includes(branch))]
-
+const filterRevisions = (revisions: { tags: string[]; branches: string[] }) => [
+  ...revisions.tags,
+  ...revisions.branches.filter(branch => !HIDDEN_BRANCHES.includes(branch))
+]
 
 enum Kind {
   UpdateRevision = "UPDATE_REVISION",
