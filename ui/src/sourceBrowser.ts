@@ -1,4 +1,5 @@
 import { createStore } from './remote'
+import { HIDDEN_BRANCHES } from "../config"
 
 interface Info {
   lastCommit: {
@@ -14,7 +15,7 @@ interface Info {
 
 enum SourceObjectType {
   Blob = 'BLOB',
-  Directory = 'DIRECTORY'
+  Tree = 'TREE'
 }
 
 interface SourceObject {
@@ -30,11 +31,21 @@ interface Blob extends SourceObject {
 }
 
 interface SourceBrowser {
+  revisions: {
+    tags?: string[];
+    branches?: string[];
+  };
   currentRevision: string;
   sourceObject: SourceObject;
 }
 
 const dummySourceBrowser = {
+  revisions: {
+    branches: [
+      'master',
+      'xla/220-warp-implementation'
+    ]
+  },
   currentRevision: 'master',
   sourceObject: {
     type: SourceObjectType.Blob,
@@ -58,3 +69,8 @@ const dummySourceBrowser = {
 const sourceBrowserStore = createStore<SourceBrowser>()
 sourceBrowserStore.success(dummySourceBrowser)
 export const sourceBrowser = sourceBrowserStore.readable
+
+// TODO(sos or xla): filter revisions before passing to store
+const filterRevisions = (revisions: { tags: string[]; branches: string[] }) => [...revisions.tags, ...revisions.branches.filter(branch => !HIDDEN_BRANCHES.includes(branch))]
+export const updateRevision = (r: string) => console.log('updating revision', r)
+

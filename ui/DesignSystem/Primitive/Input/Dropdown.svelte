@@ -2,6 +2,7 @@
   export let items = null;
   export let value = null;
   export let disabled = null;
+  export let onSelect = null;
 
   export let style = null;
   export let dataCy = null;
@@ -40,7 +41,7 @@
   }
 </style>
 
-<select data-cy={dataCy} {style} bind:value {disabled}>
+<select data-cy={dataCy} {style} bind:value {disabled} on:change={onSelect}>
   {#each items as item}
     <option value={item}>{item}</option>
   {/each}

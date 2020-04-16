@@ -3,9 +3,9 @@
 
   import { objectPathStore, revisionStore } from "../../store/sourceBrowser.js";
 
-  import { sourceBrowser } from "../../src/sourceBrowser.ts";
+  import { sourceBrowser, updateRevision } from "../../src/sourceBrowser.ts";
 
-  import { BLOB } from "../../../native/types.js";
+  import { BLOB, TREE } from "../../../native/types.js";
   import FileList from "./SourceBrowser/FileList.svelte";
   import FileSource from "./SourceBrowser/FileSource.svelte";
   import Folder from "./SourceBrowser/Folder.svelte";
@@ -60,7 +60,9 @@
 
 <div class="container" {style}>
   <div class="column-left">
-    <RevisionSelector />
+    <RevisionSelector
+      revisions={$sourceBrowser.data.revisions.branches}
+      onSelect={updateRevision} />
     {#await $project then result}
       <div class="source-tree" data-cy="source-tree">
         <Folder name={result.data.project.metadata.name} />
@@ -71,11 +73,12 @@
   <div class="column-right">
     {#if $sourceBrowser.data.sourceObject.type === BLOB}
       <FileSource blob={$sourceBrowser.data.sourceObject} {projectId} />
-    {:else}
+    {:else if $sourceBrowser.data.sourceObject.type === TREE}
       <FileList
         {projectId}
         prefix={$objectPathStore}
         revision={$revisionStore} />
+      <!-- else something is very wrong, show error -->
     {/if}
   </div>
 </div>

@@ -63,6 +63,7 @@
     }
   `;
 
+  // TODO(sos): dev mode in which you don't have to sign in on reload
   const getIdentity = async () => {
     try {
       const response = query(client, {
@@ -82,7 +83,8 @@
         );
         push(path.profile());
       } else {
-        push(path.createIdentity());
+        push(path.profile());
+        // push(path.createIdentity());
       }
     } catch (error) {
       console.log(error);
