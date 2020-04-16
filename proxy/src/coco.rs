@@ -42,9 +42,9 @@ impl fmt::Display for Tag {
 /// Representation of a person (e.g. committer, author, signer) from a repository. Usually
 /// extracted from a signature.
 pub struct Person {
-    /// Name part of the commit signature commit.
+    /// Name part of the commit signature.
     pub name: String,
-    /// Email part of the commit signature commit.
+    /// Email part of the commit signature.
     pub email: String,
     /// Reference (url/uri) to a persons avatar image.
     pub avatar: String,
@@ -139,7 +139,16 @@ pub struct Blob {
     pub info: Info,
 }
 
+impl Blob {
+    /// Indicates if the content of the [`Blob`] is binary.
+    #[must_use]
+    pub fn is_binary(&self) -> bool {
+        self.content == BlobContent::Binary
+    }
+}
+
 /// Variants of blob content.
+#[derive(PartialEq)]
 pub enum BlobContent {
     /// Content is ASCII and can be passed as a string.
     Ascii(String),
