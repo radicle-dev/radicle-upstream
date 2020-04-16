@@ -14,7 +14,7 @@ use crate::coco;
 pub fn filters(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    blob_filter(paths)
+    blob_filter(Arc::<RwLock<Paths>>::clone(&paths)).or(commit_filter(paths))
 }
 
 /// GET /blob/<project_id>/<revision>/<path...>
@@ -43,9 +43,33 @@ fn blob_filter(
                 200,
                 document::body(coco::Blob::document()).mime("application/json"),
             )
-            .description("Returns Blob"),
+            .description("Blob for path found"),
         ))
         .and_then(handler::blob)
+}
+
+/// GET /commit/<project_id>/<sha1>
+fn commit_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("commit")
+        .and(warp::get())
+        .and(super::with_paths(paths))
+        .and(document::param::<String>(
+            "project_id",
+            "ID of the project the blob is part of",
+        ))
+        .and(document::param::<String>("sha1", "Git object id"))
+        .and(document::document(document::description("Fetch a Commit")))
+        .and(document::document(document::tag("Source")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(coco::Commit::document()).mime("application/json"),
+            )
+            .description("Commit for SHA1 found"),
+        ))
+        .and_then(handler::commit)
 }
 
 /// Source handlers for conversion beetween core domain and http request fullfilment.
@@ -69,6 +93,18 @@ mod handler {
         let blob = coco::blob(&paths, &project_id, &revision, path.as_str())?;
 
         Ok(reply::json(&blob))
+    }
+
+    /// Fetch a [`coco::Commit`].
+    pub async fn commit(
+        librad_paths: Arc<RwLock<Paths>>,
+        project_id: String,
+        sha1: String,
+    ) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
+        let commit = coco::commit(&paths, &project_id, &sha1)?;
+
+        Ok(reply::json(&commit))
     }
 }
 
@@ -287,19 +323,141 @@ mod test {
         let revision = "master";
         let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
 
-        for path in &["text/arrows.txt", "bin/ls"] {
-            let want = coco::blob(&librad_paths, &platinum_id.to_string(), revision, path).unwrap();
+        // Get ASCII blob.
+        let path = "text/arrows.txt";
+        let res = request()
+            .method("GET")
+            .path(&format!("/blob/{}/{}/{}", platinum_id, revision, path))
+            .reply(&api)
+            .await;
 
-            let res = request()
-                .method("GET")
-                .path(&format!("/blob/{}/{}/{}", platinum_id, revision, path,))
-                .reply(&api)
-                .await;
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::blob(&librad_paths, &platinum_id.to_string(), revision, path).unwrap();
 
-            let have: Value = serde_json::from_slice(res.body()).unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(
+            have,
+            json!({
+                "binary": false,
+                "content": "  ;;;;;        ;;;;;        ;;;;;
+  ;;;;;        ;;;;;        ;;;;;
+  ;;;;;        ;;;;;        ;;;;;
+  ;;;;;        ;;;;;        ;;;;;
+..;;;;;..    ..;;;;;..    ..;;;;;..
+ ':::::'      ':::::'      ':::::'
+   ':`          ':`          ':`
+",
+                "info": {
+                    "name": "arrows.txt",
+                    "objectType": "BLOB",
+                    "lastCommit": {
+                        "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
+                        "author": {
+                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                            "name": "Rūdolfs Ošiņš",
+                            "email": "rudolfs@osins.org",
+                        },
+                        "committer": {
+                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                            "name": "Rūdolfs Ošiņš",
+                            "email": "rudolfs@osins.org",
+                        },
+                        "summary": "Add text files",
+                        "description": "",
+                        "committerTime": "1575283425",
+                    },
+                },
+            })
+        );
 
-            assert_eq!(res.status(), StatusCode::OK);
-            assert_eq!(have, json!(want));
-        }
+        // Get binary blob.
+        let path = "bin/ls";
+        let res = request()
+            .method("GET")
+            .path(&format!("/blob/{}/{}/{}", platinum_id, revision, path))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::blob(&librad_paths, &platinum_id.to_string(), revision, path).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(
+            have,
+            json!({
+                "binary": true,
+                "content": Value::Null,
+                "info": {
+                    "name": "ls",
+                    "objectType": "BLOB",
+                    "lastCommit": {
+                        "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
+                        "author": {
+                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                            "name": "Rūdolfs Ošiņš",
+                            "email": "rudolfs@osins.org",
+                        },
+                        "committer": {
+                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                            "name": "Rūdolfs Ošiņš",
+                            "email": "rudolfs@osins.org",
+                        },
+                        "summary": "Add some binary files",
+                        "description": "",
+                        "committerTime": "1575282964",
+                    },
+                },
+            })
+        );
+    }
+
+    #[tokio::test]
+    async fn commit() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let (platinum_id, _platinum_project) = coco::replicate_platinum(
+            &tmp_dir,
+            &librad_paths,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )
+        .unwrap();
+
+        let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
+
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let res = request()
+            .method("GET")
+            .path(&format!("/commit/{}/{}", platinum_id, sha1))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::commit(&librad_paths, &platinum_id.to_string(), sha1).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(
+            have,
+            json!({
+                "sha1": sha1,
+                "author": {
+                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/6367167426181048581.svg",
+                    "name": "Fintan Halpenny",
+                    "email": "fintan.halpenny@gmail.com",
+                },
+                "committer": {
+                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
+                    "email": "noreply@github.com",
+                    "name": "GitHub",
+                },
+                "summary": "Extend the docs (#2)",
+                "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
+                "committerTime": "1578309972",
+            }),
+        );
     }
 }
