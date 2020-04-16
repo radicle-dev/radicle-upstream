@@ -1,5 +1,5 @@
 import * as api from "./api";
-import * as event from "./event";
+import { createEvent, Event } from "./event";
 import * as remote from "./remote";
 
 // Types.
@@ -32,14 +32,14 @@ enum Kind {
   Fetch = "FETCH",
 }
 
-interface Create extends event.Event<Kind> {
+interface Create extends Event<Kind> {
   kind: Kind.Create;
   handle: string;
   displayName?: string;
   avatarUrl?: string;
 }
 
-interface Fetch extends event.Event<Kind> {
+interface Fetch extends Event<Kind> {
   kind: Kind.Fetch;
   id: string;
 }
@@ -75,4 +75,4 @@ function update(msg: Msg): void {
   }
 }
 
-export const create = event.create<Kind, Msg>(Kind.Create, update) 
+export const create = createEvent<Kind, Msg>(Kind.Create, update) 

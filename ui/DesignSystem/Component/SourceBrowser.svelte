@@ -58,27 +58,33 @@
   }
 </style>
 
-<div class="container" {style}>
-  <div class="column-left">
-    <RevisionSelector
-      revisions={$sourceBrowser.data.revisions.branches}
-      onSelect={updateRevision} />
-    {#await $project then result}
-      <div class="source-tree" data-cy="source-tree">
-        <Folder name={result.data.project.metadata.name} />
-      </div>
-    {/await}
-  </div>
+{#if $sourceBrowser.status === 'LOADING'}
+  <p>loading.....</p>
+{:else if $sourceBrowser.status === 'SUCCESS'}
+  <div class="container" {style}>
+    <div class="column-left">
+      <RevisionSelector
+        revisions={$sourceBrowser.data.revisions.branches}
+        onSelect={revision => updateRevision({ newRevision: revision })} />
+      {#await $project then result}
+        <div class="source-tree" data-cy="source-tree">
+          <Folder name={result.data.project.metadata.name} />
+        </div>
+      {/await}
+    </div>
 
-  <div class="column-right">
-    {#if $sourceBrowser.data.sourceObject.type === BLOB}
-      <FileSource blob={$sourceBrowser.data.sourceObject} {projectId} />
-    {:else if $sourceBrowser.data.sourceObject.type === TREE}
-      <FileList
-        {projectId}
-        prefix={$objectPathStore}
-        revision={$revisionStore} />
-      <!-- else something is very wrong, show error -->
-    {/if}
+    <div class="column-right">
+      {#if $sourceBrowser.data.sourceObject.type === BLOB}
+        <FileSource blob={$sourceBrowser.data.sourceObject} {projectId} />
+      {:else if $sourceBrowser.data.sourceObject.type === TREE}
+        <FileList
+          {projectId}
+          prefix={$objectPathStore}
+          revision={$revisionStore} />
+        <!-- else something is very wrong, show error -->
+      {/if}
+    </div>
   </div>
-</div>
+{:else if $sourceBrowser.status === 'ERROR'}
+  <p>{`error: ${$sourceBrowser.error.message}`}</p>
+{/if}

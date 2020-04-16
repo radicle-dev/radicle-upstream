@@ -1,45 +1,15 @@
 import { createStore } from './remote'
+import { Event, createEvent } from './event'
+import { get } from './api'
+
 import { HIDDEN_BRANCHES } from "../config"
 
-interface Info {
-  lastCommit: {
-    author: {
-      name: string;
-      avatar: string;
-    };
-    summary: string;
-    sha1: string;
-    committerTime: number;
-  };
-}
-
-enum SourceObjectType {
+export enum SourceObjectType {
   Blob = 'BLOB',
   Tree = 'TREE'
 }
 
-interface SourceObject {
-  path: string;
-  type: SourceObjectType;
-}
-
-interface Blob extends SourceObject {
-  type: SourceObjectType.Blob;
-  binary?: string;
-  content: string;
-  info: Info;
-}
-
-interface SourceBrowser {
-  revisions: {
-    tags?: string[];
-    branches?: string[];
-  };
-  currentRevision: string;
-  sourceObject: SourceObject;
-}
-
-const dummySourceBrowser = {
+export const dummySourceBrowser = {
   revisions: {
     branches: [
       'master',
@@ -63,8 +33,44 @@ const dummySourceBrowser = {
         committerTime: 139394343
       }
     }
-  } as Blob
+  }
 }
+
+interface Info {
+  lastCommit: {
+    author: {
+      name: string;
+      avatar: string;
+    };
+    summary: string;
+    sha1: string;
+    committerTime: number;
+  };
+}
+
+
+
+interface SourceObject {
+  path: string;
+  type: SourceObjectType;
+}
+
+interface Blob extends SourceObject {
+  type: SourceObjectType.Blob;
+  binary?: string;
+  content: string;
+  info: Info;
+}
+
+interface SourceBrowser {
+  revisions: {
+    tags?: string[];
+    branches?: string[];
+  };
+  currentRevision: string;
+  sourceObject: SourceObject;
+}
+
 
 const sourceBrowserStore = createStore<SourceBrowser>()
 sourceBrowserStore.success(dummySourceBrowser)
@@ -72,5 +78,29 @@ export const sourceBrowser = sourceBrowserStore.readable
 
 // TODO(sos or xla): filter revisions before passing to store
 const filterRevisions = (revisions: { tags: string[]; branches: string[] }) => [...revisions.tags, ...revisions.branches.filter(branch => !HIDDEN_BRANCHES.includes(branch))]
-export const updateRevision = (r: string) => console.log('updating revision', r)
 
+
+enum Kind {
+  UpdateRevision = "CHANGE_REVISION"
+}
+
+interface UpdateRevision extends Event<Kind> {
+  kind: Kind.UpdateRevision;
+  newRevision: string;
+}
+
+type Msg = UpdateRevision
+
+function update(msg: Msg): void {
+  switch (msg.kind) {
+    case Kind.UpdateRevision:
+      console.log('updating revision: ', msg.newRevision)
+      // sourceBrowserStore.loading();
+      // get<SourceBrowser>(`/source/browser/endpoint/${msg.newRevision}`)
+      //   .then(sourceBrowserStore.success)
+      //   .catch(sourceBrowserStore.error)
+      break
+  }
+}
+
+export const updateRevision = createEvent<Kind, Msg>(Kind.UpdateRevision, update)
