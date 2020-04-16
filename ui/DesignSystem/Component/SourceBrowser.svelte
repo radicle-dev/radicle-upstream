@@ -1,11 +1,9 @@
 <script>
   import { getContext } from "svelte";
 
-  import {
-    objectPathStore,
-    objectTypeStore,
-    revisionStore
-  } from "../../store/sourceBrowser.js";
+  import { objectPathStore, revisionStore } from "../../store/sourceBrowser.js";
+
+  import { sourceBrowser } from "../../src/sourceBrowser.ts";
 
   import { BLOB } from "../../../native/types.js";
   import FileList from "./SourceBrowser/FileList.svelte";
@@ -71,11 +69,8 @@
   </div>
 
   <div class="column-right">
-    {#if $objectTypeStore === BLOB}
-      <FileSource
-        {projectId}
-        path={$objectPathStore}
-        revision={$revisionStore} />
+    {#if $sourceBrowser.data.sourceObject.type === BLOB}
+      <FileSource blob={$sourceBrowser.data.sourceObject} {projectId} />
     {:else}
       <FileList
         {projectId}

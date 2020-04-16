@@ -1,43 +1,11 @@
 <script>
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
 
   import { Icon } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
 
+  export let blob = null;
   export let projectId = null;
-  export let path = null;
-  export let revision = null;
-
-  const SOURCE = gql`
-    query($projectId: ID!, $revision: String!, $path: String!) {
-      blob(id: $projectId, revision: $revision, path: $path) {
-        binary
-        content
-        info {
-          lastCommit {
-            author {
-              name
-              avatar
-            }
-            committerTime
-            summary
-            sha1
-          }
-        }
-      }
-    }
-  `;
-
-  $: source = query(getClient(), {
-    query: SOURCE,
-    variables: {
-      projectId: projectId,
-      path: path,
-      revision: revision
-    }
-  });
 </script>
 
 <style>
@@ -81,35 +49,33 @@
   }
 </style>
 
-{#await $source then result}
-  <CommitTeaser
-    {projectId}
-    user={{ username: result.data.blob.info.lastCommit.author.name, avatar: result.data.blob.info.lastCommit.author.avatar }}
-    commitMessage={result.data.blob.info.lastCommit.summary}
-    commitSha={result.data.blob.info.lastCommit.sha1}
-    timestamp={format(result.data.blob.info.lastCommit.committerTime * 1000)}
-    style="margin-bottom: 24px" />
+<CommitTeaser
+  {projectId}
+  user={{ username: blob.info.lastCommit.author.name, avatar: blob.info.lastCommit.author.avatar }}
+  commitMessage={blob.info.lastCommit.summary}
+  commitSha={blob.info.lastCommit.sha1}
+  timestamp={format(blob.info.lastCommit.committerTime * 1000)}
+  style="margin-bottom: 24px" />
 
-  <div class="file-source" data-cy="file-source">
-    <header>
-      <Icon.File />
-      {path}
-    </header>
-    <div class="container">
-      {#if result.data.blob.binary}
-        ఠ ͟ಠ Binary content.
-      {:else}
-        <pre class="line-numbers">
-          {@html result.data.blob.content
-            .split('\n')
-            .slice(0, -1)
-            .map((_, index) => {
-              return `${index + 1}`;
-            })
-            .join('\n')}
-        </pre>
-        <pre class="code">{result.data.blob.content}</pre>
-      {/if}
-    </div>
+<div class="file-source" data-cy="file-source">
+  <header>
+    <Icon.File />
+    {blob.path}
+  </header>
+  <div class="container">
+    {#if blob.binary}
+      ఠ ͟ಠ Binary content.
+    {:else}
+      <pre class="line-numbers">
+        {@html blob.content
+          .split('\n')
+          .slice(0, -1)
+          .map((_, index) => {
+            return `${index + 1}`;
+          })
+          .join('\n')}
+      </pre>
+      <pre class="code">{blob.content}</pre>
+    {/if}
   </div>
-{/await}
+</div>
