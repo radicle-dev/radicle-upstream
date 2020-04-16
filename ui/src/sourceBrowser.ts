@@ -23,18 +23,18 @@ interface Info {
   };
 }
 
-interface Object {
+interface SourceObject {
   path: string;
   info: Info;
 }
 
-interface Blob extends Object {
+interface Blob extends SourceObject {
   binary?: boolean;
   content: string;
 }
 
-interface Tree extends Object {
-  entries: Record<string, any>[];
+interface Tree extends SourceObject {
+  entries: SourceObject[];
 }
 
 interface SourceBrowser {
@@ -43,7 +43,7 @@ interface SourceBrowser {
     branches?: string[];
   };
   currentRevision: string;
-  sourceObject: Record<string, any>;
+  object: SourceObject;
 }
 
 const aBlob: Blob = {
