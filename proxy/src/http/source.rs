@@ -15,6 +15,7 @@ pub fn filters(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
+        .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(tree_filter(paths))
 }
@@ -48,6 +49,29 @@ fn blob_filter(
             .description("Blob for path found"),
         ))
         .and_then(handler::blob)
+}
+
+/// GET /branches/<project_id>
+fn branches_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("branches")
+        .and(warp::get())
+        .and(super::with_paths(paths))
+        .and(document::param::<String>(
+            "project_id",
+            "ID of the project the blob is part of",
+        ))
+        .and(document::document(document::description("List Branches")))
+        .and(document::document(document::tag("Source")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(coco::Commit::document()).mime("application/json"),
+            )
+            .description("List of branches"),
+        ))
+        .and_then(handler::branches)
 }
 
 /// GET /commit/<project_id>/<sha1>
@@ -125,6 +149,17 @@ mod handler {
         Ok(reply::json(&blob))
     }
 
+    /// Fetch the list [`coco::Branch`].
+    pub async fn branches(
+        librad_paths: Arc<RwLock<Paths>>,
+        project_id: String,
+    ) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
+        let branches = coco::branches(&paths, &project_id)?;
+
+        Ok(reply::json(&branches))
+    }
+
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
         librad_paths: Arc<RwLock<Paths>>,
@@ -198,6 +233,21 @@ impl ToDocumentedType for coco::BlobContent {
             .description("BlobContent")
             .example("print 'hello world'")
             .nullable(true)
+    }
+}
+
+impl Serialize for coco::Branch {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl ToDocumentedType for coco::Branch {
+    fn document() -> document::DocumentedType {
+        document::string().description("Branch").example("master")
     }
 }
 
@@ -512,6 +562,36 @@ mod test {
                         "committerTime": "1575282964", },
                 },
             })
+        );
+    }
+
+    #[tokio::test]
+    async fn branches() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let (platinum_id, _platinum_project) = coco::replicate_platinum(
+            &tmp_dir,
+            &librad_paths,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )
+        .unwrap();
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let res = request()
+            .method("GET")
+            .path(&format!("/branches/{}", platinum_id))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::branches(&librad_paths, &platinum_id.to_string()).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(
+            have,
+            json!(["dev", "master", "rad/contributor", "rad/project",]),
         );
     }
 
