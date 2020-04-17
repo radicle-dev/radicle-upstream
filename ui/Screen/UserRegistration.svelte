@@ -14,8 +14,8 @@
 
   let step = 1;
 
-  let handle = $identity.handle;
-  const id = $identity.id;
+  let handle = $identity.data.metadata.handle;
+  const id = $identity.data.id;
 
   const nextStep = () => {
     step += 1;

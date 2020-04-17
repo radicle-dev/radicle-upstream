@@ -1,8 +1,5 @@
 <script>
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore
-  } from "../../store/identity.js";
+  import { identity } from "../../src/identity.ts";
   import { Button, Flex } from "../../DesignSystem/Primitive";
   import { Transaction } from "../../DesignSystem/Component";
 
@@ -17,14 +14,14 @@
     subject: {
       name: handle,
       kind: "user",
-      avatarFallback: $identityAvatarFallbackStore,
-      imageUrl: $identityAvatarUrlStore
+      avatarFallback: $identity.data.avatarFallback,
+      imageUrl: $identity.data.metadata.avatarUrl
     },
     payer: {
       name: handle,
       kind: "user",
-      avatarFallback: $identityAvatarFallbackStore,
-      imageUrl: $identityAvatarUrlStore
+      avatarFallback: $identity.data.avatarFallback,
+      imageUrl: $identity.data.metadata.avatarUrl
     }
   };
 </script>

@@ -1,9 +1,6 @@
 <script>
   import validatejs from "validate.js";
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore
-  } from "../../store/identity.js";
+  import { identity } from "../../src/identity.ts";
   import { Button, Flex, Input } from "../../DesignSystem/Primitive";
 
   import { pop } from "svelte-spa-router";
@@ -81,8 +78,8 @@
 
 <Input.Text
   dataCy="handle"
-  avatarFallback={$identityAvatarFallbackStore}
-  imageUrl={$identityAvatarUrlStore}
+  avatarFallback={$identity.data.avatarFallback}
+  imageUrl={$identity.data.metadata.avatarUrl}
   style="--focus-outline-color: var(--color-primary)"
   placeholder="User handle"
   bind:value={handle}

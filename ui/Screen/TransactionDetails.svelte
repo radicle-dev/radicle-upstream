@@ -4,10 +4,6 @@
   import { pop } from "svelte-spa-router";
 
   import { identity } from "../src/identity.ts";
-  import {
-    USER_REGISTRATION,
-    PROJECT_REGISTRATION
-  } from "../../native/types.js";
 
   import { Button } from "../DesignSystem/Primitive";
   import {
@@ -61,9 +57,9 @@
 
   const formatMessage = kind => {
     switch (kind) {
-      case USER_REGISTRATION:
+      case "USER_REGISTRATION":
         return "User registration";
-      case PROJECT_REGISTRATION:
+      case "PROJECT_REGISTRATION":
         return "Project registration";
     }
   };
@@ -71,12 +67,12 @@
   const formatSubject = msg => {
     return {
       name:
-        msg.kind === USER_REGISTRATION
+        msg.kind === "USER_REGISTRATION"
           ? msg.handle
-          : `${$identity.handle} / ${msg.projectName}`,
+          : `${$identity.data.metadata.handle} / ${msg.projectName}`,
       kind: "user",
-      avatarFallback: $identity.avatarFallback,
-      imageUrl: $identity.avatarUrl
+      avatarFallback: $identity.data.avatarFallback,
+      imageUrl: $identity.data.metadata.avatarUrl
     };
   };
 
@@ -88,10 +84,11 @@
       stake: `${formatMessage(kind)} deposit`,
       subject: formatSubject(transaction.messages[0]),
       payer: {
-        name: $identity.displayName || $identity.Handle,
+        name:
+          $identity.data.metadata.displayName || $identity.data.metadata.handle,
         kind: "user",
-        avatarFallback: $identity.avatarFallback,
-        imageUrl: $identity.avatarUrl
+        avatarFallback: $identity.data.avatarFallback,
+        imageUrl: $identity.data.metadata.avatarUrl
       }
     };
   };
