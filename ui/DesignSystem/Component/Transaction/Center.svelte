@@ -23,14 +23,12 @@
     return transactions.map(transaction => {
       return {
         id: transaction.id,
-        message: formatMessage(transaction.messages[0].kind),
+        message: formatMessage(Object.keys(transaction.messages[0])[0]),
         state: "pending",
         progress: 0
       };
     });
   };
-
-  $: console.log($transactions);
 </script>
 
 {#if $transactions.status === 'SUCCESS'}
