@@ -42,76 +42,9 @@
     text-align: center;
     width: 480px;
   }
-
-  .loading {
-    height: 1000px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-  }
-
-  .loading-text {
-    animation: loadingText 1.2s infinite, spin 2000ms infinite linear;
-    font-size: 10rem;
-    font-family: "Comic Sans MS";
-    z-index: 1000;
-    position: absolute;
-    top: 50%;
-    left: 20%;
-  }
-
-  .loading-gif {
-    z-index: 10;
-    position: absolute;
-    top: 30%;
-    left: 30%;
-  }
-
-  @keyframes loadingText {
-    0% {
-      color: var(--color-primary);
-    }
-    20% {
-      color: var(--color-secondary);
-    }
-    40% {
-      color: var(--color-tertiary);
-    }
-    60% {
-      color: transparent;
-    }
-    99% {
-      color: var(--color-primary);
-    }
-    100% {
-      color: var(--color-primary);
-    }
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
-  }
 </style>
 
-{#if $projects.status === 'LOADING'}
-  <div class="loading">
-    <p class="loading-text">LOADING</p>
-    <iframe
-      title="loading"
-      src="https://giphy.com/embed/13d42CVe9KZxQc"
-      width="480"
-      height="360"
-      frameBorder="0"
-      class="loading-gif"
-      allowFullScreen />
-  </div>
-{:else if $projects.status === 'SUCCESS'}
+{#if $projects.status === 'SUCCESS'}
   {#if $projects.data.length > 0}
     <ul>
       {#each $projects.data as project}
