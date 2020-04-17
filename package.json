@@ -79,7 +79,7 @@
     "wait-on": "^4.0.1"
   },
   "scripts": {
-    "start": "run-p --race svelte:watch proxy:start:test graphiql:serve electron:start",
+    "start": "run-p --race svelte:watch proxy:start graphiql:serve electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' run-p --race proxy:start:test test:run",
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test cypress:open",
@@ -105,7 +105,7 @@
     "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
-    "lint": "eslint . --ignore-path .gitignore --ext js,.svelte,.ts"
+    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts"
   },
   "dependencies": {
     "@babel/runtime": "^7.8.4",

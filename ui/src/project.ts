@@ -1,7 +1,7 @@
 import { writable } from "svelte/store";
 
 import * as api from "./api";
-import { Event, createEvent } from "./event";
+import * as event from "./event";
 import * as remote from "./remote";
 
 // Types.
@@ -27,7 +27,7 @@ enum Kind {
   FetchList = "FETCH_LIST",
 }
 
-interface Fetch extends Event<Kind> {
+interface Fetch extends event.Event<Kind> {
   kind: Kind.FetchList;
 }
 
@@ -48,7 +48,7 @@ const update = (msg: Msg): void => {
 
 // Events.
 
-const fetchList = createEvent<Kind, Msg>(Kind.FetchList, update);
+const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);

@@ -33,7 +33,7 @@ pub fn routes(
                 Arc::<RwLock<registry::Registry>>::clone(&registry),
                 subscriptions,
             ))
-            .or(source::filters(librad_paths))
+            .or(source::routes(librad_paths))
             .or(transaction::filters(registry)),
     );
     // let docs = path("docs").and(doc::filters(&api));

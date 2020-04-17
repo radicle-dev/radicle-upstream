@@ -14,7 +14,7 @@
     TrackToggle
   } from "../DesignSystem/Component";
 
-  import { updateSourcePath } from "../src/sourceBrowser.ts";
+  import * as source from "../src/source.ts";
 
   import * as path from "../lib/path.js";
 
@@ -120,7 +120,12 @@
     }
   ];
 
-  $: updateSourcePath({ newPath: $location });
+  $: console.log("location", $location);
+  $: source.updatePath({
+    path: path.extractProjectSourceObjectPath($location),
+    projectId: params.id,
+    type: path.extractProjectSourceObjectType($location)
+  });
 </script>
 
 <SidebarLayout

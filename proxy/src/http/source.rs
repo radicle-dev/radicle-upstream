@@ -10,8 +10,20 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
 
-/// Combination of all source routes.
-pub fn filters(
+pub fn routes(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("source").and(
+        blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
+            .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+            .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+            .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+            .or(tree_filter(paths)),
+    )
+}
+
+/// Combination of all source filters.
+fn filters(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     blob_filter(Arc::<RwLock<Paths>>::clone(&paths))

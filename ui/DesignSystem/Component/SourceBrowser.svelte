@@ -2,7 +2,13 @@
   import { getContext } from "svelte";
 
   import { BLOB, TREE } from "../../../native/types.js";
-  import { source, updateRevision } from "../../src/sourceBrowser.ts";
+  import {
+    currentRevision,
+    fetchRevisions,
+    object,
+    revisions,
+    updateRevision
+  } from "../../src/source.ts";
 
   import { Input } from "../Primitive";
   import FileList from "./SourceBrowser/FileList.svelte";
@@ -31,6 +37,11 @@
     query: GET_PROJECT,
     variables: { projectId: getContext("projectId") }
   });
+
+  $: console.log("currentRevision", $currentRevision);
+  $: console.log("object", $object);
+
+  fetchRevisions({ projectId: projectId });
 </script>
 
 <style>
@@ -56,34 +67,43 @@
   }
 </style>
 
-{#if $source.status === 'LOADING'}
-  <p>loading.....</p>
-{:else if $source.status === 'SUCCESS'}
-  <div class="container" {style}>
-    <div class="column-left">
+<div class="container" {style}>
+  <div class="column-left">
+    {#if $revisions.status === 'NOT_ASKED'}
+      <p>Not asked...</p>
+    {:else if $revisions.status === 'LOADING'}
+      <p>Loading...</p>
+    {:else if $revisions.status === 'SUCCESS'}
       <Input.Dropdown
         dataCy="revision-selector"
         style="margin-bottom: 24px"
-        items={$source.data.revisions.branches}
-        on:select={revision => updateRevision({ newRevision: revision })} />
-      {#await $project then result}
-        <div class="source-tree" data-cy="source-tree">
-          <Folder name={result.data.project.metadata.name} />
-        </div>
-      {/await}
-    </div>
+        items={$revisions.data.branches}
+        on:select={revision => updateRevision({
+            revision: revision,
+            projectId: projectId
+          })} />
+    {:else if $revisions.status === 'ERROR'}
+      <p>{`error: ${$object.error.message}`}</p>
+    {/if}
 
-    <div class="column-right">
-      {#if $source.data.sourceObject.type === BLOB}
-        <FileSource blob={$source.data.sourceObject} {projectId} />
-      {:else if $source.data.sourceObject.type === TREE}
-        <FileList
-          {projectId}
-          tree={$source.data.sourceObject}
-          revision={$source.data.currentRevision} />
-      {/if}
-    </div>
+    {#await $project then result}
+      <div class="source-tree" data-cy="source-tree">
+        <Folder name={result.data.project.metadata.name} />
+      </div>
+    {/await}
   </div>
-{:else if $source.status === 'ERROR'}
-  <p>{`error: ${$source.error.message}`}</p>
-{/if}
+
+  <div class="column-right">
+    {#if $object.status === 'LOADING'}
+      <p>Loading...</p>
+    {:else if $object.status === 'SUCCESS'}
+      {#if $object.data.info.objectType === BLOB}
+        <FileSource blob={$object.data} {projectId} />
+      {:else if $object.data.info.objectType === TREE}
+        <FileList {projectId} tree={$object.data} revision={$currentRevision} />
+      {/if}
+    {:else if $object.status === 'ERROR'}
+      <p>{`error: ${$object.error.message}`}</p>
+    {/if}
+  </div>
+</div>

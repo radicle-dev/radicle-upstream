@@ -100,10 +100,10 @@
       <tr>
         <td class="file-column">
           <a
-            href={path.projectSource(projectId, revision, entry.type, entry.path)}
+            href={path.projectSource(projectId, revision, entry.info.objectType, entry.path)}
             data-cy={`open-${entry.info.name}`}
             use:link>
-            {#if entry.type === TREE}
+            {#if entry.info.objectType === TREE}
               <Icon.Folder />
             {:else}
               <Icon.File />
