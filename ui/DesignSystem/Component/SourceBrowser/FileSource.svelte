@@ -47,15 +47,20 @@
     min-width: var(--content-min-width);
   }
 
-  header {
+  header .file-header {
     display: flex;
-    background-color: var(--color-foreground-level-1);
-    font-family: var(--typeface-mono-regular);
-    font-size: 14px;
-    height: 48px;
+    font-weight: 600;
+    font-size: 1rem;
+    height: 3rem;
     align-items: center;
     padding-left: 13px;
+    color: var(--color-foreground);
     border-bottom: 1px solid var(--color-foreground-level-3);
+  }
+
+  header .commit-header {
+    height: 3rem;
+    background-color: var(--color-secondary-level-1);
   }
 
   .line-numbers {
@@ -65,7 +70,6 @@
     color: var(--color-foreground-level-5);
     text-align: center;
     flex: 0 0 49px;
-    border-right: 1px solid var(--color-foreground-level-3);
     user-select: none;
   }
 
@@ -76,24 +80,32 @@
     overflow-x: scroll;
   }
 
+  .code,
+  .line-numbers {
+    padding-top: 1.5rem;
+  }
+
   .container {
     display: flex;
   }
 </style>
 
 {#await $source then result}
-  <CommitTeaser
-    {projectId}
-    user={{ username: result.data.blob.info.lastCommit.author.name, avatar: result.data.blob.info.lastCommit.author.avatar }}
-    commitMessage={result.data.blob.info.lastCommit.summary}
-    commitSha={result.data.blob.info.lastCommit.sha1}
-    timestamp={format(result.data.blob.info.lastCommit.committerTime * 1000)}
-    style="margin-bottom: 24px" />
-
   <div class="file-source" data-cy="file-source">
     <header>
-      <Icon.File />
-      {path}
+      <div class="file-header">
+        <Icon.File />
+        {path}
+      </div>
+      <div class="commit-header">
+        <CommitTeaser
+          {projectId}
+          user={{ username: result.data.blob.info.lastCommit.author.name, avatar: result.data.blob.info.lastCommit.author.avatar }}
+          commitMessage={result.data.blob.info.lastCommit.summary}
+          commitSha={result.data.blob.info.lastCommit.sha1}
+          timestamp={format(result.data.blob.info.lastCommit.committerTime * 1000)}
+          style="height: 100%" />
+      </div>
     </header>
     <div class="container">
       {#if result.data.blob.binary}

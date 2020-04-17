@@ -130,7 +130,7 @@
 </script>
 
 <SidebarLayout
-  style="margin-top: calc(var(--topbar-height) + 33px)"
+  style="margin: calc(var(--topbar-height)) 0 0 0"
   dataCy="page-container">
   {#await $project then result}
     <Topbar style="position: fixed; top: 0;">

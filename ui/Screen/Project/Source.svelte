@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte";
 
-  import { Text, Title } from "../../DesignSystem/Primitive";
+  import { Code, Text, Title } from "../../DesignSystem/Primitive";
   import { SourceBrowser } from "../../DesignSystem/Component";
 
   import { gql } from "apollo-boost";
@@ -28,14 +28,27 @@
 
 <style>
   .header {
-    margin-bottom: 32px;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-foreground-level-3);
+  }
+  .project-id {
+    color: var(--color-foreground-level-5);
+    margin-top: 0.5rem;
+  }
+  .description {
+    margin-top: 1rem;
   }
 </style>
 
 <div class="header">
   {#await $project then result}
     <Title variant="big">{result.data.project.metadata.name}</Title>
-    <Text>{result.data.project.metadata.description}</Text>
+    <div class="project-id">
+      <Code>%{projectId}</Code>
+    </div>
+    <div class="description">
+      <Text>{result.data.project.metadata.description}</Text>
+    </div>
   {/await}
 </div>
 
