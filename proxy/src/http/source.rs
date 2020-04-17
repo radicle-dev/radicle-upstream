@@ -17,6 +17,7 @@ pub fn filters(
     blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
         .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+        .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(tree_filter(paths))
 }
 
@@ -98,6 +99,29 @@ fn commit_filter(
         .and_then(handler::commit)
 }
 
+/// GET /tags/<project_id>
+fn tags_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("tags")
+        .and(warp::get())
+        .and(super::with_paths(paths))
+        .and(document::param::<String>(
+            "project_id",
+            "ID of the project the blob is part of",
+        ))
+        .and(document::document(document::description("List Tags")))
+        .and(document::document(document::tag("Source")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(coco::Commit::document()).mime("application/json"),
+            )
+            .description("List of tags"),
+        ))
+        .and_then(handler::tags)
+}
+
 /// GET /tree/<project_id>/<revision>/<prefix>
 fn tree_filter(
     paths: Arc<RwLock<Paths>>,
@@ -170,6 +194,17 @@ mod handler {
         let commit = coco::commit(&paths, &project_id, &sha1)?;
 
         Ok(reply::json(&commit))
+    }
+
+    /// Fetch the list [`coco::Tag`].
+    pub async fn tags(
+        librad_paths: Arc<RwLock<Paths>>,
+        project_id: String,
+    ) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
+        let tags = coco::tags(&paths, &project_id)?;
+
+        Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
@@ -388,6 +423,21 @@ impl ToDocumentedType for coco::Person {
     }
 }
 
+impl Serialize for coco::Tag {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl ToDocumentedType for coco::Tag {
+    fn document() -> document::DocumentedType {
+        document::string().description("Tag").example("v0.1.0")
+    }
+}
+
 impl Serialize for coco::Tree {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -591,7 +641,7 @@ mod test {
         assert_eq!(have, json!(want));
         assert_eq!(
             have,
-            json!(["dev", "master", "rad/contributor", "rad/project",]),
+            json!(["dev", "master", "rad/contributor", "rad/project"]),
         );
     }
 
@@ -640,6 +690,36 @@ mod test {
                 "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
                 "committerTime": "1578309972",
             }),
+        );
+    }
+
+    #[tokio::test]
+    async fn tags() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let (platinum_id, _platinum_project) = coco::replicate_platinum(
+            &tmp_dir,
+            &librad_paths,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )
+        .unwrap();
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let res = request()
+            .method("GET")
+            .path(&format!("/tags/{}", platinum_id))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::tags(&librad_paths, &platinum_id.to_string()).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(
+            have,
+            json!(["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]),
         );
     }
 
