@@ -17,7 +17,7 @@
     {style}
     {size}
     title={showTitle && $identity.data.metadata.handle}
-    avatarFallback={$identity.data.metadata.avatarFallback}
+    avatarFallback={$identity.data.avatarFallback}
     imageUrl={$identity.data.metadata.avatarUrl}
     variant="user" />
 {:else if $identity.status === 'ERROR'}
