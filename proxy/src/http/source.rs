@@ -68,7 +68,10 @@ fn branches_filter(
         .and(document::document(
             document::response(
                 200,
-                document::body(coco::Commit::document()).mime("application/json"),
+                document::body(
+                    document::array(coco::Branch::document()).description("List of branches"),
+                )
+                .mime("application/json"),
             )
             .description("List of branches"),
         ))
@@ -115,7 +118,8 @@ fn tags_filter(
         .and(document::document(
             document::response(
                 200,
-                document::body(coco::Commit::document()).mime("application/json"),
+                document::body(document::array(coco::Tag::document()).description("List of tags"))
+                    .mime("application/json"),
             )
             .description("List of tags"),
         ))
@@ -143,7 +147,7 @@ fn tree_filter(
         .and(document::document(
             document::response(
                 200,
-                document::body(coco::Blob::document()).mime("application/json"),
+                document::body(coco::Tree::document()).mime("application/json"),
             )
             .description("Tree for path found"),
         ))
