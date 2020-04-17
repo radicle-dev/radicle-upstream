@@ -14,7 +14,9 @@ use crate::coco;
 pub fn filters(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    blob_filter(Arc::<RwLock<Paths>>::clone(&paths)).or(commit_filter(paths))
+    blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
+        .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+        .or(tree_filter(paths))
 }
 
 /// GET /blob/<project_id>/<revision>/<path...>
@@ -72,6 +74,34 @@ fn commit_filter(
         .and_then(handler::commit)
 }
 
+/// GET /tree/<project_id>/<revision>/<prefix>
+fn tree_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("tree")
+        .and(warp::get())
+        .and(super::with_paths(paths))
+        .and(document::param::<String>(
+            "project_id",
+            "ID of the project the blob is part of",
+        ))
+        .and(document::param::<String>(
+            "revision",
+            "Git revision of the blobs content",
+        ))
+        .and(document::tail("prefix", "Path prefix to query"))
+        .and(document::document(document::description("Fetch a Tree")))
+        .and(document::document(document::tag("Source")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(coco::Blob::document()).mime("application/json"),
+            )
+            .description("Tree for path found"),
+        ))
+        .and_then(handler::tree)
+}
+
 /// Source handlers for conversion beetween core domain and http request fullfilment.
 mod handler {
     use librad::paths::Paths;
@@ -105,6 +135,19 @@ mod handler {
         let commit = coco::commit(&paths, &project_id, &sha1)?;
 
         Ok(reply::json(&commit))
+    }
+
+    /// Fetch a [`coco::Tree`].
+    pub async fn tree(
+        librad_paths: Arc<RwLock<Paths>>,
+        project_id: String,
+        revision: String,
+        prefix: Tail,
+    ) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
+        let tree = coco::tree(&paths, &project_id, &revision, prefix.as_str())?;
+
+        Ok(reply::json(&tree))
     }
 }
 
@@ -295,6 +338,66 @@ impl ToDocumentedType for coco::Person {
     }
 }
 
+impl Serialize for coco::Tree {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Tree", 3)?;
+        state.serialize_field("path", &self.path)?;
+        state.serialize_field("entries", &self.entries)?;
+        state.serialize_field("info", &self.info)?;
+        state.end()
+    }
+}
+
+impl ToDocumentedType for coco::Tree {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert(
+            "path".into(),
+            document::string()
+                .description("Absolute path to the tree object from the repo root.")
+                .example("ui/src"),
+        );
+        properties.insert(
+            "entries".into(),
+            document::array(coco::TreeEntry::document())
+                .description("Entries listed in that tree result."),
+        );
+        properties.insert("info".into(), coco::Info::document());
+
+        document::DocumentedType::from(properties).description("Tree")
+    }
+}
+
+impl Serialize for coco::TreeEntry {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Tree", 2)?;
+        state.serialize_field("path", &self.path)?;
+        state.serialize_field("info", &self.info)?;
+        state.end()
+    }
+}
+
+impl ToDocumentedType for coco::TreeEntry {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert(
+            "path".into(),
+            document::string()
+                .description("Absolute path to the object from the root of the repo.")
+                .example("ui/src/main.ts"),
+        );
+        properties.insert("info".into(), coco::Info::document());
+
+        document::DocumentedType::from(properties).description("TreeEntry")
+    }
+}
+
 #[allow(clippy::non_ascii_literal, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
@@ -406,8 +509,7 @@ mod test {
                         },
                         "summary": "Add some binary files",
                         "description": "",
-                        "committerTime": "1575282964",
-                    },
+                        "committerTime": "1575282964", },
                 },
             })
         );
@@ -457,6 +559,110 @@ mod test {
                 "summary": "Extend the docs (#2)",
                 "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
                 "committerTime": "1578309972",
+            }),
+        );
+    }
+
+    #[tokio::test]
+    async fn tree() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let (platinum_id, _platinum_project) = coco::replicate_platinum(
+            &tmp_dir,
+            &librad_paths,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )
+        .unwrap();
+
+        let revision = "master";
+        let prefix = "src";
+
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let res = request()
+            .method("GET")
+            .path(&format!("/tree/{}/{}/{}", platinum_id, revision, prefix))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::tree(&librad_paths, &platinum_id.to_string(), revision, prefix).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(
+            have,
+            json!({
+                "path": "src",
+                "info": {
+                    "name": "src",
+                    "objectType": "TREE",
+                    "lastCommit": {
+                        "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
+                        "author": {
+                            "avatar":  "https://avatars.dicebear.com/v2/jdenticon/4800695552551917589.svg",
+                            "name": "Alexander Simmerl",
+                            "email": "a.simmerl@gmail.com",
+                        },
+                        "committer": {
+                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
+                            "email": "noreply@github.com",
+                            "name": "GitHub",
+                        },
+                        "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
+                        "description": "Updated README",
+                        "committerTime": "1584367899",
+                    },
+                },
+                "entries": [
+                    {
+                        "path": "src/Eval.hs",
+                        "info": {
+                            "name": "Eval.hs",
+                            "objectType": "BLOB",
+                            "lastCommit": {
+                                "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
+                                "author": {
+                                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/4800695552551917589.svg",
+                                    "name": "Alexander Simmerl",
+                                    "email": "a.simmerl@gmail.com",
+                                },
+                        "committer": {
+                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
+                            "email": "noreply@github.com",
+                            "name": "GitHub",
+                        },
+                                "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
+                                "description": "Updated README",
+                                "committerTime": "1584367899",
+                            },
+                        },
+                    },
+                    {
+                        "path": "src/memory.rs",
+                        "info": {
+                            "name": "memory.rs",
+                            "objectType": "BLOB",
+                            "lastCommit": {
+                                "sha1": "e24124b7538658220b5aaf3b6ef53758f0a106dc",
+                                "author": {
+                                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                    "name": "Rūdolfs Ošiņš",
+                                    "email": "rudolfs@osins.org",
+                                },
+                                "committer": {
+                                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                    "name": "Rūdolfs Ošiņš",
+                                    "email": "rudolfs@osins.org",
+                                },
+                                "summary": "Move examples to \"src\"",
+                                "description": "",
+                                "committerTime": "1575283266",
+                            },
+                        },
+                    },
+                ],
             }),
         );
     }
