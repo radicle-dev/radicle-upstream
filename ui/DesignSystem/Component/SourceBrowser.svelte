@@ -78,8 +78,8 @@
         dataCy="revision-selector"
         style="margin-bottom: 24px"
         items={$revisions.data.branches}
-        on:select={revision => updateRevision({
-            revision: revision,
+        on:select={event => updateRevision({
+            revision: event.detail,
             projectId: projectId
           })} />
     {:else if $revisions.status === 'ERROR'}

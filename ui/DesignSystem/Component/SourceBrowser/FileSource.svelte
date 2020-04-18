@@ -60,7 +60,7 @@
 <div class="file-source" data-cy="file-source">
   <header>
     <Icon.File />
-    {blob.path}
+    {blob.info.name}
   </header>
   <div class="container">
     {#if blob.binary}
