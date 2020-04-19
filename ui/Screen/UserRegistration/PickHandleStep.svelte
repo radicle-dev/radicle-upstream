@@ -1,12 +1,12 @@
 <script>
+  import { getClient, query } from "svelte-apollo";
+  import { gql } from "apollo-boost";
+  import { pop } from "svelte-spa-router";
   import validatejs from "validate.js";
-  import { identity } from "../../src/identity.ts";
+
   import { Button, Flex, Input } from "../../DesignSystem/Primitive";
 
-  import { pop } from "svelte-spa-router";
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
-
+  export let identity = null;
   export let onNextStep = null;
 
   const nextStep = () => {
@@ -78,8 +78,8 @@
 
 <Input.Text
   dataCy="handle"
-  avatarFallback={$identity.data.avatarFallback}
-  imageUrl={$identity.data.metadata.avatarUrl}
+  avatarFallback={identity.avatarFallback}
+  imageUrl={identity.metadata.avatarUrl}
   style="--focus-outline-color: var(--color-primary)"
   placeholder="User handle"
   bind:value={handle}

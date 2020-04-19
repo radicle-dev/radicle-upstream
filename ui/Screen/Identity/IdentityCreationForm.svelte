@@ -1,7 +1,8 @@
 <script>
   import validatejs from "validate.js";
 
-  import { create, identity } from "../../src/identity.ts";
+  import { create, store } from "../../src/identity.ts";
+  import * as remote from "../../src/remote.ts";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
@@ -74,9 +75,9 @@
 
   $: validate(handle, displayName, avatarUrl);
 
-  $: if ($identity.status === "SUCCESS") {
+  $: if ($store.status === remote.Status.Success) {
     onSuccess();
-  } else if ($identity.status === "SUCCESS") {
+  } else if ($store.status === remote.Status.Error) {
     onError();
   }
 </script>
@@ -131,7 +132,7 @@
       </Button>
       <Button
         dataCy="create-id-button"
-        disabled={!handle || validations || $identity.status === 'LOADING'}
+        disabled={!handle || validations || $store.status === remote.Status.Loading}
         size="big"
         on:click={() => {
           beginValidation = true;

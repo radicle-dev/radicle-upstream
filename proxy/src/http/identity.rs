@@ -2,6 +2,8 @@
 
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -9,14 +11,19 @@ use crate::avatar;
 use crate::identity;
 
 /// Combination of all identity routes.
-pub fn filters() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter().or(create_filter())
+pub fn filters(
+    store: Arc<RwLock<kv::Store>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    get_filter().or(create_filter(store))
 }
 
 /// POST /identities
-fn create_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn create_filter(
+    store: Arc<RwLock<kv::Store>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("identities")
         .and(warp::post())
+        .and(super::with_store(store))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new unique Identity",
@@ -63,28 +70,37 @@ fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
+    use std::sync::Arc;
+    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
     use crate::avatar;
+    use crate::error;
     use crate::identity;
+    use crate::session;
 
     /// Create a new [`identity::Identity`].
-    pub async fn create(input: super::CreateInput) -> Result<impl Reply, Rejection> {
-        let id = "123abcd.git";
-        let res = reply::json(&identity::Identity {
-            id: id.into(),
-            shareable_entity_identifier: format!("{}@123abcd.git", input.handle),
-            metadata: identity::Metadata {
-                handle: input.handle,
-                display_name: input.display_name,
-                avatar_url: input.avatar_url,
-            },
-            registered: None,
-            avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
-        });
+    pub async fn create(
+        store: Arc<RwLock<kv::Store>>,
+        input: super::CreateInput,
+    ) -> Result<impl Reply, Rejection> {
+        let store = store.read().await;
 
-        Ok(reply::with_status(res, StatusCode::CREATED))
+        if let Some(identity) = session::get(&store)?.identity {
+            return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
+        }
+
+        let id = identity::create(input.handle, input.display_name, input.avatar_url)?;
+
+        session::set(
+            &store,
+            session::Session {
+                identity: Some(id.clone()),
+            },
+        )?;
+
+        Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
@@ -313,6 +329,8 @@ impl ToDocumentedType for CreateInput {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
+    use std::sync::Arc;
+    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
@@ -321,7 +339,10 @@ mod test {
 
     #[tokio::test]
     async fn create() {
-        let api = super::filters();
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let api = super::filters(Arc::new(RwLock::new(store)));
+
         let res = request()
             .method("POST")
             .path("/identities")
@@ -359,9 +380,12 @@ mod test {
 
     #[tokio::test]
     async fn get() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let api = super::filters(Arc::new(RwLock::new(store)));
+
         let id = "123abcd.git";
 
-        let api = super::filters();
         let res = request()
             .method("GET")
             .path(&format!("/identities/{}", id))

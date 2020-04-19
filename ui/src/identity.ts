@@ -1,6 +1,7 @@
 import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
+import * as session from "./session";
 
 // Types.
 export interface Avatar {
@@ -23,8 +24,8 @@ export interface Identity {
   avatarFallback: Avatar;
 }
 
-const identityStore = remote.createStore<Identity>();
-export const identity = identityStore.readable;
+const creationStore = remote.createStore<Identity>();
+export const store = creationStore.readable;
 
 // Events.
 enum Kind {
@@ -39,12 +40,7 @@ interface Create extends event.Event<Kind> {
   avatarUrl?: string;
 }
 
-interface Fetch extends event.Event<Kind> {
-  kind: Kind.Fetch;
-  id: string;
-}
-
-type Msg = Create | Fetch;
+type Msg = Create;
 
 interface CreateInput {
   handle: string;
@@ -55,24 +51,38 @@ interface CreateInput {
 function update(msg: Msg): void {
   switch (msg.kind) {
     case Kind.Create:
-      identityStore.loading();
+      creationStore.loading();
       api.post<CreateInput, Identity>("identities", {
         handle: msg.handle,
         displayName: msg.displayName,
         avatarUrl: msg.avatarUrl
       })
-        .then(identityStore.success)
-        .catch(identityStore.error)
-
-      break;
-    case Kind.Fetch:
-      identityStore.loading();
-      api.get<Identity>(`identities/${msg.id}`)
-        .then(identityStore.success)
-        .catch(identityStore.error)
+        .then(id => {
+          session.fetch()
+          creationStore.success(id);
+        })
+        .catch(creationStore.error)
 
       break;
   }
 }
 
-export const create = event.create<Kind, Msg>(Kind.Create, update) 
+export const create = event.create<Kind, Msg>(Kind.Create, update) ;
+
+// MOCK
+export const fallback = {
+  id: "cloudhead@123abcd.git",
+  metadata: {
+    handle: "cloudhead",
+    displayName: "Alexis Sellier",
+    avatarUrl: "https://avatars1.githubusercontent.com/u/40774",
+  },
+  avatarFallback: {
+    background: {
+        r: 122,
+        g: 112,
+        b: 90,
+    },
+    emoji: "💡",
+  },
+};

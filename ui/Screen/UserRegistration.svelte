@@ -3,8 +3,10 @@
   import { getClient, mutate } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
-  import { identity } from "../src/identity.ts";
+  import { fallback } from "../src/identity.ts";
   import { showNotification } from "../store/notification.js";
+  import * as remote from "../src/remote.ts";
+  import { session } from "../src/session.ts";
 
   import { Text, Title } from "../DesignSystem/Primitive";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
@@ -14,8 +16,18 @@
 
   let step = 1;
 
-  let handle = $identity.data.metadata.handle;
-  const id = $identity.data.id;
+  let identity = fallback;
+  let handle = null;
+  let id = null;
+
+  if (
+    $session.status === remote.Status.Success &&
+    $session.data.identity !== null
+  ) {
+    identity = $session.data.identity;
+    handle = $session.data.identity.metadata.handle;
+    id = $session.data.identity.id;
+  }
 
   const nextStep = () => {
     step += 1;
@@ -57,6 +69,8 @@
       pop();
     }
   };
+
+  $: console.log(handle);
 </script>
 
 <style>
@@ -92,11 +106,12 @@
           Registering your handle makes it unique and allows others to easily
           find you.
         </Text>
-        <PickHandleStep bind:handle onNextStep={nextStep} />
+        <PickHandleStep bind:handle {identity} onNextStep={nextStep} />
       {/if}
 
       {#if step === 2}
         <SubmitRegistrationStep
+          {identity}
           onNextStep={registerUser}
           onPreviousStep={previousStep}
           {handle} />
