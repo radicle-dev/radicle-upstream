@@ -1,7 +1,7 @@
 <script>
   import ApolloClient from "apollo-boost";
   import { InMemoryCache } from "apollo-cache-inmemory";
-  import Router, { push } from "svelte-spa-router";
+  import Router, { push, location } from "svelte-spa-router";
   import { setClient } from "svelte-apollo";
 
   import { initializeHotkeys } from "./lib/hotkeys.js";
@@ -43,7 +43,9 @@
       if ($session.data.identity === null) {
         push(path.createIdentity());
       } else {
-        push(path.profile());
+        if ($location === "/") {
+          push(path.profile());
+        }
       }
       break;
 
