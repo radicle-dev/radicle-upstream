@@ -19,7 +19,7 @@
     SUMMARY: 3
   };
 
-  let currentStep = steps.DETAILS;
+  let currentStep = steps.NEW_OR_EXISTING;
 
   const nextStep = () => {
     currentStep += 1;
