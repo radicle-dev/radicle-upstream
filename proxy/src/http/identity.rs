@@ -107,7 +107,7 @@ mod handler {
     pub async fn get(id: String) -> Result<impl Reply, Rejection> {
         let id = identity::Identity {
             id: id.to_string(),
-            shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
+            shareable_entity_identifier: format!("cloudhead@{}", id),
             metadata: identity::Metadata {
                 handle: "cloudhead".into(),
                 display_name: Some("Alexis Sellier".into()),

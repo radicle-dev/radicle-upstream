@@ -71,3 +71,6 @@ impl ToDocumentedType for session::Session {
         document::DocumentedType::from(properties).description("Session")
     }
 }
+
+#[cfg(test)]
+mod test {}
