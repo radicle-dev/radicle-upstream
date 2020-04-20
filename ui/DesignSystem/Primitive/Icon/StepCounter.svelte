@@ -18,6 +18,6 @@
     <path
       d="M7.5 12C9.98528 12 12 9.98528 12 7.5C12 5.01472 9.98528 3 7.5 3C5.01472
       3 3 5.01472 3 7.5C3 9.98528 5.01472 12 7.5 12Z"
-      fill="var(--color-tertiary-level-6)" />
+      fill="var(--color-secondary)" />
   {/if}
 </svg>
