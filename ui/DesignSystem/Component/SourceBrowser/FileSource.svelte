@@ -58,6 +58,10 @@
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
 
+  header .file-name {
+    margin-left: 0.5rem;
+  }
+
   header .commit-header {
     height: 3rem;
     background-color: var(--color-secondary-level-1);
@@ -82,7 +86,7 @@
 
   .code,
   .line-numbers {
-    padding-top: 1.5rem;
+    padding: 0.75rem 0;
   }
 
   .container {
@@ -95,7 +99,7 @@
     <header>
       <div class="file-header">
         <Icon.File />
-        {path}
+        <span class="file-name">{path}</span>
       </div>
       <div class="commit-header">
         <CommitTeaser
