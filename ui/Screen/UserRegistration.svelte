@@ -69,8 +69,6 @@
       pop();
     }
   };
-
-  $: console.log(handle);
 </script>
 
 <style>
