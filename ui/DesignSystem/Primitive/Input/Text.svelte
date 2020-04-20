@@ -11,7 +11,7 @@
   export let disabled = null;
   export let valid = true;
   export let validationMessage = null;
-  export let variant = "vanilla"; // vanilla | handle
+  export let variant = "vanilla"; // vanilla | handle | project
   export let imageUrl = null;
   export let avatarFallback = null;
   export let validationPending = false;
@@ -82,7 +82,7 @@
       absolute; top: 0px; left: 10px" />
   {/if}
 
-  {#if variant === 'handle'}
+  {#if variant === 'handle' || variant === 'project'}
     {#if validationPending}
       <Icon.Spinner
         style="justify-content: flex-start; position: absolute; top: 12px;

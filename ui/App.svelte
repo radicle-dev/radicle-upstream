@@ -68,7 +68,7 @@
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
     "/projects/new": CreateProject,
-    "/projects/:projectId/register/:entityId": ProjectRegistration,
+    "/projects/:projectId/register/:registrarId": ProjectRegistration,
     "/projects/:id/*": Project,
     "/design-system-guide": DesignSystemGuide,
     "/help": Help,

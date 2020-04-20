@@ -6,7 +6,7 @@
   import { registerProject } from "../../lib/path.js";
 
   export let projectId = null;
-  export let entityId = null;
+  export let registrarId = null;
   export let title = null;
   export let description = null;
   export let isRegistered = false;
@@ -16,7 +16,7 @@
     {
       title: "Register project",
       icon: Icon.Register,
-      event: () => push(registerProject(projectId, entityId))
+      event: () => push(registerProject(projectId, registrarId))
     }
   ];
 </script>

@@ -10,12 +10,12 @@
   import ProjectCard from "./ProjectCard.svelte";
   import Placeholder from "./Placeholder.svelte";
 
-  let entityId = null;
+  let registrarId = null;
 
   // TODO(rudolfs): how do we make sure that this gets loaded before we render
   // the component?
   if ($session.status === remote.Status.Success) {
-    entityId = $session.data.identity.id;
+    registrarId = $session.data.identity.id;
   }
 </script>
 
@@ -66,7 +66,7 @@
           class="project-card">
           <ProjectCard
             projectId={project.id}
-            {entityId}
+            {registrarId}
             title={project.metadata.name}
             description={project.metadata.description}
             isRegistered={false}
