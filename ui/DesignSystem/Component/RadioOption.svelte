@@ -5,6 +5,8 @@
   export let title = null;
   export let active = false;
   export let dataCy = null;
+
+  const slotPresent = $$props.$$slots !== undefined;
 </script>
 
 <style>
@@ -49,7 +51,7 @@
     <Icon.CheckCircle
       style={active ? 'display: block; fill: var(--color-primary)' : 'display: none'} />
   </div>
-  {#if active}
+  {#if slotPresent && active}
     <div class="body" in:slide>
       <slot name="option-body" />
     </div>
