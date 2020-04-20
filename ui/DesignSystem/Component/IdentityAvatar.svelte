@@ -1,11 +1,7 @@
 <script>
   import { Avatar } from "../Primitive";
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityHandleStore
-  } from "../../store/identity.js";
 
+  export let identity = null;
   export let showTitle = false;
   export let style = null;
   export let size = null;
@@ -14,7 +10,7 @@
 <Avatar
   {style}
   {size}
-  title={showTitle && $identityHandleStore}
-  avatarFallback={$identityAvatarFallbackStore}
-  imageUrl={$identityAvatarUrlStore}
+  title={showTitle && identity.metadata.handle}
+  avatarFallback={identity.avatarFallback}
+  imageUrl={identity.metadata.avatarUrl}
   variant="user" />

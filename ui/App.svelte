@@ -1,19 +1,14 @@
 <script>
-  import ApolloClient, { gql } from "apollo-boost";
-  import { query } from "svelte-apollo";
+  import ApolloClient from "apollo-boost";
   import { InMemoryCache } from "apollo-cache-inmemory";
-  import { setClient } from "svelte-apollo";
   import Router, { push } from "svelte-spa-router";
+  import { setClient } from "svelte-apollo";
+
   import { initializeHotkeys } from "./lib/hotkeys.js";
   import * as path from "./lib/path.js";
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityHandleStore,
-    identityIdStore,
-    identityShareableEntityIdentifierStore
-  } from "./store/identity.js";
   import { showNotification } from "./store/notification.js";
+  import * as remote from "./src/remote.ts";
+  import { fetch, session } from "./src/session.ts";
 
   import CreateProject from "./Screen/CreateProject.svelte";
   import Blank from "./Screen/Blank.svelte";
@@ -39,62 +34,27 @@
 
   setClient(client);
 
-  const GET_IDENTITY = gql`
-    query Query {
-      session {
-        identity {
-          id
-          avatarFallback {
-            background {
-              b
-              g
-              r
-            }
-            emoji
-          }
-          metadata {
-            avatarUrl
-            displayName
-            handle
-          }
-          shareableEntityIdentifier
-        }
-      }
-    }
-  `;
+  $: switch ($session.status) {
+    case remote.Status.NotAsked:
+      fetch();
+      break;
 
-  const getIdentity = async () => {
-    try {
-      const response = query(client, {
-        query: GET_IDENTITY
-      });
-      const result = await response.result();
-      if (result.data.session.identity) {
-        identityAvatarUrlStore.set(
-          result.data.session.identity.metadata.avatarUrl
-        );
-        identityAvatarFallbackStore.set(
-          result.data.session.identity.avatarFallback
-        );
-        identityHandleStore.set(result.data.session.identity.metadata.handle);
-        identityIdStore.set(result.data.session.identity.id);
-        identityShareableEntityIdentifierStore.set(
-          result.data.session.identity.shareableEntityIdentifier
-        );
-        push(path.profile());
-      } else {
+    case remote.Status.Success:
+      if ($session.data.identity === null) {
         push(path.createIdentity());
+      } else {
+        push(path.profile());
       }
-    } catch (error) {
-      console.log(error);
+      break;
+
+    case remote.Status.Error:
+      console.log($session.error);
       showNotification({
-        text: "Identity could not be created",
+        text: "Session could not be fetched",
         level: "error"
       });
-    }
-  };
-
-  getIdentity();
+      break;
+  }
 
   const routes = {
     "/": Blank,

@@ -10,9 +10,7 @@
   export let title = null;
   export let description = null;
   export let isRegistered = false;
-  export let commitCount = null;
-  export let branchCount = null;
-  export let memberCount = null;
+  export let stats = { branches: -1, commits: -1, contributors: -1 };
 
   const dropdownMenuItems = [
     {
@@ -73,9 +71,18 @@
   </div>
 
   <div class="right">
-    <Stat icon={Icon.Commit} count={commitCount} style="margin-right: 32px;" />
-    <Stat icon={Icon.Branch} count={branchCount} style="margin-right: 32px;" />
-    <Stat icon={Icon.Member} count={memberCount} style="margin-right: 44px;" />
+    <Stat
+      icon={Icon.Commit}
+      count={stats.commits}
+      style="margin-right: 32px;" />
+    <Stat
+      icon={Icon.Branch}
+      count={stats.branches}
+      style="margin-right: 32px;" />
+    <Stat
+      icon={Icon.Member}
+      count={stats.contributors}
+      style="margin-right: 44px;" />
 
     <AdditionalActionsDropdown
       headerTitle={projectId}

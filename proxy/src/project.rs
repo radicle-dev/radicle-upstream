@@ -4,8 +4,14 @@
 use librad::meta;
 use librad::project;
 use radicle_registry_client as registry;
+use std::str::FromStr;
+
+use crate::coco;
+use crate::error;
 
 /// Object the API returns for project metadata.
+#[derive(serde_derive::Deserialize, serde_derive::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Project name.
     pub name: String,
@@ -34,6 +40,8 @@ pub struct Project {
     /// Informs if the project is present in the Registry and under what top-level entity it can be
     /// found.
     pub registration: Option<Registration>,
+    /// High-level statistics about the project.
+    pub stats: Stats,
 }
 
 /// Variants for possible registration states of a project.
@@ -54,4 +62,20 @@ pub struct Stats {
     pub commits: u32,
     /// Amount of unique commiters on the default branch.
     pub contributors: u32,
+}
+
+/// TODO(xla): Add documentation.
+pub async fn get(paths: &librad::paths::Paths, id: &str) -> Result<Project, error::Error> {
+    let meta = coco::get_project_meta(paths, id)?;
+
+    Ok(Project {
+        id: librad::project::ProjectId::from_str(id)?,
+        metadata: meta.into(),
+        registration: None,
+        stats: Stats {
+            branches: 11,
+            commits: 267,
+            contributors: 8,
+        },
+    })
 }
