@@ -1,22 +1,29 @@
 <script>
-  import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
+  import { gql } from "apollo-boost";
   import { pop } from "svelte-spa-router";
 
-  import { identity } from "../src/identity.ts";
-  import {
-    USER_REGISTRATION,
-    PROJECT_REGISTRATION
-  } from "../../native/types.js";
+  import { fallback } from "../src/identity.ts";
+  import * as remote from "../src/remote.ts";
+  import { session } from "../src/session.ts";
 
-  import { Button } from "../DesignSystem/Primitive";
   import {
     ModalLayout,
     Transaction,
     TransactionStatusbar
   } from "../DesignSystem/Component";
+  import { Button } from "../DesignSystem/Primitive";
 
   export let params = null;
+  // TODO(xla): Can go once we get proper transaction participants.
+  let identity = fallback;
+
+  $: if (
+    $session.status === remote.Status.Success &&
+    $session.data.identity !== null
+  ) {
+    identity = $session.data.identity;
+  }
 
   const GET_TRANSACTIONS = gql`
     query Query($ids: [ID!]!) {
@@ -61,9 +68,9 @@
 
   const formatMessage = kind => {
     switch (kind) {
-      case USER_REGISTRATION:
+      case "USER_REGISTRATION":
         return "User registration";
-      case PROJECT_REGISTRATION:
+      case "PROJECT_REGISTRATION":
         return "Project registration";
     }
   };
@@ -71,12 +78,12 @@
   const formatSubject = msg => {
     return {
       name:
-        msg.kind === USER_REGISTRATION
+        msg.kind === "USER_REGISTRATION"
           ? msg.handle
-          : `${$identity.handle} / ${msg.projectName}`,
+          : `${identity.metadata.handle} / ${msg.projectName}`,
       kind: "user",
-      avatarFallback: $identity.avatarFallback,
-      imageUrl: $identity.avatarUrl
+      avatarFallback: identity.avatarFallback,
+      imageUrl: identity.metadata.avatarUrl
     };
   };
 
@@ -88,10 +95,10 @@
       stake: `${formatMessage(kind)} deposit`,
       subject: formatSubject(transaction.messages[0]),
       payer: {
-        name: $identity.displayName || $identity.Handle,
+        name: identity.metadata.displayName || identity.metadata.handle,
         kind: "user",
-        avatarFallback: $identity.avatarFallback,
-        imageUrl: $identity.avatarUrl
+        avatarFallback: identity.avatarFallback,
+        imageUrl: identity.metadata.avatarUrl
       }
     };
   };

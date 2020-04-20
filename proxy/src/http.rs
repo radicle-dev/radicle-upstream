@@ -15,6 +15,7 @@ mod error;
 mod identity;
 mod notification;
 mod project;
+mod session;
 mod source;
 mod transaction;
 
@@ -22,17 +23,19 @@ mod transaction;
 pub fn routes(
     librad_paths: Arc<RwLock<paths::Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
+    store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
     let subscriptions = crate::notification::Subscriptions::default();
 
     let api = path("v1").and(
-        identity::filters()
+        identity::filters(Arc::<RwLock<kv::Store>>::clone(&store))
             .or(notification::filters(subscriptions.clone()))
             .or(project::filters(
-                Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
+                librad_paths,
                 Arc::<RwLock<registry::Registry>>::clone(&registry),
                 subscriptions,
             ))
+            .or(session::get_filter(store))
             .or(source::routes(librad_paths))
             .or(transaction::filters(registry)),
     );
@@ -60,7 +63,15 @@ pub fn with_registry(
     warp::any().map(move || Arc::<RwLock<registry::Registry>>::clone(&reg))
 }
 
-/// State filer to expose [`notification::Subscriptions`] to handlers.
+/// State filter to expose [`kv::Store`] to handlers.
+#[must_use]
+pub fn with_store(
+    store: Arc<RwLock<kv::Store>>,
+) -> impl Filter<Extract = (Arc<RwLock<kv::Store>>,), Error = Infallible> + Clone {
+    warp::any().map(move || Arc::<RwLock<kv::Store>>::clone(&store))
+}
+
+/// State filter to expose [`notification::Subscriptions`] to handlers.
 #[must_use]
 pub fn with_subscriptions(
     subscriptions: crate::notification::Subscriptions,

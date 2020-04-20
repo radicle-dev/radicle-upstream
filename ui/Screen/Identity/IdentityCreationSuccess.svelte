@@ -2,7 +2,8 @@
   import { push, replace } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
-  import { identity } from "../../src/identity.ts";
+  import { store } from "../../src/identity.ts";
+  import * as remote from "../../src/remote.ts";
 
   import {
     Avatar,
@@ -78,26 +79,28 @@
       </span>
     </Text>
     <div class="identity-card">
-      <Avatar
-        size="huge"
-        imageUrl={$identity.data.metadata.avatarUrl}
-        avatarFallback={$identity.data.avatarFallback} />
-      <div class="identity-card-text-container">
-        <Title>
-          {$identity.data.metadata.displayName || $identity.data.metadata.handle}
-        </Title>
-        <Copyable {afterCopy}>
-          <Flex align="left">
-            <Text
-              style="color: var(--color-foreground-level-6); white-space:
-              nowrap; overflow: hidden; text-overflow: ellipsis; max-width:
-              350px;">
-              {$identity.data.shareableEntityIdentifier}
-            </Text>
-            <svelte:component this={copyIcon} style="margin-left: 8px;" />
-          </Flex>
-        </Copyable>
-      </div>
+      {#if $store.status === remote.Status.Success}
+        <Avatar
+          size="huge"
+          imageUrl={$store.data.metadata.avatarUrl}
+          avatarFallback={$store.data.avatarFallback} />
+        <div class="identity-card-text-container">
+          <Title>
+            {$store.data.metadata.displayName || $store.data.metadata.handle}
+          </Title>
+          <Copyable {afterCopy}>
+            <Flex align="left">
+              <Text
+                style="color: var(--color-foreground-level-6); white-space:
+                nowrap; overflow: hidden; text-overflow: ellipsis; max-width:
+                350px;">
+                {$store.data.shareableEntityIdentifier}
+              </Text>
+              <svelte:component this={copyIcon} style="margin-left: 8px;" />
+            </Flex>
+          </Copyable>
+        </div>
+      {/if}
     </div>
 
     <Button on:click={onClose}>Go to profile</Button>

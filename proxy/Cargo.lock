@@ -3845,9 +3845,15 @@ dependencies = [
 
 [[package]]
 name = "tiny-bip39"
+<<<<<<< HEAD
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0165e045cc2ae1660270ca65e1676dbaab60feb0f91b10f7d0665e9b47e31f2"
+=======
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e255ec4f7d4aaccbede17dffcfb2e71434d17f5c921d5a06823b8e58a2bcd468"
+>>>>>>> master
 dependencies = [
  "failure",
  "hmac",
@@ -4386,7 +4392,11 @@ dependencies = [
 [[package]]
 name = "warp"
 version = "0.2.2"
+<<<<<<< HEAD
 source = "git+https://github.com/radicle-dev/warp?branch=openapi#879e5385014831fb2d9f6af21b14537126ac907c"
+=======
+source = "git+https://github.com/radicle-dev/warp?branch=openapi#fb8cc0bcdbee956e427ddc2f7d34ee4cee87f492"
+>>>>>>> master
 dependencies = [
  "bytes 0.5.4",
  "futures 0.3.4",
