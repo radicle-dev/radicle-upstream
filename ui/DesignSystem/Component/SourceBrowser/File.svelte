@@ -6,17 +6,14 @@
 
   import * as path from "../../../lib/path.js";
   import { BLOB } from "../../../../native/types.js";
-  import {
-    revisionStore,
-    objectPathStore
-  } from "../../../store/sourceBrowser.js";
+  import { currentPath, currentRevision } from "../../../src/source.ts";
 
   export let name = null;
   export let filePath = null;
 
   const id = getContext("projectId");
 
-  $: active = filePath === $objectPathStore;
+  $: active = filePath === $currentPath;
 </script>
 
 <style>
@@ -48,7 +45,7 @@
 </style>
 
 <div class="file" class:active>
-  <a href={path.projectSource(id, $revisionStore, BLOB, filePath)} use:link>
+  <a href={path.projectSource(id, $currentRevision, BLOB, filePath)} use:link>
     <Icon.File />
     {name}
   </a>

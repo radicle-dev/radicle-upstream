@@ -327,7 +327,7 @@ impl ToDocumentedType for project::Registration {
                 "user".into(),
                 document::string().description("User id").example("monadic"),
             );
-            document::DocumentedType::from(fields).description("Registered under a Useer")
+            document::DocumentedType::from(fields).description("Registered under a User")
         };
 
         document::one_of(vec![org, user])

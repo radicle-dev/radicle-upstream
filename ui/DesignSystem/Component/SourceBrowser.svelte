@@ -1,17 +1,19 @@
 <script>
   import { getContext } from "svelte";
 
+  import { BLOB, TREE } from "../../../native/types.js";
   import {
-    objectPathStore,
-    objectTypeStore,
-    revisionStore
-  } from "../../store/sourceBrowser.js";
+    currentRevision,
+    fetchRevisions,
+    object,
+    revisions,
+    updateRevision
+  } from "../../src/source.ts";
 
-  import { BLOB } from "../../../native/types.js";
+  import { Input } from "../Primitive";
   import FileList from "./SourceBrowser/FileList.svelte";
   import FileSource from "./SourceBrowser/FileSource.svelte";
   import Folder from "./SourceBrowser/Folder.svelte";
-  import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
@@ -35,6 +37,11 @@
     query: GET_PROJECT,
     variables: { projectId: getContext("projectId") }
   });
+
+  $: console.log("currentRevision", $currentRevision);
+  $: console.log("object", $object);
+
+  fetchRevisions({ projectId: projectId });
 </script>
 
 <style>
@@ -62,7 +69,23 @@
 
 <div class="container" {style}>
   <div class="column-left">
-    <RevisionSelector />
+    {#if $revisions.status === 'NOT_ASKED'}
+      <p>Not asked...</p>
+    {:else if $revisions.status === 'LOADING'}
+      <p>Loading...</p>
+    {:else if $revisions.status === 'SUCCESS'}
+      <Input.Dropdown
+        dataCy="revision-selector"
+        style="margin-bottom: 24px"
+        items={$revisions.data.branches}
+        on:select={event => updateRevision({
+            revision: event.detail,
+            projectId: projectId
+          })} />
+    {:else if $revisions.status === 'ERROR'}
+      <p>{`error: ${$object.error.message}`}</p>
+    {/if}
+
     {#await $project then result}
       <div class="source-tree" data-cy="source-tree">
         <Folder name={result.data.project.metadata.name} />
@@ -71,16 +94,16 @@
   </div>
 
   <div class="column-right">
-    {#if $objectTypeStore === BLOB}
-      <FileSource
-        {projectId}
-        path={$objectPathStore}
-        revision={$revisionStore} />
-    {:else}
-      <FileList
-        {projectId}
-        prefix={$objectPathStore}
-        revision={$revisionStore} />
+    {#if $object.status === 'LOADING'}
+      <p>Loading...</p>
+    {:else if $object.status === 'SUCCESS'}
+      {#if $object.data.info.objectType === BLOB}
+        <FileSource blob={$object.data} {projectId} />
+      {:else if $object.data.info.objectType === TREE}
+        <FileList {projectId} tree={$object.data} revision={$currentRevision} />
+      {/if}
+    {:else if $object.status === 'ERROR'}
+      <p>{`error: ${$object.error.message}`}</p>
     {/if}
   </div>
 </div>
