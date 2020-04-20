@@ -354,7 +354,6 @@
   table.diff {
     table-layout: fixed;
     border-collapse: collapse;
-    width: 100%;
   }
 
   tr.diff-line[data-type="+"] > * {
@@ -369,8 +368,8 @@
     color: var(--color-foreground-level-5);
     text-align: center;
     user-select: none;
-    width: 3rem;
     line-height: 150%;
+    padding: 0 0.5rem;
   }
   td.diff-line-content {
     font-family: var(--typeface-mono-regular);
@@ -379,7 +378,7 @@
   td.diff-line-type {
     font-family: var(--typeface-mono-regular);
     color: var(--color-foreground-level-6);
-    width: 2rem;
+    padding: 0 0.5rem;
     text-align: center;
   }
   td.diff-expand-action {
@@ -392,6 +391,7 @@
     font-family: var(--typeface-mono-regular);
     color: var(--color-foreground-level-5);
     background-color: var(--color-foreground-level-1);
+    padding-left: 0.5rem;
   }
 
   /* TODO(cloudhead): These should be global */
