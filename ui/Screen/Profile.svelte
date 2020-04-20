@@ -80,6 +80,7 @@
 
   <Topbar style="position: fixed; top: 0;">
     <a slot="left" href={path.profileProjects()} use:link>
+      <!-- TODO(xla): Handle other states -->
       {#if $session.status === remote.Status.Success}
         <IdentityAvatar
           identity={$session.data.identity}

@@ -1,8 +1,9 @@
 <script>
   import { push } from "svelte-spa-router";
 
-  import { projects, projectNameStore } from "../../src/project.ts";
   import * as path from "../../lib/path.js";
+  import { projects, projectNameStore } from "../../src/project.ts";
+  import * as remote from "../../src/remote.ts";
 
   import { Flex, Text, Button } from "../Primitive";
   import ProjectCard from "./ProjectCard.svelte";
@@ -44,7 +45,7 @@
   }
 </style>
 
-{#if $projects.status === 'SUCCESS'}
+{#if $projects.status === remote.Status.Success}
   {#if $projects.data.length > 0}
     <ul>
       {#each $projects.data as project}
@@ -102,6 +103,6 @@
       </div>
     </div>
   {/if}
-{:else if $projects.status === 'ERROR'}
+{:else if $projects.status === remote.Status.Error}
   <Text>{`Error`}</Text>
 {/if}
