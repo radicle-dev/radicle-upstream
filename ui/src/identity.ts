@@ -1,7 +1,6 @@
 import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
-import * as session from "./session";
 
 // Types.
 export interface Avatar {
@@ -58,7 +57,6 @@ function update(msg: Msg): void {
         avatarUrl: msg.avatarUrl
       })
         .then(id => {
-          session.fetch()
           creationStore.success(id);
         })
         .catch(creationStore.error)

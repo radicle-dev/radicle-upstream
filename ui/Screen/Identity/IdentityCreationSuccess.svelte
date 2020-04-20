@@ -79,7 +79,7 @@
       </span>
     </Text>
     <div class="identity-card">
-      {#if store.status === remote.Status.Success}
+      {#if $store.status === remote.Status.Success}
         <Avatar
           size="huge"
           imageUrl={$store.data.metadata.avatarUrl}
