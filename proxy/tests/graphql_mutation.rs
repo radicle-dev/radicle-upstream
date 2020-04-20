@@ -59,7 +59,7 @@ fn create_identity_existing() {
         {
             let id = identity::create("cloudhead".into(), None, None).unwrap();
             session::set(
-                &ctx.store.read().unwrap(),
+                &futures::executor::block_on(ctx.store.read()),
                 session::Session { identity: Some(id) },
             )
             .unwrap();

@@ -5,7 +5,9 @@ use hex::ToHex;
 use juniper::{InputValue, Variables};
 use pretty_assertions::assert_eq;
 use std::str::FromStr as _;
+use std::sync::Arc;
 use std::time;
+use tokio::sync::RwLock;
 
 use proxy::coco;
 use proxy::graphql::schema;
@@ -484,7 +486,7 @@ fn tree_root() {
 #[tokio::test]
 async fn list_transactions() {
     let tmp_dir = tempfile::tempdir().unwrap();
-    let ctx = librad::paths::Paths::from_root(tmp_dir.path()).unwrap();
+    let librad_paths = librad::paths::Paths::from_root(tmp_dir.path()).unwrap();
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
     let mut registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
 
@@ -500,7 +502,11 @@ async fn list_transactions() {
 
     registry.cache_transaction(tx.clone()).await;
 
-    let ctx = schema::Context::new(ctx, registry, store);
+    let ctx = schema::Context::new(
+        Arc::new(RwLock::new(librad_paths)),
+        Arc::new(RwLock::new(registry)),
+        Arc::new(RwLock::new(store)),
+    );
 
     let mut vars = Variables::new();
     vars.insert(
@@ -567,7 +573,7 @@ fn project() {
         coco::init_repo(path.clone()).expect("repo init failed");
 
         let (project_id, _project_meta) = coco::init_project(
-            &ctx.librad_paths.read().unwrap(),
+            &futures::executor::block_on(ctx.librad_paths.read()),
             &path,
             "upstream",
             "Code collaboration without intermediates.",

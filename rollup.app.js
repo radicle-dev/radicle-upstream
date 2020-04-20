@@ -3,11 +3,12 @@ import livereload from "rollup-plugin-livereload";
 import resolve from "rollup-plugin-node-resolve";
 import svelte from "rollup-plugin-svelte";
 import { terser } from "rollup-plugin-terser";
+import typescript from "rollup-plugin-typescript2";
 
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-  input: "ui/index.js",
+  input: "ui/index.ts",
   output: {
     sourcemap: true,
     format: "iife",
@@ -24,6 +25,8 @@ export default {
         css.write("public/bundle.css");
       }
     }),
+
+    typescript(),
 
     // If you have external dependencies installed from
     // npm, you'll most likely need these plugins. In

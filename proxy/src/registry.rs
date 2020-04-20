@@ -14,7 +14,7 @@ use radicle_registry_client::{
 use crate::error;
 
 /// A container to dissiminate and apply operations on the [`Registry`].
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Transaction {
     /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
     /// the API consumer to query state changes of a transaction.
@@ -38,8 +38,15 @@ pub struct Metadata {
 }
 
 /// Possible messages a [`Transaction`] can carry.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Message {
+    /// Issue a new org registration with a given id.
+    #[allow(dead_code)]
+    OrgRegistration(OrgId),
+
+    /// Issue an org unregistration with a given id.
+    OrgUnregistration(OrgId),
+
     /// Issue a new project registration with a given name under a given org.
     ProjectRegistration {
         /// Actual project name, unique for org.
@@ -47,13 +54,6 @@ pub enum Message {
         /// The Org in which to register the project.
         org_id: OrgId,
     },
-
-    /// Issue a new org registration with a given id.
-    #[allow(dead_code)]
-    OrgRegistration(OrgId),
-
-    /// Issue an org unregistration with a given id.
-    OrgUnregistration(OrgId),
 
     /// Issue a user registration for a given handle storing the corresponding identity id.
     UserRegistration {
@@ -66,7 +66,7 @@ pub enum Message {
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
 /// whereabouts of a given [`Transaction`].
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum TransactionState {
     /// [`Transaction`] has been applied to a block, carries the hash of the block.
     Applied(Hash),
@@ -108,6 +108,10 @@ impl Registry {
     }
 
     /// List projects of the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
     pub async fn list_projects(&self) -> Result<Vec<registry::ProjectId>, error::Error> {
         self.client.list_projects().await.map_err(|e| e.into())
     }
@@ -118,6 +122,10 @@ impl Registry {
     }
 
     /// Returns all cached transactions.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
     pub async fn list_transactions(
         &self,
         ids: Vec<registry::TxHash>,
@@ -137,6 +145,10 @@ impl Registry {
     }
 
     /// Create a new unique Org on the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
     #[allow(dead_code)]
     pub async fn register_org(
         &mut self,
@@ -175,6 +187,10 @@ impl Registry {
     }
 
     /// Remove a registered Org from the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
     #[allow(dead_code)]
     pub async fn unregister_org(
         &mut self,
@@ -214,6 +230,10 @@ impl Registry {
     }
 
     /// Register a new project on the chain.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
     pub async fn register_project(
         &mut self,
         author: &ed25519::Pair,
@@ -297,12 +317,20 @@ impl Registry {
     }
 
     /// Try to retrieve user from the Registry by handle.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
     pub async fn get_user(&self, handle: String) -> Result<Option<String>, error::Error> {
         let user_id = UserId::try_from(handle.clone())?;
         Ok(self.client.get_user(user_id).await?.map(|_user| handle))
     }
 
     /// Graciously pay some tokens to the recipient out of Alices pocket.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
     pub async fn prepay_account(
         &self,
         recipient: registry::AccountId,
@@ -319,6 +347,10 @@ impl Registry {
     }
 
     /// Create a new unique user on the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
     pub async fn register_user(
         &mut self,
         author: &ed25519::Pair,
@@ -465,7 +497,7 @@ mod tests {
         let org = futures::executor::block_on(client.get_org(org_id))
             .unwrap()
             .unwrap();
-        futures::executor::block_on(registry.prepay_account(org.account_id.clone(), 1000)).unwrap();
+        futures::executor::block_on(registry.prepay_account(org.account_id, 1000)).unwrap();
 
         // Unregister the org
         let unregistration =
@@ -491,7 +523,7 @@ mod tests {
         let org = futures::executor::block_on(client.get_org(org_id.clone()))
             .unwrap()
             .unwrap();
-        futures::executor::block_on(registry.prepay_account(org.account_id.clone(), 1000)).unwrap();
+        futures::executor::block_on(registry.prepay_account(org.account_id, 1000)).unwrap();
 
         // Register the project
         let result = futures::executor::block_on(registry.register_project(

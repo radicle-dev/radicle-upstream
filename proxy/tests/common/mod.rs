@@ -2,7 +2,9 @@ use juniper::{DefaultScalarValue, FieldError, Value, Variables};
 use librad::git::ProjectId;
 use librad::paths::Paths;
 use pretty_assertions::assert_eq;
+use std::sync::Arc;
 use tempfile::{tempdir_in, TempDir};
+use tokio::sync::RwLock;
 
 use proxy::coco;
 use proxy::graphql::schema::{Context, Mutation, Query, Schema};
@@ -35,9 +37,11 @@ where
     .unwrap();
 
     let ctx = Context::new(
-        librad_paths,
-        registry::Registry::new(radicle_registry_client::Client::new_emulator()),
-        store,
+        Arc::new(RwLock::new(librad_paths)),
+        Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        ))),
+        Arc::new(RwLock::new(store)),
     );
 
     let (query, vars, expect_errors, expect_res) = f(&ctx, repos_dir, platinum_id);
