@@ -45,18 +45,10 @@
 <ModalLayout>
   <div class="wrapper">
     <div class="project-registration">
-
-      {#if currentStep === steps.SUMMARY}
-        <StepCounter
-          selectedStep={2}
-          steps={['Prepare', 'Submit']}
-          style="margin-bottom: 48px" />
-      {:else}
-        <StepCounter
-          selectedStep={1}
-          steps={['Prepare', 'Submit']}
-          style="margin-bottom: 48px" />
-      {/if}
+      <StepCounter
+        selectedStep={currentStep === steps.SUMMARY ? 2 : 1}
+        steps={['Prepare', 'Submit']}
+        style="margin-bottom: 48px" />
 
       <Title variant="big" style="margin-bottom: 24px;">Register project</Title>
 
