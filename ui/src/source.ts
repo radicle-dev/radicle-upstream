@@ -15,9 +15,7 @@ export enum ObjectType {
 interface Info {
   name: string;
   objectType: ObjectType;
-  lastCommit: {
-    author: {
-      name: string;
+  lastCommit: { author: { name: string;
       avatar: string;
     };
     summary: string;
@@ -111,7 +109,10 @@ function update(msg: Msg): void {
           console.log("FETCH BLOB");
 
           api.get<SourceObject>(
-            `source/blob/${msg.projectId}/${get(currentRevisionStore)}/${msg.path}`
+            `source/blob/${msg.projectId}`,
+            {
+              query: { revision: get(currentRevisionStore), path: msg.path }
+            },
           )
             .then(objectStore.success)
             .catch(objectStore.error);
@@ -121,7 +122,10 @@ function update(msg: Msg): void {
           console.log("FETCH TREE", currentRevisionStore);
 
           api.get<SourceObject>(
-            `source/tree/${msg.projectId}/${get(currentRevisionStore)}/${msg.path}`
+            `source/tree/${msg.projectId}`,
+            {
+              query: { revision: get(currentRevisionStore), prefix: msg.path },
+            }
           )
             .then(objectStore.success)
             .catch(objectStore.error);
@@ -142,7 +146,7 @@ export const tree = (
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
 
-  api.get<Tree>(`source/tree/${projectId}/${revision}/${prefix}`)
+  api.get<Tree>(`source/tree/${projectId}`, { query: { revision, prefix } })
         .then(treeStore.success)
         .catch(treeStore.error);
 

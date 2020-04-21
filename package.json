@@ -109,6 +109,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.8.4",
+    "@types/qs": "^6.9.1",
     "apollo-boost": "^0.4.7",
     "graphql": "^14.6.0",
     "hotkeys-js": "^3.7.3",

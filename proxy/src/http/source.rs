@@ -2,7 +2,7 @@
 
 use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
-use serde::{Serialize, Serializer};
+use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
@@ -44,13 +44,13 @@ fn blob_filter(
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(document::param::<String>(
-            "revision",
-            "Git revision of the blobs content",
+        .and(warp::filters::query::query::<BlobQuery>())
+        .and(document::document(
+            document::query("revision", document::string()).description("Git revision"),
         ))
-        .and(document::tail(
-            "path",
-            "Location of the Blob in the repository tree",
+        .and(document::document(
+            document::query("path", document::string())
+                .description("Location of the file in the repo tree"),
         ))
         .and(document::document(document::description("Fetch a Blob")))
         .and(document::document(document::tag("Source")))
@@ -149,11 +149,14 @@ fn tree_filter(
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(document::param::<String>(
-            "revision",
-            "Git revision of the blobs content",
+        .and(warp::filters::query::query::<TreeQuery>())
+        .and(document::document(
+            document::query("revision", document::string()).description("Git revision"),
         ))
-        .and(document::tail("prefix", "Path prefix to query"))
+        .and(document::document(
+            document::query("prefix", document::string())
+                .description("Prefix to filter files and folders by"),
+        ))
         .and(document::document(document::description("Fetch a Tree")))
         .and(document::document(document::tag("Source")))
         .and(document::document(
@@ -171,7 +174,6 @@ mod handler {
     use librad::paths::Paths;
     use std::sync::Arc;
     use tokio::sync::RwLock;
-    use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
@@ -180,11 +182,10 @@ mod handler {
     pub async fn blob(
         librad_paths: Arc<RwLock<Paths>>,
         project_id: String,
-        revision: String,
-        path: Tail,
+        super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let paths = librad_paths.read().await;
-        let blob = coco::blob(&paths, &project_id, &revision, path.as_str())?;
+        let blob = coco::blob(&paths, &project_id, revision, path)?;
 
         Ok(reply::json(&blob))
     }
@@ -227,14 +228,27 @@ mod handler {
     pub async fn tree(
         librad_paths: Arc<RwLock<Paths>>,
         project_id: String,
-        revision: String,
-        prefix: Tail,
+        super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let paths = librad_paths.read().await;
-        let tree = coco::tree(&paths, &project_id, &revision, prefix.as_str())?;
+        let tree = coco::tree(&paths, &project_id, revision, prefix)?;
 
         Ok(reply::json(&tree))
     }
+}
+
+/// Bundled query params to pass to the blob handler.
+#[derive(Debug, Deserialize)]
+pub struct BlobQuery {
+    path: Option<String>,
+    revision: Option<String>,
+}
+
+/// Bundled query params to pass to the tree handler.
+#[derive(Debug, Deserialize)]
+pub struct TreeQuery {
+    prefix: Option<String>,
+    revision: Option<String>,
 }
 
 impl Serialize for coco::Blob {
@@ -546,12 +560,21 @@ mod test {
         let path = "text/arrows.txt";
         let res = request()
             .method("GET")
-            .path(&format!("/blob/{}/{}/{}", platinum_id, revision, path))
+            .path(&format!(
+                "/blob/{}?revision={}&path={}",
+                platinum_id, revision, path
+            ))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::blob(&librad_paths, &platinum_id.to_string(), revision, path).unwrap();
+        let want = coco::blob(
+            &librad_paths,
+            &platinum_id.to_string(),
+            Some(revision.to_string()),
+            Some(path.to_string()),
+        )
+        .unwrap();
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -594,12 +617,21 @@ mod test {
         let path = "bin/ls";
         let res = request()
             .method("GET")
-            .path(&format!("/blob/{}/{}/{}", platinum_id, revision, path))
+            .path(&format!(
+                "/blob/{}?revision={}&path={}",
+                platinum_id, revision, path
+            ))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::blob(&librad_paths, &platinum_id.to_string(), revision, path).unwrap();
+        let want = coco::blob(
+            &librad_paths,
+            &platinum_id.to_string(),
+            Some(revision.to_string()),
+            Some(path.to_string()),
+        )
+        .unwrap();
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -758,12 +790,21 @@ mod test {
         let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
         let res = request()
             .method("GET")
-            .path(&format!("/tree/{}/{}/{}", platinum_id, revision, prefix))
+            .path(&format!(
+                "/tree/{}?revision={}&prefix={}",
+                platinum_id, revision, prefix
+            ))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::tree(&librad_paths, &platinum_id.to_string(), revision, prefix).unwrap();
+        let want = coco::tree(
+            &librad_paths,
+            &platinum_id.to_string(),
+            Some(revision.to_string()),
+            Some(prefix.to_string()),
+        )
+        .unwrap();
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));

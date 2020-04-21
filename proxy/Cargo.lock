@@ -4385,7 +4385,7 @@ dependencies = [
 [[package]]
 name = "warp"
 version = "0.2.2"
-source = "git+https://github.com/radicle-dev/warp?branch=openapi#879e5385014831fb2d9f6af21b14537126ac907c"
+source = "git+https://github.com/radicle-dev/warp?branch=openapi#7429d1bf3c4472754c64775edb8d0b2ce9bc6663"
 dependencies = [
  "bytes 0.5.4",
  "futures 0.3.4",
