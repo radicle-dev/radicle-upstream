@@ -27,6 +27,12 @@
     border-radius: 16px;
   }
 
+  .user.small {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+  }
+
   .user.medium {
     width: 36px;
     height: 36px;
@@ -51,6 +57,11 @@
 
   .project {
     border-radius: 2px;
+  }
+
+  .project.small {
+    width: 24px;
+    height: 24px;
   }
 
   .project.regular {

@@ -12,6 +12,7 @@
   } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    Dropdown,
     Notification,
     Placeholder,
     ProjectCard,
@@ -564,6 +565,10 @@
 
     <Swatch>
       <Input.Checkbox>How about a checkbox?</Input.Checkbox>
+    </Swatch>
+
+    <Swatch>
+      <Dropdown />
     </Swatch>
   </Section>
 
