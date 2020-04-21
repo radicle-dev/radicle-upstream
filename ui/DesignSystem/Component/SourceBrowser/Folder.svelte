@@ -1,5 +1,4 @@
 <script>
-  import { getContext } from "svelte";
   import { link } from "svelte-spa-router";
 
   import { currentPath, currentRevision, tree } from "../../../src/source.ts";
@@ -11,11 +10,10 @@
 
   export let prefix = ""; // start sidebar tree from repository root
   export let name = null;
+  export let projectId = null;
 
   export let expanded = false;
   export let firstEntry = true;
-
-  const projectId = getContext("projectId");
 
   $: sourceTree = tree(projectId, $currentRevision, prefix);
 
@@ -92,11 +90,12 @@
       {#each $sourceTree.data.entries as entry}
         {#if entry.info.objectType === TREE}
           <svelte:self
-            prefix={`${entry.path}/`}
+            {projectId}
             name={entry.info.name}
+            prefix={`${entry.path}/`}
             firstEntry={false} />
         {:else}
-          <File name={entry.info.name} filePath={entry.path} />
+          <File {projectId} filePath={entry.path} name={entry.info.name} />
         {/if}
       {/each}
     {/if}

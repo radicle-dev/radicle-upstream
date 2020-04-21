@@ -30,8 +30,6 @@
       };
     });
   };
-
-  $: console.log($transactions);
 </script>
 
 {#if $transactions.status === remote.Status.Success}

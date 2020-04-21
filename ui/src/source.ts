@@ -6,6 +6,10 @@ import * as remote from './remote'
 
 import { HIDDEN_BRANCHES } from "../config"
 
+// TOOLING
+const filterBranches = (branches: string[]): string[] =>
+  branches.filter(branch => !HIDDEN_BRANCHES.includes(branch));
+
 // TYPES
 export enum ObjectType {
   Blob = 'BLOB',
@@ -49,7 +53,7 @@ interface Revisions {
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
-const currentRevisionStore = writable("master");
+const currentRevisionStore = writable("");
 export const currentRevision = derived(currentRevisionStore, $store => $store);
 
 const objectStore = remote.createStore<SourceObject>();
@@ -61,8 +65,7 @@ export const revisions = revisionsStore.readable;
 // EVENTS
 enum Kind {
   FetchRevisions = "FETCH_REVISIONS",
-  UpdateRevision = "UPDATE_REVISION",
-  UpdatePath = "UPDATE_PATH"
+  Update = "UPDATE"
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -70,48 +73,39 @@ interface FetchRevisions extends event.Event<Kind> {
   projectId: string;
 }
 
-interface UpdateRevision extends event.Event<Kind> {
-  kind: Kind.UpdateRevision;
-  revision: string;
-}
-
-interface UpdatePath extends event.Event<Kind> {
-  kind: Kind.UpdatePath;
+interface Update extends event.Event<Kind> {
+  kind: Kind.Update;
   path: string;
   projectId: string;
+  revision: string;
   type: ObjectType;
 }
 
-type Msg = FetchRevisions | UpdateRevision | UpdatePath
+type Msg = FetchRevisions | Update
 
 function update(msg: Msg): void {
-  console.log("source.update", msg)
-
   switch (msg.kind) {
     case Kind.FetchRevisions:
       api.get<string[]>(
         `source/branches/${msg.projectId}`
       )
-      .then(branches => revisionsStore.success({ branches }))
+      .then(branches => {
+        revisionsStore.success({ branches: filterBranches(branches) })
+      })
       .catch(revisionsStore.error);
-      break
-
-    case Kind.UpdateRevision:
-      currentRevisionStore.update(() => msg.revision);
       break;
 
-    case Kind.UpdatePath:
+    case Kind.Update:
       currentPathStore.update(() => msg.path)
+      currentRevisionStore.update(() => msg.revision);
       objectStore.loading();
 
       switch (msg.type) {
         case ObjectType.Blob:
-          console.log("FETCH BLOB");
-
           api.get<SourceObject>(
             `source/blob/${msg.projectId}`,
             {
-              query: { revision: get(currentRevisionStore), path: msg.path }
+              query: { revision: msg.revision, path: msg.path }
             },
           )
             .then(objectStore.success)
@@ -119,12 +113,10 @@ function update(msg: Msg): void {
           break;
 
         case ObjectType.Tree:
-          console.log("FETCH TREE", currentRevisionStore);
-
           api.get<SourceObject>(
             `source/tree/${msg.projectId}`,
             {
-              query: { revision: get(currentRevisionStore), prefix: msg.path },
+              query: { revision: msg.revision, prefix: msg.path },
             }
           )
             .then(objectStore.success)
@@ -136,8 +128,7 @@ function update(msg: Msg): void {
 }
 
 export const fetchRevisions = event.create<Kind, Msg>(Kind.FetchRevisions, update);
-export const updateRevision = event.create<Kind, Msg>(Kind.UpdateRevision, update);
-export const updatePath = event.create<Kind, Msg>(Kind.UpdatePath, update);
+export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 
 export const tree = (
   projectId: string,
@@ -152,10 +143,3 @@ export const tree = (
 
   return treeStore.readable;
 }
-
-// TOOLING
-// TODO(sos): filter revisions before passing to store
-const filterRevisions = (revisions: { tags: string[]; branches: string[] }) => [
-  ...revisions.tags,
-  ...revisions.branches.filter(branch => !HIDDEN_BRANCHES.includes(branch))
-]

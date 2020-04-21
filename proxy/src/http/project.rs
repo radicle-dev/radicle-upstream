@@ -55,9 +55,10 @@ fn create_filter(
 fn get_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("projects" / String)
+    path("projects")
         .and(warp::get())
         .and(super::with_paths(paths))
+        .and(document::param::<String>("id", "Project id"))
         .and(document::document(document::description(
             "Find Project by ID",
         )))
@@ -183,8 +184,8 @@ mod handler {
 
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(
-        id: String,
         librad_paths: Arc<RwLock<Paths>>,
+        id: String,
     ) -> Result<impl Reply, Rejection> {
         let paths = librad_paths.read().await;
         Ok(reply::json(&project::get(&paths, id.as_ref()).await?))
