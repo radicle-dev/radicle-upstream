@@ -69,6 +69,7 @@
     border-radius: 4px;
     cursor: pointer;
     border: 1px solid var(--color-foreground-level-3);
+    overflow: hidden; /* hack to make inner option rounded corners */
   }
 
   .header {
@@ -91,16 +92,6 @@
     display: flex;
     padding: 8px 12px;
     color: var(--color-foreground-level-6);
-  }
-
-  .menu-item:first-of-type {
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-  }
-
-  .menu-item:last-of-type {
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
   }
 
   .menu-item:hover {
