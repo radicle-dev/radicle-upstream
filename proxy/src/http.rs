@@ -14,6 +14,7 @@ mod doc;
 mod error;
 mod identity;
 mod notification;
+mod org;
 mod project;
 mod session;
 mod transaction;
@@ -29,6 +30,10 @@ pub fn routes(
     let api = path("v1").and(
         identity::filters(Arc::<RwLock<kv::Store>>::clone(&store))
             .or(notification::filters(subscriptions.clone()))
+            .or(org::filters(
+                Arc::<RwLock<registry::Registry>>::clone(&registry),
+                subscriptions.clone(),
+            ))
             .or(project::filters(
                 librad_paths,
                 Arc::<RwLock<registry::Registry>>::clone(&registry),
