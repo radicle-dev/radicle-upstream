@@ -3,7 +3,7 @@
   import { Icon, Text, Title } from "../Primitive";
   import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
   import Stat from "./Stat.svelte";
-  import { registerProject } from "../../lib/path.js";
+  import { registerExistingProject } from "../../lib/path.js";
 
   export let projectId = null;
   export let registrarId = null;
@@ -16,7 +16,7 @@
     {
       title: "Register project",
       icon: Icon.Register,
-      event: () => push(registerProject(projectId, registrarId))
+      event: () => push(registerExistingProject(projectId, registrarId))
     }
   ];
 </script>

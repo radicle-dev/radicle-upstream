@@ -11,6 +11,6 @@
   size="small"
   variant="transparent"
   icon={Icon.Plus}
-  on:click={() => push(path.registerProject(null, orgId))}>
+  on:click={() => push(path.registerProject(orgId))}>
   Add project
 </Button>

@@ -68,7 +68,7 @@
     {
       title: "Add project",
       icon: Icon.Plus,
-      event: () => push(path.registerProject(null, params.id))
+      event: () => push(path.registerProject(params.id))
     },
     {
       title: "Add member",

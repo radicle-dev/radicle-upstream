@@ -7,11 +7,9 @@
   import TransactionSummaryStep from "./ProjectRegistration/TransactionSummaryStep.svelte";
 
   export let params = null;
-  const projectId = params.projectId;
-  const registrarId = params.registrarId;
 
-  console.log(`projectId: ${projectId}`);
-  console.log(`registrarId: ${registrarId}`);
+  const projectId = params.projectId || null;
+  const registrarId = params.registrarId || null;
 
   const steps = {
     NEW_OR_EXISTING: 1,
@@ -19,13 +17,16 @@
     SUMMARY: 3
   };
 
-  let currentStep = steps.NEW_OR_EXISTING;
+  let currentStep = projectId === null ? steps.NEW_OR_EXISTING : steps.DETAILS;
 
   const nextStep = () => {
     currentStep += 1;
   };
 
   let createNewProject = null;
+
+  console.log(projectId);
+  console.log(registrarId);
 </script>
 
 <style>

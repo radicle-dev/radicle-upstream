@@ -3,6 +3,8 @@
   import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
   import Router, { link, location, push } from "svelte-spa-router";
+  import * as remote from "../src/remote.ts";
+  import { session } from "../src/session.ts";
 
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -110,7 +112,7 @@
     {
       title: "Register project",
       icon: Icon.Register,
-      event: () => push(path.registerProject(params.id))
+      event: () => push(path.registerExistingProject(params.id, registrarId))
     },
     {
       title: "New issue",
@@ -123,6 +125,14 @@
       event: () => console.log("event(new-revision)")
     }
   ];
+
+  // TODO(rudolfs): how do we make sure that this gets loaded before we render
+  // the component?
+  let registrarId = null;
+
+  if ($session.status === remote.Status.Success) {
+    registrarId = $session.data.identity.id;
+  }
 
   $: revisionStore.set(path.extractProjectSourceRevision($location));
   $: objectPathStore.set(path.extractProjectSourceObjectPath($location));

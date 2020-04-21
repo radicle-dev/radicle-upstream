@@ -10,10 +10,10 @@
   import ProjectCard from "./ProjectCard.svelte";
   import Placeholder from "./Placeholder.svelte";
 
-  let registrarId = null;
-
   // TODO(rudolfs): how do we make sure that this gets loaded before we render
   // the component?
+  let registrarId = null;
+
   if ($session.status === remote.Status.Success) {
     registrarId = $session.data.identity.id;
   }
