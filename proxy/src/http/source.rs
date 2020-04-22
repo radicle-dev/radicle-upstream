@@ -17,6 +17,7 @@ pub fn routes(
         blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
             .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+            .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(tree_filter(paths)),
     )
@@ -29,6 +30,7 @@ fn filters(
     blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
         .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+        .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(tree_filter(paths))
 }
@@ -112,6 +114,34 @@ fn commit_filter(
             .description("Commit for SHA1 found"),
         ))
         .and_then(handler::commit)
+}
+
+/// GET /revisions/<project_id>
+fn revisions_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("revisions")
+        .and(warp::get())
+        .and(super::with_paths(paths))
+        .and(document::param::<String>(
+            "project_id",
+            "ID of the project the blob is part of",
+        ))
+        .and(document::document(document::description(
+            "List both branches and tags",
+        )))
+        .and(document::document(document::tag("Source")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(
+                    document::array(Revisions::document()).description("List of branches and tags"),
+                )
+                .mime("application/json"),
+            )
+            .description("List of branches and tags"),
+        ))
+        .and_then(handler::revisions)
 }
 
 /// GET /tags/<project_id>
@@ -213,6 +243,18 @@ mod handler {
         Ok(reply::json(&commit))
     }
 
+    /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
+    pub async fn revisions(
+        librad_paths: Arc<RwLock<Paths>>,
+        project_id: String,
+    ) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
+        let branches = coco::branches(&paths, &project_id)?;
+        let tags = coco::tags(&paths, &project_id)?;
+
+        Ok(reply::json(&super::Revisions { branches, tags }))
+    }
+
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
         librad_paths: Arc<RwLock<Paths>>,
@@ -249,6 +291,23 @@ pub struct BlobQuery {
 pub struct TreeQuery {
     prefix: Option<String>,
     revision: Option<String>,
+}
+
+/// Bundled response to retrieve both branches and tags.
+#[derive(Debug, Serialize)]
+pub struct Revisions {
+    branches: Vec<coco::Branch>,
+    tags: Vec<coco::Tag>,
+}
+
+impl ToDocumentedType for Revisions {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert("branches".into(), document::array(coco::Branch::document()));
+        properties.insert("tags".into(), document::array(coco::Tag::document()));
+
+        document::DocumentedType::from(properties).description("Revisions")
+    }
 }
 
 impl Serialize for coco::Blob {
@@ -737,6 +796,43 @@ mod test {
                 "summary": "Extend the docs (#2)",
                 "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
                 "committerTime": "1578309972",
+            }),
+        );
+    }
+
+    #[tokio::test]
+    async fn revisions() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let (platinum_id, _platinum_project) = coco::replicate_platinum(
+            &tmp_dir,
+            &librad_paths,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )
+        .unwrap();
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let res = request()
+            .method("GET")
+            .path(&format!("/revisions/{}", platinum_id))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = {
+            let branches = coco::branches(&librad_paths, &platinum_id.to_string()).unwrap();
+            let tags = coco::tags(&librad_paths, &platinum_id.to_string()).unwrap();
+            super::Revisions { branches, tags }
+        };
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(
+            have,
+            json!({
+                "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
+                "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
             }),
         );
     }

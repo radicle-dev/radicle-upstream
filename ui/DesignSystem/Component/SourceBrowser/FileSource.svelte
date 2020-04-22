@@ -5,6 +5,7 @@
   import CommitTeaser from "./CommitTeaser.svelte";
 
   export let blob = null;
+  export let path = null;
   export let projectId = null;
 </script>
 
@@ -60,7 +61,7 @@
 <div class="file-source" data-cy="file-source">
   <header>
     <Icon.File />
-    {blob.info.name}
+    {path}
   </header>
   <div class="container">
     {#if blob.binary}

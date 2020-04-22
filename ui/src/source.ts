@@ -46,8 +46,8 @@ interface Tree extends SourceObject {
 
 // STATE
 interface Revisions {
-  branches?: string[];
-  tags?: string[];
+  branches: string[];
+  tags: string[];
 }
 
 const currentPathStore = writable("");
@@ -86,11 +86,14 @@ type Msg = FetchRevisions | Update
 function update(msg: Msg): void {
   switch (msg.kind) {
     case Kind.FetchRevisions:
-      api.get<string[]>(
-        `source/branches/${msg.projectId}`
+      api.get<Revisions>(
+        `source/revisions/${msg.projectId}`
       )
-      .then(branches => {
-        revisionsStore.success({ branches: filterBranches(branches) })
+      .then(revisions => {
+        revisionsStore.success({
+          branches: filterBranches(revisions.branches),
+          tags: revisions.tags,
+        })
       })
       .catch(revisionsStore.error);
       break;

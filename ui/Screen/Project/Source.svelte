@@ -6,6 +6,7 @@
   import { project } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
   import {
+    currentPath,
     currentRevision,
     fetchRevisions,
     object,
@@ -84,7 +85,7 @@
         <Input.Dropdown
           dataCy="revision-selector"
           style="margin-bottom: 24px"
-          items={$revisions.data.branches}
+          items={[...$revisions.data.tags, ...$revisions.data.branches]}
           value={$project.data.metadata.defaultBranch}
           on:select={event => updateRevision($project.data.id, event.detail)} />
       {/if}
@@ -99,7 +100,10 @@
     <div class="column-right">
       {#if $object.status === remote.Status.Success}
         {#if $object.data.info.objectType === BLOB}
-          <FileSource blob={$object.data} projectId={$project.id} />
+          <FileSource
+            blob={$object.data}
+            path={$currentPath}
+            projectId={$project.id} />
         {:else if $object.data.info.objectType === TREE}
           <FileList
             projectId={$project.id}
