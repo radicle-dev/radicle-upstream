@@ -11,7 +11,7 @@
   export let disabled = null;
   export let valid = true;
   export let validationMessage = null;
-  export let variant = "vanilla"; // vanilla | handle
+  export let variant = "vanilla"; // vanilla | avatar
   export let imageUrl = null;
   export let avatarFallback = null;
   export let validationPending = false;
@@ -35,7 +35,7 @@
     background-color: var(--color-background);
   }
 
-  input.handle {
+  input.avatar {
     padding: 0 46px 0 54px;
   }
 
@@ -66,13 +66,13 @@
   <input
     data-cy={dataCy}
     class:invalid={!valid && !validationPending}
-    class:handle={variant === 'handle'}
+    class:avatar={variant === 'avatar'}
     {placeholder}
     bind:value
     {disabled}
     on:change
     on:input />
-  {#if variant === 'handle'}
+  {#if variant === 'avatar'}
     <Avatar
       {avatarFallback}
       {imageUrl}
@@ -82,7 +82,7 @@
       absolute; top: 0px; left: 10px" />
   {/if}
 
-  {#if variant === 'handle'}
+  {#if variant === 'avatar'}
     {#if validationPending}
       <Icon.Spinner
         style="justify-content: flex-start; position: absolute; top: 12px;

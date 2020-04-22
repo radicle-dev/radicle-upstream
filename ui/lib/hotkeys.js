@@ -4,20 +4,20 @@ import { push, pop, location } from "svelte-spa-router";
 import * as path from "./path.js";
 import { colorConfig } from "../../tokens/colors.js";
 
-export const initializeHotkeys = () => {
-  hotkeys("shift+d", () => {
-    if (path.active(path.designSystemGuide(), get(location))) {
+const hotModal = (key, destinationPath) =>
+  hotkeys(key, () => {
+    if (path.active(destinationPath, get(location))) {
       pop();
     }
-    push(path.designSystemGuide());
+    push(destinationPath);
   });
 
-  hotkeys("shift+/", () => {
-    if (path.active(path.help(), get(location))) {
-      pop();
-    }
-    push(path.help());
-  });
+export const initializeHotkeys = () => {
+  hotModal("shift+d", path.designSystemGuide());
+  hotModal("shift+/", path.help());
+
+  // TODO(sarah): Remove temporary hotkey for org registration
+  hotModal("shift+o", path.orgRegistration());
 
   hotkeys("shift+c", () => {
     const currentTheme = document.documentElement.getAttribute("data-theme");
@@ -31,6 +31,8 @@ export const initializeHotkeys = () => {
     console.log(`Switch to ${nextTheme}`);
   });
 
+  // TODO(sos): rethink how we do esc hotkey; any time we show a modal, it should
+  // be dismissable with esc. this can be incorporated into Modal component
   hotkeys("esc", () => {
     if (
       path.active(path.help(), get(location)) ||
