@@ -386,7 +386,7 @@ impl Serialize for coco::Commit {
         state.serialize_field("summary", &self.summary)?;
         state.serialize_field("description", &self.description())?;
         state.serialize_field("committer", &self.committer)?;
-        state.serialize_field("committerTime", &self.committer_time.seconds().to_string())?;
+        state.serialize_field("committerTime", &self.committer_time.seconds())?;
         state.end()
     }
 }
@@ -666,7 +666,7 @@ mod test {
                         },
                         "summary": "Add text files",
                         "description": "",
-                        "committerTime": "1575283425",
+                        "committerTime": 1575283425,
                     },
                 },
             })
@@ -716,7 +716,7 @@ mod test {
                         },
                         "summary": "Add some binary files",
                         "description": "",
-                        "committerTime": "1575282964", },
+                        "committerTime": 1575282964, },
                 },
             })
         );
@@ -795,7 +795,7 @@ mod test {
                 },
                 "summary": "Extend the docs (#2)",
                 "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                "committerTime": "1578309972",
+                "committerTime": 1578309972,
             }),
         );
     }
@@ -925,7 +925,7 @@ mod test {
                         },
                         "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
                         "description": "Updated README",
-                        "committerTime": "1584367899",
+                        "committerTime": 1584367899,
                     },
                 },
                 "entries": [
@@ -948,7 +948,7 @@ mod test {
                         },
                                 "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
                                 "description": "Updated README",
-                                "committerTime": "1584367899",
+                                "committerTime": 1584367899,
                             },
                         },
                     },
@@ -971,7 +971,7 @@ mod test {
                                 },
                                 "summary": "Move examples to \"src\"",
                                 "description": "",
-                                "committerTime": "1575283266",
+                                "committerTime": 1575283266,
                             },
                         },
                     },

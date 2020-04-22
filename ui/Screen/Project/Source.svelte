@@ -103,10 +103,10 @@
           <FileSource
             blob={$object.data}
             path={$currentPath}
-            projectId={$project.id} />
+            projectId={$project.data.id} />
         {:else if $object.data.info.objectType === TREE}
           <FileList
-            projectId={$project.id}
+            projectId={$project.data.id}
             tree={$object.data}
             revision={$currentRevision} />
         {/if}

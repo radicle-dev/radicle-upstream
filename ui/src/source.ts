@@ -1,4 +1,4 @@
-import { derived, get, writable, Readable } from 'svelte/store'
+import { derived, writable, Readable } from 'svelte/store'
 
 import * as api from './api'
 import * as event from './event'
@@ -11,6 +11,21 @@ const filterBranches = (branches: string[]): string[] =>
   branches.filter(branch => !HIDDEN_BRANCHES.includes(branch));
 
 // TYPES
+interface Person {
+  avatar: string;
+  email: string;
+  name: string;
+}
+
+interface Commit {
+  sha1: string;
+  branch: string;
+  author: Person;
+  committer: Person;
+  committerTime: number;
+  description: string;
+  summary: string;
+}
 export enum ObjectType {
   Blob = 'BLOB',
   Tree = 'TREE'
@@ -19,9 +34,8 @@ export enum ObjectType {
 interface Info {
   name: string;
   objectType: ObjectType;
-  lastCommit: { author: { name: string;
-      avatar: string;
-    };
+  lastCommit: {
+    author: Person;
     summary: string;
     sha1: string;
     committerTime: number;
@@ -50,6 +64,9 @@ interface Revisions {
   tags: string[];
 }
 
+const commitStore = remote.createStore<Commit>();
+export const commit = commitStore.readable;
+
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
@@ -64,8 +81,15 @@ export const revisions = revisionsStore.readable;
 
 // EVENTS
 enum Kind {
+  FetchCommit = "FETCH_COMMIT",
   FetchRevisions = "FETCH_REVISIONS",
   Update = "UPDATE"
+}
+
+interface FetchCommit extends event.Event<Kind> {
+  kind: Kind.FetchCommit;
+  projectId: string;
+  sha1: string;
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -81,10 +105,26 @@ interface Update extends event.Event<Kind> {
   type: ObjectType;
 }
 
-type Msg = FetchRevisions | Update
+type Msg = FetchCommit | FetchRevisions | Update
 
-function update(msg: Msg): void {
+const update = (msg: Msg): void => {
   switch (msg.kind) {
+    case Kind.FetchCommit:
+      commitStore.loading();
+
+      api.get<Commit>(
+        `source/commit/${msg.projectId}/${msg.sha1}`
+      )
+      .then(commit => {
+        commitStore.success({
+          // TODO(cloudhead): Fetch branch from backend.
+          branch: "master",
+          ...commit,
+        })
+      })
+      .catch(commitStore.error);
+      break;
+
     case Kind.FetchRevisions:
       api.get<Revisions>(
         `source/revisions/${msg.projectId}`
@@ -130,6 +170,7 @@ function update(msg: Msg): void {
   }
 }
 
+export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
 export const fetchRevisions = event.create<Kind, Msg>(Kind.FetchRevisions, update);
 export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 
