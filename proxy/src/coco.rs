@@ -193,7 +193,7 @@ pub fn blob(
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    let path = maybe_path.unwrap_or("".to_string());
+    let path = maybe_path.unwrap_or_default();
     let revision = maybe_revision.unwrap_or(meta.default_branch);
 
     // Best effort to guess the revision.
@@ -333,7 +333,7 @@ pub fn tree(
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    let prefix = maybe_prefix.unwrap_or("".to_string());
+    let prefix = maybe_prefix.unwrap_or_default();
     let revision = maybe_revision.unwrap_or(meta.default_branch);
 
     browser.revspec(&revision)?;
