@@ -11,6 +11,7 @@ use radicle_registry_client::{
     ProjectName, TransactionExtra, UserId, H256,
 };
 
+use crate::avatar;
 use crate::error;
 
 /// A container to dissiminate and apply operations on the [`Registry`].
@@ -78,6 +79,14 @@ pub struct Thresholds {
     pub confirmation: u64,
     /// Number of blocks after which a [`Transaction`] is assumed to be settled.
     pub settlement: u64,
+}
+
+/// The registered org with identifier and avatar
+pub struct Org {
+    /// The unique identifier of the org
+    pub id: String,
+    /// Generated fallback avatar
+    pub avatar_fallback: avatar::Avatar,
 }
 
 /// Registry client wrapper.
@@ -326,6 +335,19 @@ impl Registry {
         Ok(self.client.get_user(user_id).await?.map(|_user| handle))
     }
 
+    /// Try to retrieve org from the Registry by id.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    pub async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error> {
+        let org_id = OrgId::try_from(id.clone())?;
+        Ok(self.client.get_org(org_id).await?.map(|_org| Org {
+            id: id.clone(),
+            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
+        }))
+    }
+
     /// Graciously pay some tokens to the recipient out of Alices pocket.
     ///
     /// # Errors
@@ -412,6 +434,7 @@ mod tests {
     use std::time;
 
     use super::{Metadata, Registry, Transaction, TransactionState};
+    use crate::avatar;
 
     #[tokio::test]
     async fn list_transactions() {
@@ -503,6 +526,29 @@ mod tests {
         let unregistration =
             futures::executor::block_on(registry.unregister_org(&alice, "monadic".into(), 10));
         assert!(unregistration.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_get_org() {
+        // Test that a registered org can be retrieved.
+        let client = Client::new_emulator();
+        let mut registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the org
+        let org_id = OrgId::try_from("monadic").unwrap();
+        let registration = registry
+            .register_org(&alice, org_id.clone().into(), 10)
+            .await;
+        assert!(registration.is_ok());
+
+        // Query the org
+        let org = registry.get_org("monadic".into()).await.unwrap().unwrap();
+        assert_eq!(org.id, "monadic");
+        assert_eq!(
+            org.avatar_fallback,
+            avatar::Avatar::from("monadic", avatar::Usage::Org)
+        );
     }
 
     #[tokio::test]
