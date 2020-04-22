@@ -363,35 +363,42 @@
     background: var(--color-negative-level-1);
   }
   td.diff-line-number {
-    font-family: var(--typeface-mono-regular);
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-5);
     text-align: center;
     user-select: none;
     line-height: 150%;
     padding: 0 0.5rem;
   }
   td.diff-line-content {
-    font-family: var(--typeface-mono-regular);
     white-space: pre;
   }
   td.diff-line-type {
-    font-family: var(--typeface-mono-regular);
     color: var(--color-foreground-level-6);
+    user-select: none;
     padding: 0 0.5rem;
     text-align: center;
   }
   td.diff-expand-action {
-    font-family: var(--typeface-mono-regular);
     text-align: center;
+    user-select: none;
+  }
+  td.diff-expand-header {
+    padding-left: 0.5rem;
+    user-select: none;
+  }
+
+  td.diff-expand-header,
+  td.diff-expand-action,
+  td.diff-line-number {
     color: var(--color-foreground-level-5);
     background-color: var(--color-foreground-level-1);
   }
-  td.diff-expand-header {
+
+  td.diff-expand-header,
+  td.diff-expand-action,
+  td.diff-line-type,
+  td.diff-line-content,
+  td.diff-line-number {
     font-family: var(--typeface-mono-regular);
-    color: var(--color-foreground-level-5);
-    background-color: var(--color-foreground-level-1);
-    padding-left: 0.5rem;
   }
 
   /* TODO(cloudhead): These should be global */
