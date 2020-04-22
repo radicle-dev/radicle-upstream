@@ -65,7 +65,7 @@
   }
 
   .source-tree {
-    overflow-x: scroll;
+    overflow-x: auto;
   }
 
   .revision-selector {
