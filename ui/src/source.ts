@@ -4,6 +4,7 @@ import * as api from './api'
 import * as event from './event'
 import * as remote from './remote'
 
+import { mockChangeset } from '../lib/commitMocks'
 import { HIDDEN_BRANCHES } from "../config"
 
 // TOOLING
@@ -25,6 +26,7 @@ interface Commit {
   committerTime: number;
   description: string;
   summary: string;
+  changeset: object;
 }
 export enum ObjectType {
   Blob = 'BLOB',
@@ -119,6 +121,7 @@ const update = (msg: Msg): void => {
         commitStore.success({
           // TODO(cloudhead): Fetch branch from backend.
           branch: "master",
+          changeset: mockChangeset,
           ...commit,
         })
       })

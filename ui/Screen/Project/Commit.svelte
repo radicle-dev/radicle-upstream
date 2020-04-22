@@ -7,6 +7,8 @@
 
   import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
 
+  import FileDiff from "../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
+
   export let params = null;
   const projectId = params.id;
   const commitHash = params.hash;
@@ -52,6 +54,20 @@
   }
   .hash {
     font-family: var(--typeface-mono-regular);
+  }
+
+  .changeset-summary {
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    margin-left: 1.5rem;
+  }
+  .changeset-summary .additions {
+    color: var(--color-positive);
+    font-weight: 600;
+  }
+  .changeset-summary .deletions {
+    color: var(--color-negative);
+    font-weight: 600;
   }
 
   /* TODO(cloudhead): These should be global */
@@ -119,4 +135,19 @@
       </div>
     </Flex>
   </header>
+  <main>
+    <div class="changeset-summary">
+      {$commit.data.changeset.files.length} file(s) changed with
+      <span class="additions">
+        {$commit.data.changeset.summary.additions} addition(s)
+      </span>
+      and
+      <span class="deletions">
+        {$commit.data.changeset.summary.deletions} deletion(s)
+      </span>
+    </div>
+    {#each $commit.data.changeset.files as file}
+      <FileDiff {file} />
+    {/each}
+  </main>
 {/if}
