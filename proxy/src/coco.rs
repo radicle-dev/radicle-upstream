@@ -420,7 +420,7 @@ pub fn tree(
     };
 
     Ok(Tree {
-        path: prefix.to_string(),
+        path: prefix,
         entries,
         info,
     })

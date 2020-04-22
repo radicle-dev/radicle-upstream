@@ -10,6 +10,7 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
 
+/// Prefixed filters.
 pub fn routes(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -282,21 +283,27 @@ mod handler {
 /// Bundled query params to pass to the blob handler.
 #[derive(Debug, Deserialize)]
 pub struct BlobQuery {
+    /// Location of the blob in tree.
     path: Option<String>,
+    /// Revision to use for the history of the repo.
     revision: Option<String>,
 }
 
 /// Bundled query params to pass to the tree handler.
 #[derive(Debug, Deserialize)]
 pub struct TreeQuery {
+    /// Path prefix to query the tree.
     prefix: Option<String>,
+    /// Revision to query at.
     revision: Option<String>,
 }
 
 /// Bundled response to retrieve both branches and tags.
 #[derive(Debug, Serialize)]
 pub struct Revisions {
+    /// List of [`coco::Branch`].
     branches: Vec<coco::Branch>,
+    /// List of [`coco::Tag`].
     tags: Vec<coco::Tag>,
 }
 
@@ -666,7 +673,7 @@ mod test {
                         },
                         "summary": "Add text files",
                         "description": "",
-                        "committerTime": 1575283425,
+                        "committerTime": 1_575_283_425,
                     },
                 },
             })
@@ -716,7 +723,7 @@ mod test {
                         },
                         "summary": "Add some binary files",
                         "description": "",
-                        "committerTime": 1575282964, },
+                        "committerTime": 1_575_282_964, },
                 },
             })
         );
@@ -795,7 +802,7 @@ mod test {
                 },
                 "summary": "Extend the docs (#2)",
                 "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                "committerTime": 1578309972,
+                "committerTime": 1_578_309_972,
             }),
         );
     }
@@ -925,7 +932,7 @@ mod test {
                         },
                         "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
                         "description": "Updated README",
-                        "committerTime": 1584367899,
+                        "committerTime": 1_584_367_899,
                     },
                 },
                 "entries": [
@@ -948,7 +955,7 @@ mod test {
                         },
                                 "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
                                 "description": "Updated README",
-                                "committerTime": 1584367899,
+                                "committerTime": 1_584_367_899,
                             },
                         },
                     },
@@ -971,7 +978,7 @@ mod test {
                                 },
                                 "summary": "Move examples to \"src\"",
                                 "description": "",
-                                "committerTime": 1575283266,
+                                "committerTime": 1_575_283_266,
                             },
                         },
                     },
