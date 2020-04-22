@@ -1,45 +1,13 @@
 <script>
-  import { Flex, Text, Button } from "../Primitive";
-
-  import ProjectCard from "./ProjectCard.svelte";
-  import Placeholder from "./Placeholder.svelte";
-
-  import { projectNameStore } from "../../store/project.js";
-  import * as path from "../../lib/path.js";
-
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
   import { push } from "svelte-spa-router";
 
-  const GET_PROJECTS = gql`
-    query Query {
-      projects {
-        id
-        metadata {
-          defaultBranch
-          description
-          name
-        }
-        registered {
-          ... on OrgRegistration {
-            orgId
-          }
-          ... on UserRegistration {
-            userId
-          }
-        }
-        stats {
-          branches
-          commits
-          contributors
-        }
-      }
-    }
-  `;
+  import * as path from "../../lib/path.js";
+  import { projects, projectNameStore } from "../../src/project.ts";
+  import * as remote from "../../src/remote.ts";
 
-  const client = getClient();
-  const projects = query(client, { query: GET_PROJECTS });
-  projects.refetch();
+  import { Flex, Text, Button } from "../Primitive";
+  import ProjectCard from "./ProjectCard.svelte";
+  import Placeholder from "./Placeholder.svelte";
 </script>
 
 <style>
@@ -77,10 +45,10 @@
   }
 </style>
 
-{#await $projects then result}
-  {#if result.data.projects.length > 0}
+{#if $projects.status === remote.Status.Success}
+  {#if $projects.data.length > 0}
     <ul>
-      {#each result.data.projects as project}
+      {#each $projects.data as project}
         <li
           on:click={() => {
             projectNameStore.set(project.metadata.name);
@@ -88,13 +56,10 @@
           }}
           class="project-card">
           <ProjectCard
-            projectId={project.id}
             title={project.metadata.name}
             description={project.metadata.description}
-            isRegistered={project.registered}
-            commitCount={project.stats.commits}
-            branchCount={project.stats.branches}
-            memberCount={project.stats.contributors} />
+            isRegistered={false}
+            stats={project.stats} />
         </li>
       {/each}
     </ul>
@@ -138,6 +103,6 @@
       </div>
     </div>
   {/if}
-{:catch error}
-  <p>ERROR: {error}</p>
-{/await}
+{:else if $projects.status === remote.Status.Error}
+  <Text>{`Error`}</Text>
+{/if}

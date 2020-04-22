@@ -3,6 +3,8 @@ extern crate juniper;
 
 use librad::paths;
 use pretty_assertions::assert_eq;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use proxy::graphql::schema;
 use proxy::identity;
@@ -16,9 +18,11 @@ fn nuke_coco_state() {
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
 
     let ctx = schema::Context::new(
-        librad_paths,
-        registry::Registry::new(radicle_registry_client::Client::new_emulator()),
-        store,
+        Arc::new(RwLock::new(librad_paths)),
+        Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        ))),
+        Arc::new(RwLock::new(store)),
     );
 
     let query = "mutation {nukeCocoState}";
@@ -60,16 +64,18 @@ fn nuke_session_state() -> Result<(), Box<dyn std::error::Error>> {
     let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
 
     let ctx = schema::Context::new(
-        librad_paths,
-        registry::Registry::new(radicle_registry_client::Client::new_emulator()),
-        store,
+        Arc::new(RwLock::new(librad_paths)),
+        Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        ))),
+        Arc::new(RwLock::new(store)),
     );
 
     // Create an identity and store it in the session.
     {
         let id = identity::create("cloudhead".into(), None, None).unwrap();
         session::set(
-            &ctx.store.read().unwrap(),
+            &futures::executor::block_on(ctx.store.read()),
             session::Session { identity: Some(id) },
         )
         .unwrap();

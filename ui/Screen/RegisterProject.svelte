@@ -4,7 +4,7 @@
   import { pop } from "svelte-spa-router";
 
   import { showNotification } from "../store/notification.js";
-  import { projectNameStore } from "../store/project.js";
+  import { projectNameStore } from "../src/project.ts";
 
   import { Title } from "../DesignSystem/Primitive";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";

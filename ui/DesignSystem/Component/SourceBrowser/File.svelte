@@ -1,22 +1,17 @@
 <script>
-  import { getContext } from "svelte";
   import { link } from "svelte-spa-router";
 
   import { Icon } from "../../Primitive";
 
   import * as path from "../../../lib/path.js";
   import { BLOB } from "../../../../native/types.js";
-  import {
-    revisionStore,
-    objectPathStore
-  } from "../../../store/sourceBrowser.js";
+  import { currentPath, currentRevision } from "../../../src/source.ts";
 
-  export let name = null;
+  export let projectId = null;
   export let filePath = null;
+  export let name = null;
 
-  const id = getContext("projectId");
-
-  $: active = filePath === $objectPathStore;
+  $: active = filePath === $currentPath;
 </script>
 
 <style>
@@ -59,7 +54,7 @@
 <a
   class="file"
   class:active
-  href={path.projectSource(id, $revisionStore, BLOB, filePath)}
+  href={path.projectSource(projectId, $currentRevision, BLOB, filePath)}
   use:link>
   <Icon.File />
   {name}

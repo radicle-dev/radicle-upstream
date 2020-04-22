@@ -2,7 +2,8 @@ use hex::ToHex;
 use std::convert::From;
 use std::convert::TryFrom;
 use std::str::FromStr;
-use std::sync;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use librad::paths::Paths;
 use librad::surf;
@@ -30,21 +31,25 @@ pub fn create() -> Schema {
 #[derive(Clone)]
 pub struct Context {
     /// Root on the filesystem for the librad config and storage paths.
-    pub librad_paths: sync::Arc<sync::RwLock<Paths>>,
+    pub librad_paths: Arc<RwLock<Paths>>,
     /// Wrapper to interact with the Registry.
-    pub registry: sync::Arc<sync::RwLock<registry::Registry>>,
+    registry: Arc<RwLock<registry::Registry>>,
     /// Handle to maintain local persistancce and caching.
-    pub store: sync::Arc<sync::RwLock<kv::Store>>,
+    pub store: Arc<RwLock<kv::Store>>,
 }
 
 impl Context {
     /// Returns a new `Context`.
     #[must_use]
-    pub fn new(librad_paths: Paths, registry: registry::Registry, store: kv::Store) -> Self {
+    pub fn new(
+        librad_paths: Arc<RwLock<Paths>>,
+        registry: Arc<RwLock<registry::Registry>>,
+        store: Arc<RwLock<kv::Store>>,
+    ) -> Self {
         Self {
-            librad_paths: sync::Arc::new(sync::RwLock::new(librad_paths)),
-            registry: sync::Arc::new(sync::RwLock::new(registry)),
-            store: sync::Arc::new(sync::RwLock::new(store)),
+            librad_paths,
+            registry,
+            store,
         }
     }
 }
@@ -65,7 +70,7 @@ impl Mutation {
         display_name: Option<String>,
         avatar_url: Option<String>,
     ) -> Result<identity::Identity, error::Error> {
-        let store = ctx.store.read().expect("unable to acquire read lock");
+        let store = futures::executor::block_on(ctx.store.read());
 
         if let Some(identity) = session::get(&store)?.identity {
             return Err(error::Error::IdentityExists(identity.id));
@@ -94,9 +99,7 @@ impl Mutation {
         };
 
         let (id, meta) = coco::init_project(
-            &ctx.librad_paths
-                .read()
-                .expect("unable to acquire read lock"),
+            &futures::executor::block_on(ctx.librad_paths.read()),
             &path,
             &metadata.name,
             &metadata.description,
@@ -107,6 +110,11 @@ impl Mutation {
             id: librad::project::ProjectId::from(id),
             metadata: meta.into(),
             registration: None,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -128,10 +136,13 @@ impl Mutation {
         // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
         // https://github.com/graphql-rust/juniper/pull/497
         futures::executor::block_on(
-            ctx.registry
-                .write()
-                .expect("unable to acquire write lock")
-                .register_project(&fake_pair, project_name, org_id, maybe_librad_id, fake_fee),
+            futures::executor::block_on(ctx.registry.write()).register_project(
+                &fake_pair,
+                project_name,
+                org_id,
+                maybe_librad_id,
+                fake_fee,
+            ),
         )
     }
 
@@ -146,9 +157,7 @@ impl Mutation {
 
         // Give new account some dough so we can perform transactions.
         futures::executor::block_on(
-            ctx.registry
-                .read()
-                .expect("unable to acquire read lock")
+            futures::executor::block_on(ctx.registry.read())
                 .prepay_account(fake_pair.public(), 1000),
         )?;
 
@@ -156,10 +165,12 @@ impl Mutation {
         let fee = 100;
 
         futures::executor::block_on(
-            ctx.registry
-                .write()
-                .expect("unable to acquire write lock")
-                .register_user(&fake_pair, handle.to_string(), id.to_string(), fee),
+            futures::executor::block_on(ctx.registry.write()).register_user(
+                &fake_pair,
+                handle.to_string(),
+                id.to_string(),
+                fee,
+            ),
         )
     }
 }
@@ -187,84 +198,9 @@ impl Query {
         ))
     }
 
-    fn blob(
-        ctx: &Context,
-        id: juniper::ID,
-        revision: String,
-        path: String,
-    ) -> Result<coco::Blob, error::Error> {
-        coco::blob(
-            &ctx.librad_paths
-                .read()
-                .expect("unable to acquire read lock"),
-            &id.to_string(),
-            &revision,
-            &path,
-        )
-    }
-
-    fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<coco::Commit, error::Error> {
-        coco::commit(
-            &ctx.librad_paths
-                .read()
-                .expect("unable to acquire read lock"),
-            &id.to_string(),
-            &sha1,
-        )
-    }
-
-    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
-        Ok(coco::branches(
-            &ctx.librad_paths
-                .read()
-                .expect("unable to acquire read lock"),
-            &id.to_string(),
-        )?
-        .into_iter()
-        .map(|t| t.to_string())
-        .collect())
-    }
-
-    fn local_branches(ctx: &Context, path: String) -> Result<Vec<String>, error::Error> {
-        Ok(coco::local_branches(&path)?
-            .into_iter()
-            .map(|t| t.to_string())
-            .collect())
-    }
-
-    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
-        Ok(coco::tags(
-            &ctx.librad_paths
-                .read()
-                .expect("unable to acquire read lock"),
-            &id.to_string(),
-        )?
-        .into_iter()
-        .map(|t| t.to_string())
-        .collect())
-    }
-
-    fn tree(
-        ctx: &Context,
-        id: juniper::ID,
-        revision: String,
-        prefix: String,
-    ) -> Result<coco::Tree, error::Error> {
-        coco::tree(
-            &ctx.librad_paths
-                .read()
-                .expect("unable to acquire read lock"),
-            &id,
-            &revision,
-            &prefix,
-        )
-    }
-
     fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
         let meta = coco::get_project_meta(
-            &ctx.librad_paths
-                .read()
-                .expect("unable to acquire read lock"),
+            &futures::executor::block_on(ctx.librad_paths.read()),
             &id.to_string(),
         )?;
 
@@ -272,32 +208,35 @@ impl Query {
             id: librad::project::ProjectId::from_str(&id.to_string())?,
             metadata: meta.into(),
             registration: None,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
     fn projects(ctx: &Context) -> Result<Vec<project::Project>, error::Error> {
-        let projects = coco::list_projects(
-            &ctx.librad_paths
-                .read()
-                .expect("unable to acquire read lock"),
-        )
-        .into_iter()
-        .map(|(id, meta)| project::Project {
-            id,
-            metadata: meta.into(),
-            registration: None,
-        })
-        .collect::<Vec<project::Project>>();
+        let projects = coco::list_projects(&futures::executor::block_on(ctx.librad_paths.read()))
+            .into_iter()
+            .map(|(id, meta)| project::Project {
+                id,
+                metadata: meta.into(),
+                registration: None,
+                stats: project::Stats {
+                    branches: 11,
+                    commits: 267,
+                    contributors: 8,
+                },
+            })
+            .collect::<Vec<project::Project>>();
 
         Ok(projects)
     }
 
     fn list_registry_projects(ctx: &Context) -> Result<Vec<juniper::ID>, error::Error> {
         let ids = futures::executor::block_on(
-            ctx.registry
-                .read()
-                .expect("unable to acquire read lock")
-                .list_projects(),
+            futures::executor::block_on(ctx.registry.read()).list_projects(),
         )?;
 
         Ok(ids
@@ -312,15 +251,15 @@ impl Query {
     ) -> Result<ListTransactions, error::Error> {
         let tx_ids = ids
             .iter()
-            .map(|id| radicle_registry_client::TxHash::from_str(&id.to_string()).unwrap())
+            .map(|id| {
+                radicle_registry_client::TxHash::from_str(&id.to_string())
+                    .expect("unable to get hash from string")
+            })
             .collect();
 
         Ok(ListTransactions {
             transactions: futures::executor::block_on(
-                ctx.registry
-                    .read()
-                    .expect("unable to acquire read lock")
-                    .list_transactions(tx_ids),
+                futures::executor::block_on(ctx.registry.read()).list_transactions(tx_ids),
             )?,
             thresholds: registry::Registry::thresholds(),
         })
@@ -334,15 +273,12 @@ impl Query {
     }
 
     fn session(ctx: &Context) -> Result<session::Session, error::Error> {
-        session::get(&ctx.store.read().expect("unable to acquire read lock"))
+        session::get(&futures::executor::block_on(ctx.store.read()))
     }
 
     fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
         Ok(futures::executor::block_on(
-            ctx.registry
-                .read()
-                .expect("unable to acquire read lock")
-                .get_user(handle.to_string()),
+            futures::executor::block_on(ctx.registry.read()).get_user(handle.to_string()),
         )?
         .map(juniper::ID::new))
     }
@@ -371,13 +307,10 @@ impl ControlMutation {
         metadata: ProjectMetadataInput,
     ) -> Result<project::Project, error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let paths = &ctx
-            .librad_paths
-            .read()
-            .expect("unable to acquire lock for librad paths");
+        let paths = futures::executor::block_on(ctx.librad_paths.read());
         let (id, meta) = coco::replicate_platinum(
             &tmp_dir,
-            paths,
+            &paths,
             &metadata.name,
             &metadata.description,
             &metadata.default_branch,
@@ -387,6 +320,11 @@ impl ControlMutation {
             id: id.into(),
             metadata: meta.into(),
             registration: None,
+            stats: project::Stats {
+                branches: 11,
+                commits: 267,
+                contributors: 8,
+            },
         })
     }
 
@@ -394,7 +332,7 @@ impl ControlMutation {
         let tmp_dir = tempfile::tempdir().expect("creating temporary directory for paths failed");
         let new_paths = Paths::from_root(tmp_dir.path()).expect("unable to get librad paths");
 
-        let mut librad_paths = ctx.librad_paths.write().expect("unable to get write lock");
+        let mut librad_paths = futures::executor::block_on(ctx.librad_paths.write());
 
         *librad_paths = new_paths;
 
@@ -402,16 +340,14 @@ impl ControlMutation {
     }
 
     fn nuke_registry_state(ctx: &Context) -> Result<bool, error::Error> {
-        ctx.registry
-            .write()
-            .expect("unable to get write lock")
+        futures::executor::block_on(ctx.registry.write())
             .reset(radicle_registry_client::Client::new_emulator());
 
         Ok(true)
     }
 
     fn nuke_session_state(ctx: &Context) -> Result<bool, error::Error> {
-        session::clear(&ctx.store.read().expect("unable to acquire read lock"))?;
+        session::clear(&futures::executor::block_on(ctx.store.read()))?;
 
         Ok(true)
     }
@@ -427,10 +363,12 @@ impl ControlMutation {
         let fee = 100;
 
         futures::executor::block_on(
-            ctx.registry
-                .write()
-                .expect("unable to acquire write lock")
-                .register_user(&fake_pair, handle.to_string(), id.to_string(), fee),
+            futures::executor::block_on(ctx.registry.write()).register_user(
+                &fake_pair,
+                handle.to_string(),
+                id.to_string(),
+                fee,
+            ),
         )
     }
 }
@@ -483,128 +421,6 @@ pub enum AvatarUsage {
 }
 
 #[juniper::object]
-impl coco::Blob {
-    fn binary(&self) -> bool {
-        match &self.content {
-            coco::BlobContent::Ascii(_content) => false,
-            coco::BlobContent::Binary => true,
-        }
-    }
-
-    fn content(&self) -> Option<String> {
-        match &self.content {
-            coco::BlobContent::Ascii(content) => Some(content.clone()),
-            coco::BlobContent::Binary => None,
-        }
-    }
-
-    fn info(&self) -> &coco::Info {
-        &self.info
-    }
-}
-
-#[juniper::object]
-impl coco::Commit {
-    fn sha1(&self) -> String {
-        self.sha1.to_string()
-    }
-
-    fn author(&self) -> &coco::Person {
-        &self.author
-    }
-
-    fn summary(&self) -> &str {
-        &self.summary
-    }
-
-    fn description(&self) -> &str {
-        self.description()
-    }
-
-    fn message(&self) -> &str {
-        &self.message
-    }
-
-    fn committer(&self) -> &coco::Person {
-        &self.committer
-    }
-
-    fn committer_time(&self) -> String {
-        self.committer_time.seconds().to_string()
-    }
-}
-
-#[juniper::object]
-impl coco::Info {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn object_type(&self) -> ObjectType {
-        match self.object_type {
-            coco::ObjectType::Blob => ObjectType::Blob,
-            coco::ObjectType::Tree => ObjectType::Tree,
-        }
-    }
-
-    fn last_commit(&self) -> Option<&coco::Commit> {
-        self.last_commit.as_ref()
-    }
-}
-
-/// Git object types.
-///
-/// <https://git-scm.com/book/en/v2/Git-Internals-Git-Objects>
-#[derive(GraphQLEnum)]
-enum ObjectType {
-    /// Directory tree.
-    Tree,
-    /// Text or binary blob of a file.
-    Blob,
-}
-
-#[juniper::object]
-impl coco::Person {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn email(&self) -> &str {
-        &self.email
-    }
-
-    fn avatar(&self) -> &str {
-        &self.avatar
-    }
-}
-
-#[juniper::object]
-impl coco::Tree {
-    fn path(&self) -> &str {
-        &self.path
-    }
-
-    fn entries(&self) -> &Vec<coco::TreeEntry> {
-        self.entries.as_ref()
-    }
-
-    fn info(&self) -> &coco::Info {
-        &self.info
-    }
-}
-
-#[juniper::object]
-impl coco::TreeEntry {
-    fn info(&self) -> &coco::Info {
-        &self.info
-    }
-
-    fn path(&self) -> String {
-        self.path.clone()
-    }
-}
-
-#[juniper::object]
 impl identity::Identity {
     fn id(&self) -> juniper::ID {
         juniper::ID::new(&self.id)
@@ -625,7 +441,7 @@ impl identity::Identity {
     }
 
     fn avatar_fallback(&self) -> avatar::Avatar {
-        avatar::Avatar::from(&self.id, avatar::Usage::Identity)
+        self.avatar_fallback
     }
 }
 
@@ -685,11 +501,7 @@ impl project::Project {
     }
 
     fn stats(&self) -> &project::Stats {
-        &project::Stats {
-            branches: 11,
-            commits: 267,
-            contributors: 8,
-        }
+        &self.stats
     }
 }
 
@@ -719,17 +531,17 @@ enum ProjectRegistration {
 }
 
 juniper::graphql_union!(ProjectRegistration: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &OrgRegistration => match *self {
-            ProjectRegistration::Org(ref o) => Some(o),
-            ProjectRegistration::User(..) => None,
-        },
-        &UserRegistration => match *self {
-            ProjectRegistration::User(ref o) => Some(o),
-            ProjectRegistration::Org(..) => None,
-        },
-    }
-    });
+instance_resolvers: |_| {
+    &OrgRegistration => match *self {
+        ProjectRegistration::Org(ref o) => Some(o),
+        ProjectRegistration::User(..) => None,
+    },
+    &UserRegistration => match *self {
+        ProjectRegistration::User(ref o) => Some(o),
+        ProjectRegistration::Org(..) => None,
+    },
+}
+});
 
 /// Context data for a not registered project, there are none.
 #[derive(juniper::GraphQLObject)]

@@ -1,16 +1,8 @@
 <script>
-  import { gql } from "apollo-boost";
-  import { getClient, mutate } from "svelte-apollo";
   import validatejs from "validate.js";
 
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityDisplayNameStore,
-    identityHandleStore,
-    identityIdStore,
-    identityShareableEntityIdentifierStore
-  } from "../../store/identity.js";
+  import { create, store } from "../../src/identity.ts";
+  import * as remote from "../../src/remote.ts";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
@@ -83,68 +75,11 @@
 
   $: validate(handle, displayName, avatarUrl);
 
-  const client = getClient();
-
-  const CREATE_IDENTITY = gql`
-    mutation($handle: String!, $displayName: String, $avatarUrl: String) {
-      createIdentity(
-        handle: $handle
-        displayName: $displayName
-        avatarUrl: $avatarUrl
-      ) {
-        id
-        shareableEntityIdentifier
-        avatarFallback {
-          emoji
-          background {
-            r
-            g
-            b
-          }
-        }
-        metadata {
-          handle
-          displayName
-          avatarUrl
-        }
-      }
-    }
-  `;
-
-  const createIdentity = async () => {
-    let response;
-
-    beginValidation = true;
-    validate();
-
-    if (!validatejs.isEmpty(validations)) return;
-
-    try {
-      response = await mutate(client, {
-        mutation: CREATE_IDENTITY,
-        variables: {
-          handle: handle,
-          displayName: displayName,
-          avatarUrl: avatarUrl
-        }
-      });
-
-      const responseData = response.data.createIdentity;
-
-      identityAvatarUrlStore.set(responseData.metadata.avatarUrl);
-      identityAvatarFallbackStore.set(responseData.avatarFallback);
-      identityDisplayNameStore.set(responseData.metadata.displayName);
-      identityHandleStore.set(responseData.metadata.handle);
-      identityIdStore.set(responseData.id);
-      identityShareableEntityIdentifierStore.set(
-        responseData.shareableEntityIdentifier
-      );
-
-      if (onSuccess) onSuccess();
-    } catch (error) {
-      if (onError) onError(error);
-    }
-  };
+  $: if ($store.status === remote.Status.Success) {
+    onSuccess();
+  } else if ($store.status === remote.Status.Error) {
+    onError();
+  }
 </script>
 
 <style>
@@ -197,9 +132,18 @@
       </Button>
       <Button
         dataCy="create-id-button"
-        disabled={!handle || validations}
+        disabled={!handle || validations || $store.status === remote.Status.Loading}
         size="big"
-        on:click={createIdentity}>
+        on:click={() => {
+          beginValidation = true;
+          validate();
+          if (!validatejs.isEmpty(validations)) return;
+          create({
+            handle: handle,
+            displayName: displayName,
+            avatarUrl: avatarUrl
+          });
+        }}>
         Create
       </Button>
     </div>

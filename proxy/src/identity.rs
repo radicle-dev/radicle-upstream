@@ -2,10 +2,11 @@
 
 use radicle_registry_client::UserId;
 
+use crate::avatar;
 use crate::error;
 
 /// The users personal identifying metadata and keys.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Identity {
     /// The librad id.
     pub id: String,
@@ -15,10 +16,12 @@ pub struct Identity {
     pub metadata: Metadata,
     /// Indicator if the identity is registered on the Registry.
     pub registered: Option<UserId>,
+    /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
+    pub avatar_fallback: avatar::Avatar,
 }
 
 /// User maintained information for an identity, which can evolve over time.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Metadata {
     /// Similar to a nickname, the users chosen short identifier.
     pub handle: String,
@@ -36,8 +39,9 @@ pub fn create(
     display_name: Option<String>,
     avatar_url: Option<String>,
 ) -> Result<Identity, error::Error> {
+    let id = "123abcd.git";
     Ok(Identity {
-        id: "123abcd.git".into(),
+        id: id.into(),
         shareable_entity_identifier: format!("{}@123abcd.git", handle),
         metadata: Metadata {
             handle,
@@ -45,6 +49,7 @@ pub fn create(
             avatar_url,
         },
         registered: None,
+        avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
     })
 }
 
@@ -63,5 +68,6 @@ pub fn get(id: &str) -> Result<Option<Identity>, error::Error> {
             avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
         },
         registered: None,
+        avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
     }))
 }

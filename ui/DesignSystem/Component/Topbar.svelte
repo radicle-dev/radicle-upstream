@@ -13,7 +13,7 @@
     height: var(--topbar-height);
     left: var(--sidebar-width);
     border-bottom: 1px solid var(--color-foreground-level-3);
-    z-index: 9;
+    z-index: 1;
   }
 
   .left {

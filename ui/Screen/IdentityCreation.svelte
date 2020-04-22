@@ -3,6 +3,8 @@
 
   import * as path from "../lib/path.js";
   import { showNotification } from "../store/notification.js";
+  import * as session from "../src/session.ts";
+
   import { ModalLayout, Placeholder } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
 
@@ -41,6 +43,7 @@
         returnToWelcomeStep();
         return;
       case steps.SUCCESS:
+        session.fetch();
         replace(path.profileProjects());
         return;
     }
@@ -75,6 +78,6 @@
       {onError}
       onCancel={returnToWelcomeStep} />
   {:else if currentStep === steps.SUCCESS}
-    <IdentityCreationSuccess onClose={() => replace(path.profileProjects())} />
+    <IdentityCreationSuccess {onClose} />
   {/if}
 </ModalLayout>

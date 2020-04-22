@@ -1,9 +1,11 @@
-#[macro_use]
-extern crate log;
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use warp::Filter;
 
 use proxy::coco;
 use proxy::env;
 use proxy::graphql;
+use proxy::http;
 use proxy::registry;
 
 /// Flags accepted by the proxy binary.
@@ -57,14 +59,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?
     };
 
-    info!("Starting GraphQL HTTP API");
-    graphql::api::run(
-        librad_paths,
-        registry::Registry::new(registry_client),
-        store,
-        args.test,
-    )
-    .await;
+    log::info!("Starting API");
+
+    let lib_paths = Arc::new(RwLock::new(librad_paths));
+    let reg = Arc::new(RwLock::new(registry::Registry::new(registry_client)));
+    let st = Arc::new(RwLock::new(store));
+    let routes = graphql::api::routes(lib_paths.clone(), reg.clone(), st.clone(), args.test)
+        .or(http::routes(lib_paths, reg, st))
+        .with(
+            warp::cors()
+                .allow_any_origin()
+                .allow_headers(&[warp::http::header::CONTENT_TYPE])
+                .allow_methods(&[
+                    warp::http::Method::GET,
+                    warp::http::Method::POST,
+                    warp::http::Method::OPTIONS,
+                ]),
+        );
+
+    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
 
     Ok(())
 }

@@ -18,7 +18,7 @@ use librad::surf::git::git2;
 use crate::error;
 
 /// Branch name representation.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Branch(String);
 
 impl fmt::Display for Branch {
@@ -30,7 +30,7 @@ impl fmt::Display for Branch {
 /// Tag name representation.
 ///
 /// We still need full tag support.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Tag(String);
 
 impl fmt::Display for Tag {
@@ -42,9 +42,9 @@ impl fmt::Display for Tag {
 /// Representation of a person (e.g. committer, author, signer) from a repository. Usually
 /// extracted from a signature.
 pub struct Person {
-    /// Name part of the commit signature commit.
+    /// Name part of the commit signature.
     pub name: String,
-    /// Email part of the commit signature commit.
+    /// Email part of the commit signature.
     pub email: String,
     /// Reference (url/uri) to a persons avatar image.
     pub avatar: String,
@@ -70,9 +70,9 @@ pub struct Commit {
 
 impl Commit {
     /// Returns the commit description text. This is the text after the one-line summary.
+    #[must_use]
     pub fn description(&self) -> &str {
-        &self
-            .message
+        self.message
             .strip_prefix(&self.summary)
             .unwrap_or(&self.message)
             .trim()
@@ -139,7 +139,16 @@ pub struct Blob {
     pub info: Info,
 }
 
+impl Blob {
+    /// Indicates if the content of the [`Blob`] is binary.
+    #[must_use]
+    pub fn is_binary(&self) -> bool {
+        self.content == BlobContent::Binary
+    }
+}
+
 /// Variants of blob content.
+#[derive(PartialEq)]
 pub enum BlobContent {
     /// Content is ASCII and can be passed as a string.
     Ascii(String),
@@ -169,21 +178,30 @@ pub struct TreeEntry {
 ///
 /// # Errors
 ///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interactions fail.
-pub fn blob(paths: &Paths, id: &str, revision: &str, path: &str) -> Result<Blob, error::Error> {
+/// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
+pub fn blob(
+    paths: &Paths,
+    id: &str,
+    maybe_revision: Option<String>,
+    maybe_path: Option<String>,
+) -> Result<Blob, error::Error> {
     let project_id = project::ProjectId::from_str(id)?;
     let project = project::Project::open(paths, &project_id)?;
+    let meta = project::Project::show(paths, &project_id)?;
 
     let mut browser = match project {
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
+    let path = maybe_path.unwrap_or_default();
+    let revision = maybe_revision.unwrap_or(meta.default_branch);
+
     // Best effort to guess the revision.
-    browser.revspec(revision)?;
+    browser.revspec(&revision)?;
 
     let root = browser.get_directory()?;
 
-    let mut p = surf::file_system::Path::from_str(path)?;
+    let mut p = surf::file_system::Path::from_str(&path)?;
 
     let file = root.find_file(&p).ok_or_else(|| {
         surf::file_system::error::Error::Path(surf::file_system::error::Path::Empty)
@@ -301,20 +319,29 @@ pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if any of the surf interactions fail.
-pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tree, error::Error> {
+pub fn tree(
+    paths: &Paths,
+    id: &str,
+    maybe_revision: Option<String>,
+    maybe_prefix: Option<String>,
+) -> Result<Tree, error::Error> {
     let project_id = project::ProjectId::from_str(id)?;
     let project = project::Project::open(paths, &project_id)?;
+    let meta = project::Project::show(paths, &project_id)?;
 
     let mut browser = match project {
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    browser.revspec(revision)?;
+    let prefix = maybe_prefix.unwrap_or_default();
+    let revision = maybe_revision.unwrap_or(meta.default_branch);
+
+    browser.revspec(&revision)?;
 
     let mut path = if prefix == "/" || prefix == "" {
         surf::file_system::Path::root()
     } else {
-        surf::file_system::Path::from_str(prefix)?
+        surf::file_system::Path::from_str(&prefix)?
     };
 
     let root_dir = browser.get_directory()?;
@@ -393,7 +420,7 @@ pub fn tree(paths: &Paths, id: &str, revision: &str, prefix: &str) -> Result<Tre
     };
 
     Ok(Tree {
-        path: prefix.to_string(),
+        path: prefix,
         entries,
         info,
     })

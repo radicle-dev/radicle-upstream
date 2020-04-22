@@ -1,9 +1,9 @@
 <script>
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
 
   import { showNotification } from "../../store/notification.js";
+  import { commit, fetchCommit } from "../../src/source.ts";
+  import * as remote from "../../src/remote.ts";
 
   import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
 
@@ -11,48 +11,15 @@
   const projectId = params.id;
   const commitHash = params.hash;
 
-  const GET_COMMIT = gql`
-    query($projectId: ID!, $commitHash: String!) {
-      commit(id: $projectId, sha1: $commitHash) {
-        author {
-          email
-          name
-        }
-        committer {
-          email
-          name
-        }
-        committerTime
-        description
-        sha1
-        summary
-      }
-    }
-  `;
-
-  async function fetchCommit() {
-    try {
-      const response = await query(getClient(), {
-        query: GET_COMMIT,
-        variables: {
-          projectId: projectId,
-          commitHash: commitHash
-        }
-      });
-      const result = await response.result();
-      const commit = result.data.commit;
-
-      // TODO(cloudhead): Fetch branch from backend.
-      commit.branch = "master";
-
-      return commit;
-    } catch (error) {
-      showNotification({
-        text: "Could not fetch commit",
-        level: "error"
-      });
-    }
+  $: if ($commit.status === remote.Status.Error) {
+    console.log($commit.error);
+    showNotification({
+      text: "Could not fetch commit",
+      level: "error"
+    });
   }
+
+  fetchCommit({ projectId, sha1: commitHash });
 </script>
 
 <style>
@@ -88,9 +55,6 @@
   }
 
   /* TODO(cloudhead): These should be global */
-  a {
-    color: var(--color-secondary);
-  }
   hr {
     border: 0;
     border-top: 1px solid var(--color-foreground-level-3);
@@ -98,12 +62,12 @@
   }
 </style>
 
-{#await fetchCommit() then commit}
+{#if $commit.status === remote.Status.Success}
   <header>
     <Flex style="align-items: flex-start">
       <div slot="left">
         <Title variant="large" style="margin-bottom: 1rem">
-          {commit.summary}
+          {$commit.data.summary}
         </Title>
       </div>
       <div slot="right">
@@ -116,30 +80,30 @@
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-6)" />
-            <span style="margin-left: -0.5ch">{commit.branch}</span>
+            <span style="margin-left: -0.5ch">{$commit.data.branch}</span>
           </span>
           <span style="margin-left: -0.5ch">
-            {format(commit.committerTime)}
+            {format($commit.data.committerTime * 1000)}
           </span>
         </span>
       </div>
     </Flex>
     <pre class="description" style="margin-bottom: 1rem">
-      {commit.description}
+      {$commit.data.description}
     </pre>
     <hr />
     <Flex style="align-items: flex-end">
       <div slot="left">
         <p class="field">
           Authored by
-          <span class="author">{commit.author.name}</span>
-          <span class="email">&lt;{commit.author.email}&gt;</span>
+          <span class="author">{$commit.data.author.name}</span>
+          <span class="email">&lt;{$commit.data.author.email}&gt;</span>
         </p>
-        {#if commit.committer.email != commit.author.email}
+        {#if $commit.data.committer.email != $commit.data.author.email}
           <p class="field">
             Committed by
-            <span class="author">{commit.committer.name}</span>
-            <span class="email">&lt;{commit.committer.email}&gt;</span>
+            <span class="author">{$commit.data.committer.name}</span>
+            <span class="email">&lt;{$commit.data.committer.email}&gt;</span>
           </p>
         {/if}
       </div>
@@ -147,9 +111,9 @@
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
           Commit
-          <span class="hash">{commit.sha1}</span>
+          <span class="hash">{$commit.data.sha1}</span>
         </p>
       </div>
     </Flex>
   </header>
-{/await}
+{/if}

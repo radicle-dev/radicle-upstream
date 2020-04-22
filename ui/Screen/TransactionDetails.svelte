@@ -1,27 +1,29 @@
 <script>
-  import { gql } from "apollo-boost";
   import { getClient, query } from "svelte-apollo";
+  import { gql } from "apollo-boost";
   import { pop } from "svelte-spa-router";
 
-  import {
-    identityAvatarUrlStore,
-    identityAvatarFallbackStore,
-    identityDisplayNameStore,
-    identityHandleStore
-  } from "../store/identity.js";
-  import {
-    USER_REGISTRATION,
-    PROJECT_REGISTRATION
-  } from "../../native/types.js";
+  import { fallback } from "../src/identity.ts";
+  import * as remote from "../src/remote.ts";
+  import { session } from "../src/session.ts";
 
-  import { Button } from "../DesignSystem/Primitive";
   import {
     ModalLayout,
     Transaction,
     TransactionStatusbar
   } from "../DesignSystem/Component";
+  import { Button } from "../DesignSystem/Primitive";
 
   export let params = null;
+  // TODO(xla): Can go once we get proper transaction participants.
+  let identity = fallback;
+
+  $: if (
+    $session.status === remote.Status.Success &&
+    $session.data.identity !== null
+  ) {
+    identity = $session.data.identity;
+  }
 
   const GET_TRANSACTIONS = gql`
     query Query($ids: [ID!]!) {
@@ -66,9 +68,9 @@
 
   const formatMessage = kind => {
     switch (kind) {
-      case USER_REGISTRATION:
+      case "USER_REGISTRATION":
         return "User registration";
-      case PROJECT_REGISTRATION:
+      case "PROJECT_REGISTRATION":
         return "Project registration";
     }
   };
@@ -76,12 +78,12 @@
   const formatSubject = msg => {
     return {
       name:
-        msg.kind === USER_REGISTRATION
+        msg.kind === "USER_REGISTRATION"
           ? msg.handle
-          : `${$identityHandleStore} / ${msg.projectName}`,
+          : `${identity.metadata.handle} / ${msg.projectName}`,
       kind: "user",
-      avatarFallback: $identityAvatarFallbackStore,
-      imageUrl: $identityAvatarUrlStore
+      avatarFallback: identity.avatarFallback,
+      imageUrl: identity.metadata.avatarUrl
     };
   };
 
@@ -93,10 +95,10 @@
       stake: `${formatMessage(kind)} deposit`,
       subject: formatSubject(transaction.messages[0]),
       payer: {
-        name: $identityDisplayNameStore || $identityHandleStore,
+        name: identity.metadata.displayName || identity.metadata.handle,
         kind: "user",
-        avatarFallback: $identityAvatarFallbackStore,
-        imageUrl: $identityAvatarUrlStore
+        avatarFallback: identity.avatarFallback,
+        imageUrl: identity.metadata.avatarUrl
       }
     };
   };

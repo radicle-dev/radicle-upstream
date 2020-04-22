@@ -1,24 +1,27 @@
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use warp::filters;
 use warp::http;
-use warp::Filter;
+use warp::{Filter, Rejection, Reply};
 
 use crate::registry;
 
 use super::schema;
 
-/// Runs the warp server with the given schema and context.
-pub async fn run(
-    librad_paths: librad::paths::Paths,
-    registry: registry::Registry,
-    store: kv::Store,
+/// `GraphQL` API routes.
+#[must_use]
+pub fn routes(
+    librad_paths: Arc<RwLock<librad::paths::Paths>>,
+    registry: Arc<RwLock<registry::Registry>>,
+    store: Arc<RwLock<kv::Store>>,
     enable_control: bool,
-) {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let context = schema::Context::new(librad_paths, registry, store);
     let state = warp::any().map(move || context.clone());
     let graphql_filter = make_graphql_filter(schema::create(), state.clone().boxed());
     let control_filter = make_graphql_filter(schema::create_control(), state.boxed());
-    let routes = warp::path("control")
+
+    warp::path("control")
         .map(move || enable_control)
         .and_then(|enable_control| async move {
             if enable_control {
@@ -30,26 +33,14 @@ pub async fn run(
         .untuple_one()
         .and(control_filter)
         .or(warp::path("graphql").and(graphql_filter))
-        .with(
-            warp::cors()
-                .allow_any_origin()
-                .allow_headers(&[warp::http::header::CONTENT_TYPE])
-                .allow_methods(&[
-                    warp::http::Method::GET,
-                    warp::http::Method::POST,
-                    warp::http::Method::OPTIONS,
-                ]),
-        )
-        .with(warp::log("proxy::api"));
-
-    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await
+        .with(warp::log("proxy::graphql"))
 }
 
 /// Filter for the graphql endpoint.
 fn make_graphql_filter<Context, Mutation, Query>(
     schema: juniper::RootNode<'static, Query, Mutation>,
     context_extractor: filters::BoxedFilter<(Context,)>,
-) -> impl Filter<Extract = (http::Response<Vec<u8>>,), Error = warp::Rejection> + Clone
+) -> impl Filter<Extract = (http::Response<Vec<u8>>,), Error = Rejection> + Clone
 where
     Context: Clone + Send + Sync + 'static,
     Mutation: juniper::GraphQLType<Context = Context, TypeInfo = ()> + Send + Sync + 'static,
