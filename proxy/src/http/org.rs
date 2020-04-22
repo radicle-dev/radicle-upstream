@@ -11,20 +11,12 @@ use crate::avatar;
 use crate::notification;
 use crate::registry;
 
-/// The org with identifier and avatar
-pub struct Org {
-    /// The unique identifier of the org
-    id: String,
-    /// Generated fallback avatar 
-    avatar_fallback: avatar::Avatar
-}
-
 /// Combination of all org routes.
 pub fn filters(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter().or(register_filter(registry, subscriptions))
+    get_filter(Arc::<RwLock<registry::Registry>>::clone(&registry)).or(register_filter(registry, subscriptions))
 }
 
 /// POST /orgs/register
@@ -47,7 +39,7 @@ fn register_filter(
         .and(document::document(
             document::response(
                 201,
-                document::body(Org::document()).mime("application/json"),
+                document::body(registry::Org::document()).mime("application/json"),
             )
             .description("Creation succeeded"),
         ))
@@ -55,10 +47,13 @@ fn register_filter(
 }
 
 /// GET /orgs/<id>
-fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(
+    registry: Arc<RwLock<registry::Registry>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("orgs")
         .and(document::param::<String>("id", "Unique ID of the Org"))
         .and(warp::get())
+        .and(super::with_registry(registry))
         .and(document::document(document::description(
             "Find Org by ID",
         )))
@@ -66,7 +61,7 @@ fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
         .and(document::document(
             document::response(
                 200,
-                document::body(Org::document()).mime("application/json"),
+                document::body(registry::Org::document()).mime("application/json"),
             )
             .description("Successful retrieval"),
         ))
@@ -88,7 +83,6 @@ mod handler {
     use std::sync::Arc;
     use tokio::sync::RwLock;
 
-    use crate::avatar;
     use crate::notification;
     use crate::registry;
 
@@ -114,17 +108,18 @@ mod handler {
     }
 
     /// Get the Org for the given `id`.
-    pub async fn get(id: String) -> Result<impl Reply, Rejection> {
-        let org = super::Org {
-            id: id.to_string(),
-            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
-        };
+    pub async fn get(
+        id: String,
+        registry: Arc<RwLock<registry::Registry>>,
+    ) -> Result<impl Reply, Rejection> {
+        let reg = registry.read().await;
+        let org = reg.get_org(id).await?;
 
         Ok(reply::json(&org))
     }
 }
 
-impl Serialize for Org {
+impl Serialize for registry::Org {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -137,7 +132,7 @@ impl Serialize for Org {
     }
 }
 
-impl ToDocumentedType for Org {
+impl ToDocumentedType for registry::Org {
     fn document() -> document::DocumentedType {
         let mut properties = std::collections::HashMap::with_capacity(2);
         properties.insert("avatarFallback".into(), avatar::Avatar::document());
@@ -209,18 +204,18 @@ mod test {
             .reply(&api)
             .await;
 
-            let txs = registry
-                .write()
-                .await
-                .list_transactions(vec![])
-                .await
-                .unwrap();
-            let tx = txs.first().unwrap();
+        let txs = registry
+            .write()
+            .await
+            .list_transactions(vec![])
+            .await
+            .unwrap();
+        let tx = txs.first().unwrap();
 
-            let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
 
-            assert_eq!(res.status(), StatusCode::CREATED);
-            assert_eq!(have, json!(tx));
+        assert_eq!(res.status(), StatusCode::CREATED);
+        assert_eq!(have, json!(tx));
     }
 
     #[tokio::test]
@@ -234,11 +229,19 @@ mod test {
             subscriptions,
         );
 
-        let id = "monadic";
+        // Register the org
+        request()
+            .method("POST")
+            .path("/orgs/register")
+            .json(&super::RegisterInput {
+                id: "monadic".into(),
+            })
+            .reply(&api)
+            .await;
 
         let res = request()
             .method("GET")
-            .path(&format!("/orgs/{}", id))
+            .path(&format!("/orgs/{}", "monadic"))
             .reply(&api)
             .await;
 
@@ -247,9 +250,9 @@ mod test {
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(
             have,
-            json!(super::Org {
-                id: id.to_string(),
-                avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Org),
+            json!(registry::Org {
+                id: "monadic".to_string(),
+                avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
             })
         );
     }
