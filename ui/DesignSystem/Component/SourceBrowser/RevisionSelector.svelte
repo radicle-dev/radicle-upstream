@@ -95,6 +95,8 @@
   }
   .selector-branch {
     flex: 1;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
   }
   .selector-expand {
     align-self: flex-end;
