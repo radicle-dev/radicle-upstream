@@ -348,7 +348,7 @@
     margin-left: 0.5rem;
   }
   .changeset-file main {
-    overflow-x: scroll;
+    overflow-x: auto;
   }
 
   table.diff {
