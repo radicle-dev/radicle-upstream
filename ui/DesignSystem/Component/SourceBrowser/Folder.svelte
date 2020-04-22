@@ -1,9 +1,10 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { currentPath, currentRevision, tree } from "../../../src/source.ts";
-  import * as path from "../../../lib/path.js";
   import { TREE } from "../../../../native/types.js";
+  import * as path from "../../../lib/path.js";
+  import { currentPath, currentRevision, tree } from "../../../src/source.ts";
+  import * as remote from "../../../src/remote.ts";
 
   import { Icon } from "../../Primitive";
   import File from "./File.svelte";
@@ -60,11 +61,7 @@
   }
 </style>
 
-{#if $sourceTree.status === 'NOT_ASKED'}
-  <p>Not asked...</p>
-{:else if $sourceTree.status === 'LOADING'}
-  <p>Loading...</p>
-{:else if $sourceTree.status === 'SUCCESS'}
+{#if $sourceTree.status === remote.Status.Success}
   <div class="container">
     {#if firstEntry}
       <div class="folder" class:active>
@@ -100,6 +97,4 @@
       {/each}
     {/if}
   </div>
-{:else if $sourceTree.status === 'ERROR'}
-  <p>{`error: ${$sourceTree.error.message}`}</p>
 {/if}
