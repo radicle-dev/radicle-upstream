@@ -16,7 +16,8 @@ pub fn filters(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter(Arc::<RwLock<registry::Registry>>::clone(&registry)).or(register_filter(registry, subscriptions))
+    get_filter(Arc::<RwLock<registry::Registry>>::clone(&registry))
+        .or(register_filter(registry, subscriptions))
 }
 
 /// POST /orgs
@@ -54,9 +55,7 @@ fn get_filter(
         .and(document::param::<String>("id", "Unique ID of the Org"))
         .and(warp::get())
         .and(super::with_registry(registry))
-        .and(document::document(document::description(
-            "Find Org by ID",
-        )))
+        .and(document::document(document::description("Find Org by ID")))
         .and(document::document(document::tag("Org")))
         .and(document::document(
             document::response(
@@ -77,11 +76,11 @@ fn get_filter(
 
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::{reply, Rejection, Reply};
-    use warp::http::StatusCode;
     use radicle_registry_client::Balance;
     use std::sync::Arc;
     use tokio::sync::RwLock;
+    use warp::http::StatusCode;
+    use warp::{reply, Rejection, Reply};
 
     use crate::notification;
     use crate::registry;
@@ -152,7 +151,7 @@ impl ToDocumentedType for registry::Org {
 #[serde(rename_all = "camelCase")]
 pub struct RegisterInput {
     /// Id of the Org.
-    id: String
+    id: String,
 }
 
 impl ToDocumentedType for RegisterInput {

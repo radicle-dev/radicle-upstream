@@ -86,7 +86,7 @@ pub struct Org {
     /// The unique identifier of the org
     pub id: String,
     /// Generated fallback avatar
-    pub avatar_fallback: avatar::Avatar
+    pub avatar_fallback: avatar::Avatar,
 }
 
 /// Registry client wrapper.
@@ -344,7 +344,7 @@ impl Registry {
         let org_id = OrgId::try_from(id.clone())?;
         Ok(self.client.get_org(org_id).await?.map(|_org| Org {
             id: id.clone(),
-            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org)
+            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
         }))
     }
 
@@ -433,8 +433,8 @@ mod tests {
     use std::convert::TryFrom as _;
     use std::time;
 
+    use super::{Metadata, Registry, Transaction, TransactionState};
     use crate::avatar;
-    use super::{Metadata,  Registry, Transaction, TransactionState};
 
     #[tokio::test]
     async fn list_transactions() {
@@ -545,7 +545,10 @@ mod tests {
         // Query the org
         let org = registry.get_org("monadic".into()).await.unwrap().unwrap();
         assert_eq!(org.id, "monadic");
-        assert_eq!(org.avatar_fallback, avatar::Avatar::from("monadic", avatar::Usage::Org));
+        assert_eq!(
+            org.avatar_fallback,
+            avatar::Avatar::from("monadic", avatar::Usage::Org)
+        );
     }
 
     #[tokio::test]
