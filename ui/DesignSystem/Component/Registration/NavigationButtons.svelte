@@ -5,6 +5,8 @@
   export let onNextStep = null;
   export let disabled = null;
   export let nextStepTitle = "Next";
+
+  export let style = null;
 </script>
 
 <style>
@@ -15,7 +17,7 @@
   }
 </style>
 
-<div class="container">
+<div class="container" {style}>
   <div>
     <Button
       dataCy="cancel-button"

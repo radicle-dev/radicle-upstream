@@ -1,9 +1,11 @@
 <script>
+  import { pop } from "svelte-spa-router";
+
   import {
     IdentifierSelectionStep,
     ModalLayout,
     StepCounter,
-    Transaction
+    TransactionSubmissionStep
   } from "../DesignSystem/Component";
   import { Title } from "../DesignSystem/Primitive";
 
@@ -63,9 +65,10 @@
         entity="Org name"
         onNextStep={nextStep} />
     {:else if currentStep === steps.SUBMIT}
-      <div>
-        <Transaction {transaction} />
-      </div>
+      <TransactionSubmissionStep
+        {transaction}
+        onCancel={pop}
+        onNextStep={pop} />
     {/if}
   </div>
 </ModalLayout>

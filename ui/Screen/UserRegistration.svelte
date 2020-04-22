@@ -9,10 +9,13 @@
   import { session } from "../src/session.ts";
 
   import { Text, Title } from "../DesignSystem/Primitive";
-  import { ModalLayout, StepCounter } from "../DesignSystem/Component";
+  import {
+    ModalLayout,
+    StepCounter,
+    TransactionSubmissionStep
+  } from "../DesignSystem/Component";
 
   import PickHandleStep from "./UserRegistration/PickHandleStep.svelte";
-  import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
 
   let step = 1;
 
@@ -69,6 +72,28 @@
       pop();
     }
   };
+
+  const transaction = {
+    message: "Handle registration",
+    stake: "Handle registration deposit",
+    subject: {
+      name: handle,
+      kind: "user",
+      avatarFallback: identity.avatarFallback,
+      imageUrl: identity.avatarUrl
+    },
+    payer: {
+      name: handle,
+      kind: "user",
+      avatarFallback: identity.avatarFallback,
+      imageUrl: identity.metadata.avatarUrl
+    }
+  };
+
+  $: {
+    transaction.subject.name = handle;
+    transaction.payer.name = handle;
+  }
 </script>
 
 <style>
@@ -108,11 +133,10 @@
       {/if}
 
       {#if step === 2}
-        <SubmitRegistrationStep
-          {identity}
+        <TransactionSubmissionStep
+          {transaction}
           onNextStep={registerUser}
-          onPreviousStep={previousStep}
-          {handle} />
+          onCancel={previousStep} />
       {/if}
     </div>
   </div>
