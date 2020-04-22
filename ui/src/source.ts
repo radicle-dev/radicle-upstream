@@ -174,6 +174,10 @@ export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
 export const fetchRevisions = event.create<Kind, Msg>(Kind.FetchRevisions, update);
 export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 
+export const getLocalBranches = (path: string): Promise<string[]> => {
+  return api.get<string[]>(`source/local-branches/${path}`)
+}
+
 export const tree = (
   projectId: string,
   revision: string,

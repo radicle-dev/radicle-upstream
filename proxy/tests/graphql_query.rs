@@ -59,30 +59,6 @@ fn avatar() {
     })
 }
 
-#[test]
-fn local_branches() {
-    with_fixtures(|_ctx, _repos_dir, _platinum_id| {
-        let mut vars = Variables::new();
-        vars.insert(
-            "path".into(),
-            InputValue::scalar("../fixtures/git-platinum"),
-        );
-
-        let query = "query($path: String!) { localBranches(path: $path) }";
-        let res = graphql_value!({
-            "localBranches": [
-                "dev",
-                "master",
-                "origin/HEAD",
-                "origin/dev",
-                "origin/master",
-            ]
-        });
-
-        (query, vars, None, res)
-    });
-}
-
 #[tokio::test]
 async fn list_transactions() {
     let tmp_dir = tempfile::tempdir().unwrap();

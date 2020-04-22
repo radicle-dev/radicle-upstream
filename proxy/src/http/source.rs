@@ -18,6 +18,7 @@ pub fn routes(
         blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
             .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+            .or(local_branches_filter())
             .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(tree_filter(paths)),
@@ -31,6 +32,7 @@ fn filters(
     blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
         .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+        .or(local_branches_filter())
         .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(tree_filter(paths))
@@ -115,6 +117,31 @@ fn commit_filter(
             .description("Commit for SHA1 found"),
         ))
         .and_then(handler::commit)
+}
+
+/// GET /branches/<project_id>
+fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("local-branches")
+        .and(warp::get())
+        .and(document::tail(
+            "path",
+            "Location of the repository on the filesystem",
+        ))
+        .and(document::document(document::description(
+            "List Branches for a local Repository",
+        )))
+        .and(document::document(document::tag("Source")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(
+                    document::array(coco::Branch::document()).description("List of branches"),
+                )
+                .mime("application/json"),
+            )
+            .description("List of branches"),
+        ))
+        .and_then(handler::local_branches)
 }
 
 /// GET /revisions/<project_id>
@@ -205,6 +232,7 @@ mod handler {
     use librad::paths::Paths;
     use std::sync::Arc;
     use tokio::sync::RwLock;
+    use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
@@ -242,6 +270,13 @@ mod handler {
         let commit = coco::commit(&paths, &project_id, &sha1)?;
 
         Ok(reply::json(&commit))
+    }
+
+    /// Fetch the list [`coco::Branch`] for a local repository.
+    pub async fn local_branches(path: Tail) -> Result<impl Reply, Rejection> {
+        let branches = coco::local_branches(path.as_str())?;
+
+        Ok(reply::json(&branches))
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
@@ -804,6 +839,36 @@ mod test {
                 "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
                 "committerTime": 1_578_309_972,
             }),
+        );
+    }
+
+    #[tokio::test]
+    async fn local_branches() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+
+        let path = "../fixtures/git-platinum";
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let res = request()
+            .method("GET")
+            .path(&format!("/local-branches/{}", path))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::local_branches(path).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(
+            have,
+            json!([
+                "dev",
+                "master",
+                "origin/HEAD",
+                "origin/dev",
+                "origin/master"
+            ]),
         );
     }
 

@@ -198,13 +198,6 @@ impl Query {
         ))
     }
 
-    fn local_branches(ctx: &Context, path: String) -> Result<Vec<String>, error::Error> {
-        Ok(coco::local_branches(&path)?
-            .into_iter()
-            .map(|t| t.to_string())
-            .collect())
-    }
-
     fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
         let meta = coco::get_project_meta(
             &futures::executor::block_on(ctx.librad_paths.read()),
