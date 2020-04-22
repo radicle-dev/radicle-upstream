@@ -1,45 +1,61 @@
 <script>
-  /* import { gql } from "apollo-boost"; */
-  /* import { getContext } from "svelte"; */
-  /* import { getClient, query } from "svelte-apollo"; */
-  import ClickOutside from "svelte-click-outside";
+  import { gql } from "apollo-boost";
+  import { getContext } from "svelte";
+  import { getClient, query } from "svelte-apollo";
 
-  /* import { revisionStore } from "../../../store/sourceBrowser.js"; */
-  /* import { HIDDEN_BRANCHES } from "../../../config.js"; */
+  import { revisionStore } from "../../../store/sourceBrowser.js";
+  import { HIDDEN_BRANCHES } from "../../../config.js";
 
   import { Avatar, Icon } from "../../Primitive";
 
   export let style = "";
   export let expanded = false;
 
-  const toggleDropdown = () => {
-    expanded = !expanded;
+  // Dropdown element. Set by the view.
+  let dropdown = null;
+
+  const showDropdown = () => {
+    expanded = true;
   };
 
   const hideDropdown = () => {
     expanded = false;
   };
 
-  /* const ALL_REVISIONS = gql` */
-  /*   query($projectId: ID!) { */
-  /*     tags(id: $projectId) */
-  /*     branches(id: $projectId) */
-  /*   } */
-  /* `; */
+  const handleClick = ev => {
+    if (dropdown !== ev.target && !dropdown.contains(ev.target)) {
+      hideDropdown();
+    }
+  };
 
-  /* const allRevisions = query(getClient(), { */
-  /*   query: ALL_REVISIONS, */
-  /*   variables: { projectId: getContext("projectId") } */
-  /* }); */
+  const selectRevision = (ev, rev) => {
+    revisionStore.set(rev);
+    hideDropdown();
+  };
+
+  const ALL_REVISIONS = gql`
+    query($projectId: ID!) {
+      tags(id: $projectId)
+      branches(id: $projectId)
+    }
+  `;
+
+  const allRevisions = query(getClient(), {
+    query: ALL_REVISIONS,
+    variables: { projectId: getContext("projectId") }
+  });
 
   const mockRevisions = async () => {
+    const response = await allRevisions;
+    const revisions = (await response.result()).data;
+
     const data = [
       {
         user: {
           avatar: { emoji: "🐯", background: { r: 230, g: 130, b: 230 } },
           handle: "cloudhead"
         },
-        branches: ["master"],
+        branches: revisions.branches,
         tags: ["v0.1.2"]
       },
       {
@@ -47,7 +63,7 @@
           avatar: { emoji: "👻", background: { r: 230, g: 230, b: 230 } },
           handle: "rudolfs"
         },
-        branches: ["master", "development", "feature/icons"],
+        branches: revisions.branches,
         tags: ["v0.1.2"]
       },
       {
@@ -55,14 +71,11 @@
           avatar: { emoji: "🤡", background: { r: 130, g: 230, b: 230 } },
           handle: "xla"
         },
-        branches: ["master", "development"]
+        branches: revisions.branches
       }
     ];
     return { data: data };
   };
-
-  // Set by the view.
-  let triggerEl = null;
 </script>
 
 <style>
@@ -116,11 +129,11 @@
   }
 </style>
 
+<svelte:window on:click={handleClick} />
 {#await mockRevisions() then result}
   <div
     class="revision-selector"
-    bind:this={triggerEl}
-    on:click={toggleDropdown}
+    on:click|stopPropagation={showDropdown}
     hidden={expanded}>
     <div class="selector-avatar">
       <Avatar
@@ -129,40 +142,39 @@
         size="small"
         variant="user" />
     </div>
-    <div class="selector-branch">{result.data[0].branches[0]}</div>
+    <div class="selector-branch">{$revisionStore}</div>
     <div class="selector-expand">
       <Icon.Expand
         style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
     </div>
   </div>
-  <div class="revision-dropdown-container">
-    <ClickOutside
-      on:clickoutside={hideDropdown}
-      exclude={[triggerEl]}
-      useWindow>
-      <div class="revision-dropdown" hidden={!expanded} {style}>
-        {#each result.data as repo}
-          <div class="user">
-            <!-- TODO(cloudhead): text color should be `color-foreground-level-6`,
+  <div class="revision-dropdown-container" bind:this={dropdown}>
+    <div class="revision-dropdown" hidden={!expanded} {style}>
+      {#each result.data as repo}
+        <div class="user">
+          <!-- TODO(cloudhead): text color should be `color-foreground-level-6`,
           but `Avatar` doesn't allow overwriting. -->
-            <Avatar
-              title={repo.user.handle}
-              avatarFallback={repo.user.avatar}
-              size="small"
-              variant="user" />
-          </div>
-          <ul>
-            {#each repo.branches as branch}
-              <li class="branch">
+          <Avatar
+            title={repo.user.handle}
+            avatarFallback={repo.user.avatar}
+            size="small"
+            variant="user" />
+        </div>
+        <ul>
+          {#each repo.branches as branch}
+            {#if !HIDDEN_BRANCHES.includes(branch)}
+              <li
+                class="branch"
+                on:click|stopPropagation={ev => selectRevision(ev, branch)}>
                 <Icon.Branch
                   style="vertical-align: bottom; fill:
                   var(--color-foreground-level-4)" />
                 <span style="line-height: 1.5rem">{branch}</span>
               </li>
-            {/each}
-          </ul>
-        {/each}
-      </div>
-    </ClickOutside>
+            {/if}
+          {/each}
+        </ul>
+      {/each}
+    </div>
   </div>
 {/await}
