@@ -14,8 +14,10 @@ mod doc;
 mod error;
 mod identity;
 mod notification;
+mod org;
 mod project;
 mod session;
+mod source;
 mod transaction;
 
 /// Main entry point for HTTP API.
@@ -29,12 +31,17 @@ pub fn routes(
     let api = path("v1").and(
         identity::filters(Arc::<RwLock<kv::Store>>::clone(&store))
             .or(notification::filters(subscriptions.clone()))
+            .or(org::filters(
+                Arc::<RwLock<registry::Registry>>::clone(&registry),
+                subscriptions.clone(),
+            ))
             .or(project::filters(
-                librad_paths,
+                Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
                 Arc::<RwLock<registry::Registry>>::clone(&registry),
                 subscriptions,
             ))
             .or(session::get_filter(store))
+            .or(source::routes(librad_paths))
             .or(transaction::filters(registry)),
     );
     // let docs = path("docs").and(doc::filters(&api));

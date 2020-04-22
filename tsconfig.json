@@ -7,9 +7,10 @@
     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
     "module": "es6",
     /* Specify library files to be included in the compilation. */
-    // "lib": [],
+    "lib": ["dom", "es6", "es7"],
     /* Allow javascript files to be compiled. */
-    "allowJs": false,
+    /* Allow javascript files to be compiled. */
+    "allowJs": true,
     /* Report errors in .js files. */
     // "checkJs": true,
     /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */

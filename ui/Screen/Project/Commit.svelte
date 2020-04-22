@@ -1,9 +1,9 @@
 <script>
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
   import { format } from "timeago.js";
 
   import { showNotification } from "../../store/notification.js";
+  import { commit, fetchCommit } from "../../src/source.ts";
+  import * as remote from "../../src/remote.ts";
 
   import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
 
@@ -11,274 +11,15 @@
   const projectId = params.id;
   const commitHash = params.hash;
 
-  const GET_COMMIT = gql`
-    query($projectId: ID!, $commitHash: String!) {
-      commit(id: $projectId, sha1: $commitHash) {
-        author {
-          email
-          name
-        }
-        committer {
-          email
-          name
-        }
-        committerTime
-        description
-        sha1
-        summary
-      }
-    }
-  `;
-
-  async function fetchCommit() {
-    try {
-      const response = await query(getClient(), {
-        query: GET_COMMIT,
-        variables: {
-          projectId: projectId,
-          commitHash: commitHash
-        }
-      });
-      const result = await response.result();
-      const commit = result.data.commit;
-
-      // TODO(cloudhead): Fetch branch from backend.
-      commit.branch = "master";
-      commit.changeset = {
-        summary: {
-          additions: 32,
-          deletions: 24
-        },
-        files: [
-          {
-            path: "core/index.js",
-            hunks: [
-              {
-                expanded: true,
-                lines: [
-                  { num: [192, 192], type: "", content: "/*" },
-                  { num: [193, 193], type: "", content: " * Say hello" },
-                  { num: [194, 194], type: "", content: " */" },
-                  {
-                    num: [195, null],
-                    type: "-",
-                    content:
-                      "Server.prototype.hello = function (req, contentType) {"
-                  },
-                  {
-                    num: [null, 195],
-                    type: "+",
-                    content:
-                      "Server.prototype.hello = function (req, contentType) {"
-                  },
-                  {
-                    num: [196, 196],
-                    type: "",
-                    content: "    var enable = this.options.gzip;"
-                  },
-                  {
-                    num: [197, 197],
-                    type: "",
-                    content: "    if (enable && (typeof enable === 'boolean' ||"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            path: "core/server.js",
-            hunks: [
-              {
-                expanded: true,
-                lines: [
-                  {
-                    num: [192, 192],
-                    type: "",
-                    content:
-                      "/* Check if we should consider sending a gzip version of the file based on the"
-                  },
-                  {
-                    num: [193, 193],
-                    type: "",
-                    content:
-                      " * file content type and client's Accept-Encoding header value."
-                  },
-                  { num: [194, 194], type: "", content: " */" },
-                  {
-                    num: [195, null],
-                    type: "-",
-                    content:
-                      "Server.prototype.ok = function (req, contentType) {"
-                  },
-                  {
-                    num: [null, 195],
-                    type: "+",
-                    content:
-                      "Server.prototype.gzipOk = function (req, contentType) {"
-                  },
-                  {
-                    num: [196, 196],
-                    type: "",
-                    content: "    var enable = this.options.gzip;"
-                  },
-                  { num: [197, 197], type: "", content: "    if (enable &&" },
-                  {
-                    num: [198, 198],
-                    type: "",
-                    content: "        (typeof enable === 'boolean' ||"
-                  }
-                ]
-              },
-              {
-                expanded: false,
-                header:
-                  "@@ -206,20 +206,17 @@ Server.prototype.gzipOk = function(req, contentType) {",
-                lines: [
-                  {
-                    num: [199, 199],
-                    type: "",
-                    content:
-                      "            (contentType && (enable instanceof RegExp) && enable.test(contentType)))) {"
-                  },
-                  {
-                    num: [200, 200],
-                    type: "",
-                    content:
-                      "        var acceptEncoding = req.headers['accept-encoding'];"
-                  },
-                  {
-                    num: [201, 201],
-                    type: "",
-                    content:
-                      "        return acceptEncoding && acceptEncoding.indexOf('gzip') >= 0;"
-                  },
-                  { num: [202, 202], type: "", content: "    }" },
-                  { num: [203, 203], type: "", content: "    return false;" },
-                  { num: [204, 204], type: "", content: "}" },
-                  { num: [205, 205], type: "", content: "" }
-                ]
-              },
-              {
-                expanded: true,
-                lines: [
-                  {
-                    num: [206, null],
-                    type: "-",
-                    content:
-                      "Server.prototype.respond = function (pathname, status, contentType, _headers, files, stat, req, res, finish) {"
-                  },
-                  {
-                    num: [null, 206],
-                    type: "+",
-                    content:
-                      "/* Send a gzipped version of the file if the options and the client indicate gzip is enabled and"
-                  },
-                  {
-                    num: [null, 207],
-                    type: "+",
-                    content:
-                      " * we find a .gz file mathing the static resource requested."
-                  },
-                  { num: [null, 208], type: "+", content: " */" },
-                  {
-                    num: [null, 209],
-                    type: "+",
-                    content:
-                      "Server.prototype.respondGzip = function (pathname, status, contentType, _headers, files, stat, req, res, finish) {"
-                  },
-                  {
-                    num: [207, 210],
-                    type: "",
-                    content: "    var that = this;"
-                  },
-                  {
-                    num: [208, 211],
-                    type: "",
-                    content:
-                      "    if (files.length == 1 && this.gzipOk(req, contentType)) {"
-                  },
-                  {
-                    num: [209, 212],
-                    type: "",
-                    content: "        var gzFile = files[0] + '.gz';"
-                  },
-                  {
-                    num: [210, 213],
-                    type: "",
-                    content: "        fs.stat(gzFile, function (e, gzStat) {"
-                  },
-                  {
-                    num: [211, 214],
-                    type: "",
-                    content: "            if (!e && gzStat.isFile()) {"
-                  },
-                  {
-                    num: [212, 215],
-                    type: "",
-                    content: "                var vary = _headers['Vary'];"
-                  },
-                  {
-                    num: [213, null],
-                    type: "-",
-                    content:
-                      "                _headers['Vary'] = (vary && vary != 'Accept-Encoding'?vary+', ':'')+'Accept-Encoding';"
-                  },
-                  {
-                    num: [null, 216],
-                    type: "+",
-                    content:
-                      "                _headers['Vary'] = (vary && vary != 'Accept-Encoding' ? vary + ', ' : '') + 'Accept-Encoding';"
-                  },
-                  {
-                    num: [214, 217],
-                    type: "",
-                    content:
-                      "                _headers['Content-Encoding'] = 'gzip';"
-                  },
-                  {
-                    num: [215, 218],
-                    type: "",
-                    content: "                stat.size = gzStat.size;"
-                  },
-                  {
-                    num: [216, 219],
-                    type: "",
-                    content: "                files = [gzFile];"
-                  },
-                  {
-                    num: [217, null],
-                    type: "-",
-                    content: "            } else {"
-                  },
-                  {
-                    num: [218, null],
-                    type: "-",
-                    content:
-                      "                console.log('gzip file not found or error finding it', gzFile, String(e), stat.isFile());"
-                  },
-                  { num: [219, 220], type: "", content: "            }" },
-                  {
-                    num: [220, 221],
-                    type: "",
-                    content:
-                      "            that.respondNoGzip(pathname, status, contentType, _headers, files, stat, req, res, finish);"
-                  },
-                  { num: [221, 222], type: "", content: "        });" }
-                ]
-              }
-            ]
-          }
-        ]
-      };
-
-      return commit;
-    } catch (error) {
-      showNotification({
-        text: "Could not fetch commit",
-        level: "error"
-      });
-    }
+  $: if ($commit.status === remote.Status.Error) {
+    console.log($commit.error);
+    showNotification({
+      text: "Could not fetch commit",
+      level: "error"
+    });
   }
+
+  fetchCommit({ projectId, sha1: commitHash });
 </script>
 
 <style>
@@ -412,12 +153,12 @@
   }
 </style>
 
-{#await fetchCommit() then commit}
+{#if $commit.status === remote.Status.Success}
   <header>
     <Flex style="align-items: flex-start">
       <div slot="left">
         <Title variant="large" style="margin-bottom: 1rem">
-          {commit.summary}
+          {$commit.data.summary}
         </Title>
       </div>
       <div slot="right">
@@ -430,30 +171,30 @@
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-6)" />
-            <span style="margin-left: -0.5ch">{commit.branch}</span>
+            <span style="margin-left: -0.5ch">{$commit.data.branch}</span>
           </span>
           <span style="margin-left: -0.5ch">
-            {format(commit.committerTime)}
+            {format($commit.data.committerTime * 1000)}
           </span>
         </span>
       </div>
     </Flex>
     <pre class="description" style="margin-bottom: 1rem">
-      {commit.description}
+      {$commit.data.description}
     </pre>
     <hr />
     <Flex style="align-items: flex-end">
       <div slot="left">
         <p class="field">
           Authored by
-          <span class="author">{commit.author.name}</span>
-          <span class="email">&lt;{commit.author.email}&gt;</span>
+          <span class="author">{$commit.data.author.name}</span>
+          <span class="email">&lt;{$commit.data.author.email}&gt;</span>
         </p>
-        {#if commit.committer.email != commit.author.email}
+        {#if $commit.data.committer.email != $commit.data.author.email}
           <p class="field">
             Committed by
-            <span class="author">{commit.committer.name}</span>
-            <span class="email">&lt;{commit.committer.email}&gt;</span>
+            <span class="author">{$commit.data.committer.name}</span>
+            <span class="email">&lt;{$commit.data.committer.email}&gt;</span>
           </p>
         {/if}
       </div>
@@ -461,23 +202,23 @@
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
           Commit
-          <span class="hash">{commit.sha1}</span>
+          <span class="hash">{$commit.data.sha1}</span>
         </p>
       </div>
     </Flex>
   </header>
   <main>
     <div class="changeset-summary">
-      {commit.changeset.files.length} file(s) changed with
+      {$commit.data.changeset.files.length} file(s) changed with
       <span class="additions">
-        {commit.changeset.summary.additions} addition(s)
+        {$commit.data.changeset.summary.additions} addition(s)
       </span>
       and
       <span class="deletions">
-        {commit.changeset.summary.deletions} deletion(s)
+        {$commit.data.changeset.summary.deletions} deletion(s)
       </span>
     </div>
-    {#each commit.changeset.files as file}
+    {#each $commit.data.changeset.files as file}
       <article class="changeset-file">
         <header>
           <Icon.File />
@@ -507,4 +248,4 @@
       </article>
     {/each}
   </main>
-{/await}
+{/if}

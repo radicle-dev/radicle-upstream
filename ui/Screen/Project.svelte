@@ -1,10 +1,9 @@
 <script>
-  import { setContext } from "svelte";
-  import { gql } from "apollo-boost";
-  import { getClient, query } from "svelte-apollo";
-  import Router, { link, location, push } from "svelte-spa-router";
+  import Router, { link, push } from "svelte-spa-router";
 
-  import { Icon } from "../DesignSystem/Primitive";
+  import * as path from "../lib/path.js";
+  import { fetch, project } from "../src/project.ts";
+  import * as remote from "../src/remote.ts";
 
   import {
     AdditionalActionsDropdown,
@@ -13,14 +12,7 @@
     Topbar,
     TrackToggle
   } from "../DesignSystem/Component";
-
-  import {
-    revisionStore,
-    objectPathStore,
-    objectTypeStore
-  } from "../store/sourceBrowser.js";
-
-  import * as path from "../lib/path.js";
+  import { Icon } from "../DesignSystem/Primitive";
 
   import Breadcrumb from "./Project/Breadcrumb.svelte";
 
@@ -51,39 +43,6 @@
   };
 
   export let params = null;
-  setContext("projectId", params.id);
-
-  const GET_PROJECT = gql`
-    query Query($id: ID!) {
-      project(id: $id) {
-        id
-        metadata {
-          defaultBranch
-          description
-          name
-        }
-        registered {
-          ... on OrgRegistration {
-            orgId
-          }
-          ... on UserRegistration {
-            userId
-          }
-        }
-        stats {
-          branches
-          commits
-          contributors
-        }
-      }
-    }
-  `;
-
-  const client = getClient();
-  const project = query(client, {
-    query: GET_PROJECT,
-    variables: { id: params.id }
-  });
 
   const topbarMenuItems = projectId => [
     {
@@ -124,22 +83,20 @@
     }
   ];
 
-  $: revisionStore.set(path.extractProjectSourceRevision($location));
-  $: objectPathStore.set(path.extractProjectSourceObjectPath($location));
-  $: objectTypeStore.set(path.extractProjectSourceObjectType($location));
+  fetch({ id: params.id });
 </script>
 
 <SidebarLayout
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="page-container">
-  {#await $project then result}
+  {#if $project.status === remote.Status.Success}
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.projectSource(params.id)} use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->
         <Breadcrumb
-          title={result.data.project.metadata.name}
-          user={result.data.project.registered}
-          org={result.data.project.registered} />
+          title={$project.data.metadata.name}
+          user={$project.data.registered}
+          org={$project.data.registered} />
       </a>
 
       <div slot="middle">
@@ -156,5 +113,5 @@
       </div>
     </Topbar>
     <Router {routes} />
-  {/await}
+  {/if}
 </SidebarLayout>
