@@ -142,7 +142,7 @@ impl ToDocumentedType for registry::Org {
                 .example("monadic"),
         );
 
-        document::DocumentedType::from(properties).description("Unique org")
+        document::DocumentedType::from(properties).description("Org")
     }
 }
 
