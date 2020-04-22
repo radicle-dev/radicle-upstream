@@ -19,16 +19,16 @@ pub fn filters(
     get_filter(Arc::<RwLock<registry::Registry>>::clone(&registry)).or(register_filter(registry, subscriptions))
 }
 
-/// POST /orgs/register
+/// POST /orgs
 fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("orgs" / "register")
+    path!("orgs")
         .and(warp::post())
         .and(super::with_registry(registry))
-        .and(warp::body::json())
         .and(super::with_subscriptions(subscriptions))
+        .and(warp::body::json())
         .and(document::document(document::description(
             "Register a new unique Org",
         )))
@@ -89,8 +89,8 @@ mod handler {
     /// Register an org on the Registry.
     pub async fn register(
         registry: Arc<RwLock<registry::Registry>>,
-        input: super::RegisterInput,
         subscriptions: notification::Subscriptions,
+        input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -197,7 +197,7 @@ mod test {
 
         let res = request()
             .method("POST")
-            .path("/orgs/register")
+            .path("/orgs")
             .json(&super::RegisterInput {
                 id: "monadic".into(),
             })
@@ -232,7 +232,7 @@ mod test {
         // Register the org
         request()
             .method("POST")
-            .path("/orgs/register")
+            .path("/orgs")
             .json(&super::RegisterInput {
                 id: "monadic".into(),
             })
