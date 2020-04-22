@@ -1,12 +1,13 @@
 <script>
   import validatejs from "validate.js";
   import { gql } from "apollo-boost";
-  import { getClient, query, mutate } from "svelte-apollo";
+  import { getClient, mutate } from "svelte-apollo";
   import { pop, push } from "svelte-spa-router";
 
+  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
   import { showNotification } from "../store/notification.js";
   import * as path from "../lib/path.js";
-  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
+  import { getLocalBranches } from "../src/source.ts";
 
   import {
     Button,
@@ -144,12 +145,6 @@
 
   const client = getClient();
 
-  const LOCAL_BRANCHES = gql`
-    query($path: String!) {
-      localBranches(path: $path)
-    }
-  `;
-
   const CREATE_PROJECT = gql`
     mutation(
       $metadata: ProjectMetadataInput!
@@ -224,15 +219,7 @@
     beginValidation = true;
 
     try {
-      const response = await query(client, {
-        query: LOCAL_BRANCHES,
-        variables: {
-          path: path
-        }
-      });
-
-      const result = await response.result();
-      localBranches = result.data.localBranches;
+      localBranches = await getLocalBranches(path);
     } catch (error) {
       localBranchesError = error.message;
     }

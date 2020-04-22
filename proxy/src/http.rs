@@ -17,6 +17,7 @@ mod notification;
 mod org;
 mod project;
 mod session;
+mod source;
 mod transaction;
 
 /// Main entry point for HTTP API.
@@ -35,11 +36,12 @@ pub fn routes(
                 subscriptions.clone(),
             ))
             .or(project::filters(
-                librad_paths,
+                Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
                 Arc::<RwLock<registry::Registry>>::clone(&registry),
                 subscriptions,
             ))
             .or(session::get_filter(store))
+            .or(source::routes(librad_paths))
             .or(transaction::filters(registry)),
     );
     // let docs = path("docs").and(doc::filters(&api));

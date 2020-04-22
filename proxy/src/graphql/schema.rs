@@ -198,69 +198,6 @@ impl Query {
         ))
     }
 
-    fn blob(
-        ctx: &Context,
-        id: juniper::ID,
-        revision: String,
-        path: String,
-    ) -> Result<coco::Blob, error::Error> {
-        coco::blob(
-            &futures::executor::block_on(ctx.librad_paths.read()),
-            &id.to_string(),
-            &revision,
-            &path,
-        )
-    }
-
-    fn commit(ctx: &Context, id: juniper::ID, sha1: String) -> Result<coco::Commit, error::Error> {
-        coco::commit(
-            &futures::executor::block_on(ctx.librad_paths.read()),
-            &id.to_string(),
-            &sha1,
-        )
-    }
-
-    fn branches(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
-        Ok(coco::branches(
-            &futures::executor::block_on(ctx.librad_paths.read()),
-            &id.to_string(),
-        )?
-        .into_iter()
-        .map(|t| t.to_string())
-        .collect())
-    }
-
-    fn local_branches(ctx: &Context, path: String) -> Result<Vec<String>, error::Error> {
-        Ok(coco::local_branches(&path)?
-            .into_iter()
-            .map(|t| t.to_string())
-            .collect())
-    }
-
-    fn tags(ctx: &Context, id: juniper::ID) -> Result<Vec<String>, error::Error> {
-        Ok(coco::tags(
-            &futures::executor::block_on(ctx.librad_paths.read()),
-            &id.to_string(),
-        )?
-        .into_iter()
-        .map(|t| t.to_string())
-        .collect())
-    }
-
-    fn tree(
-        ctx: &Context,
-        id: juniper::ID,
-        revision: String,
-        prefix: String,
-    ) -> Result<coco::Tree, error::Error> {
-        coco::tree(
-            &futures::executor::block_on(ctx.librad_paths.read()),
-            &id,
-            &revision,
-            &prefix,
-        )
-    }
-
     fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
         let meta = coco::get_project_meta(
             &futures::executor::block_on(ctx.librad_paths.read()),
@@ -484,128 +421,6 @@ pub enum AvatarUsage {
 }
 
 #[juniper::object]
-impl coco::Blob {
-    fn binary(&self) -> bool {
-        match &self.content {
-            coco::BlobContent::Ascii(_content) => false,
-            coco::BlobContent::Binary => true,
-        }
-    }
-
-    fn content(&self) -> Option<String> {
-        match &self.content {
-            coco::BlobContent::Ascii(content) => Some(content.clone()),
-            coco::BlobContent::Binary => None,
-        }
-    }
-
-    fn info(&self) -> &coco::Info {
-        &self.info
-    }
-}
-
-#[juniper::object]
-impl coco::Commit {
-    fn sha1(&self) -> String {
-        self.sha1.to_string()
-    }
-
-    fn author(&self) -> &coco::Person {
-        &self.author
-    }
-
-    fn summary(&self) -> &str {
-        &self.summary
-    }
-
-    fn description(&self) -> &str {
-        self.description()
-    }
-
-    fn message(&self) -> &str {
-        &self.message
-    }
-
-    fn committer(&self) -> &coco::Person {
-        &self.committer
-    }
-
-    fn committer_time(&self) -> String {
-        self.committer_time.seconds().to_string()
-    }
-}
-
-#[juniper::object]
-impl coco::Info {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn object_type(&self) -> ObjectType {
-        match self.object_type {
-            coco::ObjectType::Blob => ObjectType::Blob,
-            coco::ObjectType::Tree => ObjectType::Tree,
-        }
-    }
-
-    fn last_commit(&self) -> Option<&coco::Commit> {
-        self.last_commit.as_ref()
-    }
-}
-
-/// Git object types.
-///
-/// <https://git-scm.com/book/en/v2/Git-Internals-Git-Objects>
-#[derive(GraphQLEnum)]
-enum ObjectType {
-    /// Directory tree.
-    Tree,
-    /// Text or binary blob of a file.
-    Blob,
-}
-
-#[juniper::object]
-impl coco::Person {
-    fn name(&self) -> &str {
-        &self.name
-    }
-
-    fn email(&self) -> &str {
-        &self.email
-    }
-
-    fn avatar(&self) -> &str {
-        &self.avatar
-    }
-}
-
-#[juniper::object]
-impl coco::Tree {
-    fn path(&self) -> &str {
-        &self.path
-    }
-
-    fn entries(&self) -> &Vec<coco::TreeEntry> {
-        self.entries.as_ref()
-    }
-
-    fn info(&self) -> &coco::Info {
-        &self.info
-    }
-}
-
-#[juniper::object]
-impl coco::TreeEntry {
-    fn info(&self) -> &coco::Info {
-        &self.info
-    }
-
-    fn path(&self) -> String {
-        self.path.clone()
-    }
-}
-
-#[juniper::object]
 impl identity::Identity {
     fn id(&self) -> juniper::ID {
         juniper::ID::new(&self.id)
@@ -716,17 +531,17 @@ enum ProjectRegistration {
 }
 
 juniper::graphql_union!(ProjectRegistration: () where Scalar = <S> |&self| {
-    instance_resolvers: |_| {
-        &OrgRegistration => match *self {
-            ProjectRegistration::Org(ref o) => Some(o),
-            ProjectRegistration::User(..) => None,
-        },
-        &UserRegistration => match *self {
-            ProjectRegistration::User(ref o) => Some(o),
-            ProjectRegistration::Org(..) => None,
-        },
-    }
-    });
+instance_resolvers: |_| {
+    &OrgRegistration => match *self {
+        ProjectRegistration::Org(ref o) => Some(o),
+        ProjectRegistration::User(..) => None,
+    },
+    &UserRegistration => match *self {
+        ProjectRegistration::User(ref o) => Some(o),
+        ProjectRegistration::Org(..) => None,
+    },
+}
+});
 
 /// Context data for a not registered project, there are none.
 #[derive(juniper::GraphQLObject)]

@@ -1,10 +1,15 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   export let items = null;
   export let value = null;
   export let disabled = null;
 
   export let style = null;
   export let dataCy = null;
+
+  const dispatch = createEventDispatcher();
+  const change = () => dispatch("select", value);
 </script>
 
 <style>
@@ -40,7 +45,7 @@
   }
 </style>
 
-<select data-cy={dataCy} {style} bind:value {disabled}>
+<select data-cy={dataCy} {style} bind:value {disabled} on:change={change}>
   {#each items as item}
     <option value={item}>{item}</option>
   {/each}
