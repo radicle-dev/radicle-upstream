@@ -83,7 +83,7 @@
     overflow-x: auto;
   }
 
-  .revision-selector {
+  .revision-selector-wrapper {
     margin: 0.75rem 0;
     position: relative;
     width: 100%;
@@ -114,7 +114,7 @@
   <div class="container">
     <div class="column-left">
       {#if $revisions.status === remote.Status.Success}
-        <div class="revision-selector">
+        <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
             currentRevision={$currentRevision}
