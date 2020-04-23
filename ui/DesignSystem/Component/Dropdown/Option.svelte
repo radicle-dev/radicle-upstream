@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { Avatar, Text } from "../../Primitive";
+  import { Avatar, Text, Title } from "../../Primitive";
 
   const dispatch = createEventDispatcher();
 
@@ -14,8 +14,8 @@
 <style>
   .option {
     display: flex;
-    padding: 0 12px 0 12px;
-    height: 38px;
+    padding: 0 8px 0 8px;
+    height: 46px;
     align-items: center;
     white-space: nowrap;
   }
@@ -31,19 +31,15 @@
     dispatch('selected', { value: value });
   }}>
   {#if variant === 'identity'}
-    <Avatar {...identity} size="small" style="margin-right: 12px;" />
-    <Text style="color: var(--color-foreground-level-6)">
+    <Avatar {...identity} style="margin-right: 12px;" />
+    <Title style="color: var(--color-foreground-level-6)">
       {identity.metadata.handle}
-    </Text>
+    </Title>
   {:else if variant === 'org'}
-    <Avatar
-      {...org}
-      variant="project"
-      size="small"
-      style="margin-right: 12px;" />
-    <Text style="color: var(--color-foreground-level-6)">
+    <Avatar {...org} variant="project" style="margin-right: 12px;" />
+    <Title style="color: var(--color-foreground-level-6)">
       {org.metadata.name}
-    </Text>
+    </Title>
   {:else}
     <Text style="color: var(--color-foreground-level-6)">{text}</Text>
   {/if}

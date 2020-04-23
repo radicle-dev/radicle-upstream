@@ -1,5 +1,6 @@
 <script>
   import { Button, Flex, Title, Input } from "../../DesignSystem/Primitive";
+  import { Dropdown } from "../../DesignSystem/Component";
   import { pop } from "svelte-spa-router";
 
   export let createNewProject = false;
@@ -15,7 +16,7 @@
 </style>
 
 <div class="name">
-  <Input.Dropdown items={['radicle', 'cloudhead']} value={'radicle'} />
+  <Dropdown />
   <Title
     style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);"
     variant="regular">

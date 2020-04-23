@@ -40,8 +40,6 @@
     value = event.detail.value;
     toggleMenu();
   };
-
-  $: console.log(value);
 </script>
 
 <style>
@@ -54,7 +52,7 @@
   }
 
   .button {
-    height: 40px;
+    height: 48px;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     display: flex;
@@ -66,7 +64,6 @@
   }
 
   .button:hover {
-    height: 40px;
     box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground);
