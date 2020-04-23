@@ -40,6 +40,11 @@
     display: flex;
     cursor: pointer;
   }
+  .revision-selector:hover {
+    box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
+    color: var(--color-foreground);
+    background-color: var(--color-foreground-level-2);
+  }
   .revision-selector[hidden] {
     visibility: hidden;
   }
@@ -57,16 +62,17 @@
   }
   .revision-dropdown-container {
     position: absolute;
-    top: -1px; /* We set this to `-1px` to offset the difference in border */
-    left: -1px; /* width between the hidden and expanded states. */
+    top: 0px;
+    left: 0px;
     width: 100%;
   }
   .revision-dropdown {
     position: relative;
     background: white;
-    border: 2px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.12), 0px 0px 1px rgba(0, 0, 0, 0.12);
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.12), 0px 0px 1px rgba(0, 0, 0, 0.12),
+      0px 0px 0px 1px var(--color-foreground-level-3);
     z-index: 8;
   }
   .user {
@@ -81,7 +87,8 @@
     overflow-x: hidden;
   }
   .branch:hover {
-    background: var(--color-foreground-level-1);
+    color: var(--color-foreground);
+    background: var(--color-foreground-level-2);
   }
 </style>
 
