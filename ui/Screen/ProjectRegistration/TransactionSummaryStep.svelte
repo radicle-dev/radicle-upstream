@@ -5,6 +5,7 @@
   import * as project from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
   import { session } from "../../src/session.ts";
+  import * as transaction from "../../src/transaction.ts";
 
   import { Button, Flex } from "../../DesignSystem/Primitive";
   import { Transaction } from "../../DesignSystem/Component";
@@ -29,26 +30,20 @@
     handle = $session.data.identity.metadata.handle;
   }
 
-  // TODO(rudolfs): move wallet selection to top-level component
-  const transaction = {
-    message: "Project registration",
-    stake: "Project registration deposit",
-    subject: {
-      name: "project-name-goes-here",
-      kind: "project",
-      avatarFallback: identity.avatarFallback,
-      imageUrl: identity.avatarUrl
-    },
-    payer: {
-      name: handle,
-      kind: "user",
-      avatarFallback: identity.avatarFallback,
-      imageUrl: identity.metadata.avatarUrl
-    }
+  const tx = {
+    messages: [
+      {
+        type: transaction.MessageType.UserRegistration,
+        handle,
+        id: identity.id
+      }
+    ]
   };
+  const payer = transaction.formatPayer(identity);
+  const subject = transaction.formatSubject(identity, tx.messages[0]);
 </script>
 
-<Transaction {transaction} />
+<Transaction transaction={tx} {payer} {subject} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
