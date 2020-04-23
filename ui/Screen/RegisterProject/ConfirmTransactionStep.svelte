@@ -26,7 +26,7 @@
   };
 </script>
 
-<Transaction {tx} {payer} {subject} />
+<Transaction transaction={tx} {payer} {subject} />
 
 <Flex style="margin-top: 32px;">
   <div slot="left">

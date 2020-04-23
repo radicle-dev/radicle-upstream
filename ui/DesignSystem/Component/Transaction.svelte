@@ -1,5 +1,5 @@
 <script>
-  import * as transaction from "../../src/transaction.ts";
+  import { formatMessage, formatStake } from "../../src/transaction.ts";
 
   import {
     Avatar,
@@ -11,7 +11,7 @@
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
 
-  export let tx = null;
+  export let transaction = null;
   export let payer = null;
   export let subject = null;
 </script>
@@ -19,9 +19,9 @@
 <Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Your transaction
 </Caption>
-<Row dataCy="summary" variant={tx.id ? 'top' : 'single'}>
+<Row dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
   <div slot="left">
-    <Title>{transaction.formatMessage(tx.messages[0])}</Title>
+    <Title>{formatMessage(transaction.messages[0])}</Title>
   </div>
 
   <div slot="right">
@@ -34,13 +34,13 @@
   </div>
 </Row>
 
-{#if tx.id}
+{#if transaction.id}
   <Row
     variant="bottom"
     style="height: 32px; background-color: var(--color-foreground-level-1)">
     <div slot="left">
       <Numeric variant="tiny" style="color: var(--color-foreground-level-6)">
-        {tx.id}
+        {transaction.id}
       </Numeric>
     </div>
   </Row>
@@ -54,7 +54,7 @@
 
 <Row variant="top" style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
-    <Title>{transaction.formatStake(tx.messages[0])}</Title>
+    <Title>{formatStake(transaction.messages[0])}</Title>
   </div>
 
   <div slot="right">

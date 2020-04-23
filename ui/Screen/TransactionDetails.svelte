@@ -50,7 +50,7 @@
         progress={0}
         time={$tx.data.timestamp} />
       <Transaction
-        tx={$tx.data}
+        transaction={$tx.data}
         payer={transaction.formatPayer(identity)}
         subject={transaction.formatSubject(identity, $tx.data.messages[0])} />
     {/if}
