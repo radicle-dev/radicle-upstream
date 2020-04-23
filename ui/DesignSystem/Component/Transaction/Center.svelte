@@ -1,30 +1,17 @@
 <script>
-  import {
-    USER_REGISTRATION,
-    PROJECT_REGISTRATION
-  } from "../../../../native/types.js";
   import * as remote from "../../../src/remote.ts";
-  import { transactions } from "../../../src/transaction.ts";
+  import { formatMessage, transactions } from "../../../src/transaction.ts";
 
   import { Text } from "../../Primitive";
 
   import Accordion from "./Accordion.svelte";
 
-  const formatMessage = kind => {
-    switch (kind) {
-      case USER_REGISTRATION:
-        return "User registration";
-      case PROJECT_REGISTRATION:
-        return "Project registration";
-    }
-  };
-
-  // TODO(merle): Use actual data
-  const formatTransactions = transactions => {
-    return transactions.map(transaction => {
+  // TODO(merle): Use actual data.
+  const formatTransactions = txs => {
+    return txs.map(tx => {
       return {
-        id: transaction.id,
-        message: formatMessage(Object.keys(transaction.messages[0])[0]),
+        id: tx.id,
+        message: formatMessage(tx.messages[0]),
         state: "pending",
         progress: 0
       };
