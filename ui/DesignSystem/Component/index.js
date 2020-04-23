@@ -13,7 +13,6 @@ import Rad from "./Rad.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
-import SourceBrowser from "./SourceBrowser.svelte";
 import StepCounter from "./StepCounter.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
@@ -39,7 +38,6 @@ export {
   RadioOption,
   Sidebar,
   SidebarLayout,
-  SourceBrowser,
   StepCounter,
   Topbar,
   TrackToggle,

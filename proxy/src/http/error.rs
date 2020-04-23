@@ -1,6 +1,7 @@
 //! Recovery and conversion of [`error::Error`] to proper JSON responses, which expose variants
 //! for API consumers to act on.
 
+use librad::surf;
 use std::convert::Infallible;
 use warp::document::{self, ToDocumentedType};
 use warp::http::StatusCode;
@@ -50,25 +51,45 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
 
     let (code, variant, message) = {
         if err.is_not_found() {
-            (StatusCode::NOT_FOUND, "NOT_FOUND", "Resource not found")
+            (
+                StatusCode::NOT_FOUND,
+                "NOT_FOUND",
+                "Resource not found".to_string(),
+            )
         } else if let Some(err) = err.find::<error::Error>() {
             match err {
+                error::Error::Git(git_error) => match git_error {
+                    surf::git::error::Error::Git(error) => (
+                        StatusCode::BAD_REQUEST,
+                        "GIT_ERROR",
+                        format!("Internal Git error: {:?}", error),
+                    ),
+                    _ => (
+                        StatusCode::BAD_REQUEST,
+                        "BAD_REQUEST",
+                        "Incorrect input".to_string(),
+                    ),
+                },
                 _ => {
                     // TODO(xla): Match all variants and properly transform similar to
                     // gaphql::error.
-                    (StatusCode::BAD_REQUEST, "BAD_REQUEST", "Incorrect input")
+                    (
+                        StatusCode::BAD_REQUEST,
+                        "BAD_REQUEST",
+                        "Incorrect input".to_string(),
+                    )
                 },
             }
         } else {
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "INTERNAL_ERROR",
-                "Something went wrong",
+                "Something went wrong".to_string(),
             )
         }
     };
     let res = reply::json(&Error {
-        message: message.to_string(),
+        message,
         variant: variant.to_string(),
     });
 

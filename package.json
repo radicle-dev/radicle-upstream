@@ -73,7 +73,6 @@
     "sirv-cli": "^0.4.5",
     "standard-version": "^7.1.0",
     "svelte": "^3.20.1",
-    "svelte-click-outside": "https://github.com/radicle-dev/svelte-click-outside#10e47e6359f943d45b72c2f3fc7ccc8036b60fac",
     "svelte-spa-router": "^2.1.0",
     "typescript": "3.8.3",
     "wait-on": "^4.0.1"
@@ -105,10 +104,11 @@
     "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
-    "lint": "eslint . --ignore-path .gitignore --ext js,.svelte,.ts"
+    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts"
   },
   "dependencies": {
     "@babel/runtime": "^7.8.4",
+    "@types/qs": "^6.9.1",
     "apollo-boost": "^0.4.7",
     "graphql": "^14.6.0",
     "hotkeys-js": "^3.7.3",

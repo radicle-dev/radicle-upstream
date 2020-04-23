@@ -1,5 +1,4 @@
 <script>
-  import ClickOutside from "svelte-click-outside";
   import { fade } from "svelte/transition";
 
   import { Icon, Text } from "../Primitive";
@@ -99,40 +98,39 @@
   }
 </style>
 
-<div data-cy={dataCy} class="container" {style} on:click|stopPropagation>
+<svelte:window on:click={hideModal} />
+<div data-cy={dataCy} class="container" {style}>
   <button bind:this={triggerEl} on:click|stopPropagation={toggleModal}>
     <svelte:component this={Icon.Ellipses} />
   </button>
-  <ClickOutside on:clickoutside={hideModal} exclude={[triggerEl]} useWindow>
-    {#if expanded}
-      <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
-        {#if headerTitle}
-          <Copyable {afterCopy}>
-            <div class="header">
-              <Text
-                style="white-space: nowrap; overflow: hidden; text-overflow:
-                ellipsis; max-width: 170px;">
-                {headerTitle}
-              </Text>
-              <svelte:component
-                this={copyIcon}
-                style="margin-left: 8px; min-width: 16px;" />
-            </div>
-          </Copyable>
-        {/if}
+  {#if expanded}
+    <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
+      {#if headerTitle}
+        <Copyable {afterCopy}>
+          <div class="header">
+            <Text
+              style="white-space: nowrap; overflow: hidden; text-overflow:
+              ellipsis; max-width: 170px;">
+              {headerTitle}
+            </Text>
+            <svelte:component
+              this={copyIcon}
+              style="margin-left: 8px; min-width: 16px;" />
+          </div>
+        </Copyable>
+      {/if}
 
-        <div class="menu" data-cy="dropdown-menu">
-          {#each menuItems as item, index}
-            <div
-              data-cy={item.dataCy}
-              class="menu-item"
-              on:click|stopPropagation={handleItemSelection(item)}>
-              <svelte:component this={item.icon} style="margin-right: 12px" />
-              <Text>{item.title}</Text>
-            </div>
-          {/each}
-        </div>
+      <div class="menu" data-cy="dropdown-menu">
+        {#each menuItems as item, index}
+          <div
+            data-cy={item.dataCy}
+            class="menu-item"
+            on:click|stopPropagation={handleItemSelection(item)}>
+            <svelte:component this={item.icon} style="margin-right: 12px" />
+            <Text>{item.title}</Text>
+          </div>
+        {/each}
       </div>
-    {/if}
-  </ClickOutside>
+    </div>
+  {/if}
 </div>
