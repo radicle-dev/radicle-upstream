@@ -64,7 +64,7 @@
     width: 240px;
     margin-top: 15px;
     background-color: var(--color-background);
-    box-shadow: 0px 4px 8px var(--color-foreground-level-3-opacity-08);
+    box-shadow: var(--elevation-medium);
     border-radius: 4px;
     cursor: pointer;
     border: 1px solid var(--color-foreground-level-3);
