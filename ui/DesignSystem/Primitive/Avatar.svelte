@@ -20,6 +20,12 @@
 </script>
 
 <style>
+  .user.small {
+    width: 24px;
+    height: 24px;
+    border-radius: 16px;
+  }
+
   img,
   .user.regular {
     width: 32px;
@@ -79,6 +85,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    user-select: none;
   }
 </style>
 
@@ -106,6 +113,12 @@
   {#if title}
     {#if size === 'big'}
       <Title variant="big" style="white-space: nowrap; margin-left: 12px">
+        {title}
+      </Title>
+    {:else if size === 'small'}
+      <Title
+        style="white-space: nowrap; margin-left: 0.5rem; color:
+        var(--color-foreground)">
         {title}
       </Title>
     {:else}

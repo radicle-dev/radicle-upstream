@@ -1,55 +1,28 @@
 <script>
-  import { gql } from "apollo-boost";
-  import { getContext } from "svelte";
-  import { getClient, query } from "svelte-apollo";
   import { link } from "svelte-spa-router";
+
+  import { TREE } from "../../../../native/types.js";
+  import * as path from "../../../lib/path.js";
+  import { currentPath, currentRevision, tree } from "../../../src/source.ts";
+  import * as remote from "../../../src/remote.ts";
 
   import { Icon } from "../../Primitive";
   import File from "./File.svelte";
 
-  import {
-    revisionStore,
-    objectPathStore
-  } from "../../../store/sourceBrowser.js";
-  import * as path from "../../../lib/path.js";
-  import { TREE } from "../../../../native/types.js";
-
   export let prefix = ""; // start sidebar tree from repository root
   export let name = null;
+  export let projectId = null;
 
   export let expanded = false;
   export let firstEntry = true;
 
-  const projectId = getContext("projectId");
-
-  const QUERY = gql`
-    query Query($projectId: ID!, $revision: String!, $prefix: String!) {
-      tree(id: $projectId, revision: $revision, prefix: $prefix) {
-        entries {
-          path
-          info {
-            objectType
-            name
-          }
-        }
-      }
-    }
-  `;
-
-  $: sourceTree = query(getClient(), {
-    query: QUERY,
-    variables: {
-      projectId: projectId,
-      revision: $revisionStore,
-      prefix: prefix
-    }
-  });
+  $: sourceTree = tree(projectId, $currentRevision, prefix);
 
   const toggle = () => {
     expanded = !expanded;
   };
 
-  $: active = prefix === $objectPathStore;
+  $: active = prefix === $currentPath;
 </script>
 
 <style>
@@ -88,13 +61,13 @@
   }
 </style>
 
-{#await $sourceTree then result}
+{#if $sourceTree.status === remote.Status.Success}
   <div class="container">
     {#if firstEntry}
       <div class="folder" class:active>
         <Icon.Folder dataCy={`expand-${name}`} />
         <a
-          href={path.projectSource(projectId, $revisionStore, TREE, prefix)}
+          href={path.projectSource(projectId, $currentRevision, TREE, prefix)}
           use:link>
           {name}
         </a>
@@ -103,7 +76,7 @@
       <div class="folder" class:expanded class:active>
         <Icon.CarretBig dataCy={`expand-${name}`} on:click={toggle} />
         <a
-          href={path.projectSource(projectId, $revisionStore, TREE, prefix)}
+          href={path.projectSource(projectId, $currentRevision, TREE, prefix)}
           use:link>
           {name}
         </a>
@@ -111,16 +84,17 @@
     {/if}
 
     {#if expanded || firstEntry}
-      {#each result.data.tree.entries as entry}
+      {#each $sourceTree.data.entries as entry}
         {#if entry.info.objectType === TREE}
           <svelte:self
-            prefix={`${entry.path}/`}
+            {projectId}
             name={entry.info.name}
+            prefix={`${entry.path}/`}
             firstEntry={false} />
         {:else}
-          <File name={entry.info.name} filePath={entry.path} />
+          <File {projectId} filePath={entry.path} name={entry.info.name} />
         {/if}
       {/each}
     {/if}
   </div>
-{/await}
+{/if}

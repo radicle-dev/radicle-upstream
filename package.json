@@ -104,10 +104,11 @@
     "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
-    "lint": "eslint . --ignore-path .gitignore --ext js,.svelte,.ts"
+    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts"
   },
   "dependencies": {
     "@babel/runtime": "^7.8.4",
+    "@types/qs": "^6.9.1",
     "apollo-boost": "^0.4.7",
     "graphql": "^14.6.0",
     "hotkeys-js": "^3.7.3",

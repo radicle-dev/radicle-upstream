@@ -19,8 +19,6 @@
     align-items: center;
     height: 36px;
     padding: 0 12px 0 12px;
-    border-radius: 2px;
-    border: 1px solid var(--color-foreground-level-3);
     white-space: nowrap;
     min-width: var(--content-min-width);
   }
