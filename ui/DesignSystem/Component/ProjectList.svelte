@@ -1,7 +1,11 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import ProjectCard from "./ProjectCard.svelte";
 
   export let projects = null;
+
+  const dispatch = createEventDispatcher();
 </script>
 
 <style>
@@ -32,8 +36,7 @@
   {#each projects as project}
     <li
       on:click={() => {
-        projectNameStore.set(project.metadata.name);
-        push(path.projectSource(project.id));
+        dispatch('select', project);
       }}
       class="project-card">
       <ProjectCard
