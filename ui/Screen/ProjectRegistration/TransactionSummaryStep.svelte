@@ -1,14 +1,20 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import { session } from "../../src/session.ts";
   import { fallback } from "../../src/identity.ts";
+  import * as project from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
+  import { session } from "../../src/session.ts";
 
   import { Button, Flex } from "../../DesignSystem/Primitive";
   import { Transaction } from "../../DesignSystem/Component";
 
   const onSubmitTransaction = () => {
+    project.register({
+      name: "upstream",
+      orgId: "monadic",
+      cocoId: "upstream@123abcd.git"
+    });
     pop();
   };
 
