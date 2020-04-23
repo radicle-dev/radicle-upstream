@@ -1,20 +1,22 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { Avatar, Text, Title } from "../../Primitive";
+  import { Avatar, Text } from "../../Primitive";
 
   const dispatch = createEventDispatcher();
 
-  export let text = null;
+  export let textProps = null;
+  export let avatarProps = null;
+
   export let value = null;
   export let disabled = false;
-  export let identity = null;
-  export let org = null;
-  export let variant = "text"; // text | org | identity
+  export let variant = "text"; // text | avatar
 
-  const disabledColor = () => {
-    return disabled
-      ? "var(--color-foreground-level-4)"
-      : "var(--color-foreground-level-6)";
+  const disabledColor = disabled
+    ? "var(--color-foreground-level-4)"
+    : "var(--color-foreground-level-6)";
+
+  const clickHandler = () => {
+    dispatch("selected", { value: value });
   };
 </script>
 
@@ -32,20 +34,10 @@
   }
 </style>
 
-<div
-  class="option"
-  on:click={() => {
-    dispatch('selected', { value: value });
-  }}>
-  {#if variant === 'identity'}
-    <Avatar {...identity} style="margin-right: 12px;" />
-    <Title style={`color: ${disabledColor()}`}>
-      {identity.metadata.handle}
-    </Title>
-  {:else if variant === 'org'}
-    <Avatar {...org} variant="project" style="margin-right: 12px;" />
-    <Title style={`color: ${disabledColor()}`}>{org.metadata.name}</Title>
+<div class="option" on:click={clickHandler}>
+  {#if variant === 'avatar'}
+    <Avatar {...avatarProps} {disabled} style="margin-right: 12px;" />
   {:else}
-    <Text style={`color: ${disabledColor()}`}>{text}</Text>
+    <Text style={`color: ${disabledColor}`}>{textProps.title}</Text>
   {/if}
 </div>

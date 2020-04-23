@@ -176,15 +176,40 @@
   };
 
   const dropdownOptions1 = [
-    { text: "Option 1", value: "1", variant: "text" },
-    { text: "Option 2", value: "2", variant: "text" },
-    { text: "Option 3", value: "3", variant: "text" }
+    { variant: "text", value: "1", textProps: { title: "Option 1" } },
+    { variant: "text", value: "2", textProps: { title: "Option 2" } },
+    { variant: "text", value: "3", textProps: { title: "Option 3" } }
   ];
 
   const dropdownOptions2 = [
-    { value: "1", variant: "identity", identity: identity },
-    { value: "2", variant: "org", org: orgs[0] },
-    { value: "3", variant: "org", org: orgs[1] }
+    {
+      variant: "avatar",
+      value: "1",
+      avatarProps: {
+        variant: "user",
+        title: identity.metadata.handle,
+        avatarFallback: identity.avatarFallback,
+        imageUrl: identity.imageUrl
+      }
+    },
+    {
+      variant: "avatar",
+      value: "2",
+      avatarProps: {
+        variant: "project",
+        title: orgs[0].metadata.name,
+        avatarFallback: orgs[0].avatarFallback
+      }
+    },
+    {
+      variant: "avatar",
+      value: "3",
+      avatarProps: {
+        variant: "project",
+        title: orgs[1].metadata.name,
+        avatarFallback: orgs[1].avatarFallback
+      }
+    }
   ];
 </script>
 
@@ -635,22 +660,9 @@
 
     <Swatch>
       <Dropdown
-        placeholder="Select option..."
-        options={dropdownOptions1}
-        value="2"
-        disabled={true} />
-    </Swatch>
-
-    <Swatch>
-      <Dropdown placeholder="Select registrar..." options={dropdownOptions2} />
-    </Swatch>
-
-    <Swatch>
-      <Dropdown
         placeholder="Select registrar..."
-        options={dropdownOptions2}
-        value="1"
-        disabled={true} />
+        value="2"
+        options={dropdownOptions2} />
     </Swatch>
   </Section>
 
@@ -684,7 +696,7 @@
   </Section>
 
   <Section title="Notifications" subTitle="Info, Warnings and Errors">
-    <Swatch showIcon="true">
+    <Swatch>
       <Notification showIcon="true">
         This is harmless, but you should know anyway.
       </Notification>
@@ -715,9 +727,7 @@
         title="Radicle"
         description="Best project in the world"
         isRegistered={true}
-        commitCount={'2.5k'}
-        branchCount={'25'}
-        memberCount={'245'} />
+        stats={{ branches: '12', commits: '12k', contributors: '120' }} />
     </Swatch>
 
     <Swatch>
