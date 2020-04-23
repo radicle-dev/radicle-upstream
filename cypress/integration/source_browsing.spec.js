@@ -74,13 +74,15 @@ context("source code browsing", () => {
 
       // there is a commit teaser
       cy.get("[data-cy=commit-teaser]")
-        .contains("Rūdolfs Ošiņš")
+        .contains("Alexander Simmerl")
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("Remove src/Folder.svelte (#3)")
+        .contains(
+          "Merge pull request #4 from FintanH/fintan/update-readme-no-sig"
+        )
         .should("exist");
       cy.get("[data-cy=commit-teaser]")
-        .contains("a57846b")
+        .contains("223aaf8")
         .should("exist");
 
       // it is the folder view
