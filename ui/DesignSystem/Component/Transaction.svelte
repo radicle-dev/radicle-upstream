@@ -1,60 +1,46 @@
 <script>
+  import * as transaction from "../../src/transaction.ts";
+
   import {
     Avatar,
     Caption,
     Numeric,
     Title
   } from "../../DesignSystem/Primitive";
+
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
 
-  // transaction = {
-  //   id: transaction id (optional),
-  //   message: "transaction message",
-  //   stake: "name of stake (optional)",
-  //   subject: {
-  //     name: "name of the transaction target",
-  //     kind: "project" || "user",
-  //     avatarFallback: "avatar fallback of the target",
-  //     imageUrl: "avatar url of the target (optional)"
-  //   },
-  //   payer: {
-  //     name: "name of the owner of the paying wallet"
-  //     avatar: "avatar of the owner (optional)",
-  //     avatarFallback: "avatar fallback of the owner",
-  //     imageUrl: "avatar url of the owner (optional)"
-  //   }
-  // }
-  export let transaction = null;
-
-  const feePosition = transaction.stake ? "middle" : "top";
+  export let tx = null;
+  export let payer = null;
+  export let subject = null;
 </script>
 
 <Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Your transaction
 </Caption>
-<Row dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
+<Row dataCy="summary" variant={tx.id ? 'top' : 'single'}>
   <div slot="left">
-    <Title>{transaction.message}</Title>
+    <Title>{transaction.formatMessage(tx.messages[0])}</Title>
   </div>
 
   <div slot="right">
     <Avatar
-      title={transaction.subject.name}
-      imageUrl={transaction.subject.imageUrl}
-      avatarFallback={transaction.subject.avatarFallback}
-      variant={transaction.subject.kind}
+      title={subject.name}
+      imageUrl={subject.imageUrl}
+      avatarFallback={subject.avatarFallback}
+      variant={subject.kind}
       style="color: var(--color-foreground)" />
   </div>
 </Row>
 
-{#if transaction.id}
+{#if tx.id}
   <Row
     variant="bottom"
     style="height: 32px; background-color: var(--color-foreground-level-1)">
     <div slot="left">
       <Numeric variant="tiny" style="color: var(--color-foreground-level-6)">
-        {transaction.id}
+        {tx.id}
       </Numeric>
     </div>
   </Row>
@@ -66,21 +52,17 @@
   Transaction cost
 </Caption>
 
-{#if transaction.stake}
-  <Row variant="top" style="background-color: var(--color-foreground-level-1)">
-    <div slot="left">
-      <Title>{transaction.stake}</Title>
-    </div>
+<Row variant="top" style="background-color: var(--color-foreground-level-1)">
+  <div slot="left">
+    <Title>{transaction.formatStake(tx.messages[0])}</Title>
+  </div>
 
-    <div slot="right">
-      <Rad amount={20} />
-    </div>
-  </Row>
-{/if}
+  <div slot="right">
+    <Rad amount={20} />
+  </div>
+</Row>
 
-<Row
-  variant={feePosition}
-  style="background-color: var(--color-foreground-level-1)">
+<Row variant="middle" style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Title>Transaction Fee</Title>
   </div>
@@ -109,9 +91,9 @@
 <Row style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Avatar
-      title={transaction.payer.name}
-      imageUrl={transaction.payer.imageUrl}
-      avatarFallback={transaction.payer.avatarFallback}
+      title={payer.name}
+      imageUrl={payer.imageUrl}
+      avatarFallback={payer.avatarFallback}
       style="color: var(--color-foreground)" />
   </div>
 

@@ -1,11 +1,10 @@
 <script>
-  import { getClient, query } from "svelte-apollo";
-  import { gql } from "apollo-boost";
   import { pop } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
   import * as remote from "../src/remote.ts";
   import { session } from "../src/session.ts";
+  import * as transaction from "../src/transaction.ts";
 
   import {
     ModalLayout,
@@ -25,83 +24,7 @@
     identity = $session.data.identity;
   }
 
-  const GET_TRANSACTIONS = gql`
-    query Query($ids: [ID!]!) {
-      listTransactions(ids: $ids) {
-        transactions {
-          id
-          state {
-            ... on Applied {
-              block
-            }
-          }
-          timestamp
-          messages {
-            ... on ProjectRegistrationMessage {
-              kind
-              orgId
-              projectName
-            }
-            ... on UserRegistrationMessage {
-              kind
-              id
-              handle
-            }
-          }
-        }
-        thresholds {
-          confirmation
-          settlement
-        }
-      }
-    }
-  `;
-
-  const client = getClient();
-  const transactions = query(client, {
-    query: GET_TRANSACTIONS,
-    variables: {
-      ids: [params.id]
-    },
-    fetchPolicy: "no-cache"
-  });
-
-  const formatMessage = kind => {
-    switch (kind) {
-      case "USER_REGISTRATION":
-        return "User registration";
-      case "PROJECT_REGISTRATION":
-        return "Project registration";
-    }
-  };
-
-  const formatSubject = msg => {
-    return {
-      name:
-        msg.kind === "USER_REGISTRATION"
-          ? msg.handle
-          : `${identity.metadata.handle} / ${msg.projectName}`,
-      kind: "user",
-      avatarFallback: identity.avatarFallback,
-      imageUrl: identity.metadata.avatarUrl
-    };
-  };
-
-  const formatTransaction = transaction => {
-    const kind = transaction.messages[0].kind;
-    return {
-      id: transaction.id,
-      message: formatMessage(kind),
-      stake: `${formatMessage(kind)} deposit`,
-      subject: formatSubject(transaction.messages[0]),
-      payer: {
-        name: identity.metadata.displayName || identity.metadata.handle,
-        kind: "user",
-        avatarFallback: identity.avatarFallback,
-        imageUrl: identity.metadata.avatarUrl
-      }
-    };
-  };
+  const tx = transaction.fetch(params.id);
 </script>
 
 <style>
@@ -119,16 +42,18 @@
 
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
-    {#await $transactions then result}
+    {#if $tx.status === remote.Status.Success}
       <!-- TODO(merle): Retrieve actual data for variant, progress & timestamp -->
       <TransactionStatusbar
         style="margin-bottom: 32px; margin-top: 96px;"
         variant="caution"
         progress={0}
-        time={result.data.listTransactions.transactions[0].timestamp} />
+        time={$tx.data.timestamp} />
       <Transaction
-        transaction={formatTransaction(result.data.listTransactions.transactions[0])} />
-    {/await}
+        tx={$tx.data}
+        payer={transaction.formatPayer(identity)}
+        subject={transaction.formatSubject(identity, $tx.data.messages[0])} />
+    {/if}
 
     <div class="button-row">
       <Button

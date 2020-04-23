@@ -1,4 +1,7 @@
 <script>
+  import * as identity from "../../src/identity.ts";
+  import * as transaction from "../../src/transaction.ts";
+
   import { Button, Flex } from "../../DesignSystem/Primitive";
   import { Transaction } from "../../DesignSystem/Component";
 
@@ -7,21 +10,23 @@
   export let onNextStep = null;
   export let onPreviousStep = null;
 
-  const transaction = {
-    message: "Name registration",
-    stake: "Project registration fee",
-    subject: {
-      name: projectName,
-      kind: "project"
-    },
-    payer: {
-      name: "cloudhead",
-      kind: "user"
-    }
+  const tx = {
+    messages: [
+      {
+        type: transaction.MessageType.ProjectRegistration,
+        projectName,
+        orgId: "monadic"
+      }
+    ]
+  };
+  const payer = transaction.formatPayer(identity.fallback);
+  const subject = {
+    name: projectName,
+    kind: "project"
   };
 </script>
 
-<Transaction {transaction} />
+<Transaction {tx} {payer} {subject} />
 
 <Flex style="margin-top: 32px;">
   <div slot="left">
