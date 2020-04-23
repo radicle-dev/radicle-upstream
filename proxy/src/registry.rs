@@ -348,6 +348,26 @@ impl Registry {
         }))
     }
 
+    /// List orgs of the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    pub async fn list_orgs(&self) -> Result<Vec<Org>, error::Error> {
+        let org_ids = self.client.list_orgs().await?.into_iter();
+        let mut orgs = Vec::new();
+        for org_id in org_ids {
+            orgs.push(self.client.get_org(org_id).await.unwrap().unwrap())
+        }
+        Ok(orgs
+            .into_iter()
+            .map(|org| Org {
+                id: org.id.to_string(),
+                avatar_fallback: avatar::Avatar::from(&org.id.to_string(), avatar::Usage::Org),
+            })
+            .collect())
+    }
+
     /// Graciously pay some tokens to the recipient out of Alices pocket.
     ///
     /// # Errors
@@ -499,7 +519,7 @@ mod tests {
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.id, org_id);
-        assert_eq!(org.members.len(), 1);
+        assert_eq!(org.members[0], ed25519::Public::from(alice));
     }
 
     #[tokio::test]
@@ -549,6 +569,25 @@ mod tests {
             org.avatar_fallback,
             avatar::Avatar::from("monadic", avatar::Usage::Org)
         );
+    }
+
+    #[tokio::test]
+    async fn test_list_org() {
+        // Test that a registered org can be retrieved.
+        let client = Client::new_emulator();
+        let mut registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the org
+        let org_id = OrgId::try_from("monadic").unwrap();
+        let registration = registry
+            .register_org(&alice, org_id.clone().into(), 10)
+            .await;
+        assert!(registration.is_ok());
+
+        // List the orgs
+        let orgs = registry.list_orgs().await.unwrap();
+        assert_eq!(orgs[0].id, "monadic");
     }
 
     #[tokio::test]

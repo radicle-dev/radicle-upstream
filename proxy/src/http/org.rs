@@ -17,6 +17,9 @@ pub fn filters(
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::<RwLock<registry::Registry>>::clone(&registry))
+        .or(list_filter(Arc::<RwLock<registry::Registry>>::clone(
+            &registry,
+        )))
         .or(register_filter(registry, subscriptions))
 }
 
@@ -74,6 +77,27 @@ fn get_filter(
         .and_then(handler::get)
 }
 
+/// GET /orgs
+fn list_filter(
+    registry: Arc<RwLock<registry::Registry>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("orgs")
+        .and(warp::get())
+        .and(super::with_registry(registry))
+        .and(document::document(document::description(
+            "List orgs by member id",
+        )))
+        .and(document::document(document::tag("Org")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(registry::Org::document()).mime("application/json"),
+            )
+            .description("Successful retrieval"),
+        ))
+        .and_then(handler::list)
+}
+
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
@@ -115,6 +139,14 @@ mod handler {
         let org = reg.get_org(id).await?;
 
         Ok(reply::json(&org))
+    }
+
+    /// List the orgs the given `id` is a member of.
+    pub async fn list(registry: Arc<RwLock<registry::Registry>>) -> Result<impl Reply, Rejection> {
+        let reg = registry.read().await;
+        let orgs = reg.list_orgs().await?;
+
+        Ok(reply::json(&orgs))
     }
 }
 
@@ -253,6 +285,45 @@ mod test {
                 id: "monadic".to_string(),
                 avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
             })
+        );
+    }
+
+    #[tokio::test]
+    async fn list() {
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        )));
+        let subscriptions = notification::Subscriptions::default();
+        let api = super::filters(
+            Arc::<RwLock<registry::Registry>>::clone(&registry),
+            subscriptions,
+        );
+
+        // Register the org
+        request()
+            .method("POST")
+            .path("/orgs")
+            .json(&super::RegisterInput {
+                id: "monadic".into(),
+            })
+            .reply(&api)
+            .await;
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/orgs"))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(
+            have,
+            json!([registry::Org {
+                id: "monadic".to_string(),
+                avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
+            }])
         );
     }
 }
