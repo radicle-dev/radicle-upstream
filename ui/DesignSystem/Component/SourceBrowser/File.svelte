@@ -18,9 +18,12 @@
   .file {
     display: flex;
     cursor: pointer;
-    margin: 0 4px 12px 8px;
+    padding: 4px 4px 4px 4px;
+    margin: 4px 0;
     color: var(--color-foreground-level-6);
+    line-height: 1.5em;
     flex: 1;
+    width: 100%;
   }
 
   /* prevent icon from shrinking when the filename is long */
@@ -30,23 +33,29 @@
 
   a {
     display: flex;
+    border-radius: 4px;
   }
 
-  .active a {
-    color: var(--color-secondary);
+  a:hover {
+    background-color: var(--color-foreground-level-1);
+  }
+
+  .active {
+    color: var(--color-foreground);
+    background-color: var(--color-foreground-level-1);
     font-family: var(--typeface-medium);
   }
 
   .active :global(svg) {
-    fill: var(--color-secondary);
+    fill: var(--color-foreground-level-6);
   }
 </style>
 
-<div class="file" class:active>
-  <a
-    href={path.projectSource(projectId, $currentRevision, BLOB, filePath)}
-    use:link>
-    <Icon.File />
-    {name}
-  </a>
-</div>
+<a
+  class="file"
+  class:active
+  href={path.projectSource(projectId, $currentRevision, BLOB, filePath)}
+  use:link>
+  <Icon.File />
+  {name}
+</a>

@@ -9,6 +9,7 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::identity;
 
 /// Prefixed filters.
 pub fn routes(
@@ -163,7 +164,7 @@ fn revisions_filter(
             document::response(
                 200,
                 document::body(
-                    document::array(Revisions::document()).description("List of branches and tags"),
+                    document::array(Revision::document()).description("List of revisions per repo"),
                 )
                 .mime("application/json"),
             )
@@ -235,7 +236,9 @@ mod handler {
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
+    use crate::avatar;
     use crate::coco;
+    use crate::identity;
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
@@ -287,8 +290,26 @@ mod handler {
         let paths = librad_paths.read().await;
         let branches = coco::branches(&paths, &project_id)?;
         let tags = coco::tags(&paths, &project_id)?;
+        let revs = ["cloudhead", "rudolfs", "xla"]
+            .iter()
+            .map(|handle| super::Revision {
+                branches: branches.clone(),
+                tags: tags.clone(),
+                identity: identity::Identity {
+                    id: format!("{}@123abcd.git", handle),
+                    metadata: identity::Metadata {
+                        handle: handle.to_string(),
+                        display_name: None,
+                        avatar_url: None,
+                    },
+                    avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
+                    registered: None,
+                    shareable_entity_identifier: format!("{}@123abcd.git", handle),
+                },
+            })
+            .collect::<Vec<super::Revision>>();
 
-        Ok(reply::json(&super::Revisions { branches, tags }))
+        Ok(reply::json(&revs))
     }
 
     /// Fetch the list [`coco::Tag`].
@@ -333,22 +354,26 @@ pub struct TreeQuery {
     revision: Option<String>,
 }
 
-/// Bundled response to retrieve both branches and tags.
+/// Bundled response to retrieve both branches and tags for a user repo.
 #[derive(Debug, Serialize)]
-pub struct Revisions {
+#[serde(rename_all = "camelCase")]
+pub struct Revision {
+    /// Owner of the repo.
+    identity: identity::Identity,
     /// List of [`coco::Branch`].
     branches: Vec<coco::Branch>,
     /// List of [`coco::Tag`].
     tags: Vec<coco::Tag>,
 }
 
-impl ToDocumentedType for Revisions {
+impl ToDocumentedType for Revision {
     fn document() -> document::DocumentedType {
         let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert("identity".into(), identity::Identity::document());
         properties.insert("branches".into(), document::array(coco::Branch::document()));
         properties.insert("tags".into(), document::array(coco::Tag::document()));
 
-        document::DocumentedType::from(properties).description("Revisions")
+        document::DocumentedType::from(properties).description("Revision")
     }
 }
 
@@ -640,7 +665,9 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use crate::avatar;
     use crate::coco;
+    use crate::identity;
 
     #[tokio::test]
     async fn blob() {
@@ -895,17 +922,98 @@ mod test {
         let want = {
             let branches = coco::branches(&librad_paths, &platinum_id.to_string()).unwrap();
             let tags = coco::tags(&librad_paths, &platinum_id.to_string()).unwrap();
-            super::Revisions { branches, tags }
+            ["cloudhead", "rudolfs", "xla"]
+                .iter()
+                .map(|handle| super::Revision {
+                    branches: branches.clone(),
+                    tags: tags.clone(),
+                    identity: identity::Identity {
+                        id: format!("{}@123abcd.git", handle),
+                        metadata: identity::Metadata {
+                            handle: (*handle).to_string(),
+                            display_name: None,
+                            avatar_url: None,
+                        },
+                        avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
+                        registered: None,
+                        shareable_entity_identifier: format!("{}@123abcd.git", handle),
+                    },
+                })
+                .collect::<Vec<super::Revision>>()
         };
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
         assert_eq!(
             have,
-            json!({
-                "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
-                "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-            }),
+            json!([
+                {
+                    "identity": {
+                        "id": "cloudhead@123abcd.git",
+                        "metadata": {
+                            "handle": "cloudhead",
+                            "displayName": Value::Null,
+                            "avatarUrl": Value::Null,
+                        },
+                        "registered": Value::Null,
+                        "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                        "avatarFallback": {
+                            "background": {
+                                "r": 24,
+                                "g": 105,
+                                "b": 216,
+                            },
+                            "emoji": "🚡",
+                        },
+                    },
+                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
+                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                },
+                {
+                    "identity": {
+                        "id": "rudolfs@123abcd.git",
+                        "metadata": {
+                            "handle": "rudolfs",
+                            "displayName": Value::Null,
+                            "avatarUrl": Value::Null,
+                        },
+                        "registered": Value::Null,
+                        "shareableEntityIdentifier": "rudolfs@123abcd.git",
+                        "avatarFallback": {
+                            "background": {
+                                "r": 24,
+                                "g": 186,
+                                "b": 214,
+                            },
+                            "emoji": "⚙\u{fe0f}",
+                        },
+                    },
+                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
+                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                },
+                {
+                    "identity": {
+                        "id": "xla@123abcd.git",
+                        "metadata": {
+                            "handle": "xla",
+                            "displayName": Value::Null,
+                            "avatarUrl": Value::Null,
+                        },
+                        "registered": Value::Null,
+                        "shareableEntityIdentifier": "xla@123abcd.git",
+                        "avatarFallback": {
+                            "background": {
+                                "r": 155,
+                                "g": 157,
+                                "b": 169,
+                            },
+                            "emoji": "🚜",
+                        },
+                    },
+                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
+                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                },
+            ]),
         );
     }
 
