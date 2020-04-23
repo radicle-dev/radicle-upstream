@@ -6,9 +6,16 @@
 
   export let text = null;
   export let value = null;
+  export let disabled = false;
   export let identity = null;
   export let org = null;
   export let variant = "text"; // text | org | identity
+
+  const disabledColor = () => {
+    return disabled
+      ? "var(--color-foreground-level-4)"
+      : "var(--color-foreground-level-6)";
+  };
 </script>
 
 <style>
@@ -32,15 +39,13 @@
   }}>
   {#if variant === 'identity'}
     <Avatar {...identity} style="margin-right: 12px;" />
-    <Title style="color: var(--color-foreground-level-6)">
+    <Title style={`color: ${disabledColor()}`}>
       {identity.metadata.handle}
     </Title>
   {:else if variant === 'org'}
     <Avatar {...org} variant="project" style="margin-right: 12px;" />
-    <Title style="color: var(--color-foreground-level-6)">
-      {org.metadata.name}
-    </Title>
+    <Title style={`color: ${disabledColor()}`}>{org.metadata.name}</Title>
   {:else}
-    <Text style="color: var(--color-foreground-level-6)">{text}</Text>
+    <Text style={`color: ${disabledColor()}`}>{text}</Text>
   {/if}
 </div>

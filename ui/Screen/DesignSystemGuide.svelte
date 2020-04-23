@@ -78,7 +78,7 @@
     }
   };
 
-  const dropdownMenuItems = [
+  const additionalActionsDropdownItems = [
     {
       title: "Add something",
       icon: Icon.Plus,
@@ -130,6 +130,61 @@
       message: "Org registration",
       state: "success"
     }
+  ];
+
+  const orgs = [
+    {
+      id: "%monadic",
+      metadata: {
+        name: "monadic"
+      },
+      avatarFallback: {
+        emoji: "☔️",
+        background: {
+          b: 61,
+          g: 187,
+          r: 148
+        }
+      }
+    },
+    {
+      id: "%sveltejs",
+      metadata: {
+        name: "sveltejs"
+      },
+      avatarFallback: {
+        emoji: "🚊",
+        background: {
+          b: 112,
+          g: 27,
+          r: 205
+        }
+      }
+    }
+  ];
+
+  const identity = {
+    id: "123abcd.git",
+    shareableEntityIdentifier: "cloudhead@123abcd.git",
+    metadata: {
+      handle: "cloudhead",
+      displayName: "Alexis Sellier",
+      avatarUrl: "https://avatars1.githubusercontent.com/u/40774"
+    },
+    registered: null,
+    avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" }
+  };
+
+  const dropdownOptions1 = [
+    { text: "Option 1", value: "1", variant: "text" },
+    { text: "Option 2", value: "2", variant: "text" },
+    { text: "Option 3", value: "3", variant: "text" }
+  ];
+
+  const dropdownOptions2 = [
+    { value: "1", variant: "identity", identity: identity },
+    { value: "2", variant: "org", org: orgs[0] },
+    { value: "3", variant: "org", org: orgs[1] }
   ];
 </script>
 
@@ -568,7 +623,34 @@
     </Swatch>
 
     <Swatch>
-      <Dropdown />
+      <Dropdown placeholder="Select option..." options={dropdownOptions1} />
+    </Swatch>
+
+    <Swatch>
+      <Dropdown
+        placeholder="Select option..."
+        options={dropdownOptions1}
+        disabled={true} />
+    </Swatch>
+
+    <Swatch>
+      <Dropdown
+        placeholder="Select option..."
+        options={dropdownOptions1}
+        value="2"
+        disabled={true} />
+    </Swatch>
+
+    <Swatch>
+      <Dropdown placeholder="Select registrar..." options={dropdownOptions2} />
+    </Swatch>
+
+    <Swatch>
+      <Dropdown
+        placeholder="Select registrar..."
+        options={dropdownOptions2}
+        value="1"
+        disabled={true} />
     </Swatch>
   </Section>
 
@@ -728,7 +810,7 @@
     <Swatch>
       <AdditionalActionsDropdown
         headerTitle="Copy this title"
-        menuItems={dropdownMenuItems} />
+        menuItems={additionalActionsDropdownItems} />
     </Swatch>
 
     <Swatch>

@@ -1,35 +1,22 @@
 <script>
   import { Icon, Text } from "../Primitive";
   import Option from "./Dropdown/Option.svelte";
-  import { orgMocks } from "../../lib/orgMocks.js";
 
-  export let placeholder = "Select issue type";
+  export let placeholder = null;
 
-  const org = orgMocks.data.orgs[0];
-  const identity = {
-    id: "123abcd.git",
-    shareableEntityIdentifier: "cloudhead@123abcd.git",
-    metadata: {
-      handle: "cloudhead",
-      displayName: "Alexis Sellier",
-      avatarUrl: "https://avatars1.githubusercontent.com/u/40774"
-    },
-    registered: null,
-    avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" }
-  };
-
-  export let options = [
-    { text: "Option 1", value: "1", variant: "text" },
-    { text: "Option 2", value: "2", variant: "org", org: org },
-    { text: "Option 3", value: "3", variant: "identity", identity: identity }
-  ];
+  export let options = null;
 
   let expanded = false;
 
   // bind to this prop from the outside
   export let value = null;
+  export let disabled = false;
 
   const toggleMenu = () => {
+    if (disabled) {
+      return;
+    }
+
     expanded = !expanded;
   };
   const hideMenu = () => {
@@ -39,6 +26,12 @@
   const optionSelectedHandler = event => {
     value = event.detail.value;
     toggleMenu();
+  };
+
+  const disabledColor = () => {
+    return disabled
+      ? "var(--color-foreground-level-4)"
+      : "var(--color-foreground-level-6)";
   };
 </script>
 
@@ -93,13 +86,13 @@
 <div class="dropdown">
   <div class="button" on:click|stopPropagation={toggleMenu}>
     {#if value}
-      <Option {...options.find(option => option.value === value)} />
+      <Option {...options.find(option => option.value === value)} {disabled} />
     {:else}
-      <Text style="margin-left: 12px; color: var(--color-foreground-level-6);">
+      <Text style={`margin-left: 12px; color: ${disabledColor()}`}>
         {placeholder}
       </Text>
     {/if}
-    <Icon.Expand style="margin: 0 8px 0 8px;" />
+    <Icon.Expand style={`margin: 0 8px 0 8px; fill: ${disabledColor()}`} />
   </div>
 
   <div class="menu" hidden={!expanded}>
