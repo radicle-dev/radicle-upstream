@@ -5,6 +5,7 @@
   export let placeholder = null;
 
   export let options = null;
+  export let style = null;
 
   let expanded = false;
 
@@ -83,7 +84,7 @@
 
 <svelte:window on:click={hideMenu} />
 
-<div class="dropdown">
+<div class="dropdown" {style}>
   <div class="button" on:click|stopPropagation={toggleMenu}>
     {#if value}
       <Option {...options.find(option => option.value === value)} {disabled} />

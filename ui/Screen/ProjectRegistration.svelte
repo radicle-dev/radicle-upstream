@@ -57,7 +57,10 @@
           bind:createNewProject
           onNextStep={nextStep} />
       {:else if currentStep === steps.DETAILS}
-        <RegistrationDetailsStep {createNewProject} onNextStep={nextStep} />
+        <RegistrationDetailsStep
+          {projectId}
+          {createNewProject}
+          onNextStep={nextStep} />
       {:else if currentStep === steps.SUMMARY}
         <TransactionSummaryStep />
       {/if}

@@ -2,8 +2,12 @@
   import { Button, Flex, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown } from "../../DesignSystem/Component";
   import { pop } from "svelte-spa-router";
+  import { projects } from "../../src/project.ts";
+  import * as remote from "../../src/remote.ts";
 
   export let onNextStep = null;
+  export let createNewProject = false;
+  export let projectId = null;
 
   const orgs = [
     {
@@ -48,7 +52,7 @@
     avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" }
   };
 
-  const dropdownOptions = [
+  const registrarDropdownOptions = [
     {
       variant: "avatar",
       value: "1",
@@ -78,6 +82,20 @@
       }
     }
   ];
+
+  $: console.log($projects.data);
+  $: projectDropdownOptions =
+    ($projects.status === remote.Status.Success &&
+      $projects.data.map(project => {
+        return {
+          variant: "text",
+          value: project.id,
+          textProps: { title: project.metadata.name }
+        };
+      })) ||
+    [];
+
+  $: console.log(projectDropdownOptions);
 </script>
 
 <style>
@@ -88,8 +106,18 @@
   }
 </style>
 
+{#if createNewProject}
+  TODO: create new project
+{:else}
+  choose existing project choice: {projectId}
+  <Dropdown
+    placeholder="Choose a project"
+    options={projectDropdownOptions}
+    style="margin-bottom: 16px;" />
+{/if}
+
 <div class="name">
-  <Dropdown value="1" options={dropdownOptions} />
+  <Dropdown value="1" options={registrarDropdownOptions} />
   <Title
     style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);"
     variant="regular">
