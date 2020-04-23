@@ -55,7 +55,7 @@
     font-family: var(--typeface-mono-regular);
     font-size: 14px;
     padding-left: 0.75rem;
-    overflow-x: scroll;
+    overflow-x: auto;
   }
 
   .container {
