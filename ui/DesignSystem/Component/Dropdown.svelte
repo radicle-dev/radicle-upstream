@@ -39,10 +39,11 @@
 <style>
   .dropdown {
     position: relative;
+    min-width: 187px;
   }
 
   .dropdown > * {
-    min-width: 187px;
+    width: 100%;
   }
 
   .button {
