@@ -684,16 +684,26 @@
   </Section>
 
   <Section title="Notifications" subTitle="Info, Warnings and Errors">
-    <Swatch>
-      <Notification>This is harmless, but you should know anyway.</Notification>
+    <Swatch showIcon="true">
+      <Notification showIcon="true">
+        This is harmless, but you should know anyway.
+      </Notification>
     </Swatch>
 
     <Swatch>
-      <Notification level="warning">This is slightly concerning.</Notification>
+      <Notification>This is harmless without an icon.</Notification>
     </Swatch>
 
     <Swatch>
-      <Notification level="error">Something bad happened, halp!</Notification>
+      <Notification showIcon="true" variant="error">
+        Something bad happened, halp!
+      </Notification>
+    </Swatch>
+
+    <Swatch>
+      <Notification variant="error">
+        Something bad happened with no icon!
+      </Notification>
     </Swatch>
   </Section>
 
