@@ -15,7 +15,8 @@ context("source code browsing", () => {
     context("when the timeframe is less than a day", () => {
       it("shows timeframe in hours", () => {
         cy.clock(Date.parse("5 dec 2019"));
-        cy.get("[data-cy=revision-selector]").select("v0.5.0");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
         cy.contains("9 hours ago").should("exist");
       });
     });
@@ -23,7 +24,8 @@ context("source code browsing", () => {
     context("when the timeframe is less than 2 days", () => {
       it("shows timeframe in days", () => {
         cy.clock(Date.parse("6 dec 2019"));
-        cy.get("[data-cy=revision-selector]").select("v0.5.0");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
         cy.contains("1 day ago").should("exist");
       });
     });
@@ -31,7 +33,8 @@ context("source code browsing", () => {
     context("when the timeframe is less than a week", () => {
       it("shows timeframe in days", () => {
         cy.clock(Date.parse("10 dec 2019"));
-        cy.get("[data-cy=revision-selector]").select("v0.5.0");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
         cy.contains("5 days ago").should("exist");
       });
     });
@@ -39,7 +42,8 @@ context("source code browsing", () => {
     context("when the timeframe is more than a week", () => {
       it("shows timeframe in weeks", () => {
         cy.clock(Date.parse("15 dec 2019"));
-        cy.get("[data-cy=revision-selector]").select("v0.5.0");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
         cy.contains("1 week ago").should("exist");
       });
     });
@@ -47,7 +51,8 @@ context("source code browsing", () => {
     context("when the timeframe is more than 2 weeks", () => {
       it("shows timeframe in weeks", () => {
         cy.clock(Date.parse("21 dec 2019"));
-        cy.get("[data-cy=revision-selector]").select("v0.5.0");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get('[data-tag="v0.5.0"][data-repo-handle="cloudhead"]').click();
         cy.contains("2 weeks ago").should("exist");
       });
     });
@@ -63,7 +68,9 @@ context("source code browsing", () => {
 
     it("shows contents of the root folder for the latest revision", () => {
       // the default revision is selected
-      cy.get("[data-cy=revision-selector]").should("have.value", "master");
+      cy.get('[data-cy=revision-selector][data-revision="master"]').should(
+        "exist"
+      );
 
       // there is a commit teaser
       cy.get("[data-cy=commit-teaser]")
@@ -94,18 +101,30 @@ context("source code browsing", () => {
   context("page view", () => {
     context("revision selector", () => {
       it("allows switching to a different branch", () => {
-        cy.get("[data-cy=revision-selector]").select("dev");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get(
+          '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]'
+        ).click();
         cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
 
-        cy.get("[data-cy=revision-selector]").select("master");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get(
+          '.revision-dropdown [data-branch="master"][data-repo-handle="cloudhead"]'
+        ).click();
         cy.contains("here-we-are-on-a-dev-branch.lol").should("not.exist");
       });
 
       it("allows switching to a different tag", () => {
-        cy.get("[data-cy=revision-selector]").select("v0.4.0");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get(
+          '.revision-dropdown [data-tag="v0.4.0"][data-repo-handle="cloudhead"]'
+        ).click();
         cy.contains("test-file-deletion.txt").should("exist");
 
-        cy.get("[data-cy=revision-selector]").select("v0.5.0");
+        cy.get("[data-cy=revision-selector]").click();
+        cy.get(
+          '.revision-dropdown [data-tag="v0.5.0"][data-repo-handle="cloudhead"]'
+        ).click();
         cy.contains("test-file-deletion.txt").should("not.exist");
       });
     });

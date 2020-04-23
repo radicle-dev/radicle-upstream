@@ -71,9 +71,6 @@
   }
 
   /* TODO(cloudhead): These should be global */
-  a {
-    color: var(--color-secondary);
-  }
   hr {
     border: 0;
     border-top: 1px solid var(--color-foreground-level-3);

@@ -14,11 +14,13 @@
     updateParams
   } from "../../src/source.ts";
 
-  import { Input, Text, Title } from "../../DesignSystem/Primitive";
+  import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
 
   import FileList from "../../DesignSystem/Component/SourceBrowser/FileList.svelte";
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
+  import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
+  import Stat from "../../DesignSystem/Component/Stat.svelte";
 
   export const params = null;
 
@@ -47,7 +49,15 @@
 
 <style>
   .header {
-    margin-bottom: 32px;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-foreground-level-3);
+  }
+  .project-id {
+    color: var(--color-foreground-level-5);
+    margin-top: 0.5rem;
+  }
+  .description {
+    margin-top: 1rem;
   }
 
   .container {
@@ -58,36 +68,59 @@
   .column-left {
     display: flex;
     flex-direction: column;
-    width: 196px;
+    width: 286px;
+    padding: 0 0.75rem;
   }
 
   .column-right {
     display: flex;
     flex-direction: column;
+    padding-left: 0.75rem;
     width: 960px;
-    padding-left: 24px;
   }
 
   .source-tree {
-    overflow-x: scroll;
+    overflow-x: auto;
+  }
+
+  .revision-selector-wrapper {
+    margin: 0.75rem 0;
+    position: relative;
+    width: 100%;
+  }
+  .repo-stats {
+    height: 4rem;
+    display: flex;
+    justify-content: space-evenly;
+    padding: 1.25rem 1rem;
+  }
+  .repo-stats > * {
+    flex: 1;
+    color: var(--color-foreground-level-6);
   }
 </style>
 
 {#if $project.status === remote.Status.Success}
   <div class="header">
     <Title variant="big">{$project.data.metadata.name}</Title>
-    <Text>{$project.data.metadata.description}</Text>
+    <div class="project-id">
+      <Code>%{$project.data.id}</Code>
+    </div>
+    <div class="description">
+      <Text>{$project.data.metadata.description}</Text>
+    </div>
   </div>
 
   <div class="container">
     <div class="column-left">
       {#if $revisions.status === remote.Status.Success}
-        <Input.Dropdown
-          dataCy="revision-selector"
-          style="margin-bottom: 24px"
-          items={[...$revisions.data.tags, ...$revisions.data.branches]}
-          value={$project.data.metadata.defaultBranch}
-          on:select={event => updateRevision($project.data.id, event.detail)} />
+        <div class="revision-selector-wrapper">
+          <RevisionSelector
+            style="height: 100%;"
+            currentRevision={$currentRevision}
+            revisions={$revisions.data}
+            on:select={event => updateRevision($project.data.id, event.detail)} />
+        </div>
       {/if}
 
       <div class="source-tree" data-cy="source-tree">
@@ -98,6 +131,23 @@
     </div>
 
     <div class="column-right">
+      <div class="repo-stats">
+        <div>
+          <Stat icon={Icon.Commit} count={$project.data.stats.commits}>
+            &nbsp;Commits
+          </Stat>
+        </div>
+        <div>
+          <Stat icon={Icon.Branch} count={$project.data.stats.branches}>
+            &nbsp;Branches
+          </Stat>
+        </div>
+        <div>
+          <Stat icon={Icon.Member} count={$project.data.stats.contributors}>
+            &nbsp;Contributors
+          </Stat>
+        </div>
+      </div>
       {#if $object.status === remote.Status.Success}
         {#if $object.data.info.objectType === BLOB}
           <FileSource

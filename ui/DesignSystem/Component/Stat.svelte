@@ -13,7 +13,8 @@
   }
 </style>
 
-<div class="stat" {style}>
+<span class="stat" {style}>
   <svelte:component this={icon} style="margin-right: 4px;" />
   <Numeric style="color: var(--color-foreground-level-6);">{count}</Numeric>
-</div>
+  <slot />
+</span>
