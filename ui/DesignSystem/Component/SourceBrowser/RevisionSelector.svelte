@@ -20,13 +20,14 @@
   };
 
   const handleClick = ev => {
+    // Any click *outside* the dropdown should hide hte dropdown.
     if (dropdown !== ev.target && !dropdown.contains(ev.target)) {
       hideDropdown();
     }
   };
 
   const dispatch = createEventDispatcher();
-  const selectRevision = (ev, rev) => {
+  const selectRevision = (_repo, rev) => {
     dispatch("select", rev);
     hideDropdown();
   };
@@ -126,7 +127,7 @@
         {#each repo.branches as branch}
           <li
             class="branch"
-            on:click|stopPropagation={ev => selectRevision(ev, branch)}>
+            on:click|stopPropagation={() => selectRevision(repo.identity, branch)}>
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
