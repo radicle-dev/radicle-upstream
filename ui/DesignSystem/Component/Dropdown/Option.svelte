@@ -15,7 +15,7 @@
   .option {
     display: flex;
     padding: 0 12px 0 12px;
-    height: 36px;
+    height: 38px;
     align-items: center;
     white-space: nowrap;
   }
@@ -32,14 +32,18 @@
   }}>
   {#if variant === 'identity'}
     <Avatar {...identity} size="small" style="margin-right: 12px;" />
-    <Text style="color: var(--color-foreground-level-6)">{text}</Text>
+    <Text style="color: var(--color-foreground-level-6)">
+      {identity.metadata.handle}
+    </Text>
   {:else if variant === 'org'}
     <Avatar
       {...org}
       variant="project"
       size="small"
       style="margin-right: 12px;" />
-    <Text style="color: var(--color-foreground-level-6)">{text}</Text>
+    <Text style="color: var(--color-foreground-level-6)">
+      {org.metadata.name}
+    </Text>
   {:else}
     <Text style="color: var(--color-foreground-level-6)">{text}</Text>
   {/if}

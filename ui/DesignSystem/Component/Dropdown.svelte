@@ -62,13 +62,14 @@
     user-select: none;
     display: flex;
     justify-content: space-between;
+    overflow: hidden; /* hack to make inner option corners rounded */
   }
 
   .button:hover {
     height: 40px;
+    box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground);
-    border: 2px solid var(--color-foreground-level-3);
   }
 
   .button[hidden] {
@@ -79,12 +80,14 @@
     position: absolute;
     top: 0px;
     left: 0px;
-    box-shadow: var(--elevation-medium);
-    border: 2px solid var(--color-foreground-level-3);
+    box-shadow: var(--elevation-medium),
+      0px 0px 0px 1px var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     user-select: none;
     background-color: var(--color-background);
-    overflow: hidden; /* hack to make inner option rounded corners */
+    overflow: hidden; /* hack to make inner option corners rounded */
+    z-index: 1;
   }
 </style>
 
