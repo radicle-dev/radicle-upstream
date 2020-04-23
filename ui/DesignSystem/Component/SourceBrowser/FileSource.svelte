@@ -46,16 +46,16 @@
     user-select: none;
   }
 
-  .code {
-    font-family: var(--typeface-mono-regular);
-    font-size: 14px;
-    padding-left: 8px;
-    overflow-x: scroll;
-  }
-
   .code,
   .line-numbers {
     padding: 0.75rem 0;
+  }
+
+  .code {
+    font-family: var(--typeface-mono-regular);
+    font-size: 14px;
+    padding-left: 0.75rem;
+    overflow-x: scroll;
   }
 
   .container {
