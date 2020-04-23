@@ -3,11 +3,11 @@
 
   import * as path from "../lib/path.js";
   import { fetch, project } from "../src/project.ts";
-  import * as remote from "../src/remote.ts";
 
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
+    Remote,
     SidebarLayout,
     Topbar,
     TrackToggle
@@ -89,29 +89,31 @@
 <SidebarLayout
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="page-container">
-  {#if $project.status === remote.Status.Success}
-    <Topbar style="position: fixed; top: 0;">
-      <a slot="left" href={path.projectSource(params.id)} use:link>
-        <!-- TODO(rudolfs): show whether the project is registered under user or org -->
-        <Breadcrumb
-          title={$project.data.metadata.name}
-          user={$project.data.registered}
-          org={$project.data.registered} />
-      </a>
+  <Remote store={project}>
+    <div slot="success">
+      <Topbar style="position: fixed; top: 0;">
+        <a slot="left" href={path.projectSource(params.id)} use:link>
+          <!-- TODO(rudolfs): show whether the project is registered under user or org -->
+          <Breadcrumb
+            title={$project.data.metadata.name}
+            user={$project.data.registered}
+            org={$project.data.registered} />
+        </a>
 
-      <div slot="middle">
-        <HorizontalMenu items={topbarMenuItems(params.id)} />
-      </div>
+        <div slot="middle">
+          <HorizontalMenu items={topbarMenuItems(params.id)} />
+        </div>
 
-      <div slot="right" style="display: flex">
-        <Router routes={menuRoutes} />
-        <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
-        <AdditionalActionsDropdown
-          style="margin: 0 24px 0 16px"
-          headerTitle={params.id}
-          menuItems={dropdownMenuItems} />
-      </div>
-    </Topbar>
-    <Router {routes} />
-  {/if}
+        <div slot="right" style="display: flex">
+          <Router routes={menuRoutes} />
+          <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
+          <AdditionalActionsDropdown
+            style="margin: 0 24px 0 16px"
+            headerTitle={params.id}
+            menuItems={dropdownMenuItems} />
+        </div>
+      </Topbar>
+      <Router {routes} />
+    </div>
+  </Remote>
 </SidebarLayout>
