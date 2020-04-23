@@ -80,12 +80,14 @@
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
     display: inline-block;
+    user-select: none;
   }
   .branch {
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
     cursor: pointer;
     overflow-x: hidden;
+    user-select: none;
   }
   .branch:hover {
     color: var(--color-foreground);
