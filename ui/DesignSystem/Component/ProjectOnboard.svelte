@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   import { Flex, Text, Button } from "../../DesignSystem/Primitive";
-  import { Placeholder } from "../../DesignSystem/Component";
+  import Placeholder from "./Placeholder.svelte";
 
   const dispatch = createEventDispatcher();
 </script>
