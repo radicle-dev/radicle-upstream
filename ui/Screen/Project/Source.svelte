@@ -126,6 +126,7 @@
       <div class="source-tree" data-cy="source-tree">
         <Folder
           projectId={$project.data.id}
+          toplevel
           name={$project.data.metadata.name} />
       </div>
     </div>
