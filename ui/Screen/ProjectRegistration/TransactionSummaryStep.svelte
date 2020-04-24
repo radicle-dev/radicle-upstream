@@ -10,21 +10,23 @@
   import { Button, Flex } from "../../DesignSystem/Primitive";
   import { Transaction } from "../../DesignSystem/Component";
 
-  const onSubmitTransaction = () => {
-    project.register({
-      name: "upstream",
-      orgId: "monadic",
-      cocoId: "upstream@123abcd.git"
-    });
-    pop();
-  };
-
-  let identity = fallback;
-
   export let projectId = null;
   export let registrarId = null;
   export let projectName = null;
   export let projectDescription = null;
+
+  const onSubmitTransaction = () => {
+    project.register({
+      name: projectName,
+      description: projectDescription,
+      orgId: registrarId,
+      cocoId: projectId
+    });
+
+    pop();
+  };
+
+  let identity = fallback;
 
   if (
     $session.status === remote.Status.Success &&
@@ -37,7 +39,7 @@
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
-        projectId: projectId,
+        cocoId: projectId,
         orgId: registrarId,
         projectName: projectName,
         projectDescription: projectDescription

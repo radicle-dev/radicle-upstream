@@ -26,7 +26,7 @@ interface OrgUnregistration {
 interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
   orgId: string;
-  projectId: string;
+  cocoId: string;
   projectName: string;
   projectDescription: string;
 }

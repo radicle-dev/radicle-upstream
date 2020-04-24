@@ -49,6 +49,7 @@ interface Register extends event.Event<Kind> {
   kind: Kind.Register;
   orgId: string;
   name: string;
+  description: string;
   cocoId?: string;
 }
 
@@ -56,6 +57,7 @@ type Msg = Fetch | FetchList | Register;
 
 interface RegisterInput {
   projectName: string;
+  projectDescription: string;
   orgId: string;
   maybeCocoId?: string;
 }
@@ -83,6 +85,7 @@ const update = (msg: Msg): void => {
       registrationStore.loading();
       api.post<RegisterInput, transaction.Transaction>("projects/register", {
         projectName: msg.name,
+        projectDescription: msg.description,
         orgId: msg.orgId,
         maybeCocoId: msg.cocoId,
       })
