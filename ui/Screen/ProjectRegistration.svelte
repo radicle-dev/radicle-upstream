@@ -1,5 +1,5 @@
 <script>
-  import { Title } from "../DesignSystem/Primitive";
+  import { Flex, Title } from "../DesignSystem/Primitive";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
@@ -30,20 +30,21 @@
   }
 
   .project-registration {
-    text-align: center;
-    flex: 1;
+    width: 540px;
   }
 </style>
 
 <ModalLayout>
   <div class="wrapper">
     <div class="project-registration">
-      <StepCounter
-        selectedStep={currentStep}
-        steps={['Prepare', 'Submit']}
-        style="margin-bottom: 48px" />
+      <Flex align="center" style="margin-bottom: 40px;">
+        <StepCounter
+          selectedStep={currentStep}
+          steps={['Prepare', 'Submit']}
+          style="margin-bottom: 48px" />
 
-      <Title variant="big" style="margin-bottom: 24px;">Register project</Title>
+        <Title variant="big">Register project</Title>
+      </Flex>
 
       {#if currentStep === steps.DETAILS}
         <RegistrationDetailsStep
