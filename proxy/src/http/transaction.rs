@@ -18,7 +18,7 @@ pub fn filters(
     list_filter(registry)
 }
 
-/// POST /transactions
+/// `POST /transactions`
 fn list_filter(
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {

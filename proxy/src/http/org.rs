@@ -23,7 +23,7 @@ pub fn filters(
         .or(register_filter(registry, subscriptions))
 }
 
-/// POST /orgs
+/// `POST /orgs`
 fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
@@ -50,7 +50,7 @@ fn register_filter(
         .and_then(handler::register)
 }
 
-/// GET /orgs/<id>
+/// `GET /orgs/<id>`
 fn get_filter(
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -77,7 +77,7 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// GET /orgs
+/// `GET /orgs`
 fn list_filter(
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
