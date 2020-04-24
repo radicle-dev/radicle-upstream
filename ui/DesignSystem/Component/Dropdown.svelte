@@ -41,6 +41,7 @@
 <style>
   .dropdown {
     position: relative;
+    cursor: pointer;
   }
 
   .dropdown > * {
