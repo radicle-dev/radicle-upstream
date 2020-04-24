@@ -37,7 +37,10 @@
 
 <div class="option" on:click={clickHandler} class:selected>
   {#if variant === 'avatar'}
-    <Avatar style="margin-left: 8px;" {...avatarProps} {disabled} />
+    <Avatar
+      style="margin-left: 8px; --title-color: var(--color-foreground-level-6);"
+      {...avatarProps}
+      {disabled} />
   {:else}
     <Text style={`margin-left: 12px; color: ${disabledColor}`}>
       {textProps.title}
