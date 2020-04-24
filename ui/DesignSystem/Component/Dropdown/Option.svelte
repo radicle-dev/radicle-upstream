@@ -6,6 +6,7 @@
 
   export let textProps = null;
   export let avatarProps = null;
+  export let selected = false;
 
   export let value = null;
   export let disabled = false;
@@ -29,12 +30,13 @@
     white-space: nowrap;
   }
 
+  .option.selected,
   .option:hover {
     background-color: var(--color-foreground-level-2);
   }
 </style>
 
-<div class="option" on:click={clickHandler}>
+<div class="option" on:click={clickHandler} class:selected>
   {#if variant === 'avatar'}
     <Avatar {...avatarProps} {disabled} style="margin-right: 12px;" />
   {:else}

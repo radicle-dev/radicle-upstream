@@ -101,7 +101,10 @@
 
   <div class="menu" hidden={!expanded}>
     {#each options as option}
-      <Option {...option} on:selected={optionSelectedHandler} />
+      <Option
+        {...option}
+        on:selected={optionSelectedHandler}
+        selected={value === option.value} />
     {/each}
   </div>
 </div>
