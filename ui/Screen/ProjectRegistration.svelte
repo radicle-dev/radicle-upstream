@@ -24,9 +24,6 @@
   };
 
   let createNewProject = null;
-
-  console.log(projectId);
-  console.log(registrarId);
 </script>
 
 <style>
