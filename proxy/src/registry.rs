@@ -359,10 +359,7 @@ impl Registry {
         let org_ids = self.client.list_orgs().await?.into_iter();
         let mut orgs = Vec::new();
         for org_id in org_ids {
-            let maybe_org = self.client.get_org(org_id).await?;
-            if let Some(org) = maybe_org {
-                orgs.push(org)
-            }
+            orgs.push(self.client.get_org(org_id).await?.expect("Get org"));
         }
         Ok(orgs
             .into_iter()
