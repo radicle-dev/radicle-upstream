@@ -3,13 +3,16 @@
 
   import {
     RegistrationFlowState,
-    createValidationStore,
-    ValidationStatus,
     transaction,
     subject,
     payer,
     org
   } from "../src/org.ts";
+
+  import {
+    ValidationStatus,
+    createValidationStore
+  } from "../src/validation.ts";
 
   import {
     ModalLayout,
@@ -21,13 +24,14 @@
 
   let orgName;
   let state = RegistrationFlowState.NameSelection;
+  let startValidating = false;
 
   const validation = createValidationStore();
 
   const next = () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
-        validation.validate(orgName);
+        startValidating = true;
         if ($validation.status === ValidationStatus.Success)
           state = RegistrationFlowState.TransactionConfirmation;
         break;
@@ -56,17 +60,7 @@
     }
   };
 
-  $: {
-    if ($validation.status !== ValidationStatus.NotStarted)
-      validation.validate(orgName);
-  }
-  $: valid =
-    $validation.status === ValidationStatus.NotStarted ||
-    $validation.status === ValidationStatus.Success;
-
-  $: validationMessage =
-    $validation.status === ValidationStatus.Error && $validation.message;
-
+  $: if (startValidating) validation.validate(orgName);
   $: subject.name = orgName;
 </script>
 
@@ -93,14 +87,13 @@
         Registering an org allows you to give others in your org the right to
         sign transactions, like adding other members or adding projects.
       </Text>
-      <Input.Text
+      <Input.Validated
         placeholder="Org name (e.g. Flowerpot)"
         variant="avatar"
         bind:value={orgName}
         imageUrl={org.avatar.imageUrl}
         style="--focus-outline-color: var(--color-primary); width: 100%;"
-        {valid}
-        {validationMessage} />
+        validation={$validation} />
     {:else if state === RegistrationFlowState.TransactionConfirmation}
       <div style="width: 100%;">
         <Transaction {transaction} {subject} {payer} />
