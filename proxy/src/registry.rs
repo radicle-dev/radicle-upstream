@@ -353,11 +353,9 @@ impl Registry {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    pub async fn list_orgs(
-        &self,
-        // TODO(merle): Replace public key with user id once members are returned as such
-        user: &ed25519::Public,
-    ) -> Result<Vec<Org>, error::Error> {
+    pub async fn list_orgs(&self, _user_id: String) -> Result<Vec<Org>, error::Error> {
+        // TODO(merle): Remove temp_public_key once members are returned as user ids
+        let temp_public_key = ed25519::Pair::from_legacy_string("//Alice", None).public();
         let org_ids = self.client.list_orgs().await?.into_iter();
         let mut orgs = Vec::new();
         for org_id in org_ids {
@@ -369,7 +367,7 @@ impl Registry {
         Ok(orgs
             .into_iter()
             .filter_map(|org| {
-                if org.members.contains(user) {
+                if org.members.contains(&temp_public_key) {
                     Some(Org {
                         id: org.id.to_string(),
                         avatar_fallback: avatar::Avatar::from(
@@ -601,15 +599,21 @@ mod tests {
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), "123abcd.git".into(), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
         // Register the org
         let org_id = OrgId::try_from("monadic").unwrap();
-        let registration = registry
+        let org_registration = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
-        assert!(registration.is_ok());
+        assert!(org_registration.is_ok());
 
         // List the orgs
-        let orgs = registry.list_orgs(&alice.public()).await.unwrap();
+        let orgs = registry.list_orgs("alice".to_string()).await.unwrap();
         assert_eq!(orgs.len(), 1);
         assert_eq!(orgs[0].id, "monadic");
     }

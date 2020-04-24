@@ -84,10 +84,14 @@ fn list_filter(
     path("orgs")
         .and(warp::get())
         .and(super::with_registry(registry))
+        .and(warp::body::json())
         .and(document::document(document::description(
             "List orgs by member id",
         )))
         .and(document::document(document::tag("Org")))
+        .and(document::document(
+            document::body(ListInput::document()).mime("application/json"),
+        ))
         .and(document::document(
             document::response(
                 200,
@@ -101,7 +105,6 @@ fn list_filter(
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
-    use radicle_registry_client::CryptoPair;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -143,11 +146,12 @@ mod handler {
     }
 
     /// List the orgs the given `id` is a member of.
-    pub async fn list(registry: Arc<RwLock<registry::Registry>>) -> Result<impl Reply, Rejection> {
-        // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+    pub async fn list(
+        registry: Arc<RwLock<registry::Registry>>,
+        input: super::ListInput,
+    ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let orgs = reg.list_orgs(&fake_pair.public()).await?;
+        let orgs = reg.list_orgs(input.id).await?;
 
         Ok(reply::json(&orgs))
     }
@@ -200,6 +204,28 @@ impl ToDocumentedType for RegisterInput {
         );
 
         document::DocumentedType::from(properties).description("Input for org registration")
+    }
+}
+
+/// Bundled input data for org list.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ListInput {
+    /// Id of the User.
+    id: String,
+}
+
+impl ToDocumentedType for ListInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(1);
+        properties.insert(
+            "id".into(),
+            document::string()
+                .description("ID of the user")
+                .example("alice"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for org list")
     }
 }
 
@@ -306,6 +332,15 @@ mod test {
             subscriptions,
         );
 
+        // Register the user
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        registry
+            .write()
+            .await
+            .register_user(&alice, "alice".into(), "123abcd.git".into(), 100)
+            .await
+            .unwrap();
+
         // Register the org
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let fee: radicle_registry_client::Balance = 100;
@@ -316,7 +351,12 @@ mod test {
             .await
             .unwrap();
 
-        let res = request().method("GET").path("/orgs").reply(&api).await;
+        let res = request()
+            .method("GET")
+            .path("/orgs")
+            .json(&super::ListInput { id: "alice".into() })
+            .reply(&api)
+            .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
