@@ -312,11 +312,7 @@ mod test {
             .await
             .unwrap();
 
-        let res = request()
-            .method("GET")
-            .path("/orgs")
-            .reply(&api)
-            .await;
+        let res = request().method("GET").path("/orgs").reply(&api).await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 

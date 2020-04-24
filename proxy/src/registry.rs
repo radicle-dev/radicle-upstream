@@ -458,7 +458,12 @@ impl Registry {
     }
 }
 
-#[allow(clippy::indexing_slicing, clippy::panic, clippy::option_unwrap_used, clippy::result_unwrap_used)]
+#[allow(
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::option_unwrap_used,
+    clippy::result_unwrap_used
+)]
 #[cfg(test)]
 mod tests {
     use radicle_registry_client::{
