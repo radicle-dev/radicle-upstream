@@ -169,6 +169,7 @@
           <FileSource
             blob={$object.data}
             path={$currentPath}
+            projectName={$project.data.metadata.name}
             projectId={$project.data.id} />
         {:else if $object.data.info.objectType === TREE && $readme.status === remote.Status.Success}
           <Readme

@@ -1,5 +1,8 @@
 <script>
   import { format } from "timeago.js";
+  import { link } from "svelte-spa-router";
+
+  import { projectSource } from "../../../lib/path.js";
 
   import { Icon } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
@@ -7,6 +10,7 @@
   export let blob = null;
   export let path = null;
   export let projectId = null;
+  export let projectName = null;
 </script>
 
 <style>
@@ -29,6 +33,15 @@
 
   header .file-name {
     margin-left: 0.5rem;
+    font-weight: 600;
+  }
+
+  header .file-name a {
+    color: var(--color-foreground-level-5);
+  }
+
+  header .file-name a:hover {
+    text-decoration: underline;
   }
 
   header .commit-header {
@@ -67,7 +80,10 @@
   <header>
     <div class="file-header">
       <Icon.File />
-      <span class="file-name">{path}</span>
+      <span class="file-name">
+        <a href={projectSource(projectId)} use:link>{projectName}</a>
+        <span>/ {path.split('/').join(' / ')}</span>
+      </span>
     </div>
     <div class="commit-header">
       <CommitTeaser
