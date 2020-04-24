@@ -264,14 +264,14 @@ mod test {
         );
 
         // Register the org
-        request()
-            .method("POST")
-            .path("/orgs")
-            .json(&super::RegisterInput {
-                id: "monadic".into(),
-            })
-            .reply(&api)
-            .await;
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let fee: radicle_registry_client::Balance = 100;
+        registry
+            .write()
+            .await
+            .register_org(&alice, "monadic".to_string(), fee)
+            .await
+            .unwrap();
 
         let res = request()
             .method("GET")
@@ -303,14 +303,14 @@ mod test {
         );
 
         // Register the org
-        request()
-            .method("POST")
-            .path("/orgs")
-            .json(&super::RegisterInput {
-                id: "monadic".into(),
-            })
-            .reply(&api)
-            .await;
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let fee: radicle_registry_client::Balance = 100;
+        registry
+            .write()
+            .await
+            .register_org(&alice, "monadic".to_string(), fee)
+            .await
+            .unwrap();
 
         let res = request()
             .method("GET")
