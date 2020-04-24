@@ -4,6 +4,7 @@
   import { Icon } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
 
+  export let commit = null;
   export let blob = null;
   export let path = null;
   export let projectId = null;
@@ -31,14 +32,16 @@
     margin-left: 0.5rem;
   }
 
-  header .commit-header {
+  .commit-header {
     height: 3rem;
     background-color: var(--color-secondary-level-1);
+    margin-bottom: 1rem;
+    border-radius: 3px;
   }
 
   .line-numbers {
     font-family: var(--typeface-mono-regular);
-    font-size: 16px;
+    font-size: 14px;
     background-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-5);
     text-align: center;
@@ -46,15 +49,10 @@
     user-select: none;
   }
 
-  .code,
-  .line-numbers {
-    padding: 0.75rem 0;
-  }
-
   .code {
     font-family: var(--typeface-mono-regular);
     font-size: 16px;
-    padding-left: 0.75rem;
+    padding: 1.5rem;
     overflow-x: auto;
   }
 
@@ -63,35 +61,27 @@
   }
 </style>
 
+<div class="commit-header">
+  <CommitTeaser
+    {projectId}
+    user={{ username: commit.author.name, avatar: commit.author.avatar }}
+    commitMessage={commit.summary}
+    commitSha={commit.sha1}
+    timestamp={format(commit.committerTime * 1000)}
+    style="height: 100%" />
+</div>
+
 <div class="file-source" data-cy="file-source">
   <header>
     <div class="file-header">
       <Icon.File />
       <span class="file-name">{path}</span>
     </div>
-    <div class="commit-header">
-      <CommitTeaser
-        {projectId}
-        user={{ username: blob.info.lastCommit.author.name, avatar: blob.info.lastCommit.author.avatar }}
-        commitMessage={blob.info.lastCommit.summary}
-        commitSha={blob.info.lastCommit.sha1}
-        timestamp={format(blob.info.lastCommit.committerTime * 1000)}
-        style="height: 100%" />
-    </div>
   </header>
   <div class="container">
     {#if blob.binary}
       ఠ ͟ಠ Binary content.
     {:else}
-      <pre class="line-numbers">
-        {@html blob.content
-          .split('\n')
-          .slice(0, -1)
-          .map((_, index) => {
-            return `${index + 1}`;
-          })
-          .join('\n')}
-      </pre>
       <pre class="code">{blob.content}</pre>
     {/if}
   </div>

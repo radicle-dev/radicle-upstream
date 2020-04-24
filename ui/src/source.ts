@@ -198,3 +198,29 @@ export const tree = (
 
   return treeStore.readable;
 }
+
+export const blob = (
+  projectId: string,
+  revision: string,
+  path: string,
+): Readable<remote.Data<Blob>> => {
+  const blobStore = remote.createStore<Blob>();
+
+  api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } })
+        .then(blobStore.success)
+        .catch(blobStore.error);
+
+  return blobStore.readable;
+}
+
+export const findReadme = (tree: Tree): string | null => {
+  for (const entry of tree.entries) {
+    if (entry.info.objectType != ObjectType.Blob) {
+      continue;
+    }
+    if (/readme/i.test(entry.path)) {
+      return entry.path;
+    }
+  }
+  return null;
+}

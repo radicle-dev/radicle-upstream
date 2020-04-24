@@ -11,13 +11,15 @@
     fetchRevisions,
     object,
     revisions,
+    findReadme,
+    blob,
     updateParams
   } from "../../src/source.ts";
 
   import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
 
-  import FileList from "../../DesignSystem/Component/SourceBrowser/FileList.svelte";
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
+  import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
   import Stat from "../../DesignSystem/Component/Stat.svelte";
@@ -44,6 +46,19 @@
         $currentRevision !== "" ? $currentRevision : metadata.defaultBranch,
       type: path.extractProjectSourceObjectType($location)
     });
+  }
+
+  let readmePath = null;
+
+  $: readme = null;
+  $: if ($object.status === remote.Status.Success) {
+    if ($object.data.info.objectType === TREE) {
+      readmePath = findReadme($object.data);
+
+      if (path) {
+        readme = blob($project.data.id, $currentRevision, readmePath);
+      }
+    }
   }
 </script>
 
@@ -155,11 +170,12 @@
             blob={$object.data}
             path={$currentPath}
             projectId={$project.data.id} />
-        {:else if $object.data.info.objectType === TREE}
-          <FileList
-            projectId={$project.data.id}
-            tree={$object.data}
-            revision={$currentRevision} />
+        {:else if $object.data.info.objectType === TREE && $readme.status === remote.Status.Success}
+          <Readme
+            path={readmePath}
+            commit={$object.data.info.lastCommit}
+            blob={$readme.data}
+            projectId={$project.data.id} />
         {/if}
       {/if}
     </div>
