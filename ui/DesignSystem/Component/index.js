@@ -1,6 +1,6 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Copyable from "./Copyable.svelte";
-import IdentifierSelectionStep from "./Registration/IdentifierSelectionStep.svelte";
+import ValidatedInput from "./Registration/ValidatedInput.svelte";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import IdentityAvatar from "./IdentityAvatar.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
@@ -26,7 +26,7 @@ import UserCard from "./UserCard.svelte";
 export {
   AdditionalActionsDropdown,
   Copyable,
-  IdentifierSelectionStep,
+  ValidatedInput,
   HorizontalMenu,
   IdentityAvatar,
   NavigationButtons,

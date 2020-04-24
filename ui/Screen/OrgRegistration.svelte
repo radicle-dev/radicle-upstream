@@ -1,55 +1,52 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import { MessageType } from "../src/transaction.ts";
+  import {
+    RegistrationFlowState,
+    transaction,
+    subject,
+    payer
+  } from "../src/org.ts";
 
   import {
-    IdentifierSelectionStep,
     ModalLayout,
     NavigationButtons,
     StepCounter,
-    Transaction
+    Transaction,
+    ValidatedInput
   } from "../DesignSystem/Component";
-  import { Title } from "../DesignSystem/Primitive";
+  import { Text, Title } from "../DesignSystem/Primitive";
 
-  const steps = {
-    PREPARE: 1,
-    SUBMIT: 2
+  let state = RegistrationFlowState.NameSelection;
+
+  const next = () => {
+    switch (state) {
+      case RegistrationFlowState.NameSelection:
+        state = RegistrationFlowState.TransactionConfirmation;
+        break;
+      case RegistrationFlowState.TransactionConfirmation:
+        console.log("submitting transaction");
+        pop();
+    }
   };
 
-  let currentStep = steps.PREPARE;
-
-  const nextStep = () => currentStep++;
-
-  const submitTransaction = () => {
-    console.log("submitting transaction");
-    pop();
+  const cancel = () => {
+    switch (state) {
+      case RegistrationFlowState.NameSelection:
+        pop();
+        break;
+      case RegistrationFlowState.TransactionConfirmation:
+        state = RegistrationFlowState.NameSelection;
+    }
   };
 
-  const imageUrl =
-    "https://pbs.twimg.com/profile_images/378800000411356732/e8b1b7f0bd07d4d948cb2da25e221673_400x400.jpeg";
-
-  const transaction = {
-    messages: [
-      {
-        type: MessageType.OrgRegistration,
-        orgId: "1234"
-      }
-    ]
-  };
-
-  const payer = {
-    name: "someone",
-    kind: "org",
-    avatarFallback: null,
-    imageUrl: imageUrl
-  };
-
-  const subject = {
-    name: "",
-    kind: "org",
-    avatarFallback: null,
-    imageUrl: imageUrl
+  const nextButtonTitle = () => {
+    switch (state) {
+      case RegistrationFlowState.NameSelection:
+        return "Next";
+      case RegistrationFlowState.TransactionConfirmation:
+        return "Submit transaction";
+    }
   };
 
   let identifier;
@@ -69,32 +66,28 @@
 <ModalLayout>
   <div class="container">
     <StepCounter
-      selectedStep={currentStep}
+      selectedStep={state + 1}
       steps={['Prepare', 'Submit']}
       style="margin-bottom: 50px;" />
     <Title variant="big" style="margin-bottom: 16px;">Register an org</Title>
-    {#if currentStep === steps.PREPARE}
-      <IdentifierSelectionStep
-        explanatoryText="Registering an org allows you to give others in your
-        org the right to sign transactions, like adding other members or adding
-        projects."
+    {#if state === RegistrationFlowState.NameSelection}
+      <Text
+        style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
+        Registering an org allows you to give others in your org the right to
+        sign transactions, like adding other members or adding projects.
+      </Text>
+      <ValidatedInput
         inputPlaceholder="Org name (e.g. Flowerpot)"
         entity="Org name"
-        bind:identifier
-        onNextStep={nextStep} />
-    {:else if currentStep === steps.SUBMIT}
-      <div style="width: 100%;">
-        <Transaction
-          {transaction}
-          {subject}
-          {payer}
-          style="margin-bottom: 32px;" />
-        <NavigationButtons
-          style="margin-top: 32px;"
-          nextStepTitle="Submit transaction"
-          onCancel={pop}
-          onNextStep={submitTransaction} />
+        bind:identifier />
+    {:else if state === RegistrationFlowState.TransactionConfirmation}
+      <div style="width: 100%; margin-bottom: 32px;">
+        <Transaction {transaction} {subject} {payer} />
       </div>
     {/if}
+    <NavigationButtons
+      nextStepTitle={nextButtonTitle(state)}
+      onCancel={cancel}
+      onNextStep={next} />
   </div>
 </ModalLayout>
