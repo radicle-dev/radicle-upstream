@@ -1,6 +1,5 @@
 <script>
   import Router, { link, push } from "svelte-spa-router";
-  import { setContext } from "svelte";
   import * as path from "../lib/path.js";
   import { orgMocks } from "../lib/orgMocks.js";
   import { Avatar, Icon } from "../DesignSystem/Primitive";
@@ -17,8 +16,6 @@
   import Members from "./Org/Members.svelte";
 
   export let params = null;
-
-  setContext("orgId", params.id);
 
   /* TODO(rudolfs): replace with actual org metadata lookup */
   $: org = orgMocks.data.orgs.find(org => {

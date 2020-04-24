@@ -1,16 +1,15 @@
 <script>
-  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
   import { Icon, Button } from "../../DesignSystem/Primitive";
   import * as path from "../../lib/path.js";
 
-  const orgId = getContext("orgId");
+  export let params = null;
 </script>
 
 <Button
   size="small"
   variant="transparent"
   icon={Icon.Plus}
-  on:click={() => push(path.registerProject(orgId))}>
+  on:click={() => push(path.registerProject(params.id))}>
   Add project
 </Button>
