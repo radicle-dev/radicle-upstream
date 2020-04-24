@@ -1,14 +1,19 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+  import { pop } from "svelte-spa-router";
+
   import { Button, Flex, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown } from "../../DesignSystem/Component";
-  import { pop } from "svelte-spa-router";
+
   import { projects } from "../../src/project.ts";
   import { session } from "../../src/session.ts";
   import * as remote from "../../src/remote.ts";
   import { orgMocks } from "../../lib/orgMocks.js";
 
-  export let onNextStep = null;
-  export let createNewProject = false;
+  const dispatch = createEventDispatcher();
+
+  export let createNewProject = null;
+
   export let projectId = null;
   export let registrarId = null;
 
@@ -64,13 +69,13 @@
 {:else}
   <Dropdown
     placeholder="Select project to register"
-    value={projectId}
+    bind:value={projectId}
     options={projectDropdownOptions}
     style="margin-bottom: 16px;" />
 {/if}
 
 <div class="name">
-  <Dropdown value={registrarId} options={registrarDropdownOptions} />
+  <Dropdown bind:value={registrarId} options={registrarDropdownOptions} />
   <Title
     style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);"
     variant="regular">
@@ -95,7 +100,12 @@
     style="margin-right: 24px;">
     Cancel
   </Button>
-  <Button dataCy="next-button" on:click={onNextStep} variant="primary">
+  <Button
+    dataCy="next-button"
+    on:click={() => {
+      dispatch('next');
+    }}
+    variant="primary">
     Next
   </Button>
 </Flex>

@@ -8,8 +8,9 @@
 
   export let params = null;
 
-  const projectId = params.projectId || null;
-  const registrarId = params.registrarId || null;
+  let createNewProject = null;
+  let projectId = params.projectId || null;
+  let registrarId = params.registrarId || null;
 
   const steps = {
     NEW_OR_EXISTING: 1,
@@ -22,8 +23,6 @@
   const nextStep = () => {
     currentStep += 1;
   };
-
-  let createNewProject = null;
 </script>
 
 <style>
@@ -52,15 +51,19 @@
       {#if currentStep === steps.NEW_OR_EXISTING}
         <PickNewOrExistingProjectStep
           bind:createNewProject
-          onNextStep={nextStep} />
+          on:next={() => {
+            nextStep();
+          }} />
       {:else if currentStep === steps.DETAILS}
         <RegistrationDetailsStep
-          {projectId}
-          {registrarId}
+          bind:projectId
+          bind:registrarId
           {createNewProject}
-          onNextStep={nextStep} />
+          on:next={() => {
+            nextStep();
+          }} />
       {:else if currentStep === steps.SUMMARY}
-        <TransactionSummaryStep />
+        <TransactionSummaryStep {projectId} {registrarId} />
       {/if}
 
     </div>

@@ -22,6 +22,9 @@
   let identity = fallback;
   let handle = null;
 
+  export let projectId = null;
+  export let registrarId = null;
+
   if (
     $session.status === remote.Status.Success &&
     $session.data.identity !== null
@@ -41,6 +44,9 @@
   };
   const payer = transaction.formatPayer(identity);
   const subject = transaction.formatSubject(identity, tx.messages[0]);
+
+  $: console.log(projectId);
+  $: console.log(registrarId);
 </script>
 
 <Transaction transaction={tx} {payer} {subject} />
