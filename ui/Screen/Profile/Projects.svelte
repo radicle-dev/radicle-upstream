@@ -2,7 +2,7 @@
   import { push } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
-  import { projectNameStore, projects } from "../../src/project.ts";
+  import { projectNameStore, projects as store } from "../../src/project.ts";
 
   import { Text } from "../../DesignSystem/Primitive";
   import { ProjectList, Remote } from "../../DesignSystem/Component";
@@ -15,12 +15,10 @@
   };
 </script>
 
-<Remote store={projects}>
-  <div slot="success" let:data>
-    {#if data.length > 0}
-      <ProjectList projects={data} on:select={select} />
-    {:else}{push(path.profileOnboard())}{/if}
-  </div>
+<Remote {store} let:data={projects}>
+  {#if projects.length > 0}
+    <ProjectList {projects} on:select={select} />
+  {:else}{push(path.profileOnboard())}{/if}
 
   <div slot="error" let:error>
     <Text>{error}</Text>

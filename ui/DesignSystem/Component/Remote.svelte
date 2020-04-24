@@ -5,11 +5,11 @@
 </script>
 
 {#if $store.status === remote.Status.NotAsked}
-  <slot name="not-asked"></slot>
+  <slot name="not-asked" />
 {:else if $store.status === remote.Status.Loading}
-  <slot name="loading"></slot>
+  <slot name="loading" />
 {:else if $store.status === remote.Status.Success}
-  <slot name="success" data={$store.data}></slot>
+  <slot data={$store.data} />
 {:else if $store.status === remote.Status.Error}
-  <slot name="error" error={$store.error}></slot>
+  <slot name="error" error={$store.error} />
 {/if}

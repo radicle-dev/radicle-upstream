@@ -3,7 +3,6 @@
 
   import * as path from "../../lib/path.js";
   import { store } from "../../src/identity.ts";
-  import * as remote from "../../src/remote.ts";
 
   import {
     Avatar,
@@ -13,7 +12,7 @@
     Text,
     Title
   } from "../../DesignSystem/Primitive";
-  import { Copyable } from "../../DesignSystem/Component";
+  import { Copyable, Remote } from "../../DesignSystem/Component";
 
   export let onClose;
   let copyIcon = Icon.Copy;
@@ -78,8 +77,8 @@
         register it.
       </span>
     </Text>
-    <div class="identity-card">
-      {#if $store.status === remote.Status.Success}
+    <Remote {store}>
+      <div class="identity-card" slot="success" let:data>
         <Avatar
           size="huge"
           imageUrl={$store.data.metadata.avatarUrl}
@@ -100,8 +99,8 @@
             </Flex>
           </Copyable>
         </div>
-      {/if}
-    </div>
+      </div>
+    </Remote>
 
     <Button on:click={onClose}>Go to profile</Button>
   </div>

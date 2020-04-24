@@ -2,15 +2,15 @@
   import Router, { link, push } from "svelte-spa-router";
 
   import * as path from "../lib/path.js";
-  import * as remote from "../src/remote.ts";
   import { session } from "../src/session.ts";
 
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
+    IdentityAvatar,
+    Remote,
     SidebarLayout,
-    Topbar,
-    IdentityAvatar
+    Topbar
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -80,31 +80,31 @@
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="profile-screen">
 
-  <Topbar style="position: fixed; top: 0;">
-    <a slot="left" href={path.profileProjects()} use:link>
-      <!-- TODO(xla): Handle other states -->
-      {#if $session.status === remote.Status.Success}
-        <IdentityAvatar
-          identity={$session.data.identity}
-          showTitle={true}
-          size={'regular'}
-          style="color: var(--color-secondary)" />
-      {/if}
-    </a>
-    <div slot="middle">
-      <HorizontalMenu items={topbarMenuItems} />
+  <Remote store={session}>
+    <div slot="success" let:data>
+      <Topbar style="position: fixed; top: 0;">
+        <a slot="left" href={path.profileProjects()} use:link>
+          <!-- TODO(xla): Handle other states -->
+          <IdentityAvatar
+            identity={data.identity}
+            showTitle={true}
+            size={'regular'}
+            style="color: var(--color-secondary)" />
+        </a>
+        <div slot="middle">
+          <HorizontalMenu items={topbarMenuItems} />
+        </div>
+        <div slot="right" style="display: flex">
+          <Router routes={menuRoutes} />
+          <AdditionalActionsDropdown
+            dataCy="profile-context-menu"
+            style="margin: 0 24px 0 16px"
+            headerTitle={data.identity.shareableEntityIdentifier}
+            menuItems={dropdownMenuItems} />
+        </div>
+      </Topbar>
     </div>
-    <div slot="right" style="display: flex">
-      <Router routes={menuRoutes} />
-      {#if $session.status === remote.Status.Success}
-        <AdditionalActionsDropdown
-          dataCy="profile-context-menu"
-          style="margin: 0 24px 0 16px"
-          headerTitle={$session.data.identity.shareableEntityIdentifier}
-          menuItems={dropdownMenuItems} />
-      {/if}
-    </div>
-  </Topbar>
+  </Remote>
 
   <Router routes={screenRoutes} />
 </SidebarLayout>

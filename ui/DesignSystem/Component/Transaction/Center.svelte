@@ -1,30 +1,20 @@
 <script>
-  import * as remote from "../../../src/remote.ts";
-  import { formatMessage, transactions } from "../../../src/transaction.ts";
+  import { format, transactions as store } from "../../../src/transaction.ts";
 
   import { Text } from "../../Primitive";
+  import Remote from "../Remote.svelte";
 
   import Accordion from "./Accordion.svelte";
-
-  // TODO(merle): Use actual data.
-  const formatTransactions = txs => {
-    return txs.map(tx => {
-      return {
-        id: tx.id,
-        message: formatMessage(tx.messages[0]),
-        state: "pending",
-        progress: 0
-      };
-    });
-  };
 </script>
 
-{#if $transactions.status === remote.Status.Success}
-  {#if $transactions.data.length > 0}
+<Remote {store} let:data={transactions}>
+  {#if transactions.length > 0}
     <Accordion
-      transactions={formatTransactions($transactions.data)}
+      transactions={transactions.map(format)}
       style="position: absolute; bottom: 32px; right: 32px;" />
   {/if}
-{:else if $transactions.status === remote.Status.Error}
-  <Text>Transactions errored</Text>
-{/if}
+
+  <div slot="error">
+    <Text>Transactions errored</Text>
+  </div>
+</Remote>
