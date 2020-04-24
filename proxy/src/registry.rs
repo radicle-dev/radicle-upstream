@@ -461,7 +461,9 @@ impl Registry {
 #[allow(clippy::panic, clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod tests {
-    use radicle_registry_client::{ed25519, Client, ClientT, Hash, OrgId, ProjectName, TxHash};
+    use radicle_registry_client::{
+        ed25519, Client, ClientT, CryptoPair, Hash, OrgId, ProjectName, TxHash,
+    };
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
     use std::time;
@@ -532,7 +534,7 @@ mod tests {
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.id, org_id);
-        assert_eq!(org.members[0], ed25519::Public::from(alice));
+        assert_eq!(org.members[0], alice.public());
     }
 
     #[tokio::test]
@@ -599,10 +601,7 @@ mod tests {
         assert!(registration.is_ok());
 
         // List the orgs
-        let orgs = registry
-            .list_orgs(&ed25519::Public::from(alice.clone()))
-            .await
-            .unwrap();
+        let orgs = registry.list_orgs(&alice.public()).await.unwrap();
         assert_eq!(orgs.len(), 1);
         assert_eq!(orgs[0].id, "monadic");
     }

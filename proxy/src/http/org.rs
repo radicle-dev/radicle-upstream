@@ -101,6 +101,7 @@ fn list_filter(
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
+    use radicle_registry_client::CryptoPair;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -146,11 +147,7 @@ mod handler {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let reg = registry.read().await;
-        let orgs = reg
-            .list_orgs(&radicle_registry_client::ed25519::Public::from(
-                fake_pair.clone(),
-            ))
-            .await?;
+        let orgs = reg.list_orgs(&fake_pair.public()).await?;
 
         Ok(reply::json(&orgs))
     }
