@@ -20,33 +20,32 @@
   };
 
   let identity = fallback;
-  let handle = null;
 
   export let projectId = null;
   export let registrarId = null;
+  export let projectName = null;
+  export let projectDescription = null;
 
   if (
     $session.status === remote.Status.Success &&
     $session.data.identity !== null
   ) {
     identity = $session.data.identity;
-    handle = $session.data.identity.metadata.handle;
   }
 
   const tx = {
     messages: [
       {
-        type: transaction.MessageType.UserRegistration,
-        handle,
-        id: identity.id
+        type: transaction.MessageType.ProjectRegistration,
+        projectId: projectId,
+        orgId: registrarId,
+        projectName: projectName,
+        projectDescription: projectDescription
       }
     ]
   };
   const payer = transaction.formatPayer(identity);
   const subject = transaction.formatSubject(identity, tx.messages[0]);
-
-  $: console.log(projectId);
-  $: console.log(registrarId);
 </script>
 
 <Transaction transaction={tx} {payer} {subject} />

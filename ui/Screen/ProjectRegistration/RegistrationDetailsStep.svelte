@@ -14,6 +14,8 @@
 
   export let projectId = null;
   export let registrarId = null;
+  export let projectName = null;
+  export let projectDescription = null;
 
   $: identity =
     ($session.status === remote.Status.Success && [
@@ -80,11 +82,12 @@
   <Input.Text
     placeholder="Project name*"
     style="width: 100%;"
+    bind:value={projectName}
     valid={true}
     variant="project" />
 </div>
 
-<Input.Text placeholder="Project description" />
+<Input.Text bind:value={projectDescription} placeholder="Project description" />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
