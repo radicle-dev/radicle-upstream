@@ -63,7 +63,7 @@
   TODO: create new project
 {:else}
   <Dropdown
-    placeholder="Choose a project"
+    placeholder="Select project to register"
     value={projectId}
     options={projectDropdownOptions}
     style="margin-bottom: 16px;" />
@@ -78,12 +78,14 @@
   </Title>
   <Input.Text
     placeholder="Project name*"
-    style="width: 100%"
+    style="width: 100%; --focus-outline-color: var(--color-primary);"
     valid={true}
     variant="project" />
 </div>
 
-<Input.Text placeholder="Project description" />
+<Input.Text
+  style="--focus-outline-color: var(--color-primary);"
+  placeholder="Project description" />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
