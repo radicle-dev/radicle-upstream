@@ -1,10 +1,13 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { push } from "svelte-spa-router";
+
+  import * as path from "../../lib/path.js";
 
   import { Flex, Text, Button } from "../../DesignSystem/Primitive";
-  import Placeholder from "./Placeholder.svelte";
+  import Placeholder from "../../DesignSystem/Component/Placeholder.svelte";
 
-  const dispatch = createEventDispatcher();
+  const create = () => push(path.createProject());
+  const register = () => push(path.registerUser());
 </script>
 
 <style>
@@ -30,9 +33,7 @@
           var(--color-foreground-level-6);">
           Create a new project because that's why you're here.
         </Text>
-        <Button variant="vanilla" on:click={() => dispatch('create')}>
-          Start a new project
-        </Button>
+        <Button variant="vanilla" on:click={create}>Start a new project</Button>
       </div>
       <div
         slot="right"
@@ -43,9 +44,7 @@
           var(--color-foreground-level-6);">
           Register so your friends can find you!
         </Text>
-        <Button variant="vanilla" on:click={() => dispatch('register')}>
-          Register handle
-        </Button>
+        <Button variant="vanilla" on:click={register}>Register handle</Button>
       </div>
     </Flex>
   </div>

@@ -8,7 +8,6 @@ import ModalLayout from "./ModalLayout.svelte";
 import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
-import ProjectOnboard from "./ProjectOnboard.svelte";
 import Rad from "./Rad.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
@@ -34,7 +33,6 @@ export {
   Placeholder,
   ProjectCard,
   ProjectList,
-  ProjectOnboard,
   Rad,
   RadioOption,
   Remote,

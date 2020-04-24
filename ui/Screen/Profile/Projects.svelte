@@ -5,14 +5,8 @@
   import { projectNameStore, projects } from "../../src/project.ts";
 
   import { Text } from "../../DesignSystem/Primitive";
-  import {
-    ProjectList,
-    ProjectOnboard,
-    Remote
-  } from "../../DesignSystem/Component";
+  import { ProjectList, Remote } from "../../DesignSystem/Component";
 
-  const create = () => push(path.createProject());
-  const register = () => push(path.registerUser());
   const select = event => {
     const project = event.detail;
 
@@ -25,9 +19,7 @@
   <div slot="success" let:data>
     {#if data.length > 0}
       <ProjectList projects={data} on:select={select} />
-    {:else}
-      <ProjectOnboard on:create={create} on:registe={register} />
-    {/if}
+    {:else}{push(path.profileOnboard())}{/if}
   </div>
 
   <div slot="error" let:error>
