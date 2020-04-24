@@ -79,14 +79,12 @@
   </Title>
   <Input.Text
     placeholder="Project name*"
-    style="width: 100%; --focus-outline-color: var(--color-primary);"
+    style="width: 100%;"
     valid={true}
     variant="project" />
 </div>
 
-<Input.Text
-  style="--focus-outline-color: var(--color-primary);"
-  placeholder="Project description" />
+<Input.Text placeholder="Project description" />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
