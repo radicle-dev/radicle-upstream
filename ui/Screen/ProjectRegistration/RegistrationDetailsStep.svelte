@@ -16,17 +16,19 @@
   export let registrarId = null;
 
   $: identity =
-    ($session.status === remote.Status.Success && {
-      variant: "avatar",
-      value: $session.data.identity.id,
-      avatarProps: {
-        variant: "user",
-        title: $session.data.identity.metadata.handle,
-        avatarFallback: $session.data.identity.avatarFallback,
-        imageUrl: $session.data.identity.imageUrl
+    ($session.status === remote.Status.Success && [
+      {
+        variant: "avatar",
+        value: $session.data.identity.id,
+        avatarProps: {
+          variant: "user",
+          title: $session.data.identity.metadata.handle,
+          avatarFallback: $session.data.identity.avatarFallback,
+          imageUrl: $session.data.identity.imageUrl
+        }
       }
-    }) ||
-    {};
+    ]) ||
+    [];
 
   $: orgs = orgMocks.data.orgs.map(org => {
     return {
@@ -40,7 +42,7 @@
     };
   });
 
-  $: registrarDropdownOptions = [identity, ...orgs];
+  $: registrarDropdownOptions = [...identity, ...orgs];
 
   $: projectDropdownOptions =
     ($projects.status === remote.Status.Success &&
