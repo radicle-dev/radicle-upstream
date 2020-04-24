@@ -12,8 +12,6 @@
 
   const dispatch = createEventDispatcher();
 
-  export let createNewProject = null;
-
   export let projectId = null;
   export let registrarId = null;
 
@@ -64,15 +62,11 @@
   }
 </style>
 
-{#if createNewProject}
-  TODO: create new project
-{:else}
-  <Dropdown
-    placeholder="Select project to register"
-    bind:value={projectId}
-    options={projectDropdownOptions}
-    style="margin-bottom: 16px;" />
-{/if}
+<Dropdown
+  placeholder="Select project to register"
+  bind:value={projectId}
+  options={projectDropdownOptions}
+  style="margin-bottom: 16px;" />
 
 <div class="name">
   <Dropdown bind:value={registrarId} options={registrarDropdownOptions} />
