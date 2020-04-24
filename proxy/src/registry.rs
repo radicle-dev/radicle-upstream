@@ -365,12 +365,19 @@ impl Registry {
         }
         Ok(orgs
             .into_iter()
-            .filter_map(|org| if org.members.contains(user) {
-                Some(Org {
-                    id: org.id.to_string(),
-                    avatar_fallback: avatar::Avatar::from(&org.id.to_string(), avatar::Usage::Org),
-                })
-            } else {None})
+            .filter_map(|org| {
+                if org.members.contains(user) {
+                    Some(Org {
+                        id: org.id.to_string(),
+                        avatar_fallback: avatar::Avatar::from(
+                            &org.id.to_string(),
+                            avatar::Usage::Org,
+                        ),
+                    })
+                } else {
+                    None
+                }
+            })
             .collect())
     }
 
