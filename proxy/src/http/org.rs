@@ -143,8 +143,14 @@ mod handler {
 
     /// List the orgs the given `id` is a member of.
     pub async fn list(registry: Arc<RwLock<registry::Registry>>) -> Result<impl Reply, Rejection> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let reg = registry.read().await;
-        let orgs = reg.list_orgs().await?;
+        let orgs = reg
+            .list_orgs(&radicle_registry_client::ed25519::Public::from(
+                fake_pair.clone(),
+            ))
+            .await?;
 
         Ok(reply::json(&orgs))
     }

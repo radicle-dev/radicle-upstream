@@ -353,7 +353,11 @@ impl Registry {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    pub async fn list_orgs(&self) -> Result<Vec<Org>, error::Error> {
+    pub async fn list_orgs(
+        &self,
+        // TODO(merle): Replace public key with user id once members are returned as such
+        user: &ed25519::Public,
+    ) -> Result<Vec<Org>, error::Error> {
         let org_ids = self.client.list_orgs().await?.into_iter();
         let mut orgs = Vec::new();
         for org_id in org_ids {
@@ -361,10 +365,12 @@ impl Registry {
         }
         Ok(orgs
             .into_iter()
-            .map(|org| Org {
-                id: org.id.to_string(),
-                avatar_fallback: avatar::Avatar::from(&org.id.to_string(), avatar::Usage::Org),
-            })
+            .filter_map(|org| if org.members.contains(user) {
+                Some(Org {
+                    id: org.id.to_string(),
+                    avatar_fallback: avatar::Avatar::from(&org.id.to_string(), avatar::Usage::Org),
+                })
+            } else {None})
             .collect())
     }
 
@@ -586,7 +592,11 @@ mod tests {
         assert!(registration.is_ok());
 
         // List the orgs
-        let orgs = registry.list_orgs().await.unwrap();
+        let orgs = registry
+            .list_orgs(&ed25519::Public::from(alice.clone()))
+            .await
+            .unwrap();
+        assert_eq!(orgs.len(), 1);
         assert_eq!(orgs[0].id, "monadic");
     }
 
