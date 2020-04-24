@@ -24,7 +24,6 @@
 <style>
   .option {
     display: flex;
-    padding: 0 8px 0 8px;
     height: 46px;
     align-items: center;
     white-space: nowrap;
@@ -38,8 +37,10 @@
 
 <div class="option" on:click={clickHandler} class:selected>
   {#if variant === 'avatar'}
-    <Avatar {...avatarProps} {disabled} style="margin-right: 12px;" />
+    <Avatar style="margin-left: 8px;" {...avatarProps} {disabled} />
   {:else}
-    <Text style={`color: ${disabledColor}`}>{textProps.title}</Text>
+    <Text style={`margin-left: 12px; color: ${disabledColor}`}>
+      {textProps.title}
+    </Text>
   {/if}
 </div>

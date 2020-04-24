@@ -41,7 +41,6 @@
 <style>
   .dropdown {
     position: relative;
-    min-width: 187px;
   }
 
   .dropdown > * {
@@ -96,7 +95,8 @@
         {placeholder}
       </Text>
     {/if}
-    <Icon.Expand style={`margin: 0 8px 0 8px; fill: ${disabledColor()}`} />
+    <Icon.Expand
+      style={`flex-shrink: 0; margin: 0 8px 0 8px; fill: ${disabledColor()}`} />
   </div>
 
   <div class="menu" hidden={!expanded}>
