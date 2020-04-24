@@ -314,7 +314,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/orgs"))
+            .path("/orgs")
             .reply(&api)
             .await;
 
