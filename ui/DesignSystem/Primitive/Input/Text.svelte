@@ -35,6 +35,10 @@
     background-color: var(--color-background);
   }
 
+  input::placeholder {
+    color: var(--color-foreground-level-6);
+  }
+
   input.handle {
     padding: 0 46px 0 54px;
   }
