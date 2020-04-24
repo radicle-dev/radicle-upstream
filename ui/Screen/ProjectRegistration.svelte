@@ -59,6 +59,7 @@
       {:else if currentStep === steps.DETAILS}
         <RegistrationDetailsStep
           {projectId}
+          {registrarId}
           {createNewProject}
           onNextStep={nextStep} />
       {:else if currentStep === steps.SUMMARY}

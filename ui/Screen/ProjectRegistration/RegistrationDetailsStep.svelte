@@ -3,87 +3,42 @@
   import { Dropdown } from "../../DesignSystem/Component";
   import { pop } from "svelte-spa-router";
   import { projects } from "../../src/project.ts";
+  import { session } from "../../src/session.ts";
   import * as remote from "../../src/remote.ts";
+  import { orgMocks } from "../../lib/orgMocks.js";
 
   export let onNextStep = null;
   export let createNewProject = false;
   export let projectId = null;
+  export let registrarId = null;
 
-  const orgs = [
-    {
-      id: "%monadic",
-      metadata: {
-        name: "monadic"
-      },
-      avatarFallback: {
-        emoji: "☔️",
-        background: {
-          b: 61,
-          g: 187,
-          r: 148
-        }
-      }
-    },
-    {
-      id: "%sveltejs",
-      metadata: {
-        name: "sveltejs"
-      },
-      avatarFallback: {
-        emoji: "🚊",
-        background: {
-          b: 112,
-          g: 27,
-          r: 205
-        }
-      }
-    }
-  ];
-
-  const identity = {
-    id: "123abcd.git",
-    shareableEntityIdentifier: "cloudhead@123abcd.git",
-    metadata: {
-      handle: "cloudhead",
-      displayName: "Alexis Sellier",
-      avatarUrl: "https://avatars1.githubusercontent.com/u/40774"
-    },
-    registered: null,
-    avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" }
-  };
-
-  const registrarDropdownOptions = [
-    {
+  $: identity =
+    ($session.status === remote.Status.Success && {
       variant: "avatar",
-      value: "1",
+      value: $session.data.identity.id,
       avatarProps: {
         variant: "user",
-        title: identity.metadata.handle,
-        avatarFallback: identity.avatarFallback,
-        imageUrl: identity.imageUrl
+        title: $session.data.identity.metadata.handle,
+        avatarFallback: $session.data.identity.avatarFallback,
+        imageUrl: $session.data.identity.imageUrl
       }
-    },
-    {
-      variant: "avatar",
-      value: "2",
-      avatarProps: {
-        variant: "project",
-        title: orgs[0].metadata.name,
-        avatarFallback: orgs[0].avatarFallback
-      }
-    },
-    {
-      variant: "avatar",
-      value: "3",
-      avatarProps: {
-        variant: "project",
-        title: orgs[1].metadata.name,
-        avatarFallback: orgs[1].avatarFallback
-      }
-    }
-  ];
+    }) ||
+    {};
 
-  $: console.log($projects.data);
+  $: orgs = orgMocks.data.orgs.map(org => {
+    return {
+      variant: "avatar",
+      value: org.id,
+      avatarProps: {
+        variant: "project",
+        title: org.metadata.name,
+        avatarFallback: org.avatarFallback
+      }
+    };
+  });
+
+  $: registrarDropdownOptions = [identity, ...orgs];
+
   $: projectDropdownOptions =
     ($projects.status === remote.Status.Success &&
       $projects.data.map(project => {
@@ -94,8 +49,6 @@
         };
       })) ||
     [];
-
-  $: console.log(projectDropdownOptions);
 </script>
 
 <style>
@@ -109,15 +62,15 @@
 {#if createNewProject}
   TODO: create new project
 {:else}
-  choose existing project choice: {projectId}
   <Dropdown
     placeholder="Choose a project"
+    value={projectId}
     options={projectDropdownOptions}
     style="margin-bottom: 16px;" />
 {/if}
 
 <div class="name">
-  <Dropdown value="1" options={registrarDropdownOptions} />
+  <Dropdown value={registrarId} options={registrarDropdownOptions} />
   <Title
     style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);"
     variant="regular">

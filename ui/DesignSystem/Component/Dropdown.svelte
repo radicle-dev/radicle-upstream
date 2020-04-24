@@ -34,6 +34,8 @@
       ? "var(--color-foreground-level-4)"
       : "var(--color-foreground-level-6)";
   };
+
+  $: optionByValue = options.find(option => option.value === value);
 </script>
 
 <style>
@@ -87,8 +89,8 @@
 
 <div class="dropdown" {style}>
   <div class="button" on:click|stopPropagation={toggleMenu}>
-    {#if value}
-      <Option {...options.find(option => option.value === value)} {disabled} />
+    {#if value && optionByValue}
+      <Option {...optionByValue} {disabled} />
     {:else}
       <Text style={`margin-left: 12px; color: ${disabledColor()}`}>
         {placeholder}
