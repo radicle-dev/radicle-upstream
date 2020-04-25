@@ -1,5 +1,5 @@
 import validatejs from "validate.js"
-import { derived, writable, Readable, get } from "svelte/store"
+import { derived, writable, Writable, Readable, get } from "svelte/store"
 
 export enum ValidationStatus {
   NotStarted = "NOT_STARTED",
@@ -11,10 +11,10 @@ export enum ValidationStatus {
 
 type ValidationState =
   { status: ValidationStatus.NotStarted } |
-  { status: ValidationStatus.FormatValidation; input: string } |
-  { status: ValidationStatus.Pending; input: string } |
-  { status: ValidationStatus.Error; input: string; message: string } |
-  { status: ValidationStatus.Success; input: string }
+  { status: ValidationStatus.FormatValidation } |
+  { status: ValidationStatus.Pending } |
+  { status: ValidationStatus.Error; message: string } |
+  { status: ValidationStatus.Success }
 
 interface ValidationStore extends Readable<ValidationState> {
   validate: (input: string) => void;
@@ -34,6 +34,9 @@ const constraints = {
   }
 };
 
+export const inputStore = writable("")
+
+
 export const createValidationStore = (input?: string): ValidationStore => {
   const initialState = { status: ValidationStatus.NotStarted } as ValidationState
   const internalStore = writable(initialState)
@@ -42,7 +45,10 @@ export const createValidationStore = (input?: string): ValidationStore => {
   const delay = (duration: number) =>
     new Promise(resolve => setTimeout(resolve, duration))
 
+
+
   const validate = async (input: string) => {
+    update(store => { return { status: ValidationStatus.Pending, input: input } })
     const errors = validatejs({ name: input }, constraints, { fullMessages: false })
 
     if (errors) {
@@ -51,12 +57,22 @@ export const createValidationStore = (input?: string): ValidationStore => {
     } else {
       update(store => { return { status: ValidationStatus.Pending, input: input } })
       await delay(1000)
-      update(store => { return { status: ValidationStatus.Success, input: input } })
+      update((store) => {
+        return { status: ValidationStatus.Success, input: input }
+      })
     }
   }
+
+  inputStore.subscribe((input: string) => {
+    console.log("validating ", input)
+    validate(input)
+  })
 
   return {
     subscribe,
     validate
   }
 }
+
+
+

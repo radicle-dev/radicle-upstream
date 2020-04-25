@@ -11,7 +11,8 @@
 
   import {
     ValidationStatus,
-    createValidationStore
+    createValidationStore,
+    inputStore
   } from "../src/validation.ts";
 
   import {
@@ -24,14 +25,12 @@
 
   let orgName;
   let state = RegistrationFlowState.NameSelection;
-  let startValidating = false;
 
   const validation = createValidationStore();
 
   const next = () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
-        startValidating = true;
         if ($validation.status === ValidationStatus.Success)
           state = RegistrationFlowState.TransactionConfirmation;
         break;
@@ -60,8 +59,10 @@
     }
   };
 
-  $: if (startValidating) validation.validate(orgName);
-  $: subject.name = orgName;
+  $: {
+    subject.name = orgName;
+    inputStore.set(orgName);
+  }
 </script>
 
 <style>
