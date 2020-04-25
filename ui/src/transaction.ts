@@ -119,6 +119,16 @@ export const formatMessage = (msg: Message): string => {
   }
 };
 
+// TODO(merle): Use actual data.
+export const format = (tx: Transaction): object => {
+  return {
+    id: tx.id,
+    message: formatMessage(tx.messages[0]),
+    state: "pending",
+    progress: 0
+  }
+}
+
 export const formatStake = (msg: Message): string => `${formatMessage(msg)} deposit`;
 
 export const formatPayer = (identity: identity.Identity): object => {
