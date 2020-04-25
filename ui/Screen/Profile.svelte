@@ -2,7 +2,7 @@
   import Router, { link, push } from "svelte-spa-router";
 
   import * as path from "../lib/path.js";
-  import { session } from "../src/session.ts";
+  import { session as store } from "../src/session.ts";
 
   import {
     AdditionalActionsDropdown,
@@ -80,30 +80,28 @@
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="profile-screen">
 
-  <Remote store={session}>
-    <div slot="success" let:data>
-      <Topbar style="position: fixed; top: 0;">
-        <a slot="left" href={path.profileProjects()} use:link>
-          <!-- TODO(xla): Handle other states -->
-          <IdentityAvatar
-            identity={data.identity}
-            showTitle={true}
-            size={'regular'}
-            style="color: var(--color-secondary)" />
-        </a>
-        <div slot="middle">
-          <HorizontalMenu items={topbarMenuItems} />
-        </div>
-        <div slot="right" style="display: flex">
-          <Router routes={menuRoutes} />
-          <AdditionalActionsDropdown
-            dataCy="profile-context-menu"
-            style="margin: 0 24px 0 16px"
-            headerTitle={data.identity.shareableEntityIdentifier}
-            menuItems={dropdownMenuItems} />
-        </div>
-      </Topbar>
-    </div>
+  <Remote {store} let:data={session}>
+    <Topbar style="position: fixed; top: 0;">
+      <a slot="left" href={path.profileProjects()} use:link>
+        <!-- TODO(xla): Handle other states -->
+        <IdentityAvatar
+          identity={session.identity}
+          showTitle={true}
+          size={'regular'}
+          style="color: var(--color-secondary)" />
+      </a>
+      <div slot="middle">
+        <HorizontalMenu items={topbarMenuItems} />
+      </div>
+      <div slot="right" style="display: flex">
+        <Router routes={menuRoutes} />
+        <AdditionalActionsDropdown
+          dataCy="profile-context-menu"
+          style="margin: 0 24px 0 16px"
+          headerTitle={session.identity.shareableEntityIdentifier}
+          menuItems={dropdownMenuItems} />
+      </div>
+    </Topbar>
   </Remote>
 
   <Router routes={screenRoutes} />
