@@ -16,12 +16,7 @@
   export let projectDescription = null;
 
   const onSubmitTransaction = () => {
-    project.register({
-      name: projectName,
-      description: projectDescription,
-      orgId: registrarId,
-      cocoId: projectId
-    });
+    project.register(registrarId, projectName, projectId);
 
     pop();
   };

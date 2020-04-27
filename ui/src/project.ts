@@ -63,6 +63,7 @@ interface CreateInput {
 interface RegisterInput {
   orgId: string;
   projectName: string;
+  maybeCocoId?: string;
 }
 
 const update = (msg: Msg): void => {
@@ -114,10 +115,12 @@ export const create = (
 export const register = (
   orgId: string,
   projectName: string,
+  maybeCocoId?: string
 ): Promise<transaction.Transaction> => {
   return api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
     orgId,
     projectName,
+    maybeCocoId
   });
 }
 
