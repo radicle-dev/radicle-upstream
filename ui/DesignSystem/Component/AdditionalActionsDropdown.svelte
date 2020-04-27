@@ -54,7 +54,10 @@
   }
 
   button:hover {
-    background-color: var(--color-foreground-level-1);
+    background-color: var(
+      --button-hover-background-color,
+      --color-foreground-level-1
+    );
   }
 
   .modal {
