@@ -4,6 +4,7 @@
   import * as path from "../../lib/path.js";
   import { store } from "../../src/identity.ts";
 
+  import { Copyable, Remote } from "../../DesignSystem/Component";
   import {
     Avatar,
     Button,
@@ -12,7 +13,6 @@
     Text,
     Title
   } from "../../DesignSystem/Primitive";
-  import { Copyable, Remote } from "../../DesignSystem/Component";
 
   export let onClose;
   let copyIcon = Icon.Copy;

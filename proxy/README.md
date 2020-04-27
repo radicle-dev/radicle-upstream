@@ -1,14 +1,12 @@
 # Proxy
 
 A background service that implements all business logic tying together the
-radicle code collaboration and registry protocols. It provides a GraphQL API to
-the UI.
-
+radicle code collaboration and registry protocols.
 
 ### Run
 
 To start up the binary you can run: `cargo run -- --registry=emulator`.
-After that the API is served on `http://127.0.0.1:8080/graphql`.
+After that the API is served on `http://127.0.0.1:8080/docs`.
 
 
 ### Testing
