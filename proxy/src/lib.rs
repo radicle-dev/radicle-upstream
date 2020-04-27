@@ -25,14 +25,10 @@
 )]
 #![feature(str_strip)]
 
-#[macro_use]
-extern crate juniper;
-
 pub mod avatar;
 pub mod coco;
 pub mod env;
 pub mod error;
-pub mod graphql;
 pub mod http;
 pub mod identity;
 mod notification;

@@ -4,7 +4,7 @@ version = "0.1.0"
 license = "GPL-3.0-only"
 authors = ["radicle team <dev@radicle.xyz>"]
 edition = "2018"
-description = "Proxy to serve a specialised GraphQL API to radicle-upstream."
+description = "Proxy to serve a specialised API to the Upstream UI."
 readme = "https://github.com/radicle-dev/radicle-upstream/blob/master/proxy/README.md"
 categories = [ "crypto", "p2p" ]
 keywords = [ "radicle-upstream", "proxy" ]
@@ -14,8 +14,6 @@ repository = "git@github.com:radicle-dev/radicle-upstream.git"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
 hex = "0.4"
-juniper = "0.14"
-juniper_codegen = "0.14"
 kv = { version = "0.20", features = [ "bincode-value" ] }
 log = "0.4"
 nonempty = "0.2"
@@ -41,5 +39,4 @@ git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "9a751cbc2941ce0ead6195b118c150b017d63c8a"
 
 [dev-dependencies]
-indexmap = "1.3"
 pretty_assertions = "0.6"
