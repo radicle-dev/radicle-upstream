@@ -83,7 +83,7 @@ fn nuke_session_filter(
         .and_then(handler::nuke_session)
 }
 
-/// Control handlers for ocnversion between core domain and http request fullfilment.
+/// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
     use kv::Store;
     use librad::paths::Paths;
