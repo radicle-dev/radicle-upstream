@@ -8,7 +8,7 @@ import * as transaction from "./transaction";
 // TYPES.
 export interface Metadata {
   name: string;
-  default_branch: string;
+  defaultBranch: string;
   description?: string;
 }
 
