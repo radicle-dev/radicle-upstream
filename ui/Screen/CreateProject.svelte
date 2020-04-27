@@ -1,14 +1,14 @@
 <script>
-  import validatejs from "validate.js";
-  import { gql } from "apollo-boost";
-  import { getClient, mutate } from "svelte-apollo";
   import { pop, push } from "svelte-spa-router";
+  import validatejs from "validate.js";
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
-  import { showNotification } from "../store/notification.js";
   import * as path from "../lib/path.js";
+  import { showNotification } from "../store/notification.js";
+  import { create } from "../src/project.ts";
   import { getLocalBranches } from "../src/source.ts";
 
+  import { ModalLayout, RadioOption } from "../DesignSystem/Component";
   import {
     Button,
     Flex,
@@ -17,7 +17,6 @@
     Text,
     Title
   } from "../DesignSystem/Primitive";
-  import { ModalLayout, RadioOption } from "../DesignSystem/Component";
 
   let currentSelection;
 
@@ -143,23 +142,6 @@
     existingRepositoryPath
   );
 
-  const client = getClient();
-
-  const CREATE_PROJECT = gql`
-    mutation(
-      $metadata: ProjectMetadataInput!
-      $path: String!
-      $publish: Boolean!
-    ) {
-      createProject(metadata: $metadata, path: $path, publish: $publish) {
-        id
-        metadata {
-          name
-        }
-      }
-    }
-  `;
-
   const createProject = async () => {
     beginValidation = true;
     validate();
@@ -171,22 +153,18 @@
     let response;
 
     try {
-      response = await mutate(client, {
-        mutation: CREATE_PROJECT,
-        variables: {
-          metadata: {
-            name: name,
-            description: description,
-            defaultBranch: defaultBranch
-          },
-          path: isNew ? newRepositoryPath : existingRepositoryPath,
-          publish: true
-        }
+      response = await create({
+        metadata: {
+          name,
+          description,
+          defaultBranch
+        },
+        path: isNew ? newRepositoryPath : existingRepositoryPath
       });
 
-      push(path.projectSource(response.data.createProject.id));
+      push(path.projectSource(response.id));
       showNotification({
-        text: `Project ${response.data.createProject.metadata.name} successfully created`,
+        text: `Project ${response.metadata.name} successfully created`,
         level: "info"
       });
     } catch (error) {

@@ -30,15 +30,6 @@ source-of-truth for this API is the proxy source code.
 To change or extend the API, first open an issue on GitHub, discuss what is
 needed and then propose proxy code changes which implement the API.
 
-We don't keep around a copy of an SDL schema file as they tend to get outdated
-quickly and it is way easier to explore the API via introspection. You can read
-more on that in the [GraphiQL Explorer](#graphiql-explorer) section below.
-
-If you need the schema to guide you writing new queries or mutations, you can
-extract the latest schema version from the proxy via `yarn generate:schema`.
-It'll be saved into `./schema.gql`.
-
-
 ## UI
 
 The UI is written in JavaScript, [Svelte][se] is our [component language][cl]
@@ -106,27 +97,6 @@ Then, to execute just this single test, fire up the Cypress GUI:
 
 💡 *Don't forget to remove all `.only` methods from the tests before
 committing changes, otherwise these tests will be skipped on CI.*
-
-
-### GraphiQL explorer
-
-The introspective and self-docummenting nature of GraphQL allows us to easily
-explore our API by querying the proxy. For better developer ergonomics we
-include a [static version][gs] of [GraphiQL-explorer][ge].
-
-To see this in action:
-
-1. Start Upstream in development mode: `yarn start`.
-2. Launch GraphiQL from a separate shell: `yarn graphiql`
-   or directly navigate to http://localhost:5000 in your browser.
-
-To see all the possible queries and query parameters, open the GraphiQL
-explorer sidebar simply by clicking the `Explorer` button. More extensive API
-documentation is provided in the `Docs` sidebar. You can navigate through all
-the queries and types by clicking on them.
-
-Annotations for queries, mutations, types and fields propagate from the proxy
-source into the `Docs` section automatically.
 
 
 ### Design System
@@ -419,11 +389,6 @@ yarn dist             # Bundles Upstream into an installable package
 yarn generate:colors  # Update color CSS variables in public/colors.css from
                       # colors.js
 
-yarn generate:schema  # Start proxy and save the latest GraphQL schema
-                      # in ./schema.gql
-
-yarn graphiql         # Open GraphiQL with explorer extension in browser
-
 yarn release          # Start a two-step process to cut a new release, for more
                       # details have a look at ../DEVELOPMENT.md
 
@@ -436,9 +401,8 @@ yarn lint             # Check UI code for linting errors
 ## Proxy
 
 All of Upstream's business logic tying together the radicle code collaboration and
-registry protocols is provided to the UI via [GraphQL][gq] by a rust binary called
-the proxy. It uses [warp][wa] to serve a [Juniper][ju] powered API providing all necessary
-queries and mutations.
+registry protocols is provided to the UI via an HTTP API by a rust binary called
+the proxy. It uses [warp][wa] to serve a RESTish JSON API.
 
 For dependency management and execution of common tasks we use [Cargo][co]. To
 get up to speed with common functionality and manifest file intricacies consult
@@ -452,7 +416,7 @@ application package by [electron-builder][eb].
 ### Running the proxy in stand-alone mode
 
 To start the proxy binary, run: `cd proxy && cargo run -- --registry=emulator`.
-After that the GraphQL API is served on `http://127.0.0.1:8080/graphql`.
+After that the API docs are served under `http://127.0.0.1:8080/docs`.
 
 
 ### Testing
@@ -477,7 +441,7 @@ out where to place and how to lay out tests, check the Rust book [test chapter][
 
 ### File structure
 
-The GraphQL API exposes the application's domain logic. Therefore we try to treat
+The API exposes the application's domain logic. Therefore we try to treat
 it as a thin layer exposing well-typed entities. The heavy lifting is done in the
 modules named after the protocols we consume - [radicle-link][rl] through it
 [radicle-surf][rs], for code collaboration and [radicle-registry][rr] for global
@@ -490,14 +454,21 @@ proxy/src/
 ├── coco.rs
 ├── env.rs
 ├── error.rs
-├── graphql
-│   ├── api.rs
+├── http
+│   ├── control.rs
+│   ├── doc.rs
 │   ├── error.rs
+│   ├── identity.rs
+│   ├── notification.rs
 │   ├── project.rs
-│   └── schema.rs
-├── graphql.rs
+│   ├── transaction.rs
+│   ├── source.rs
+│   └── user.rs
+├── http.rs
+├── identity.rs
 ├── lib.rs
 ├── main.rs
+├── project.rs
 └── registry.rs
 ```
 
@@ -516,8 +487,6 @@ yarn dist                 # Bundles Upstream into an installable package
 
 yarn generate:colors      # Update color CSS variables in public/colors.css from
                           # colors.js
-
-yarn graphiql             # Open GraphiQL with explorer extension in browser
 
 yarn release              # Start a two-step process to cut a new release, for more
                           # details have a look at ../DEVELOPMENT.md
@@ -648,12 +617,8 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
-[ge]: https://github.com/OneGraph/graphiql-explorer
-[gs]: https://github.com/OneGraph/graphiql-with-extensions
-[gq]: https://graphql.org/
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
-[ju]: https://github.com/graphql-rust/juniper
 [ls]: https://github.com/okonet/lint-staged
 [pr]: https://prettier.io
 [rl]: https://github.com/radicle-dev/radicle-link

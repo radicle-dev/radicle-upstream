@@ -1501,33 +1501,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "juniper"
-version = "0.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f662ba51e2fbc3d6dd1ca66be70b44963606a34473156abddcb0351fc6caa668"
-dependencies = [
- "chrono",
- "fnv",
- "indexmap",
- "juniper_codegen",
- "serde",
- "serde_derive",
- "url 2.1.1",
- "uuid",
-]
-
-[[package]]
-name = "juniper_codegen"
-version = "0.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d40af234d8e971a9d7dda93ffbcc8a44a93f17e69e3067f72ce7a6894c41d51b"
-dependencies = [
- "proc-macro2 1.0.10",
- "quote 1.0.3",
- "syn 1.0.17",
-]
-
-[[package]]
 name = "keccak"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2569,9 +2542,6 @@ dependencies = [
  "directories",
  "futures 0.3.4",
  "hex",
- "indexmap",
- "juniper",
- "juniper_codegen",
  "kv",
  "librad",
  "log 0.4.8",
@@ -4347,12 +4317,6 @@ name = "utf-8"
 version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05e42f7c18b8f902290b009cde6d651262f956c98bc51bca4cd1d511c9cd85c7"
-
-[[package]]
-name = "uuid"
-version = "0.7.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "90dbc611eb48397705a6b0f6e917da23ae517e4d127123d2cf7674206627d32a"
 
 [[package]]
 name = "vcpkg"

@@ -1,8 +1,5 @@
 <script>
-  import ApolloClient from "apollo-boost";
-  import { InMemoryCache } from "apollo-cache-inmemory";
   import Router, { push, location } from "svelte-spa-router";
-  import { setClient } from "svelte-apollo";
 
   import { initializeHotkeys } from "./lib/hotkeys.js";
   import * as path from "./lib/path.js";
@@ -26,13 +23,6 @@
   import CreateIdentity from "./Screen/IdentityCreation.svelte";
 
   initializeHotkeys();
-
-  const client = new ApolloClient({
-    uri: "http://127.0.0.1:8080/graphql",
-    cache: new InMemoryCache()
-  });
-
-  setClient(client);
 
   $: switch ($session.status) {
     case remote.Status.NotAsked:
