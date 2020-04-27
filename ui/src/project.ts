@@ -3,6 +3,7 @@ import { Readable, writable } from "svelte/store";
 import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
+import * as transaction from "./transaction";
 
 // TYPES.
 export interface Metadata {
@@ -59,6 +60,11 @@ interface CreateInput {
   path: string;
 }
 
+interface RegisterInput {
+  orgId: string;
+  projectName: string;
+}
+
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Create:
@@ -101,6 +107,22 @@ export const create = (
   })
     .then(store.success)
     .catch(store.error);
+
+  return store.readable;
+}
+
+export const register = (
+  orgId: string,
+  projectName: string,
+): Readable<remote.Data<transaction.Transaction>> => {
+  const store = remote.createStore<transaction.Transaction>();
+
+  api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
+    orgId,
+    projectName,
+  })
+    .then(store.success)
+    .catch(store.error)
 
   return store.readable;
 }

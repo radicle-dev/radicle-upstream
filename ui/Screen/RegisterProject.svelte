@@ -1,10 +1,8 @@
 <script>
-  import { gql } from "apollo-boost";
-  import { getClient, mutate } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
   import { showNotification } from "../store/notification.js";
-  import { projectNameStore } from "../src/project.ts";
+  import { projectNameStore, register } from "../src/project.ts";
 
   import { Title } from "../DesignSystem/Primitive";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
@@ -31,37 +29,9 @@
     step -= 1;
   };
 
-  const client = getClient();
-
-  const REGISTER_PROJECT = gql`
-    mutation($orgId: String!, $projectName: String!) {
-      registerProject(orgId: $orgId, projectName: $projectName) {
-        id
-        messages {
-          ... on ProjectRegistrationMessage {
-            projectName
-            orgId
-          }
-        }
-        state {
-          ... on Applied {
-            block
-          }
-        }
-        timestamp
-      }
-    }
-  `;
-
   const registerProject = async () => {
     try {
-      await mutate(client, {
-        mutation: REGISTER_PROJECT,
-        variables: {
-          projectName: projectName,
-          orgId: orgId
-        }
-      });
+      await register(orgId, projectName);
     } catch (error) {
       showNotification({
         text: `Could not register project: ${error}`,
