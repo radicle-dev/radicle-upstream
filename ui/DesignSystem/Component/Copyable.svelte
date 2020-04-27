@@ -18,7 +18,7 @@
   }
 </style>
 
-<div class="container" on:click={copy}>
+<div class="container" on:click|stopPropagation={copy}>
   <span bind:this={slotContent}>
     <slot />
   </span>
