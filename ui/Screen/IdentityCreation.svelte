@@ -43,11 +43,15 @@
         returnToWelcomeStep();
         return;
       case steps.SUCCESS:
-        session.fetch();
         replace(path.profileProjects());
         return;
     }
   };
+
+  // Refetch the session, once we created the identity.
+  $: if (currentStep === steps.SUCCESS) {
+    session.fetch();
+  }
 </script>
 
 <style>
