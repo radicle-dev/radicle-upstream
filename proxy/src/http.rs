@@ -19,6 +19,7 @@ mod project;
 mod session;
 mod source;
 mod transaction;
+mod user;
 
 /// Main entry point for HTTP API.
 pub fn routes(
@@ -38,11 +39,14 @@ pub fn routes(
             .or(project::filters(
                 Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
                 Arc::<RwLock<registry::Registry>>::clone(&registry),
-                subscriptions,
+                subscriptions.clone(),
             ))
             .or(session::get_filter(store))
             .or(source::routes(librad_paths))
-            .or(transaction::filters(registry)),
+            .or(transaction::filters(
+                Arc::<RwLock<registry::Registry>>::clone(&registry),
+            ))
+            .or(user::routes(registry, subscriptions)),
     );
     // let docs = path("docs").and(doc::filters(&api));
     let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));

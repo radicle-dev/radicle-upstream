@@ -228,7 +228,7 @@ fn tree_filter(
         .and_then(handler::tree)
 }
 
-/// Source handlers for conversion beetween core domain and http request fullfilment.
+/// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use librad::paths::Paths;
     use std::sync::Arc;

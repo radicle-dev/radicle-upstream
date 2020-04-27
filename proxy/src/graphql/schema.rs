@@ -1,19 +1,15 @@
 use hex::ToHex;
 use std::convert::From;
 use std::convert::TryFrom;
-use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
 use librad::paths::Paths;
-use librad::surf;
 use librad::surf::git::git2;
-use radicle_registry_client::{ed25519, CryptoPair as _};
+use radicle_registry_client::ed25519;
 
-use crate::avatar;
 use crate::coco;
 use crate::error;
-use crate::identity;
 use crate::project;
 use crate::registry;
 use crate::session;
@@ -63,117 +59,7 @@ pub struct Mutation;
     Context = Context,
     name = "UpstreamMutation",
 )]
-impl Mutation {
-    fn create_identity(
-        ctx: &Context,
-        handle: String,
-        display_name: Option<String>,
-        avatar_url: Option<String>,
-    ) -> Result<identity::Identity, error::Error> {
-        let store = futures::executor::block_on(ctx.store.read());
-
-        if let Some(identity) = session::get(&store)?.identity {
-            return Err(error::Error::IdentityExists(identity.id));
-        }
-
-        let id = identity::create(handle, display_name, avatar_url)?;
-
-        session::set(
-            &store,
-            session::Session {
-                identity: Some(id.clone()),
-            },
-        )?;
-
-        Ok(id)
-    }
-
-    fn create_project(
-        ctx: &Context,
-        metadata: ProjectMetadataInput,
-        path: String,
-        publish: bool,
-    ) -> Result<project::Project, error::Error> {
-        if surf::git::git2::Repository::open(path.clone()).is_err() {
-            coco::init_repo(path.clone())?;
-        };
-
-        let (id, meta) = coco::init_project(
-            &futures::executor::block_on(ctx.librad_paths.read()),
-            &path,
-            &metadata.name,
-            &metadata.description,
-            &metadata.default_branch,
-        )?;
-
-        Ok(project::Project {
-            id: librad::project::ProjectId::from(id),
-            metadata: meta.into(),
-            registration: None,
-            stats: project::Stats {
-                branches: 11,
-                commits: 267,
-                contributors: 8,
-            },
-        })
-    }
-
-    fn register_project(
-        ctx: &Context,
-        project_name: String,
-        org_id: String,
-        maybe_librad_id_input: Option<juniper::ID>,
-    ) -> Result<registry::Transaction, error::Error> {
-        let maybe_librad_id = maybe_librad_id_input.map(|id| {
-            librad::project::ProjectId::from_str(&id.to_string())
-                .expect("unable to parse project id")
-        });
-
-        // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = ed25519::Pair::from_legacy_string("//Alice", None);
-        // TODO(xla): Use real fee defined by the user.
-        let fake_fee = 100;
-        // TODO(xla): Remove single-threaded executor once async/await lands in juniper:
-        // https://github.com/graphql-rust/juniper/pull/497
-        futures::executor::block_on(
-            futures::executor::block_on(ctx.registry.write()).register_project(
-                &fake_pair,
-                project_name,
-                org_id,
-                maybe_librad_id,
-                fake_fee,
-            ),
-        )
-    }
-
-    fn register_user(
-        ctx: &Context,
-        handle: juniper::ID,
-        id: juniper::ID,
-    ) -> Result<registry::Transaction, error::Error> {
-        // TODO(xla): Get keypair from persistent storage.
-        let fake_pair =
-            ed25519::Pair::from_legacy_string(&format!("//{}", handle.to_string()), None);
-
-        // Give new account some dough so we can perform transactions.
-        futures::executor::block_on(
-            futures::executor::block_on(ctx.registry.read())
-                .prepay_account(fake_pair.public(), 1000),
-        )?;
-
-        // TODO(xla): Use real fee defined by the user.
-        let fee = 100;
-
-        futures::executor::block_on(
-            futures::executor::block_on(ctx.registry.write()).register_user(
-                &fake_pair,
-                handle.to_string(),
-                id.to_string(),
-                fee,
-            ),
-        )
-    }
-}
+impl Mutation {}
 
 /// Encapsulates read paths in API.
 pub struct Query;
@@ -185,102 +71,6 @@ pub struct Query;
 impl Query {
     fn apiVersion() -> &str {
         "1.0"
-    }
-
-    fn avatar(handle: juniper::ID, usage: AvatarUsage) -> Result<avatar::Avatar, error::Error> {
-        Ok(avatar::Avatar::from(
-            &handle.to_string(),
-            match usage {
-                AvatarUsage::Any => avatar::Usage::Any,
-                AvatarUsage::Identity => avatar::Usage::Identity,
-                AvatarUsage::Org => avatar::Usage::Org,
-            },
-        ))
-    }
-
-    fn project(ctx: &Context, id: juniper::ID) -> Result<project::Project, error::Error> {
-        let meta = coco::get_project_meta(
-            &futures::executor::block_on(ctx.librad_paths.read()),
-            &id.to_string(),
-        )?;
-
-        Ok(project::Project {
-            id: librad::project::ProjectId::from_str(&id.to_string())?,
-            metadata: meta.into(),
-            registration: None,
-            stats: project::Stats {
-                branches: 11,
-                commits: 267,
-                contributors: 8,
-            },
-        })
-    }
-
-    fn projects(ctx: &Context) -> Result<Vec<project::Project>, error::Error> {
-        let projects = coco::list_projects(&futures::executor::block_on(ctx.librad_paths.read()))
-            .into_iter()
-            .map(|(id, meta)| project::Project {
-                id,
-                metadata: meta.into(),
-                registration: None,
-                stats: project::Stats {
-                    branches: 11,
-                    commits: 267,
-                    contributors: 8,
-                },
-            })
-            .collect::<Vec<project::Project>>();
-
-        Ok(projects)
-    }
-
-    fn list_registry_projects(ctx: &Context) -> Result<Vec<juniper::ID>, error::Error> {
-        let ids = futures::executor::block_on(
-            futures::executor::block_on(ctx.registry.read()).list_projects(),
-        )?;
-
-        Ok(ids
-            .iter()
-            .map(|id| juniper::ID::from(id.0.to_string()))
-            .collect::<Vec<juniper::ID>>())
-    }
-
-    fn list_transactions(
-        ctx: &Context,
-        ids: Vec<juniper::ID>,
-    ) -> Result<ListTransactions, error::Error> {
-        let tx_ids = ids
-            .iter()
-            .map(|id| {
-                radicle_registry_client::TxHash::from_str(&id.to_string())
-                    .expect("unable to get hash from string")
-            })
-            .collect();
-
-        Ok(ListTransactions {
-            transactions: futures::executor::block_on(
-                futures::executor::block_on(ctx.registry.read()).list_transactions(tx_ids),
-            )?,
-            thresholds: registry::Registry::thresholds(),
-        })
-    }
-
-    fn identity(
-        _ctx: &Context,
-        id: juniper::ID,
-    ) -> Result<Option<identity::Identity>, error::Error> {
-        identity::get(id.to_string().as_ref())
-    }
-
-    fn session(ctx: &Context) -> Result<session::Session, error::Error> {
-        session::get(&futures::executor::block_on(ctx.store.read()))
-    }
-
-    fn user(ctx: &Context, handle: juniper::ID) -> Result<Option<juniper::ID>, error::Error> {
-        Ok(futures::executor::block_on(
-            futures::executor::block_on(ctx.registry.read()).get_user(handle.to_string()),
-        )?
-        .map(juniper::ID::new))
     }
 }
 
@@ -366,7 +156,7 @@ impl ControlMutation {
             futures::executor::block_on(ctx.registry.write()).register_user(
                 &fake_pair,
                 handle.to_string(),
-                id.to_string(),
+                Some(id.to_string()),
                 fee,
             ),
         )
@@ -382,83 +172,6 @@ pub struct ControlQuery;
     description = "Queries to access raw proxy state.",
 )]
 impl ControlQuery {}
-
-#[juniper::object]
-impl avatar::Avatar {
-    fn background(&self) -> avatar::Color {
-        self.background
-    }
-
-    fn emoji(&self) -> String {
-        self.emoji.to_string()
-    }
-}
-
-#[juniper::object]
-impl avatar::Color {
-    fn r() -> i32 {
-        i32::from(self.r)
-    }
-
-    fn g() -> i32 {
-        i32::from(self.g)
-    }
-
-    fn b() -> i32 {
-        i32::from(self.b)
-    }
-}
-
-/// Application of the requested avatar.
-#[derive(GraphQLEnum)]
-pub enum AvatarUsage {
-    /// No specific use-case.
-    Any,
-    /// To be displayed for an [`identity::Identity`].
-    Identity,
-    /// To be displyed for an org.
-    Org,
-}
-
-#[juniper::object]
-impl identity::Identity {
-    fn id(&self) -> juniper::ID {
-        juniper::ID::new(&self.id)
-    }
-
-    fn shareable_entity_identifier(&self) -> juniper::ID {
-        juniper::ID::new(&self.shareable_entity_identifier)
-    }
-
-    fn metadata(&self) -> &identity::Metadata {
-        &self.metadata
-    }
-
-    fn registered(&self) -> Option<juniper::ID> {
-        self.registered
-            .as_ref()
-            .map(|r| juniper::ID::new(r.to_string()))
-    }
-
-    fn avatar_fallback(&self) -> avatar::Avatar {
-        self.avatar_fallback
-    }
-}
-
-#[juniper::object(name = "IdentityMetadata")]
-impl identity::Metadata {
-    fn avatar_url(&self) -> Option<&String> {
-        self.avatar_url.as_ref()
-    }
-
-    fn display_name(&self) -> Option<&String> {
-        self.display_name.as_ref()
-    }
-
-    fn handle(&self) -> &str {
-        &self.handle
-    }
-}
 
 /// Input object capturing the fields we need to create project metadata.
 #[derive(GraphQLInputObject)]
@@ -777,10 +490,3 @@ juniper::graphql_union!(TransactionState: () where Scalar = <S> |&self| {
         &Applied => match *self { TransactionState::Applied(ref a) => Some(a) },
     }
 });
-
-#[juniper::object]
-impl session::Session {
-    fn identity(&self) -> Option<&identity::Identity> {
-        self.identity.as_ref()
-    }
-}
