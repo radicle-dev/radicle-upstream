@@ -1,8 +1,15 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { pop } from "svelte-spa-router";
+  import validatejs from "validate.js";
 
-  import { Button, Flex, Title, Input } from "../../DesignSystem/Primitive";
+  import {
+    Button,
+    Flex,
+    Text,
+    Title,
+    Input
+  } from "../../DesignSystem/Primitive";
   import { Dropdown } from "../../DesignSystem/Component";
 
   import { projects } from "../../src/project.ts";
@@ -55,6 +62,56 @@
         };
       })) ||
     [];
+
+  const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
+  let validating = false;
+  let validations = false;
+
+  const validateProjectNameAvailability = async () => {
+    try {
+      // TODO(rudolfs): wait for #312 to land and fix this
+      // const present = await project.get(registrarId, projectName);
+      await new Promise(r => setTimeout(r, 500));
+      const present = Math.random() > 0.5;
+
+      if (present) {
+        validations = { projectName: ["Project name already taken"] };
+      }
+    } catch (error) {
+      validations = { projectName: [error] };
+    }
+  };
+
+  validatejs.options = {
+    fullMessages: false
+  };
+
+  const constraints = {
+    projectName: {
+      presence: {
+        message: "Project name is required",
+        allowEmpty: false
+      },
+      format: {
+        pattern: VALID_NAME_MATCH,
+        message: "Project name should match [a-z0-9][a-z0-9_-]+"
+      }
+    }
+  };
+
+  const validate = async () => {
+    validating = true;
+    validations = validatejs({ projectName: projectName }, constraints);
+
+    if (!validatejs.isEmpty(validations)) {
+      validating = false;
+    } else {
+      await validateProjectNameAvailability();
+      validating = false;
+    }
+  };
+
+  $: validate(projectName);
 </script>
 
 <style>
@@ -82,9 +139,18 @@
     placeholder="Project name*"
     style="width: 100%;"
     bind:value={projectName}
-    valid={true}
-    variant="project" />
+    valid={!(validations && validations.projectName)}
+    variant="project"
+    validationPending={validating} />
 </div>
+
+{#if validations && validations.projectName}
+  <div>
+    <Text style="color: var(--color-negative); text-align: left;">
+      {validations.projectName[0]}
+    </Text>
+  </div>
+{/if}
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
@@ -96,6 +162,7 @@
   </Button>
   <Button
     dataCy="next-button"
+    disabled={!projectName || validating || validations}
     on:click={() => {
       dispatch('next');
     }}
