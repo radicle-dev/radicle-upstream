@@ -40,8 +40,6 @@
   }
   select:focus {
     outline: none;
-    border: 1px solid
-      var(--focus-outline-color, var(--color-foreground-level-3));
   }
 
   select:disabled {
