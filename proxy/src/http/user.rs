@@ -21,6 +21,7 @@ pub fn routes(
 }
 
 /// Combination of all user filters.
+#[cfg(test)]
 fn filters(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,

@@ -1,6 +1,6 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-#![allow(dead_code)]
+#![allow(clippy::doc_markdown)]
 
 use librad::paths;
 use std::convert::Infallible;

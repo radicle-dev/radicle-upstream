@@ -27,6 +27,7 @@ pub fn routes(
 }
 
 /// Combination of all source filters.
+#[cfg(test)]
 fn filters(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -298,7 +299,7 @@ mod handler {
                 identity: identity::Identity {
                     id: format!("{}@123abcd.git", handle),
                     metadata: identity::Metadata {
-                        handle: handle.to_string(),
+                        handle: (*handle).to_string(),
                         display_name: None,
                         avatar_url: None,
                     },

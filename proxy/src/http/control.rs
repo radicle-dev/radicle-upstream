@@ -34,6 +34,7 @@ pub fn routes(
 }
 
 /// Combination of all control filters.
+#[allow(dead_code)]
 fn filters(
     librad_paths: Arc<RwLock<paths::Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
