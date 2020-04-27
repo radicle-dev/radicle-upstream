@@ -72,6 +72,7 @@
     cursor: pointer;
     border: 1px solid var(--color-foreground-level-3);
     overflow: hidden; /* hack to make inner option rounded corners */
+    z-index: 1;
   }
 
   .header {
