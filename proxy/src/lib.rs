@@ -1,4 +1,4 @@
-//! Proxy to serve a specialised `GraphQL` API to radicle-upstream.
+//! Proxy serving a specialized API to the Upstream UI..
 
 #![deny(missing_docs, unused_import_braces, unused_qualifications, warnings)]
 #![deny(
