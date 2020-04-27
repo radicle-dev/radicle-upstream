@@ -1,5 +1,3 @@
-import { writable } from "svelte/store";
-
 import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
@@ -23,8 +21,6 @@ export const project = projectStore.readable;
 
 const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
-
-export const projectNameStore = writable(null);
 
 const registrationStore = remote.createStore<transaction.Transaction>();
 export const registration = registrationStore.readable;

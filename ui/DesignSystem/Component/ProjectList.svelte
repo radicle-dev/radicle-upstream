@@ -1,18 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
-
   import ProjectCard from "./ProjectCard.svelte";
-  import * as remote from "../../src/remote.ts";
-  import { session } from "../../src/session.ts";
 
-  // TODO(rudolfs): how do we make sure that this gets loaded before we render
-  // the component?
-  let registrarId = null;
-
-  if ($session.status === remote.Status.Success) {
-    registrarId = $session.data.identity.id;
-  }
-
+  export let registrarId = null;
   export let projects = null;
 
   const dispatch = createEventDispatcher();
@@ -51,6 +41,7 @@
       class="project-card">
       <ProjectCard
         title={project.metadata.name}
+        projectId={project.id}
         {registrarId}
         description={project.metadata.description}
         isRegistered={false}
