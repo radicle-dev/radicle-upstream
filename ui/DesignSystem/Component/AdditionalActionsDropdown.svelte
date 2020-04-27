@@ -39,8 +39,8 @@
 <style>
   .container {
     position: relative;
-    height: 36px;
-    width: 36px;
+    height: 40px;
+    width: 40px;
   }
 
   button {
@@ -53,8 +53,15 @@
     outline-style: none;
   }
 
+  button :global(svg) {
+    fill: var(--color-foreground-level-6);
+  }
+  button:active :global(svg) {
+    fill: var(--color-foreground-level-5);
+  }
+
   button:hover {
-    background-color: var(--color-foreground-level-1);
+    background-color: var(--color-foreground-level-2);
   }
 
   .modal {
