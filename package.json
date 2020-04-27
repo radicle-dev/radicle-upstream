@@ -77,7 +77,7 @@
     "wait-on": "^4.0.1"
   },
   "scripts": {
-    "start": "run-p --race svelte:watch proxy:start graphiql:serve electron:start",
+    "start": "run-p --race svelte:watch proxy:start electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' run-p --race proxy:start:test test:run",
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test cypress:open",
@@ -91,8 +91,6 @@
     "proxy:build:release": "cd proxy && cargo build --release --all-features --all-targets",
     "proxy:start": "cd proxy && cargo run -- --registry=emulator",
     "proxy:start:test": "cd proxy && cargo run -- --registry=emulator --test",
-    "graphiql": "open http://localhost:5000",
-    "graphiql:serve": "yarn sirv ./graphiql",
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
     "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js",
