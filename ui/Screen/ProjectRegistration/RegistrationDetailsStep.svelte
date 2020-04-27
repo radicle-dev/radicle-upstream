@@ -21,6 +21,7 @@
 
   export let projectId = null;
   export let registrarId = null;
+  export let registrarHandle = null;
   export let projectName = null;
 
   $: identity =
@@ -62,6 +63,10 @@
         };
       })) ||
     [];
+
+  $: registrarHandle = registrarDropdownOptions.find(option => {
+    return option.value === registrarId;
+  }).avatarProps.title;
 
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
   let validating = false;

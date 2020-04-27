@@ -9,6 +9,7 @@
 
   let projectId = params.projectId || null;
   let registrarId = params.registrarId || null;
+  let registrarHandle = null;
   let projectName = null;
 
   const steps = {
@@ -52,11 +53,12 @@
           bind:projectId
           bind:registrarId
           bind:projectName
+          bind:registrarHandle
           on:next={() => {
             nextStep();
           }} />
       {:else}
-        <TransactionSummaryStep {projectId} {registrarId} {projectName} />
+        <TransactionSummaryStep {projectId} {registrarHandle} {projectName} />
       {/if}
     </div>
   </div>

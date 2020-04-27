@@ -11,12 +11,12 @@
   import { Transaction } from "../../DesignSystem/Component";
 
   export let projectId = null;
-  export let registrarId = null;
+  export let registrarHandle = null;
   export let projectName = null;
   export let projectDescription = null;
 
   const onSubmitTransaction = () => {
-    project.register(registrarId, projectName, projectId);
+    project.register(registrarHandle, projectName, projectId);
 
     pop();
   };
@@ -35,7 +35,7 @@
       {
         type: transaction.MessageType.ProjectRegistration,
         cocoId: projectId,
-        orgId: registrarId,
+        orgId: registrarHandle,
         projectName: projectName,
         projectDescription: projectDescription
       }
