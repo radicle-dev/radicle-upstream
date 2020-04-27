@@ -4,10 +4,7 @@ context("user registration", () => {
       cy.createIdentity();
       cy.visit("./public/index.html");
       cy.get('[data-cy="profile-context-menu"]').click();
-      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click({
-        // TODO(rudolfs): remove this once #246 is fixed
-        force: true
-      });
+      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();
     });
 
     // TODO(merle): Replace opening via hotkey
@@ -48,10 +45,7 @@ context("user registration", () => {
       cy.createIdentity();
       cy.visit("./public/index.html");
       cy.get('[data-cy="profile-context-menu"]').click();
-      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click({
-        // TODO(rudolfs): remove this once #246 is fixed
-        force: true
-      });
+      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();
     });
 
     context("handle", () => {
