@@ -17,7 +17,7 @@ pub fn routes(
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("users")
-        .and(get_filter(Arc::clone(&registry)).or(register_filter(registry, subscriptions)))
+        .and(register_filter(Arc::clone(&registry), subscriptions).or(get_filter(registry)))
 }
 
 /// Combination of all user filters.
@@ -46,13 +46,6 @@ fn get_filter(
                 document::body(registry::User::document()).mime("application/json"),
             )
             .description("User with the given id"),
-        ))
-        .and(document::document(
-            document::response(
-                404,
-                document::body(registry::User::document()).mime("application/json"),
-            )
-            .description("User not found"),
         ))
         .and_then(handler::get)
 }
@@ -86,7 +79,7 @@ mod handler {
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
-    use warp::{reject, reply, Rejection, Reply};
+    use warp::{reply, Rejection, Reply};
 
     use crate::notification;
     use crate::registry;
@@ -97,11 +90,6 @@ mod handler {
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let user = registry.read().await.get_user(handle).await?;
-
-        if user.is_none() {
-            return Err(reject::not_found());
-        }
-
         Ok(reply::json(&user))
     }
 
@@ -158,7 +146,10 @@ impl ToDocumentedType for registry::User {
                 .example("cloudhead@123abcd.git")
                 .nullable(true),
         );
-        document::DocumentedType::from(props).description("Input for Uesr registration")
+
+        document::DocumentedType::from(props)
+            .description("Input for Uesr registration")
+            .nullable(true)
     }
 }
 

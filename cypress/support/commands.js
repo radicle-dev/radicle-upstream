@@ -4,7 +4,6 @@ import { gql } from "apollo-boost";
 const controlClient = new ApolloClient({
   uri: "http://localhost:8080/control"
 });
-const apiClient = new ApolloClient({ uri: "http://localhost:8080/graphql" });
 
 Cypress.Commands.add("nukeCocoState", () => {
   console.log("Nuking CoCo state");
@@ -113,38 +112,16 @@ Cypress.Commands.add(
     handle = "secretariat",
     displayName = "Christopher Chenery",
     avatarUrl = null
-  ) => {
-    apiClient.mutate({
-      variables: {
-        handle: handle,
-        displayName: displayName,
-        avatarUrl: avatarUrl
+  ) =>
+    fetch("http://localhost:8080/v1/identities", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
       },
-      mutation: gql`
-        mutation($handle: String!, $displayName: String, $avatarUrl: String) {
-          createIdentity(
-            handle: $handle
-            displayName: $displayName
-            avatarUrl: $avatarUrl
-          ) {
-            id
-            shareableEntityIdentifier
-            avatarFallback {
-              emoji
-              background {
-                r
-                g
-                b
-              }
-            }
-            metadata {
-              handle
-              displayName
-              avatarUrl
-            }
-          }
-        }
-      `
-    });
-  }
+      body: JSON.stringify({
+        handle,
+        displayName,
+        avatarUrl
+      })
+    })
 );

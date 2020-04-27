@@ -114,17 +114,11 @@ export const create = (
 export const register = (
   orgId: string,
   projectName: string,
-): Readable<remote.Data<transaction.Transaction>> => {
-  const store = remote.createStore<transaction.Transaction>();
-
-  api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
+): Promise<transaction.Transaction> => {
+  return api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
     orgId,
     projectName,
-  })
-    .then(store.success)
-    .catch(store.error)
-
-  return store.readable;
+  });
 }
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
