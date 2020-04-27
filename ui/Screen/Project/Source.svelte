@@ -3,18 +3,19 @@
 
   import { BLOB, TREE } from "../../../native/types.js";
   import * as path from "../../lib/path.js";
-  import { project } from "../../src/project.ts";
+  import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
   import {
     currentPath,
     currentRevision,
     fetchRevisions,
-    object,
-    revisions,
+    object as objectStore,
+    revisions as revisionsStore,
     updateParams
   } from "../../src/source.ts";
 
   import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { Remote } from "../../DesignSystem/Component";
 
   import FileList from "../../DesignSystem/Component/SourceBrowser/FileList.svelte";
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
@@ -33,8 +34,8 @@
     });
   };
 
-  $: if ($project.status === remote.Status.Success) {
-    const { id, metadata } = $project.data;
+  $: if ($projectStore.status === remote.Status.Success) {
+    const { id, metadata } = $projectStore.data;
 
     fetchRevisions({ projectId: id });
     updateParams({
@@ -100,67 +101,65 @@
   }
 </style>
 
-{#if $project.status === remote.Status.Success}
+<Remote store={projectStore} let:data={project}>
   <div class="header">
-    <Title variant="big">{$project.data.metadata.name}</Title>
+    <Title variant="big">{project.metadata.name}</Title>
     <div class="project-id">
-      <Code>%{$project.data.id}</Code>
+      <Code>%{project.id}</Code>
     </div>
     <div class="description">
-      <Text>{$project.data.metadata.description}</Text>
+      <Text>{project.metadata.description}</Text>
     </div>
   </div>
 
   <div class="container">
     <div class="column-left">
-      {#if $revisions.status === remote.Status.Success}
+      <Remote store={revisionsStore} let:data={revisions}>
         <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
             currentRevision={$currentRevision}
-            revisions={$revisions.data}
-            on:select={event => updateRevision($project.data.id, event.detail)} />
+            {revisions}
+            on:select={event => updateRevision(project.id, event.detail)} />
         </div>
-      {/if}
+      </Remote>
 
       <div class="source-tree" data-cy="source-tree">
-        <Folder
-          projectId={$project.data.id}
-          name={$project.data.metadata.name} />
+        <Folder projectId={project.id} name={project.metadata.name} />
       </div>
     </div>
 
     <div class="column-right">
       <div class="repo-stats">
         <div>
-          <Stat icon={Icon.Commit} count={$project.data.stats.commits}>
+          <Stat icon={Icon.Commit} count={project.stats.commits}>
             &nbsp;Commits
           </Stat>
         </div>
         <div>
-          <Stat icon={Icon.Branch} count={$project.data.stats.branches}>
+          <Stat icon={Icon.Branch} count={project.stats.branches}>
             &nbsp;Branches
           </Stat>
         </div>
         <div>
-          <Stat icon={Icon.Member} count={$project.data.stats.contributors}>
+          <Stat icon={Icon.Member} count={project.stats.contributors}>
             &nbsp;Contributors
           </Stat>
         </div>
       </div>
-      {#if $object.status === remote.Status.Success}
-        {#if $object.data.info.objectType === BLOB}
+      <Remote store={objectStore} let:data={object}>
+        {#if object.info.objectType === BLOB}
           <FileSource
-            blob={$object.data}
+            blob={object}
             path={$currentPath}
-            projectId={$project.data.id} />
-        {:else if $object.data.info.objectType === TREE}
+            projectId={project.id} />
+        {:else if object.info.objectType === TREE}
           <FileList
-            projectId={$project.data.id}
-            tree={$object.data}
+            projectId={project.id}
+            tree={object}
             revision={$currentRevision} />
         {/if}
-      {/if}
+      </Remote>
     </div>
   </div>
-{/if}
+</Remote>

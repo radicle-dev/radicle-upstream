@@ -4,10 +4,11 @@
   import { fallback } from "../src/identity.ts";
   import * as remote from "../src/remote.ts";
   import { session } from "../src/session.ts";
-  import * as transaction from "../src/transaction.ts";
+  import { fetch, formatPayer, formatSubject } from "../src/transaction.ts";
 
   import {
     ModalLayout,
+    Remote,
     Transaction,
     TransactionStatusbar
   } from "../DesignSystem/Component";
@@ -24,7 +25,7 @@
     identity = $session.data.identity;
   }
 
-  const tx = transaction.fetch(params.id);
+  const store = fetch(params.id);
 </script>
 
 <style>
@@ -42,18 +43,18 @@
 
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
-    {#if $tx.status === remote.Status.Success}
+    <Remote {store} let:data={tx}>
       <!-- TODO(merle): Retrieve actual data for variant, progress & timestamp -->
       <TransactionStatusbar
         style="margin-bottom: 32px; margin-top: 96px;"
         variant="caution"
         progress={0}
-        time={$tx.data.timestamp} />
+        time={tx.timestamp} />
       <Transaction
-        transaction={$tx.data}
-        payer={transaction.formatPayer(identity)}
-        subject={transaction.formatSubject(identity, $tx.data.messages[0])} />
-    {/if}
+        transaction={tx}
+        payer={formatPayer(identity)}
+        subject={formatSubject(identity, tx.messages[0])} />
+    </Remote>
 
     <div class="button-row">
       <Button
