@@ -136,7 +136,7 @@ export const formatStake = (msg: Message): string => `${formatMessage(msg)} depo
 export const formatPayer = (identity: identity.Identity): object => {
   return {
     name: identity.metadata.displayName || identity.metadata.handle,
-    kind: "user",
+    variant: "user",
     avatarFallback: identity.avatarFallback,
     imageUrl: identity.metadata.avatarUrl
   };
@@ -165,7 +165,7 @@ export const formatSubject = (identity: identity.Identity, msg: Message): object
 
   return {
     name,
-    kind: "user",
+    variant: "user",
     avatarFallback: identity.avatarFallback,
     imageUrl: identity.metadata.avatarUrl
   };

@@ -20,12 +20,27 @@
 
     pop();
   };
+
+  const wallet = {
+    name: registrarHandle,
+    imageUrl: registrarImageUrl,
+    avatarFallback: registrarAvatarFallback,
+    variant: registrarVariant
+  };
+
+  const subject = {
+    name: `${registrarHandle  } / ${  projectName}`,
+    imageUrl: registrarImageUrl,
+    avatarFallback: registrarAvatarFallback,
+    variant: registrarVariant
+  };
+
+  const tx = {
+    messages: [{ type: transaction.MessageType.ProjectRegistration }]
+  };
 </script>
 
-<Transaction
-  payer={{ name: registrarHandle, imageUrl: registrarImageUrl, avatarFallback: registrarAvatarFallback, variant: registrarVariant }}
-  subject={{ name: 'subject' }}
-  transaction={{ messages: [{ type: transaction.MessageType.ProjectRegistration }] }} />
+<Transaction payer={wallet} {subject} transaction={tx} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
