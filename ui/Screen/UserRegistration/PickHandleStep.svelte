@@ -80,7 +80,6 @@
   dataCy="handle"
   avatarFallback={identity.avatarFallback}
   imageUrl={identity.metadata.avatarUrl}
-  style="--focus-outline-color: var(--color-primary)"
   placeholder="User handle"
   bind:value={handle}
   valid={!(validations && validations.handle)}
