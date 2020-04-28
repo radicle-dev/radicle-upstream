@@ -16,9 +16,6 @@ export const initializeHotkeys = () => {
   hotModal("shift+d", path.designSystemGuide());
   hotModal("shift+/", path.help());
 
-  // TODO(sarah): Remove temporary hotkey for org registration
-  hotModal("shift+o", path.orgRegistration());
-
   hotkeys("shift+c", () => {
     const currentTheme = document.documentElement.getAttribute("data-theme");
 
