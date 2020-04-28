@@ -99,17 +99,11 @@ const update = (msg: Msg): void => {
 export const create = (
   metadata: Metadata,
   path: string,
-): Readable<remote.Data<Project>> => {
-  const store = remote.createStore<Project>();
-
-  api.post<CreateInput, Project>(`projects`, {
+): Promise<Project> => {
+  return api.post<CreateInput, Project>(`projects`, {
     metadata,
     path,
   })
-    .then(store.success)
-    .catch(store.error);
-
-  return store.readable;
 }
 
 export const register = (

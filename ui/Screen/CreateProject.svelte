@@ -154,7 +154,11 @@
 
     try {
       response = await create(
-        { name, description, defaultBranch },
+        {
+          name,
+          description,
+          defaultBranch
+        },
         isNew ? newRepositoryPath : existingRepositoryPath
       );
 
