@@ -1,5 +1,5 @@
 import validatejs from "validate.js"
-import { derived, writable, Writable, Readable, get } from "svelte/store"
+import { writable, Writable, Readable, get } from "svelte/store"
 
 export enum ValidationStatus {
   NotStarted = "NOT_STARTED",
@@ -18,59 +18,55 @@ type ValidationState =
 
 interface ValidationStore extends Readable<ValidationState> {
   validate: (input: string) => void;
+  updateInput: (input: string) => void;
 }
 
-const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
-const constraints = {
-  name: {
-    presence: {
-      message: `Org name is required`,
-      allowEmpty: false
-    },
-    format: {
-      pattern: VALID_NAME_MATCH,
-      message: `Org name should match [a-z0-9][a-z0-9_-]+`
-    }
-  }
-};
 
-export const inputStore = writable("")
-
-
-export const createValidationStore = (input?: string): ValidationStore => {
+export const createValidationStore = (constraints: any): ValidationStore => {
   const initialState = { status: ValidationStatus.NotStarted } as ValidationState
   const internalStore = writable(initialState)
   const { subscribe, update } = internalStore
+  let inputStore: Writable<string> | undefined = undefined
 
-  const delay = (duration: number) =>
+  const delay = (duration: number): Promise<void> =>
     new Promise(resolve => setTimeout(resolve, duration))
 
+  const validate = async (input: string): Promise<void> => {
+    // Always start with Pending
+    update(() => { return { status: ValidationStatus.Pending, input: input } })
 
-
-  const validate = async (input: string) => {
-    update(store => { return { status: ValidationStatus.Pending, input: input } })
-    const errors = validatejs({ name: input }, constraints, { fullMessages: false })
+    // Check for errors
+    const errors = validatejs({ input: input }, { input: constraints }, { fullMessages: false })
 
     if (errors) {
-      update(store => { return { status: ValidationStatus.Error, message: errors.name[0], input: input } })
+      update(() => { return { status: ValidationStatus.Error, message: errors.input[0], input: input } })
       return
     } else {
-      update(store => { return { status: ValidationStatus.Pending, input: input } })
-      await delay(1000)
-      update((store) => {
-        return { status: ValidationStatus.Success, input: input }
-      })
+      // Check remote
+      update(() => { return { status: ValidationStatus.Pending, input: input } })
+      await delay(1000).then(() =>
+        update((store) => {
+          // If the input has changed since this request was fired off, don't update
+          if (get(inputStore) !== input) return store
+          return { status: ValidationStatus.Success, input: input }
+        })
+      )
     }
   }
 
-  inputStore.subscribe((input: string) => {
-    console.log("validating ", input)
-    validate(input)
-  })
+  const updateInput = (input: string): void => {
+    if (!inputStore) {
+      inputStore = writable(input)
+      inputStore.subscribe((input: string) => { const valid = validate(input) })
+      return
+    }
+    inputStore.set(input)
+  }
 
   return {
     subscribe,
-    validate
+    validate,
+    updateInput
   }
 }
 

@@ -4,6 +4,7 @@
   import {
     RegistrationFlowState,
     transaction,
+    nameConstraints,
     subject,
     payer,
     org
@@ -11,8 +12,7 @@
 
   import {
     ValidationStatus,
-    createValidationStore,
-    inputStore
+    createValidationStore
   } from "../src/validation.ts";
 
   import {
@@ -26,11 +26,13 @@
   let orgName;
   let state = RegistrationFlowState.NameSelection;
 
-  const validation = createValidationStore();
+  const validation = createValidationStore(nameConstraints);
+  let validating = false;
 
   const next = () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
+        validating = true;
         if ($validation.status === ValidationStatus.Success)
           state = RegistrationFlowState.TransactionConfirmation;
         break;
@@ -60,8 +62,11 @@
   };
 
   $: {
+    // Start validating once the user enters something for the first time
+    if (orgName && orgName.length > 0) validating = true;
+
     subject.name = orgName;
-    inputStore.set(orgName);
+    if (validating) validation.updateInput(orgName);
   }
 </script>
 
