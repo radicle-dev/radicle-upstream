@@ -53,8 +53,8 @@
           bind:projectId
           bind:registrarId
           bind:projectName
-          bind:registrarHandle
-          on:next={() => {
+          on:next={event => {
+            registrarHandle = event.detail.registrarHandle;
             nextStep();
           }} />
       {:else}

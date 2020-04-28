@@ -21,8 +21,17 @@
 
   export let projectId = null;
   export let registrarId = null;
-  export let registrarHandle = null;
   export let projectName = null;
+
+  const next = () => {
+    dispatch("next", { registrarHandle: registrarHandle });
+  };
+
+  const registrarHandle = () => {
+    return registrarDropdownOptions.find(option => {
+      return option.value === registrarId;
+    }).avatarProps.title;
+  };
 
   $: identity =
     ($session.status === remote.Status.Success && [
@@ -63,10 +72,6 @@
         };
       })) ||
     [];
-
-  $: registrarHandle = registrarDropdownOptions.find(option => {
-    return option.value === registrarId;
-  }).avatarProps.title;
 
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
   let validating = false;
@@ -165,12 +170,11 @@
     style="margin-right: 24px;">
     Cancel
   </Button>
+
   <Button
     dataCy="next-button"
     disabled={!projectName || validating || validations}
-    on:click={() => {
-      dispatch('next');
-    }}
+    on:click={next}
     variant="primary">
     Next
   </Button>
