@@ -218,7 +218,7 @@ export const findReadme = (tree: Tree): string | null => {
     if (entry.info.objectType != ObjectType.Blob) {
       continue;
     }
-    if (/readme/i.test(entry.path)) {
+    if (/^readme/i.test(entry.path)) {
       return entry.path;
     }
   }
