@@ -71,9 +71,11 @@
   });
 
   // Pre-select existing project name as the to-be-registered name
-  $: projectName = projectDropdownOptions.find(option => {
-    return option.value === projectId;
-  }).textProps.title;
+  $: projectName =
+    projectId &&
+    projectDropdownOptions.find(option => {
+      return option.value === projectId;
+    }).textProps.title;
 
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
 
@@ -100,6 +102,9 @@
   };
 
   const constraints = {
+    projectId: {
+      presence: { message: "Choose a project to register", allowEmpty: false }
+    },
     projectName: {
       presence: {
         message: "Project name is required",
@@ -114,7 +119,10 @@
 
   const validate = async () => {
     validating = true;
-    validations = validatejs({ projectName: projectName }, constraints);
+    validations = validatejs(
+      { projectId: projectId, projectName: projectName },
+      constraints
+    );
 
     if (!validatejs.isEmpty(validations)) {
       validating = false;
@@ -124,7 +132,7 @@
     }
   };
 
-  $: validate(projectName);
+  $: validate(projectName, projectId);
 </script>
 
 <style>
@@ -133,10 +141,16 @@
     align-items: center;
     margin-bottom: 16px;
   }
+
+  .name-validation {
+    margin-left: 12px;
+  }
 </style>
 
 <Dropdown
   placeholder="Select project to register"
+  valid={!(validations && validations.projectId)}
+  validationMessage={validations && validations.projectId && validations.projectId[0]}
   bind:value={projectId}
   options={projectDropdownOptions}
   style="margin-bottom: 16px;" />
@@ -158,7 +172,7 @@
 </div>
 
 {#if validations && validations.projectName}
-  <div>
+  <div class="name-validation">
     <Text style="color: var(--color-negative); text-align: left;">
       {validations.projectName[0]}
     </Text>

@@ -6,6 +6,9 @@
 
   export let options = null;
   export let style = null;
+  export let valid = true;
+  export let validationMessage = null;
+  export let validationPending = false;
 
   let expanded = false;
 
@@ -83,12 +86,27 @@
     overflow: hidden; /* hack to make inner option corners rounded */
     z-index: 1;
   }
+
+  .validation-row {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+    margin-left: 12px;
+  }
+
+  .button.invalid {
+    box-shadow: 0 0 0 1px var(--color-negative);
+    border: 1px solid var(--color-negative);
+  }
 </style>
 
 <svelte:window on:click={hideMenu} />
 
 <div class="dropdown" {style}>
-  <div class="button" on:click|stopPropagation={toggleMenu}>
+  <div
+    class="button"
+    class:invalid={!valid}
+    on:click|stopPropagation={toggleMenu}>
     {#if value && optionByValue}
       <Option {...optionByValue} {disabled} />
     {:else}
@@ -108,4 +126,12 @@
         selected={value === option.value} />
     {/each}
   </div>
+
+  {#if !validationPending && !valid && validationMessage}
+    <div class="validation-row">
+      <Text style="color: var(--color-negative); text-align: left;">
+        {validationMessage}
+      </Text>
+    </div>
+  {/if}
 </div>
