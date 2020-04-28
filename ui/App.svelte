@@ -66,7 +66,7 @@
     "/network": Network,
     "/profile": Profile,
     "/profile/*": Profile,
-    "/orgs/:id/register": OrgRegistration,
+    "/orgs/register": OrgRegistration,
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
     "/projects/new": CreateProject,

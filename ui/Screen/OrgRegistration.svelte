@@ -32,7 +32,6 @@
   const next = () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
-        validating = true;
         if ($validation.status === ValidationStatus.Success)
           state = RegistrationFlowState.TransactionConfirmation;
         break;
@@ -55,9 +54,9 @@
   $: {
     // Start validating once the user enters something for the first time
     if (orgName && orgName.length > 0) validating = true;
+    if (validating) validation.updateInput(orgName);
 
     subject.name = orgName;
-    if (validating) validation.updateInput(orgName);
   }
 
   $: submitLabel =
