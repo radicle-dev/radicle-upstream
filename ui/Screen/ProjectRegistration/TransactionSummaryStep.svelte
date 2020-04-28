@@ -29,7 +29,7 @@
   };
 
   const subject = {
-    name: `${registrarHandle  } / ${  projectName}`,
+    name: `${registrarHandle} / ${projectName}`,
     imageUrl: registrarImageUrl,
     avatarFallback: registrarAvatarFallback,
     variant: registrarVariant
