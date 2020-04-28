@@ -16,11 +16,7 @@ pub fn filters(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter(Arc::<RwLock<registry::Registry>>::clone(&registry))
-        .or(list_filter(Arc::<RwLock<registry::Registry>>::clone(
-            &registry,
-        )))
-        .or(register_filter(registry, subscriptions))
+    get_filter(Arc::clone(&registry)).or(register_filter(registry, subscriptions))
 }
 
 /// `POST /orgs`
@@ -77,31 +73,6 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// `GET /orgs`
-fn list_filter(
-    registry: Arc<RwLock<registry::Registry>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("orgs")
-        .and(warp::get())
-        .and(super::with_registry(registry))
-        .and(warp::body::json())
-        .and(document::document(document::description(
-            "List orgs by member id",
-        )))
-        .and(document::document(document::tag("Org")))
-        .and(document::document(
-            document::body(ListInput::document()).mime("application/json"),
-        ))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(registry::Org::document()).mime("application/json"),
-            )
-            .description("Successful retrieval"),
-        ))
-        .and_then(handler::list)
-}
-
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
@@ -143,17 +114,6 @@ mod handler {
         let org = reg.get_org(id).await?;
 
         Ok(reply::json(&org))
-    }
-
-    /// List the orgs the given `id` is a member of.
-    pub async fn list(
-        registry: Arc<RwLock<registry::Registry>>,
-        input: super::ListInput,
-    ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
-        let orgs = reg.list_orgs(input.id).await?;
-
-        Ok(reply::json(&orgs))
     }
 }
 
@@ -207,33 +167,7 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
-/// Bundled input data for org list.
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ListInput {
-    /// Id of the User.
-    id: String,
-}
-
-impl ToDocumentedType for ListInput {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(1);
-        properties.insert(
-            "id".into(),
-            document::string()
-                .description("ID of the user")
-                .example("alice"),
-        );
-
-        document::DocumentedType::from(properties).description("Input for org list")
-    }
-}
-
-#[allow(
-    clippy::non_ascii_literal,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used
-)]
+#[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -254,10 +188,7 @@ mod test {
         )));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions,
-        );
+        let api = super::filters(Arc::clone(&registry), subscriptions);
 
         let res = request()
             .method("POST")
@@ -288,10 +219,7 @@ mod test {
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions,
-        );
+        let api = super::filters(Arc::clone(&registry), subscriptions);
 
         // Register the org
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -318,55 +246,6 @@ mod test {
                 id: "monadic".to_string(),
                 avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
             })
-        );
-    }
-
-    #[tokio::test]
-    async fn list() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
-        let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions,
-        );
-
-        // Register the user
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        registry
-            .write()
-            .await
-            .register_user(&alice, "alice".into(), "123abcd.git".into(), 100)
-            .await
-            .unwrap();
-
-        // Register the org
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        let fee: radicle_registry_client::Balance = 100;
-        registry
-            .write()
-            .await
-            .register_org(&alice, "monadic".to_string(), fee)
-            .await
-            .unwrap();
-
-        let res = request()
-            .method("GET")
-            .path("/orgs")
-            .json(&super::ListInput { id: "alice".into() })
-            .reply(&api)
-            .await;
-
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!([registry::Org {
-                id: "monadic".to_string(),
-                avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
-            }])
         );
     }
 }

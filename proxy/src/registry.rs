@@ -613,7 +613,7 @@ mod tests {
 
         // Register the user
         let user_registration = registry
-            .register_user(&alice, "alice".into(), "123abcd.git".into(), 100)
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
