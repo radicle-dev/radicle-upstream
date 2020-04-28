@@ -23,7 +23,7 @@
   export let orgs = null;
 
   const next = () => {
-    dispatch("next", { registrarHandle: registrarHandle });
+    dispatch("next", { registrarHandle: registrarHandle() });
   };
 
   const registrarHandle = () => {
