@@ -97,7 +97,7 @@ fn list_orgs_filter(
         .and(document::document(
             document::response(
                 200,
-                document::body(registry::Org::document()).mime("application/json"),
+                document::body(document::array(registry::Org::document())).mime("application/json"),
             )
             .description("Successful retrieval"),
         ))
