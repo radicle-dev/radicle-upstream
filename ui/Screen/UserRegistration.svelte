@@ -1,15 +1,14 @@
 <script>
-  import { gql } from "apollo-boost";
-  import { getClient, mutate } from "svelte-apollo";
   import { pop } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
   import { showNotification } from "../store/notification.js";
   import * as remote from "../src/remote.ts";
   import { session } from "../src/session.ts";
+  import * as user from "../src/user.ts";
 
-  import { Text, Title } from "../DesignSystem/Primitive";
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
+  import { Text, Title } from "../DesignSystem/Primitive";
 
   import PickHandleStep from "./UserRegistration/PickHandleStep.svelte";
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
@@ -37,29 +36,9 @@
     step -= 1;
   };
 
-  const client = getClient();
-  const REGISTER_USER = gql`
-    mutation($handle: ID!, $id: ID!) {
-      registerUser(handle: $handle, id: $id) {
-        messages {
-          ... on UserRegistrationMessage {
-            handle
-            id
-          }
-        }
-      }
-    }
-  `;
-
   const registerUser = async () => {
     try {
-      await mutate(client, {
-        mutation: REGISTER_USER,
-        variables: {
-          handle: handle,
-          id: id
-        }
-      });
+      await user.register(handle, id);
     } catch (error) {
       showNotification({
         text: `Could not register user: ${error}`,

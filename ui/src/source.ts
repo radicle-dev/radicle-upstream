@@ -1,8 +1,9 @@
 import { derived, writable, Readable } from 'svelte/store'
 
-import * as api from './api'
-import * as event from './event'
-import * as remote from './remote'
+import * as api from "./api"
+import * as event from "./event"
+import * as identity from "./identity";
+import * as remote from "./remote";
 
 import { mockChangeset } from '../lib/commitMocks'
 import { HIDDEN_BRANCHES } from "../config"
@@ -28,6 +29,7 @@ interface Commit {
   summary: string;
   changeset: object;
 }
+
 export enum ObjectType {
   Blob = 'BLOB',
   Tree = 'TREE'
@@ -61,10 +63,13 @@ interface Tree extends SourceObject {
 }
 
 // STATE
-interface Revisions {
+interface Revision {
+  user: identity.Identity;
   branches: string[];
   tags: string[];
 }
+
+type Revisions = Revision[];
 
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
@@ -132,12 +137,11 @@ const update = (msg: Msg): void => {
       api.get<Revisions>(
         `source/revisions/${msg.projectId}`
       )
-      .then(revisions => {
-        revisionsStore.success({
-          branches: filterBranches(revisions.branches),
-          tags: revisions.tags,
-        })
-      })
+      .then(revisions =>
+        revisionsStore.success(revisions.map(rev => {
+          return { ...rev, branches: filterBranches(rev.branches) }
+        }))
+      )
       .catch(revisionsStore.error);
       break;
 

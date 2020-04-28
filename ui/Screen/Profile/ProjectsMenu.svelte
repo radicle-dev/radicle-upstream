@@ -5,7 +5,6 @@
 </script>
 
 <Button
-  size="small"
   variant="transparent"
   icon={Icon.Plus}
   on:click={() => push(createProject())}>

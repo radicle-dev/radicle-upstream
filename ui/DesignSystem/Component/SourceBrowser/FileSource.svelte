@@ -16,15 +16,24 @@
     min-width: var(--content-min-width);
   }
 
-  header {
+  header .file-header {
     display: flex;
-    background-color: var(--color-foreground-level-1);
-    font-family: var(--typeface-mono-regular);
-    font-size: 14px;
-    height: 48px;
+    font-weight: 600;
+    font-size: 1rem;
+    height: 3rem;
     align-items: center;
     padding-left: 13px;
+    color: var(--color-foreground);
     border-bottom: 1px solid var(--color-foreground-level-3);
+  }
+
+  header .file-name {
+    margin-left: 0.5rem;
+  }
+
+  header .commit-header {
+    height: 3rem;
+    background-color: var(--color-secondary-level-1);
   }
 
   .line-numbers {
@@ -34,15 +43,19 @@
     color: var(--color-foreground-level-5);
     text-align: center;
     flex: 0 0 49px;
-    border-right: 1px solid var(--color-foreground-level-3);
     user-select: none;
+  }
+
+  .code,
+  .line-numbers {
+    padding: 0.75rem 0;
   }
 
   .code {
     font-family: var(--typeface-mono-regular);
     font-size: 14px;
-    padding-left: 8px;
-    overflow-x: scroll;
+    padding-left: 0.75rem;
+    overflow-x: auto;
   }
 
   .container {
@@ -50,18 +63,21 @@
   }
 </style>
 
-<CommitTeaser
-  {projectId}
-  user={{ username: blob.info.lastCommit.author.name, avatar: blob.info.lastCommit.author.avatar }}
-  commitMessage={blob.info.lastCommit.summary}
-  commitSha={blob.info.lastCommit.sha1}
-  timestamp={format(blob.info.lastCommit.committerTime * 1000)}
-  style="margin-bottom: 24px" />
-
 <div class="file-source" data-cy="file-source">
   <header>
-    <Icon.File />
-    {path}
+    <div class="file-header">
+      <Icon.File />
+      <span class="file-name">{path}</span>
+    </div>
+    <div class="commit-header">
+      <CommitTeaser
+        {projectId}
+        user={{ username: blob.info.lastCommit.author.name, avatar: blob.info.lastCommit.author.avatar }}
+        commitMessage={blob.info.lastCommit.summary}
+        commitSha={blob.info.lastCommit.sha1}
+        timestamp={format(blob.info.lastCommit.committerTime * 1000)}
+        style="height: 100%" />
+    </div>
   </header>
   <div class="container">
     {#if blob.binary}

@@ -1,6 +1,6 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-#![allow(dead_code)]
+#![allow(clippy::doc_markdown)]
 
 use librad::paths;
 use std::convert::Infallible;
@@ -10,6 +10,7 @@ use warp::{path, Filter, Reply};
 
 use crate::registry;
 
+mod control;
 mod doc;
 mod error;
 mod identity;
@@ -19,30 +20,41 @@ mod project;
 mod session;
 mod source;
 mod transaction;
+mod user;
 
 /// Main entry point for HTTP API.
 pub fn routes(
     librad_paths: Arc<RwLock<paths::Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
     store: Arc<RwLock<kv::Store>>,
+    enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
     let subscriptions = crate::notification::Subscriptions::default();
 
     let api = path("v1").and(
-        identity::filters(Arc::<RwLock<kv::Store>>::clone(&store))
-            .or(notification::filters(subscriptions.clone()))
-            .or(org::filters(
-                Arc::<RwLock<registry::Registry>>::clone(&registry),
-                subscriptions.clone(),
-            ))
-            .or(project::filters(
-                Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
-                Arc::<RwLock<registry::Registry>>::clone(&registry),
-                subscriptions,
-            ))
-            .or(session::get_filter(store))
-            .or(source::routes(librad_paths))
-            .or(transaction::filters(registry)),
+        control::routes(
+            enable_control,
+            Arc::clone(&librad_paths),
+            Arc::clone(&registry),
+            Arc::clone(&store),
+        )
+        .or(identity::filters(Arc::<RwLock<kv::Store>>::clone(&store)))
+        .or(notification::filters(subscriptions.clone()))
+        .or(org::filters(
+            Arc::<RwLock<registry::Registry>>::clone(&registry),
+            subscriptions.clone(),
+        ))
+        .or(project::filters(
+            Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
+            Arc::<RwLock<registry::Registry>>::clone(&registry),
+            subscriptions.clone(),
+        ))
+        .or(session::get_filter(store))
+        .or(source::routes(librad_paths))
+        .or(transaction::filters(
+            Arc::<RwLock<registry::Registry>>::clone(&registry),
+        ))
+        .or(user::routes(registry, subscriptions)),
     );
     // let docs = path("docs").and(doc::filters(&api));
     let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));

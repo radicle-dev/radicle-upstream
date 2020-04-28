@@ -6,7 +6,7 @@ use crate::avatar;
 use crate::error;
 
 /// The users personal identifying metadata and keys.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Identity {
     /// The librad id.
     pub id: String,
@@ -21,7 +21,7 @@ pub struct Identity {
 }
 
 /// User maintained information for an identity, which can evolve over time.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Metadata {
     /// Similar to a nickname, the users chosen short identifier.
     pub handle: String,

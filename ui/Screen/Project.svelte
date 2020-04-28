@@ -2,12 +2,12 @@
   import Router, { link, push } from "svelte-spa-router";
 
   import * as path from "../lib/path.js";
-  import { fetch, project } from "../src/project.ts";
-  import * as remote from "../src/remote.ts";
+  import { fetch, project as store } from "../src/project.ts";
 
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
+    Remote,
     SidebarLayout,
     Topbar,
     TrackToggle
@@ -87,16 +87,16 @@
 </script>
 
 <SidebarLayout
-  style="margin-top: calc(var(--topbar-height) + 33px)"
+  style="margin: calc(var(--topbar-height)) 0 0 0"
   dataCy="page-container">
-  {#if $project.status === remote.Status.Success}
+  <Remote {store} let:data={project}>
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.projectSource(params.id)} use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->
         <Breadcrumb
-          title={$project.data.metadata.name}
-          user={$project.data.registered}
-          org={$project.data.registered} />
+          title={project.metadata.name}
+          user={project.registered}
+          org={project.registered} />
       </a>
 
       <div slot="middle">
@@ -113,5 +113,5 @@
       </div>
     </Topbar>
     <Router {routes} />
-  {/if}
+  </Remote>
 </SidebarLayout>

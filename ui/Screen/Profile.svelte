@@ -2,18 +2,19 @@
   import Router, { link, push } from "svelte-spa-router";
 
   import * as path from "../lib/path.js";
-  import * as remote from "../src/remote.ts";
-  import { session } from "../src/session.ts";
+  import { session as store } from "../src/session.ts";
 
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
+    IdentityAvatar,
+    Remote,
     SidebarLayout,
-    Topbar,
-    IdentityAvatar
+    Topbar
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
+  import Onboard from "./Profile/Onboard.svelte";
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
   import Settings from "./Profile/Settings.svelte";
@@ -21,6 +22,7 @@
 
   const screenRoutes = {
     "/profile/": Projects,
+    "/profile/onboard/": Onboard,
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
     "/profile/settings": Settings,
@@ -78,31 +80,29 @@
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="profile-screen">
 
-  <Topbar style="position: fixed; top: 0;">
-    <a slot="left" href={path.profileProjects()} use:link>
-      <!-- TODO(xla): Handle other states -->
-      {#if $session.status === remote.Status.Success}
+  <Remote {store} let:data={session}>
+    <Topbar style="position: fixed; top: 0;">
+      <a slot="left" href={path.profileProjects()} use:link>
+        <!-- TODO(xla): Handle other states -->
         <IdentityAvatar
-          identity={$session.data.identity}
+          identity={session.identity}
           showTitle={true}
           size={'regular'}
           style="color: var(--color-secondary)" />
-      {/if}
-    </a>
-    <div slot="middle">
-      <HorizontalMenu items={topbarMenuItems} />
-    </div>
-    <div slot="right" style="display: flex">
-      <Router routes={menuRoutes} />
-      {#if $session.status === remote.Status.Success}
+      </a>
+      <div slot="middle">
+        <HorizontalMenu items={topbarMenuItems} />
+      </div>
+      <div slot="right" style="display: flex">
+        <Router routes={menuRoutes} />
         <AdditionalActionsDropdown
           dataCy="profile-context-menu"
           style="margin: 0 24px 0 16px"
-          headerTitle={$session.data.identity.shareableEntityIdentifier}
+          headerTitle={session.identity.shareableEntityIdentifier}
           menuItems={dropdownMenuItems} />
-      {/if}
-    </div>
-  </Topbar>
+      </div>
+    </Topbar>
+  </Remote>
 
   <Router routes={screenRoutes} />
 </SidebarLayout>

@@ -89,6 +89,14 @@ pub struct Org {
     pub avatar_fallback: avatar::Avatar,
 }
 
+/// The registered user with associated coco id.
+pub struct User {
+    /// Unique handle regsistered on the Regisry.
+    pub handle: UserId,
+    /// Associated coco id for attestion.
+    pub maybe_coco_id: Option<String>,
+}
+
 /// Registry client wrapper.
 #[derive(Clone)]
 pub struct Registry {
@@ -330,9 +338,16 @@ impl Registry {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    pub async fn get_user(&self, handle: String) -> Result<Option<String>, error::Error> {
+    pub async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error> {
         let user_id = UserId::try_from(handle.clone())?;
-        Ok(self.client.get_user(user_id).await?.map(|_user| handle))
+        Ok(self
+            .client
+            .get_user(user_id.clone())
+            .await?
+            .map(|_user| User {
+                handle: user_id,
+                maybe_coco_id: None,
+            }))
     }
 
     /// Try to retrieve org from the Registry by id.
@@ -408,12 +423,12 @@ impl Registry {
         &mut self,
         author: &ed25519::Pair,
         handle: String,
-        id: String,
+        id: Option<String>,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
         let user_id = UserId::try_from(handle.clone())?;
-        let id = registry::String32::from_string(id)?;
+        let id = registry::String32::from_string(id.unwrap_or_default())?;
 
         // Prepare and submit user registration transaction.
         let register_message = message::RegisterUser {
@@ -664,7 +679,7 @@ mod tests {
         let robo = ed25519::Pair::from_legacy_string("//Alice", None);
 
         let res = registry
-            .register_user(&robo, "cloudhead".into(), "123abcd.git".into(), 100)
+            .register_user(&robo, "cloudhead".into(), Some("123abcd.git".into()), 100)
             .await;
         assert!(res.is_ok());
     }

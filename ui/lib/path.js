@@ -11,6 +11,7 @@ export const search = () => "/search";
 export const network = () => "/network";
 
 export const profile = () => "/profile";
+export const profileOnboard = () => "/profile/onboard";
 export const profileProjects = () => "/profile/projects";
 export const profileWallet = () => "/profile/wallet";
 export const profileSettings = () => "/profile/settings";

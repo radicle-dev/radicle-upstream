@@ -1,7 +1,7 @@
 //! Endpoints and serialisation for [`registry::Transaction`] related types.
 
 use hex::ToHex;
-use serde::ser::{SerializeStruct as _, SerializeStructVariant as _};
+use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -135,34 +135,36 @@ impl Serialize for registry::Message {
         S: Serializer,
     {
         match self {
-            Self::OrgRegistration(org_id) => serializer.serialize_newtype_variant(
-                "Message",
-                0,
-                "OrgRegistration",
-                &org_id.to_string(),
-            ),
-            Self::OrgUnregistration(org_id) => serializer.serialize_newtype_variant(
-                "Message",
-                1,
-                "OrgUnregistration",
-                &org_id.to_string(),
-            ),
+            Self::OrgRegistration(org_id) => {
+                let mut state = serializer.serialize_struct("OrgRegistration", 2)?;
+                state.serialize_field("type", "ORG_REGISTRATION")?;
+                state.serialize_field("orgId", &org_id.to_string())?;
+
+                state.end()
+            },
+            Self::OrgUnregistration(org_id) => {
+                let mut state = serializer.serialize_struct("OrgUnegistration", 2)?;
+                state.serialize_field("type", "ORG_UNREGISTRATION")?;
+                state.serialize_field("orgId", &org_id.to_string())?;
+
+                state.end()
+            },
             Self::ProjectRegistration {
                 org_id,
                 project_name,
             } => {
-                let mut sv =
-                    serializer.serialize_struct_variant("Message", 2, "ProjectRegistration", 2)?;
-                sv.serialize_field("org_id", &org_id.to_string())?;
-                sv.serialize_field("project_name", &project_name.to_string())?;
-                sv.end()
+                let mut state = serializer.serialize_struct("ProjectRegistration", 3)?;
+                state.serialize_field("type", "PROJECT_REGISTRATION")?;
+                state.serialize_field("orgId", &org_id.to_string())?;
+                state.serialize_field("projectName", &project_name.to_string())?;
+                state.end()
             },
             Self::UserRegistration { handle, id } => {
-                let mut sv =
-                    serializer.serialize_struct_variant("Message", 3, "UserRegistration", 2)?;
-                sv.serialize_field("handle", &handle.to_string())?;
-                sv.serialize_field("id", &id.to_string())?;
-                sv.end()
+                let mut state = serializer.serialize_struct("UserRegistration", 3)?;
+                state.serialize_field("type", "USER_REGISTRATION")?;
+                state.serialize_field("handle", &handle.to_string())?;
+                state.serialize_field("id", &id.to_string())?;
+                state.end()
             },
         }
     }
@@ -184,8 +186,8 @@ impl Serialize for registry::TransactionState {
         match self {
             Self::Applied(block_hash) => {
                 let mut state = serializer.serialize_struct("TransactionApplied", 2)?;
-                state.serialize_field("type", "TransactionApplied")?;
-                state.serialize_field("block_hash", &block_hash.to_string())?;
+                state.serialize_field("type", "APPLIED")?;
+                state.serialize_field("blockHash", &block_hash.to_string())?;
 
                 state.end()
             },
@@ -203,6 +205,7 @@ impl ToDocumentedType for registry::TransactionState {
 
 /// Bundled input data for a transaction listing.
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ListInput {
     /// The transaction ids that the list should be filtered by.
     ids: Vec<String>,

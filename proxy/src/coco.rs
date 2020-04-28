@@ -18,7 +18,7 @@ use librad::surf::git::git2;
 use crate::error;
 
 /// Branch name representation.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Branch(String);
 
 impl fmt::Display for Branch {
@@ -30,7 +30,7 @@ impl fmt::Display for Branch {
 /// Tag name representation.
 ///
 /// We still need full tag support.
-#[derive(Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct Tag(String);
 
 impl fmt::Display for Tag {
