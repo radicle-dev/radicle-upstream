@@ -94,6 +94,7 @@
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}
+      variant={payer.variant}
       style="color: var(--color-foreground)" />
   </div>
 

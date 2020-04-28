@@ -23,13 +23,18 @@
   export let orgs = null;
 
   const next = () => {
-    dispatch("next", { registrarHandle: registrarHandle() });
+    dispatch("next", {
+      registrarHandle: selectedRegistrar().avatarProps.title,
+      registrarImageUrl: selectedRegistrar().avatarProps.imageUrl,
+      registrarAvatarFallback: selectedRegistrar().avatarProps.avatarFallback,
+      registrarVariant: selectedRegistrar().avatarProps.variant
+    });
   };
 
-  const registrarHandle = () => {
+  const selectedRegistrar = () => {
     return registrarDropdownOptions.find(option => {
       return option.value === registrarId;
-    }).avatarProps.title;
+    });
   };
 
   const identityOption = {

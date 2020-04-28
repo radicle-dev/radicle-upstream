@@ -13,7 +13,12 @@
 
   let projectId = params.projectId || null;
   let registrarId = params.registrarId || null;
+
   let registrarHandle = null;
+  let registrarAvatarFallback = null;
+  let registrarImageUrl = null;
+  let registrarVariant = null;
+
   let projectName = null;
 
   const steps = {
@@ -40,21 +45,21 @@
   }
 </style>
 
-<ModalLayout>
-  <div class="wrapper">
-    <div class="project-registration">
-      <Flex align="center" style="margin-bottom: 40px;">
-        <StepCounter
-          selectedStep={currentStep}
-          steps={['Prepare', 'Submit']}
-          style="margin-bottom: 48px" />
+<Remote store={projectStore} let:data={projects}>
+  <Remote store={sessionStore} let:data={session}>
+    <ModalLayout>
+      <div class="wrapper">
+        <div class="project-registration">
+          <Flex align="center" style="margin-bottom: 40px;">
+            <StepCounter
+              selectedStep={currentStep}
+              steps={['Prepare', 'Submit']}
+              style="margin-bottom: 48px" />
 
-        <Title variant="big">Register project</Title>
-      </Flex>
+            <Title variant="big">Register project</Title>
+          </Flex>
 
-      {#if currentStep === steps.DETAILS}
-        <Remote store={projectStore} let:data={projects}>
-          <Remote store={sessionStore} let:data={session}>
+          {#if currentStep === steps.DETAILS}
             <RegistrationDetailsStep
               {session}
               {projects}
@@ -64,13 +69,22 @@
               bind:projectName
               on:next={event => {
                 registrarHandle = event.detail.registrarHandle;
+                registrarImageUrl = event.detail.registrarImageUrl;
+                registrarAvatarFallback = event.detail.registrarAvatarFallback;
+                registrarVariant = event.detail.registrarVariant;
                 nextStep();
               }} />
-          </Remote>
-        </Remote>
-      {:else}
-        <TransactionSummaryStep {projectId} {registrarHandle} {projectName} />
-      {/if}
-    </div>
-  </div>
-</ModalLayout>
+          {:else}
+            <TransactionSummaryStep
+              {projectId}
+              {registrarHandle}
+              {registrarImageUrl}
+              {registrarAvatarFallback}
+              {registrarVariant}
+              {projectName} />
+          {/if}
+        </div>
+      </div>
+    </ModalLayout>
+  </Remote>
+</Remote>
