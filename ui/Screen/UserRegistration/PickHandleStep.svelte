@@ -74,7 +74,7 @@
   bind:value={handle}
   valid={!(validations && validations.handle)}
   validationMessage={validations && validations.handle && validations.handle[0]}
-  variant="avatar"
+  variant="handle"
   validationPending={validating} />
 
 <Flex style="margin-top: 32px;" align="right">

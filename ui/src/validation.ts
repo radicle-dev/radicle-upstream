@@ -3,14 +3,14 @@ import { writable, Writable, Readable, get } from "svelte/store"
 
 export enum ValidationStatus {
   NotStarted = "NOT_STARTED",
-  Pending = "PENDING",
+  Loading = "LOADING",
   Error = "ERROR",
   Success = "SUCCESS"
 }
 
 type ValidationState =
   { status: ValidationStatus.NotStarted } |
-  { status: ValidationStatus.Pending } |
+  { status: ValidationStatus.Loading } |
   { status: ValidationStatus.Error; message: string } |
   { status: ValidationStatus.Success }
 
@@ -29,8 +29,8 @@ export const createValidationStore = (constraints: any): ValidationStore => {
     new Promise(resolve => setTimeout(resolve, duration))
 
   const validate = async (input: string): Promise<void> => {
-    // Always start with Pending
-    update(() => { return { status: ValidationStatus.Pending, input: input } })
+    // Always start with Loading
+    update(() => { return { status: ValidationStatus.Loading, input: input } })
 
     // Check for errors
     const errors = validatejs({ input: input }, { input: constraints }, { fullMessages: false })
@@ -40,7 +40,6 @@ export const createValidationStore = (constraints: any): ValidationStore => {
       return
     } else {
       // Check remote
-      update(() => { return { status: ValidationStatus.Pending } })
       await delay(1000).then(() =>
         update((store) => {
           // If the input has changed since this request was fired off, don't update

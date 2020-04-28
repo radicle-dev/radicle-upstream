@@ -91,7 +91,7 @@
     </slot>
   </div>
 
-  {#if validation.status === ValidationStatus.Pending}
+  {#if validation.status === ValidationStatus.Loading}
     <Icon.Spinner
       style="justify-content: flex-start; position: absolute; top: 12px; right:
       10px;" />
