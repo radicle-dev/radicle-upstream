@@ -26,7 +26,7 @@ pub fn filters(
         .or(register_filter(registry, subscriptions))
 }
 
-/// POST /projects
+/// `POST /projects`
 fn create_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -51,7 +51,7 @@ fn create_filter(
         .and_then(handler::create)
 }
 
-/// GET /projects/<id>
+/// `GET /projects/<id>`
 fn get_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -80,7 +80,7 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// GET /projects
+/// `GET /projects`
 fn list_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -102,7 +102,7 @@ fn list_filter(
         .and_then(handler::list)
 }
 
-/// POST /projects/register
+/// `POST /projects/register`
 fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,

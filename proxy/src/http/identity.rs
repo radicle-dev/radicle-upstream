@@ -17,7 +17,7 @@ pub fn filters(
     get_filter().or(create_filter(store))
 }
 
-/// POST /identities
+/// `POST /identities`
 fn create_filter(
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -42,7 +42,7 @@ fn create_filter(
         .and_then(handler::create)
 }
 
-/// GET /identities/<id>
+/// `GET /identities/<id>`
 fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("identities")
         .and(document::param::<String>("id", "Unique ID of the Identity"))
