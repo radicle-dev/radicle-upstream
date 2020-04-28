@@ -137,7 +137,7 @@ mod handler {
 
         let mut reg = registry.write().await;
         let tx = reg
-            .register_user(&fake_pair, input.handle, input.maybe_id, fake_fee)
+            .register_user(&fake_pair, input.handle, input.maybe_project_id, fake_fee)
             .await?;
 
         subscriptions
@@ -166,7 +166,7 @@ impl Serialize for registry::User {
     {
         let mut state = serializer.serialize_struct("User", 2)?;
         state.serialize_field("handle", &self.handle.to_string())?;
-        state.serialize_field("maybeId", &self.maybe_coco_id)?;
+        state.serialize_field("maybeProjectId", &self.maybe_project_id)?;
 
         state.end()
     }
@@ -182,7 +182,7 @@ impl ToDocumentedType for registry::User {
                 .example("cloudhead"),
         );
         props.insert(
-            "maybe_id".into(),
+            "maybeProjectId".into(),
             document::string()
                 .description("Exisiting coco id for attestion")
                 .example("cloudhead@123abcd.git")
@@ -201,8 +201,8 @@ impl ToDocumentedType for registry::User {
 pub struct RegisterInput {
     /// Handle the User registered under.
     handle: String,
-    /// Optionally passed coco id to store for attestion.
-    maybe_id: Option<String>,
+    /// Optionally passed proejct id to store for attestion.
+    maybe_project_id: Option<String>,
 }
 
 impl ToDocumentedType for RegisterInput {
@@ -215,9 +215,9 @@ impl ToDocumentedType for RegisterInput {
                 .example("cloudhead"),
         );
         props.insert(
-            "maybe_id".into(),
+            "maybeProjectId".into(),
             document::string()
-                .description("Exisiting coco id for attestion")
+                .description("Exisiting project id for attestion")
                 .example("cloudhead@123abcd.git")
                 .nullable(true),
         );
@@ -268,41 +268,9 @@ mod test {
             have,
             json!({
                 "handle": "cloudhead",
-                "maybeId": Value::Null,
+                "maybeProjectId": Value::Null,
             })
         );
-    }
-
-    #[tokio::test]
-    async fn register() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
-        let subscriptions = notification::Subscriptions::default();
-
-        let api = super::filters(Arc::clone(&registry), subscriptions);
-        let res = request()
-            .method("POST")
-            .path("/")
-            .json(&super::RegisterInput {
-                handle: "cloudhead".into(),
-                maybe_id: Some("cloudhead@123abcd.git".into()),
-            })
-            .reply(&api)
-            .await;
-
-        let txs = registry
-            .read()
-            .await
-            .list_transactions(vec![])
-            .await
-            .unwrap();
-        let tx = txs.first().unwrap();
-
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::CREATED);
-        assert_eq!(have, json!(tx));
     }
 
     #[tokio::test]
@@ -347,5 +315,37 @@ mod test {
                 avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
             }])
         );
+    }
+
+    #[tokio::test]
+    async fn register() {
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        )));
+        let subscriptions = notification::Subscriptions::default();
+
+        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let res = request()
+            .method("POST")
+            .path("/")
+            .json(&super::RegisterInput {
+                handle: "cloudhead".into(),
+                maybe_project_id: Some("cloudhead@123abcd.git".into()),
+            })
+            .reply(&api)
+            .await;
+
+        let txs = registry
+            .read()
+            .await
+            .list_transactions(vec![])
+            .await
+            .unwrap();
+        let tx = txs.first().unwrap();
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+
+        assert_eq!(res.status(), StatusCode::CREATED);
+        assert_eq!(have, json!(tx));
     }
 }

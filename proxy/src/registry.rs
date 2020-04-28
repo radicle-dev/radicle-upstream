@@ -7,11 +7,11 @@ use std::convert::TryFrom;
 use std::time::SystemTime;
 
 use radicle_registry_client::{
-    self as registry, ed25519, message, Balance, Client, ClientT, CryptoPair, Hash, ProjectName,
+    self as registry, ed25519, message, Balance, Client, ClientT, CryptoPair, Hash,
     TransactionExtra, H256,
 };
 
-pub use radicle_registry_client::Id;
+pub use radicle_registry_client::{Id, ProjectName};
 
 use crate::avatar;
 use crate::error;
@@ -91,12 +91,18 @@ pub struct Org {
     pub avatar_fallback: avatar::Avatar,
 }
 
+pub struct Project {
+    pub name: ProjectName,
+    pub org_id: Id,
+    pub maybe_project_id: Option<String>,
+}
+
 /// The registered user with associated coco id.
 pub struct User {
     /// Unique handle regsistered on the Regisry.
     pub handle: Id,
     /// Associated coco id for attestion.
-    pub maybe_coco_id: Option<String>,
+    pub maybe_project_id: Option<String>,
 }
 
 /// Registry client wrapper.
@@ -256,14 +262,14 @@ impl Registry {
     pub async fn register_project(
         &mut self,
         author: &ed25519::Pair,
-        name: String,
         org_id: String,
+        project_name: String,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let project_name = ProjectName::try_from(name.clone())?;
         let org_id = Id::try_from(org_id.clone())?;
+        let project_name = ProjectName::try_from(project_name.clone())?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
@@ -348,7 +354,7 @@ impl Registry {
             .await?
             .map(|_user| User {
                 handle: user_id,
-                maybe_coco_id: None,
+                maybe_project_id: None,
             }))
     }
 
@@ -394,6 +400,30 @@ impl Registry {
                 }
             })
             .collect())
+    }
+
+    /// Try to retrieve project from the Registry by name for an id.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    pub async fn get_project(
+        &self,
+        id: String,
+        project_name: String,
+    ) -> Result<Option<Project>, error::Error> {
+        let org_id = Id::try_from(id.clone())?;
+        let project_name = ProjectName::try_from(project_name)?;
+
+        Ok(self
+            .client
+            .get_project(project_name, org_id)
+            .await?
+            .map(|project| Project {
+                name: project.name,
+                org_id: project.org_id,
+                maybe_project_id: None,
+            }))
     }
 
     /// Graciously pay some tokens to the recipient out of Alices pocket.
@@ -646,25 +676,30 @@ mod tests {
         assert!(org_result.is_ok());
 
         // The org needs funds to submit transactions.
-        let org = futures::executor::block_on(client.get_org(org_id.clone()))
-            .unwrap()
-            .unwrap();
-        futures::executor::block_on(registry.prepay_account(org.account_id, 1000)).unwrap();
+        let org = client.get_org(org_id.clone()).await.unwrap().unwrap();
+        registry.prepay_account(org.account_id, 1000).await.unwrap();
 
         // Register the project
-        let result = futures::executor::block_on(registry.register_project(
-            &alice,
-            "radicle".into(),
-            org_id.into(),
-            Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
-            10,
-        ));
+        let result = registry
+            .register_project(
+                &alice,
+                org_id.into(),
+                "radicle".into(),
+                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
+                10,
+            )
+            .await;
         assert!(result.is_ok());
+
         let org_id = Id::try_from("monadic").unwrap();
         let project_name = ProjectName::try_from("radicle").unwrap();
-        let future_project = client.get_project(project_name.clone(), org_id.clone());
-        let maybe_project = futures::executor::block_on(future_project).unwrap();
+        let maybe_project = client
+            .get_project(project_name.clone(), org_id.clone())
+            .await
+            .unwrap();
+
         assert!(maybe_project.is_some());
+
         let project = maybe_project.unwrap();
         assert_eq!(project.name, project_name);
         assert_eq!(project.org_id, org_id);
