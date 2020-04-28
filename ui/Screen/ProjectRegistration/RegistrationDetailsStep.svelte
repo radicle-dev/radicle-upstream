@@ -12,16 +12,15 @@
   } from "../../DesignSystem/Primitive";
   import { Dropdown } from "../../DesignSystem/Component";
 
-  import { projects } from "../../src/project.ts";
-  import { session } from "../../src/session.ts";
-  import * as remote from "../../src/remote.ts";
-  import { orgMocks } from "../../lib/orgMocks.js";
-
   const dispatch = createEventDispatcher();
 
   export let projectId = null;
   export let registrarId = null;
   export let projectName = null;
+
+  export let projects = null;
+  export let session = null;
+  export let orgs = null;
 
   const next = () => {
     dispatch("next", { registrarHandle: registrarHandle });
@@ -33,22 +32,18 @@
     }).avatarProps.title;
   };
 
-  $: identity =
-    ($session.status === remote.Status.Success && [
-      {
-        variant: "avatar",
-        value: $session.data.identity.id,
-        avatarProps: {
-          variant: "user",
-          title: $session.data.identity.metadata.handle,
-          avatarFallback: $session.data.identity.avatarFallback,
-          imageUrl: $session.data.identity.imageUrl
-        }
-      }
-    ]) ||
-    [];
+  const identityOption = {
+    variant: "avatar",
+    value: session.identity.id,
+    avatarProps: {
+      variant: "user",
+      title: session.identity.metadata.handle,
+      avatarFallback: session.identity.avatarFallback,
+      imageUrl: session.identity.imageUrl
+    }
+  };
 
-  $: orgs = orgMocks.data.orgs.map(org => {
+  const orgOptions = orgs.map(org => {
     return {
       variant: "avatar",
       value: org.id,
@@ -60,29 +55,36 @@
     };
   });
 
-  $: registrarDropdownOptions = [...identity, ...orgs];
+  const registrarDropdownOptions = [identityOption, ...orgOptions];
 
-  $: projectDropdownOptions =
-    ($projects.status === remote.Status.Success &&
-      $projects.data.map(project => {
-        return {
-          variant: "text",
-          value: project.id,
-          textProps: { title: project.metadata.name }
-        };
-      })) ||
-    [];
+  const projectDropdownOptions = projects.map(project => {
+    return {
+      variant: "text",
+      value: project.id,
+      textProps: { title: project.metadata.name }
+    };
+  });
+
+  // Pre-select existing project name as the to-be-registered name
+  $: projectName = projectDropdownOptions.find(option => {
+    return option.value === projectId;
+  }).textProps.title;
 
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
+
   let validating = false;
   let validations = false;
 
+  validatejs.options = {
+    fullMessages: false
+  };
+
   const validateProjectNameAvailability = async () => {
     try {
-      // TODO(rudolfs): wait for #312 to land and fix this
+      // TODO(rudolfs): wait for the endpoint to land in proxy and fix this
       // const present = await project.get(registrarId, projectName);
       await new Promise(r => setTimeout(r, 500));
-      const present = Math.random() > 0.5;
+      const present = false;
 
       if (present) {
         validations = { projectName: ["Project name already taken"] };
@@ -90,10 +92,6 @@
     } catch (error) {
       validations = { projectName: [error] };
     }
-  };
-
-  validatejs.options = {
-    fullMessages: false
   };
 
   const constraints = {

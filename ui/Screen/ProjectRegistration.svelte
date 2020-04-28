@@ -1,9 +1,13 @@
 <script>
   import { Flex, Title } from "../DesignSystem/Primitive";
-  import { ModalLayout, StepCounter } from "../DesignSystem/Component";
+  import { ModalLayout, Remote, StepCounter } from "../DesignSystem/Component";
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
   import TransactionSummaryStep from "./ProjectRegistration/TransactionSummaryStep.svelte";
+
+  import { projects as projectStore } from "../src/project.ts";
+  import { session as sessionStore } from "../src/session.ts";
+  import { orgMocks } from "../lib/orgMocks.js";
 
   export let params = null;
 
@@ -49,14 +53,21 @@
       </Flex>
 
       {#if currentStep === steps.DETAILS}
-        <RegistrationDetailsStep
-          bind:projectId
-          bind:registrarId
-          bind:projectName
-          on:next={event => {
-            registrarHandle = event.detail.registrarHandle;
-            nextStep();
-          }} />
+        <Remote store={projectStore} let:data={projects}>
+          <Remote store={sessionStore} let:data={session}>
+            <RegistrationDetailsStep
+              {session}
+              {projects}
+              orgs={orgMocks.data.orgs}
+              bind:projectId
+              bind:registrarId
+              bind:projectName
+              on:next={event => {
+                registrarHandle = event.detail.registrarHandle;
+                nextStep();
+              }} />
+          </Remote>
+        </Remote>
       {:else}
         <TransactionSummaryStep {projectId} {registrarHandle} {projectName} />
       {/if}
