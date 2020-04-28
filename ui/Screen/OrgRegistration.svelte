@@ -7,8 +7,10 @@
     nameConstraints,
     subject,
     payer,
-    org
+    org,
+    register
   } from "../src/org.ts";
+  import { showNotification } from "../store/notification.js";
 
   import {
     ValidationStatus,
@@ -36,8 +38,20 @@
           state = RegistrationFlowState.TransactionConfirmation;
         break;
       case RegistrationFlowState.TransactionConfirmation:
-        console.log("submitting transaction");
-        pop();
+        registerOrg();
+    }
+  };
+
+  const registerOrg = async () => {
+    try {
+      await register(orgName);
+    } catch (error) {
+      showNotification({
+        text: `Could not register org: ${error}`,
+        level: "error"
+      });
+    } finally {
+      pop();
     }
   };
 

@@ -1,5 +1,6 @@
+import * as api from "./api"
+import { MessageType, Transaction } from './transaction';
 
-import { MessageType } from './transaction';
 
 export enum RegistrationFlowState {
   NameSelection,
@@ -37,6 +38,18 @@ export const org: Org = {
   avatar: {
     imageUrl: imageUrl
   }
+}
+
+export const getOrg = (id: string) => api.get<Org>(`orgs/${id}`)
+
+interface RegisterOrg {
+  id: string;
+}
+
+export const register = (id: string): Promise<Transaction> => {
+  return api.post<RegisterOrg, Transaction>(`orgs`, {
+    id
+  });
 }
 
 export const transaction = {
