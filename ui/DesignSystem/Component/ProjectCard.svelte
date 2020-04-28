@@ -85,7 +85,6 @@
       style="margin-right: 44px;" />
 
     <AdditionalActionsDropdown
-      style="--button-hover-background-color: var(--color-foreground-level-2)"
       headerTitle={projectId}
       menuItems={dropdownMenuItems} />
   </div>

@@ -3,7 +3,6 @@
 </script>
 
 <Button
-  size="small"
   variant="transparent"
   icon={Icon.ArrowUp}
   on:click={() => console.log('event(send-button-click)')}>
@@ -11,7 +10,6 @@
 </Button>
 
 <Button
-  size="small"
   variant="transparent"
   icon={Icon.ArrowDown}
   on:click={() => console.log('event(receive-button-click)')}>

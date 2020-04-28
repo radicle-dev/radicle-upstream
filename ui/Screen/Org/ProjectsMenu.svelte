@@ -7,7 +7,6 @@
 </script>
 
 <Button
-  size="small"
   variant="transparent"
   icon={Icon.Plus}
   on:click={() => push(path.registerProject(params.id))}>

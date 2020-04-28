@@ -39,11 +39,11 @@
 <style>
   .container {
     position: relative;
-    height: 36px;
-    width: 36px;
+    height: 40px;
+    width: 40px;
   }
 
-  button {
+  .additional-actions-dropdown-button {
     height: 100%;
     width: 100%;
     display: flex;
@@ -53,11 +53,16 @@
     outline-style: none;
   }
 
-  button:hover {
-    background-color: var(
-      --button-hover-background-color,
-      --color-foreground-level-1
-    );
+  .additional-actions-dropdown-button :global(svg) {
+    fill: var(--color-foreground-level-6);
+  }
+
+  .additional-actions-dropdown-button:active :global(svg) {
+    fill: var(--color-foreground-level-5);
+  }
+
+  .additional-actions-dropdown-button:hover {
+    background-color: var(--color-foreground-level-2);
   }
 
   .modal {
@@ -104,7 +109,10 @@
 
 <svelte:window on:click={hideModal} />
 <div data-cy={dataCy} class="container" {style}>
-  <button bind:this={triggerEl} on:click|stopPropagation={toggleModal}>
+  <button
+    class="additional-actions-dropdown-button"
+    bind:this={triggerEl}
+    on:click|stopPropagation={toggleModal}>
     <svelte:component this={Icon.Ellipses} />
   </button>
   {#if expanded}
