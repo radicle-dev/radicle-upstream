@@ -27,6 +27,7 @@ pub fn routes(
 }
 
 /// Combination of all source filters.
+#[cfg(test)]
 fn filters(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -228,7 +229,7 @@ fn tree_filter(
         .and_then(handler::tree)
 }
 
-/// Source handlers for conversion beetween core domain and http request fullfilment.
+/// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use librad::paths::Paths;
     use std::sync::Arc;
@@ -298,7 +299,7 @@ mod handler {
                 identity: identity::Identity {
                     id: format!("{}@123abcd.git", handle),
                     metadata: identity::Metadata {
-                        handle: handle.to_string(),
+                        handle: (*handle).to_string(),
                         display_name: None,
                         avatar_url: None,
                     },

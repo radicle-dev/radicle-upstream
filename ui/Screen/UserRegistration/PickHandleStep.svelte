@@ -1,8 +1,8 @@
 <script>
-  import { getClient, query } from "svelte-apollo";
-  import { gql } from "apollo-boost";
   import { pop } from "svelte-spa-router";
   import validatejs from "validate.js";
+
+  import * as user from "../../src/user.ts";
 
   import { Button, Flex, Input } from "../../DesignSystem/Primitive";
 
@@ -20,23 +20,12 @@
 
   let validating = false;
   let validations = false;
-  const client = getClient();
-
-  const GET_USER = gql`
-    query Query($handle: ID!) {
-      user(handle: $handle)
-    }
-  `;
 
   const validateHandleAvailability = async () => {
     try {
-      const response = await query(client, {
-        query: GET_USER,
-        variables: { handle: handle },
-        fetchPolicy: "network-only"
-      });
-      const result = await response.result();
-      if (await result.data.user) {
+      const present = await user.get(handle);
+
+      if (present) {
         validations = { handle: ["Handle already taken"] };
       }
     } catch (error) {

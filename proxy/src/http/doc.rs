@@ -2,13 +2,6 @@
 
 use warp::{document, path, reply, Filter, Rejection, Reply};
 
-/// Combination of all doc routes.
-pub fn filters<F: Filter>(
-    routes: &F,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    index_filter().or(describe_filter(routes))
-}
-
 /// GET /
 /// GET /index.html
 pub fn index_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {

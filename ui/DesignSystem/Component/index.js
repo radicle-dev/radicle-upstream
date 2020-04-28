@@ -11,6 +11,7 @@ import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
 import Rad from "./Rad.svelte";
 import RadioOption from "./RadioOption.svelte";
+import Remote from "./Remote.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import StepCounter from "./StepCounter.svelte";
@@ -36,6 +37,7 @@ export {
   ProjectList,
   Rad,
   RadioOption,
+  Remote,
   Row,
   Sidebar,
   SidebarLayout,
