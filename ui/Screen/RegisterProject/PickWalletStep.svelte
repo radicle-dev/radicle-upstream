@@ -25,7 +25,7 @@
   <div slot="left">
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project1.svg"
-      variant="project"
+      variant="square"
       title="Monadic wallet" />
   </div>
 
@@ -38,7 +38,7 @@
   <div slot="left">
     <Avatar
       imageUrl="https://avatars.dicebear.com/v2/jdenticon/project2.svg"
-      variant="project"
+      variant="square"
       title="Radicle wallet" />
   </div>
 

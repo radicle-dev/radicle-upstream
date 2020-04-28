@@ -18,14 +18,14 @@
     <Avatar
       avatarFallback={user.avatarFallback}
       title={`${user.name} / ${title}`}
-      variant="user" />
+      variant="circle" />
 
     <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
   {:else if org}
     <Avatar
       avatarFallback={org.avatarFallback}
       title={`${org.name} / ${title}`}
-      variant="project" />
+      variant="square" />
 
     <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}

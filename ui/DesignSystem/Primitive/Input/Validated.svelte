@@ -1,7 +1,6 @@
 <script>
   import Text from "../Text.svelte";
   import Icon from "../Icon";
-  import Avatar from "../Avatar.svelte";
 
   import { ValidationStatus } from "../../../src/validation.ts";
 
@@ -11,9 +10,10 @@
   export let dataCy = null;
 
   export let disabled = null;
-  export let variant = "vanilla"; // vanilla | avatar
-  export let imageUrl = null;
-  export let avatarFallback = null;
+
+  // TODO(sos): replace with actual slot presence check once
+  // https://github.com/sveltejs/svelte/issues/2106 is solved
+  let slotFallback;
 
   export let validation;
 </script>
@@ -37,7 +37,7 @@
   }
 
   input.avatar {
-    padding: 0 46px 0 54px;
+    padding: 0 46px 0 46px;
   }
 
   input:focus {
@@ -61,41 +61,45 @@
     align-items: center;
     margin-top: 16px;
   }
+
+  .avatar-wrapper {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding-left: 8px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 </style>
 
 <div {style} class="wrapper">
   <input
     data-cy={dataCy}
     class:invalid={validation.status === ValidationStatus.Error}
-    class:avatar={variant === 'avatar'}
+    class:avatar={!slotFallback}
     {placeholder}
     bind:value
     {disabled}
     on:change
     on:input />
-  {#if variant === 'avatar'}
-    <Avatar
-      {avatarFallback}
-      {imageUrl}
-      variant="user"
-      size="regular"
-      style="width: 34px; height: 48px; justify-content: flex-start; position:
-      absolute; top: 0px; left: 10px" />
-  {/if}
 
-  {#if variant === 'avatar'}
-    {#if validation.status === ValidationStatus.Pending}
-      <Icon.Spinner
-        style="justify-content: flex-start; position: absolute; top: 12px;
-        right: 10px;" />
-    {:else if validation.status === ValidationStatus.Success}
-      <Icon.CheckCircle
-        style="fill: var(--color-positive); justify-content: flex-start;
-        position: absolute; top: 12px; right: 10px;" />
-    {/if}
-  {/if}
+  <div class="avatar-wrapper">
+    <slot name="avatar">
+      <div bind:this={slotFallback} />
+    </slot>
+  </div>
 
-  {#if validation.status === ValidationStatus.Error}
+  {#if validation.status === ValidationStatus.Pending}
+    <Icon.Spinner
+      style="justify-content: flex-start; position: absolute; top: 12px; right:
+      10px;" />
+  {:else if validation.status === ValidationStatus.Success}
+    <Icon.CheckCircle
+      style="fill: var(--color-positive); justify-content: flex-start; position:
+      absolute; top: 12px; right: 10px;" />
+  {:else if validation.status === ValidationStatus.Error}
     <Icon.Important
       style="fill: var(--color-negative); justify-content: flex-start; position:
       absolute; top: 12px; right: 10px;" />

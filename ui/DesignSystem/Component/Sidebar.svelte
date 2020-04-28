@@ -181,7 +181,7 @@
           <Avatar
             imageUrl={org.metadata.avatarUrl}
             avatarFallback={org.avatarFallback}
-            variant="project"
+            variant="square"
             size="medium" />
         </a>
 

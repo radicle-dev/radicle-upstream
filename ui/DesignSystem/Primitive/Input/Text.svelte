@@ -76,7 +76,7 @@
     <Avatar
       {avatarFallback}
       {imageUrl}
-      variant="user"
+      variant="circle"
       size="regular"
       style="width: 34px; height: 48px; justify-content: flex-start; position:
       absolute; top: 0px; left: 10px" />

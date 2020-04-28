@@ -21,7 +21,7 @@
     StepCounter,
     Transaction
   } from "../DesignSystem/Component";
-  import { Input, Text, Title } from "../DesignSystem/Primitive";
+  import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
 
   let orgName;
   let state = RegistrationFlowState.NameSelection;
@@ -95,11 +95,13 @@
       </Text>
       <Input.Validated
         placeholder="Org name (e.g. Flowerpot)"
-        variant="avatar"
         bind:value={orgName}
-        imageUrl={org.avatar.imageUrl}
         style="--focus-outline-color: var(--color-primary); width: 100%;"
-        validation={$validation} />
+        validation={$validation}>
+        <div slot="avatar">
+          <Avatar imageUrl={org.avatar.imageUrl} variant="square" />
+        </div>
+      </Input.Validated>
     {:else if state === RegistrationFlowState.TransactionConfirmation}
       <div style="width: 100%;">
         <Transaction {transaction} {subject} {payer} />

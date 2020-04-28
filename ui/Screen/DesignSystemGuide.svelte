@@ -582,10 +582,10 @@
         size="big" />
       <Avatar
         imageUrl="https://avatars.dicebear.com/v2/jdenticon/one.svg"
-        variant="project" />
+        variant="square" />
       <Avatar
         imageUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
-        variant="project"
+        variant="square"
         size="big" />
       <Avatar size="huge" avatarFallback={avatarFallback2} />
     </Swatch>
