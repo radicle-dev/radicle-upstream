@@ -52,15 +52,6 @@
     }
   };
 
-  const nextButtonTitle = () => {
-    switch (state) {
-      case RegistrationFlowState.NameSelection:
-        return "Next";
-      case RegistrationFlowState.TransactionConfirmation:
-        return "Submit transaction";
-    }
-  };
-
   $: {
     // Start validating once the user enters something for the first time
     if (orgName && orgName.length > 0) validating = true;
@@ -68,6 +59,13 @@
     subject.name = orgName;
     if (validating) validation.updateInput(orgName);
   }
+
+  $: submitLabel =
+    state === RegistrationFlowState.TransactionConfirmation
+      ? "Submit transaction"
+      : "Next";
+
+  $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
 <style>
@@ -109,9 +107,9 @@
     {/if}
     <NavigationButtons
       style="margin-top: 32px;"
-      submitLabel={nextButtonTitle(state)}
+      {submitLabel}
+      {disableSubmit}
       on:cancel={cancel}
-      on:submit={next}
-      disableSubmit={$validation.status !== ValidationStatus.Success} />
+      on:submit={next} />
   </div>
 </ModalLayout>
