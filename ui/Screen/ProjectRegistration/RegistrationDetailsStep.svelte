@@ -132,7 +132,8 @@
     }
   };
 
-  $: validate(projectName, projectId);
+  // Start validating only when the user has touched the form
+  $: (projectId || projectName) && validate(projectId, projectName);
 </script>
 
 <style>
