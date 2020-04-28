@@ -107,8 +107,9 @@
     {/if}
     <NavigationButtons
       style="margin-top: 32px;"
-      nextStepTitle={nextButtonTitle(state)}
-      onCancel={cancel}
-      onNextStep={next} />
+      submitLabel={nextButtonTitle(state)}
+      on:cancel={cancel}
+      on:submit={next}
+      disableSubmit={$validation.status !== ValidationStatus.Success} />
   </div>
 </ModalLayout>

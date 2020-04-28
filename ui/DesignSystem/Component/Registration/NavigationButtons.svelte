@@ -1,12 +1,16 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import { Button } from "../../Primitive";
 
-  export let onCancel = null;
-  export let onNextStep = null;
-  export let disabled = null;
-  export let nextStepTitle = "Next";
+  export let disableSubmit = null;
+  export let submitLabel = "Next";
+  export let cancelLabel = "Cancel";
 
   export let style = null;
+
+  const dispatch = createEventDispatcher();
+  const cancel = () => dispatch("cancel");
+  const submit = () => dispatch("submit");
 </script>
 
 <style>
@@ -22,15 +26,15 @@
     <Button
       dataCy="cancel-button"
       variant="transparent"
-      on:click={onCancel}
+      on:click={cancel}
       style="margin-right: 24px;">
-      Cancel
+      {cancelLabel}
     </Button>
   </div>
 
   <div>
-    <Button {disabled} on:click={onNextStep} variant="primary">
-      {nextStepTitle}
+    <Button disabled={disableSubmit} on:click={submit} variant="primary">
+      {submitLabel}
     </Button>
   </div>
 </div>

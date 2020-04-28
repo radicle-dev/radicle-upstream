@@ -19,7 +19,6 @@ interface ValidationStore extends Readable<ValidationState> {
   updateInput: (input: string) => void;
 }
 
-
 export const createValidationStore = (constraints: any): ValidationStore => {
   const initialState = { status: ValidationStatus.NotStarted } as ValidationState
   const internalStore = writable(initialState)
