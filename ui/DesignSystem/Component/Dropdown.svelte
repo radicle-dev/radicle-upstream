@@ -49,7 +49,7 @@
   }
 
   .button {
-    height: 48px;
+    height: 40px;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     display: flex;

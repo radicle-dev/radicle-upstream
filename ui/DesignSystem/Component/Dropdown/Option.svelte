@@ -24,7 +24,7 @@
 <style>
   .option {
     display: flex;
-    height: 46px;
+    height: 38px;
     align-items: center;
     white-space: nowrap;
   }
@@ -38,6 +38,7 @@
 <div class="option" on:click={clickHandler} class:selected>
   {#if variant === 'avatar'}
     <Avatar
+      size="small"
       style="margin-left: 8px; --title-color: var(--color-foreground-level-6);"
       {...avatarProps}
       {disabled} />
