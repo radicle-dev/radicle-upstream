@@ -19,7 +19,7 @@ interface Org {
 }
 
 // Name validation
-const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
+const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$");
 export const nameConstraints = {
   presence: {
     message: `Org name is required`,

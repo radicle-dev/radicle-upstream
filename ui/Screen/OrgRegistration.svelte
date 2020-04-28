@@ -47,7 +47,7 @@
       await register(orgName);
     } catch (error) {
       showNotification({
-        text: `Could not register org: ${error}`,
+        text: `Could not register org: ${error.message}`,
         level: "error"
       });
     } finally {
