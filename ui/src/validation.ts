@@ -3,7 +3,6 @@ import { writable, Writable, Readable, get } from "svelte/store"
 
 export enum ValidationStatus {
   NotStarted = "NOT_STARTED",
-  FormatValidation = "FORMAT_VALIDATION",
   Pending = "PENDING",
   Error = "ERROR",
   Success = "SUCCESS"
@@ -11,7 +10,6 @@ export enum ValidationStatus {
 
 type ValidationState =
   { status: ValidationStatus.NotStarted } |
-  { status: ValidationStatus.FormatValidation } |
   { status: ValidationStatus.Pending } |
   { status: ValidationStatus.Error; message: string } |
   { status: ValidationStatus.Success }
@@ -39,16 +37,16 @@ export const createValidationStore = (constraints: any): ValidationStore => {
     const errors = validatejs({ input: input }, { input: constraints }, { fullMessages: false })
 
     if (errors) {
-      update(() => { return { status: ValidationStatus.Error, message: errors.input[0], input: input } })
+      update(() => { return { status: ValidationStatus.Error, message: errors.input[0] } })
       return
     } else {
       // Check remote
-      update(() => { return { status: ValidationStatus.Pending, input: input } })
+      update(() => { return { status: ValidationStatus.Pending } })
       await delay(1000).then(() =>
         update((store) => {
           // If the input has changed since this request was fired off, don't update
           if (get(inputStore) !== input) return store
-          return { status: ValidationStatus.Success, input: input }
+          return { status: ValidationStatus.Success }
         })
       )
     }
