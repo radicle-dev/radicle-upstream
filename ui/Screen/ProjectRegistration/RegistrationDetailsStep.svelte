@@ -22,6 +22,8 @@
   export let session = null;
   export let orgs = null;
 
+  export let skipNamePreselection = false;
+
   const next = () => {
     dispatch("next", {
       registrarHandle: selectedRegistrar().avatarProps.title,
@@ -70,12 +72,18 @@
     };
   });
 
-  // Pre-select existing project name as the to-be-registered name
-  $: projectName =
-    projectId &&
-    projectDropdownOptions.find(option => {
+  const selectedProject = () => {
+    return projectDropdownOptions.find(option => {
       return option.value === projectId;
-    }).textProps.title;
+    });
+  };
+
+  // Pre-select existing project name as the to-be-registered name
+  $: if (projectId && !skipNamePreselection) {
+    projectName = selectedProject().textProps.title;
+  } else {
+    skipNamePreselection = false;
+  }
 
   const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
 

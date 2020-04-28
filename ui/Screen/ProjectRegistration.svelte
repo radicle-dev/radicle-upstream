@@ -19,18 +19,11 @@
   let registrarImageUrl = null;
   let registrarVariant = null;
 
+  let skipNamePreselection = false;
+
   let projectName = null;
 
-  const steps = {
-    DETAILS: 1,
-    SUMMARY: 2
-  };
-
-  let currentStep = steps.DETAILS;
-
-  const nextStep = () => {
-    currentStep += 1;
-  };
+  let showRegistrationDetails = true;
 </script>
 
 <style>
@@ -52,17 +45,18 @@
         <div class="project-registration">
           <Flex align="center" style="margin-bottom: 40px;">
             <StepCounter
-              selectedStep={currentStep}
+              selectedStep={showRegistrationDetails ? 1 : 2}
               steps={['Prepare', 'Submit']}
               style="margin-bottom: 48px" />
 
             <Title variant="big">Register project</Title>
           </Flex>
 
-          {#if currentStep === steps.DETAILS}
+          {#if showRegistrationDetails === true}
             <RegistrationDetailsStep
               {session}
               {projects}
+              {skipNamePreselection}
               orgs={orgMocks.data.orgs}
               bind:projectId
               bind:registrarId
@@ -72,10 +66,14 @@
                 registrarImageUrl = event.detail.registrarImageUrl;
                 registrarAvatarFallback = event.detail.registrarAvatarFallback;
                 registrarVariant = event.detail.registrarVariant;
-                nextStep();
+                showRegistrationDetails = false;
               }} />
           {:else}
             <TransactionSummaryStep
+              on:previous={() => {
+                showRegistrationDetails = true;
+                skipNamePreselection = true;
+              }}
               {projectId}
               {registrarHandle}
               {registrarImageUrl}

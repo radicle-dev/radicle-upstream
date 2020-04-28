@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import { pop } from "svelte-spa-router";
 
   import * as transaction from "../../src/transaction.ts";
@@ -6,6 +7,8 @@
 
   import { Button, Flex } from "../../DesignSystem/Primitive";
   import { Transaction } from "../../DesignSystem/Component";
+
+  const dispatch = createEventDispatcher();
 
   export let projectId = null;
   export let registrarHandle = null;
@@ -46,9 +49,9 @@
   <Button
     dataCy="cancel-button"
     variant="transparent"
-    on:click={pop}
+    on:click={() => dispatch('previous')}
     style="margin-right: 24px;">
-    Cancel
+    Back
   </Button>
   <Button dataCy="next-button" on:click={onSubmitTransaction} variant="primary">
     Submit transaction
