@@ -249,7 +249,6 @@
       </Title>
 
       <Input.Text
-        style="--focus-outline-color: var(--color-primary)"
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
@@ -257,8 +256,7 @@
         validationMessage={validations && validations.name && validations.name[0]} />
 
       <Input.Text
-        style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
-        var(--color-primary)"
+        style="margin-top: 16px; margin-bottom: 16px;"
         placeholder="Project description"
         bind:value={description} />
 
