@@ -130,7 +130,7 @@
         on:click={() => {
           push(path.transactions(transaction.id));
         }}>
-        <Flex>
+        <Flex style="height: 100%">
           <div slot="left" style="display: flex;">
             <Icon.TransactionState
               state={stateToIconState[transaction.state]}
