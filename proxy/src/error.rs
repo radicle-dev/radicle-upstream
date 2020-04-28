@@ -39,12 +39,10 @@ pub enum Error {
     IntConversion(std::num::TryFromIntError),
     /// Length limitation on String32 has been exceeded.
     InordinateString32(),
-    /// Org id input is invalid, variant carries the reason.
-    InvalidOrgId(String),
+    /// Id input is invalid, variant carries the reason.
+    InvalidId(String),
     /// Project name input is invalid, variant carries the reason.
     InvalidProjectName(String),
-    /// User id input is invalid, variant carries the reason.
-    InvalidUserId(String),
     /// Originated from `librad`.
     Librad(librad::git::Error),
     /// Parse error for `librad::project::ProjectId`.
@@ -65,6 +63,8 @@ pub enum Error {
     Runtime(registry::DispatchError),
     /// Errors from handling time.
     Time(SystemTimeError),
+    /// Errors from transactions.
+    Transaction(registry::TransactionError),
 }
 
 impl From<surf::file_system::error::Error> for Error {
@@ -133,15 +133,9 @@ impl From<registry::Error> for Error {
     }
 }
 
-impl From<registry::string32::InordinateStringError> for Error {
-    fn from(_invalid_string: registry::string32::InordinateStringError) -> Self {
-        Self::InordinateString32()
-    }
-}
-
-impl From<registry::InvalidOrgIdError> for Error {
-    fn from(invalid_org_id: registry::InvalidOrgIdError) -> Self {
-        Self::InvalidOrgId(invalid_org_id.to_string())
+impl From<registry::InvalidIdError> for Error {
+    fn from(invalid_id: registry::InvalidIdError) -> Self {
+        Self::InvalidId(invalid_id.to_string())
     }
 }
 
@@ -151,9 +145,9 @@ impl From<registry::InvalidProjectNameError> for Error {
     }
 }
 
-impl From<registry::InvalidUserIdError> for Error {
-    fn from(invalid_user_id: registry::InvalidUserIdError) -> Self {
-        Self::InvalidUserId(invalid_user_id.to_string())
+impl From<registry::TransactionError> for Error {
+    fn from(tx_err: registry::TransactionError) -> Self {
+        Self::Transaction(tx_err)
     }
 }
 

@@ -7,9 +7,11 @@ use std::convert::TryFrom;
 use std::time::SystemTime;
 
 use radicle_registry_client::{
-    self as registry, ed25519, message, Balance, Client, ClientT, CryptoPair, Hash, OrgId,
-    ProjectName, TransactionExtra, UserId, H256,
+    self as registry, ed25519, message, Balance, Client, ClientT, CryptoPair, Hash, ProjectName,
+    TransactionExtra, H256,
 };
+
+pub use radicle_registry_client::Id;
 
 use crate::avatar;
 use crate::error;
@@ -43,25 +45,25 @@ pub struct Metadata {
 pub enum Message {
     /// Issue a new org registration with a given id.
     #[allow(dead_code)]
-    OrgRegistration(OrgId),
+    OrgRegistration(Id),
 
     /// Issue an org unregistration with a given id.
-    OrgUnregistration(OrgId),
+    OrgUnregistration(Id),
 
     /// Issue a new project registration with a given name under a given org.
     ProjectRegistration {
         /// Actual project name, unique for org.
         project_name: ProjectName,
         /// The Org in which to register the project.
-        org_id: OrgId,
+        org_id: Id,
     },
 
     /// Issue a user registration for a given handle storing the corresponding identity id.
     UserRegistration {
         /// Globally unique user handle.
-        handle: UserId,
+        handle: Id,
         /// Identity id originated from librad.
-        id: registry::String32,
+        id: Option<String>,
     },
 }
 
@@ -92,7 +94,7 @@ pub struct Org {
 /// The registered user with associated coco id.
 pub struct User {
     /// Unique handle regsistered on the Regisry.
-    pub handle: UserId,
+    pub handle: Id,
     /// Associated coco id for attestion.
     pub maybe_coco_id: Option<String>,
 }
@@ -174,7 +176,7 @@ impl Registry {
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id = OrgId::try_from(org_id.clone())?;
+        let org_id = Id::try_from(org_id.clone())?;
 
         // Prepare and submit org registration transaction.
         let register_message = message::RegisterOrg {
@@ -216,7 +218,7 @@ impl Registry {
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id = OrgId::try_from(org_id.clone())?;
+        let org_id = Id::try_from(org_id.clone())?;
 
         // Prepare and submit org unregistration transaction.
         let unregister_message = message::UnregisterOrg {
@@ -261,7 +263,7 @@ impl Registry {
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
         let project_name = ProjectName::try_from(name.clone())?;
-        let org_id = OrgId::try_from(org_id.clone())?;
+        let org_id = Id::try_from(org_id.clone())?;
 
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = message::CreateCheckpoint {
@@ -339,7 +341,7 @@ impl Registry {
     ///
     /// Will return `Err` if a protocol error occurs.
     pub async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error> {
-        let user_id = UserId::try_from(handle.clone())?;
+        let user_id = Id::try_from(handle.clone())?;
         Ok(self
             .client
             .get_user(user_id.clone())
@@ -356,7 +358,7 @@ impl Registry {
     ///
     /// Will return `Err` if a protocol error occurs.
     pub async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error> {
-        let org_id = OrgId::try_from(id.clone())?;
+        let org_id = Id::try_from(id.clone())?;
         Ok(self.client.get_org(org_id).await?.map(|_org| Org {
             id: id.clone(),
             avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
@@ -427,8 +429,7 @@ impl Registry {
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let user_id = UserId::try_from(handle.clone())?;
-        let id = registry::String32::from_string(id.unwrap_or_default())?;
+        let user_id = Id::try_from(handle.clone())?;
 
         // Prepare and submit user registration transaction.
         let register_message = message::RegisterUser {
@@ -450,7 +451,7 @@ impl Registry {
             id: register_applied.tx_hash,
             messages: vec![Message::UserRegistration {
                 handle: user_id,
-                id,
+                id: id,
             }],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
@@ -480,7 +481,7 @@ impl Registry {
 #[cfg(test)]
 mod tests {
     use radicle_registry_client::{
-        ed25519, Client, ClientT, CryptoPair, Hash, OrgId, ProjectName, TxHash,
+        ed25519, Client, ClientT, CryptoPair, Hash, Id, ProjectName, TxHash,
     };
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
@@ -547,7 +548,7 @@ mod tests {
             futures::executor::block_on(registry.register_org(&alice, "monadic".into(), 10));
         assert!(result.is_ok());
 
-        let org_id = OrgId::try_from("monadic").unwrap();
+        let org_id = Id::try_from("monadic").unwrap();
         let maybe_org = client.get_org(org_id.clone()).await.unwrap();
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
@@ -563,7 +564,7 @@ mod tests {
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
-        let org_id = OrgId::try_from("monadic").unwrap();
+        let org_id = Id::try_from("monadic").unwrap();
         let registration = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -589,7 +590,7 @@ mod tests {
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
-        let org_id = OrgId::try_from("monadic").unwrap();
+        let org_id = Id::try_from("monadic").unwrap();
         let registration = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -618,7 +619,7 @@ mod tests {
         assert!(user_registration.is_ok());
 
         // Register the org
-        let org_id = OrgId::try_from("monadic").unwrap();
+        let org_id = Id::try_from("monadic").unwrap();
         let org_registration = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -638,7 +639,7 @@ mod tests {
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
-        let org_id = OrgId::try_from("monadic").unwrap();
+        let org_id = Id::try_from("monadic").unwrap();
         let org_result = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -659,7 +660,7 @@ mod tests {
             10,
         ));
         assert!(result.is_ok());
-        let org_id = OrgId::try_from("monadic").unwrap();
+        let org_id = Id::try_from("monadic").unwrap();
         let project_name = ProjectName::try_from("radicle").unwrap();
         let future_project = client.get_project(project_name.clone(), org_id.clone());
         let maybe_project = futures::executor::block_on(future_project).unwrap();

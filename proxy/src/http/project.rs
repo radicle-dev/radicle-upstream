@@ -334,8 +334,7 @@ impl ToDocumentedType for project::Registration {
         document::one_of(vec![org, user])
             .description("Variants for possible registration states of a Project on the Registry")
             .example(Self::Org(
-                radicle_registry_client::OrgId::try_from("monadic")
-                    .expect("unable to parse org id"),
+                registry::Id::try_from("monadic").expect("unable to parse org id"),
             ))
     }
 }

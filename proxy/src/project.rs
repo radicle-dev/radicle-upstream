@@ -49,9 +49,9 @@ pub struct Project {
 #[allow(dead_code)]
 pub enum Registration {
     /// Project is registered under an Org.
-    Org(registry::OrgId),
+    Org(registry::Id),
     /// Project is registered under a User.
-    User(registry::UserId),
+    User(registry::Id),
 }
 
 /// Coarse statistics for the Project source code.
