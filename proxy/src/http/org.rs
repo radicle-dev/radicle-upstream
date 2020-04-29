@@ -238,7 +238,7 @@ impl ToDocumentedType for registry::Project {
             "maybeProjectId".into(),
             document::string()
                 .description("The id project attested in coco")
-                .example("monadic")
+                .example("123abdcd.git")
                 .nullable(true),
         );
 
