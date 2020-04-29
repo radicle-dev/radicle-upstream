@@ -1,13 +1,10 @@
 <script>
-  import { format } from "timeago.js";
-
   import { Icon } from "../../Primitive";
-  import CommitTeaser from "./CommitTeaser.svelte";
 
-  export let commit = null;
   export let blob = null;
   export let path = null;
-  export let projectId = null;
+
+  console.assert(blob.binary === false, "blob should not be binary");
 </script>
 
 <style>
@@ -32,13 +29,6 @@
     margin-left: 0.5rem;
   }
 
-  .commit-header {
-    height: 3rem;
-    background-color: var(--color-secondary-level-1);
-    margin-bottom: 1rem;
-    border-radius: 3px;
-  }
-
   .line-numbers {
     font-family: var(--typeface-mono-regular);
     font-size: 14px;
@@ -61,16 +51,6 @@
   }
 </style>
 
-<div class="commit-header">
-  <CommitTeaser
-    {projectId}
-    user={{ username: commit.author.name, avatar: commit.author.avatar }}
-    commitMessage={commit.summary}
-    commitSha={commit.sha1}
-    timestamp={format(commit.committerTime * 1000)}
-    style="height: 100%" />
-</div>
-
 <div class="file-source" data-cy="file-source">
   <header>
     <div class="file-header">
@@ -79,10 +59,6 @@
     </div>
   </header>
   <div class="container">
-    {#if blob.binary}
-      ఠ ͟ಠ Binary content.
-    {:else}
-      <pre class="code">{blob.content}</pre>
-    {/if}
+    <pre class="code">{blob.content}</pre>
   </div>
 </div>
