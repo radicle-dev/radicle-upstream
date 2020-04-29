@@ -153,14 +153,14 @@
     let response;
 
     try {
-      response = await create({
-        metadata: {
+      response = await create(
+        {
           name,
           description,
           defaultBranch
         },
-        path: isNew ? newRepositoryPath : existingRepositoryPath
-      });
+        isNew ? newRepositoryPath : existingRepositoryPath
+      );
 
       push(path.projectSource(response.id));
       showNotification({
