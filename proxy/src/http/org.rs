@@ -16,11 +16,10 @@ pub fn filters(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter(Arc::<RwLock<registry::Registry>>::clone(&registry))
-        .or(register_filter(registry, subscriptions))
+    get_filter(Arc::clone(&registry)).or(register_filter(registry, subscriptions))
 }
 
-/// POST /orgs
+/// `POST /orgs`
 fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
@@ -47,7 +46,7 @@ fn register_filter(
         .and_then(handler::register)
 }
 
-/// GET /orgs/<id>
+/// `GET /orgs/<id>`
 fn get_filter(
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -168,7 +167,7 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
-#[allow(clippy::non_ascii_literal, clippy::result_unwrap_used)]
+#[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -189,10 +188,7 @@ mod test {
         )));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions,
-        );
+        let api = super::filters(Arc::clone(&registry), subscriptions);
 
         let res = request()
             .method("POST")
@@ -223,20 +219,17 @@ mod test {
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions,
-        );
+        let api = super::filters(Arc::clone(&registry), subscriptions);
 
         // Register the org
-        request()
-            .method("POST")
-            .path("/orgs")
-            .json(&super::RegisterInput {
-                id: "monadic".into(),
-            })
-            .reply(&api)
-            .await;
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let fee: radicle_registry_client::Balance = 100;
+        registry
+            .write()
+            .await
+            .register_org(&alice, "monadic".to_string(), fee)
+            .await
+            .unwrap();
 
         let res = request()
             .method("GET")

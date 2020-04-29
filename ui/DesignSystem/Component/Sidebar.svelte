@@ -1,16 +1,15 @@
 <script>
-  import { location } from "svelte-spa-router";
-  import { link } from "svelte-spa-router";
+  import { location, link } from "svelte-spa-router";
 
   /* TODO(rudolfs): fetch the actual org list */
   import { orgMocks } from "../../lib/orgMocks.js";
   import * as path from "../../lib/path.js";
-  import * as remote from "../../src/remote.ts";
   import { session } from "../../src/session.ts";
 
   import { Avatar, Icon, Title } from "../Primitive";
-
   import IdentityAvatar from "./IdentityAvatar.svelte";
+  import Remote from "./Remote.svelte";
+
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 </script>
 
@@ -162,11 +161,11 @@
       class="item indicator"
       data-cy="profile"
       class:active={path.active(path.profile(), $location, true)}>
-      {#if $session.status === remote.Status.Success}
+      <Remote store={session} let:data>
         <a href={path.profileProjects()} use:link>
-          <IdentityAvatar identity={$session.data.identity} size="medium" />
+          <IdentityAvatar identity={data.identity} size="medium" />
         </a>
-      {/if}
+      </Remote>
 
       <div class="tooltip">
         <Title>Profile</Title>

@@ -1,9 +1,10 @@
 <script>
   import { TREE } from "../../../../native/types.js";
   import { currentPath, currentRevision, tree } from "../../../src/source.ts";
-  import * as remote from "../../../src/remote.ts";
 
   import { Icon } from "../../Primitive";
+  import { Remote } from "../../Component";
+
   import File from "./File.svelte";
 
   export let prefix = ""; // start sidebar tree from repository root
@@ -13,12 +14,11 @@
   export let expanded = false;
   export let toplevel = false;
 
-  $: sourceTree = tree(projectId, $currentRevision, prefix);
-
   const toggle = () => {
     expanded = !expanded;
   };
 
+  $: store = tree(projectId, $currentRevision, prefix);
   $: active = prefix === $currentPath;
 </script>
 
@@ -54,7 +54,7 @@
   }
 </style>
 
-{#if $sourceTree.status === remote.Status.Success}
+<Remote {store} let:data={tree}>
   {#if !toplevel}
     <div class="folder" on:click={toggle}>
       <span class:expanded class:active style="height: 24px">
@@ -66,7 +66,7 @@
 
   <div class="container" class:toplevel>
     {#if expanded || toplevel}
-      {#each $sourceTree.data.entries as entry}
+      {#each tree.entries as entry}
         {#if entry.info.objectType === TREE}
           <svelte:self
             {projectId}
@@ -78,4 +78,4 @@
       {/each}
     {/if}
   </div>
-{/if}
+</Remote>

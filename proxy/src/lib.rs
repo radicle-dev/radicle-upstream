@@ -1,4 +1,4 @@
-//! Proxy to serve a specialised `GraphQL` API to radicle-upstream.
+//! Proxy serving a specialized API to the Upstream UI.
 
 #![deny(missing_docs, unused_import_braces, unused_qualifications, warnings)]
 #![deny(
@@ -25,14 +25,10 @@
 )]
 #![feature(str_strip)]
 
-#[macro_use]
-extern crate juniper;
-
 pub mod avatar;
 pub mod coco;
 pub mod env;
 pub mod error;
-pub mod graphql;
 pub mod http;
 pub mod identity;
 mod notification;

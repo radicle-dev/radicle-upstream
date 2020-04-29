@@ -1,6 +1,6 @@
 {
   "name": "radicle-upstream",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "author": {
     "name": "radicle team",
     "email": "dev@radicle.xyz",
@@ -47,7 +47,6 @@
     "@babel/preset-env": "^7.8.6",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
     "@typescript-eslint/parser": "^2.27.0",
-    "apollo": "^2.24.0",
     "babel-eslint": "^10.1.0",
     "chokidar": "^3.3.1",
     "cypress": "^4.3.0",
@@ -78,7 +77,7 @@
     "wait-on": "^4.0.1"
   },
   "scripts": {
-    "start": "run-p --race svelte:watch proxy:start graphiql:serve electron:start",
+    "start": "run-p --race svelte:watch proxy:start electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' run-p --race proxy:start:test test:run",
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test cypress:open",
@@ -92,13 +91,9 @@
     "proxy:build:release": "cd proxy && cargo build --release --all-features --all-targets",
     "proxy:start": "cd proxy && cargo run -- --registry=emulator",
     "proxy:start:test": "cd proxy && cargo run -- --registry=emulator --test",
-    "graphiql": "open http://localhost:5000",
-    "graphiql:serve": "yarn sirv ./graphiql",
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
     "generate:colors": "babel-node --presets \"@babel/env\" scripts/generate-colors.js",
-    "generate:schema": "run-p --race proxy:start apollo:download:schema",
-    "apollo:download:schema": "wait-on tcp:8080 && rm -rf ./schema.gql && yarn apollo client:download-schema schema.gql --endpoint=http://127.0.0.1:8080/graphql",
     "release": "babel-node --presets \"@babel/env\" scripts/release.js",
     "release:finalize": "babel-node --presets \"@babel/env\" scripts/release.js --finalize",
     "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
@@ -109,10 +104,7 @@
   "dependencies": {
     "@babel/runtime": "^7.8.4",
     "@types/qs": "^6.9.1",
-    "apollo-boost": "^0.4.7",
-    "graphql": "^14.6.0",
     "hotkeys-js": "^3.7.3",
-    "svelte-apollo": "^0.3.0",
     "timeago.js": "^4.0.2",
     "validate.js": "^0.13.1"
   },

@@ -89,6 +89,14 @@ pub struct Org {
     pub avatar_fallback: avatar::Avatar,
 }
 
+/// The registered user with associated coco id.
+pub struct User {
+    /// Unique handle regsistered on the Regisry.
+    pub handle: UserId,
+    /// Associated coco id for attestion.
+    pub maybe_coco_id: Option<String>,
+}
+
 /// Registry client wrapper.
 #[derive(Clone)]
 pub struct Registry {
@@ -330,9 +338,16 @@ impl Registry {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    pub async fn get_user(&self, handle: String) -> Result<Option<String>, error::Error> {
+    pub async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error> {
         let user_id = UserId::try_from(handle.clone())?;
-        Ok(self.client.get_user(user_id).await?.map(|_user| handle))
+        Ok(self
+            .client
+            .get_user(user_id.clone())
+            .await?
+            .map(|_user| User {
+                handle: user_id,
+                maybe_coco_id: None,
+            }))
     }
 
     /// Try to retrieve org from the Registry by id.
@@ -346,6 +361,37 @@ impl Registry {
             id: id.clone(),
             avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
         }))
+    }
+
+    /// List orgs of the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    pub async fn list_orgs(&self, _user_id: String) -> Result<Vec<Org>, error::Error> {
+        // TODO(merle): Remove temp_public_key once members are returned as user ids
+        let temp_public_key = ed25519::Pair::from_legacy_string("//Alice", None).public();
+        let org_ids = self.client.list_orgs().await?.into_iter();
+        let mut orgs = Vec::new();
+        for org_id in org_ids {
+            orgs.push(self.client.get_org(org_id).await?.expect("Get org"));
+        }
+        Ok(orgs
+            .into_iter()
+            .filter_map(|org| {
+                if org.members.contains(&temp_public_key) {
+                    Some(Org {
+                        id: org.id.to_string(),
+                        avatar_fallback: avatar::Avatar::from(
+                            &org.id.to_string(),
+                            avatar::Usage::Org,
+                        ),
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect())
     }
 
     /// Graciously pay some tokens to the recipient out of Alices pocket.
@@ -377,12 +423,12 @@ impl Registry {
         &mut self,
         author: &ed25519::Pair,
         handle: String,
-        id: String,
+        id: Option<String>,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
         let user_id = UserId::try_from(handle.clone())?;
-        let id = registry::String32::from_string(id)?;
+        let id = registry::String32::from_string(id.unwrap_or_default())?;
 
         // Prepare and submit user registration transaction.
         let register_message = message::RegisterUser {
@@ -425,10 +471,17 @@ impl Registry {
     }
 }
 
-#[allow(clippy::panic, clippy::option_unwrap_used, clippy::result_unwrap_used)]
+#[allow(
+    clippy::indexing_slicing,
+    clippy::panic,
+    clippy::option_unwrap_used,
+    clippy::result_unwrap_used
+)]
 #[cfg(test)]
 mod tests {
-    use radicle_registry_client::{ed25519, Client, ClientT, Hash, OrgId, ProjectName, TxHash};
+    use radicle_registry_client::{
+        ed25519, Client, ClientT, CryptoPair, Hash, OrgId, ProjectName, TxHash,
+    };
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
     use std::time;
@@ -499,7 +552,7 @@ mod tests {
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.id, org_id);
-        assert_eq!(org.members.len(), 1);
+        assert_eq!(org.members[0], alice.public());
     }
 
     #[tokio::test]
@@ -552,6 +605,32 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_list_org() {
+        // Test that a registered org can be retrieved.
+        let client = Client::new_emulator();
+        let mut registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Register the org
+        let org_id = OrgId::try_from("monadic").unwrap();
+        let org_registration = registry
+            .register_org(&alice, org_id.clone().into(), 10)
+            .await;
+        assert!(org_registration.is_ok());
+
+        // List the orgs
+        let orgs = registry.list_orgs("alice".to_string()).await.unwrap();
+        assert_eq!(orgs.len(), 1);
+        assert_eq!(orgs[0].id, "monadic");
+    }
+
+    #[tokio::test]
     async fn test_register_project() {
         // Test that project registration submits valid transactions and they succeed.
         let client = Client::new_emulator();
@@ -600,7 +679,7 @@ mod tests {
         let robo = ed25519::Pair::from_legacy_string("//Alice", None);
 
         let res = registry
-            .register_user(&robo, "cloudhead".into(), "123abcd.git".into(), 100)
+            .register_user(&robo, "cloudhead".into(), Some("123abcd.git".into()), 100)
             .await;
         assert!(res.is_ok());
     }

@@ -26,7 +26,7 @@ pub fn filters(
         .or(register_filter(registry, subscriptions))
 }
 
-/// POST /projects
+/// `POST /projects`
 fn create_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -51,7 +51,7 @@ fn create_filter(
         .and_then(handler::create)
 }
 
-/// GET /projects/<id>
+/// `GET /projects/<id>`
 fn get_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -80,7 +80,7 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// GET /projects
+/// `GET /projects`
 fn list_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -102,7 +102,7 @@ fn list_filter(
         .and_then(handler::list)
 }
 
-/// POST /projects/register
+/// `POST /projects/register`
 fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
@@ -110,8 +110,8 @@ fn register_filter(
     path!("projects" / "register")
         .and(warp::post())
         .and(super::with_registry(registry))
-        .and(warp::body::json())
         .and(super::with_subscriptions(subscriptions))
+        .and(warp::body::json())
         .and(document::document(document::description(
             "Register a Project on the Registry",
         )))
@@ -214,8 +214,8 @@ mod handler {
     /// Register a project on the Registry.
     pub async fn register(
         registry: Arc<RwLock<registry::Registry>>,
-        input: super::RegisterInput,
         subscriptions: notification::Subscriptions,
+        input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -393,7 +393,7 @@ pub struct CreateInput {
 
 impl ToDocumentedType for CreateInput {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
+        let mut properties = HashMap::with_capacity(2);
         properties.insert(
             "path".into(),
             document::string()
@@ -420,7 +420,7 @@ pub struct MetadataInput {
 
 impl ToDocumentedType for MetadataInput {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
+        let mut properties = HashMap::with_capacity(3);
         properties.insert(
             "name".into(),
             document::string()
@@ -458,7 +458,7 @@ pub struct RegisterInput {
 
 impl ToDocumentedType for RegisterInput {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
+        let mut properties = HashMap::with_capacity(3);
         properties.insert(
             "org_id".into(),
             document::string()
@@ -478,7 +478,7 @@ impl ToDocumentedType for RegisterInput {
                 .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
         );
 
-        document::DocumentedType::from(properties).description("Input for project creation")
+        document::DocumentedType::from(properties).description("Input for Project registration")
     }
 }
 
@@ -584,7 +584,6 @@ mod test {
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(project));
     }

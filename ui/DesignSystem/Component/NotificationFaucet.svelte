@@ -39,12 +39,10 @@
 <style>
   .wrapper {
     position: absolute;
+    bottom: 32px;
     z-index: 1001;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    padding: 0 80px 0 80px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .notification {
@@ -56,7 +54,7 @@
   {#each messages as message}
     <div class="notification" transition:blur={{ duration: 300 }}>
       <Notification
-        level={message.level}
+        variant={message.level}
         on:click={() => {
           remove(message.id);
         }}>

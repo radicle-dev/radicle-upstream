@@ -125,7 +125,6 @@
     <div class="buttons">
       <Button
         variant="transparent"
-        size="big"
         style="margin-right: 16px;"
         on:click={onCancel}>
         Cancel
@@ -133,7 +132,6 @@
       <Button
         dataCy="create-id-button"
         disabled={!handle || validations || $store.status === remote.Status.Loading}
-        size="big"
         on:click={() => {
           beginValidation = true;
           validate();

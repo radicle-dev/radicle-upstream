@@ -5,7 +5,6 @@
 </script>
 
 <Button
-  size="small"
   variant="transparent"
   icon={Icon.Register}
   on:click={() => push(registerUser())}>

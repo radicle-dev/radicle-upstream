@@ -3,8 +3,8 @@
 
   import * as path from "../../lib/path.js";
   import { store } from "../../src/identity.ts";
-  import * as remote from "../../src/remote.ts";
 
+  import { Copyable, Remote } from "../../DesignSystem/Component";
   import {
     Avatar,
     Button,
@@ -13,7 +13,6 @@
     Text,
     Title
   } from "../../DesignSystem/Primitive";
-  import { Copyable } from "../../DesignSystem/Component";
 
   export let onClose;
   let copyIcon = Icon.Copy;
@@ -78,15 +77,15 @@
         register it.
       </span>
     </Text>
-    <div class="identity-card">
-      {#if $store.status === remote.Status.Success}
+    <Remote {store} let:data={identity}>
+      <div class="identity-card">
         <Avatar
           size="huge"
-          imageUrl={$store.data.metadata.avatarUrl}
-          avatarFallback={$store.data.avatarFallback} />
+          imageUrl={identity.metadata.avatarUrl}
+          avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">
           <Title>
-            {$store.data.metadata.displayName || $store.data.metadata.handle}
+            {identity.metadata.displayName || identity.metadata.handle}
           </Title>
           <Copyable {afterCopy}>
             <Flex align="left">
@@ -94,14 +93,14 @@
                 style="color: var(--color-foreground-level-6); white-space:
                 nowrap; overflow: hidden; text-overflow: ellipsis; max-width:
                 350px;">
-                {$store.data.shareableEntityIdentifier}
+                {identity.shareableEntityIdentifier}
               </Text>
               <svelte:component this={copyIcon} style="margin-left: 8px;" />
             </Flex>
           </Copyable>
         </div>
-      {/if}
-    </div>
+      </div>
+    </Remote>
 
     <Button on:click={onClose}>Go to profile</Button>
   </div>

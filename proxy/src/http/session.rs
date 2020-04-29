@@ -10,7 +10,7 @@ use warp::{path, Filter, Rejection, Reply};
 use crate::identity;
 use crate::session;
 
-/// GET /
+/// `GET /`
 pub fn get_filter(
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
