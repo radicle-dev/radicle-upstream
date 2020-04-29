@@ -83,6 +83,7 @@
   .container {
     display: flex;
     width: inherit;
+    margin-bottom: 64px;
   }
 
   .column-left {
