@@ -104,15 +104,16 @@
         Registering an org allows you to give others in your org the right to
         sign transactions, like adding other members or adding projects.
       </Text>
-      <Input.Validated
+      <Input.Text
         placeholder="Org name (e.g. Flowerpot)"
         bind:value={orgName}
         style="--focus-outline-color: var(--color-primary); width: 100%;"
+        showSuccessCheck
         validation={$validation}>
         <div slot="avatar">
           <Avatar imageUrl={org.avatar.imageUrl} variant="square" />
         </div>
-      </Input.Validated>
+      </Input.Text>
     {:else if state === RegistrationFlowState.TransactionConfirmation}
       <div style="width: 100%;">
         <Transaction {transaction} {subject} {payer} />

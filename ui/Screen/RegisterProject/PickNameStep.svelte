@@ -1,6 +1,10 @@
 <script>
   import validatejs from "validate.js";
   import { Button, Flex, Input } from "../../DesignSystem/Primitive";
+  import {
+    ValidationStatus,
+    getValidationState
+  } from "../../src/validation.ts";
 
   import { pop } from "svelte-spa-router";
 
@@ -38,6 +42,7 @@
   };
 
   let validations = false;
+  let nameValidation = { status: ValidationStatus.NotStarted };
 
   const validate = () => {
     if (!beginValidation) {
@@ -45,6 +50,7 @@
     }
 
     validations = validatejs({ projectName: projectName }, constraints);
+    nameValidation = getValidationState("projectName", validations);
   };
 
   $: validate(projectName);
@@ -54,8 +60,7 @@
   style="--focus-outline-color: var(--color-primary)"
   placeholder="Project name"
   bind:value={projectName}
-  valid={!(beginValidation && validations && validations.projectName)}
-  validationMessage={beginValidation && validations && validations.projectName && validations.projectName[0]} />
+  validation={nameValidation} />
 
 <Flex style="margin-top: 48px;">
   <div slot="left">

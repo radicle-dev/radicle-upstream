@@ -3,8 +3,12 @@
   import validatejs from "validate.js";
 
   import * as user from "../../src/user.ts";
+  import {
+    getValidationState,
+    ValidationStatus
+  } from "../../src/validation.ts";
 
-  import { Button, Flex, Input } from "../../DesignSystem/Primitive";
+  import { Avatar, Button, Flex, Input } from "../../DesignSystem/Primitive";
 
   export let identity = null;
   export let onNextStep = null;
@@ -51,14 +55,16 @@
     }
   };
 
+  let handleValidation = { status: ValidationStatus.NotStarted };
   const validate = async () => {
-    validating = true;
+    handleValidation = { status: ValidationStatus.Loading };
     validations = validatejs({ handle: handle }, constraints);
     if (!validatejs.isEmpty(validations)) {
-      validating = false;
+      handleValidation = getValidationState("handle", validations);
     } else {
       await validateHandleAvailability();
       validating = false;
+      handleValidation = getValidationState("handle", validations);
     }
   };
 
@@ -67,15 +73,18 @@
 
 <Input.Text
   dataCy="handle"
-  avatarFallback={identity.avatarFallback}
-  imageUrl={identity.metadata.avatarUrl}
   style="--focus-outline-color: var(--color-primary)"
   placeholder="User handle"
   bind:value={handle}
-  valid={!(validations && validations.handle)}
-  validationMessage={validations && validations.handle && validations.handle[0]}
-  variant="handle"
-  validationPending={validating} />
+  showSuccessCheck
+  validation={handleValidation}>
+  <div slot="avatar">
+    <Avatar
+      imageUrl={identity.metadata.avatarUrl}
+      avatarFallback={identity.avatarFallback}
+      variant="circle" />
+  </div>
+</Input.Text>
 
 <Flex style="margin-top: 32px;" align="right">
   <Button

@@ -19,6 +19,19 @@ interface ValidationStore extends Readable<ValidationState> {
   updateInput: (input: string) => void;
 }
 
+// TODO(sos): While we're figuring out consistent validations, this method makes
+// it easier to derive a ValidationState from an existing validatejs response
+export const getValidationState = (entity: string, validationErrors: { [key: string]: string[] }): ValidationState => {
+  if (validationErrors && validationErrors[entity]) {
+    return {
+      status: ValidationStatus.Error,
+      message: validationErrors[entity][0]
+    };
+  }
+
+  return { status: ValidationStatus.Success };
+}
+
 export const createValidationStore = (constraints: any): ValidationStore => {
   const initialState = { status: ValidationStatus.NotStarted } as ValidationState
   const internalStore = writable(initialState)

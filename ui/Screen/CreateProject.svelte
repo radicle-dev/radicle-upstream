@@ -7,6 +7,7 @@
   import { showNotification } from "../store/notification.js";
   import { create } from "../src/project.ts";
   import { getLocalBranches } from "../src/source.ts";
+  import { getValidationState } from "../src/validation.ts";
 
   import { ModalLayout, RadioOption } from "../DesignSystem/Component";
   import {
@@ -209,6 +210,8 @@
 
   // Re-fetch branches whenever the user selects a new path.
   $: fetchBranches(isNew ? newRepositoryPath : existingRepositoryPath);
+
+  $: nameValidation = getValidationState("name", validations);
 </script>
 
 <style>
@@ -253,8 +256,7 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        valid={!(validations && validations.name)}
-        validationMessage={validations && validations.name && validations.name[0]} />
+        validation={nameValidation} />
 
       <Input.Text
         style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:

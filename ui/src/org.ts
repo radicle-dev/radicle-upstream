@@ -1,7 +1,6 @@
 import * as api from "./api"
 import { MessageType, Transaction } from './transaction';
 
-
 export enum RegistrationFlowState {
   NameSelection,
   TransactionConfirmation

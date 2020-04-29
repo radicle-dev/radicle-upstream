@@ -3,6 +3,10 @@
 
   import { create, store } from "../../src/identity.ts";
   import * as remote from "../../src/remote.ts";
+  import {
+    ValidationStatus,
+    getValidationState
+  } from "../../src/validation.ts";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
@@ -59,6 +63,10 @@
     }
   };
 
+  let handleValidation = { status: ValidationStatus.NotStarted };
+  let displayNameValidation = { status: ValidationStatus.NotStarted };
+  let avatarUrlValidation = { status: ValidationStatus.NotStarted };
+
   const validate = () => {
     if (!beginValidation) {
       return;
@@ -71,6 +79,10 @@
       },
       constraints
     );
+
+    handleValidation = getValidationState("handle", validations);
+    displayNameValidation = getValidationState("displayName", validations);
+    avatarUrlValidation = getValidationState("avatarUrl", validations);
   };
 
   $: validate(handle, displayName, avatarUrl);
@@ -106,22 +118,19 @@
       placeholder="Enter a handle*"
       bind:value={handle}
       dataCy="handle"
-      valid={!(validations && validations.handle)}
-      validationMessage={validations && validations.handle && validations.handle[0]} />
+      validation={handleValidation} />
     <Input.Text
       placeholder="Add a display name"
       bind:value={displayName}
       dataCy="display-name"
-      valid={!(validations && validations.displayName)}
-      validationMessage={validations && validations.displayName && validations.displayName[0]}
+      validation={displayNameValidation}
       style="margin-top: 16px;" />
     <Input.Text
       placeholder="Avatar url"
       bind:value={avatarUrl}
       dataCy="avatar-url"
       style="margin: 16px 0 32px 0;"
-      validationMessage={validations && validations.avatarUrl && validations.avatarUrl[0]}
-      valid={!(validations && validations.avatarUrl)} />
+      validation={avatarUrlValidation} />
     <div class="buttons">
       <Button
         variant="transparent"
