@@ -180,7 +180,8 @@
             path={$currentPath}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.info.objectType === TREE}
+        {:else if object.info.objectType === TREE && !object.path}
+          <!-- Repository root -->
           <div class="commit-header">
             <CommitTeaser
               projectId={project.id}
@@ -192,19 +193,17 @@
           </div>
 
           {#if readmePath}
-            {#await $readme then blob}
-              {#if blob && blob.status == remote.Status.Success}
-                {#if blob.data.binary}
-                  <!-- TODO: Placeholder for when projects don't have a README -->
-                {:else}
-                  <Readme
-                    path={readmePath}
-                    commit={object.info.lastCommit}
-                    blob={blob.data}
-                    projectId={project.id} />
-                {/if}
+            <Remote store={readme} let:data={blob}>
+              {#if blob.binary}
+                <!-- TODO: Placeholder for when README is binary -->
+              {:else}
+                <Readme
+                  {blob}
+                  path={readmePath}
+                  commit={object.info.lastCommit}
+                  projectId={project.id} />
               {/if}
-            {/await}
+            </Remote>
           {:else}
             <!-- TODO: Placeholder for when projects don't have a README -->
           {/if}
