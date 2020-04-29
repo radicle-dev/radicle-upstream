@@ -561,6 +561,9 @@ Before you begin: install the [`hub`][hb] cli tool. We use `hub` in our release
 automation script to create a pull-request off of a release branch and later
 for merging this branch into master and closing the pull-request.
 
+You'll also have to authenticate the hub cli once by running any command that
+does a request to GitHub, like so: `hub api`.
+
 To perform a release run: `git checkout master && yarn release` and follow the
 instructions.
 
