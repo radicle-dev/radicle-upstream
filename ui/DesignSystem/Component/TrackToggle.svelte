@@ -1,14 +1,11 @@
 <script>
-  /* TODO(rudolfs): this is a placeholder for now, implement this component
-                    according to UX */
-
   import { Code, Icon, Title } from "../Primitive";
 
   export let style = null;
   export let peerCount = null;
   let hover = false;
   let active = false;
-  let tracking = false;
+  export let tracking = false;
   const enter = () => {
     hover = true;
   };
@@ -73,7 +70,7 @@
     border-bottom-left-radius: 3px;
   }
 
-  .left :global(svg) {
+  .toggle .left :global(svg) {
     fill: var(--color-background);
   }
 
@@ -83,8 +80,8 @@
   .left.active {
     background-color: var(--color-secondary-level-1);
   }
-  .left.tracking :global(svg) {
-    fill: var(--color-forground-level-5);
+  .toggle .left.tracking :global(svg) {
+    fill: var(--color-foreground-level-6);
   }
   .left.tracking {
     background-color: var(--color-foreground-level-3);
