@@ -1,6 +1,5 @@
 //! Integrations with the radicle Registry.
 
-use serde_cbor::to_vec;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -91,9 +90,13 @@ pub struct Org {
     pub avatar_fallback: avatar::Avatar,
 }
 
+/// A project registered under an [`Org`] or [`User`] on the Registry.
 pub struct Project {
+    /// Name of the project, unique under the top-level entity.
     pub name: ProjectName,
+    /// Id of the top-level entity.
     pub org_id: Id,
+    /// Optionally associated project id for attestation in other systems.
     pub maybe_project_id: Option<String>,
 }
 
@@ -201,10 +204,14 @@ impl Registry {
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
         let tx = Transaction {
             id: register_applied.tx_hash,
-            messages: vec![Message::OrgRegistration(org_id)],
+            messages: vec![Message::OrgRegistration(org_id.clone())],
             state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
         };
+
+        // TODO(xla): Remove autmoatic prepayment once we have proper balances.
+        let org = self.client.get_org(org_id).await?.expect("org not present");
+        self.prepay_account(org.account_id, 1000).await?;
 
         self.cache_transaction(tx.clone()).await;
 
@@ -246,93 +253,6 @@ impl Registry {
             id: unregister_applied.tx_hash,
             messages: vec![Message::OrgUnregistration(org_id)],
             state: TransactionState::Applied(unregister_applied.block),
-            timestamp: SystemTime::now(),
-        };
-
-        self.cache_transaction(tx.clone()).await;
-
-        Ok(tx)
-    }
-
-    /// Register a new project on the chain.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn register_project(
-        &mut self,
-        author: &ed25519::Pair,
-        org_id: String,
-        project_name: String,
-        maybe_project_id: Option<librad::project::ProjectId>,
-        fee: Balance,
-    ) -> Result<Transaction, error::Error> {
-        // Verify that inputs are valid.
-        let org_id = Id::try_from(org_id.clone())?;
-        let project_name = ProjectName::try_from(project_name.clone())?;
-
-        // Prepare and submit checkpoint transaction.
-        let checkpoint_message = message::CreateCheckpoint {
-            project_hash: H256::random(),
-            previous_checkpoint_id: None,
-        };
-        let checkpoint_tx = registry::Transaction::new_signed(
-            author,
-            checkpoint_message,
-            TransactionExtra {
-                genesis_hash: self.client.genesis_hash(),
-                nonce: self.client.account_nonce(&author.public()).await?,
-                fee,
-            },
-        );
-        let checkpoint_id = self
-            .client
-            .submit_transaction(checkpoint_tx)
-            .await?
-            .await?
-            .result?;
-
-        let register_metadata_vec = if let Some(pid_string) = maybe_project_id {
-            let pid_cbor = Metadata {
-                id: pid_string.to_string(),
-                version: 1,
-            };
-            // TODO(garbados): unpanic
-            to_vec(&pid_cbor).expect("unable to serialize project metadata")
-        } else {
-            vec![]
-        };
-
-        // TODO: remove .expect() call, see: https://github.com/radicle-dev/radicle-registry/issues/185
-        let register_metadata =
-            registry::Bytes128::from_vec(register_metadata_vec).expect("unable construct metadata");
-
-        // Prepare and submit project registration transaction.
-        let register_message = message::RegisterProject {
-            project_name: project_name.clone(),
-            org_id: org_id.clone(),
-            checkpoint_id,
-            metadata: register_metadata,
-        };
-        let register_tx = registry::Transaction::new_signed(
-            author,
-            register_message,
-            TransactionExtra {
-                genesis_hash: self.client.genesis_hash(),
-                nonce: self.client.account_nonce(&author.public()).await?,
-                fee,
-            },
-        );
-        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
-        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
-
-        let tx = Transaction {
-            id: register_applied.tx_hash,
-            messages: vec![Message::ProjectRegistration {
-                project_name: project_name,
-                org_id: org_id,
-            }],
-            state: TransactionState::Applied(register_applied.block),
             timestamp: SystemTime::now(),
         };
 
@@ -422,8 +342,96 @@ impl Registry {
             .map(|project| Project {
                 name: project.name,
                 org_id: project.org_id,
+                // TODO(xla): Proper conversion of ProjectIds.
                 maybe_project_id: None,
             }))
+    }
+
+    /// Register a new project on the chain.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    pub async fn register_project(
+        &mut self,
+        author: &ed25519::Pair,
+        org_id: String,
+        project_name: String,
+        maybe_project_id: Option<librad::project::ProjectId>,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error> {
+        // Verify that inputs are valid.
+        let org_id = Id::try_from(org_id.clone())?;
+        let project_name = ProjectName::try_from(project_name.clone())?;
+
+        // Prepare and submit checkpoint transaction.
+        let checkpoint_message = message::CreateCheckpoint {
+            project_hash: H256::random(),
+            previous_checkpoint_id: None,
+        };
+        let checkpoint_tx = registry::Transaction::new_signed(
+            author,
+            checkpoint_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+                fee,
+            },
+        );
+        let checkpoint_id = self
+            .client
+            .submit_transaction(checkpoint_tx)
+            .await?
+            .await?
+            .result?;
+
+        let register_metadata_vec = if let Some(pid_string) = maybe_project_id {
+            let pid_cbor = Metadata {
+                id: pid_string.to_string(),
+                version: 1,
+            };
+            // TODO(garbados): unpanic
+            serde_cbor::to_vec(&pid_cbor).expect("unable to serialize project metadata")
+        } else {
+            vec![]
+        };
+
+        // TODO: remove .expect() call, see: https://github.com/radicle-dev/radicle-registry/issues/185
+        let register_metadata =
+            registry::Bytes128::from_vec(register_metadata_vec).expect("unable construct metadata");
+
+        // Prepare and submit project registration transaction.
+        let register_message = message::RegisterProject {
+            project_name: project_name.clone(),
+            org_id: org_id.clone(),
+            checkpoint_id,
+            metadata: register_metadata,
+        };
+        let register_tx = registry::Transaction::new_signed(
+            author,
+            register_message,
+            TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+                fee,
+            },
+        );
+        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
+        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
+
+        let tx = Transaction {
+            id: register_applied.tx_hash,
+            messages: vec![Message::ProjectRegistration {
+                project_name: project_name,
+                org_id: org_id,
+            }],
+            state: TransactionState::Applied(register_applied.block),
+            timestamp: SystemTime::now(),
+        };
+
+        self.cache_transaction(tx.clone()).await;
+
+        Ok(tx)
     }
 
     /// Graciously pay some tokens to the recipient out of Alices pocket.
@@ -600,12 +608,6 @@ mod tests {
             .await;
         assert!(registration.is_ok());
 
-        // The org needs funds to submit transactions.
-        let org = futures::executor::block_on(client.get_org(org_id))
-            .unwrap()
-            .unwrap();
-        futures::executor::block_on(registry.prepay_account(org.account_id, 1000)).unwrap();
-
         // Unregister the org
         let unregistration =
             futures::executor::block_on(registry.unregister_org(&alice, "monadic".into(), 10));
@@ -674,10 +676,6 @@ mod tests {
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
         assert!(org_result.is_ok());
-
-        // The org needs funds to submit transactions.
-        let org = client.get_org(org_id.clone()).await.unwrap().unwrap();
-        registry.prepay_account(org.account_id, 1000).await.unwrap();
 
         // Register the project
         let result = registry

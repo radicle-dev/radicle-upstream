@@ -28,6 +28,7 @@ fn get_filter(
     super::with_registry(registry)
         .and(warp::get())
         .and(document::param::<String>("id", "Unique ID of the Org"))
+        .and(path::end())
         .and(document::document(document::description("Find Org by ID")))
         .and(document::document(document::tag("Org")))
         .and(document::document(
@@ -53,12 +54,13 @@ fn get_project_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     super::with_registry(registry)
         .and(warp::get())
-        .and(document::param::<String>("id", "Unique ID of the Org"))
+        .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
         .and(document::param::<String>(
             "project_name",
             "Name of the project",
         ))
+        .and(path::end())
         .and(document::document(document::description(
             "Find Project for Org",
         )))
@@ -131,13 +133,13 @@ mod handler {
     /// Get the [`registry::Project`] under the given org id.
     pub async fn get_project(
         registry: Arc<RwLock<registry::Registry>>,
-        id: String,
+        org_id: String,
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let org = reg.get_project(id, project_name).await?;
+        let project = reg.get_project(org_id, project_name).await?;
 
-        Ok(reply::json(&org))
+        Ok(reply::json(&project))
     }
 
     /// Register an org on the Registry.
@@ -317,11 +319,10 @@ mod test {
 
         // Register the org.
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        let fee: radicle_registry_client::Balance = 10;
         registry
             .write()
             .await
-            .register_org(&alice, org_id.to_string(), fee)
+            .register_org(&alice, org_id.to_string(), 10)
             .await
             .unwrap();
 
@@ -334,7 +335,7 @@ mod test {
                 org_id.to_string(),
                 project_name.to_string(),
                 None,
-                fee,
+                10,
             )
             .await
             .unwrap();
