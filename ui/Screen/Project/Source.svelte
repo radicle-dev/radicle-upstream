@@ -52,12 +52,14 @@
   let readmePath = null;
 
   $: readme = null;
-  $: if ($object.status === remote.Status.Success) {
-    if ($object.data.info.objectType === TREE) {
-      readmePath = findReadme($object.data);
+  $: if ($objectStore.status === remote.Status.Success) {
+    if ($objectStore.data.info.objectType === TREE) {
+      readmePath = findReadme($objectStore.data);
 
       if (path) {
-        readme = blob($project.data.id, $currentRevision, readmePath);
+        if ($projectStore.status === remote.Status.Success) {
+          readme = blob($projectStore.data.id, $currentRevision, readmePath);
+        }
       }
     }
   }
@@ -140,10 +142,7 @@
       </Remote>
 
       <div class="source-tree" data-cy="source-tree">
-        <Folder
-          projectId={project.data.id}
-          toplevel
-          name={project.data.metadata.name} />
+        <Folder projectId={project.id} toplevel name={project.metadata.name} />
       </div>
     </div>
 
@@ -170,14 +169,14 @@
           <FileSource
             blob={object}
             path={$currentPath}
-            projectName={project.data.metadata.name}
-            projectId={project.data.id} />
-        {:else if object.data.info.objectType === TREE && $readme.status === remote.Status.Success}
+            projectName={project.metadata.name}
+            projectId={project.id} />
+        {:else if object.info.objectType === TREE && $readme.status === remote.Status.Success}
           <Readme
             path={readmePath}
-            commit={object.data.info.lastCommit}
-            blob={$readme.data}
-            projectId={project.data.id} />
+            commit={object.info.lastCommit}
+            blob={readme.data}
+            projectId={project.id} />
         {/if}
       </Remote>
     </div>
