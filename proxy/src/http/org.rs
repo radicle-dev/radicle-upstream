@@ -1,5 +1,4 @@
 //! Endpoints for Org.
-
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
@@ -11,8 +10,21 @@ use crate::avatar;
 use crate::notification;
 use crate::registry;
 
+/// Prefixed filters..
+pub fn routes(
+    registry: Arc<RwLock<registry::Registry>>,
+    subscriptions: notification::Subscriptions,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("orgs").and(
+        get_filter(Arc::clone(&registry))
+            .or(get_project_filter(Arc::clone(&registry)))
+            .or(register_filter(registry, subscriptions)),
+    )
+}
+
 /// Combination of all org routes.
-pub fn filters(
+#[cfg(test)]
+fn filters(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -91,6 +103,7 @@ fn register_filter(
         .and(super::with_subscriptions(subscriptions))
         .and(warp::post())
         .and(warp::body::json())
+        .and(path::end())
         .and(document::document(document::description(
             "Register a new unique Org",
         )))
