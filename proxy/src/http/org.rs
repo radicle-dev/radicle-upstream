@@ -226,13 +226,13 @@ impl ToDocumentedType for registry::Project {
             "name".into(),
             document::string()
                 .description("Name of the project")
-                .example("monadic"),
+                .example("upstream"),
         );
         properties.insert(
             "orgId".into(),
             document::string()
                 .description("The id of the org")
-                .example("monadic"),
+                .example("radicle"),
         );
         properties.insert(
             "maybeProjectId".into(),
