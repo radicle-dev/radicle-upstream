@@ -154,14 +154,14 @@
     let response;
 
     try {
-      response = await create({
-        metadata: {
+      response = await create(
+        {
           name,
           description,
           defaultBranch
         },
-        path: isNew ? newRepositoryPath : existingRepositoryPath
-      });
+        isNew ? newRepositoryPath : existingRepositoryPath
+      );
 
       push(path.projectSource(response.id));
       showNotification({
@@ -252,15 +252,13 @@
       </Title>
 
       <Input.Text
-        style="--focus-outline-color: var(--color-primary)"
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
         validation={nameValidation} />
 
       <Input.Text
-        style="margin-top: 16px; margin-bottom: 16px; --focus-outline-color:
-        var(--color-primary)"
+        style="margin-top: 16px; margin-bottom: 16px;"
         placeholder="Project description"
         bind:value={description} />
 

@@ -57,7 +57,6 @@
 </script>
 
 <Input.Text
-  style="--focus-outline-color: var(--color-primary)"
   placeholder="Project name"
   bind:value={projectName}
   validation={nameValidation} />

@@ -144,7 +144,7 @@
   }
 
   .layout {
-    margin: 160px;
+    margin: 32px;
   }
 </style>
 
@@ -295,21 +295,6 @@
       </thead>
       <tr>
         <td>
-          <Button variant="vanilla">Vanilla</Button>
-        </td>
-        <td>
-          <Button variant="vanilla" disabled>Vanilla</Button>
-        </td>
-        <td>
-          <Button icon={Icon.Plus} variant="vanilla">Vanilla</Button>
-        </td>
-        <td>
-          <Button icon={Icon.Plus} variant="vanilla" disabled>Vanilla</Button>
-        </td>
-      </tr>
-
-      <tr>
-        <td>
           <Button variant="primary">Primary</Button>
         </td>
         <td>
@@ -322,7 +307,6 @@
           <Button icon={Icon.Minus} variant="primary" disabled>Primary</Button>
         </td>
       </tr>
-
       <tr>
         <td>
           <Button variant="secondary">Secondary</Button>
@@ -339,7 +323,34 @@
           </Button>
         </td>
       </tr>
-
+      <tr>
+        <td>
+          <Button variant="vanilla">Vanilla</Button>
+        </td>
+        <td>
+          <Button variant="vanilla" disabled>Vanilla</Button>
+        </td>
+        <td>
+          <Button icon={Icon.Plus} variant="vanilla">Vanilla</Button>
+        </td>
+        <td>
+          <Button icon={Icon.Plus} variant="vanilla" disabled>Vanilla</Button>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <Button variant="outline">Outline</Button>
+        </td>
+        <td>
+          <Button variant="outline" disabled>Outline</Button>
+        </td>
+        <td>
+          <Button icon={Icon.Graph} variant="outline">Outline</Button>
+        </td>
+        <td>
+          <Button icon={Icon.Graph} variant="outline" disabled>Outline</Button>
+        </td>
+      </tr>
       <tr>
         <td>
           <Button variant="transparent">Transparent</Button>
@@ -357,139 +368,6 @@
         </td>
       </tr>
 
-      <tr>
-        <td>
-          <Button variant="outline">Outline</Button>
-        </td>
-        <td>
-          <Button variant="outline" disabled>Outline</Button>
-        </td>
-        <td>
-          <Button icon={Icon.Graph} variant="outline">Outline</Button>
-        </td>
-        <td>
-          <Button icon={Icon.Graph} variant="outline" disabled>Outline</Button>
-        </td>
-      </tr>
-    </table>
-
-    <table>
-      <thead>
-        <tr>
-          <td>
-            <Caption>Variant</Caption>
-          </td>
-          <td>
-            <Caption>Disabled</Caption>
-          </td>
-          <td>
-            <Caption>Variant</Caption>
-          </td>
-          <td>
-            <Caption>Disabled</Caption>
-          </td>
-        </tr>
-      </thead>
-      <tr>
-        <td>
-          <Button size="small" variant="vanilla">Vanilla</Button>
-        </td>
-        <td>
-          <Button size="small" variant="vanilla" disabled>Vanilla</Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.Plus} variant="vanilla">
-            Vanilla
-          </Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.Plus} variant="vanilla" disabled>
-            Vanilla
-          </Button>
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          <Button size="small" variant="primary">Primary</Button>
-        </td>
-        <td>
-          <Button size="small" variant="primary" disabled>Primary</Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.Minus} variant="primary">
-            Primary
-          </Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.Minus} variant="primary" disabled>
-            Primary
-          </Button>
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          <Button size="small" variant="secondary">Secondary</Button>
-        </td>
-        <td>
-          <Button size="small" variant="secondary" disabled>Secondary</Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.SearchSmall} variant="secondary">
-            Secondary
-          </Button>
-        </td>
-        <td>
-          <Button
-            size="small"
-            icon={Icon.SearchSmall}
-            variant="secondary"
-            disabled>
-            Secondary
-          </Button>
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          <Button size="small" variant="transparent">Transparent</Button>
-        </td>
-        <td>
-          <Button size="small" variant="transparent" disabled>
-            Transparent
-          </Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.Check} variant="transparent">
-            Transparent
-          </Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.Check} variant="transparent" disabled>
-            Transparent
-          </Button>
-        </td>
-      </tr>
-
-      <tr>
-        <td>
-          <Button size="small" variant="outline">Outline</Button>
-        </td>
-        <td>
-          <Button size="small" variant="outline" disabled>Outline</Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.Graph} variant="outline">
-            Outline
-          </Button>
-        </td>
-        <td>
-          <Button size="small" icon={Icon.Graph} variant="outline" disabled>
-            Outline
-          </Button>
-        </td>
-      </tr>
     </table>
   </Section>
 

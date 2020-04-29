@@ -4,7 +4,6 @@
 
 <Button
   style="color: var(--color-secondary); border: 2px solid var(--color-secondary)"
-  size="small"
   variant="outline"
   on:click={() => console.log('event(support-project)')}>
   Support

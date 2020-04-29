@@ -27,6 +27,7 @@
     display: flex;
     flex: 1;
     align-items: center;
+    max-width: 64%;
   }
 
   .align-right {
@@ -35,22 +36,30 @@
     justify-content: flex-end;
   }
 
-  .commitSha {
+  .commit-message {
+    color: var(--color-foreground-level-6);
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+  }
+
+  .commit-sha {
     color: var(--color-secondary);
+    font-family: var(--typeface-mono-regular);
   }
 </style>
 
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
     <UserCard {user} style="margin-right: 8px" />
-    <Text style="color: var(--color-foreground-level-6)">{commitMessage}</Text>
+
+    <p class="commit-message">{commitMessage}</p>
   </div>
 
   <div class="align-right">
     <Text style="color: var(--color-foreground-level-6)">
       Latest commit
       <a
-        class="commitSha"
+        class="commit-sha"
         href={path.projectCommit(projectId, commitSha)}
         use:link>
         {commitSha.substring(0, 7)}

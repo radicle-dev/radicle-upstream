@@ -1,8 +1,5 @@
 <script>
-  import { link } from "svelte-spa-router";
-
   import { TREE } from "../../../../native/types.js";
-  import * as path from "../../../lib/path.js";
   import { currentPath, currentRevision, tree } from "../../../src/source.ts";
 
   import { Icon } from "../../Primitive";
@@ -15,7 +12,7 @@
   export let projectId = null;
 
   export let expanded = false;
-  export let firstEntry = true;
+  export let toplevel = false;
 
   const toggle = () => {
     expanded = !expanded;
@@ -29,68 +26,52 @@
   .folder {
     display: flex;
     cursor: pointer;
-    margin: 0 4px 12px 0;
+    padding: 4px 4px 4px 4px;
+    margin: 4px 0;
     color: var(--color-foreground-level-6);
     user-select: none;
+    line-height: 1.5rem;
+  }
+  .folder:hover {
+    background-color: var(--color-foreground-level-1);
+    border-radius: 4px;
+  }
+
+  .folder-name {
+    margin-left: 0.25rem;
   }
 
   .expanded :global(svg) {
     transform: rotate(90deg);
   }
 
-  .folder :global(svg:hover) {
-    background-color: var(--color-foreground-level-2);
-    border-radius: 2px;
-  }
-
   .container {
-    margin: 0 0 0 8px;
+    padding-left: 0.5rem;
+    margin: 0;
   }
-
-  a {
-    display: flex;
-  }
-
-  .active a {
-    color: var(--color-secondary);
-    font-family: var(--typeface-medium);
-  }
-
-  .active :global(svg) {
-    fill: var(--color-secondary);
+  .container.toplevel {
+    padding-left: 0;
   }
 </style>
 
 <Remote {store} let:data={tree}>
-  <div class="container">
-    {#if firstEntry}
-      <div class="folder" class:active>
-        <Icon.Folder dataCy={`expand-${name}`} />
-        <a
-          href={path.projectSource(projectId, $currentRevision, TREE, prefix)}
-          use:link>
-          {name}
-        </a>
-      </div>
-    {:else}
-      <div class="folder" class:expanded class:active>
-        <Icon.CarretBig dataCy={`expand-${name}`} on:click={toggle} />
-        <a
-          href={path.projectSource(projectId, $currentRevision, TREE, prefix)}
-          use:link>
-          {name}
-        </a>
-      </div>
-    {/if}
+  {#if !toplevel}
+    <div class="folder" on:click={toggle}>
+      <span class:expanded class:active style="height: 24px">
+        <Icon.CarretBig dataCy={`expand-${name}`} />
+      </span>
+      <span class="folder-name">{name}</span>
+    </div>
+  {/if}
 
-    {#if expanded || firstEntry}
+  <div class="container" class:toplevel>
+    {#if expanded || toplevel}
       {#each tree.entries as entry}
         {#if entry.info.objectType === TREE}
           <svelte:self
             {projectId}
             name={entry.info.name}
-            prefix={`${entry.path}/`}
-            firstEntry={false} />
+            prefix={`${entry.path}/`} />
         {:else}
           <File {projectId} filePath={entry.path} name={entry.info.name} />
         {/if}

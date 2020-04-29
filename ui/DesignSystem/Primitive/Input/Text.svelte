@@ -31,20 +31,28 @@
     padding: 8px;
     border-radius: 4px;
     width: 100%;
-    height: 48px;
+    height: 40px;
     line-height: 48px;
-    padding: 0 16px 0 16px;
+    padding: 0 12px;
     background-color: var(--color-background);
   }
 
+<<<<<<< HEAD
   input.avatar {
     padding: 0 46px 0 46px;
+=======
+  input.handle {
+    padding: 0 40px 0 38px;
+>>>>>>> master
   }
 
   input:focus {
     outline: none;
-    box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-secondary));
-    border: 1px solid var(--focus-outline-color, var(--color-secondary));
+    box-shadow: 0 0 0 1px
+      var(--focus-outline-color, var(--color-foreground-level-3));
+    border: 1px solid
+      var(--focus-outline-color, var(--color-foreground-level-3));
+    background-color: var(--color-foreground-level-1);
   }
 
   input.invalid:focus,
@@ -54,13 +62,18 @@
     border: 1px solid var(--color-negative);
     background: var(--color-background);
     background-position: right 14px top 55%;
-    padding-right: 46px;
+    padding-right: 38px;
+  }
+
+  input.invalid:focus {
+    background: var(--color-foreground-level-1);
   }
 
   .validation-row {
     display: flex;
     align-items: center;
-    margin-top: 16px;
+    margin-top: 12px;
+    margin-left: 12px;
   }
 
   .avatar-wrapper {

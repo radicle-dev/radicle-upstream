@@ -3,7 +3,6 @@
 </script>
 
 <Button
-  size="small"
   variant="transparent"
   icon={Icon.Plus}
   on:click={() => console.log('event(new-issue)')}>

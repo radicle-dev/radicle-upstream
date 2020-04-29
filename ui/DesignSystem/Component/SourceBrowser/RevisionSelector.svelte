@@ -57,6 +57,7 @@
     flex: 1;
     text-overflow: ellipsis;
     overflow-x: hidden;
+    margin-right: 0.5rem;
   }
   .selector-expand {
     align-self: flex-end;
