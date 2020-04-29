@@ -171,12 +171,16 @@
             path={$currentPath}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.info.objectType === TREE && $readme.status === remote.Status.Success}
-          <Readme
-            path={readmePath}
-            commit={object.info.lastCommit}
-            blob={readme.data}
-            projectId={project.id} />
+        {:else if object.info.objectType === TREE}
+          {#await $readme then blob}
+            {#if blob && blob.status == remote.Status.Success}
+              <Readme
+                path={readmePath}
+                commit={object.info.lastCommit}
+                blob={blob.data}
+                projectId={project.id} />
+            {/if}
+          {/await}
         {/if}
       </Remote>
     </div>
