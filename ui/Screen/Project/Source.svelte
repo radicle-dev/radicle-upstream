@@ -18,7 +18,7 @@
   } from "../../src/source.ts";
 
   import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
-  import { Remote } from "../../DesignSystem/Component";
+  import { Remote, Copyable } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
@@ -36,6 +36,15 @@
       revision: revision,
       type: path.extractProjectSourceObjectType($location)
     });
+  };
+
+  let copyIcon = Icon.Copy;
+
+  const afterCopy = () => {
+    copyIcon = Icon.Check;
+    setTimeout(() => {
+      copyIcon = Icon.Copy;
+    }, 1000);
   };
 
   $: if ($projectStore.status === remote.Status.Success) {
@@ -75,6 +84,7 @@
   .project-id {
     color: var(--color-foreground-level-5);
     margin-top: 0.5rem;
+    display: inline-block;
   }
   .description {
     margin-top: 1rem;
@@ -132,7 +142,12 @@
   <div class="header">
     <Title variant="big">{project.metadata.name}</Title>
     <div class="project-id">
-      <Code>%{project.id}</Code>
+      <Code>
+        <Copyable {afterCopy}>
+          %{project.id}
+          <svelte:component this={copyIcon} style="vertical-align: bottom" />
+        </Copyable>
+      </Code>
     </div>
     <div class="description">
       <Text>{project.metadata.description}</Text>
