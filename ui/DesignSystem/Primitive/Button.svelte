@@ -17,7 +17,7 @@
 </script>
 
 <style>
-  button {
+  .button {
     white-space: nowrap;
     background-color: var(--color-foreground-level-3);
     border-radius: 4px;
@@ -29,13 +29,14 @@
     height: 40px;
     outline-style: none;
     padding: 0 12px;
+    user-select: none;
   }
 
   .icon {
     padding: 0 16px 0 15px;
   }
 
-  button :global(svg) {
+  .vanilla :global(svg) {
     fill: var(--color-foreground-level-6);
     margin-right: 8px;
   }
@@ -45,20 +46,20 @@
     fill: var(--color-background);
   }
 
-  .disabled :global(svg) {
+  .vanilla.disabled :global(svg) {
     fill: var(--color-foreground-level-5);
   }
 
-  button:hover {
+  .vanilla:hover {
     background-color: var(--color-foreground-level-2);
     border-color: var(--color-foreground-level-2);
   }
 
-  button:active {
+  .vanilla:active {
     color: var(--color-foreground-level-5);
   }
 
-  button:active :global(svg) {
+  .vanilla:active :global(svg) {
     fill: var(--color-foreground-level-5);
   }
 
@@ -154,27 +155,27 @@
     fill: var(--color-foreground-level-4);
   }
 
-  .disabled {
+  .vanilla.disabled {
     background-color: var(--color-foreground-level-1);
     border-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-3);
     cursor: default;
   }
 
-  .disabled:hover {
+  .vanilla.disabled:hover {
     background-color: var(--color-foreground-level-1);
     box-shadow: 0 0 0 0;
     border-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-3);
   }
 
-  .disabled:active {
+  .vanilla.disabled:active {
     background-color: var(--color-foreground-level-1);
     border-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-3);
   }
 
-  .disabled :global(svg) {
+  .vanilla.disabled :global(svg) {
     fill: var(--color-foreground-level-3);
   }
 
@@ -275,7 +276,12 @@
   }
 </style>
 
-<button data-cy={dataCy} class={buttonClass} {disabled} on:click {style}>
+<button
+  data-cy={dataCy}
+  class="button {buttonClass}"
+  {disabled}
+  on:click
+  {style}>
   <svelte:component this={icon} />
   <Title>
     <slot />
