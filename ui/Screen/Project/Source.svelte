@@ -178,6 +178,7 @@
           <FileSource
             blob={object}
             path={$currentPath}
+            rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
         {:else if object.info.objectType === TREE && !object.path}
