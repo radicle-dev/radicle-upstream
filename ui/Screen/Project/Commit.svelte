@@ -26,6 +26,13 @@
 </script>
 
 <style>
+  .commit-page {
+    padding-top: 32px;
+    margin-bottom: 64px;
+    margin-left: 96px;
+    margin-right: 96px;
+  }
+
   header {
     background: var(--color-foreground-level-1);
     border-radius: 4px;
@@ -79,73 +86,75 @@
   }
 </style>
 
-<Remote {store} let:data={commit}>
-  <header>
-    <Flex style="align-items: flex-start">
-      <div slot="left">
-        <Title variant="large" style="margin-bottom: 1rem">
-          {commit.summary}
-        </Title>
-      </div>
-      <div slot="right">
-        <span class="field">
-          <!-- NOTE(cloudhead): These awful margin hacks are here because
-          there is a bug in prettier that breaks our HTML if we try to format
-          it differently. -->
-          <span style="margin-right: -1ch">Committed to</span>
-          <span class="branch">
-            <Icon.Branch
-              style="vertical-align: bottom; fill:
-              var(--color-foreground-level-6)" />
-            <span style="margin-left: -0.5ch">{commit.branch}</span>
+<div class="commit-page">
+  <Remote {store} let:data={commit}>
+    <header>
+      <Flex style="align-items: flex-start">
+        <div slot="left">
+          <Title variant="large" style="margin-bottom: 1rem">
+            {commit.summary}
+          </Title>
+        </div>
+        <div slot="right">
+          <span class="field">
+            <!-- NOTE(cloudhead): These awful margin hacks are here because
+            there is a bug in prettier that breaks our HTML if we try to format
+            it differently. -->
+            <span style="margin-right: -1ch">Committed to</span>
+            <span class="branch">
+              <Icon.Branch
+                style="vertical-align: bottom; fill:
+                var(--color-foreground-level-6)" />
+              <span style="margin-left: -0.5ch">{commit.branch}</span>
+            </span>
+            <span style="margin-left: -0.5ch">
+              {format(commit.committerTime * 1000)}
+            </span>
           </span>
-          <span style="margin-left: -0.5ch">
-            {format(commit.committerTime * 1000)}
-          </span>
+        </div>
+      </Flex>
+      <pre class="description" style="margin-bottom: 1rem">
+        {commit.description}
+      </pre>
+      <hr />
+      <Flex style="align-items: flex-end">
+        <div slot="left">
+          <p class="field">
+            Authored by
+            <span class="author">{commit.author.name}</span>
+            <span class="email">&lt;{commit.author.email}&gt;</span>
+          </p>
+          {#if commit.committer.email != commit.author.email}
+            <p class="field">
+              Committed by
+              <span class="author">{commit.committer.name}</span>
+              <span class="email">&lt;{commit.committer.email}&gt;</span>
+            </p>
+          {/if}
+        </div>
+        <div slot="right">
+          <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
+          <p class="field">
+            Commit
+            <span class="hash">{commit.sha1}</span>
+          </p>
+        </div>
+      </Flex>
+    </header>
+    <main>
+      <div class="changeset-summary">
+        {commit.changeset.files.length} file(s) changed with
+        <span class="additions">
+          {commit.changeset.summary.additions} addition(s)
+        </span>
+        and
+        <span class="deletions">
+          {commit.changeset.summary.deletions} deletion(s)
         </span>
       </div>
-    </Flex>
-    <pre class="description" style="margin-bottom: 1rem">
-      {commit.description}
-    </pre>
-    <hr />
-    <Flex style="align-items: flex-end">
-      <div slot="left">
-        <p class="field">
-          Authored by
-          <span class="author">{commit.author.name}</span>
-          <span class="email">&lt;{commit.author.email}&gt;</span>
-        </p>
-        {#if commit.committer.email != commit.author.email}
-          <p class="field">
-            Committed by
-            <span class="author">{commit.committer.name}</span>
-            <span class="email">&lt;{commit.committer.email}&gt;</span>
-          </p>
-        {/if}
-      </div>
-      <div slot="right">
-        <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
-        <p class="field">
-          Commit
-          <span class="hash">{commit.sha1}</span>
-        </p>
-      </div>
-    </Flex>
-  </header>
-  <main>
-    <div class="changeset-summary">
-      {commit.changeset.files.length} file(s) changed with
-      <span class="additions">
-        {commit.changeset.summary.additions} addition(s)
-      </span>
-      and
-      <span class="deletions">
-        {commit.changeset.summary.deletions} deletion(s)
-      </span>
-    </div>
-    {#each commit.changeset.files as file}
-      <FileDiff {file} />
-    {/each}
-  </main>
-</Remote>
+      {#each commit.changeset.files as file}
+        <FileDiff {file} />
+      {/each}
+    </main>
+  </Remote>
+</div>
