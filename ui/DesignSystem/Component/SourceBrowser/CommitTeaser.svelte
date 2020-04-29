@@ -44,6 +44,7 @@
 
   .commit-sha {
     color: var(--color-secondary);
+    font-family: var(--typeface-mono-regular);
   }
 </style>
 
