@@ -10,6 +10,7 @@ use warp::{path, Filter, Reply};
 
 use crate::registry;
 
+mod avatar;
 mod control;
 mod doc;
 mod error;
@@ -32,29 +33,30 @@ pub fn routes(
     let subscriptions = crate::notification::Subscriptions::default();
 
     let api = path("v1").and(
-        control::routes(
-            enable_control,
-            Arc::clone(&librad_paths),
-            Arc::clone(&registry),
-            Arc::clone(&store),
-        )
-        .or(identity::filters(Arc::<RwLock<kv::Store>>::clone(&store)))
-        .or(notification::filters(subscriptions.clone()))
-        .or(org::routes(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions.clone(),
-        ))
-        .or(project::filters(
-            Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions.clone(),
-        ))
-        .or(session::get_filter(store))
-        .or(source::routes(librad_paths))
-        .or(transaction::filters(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-        ))
-        .or(user::routes(registry, subscriptions)),
+        avatar::get_filter()
+            .or(control::routes(
+                enable_control,
+                Arc::clone(&librad_paths),
+                Arc::clone(&registry),
+                Arc::clone(&store),
+            ))
+            .or(identity::filters(Arc::<RwLock<kv::Store>>::clone(&store)))
+            .or(notification::filters(subscriptions.clone()))
+            .or(org::routes(
+                Arc::<RwLock<registry::Registry>>::clone(&registry),
+                subscriptions.clone(),
+            ))
+            .or(project::filters(
+                Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
+                Arc::<RwLock<registry::Registry>>::clone(&registry),
+                subscriptions.clone(),
+            ))
+            .or(session::get_filter(store))
+            .or(source::routes(librad_paths))
+            .or(transaction::filters(
+                Arc::<RwLock<registry::Registry>>::clone(&registry),
+            ))
+            .or(user::routes(registry, subscriptions)),
     );
     // let docs = path("docs").and(doc::filters(&api));
     let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));
