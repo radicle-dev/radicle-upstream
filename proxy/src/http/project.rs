@@ -224,7 +224,7 @@ mod handler {
 
         let mut reg = registry.write().await;
         let tx = reg
-            .register_project(&fake_pair, input.project_name, input.org_id, None, fake_fee)
+            .register_project(&fake_pair, input.org_id, input.project_name, None, fake_fee)
             .await?;
 
         subscriptions
@@ -459,7 +459,7 @@ impl ToDocumentedType for RegisterInput {
     fn document() -> document::DocumentedType {
         let mut properties = HashMap::with_capacity(3);
         properties.insert(
-            "org_id".into(),
+            "orgId".into(),
             document::string()
                 .description("ID of the Org the project will be registered under")
                 .example("monadic"),
