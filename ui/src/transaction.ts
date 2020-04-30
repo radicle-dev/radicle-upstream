@@ -2,6 +2,7 @@ import { Readable } from "svelte/store";
 
 import * as api from "./api";
 import * as event from "./event";
+import * as identity from "./identity";
 import * as remote from "./remote";
 
 // Types.
