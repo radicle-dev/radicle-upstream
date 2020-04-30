@@ -64,7 +64,6 @@
   .code {
     font-family: var(--typeface-mono-regular);
     font-size: 16px;
-    padding-left: 0.75rem;
     overflow-x: auto;
   }
 
