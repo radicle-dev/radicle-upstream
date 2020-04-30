@@ -234,7 +234,11 @@
   <Section title="Colors" subTitle="Primary, secondary and grays">
 
     {#each colors as color}
-      <Text style="background-color: var({color})">{color}</Text>
+      <Text
+        style="background-color: var({color}); margin-bottom: 8px;
+        border-radius: 2px; padding: 4px 8px;">
+        {color}
+      </Text>
     {/each}
   </Section>
 

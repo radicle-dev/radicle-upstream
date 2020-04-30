@@ -16,8 +16,11 @@ pub fn routes(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("users")
-        .and(register_filter(Arc::clone(&registry), subscriptions).or(get_filter(registry)))
+    path("users").and(
+        register_filter(Arc::clone(&registry), subscriptions)
+            .or(list_orgs_filter(Arc::clone(&registry)))
+            .or(get_filter(registry)),
+    )
 }
 
 /// Combination of all user filters.
@@ -26,7 +29,9 @@ fn filters(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter(Arc::clone(&registry)).or(register_filter(registry, subscriptions))
+    list_orgs_filter(Arc::clone(&registry))
+        .or(get_filter(Arc::clone(&registry)))
+        .or(register_filter(registry, subscriptions))
 }
 
 /// GET /<handle>
@@ -37,7 +42,7 @@ fn get_filter(
         .and(super::with_registry(registry))
         .and(document::param::<String>(
             "handle",
-            "ID fo the user to query for",
+            "ID of the user to query for",
         ))
         .and(document::document(document::description("Fetch a User")))
         .and(document::document(document::tag("User")))
@@ -74,6 +79,31 @@ fn register_filter(
         .and_then(handler::register)
 }
 
+/// `GET /<handle>/orgs`
+fn list_orgs_filter(
+    registry: Arc<RwLock<registry::Registry>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::get()
+        .and(super::with_registry(registry))
+        .and(document::param::<String>(
+            "handle",
+            "ID of the user to query for",
+        ))
+        .and(path("orgs"))
+        .and(document::document(document::description(
+            "List all orgs the user is a member of",
+        )))
+        .and(document::document(document::tag("User")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(document::array(registry::Org::document())).mime("application/json"),
+            )
+            .description("Successful retrieval"),
+        ))
+        .and_then(handler::list_orgs)
+}
+
 /// User handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
@@ -107,7 +137,7 @@ mod handler {
 
         let mut reg = registry.write().await;
         let tx = reg
-            .register_user(&fake_pair, input.handle, input.maybe_id, fake_fee)
+            .register_user(&fake_pair, input.handle, input.maybe_project_id, fake_fee)
             .await?;
 
         subscriptions
@@ -115,6 +145,17 @@ mod handler {
             .await;
 
         Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+    }
+
+    /// List the orgs the user is a member of.
+    pub async fn list_orgs(
+        registry: Arc<RwLock<registry::Registry>>,
+        handle: String,
+    ) -> Result<impl Reply, Rejection> {
+        let reg = registry.read().await;
+        let orgs = reg.list_orgs(handle).await?;
+
+        Ok(reply::json(&orgs))
     }
 }
 
@@ -125,7 +166,7 @@ impl Serialize for registry::User {
     {
         let mut state = serializer.serialize_struct("User", 2)?;
         state.serialize_field("handle", &self.handle.to_string())?;
-        state.serialize_field("maybeId", &self.maybe_coco_id)?;
+        state.serialize_field("maybeProjectId", &self.maybe_project_id)?;
 
         state.end()
     }
@@ -141,7 +182,7 @@ impl ToDocumentedType for registry::User {
                 .example("cloudhead"),
         );
         props.insert(
-            "maybe_id".into(),
+            "maybeProjectId".into(),
             document::string()
                 .description("Exisiting coco id for attestion")
                 .example("cloudhead@123abcd.git")
@@ -160,8 +201,8 @@ impl ToDocumentedType for registry::User {
 pub struct RegisterInput {
     /// Handle the User registered under.
     handle: String,
-    /// Optionally passed coco id to store for attestion.
-    maybe_id: Option<String>,
+    /// Optionally passed proejct id to store for attestion.
+    maybe_project_id: Option<String>,
 }
 
 impl ToDocumentedType for RegisterInput {
@@ -174,9 +215,9 @@ impl ToDocumentedType for RegisterInput {
                 .example("cloudhead"),
         );
         props.insert(
-            "maybe_id".into(),
+            "maybeProjectId".into(),
             document::string()
-                .description("Exisiting coco id for attestion")
+                .description("Exisiting project id for attestion")
                 .example("cloudhead@123abcd.git")
                 .nullable(true),
         );
@@ -196,6 +237,7 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use crate::avatar;
     use crate::notification;
     use crate::registry;
 
@@ -226,8 +268,52 @@ mod test {
             have,
             json!({
                 "handle": "cloudhead",
-                "maybeId": Value::Null,
+                "maybeProjectId": Value::Null,
             })
+        );
+    }
+
+    #[tokio::test]
+    async fn list_orgs() {
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        )));
+        let subscriptions = notification::Subscriptions::default();
+        let api = super::filters(Arc::clone(&registry), subscriptions);
+
+        // Register the user
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        registry
+            .write()
+            .await
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await
+            .unwrap();
+
+        // Register the org
+        let fee: radicle_registry_client::Balance = 100;
+        registry
+            .write()
+            .await
+            .register_org(&alice, "monadic".to_string(), fee)
+            .await
+            .unwrap();
+
+        let res = request()
+            .method("GET")
+            .path("/alice/orgs")
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(
+            have,
+            json!([registry::Org {
+                id: "monadic".to_string(),
+                avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
+            }])
         );
     }
 
@@ -244,7 +330,7 @@ mod test {
             .path("/")
             .json(&super::RegisterInput {
                 handle: "cloudhead".into(),
-                maybe_id: Some("cloudhead@123abcd.git".into()),
+                maybe_project_id: Some("cloudhead@123abcd.git".into()),
             })
             .reply(&api)
             .await;

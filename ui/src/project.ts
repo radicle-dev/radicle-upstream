@@ -1,4 +1,4 @@
-import { Readable, writable } from "svelte/store";
+import { writable } from "svelte/store";
 
 import * as api from "./api";
 import * as event from "./event";
@@ -18,6 +18,12 @@ export interface Project {
 }
 
 type Projects = Project[]
+
+export interface Registered {
+  name: string;
+  orgId: string;
+  maybeProjectId?: string;
+}
 
 // STATE
 const creationStore = remote.createStore<Project>();
@@ -104,6 +110,13 @@ export const create = (
     metadata,
     path,
   })
+}
+
+export const getOrgProject = (
+  orgId: string,
+  projectName: string,
+): Promise<Registered> => {
+  return api.get<Registered>(`orgs/${orgId}/projects/${projectName}`)
 }
 
 export const register = (

@@ -5,6 +5,7 @@ use crate::error;
 use crate::identity;
 
 /// Container for all local state.
+#[derive(Debug)]
 pub struct Session {
     /// The currently used [`identity::Identity`].
     pub identity: Option<identity::Identity>,

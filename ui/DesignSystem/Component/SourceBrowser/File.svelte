@@ -31,6 +31,10 @@
     overflow: unset;
   }
 
+  .file-name {
+    margin-left: 0.25rem;
+  }
+
   a {
     display: flex;
     border-radius: 4px;
@@ -57,5 +61,5 @@
   href={path.projectSource(projectId, $currentRevision, BLOB, filePath)}
   use:link>
   <Icon.File />
-  {name}
+  <span class="file-name">{name}</span>
 </a>

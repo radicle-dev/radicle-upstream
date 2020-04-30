@@ -1,9 +1,8 @@
 //! Container to bundle and associate information around an identity.
 
-use radicle_registry_client::UserId;
-
 use crate::avatar;
 use crate::error;
+use crate::registry;
 
 /// The users personal identifying metadata and keys.
 #[derive(Clone, Debug)]
@@ -15,7 +14,7 @@ pub struct Identity {
     /// Bundle of user provided data.
     pub metadata: Metadata,
     /// Indicator if the identity is registered on the Registry.
-    pub registered: Option<UserId>,
+    pub registered: Option<registry::Id>,
     /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
     pub avatar_fallback: avatar::Avatar,
 }

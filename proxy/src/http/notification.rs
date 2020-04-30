@@ -14,7 +14,7 @@ pub fn filters(
         .or(stream_filter(subscriptions))
 }
 
-/// GET /notifications
+/// `GET /notifications`
 fn stream_filter(
     subscriptions: Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -35,7 +35,7 @@ fn stream_filter(
         .and_then(handler::stream)
 }
 
-/// GET /notifications/test/index.html
+/// `GET /notifications/test/index.html`
 fn test_html_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("notifications" / "test" / "index.html")
         .and(warp::get())
@@ -48,7 +48,7 @@ fn test_html_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
         })
 }
 
-/// GET /notifications/test/index.js
+/// `GET /notifications/test/index.js`
 fn test_js_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("notifications" / "test" / "index.js")
         .and(warp::get())

@@ -18,7 +18,7 @@ pub fn filters(
     list_filter(registry)
 }
 
-/// POST /transactions
+/// `POST /transactions`
 fn list_filter(
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -163,7 +163,7 @@ impl Serialize for registry::Message {
                 let mut state = serializer.serialize_struct("UserRegistration", 3)?;
                 state.serialize_field("type", "USER_REGISTRATION")?;
                 state.serialize_field("handle", &handle.to_string())?;
-                state.serialize_field("id", &id.to_string())?;
+                state.serialize_field("id", &id)?;
                 state.end()
             },
         }
@@ -251,7 +251,7 @@ mod test {
             id: radicle_registry_client::TxHash::random(),
             messages: vec![registry::Message::ProjectRegistration {
                 project_name: radicle_registry_client::ProjectName::from_str("upstream").unwrap(),
-                org_id: radicle_registry_client::OrgId::from_str("radicle").unwrap(),
+                org_id: registry::Id::from_str("radicle").unwrap(),
             }],
             state: registry::TransactionState::Applied(radicle_registry_client::Hash::random()),
             timestamp: time::SystemTime::now(),

@@ -26,7 +26,7 @@ pub fn filters(
         .or(register_filter(registry, subscriptions))
 }
 
-/// POST /projects
+/// `POST /projects`
 fn create_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -51,7 +51,7 @@ fn create_filter(
         .and_then(handler::create)
 }
 
-/// GET /projects/<id>
+/// `GET /projects/<id>`
 fn get_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -80,7 +80,7 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// GET /projects
+/// `GET /projects`
 fn list_filter(
     paths: Arc<RwLock<Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -102,7 +102,7 @@ fn list_filter(
         .and_then(handler::list)
 }
 
-/// POST /projects/register
+/// `POST /projects/register`
 fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
@@ -224,7 +224,7 @@ mod handler {
 
         let mut reg = registry.write().await;
         let tx = reg
-            .register_project(&fake_pair, input.project_name, input.org_id, None, fake_fee)
+            .register_project(&fake_pair, input.org_id, input.project_name, None, fake_fee)
             .await?;
 
         subscriptions
@@ -334,8 +334,7 @@ impl ToDocumentedType for project::Registration {
         document::one_of(vec![org, user])
             .description("Variants for possible registration states of a Project on the Registry")
             .example(Self::Org(
-                radicle_registry_client::OrgId::try_from("monadic")
-                    .expect("unable to parse org id"),
+                registry::Id::try_from("monadic").expect("unable to parse org id"),
             ))
     }
 }
@@ -460,7 +459,7 @@ impl ToDocumentedType for RegisterInput {
     fn document() -> document::DocumentedType {
         let mut properties = HashMap::with_capacity(3);
         properties.insert(
-            "org_id".into(),
+            "orgId".into(),
             document::string()
                 .description("ID of the Org the project will be registered under")
                 .example("monadic"),

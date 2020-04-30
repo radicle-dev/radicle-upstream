@@ -58,6 +58,7 @@
     text-overflow: ellipsis;
     overflow-x: hidden;
     color: var(--color-foreground-level-6);
+    margin-right: 0.5rem;
   }
   .selector-expand {
     align-self: flex-end;

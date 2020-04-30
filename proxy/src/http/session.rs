@@ -10,7 +10,7 @@ use warp::{path, Filter, Rejection, Reply};
 use crate::identity;
 use crate::session;
 
-/// GET /
+/// `GET /`
 pub fn get_filter(
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -73,4 +73,30 @@ impl ToDocumentedType for session::Session {
 }
 
 #[cfg(test)]
-mod test {}
+mod test {
+    use pretty_assertions::assert_eq;
+    use serde_json::{json, Value};
+    use std::sync::Arc;
+    use tokio::sync::RwLock;
+    use warp::http::StatusCode;
+    use warp::test::request;
+
+    #[tokio::test]
+    async fn get() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let api = super::get_filter(Arc::new(RwLock::new(store)));
+
+        let res = request().method("GET").path("/session").reply(&api).await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(
+            have,
+            json!({
+                "identity": Value::Null,
+            }),
+        );
+    }
+}
