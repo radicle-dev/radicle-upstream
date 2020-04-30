@@ -40,7 +40,7 @@ pub fn routes(
         )
         .or(identity::filters(Arc::<RwLock<kv::Store>>::clone(&store)))
         .or(notification::filters(subscriptions.clone()))
-        .or(org::filters(
+        .or(org::routes(
             Arc::<RwLock<registry::Registry>>::clone(&registry),
             subscriptions.clone(),
         ))

@@ -73,6 +73,7 @@
     background: white;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
+    /* TODO(julien): Replace with `elevation-medium`, but keep 1px box-shadow! */
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.12), 0px 0px 1px rgba(0, 0, 0, 0.12),
       0px 0px 0px 1px var(--color-foreground-level-3);
     z-index: 8;
