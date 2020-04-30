@@ -1,5 +1,5 @@
 <script>
-  import { Icon } from "../../Primitive";
+  import { Title, Icon } from "../../Primitive";
 
   export let file = null;
 </script>
@@ -21,10 +21,7 @@
     border-radius: 0;
     padding: 0.75rem;
   }
-  .changeset-file-path {
-    font-weight: 600;
-    margin-left: 0.5rem;
-  }
+
   .changeset-file main {
     overflow-x: auto;
   }
@@ -32,6 +29,7 @@
   table.diff {
     table-layout: fixed;
     border-collapse: collapse;
+    margin: 0.5rem 0;
   }
 
   tr.diff-line[data-type="+"] > * {
@@ -41,35 +39,49 @@
     background: var(--color-negative-level-1);
   }
   td.diff-line-number {
-    text-align: center;
+    text-align: right;
     user-select: none;
     line-height: 150%;
-    padding: 0 0.5rem;
+  }
+  td.diff-line-number[data-type="+"],
+  td.diff-line-type[data-type="+"] {
+    color: var(--color-positive-level-6);
+  }
+  td.diff-line-number[data-type="-"],
+  td.diff-line-type[data-type="-"] {
+    color: var(--color-negative-level-6);
+  }
+  td.diff-line-number.left {
+    padding: 0 0.25rem 0 1rem;
+  }
+  td.diff-line-number.right {
+    padding: 0 1rem 0 0.25rem;
   }
   td.diff-line-content {
     white-space: pre;
     width: 100%;
+    padding-right: 0.5rem;
   }
   td.diff-line-type {
-    color: var(--color-foreground-level-6);
     user-select: none;
-    padding: 0 0.5rem;
+    padding-right: 1rem;
     text-align: center;
   }
+
   td.diff-expand-action {
     text-align: center;
     user-select: none;
+    background: var(--color-foreground-level-2);
+    color: var(--color-foreground-level-6);
   }
   td.diff-expand-header {
-    padding-left: 0.5rem;
     user-select: none;
+    background: var(--color-foreground-level-2);
+    color: var(--color-foreground-level-6);
   }
 
-  td.diff-expand-header,
-  td.diff-expand-action,
   td.diff-line-number {
-    color: var(--color-foreground-level-5);
-    background-color: var(--color-foreground-level-1);
+    color: var(--color-foreground-level-4);
   }
 
   td.diff-expand-header,
@@ -83,8 +95,8 @@
 
 <article class="changeset-file">
   <header>
-    <Icon.File />
-    <span class="changeset-file-path">{file.path}</span>
+    <Icon.File style="margin-right: 8px;" />
+    <Title>{file.path}</Title>
   </header>
   <main>
     <table class="diff">
@@ -92,9 +104,13 @@
         {#if hunk.expanded}
           {#each hunk.lines as line}
             <tr class="diff-line" data-expanded data-type={line.type}>
-              <td class="diff-line-number">{line.num[0] || ''}</td>
-              <td class="diff-line-number">{line.num[1] || ''}</td>
-              <td class="diff-line-type">{line.type}</td>
+              <td class="diff-line-number left" data-type={line.type}>
+                {line.num[0] || ''}
+              </td>
+              <td class="diff-line-number right" data-type={line.type}>
+                {line.num[1] || ''}
+              </td>
+              <td class="diff-line-type" data-type={line.type}>{line.type}</td>
               <td class="diff-line-content">{line.content}</td>
             </tr>
           {/each}
