@@ -3,6 +3,7 @@
   import { pop } from "svelte-spa-router";
   import validatejs from "validate.js";
   import * as project from "../../src/project.ts";
+  import { showNotification } from "../../store/notification.js";
 
   import { Text, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
@@ -80,7 +81,7 @@
     skipNamePreselection = false;
   }
 
-  const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
+  const NAME_MATCH = "^[a-z0-9][a-z0-9_-]+$";
 
   let validating = false;
   let validations = false;
@@ -100,7 +101,10 @@
         validations = { projectName: ["Project name already taken"] };
       }
     } catch (error) {
-      validations = { projectName: [error] };
+      showNotification({
+        text: `Proxy: ${JSON.stringify(error)}`,
+        level: "error"
+      });
     }
   };
 
@@ -114,8 +118,8 @@
         allowEmpty: false
       },
       format: {
-        pattern: VALID_NAME_MATCH,
-        message: "Project name should match [a-z0-9][a-z0-9_-]+"
+        pattern: new RegExp(NAME_MATCH),
+        message: `Project name should match ${NAME_MATCH}`
       }
     }
   };

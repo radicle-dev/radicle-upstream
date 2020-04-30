@@ -1,6 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
   import { Icon } from "../Primitive";
+  import NotificationFaucet from "./NotificationFaucet.svelte";
 
   export let dataCy = null;
   export let hideCloseButton = null;
@@ -33,6 +34,7 @@
 {/if}
 
 <div class="wrapper" data-cy={dataCy}>
+  <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
   <div class="content">
     <slot />
   </div>
