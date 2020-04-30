@@ -143,11 +143,11 @@
   .name {
     display: flex;
     align-items: center;
-    margin-bottom: 32px;
   }
 
   .name-validation {
     margin-left: 12px;
+    margin-top: 12px;
   }
 </style>
 
@@ -184,6 +184,7 @@
 {/if}
 
 <NavigationButtons
+  style="margin-top: 32px;"
   on:cancel={pop}
   on:submit={next}
   disableSubmit={!projectName || validating || validations} />
