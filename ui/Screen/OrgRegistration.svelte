@@ -107,7 +107,7 @@
       <Input.Text
         placeholder="Org name (e.g. Flowerpot)"
         bind:value={orgName}
-        style="--focus-outline-color: var(--color-primary); width: 100%;"
+        style="width: 100%;"
         showSuccessCheck
         validation={$validation}>
         <div slot="avatar">
