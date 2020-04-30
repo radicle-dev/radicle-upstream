@@ -27,6 +27,8 @@
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
   import Stat from "../../DesignSystem/Component/Stat.svelte";
 
+  import CloneButton from "./CloneButton.svelte";
+
   export const params = null;
 
   const updateRevision = (projectId, revision) => {
@@ -126,11 +128,18 @@
     position: relative;
     width: 100%;
   }
+  .repo-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
   .repo-stats {
     height: 4rem;
     display: flex;
     justify-content: space-evenly;
     padding: 1.25rem 1rem;
+    flex: 0.8;
   }
   .repo-stats > * {
     flex: 1;
@@ -172,23 +181,27 @@
     </div>
 
     <div class="column-right">
-      <div class="repo-stats">
-        <div>
-          <Stat icon={Icon.Commit} count={project.stats.commits}>
-            &nbsp;Commits
-          </Stat>
+      <div class="repo-header">
+        <div class="repo-stats">
+          <div>
+            <Stat icon={Icon.Commit} count={project.stats.commits}>
+              &nbsp;Commits
+            </Stat>
+          </div>
+          <div>
+            <Stat icon={Icon.Branch} count={project.stats.branches}>
+              &nbsp;Branches
+            </Stat>
+          </div>
+          <div>
+            <Stat icon={Icon.Member} count={project.stats.contributors}>
+              &nbsp;Contributors
+            </Stat>
+          </div>
         </div>
-        <div>
-          <Stat icon={Icon.Branch} count={project.stats.branches}>
-            &nbsp;Branches
-          </Stat>
-        </div>
-        <div>
-          <Stat icon={Icon.Member} count={project.stats.contributors}>
-            &nbsp;Contributors
-          </Stat>
-        </div>
+        <CloneButton projectId={project.id} />
       </div>
+
       <Remote store={objectStore} let:data={object}>
         {#if object.info.objectType === BLOB}
           <FileSource
