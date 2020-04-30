@@ -44,8 +44,8 @@
   }
 
   header .commit-header {
-    height: 3rem;
-    background-color: var(--color-secondary-level-1);
+    height: 2.5rem;
+    margin: 8px;
   }
 
   .line-numbers {

@@ -106,15 +106,13 @@
   .column-right {
     display: flex;
     flex-direction: column;
-    padding-left: 0.75rem;
+    padding: 0 0.75rem;
     width: 960px;
   }
 
   .commit-header {
-    height: 3rem;
-    background-color: var(--color-secondary-level-1);
+    height: 2.5rem;
     margin-bottom: 1rem;
-    border-radius: 3px;
   }
 
   .source-tree {
