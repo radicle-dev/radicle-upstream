@@ -111,7 +111,10 @@
         showSuccessCheck
         validation={$validation}>
         <div slot="avatar">
-          <Avatar imageUrl={org.avatar.imageUrl} variant="square" />
+          <Avatar
+            imageUrl={org.avatar.imageUrl}
+            size="small"
+            variant="square" />
         </div>
       </Input.Text>
     {:else if state === RegistrationFlowState.TransactionConfirmation}

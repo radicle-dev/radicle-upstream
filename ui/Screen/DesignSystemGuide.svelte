@@ -411,7 +411,9 @@
         validation={{ status: ValidationStatus.Success }}
         value="user123">
         <div slot="avatar">
-          <Avatar imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+          <Avatar
+            size="small"
+            imageUrl="https://avatars1.githubusercontent.com/u/40774" />
         </div>
       </Input.Text>
     </Swatch>
@@ -423,7 +425,7 @@
         validation={{ status: ValidationStatus.Loading }}
         value="user123">
         <div slot="avatar">
-          <Avatar avatarFallback={avatarFallback1} />
+          <Avatar size="small" avatarFallback={avatarFallback1} />
         </div>
       </Input.Text>
     </Swatch>
@@ -437,7 +439,7 @@
         validation={{ status: ValidationStatus.Error, message: 'Handle already taken' }}
         value="myUser">
         <div slot="avatar">
-          <Avatar avatarFallback={avatarFallback2} />
+          <Avatar size="small" avatarFallback={avatarFallback2} />
         </div>
       </Input.Text>
     </Swatch>

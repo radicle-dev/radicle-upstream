@@ -10,7 +10,7 @@
   export let title = null;
 
   export let variant = "circle"; // circle | square
-  export let size = "regular"; // regular | medium | big | huge
+  export let size = "regular"; // small | regular | medium | big | huge
 
   const fmt = background => {
     return `rgb(${background.r}, ${background.g}, ${background.b})`;
@@ -57,6 +57,11 @@
 
   .square {
     border-radius: 2px;
+  }
+
+  .square.small {
+    width: 24px;
+    height: 24px;
   }
 
   .square.regular {

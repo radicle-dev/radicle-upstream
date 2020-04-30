@@ -82,6 +82,7 @@
     <Avatar
       imageUrl={identity.metadata.avatarUrl}
       avatarFallback={identity.avatarFallback}
+      size="small"
       variant="circle" />
   </div>
 </Input.Text>

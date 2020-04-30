@@ -76,8 +76,8 @@
     top: 0px;
     left: 0px;
     padding-left: 8px;
-    height: 48px;
     display: flex;
+    height: 40px;
     justify-content: center;
     align-items: center;
   }
@@ -103,16 +103,16 @@
   {#if validation}
     {#if validation.status === ValidationStatus.Loading}
       <Icon.Spinner
-        style="justify-content: flex-start; position: absolute; top: 12px;
-        right: 10px;" />
+        style="justify-content: flex-start; position: absolute; top: 8px; right:
+        10px;" />
     {:else if validation.status === ValidationStatus.Success && showSuccessCheck}
       <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;
-        position: absolute; top: 12px; right: 10px;" />
+        position: absolute; top: 8px; right: 10px;" />
     {:else if validation.status === ValidationStatus.Error}
       <Icon.Important
         style="fill: var(--color-negative); justify-content: flex-start;
-        position: absolute; top: 12px; right: 10px;" />
+        position: absolute; top: 8px; right: 10px;" />
       <div class="validation-row">
         <Text style="color: var(--color-negative); text-align: left;">
           {validation.message}
