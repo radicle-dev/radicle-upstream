@@ -1,4 +1,4 @@
-import { Readable, writable } from "svelte/store";
+import { writable } from "svelte/store";
 
 import * as api from "./api";
 import * as event from "./event";

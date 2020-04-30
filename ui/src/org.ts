@@ -39,7 +39,7 @@ export const org: Org = {
   }
 }
 
-export const getOrg = (id: string) => api.get<Org>(`orgs/${id}`)
+export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`)
 
 interface RegisterOrg {
   id: string;

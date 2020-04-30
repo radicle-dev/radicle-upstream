@@ -29,16 +29,6 @@
     margin-left: 0.5rem;
   }
 
-  .line-numbers {
-    font-family: var(--typeface-mono-regular);
-    font-size: 14px;
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-5);
-    text-align: center;
-    flex: 0 0 49px;
-    user-select: none;
-  }
-
   .code {
     font-family: var(--typeface-mono-regular);
     font-size: 16px;

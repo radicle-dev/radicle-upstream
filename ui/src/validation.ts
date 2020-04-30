@@ -66,7 +66,7 @@ export const createValidationStore = (constraints: any): ValidationStore => {
   const updateInput = (input: string): void => {
     if (!inputStore) {
       inputStore = writable(input)
-      inputStore.subscribe((input: string) => { const valid = validate(input) })
+      inputStore.subscribe((input: string) => { validate(input) })
       return
     }
     inputStore.set(input)
