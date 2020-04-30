@@ -5,13 +5,21 @@
   import { projects as projectStore } from "../../src/project.ts";
   import { session as sessionStore } from "../../src/session.ts";
 
-  import { Text } from "../../DesignSystem/Primitive";
+  import { Icon, Text } from "../../DesignSystem/Primitive";
   import { ProjectList, Remote } from "../../DesignSystem/Component";
 
   const select = event => {
     const project = event.detail;
     push(path.projectSource(project.id));
   };
+
+  const contextMenuItems = (projectId, registrarId) => [
+    {
+      title: "Register project",
+      icon: Icon.Register,
+      event: () => push(path.registerExistingProject(projectId, registrarId))
+    }
+  ];
 </script>
 
 <Remote store={projectStore} let:data={projects}>
@@ -19,7 +27,7 @@
     <Remote store={sessionStore} let:data={session}>
       <ProjectList
         {projects}
-        registrarId={session.identity.id}
+        contextMenuItems={projectId => contextMenuItems(projectId, session.identity.id)}
         on:select={select} />
     </Remote>
   {:else}{push(path.profileOnboard())}{/if}
