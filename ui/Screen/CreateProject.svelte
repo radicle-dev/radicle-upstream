@@ -227,8 +227,9 @@
   }
 
   .double-button {
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-column-gap: 16px;
   }
 
   .default-branch-row {
@@ -343,11 +344,7 @@
         </div>
         <div slot="right">
           <div class="double-button">
-            <Button
-              dataCy="cancel-button"
-              variant="transparent"
-              on:click={pop}
-              style="margin-right: 24px;">
+            <Button dataCy="cancel-button" variant="transparent" on:click={pop}>
               Cancel
             </Button>
             <Button

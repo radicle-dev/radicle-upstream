@@ -20,7 +20,7 @@
 
 <style>
   .statusbar {
-    height: 48px;
+    height: 40px;
     width: 100%;
     border-radius: 4px;
     display: flex;
@@ -41,14 +41,14 @@
 
 <div {style} class="statusbar {variant}">
   {#if variant === 'negative'}
-    <Icon.Important style="margin: 12px; fill: var(--color-background)" />
+    <Icon.Important style="margin: 8px; fill: var(--color-background)" />
   {:else if variant === 'positive'}
-    <Icon.CheckCircle style="margin: 12px; fill: var(--color-background)" />
+    <Icon.CheckCircle style="margin: 8px; fill: var(--color-background)" />
   {:else}
     <Icon.TransactionState
       variant="inverted"
       {progress}
-      style="margin: 12px; fill: var(--color-background)"
+      style="margin: 8px; fill: var(--color-background)"
       state={variant} />
   {/if}
   <Text variant="tiny" style="align-self: center;">{text[variant]}</Text>

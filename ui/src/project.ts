@@ -19,6 +19,12 @@ export interface Project {
 
 type Projects = Project[]
 
+export interface Registered {
+  name: string;
+  orgId: string;
+  maybeProjectId?: string;
+}
+
 // STATE
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
@@ -103,6 +109,13 @@ export const create = (
     metadata,
     path,
   })
+}
+
+export const getOrgProject = (
+  orgId: string,
+  projectName: string,
+): Promise<Registered> => {
+  return api.get<Registered>(`orgs/${orgId}/projects/${projectName}`)
 }
 
 export const register = (
