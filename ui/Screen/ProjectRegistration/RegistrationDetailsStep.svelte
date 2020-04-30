@@ -3,14 +3,8 @@
   import { pop } from "svelte-spa-router";
   import validatejs from "validate.js";
 
-  import {
-    Button,
-    Flex,
-    Text,
-    Title,
-    Input
-  } from "../../DesignSystem/Primitive";
-  import { Dropdown } from "../../DesignSystem/Component";
+  import { Text, Title, Input } from "../../DesignSystem/Primitive";
+  import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
 
   const dispatch = createEventDispatcher();
 
@@ -148,7 +142,7 @@
   .name {
     display: flex;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 32px;
   }
 
   .name-validation {
@@ -188,20 +182,7 @@
   </div>
 {/if}
 
-<Flex style="margin-top: 32px;" align="right">
-  <Button
-    dataCy="cancel-button"
-    variant="transparent"
-    on:click={pop}
-    style="margin-right: 24px;">
-    Cancel
-  </Button>
-
-  <Button
-    dataCy="next-button"
-    disabled={!projectName || validating || validations}
-    on:click={next}
-    variant="primary">
-    Next
-  </Button>
-</Flex>
+<NavigationButtons
+  on:cancel={pop}
+  on:submit={next}
+  disableSubmit={!projectName || validating || validations} />

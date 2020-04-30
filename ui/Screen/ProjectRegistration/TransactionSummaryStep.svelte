@@ -5,8 +5,7 @@
   import * as transaction from "../../src/transaction.ts";
   import * as project from "../../src/project.ts";
 
-  import { Button, Flex } from "../../DesignSystem/Primitive";
-  import { Transaction } from "../../DesignSystem/Component";
+  import { NavigationButtons, Transaction } from "../../DesignSystem/Component";
 
   const dispatch = createEventDispatcher();
 
@@ -45,15 +44,11 @@
 
 <Transaction payer={wallet} {subject} transaction={tx} />
 
-<Flex style="margin-top: 32px;" align="right">
-  <Button
-    dataCy="cancel-button"
-    variant="transparent"
-    on:click={() => dispatch('previous')}
-    style="margin-right: 24px;">
-    Back
-  </Button>
-  <Button dataCy="next-button" on:click={onSubmitTransaction} variant="primary">
-    Submit transaction
-  </Button>
-</Flex>
+<NavigationButtons
+  style={'margin-top: 32px;'}
+  cancelLabel="Back"
+  submitLabel="Submit transaction"
+  on:cancel={() => {
+    dispatch('previous');
+  }}
+  on:submit={onSubmitTransaction} />
