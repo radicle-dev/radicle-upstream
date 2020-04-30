@@ -32,11 +32,7 @@
     user-select: none;
   }
 
-  .icon {
-    padding: 0 16px 0 15px;
-  }
-
-  .vanilla :global(svg) {
+  .button :global(svg) {
     fill: var(--color-foreground-level-6);
     margin-right: 8px;
   }
