@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import { pop } from "svelte-spa-router";
   import validatejs from "validate.js";
+  import * as project from "../../src/project.ts";
 
   import { Text, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
@@ -90,10 +91,10 @@
 
   const validateProjectNameAvailability = async () => {
     try {
-      // TODO(rudolfs): wait for the endpoint to land in proxy and fix this
-      // const present = await project.get(registrarId, projectName);
-      await new Promise(r => setTimeout(r, 500));
-      const present = false;
+      const present = await project.getOrgProject(
+        selectedRegistrar().avatarProps.title,
+        projectName
+      );
 
       if (present) {
         validations = { projectName: ["Project name already taken"] };
