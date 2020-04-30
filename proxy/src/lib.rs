@@ -13,6 +13,7 @@
 // TODO(xla): Handle all Results properly and never panic outside of main.
 // TODO(xla): Remove exception for or_fun_call lint.
 // TODO(xla): Remove let_underscore_must_use once the issue is resolved: https://github.com/rust-lang/rust-clippy/issues/4980
+// TODO(xla): Remove used_underscore_binding.
 #![allow(
     clippy::implicit_return,
     clippy::let_underscore_must_use,
@@ -21,7 +22,8 @@
     clippy::or_fun_call,
     clippy::result_expect_used,
     clippy::shadow_reuse,
-    clippy::unseparated_literal_suffix
+    clippy::unseparated_literal_suffix,
+    clippy::used_underscore_binding
 )]
 #![feature(str_strip)]
 
