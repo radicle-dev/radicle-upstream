@@ -37,13 +37,8 @@
     background-color: var(--color-background);
   }
 
-<<<<<<< HEAD
   input.avatar {
-    padding: 0 46px 0 46px;
-=======
-  input.handle {
     padding: 0 40px 0 38px;
->>>>>>> master
   }
 
   input:focus {
