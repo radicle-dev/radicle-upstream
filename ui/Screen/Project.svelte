@@ -85,11 +85,9 @@
     }
   ];
 
-  // TODO(rudolfs): how do we make sure that this gets loaded before we render
-  // the component?
-  let registrarId = null;
+  let registrarId;
 
-  if ($session.status === remote.Status.Success) {
+  $: if ($session.status === remote.Status.Success) {
     registrarId = $session.data.identity.id;
   }
 
