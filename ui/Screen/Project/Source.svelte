@@ -7,13 +7,13 @@
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
   import {
+    blob,
     currentPath,
     currentRevision,
     fetchRevisions,
+    findReadme,
     object as objectStore,
     revisions as revisionsStore,
-    findReadme,
-    blob,
     updateParams
   } from "../../src/source.ts";
 
@@ -227,11 +227,7 @@
               {#if blob.binary}
                 <!-- TODO: Placeholder for when README is binary -->
               {:else}
-                <Readme
-                  {blob}
-                  path={readmePath}
-                  commit={object.info.lastCommit}
-                  projectId={project.id} />
+                <Readme content={blob.content} path={readmePath} />
               {/if}
             </Remote>
           {:else}

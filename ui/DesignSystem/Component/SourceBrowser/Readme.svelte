@@ -1,10 +1,8 @@
 <script>
   import { Icon } from "../../Primitive";
 
-  export let blob = null;
+  export let content = null;
   export let path = null;
-
-  console.assert(blob.binary === false, "blob should not be binary");
 </script>
 
 <style>
@@ -49,6 +47,6 @@
     </div>
   </header>
   <div class="container">
-    <pre class="code">{blob.content}</pre>
+    <pre class="code">{content}</pre>
   </div>
 </div>
