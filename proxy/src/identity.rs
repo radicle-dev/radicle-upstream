@@ -3,6 +3,7 @@
 use crate::avatar;
 use crate::error;
 use crate::registry;
+use std::convert::TryFrom;
 
 /// The users personal identifying metadata and keys.
 #[derive(Clone, Debug)]
@@ -66,7 +67,7 @@ pub fn get(id: &str) -> Result<Option<Identity>, error::Error> {
             display_name: Some("Alexis Sellier".into()),
             avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
         },
-        registered: None,
+        registered: Some(registry::Id::try_from("cloudhead").unwrap()),
         avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
     }))
 }
