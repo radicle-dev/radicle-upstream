@@ -67,7 +67,7 @@ pub fn get(id: &str) -> Result<Option<Identity>, error::Error> {
             display_name: Some("Alexis Sellier".into()),
             avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
         },
-        registered: Some(registry::Id::try_from("cloudhead").unwrap()),
+        registered: registry::Id::try_from("cloudhead").ok(),
         avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
     }))
 }
