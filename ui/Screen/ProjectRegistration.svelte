@@ -1,13 +1,22 @@
 <script>
+  import { pop } from "svelte-spa-router";
+
   import { Flex, Title } from "../DesignSystem/Primitive";
-  import { ModalLayout, Remote, StepCounter } from "../DesignSystem/Component";
+  import {
+    NavigationButtons,
+    ModalLayout,
+    Remote,
+    StepCounter,
+    Transaction
+  } from "../DesignSystem/Component";
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
-  import TransactionSummaryStep from "./ProjectRegistration/TransactionSummaryStep.svelte";
 
   import { projects as projectStore } from "../src/project.ts";
   import { session as sessionStore } from "../src/session.ts";
   import { orgMocks } from "../lib/orgMocks.js";
+  import * as transaction from "../src/transaction.ts";
+  import * as project from "../src/project.ts";
 
   export let params = null;
 
@@ -24,6 +33,36 @@
   let projectName = null;
 
   let showRegistrationDetails = true;
+
+  // summary
+
+  const onSubmitTransaction = () => {
+    project.register(registrarHandle, projectName, projectId);
+
+    pop();
+  };
+
+  const wallet = () => {
+    return {
+      name: registrarHandle,
+      imageUrl: registrarImageUrl,
+      avatarFallback: registrarAvatarFallback,
+      variant: registrarVariant
+    };
+  };
+
+  const subject = () => {
+    return {
+      name: `${registrarHandle} / ${projectName}`,
+      imageUrl: registrarImageUrl,
+      avatarFallback: registrarAvatarFallback,
+      variant: registrarVariant
+    };
+  };
+
+  const tx = {
+    messages: [{ type: transaction.MessageType.ProjectRegistration }]
+  };
 </script>
 
 <style>
@@ -69,17 +108,20 @@
                 showRegistrationDetails = false;
               }} />
           {:else}
-            <TransactionSummaryStep
-              on:previous={() => {
+            <Transaction
+              payer={wallet()}
+              subject={subject()}
+              transaction={tx} />
+
+            <NavigationButtons
+              style={'margin-top: 32px;'}
+              cancelLabel="Back"
+              submitLabel="Submit transaction"
+              on:cancel={() => {
                 showRegistrationDetails = true;
                 skipNamePreselection = true;
               }}
-              {projectId}
-              {registrarHandle}
-              {registrarImageUrl}
-              {registrarAvatarFallback}
-              {registrarVariant}
-              {projectName} />
+              on:submit={onSubmitTransaction} />
           {/if}
         </div>
       </div>
