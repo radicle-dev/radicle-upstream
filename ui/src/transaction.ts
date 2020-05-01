@@ -92,7 +92,7 @@ const fetchList = event.create<Kind, Msg>(Kind.FetchList, update)
 export const fetch = (id: string): Readable<remote.Data<Transaction | null>> => {
   const store = remote.createStore<Transaction | null>();
 
-  api.post<ListInput, Transactions>("transactions", { ids: [ id ] })
+  api.post<ListInput, Transactions>("transactions", { ids: [id] })
     .then(txs => store.success(txs.length === 1 ? txs[0] : null))
     .catch(store.error);
 
@@ -140,6 +140,7 @@ export const formatPayer = (identity: identity.Identity): object => {
   };
 };
 
+// TODO(sos): add avatarFallback for org registration once endpoint is ready
 export const formatSubject = (identity: identity.Identity, msg: Message): object => {
   let name;
 

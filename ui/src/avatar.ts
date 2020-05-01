@@ -1,4 +1,4 @@
-interface EmojiAvatar {
+export interface EmojiAvatar {
   background: {
     r: number;
     g: number;
@@ -7,8 +7,8 @@ interface EmojiAvatar {
   emoji: string;
 }
 
-interface RemoteAvatar {
+export interface RemoteAvatar {
   url: string;
 }
 
-type Avatar = EmojiAvatar | RemoteAvatar
+export type Avatar = EmojiAvatar | RemoteAvatar

@@ -1,21 +1,23 @@
 import * as api from "./api"
-import { MessageType, Transaction } from './transaction';
+import { createValidationStore } from "./validation"
+import { MessageType, Transaction, formatPayer } from './transaction';
+import { EmojiAvatar } from "./avatar"
+import { Identity } from './identity';
 
 export enum RegistrationFlowState {
   NameSelection,
   TransactionConfirmation
 }
 
-const imageUrl =
-  "https://pbs.twimg.com/profile_images/378800000411356732/e8b1b7f0bd07d4d948cb2da25e221673_400x400.jpeg";
-
-
 interface Org {
   name: string;
-  avatar: {
-    imageUrl: string;
-  };
+  avatarFallback: EmojiAvatar;
 }
+
+// Api 
+export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`)
+export const getNameAvailability = (id: string): Promise<boolean> =>
+  getOrg(id).then(org => !org)
 
 // Name validation
 const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$");
@@ -30,16 +32,32 @@ export const nameConstraints = {
   }
 };
 
-// DUMMY DATA
+// Make sure we make a new one every time
+export const validationStore = () => createValidationStore(nameConstraints, {
+  promise: getNameAvailability,
+  validationMessage: "Sorry, this name is already taken"
+})
 
-export const org: Org = {
-  name: "",
-  avatar: {
-    imageUrl: imageUrl
+// DUMMY DATA
+// TODO(sos): Replace with actual avatar fallback request once the endpoint is ready
+export const generateAvatar = (id: string): EmojiAvatar => {
+  return {
+    background: {
+      r: 0,
+      g: 200,
+      b: 222
+    },
+    emoji: "😘"
   }
 }
 
-export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`)
+export const getSubject = (id: string) => {
+  return {
+    name: id,
+    kind: "org",
+    avatarFallback: generateAvatar("")
+  }
+};
 
 interface RegisterOrg {
   id: string;
@@ -51,25 +69,15 @@ export const register = (id: string): Promise<Transaction> => {
   });
 }
 
-export const transaction = {
-  messages: [
-    {
-      type: MessageType.OrgRegistration,
-      orgId: "1234"
-    }
-  ]
+export const getTransaction = (id: string) => {
+  return {
+    messages: [
+      {
+        type: MessageType.OrgRegistration,
+        orgId: id
+      }
+    ]
+  }
 };
 
-export const payer = {
-  name: "someone",
-  kind: "org",
-  avatarFallback: null,
-  imageUrl: imageUrl
-};
-
-export const subject = {
-  name: "",
-  kind: "org",
-  avatarFallback: null,
-  imageUrl: imageUrl
-};
+export const getPayer = (identity: Identity) => formatPayer(identity)
