@@ -29,7 +29,7 @@
       title={subject.name}
       imageUrl={subject.imageUrl}
       avatarFallback={subject.avatarFallback}
-      variant={subject.variant === 'user' ? 'circle' : 'square'}
+      variant={subject.variant}
       style="color: var(--color-foreground)" />
   </div>
 </Row>

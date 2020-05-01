@@ -39,7 +39,7 @@
     variant: "avatar",
     value: session.identity.id,
     avatarProps: {
-      variant: "user",
+      variant: "circle",
       title: session.identity.metadata.handle,
       avatarFallback: session.identity.avatarFallback,
       imageUrl: session.identity.imageUrl
@@ -51,7 +51,7 @@
       variant: "avatar",
       value: org.id,
       avatarProps: {
-        variant: "project",
+        variant: "square",
         title: org.metadata.name,
         avatarFallback: org.avatarFallback
       }
