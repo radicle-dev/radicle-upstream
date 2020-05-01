@@ -7,6 +7,7 @@
   import { showNotification } from "../store/notification.js";
   import { create } from "../src/project.ts";
   import { getLocalBranches } from "../src/source.ts";
+  import { getValidationState } from "../src/validation.ts";
 
   import { ModalLayout, RadioOption } from "../DesignSystem/Component";
   import {
@@ -209,6 +210,16 @@
 
   // Re-fetch branches whenever the user selects a new path.
   $: fetchBranches(isNew ? newRepositoryPath : existingRepositoryPath);
+
+  $: nameValidation = getValidationState("name", validations);
+  $: newRepositoryPathValidation = getValidationState(
+    "newRepositoryPath",
+    validations
+  );
+  $: existingRepositoryPathValidation = getValidationState(
+    "existingRepositoryPath",
+    validations
+  );
 </script>
 
 <style>
@@ -253,8 +264,7 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        valid={!(validations && validations.name)}
-        validationMessage={validations && validations.name && validations.name[0]} />
+        validation={nameValidation} />
 
       <Input.Text
         style="margin-top: 16px; margin-bottom: 16px;"
@@ -278,9 +288,8 @@
               Choose where you'd like to create the repository
             </Text>
             <Input.Directory
-              valid={!(validations && validations.newRepositoryPath)}
-              validationMessage={validations && validations.newRepositoryPath && validations.newRepositoryPath[0]}
               placeholder="~/path/to/folder"
+              validation={newRepositoryPathValidation}
               bind:path={newRepositoryPath} />
           </div>
         </RadioOption>
@@ -298,8 +307,7 @@
             </Text>
             <Input.Directory
               placeholder="~/path/to/folder"
-              valid={!(validations && validations.existingRepositoryPath)}
-              validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
+              validation={existingRepositoryPathValidation}
               bind:path={existingRepositoryPath} />
             <div class="default-branch-row">
               <Text style="color: var(--color-foreground-level-6)">

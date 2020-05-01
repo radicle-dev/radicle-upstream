@@ -40,6 +40,7 @@ export {
   Rad,
   RadioOption,
   Remote,
+  Row,
   Sidebar,
   SidebarLayout,
   StepCounter,
@@ -48,6 +49,5 @@ export {
   Transaction,
   TransactionAccordion,
   TransactionStatusbar,
-  Row,
   UserCard
 };

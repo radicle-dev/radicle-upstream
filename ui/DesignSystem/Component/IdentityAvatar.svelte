@@ -13,4 +13,4 @@
   title={showTitle && identity.metadata.handle}
   avatarFallback={identity.avatarFallback}
   imageUrl={identity.metadata.avatarUrl}
-  variant="user" />
+  variant="circle" />

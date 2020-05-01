@@ -89,7 +89,7 @@
         title={org.metadata.name}
         imageUrl={org.metadata.avatarUrl}
         avatarFallback={org.avatarFallback}
-        variant="project" />
+        variant="square" />
     </a>
 
     <div slot="middle">

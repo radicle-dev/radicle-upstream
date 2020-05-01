@@ -1,5 +1,5 @@
 <script>
-  import { location, link } from "svelte-spa-router";
+  import { location, link, push } from "svelte-spa-router";
 
   /* TODO(rudolfs): fetch the actual org list */
   import { orgMocks } from "../../lib/orgMocks.js";
@@ -180,7 +180,7 @@
           <Avatar
             imageUrl={org.metadata.avatarUrl}
             avatarFallback={org.avatarFallback}
-            variant="project"
+            variant="square"
             size="medium" />
         </a>
 
@@ -191,8 +191,7 @@
     {/each}
 
     <li class="item">
-      <AddOrgButton on:click={() => console.log('event(add-org)')} />
-
+      <AddOrgButton on:click={() => push(path.orgRegistration())} />
       <div class="tooltip">
         <Title>Add org</Title>
       </div>
