@@ -78,6 +78,7 @@
     border: 1px solid var(--color-foreground-level-3);
     overflow: hidden; /* hack to make inner option rounded corners */
     z-index: 1;
+    user-select: none;
   }
 
   .header {
@@ -104,6 +105,14 @@
 
   .menu-item:hover {
     background-color: var(--color-foreground-level-1);
+  }
+
+  .menu-item.disabled {
+    color: var(--color-foreground-level-4);
+  }
+
+  .menu-item.disabled :global(svg) {
+    fill: var(--color-foreground-level-4);
   }
 </style>
 
@@ -135,9 +144,11 @@
       <div class="menu" data-cy="dropdown-menu">
         {#each menuItems as item, index}
           <div
+            title={item.tooltip}
             data-cy={item.dataCy}
             class="menu-item"
-            on:click|stopPropagation={handleItemSelection(item)}>
+            class:disabled={item.disabled}
+            on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
             <svelte:component this={item.icon} style="margin-right: 12px" />
             <Text>{item.title}</Text>
           </div>

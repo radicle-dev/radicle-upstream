@@ -67,12 +67,8 @@
     }
   ];
 
-  const dropdownMenuItems = [
-    {
-      title: "Register project",
-      icon: Icon.Register,
-      event: () => push(path.registerExistingProject(params.id, registrarId))
-    },
+  $: dropdownMenuItems = [
+    registerProjectMenuItem,
     {
       title: "New issue",
       icon: Icon.Issue,
@@ -85,10 +81,27 @@
     }
   ];
 
-  let registrarId;
+  let registerProjectMenuItem;
 
   $: if ($session.status === remote.Status.Success) {
-    registrarId = $session.data.identity.id;
+    if ($session.data.identity.registered) {
+      registerProjectMenuItem = {
+        title: "Register project",
+        icon: Icon.Register,
+        event: () =>
+          push(
+            path.registerExistingProject(params.id, $session.data.identity.id)
+          )
+      };
+    } else {
+      registerProjectMenuItem = {
+        title: "Register project",
+        icon: Icon.Register,
+        disabled: true,
+        tooltip:
+          "To unlock project registration, register your own handle first."
+      };
+    }
   }
 
   fetch({ id: params.id });

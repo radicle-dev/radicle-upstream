@@ -94,6 +94,13 @@
       title: "Send something",
       icon: Icon.ArrowUp,
       event: () => console.log("event(Send Something)")
+    },
+    {
+      title: "Send something",
+      icon: Icon.ArrowUp,
+      event: () => console.log("event(Send Something)"),
+      disabled: true,
+      tooltip: "This item is disabled because of reason!"
     }
   ];
 
