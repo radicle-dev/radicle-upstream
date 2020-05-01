@@ -212,6 +212,14 @@
   $: fetchBranches(isNew ? newRepositoryPath : existingRepositoryPath);
 
   $: nameValidation = getValidationState("name", validations);
+  $: newRepositoryPathValidation = getValidationState(
+    "newRepositoryPath",
+    validations
+  );
+  $: existingRepositoryPathValidation = getValidationState(
+    "existingRepositoryPath",
+    validations
+  );
 </script>
 
 <style>
@@ -280,9 +288,8 @@
               Choose where you'd like to create the repository
             </Text>
             <Input.Directory
-              valid={!(validations && validations.newRepositoryPath)}
-              validationMessage={validations && validations.newRepositoryPath && validations.newRepositoryPath[0]}
               placeholder="~/path/to/folder"
+              validation={newRepositoryPathValidation}
               bind:path={newRepositoryPath} />
           </div>
         </RadioOption>
@@ -300,8 +307,7 @@
             </Text>
             <Input.Directory
               placeholder="~/path/to/folder"
-              valid={!(validations && validations.existingRepositoryPath)}
-              validationMessage={validations && validations.existingRepositoryPath && validations.existingRepositoryPath[0]}
+              validation={existingRepositoryPathValidation}
               bind:path={existingRepositoryPath} />
             <div class="default-branch-row">
               <Text style="color: var(--color-foreground-level-6)">

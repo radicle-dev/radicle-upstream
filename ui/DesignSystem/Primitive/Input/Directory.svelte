@@ -6,9 +6,8 @@
 
   export let placeholder = null;
   export let style = null;
-  export let valid = true;
   export let path = null;
-  export let validationMessage = null;
+  export let validation = null;
 
   const openFileDialog = async () => {
     path = await getDirectoryPath();
@@ -25,9 +24,8 @@
 <div class="wrapper" {style}>
   <TextInput
     {placeholder}
-    {validationMessage}
+    {validation}
     value={path}
-    {valid}
     disabled
     style="margin-right: 16px; flex: 1" />
 
