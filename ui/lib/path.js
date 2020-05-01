@@ -19,6 +19,7 @@ export const registerUser = () => "/user-registration";
 export const createIdentity = _params => "/identity/new";
 
 export const orgs = id => `/orgs/${id}`;
+export const orgRegistration = () => `/orgs/register`;
 export const orgProjects = id => `/orgs/${id}/projects`;
 export const orgFund = id => `/orgs/${id}/fund`;
 export const orgMembers = id => `/orgs/${id}/members`;

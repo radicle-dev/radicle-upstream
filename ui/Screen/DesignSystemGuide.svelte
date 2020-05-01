@@ -27,6 +27,7 @@
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
+  import { ValidationStatus } from "../src/validation.ts";
 
   const colors = Array.from(document.styleSheets)
     .filter(
@@ -388,16 +389,15 @@
       <Input.Text
         placeholder="And I'm an input with a validation error."
         style="flex: 1"
-        valid={false}
-        validationMessage="Well, that didn't go well..." />
+        validation={{ status: ValidationStatus.Error, message: "Well, that didn't go well..." }} />
     </Swatch>
 
     <Swatch>
       <Input.Text
         placeholder="Enter user name"
         style="width: 100%"
-        valid={true}
-        variant="handle"
+        showSuccessCheck
+        validation={{ status: ValidationStatus.Success }}
         on:input={() => {
           console.log('event(Input changed)');
         }} />
@@ -405,24 +405,29 @@
 
     <Swatch>
       <Input.Text
-        avatarFallback={avatarFallback1}
-        imageUrl="https://avatars1.githubusercontent.com/u/40774"
         placeholder="Enter user name"
         style="width: 100%"
-        valid={true}
-        value="user123"
-        variant="handle" />
+        showSuccessCheck
+        validation={{ status: ValidationStatus.Success }}
+        value="user123">
+        <div slot="avatar">
+          <Avatar
+            size="small"
+            imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+        </div>
+      </Input.Text>
     </Swatch>
 
     <Swatch>
       <Input.Text
-        avatarFallback={avatarFallback1}
         placeholder="Enter user name"
         style="width: 100%"
-        valid={true}
-        validationPending="true"
-        value="user123"
-        variant="handle" />
+        validation={{ status: ValidationStatus.Loading }}
+        value="user123">
+        <div slot="avatar">
+          <Avatar size="small" avatarFallback={avatarFallback1} />
+        </div>
+      </Input.Text>
     </Swatch>
 
     <Swatch>
@@ -431,9 +436,12 @@
         placeholder="Enter user name."
         style="width: 100%"
         valid={false}
-        validationMessage="Handle already taken"
-        value="myUser"
-        variant="handle" />
+        validation={{ status: ValidationStatus.Error, message: 'Handle already taken' }}
+        value="myUser">
+        <div slot="avatar">
+          <Avatar size="small" avatarFallback={avatarFallback2} />
+        </div>
+      </Input.Text>
     </Swatch>
 
     <Swatch>
@@ -464,10 +472,10 @@
         size="big" />
       <Avatar
         imageUrl="https://avatars.dicebear.com/v2/jdenticon/one.svg"
-        variant="project" />
+        variant="square" />
       <Avatar
         imageUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
-        variant="project"
+        variant="square"
         size="big" />
       <Avatar size="huge" avatarFallback={avatarFallback2} />
     </Swatch>

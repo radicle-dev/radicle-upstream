@@ -9,8 +9,8 @@
   export let avatarFallback = null; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
   export let title = null;
 
-  export let variant = "user"; // user | project
-  export let size = "regular"; // regular | medium | big | huge
+  export let variant = "circle"; // circle | square
+  export let size = "regular"; // small | regular | medium | big | huge
 
   const fmt = background => {
     return `rgb(${background.r}, ${background.g}, ${background.b})`;
@@ -20,56 +20,61 @@
 </script>
 
 <style>
-  .user.small {
+  .circle.small {
     width: 24px;
     height: 24px;
     border-radius: 16px;
   }
 
   img,
-  .user.regular {
+  .circle.regular {
     width: 32px;
     height: 32px;
     border-radius: 16px;
   }
 
-  .user.medium {
+  .circle.medium {
     width: 36px;
     height: 36px;
     border-radius: 18px;
   }
 
-  .user.big {
+  .circle.big {
     width: 68px;
     height: 68px;
     border-radius: 34px;
   }
 
-  .user.huge {
+  .circle.huge {
     width: 72px;
     height: 72px;
     border-radius: 36px;
   }
 
-  .avatar.user.big {
+  .avatar.circle.big {
     line-height: 68px;
   }
 
-  .project {
+  .square {
     border-radius: 2px;
   }
 
-  .project.regular {
+  .square.small {
+    width: 24px;
+    height: 24px;
+  }
+
+  .square.regular {
     width: 32px;
     height: 32px;
   }
 
-  .project.medium {
+  .square.medium {
     width: 36px;
     height: 36px;
   }
 
-  .project.big {
+  .square.big {
     width: 64px;
     height: 64px;
   }

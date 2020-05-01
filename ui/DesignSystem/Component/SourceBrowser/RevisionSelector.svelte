@@ -111,7 +111,7 @@
       title={revisions[0].identity.metadata.handle}
       avatarFallback={revisions[0].identity.avatarFallback}
       size="small"
-      variant="user" />
+      variant="circle" />
   </div>
   <div class="selector-branch">{currentRevision}</div>
   <div class="selector-expand">
@@ -129,7 +129,7 @@
           title={repo.identity.metadata.handle}
           avatarFallback={repo.identity.avatarFallback}
           size="small"
-          variant="user" />
+          variant="circle" />
       </div>
       <ul>
         {#each repo.branches as branch}

@@ -1,7 +1,8 @@
 <script>
   import Text from "../Text.svelte";
   import Icon from "../Icon";
-  import Avatar from "../Avatar.svelte";
+
+  import { ValidationStatus } from "../../../src/validation.ts";
 
   export let style = null;
   export let placeholder = null;
@@ -9,12 +10,13 @@
   export let dataCy = null;
 
   export let disabled = null;
-  export let valid = true;
-  export let validationMessage = null;
-  export let variant = "vanilla"; // vanilla | handle
-  export let imageUrl = null;
-  export let avatarFallback = null;
-  export let validationPending = false;
+
+  // TODO(sos): replace with actual slot presence check once
+  // https://github.com/sveltejs/svelte/issues/2106 is solved
+  let slotFallback;
+
+  export let validation = null;
+  export let showSuccessCheck = false;
 </script>
 
 <style>
@@ -35,7 +37,7 @@
     background-color: var(--color-background);
   }
 
-  input.handle {
+  input.avatar {
     padding: 0 40px 0 38px;
   }
 
@@ -68,48 +70,54 @@
     margin-top: 12px;
     margin-left: 12px;
   }
+
+  .avatar-wrapper {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    padding-left: 8px;
+    display: flex;
+    height: 40px;
+    justify-content: center;
+    align-items: center;
+  }
 </style>
 
 <div {style} class="wrapper">
   <input
     data-cy={dataCy}
-    class:invalid={!valid && !validationPending}
-    class:handle={variant === 'handle'}
+    class:invalid={validation && validation.status === ValidationStatus.Error}
+    class:avatar={!slotFallback}
     {placeholder}
     bind:value
     {disabled}
     on:change
     on:input />
-  {#if variant === 'handle'}
-    <Avatar
-      {avatarFallback}
-      {imageUrl}
-      variant="user"
-      size="small"
-      style="width: 24px; height: 40px; justify-content: flex-start; position:
-      absolute; top: 0px; left: 8px" />
-  {/if}
 
-  {#if variant === 'handle'}
-    {#if validationPending}
+  <div class="avatar-wrapper">
+    <slot name="avatar">
+      <div bind:this={slotFallback} />
+    </slot>
+  </div>
+
+  {#if validation}
+    {#if validation.status === ValidationStatus.Loading}
       <Icon.Spinner
         style="justify-content: flex-start; position: absolute; top: 8px; right:
-        8px;" />
-    {:else if value && valid}
+        10px;" />
+    {:else if validation.status === ValidationStatus.Success && showSuccessCheck}
       <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;
-        position: absolute; top: 8px; right: 8px;" />
+        position: absolute; top: 8px; right: 10px;" />
+    {:else if validation.status === ValidationStatus.Error}
+      <Icon.Important
+        style="fill: var(--color-negative); justify-content: flex-start;
+        position: absolute; top: 8px; right: 10px;" />
+      <div class="validation-row">
+        <Text style="color: var(--color-negative); text-align: left;">
+          {validation.message}
+        </Text>
+      </div>
     {/if}
-  {/if}
-
-  {#if !validationPending && !valid && validationMessage}
-    <Icon.Important
-      style="fill: var(--color-negative); justify-content: flex-start; position:
-      absolute; top: 8px; right: 8px;" />
-    <div class="validation-row">
-      <Text style="color: var(--color-negative); text-align: left;">
-        {validationMessage}
-      </Text>
-    </div>
   {/if}
 </div>
