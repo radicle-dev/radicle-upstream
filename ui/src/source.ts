@@ -31,8 +31,8 @@ interface Commit {
 }
 
 export enum ObjectType {
-  Blob = 'BLOB',
-  Tree = 'TREE'
+  Blob = "BLOB",
+  Tree = "TREE",
 }
 
 interface Info {

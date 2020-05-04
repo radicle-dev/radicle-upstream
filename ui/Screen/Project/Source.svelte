@@ -50,16 +50,19 @@
 
   const { id, metadata } = getContext("project");
 
-  $: rev = $currentRevision !== "" ? $currentRevision : metadata.defaultBranch;
-  $: readmeStore = readme(id, $rev);
+  const getRevision = current => {
+    return current !== "" ? current : metadata.defaultBranch;
+  };
 
-  fetchRevisions({ projectId: id });
-  updateParams({
+  $: readmeStore = readme(id, getRevision($currentRevision));
+  $: updateParams({
     path: path.extractProjectSourceObjectPath($location),
     projectId: id,
-    revision: $rev,
+    revision: getRevision($currentRevision),
     type: path.extractProjectSourceObjectType($location)
   });
+
+  fetchRevisions({ projectId: id });
 </script>
 
 <style>
@@ -154,7 +157,7 @@
         <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
-            currentRevision={$currentRevision}
+            currentRevision={getRevision($currentRevision)}
             {revisions}
             on:select={event => updateRevision(project.id, event.detail)} />
         </div>
@@ -197,7 +200,7 @@
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.info.objectType === ObjectType.Tree && !object.path}
+        {:else if object.info.objectType === ObjectType.Tree}
           <!-- Repository root -->
           <div class="commit-header">
             <CommitTeaser
