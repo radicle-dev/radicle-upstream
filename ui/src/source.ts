@@ -39,10 +39,12 @@ interface CommitSummary {
   description: string;
 }
 
-interface CommitHistory {
-  branch: string;
+interface CommitGroup {
+  time: number;
   commits: CommitSummary[];
 }
+
+type CommitHistory = CommitGroup[];
 
 export enum ObjectType {
   Blob = 'BLOB',
@@ -160,11 +162,28 @@ const update = (msg: Msg): void => {
     case Kind.FetchCommits:
       commitsStore.loading();
 
-      api.get<CommitHistory>(
+      api.get<CommitSummary[]>(
         `source/commits/${msg.projectId}/${msg.branch}`
       )
       .then(history => {
-        commitsStore.success(history)
+        const days: CommitHistory = [];
+
+        const DAY = 60 * 60 * 24;
+
+        for (const commit of history) {
+          const time = commit.committerTime;
+          const last = days[days.length - 1];
+          const diff = last ? last.time - time : DAY;
+
+          if (!days.length || diff > DAY) {
+            days.push({
+              time: time,
+              commits: []
+            });
+          }
+          days[days.length - 1].commits.push(commit);
+        }
+        commitsStore.success(days)
       })
       .catch(commitsStore.error);
       break;
