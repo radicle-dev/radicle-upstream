@@ -4,10 +4,7 @@ context("user registration", () => {
       cy.createIdentity();
       cy.visit("./public/index.html");
       cy.get('[data-cy="profile-context-menu"]').click();
-      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click({
-        // TODO(rudolfs): remove this once #246 is fixed
-        force: true
-      });
+      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();
     });
 
     // TODO(merle): Replace opening via hotkey
@@ -48,10 +45,7 @@ context("user registration", () => {
       cy.createIdentity();
       cy.visit("./public/index.html");
       cy.get('[data-cy="profile-context-menu"]').click();
-      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click({
-        // TODO(rudolfs): remove this once #246 is fixed
-        force: true
-      });
+      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();
     });
 
     context("handle", () => {
@@ -64,35 +58,35 @@ context("user registration", () => {
         // spaces are not allowed
         cy.get('[data-cy="page"] [data-cy="handle"]').type("no spaces");
         cy.get('[data-cy="page"]').contains(
-          "Handle should match [a-z0-9][a-z0-9_-]+"
+          "Handle should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // special characters are disallowed
         cy.get('[data-cy="page"] [data-cy="handle"]').clear();
         cy.get('[data-cy="page"] [data-cy="handle"]').type("$bad");
         cy.get('[data-cy="page"]').contains(
-          "Handle should match [a-z0-9][a-z0-9_-]+"
+          "Handle should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // can't start with an underscore
         cy.get('[data-cy="page"] [data-cy="handle"]').clear();
         cy.get('[data-cy="page"] [data-cy="handle"]').type("_nein");
         cy.get('[data-cy="page"]').contains(
-          "Handle should match [a-z0-9][a-z0-9_-]+"
+          "Handle should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // can't start with a dash
         cy.get('[data-cy="page"] [data-cy="handle"]').clear();
         cy.get('[data-cy="page"] [data-cy="handle"]').type("-nope");
         cy.get('[data-cy="page"]').contains(
-          "Handle should match [a-z0-9][a-z0-9_-]+"
+          "Handle should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // has to be at least two characters long
         cy.get('[data-cy="page"] [data-cy="handle"]').clear();
         cy.get('[data-cy="page"] [data-cy="handle"]').type("x");
         cy.get('[data-cy="page"]').contains(
-          "Handle should match [a-z0-9][a-z0-9_-]+"
+          "Handle should match ^[a-z0-9][a-z0-9_-]+$"
         );
       });
 

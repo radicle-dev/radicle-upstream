@@ -1,9 +1,7 @@
 <script>
-  import { push } from "svelte-spa-router";
   import { Icon, Text, Title } from "../Primitive";
   import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
   import Stat from "./Stat.svelte";
-  import { registerProject } from "../../lib/path.js";
 
   export let projectId = null;
   export let title = null;
@@ -11,13 +9,7 @@
   export let isRegistered = false;
   export let stats = { branches: -1, commits: -1, contributors: -1 };
 
-  const dropdownMenuItems = [
-    {
-      title: "Register project",
-      icon: Icon.Register,
-      event: () => push(registerProject(projectId))
-    }
-  ];
+  export let contextMenuItems = null;
 </script>
 
 <style>
@@ -85,6 +77,6 @@
 
     <AdditionalActionsDropdown
       headerTitle={projectId}
-      menuItems={dropdownMenuItems} />
+      menuItems={contextMenuItems} />
   </div>
 </div>

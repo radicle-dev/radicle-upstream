@@ -24,7 +24,6 @@
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
-  import Stat from "../../DesignSystem/Component/Stat.svelte";
 
   import CloneButton from "./CloneButton.svelte";
 
@@ -95,15 +94,13 @@
   .column-right {
     display: flex;
     flex-direction: column;
-    padding-left: 0.75rem;
+    padding: 0 0.75rem;
     width: 960px;
   }
 
   .commit-header {
-    height: 3rem;
-    background-color: var(--color-secondary-level-1);
+    height: 2.5rem;
     margin-bottom: 1rem;
-    border-radius: 3px;
   }
 
   .source-tree {
@@ -122,15 +119,23 @@
     justify-content: space-between;
   }
   .repo-stats {
-    height: 4rem;
+    height: 2.5rem;
+    margin: 0.75rem 0 1rem;
     display: flex;
     justify-content: space-evenly;
-    padding: 1.25rem 1rem;
-    flex: 0.8;
   }
-  .repo-stats > * {
-    flex: 1;
+  .repo-stat-item {
+    display: flex;
     color: var(--color-foreground-level-6);
+    padding: 0.5rem 1rem;
+    margin-right: 1rem;
+  }
+  .stat {
+    font-family: var(--typeface-mono-bold);
+    background-color: var(--color-foreground-level-2);
+    color: var(--color-foreground-level-6);
+    padding: 0 0.5rem;
+    border-radius: 0.75rem;
   }
 </style>
 
@@ -172,20 +177,20 @@
     <div class="column-right">
       <div class="repo-header">
         <div class="repo-stats">
-          <div>
-            <Stat icon={Icon.Commit} count={project.stats.commits}>
-              &nbsp;Commits
-            </Stat>
+          <div class="repo-stat-item">
+            <Icon.Commit />
+            <Text style="margin: 0 8px;">Commits</Text>
+            <span class="stat">{project.stats.commits}</span>
           </div>
-          <div>
-            <Stat icon={Icon.Branch} count={project.stats.branches}>
-              &nbsp;Branches
-            </Stat>
+          <div class="repo-stat-item">
+            <Icon.Branch />
+            <Text style="margin: 0 8px;">Branches</Text>
+            <span class="stat">{project.stats.branches}</span>
           </div>
-          <div>
-            <Stat icon={Icon.Member} count={project.stats.contributors}>
-              &nbsp;Contributors
-            </Stat>
+          <div class="repo-stat-item">
+            <Icon.Member />
+            <Text style="margin: 0 8px;">Contributors</Text>
+            <span class="stat">{project.stats.contributors}</span>
           </div>
         </div>
         <CloneButton projectId={project.id} />

@@ -7,12 +7,11 @@
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
-    IdentityAvatar,
     Remote,
     SidebarLayout,
     Topbar
   } from "../DesignSystem/Component";
-  import { Icon } from "../DesignSystem/Primitive";
+  import { Avatar, Icon } from "../DesignSystem/Primitive";
 
   import Onboard from "./Profile/Onboard.svelte";
   import Projects from "./Profile/Projects.svelte";
@@ -76,6 +75,13 @@
   ];
 </script>
 
+<style>
+  .profile-avatar {
+    display: flex;
+    align-items: center;
+  }
+</style>
+
 <SidebarLayout
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="profile-screen">
@@ -84,11 +90,18 @@
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.profileProjects()} use:link>
         <!-- TODO(xla): Handle other states -->
-        <IdentityAvatar
-          identity={session.identity}
-          showTitle={true}
-          size={'regular'}
-          style="color: var(--color-secondary)" />
+        <div class="profile-avatar">
+          <Avatar
+            avatarFallback={session.identity.avatarFallback}
+            imageUrl={session.identity.metadata.avatarUrl}
+            variant="circle"
+            title={session.identity.metadata.handle}
+            size="regular"
+            style="color: var(--color-secondary)" />
+          {#if session.identity.registered}
+            <Icon.Badge style="margin-left: 8px; fill: var(--color-primary);" />
+          {/if}
+        </div>
       </a>
       <div slot="middle">
         <HorizontalMenu items={topbarMenuItems} />

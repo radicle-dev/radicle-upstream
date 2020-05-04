@@ -16,8 +16,10 @@
 
   .align-center {
     display: flex;
-    justify-content: center;
     flex: 1;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   .align-right {

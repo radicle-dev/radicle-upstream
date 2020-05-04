@@ -85,7 +85,7 @@
   .pipeline {
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    box-shadow: 0px 4px 8px var(--color-foreground-level-3-opacity-08);
+    box-shadow: var(--elevation-low);
     width: 274px;
     cursor: pointer;
     user-select: none;
