@@ -3,6 +3,7 @@
   import validatejs from "validate.js";
 
   import * as user from "../../src/user.ts";
+  import { showNotification } from "../../store/notification.js";
   import {
     getValidationState,
     ValidationStatus
@@ -33,7 +34,10 @@
         validations = { handle: ["Handle already taken"] };
       }
     } catch (error) {
-      validations = { handle: [error] };
+      showNotification({
+        text: `Proxy: ${JSON.stringify(error)}`,
+        level: "error"
+      });
     }
   };
 
@@ -41,7 +45,8 @@
     fullMessages: false
   };
 
-  const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$", "i");
+  const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
+
   const constraints = {
     handle: {
       presence: {
@@ -49,8 +54,8 @@
         allowEmpty: false
       },
       format: {
-        pattern: VALID_NAME_MATCH,
-        message: "Handle should match [a-z0-9][a-z0-9_-]+"
+        pattern: new RegExp(HANDLE_MATCH),
+        message: `Handle should match ${HANDLE_MATCH}`
       }
     }
   };

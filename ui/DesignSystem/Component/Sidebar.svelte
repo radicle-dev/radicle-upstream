@@ -7,7 +7,6 @@
   import { session } from "../../src/session.ts";
 
   import { Avatar, Icon, Title } from "../Primitive";
-  import IdentityAvatar from "./IdentityAvatar.svelte";
   import Remote from "./Remote.svelte";
 
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
@@ -163,7 +162,11 @@
       class:active={path.active(path.profile(), $location, true)}>
       <Remote store={session} let:data>
         <a href={path.profileProjects()} use:link>
-          <IdentityAvatar identity={data.identity} size="medium" />
+          <Avatar
+            size="medium"
+            avatarFallback={data.identity.avatarFallback}
+            imageUrl={data.identity.metadata.avatarUrl}
+            variant="circle" />
         </a>
       </Remote>
 
