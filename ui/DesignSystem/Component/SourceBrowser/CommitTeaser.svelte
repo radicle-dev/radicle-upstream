@@ -1,6 +1,6 @@
 <script>
   import { link } from "svelte-spa-router";
-  import { Text } from "../../Primitive";
+  import { Text, Icon } from "../../Primitive";
   import UserCard from "../UserCard.svelte";
   import * as path from "../../../lib/path.js";
 
@@ -17,10 +17,12 @@
   .container {
     display: flex;
     align-items: center;
-    height: 36px;
-    padding: 0 12px 0 12px;
+    height: 40px;
+    padding: 0 12px 0 8px;
     white-space: nowrap;
     min-width: var(--content-min-width);
+    border-radius: 4px;
+    background-color: var(--color-secondary-level-1);
   }
 
   .align-left {
@@ -37,34 +39,34 @@
   }
 
   .commit-message {
-    color: var(--color-foreground-level-6);
+    color: var(--color-secondary);
     text-overflow: ellipsis;
     overflow-x: hidden;
   }
 
   .commit-sha {
     color: var(--color-secondary);
-    font-family: var(--typeface-mono-regular);
+    font-family: var(--typeface-mono-bold);
+    padding: 0 8px 0 4px;
   }
 </style>
 
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
-    <UserCard {user} style="margin-right: 8px" />
-
+    <Icon.Commit style="fill: var(--color-secondary)" />
+    <a
+      class="commit-sha"
+      href={path.projectCommit(projectId, commitSha)}
+      use:link>
+      {commitSha.substring(0, 7)}
+    </a>
     <p class="commit-message">{commitMessage}</p>
   </div>
 
   <div class="align-right">
-    <Text style="color: var(--color-foreground-level-6)">
-      Latest commit
-      <a
-        class="commit-sha"
-        href={path.projectCommit(projectId, commitSha)}
-        use:link>
-        {commitSha.substring(0, 7)}
-      </a>
-      {timestamp}
-    </Text>
+    <UserCard
+      {user}
+      style="margin-right: 8px; color: var(--color-foreground-level-6)" />
+    <Text style="color: var(--color-foreground-level-6)">{timestamp}</Text>
   </div>
 </div>

@@ -16,7 +16,7 @@
 
   header .file-header {
     display: flex;
-    font-weight: 600;
+    font-family: var(--typeface-medium);
     font-size: 1rem;
     height: 3rem;
     align-items: center;

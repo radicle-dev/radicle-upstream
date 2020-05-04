@@ -34,7 +34,7 @@
 <style>
   .clone-dropdown {
     margin-top: 0.5rem;
-    top: 3rem;
+    top: 3.25rem;
     right: 0;
     position: absolute;
     border-radius: 4px;
@@ -57,7 +57,7 @@
 
 <svelte:window on:click={clickOutside} />
 <div class="clone-dropdown" hidden={!expanded} bind:this={dropdown}>
-  <Text style="color: var(--color-foreground-level-5); user-select: none">
+  <Text style="color: var(--color-foreground-level-6); user-select: none">
     Clone this repository using the following URL.
   </Text>
   <Copyable {afterCopy}>
