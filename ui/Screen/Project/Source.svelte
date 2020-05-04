@@ -28,7 +28,9 @@
 
   import CloneButton from "./CloneButton.svelte";
 
-  export const params = null;
+  export let params = {
+    id: ""
+  };
 
   const updateRevision = (projectId, revision) => {
     updateParams({
@@ -48,10 +50,11 @@
     }, 1000);
   };
 
-  let readmeStore;
+  const { id } = params;
 
+  $: readmeStore = readme(id, $currentRevision);
   $: if ($projectStore.status === remote.Status.Success) {
-    const { id, metadata } = $projectStore.data;
+    const { metadata } = $projectStore.data;
 
     fetchRevisions({ projectId: id });
     updateParams({
@@ -61,8 +64,6 @@
         $currentRevision !== "" ? $currentRevision : metadata.defaultBranch,
       type: path.extractProjectSourceObjectType($location)
     });
-
-    readmeStore = readme(id, $currentRevision);
   }
 </script>
 
@@ -153,6 +154,7 @@
 
   <div class="container">
     <div class="column-left">
+      <!-- Revision selector -->
       <Remote store={revisionsStore} let:data={revisions}>
         <div class="revision-selector-wrapper">
           <RevisionSelector
@@ -163,6 +165,7 @@
         </div>
       </Remote>
 
+      <!-- Tree -->
       <div class="source-tree" data-cy="source-tree">
         <Folder projectId={project.id} toplevel name={project.metadata.name} />
       </div>
@@ -190,6 +193,7 @@
         <CloneButton projectId={project.id} />
       </div>
 
+      <!-- Object -->
       <Remote store={objectStore} let:data={object}>
         {#if object.info.objectType === ObjectType.Blob}
           <FileSource
@@ -212,6 +216,7 @@
         {/if}
       </Remote>
 
+      <!-- Readme -->
       <Remote store={readmeStore} let:data={readme}>
         {#if readme}
           <Readme content={readme.content} path={readme.path} />

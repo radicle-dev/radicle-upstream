@@ -387,6 +387,7 @@ impl Serialize for coco::Blob {
         state.serialize_field("binary", &self.is_binary())?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("info", &self.info)?;
+        state.serialize_field("path", &self.path)?;
         state.end()
     }
 }
@@ -739,6 +740,7 @@ mod test {
                         "committerTime": 1_575_283_425,
                     },
                 },
+                "path": "text/arrows.txt",
             })
         );
 
@@ -788,6 +790,7 @@ mod test {
                         "description": "",
                         "committerTime": 1_575_282_964, },
                 },
+                "path": "bin/ls",
             })
         );
     }
