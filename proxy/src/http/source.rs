@@ -19,6 +19,7 @@ pub fn routes(
         blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
             .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+            .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(local_branches_filter())
             .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
@@ -34,6 +35,7 @@ fn filters(
     blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
         .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+        .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(local_branches_filter())
         .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
@@ -119,6 +121,30 @@ fn commit_filter(
             .description("Commit for SHA1 found"),
         ))
         .and_then(handler::commit)
+}
+
+/// `GET /commits/<project_id>/<branch>`
+fn commits_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("commits")
+        .and(warp::get())
+        .and(super::with_paths(paths))
+        .and(document::param::<String>(
+            "project_id",
+            "ID of the project the blob is part of",
+        ))
+        .and(document::param::<String>("branch", "Branch name"))
+        .and(document::document(document::description("Fetch Commits from a Branch")))
+        .and(document::document(document::tag("Source")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(coco::Commit::document()).mime("application/json"),
+            )
+            .description("Branch found"),
+        ))
+        .and_then(handler::commits)
 }
 
 /// `GET /branches/<project_id>`
@@ -274,6 +300,18 @@ mod handler {
         let commit = coco::commit(&paths, &project_id, &sha1)?;
 
         Ok(reply::json(&commit))
+    }
+
+    /// Fetch the list of [`coco::Commit`] from a branch.
+    pub async fn commits(
+        librad_paths: Arc<RwLock<Paths>>,
+        project_id: String,
+        branch: String,
+    ) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
+        let commits = coco::commits(&paths, &project_id, &branch)?;
+
+        Ok(reply::json(&commits))
     }
 
     /// Fetch the list [`coco::Branch`] for a local repository.

@@ -30,6 +30,20 @@ interface Commit {
   changeset: object;
 }
 
+interface CommitSummary {
+  sha1: string;
+  author: Person;
+  committer: Person;
+  committerTime: number;
+  summary: string;
+  description: string;
+}
+
+interface CommitHistory {
+  branch: string;
+  commits: CommitSummary[];
+}
+
 export enum ObjectType {
   Blob = 'BLOB',
   Tree = 'TREE'
@@ -74,6 +88,9 @@ type Revisions = Revision[];
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
 
+const commitsStore = remote.createStore<CommitHistory>();
+export const commits = commitsStore.readable;
+
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
@@ -89,6 +106,7 @@ export const revisions = revisionsStore.readable;
 // EVENTS
 enum Kind {
   FetchCommit = "FETCH_COMMIT",
+  FetchCommits = "FETCH_COMMITS",
   FetchRevisions = "FETCH_REVISIONS",
   Update = "UPDATE"
 }
@@ -97,6 +115,12 @@ interface FetchCommit extends event.Event<Kind> {
   kind: Kind.FetchCommit;
   projectId: string;
   sha1: string;
+}
+
+interface FetchCommits extends event.Event<Kind> {
+  kind: Kind.FetchCommits;
+  projectId: string;
+  branch: string;
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -112,7 +136,7 @@ interface Update extends event.Event<Kind> {
   type: ObjectType;
 }
 
-type Msg = FetchCommit | FetchRevisions | Update
+type Msg = FetchCommit | FetchCommits | FetchRevisions | Update
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -131,6 +155,18 @@ const update = (msg: Msg): void => {
         })
       })
       .catch(commitStore.error);
+      break;
+
+    case Kind.FetchCommits:
+      commitsStore.loading();
+
+      api.get<CommitHistory>(
+        `source/commits/${msg.projectId}/${msg.branch}`
+      )
+      .then(history => {
+        commitsStore.success(history)
+      })
+      .catch(commitsStore.error);
       break;
 
     case Kind.FetchRevisions:
@@ -178,6 +214,7 @@ const update = (msg: Msg): void => {
 }
 
 export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
+export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
 export const fetchRevisions = event.create<Kind, Msg>(Kind.FetchRevisions, update);
 export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 

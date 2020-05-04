@@ -290,6 +290,24 @@ pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Erro
     Ok(Commit::from(commit))
 }
 
+/// Retrieves the [`Commit`] history for the given `branch`.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+pub fn commits(paths: &Paths, id: &str, branch: &str) -> Result<Vec<Commit>, error::Error> {
+    let project_id = project::ProjectId::from_str(id)?;
+    let project = project::Project::open(paths, &project_id)?;
+    let mut browser = match project {
+        project::Project::Git(git_project) => git_project.browser()?,
+    };
+    browser.branch(surf::git::BranchName::new(branch))?;
+
+    let commits = browser.get().iter().map(Commit::from).collect();
+
+    Ok(commits)
+}
+
 /// Retrieves the list of [`Tag`] for the given project `id`.
 ///
 /// # Errors

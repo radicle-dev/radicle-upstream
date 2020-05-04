@@ -40,7 +40,9 @@ export const projectSource = (id, revision, objectType, path) => {
     return `/projects/${id}/source`;
   }
 };
-export const projectCommit = (id, hash) => `/projects/${id}/commits/${hash}`;
+export const projectCommit = (id, hash) => `/projects/${id}/commit/${hash}`;
+export const projectCommits = (id, branch) =>
+  `/projects/${id}/commits/${branch}`;
 
 export const transactions = id => `/transactions/${id}`;
 

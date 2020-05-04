@@ -1,5 +1,5 @@
 <script>
-  import { location } from "svelte-spa-router";
+  import { location, link } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import { BLOB, TREE } from "../../../native/types.js";
@@ -190,7 +190,12 @@
         <div class="repo-stats">
           <div class="repo-stat-item">
             <Icon.Commit />
-            <Text style="margin: 0 8px;">Commits</Text>
+            <Text style="margin: 0 8px;">
+              <!-- XXX(cloudhead): Use branch -->
+              <a href={path.projectCommits(project.id, 'master')} use:link>
+                Commits
+              </a>
+            </Text>
             <span class="stat">{project.stats.commits}</span>
           </div>
           <div class="repo-stat-item">
