@@ -32,6 +32,7 @@
     margin-bottom: 64px;
     margin-left: 96px;
     margin-right: 96px;
+    min-width: 720px;
     position: relative;
   }
   .commit-group header {
