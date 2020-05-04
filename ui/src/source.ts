@@ -82,7 +82,7 @@ export const commit = commitStore.readable;
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
-const currentRevisionStore = writable("master");
+const currentRevisionStore = writable("");
 export const currentRevision = derived(currentRevisionStore, $store => $store);
 
 const objectStore = remote.createStore<SourceObject>();

@@ -1,10 +1,10 @@
 <script>
+  import { getContext } from "svelte";
   import { location } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../lib/path.js";
   import { project as projectStore } from "../../src/project.ts";
-  import * as remote from "../../src/remote.ts";
   import {
     currentPath,
     currentRevision,
@@ -28,9 +28,7 @@
 
   import CloneButton from "./CloneButton.svelte";
 
-  export let params = {
-    id: ""
-  };
+  export const params = null;
 
   const updateRevision = (projectId, revision) => {
     updateParams({
@@ -50,21 +48,18 @@
     }, 1000);
   };
 
-  const { id } = params;
+  const { id, metadata } = getContext("project");
 
-  $: readmeStore = readme(id, $currentRevision);
-  $: if ($projectStore.status === remote.Status.Success) {
-    const { metadata } = $projectStore.data;
+  $: rev = $currentRevision !== "" ? $currentRevision : metadata.defaultBranch;
+  $: readmeStore = readme(id, $rev);
 
-    fetchRevisions({ projectId: id });
-    updateParams({
-      path: path.extractProjectSourceObjectPath($location),
-      projectId: id,
-      revision:
-        $currentRevision !== "" ? $currentRevision : metadata.defaultBranch,
-      type: path.extractProjectSourceObjectType($location)
-    });
-  }
+  fetchRevisions({ projectId: id });
+  updateParams({
+    path: path.extractProjectSourceObjectPath($location),
+    projectId: id,
+    revision: $rev,
+    type: path.extractProjectSourceObjectType($location)
+  });
 </script>
 
 <style>
