@@ -135,7 +135,9 @@ fn commits_filter(
             "ID of the project the blob is part of",
         ))
         .and(document::param::<String>("branch", "Branch name"))
-        .and(document::document(document::description("Fetch Commits from a Branch")))
+        .and(document::document(document::description(
+            "Fetch Commits from a Branch",
+        )))
         .and(document::document(document::tag("Source")))
         .and(document::document(
             document::response(
