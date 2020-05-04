@@ -6,6 +6,7 @@
 
   export let projectId = null;
   export let commitMessage = null;
+  export let commitMessageColor = null;
   export let timestamp = null;
   export let commitSha = null;
   export let user = null;
@@ -60,7 +61,9 @@
       use:link>
       {commitSha.substring(0, 7)}
     </a>
-    <p class="commit-message">{commitMessage}</p>
+    <p class="commit-message" style="color: {commitMessageColor}">
+      {commitMessage}
+    </p>
   </div>
 
   <div class="align-right">

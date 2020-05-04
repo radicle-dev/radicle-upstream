@@ -93,6 +93,7 @@
                   {projectId}
                   user={{ username: commit.author.name, avatar: commit.author.avatar }}
                   commitMessage={commit.summary}
+                  commitMessageColor="var(--color-foreground-level-6)"
                   commitSha={commit.sha1}
                   timestamp={format(commit.committerTime * 1000)}
                   style="background: none" />
