@@ -191,8 +191,9 @@
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
-              <!-- XXX(cloudhead): Use branch -->
-              <a href={path.projectCommits(project.id, 'master')} use:link>
+              <a
+                href={path.projectCommits(project.id, $currentRevision)}
+                use:link>
                 Commits
               </a>
             </Text>
