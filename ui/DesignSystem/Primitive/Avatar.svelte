@@ -1,4 +1,5 @@
 <script>
+  import twemoji from "twemoji";
   import Title from "./Title.svelte";
 
   export let style = null;
@@ -26,7 +27,6 @@
     border-radius: 16px;
   }
 
-  img,
   .circle.regular {
     width: 32px;
     height: 32px;
@@ -98,6 +98,31 @@
     align-items: center;
     user-select: none;
   }
+
+  .avatar :global(.emoji.small) {
+    height: 12px;
+    width: 12px;
+  }
+
+  .avatar :global(.emoji.regular) {
+    height: 16px;
+    width: 16px;
+  }
+
+  .avatar :global(.emoji.medium) {
+    height: 18px;
+    width: 18px;
+  }
+
+  .avatar :global(.emoji.big) {
+    height: 32px;
+    width: 32px;
+  }
+
+  .avatar :global(.emoji.huge) {
+    height: 36px;
+    width: 36px;
+  }
 </style>
 
 <div class={`container ${size}`} {style}>
@@ -111,9 +136,12 @@
     <div
       class={`avatar ${avatarClass}`}
       style="background: {fmt(avatarFallback.background)}">
-      <Title variant={size} style="min-width: 27px; text-align: end;">
-        {avatarFallback.emoji}
-      </Title>
+      {@html twemoji.parse(avatarFallback.emoji, {
+        className: `emoji ${size}`,
+        folder: 'twemoji/assets/svg',
+        base: '',
+        ext: '.svg'
+      })}
     </div>
   {:else}
     <div
