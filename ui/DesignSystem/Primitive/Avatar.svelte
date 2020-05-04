@@ -106,6 +106,12 @@
     user-select: none;
   }
 
+  .image {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+  }
+
   .avatar :global(.emoji.small) {
     height: 12px;
     width: 12px;
@@ -135,7 +141,7 @@
 <div class={`container ${size}`} {style}>
   {#if imageUrl}
     <img
-      class={avatarClass}
+      class={`image ${avatarClass}`}
       src={imageUrl}
       alt="user-avatar"
       onerror="this.style.display='none'" />
