@@ -83,6 +83,13 @@
   .square.big {
     width: 64px;
     height: 64px;
+    border-radius: 4px;
+  }
+
+  .square.huge {
+    width: 72px;
+    height: 72px;
+    border-radius: 4px;
   }
 
   .container {
@@ -150,7 +157,7 @@
   {/if}
 
   {#if title}
-    {#if size === 'big'}
+    {#if size === 'big' || size === 'huge'}
       <Title variant="big" style="white-space: nowrap; margin-left: 12px">
         {title}
       </Title>
