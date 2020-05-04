@@ -201,7 +201,7 @@ impl ToDocumentedType for registry::User {
 pub struct RegisterInput {
     /// Handle the User registered under.
     handle: String,
-    /// Optionally passed proejct id to store for attestion.
+    /// Optionally passed entity id to store for attestion.
     maybe_entity_id: Option<String>,
 }
 
