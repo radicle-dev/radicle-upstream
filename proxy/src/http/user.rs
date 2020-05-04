@@ -137,7 +137,7 @@ mod handler {
 
         let mut reg = registry.write().await;
         let tx = reg
-            .register_user(&fake_pair, input.handle, input.maybe_project_id, fake_fee)
+            .register_user(&fake_pair, input.handle, input.maybe_entity_id, fake_fee)
             .await?;
 
         subscriptions
@@ -166,7 +166,7 @@ impl Serialize for registry::User {
     {
         let mut state = serializer.serialize_struct("User", 2)?;
         state.serialize_field("handle", &self.handle.to_string())?;
-        state.serialize_field("maybeProjectId", &self.maybe_project_id)?;
+        state.serialize_field("maybeEntityId", &self.maybe_entity_id)?;
 
         state.end()
     }
@@ -182,9 +182,9 @@ impl ToDocumentedType for registry::User {
                 .example("cloudhead"),
         );
         props.insert(
-            "maybeProjectId".into(),
+            "maybeEntityId".into(),
             document::string()
-                .description("Exisiting coco id for attestion")
+                .description("Exisiting entity id for attestion")
                 .example("cloudhead@123abcd.git")
                 .nullable(true),
         );
@@ -202,7 +202,7 @@ pub struct RegisterInput {
     /// Handle the User registered under.
     handle: String,
     /// Optionally passed proejct id to store for attestion.
-    maybe_project_id: Option<String>,
+    maybe_entity_id: Option<String>,
 }
 
 impl ToDocumentedType for RegisterInput {
@@ -215,7 +215,7 @@ impl ToDocumentedType for RegisterInput {
                 .example("cloudhead"),
         );
         props.insert(
-            "maybeProjectId".into(),
+            "maybeEntityId".into(),
             document::string()
                 .description("Exisiting project id for attestion")
                 .example("cloudhead@123abcd.git")
@@ -268,7 +268,7 @@ mod test {
             have,
             json!({
                 "handle": "cloudhead",
-                "maybeProjectId": Value::Null,
+                "maybeEntityId": Value::Null,
             })
         );
     }
@@ -330,7 +330,7 @@ mod test {
             .path("/")
             .json(&super::RegisterInput {
                 handle: "cloudhead".into(),
-                maybe_project_id: Some("cloudhead@123abcd.git".into()),
+                maybe_entity_id: Some("cloudhead@123abcd.git".into()),
             })
             .reply(&api)
             .await;

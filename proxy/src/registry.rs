@@ -105,7 +105,7 @@ pub struct User {
     /// Unique handle regsistered on the Regisry.
     pub handle: Id,
     /// Associated coco id for attestion.
-    pub maybe_project_id: Option<String>,
+    pub maybe_entity_id: Option<String>,
 }
 
 /// Registry client wrapper.
@@ -274,7 +274,7 @@ impl Registry {
             .await?
             .map(|_user| User {
                 handle: user_id,
-                maybe_project_id: None,
+                maybe_entity_id: None,
             }))
     }
 
