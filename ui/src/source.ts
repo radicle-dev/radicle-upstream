@@ -203,15 +203,14 @@ export const tree = (
   return treeStore.readable;
 }
 
-export const blob = (
+const blob = (
   projectId: string,
   revision: string,
   path: string,
-): Promise<Blob> => {
-  return api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
-}
+): Promise<Blob> =>
+  api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
 
-export const findReadme = (tree: Tree): string | null => {
+const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
     if (entry.info.objectType != ObjectType.Blob) {
       continue;
@@ -222,37 +221,28 @@ export const findReadme = (tree: Tree): string | null => {
   }
   return null;
 }
+
 export const readme = (
   projectId: string,
   revision: string,
 ): Readable<remote.Data<Readme | null>> => {
-  const store = remote.createStore<Readme | null>();
+  const readme = remote.createStore<Readme | null>();
 
-  objectStore.subscribe((object) => {
-    if (object.status === remote.Status.Loading) {
-      store.loading();
-    }
-
-    if (object.status === remote.Status.Success) {
-      if (object.data.info.objectType === ObjectType.Tree) {
-        const path = findReadme(object.data as Tree);
+  remote
+    .chain(objectStore.readable, readme)
+    .then((object: SourceObject) => {
+      if (object.info.objectType === ObjectType.Tree) {
+        const path = findReadme(object as Tree);
 
         if (path) {
-          blob(projectId, revision, path)
-            .then((blob) => {
-              if (!blob.binary) {
-                store.success({ content: blob.content, path });
-              } else {
-                store.success(null);
-              }
-            })
-            .catch(store.error);
-        } else {
-          store.success(null);
+          return blob(projectId, revision, path)
         }
       }
-    }
-  })
 
-  return store.readable;
+      return null;
+    })
+    .then(readme.success)
+    .catch(readme.error);
+
+  return readme.readable;
 }
