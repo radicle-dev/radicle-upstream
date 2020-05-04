@@ -2,17 +2,16 @@
   import { location } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import { BLOB, TREE } from "../../../native/types.js";
   import * as path from "../../lib/path.js";
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
   import {
-    blob,
     currentPath,
     currentRevision,
     fetchRevisions,
-    findReadme,
     object as objectStore,
+    ObjectType,
+    readme,
     revisions as revisionsStore,
     updateParams
   } from "../../src/source.ts";
@@ -49,6 +48,8 @@
     }, 1000);
   };
 
+  let readmeStore;
+
   $: if ($projectStore.status === remote.Status.Success) {
     const { id, metadata } = $projectStore.data;
 
@@ -60,21 +61,8 @@
         $currentRevision !== "" ? $currentRevision : metadata.defaultBranch,
       type: path.extractProjectSourceObjectType($location)
     });
-  }
 
-  let readmePath = null;
-
-  $: readme = null;
-  $: if ($objectStore.status === remote.Status.Success) {
-    if ($objectStore.data.info.objectType === TREE) {
-      readmePath = findReadme($objectStore.data);
-
-      if (readmePath) {
-        if ($projectStore.status === remote.Status.Success) {
-          readme = blob($projectStore.data.id, $currentRevision, readmePath);
-        }
-      }
-    }
+    readmeStore = readme(id, $currentRevision);
   }
 </script>
 
@@ -203,14 +191,14 @@
       </div>
 
       <Remote store={objectStore} let:data={object}>
-        {#if object.info.objectType === BLOB}
+        {#if object.info.objectType === ObjectType.Blob}
           <FileSource
             blob={object}
             path={$currentPath}
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.info.objectType === TREE && !object.path}
+        {:else if object.info.objectType === ObjectType.Tree && !object.path}
           <!-- Repository root -->
           <div class="commit-header">
             <CommitTeaser
@@ -221,18 +209,14 @@
               timestamp={format(object.info.lastCommit.committerTime * 1000)}
               style="height: 100%" />
           </div>
+        {/if}
+      </Remote>
 
-          {#if readmePath}
-            <Remote store={readme} let:data={blob}>
-              {#if blob.binary}
-                <!-- TODO: Placeholder for when README is binary -->
-              {:else}
-                <Readme content={blob.content} path={readmePath} />
-              {/if}
-            </Remote>
-          {:else}
-            <!-- TODO: Placeholder for when projects don't have a README -->
-          {/if}
+      <Remote store={readmeStore} let:data={readme}>
+        {#if readme}
+          <Readme content={readme.content} path={readme.path} />
+        {:else}
+          <!-- TODO: Placeholder for when projects don't have a README -->
         {/if}
       </Remote>
     </div>

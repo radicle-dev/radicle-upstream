@@ -62,7 +62,6 @@ interface Tree extends SourceObject {
   path: string;
 }
 
-// STATE
 interface Revision {
   user: identity.Identity;
   branches: string[];
@@ -71,6 +70,12 @@ interface Revision {
 
 type Revisions = Revision[];
 
+interface Readme {
+  content: string;
+  path?: string;
+}
+
+// STATE
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
 
@@ -126,8 +131,7 @@ const update = (msg: Msg): void => {
         commitStore.success({
           // TODO(cloudhead): Fetch branch from backend.
           branch: "master",
-          changeset: mockChangeset,
-          ...commit,
+          changeset: mockChangeset, ...commit,
         })
       })
       .catch(commitStore.error);
@@ -203,14 +207,8 @@ export const blob = (
   projectId: string,
   revision: string,
   path: string,
-): Readable<remote.Data<Blob>> => {
-  const blobStore = remote.createStore<Blob>();
-
-  api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } })
-        .then(blobStore.success)
-        .catch(blobStore.error);
-
-  return blobStore.readable;
+): Promise<Blob> => {
+  return api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
 }
 
 export const findReadme = (tree: Tree): string | null => {
@@ -223,4 +221,38 @@ export const findReadme = (tree: Tree): string | null => {
     }
   }
   return null;
+}
+export const readme = (
+  projectId: string,
+  revision: string,
+): Readable<remote.Data<Readme | null>> => {
+  const store = remote.createStore<Readme | null>();
+
+  objectStore.subscribe((object) => {
+    if (object.status === remote.Status.Loading) {
+      store.loading();
+    }
+
+    if (object.status === remote.Status.Success) {
+      if (object.data.info.objectType === ObjectType.Tree) {
+        const path = findReadme(object.data as Tree);
+
+        if (path) {
+          blob(projectId, revision, path)
+            .then((blob) => {
+              if (!blob.binary) {
+                store.success({ content: blob.content, path });
+              } else {
+                store.success(null);
+              }
+            })
+            .catch(store.error);
+        } else {
+          store.success(null);
+        }
+      }
+    }
+  })
+
+  return store.readable;
 }
