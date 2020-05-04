@@ -194,7 +194,7 @@
       variant: "avatar",
       value: "1",
       avatarProps: {
-        variant: "user",
+        variant: "circle",
         title: identity.metadata.handle,
         avatarFallback: identity.avatarFallback,
         imageUrl: identity.imageUrl
@@ -204,7 +204,7 @@
       variant: "avatar",
       value: "2",
       avatarProps: {
-        variant: "project",
+        variant: "square",
         title: orgs[0].metadata.name,
         avatarFallback: orgs[0].avatarFallback
       }
@@ -213,7 +213,7 @@
       variant: "avatar",
       value: "3",
       avatarProps: {
-        variant: "project",
+        variant: "square",
         title: orgs[1].metadata.name,
         avatarFallback: orgs[1].avatarFallback
       }
