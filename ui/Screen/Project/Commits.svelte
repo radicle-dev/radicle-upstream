@@ -32,27 +32,13 @@
   }
   .commit-group header {
     padding-bottom: 0.75rem;
-    margin-left: 1.25rem;
     padding-left: 1rem;
     color: var(--color-foreground-level-6);
   }
   .commit-group ul {
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-  }
-  .commit-group:after {
-    content: "";
-    height: 2rem;
-    left: 1.25rem;
-    position: relative;
-    display: block;
-  }
-  .commit-group:after,
-  .commit-group header {
-    border-left: 2px solid var(--color-foreground-level-3);
-  }
-  .commit-group:last-child:after {
-    border: none;
+    margin-bottom: 2rem;
   }
   .commit {
     border-bottom: 1px solid var(--color-foreground-level-3);
