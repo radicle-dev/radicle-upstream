@@ -51,11 +51,8 @@
   .commit-group header {
     border-left: 2px solid var(--color-foreground-level-3);
   }
-  .commit-group:first-child header {
-    border-left: none;
-  }
   .commit {
-    border-bottom: 1px solid var(--color-foreground-level-2);
+    border-bottom: 1px solid var(--color-foreground-level-3);
     height: 48px;
     display: block;
     padding: 4px 0;
