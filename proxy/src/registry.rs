@@ -330,20 +330,17 @@ impl Registry {
     pub async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error> {
         let org_id = Id::try_from(id.clone())?;
         let project_ids = self.client.list_projects().await?.into_iter();
-        Ok(project_ids
-            .filter_map(|project_id| {
-                if project_id.1 == org_id {
-                    Some(Project {
-                        name: project_id.0,
-                        org_id: project_id.1,
-                        // TODO(xla): Proper conversion of ProjectIds.
-                        maybe_project_id: None,
-                    })
-                } else {
-                    None
-                }
-            })
-            .collect())
+        let mut projects = Vec::new();
+        for project_id in project_ids {
+            if project_id.1 == org_id {
+                projects.push(
+                    self.get_project(org_id.to_string(), project_id.0.to_string())
+                        .await?
+                        .expect("Get project"),
+                );
+            }
+        }
+        Ok(projects)
     }
 
     /// Try to retrieve project from the Registry by name for an id.
