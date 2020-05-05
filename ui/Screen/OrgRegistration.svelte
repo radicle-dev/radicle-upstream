@@ -25,7 +25,7 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
 
-  let orgName;
+  let orgName, transaction, subject, avatarFallback;
   let state = RegistrationFlowState.NameSelection;
 
   // Create a new validation store
@@ -35,8 +35,12 @@
   const next = () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
-        if ($validation.status === ValidationStatus.Success)
+        if ($validation.status === ValidationStatus.Success) {
+          transaction = getTransaction(orgName);
+          subject = getSubject(orgName);
+          avatarFallback = generateAvatar(orgName);
           state = RegistrationFlowState.TransactionConfirmation;
+        }
         break;
       case RegistrationFlowState.TransactionConfirmation:
         registerOrg();
@@ -80,9 +84,6 @@
 
   $: payer =
     $session.status === Status.Success && getPayer($session.data.identity);
-  $: transaction = getTransaction(orgName);
-  $: subject = getSubject(orgName);
-  $: avatarFallback = generateAvatar(orgName);
 </script>
 
 <style>

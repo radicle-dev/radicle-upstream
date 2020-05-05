@@ -69,16 +69,16 @@ export const createValidationStore = (constraints: FormatConstraints, remoteVali
     // Check remote validation
     if (remoteValidation) {
       try {
-        await remoteValidation.promise(input)
-          .then((valid) =>
-            update((store) => {
-              // If the input has changed since this request was fired off, don't update
-              if (get(inputStore) !== input) return store
-              return valid ?
-                { status: ValidationStatus.Success } :
-                { status: ValidationStatus.Error, message: remoteValidation.validationMessage }
-            })
-          )
+        const valid = await remoteValidation.promise(input)
+
+        update((store) => {
+          // If the input has changed since this request was fired off, don't update
+          if (get(inputStore) !== input) return store
+          return valid ?
+            { status: ValidationStatus.Success } :
+            { status: ValidationStatus.Error, message: remoteValidation.validationMessage }
+        })
+
       } catch (error) {
         update(() => {
           return {

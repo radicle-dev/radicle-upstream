@@ -20,7 +20,7 @@ export const getNameAvailability = (id: string): Promise<boolean> =>
   getOrg(id).then(org => !org)
 
 // Name validation
-const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9_-]+$");
+const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
 export const nameConstraints = {
   presence: {
     message: `Org name is required`,
