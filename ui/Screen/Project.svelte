@@ -1,9 +1,8 @@
 <script>
+  import { getContext } from "svelte";
   import Router, { link, push } from "svelte-spa-router";
 
   import * as path from "../lib/path.js";
-  import * as remote from "../src/remote.ts";
-  import { session } from "../src/session.ts";
   import { fetch, project as store } from "../src/project.ts";
 
   import {
@@ -81,27 +80,24 @@
     }
   ];
 
+  const session = getContext("session");
+
   let registerProjectMenuItem;
 
-  $: if ($session.status === remote.Status.Success) {
-    if ($session.data.identity.registered) {
-      registerProjectMenuItem = {
-        title: "Register project",
-        icon: Icon.Register,
-        event: () =>
-          push(
-            path.registerExistingProject(params.id, $session.data.identity.id)
-          )
-      };
-    } else {
-      registerProjectMenuItem = {
-        title: "Register project",
-        icon: Icon.Register,
-        disabled: true,
-        tooltip:
-          "To unlock project registration, register your own handle first."
-      };
-    }
+  if (session.identity.registered) {
+    registerProjectMenuItem = {
+      title: "Register project",
+      icon: Icon.Register,
+      event: () =>
+        push(path.registerExistingProject(params.id, session.identity.id))
+    };
+  } else {
+    registerProjectMenuItem = {
+      title: "Register project",
+      icon: Icon.Register,
+      disabled: true,
+      tooltip: "To unlock project registration, register your own handle first."
+    };
   }
 
   fetch({ id: params.id });

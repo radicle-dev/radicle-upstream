@@ -1,10 +1,9 @@
 <script>
+  import { getContext } from "svelte";
   import { pop } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
   import { showNotification } from "../store/notification.js";
-  import * as remote from "../src/remote.ts";
-  import { session } from "../src/session.ts";
   import * as user from "../src/user.ts";
 
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
@@ -13,19 +12,18 @@
   import PickHandleStep from "./UserRegistration/PickHandleStep.svelte";
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
 
+  const session = getContext("session");
+
   let step = 1;
 
   let identity = fallback;
   let handle = null;
   let id = null;
 
-  if (
-    $session.status === remote.Status.Success &&
-    $session.data.identity !== null
-  ) {
-    identity = $session.data.identity;
-    handle = $session.data.identity.metadata.handle;
-    id = $session.data.identity.id;
+  if (session.identity !== null) {
+    identity = session.identity;
+    handle = session.identity.metadata.handle;
+    id = session.identity.id;
   }
 
   const nextStep = () => {
