@@ -169,8 +169,7 @@ const update = (msg: Msg): void => {
         case ObjectType.Tree:
           api.get<SourceObject>(
             `source/tree/${msg.projectId}`,
-            {
-              query: { revision: msg.revision, prefix: msg.path },
+            { query: { revision: msg.revision, prefix: msg.path },
             }
           )
             .then(objectStore.success)
@@ -241,6 +240,7 @@ export const readme = (
 
       return null;
     })
+    .then(blob => (blob && !blob.binary) ? blob : null)
     .then(readme.success)
     .catch(readme.error);
 
