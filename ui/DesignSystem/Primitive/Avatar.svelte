@@ -111,7 +111,7 @@
     <div
       class={`avatar ${avatarClass}`}
       style="background: {fmt(avatarFallback.background)}">
-      <Title variant={size} style="min-width: 27px; text-align: center;">
+      <Title variant={size} style="min-width: 27px; text-align: end;">
         {avatarFallback.emoji}
       </Title>
     </div>
