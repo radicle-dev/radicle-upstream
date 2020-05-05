@@ -142,7 +142,7 @@ fn commits_filter(
         .and(document::document(
             document::response(
                 200,
-                document::body(coco::Commit::document()).mime("application/json"),
+                document::body(document::array(coco::Commit::document())).mime("application/json"),
             )
             .description("Branch found"),
         ))
