@@ -1,15 +1,11 @@
 <script>
+  import { getContext } from "svelte";
   import { location, link, push } from "svelte-spa-router";
-
-  /* TODO(rudolfs): fetch the actual org list */
-  import { orgMocks } from "../../lib/orgMocks.js";
   import * as path from "../../lib/path.js";
-  import { session } from "../../src/session.ts";
-
   import { Avatar, Icon, Title } from "../Primitive";
-  import Remote from "./Remote.svelte";
-
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
+
+  const session = getContext("session");
 </script>
 
 <style>
@@ -160,35 +156,32 @@
       class="item indicator"
       data-cy="profile"
       class:active={path.active(path.profile(), $location, true)}>
-      <Remote store={session} let:data>
-        <a href={path.profileProjects()} use:link>
-          <Avatar
-            size="medium"
-            avatarFallback={data.identity.avatarFallback}
-            imageUrl={data.identity.metadata.avatarUrl}
-            variant="circle" />
-        </a>
-      </Remote>
+      <a href={path.profileProjects()} use:link>
+        <Avatar
+          size="medium"
+          avatarFallback={session.identity.avatarFallback}
+          imageUrl={session.identity.metadata.avatarUrl}
+          variant="circle" />
+      </a>
 
       <div class="tooltip">
         <Title>Profile</Title>
       </div>
     </li>
 
-    {#each orgMocks.data.orgs as org}
+    {#each session.orgs as org}
       <li
         class="item indicator"
         class:active={path.active(path.orgs(org.id), $location, true)}>
         <a href={path.orgProjects(org.id)} use:link>
           <Avatar
-            imageUrl={org.metadata.avatarUrl}
             avatarFallback={org.avatarFallback}
             variant="square"
             size="medium" />
         </a>
 
         <div class="tooltip">
-          <Title>{org.metadata.name}</Title>
+          <Title>{org.id}</Title>
         </div>
       </li>
     {/each}
