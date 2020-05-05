@@ -283,3 +283,12 @@ export const findReadme = (tree: Tree): string | null => {
   }
   return null;
 }
+
+export const formatTime = (t: number): string => {
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "long",
+    weekday: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+}

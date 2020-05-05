@@ -3,7 +3,11 @@
   import { link } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
-  import { commits as store, fetchCommits } from "../../src/source.ts";
+  import {
+    commits as store,
+    fetchCommits,
+    formatTime
+  } from "../../src/source.ts";
 
   import { Remote } from "../../DesignSystem/Component";
   import { Text } from "../../DesignSystem/Primitive";
@@ -13,15 +17,6 @@
 
   const projectId = params.id;
   const branch = params.branch;
-
-  const formatTime = t => {
-    return new Date(t).toLocaleDateString("en-US", {
-      month: "long",
-      weekday: "long",
-      day: "numeric",
-      year: "numeric"
-    });
-  };
 
   fetchCommits({ projectId, branch });
 </script>
