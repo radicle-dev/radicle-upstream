@@ -33,6 +33,12 @@
     border-radius: 16px;
   }
 
+  .circle.small {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+  }
+
   .circle.medium {
     width: 36px;
     height: 36px;
@@ -123,13 +129,13 @@
     {:else if size === 'small'}
       <Title
         style="white-space: nowrap; margin-left: 0.5rem; color:
-        var(--color-foreground)">
+        var(--title-color, var(--color-foreground))">
         {title}
       </Title>
     {:else}
       <Title
-        style="white-space: nowrap; margin-left: 12px; color:
-        var(--color-foreground)">
+        style="white-space: nowrap; margin-left: 12px; color: var(--title-color,
+        var(--color-foreground))">
         {title}
       </Title>
     {/if}

@@ -56,6 +56,7 @@
   .additional-actions-dropdown-button :global(svg) {
     fill: var(--color-foreground-level-6);
   }
+
   .additional-actions-dropdown-button:active :global(svg) {
     fill: var(--color-foreground-level-5);
   }
@@ -71,10 +72,13 @@
     width: 240px;
     margin-top: 15px;
     background-color: var(--color-background);
-    box-shadow: 0px 4px 8px var(--color-foreground-level-3-opacity-08);
+    box-shadow: var(--elevation-medium);
     border-radius: 4px;
     cursor: pointer;
     border: 1px solid var(--color-foreground-level-3);
+    overflow: hidden; /* hack to make inner option rounded corners */
+    z-index: 1;
+    user-select: none;
   }
 
   .header {
@@ -99,18 +103,16 @@
     color: var(--color-foreground-level-6);
   }
 
-  .menu-item:first-of-type {
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
-  }
-
-  .menu-item:last-of-type {
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
-  }
-
   .menu-item:hover {
     background-color: var(--color-foreground-level-1);
+  }
+
+  .menu-item.disabled {
+    color: var(--color-foreground-level-4);
+  }
+
+  .menu-item.disabled :global(svg) {
+    fill: var(--color-foreground-level-4);
   }
 </style>
 
@@ -142,9 +144,11 @@
       <div class="menu" data-cy="dropdown-menu">
         {#each menuItems as item, index}
           <div
+            title={item.tooltip}
             data-cy={item.dataCy}
             class="menu-item"
-            on:click|stopPropagation={handleItemSelection(item)}>
+            class:disabled={item.disabled}
+            on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
             <svelte:component this={item.icon} style="margin-right: 12px" />
             <Text>{item.title}</Text>
           </div>

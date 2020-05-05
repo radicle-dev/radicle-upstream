@@ -12,6 +12,7 @@
   } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    Dropdown,
     Notification,
     Placeholder,
     ProjectCard,
@@ -78,7 +79,7 @@
     }
   };
 
-  const dropdownMenuItems = [
+  const additionalActionsDropdownItems = [
     {
       title: "Add something",
       icon: Icon.Plus,
@@ -93,6 +94,13 @@
       title: "Send something",
       icon: Icon.ArrowUp,
       event: () => console.log("event(Send Something)")
+    },
+    {
+      title: "Send something",
+      icon: Icon.ArrowUp,
+      event: () => console.log("event(Send Something)"),
+      disabled: true,
+      tooltip: "This item is disabled because of reason!"
     }
   ];
 
@@ -129,6 +137,86 @@
     {
       message: "Org registration",
       state: "success"
+    }
+  ];
+
+  const orgs = [
+    {
+      id: "%monadic",
+      metadata: {
+        name: "monadic"
+      },
+      avatarFallback: {
+        emoji: "☔️",
+        background: {
+          b: 61,
+          g: 187,
+          r: 148
+        }
+      }
+    },
+    {
+      id: "%sveltejs",
+      metadata: {
+        name: "sveltejs"
+      },
+      avatarFallback: {
+        emoji: "🚊",
+        background: {
+          b: 112,
+          g: 27,
+          r: 205
+        }
+      }
+    }
+  ];
+
+  const identity = {
+    id: "123abcd.git",
+    shareableEntityIdentifier: "cloudhead@123abcd.git",
+    metadata: {
+      handle: "cloudhead",
+      displayName: "Alexis Sellier",
+      avatarUrl: "https://avatars1.githubusercontent.com/u/40774"
+    },
+    registered: null,
+    avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" }
+  };
+
+  const dropdownOptions1 = [
+    { variant: "text", value: "1", textProps: { title: "Option 1" } },
+    { variant: "text", value: "2", textProps: { title: "Option 2" } },
+    { variant: "text", value: "3", textProps: { title: "Option 3" } }
+  ];
+
+  const dropdownOptions2 = [
+    {
+      variant: "avatar",
+      value: "1",
+      avatarProps: {
+        variant: "user",
+        title: identity.metadata.handle,
+        avatarFallback: identity.avatarFallback,
+        imageUrl: identity.imageUrl
+      }
+    },
+    {
+      variant: "avatar",
+      value: "2",
+      avatarProps: {
+        variant: "project",
+        title: orgs[0].metadata.name,
+        avatarFallback: orgs[0].avatarFallback
+      }
+    },
+    {
+      variant: "avatar",
+      value: "3",
+      avatarProps: {
+        variant: "project",
+        title: orgs[1].metadata.name,
+        avatarFallback: orgs[1].avatarFallback
+      }
     }
   ];
 </script>
@@ -455,6 +543,24 @@
     <Swatch>
       <Input.Checkbox>How about a checkbox?</Input.Checkbox>
     </Swatch>
+
+    <Swatch>
+      <Dropdown placeholder="Select option..." options={dropdownOptions1} />
+    </Swatch>
+
+    <Swatch>
+      <Dropdown
+        placeholder="Select option..."
+        options={dropdownOptions1}
+        disabled={true} />
+    </Swatch>
+
+    <Swatch>
+      <Dropdown
+        placeholder="Select registrar..."
+        value="2"
+        options={dropdownOptions2} />
+    </Swatch>
   </Section>
 
   <Title variant="huge" style="margin-bottom: 92px">Components</Title>
@@ -487,7 +593,7 @@
   </Section>
 
   <Section title="Notifications" subTitle="Info, Warnings and Errors">
-    <Swatch showIcon="true">
+    <Swatch>
       <Notification showIcon="true">
         This is harmless, but you should know anyway.
       </Notification>
@@ -518,9 +624,7 @@
         title="Radicle"
         description="Best project in the world"
         isRegistered={true}
-        commitCount={'2.5k'}
-        branchCount={'25'}
-        memberCount={'245'} />
+        stats={{ branches: '12', commits: '12k', contributors: '120' }} />
     </Swatch>
 
     <Swatch>
@@ -623,7 +727,7 @@
     <Swatch>
       <AdditionalActionsDropdown
         headerTitle="Copy this title"
-        menuItems={dropdownMenuItems} />
+        menuItems={additionalActionsDropdownItems} />
     </Swatch>
 
     <Swatch>

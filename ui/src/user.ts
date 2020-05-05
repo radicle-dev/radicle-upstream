@@ -5,14 +5,14 @@ import * as transaction from "./transaction";
 
 export interface User {
   handle: string;
-  maybeProjectId?: string;
+  maybeEntityId?: string;
 }
 
 // EVENTS
 
 interface RegisterInput {
   handle: string;
-  maybeProjectId?: string;
+  maybeEntityId?: string;
 }
 
 export const get = (
@@ -23,9 +23,9 @@ export const get = (
 
 export const register = (
   handle: string,
-  maybeProjectId?: string,
+  maybeEntityId?: string,
 ): Promise<transaction.Transaction> => {
   return api.post<RegisterInput, transaction.Transaction>(`users`, {
-    handle, maybeProjectId
+    handle, maybeEntityId
   });
 }

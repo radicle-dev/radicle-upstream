@@ -37,6 +37,10 @@
     background-color: var(--color-background);
   }
 
+  input::placeholder {
+    color: var(--color-foreground-level-6);
+  }
+
   input.avatar {
     padding: 0 40px 0 38px;
   }

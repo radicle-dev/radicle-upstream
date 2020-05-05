@@ -20,7 +20,7 @@
   }
 
   .step.active {
-    color: var(--color-tertiary-level-6);
+    color: var(--color-secondary);
   }
 </style>
 
