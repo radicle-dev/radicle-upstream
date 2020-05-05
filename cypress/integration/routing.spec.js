@@ -43,6 +43,8 @@ context("routing", () => {
             cy.location().should(loc => {
               expect(loc.hash).to.eq("#/search");
             });
+
+            cy.screenshot();
           });
         }
       );
