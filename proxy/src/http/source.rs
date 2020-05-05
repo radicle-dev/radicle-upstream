@@ -911,6 +911,45 @@ mod test {
     }
 
     #[tokio::test]
+    async fn commits() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let (platinum_id, _platinum_project) = coco::replicate_platinum(
+            &tmp_dir,
+            &librad_paths,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )
+        .unwrap();
+
+        let branch = "master";
+        let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
+
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let res = request()
+            .method("GET")
+            .path(&format!("/commits/{}/{}", platinum_id, branch))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::commits(&librad_paths, &platinum_id.to_string(), branch).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(have.as_array().unwrap().len(), 14);
+
+        let head_commit = coco::commit(&librad_paths, &platinum_id.to_string(), head).unwrap();
+
+        assert_eq!(
+            have.as_array().unwrap().first().unwrap(),
+            &serde_json::to_value(&head_commit).unwrap(),
+            "the first commit is the head of the branch"
+        );
+    }
+
+    #[tokio::test]
     async fn local_branches() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
