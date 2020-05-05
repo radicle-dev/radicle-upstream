@@ -1,9 +1,8 @@
 <script>
+  import { getContext } from "svelte";
   import { pop } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
-  import * as remote from "../src/remote.ts";
-  import { session } from "../src/session.ts";
   import { fetch, formatPayer, formatSubject } from "../src/transaction.ts";
 
   import {
@@ -15,14 +14,13 @@
   import { Button } from "../DesignSystem/Primitive";
 
   export let params = null;
+
+  const session = getContext("session");
   // TODO(xla): Can go once we get proper transaction participants.
   let identity = fallback;
 
-  $: if (
-    $session.status === remote.Status.Success &&
-    $session.data.identity !== null
-  ) {
-    identity = $session.data.identity;
+  if (session.identity !== null) {
+    identity = session.identity;
   }
 
   const store = fetch(params.id);

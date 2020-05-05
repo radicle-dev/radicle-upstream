@@ -1,12 +1,14 @@
 <script>
+  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as path from "../../lib/path.js";
   import { projects as projectStore } from "../../src/project.ts";
-  import { session as sessionStore } from "../../src/session.ts";
 
   import { Icon, Text } from "../../DesignSystem/Primitive";
   import { ProjectList, Remote } from "../../DesignSystem/Component";
+
+  const session = getContext("session");
 
   const select = event => {
     const project = event.detail;
@@ -39,12 +41,10 @@
 
 <Remote store={projectStore} let:data={projects}>
   {#if projects.length > 0}
-    <Remote store={sessionStore} let:data={session}>
-      <ProjectList
-        {projects}
-        contextMenuItems={projectId => contextMenuItems(projectId, session)}
-        on:select={select} />
-    </Remote>
+    <ProjectList
+      {projects}
+      contextMenuItems={projectId => contextMenuItems(projectId, session)}
+      on:select={select} />
   {:else}{push(path.profileOnboard())}{/if}
 
   <div slot="error" let:error>

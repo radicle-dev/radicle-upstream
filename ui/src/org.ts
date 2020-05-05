@@ -9,12 +9,12 @@ export enum RegistrationFlowState {
   TransactionConfirmation
 }
 
-interface Org {
+export interface Org {
   name: string;
   avatarFallback: EmojiAvatar;
 }
 
-// Api 
+// Api
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`)
 export const getNameAvailability = (id: string): Promise<boolean> =>
   getOrg(id).then(org => !org)
