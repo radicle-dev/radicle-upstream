@@ -5654,6 +5654,10 @@ twemoji-parser@12.1.3:
   resolved "https://registry.yarnpkg.com/twemoji-parser/-/twemoji-parser-12.1.3.tgz#916c0153e77bd5f1011e7a99cbeacf52e43c9371"
   integrity sha512-ND4LZXF4X92/PFrzSgGkq6KPPg8swy/U0yRw1k/+izWRVmq1HYi3khPwV3XIB6FRudgVICAaBhJfW8e8G3HC7Q==
 
+"twemoji-svg-assets@https://github.com/radicle-dev/twemoji-svg-assets.git#v12.1.6":
+  version "12.1.6"
+  resolved "https://github.com/radicle-dev/twemoji-svg-assets.git#1e0592f51ed08159cda6b4eb12c94598345544ad"
+
 twemoji@^12.1.6:
   version "12.1.6"
   resolved "https://registry.yarnpkg.com/twemoji/-/twemoji-12.1.6.tgz#3425427627a38ab5cae24e7690cecb691022479f"

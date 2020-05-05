@@ -151,8 +151,8 @@
       style="background: {fmt(avatarFallback.background)}">
       {@html twemoji.parse(avatarFallback.emoji, {
         className: `emoji ${size}`,
-        folder: 'twemoji/assets/svg',
         base: '',
+        folder: 'twemoji/',
         ext: '.svg'
       })}
     </div>
