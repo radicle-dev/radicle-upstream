@@ -40,7 +40,7 @@
   }
 
   .commit-message {
-    color: var(--color-secondary);
+    color: var(--commit-message-color, var(--color-secondary));
     text-overflow: ellipsis;
     overflow-x: hidden;
   }
@@ -61,9 +61,7 @@
       use:link>
       {commitSha.substring(0, 7)}
     </a>
-    <p class="commit-message" style="color: {commitMessageColor}">
-      {commitMessage}
-    </p>
+    <p class="commit-message">{commitMessage}</p>
   </div>
 
   <div class="align-right">
