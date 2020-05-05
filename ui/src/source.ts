@@ -144,19 +144,24 @@ interface Update extends event.Event<Kind> {
 }
 
 const groupCommits = (history: CommitSummary[]): CommitHistory => {
-  const DAY = 60 * 60 * 24;
   const days: CommitHistory = [];
+  let groupDate = null;
 
   for (const commit of history) {
     const time = commit.committerTime;
-    const last = days[days.length - 1];
-    const diff = last ? last.time - time : DAY;
+    const date = new Date(time * 1000);
+    const isNewDay = !days.length
+      || !groupDate
+      || date.getDate() < groupDate.getDate()
+      || date.getMonth() < groupDate.getMonth()
+      || date.getFullYear() < groupDate.getFullYear();
 
-    if (!days.length || diff > DAY) {
+    if (isNewDay) {
       days.push({
         time: time,
         commits: []
       });
+      groupDate = date;
     }
     days[days.length - 1].commits.push(commit);
   }
