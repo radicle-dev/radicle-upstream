@@ -322,6 +322,25 @@ impl Registry {
             .collect())
     }
 
+    /// List all projects of the Registry for an org.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    pub async fn list_org_projects(&self, id: String) -> Result<Vec<ProjectName>, error::Error> {
+        let org_id = Id::try_from(id.clone())?;
+        let project_ids = self.client.list_projects().await?.into_iter();
+        Ok(project_ids
+            .filter_map(|project_id| {
+                if project_id.1 == org_id {
+                    Some(project_id.0)
+                } else {
+                    None
+                }
+            })
+            .collect())
+    }
+
     /// Try to retrieve project from the Registry by name for an id.
     ///
     /// # Errors
@@ -661,6 +680,44 @@ mod tests {
         let orgs = registry.list_orgs("alice".to_string()).await.unwrap();
         assert_eq!(orgs.len(), 1);
         assert_eq!(orgs[0].id, "monadic");
+    }
+
+    #[tokio::test]
+    async fn test_list_org_projects() {
+        // Test that a registered project is included in the list of org projects.
+        let client = Client::new_emulator();
+        let mut registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Register the org
+        let org_id = Id::try_from("monadic").unwrap();
+        let org_registration = registry
+            .register_org(&alice, org_id.clone().into(), 10)
+            .await;
+        assert!(org_registration.is_ok());
+
+        // Register the project
+        let result = registry
+            .register_project(
+                &alice,
+                org_id.into(),
+                "radicle".into(),
+                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
+                10,
+            )
+            .await;
+        assert!(result.is_ok());
+
+        // List the projects
+        let project_names = registry.list_org_projects("monadic".to_string()).await.unwrap();
+        assert_eq!(project_names.len(), 1);
+        assert_eq!(project_names[0], ProjectName::try_from("radicle").unwrap());
     }
 
     #[tokio::test]
