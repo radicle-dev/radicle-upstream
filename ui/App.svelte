@@ -5,7 +5,9 @@
   import * as path from "./lib/path.js";
   import { showNotification } from "./store/notification.js";
   import * as remote from "./src/remote.ts";
-  import { fetch, session } from "./src/session.ts";
+  import { fetch, session as store } from "./src/session.ts";
+
+  import Remote from "./DesignSystem/Component/Remote.svelte";
 
   import CreateProject from "./Screen/CreateProject.svelte";
   import Blank from "./Screen/Blank.svelte";
@@ -25,23 +27,23 @@
 
   initializeHotkeys();
 
-  $: switch ($session.status) {
+  $: switch ($store.status) {
     case remote.Status.NotAsked:
       fetch();
       break;
 
     case remote.Status.Success:
-      if ($session.data.identity === null) {
+      if ($store.data.identity === null) {
         push(path.createIdentity());
       } else {
-        if ($location === "/") {
+        if ($location === "/" || $location === "/identity/new") {
           push(path.profile());
         }
       }
       break;
 
     case remote.Status.Error:
-      console.log($session.error);
+      console.log($store.error);
       showNotification({
         text: "Session could not be fetched",
         level: "error"
@@ -71,4 +73,6 @@
   };
 </script>
 
-<Router {routes} />
+<Remote {store} context="session">
+  <Router {routes} />
+</Remote>

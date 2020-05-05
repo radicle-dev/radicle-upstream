@@ -8,7 +8,7 @@ export enum RegistrationFlowState {
   TransactionConfirmation
 }
 
-interface Org {
+export interface Org {
   name: string;
   avatarFallback: EmojiAvatar;
 }

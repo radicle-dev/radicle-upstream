@@ -1,19 +1,18 @@
 <script>
+  import { getContext } from "svelte";
   import { location } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import { BLOB, TREE } from "../../../native/types.js";
   import * as path from "../../lib/path.js";
   import { project as projectStore } from "../../src/project.ts";
-  import * as remote from "../../src/remote.ts";
   import {
     currentPath,
     currentRevision,
     fetchRevisions,
     object as objectStore,
+    ObjectType,
+    readme,
     revisions as revisionsStore,
-    findReadme,
-    blob,
     updateParams
   } from "../../src/source.ts";
 
@@ -48,33 +47,21 @@
     }, 1000);
   };
 
-  $: if ($projectStore.status === remote.Status.Success) {
-    const { id, metadata } = $projectStore.data;
+  const { id, metadata } = getContext("project");
 
-    fetchRevisions({ projectId: id });
-    updateParams({
-      path: path.extractProjectSourceObjectPath($location),
-      projectId: id,
-      revision:
-        $currentRevision !== "" ? $currentRevision : metadata.defaultBranch,
-      type: path.extractProjectSourceObjectType($location)
-    });
-  }
+  const getRevision = current => {
+    return current !== "" ? current : metadata.defaultBranch;
+  };
 
-  let readmePath = null;
+  $: readmeStore = readme(id, getRevision($currentRevision));
+  $: updateParams({
+    path: path.extractProjectSourceObjectPath($location),
+    projectId: id,
+    revision: getRevision($currentRevision),
+    type: path.extractProjectSourceObjectType($location)
+  });
 
-  $: readme = null;
-  $: if ($objectStore.status === remote.Status.Success) {
-    if ($objectStore.data.info.objectType === TREE) {
-      readmePath = findReadme($objectStore.data);
-
-      if (readmePath) {
-        if ($projectStore.status === remote.Status.Success) {
-          readme = blob($projectStore.data.id, $currentRevision, readmePath);
-        }
-      }
-    }
-  }
+  fetchRevisions({ projectId: id });
 </script>
 
 <style>
@@ -170,16 +157,18 @@
 
   <div class="container">
     <div class="column-left">
+      <!-- Revision selector -->
       <Remote store={revisionsStore} let:data={revisions}>
         <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
-            currentRevision={$currentRevision}
+            currentRevision={getRevision($currentRevision)}
             {revisions}
             on:select={event => updateRevision(project.id, event.detail)} />
         </div>
       </Remote>
 
+      <!-- Tree -->
       <div class="source-tree" data-cy="source-tree">
         <Folder projectId={project.id} toplevel name={project.metadata.name} />
       </div>
@@ -207,15 +196,16 @@
         <CloneButton projectId={project.id} />
       </div>
 
+      <!-- Object -->
       <Remote store={objectStore} let:data={object}>
-        {#if object.info.objectType === BLOB}
+        {#if object.info.objectType === ObjectType.Blob}
           <FileSource
             blob={object}
             path={$currentPath}
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.info.objectType === TREE && !object.path}
+        {:else if object.info.objectType === ObjectType.Tree}
           <!-- Repository root -->
           <div class="commit-header">
             <CommitTeaser
@@ -226,22 +216,15 @@
               timestamp={format(object.info.lastCommit.committerTime * 1000)}
               style="height: 100%" />
           </div>
+        {/if}
+      </Remote>
 
-          {#if readmePath}
-            <Remote store={readme} let:data={blob}>
-              {#if blob.binary}
-                <!-- TODO: Placeholder for when README is binary -->
-              {:else}
-                <Readme
-                  {blob}
-                  path={readmePath}
-                  commit={object.info.lastCommit}
-                  projectId={project.id} />
-              {/if}
-            </Remote>
-          {:else}
-            <!-- TODO: Placeholder for when projects don't have a README -->
-          {/if}
+      <!-- Readme -->
+      <Remote store={readmeStore} let:data={readme}>
+        {#if readme}
+          <Readme content={readme.content} path={readme.path} />
+        {:else}
+          <!-- TODO: Placeholder for when projects don't have a README -->
         {/if}
       </Remote>
     </div>
