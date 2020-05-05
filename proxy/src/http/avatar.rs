@@ -1,20 +1,22 @@
 //! Endpoints for Avatar.
 
+use serde::Deserialize;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
 
-/// `GET /avatars/<usage>/<id>`
+/// `GET /avatars/<id>?usage=<usage>`
 pub fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("avatars")
         .and(document::param::<String>(
-            "usage",
-            "Usage of the Avatar: org, identity, any",
-        ))
-        .and(document::param::<String>(
             "id",
             "ID for the Avatar creation",
+        ))
+        .and(warp::filters::query::query::<GetAvatarQuery>())
+        .and(document::document(
+            document::query("usage", document::string())
+                .description("Usage of the Avatar: org, identity, any"),
         ))
         .and(warp::get())
         .and(document::document(document::description(
@@ -45,19 +47,29 @@ mod handler {
     use crate::avatar;
 
     /// Get the avatar for the given `id`.
-    pub async fn get(usage: String, id: String) -> Result<impl Reply, Rejection> {
+    pub async fn get(
+        id: String,
+        super::GetAvatarQuery { usage }: super::GetAvatarQuery,
+    ) -> Result<impl Reply, Rejection> {
         let avatar = avatar::Avatar::from(
             &id,
-            match usage.as_str() {
-                "identity" => avatar::Usage::Identity,
-                "org" => avatar::Usage::Org,
-                "any" => avatar::Usage::Any,
+            match usage.as_deref() {
+                Some("identity") => avatar::Usage::Identity,
+                Some("org") => avatar::Usage::Org,
+                Some("any") | None => avatar::Usage::Any,
                 _ => return Err(reject::not_found()),
             },
         );
 
         Ok(reply::json(&avatar))
     }
+}
+
+/// Bundled query params to pass to the avatar handler.
+#[derive(Debug, Deserialize)]
+pub struct GetAvatarQuery {
+    /// Kind of avatar usage.
+    usage: Option<String>,
 }
 
 #[allow(
@@ -77,7 +89,7 @@ mod test {
         let api = super::get_filter();
         let res = request()
             .method("GET")
-            .path(&format!("/avatars/{}/{}", "org", "monadic"))
+            .path(&format!("/avatars/{}?usage={}", "monadic", "org"))
             .reply(&api)
             .await;
 
