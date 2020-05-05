@@ -327,13 +327,18 @@ impl Registry {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    pub async fn list_org_projects(&self, id: String) -> Result<Vec<ProjectName>, error::Error> {
+    pub async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error> {
         let org_id = Id::try_from(id.clone())?;
         let project_ids = self.client.list_projects().await?.into_iter();
         Ok(project_ids
             .filter_map(|project_id| {
                 if project_id.1 == org_id {
-                    Some(project_id.0)
+                    Some(Project {
+                        name: project_id.0,
+                        org_id: project_id.1,
+                        // TODO(xla): Proper conversion of ProjectIds.
+                        maybe_project_id: None,
+                    })
                 } else {
                     None
                 }
@@ -715,9 +720,12 @@ mod tests {
         assert!(result.is_ok());
 
         // List the projects
-        let project_names = registry.list_org_projects("monadic".to_string()).await.unwrap();
-        assert_eq!(project_names.len(), 1);
-        assert_eq!(project_names[0], ProjectName::try_from("radicle").unwrap());
+        let projects = registry
+            .list_org_projects("monadic".to_string())
+            .await
+            .unwrap();
+        assert_eq!(projects.len(), 1);
+        assert_eq!(projects[0].name, ProjectName::try_from("radicle").unwrap());
     }
 
     #[tokio::test]
