@@ -71,13 +71,13 @@
   td.diff-expand-action {
     text-align: center;
     user-select: none;
-    background: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-6);
+    background: var(--color-background);
+    color: var(--color-foreground-level-4);
   }
   td.diff-expand-header {
     user-select: none;
-    background: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-6);
+    background: var(--color-background);
+    color: var(--color-foreground-level-4);
   }
 
   td.diff-line-number {
@@ -116,7 +116,7 @@
           {/each}
         {:else}
           <tr class="diff-line">
-            <td colspan="2" class="diff-expand-action">...</td>
+            <td colspan="2" class="diff-expand-action" />
             <td colspan="2" class="diff-expand-header">{hunk.header}</td>
           </tr>
         {/if}
