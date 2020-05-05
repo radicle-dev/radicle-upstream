@@ -6,6 +6,7 @@
   import {
     NavigationButtons,
     ModalLayout,
+    Remote,
     StepCounter,
     Transaction
   } from "../DesignSystem/Component";
