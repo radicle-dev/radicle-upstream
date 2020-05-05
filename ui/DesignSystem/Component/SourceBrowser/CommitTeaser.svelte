@@ -6,7 +6,6 @@
 
   export let projectId = null;
   export let commitMessage = null;
-  export let commitMessageColor = null;
   export let timestamp = null;
   export let commitSha = null;
   export let user = null;
