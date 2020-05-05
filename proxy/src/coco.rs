@@ -137,6 +137,8 @@ pub struct Blob {
     pub content: BlobContent,
     /// Extra info for the file.
     pub info: Info,
+    /// Absolute path to the object from the root of the repo.
+    pub path: String,
 }
 
 impl Blob {
@@ -193,7 +195,7 @@ pub fn blob(
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    let path = maybe_path.unwrap_or_default();
+    let path = maybe_path.clone().unwrap_or_default();
     let revision = maybe_revision.unwrap_or(meta.default_branch);
 
     // Best effort to guess the revision.
@@ -224,6 +226,7 @@ pub fn blob(
             object_type: ObjectType::Blob,
             last_commit,
         },
+        path: maybe_path.unwrap_or(last.to_string()),
     })
 }
 

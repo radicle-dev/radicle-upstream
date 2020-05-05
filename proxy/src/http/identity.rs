@@ -237,7 +237,7 @@ impl ToDocumentedType for avatar::Avatar {
             "emoji".into(),
             document::string()
                 .description("String containing the actual emoji codepoint to display")
-                .example("💡"),
+                .example("🐽"),
         );
 
         document::DocumentedType::from(properties)
@@ -362,7 +362,7 @@ mod test {
                     "g": 112,
                     "b": 90,
                 },
-                "emoji": "💡",
+                "emoji": "🐽",
             },
             "id": "123abcd.git",
             "metadata": {

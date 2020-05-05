@@ -427,6 +427,7 @@ impl Serialize for coco::Blob {
         state.serialize_field("binary", &self.is_binary())?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("info", &self.info)?;
+        state.serialize_field("path", &self.path)?;
         state.end()
     }
 }
@@ -779,6 +780,7 @@ mod test {
                         "committerTime": 1_575_283_425,
                     },
                 },
+                "path": "text/arrows.txt",
             })
         );
 
@@ -828,6 +830,7 @@ mod test {
                         "description": "",
                         "committerTime": 1_575_282_964, },
                 },
+                "path": "bin/ls",
             })
         );
     }
@@ -1043,7 +1046,7 @@ mod test {
                                 "g": 105,
                                 "b": 216,
                             },
-                            "emoji": "🚡",
+                            "emoji": "🏍",
                         },
                     },
                     "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
@@ -1065,7 +1068,7 @@ mod test {
                                 "g": 186,
                                 "b": 214,
                             },
-                            "emoji": "⚙\u{fe0f}",
+                            "emoji": "🛷",
                         },
                     },
                     "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
@@ -1087,7 +1090,7 @@ mod test {
                                 "g": 157,
                                 "b": 169,
                             },
-                            "emoji": "🚜",
+                            "emoji": "🗻",
                         },
                     },
                     "branches": [ "dev", "master", "rad/contributor", "rad/project" ],

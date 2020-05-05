@@ -47,8 +47,8 @@ interface CommitGroup {
 type CommitHistory = CommitGroup[];
 
 export enum ObjectType {
-  Blob = 'BLOB',
-  Tree = 'TREE'
+  Blob = "BLOB",
+  Tree = "TREE",
 }
 
 interface Info {
@@ -78,7 +78,6 @@ interface Tree extends SourceObject {
   path: string;
 }
 
-// STATE
 interface Revision {
   user: identity.Identity;
   branches: string[];
@@ -87,6 +86,12 @@ interface Revision {
 
 type Revisions = Revision[];
 
+interface Readme {
+  content: string;
+  path?: string;
+}
+
+// STATE
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
 
@@ -172,8 +177,7 @@ const update = (msg: Msg): void => {
         commitStore.success({
           // TODO(cloudhead): Fetch branch from backend.
           branch: "master",
-          changeset: mockChangeset,
-          ...commit,
+          changeset: mockChangeset, ...commit,
         })
       })
       .catch(commitStore.error);
@@ -223,8 +227,7 @@ const update = (msg: Msg): void => {
         case ObjectType.Tree:
           api.get<SourceObject>(
             `source/tree/${msg.projectId}`,
-            {
-              query: { revision: msg.revision, prefix: msg.path },
+            { query: { revision: msg.revision, prefix: msg.path },
             }
           )
             .then(objectStore.success)
@@ -258,21 +261,14 @@ export const tree = (
   return treeStore.readable;
 }
 
-export const blob = (
+const blob = (
   projectId: string,
   revision: string,
   path: string,
-): Readable<remote.Data<Blob>> => {
-  const blobStore = remote.createStore<Blob>();
+): Promise<Blob> =>
+  api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
 
-  api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } })
-        .then(blobStore.success)
-        .catch(blobStore.error);
-
-  return blobStore.readable;
-}
-
-export const findReadme = (tree: Tree): string | null => {
+const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
     if (entry.info.objectType != ObjectType.Blob) {
       continue;
@@ -291,4 +287,30 @@ export const formatTime = (t: number): string => {
     day: "numeric",
     year: "numeric"
   });
+}
+
+export const readme = (
+  projectId: string,
+  revision: string,
+): Readable<remote.Data<Readme | null>> => {
+  const readme = remote.createStore<Readme | null>();
+
+  remote
+    .chain(objectStore.readable, readme)
+    .then((object: SourceObject) => {
+      if (object.info.objectType === ObjectType.Tree) {
+        const path = findReadme(object as Tree);
+
+        if (path) {
+          return blob(projectId, revision, path)
+        }
+      }
+
+      return null;
+    })
+    .then(blob => (blob && !blob.binary) ? blob : null)
+    .then(readme.success)
+    .catch(readme.error);
+
+  return readme.readable;
 }
