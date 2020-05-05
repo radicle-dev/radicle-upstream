@@ -138,6 +138,26 @@ interface Update extends event.Event<Kind> {
   type: ObjectType;
 }
 
+const groupCommits = (history: CommitSummary[]): CommitHistory => {
+  const DAY = 60 * 60 * 24;
+  const days: CommitHistory = [];
+
+  for (const commit of history) {
+    const time = commit.committerTime;
+    const last = days[days.length - 1];
+    const diff = last ? last.time - time : DAY;
+
+    if (!days.length || diff > DAY) {
+      days.push({
+        time: time,
+        commits: []
+      });
+    }
+    days[days.length - 1].commits.push(commit);
+  }
+  return days;
+}
+
 type Msg = FetchCommit | FetchCommits | FetchRevisions | Update
 
 const update = (msg: Msg): void => {
@@ -166,24 +186,7 @@ const update = (msg: Msg): void => {
         `source/commits/${msg.projectId}/${msg.branch}`
       )
       .then(history => {
-        const days: CommitHistory = [];
-
-        const DAY = 60 * 60 * 24;
-
-        for (const commit of history) {
-          const time = commit.committerTime;
-          const last = days[days.length - 1];
-          const diff = last ? last.time - time : DAY;
-
-          if (!days.length || diff > DAY) {
-            days.push({
-              time: time,
-              commits: []
-            });
-          }
-          days[days.length - 1].commits.push(commit);
-        }
-        commitsStore.success(days)
+        commitsStore.success(groupCommits(history));
       })
       .catch(commitsStore.error);
       break;
