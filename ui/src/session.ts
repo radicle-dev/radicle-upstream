@@ -1,11 +1,13 @@
 import * as api from "./api";
 import * as event from "./event";
 import * as identity from "./identity";
+import * as org from "./org";
 import * as remote from "./remote";
 
 // TYPES
 export interface Session {
   identity?: identity.Identity;
+  orgs: org.Org[];
 }
 
 // STATE

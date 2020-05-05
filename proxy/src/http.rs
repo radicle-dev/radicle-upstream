@@ -38,22 +38,17 @@ pub fn routes(
             Arc::clone(&registry),
             Arc::clone(&store),
         )
-        .or(identity::filters(Arc::<RwLock<kv::Store>>::clone(&store)))
+        .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
         .or(notification::filters(subscriptions.clone()))
-        .or(org::routes(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions.clone(),
-        ))
+        .or(org::routes(Arc::clone(&registry), subscriptions.clone()))
         .or(project::filters(
-            Arc::<RwLock<paths::Paths>>::clone(&librad_paths),
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
+            Arc::clone(&librad_paths),
+            Arc::clone(&registry),
             subscriptions.clone(),
         ))
-        .or(session::get_filter(store))
+        .or(session::get_filter(Arc::clone(&registry), store))
         .or(source::routes(librad_paths))
-        .or(transaction::filters(
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-        ))
+        .or(transaction::filters(Arc::clone(&registry)))
         .or(user::routes(registry, subscriptions)),
     );
     // let docs = path("docs").and(doc::filters(&api));
@@ -69,7 +64,7 @@ pub fn routes(
 pub fn with_paths(
     paths: Arc<RwLock<paths::Paths>>,
 ) -> impl Filter<Extract = (Arc<RwLock<paths::Paths>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::<RwLock<librad::paths::Paths>>::clone(&paths))
+    warp::any().map(move || Arc::clone(&paths))
 }
 
 /// State filter to expose the [`registry::Registry`] to handlers.
@@ -77,7 +72,7 @@ pub fn with_paths(
 pub fn with_registry(
     reg: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = (Arc<RwLock<registry::Registry>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::<RwLock<registry::Registry>>::clone(&reg))
+    warp::any().map(move || Arc::clone(&reg))
 }
 
 /// State filter to expose [`kv::Store`] to handlers.
@@ -85,7 +80,7 @@ pub fn with_registry(
 pub fn with_store(
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = (Arc<RwLock<kv::Store>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::<RwLock<kv::Store>>::clone(&store))
+    warp::any().map(move || Arc::clone(&store))
 }
 
 /// State filter to expose [`notification::Subscriptions`] to handlers.

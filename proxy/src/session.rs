@@ -3,12 +3,15 @@
 
 use crate::error;
 use crate::identity;
+use crate::registry;
 
 /// Container for all local state.
 #[derive(Debug)]
 pub struct Session {
     /// The currently used [`identity::Identity`].
     pub identity: Option<identity::Identity>,
+    /// List of the orgs of the user associated with the current identity.
+    pub orgs: Vec<registry::Org>,
 }
 
 /// Resets the session state.
@@ -32,7 +35,10 @@ pub fn clear(store: &kv::Store) -> Result<(), error::Error> {
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub fn get(store: &kv::Store) -> Result<Session, error::Error> {
+pub async fn get(
+    registry: &registry::Registry,
+    store: &kv::Store,
+) -> Result<Session, error::Error> {
     let bucket = store
         .bucket::<kv::Raw, String>(Some("session"))
         .expect("unable to get session bucket");
@@ -41,8 +47,11 @@ pub fn get(store: &kv::Store) -> Result<Session, error::Error> {
         .get("identity")
         .expect("unable to fetch identity")
         .and_then(|id| identity::get(id.as_ref()).expect("unable to retrieve identity"));
+    // TODO(xla): Get actual attested handle from identity metadata. Alternatively use the stored
+    // keypair of the current session to find the associated user and look it up that way.
+    let orgs = registry.list_orgs("".to_string()).await?;
 
-    Ok(Session { identity })
+    Ok(Session { identity, orgs })
 }
 
 /// Stores the Session in its entirety.

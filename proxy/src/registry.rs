@@ -83,6 +83,7 @@ pub struct Thresholds {
 }
 
 /// The registered org with identifier and avatar
+#[derive(Debug)]
 pub struct Org {
     /// The unique identifier of the org
     pub id: String,

@@ -1,13 +1,12 @@
 <script>
+  import { getContext } from "svelte";
   import Router, { link, push } from "svelte-spa-router";
 
   import * as path from "../lib/path.js";
-  import { session as store } from "../src/session.ts";
 
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
-    Remote,
     SidebarLayout,
     Topbar
   } from "../DesignSystem/Component";
@@ -73,6 +72,8 @@
       event: () => push(path.registerUser())
     }
   ];
+
+  const session = getContext("session");
 </script>
 
 <style>
@@ -86,36 +87,34 @@
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="profile-screen">
 
-  <Remote {store} let:data={session}>
-    <Topbar style="position: fixed; top: 0;">
-      <a slot="left" href={path.profileProjects()} use:link>
-        <!-- TODO(xla): Handle other states -->
-        <div class="profile-avatar">
-          <Avatar
-            avatarFallback={session.identity.avatarFallback}
-            imageUrl={session.identity.metadata.avatarUrl}
-            variant="circle"
-            title={session.identity.metadata.handle}
-            size="regular"
-            style="color: var(--color-secondary)" />
-          {#if session.identity.registered}
-            <Icon.Badge style="margin-left: 8px; fill: var(--color-primary);" />
-          {/if}
-        </div>
-      </a>
-      <div slot="middle">
-        <HorizontalMenu items={topbarMenuItems} />
+  <Topbar style="position: fixed; top: 0;">
+    <a slot="left" href={path.profileProjects()} use:link>
+      <!-- TODO(xla): Handle other states -->
+      <div class="profile-avatar">
+        <Avatar
+          avatarFallback={session.identity.avatarFallback}
+          imageUrl={session.identity.metadata.avatarUrl}
+          variant="circle"
+          title={session.identity.metadata.handle}
+          size="regular"
+          style="color: var(--color-secondary)" />
+        {#if session.identity.registered}
+          <Icon.Badge style="margin-left: 8px; fill: var(--color-primary);" />
+        {/if}
       </div>
-      <div slot="right" style="display: flex">
-        <Router routes={menuRoutes} />
-        <AdditionalActionsDropdown
-          dataCy="profile-context-menu"
-          style="margin: 0 24px 0 16px"
-          headerTitle={session.identity.shareableEntityIdentifier}
-          menuItems={dropdownMenuItems} />
-      </div>
-    </Topbar>
-  </Remote>
+    </a>
+    <div slot="middle">
+      <HorizontalMenu items={topbarMenuItems} />
+    </div>
+    <div slot="right" style="display: flex">
+      <Router routes={menuRoutes} />
+      <AdditionalActionsDropdown
+        dataCy="profile-context-menu"
+        style="margin: 0 24px 0 16px"
+        headerTitle={session.identity.shareableEntityIdentifier}
+        menuItems={dropdownMenuItems} />
+    </div>
+  </Topbar>
 
   <Router routes={screenRoutes} />
 </SidebarLayout>
