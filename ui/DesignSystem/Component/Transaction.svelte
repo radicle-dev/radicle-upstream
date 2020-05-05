@@ -1,5 +1,9 @@
 <script>
-  import { formatMessage, formatStake } from "../../src/transaction.ts";
+  import {
+    formatMessage,
+    formatStake,
+    SubjectVariant
+  } from "../../src/transaction.ts";
 
   import {
     Avatar,
@@ -29,7 +33,7 @@
       title={subject.name}
       imageUrl={subject.imageUrl}
       avatarFallback={subject.avatarFallback}
-      variant={subject.variant}
+      variant={subject.variant === SubjectVariant.User ? 'circle' : 'square'}
       style="color: var(--color-foreground)" />
   </div>
 </Row>
@@ -94,7 +98,7 @@
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}
-      variant={payer.variant}
+      variant={payer.variant === SubjectVariant.User ? 'circle' : 'square'}
       style="color: var(--color-foreground)" />
   </div>
 

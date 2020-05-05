@@ -1,8 +1,7 @@
 import * as api from "./api"
 import { createValidationStore } from "./validation"
-import { MessageType, Transaction, formatPayer } from './transaction';
+import { Transaction } from './transaction';
 import { EmojiAvatar } from "./avatar"
-import { Identity } from './identity';
 
 export enum RegistrationFlowState {
   NameSelection,
@@ -38,7 +37,7 @@ export const validationStore = () => createValidationStore(nameConstraints, {
   validationMessage: "Sorry, this name is already taken"
 })
 
-// DUMMY DATA
+// MOCK DATA
 // TODO(sos): Replace with actual avatar fallback request once the endpoint is ready
 export const generateAvatar = (id: string): EmojiAvatar => {
   return {
@@ -51,33 +50,12 @@ export const generateAvatar = (id: string): EmojiAvatar => {
   }
 }
 
-export const getSubject = (id: string) => {
-  return {
-    name: id,
-    kind: "org",
-    avatarFallback: generateAvatar("")
-  }
-};
-
-interface RegisterOrg {
+interface RegisterOrgInput {
   id: string;
 }
 
 export const register = (id: string): Promise<Transaction> => {
-  return api.post<RegisterOrg, Transaction>(`orgs`, {
+  return api.post<RegisterOrgInput, Transaction>(`orgs`, {
     id
   });
 }
-
-export const getTransaction = (id: string) => {
-  return {
-    messages: [
-      {
-        type: MessageType.OrgRegistration,
-        orgId: id
-      }
-    ]
-  }
-};
-
-export const getPayer = (identity: Identity) => formatPayer(identity)
