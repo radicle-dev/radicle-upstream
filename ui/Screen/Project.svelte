@@ -110,7 +110,7 @@
 <SidebarLayout
   style="margin: calc(var(--topbar-height)) 0 0 0"
   dataCy="page-container">
-  <Remote {store} let:data={project}>
+  <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.projectSource(params.id)} use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->
