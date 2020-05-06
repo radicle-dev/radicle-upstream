@@ -1,10 +1,16 @@
 <script>
+  import { getContext } from "svelte";
+  import { push } from "svelte-spa-router";
+
+  import * as path from "../../lib/path.js";
   import Sidebar from "./Sidebar.svelte";
   import NotificationFaucet from "./NotificationFaucet.svelte";
   import TransactionCenter from "./Transaction/Center.svelte";
 
   export let dataCy = null;
   export let style = null;
+
+  const session = getContext("session");
 </script>
 
 <style>
@@ -25,7 +31,10 @@
 </style>
 
 <div data-cy={dataCy}>
-  <Sidebar />
+  <Sidebar
+    on:createorg={() => push(path.orgRegistration())}
+    orgs={session.orgs}
+    identity={session.identity} />
 
   <div class="container" data-cy="scrollable-content">
     <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />

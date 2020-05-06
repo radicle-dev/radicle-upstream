@@ -1,11 +1,14 @@
 <script>
-  import { getContext } from "svelte";
-  import { location, link, push } from "svelte-spa-router";
+  import { createEventDispatcher } from "svelte";
+  import { location, link } from "svelte-spa-router";
   import * as path from "../../lib/path.js";
   import { Avatar, Icon, Title } from "../Primitive";
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
-  const session = getContext("session");
+  const dispatch = createEventDispatcher();
+
+  export let identity = null;
+  export let orgs = null;
 </script>
 
 <style>
@@ -159,8 +162,8 @@
       <a href={path.profileProjects()} use:link>
         <Avatar
           size="medium"
-          avatarFallback={session.identity.avatarFallback}
-          imageUrl={session.identity.metadata.avatarUrl}
+          avatarFallback={identity.avatarFallback}
+          imageUrl={identity.metadata.avatarUrl}
           variant="circle" />
       </a>
 
@@ -169,7 +172,7 @@
       </div>
     </li>
 
-    {#each session.orgs as org}
+    {#each orgs as org}
       <li
         class="item indicator"
         class:active={path.active(path.orgs(org.id), $location, true)}>
@@ -187,7 +190,7 @@
     {/each}
 
     <li class="item">
-      <AddOrgButton on:click={() => push(path.orgRegistration())} />
+      <AddOrgButton on:click={() => dispatch('createorg')} />
       <div class="tooltip">
         <Title>Add org</Title>
       </div>
