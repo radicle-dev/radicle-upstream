@@ -53,11 +53,11 @@
   }
   .branch {
     margin: 0 0.5rem;
-    font-weight: bold;
+    font-family: var(--typeface-medium);
     color: var(--color-foreground-level-6);
   }
   .author {
-    font-weight: bold;
+    font-family: var(--typeface-medium);
     color: var(--color-foreground);
   }
   .hash {
@@ -69,13 +69,16 @@
     margin-bottom: 1.5rem;
     margin-left: 1.5rem;
   }
+  .changeset-summary .amount {
+    font-family: var(--typeface-medium);
+  }
   .changeset-summary .additions {
     color: var(--color-positive);
-    font-weight: 600;
+    font-family: var(--typeface-medium);
   }
   .changeset-summary .deletions {
     color: var(--color-negative);
-    font-weight: 600;
+    font-family: var(--typeface-medium);
   }
 
   /* TODO(cloudhead): These should be global */
@@ -143,7 +146,10 @@
     </header>
     <main>
       <div class="changeset-summary">
-        {commit.changeset.files.length} file(s) changed with
+        <span class="amount">
+          {commit.changeset.files.length} file(s) changed
+        </span>
+        with
         <span class="additions">
           {commit.changeset.summary.additions} addition(s)
         </span>

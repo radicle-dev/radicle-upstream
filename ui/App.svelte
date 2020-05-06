@@ -5,7 +5,9 @@
   import * as path from "./lib/path.js";
   import { showNotification } from "./store/notification.js";
   import * as remote from "./src/remote.ts";
-  import { fetch, session } from "./src/session.ts";
+  import { fetch, session as store } from "./src/session.ts";
+
+  import Remote from "./DesignSystem/Component/Remote.svelte";
 
   import CreateProject from "./Screen/CreateProject.svelte";
   import Blank from "./Screen/Blank.svelte";
@@ -16,7 +18,8 @@
   import Org from "./Screen/Org.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
-  import RegisterProject from "./Screen/RegisterProject.svelte";
+  import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
+  import OrgRegistration from "./Screen/OrgRegistration.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
   import Search from "./Screen/Search.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
@@ -24,23 +27,23 @@
 
   initializeHotkeys();
 
-  $: switch ($session.status) {
+  $: switch ($store.status) {
     case remote.Status.NotAsked:
       fetch();
       break;
 
     case remote.Status.Success:
-      if ($session.data.identity === null) {
+      if ($store.data.identity === null) {
         push(path.createIdentity());
       } else {
-        if ($location === "/") {
+        if ($location === "/" || $location === "/identity/new") {
           push(path.profile());
         }
       }
       break;
 
     case remote.Status.Error:
-      console.log($session.error);
+      console.log($store.error);
       showNotification({
         text: "Session could not be fetched",
         level: "error"
@@ -55,10 +58,12 @@
     "/network": Network,
     "/profile": Profile,
     "/profile/*": Profile,
+    "/orgs/register": OrgRegistration,
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
     "/projects/new": CreateProject,
-    "/projects/:id/register": RegisterProject,
+    "/projects/register/:registrarId": ProjectRegistration,
+    "/projects/:projectId/register/:registrarId": ProjectRegistration,
     "/projects/:id/*": Project,
     "/design-system-guide": DesignSystemGuide,
     "/help": Help,
@@ -68,4 +73,6 @@
   };
 </script>
 
-<Router {routes} />
+<Remote {store} context="session">
+  <Router {routes} />
+</Remote>

@@ -57,6 +57,7 @@
     flex: 1;
     text-overflow: ellipsis;
     overflow-x: hidden;
+    color: var(--color-foreground-level-6);
     margin-right: 0.5rem;
   }
   .selector-expand {
@@ -73,7 +74,7 @@
     background: white;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.12), 0px 0px 1px rgba(0, 0, 0, 0.12),
+    box-shadow: var(--elevation-medium),
       0px 0px 0px 1px var(--color-foreground-level-3);
     z-index: 8;
   }
@@ -110,7 +111,8 @@
       title={revisions[0].identity.metadata.handle}
       avatarFallback={revisions[0].identity.avatarFallback}
       size="small"
-      variant="user" />
+      style="--title-color: var(--color-foreground-level-6);"
+      variant="circle" />
   </div>
   <div class="selector-branch">{currentRevision}</div>
   <div class="selector-expand">
@@ -122,13 +124,12 @@
   <div class="revision-dropdown" hidden={!expanded} {style}>
     {#each revisions as repo}
       <div class="user">
-        <!-- TODO(cloudhead): text color should be `color-foreground-level-6`,
-        but `Avatar` doesn't allow overwriting. -->
         <Avatar
           title={repo.identity.metadata.handle}
           avatarFallback={repo.identity.avatarFallback}
           size="small"
-          variant="user" />
+          style="--title-color: var(--color-foreground-level-6);"
+          variant="circle" />
       </div>
       <ul>
         {#each repo.branches as branch}

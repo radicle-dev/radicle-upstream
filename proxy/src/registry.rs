@@ -83,6 +83,7 @@ pub struct Thresholds {
 }
 
 /// The registered org with identifier and avatar
+#[derive(Debug)]
 pub struct Org {
     /// The unique identifier of the org
     pub id: String,
@@ -104,8 +105,8 @@ pub struct Project {
 pub struct User {
     /// Unique handle regsistered on the Regisry.
     pub handle: Id,
-    /// Associated coco id for attestion.
-    pub maybe_project_id: Option<String>,
+    /// Associated entity id for attestion.
+    pub maybe_entity_id: Option<String>,
 }
 
 /// Registry client wrapper.
@@ -274,7 +275,7 @@ impl Registry {
             .await?
             .map(|_user| User {
                 handle: user_id,
-                maybe_project_id: None,
+                maybe_entity_id: None,
             }))
     }
 

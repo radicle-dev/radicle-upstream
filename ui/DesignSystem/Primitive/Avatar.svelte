@@ -1,4 +1,5 @@
 <script>
+  import twemoji from "twemoji";
   import Title from "./Title.svelte";
 
   export let style = null;
@@ -9,8 +10,8 @@
   export let avatarFallback = null; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
   export let title = null;
 
-  export let variant = "user"; // user | project
-  export let size = "regular"; // regular | medium | big | huge
+  export let variant = "circle"; // circle | square
+  export let size = "regular"; // small | regular | medium | big | huge
 
   const fmt = background => {
     return `rgb(${background.r}, ${background.g}, ${background.b})`;
@@ -20,58 +21,75 @@
 </script>
 
 <style>
-  .user.small {
+  .circle.small {
     width: 24px;
     height: 24px;
     border-radius: 16px;
   }
 
-  img,
-  .user.regular {
+  .circle.regular {
     width: 32px;
     height: 32px;
     border-radius: 16px;
   }
 
-  .user.medium {
+  .circle.small {
+    width: 24px;
+    height: 24px;
+    border-radius: 12px;
+  }
+
+  .circle.medium {
     width: 36px;
     height: 36px;
     border-radius: 18px;
   }
 
-  .user.big {
+  .circle.big {
     width: 68px;
     height: 68px;
     border-radius: 34px;
   }
 
-  .user.huge {
+  .circle.huge {
     width: 72px;
     height: 72px;
     border-radius: 36px;
   }
 
-  .avatar.user.big {
+  .avatar.circle.big {
     line-height: 68px;
   }
 
-  .project {
+  .square {
     border-radius: 2px;
   }
 
-  .project.regular {
+  .square.small {
+    width: 24px;
+    height: 24px;
+  }
+
+  .square.regular {
     width: 32px;
     height: 32px;
   }
 
-  .project.medium {
+  .square.medium {
     width: 36px;
     height: 36px;
   }
 
-  .project.big {
+  .square.big {
     width: 64px;
     height: 64px;
+    border-radius: 4px;
+  }
+
+  .square.huge {
+    width: 72px;
+    height: 72px;
+    border-radius: 4px;
   }
 
   .container {
@@ -87,12 +105,43 @@
     align-items: center;
     user-select: none;
   }
+
+  .image {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+  }
+
+  .avatar :global(.emoji.small) {
+    height: 12px;
+    width: 12px;
+  }
+
+  .avatar :global(.emoji.regular) {
+    height: 16px;
+    width: 16px;
+  }
+
+  .avatar :global(.emoji.medium) {
+    height: 18px;
+    width: 18px;
+  }
+
+  .avatar :global(.emoji.big) {
+    height: 32px;
+    width: 32px;
+  }
+
+  .avatar :global(.emoji.huge) {
+    height: 36px;
+    width: 36px;
+  }
 </style>
 
 <div class={`container ${size}`} {style}>
   {#if imageUrl}
     <img
-      class={avatarClass}
+      class={`image ${avatarClass}`}
       src={imageUrl}
       alt="user-avatar"
       onerror="this.style.display='none'" />
@@ -100,9 +149,12 @@
     <div
       class={`avatar ${avatarClass}`}
       style="background: {fmt(avatarFallback.background)}">
-      <Title variant={size} style="min-width: 27px; text-align: end;">
-        {avatarFallback.emoji}
-      </Title>
+      {@html twemoji.parse(avatarFallback.emoji, {
+        className: `emoji ${size}`,
+        base: '',
+        folder: 'twemoji/',
+        ext: '.svg'
+      })}
     </div>
   {:else}
     <div
@@ -111,20 +163,20 @@
   {/if}
 
   {#if title}
-    {#if size === 'big'}
+    {#if size === 'big' || size === 'huge'}
       <Title variant="big" style="white-space: nowrap; margin-left: 12px">
         {title}
       </Title>
     {:else if size === 'small'}
       <Title
         style="white-space: nowrap; margin-left: 0.5rem; color:
-        var(--color-foreground)">
+        var(--title-color, var(--color-foreground))">
         {title}
       </Title>
     {:else}
       <Title
-        style="white-space: nowrap; margin-left: 12px; color:
-        var(--color-foreground)">
+        style="white-space: nowrap; margin-left: 12px; color: var(--title-color,
+        var(--color-foreground))">
         {title}
       </Title>
     {/if}

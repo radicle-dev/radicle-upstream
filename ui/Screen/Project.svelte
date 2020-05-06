@@ -1,4 +1,5 @@
 <script>
+  import { getContext } from "svelte";
   import Router, { link, push } from "svelte-spa-router";
 
   import * as path from "../lib/path.js";
@@ -20,6 +21,7 @@
   import Issues from "./Project/Issues.svelte";
   import Revisions from "./Project/Revisions.svelte";
   import Commit from "./Project/Commit.svelte";
+  import Commits from "./Project/Commits.svelte";
 
   import SourceMenu from "./Project/SourceMenu.svelte";
   import IssuesMenu from "./Project/IssuesMenu.svelte";
@@ -30,7 +32,8 @@
     "/projects/:id/source": Source,
     "/projects/:id/source/*": Source,
     "/projects/:id/issues": Issues,
-    "/projects/:id/commits/:hash": Commit,
+    "/projects/:id/commit/:hash": Commit,
+    "/projects/:id/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions
   };
 
@@ -65,12 +68,8 @@
     }
   ];
 
-  const dropdownMenuItems = [
-    {
-      title: "Register project",
-      icon: Icon.Register,
-      event: () => push(path.registerProject(params.id))
-    },
+  $: dropdownMenuItems = [
+    registerProjectMenuItem,
     {
       title: "New issue",
       icon: Icon.Issue,
@@ -83,13 +82,33 @@
     }
   ];
 
+  const session = getContext("session");
+
+  let registerProjectMenuItem;
+
+  if (session.identity.registered) {
+    registerProjectMenuItem = {
+      title: "Register project",
+      icon: Icon.Register,
+      event: () =>
+        push(path.registerExistingProject(params.id, session.identity.id))
+    };
+  } else {
+    registerProjectMenuItem = {
+      title: "Register project",
+      icon: Icon.Register,
+      disabled: true,
+      tooltip: "To unlock project registration, register your own handle first."
+    };
+  }
+
   fetch({ id: params.id });
 </script>
 
 <SidebarLayout
   style="margin: calc(var(--topbar-height)) 0 0 0"
   dataCy="page-container">
-  <Remote {store} let:data={project}>
+  <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.projectSource(params.id)} use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->

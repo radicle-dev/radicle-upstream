@@ -8,14 +8,17 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::identity;
+use crate::registry;
 use crate::session;
 
 /// `GET /`
 pub fn get_filter(
+    registry: Arc<RwLock<registry::Registry>>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("session")
         .and(warp::get())
+        .and(super::with_registry(registry))
         .and(super::with_store(store))
         .and(document::document(document::description(
             "Fetch active Session",
@@ -37,12 +40,17 @@ mod handler {
     use tokio::sync::RwLock;
     use warp::{reply, Rejection, Reply};
 
+    use crate::registry;
     use crate::session;
 
     /// Fetch the [`session::Session`].
-    pub async fn get(store: Arc<RwLock<kv::Store>>) -> Result<impl Reply, Rejection> {
+    pub async fn get(
+        registry: Arc<RwLock<registry::Registry>>,
+        store: Arc<RwLock<kv::Store>>,
+    ) -> Result<impl Reply, Rejection> {
         let store = store.read().await;
-        let sess = session::get(&store)?;
+        let reg = registry.read().await;
+        let sess = session::get(&reg, &store).await?;
 
         Ok(reply::json(&sess))
     }
@@ -55,6 +63,7 @@ impl Serialize for session::Session {
     {
         let mut state = serializer.serialize_struct("Session", 1)?;
         state.serialize_field("identity", &self.identity)?;
+        state.serialize_field("orgs", &self.orgs)?;
 
         state.end()
     }
@@ -67,6 +76,7 @@ impl ToDocumentedType for session::Session {
             "identity".into(),
             identity::Identity::document().nullable(true),
         );
+        properties.insert("orgs".into(), document::array(registry::Org::document()));
 
         document::DocumentedType::from(properties).description("Session")
     }
@@ -81,11 +91,17 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use crate::registry;
+
     #[tokio::test]
     async fn get() {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let api = super::get_filter(Arc::new(RwLock::new(store)));
+        let api = super::get_filter(
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
 
         let res = request().method("GET").path("/session").reply(&api).await;
 
@@ -96,6 +112,7 @@ mod test {
             have,
             json!({
                 "identity": Value::Null,
+                "orgs": [],
             }),
         );
     }

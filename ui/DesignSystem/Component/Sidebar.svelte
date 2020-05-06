@@ -1,5 +1,5 @@
 <script>
-  import { location, link } from "svelte-spa-router";
+  import { location, link, push } from "svelte-spa-router";
 
   /* TODO(rudolfs): fetch the actual org list */
   import { orgMocks } from "../../lib/orgMocks.js";
@@ -7,7 +7,6 @@
   import { session } from "../../src/session.ts";
 
   import { Avatar, Icon, Title } from "../Primitive";
-  import IdentityAvatar from "./IdentityAvatar.svelte";
   import Remote from "./Remote.svelte";
 
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
@@ -163,7 +162,11 @@
       class:active={path.active(path.profile(), $location, true)}>
       <Remote store={session} let:data>
         <a href={path.profileProjects()} use:link>
-          <IdentityAvatar identity={data.identity} size="medium" />
+          <Avatar
+            size="medium"
+            avatarFallback={data.identity.avatarFallback}
+            imageUrl={data.identity.metadata.avatarUrl}
+            variant="circle" />
         </a>
       </Remote>
 
@@ -180,7 +183,7 @@
           <Avatar
             imageUrl={org.metadata.avatarUrl}
             avatarFallback={org.avatarFallback}
-            variant="project"
+            variant="square"
             size="medium" />
         </a>
 
@@ -191,8 +194,7 @@
     {/each}
 
     <li class="item">
-      <AddOrgButton on:click={() => console.log('event(add-org)')} />
-
+      <AddOrgButton on:click={() => push(path.orgRegistration())} />
       <div class="tooltip">
         <Title>Add org</Title>
       </div>

@@ -26,7 +26,9 @@ interface OrgUnregistration {
 interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
   orgId: string;
+  cocoId: string;
   projectName: string;
+  projectDescription: string;
 }
 
 interface UserRegistration {
@@ -92,7 +94,7 @@ const fetchList = event.create<Kind, Msg>(Kind.FetchList, update)
 export const fetch = (id: string): Readable<remote.Data<Transaction | null>> => {
   const store = remote.createStore<Transaction | null>();
 
-  api.post<ListInput, Transactions>("transactions", { ids: [ id ] })
+  api.post<ListInput, Transactions>("transactions", { ids: [id] })
     .then(txs => store.success(txs.length === 1 ? txs[0] : null))
     .catch(store.error);
 
@@ -131,39 +133,50 @@ export const format = (tx: Transaction): object => {
 
 export const formatStake = (msg: Message): string => `${formatMessage(msg)} deposit`;
 
+export enum Variant {
+  Org = "ORG",
+  User = "USER",
+  Project = "PROJECT"
+}
+
 export const formatPayer = (identity: identity.Identity): object => {
   return {
     name: identity.metadata.displayName || identity.metadata.handle,
-    kind: "user",
+    variant: Variant.User,
     avatarFallback: identity.avatarFallback,
     imageUrl: identity.metadata.avatarUrl
   };
 };
 
+// TODO(sos): add avatarFallback for org registration once endpoint is ready
 export const formatSubject = (identity: identity.Identity, msg: Message): object => {
-  let name;
+  let name, variant;
 
   switch (msg.type) {
     case MessageType.OrgRegistration:
       name = msg.orgId;
+      variant = Variant.Org
       break;
 
     case MessageType.OrgUnregistration:
       name = msg.orgId;
+      variant = Variant.Org
       break;
 
     case MessageType.UserRegistration:
       name = msg.handle;
+      variant = Variant.User
       break;
 
     case MessageType.ProjectRegistration:
       name = `${identity.metadata.handle} / ${msg.projectName}`;
+      variant = Variant.Project
       break;
   }
 
   return {
     name,
-    kind: "user",
+    variant,
     avatarFallback: identity.avatarFallback,
     imageUrl: identity.metadata.avatarUrl
   };

@@ -137,6 +137,8 @@ pub struct Blob {
     pub content: BlobContent,
     /// Extra info for the file.
     pub info: Info,
+    /// Absolute path to the object from the root of the repo.
+    pub path: String,
 }
 
 impl Blob {
@@ -193,7 +195,7 @@ pub fn blob(
         project::Project::Git(git_project) => git_project.browser()?,
     };
 
-    let path = maybe_path.unwrap_or_default();
+    let path = maybe_path.clone().unwrap_or_default();
     let revision = maybe_revision.unwrap_or(meta.default_branch);
 
     // Best effort to guess the revision.
@@ -224,6 +226,7 @@ pub fn blob(
             object_type: ObjectType::Blob,
             last_commit,
         },
+        path: maybe_path.unwrap_or(last.to_string()),
     })
 }
 
@@ -288,6 +291,24 @@ pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Erro
     let commit = history.first();
 
     Ok(Commit::from(commit))
+}
+
+/// Retrieves the [`Commit`] history for the given `branch`.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+pub fn commits(paths: &Paths, id: &str, branch: &str) -> Result<Vec<Commit>, error::Error> {
+    let project_id = project::ProjectId::from_str(id)?;
+    let project = project::Project::open(paths, &project_id)?;
+    let mut browser = match project {
+        project::Project::Git(git_project) => git_project.browser()?,
+    };
+    browser.branch(surf::git::BranchName::new(branch))?;
+
+    let commits = browser.get().iter().map(Commit::from).collect();
+
+    Ok(commits)
 }
 
 /// Retrieves the list of [`Tag`] for the given project `id`.

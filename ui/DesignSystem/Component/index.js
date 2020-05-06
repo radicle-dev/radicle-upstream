@@ -1,7 +1,8 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Copyable from "./Copyable.svelte";
+import Dropdown from "./Dropdown.svelte";
 import HorizontalMenu from "./HorizontalMenu.svelte";
-import IdentityAvatar from "./IdentityAvatar.svelte";
+import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
@@ -25,8 +26,9 @@ import UserCard from "./UserCard.svelte";
 export {
   AdditionalActionsDropdown,
   Copyable,
+  Dropdown,
   HorizontalMenu,
-  IdentityAvatar,
+  NavigationButtons,
   Notification,
   NotificationFaucet,
   ModalLayout,
@@ -36,6 +38,7 @@ export {
   Rad,
   RadioOption,
   Remote,
+  Row,
   Sidebar,
   SidebarLayout,
   StepCounter,
@@ -44,6 +47,5 @@ export {
   Transaction,
   TransactionAccordion,
   TransactionStatusbar,
-  Row,
   UserCard
 };

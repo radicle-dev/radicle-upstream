@@ -1,10 +1,8 @@
 <script>
   import { Icon } from "../../Primitive";
 
-  export let blob = null;
+  export let content = null;
   export let path = null;
-
-  console.assert(blob.binary === false, "blob should not be binary");
 </script>
 
 <style>
@@ -16,7 +14,7 @@
 
   header .file-header {
     display: flex;
-    font-weight: 600;
+    font-family: var(--typeface-medium);
     font-size: 1rem;
     height: 3rem;
     align-items: center;
@@ -27,16 +25,6 @@
 
   header .file-name {
     margin-left: 0.5rem;
-  }
-
-  .line-numbers {
-    font-family: var(--typeface-mono-regular);
-    font-size: 14px;
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-5);
-    text-align: center;
-    flex: 0 0 49px;
-    user-select: none;
   }
 
   .code {
@@ -59,6 +47,6 @@
     </div>
   </header>
   <div class="container">
-    <pre class="code">{blob.content}</pre>
+    <pre class="code">{content}</pre>
   </div>
 </div>

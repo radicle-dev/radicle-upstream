@@ -12,6 +12,7 @@
   } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    Dropdown,
     Notification,
     Placeholder,
     ProjectCard,
@@ -27,6 +28,7 @@
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
+  import { ValidationStatus } from "../src/validation.ts";
 
   const colors = Array.from(document.styleSheets)
     .filter(
@@ -69,15 +71,15 @@
   };
 
   const avatarFallback2 = {
-    emoji: "🛠",
     background: {
-      r: 181,
-      g: 25,
-      b: 111
-    }
+      r: 122,
+      g: 112,
+      b: 90
+    },
+    emoji: "💡"
   };
 
-  const dropdownMenuItems = [
+  const additionalActionsDropdownItems = [
     {
       title: "Add something",
       icon: Icon.Plus,
@@ -92,6 +94,13 @@
       title: "Send something",
       icon: Icon.ArrowUp,
       event: () => console.log("event(Send Something)")
+    },
+    {
+      title: "Send something",
+      icon: Icon.ArrowUp,
+      event: () => console.log("event(Send Something)"),
+      disabled: true,
+      tooltip: "This item is disabled because of reason!"
     }
   ];
 
@@ -128,6 +137,86 @@
     {
       message: "Org registration",
       state: "success"
+    }
+  ];
+
+  const orgs = [
+    {
+      id: "%monadic",
+      metadata: {
+        name: "monadic"
+      },
+      avatarFallback: {
+        emoji: "☔️",
+        background: {
+          b: 61,
+          g: 187,
+          r: 148
+        }
+      }
+    },
+    {
+      id: "%sveltejs",
+      metadata: {
+        name: "sveltejs"
+      },
+      avatarFallback: {
+        emoji: "🚊",
+        background: {
+          b: 112,
+          g: 27,
+          r: 205
+        }
+      }
+    }
+  ];
+
+  const identity = {
+    id: "123abcd.git",
+    shareableEntityIdentifier: "cloudhead@123abcd.git",
+    metadata: {
+      handle: "cloudhead",
+      displayName: "Alexis Sellier",
+      avatarUrl: "https://avatars1.githubusercontent.com/u/40774"
+    },
+    registered: null,
+    avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" }
+  };
+
+  const dropdownOptions1 = [
+    { variant: "text", value: "1", textProps: { title: "Option 1" } },
+    { variant: "text", value: "2", textProps: { title: "Option 2" } },
+    { variant: "text", value: "3", textProps: { title: "Option 3" } }
+  ];
+
+  const dropdownOptions2 = [
+    {
+      variant: "avatar",
+      value: "1",
+      avatarProps: {
+        variant: "circle",
+        title: identity.metadata.handle,
+        avatarFallback: identity.avatarFallback,
+        imageUrl: identity.imageUrl
+      }
+    },
+    {
+      variant: "avatar",
+      value: "2",
+      avatarProps: {
+        variant: "square",
+        title: orgs[0].metadata.name,
+        avatarFallback: orgs[0].avatarFallback
+      }
+    },
+    {
+      variant: "avatar",
+      value: "3",
+      avatarProps: {
+        variant: "square",
+        title: orgs[1].metadata.name,
+        avatarFallback: orgs[1].avatarFallback
+      }
     }
   ];
 </script>
@@ -388,16 +477,15 @@
       <Input.Text
         placeholder="And I'm an input with a validation error."
         style="flex: 1"
-        valid={false}
-        validationMessage="Well, that didn't go well..." />
+        validation={{ status: ValidationStatus.Error, message: "Well, that didn't go well..." }} />
     </Swatch>
 
     <Swatch>
       <Input.Text
         placeholder="Enter user name"
         style="width: 100%"
-        valid={true}
-        variant="handle"
+        showSuccessCheck
+        validation={{ status: ValidationStatus.Success }}
         on:input={() => {
           console.log('event(Input changed)');
         }} />
@@ -405,24 +493,29 @@
 
     <Swatch>
       <Input.Text
-        avatarFallback={avatarFallback1}
-        imageUrl="https://avatars1.githubusercontent.com/u/40774"
         placeholder="Enter user name"
         style="width: 100%"
-        valid={true}
-        value="user123"
-        variant="handle" />
+        showSuccessCheck
+        validation={{ status: ValidationStatus.Success }}
+        value="user123">
+        <div slot="avatar">
+          <Avatar
+            size="small"
+            imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+        </div>
+      </Input.Text>
     </Swatch>
 
     <Swatch>
       <Input.Text
-        avatarFallback={avatarFallback1}
         placeholder="Enter user name"
         style="width: 100%"
-        valid={true}
-        validationPending="true"
-        value="user123"
-        variant="handle" />
+        validation={{ status: ValidationStatus.Loading }}
+        value="user123">
+        <div slot="avatar">
+          <Avatar size="small" avatarFallback={avatarFallback1} />
+        </div>
+      </Input.Text>
     </Swatch>
 
     <Swatch>
@@ -431,9 +524,12 @@
         placeholder="Enter user name."
         style="width: 100%"
         valid={false}
-        validationMessage="Handle already taken"
-        value="myUser"
-        variant="handle" />
+        validation={{ status: ValidationStatus.Error, message: 'Handle already taken' }}
+        value="myUser">
+        <div slot="avatar">
+          <Avatar size="small" avatarFallback={avatarFallback2} />
+        </div>
+      </Input.Text>
     </Swatch>
 
     <Swatch>
@@ -447,6 +543,24 @@
     <Swatch>
       <Input.Checkbox>How about a checkbox?</Input.Checkbox>
     </Swatch>
+
+    <Swatch>
+      <Dropdown placeholder="Select option..." options={dropdownOptions1} />
+    </Swatch>
+
+    <Swatch>
+      <Dropdown
+        placeholder="Select option..."
+        options={dropdownOptions1}
+        disabled={true} />
+    </Swatch>
+
+    <Swatch>
+      <Dropdown
+        placeholder="Select registrar..."
+        value="2"
+        options={dropdownOptions2} />
+    </Swatch>
   </Section>
 
   <Title variant="huge" style="margin-bottom: 92px">Components</Title>
@@ -456,30 +570,128 @@
     subTitle="User, project, etc avatars in various sizes and shapes.">
 
     <Swatch>
-      <Avatar avatarFallback={avatarFallback1} />
-      <Avatar size="big" avatarFallback={avatarFallback1} />
-      <Avatar imageUrl="https://avatars1.githubusercontent.com/u/40774" />
       <Avatar
-        imageUrl="https://avatars1.githubusercontent.com/u/40774"
-        size="big" />
+        style="margin-right: 16px"
+        size="small"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
       <Avatar
-        imageUrl="https://avatars.dicebear.com/v2/jdenticon/one.svg"
-        variant="project" />
+        style="margin-right: 16px"
+        size="small"
+        variant="square"
+        avatarFallback={avatarFallback2} />
       <Avatar
-        imageUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
-        variant="project"
-        size="big" />
-      <Avatar size="huge" avatarFallback={avatarFallback2} />
+        style="margin-right: 16px"
+        size="small"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="small"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
     </Swatch>
 
     <Swatch>
-      <Avatar title="My name" avatarFallback={avatarFallback2} />
-      <Avatar size="big" title="My name" avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="regular"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
+      <Avatar
+        style="margin-right: 16px"
+        size="regular"
+        variant="square"
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="regular"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="regular"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
+    </Swatch>
+
+    <Swatch>
+      <Avatar
+        style="margin-right: 16px"
+        size="medium"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
+      <Avatar
+        style="margin-right: 16px"
+        size="medium"
+        variant="square"
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="medium"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="medium"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
+    </Swatch>
+
+    <Swatch>
+      <Avatar
+        style="margin-right: 16px"
+        size="big"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
+      <Avatar
+        style="margin-right: 16px"
+        size="big"
+        variant="square"
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="big"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="big"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
+    </Swatch>
+
+    <Swatch>
+      <Avatar
+        style="margin-right: 16px"
+        size="huge"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
+      <Avatar
+        style="margin-right: 16px"
+        size="huge"
+        variant="square"
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="huge"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="huge"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
     </Swatch>
   </Section>
 
   <Section title="Notifications" subTitle="Info, Warnings and Errors">
-    <Swatch showIcon="true">
+    <Swatch>
       <Notification showIcon="true">
         This is harmless, but you should know anyway.
       </Notification>
@@ -510,9 +722,7 @@
         title="Radicle"
         description="Best project in the world"
         isRegistered={true}
-        commitCount={'2.5k'}
-        branchCount={'25'}
-        memberCount={'245'} />
+        stats={{ branches: '12', commits: '12k', contributors: '120' }} />
     </Swatch>
 
     <Swatch>
@@ -615,7 +825,7 @@
     <Swatch>
       <AdditionalActionsDropdown
         headerTitle="Copy this title"
-        menuItems={dropdownMenuItems} />
+        menuItems={additionalActionsDropdownItems} />
     </Swatch>
 
     <Swatch>

@@ -19,12 +19,16 @@ export const registerUser = () => "/user-registration";
 export const createIdentity = _params => "/identity/new";
 
 export const orgs = id => `/orgs/${id}`;
+export const orgRegistration = () => `/orgs/register`;
 export const orgProjects = id => `/orgs/${id}/projects`;
 export const orgFund = id => `/orgs/${id}/fund`;
 export const orgMembers = id => `/orgs/${id}/members`;
 
 export const createProject = () => "/projects/new";
-export const registerProject = id => `/projects/${id}/register`;
+export const registerProject = registrarId =>
+  `/projects/register/${registrarId}`;
+export const registerExistingProject = (projectId, registrarId) =>
+  `/projects/${projectId}/register/${registrarId}`;
 export const projectIssues = id => `/projects/${id}/issues`;
 export const projectRevisions = id => `/projects/${id}/revisions`;
 export const projectSource = (id, revision, objectType, path) => {
@@ -36,7 +40,9 @@ export const projectSource = (id, revision, objectType, path) => {
     return `/projects/${id}/source`;
   }
 };
-export const projectCommit = (id, hash) => `/projects/${id}/commits/${hash}`;
+export const projectCommit = (id, hash) => `/projects/${id}/commit/${hash}`;
+export const projectCommits = (id, branch) =>
+  `/projects/${id}/commits/${branch}`;
 
 export const transactions = id => `/transactions/${id}`;
 

@@ -1,19 +1,18 @@
 <script>
-  import { location } from "svelte-spa-router";
+  import { getContext } from "svelte";
+  import { location, link } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import { BLOB, TREE } from "../../../native/types.js";
   import * as path from "../../lib/path.js";
   import { project as projectStore } from "../../src/project.ts";
-  import * as remote from "../../src/remote.ts";
   import {
     currentPath,
     currentRevision,
     fetchRevisions,
     object as objectStore,
+    ObjectType,
+    readme,
     revisions as revisionsStore,
-    findReadme,
-    blob,
     updateParams
   } from "../../src/source.ts";
 
@@ -25,7 +24,8 @@
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
-  import Stat from "../../DesignSystem/Component/Stat.svelte";
+
+  import CloneButton from "./CloneButton.svelte";
 
   export const params = null;
 
@@ -47,33 +47,21 @@
     }, 1000);
   };
 
-  $: if ($projectStore.status === remote.Status.Success) {
-    const { id, metadata } = $projectStore.data;
+  const { id, metadata } = getContext("project");
 
-    fetchRevisions({ projectId: id });
-    updateParams({
-      path: path.extractProjectSourceObjectPath($location),
-      projectId: id,
-      revision:
-        $currentRevision !== "" ? $currentRevision : metadata.defaultBranch,
-      type: path.extractProjectSourceObjectType($location)
-    });
-  }
+  const getRevision = current => {
+    return current !== "" ? current : metadata.defaultBranch;
+  };
 
-  let readmePath = null;
+  $: readmeStore = readme(id, getRevision($currentRevision));
+  $: updateParams({
+    path: path.extractProjectSourceObjectPath($location),
+    projectId: id,
+    revision: getRevision($currentRevision),
+    type: path.extractProjectSourceObjectType($location)
+  });
 
-  $: readme = null;
-  $: if ($objectStore.status === remote.Status.Success) {
-    if ($objectStore.data.info.objectType === TREE) {
-      readmePath = findReadme($objectStore.data);
-
-      if (readmePath) {
-        if ($projectStore.status === remote.Status.Success) {
-          readme = blob($projectStore.data.id, $currentRevision, readmePath);
-        }
-      }
-    }
-  }
+  fetchRevisions({ projectId: id });
 </script>
 
 <style>
@@ -106,15 +94,13 @@
   .column-right {
     display: flex;
     flex-direction: column;
-    padding-left: 0.75rem;
+    padding: 0 0.75rem;
     width: 960px;
   }
 
   .commit-header {
-    height: 3rem;
-    background-color: var(--color-secondary-level-1);
+    height: 2.5rem;
     margin-bottom: 1rem;
-    border-radius: 3px;
   }
 
   .source-tree {
@@ -126,15 +112,30 @@
     position: relative;
     width: 100%;
   }
+  .repo-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
   .repo-stats {
-    height: 4rem;
+    height: 2.5rem;
+    margin: 0.75rem 0 1rem;
     display: flex;
     justify-content: space-evenly;
-    padding: 1.25rem 1rem;
   }
-  .repo-stats > * {
-    flex: 1;
+  .repo-stat-item {
+    display: flex;
     color: var(--color-foreground-level-6);
+    padding: 0.5rem 1rem;
+    margin-right: 1rem;
+  }
+  .stat {
+    font-family: var(--typeface-mono-bold);
+    background-color: var(--color-foreground-level-2);
+    color: var(--color-foreground-level-6);
+    padding: 0 0.5rem;
+    border-radius: 0.75rem;
   }
 </style>
 
@@ -156,48 +157,61 @@
 
   <div class="container">
     <div class="column-left">
+      <!-- Revision selector -->
       <Remote store={revisionsStore} let:data={revisions}>
         <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
-            currentRevision={$currentRevision}
+            currentRevision={getRevision($currentRevision)}
             {revisions}
             on:select={event => updateRevision(project.id, event.detail)} />
         </div>
       </Remote>
 
+      <!-- Tree -->
       <div class="source-tree" data-cy="source-tree">
         <Folder projectId={project.id} toplevel name={project.metadata.name} />
       </div>
     </div>
 
     <div class="column-right">
-      <div class="repo-stats">
-        <div>
-          <Stat icon={Icon.Commit} count={project.stats.commits}>
-            &nbsp;Commits
-          </Stat>
+      <div class="repo-header">
+        <div class="repo-stats">
+          <div class="repo-stat-item">
+            <Icon.Commit />
+            <Text style="margin: 0 8px;">
+              <a
+                href={path.projectCommits(project.id, $currentRevision)}
+                use:link>
+                Commits
+              </a>
+            </Text>
+            <span class="stat">{project.stats.commits}</span>
+          </div>
+          <div class="repo-stat-item">
+            <Icon.Branch />
+            <Text style="margin: 0 8px;">Branches</Text>
+            <span class="stat">{project.stats.branches}</span>
+          </div>
+          <div class="repo-stat-item">
+            <Icon.Member />
+            <Text style="margin: 0 8px;">Contributors</Text>
+            <span class="stat">{project.stats.contributors}</span>
+          </div>
         </div>
-        <div>
-          <Stat icon={Icon.Branch} count={project.stats.branches}>
-            &nbsp;Branches
-          </Stat>
-        </div>
-        <div>
-          <Stat icon={Icon.Member} count={project.stats.contributors}>
-            &nbsp;Contributors
-          </Stat>
-        </div>
+        <CloneButton projectId={project.id} />
       </div>
+
+      <!-- Object -->
       <Remote store={objectStore} let:data={object}>
-        {#if object.info.objectType === BLOB}
+        {#if object.info.objectType === ObjectType.Blob}
           <FileSource
             blob={object}
             path={$currentPath}
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.info.objectType === TREE && !object.path}
+        {:else if object.info.objectType === ObjectType.Tree}
           <!-- Repository root -->
           <div class="commit-header">
             <CommitTeaser
@@ -208,22 +222,15 @@
               timestamp={format(object.info.lastCommit.committerTime * 1000)}
               style="height: 100%" />
           </div>
+        {/if}
+      </Remote>
 
-          {#if readmePath}
-            <Remote store={readme} let:data={blob}>
-              {#if blob.binary}
-                <!-- TODO: Placeholder for when README is binary -->
-              {:else}
-                <Readme
-                  {blob}
-                  path={readmePath}
-                  commit={object.info.lastCommit}
-                  projectId={project.id} />
-              {/if}
-            </Remote>
-          {:else}
-            <!-- TODO: Placeholder for when projects don't have a README -->
-          {/if}
+      <!-- Readme -->
+      <Remote store={readmeStore} let:data={readme}>
+        {#if readme}
+          <Readme content={readme.content} path={readme.path} />
+        {:else}
+          <!-- TODO: Placeholder for when projects don't have a README -->
         {/if}
       </Remote>
     </div>

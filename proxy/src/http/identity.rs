@@ -9,20 +9,24 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::identity;
+use crate::registry;
 
 /// Combination of all identity routes.
 pub fn filters(
+    registry: Arc<RwLock<registry::Registry>>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter().or(create_filter(store))
+    get_filter().or(create_filter(registry, store))
 }
 
 /// `POST /identities`
 fn create_filter(
+    registry: Arc<RwLock<registry::Registry>>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("identities")
         .and(warp::post())
+        .and(super::with_registry(registry))
         .and(super::with_store(store))
         .and(warp::body::json())
         .and(document::document(document::description(
@@ -78,16 +82,19 @@ mod handler {
     use crate::avatar;
     use crate::error;
     use crate::identity;
+    use crate::registry;
     use crate::session;
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
+        registry: Arc<RwLock<registry::Registry>>,
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
+        let reg = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::get(&store)?.identity {
+        if let Some(identity) = session::get(&reg, &store).await?.identity {
             return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
         }
 
@@ -97,6 +104,7 @@ mod handler {
             &store,
             session::Session {
                 identity: Some(id.clone()),
+                orgs: vec![],
             },
         )?;
 
@@ -237,7 +245,7 @@ impl ToDocumentedType for avatar::Avatar {
             "emoji".into(),
             document::string()
                 .description("String containing the actual emoji codepoint to display")
-                .example("💡"),
+                .example("🐽"),
         );
 
         document::DocumentedType::from(properties)
@@ -336,12 +344,17 @@ mod test {
 
     use crate::avatar;
     use crate::identity;
+    use crate::registry;
 
     #[tokio::test]
     async fn create() {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let api = super::filters(Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
 
         let res = request()
             .method("POST")
@@ -362,7 +375,7 @@ mod test {
                     "g": 112,
                     "b": 90,
                 },
-                "emoji": "💡",
+                "emoji": "🐽",
             },
             "id": "123abcd.git",
             "metadata": {
@@ -381,8 +394,12 @@ mod test {
     #[tokio::test]
     async fn get() {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let api = super::filters(Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
 
         let id = "123abcd.git";
 

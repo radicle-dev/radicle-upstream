@@ -21,7 +21,7 @@
 
   header .file-header {
     display: flex;
-    font-weight: 600;
+    font-family: var(--typeface-medium);
     font-size: 1rem;
     height: 3rem;
     align-items: center;
@@ -32,7 +32,7 @@
 
   header .file-name {
     margin-left: 0.5rem;
-    font-weight: 600;
+    font-family: var(--typeface-medium);
   }
 
   header .file-name a {
@@ -44,29 +44,26 @@
   }
 
   header .commit-header {
-    height: 3rem;
-    background-color: var(--color-secondary-level-1);
+    height: 2.5rem;
+    margin: 0.5rem;
   }
 
   .line-numbers {
     font-family: var(--typeface-mono-regular);
     font-size: 16px;
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-5);
-    text-align: center;
-    flex: 0 0 49px;
+    color: var(--color-foreground-level-4);
+    text-align: right;
     user-select: none;
+    padding: 0 1rem 0.5rem 1rem;
   }
 
-  .code,
-  .line-numbers {
-    padding: 0.75rem 0;
+  .code {
+    padding-bottom: 0.5rem;
   }
 
   .code {
     font-family: var(--typeface-mono-regular);
     font-size: 16px;
-    padding-left: 0.75rem;
     overflow-x: auto;
   }
 
