@@ -136,37 +136,47 @@ export const formatStake = (msg: Message): string => `${formatMessage(msg)} depo
 export const formatPayer = (identity: identity.Identity): object => {
   return {
     name: identity.metadata.displayName || identity.metadata.handle,
-    variant: "user",
+    variant: "USER",
     avatarFallback: identity.avatarFallback,
     imageUrl: identity.metadata.avatarUrl
   };
 };
 
+export enum SubjectVariant {
+  Org = "ORG",
+  User = "USER",
+  Project = "PROJECT"
+}
+
 // TODO(sos): add avatarFallback for org registration once endpoint is ready
 export const formatSubject = (identity: identity.Identity, msg: Message): object => {
-  let name;
+  let name, variant;
 
   switch (msg.type) {
     case MessageType.OrgRegistration:
       name = msg.orgId;
+      variant = SubjectVariant.Org
       break;
 
     case MessageType.OrgUnregistration:
       name = msg.orgId;
+      variant = SubjectVariant.Org
       break;
 
     case MessageType.UserRegistration:
       name = msg.handle;
+      variant = SubjectVariant.User
       break;
 
     case MessageType.ProjectRegistration:
       name = `${identity.metadata.handle} / ${msg.projectName}`;
+      variant = SubjectVariant.Project
       break;
   }
 
   return {
     name,
-    variant: "user",
+    variant,
     avatarFallback: identity.avatarFallback,
     imageUrl: identity.metadata.avatarUrl
   };

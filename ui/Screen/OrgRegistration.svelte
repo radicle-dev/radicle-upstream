@@ -3,15 +3,16 @@
 
   import {
     RegistrationFlowState,
-    getTransaction,
     validationStore,
-    getSubject,
-    getPayer,
     register,
     generateAvatar
   } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
-  import { Status } from "../src/remote.ts";
+  import {
+    formatPayer,
+    formatSubject,
+    MessageType
+  } from "../src/transaction.ts";
 
   import { showNotification } from "../store/notification.js";
 
@@ -25,7 +26,7 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
 
-  let orgName, transaction, subject, avatarFallback;
+  let orgName, transaction, subject, payer, avatarFallback;
   let state = RegistrationFlowState.NameSelection;
 
   // Create a new validation store
@@ -36,9 +37,20 @@
     switch (state) {
       case RegistrationFlowState.NameSelection:
         if ($validation.status === ValidationStatus.Success) {
-          transaction = getTransaction(orgName);
-          subject = getSubject(orgName);
+          transaction = {
+            messages: [
+              {
+                type: MessageType.OrgRegistration,
+                orgId: orgName
+              }
+            ]
+          };
           avatarFallback = generateAvatar(orgName);
+          subject = formatSubject(
+            $session.data.identity,
+            transaction.messages[0]
+          );
+          payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.TransactionConfirmation;
         }
         break;
@@ -71,20 +83,18 @@
     }
   };
 
+  $: submitLabel =
+    state === RegistrationFlowState.TransactionConfirmation
+      ? "Submit transaction"
+      : "Next";
+
   $: {
     // Start validating once the user enters something for the first time
     if (orgName && orgName.length > 0) validating = true;
     if (validating) validation.updateInput(orgName);
   }
 
-  $: submitLabel =
-    state === RegistrationFlowState.TransactionConfirmation
-      ? "Submit transaction"
-      : "Next";
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
-
-  $: payer =
-    $session.status === Status.Success && getPayer($session.data.identity);
 </script>
 
 <style>
