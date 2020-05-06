@@ -46,6 +46,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::avatar;
+    use crate::http::error;
 
     /// Get the avatar for the given `id`.
     pub async fn get(
@@ -60,7 +61,10 @@ mod handler {
                 Some("any") | None => avatar::Usage::Any,
                 _ => {
                     return Ok(reply::with_status(
-                        reply::json(&"Invalid query input".to_string()),
+                        reply::json(&error::Error {
+                            message: "BAD_REQUEST".to_string(),
+                            variant: "Invalid query input".to_string(),
+                        }),
                         StatusCode::BAD_REQUEST,
                     ))
                 },
