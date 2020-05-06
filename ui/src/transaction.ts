@@ -153,20 +153,20 @@ export const format = (tx: Transaction): object => {
 
 export const formatStake = (msg: Message): string => `${formatMessage(msg)} deposit`;
 
-export const formatPayer = (identity: identity.Identity): object => {
-  return {
-    name: identity.metadata.displayName || identity.metadata.handle,
-    variant: "USER",
-    avatarFallback: identity.avatarFallback,
-    imageUrl: identity.metadata.avatarUrl
-  };
-};
-
-export enum SubjectVariant {
+export enum Variant {
   Org = "ORG",
   User = "USER",
   Project = "PROJECT"
 }
+
+export const formatPayer = (identity: identity.Identity): object => {
+  return {
+    name: identity.metadata.displayName || identity.metadata.handle,
+    variant: Variant.User,
+    avatarFallback: identity.avatarFallback,
+    imageUrl: identity.metadata.avatarUrl
+  };
+};
 
 // TODO(sos): add avatarFallback for org registration once endpoint is ready
 export const formatSubject = (identity: identity.Identity, msg: Message): object => {
@@ -175,32 +175,22 @@ export const formatSubject = (identity: identity.Identity, msg: Message): object
   switch (msg.type) {
     case MessageType.OrgRegistration:
       name = msg.orgId;
-      variant = SubjectVariant.Org
+      variant = Variant.Org
       break;
 
     case MessageType.OrgUnregistration:
       name = msg.orgId;
-      variant = SubjectVariant.Org
-      break;
-
-    case MessageType.OrgMemberRegistration:
-      name = msg.orgId;
-      variant = SubjectVariant.Org;
-      break;
-
-    case MessageType.OrgMemberUnregistration:
-      name = msg.orgId;
-      variant = SubjectVariant.Org;
+      variant = Variant.Org
       break;
 
     case MessageType.UserRegistration:
       name = msg.handle;
-      variant = SubjectVariant.User
+      variant = Variant.User
       break;
 
     case MessageType.ProjectRegistration:
       name = `${identity.metadata.handle} / ${msg.projectName}`;
-      variant = SubjectVariant.Project
+      variant = Variant.Project
       break;
   }
 
