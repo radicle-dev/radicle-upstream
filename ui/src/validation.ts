@@ -32,14 +32,27 @@ export const getValidationState = (entity: string, validationErrors: { [key: str
   return { status: ValidationStatus.Success };
 }
 
-export const createValidationStore = (constraints: any): ValidationStore => {
+interface RemoteValidation {
+  promise: (input: string) => Promise<boolean>;
+  validationMessage: string;
+}
+
+interface FormatConstraints {
+  presence?: {
+    message: string;
+    allowEmpty?: boolean;
+  };
+  format?: {
+    pattern: RegExp;
+    message: string;
+  };
+}
+
+export const createValidationStore = (constraints: FormatConstraints, remoteValidation?: RemoteValidation): ValidationStore => {
   const initialState = { status: ValidationStatus.NotStarted } as ValidationState
   const internalStore = writable(initialState)
   const { subscribe, update } = internalStore
   let inputStore: Writable<string> | undefined = undefined
-
-  const delay = (duration: number): Promise<void> =>
-    new Promise(resolve => setTimeout(resolve, duration))
 
   const validate = async (input: string): Promise<void> => {
     // Always start with Loading
@@ -51,16 +64,34 @@ export const createValidationStore = (constraints: any): ValidationStore => {
     if (errors) {
       update(() => { return { status: ValidationStatus.Error, message: errors.input[0] } })
       return
-    } else {
-      // Check remote
-      await delay(1000).then(() =>
+    }
+
+    // Check remote validation
+    if (remoteValidation) {
+      try {
+        const valid = await remoteValidation.promise(input)
+
         update((store) => {
           // If the input has changed since this request was fired off, don't update
           if (get(inputStore) !== input) return store
-          return { status: ValidationStatus.Success }
+          return valid ?
+            { status: ValidationStatus.Success } :
+            { status: ValidationStatus.Error, message: remoteValidation.validationMessage }
         })
-      )
+
+      } catch (error) {
+        update(() => {
+          return {
+            status: ValidationStatus.Error,
+            message: `Cannot validate "${input}": ${error.message}`
+          }
+        })
+      }
+      return
     }
+
+    // If we made it here, it's valid
+    update(() => { return { status: ValidationStatus.Success } })
   }
 
   const updateInput = (input: string): void => {

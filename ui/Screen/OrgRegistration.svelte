@@ -3,19 +3,20 @@
 
   import {
     RegistrationFlowState,
-    transaction,
-    nameConstraints,
-    subject,
-    payer,
-    org,
-    register
+    validationStore,
+    register,
+    generateAvatar
   } from "../src/org.ts";
+  import { session } from "../src/session.ts";
+  import {
+    formatPayer,
+    formatSubject,
+    MessageType
+  } from "../src/transaction.ts";
+
   import { showNotification } from "../store/notification.js";
 
-  import {
-    ValidationStatus,
-    createValidationStore
-  } from "../src/validation.ts";
+  import { ValidationStatus } from "../src/validation.ts";
 
   import {
     ModalLayout,
@@ -25,17 +26,33 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
 
-  let orgName;
+  let orgName, transaction, subject, payer, avatarFallback;
   let state = RegistrationFlowState.NameSelection;
 
-  const validation = createValidationStore(nameConstraints);
+  // Create a new validation store
   let validating = false;
+  const validation = validationStore();
 
   const next = () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
-        if ($validation.status === ValidationStatus.Success)
+        if ($validation.status === ValidationStatus.Success) {
+          transaction = {
+            messages: [
+              {
+                type: MessageType.OrgRegistration,
+                orgId: orgName
+              }
+            ]
+          };
+          avatarFallback = generateAvatar(orgName);
+          subject = formatSubject(
+            $session.data.identity,
+            transaction.messages[0]
+          );
+          payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.TransactionConfirmation;
+        }
         break;
       case RegistrationFlowState.TransactionConfirmation:
         registerOrg();
@@ -65,18 +82,16 @@
     }
   };
 
-  $: {
-    // Start validating once the user enters something for the first time
-    if (orgName && orgName.length > 0) validating = true;
-    if (validating) validation.updateInput(orgName);
-
-    subject.name = orgName;
-  }
-
   $: submitLabel =
     state === RegistrationFlowState.TransactionConfirmation
       ? "Submit transaction"
       : "Next";
+
+  $: {
+    // Start validating once the user enters something for the first time
+    if (orgName && orgName.length > 0) validating = true;
+    if (validating) validation.updateInput(orgName);
+  }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
@@ -111,10 +126,7 @@
         showSuccessCheck
         validation={$validation}>
         <div slot="avatar">
-          <Avatar
-            imageUrl={org.avatar.imageUrl}
-            size="small"
-            variant="square" />
+          <Avatar {avatarFallback} size="small" variant="square" />
         </div>
       </Input.Text>
     {:else if state === RegistrationFlowState.TransactionConfirmation}
