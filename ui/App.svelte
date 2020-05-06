@@ -20,6 +20,7 @@
   import Project from "./Screen/Project.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
+  import OrgMemberRegistration from "./Screen/Org/OrgMemberRegistration.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
   import Search from "./Screen/Search.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
@@ -60,6 +61,7 @@
     "/profile/*": Profile,
     "/orgs/register": OrgRegistration,
     "/orgs/:id": Org,
+    "/orgs/:id/members/new": OrgMemberRegistration,
     "/orgs/:id/*": Org,
     "/projects/new": CreateProject,
     "/projects/register/:registrarId": ProjectRegistration,

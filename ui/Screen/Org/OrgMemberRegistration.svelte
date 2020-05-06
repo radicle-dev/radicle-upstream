@@ -1,0 +1,85 @@
+<script>
+  import { pop } from "svelte-spa-router";
+
+  // import { session } from "../../src/session.ts";
+  // import { Status } from "../../src/remote.ts";
+  import { ValidationStatus } from "../../src/validation.ts";
+  import {
+    RegistrationFlowState,
+    registerMemberTransaction,
+    mockAvatarUrl,
+    memberNameValidationStore
+  } from "../../src/org.ts";
+
+  import { Avatar, Input, Text } from "../../DesignSystem/Primitive";
+  import {
+    NavigationButtons,
+    StepModalLayout
+  } from "../../DesignSystem/Component";
+
+  let state = RegistrationFlowState.NameSelection;
+  let userHandle,
+    validating = false;
+  const validation = memberNameValidationStore();
+
+  const next = () => {
+    switch (state) {
+      case RegistrationFlowState.NameSelection:
+        state = RegistrationFlowState.TransactionConfirmation;
+        break;
+      case RegistrationFlowState.TransactionConfirmation:
+        pop();
+    }
+  };
+
+  const cancel = () => {
+    switch (state) {
+      case RegistrationFlowState.NameSelection:
+        pop();
+        break;
+      case RegistrationFlowState.TransactionConfirmation:
+        state = RegistrationFlowState.NameSelection;
+    }
+  };
+
+  $: {
+    if (userHandle && userHandle.length > 0) validating = true;
+    if (validating) validation.updateInput(userHandle);
+  }
+
+  $: imageUrl =
+    $validation.status === ValidationStatus.Success && mockAvatarUrl;
+
+  $: transaction = registerMemberTransaction("monadic", userHandle);
+  // $: subject = getSubject(userHandle);
+  // $: payer =
+  //   $session.status === Status.Success && getPayer($session.data.identity);
+</script>
+
+<StepModalLayout steps={['Prepare', 'Submit']} selectedStep={state + 1}>
+  <div slot="title">Register a member</div>
+  {#if state === RegistrationFlowState.NameSelection}
+    <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
+      Registering a member will allow them to sign transactions for your org.
+      Only registered users can be added as members.
+    </Text>
+    <Input.Text
+      placeholder="Registered user id"
+      bind:value={userHandle}
+      style="width: 100%;"
+      showSuccessCheck
+      validation={$validation}>
+      <div slot="avatar">
+        <Avatar {imageUrl} size="small" variant="circle" />
+      </div>
+    </Input.Text>
+  {:else if state === RegistrationFlowState.TransactionConfirmation}
+    <div style="width: 100%;">
+      <!-- <Transaction {transaction} {subject} {payer} /> -->
+    </div>
+  {/if}
+  <NavigationButtons
+    style="margin-top: 32px;"
+    on:submit={next}
+    on:cancel={cancel} />
+</StepModalLayout>

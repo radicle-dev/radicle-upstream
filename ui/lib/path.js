@@ -23,6 +23,7 @@ export const orgRegistration = () => `/orgs/register`;
 export const orgProjects = id => `/orgs/${id}/projects`;
 export const orgFund = id => `/orgs/${id}/fund`;
 export const orgMembers = id => `/orgs/${id}/members`;
+export const addOrgMember = id => `/orgs/${id}/members/new`;
 
 export const createProject = () => "/projects/new";
 export const registerProject = registrarId =>

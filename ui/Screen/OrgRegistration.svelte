@@ -3,7 +3,7 @@
 
   import {
     RegistrationFlowState,
-    validationStore,
+    orgNameValidationStore,
     register,
     generateAvatar
   } from "../src/org.ts";
@@ -19,19 +19,18 @@
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
-    ModalLayout,
     NavigationButtons,
-    StepCounter,
+    StepModalLayout,
     Transaction
   } from "../DesignSystem/Component";
-  import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
+  import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
   let orgName, transaction, subject, payer, avatarFallback;
   let state = RegistrationFlowState.NameSelection;
 
   // Create a new validation store
   let validating = false;
-  const validation = validationStore();
+  const validation = orgNameValidationStore();
 
   const next = () => {
     switch (state) {
@@ -106,39 +105,32 @@
   }
 </style>
 
-<ModalLayout>
-  <div class="container">
-    <StepCounter
-      selectedStep={state + 1}
-      steps={['Prepare', 'Submit']}
-      style="margin-bottom: 50px;" />
-    <Title variant="big" style="margin-bottom: 16px;">Register an org</Title>
-    {#if state === RegistrationFlowState.NameSelection}
-      <Text
-        style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
-        Registering an org allows you to give others in your org the right to
-        sign transactions, like adding other members or adding projects.
-      </Text>
-      <Input.Text
-        placeholder="Org name (e.g. Flowerpot)"
-        bind:value={orgName}
-        style="width: 100%;"
-        showSuccessCheck
-        validation={$validation}>
-        <div slot="avatar">
-          <Avatar {avatarFallback} size="small" variant="square" />
-        </div>
-      </Input.Text>
-    {:else if state === RegistrationFlowState.TransactionConfirmation}
-      <div style="width: 100%;">
-        <Transaction {transaction} {subject} {payer} />
+<StepModalLayout selectedStep={state + 1} steps={['Prepare', 'Submit']}>
+  <div slot="title">Register an org</div>
+  {#if state === RegistrationFlowState.NameSelection}
+    <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
+      Registering an org allows you to give others in your org the right to sign
+      transactions, like adding other members or adding projects.
+    </Text>
+    <Input.Text
+      placeholder="Org name (e.g. Flowerpot)"
+      bind:value={orgName}
+      style="width: 100%;"
+      showSuccessCheck
+      validation={$validation}>
+      <div slot="avatar">
+        <Avatar {avatarFallback} size="small" variant="square" />
       </div>
-    {/if}
-    <NavigationButtons
-      style="margin-top: 32px;"
-      {submitLabel}
-      {disableSubmit}
-      on:cancel={cancel}
-      on:submit={next} />
-  </div>
-</ModalLayout>
+    </Input.Text>
+  {:else if state === RegistrationFlowState.TransactionConfirmation}
+    <div style="width: 100%;">
+      <Transaction {transaction} {subject} {payer} />
+    </div>
+  {/if}
+  <NavigationButtons
+    style="margin-top: 32px;"
+    {submitLabel}
+    {disableSubmit}
+    on:cancel={cancel}
+    on:submit={next} />
+</StepModalLayout>
