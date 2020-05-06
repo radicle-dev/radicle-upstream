@@ -19,6 +19,7 @@ pub fn routes(
         blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
             .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+            .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(local_branches_filter())
             .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
             .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
@@ -34,6 +35,7 @@ fn filters(
     blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
         .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+        .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(local_branches_filter())
         .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
@@ -119,6 +121,32 @@ fn commit_filter(
             .description("Commit for SHA1 found"),
         ))
         .and_then(handler::commit)
+}
+
+/// `GET /commits/<project_id>/<branch>`
+fn commits_filter(
+    paths: Arc<RwLock<Paths>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("commits")
+        .and(warp::get())
+        .and(super::with_paths(paths))
+        .and(document::param::<String>(
+            "project_id",
+            "ID of the project the blob is part of",
+        ))
+        .and(document::param::<String>("branch", "Branch name"))
+        .and(document::document(document::description(
+            "Fetch Commits from a Branch",
+        )))
+        .and(document::document(document::tag("Source")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(document::array(coco::Commit::document())).mime("application/json"),
+            )
+            .description("Branch found"),
+        ))
+        .and_then(handler::commits)
 }
 
 /// `GET /branches/<project_id>`
@@ -274,6 +302,18 @@ mod handler {
         let commit = coco::commit(&paths, &project_id, &sha1)?;
 
         Ok(reply::json(&commit))
+    }
+
+    /// Fetch the list of [`coco::Commit`] from a branch.
+    pub async fn commits(
+        librad_paths: Arc<RwLock<Paths>>,
+        project_id: String,
+        branch: String,
+    ) -> Result<impl Reply, Rejection> {
+        let paths = librad_paths.read().await;
+        let commits = coco::commits(&paths, &project_id, &branch)?;
+
+        Ok(reply::json(&commits))
     }
 
     /// Fetch the list [`coco::Branch`] for a local repository.
@@ -870,6 +910,45 @@ mod test {
                 "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
                 "committerTime": 1_578_309_972,
             }),
+        );
+    }
+
+    #[tokio::test]
+    async fn commits() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let (platinum_id, _platinum_project) = coco::replicate_platinum(
+            &tmp_dir,
+            &librad_paths,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )
+        .unwrap();
+
+        let branch = "master";
+        let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
+
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let res = request()
+            .method("GET")
+            .path(&format!("/commits/{}/{}", platinum_id, branch))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = coco::commits(&librad_paths, &platinum_id.to_string(), branch).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!(want));
+        assert_eq!(have.as_array().unwrap().len(), 14);
+
+        let head_commit = coco::commit(&librad_paths, &platinum_id.to_string(), head).unwrap();
+
+        assert_eq!(
+            have.as_array().unwrap().first().unwrap(),
+            &serde_json::to_value(&head_commit).unwrap(),
+            "the first commit is the head of the branch"
         );
     }
 

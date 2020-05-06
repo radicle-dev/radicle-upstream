@@ -30,6 +30,22 @@ interface Commit {
   changeset: object;
 }
 
+interface CommitSummary {
+  sha1: string;
+  author: Person;
+  committer: Person;
+  committerTime: number;
+  summary: string;
+  description: string;
+}
+
+interface CommitGroup {
+  time: number;
+  commits: CommitSummary[];
+}
+
+type CommitHistory = CommitGroup[];
+
 export enum ObjectType {
   Blob = "BLOB",
   Tree = "TREE",
@@ -79,6 +95,9 @@ interface Readme {
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
 
+const commitsStore = remote.createStore<CommitHistory>();
+export const commits = commitsStore.readable;
+
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
@@ -94,6 +113,7 @@ export const revisions = revisionsStore.readable;
 // EVENTS
 enum Kind {
   FetchCommit = "FETCH_COMMIT",
+  FetchCommits = "FETCH_COMMITS",
   FetchRevisions = "FETCH_REVISIONS",
   Update = "UPDATE"
 }
@@ -102,6 +122,12 @@ interface FetchCommit extends event.Event<Kind> {
   kind: Kind.FetchCommit;
   projectId: string;
   sha1: string;
+}
+
+interface FetchCommits extends event.Event<Kind> {
+  kind: Kind.FetchCommits;
+  projectId: string;
+  branch: string;
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -117,7 +143,32 @@ interface Update extends event.Event<Kind> {
   type: ObjectType;
 }
 
-type Msg = FetchCommit | FetchRevisions | Update
+const groupCommits = (history: CommitSummary[]): CommitHistory => {
+  const days: CommitHistory = [];
+  let groupDate = null;
+
+  for (const commit of history) {
+    const time = commit.committerTime;
+    const date = new Date(time * 1000);
+    const isNewDay = !days.length
+      || !groupDate
+      || date.getDate() < groupDate.getDate()
+      || date.getMonth() < groupDate.getMonth()
+      || date.getFullYear() < groupDate.getFullYear();
+
+    if (isNewDay) {
+      days.push({
+        time: time,
+        commits: []
+      });
+      groupDate = date;
+    }
+    days[days.length - 1].commits.push(commit);
+  }
+  return days;
+}
+
+type Msg = FetchCommit | FetchCommits | FetchRevisions | Update
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -135,6 +186,18 @@ const update = (msg: Msg): void => {
         })
       })
       .catch(commitStore.error);
+      break;
+
+    case Kind.FetchCommits:
+      commitsStore.loading();
+
+      api.get<CommitSummary[]>(
+        `source/commits/${msg.projectId}/${msg.branch}`
+      )
+      .then(history => {
+        commitsStore.success(groupCommits(history));
+      })
+      .catch(commitsStore.error);
       break;
 
     case Kind.FetchRevisions:
@@ -181,6 +244,7 @@ const update = (msg: Msg): void => {
 }
 
 export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
+export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
 export const fetchRevisions = event.create<Kind, Msg>(Kind.FetchRevisions, update);
 export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 
@@ -219,6 +283,15 @@ const findReadme = (tree: Tree): string | null => {
     }
   }
   return null;
+}
+
+export const formatTime = (t: number): string => {
+  return new Date(t).toLocaleDateString("en-US", {
+    month: "long",
+    weekday: "long",
+    day: "numeric",
+    year: "numeric"
+  });
 }
 
 export const readme = (
