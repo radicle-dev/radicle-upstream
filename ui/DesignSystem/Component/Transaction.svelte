@@ -2,7 +2,7 @@
   import {
     formatMessage,
     formatStake,
-    SubjectVariant
+    Variant
   } from "../../src/transaction.ts";
 
   import {
@@ -33,7 +33,7 @@
       title={subject.name}
       imageUrl={subject.imageUrl}
       avatarFallback={subject.avatarFallback}
-      variant={subject.variant === SubjectVariant.User ? 'circle' : 'square'}
+      variant={subject.variant === Variant.User ? 'circle' : 'square'}
       style="color: var(--color-foreground)" />
   </div>
 </Row>
@@ -98,7 +98,7 @@
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}
-      variant={payer.variant === SubjectVariant.User ? 'circle' : 'square'}
+      variant={payer.variant === Variant.User ? 'circle' : 'square'}
       style="color: var(--color-foreground)" />
   </div>
 
