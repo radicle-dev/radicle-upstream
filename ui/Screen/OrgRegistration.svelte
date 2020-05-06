@@ -7,7 +7,7 @@
     register,
     generateAvatar
   } from "../src/org.ts";
-  import { session } from "../src/session.ts";
+  import { session, fetch as fetchSession } from "../src/session.ts";
   import {
     formatPayer,
     formatSubject,
@@ -62,6 +62,7 @@
   const registerOrg = async () => {
     try {
       await register(orgName);
+      await fetchSession();
     } catch (error) {
       showNotification({
         text: `Could not register org: ${error.message}`,
