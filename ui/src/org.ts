@@ -12,6 +12,10 @@ export interface Org {
   avatarFallback: EmojiAvatar;
 }
 
+enum Kind {
+  Fetch = "FETCH"
+}
+
 interface Fetch extends event.Event<Kind> {
   kind: Kind.Fetch;
   id: string;
@@ -33,10 +37,6 @@ const orgStore = remote.createStore<Org>();
 export const org = orgStore.readable;
 
 // EVENTS
-enum Kind {
-  Fetch = "FETCH"
-}
-
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Fetch:
