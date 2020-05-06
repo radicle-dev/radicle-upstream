@@ -10,7 +10,7 @@
 
   const session = getContext("session");
 
-  const select = event => {
+  const select = (event) => {
     const project = event.detail;
     push(path.projectSource(project.id));
   };
@@ -22,8 +22,8 @@
           title: "Register project",
           icon: Icon.Register,
           event: () =>
-            push(path.registerExistingProject(projectId, session.identity.id))
-        }
+            push(path.registerExistingProject(projectId, session.identity.id)),
+        },
       ];
     } else {
       return [
@@ -32,8 +32,8 @@
           icon: Icon.Register,
           disabled: true,
           tooltip:
-            "To unlock project registration, register your own handle first."
-        }
+            "To unlock project registration, register your own handle first.",
+        },
       ];
     }
   };
@@ -43,7 +43,7 @@
   {#if projects.length > 0}
     <ProjectList
       {projects}
-      contextMenuItems={projectId => contextMenuItems(projectId, session)}
+      contextMenuItems={(projectId) => contextMenuItems(projectId, session)}
       on:select={select} />
   {:else}{push(path.profileOnboard())}{/if}
 

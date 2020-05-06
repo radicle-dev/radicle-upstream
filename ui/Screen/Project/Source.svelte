@@ -13,7 +13,7 @@
     ObjectType,
     readme,
     revisions as revisionsStore,
-    updateParams
+    updateParams,
   } from "../../src/source.ts";
 
   import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
@@ -34,7 +34,7 @@
       path: path.extractProjectSourceObjectPath($location),
       projectId: projectId,
       revision: revision,
-      type: path.extractProjectSourceObjectType($location)
+      type: path.extractProjectSourceObjectType($location),
     });
   };
 
@@ -49,7 +49,7 @@
 
   const { id, metadata } = getContext("project");
 
-  const getRevision = current => {
+  const getRevision = (current) => {
     return current !== "" ? current : metadata.defaultBranch;
   };
 
@@ -58,7 +58,7 @@
     path: path.extractProjectSourceObjectPath($location),
     projectId: id,
     revision: getRevision($currentRevision),
-    type: path.extractProjectSourceObjectType($location)
+    type: path.extractProjectSourceObjectType($location),
   });
 
   fetchRevisions({ projectId: id });
@@ -164,7 +164,7 @@
             style="height: 100%;"
             currentRevision={getRevision($currentRevision)}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail)} />
+            on:select={(event) => updateRevision(project.id, event.detail)} />
         </div>
       </Remote>
 

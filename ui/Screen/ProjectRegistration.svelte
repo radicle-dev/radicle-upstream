@@ -8,7 +8,7 @@
     ModalLayout,
     Remote,
     StepCounter,
-    Transaction
+    Transaction,
   } from "../DesignSystem/Component";
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
@@ -48,7 +48,7 @@
       name: registrarHandle,
       imageUrl: registrarImageUrl,
       avatarFallback: registrarAvatarFallback,
-      variant: registrarVariant
+      variant: registrarVariant,
     };
   };
 
@@ -57,12 +57,12 @@
       name: `${registrarHandle} / ${projectName}`,
       imageUrl: registrarImageUrl,
       avatarFallback: registrarAvatarFallback,
-      variant: registrarVariant
+      variant: registrarVariant,
     };
   };
 
   const tx = {
-    messages: [{ type: transaction.MessageType.ProjectRegistration }]
+    messages: [{ type: transaction.MessageType.ProjectRegistration }],
   };
 </script>
 
@@ -100,7 +100,7 @@
             bind:projectId
             bind:registrarId
             bind:projectName
-            on:next={event => {
+            on:next={(event) => {
               registrarHandle = event.detail.registrarHandle;
               registrarImageUrl = event.detail.registrarImageUrl;
               registrarAvatarFallback = event.detail.registrarAvatarFallback;

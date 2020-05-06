@@ -25,12 +25,12 @@
       registrarHandle: selectedRegistrar().avatarProps.title,
       registrarImageUrl: selectedRegistrar().avatarProps.imageUrl,
       registrarAvatarFallback: selectedRegistrar().avatarProps.avatarFallback,
-      registrarVariant: selectedRegistrar().avatarProps.variant
+      registrarVariant: selectedRegistrar().avatarProps.variant,
     });
   };
 
   const selectedRegistrar = () => {
-    return registrarDropdownOptions.find(option => {
+    return registrarDropdownOptions.find((option) => {
       return option.value === registrarId;
     });
   };
@@ -42,34 +42,34 @@
       variant: "circle",
       title: session.identity.metadata.handle,
       avatarFallback: session.identity.avatarFallback,
-      imageUrl: session.identity.imageUrl
-    }
+      imageUrl: session.identity.imageUrl,
+    },
   };
 
-  const orgOptions = orgs.map(org => {
+  const orgOptions = orgs.map((org) => {
     return {
       variant: "avatar",
       value: org.id,
       avatarProps: {
         variant: "square",
         title: org.id,
-        avatarFallback: org.avatarFallback
-      }
+        avatarFallback: org.avatarFallback,
+      },
     };
   });
 
   const registrarDropdownOptions = [identityOption, ...orgOptions];
 
-  const projectDropdownOptions = projects.map(project => {
+  const projectDropdownOptions = projects.map((project) => {
     return {
       variant: "text",
       value: project.id,
-      textProps: { title: project.metadata.name }
+      textProps: { title: project.metadata.name },
     };
   });
 
   const selectedProject = () => {
-    return projectDropdownOptions.find(option => {
+    return projectDropdownOptions.find((option) => {
       return option.value === projectId;
     });
   };
@@ -87,7 +87,7 @@
   let validations = false;
 
   validatejs.options = {
-    fullMessages: false
+    fullMessages: false,
   };
 
   const validateProjectNameAvailability = async () => {
@@ -103,25 +103,25 @@
     } catch (error) {
       showNotification({
         text: `Proxy: ${JSON.stringify(error)}`,
-        level: "error"
+        level: "error",
       });
     }
   };
 
   const constraints = {
     projectId: {
-      presence: { message: "Choose a project to register", allowEmpty: false }
+      presence: { message: "Choose a project to register", allowEmpty: false },
     },
     projectName: {
       presence: {
         message: "Project name is required",
-        allowEmpty: false
+        allowEmpty: false,
       },
       format: {
         pattern: new RegExp(NAME_MATCH),
-        message: `Project name should match ${NAME_MATCH}`
-      }
-    }
+        message: `Project name should match ${NAME_MATCH}`,
+      },
+    },
   };
 
   const validate = async () => {

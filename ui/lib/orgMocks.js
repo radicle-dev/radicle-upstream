@@ -4,59 +4,59 @@ export const orgMocks = {
       {
         id: "%monadic",
         metadata: {
-          name: "monadic"
+          name: "monadic",
         },
         avatarFallback: {
           emoji: "☔️",
           background: {
             b: 61,
             g: 187,
-            r: 148
-          }
-        }
+            r: 148,
+          },
+        },
       },
       {
         id: "%sveltejs",
         metadata: {
-          name: "sveltejs"
+          name: "sveltejs",
         },
         avatarFallback: {
           emoji: "🚊",
           background: {
             b: 112,
             g: 27,
-            r: 205
-          }
-        }
+            r: 205,
+          },
+        },
       },
       {
         id: "%radicle",
         metadata: {
-          name: "radicle-org"
+          name: "radicle-org",
         },
         avatarFallback: {
           background: {
             r: 179,
             g: 167,
-            b: 164
+            b: 164,
           },
-          emoji: "🦂"
-        }
+          emoji: "🦂",
+        },
       },
       {
         id: "%monocleorg",
         metadata: {
-          name: "monocleorg"
+          name: "monocleorg",
         },
         avatarFallback: {
           background: {
             r: 255,
             g: 43,
-            b: 59
+            b: 59,
           },
-          emoji: "🦄"
-        }
-      }
-    ]
-  }
+          emoji: "🦄",
+        },
+      },
+    ],
+  },
 };

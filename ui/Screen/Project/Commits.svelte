@@ -6,7 +6,7 @@
   import {
     commits as store,
     fetchCommits,
-    formatTime
+    formatTime,
   } from "../../src/source.ts";
 
   import { Remote } from "../../DesignSystem/Component";

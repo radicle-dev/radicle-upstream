@@ -20,8 +20,8 @@ export const initializeHotkeys = () => {
     const currentTheme = document.documentElement.getAttribute("data-theme");
 
     const nextTheme = colorConfig.themes
-      .map(theme => theme.name)
-      .filter(e => e !== currentTheme)
+      .map((theme) => theme.name)
+      .filter((e) => e !== currentTheme)
       .pop();
     document.documentElement.setAttribute("data-theme", nextTheme);
 

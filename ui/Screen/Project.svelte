@@ -11,7 +11,7 @@
     Remote,
     SidebarLayout,
     Topbar,
-    TrackToggle
+    TrackToggle,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -34,7 +34,7 @@
     "/projects/:id/issues": Issues,
     "/projects/:id/commit/:hash": Commit,
     "/projects/:id/commits/:branch": Commits,
-    "/projects/:id/revisions": Revisions
+    "/projects/:id/revisions": Revisions,
   };
 
   const menuRoutes = {
@@ -42,30 +42,30 @@
     "/projects/:id/source": SourceMenu,
     "/projects/:id/source/*": SourceMenu,
     "/projects/:id/issues": IssuesMenu,
-    "/projects/:id/revisions": RevisionsMenu
+    "/projects/:id/revisions": RevisionsMenu,
   };
 
   export let params = null;
 
-  const topbarMenuItems = projectId => [
+  const topbarMenuItems = (projectId) => [
     {
       icon: Icon.Home,
       title: "Source",
       href: path.projectSource(projectId),
-      looseActiveStateMatching: true
+      looseActiveStateMatching: true,
     },
     {
       icon: Icon.Issue,
       title: "Issues",
       href: path.projectIssues(projectId),
-      looseActiveStateMatching: false
+      looseActiveStateMatching: false,
     },
     {
       icon: Icon.Revisions,
       title: "Revisions",
       href: path.projectRevisions(projectId),
-      looseActiveStateMatching: false
-    }
+      looseActiveStateMatching: false,
+    },
   ];
 
   $: dropdownMenuItems = [
@@ -73,13 +73,13 @@
     {
       title: "New issue",
       icon: Icon.Issue,
-      event: () => console.log("event(new-issue)")
+      event: () => console.log("event(new-issue)"),
     },
     {
       title: "New revision",
       icon: Icon.Revisions,
-      event: () => console.log("event(new-revision)")
-    }
+      event: () => console.log("event(new-revision)"),
+    },
   ];
 
   const session = getContext("session");
@@ -91,14 +91,15 @@
       title: "Register project",
       icon: Icon.Register,
       event: () =>
-        push(path.registerExistingProject(params.id, session.identity.id))
+        push(path.registerExistingProject(params.id, session.identity.id)),
     };
   } else {
     registerProjectMenuItem = {
       title: "Register project",
       icon: Icon.Register,
       disabled: true,
-      tooltip: "To unlock project registration, register your own handle first."
+      tooltip:
+        "To unlock project registration, register your own handle first.",
     };
   }
 

@@ -8,7 +8,7 @@
     Input,
     Text,
     Title,
-    Numeric
+    Numeric,
   } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
@@ -22,7 +22,7 @@
     TrackToggle,
     TransactionAccordion,
     TransactionStatusbar,
-    UserCard
+    UserCard,
   } from "../DesignSystem/Component";
 
   import Section from "./DesignSystemGuide/Section.svelte";
@@ -32,7 +32,7 @@
 
   const colors = Array.from(document.styleSheets)
     .filter(
-      sheet =>
+      (sheet) =>
         sheet.href === null || sheet.href.startsWith(window.location.origin)
     )
     .reduce(
@@ -45,20 +45,20 @@
                 rule.selectorText === ":root"
                   ? [
                       ...def,
-                      ...Array.from(rule.style).filter(name =>
+                      ...Array.from(rule.style).filter((name) =>
                         name.startsWith("--color")
-                      )
+                      ),
                     ]
                   : def),
             []
-          )
+          ),
         ]),
       []
     );
 
   const user = {
     username: "Rudolfs Osins",
-    avatar: "https://avatars.dicebear.com/v2/jdenticon/two.svg"
+    avatar: "https://avatars.dicebear.com/v2/jdenticon/two.svg",
   };
 
   const avatarFallback1 = {
@@ -66,109 +66,109 @@
     background: {
       r: 24,
       g: 105,
-      b: 216
-    }
+      b: 216,
+    },
   };
 
   const avatarFallback2 = {
     background: {
       r: 122,
       g: 112,
-      b: 90
+      b: 90,
     },
-    emoji: "💡"
+    emoji: "💡",
   };
 
   const additionalActionsDropdownItems = [
     {
       title: "Add something",
       icon: Icon.Plus,
-      event: () => console.log("event(Add Something)")
+      event: () => console.log("event(Add Something)"),
     },
     {
       title: "Add something else",
       icon: Icon.Plus,
-      event: () => console.log("event(Add Something Else)")
+      event: () => console.log("event(Add Something Else)"),
     },
     {
       title: "Send something",
       icon: Icon.ArrowUp,
-      event: () => console.log("event(Send Something)")
+      event: () => console.log("event(Send Something)"),
     },
     {
       title: "Send something",
       icon: Icon.ArrowUp,
       event: () => console.log("event(Send Something)"),
       disabled: true,
-      tooltip: "This item is disabled because of reason!"
-    }
+      tooltip: "This item is disabled because of reason!",
+    },
   ];
 
   const transactions1 = [
     {
       message: "Project registration",
       state: "pending",
-      progress: 50
+      progress: 50,
     },
     {
       message: "Member registration",
-      state: "error"
+      state: "error",
     },
     {
       message: "Org registration",
-      state: "success"
-    }
+      state: "success",
+    },
   ];
 
   const transactions2 = [
     {
       message: "Project registration",
       state: "pending",
-      progress: 70
+      progress: 70,
     },
     {
       message: "Org registration",
       state: "pending",
-      progress: 0
-    }
+      progress: 0,
+    },
   ];
 
   const transactions3 = [
     {
       message: "Org registration",
-      state: "success"
-    }
+      state: "success",
+    },
   ];
 
   const orgs = [
     {
       id: "%monadic",
       metadata: {
-        name: "monadic"
+        name: "monadic",
       },
       avatarFallback: {
         emoji: "☔️",
         background: {
           b: 61,
           g: 187,
-          r: 148
-        }
-      }
+          r: 148,
+        },
+      },
     },
     {
       id: "%sveltejs",
       metadata: {
-        name: "sveltejs"
+        name: "sveltejs",
       },
       avatarFallback: {
         emoji: "🚊",
         background: {
           b: 112,
           g: 27,
-          r: 205
-        }
-      }
-    }
+          r: 205,
+        },
+      },
+    },
   ];
 
   const identity = {
@@ -177,16 +177,16 @@
     metadata: {
       handle: "cloudhead",
       displayName: "Alexis Sellier",
-      avatarUrl: "https://avatars1.githubusercontent.com/u/40774"
+      avatarUrl: "https://avatars1.githubusercontent.com/u/40774",
     },
     registered: null,
-    avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" }
+    avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" },
   };
 
   const dropdownOptions1 = [
     { variant: "text", value: "1", textProps: { title: "Option 1" } },
     { variant: "text", value: "2", textProps: { title: "Option 2" } },
-    { variant: "text", value: "3", textProps: { title: "Option 3" } }
+    { variant: "text", value: "3", textProps: { title: "Option 3" } },
   ];
 
   const dropdownOptions2 = [
@@ -197,8 +197,8 @@
         variant: "circle",
         title: identity.metadata.handle,
         avatarFallback: identity.avatarFallback,
-        imageUrl: identity.imageUrl
-      }
+        imageUrl: identity.imageUrl,
+      },
     },
     {
       variant: "avatar",
@@ -206,8 +206,8 @@
       avatarProps: {
         variant: "square",
         title: orgs[0].metadata.name,
-        avatarFallback: orgs[0].avatarFallback
-      }
+        avatarFallback: orgs[0].avatarFallback,
+      },
     },
     {
       variant: "avatar",
@@ -215,9 +215,9 @@
       avatarProps: {
         variant: "square",
         title: orgs[1].metadata.name,
-        avatarFallback: orgs[1].avatarFallback
-      }
-    }
+        avatarFallback: orgs[1].avatarFallback,
+      },
+    },
   ];
 </script>
 

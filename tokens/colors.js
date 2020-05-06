@@ -35,8 +35,8 @@ export const colorConfig = {
         { name: "foreground-level-3", hex: "#c5d1db" },
         { name: "foreground-level-4", hex: "#a9b9c7" },
         { name: "foreground-level-5", hex: "#90a0af" },
-        { name: "foreground-level-6", hex: "#546474" }
-      ]
+        { name: "foreground-level-6", hex: "#546474" },
+      ],
     },
     {
       name: "darkMode",
@@ -72,8 +72,8 @@ export const colorConfig = {
         { name: "foreground-level-3", hex: "#333e47" },
         { name: "foreground-level-4", hex: "#5e6d7a" },
         { name: "foreground-level-5", hex: "#8594a1" },
-        { name: "foreground-level-6", hex: "#d3dee8" }
-      ]
-    }
-  ]
+        { name: "foreground-level-6", hex: "#d3dee8" },
+      ],
+    },
+  ],
 };

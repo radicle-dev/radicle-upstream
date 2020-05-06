@@ -9,7 +9,7 @@
     AdditionalActionsDropdown,
     HorizontalMenu,
     SidebarLayout,
-    Topbar
+    Topbar,
   } from "../DesignSystem/Component";
 
   import Projects from "./Org/Projects.svelte";
@@ -22,7 +22,7 @@
     "/orgs/:id": Projects,
     "/orgs/:id/projects": Projects,
     "/orgs/:id/fund": Fund,
-    "/orgs/:id/members": Members
+    "/orgs/:id/members": Members,
   };
 
   import ProjectsMenu from "./Org/ProjectsMenu.svelte";
@@ -33,46 +33,46 @@
     "/orgs/:id/": ProjectsMenu,
     "/orgs/:id/projects": ProjectsMenu,
     "/orgs/:id/fund": FundMenu,
-    "/orgs/:id/members": MembersMenu
+    "/orgs/:id/members": MembersMenu,
   };
 
-  const topbarMenuItems = orgId => [
+  const topbarMenuItems = (orgId) => [
     {
       icon: Icon.Source,
       title: "Projects",
       href: path.orgProjects(orgId),
-      looseActiveStateMatching: true
+      looseActiveStateMatching: true,
     },
     {
       icon: Icon.Fund,
       title: "Fund",
       href: path.orgFund(orgId),
-      looseActiveStateMatching: false
+      looseActiveStateMatching: false,
     },
     {
       icon: Icon.Member,
       title: "Members",
       href: path.orgMembers(orgId),
-      looseActiveStateMatching: false
-    }
+      looseActiveStateMatching: false,
+    },
   ];
 
   const dropdownMenuItems = [
     {
       title: "Add project",
       icon: Icon.Plus,
-      event: () => push(path.registerProject(params.id))
+      event: () => push(path.registerProject(params.id)),
     },
     {
       title: "Add member",
       icon: Icon.Plus,
-      event: () => console.log("event(add-member-to-org)")
+      event: () => console.log("event(add-member-to-org)"),
     },
     {
       title: "Send funds",
       icon: Icon.ArrowUp,
-      event: () => console.log("event(send-funds-to-org)")
-    }
+      event: () => console.log("event(send-funds-to-org)"),
+    },
   ];
 
   $: fetch({ id: params.id });

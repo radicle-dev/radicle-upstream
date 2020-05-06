@@ -21,5 +21,5 @@ export {
   Line,
   Numeric,
   Text,
-  Title
+  Title,
 };

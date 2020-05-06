@@ -1,3 +1,3 @@
 window.electron = {
-  ipcRenderer: { invoke: require("electron").ipcRenderer.invoke }
+  ipcRenderer: { invoke: require("electron").ipcRenderer.invoke },
 };

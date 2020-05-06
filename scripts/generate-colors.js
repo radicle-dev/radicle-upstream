@@ -10,14 +10,14 @@ let colorCss = `/* This file is auto-generated via \`yarn generate:colors\`, don
 
 `;
 
-colorConfig.themes.map(theme => {
+colorConfig.themes.map((theme) => {
   if (theme.name === colorConfig.defaultTheme) {
     colorCss += ":root {\n";
   } else {
     colorCss += `\n[data-theme="${theme.name}"] {\n`;
   }
 
-  theme.colors.map(color => {
+  theme.colors.map((color) => {
     colorCss += `  --color-${color.name}: ${color.hex};\n`;
   });
 
@@ -26,7 +26,7 @@ colorConfig.themes.map(theme => {
 
 const pathToFile = path.resolve(__dirname, "../public/colors.css");
 
-fs.writeFile(pathToFile, colorCss, error => {
+fs.writeFile(pathToFile, colorCss, (error) => {
   if (error) {
     return console.log(error);
   }
