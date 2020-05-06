@@ -71,12 +71,12 @@
   };
 
   const avatarFallback2 = {
-    emoji: "🛠",
     background: {
-      r: 181,
-      g: 25,
-      b: 111
-    }
+      r: 122,
+      g: 112,
+      b: 90
+    },
+    emoji: "💡"
   };
 
   const additionalActionsDropdownItems = [
@@ -194,7 +194,7 @@
       variant: "avatar",
       value: "1",
       avatarProps: {
-        variant: "user",
+        variant: "circle",
         title: identity.metadata.handle,
         avatarFallback: identity.avatarFallback,
         imageUrl: identity.imageUrl
@@ -204,7 +204,7 @@
       variant: "avatar",
       value: "2",
       avatarProps: {
-        variant: "project",
+        variant: "square",
         title: orgs[0].metadata.name,
         avatarFallback: orgs[0].avatarFallback
       }
@@ -213,7 +213,7 @@
       variant: "avatar",
       value: "3",
       avatarProps: {
-        variant: "project",
+        variant: "square",
         title: orgs[1].metadata.name,
         avatarFallback: orgs[1].avatarFallback
       }
@@ -570,25 +570,123 @@
     subTitle="User, project, etc avatars in various sizes and shapes.">
 
     <Swatch>
-      <Avatar avatarFallback={avatarFallback1} />
-      <Avatar size="big" avatarFallback={avatarFallback1} />
-      <Avatar imageUrl="https://avatars1.githubusercontent.com/u/40774" />
       <Avatar
-        imageUrl="https://avatars1.githubusercontent.com/u/40774"
-        size="big" />
+        style="margin-right: 16px"
+        size="small"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
       <Avatar
-        imageUrl="https://avatars.dicebear.com/v2/jdenticon/one.svg"
-        variant="square" />
-      <Avatar
-        imageUrl="https://avatars.dicebear.com/v2/jdenticon/two.svg"
+        style="margin-right: 16px"
+        size="small"
         variant="square"
-        size="big" />
-      <Avatar size="huge" avatarFallback={avatarFallback2} />
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="small"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="small"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
     </Swatch>
 
     <Swatch>
-      <Avatar title="My name" avatarFallback={avatarFallback2} />
-      <Avatar size="big" title="My name" avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="regular"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
+      <Avatar
+        style="margin-right: 16px"
+        size="regular"
+        variant="square"
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="regular"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="regular"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
+    </Swatch>
+
+    <Swatch>
+      <Avatar
+        style="margin-right: 16px"
+        size="medium"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
+      <Avatar
+        style="margin-right: 16px"
+        size="medium"
+        variant="square"
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="medium"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="medium"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
+    </Swatch>
+
+    <Swatch>
+      <Avatar
+        style="margin-right: 16px"
+        size="big"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
+      <Avatar
+        style="margin-right: 16px"
+        size="big"
+        variant="square"
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="big"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="big"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
+    </Swatch>
+
+    <Swatch>
+      <Avatar
+        style="margin-right: 16px"
+        size="huge"
+        variant="circle"
+        avatarFallback={avatarFallback1} />
+      <Avatar
+        style="margin-right: 16px"
+        size="huge"
+        variant="square"
+        avatarFallback={avatarFallback2} />
+      <Avatar
+        style="margin-right: 16px"
+        size="huge"
+        variant="circle"
+        imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+      <Avatar
+        style="margin-right: 16px"
+        size="huge"
+        variant="circle"
+        avatarFallback={avatarFallback1}
+        title="cloudhead" />
     </Swatch>
   </Section>
 
