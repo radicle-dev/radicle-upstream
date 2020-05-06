@@ -2,7 +2,7 @@
   .swatch {
     display: flex;
     margin-bottom: 34px;
-    align-items: baseline;
+    align-items: flex-end;
   }
 </style>
 

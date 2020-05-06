@@ -39,7 +39,7 @@
   }
 
   .commit-message {
-    color: var(--color-secondary);
+    color: var(--commit-message-color, var(--color-secondary));
     text-overflow: ellipsis;
     overflow-x: hidden;
   }
