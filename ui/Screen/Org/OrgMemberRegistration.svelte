@@ -1,7 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  // import { session } from "../../src/session.ts";
+  import { session } from "../../src/session.ts";
   // import { Status } from "../../src/remote.ts";
   import { ValidationStatus } from "../../src/validation.ts";
   import {
@@ -10,22 +10,35 @@
     mockAvatarUrl,
     memberNameValidationStore
   } from "../../src/org.ts";
+  import { formatPayer, formatSubject } from "../../src/transaction.ts";
 
   import { Avatar, Input, Text } from "../../DesignSystem/Primitive";
   import {
     NavigationButtons,
-    StepModalLayout
+    StepModalLayout,
+    Transaction
   } from "../../DesignSystem/Component";
 
   let state = RegistrationFlowState.NameSelection;
   let userHandle,
+    transaction,
+    subject,
+    payer,
     validating = false;
   const validation = memberNameValidationStore();
 
   const next = () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
-        state = RegistrationFlowState.TransactionConfirmation;
+        if ($validation.status === ValidationStatus.Success) {
+          transaction = registerMemberTransaction("monadic", userHandle);
+          subject = formatSubject(
+            $session.data.identity,
+            transaction.messages[0]
+          );
+          payer = formatPayer($session.data.identity);
+          state = RegistrationFlowState.TransactionConfirmation;
+        }
         break;
       case RegistrationFlowState.TransactionConfirmation:
         pop();
@@ -49,11 +62,7 @@
 
   $: imageUrl =
     $validation.status === ValidationStatus.Success && mockAvatarUrl;
-
-  $: transaction = registerMemberTransaction("monadic", userHandle);
-  // $: subject = getSubject(userHandle);
-  // $: payer =
-  //   $session.status === Status.Success && getPayer($session.data.identity);
+  $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
 <StepModalLayout steps={['Prepare', 'Submit']} selectedStep={state + 1}>
@@ -75,11 +84,12 @@
     </Input.Text>
   {:else if state === RegistrationFlowState.TransactionConfirmation}
     <div style="width: 100%;">
-      <!-- <Transaction {transaction} {subject} {payer} /> -->
+      <Transaction {transaction} {subject} {payer} />
     </div>
   {/if}
   <NavigationButtons
     style="margin-top: 32px;"
+    {disableSubmit}
     on:submit={next}
     on:cancel={cancel} />
 </StepModalLayout>

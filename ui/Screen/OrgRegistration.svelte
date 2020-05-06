@@ -95,16 +95,6 @@
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
-<style>
-  .container {
-    margin: 86px 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-</style>
-
 <StepModalLayout selectedStep={state + 1} steps={['Prepare', 'Submit']}>
   <div slot="title">Register an org</div>
   {#if state === RegistrationFlowState.NameSelection}
