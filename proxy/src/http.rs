@@ -34,24 +34,24 @@ pub fn routes(
 
     let api = path("v1").and(
         avatar::get_filter()
-        .or(control::routes(
-            enable_control,
-            Arc::clone(&librad_paths),
-            Arc::clone(&registry),
-            Arc::clone(&store),
-        ))
-        .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
-        .or(notification::filters(subscriptions.clone()))
-        .or(org::routes(Arc::clone(&registry), subscriptions.clone()))
-        .or(project::filters(
-            Arc::clone(&librad_paths),
-            Arc::clone(&registry),
-            subscriptions.clone(),
-        ))
-        .or(session::get_filter(Arc::clone(&registry), store))
-        .or(source::routes(librad_paths))
-        .or(transaction::filters(Arc::clone(&registry)))
-        .or(user::routes(registry, subscriptions)),
+            .or(control::routes(
+                enable_control,
+                Arc::clone(&librad_paths),
+                Arc::clone(&registry),
+                Arc::clone(&store),
+            ))
+            .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
+            .or(notification::filters(subscriptions.clone()))
+            .or(org::routes(Arc::clone(&registry), subscriptions.clone()))
+            .or(project::filters(
+                Arc::clone(&librad_paths),
+                Arc::clone(&registry),
+                subscriptions.clone(),
+            ))
+            .or(session::get_filter(Arc::clone(&registry), store))
+            .or(source::routes(librad_paths))
+            .or(transaction::filters(Arc::clone(&registry)))
+            .or(user::routes(registry, subscriptions)),
     );
     // let docs = path("docs").and(doc::filters(&api));
     let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));
