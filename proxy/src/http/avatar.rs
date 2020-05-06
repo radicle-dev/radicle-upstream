@@ -32,17 +32,18 @@ pub fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Cl
         ))
         .and(document::document(
             document::response(
-                404,
+                400,
                 document::body(super::error::Error::document()).mime("application/json"),
             )
-            .description("Avatar not found"),
+            .description("Wrong usage for Avatar"),
         ))
         .and_then(handler::get)
 }
 
 /// Avatar handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::{reject, reply, Rejection, Reply};
+    use warp::http::StatusCode;
+    use warp::{reply, Rejection, Reply};
 
     use crate::avatar;
 
@@ -57,11 +58,16 @@ mod handler {
                 Some("identity") => avatar::Usage::Identity,
                 Some("org") => avatar::Usage::Org,
                 Some("any") | None => avatar::Usage::Any,
-                _ => return Err(reject::not_found()),
+                _ => {
+                    return Ok(reply::with_status(
+                        reply::json(&"Invalid query input".to_string()),
+                        StatusCode::BAD_REQUEST,
+                    ))
+                },
             },
         );
 
-        Ok(reply::json(&avatar))
+        Ok(reply::with_status(reply::json(&avatar), StatusCode::OK))
     }
 }
 
