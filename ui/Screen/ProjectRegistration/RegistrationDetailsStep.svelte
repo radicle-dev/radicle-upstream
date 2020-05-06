@@ -52,7 +52,7 @@
       value: org.id,
       avatarProps: {
         variant: "square",
-        title: org.metadata.name,
+        title: org.id,
         avatarFallback: org.avatarFallback
       }
     };

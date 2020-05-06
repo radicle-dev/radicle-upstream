@@ -1,8 +1,9 @@
 <script>
   import Router, { link, push } from "svelte-spa-router";
   import * as path from "../lib/path.js";
-  import { orgMocks } from "../lib/orgMocks.js";
   import { Avatar, Icon } from "../DesignSystem/Primitive";
+  import { Remote } from "../DesignSystem/Component";
+  import { fetch, org as store } from "../src/org.ts";
 
   import {
     AdditionalActionsDropdown,
@@ -16,11 +17,6 @@
   import Members from "./Org/Members.svelte";
 
   export let params = null;
-
-  /* TODO(rudolfs): replace with actual org metadata lookup */
-  $: org = orgMocks.data.orgs.find(org => {
-    return org.id === params.id;
-  });
 
   const routes = {
     "/orgs/:id": Projects,
@@ -78,31 +74,34 @@
       event: () => console.log("event(send-funds-to-org)")
     }
   ];
+
+  $: fetch({ id: params.id });
 </script>
 
-<SidebarLayout
-  style="margin-top: calc(var(--topbar-height) + 33px)"
-  dataCy="page-container">
-  <Topbar style="position: fixed; top: 0;">
-    <a slot="left" href={path.orgProjects(params.id)} use:link>
-      <Avatar
-        title={org.metadata.name}
-        imageUrl={org.metadata.avatarUrl}
-        avatarFallback={org.avatarFallback}
-        variant="square" />
-    </a>
+<Remote {store} let:data={org}>
+  <SidebarLayout
+    style="margin-top: calc(var(--topbar-height) + 33px)"
+    dataCy="page-container">
+    <Topbar style="position: fixed; top: 0;">
+      <a slot="left" href={path.orgProjects(params.id)} use:link>
+        <Avatar
+          title={org.id}
+          avatarFallback={org.avatarFallback}
+          variant="square" />
+      </a>
 
-    <div slot="middle">
-      <HorizontalMenu items={topbarMenuItems(params.id)} />
-    </div>
+      <div slot="middle">
+        <HorizontalMenu items={topbarMenuItems(params.id)} />
+      </div>
 
-    <div style="display: flex" slot="right">
-      <Router routes={menuRoutes} />
-      <AdditionalActionsDropdown
-        style="margin: 0 24px 0 16px"
-        headerTitle={params.id}
-        menuItems={dropdownMenuItems} />
-    </div>
-  </Topbar>
-  <Router {routes} />
-</SidebarLayout>
+      <div style="display: flex" slot="right">
+        <Router routes={menuRoutes} />
+        <AdditionalActionsDropdown
+          style="margin: 0 24px 0 16px"
+          headerTitle={params.id}
+          menuItems={dropdownMenuItems} />
+      </div>
+    </Topbar>
+    <Router {routes} />
+  </SidebarLayout>
+</Remote>

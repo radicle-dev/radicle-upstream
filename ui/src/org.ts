@@ -2,6 +2,8 @@ import * as api from "./api"
 import { createValidationStore } from "./validation"
 import { Transaction } from './transaction';
 import { EmojiAvatar } from "./avatar"
+import * as remote from "./remote";
+import * as event from "./event";
 
 export enum RegistrationFlowState {
   NameSelection,
@@ -11,6 +13,34 @@ export enum RegistrationFlowState {
 export interface Org {
   name: string;
   avatarFallback: EmojiAvatar;
+}
+
+interface Fetch extends event.Event<Kind> {
+  kind: Kind.Fetch;
+  id: string;
+}
+
+type Msg = Fetch;
+
+// STATE
+const orgStore = remote.createStore<Org>();
+export const org = orgStore.readable;
+
+// EVENTS
+enum Kind {
+  Fetch = "FETCH",
+}
+
+const update = (msg: Msg): void => {
+  switch (msg.kind) {
+    case Kind.Fetch:
+      orgStore.loading();
+      api.get<Org>(`orgs/${msg.id}`)
+        .then(orgStore.success)
+        .catch(orgStore.error)
+
+      break;
+  }
 }
 
 // Api
@@ -59,3 +89,5 @@ export const register = (id: string): Promise<Transaction> => {
     id
   });
 }
+
+export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);

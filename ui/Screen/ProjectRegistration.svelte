@@ -14,7 +14,6 @@
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
 
   import { projects as projectStore } from "../src/project.ts";
-  import { orgMocks } from "../lib/orgMocks.js";
   import * as transaction from "../src/transaction.ts";
   import * as project from "../src/project.ts";
 
@@ -97,7 +96,7 @@
             {session}
             {projects}
             {skipNamePreselection}
-            orgs={orgMocks.data.orgs}
+            orgs={session.orgs}
             bind:projectId
             bind:registrarId
             bind:projectName
