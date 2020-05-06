@@ -78,10 +78,10 @@
   $: fetch({ id: params.id });
 </script>
 
-<Remote {store} let:data={org}>
-  <SidebarLayout
-    style="margin-top: calc(var(--topbar-height) + 33px)"
-    dataCy="page-container">
+<SidebarLayout
+  style="margin-top: calc(var(--topbar-height) + 33px)"
+  dataCy="page-container">
+  <Remote {store} let:data={org}>
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.orgProjects(params.id)} use:link>
         <Avatar
@@ -103,5 +103,5 @@
       </div>
     </Topbar>
     <Router {routes} />
-  </SidebarLayout>
-</Remote>
+  </Remote>
+</SidebarLayout>
