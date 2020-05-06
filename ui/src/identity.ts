@@ -1,3 +1,4 @@
+import { writable } from "svelte/store"
 import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
@@ -25,6 +26,15 @@ export interface Identity {
 
 const creationStore = remote.createStore<Identity>();
 export const store = creationStore.readable;
+
+export enum LaunchFlowState {
+  Welcome = "WELCOME",
+  Form = "FORM",
+  SuccessView = "SUCCESS_VIEW",
+  Complete = "COMPLETE"
+}
+
+export const launchFlowStore = writable(LaunchFlowState.Welcome)
 
 // Events.
 enum Kind {
@@ -65,7 +75,7 @@ function update(msg: Msg): void {
   }
 }
 
-export const create = event.create<Kind, Msg>(Kind.Create, update) ;
+export const create = event.create<Kind, Msg>(Kind.Create, update);
 
 // MOCK
 export const fallback = {
@@ -77,9 +87,9 @@ export const fallback = {
   },
   avatarFallback: {
     background: {
-        r: 122,
-        g: 112,
-        b: 90,
+      r: 122,
+      g: 112,
+      b: 90,
     },
     emoji: "💡",
   },
