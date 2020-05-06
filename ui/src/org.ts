@@ -1,4 +1,4 @@
-import { createValidationStore } from "./validation";
+import { createValidationStore, ValidationStore } from "./validation";
 import { EmojiAvatar } from "./avatar";
 import { Transaction } from "./transaction";
 
@@ -68,7 +68,7 @@ export const getNameAvailability = (id: string): Promise<boolean> =>
   getOrg(id).then(org => !org);
 
 // Make sure we make a new one every time
-export const validationStore = () =>
+export const validationStore = (): ValidationStore =>
   createValidationStore(nameConstraints, {
     promise: getNameAvailability,
     validationMessage: "Sorry, this name is already taken"
@@ -78,7 +78,7 @@ export const validationStore = () =>
 
 // TODO(sos): Replace with actual avatar fallback request once the endpoint
 // is ready
-export const generateAvatar = (_id: string): EmojiAvatar => {
+export const generateAvatar = (): EmojiAvatar => {
   return {
     background: {
       r: 0,

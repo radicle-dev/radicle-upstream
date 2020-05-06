@@ -45,7 +45,7 @@
               },
             ],
           };
-          avatarFallback = generateAvatar(orgName);
+          avatarFallback = generateAvatar();
           subject = formatSubject(
             $session.data.identity,
             transaction.messages[0]

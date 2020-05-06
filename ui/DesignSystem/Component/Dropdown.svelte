@@ -69,10 +69,6 @@
     color: var(--color-foreground);
   }
 
-  .button[hidden] {
-    visibility: hidden;
-  }
-
   .menu {
     position: absolute;
     top: 0px;
