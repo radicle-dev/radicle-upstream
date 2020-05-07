@@ -1,9 +1,8 @@
-import { writable } from "svelte/store"
 import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
 
-// Types.
+// TYPES
 export interface Avatar {
   background: {
     r: number;
@@ -24,19 +23,12 @@ export interface Identity {
   avatarFallback: Avatar;
 }
 
+
+// STATE
 const creationStore = remote.createStore<Identity>();
 export const store = creationStore.readable;
 
-export enum CreationState {
-  Welcome = "WELCOME",
-  Form = "FORM",
-  SuccessView = "SUCCESS_VIEW",
-  Complete = "COMPLETE"
-}
-
-export const state = writable(CreationState.Welcome)
-
-// Events.
+// EVENTS
 enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",

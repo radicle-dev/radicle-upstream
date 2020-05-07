@@ -1,7 +1,6 @@
 <script>
-  import { push, replace } from "svelte-spa-router";
+  import { createEventDispatcher } from "svelte";
 
-  import * as path from "../../lib/path.js";
   import { store } from "../../src/identity.ts";
 
   import { Copyable, Remote } from "../../DesignSystem/Component";
@@ -11,10 +10,11 @@
     Flex,
     Icon,
     Text,
-    Title,
+    Title
   } from "../../DesignSystem/Primitive";
 
-  export let onClose;
+  const dispatch = createEventDispatcher();
+
   let copyIcon = Icon.Copy;
 
   const afterCopy = () => {
@@ -68,12 +68,7 @@
     <Text style="margin: 20px 0; color: var(--color-foreground-level-5);">
       This is your peer-to-peer identity. Even though your radicleID is unique,
       your handle isn't. To get a unique handle, you have to
-      <span
-        class="registration-link"
-        on:click={() => {
-          replace(path.profileProjects());
-          push(path.registerUser());
-        }}>
+      <span class="registration-link" on:click={() => dispatch('register')}>
         register it.
       </span>
     </Text>
@@ -102,6 +97,6 @@
       </div>
     </Remote>
 
-    <Button on:click={onClose}>Go to profile</Button>
+    <Button on:click={() => dispatch('close')}>Go to profile</Button>
   </div>
 </div>

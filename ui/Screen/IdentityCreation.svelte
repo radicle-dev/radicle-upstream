@@ -4,7 +4,7 @@
   import * as path from "../lib/path.js";
   import { showNotification } from "../store/notification.js";
   import * as session from "../src/session.ts";
-  import { CreationState, state } from "../src/identity.ts";
+  import { State, store } from "../src/onboard.ts";
 
   import { ModalLayout, Placeholder } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
@@ -13,30 +13,39 @@
   import IdentityCreationSuccess from "./Identity/IdentityCreationSuccess.svelte";
 
   const returnToWelcomeStep = () => {
-    $state.set(CreationState.Welcome);
+    $store.set(State.Welcome);
   };
 
-  const onError = (error) => {
+  const onError = error => {
     pop();
     showNotification({
       text: `Could not create identity: ${error}`,
-      level: "error",
+      level: "error"
     });
   };
 
+  const complete = redirectPath => {
+    session.fetch();
+    store.set(State.Complete);
+    replace(redirectPath);
+  };
+
   const onClose = () => {
-    switch ($state) {
-      case CreationState.Welcome:
+    switch ($store) {
+      case State.Welcome:
         return;
-      case CreationState.Form:
+      case State.Form:
         returnToWelcomeStep();
         return;
-      case CreationState.SuccessView:
-        session.fetch();
-        state.set(CreationState.Complete);
-        replace(path.profileProjects());
+      case State.SuccessView:
+        complete(path.profileProjects());
         return;
     }
+  };
+
+  const onRegister = () => {
+    replace(path.profileProjects());
+    complete(path.registerUser());
   };
 </script>
 
@@ -50,24 +59,24 @@
   }
 </style>
 
-<ModalLayout hideCloseButton={$state === CreationState.Welcome} {onClose}>
-  {#if $state === CreationState.Welcome}
+<ModalLayout hideCloseButton={$store === State.Welcome} {onClose}>
+  {#if $store === State.Welcome}
     <div class="container">
       <Placeholder
         style="flex-shrink: 0; width: 800px; height: 400px; margin-bottom: 20px;" />
       <Button
         style="flex-shrink: 0; margin-bottom: 24px;"
-        on:click={() => state.set(CreationState.Form)}
+        on:click={() => store.set(State.Form)}
         dataCy="get-started-button">
         Get started
       </Button>
     </div>
-  {:else if $state === CreationState.Form}
+  {:else if $store === State.Form}
     <IdentityCreationForm
-      onSuccess={() => state.set(CreationState.SuccessView)}
+      onSuccess={() => store.set(State.SuccessView)}
       {onError}
       onCancel={returnToWelcomeStep} />
-  {:else if $state === CreationState.SuccessView}
-    <IdentityCreationSuccess {onClose} />
+  {:else if $store === State.SuccessView}
+    <IdentityCreationSuccess on:close={onClose} on:register={onRegister} />
   {/if}
 </ModalLayout>
