@@ -35,7 +35,7 @@
       "extraFiles": [
         {
           "from": "/usr/lib/x86_64-linux-gnu/libhogweed.so.4",
-          "to": "usr/lib"
+          "to": "usr/lib/libhogweed.so.4"
         }
       ]
     },
