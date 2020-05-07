@@ -73,9 +73,9 @@
     </div>
   {:else if $store === State.Form}
     <IdentityCreationForm
-      onSuccess={() => store.set(State.SuccessView)}
-      {onError}
-      onCancel={returnToWelcomeStep} />
+      on:cancel={returnToWelcomeStep}
+      on:error={onError}
+      on:success={() => store.set(State.SuccessView)} />
   {:else if $store === State.SuccessView}
     <IdentityCreationSuccess on:close={onClose} on:register={onRegister} />
   {/if}
