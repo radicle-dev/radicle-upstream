@@ -1,4 +1,5 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import validatejs from "validate.js";
 
   import { create, store } from "../../src/identity.ts";
@@ -10,9 +11,7 @@
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
-  export let onSuccess,
-    onCancel,
-    onError = null;
+  const dispatch = createEventDispatcher();
 
   const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
   const DISPLAY_NAME_MATCH = "^[a-z0-9 ]+$";
@@ -88,9 +87,9 @@
   $: validate(handle, displayName, avatarUrl);
 
   $: if ($store.status === remote.Status.Success) {
-    onSuccess();
+    dispatch("success");
   } else if ($store.status === remote.Status.Error) {
-    onError();
+    dispatch("error");
   }
 </script>
 
@@ -135,7 +134,7 @@
       <Button
         variant="transparent"
         style="margin-right: 16px;"
-        on:click={onCancel}>
+        on:click={() => dispatch('cancel')}>
         Cancel
       </Button>
       <Button

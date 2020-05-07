@@ -4,6 +4,7 @@
   import * as path from "../lib/path.js";
   import { showNotification } from "../store/notification.js";
   import * as session from "../src/session.ts";
+  import { State, store } from "../src/onboard.ts";
 
   import { ModalLayout, Placeholder } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
@@ -11,20 +12,8 @@
   import IdentityCreationForm from "./Identity/IdentityCreationForm.svelte";
   import IdentityCreationSuccess from "./Identity/IdentityCreationSuccess.svelte";
 
-  const steps = {
-    WELCOME: 1,
-    FORM: 2,
-    SUCCESS: 3,
-  };
-
-  let currentStep = steps.WELCOME;
-
-  const nextStep = () => {
-    currentStep += 1;
-  };
-
   const returnToWelcomeStep = () => {
-    currentStep = steps.WELCOME;
+    $store.set(State.Welcome);
   };
 
   const onError = (error) => {
@@ -35,23 +24,29 @@
     });
   };
 
+  const complete = (redirectPath) => {
+    session.fetch();
+    store.set(State.Complete);
+    replace(redirectPath);
+  };
+
   const onClose = () => {
-    switch (currentStep) {
-      case steps.WELCOME:
+    switch ($store) {
+      case State.Welcome:
         return;
-      case steps.FORM:
+      case State.Form:
         returnToWelcomeStep();
         return;
-      case steps.SUCCESS:
-        replace(path.profileProjects());
+      case State.SuccessView:
+        complete(path.profileProjects());
         return;
     }
   };
 
-  // Refetch the session, once we created the identity.
-  $: if (currentStep === steps.SUCCESS) {
-    session.fetch();
-  }
+  const onRegister = () => {
+    replace(path.profileProjects());
+    complete(path.registerUser());
+  };
 </script>
 
 <style>
@@ -64,24 +59,24 @@
   }
 </style>
 
-<ModalLayout hideCloseButton={currentStep === steps.WELCOME} {onClose}>
-  {#if currentStep === steps.WELCOME}
+<ModalLayout hideCloseButton={$store === State.Welcome} {onClose}>
+  {#if $store === State.Welcome}
     <div class="container">
       <Placeholder
         style="flex-shrink: 0; width: 800px; height: 400px; margin-bottom: 20px;" />
       <Button
         style="flex-shrink: 0; margin-bottom: 24px;"
-        on:click={nextStep}
+        on:click={() => store.set(State.Form)}
         dataCy="get-started-button">
         Get started
       </Button>
     </div>
-  {:else if currentStep === steps.FORM}
+  {:else if $store === State.Form}
     <IdentityCreationForm
-      onSuccess={nextStep}
-      {onError}
-      onCancel={returnToWelcomeStep} />
-  {:else if currentStep === steps.SUCCESS}
-    <IdentityCreationSuccess {onClose} />
+      on:cancel={returnToWelcomeStep}
+      on:error={onError}
+      on:success={() => store.set(State.SuccessView)} />
+  {:else if $store === State.SuccessView}
+    <IdentityCreationSuccess on:close={onClose} on:register={onRegister} />
   {/if}
 </ModalLayout>

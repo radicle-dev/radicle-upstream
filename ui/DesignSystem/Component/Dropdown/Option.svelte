@@ -39,11 +39,12 @@
   {#if variant === 'avatar'}
     <Avatar
       size="small"
-      style="margin-left: 8px; --title-color: var(--color-foreground-level-6);"
+      style="margin: 0 12px 0 8px; --title-color:
+      var(--color-foreground-level-6);"
       {...avatarProps}
       {disabled} />
   {:else}
-    <Text style={`margin-left: 12px; color: ${disabledColor}`}>
+    <Text style={`margin: 0 12px; color: ${disabledColor}`}>
       {textProps.title}
     </Text>
   {/if}

@@ -2,7 +2,7 @@ import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
 
-// Types.
+// TYPES
 export interface Avatar {
   background: {
     r: number;
@@ -23,10 +23,12 @@ export interface Identity {
   avatarFallback: Avatar;
 }
 
+
+// STATE
 const creationStore = remote.createStore<Identity>();
 export const store = creationStore.readable;
 
-// Events.
+// EVENTS
 enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
@@ -65,7 +67,7 @@ function update(msg: Msg): void {
   }
 }
 
-export const create = event.create<Kind, Msg>(Kind.Create, update) ;
+export const create = event.create<Kind, Msg>(Kind.Create, update);
 
 // MOCK
 export const fallback = {
@@ -77,9 +79,9 @@ export const fallback = {
   },
   avatarFallback: {
     background: {
-        r: 122,
-        g: 112,
-        b: 90,
+      r: 122,
+      g: 112,
+      b: 90,
     },
     emoji: "💡",
   },
