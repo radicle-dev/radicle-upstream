@@ -68,6 +68,9 @@ context("identity creation", () => {
 
           // Now try to close the modal via the "x" button
           cy.get('[data-cy="modal-close-button"]').click();
+
+          // We should land back on the intro screen
+          cy.get('[data-cy="get-started-button"]').should("exist");
         });
       }
     );
