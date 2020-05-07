@@ -2,7 +2,7 @@
   import { onDestroy } from "svelte";
   import { blur } from "svelte/transition";
 
-  import { NOTIFICATION_TIMEOUT } from "../../config.js";
+  import * as config from "../../src/config.ts";
   import { store } from "../../src/notification.ts";
 
   import Notification from "./Notification.svelte";
@@ -23,7 +23,7 @@
     store.set(null);
     setTimeout(() => {
       remove(id);
-    }, NOTIFICATION_TIMEOUT);
+    }, config.NOTIFICATION_TIMEOUT);
   });
 
   const remove = (id) => {

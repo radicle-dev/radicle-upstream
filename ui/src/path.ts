@@ -1,10 +1,10 @@
 import regexparam from "regexparam";
 
-import { DEFAULT_PROJECT_REVISION } from "../config.js";
-import { BLOB, TREE } from "../../native/types.js";
+import * as config from "./config";
+import { ObjectType } from "./source";
 
 const PROJECT_SOURCE_PATH_MATCH = new RegExp(
-  `/source/(.*)/(${BLOB}|${TREE})/(.*)`
+  `/source/(.*)/(${ObjectType.Blob}|${ObjectType.Tree})/(.*)`
 );
 
 export const search = (): string => "/search";
@@ -42,7 +42,7 @@ export const projectSource = (
 ): string => {
   if (revision && path) {
     return `/projects/${id}/source/${revision}/${objectType}/${
-      objectType === TREE ? `${path}/` : path
+      objectType === ObjectType.Tree ? `${path}/` : path
     }`;
   } else {
     return `/projects/${id}/source`;
@@ -64,7 +64,7 @@ export const active = (path: string, location: string, loose = false): boolean =
 
 export const extractProjectSourceRevision = (location: string): string => {
   const rev = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return rev === null ? DEFAULT_PROJECT_REVISION : rev[1];
+  return rev === null ? config.DEFAULT_PROJECT_REVISION : rev[1];
 };
 
 export const extractProjectSourceObjectPath = (location: string): string => {
@@ -74,5 +74,5 @@ export const extractProjectSourceObjectPath = (location: string): string => {
 
 export const extractProjectSourceObjectType = (location: string): string => {
   const type = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return type === null ? TREE : type[2];
+  return type === null ? ObjectType.Tree : type[2];
 };
