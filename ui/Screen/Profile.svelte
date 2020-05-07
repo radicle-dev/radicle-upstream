@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import Router, { link, push } from "svelte-spa-router";
 
-  import * as path from "../lib/path.js";
+  import * as path from "../src/path.ts";
 
   import {
     AdditionalActionsDropdown,

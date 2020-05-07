@@ -3,8 +3,8 @@
   import validatejs from "validate.js";
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
-  import * as path from "../lib/path.js";
   import { showNotification } from "../store/notification.js";
+  import * as path from "../src/path.ts";
   import { create } from "../src/project.ts";
   import { getLocalBranches } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";

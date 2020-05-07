@@ -1,8 +1,11 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { location, link } from "svelte-spa-router";
-  import * as path from "../../lib/path.js";
+
+  import * as path from "../../src/path.ts";
+
   import { Avatar, Icon, Title } from "../Primitive";
+
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
   const dispatch = createEventDispatcher();

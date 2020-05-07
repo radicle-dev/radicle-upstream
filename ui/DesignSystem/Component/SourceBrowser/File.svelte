@@ -3,7 +3,7 @@
 
   import { Icon } from "../../Primitive";
 
-  import * as path from "../../../lib/path.js";
+  import * as path from "../../../src/path.ts";
   import { BLOB } from "../../../../native/types.js";
   import { currentPath, currentRevision } from "../../../src/source.ts";
 

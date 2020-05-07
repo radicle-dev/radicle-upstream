@@ -2,7 +2,8 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../lib/path.js";
+  import * as path from "../../src/path.ts";
+
   import Sidebar from "./Sidebar.svelte";
   import NotificationFaucet from "./NotificationFaucet.svelte";
   import TransactionCenter from "./Transaction/Center.svelte";

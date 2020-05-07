@@ -1,10 +1,10 @@
 <script>
   import { pop, replace } from "svelte-spa-router";
 
-  import * as path from "../lib/path.js";
   import { showNotification } from "../store/notification.js";
-  import * as session from "../src/session.ts";
   import { State, store } from "../src/onboard.ts";
+  import * as path from "../src/path.ts";
+  import * as session from "../src/session.ts";
 
   import { ModalLayout, Placeholder } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";

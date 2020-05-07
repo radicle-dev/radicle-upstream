@@ -2,7 +2,7 @@
   import Router, { push, location } from "svelte-spa-router";
 
   import { initializeHotkeys } from "./lib/hotkeys.js";
-  import * as path from "./lib/path.js";
+  import * as path from "./src/path.ts";
   import { showNotification } from "./store/notification.js";
   import * as remote from "./src/remote.ts";
   import { fetch, session as store } from "./src/session.ts";
