@@ -9,8 +9,8 @@
   import { ModalLayout, Placeholder } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
 
-  import IdentityCreationForm from "./Identity/IdentityCreationForm.svelte";
-  import IdentityCreationSuccess from "./Identity/IdentityCreationSuccess.svelte";
+  import Form from "./IdentityCreation/Form.svelte";
+  import Success from "./IdentityCreation/Success.svelte";
 
   const returnToWelcomeStep = () => {
     store.set(State.Welcome);
@@ -69,11 +69,11 @@
       </Button>
     </div>
   {:else if $store === State.Form}
-    <IdentityCreationForm
+    <Form
       on:cancel={returnToWelcomeStep}
       on:error={onError}
       on:success={() => store.set(State.SuccessView)} />
   {:else if $store === State.SuccessView}
-    <IdentityCreationSuccess on:close={onClose} on:register={onRegister} />
+    <Success on:close={onClose} on:register={onRegister} />
   {/if}
 </ModalLayout>
