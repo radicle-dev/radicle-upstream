@@ -164,12 +164,12 @@
       );
 
       push(path.projectSource(response.id));
-      notification.info({
-        message: `Project ${response.metadata.name} successfully created`,
-      });
+      notification.info(
+        `Project ${response.metadata.name} successfully created`
+      );
     } catch (error) {
       push(path.profile());
-      notification.error({ message: "Could not create project" });
+      notification.error("Could not create project");
     }
   };
 

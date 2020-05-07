@@ -44,7 +44,7 @@
 
     case remote.Status.Error:
       console.log($store.error);
-      notification.error({ mesage: "Session could not be fetched" });
+      notification.error("Session could not be fetched");
       break;
   }
 

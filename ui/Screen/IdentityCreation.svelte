@@ -18,7 +18,7 @@
 
   const onError = (error) => {
     pop();
-    notification.error({ message: `Could not create identity: ${error}` });
+    notification.error(`Could not create identity: ${error}`);
   };
 
   const complete = (redirectPath) => {

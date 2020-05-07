@@ -38,7 +38,7 @@
     try {
       await user.register(handle, id);
     } catch (error) {
-      notification.error({ message: `Could not register user: ${error}` });
+      notification.error(`Could not register user: ${error}`);
     } finally {
       pop();
     }

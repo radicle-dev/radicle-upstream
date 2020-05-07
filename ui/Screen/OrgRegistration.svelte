@@ -62,9 +62,7 @@
       await register(orgName);
       await fetchSession();
     } catch (error) {
-      notification.error({
-        message: `Could not register org: ${error.message}`,
-      });
+      notification.error(`Could not register org: ${error.message}`);
     } finally {
       pop();
     }

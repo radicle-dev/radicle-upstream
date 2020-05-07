@@ -16,7 +16,7 @@
 
   $: if ($store.status === remote.Status.Error) {
     console.log($store.error);
-    notification.error({ message: "Could not fetch commit" });
+    notification.error("Could not fetch commit");
   }
 
   fetchCommit({ projectId, sha1: commitHash });

@@ -102,7 +102,7 @@
         validations = { projectName: ["Project name already taken"] };
       }
     } catch (error) {
-      notification.error({ message: `Proxy: ${JSON.stringify(error)}` });
+      notification.error(`Proxy: ${JSON.stringify(error)}`);
     }
   };
 
