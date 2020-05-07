@@ -3,6 +3,7 @@
   import Title from "./Title.svelte";
 
   export let style = null;
+  export let dataCy = null;
 
   // the hierarchy of usage for the following avatars is:
   // imageUrl > avatarFallback
@@ -138,7 +139,7 @@
   }
 </style>
 
-<div class={`container ${size}`} {style}>
+<div data-cy={dataCy} class={`container ${size}`} {style}>
   {#if imageUrl}
     <img
       class={`image ${avatarClass}`}

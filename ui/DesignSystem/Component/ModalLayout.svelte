@@ -27,7 +27,7 @@
 </style>
 
 {#if !hideCloseButton}
-  <div class="close">
+  <div data-cy="modal-close-button" class="close">
     <Icon.CrossBig on:click={onClose} />
   </div>
 {/if}

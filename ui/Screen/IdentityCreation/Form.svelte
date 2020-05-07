@@ -132,6 +132,7 @@
       validation={avatarUrlValidation} />
     <div class="buttons">
       <Button
+        dataCy="cancel-button"
         variant="transparent"
         style="margin-right: 16px;"
         on:click={() => dispatch('cancel')}>
