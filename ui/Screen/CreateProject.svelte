@@ -9,7 +9,6 @@
   import { getLocalBranches } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
 
-  import { ModalLayout, RadioOption } from "../DesignSystem/Component";
   import {
     Button,
     Flex,
@@ -18,6 +17,11 @@
     Text,
     Title,
   } from "../DesignSystem/Primitive";
+  import {
+    Dropdown,
+    ModalLayout,
+    RadioOption,
+  } from "../DesignSystem/Component";
 
   let currentSelection;
 
@@ -314,16 +318,16 @@
                 Select the default branch
               </Text>
               {#if localBranches.length > 0}
-                <Input.Dropdown
-                  items={localBranches}
-                  bind:value={defaultBranch}
-                  style="min-width: 240px; --focus-outline-color:
-                  var(--color-primary)" />
+                <Dropdown
+                  options={localBranches.map((branch) => {
+                    return { variant: 'text', value: branch, textProps: { title: branch } };
+                  })}
+                  bind:value={defaultBranch} />
               {:else}
-                <Input.Dropdown
-                  items={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
-                  disabled
-                  style="min-width: 240px" />
+                <Dropdown
+                  placeholder={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
+                  options={[]}
+                  disabled />
               {/if}
             </div>
           </div>

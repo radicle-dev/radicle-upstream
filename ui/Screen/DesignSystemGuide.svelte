@@ -533,14 +533,6 @@
     </Swatch>
 
     <Swatch>
-      <Input.Dropdown items={['master', 'dev']} value={'dev'} />
-    </Swatch>
-
-    <Swatch>
-      <Input.Dropdown disabled items={['master', 'dev']} value={'dev'} />
-    </Swatch>
-
-    <Swatch>
       <Input.Checkbox>How about a checkbox?</Input.Checkbox>
     </Swatch>
 
