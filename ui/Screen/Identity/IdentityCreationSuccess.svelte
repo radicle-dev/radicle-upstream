@@ -10,7 +10,7 @@
     Flex,
     Icon,
     Text,
-    Title
+    Title,
   } from "../../DesignSystem/Primitive";
 
   const dispatch = createEventDispatcher();

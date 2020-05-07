@@ -6,7 +6,7 @@
   import * as remote from "../../src/remote.ts";
   import {
     ValidationStatus,
-    getValidationState
+    getValidationState,
   } from "../../src/validation.ts";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
@@ -23,7 +23,7 @@
     beginValidation = false;
 
   validatejs.options = {
-    fullMessages: false
+    fullMessages: false,
   };
 
   validatejs.validators.optional = (value, options) => {
@@ -36,30 +36,30 @@
     handle: {
       presence: {
         message: "You must provide a handle",
-        allowEmpty: false
+        allowEmpty: false,
       },
       format: {
         pattern: new RegExp(HANDLE_MATCH, "i"),
-        message: `Handle should match ${HANDLE_MATCH}`
-      }
+        message: `Handle should match ${HANDLE_MATCH}`,
+      },
     },
     displayName: {
       optional: {
         format: {
           pattern: new RegExp(DISPLAY_NAME_MATCH, "i"),
-          message: `Display name should match ${DISPLAY_NAME_MATCH}`
-        }
-      }
+          message: `Display name should match ${DISPLAY_NAME_MATCH}`,
+        },
+      },
     },
     avatarUrl: {
       optional: {
         url: {
           schemes: ["http", "https"],
           message: "Not a valid image URL",
-          allowLocal: false
-        }
-      }
-    }
+          allowLocal: false,
+        },
+      },
+    },
   };
 
   let handleValidation = { status: ValidationStatus.NotStarted };
@@ -74,7 +74,7 @@
       {
         handle: handle,
         displayName: displayName,
-        avatarUrl: avatarUrl
+        avatarUrl: avatarUrl,
       },
       constraints
     );
@@ -147,7 +147,7 @@
           create({
             handle: handle,
             displayName: displayName,
-            avatarUrl: avatarUrl
+            avatarUrl: avatarUrl,
           });
         }}>
         Create
