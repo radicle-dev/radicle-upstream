@@ -5,8 +5,9 @@ import * as event from "./event"
 import * as identity from "./identity";
 import * as remote from "./remote";
 
-import { mockChangeset } from '../lib/commitMocks'
 import { HIDDEN_BRANCHES } from "../config"
+
+import { mockChangeset } from './commitMocks'
 
 // TOOLING
 const filterBranches = (branches: string[]): string[] =>
