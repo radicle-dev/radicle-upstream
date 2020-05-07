@@ -27,14 +27,14 @@ export interface Identity {
 const creationStore = remote.createStore<Identity>();
 export const store = creationStore.readable;
 
-export enum LaunchFlowState {
+export enum CreationState {
   Welcome = "WELCOME",
   Form = "FORM",
   SuccessView = "SUCCESS_VIEW",
   Complete = "COMPLETE"
 }
 
-export const launchFlowStore = writable(LaunchFlowState.Welcome)
+export const state = writable(CreationState.Welcome)
 
 // Events.
 enum Kind {

@@ -4,7 +4,7 @@
   import * as path from "../lib/path.js";
   import { showNotification } from "../store/notification.js";
   import * as session from "../src/session.ts";
-  import { LaunchFlowState, launchFlowStore } from "../src/identity.ts";
+  import { CreationState, state } from "../src/identity.ts";
 
   import { ModalLayout, Placeholder } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
@@ -13,7 +13,7 @@
   import IdentityCreationSuccess from "./Identity/IdentityCreationSuccess.svelte";
 
   const returnToWelcomeStep = () => {
-    $launchFlowStore.set(LaunchFlowState.Welcome);
+    $state.set(CreationState.Welcome);
   };
 
   const onError = (error) => {
@@ -25,15 +25,15 @@
   };
 
   const onClose = () => {
-    switch ($launchFlowStore) {
-      case LaunchFlowState.Welcome:
+    switch ($state) {
+      case CreationState.Welcome:
         return;
-      case LaunchFlowState.Form:
+      case CreationState.Form:
         returnToWelcomeStep();
         return;
-      case LaunchFlowState.SuccessView:
+      case CreationState.SuccessView:
         session.fetch();
-        launchFlowStore.set(LaunchFlowState.Complete);
+        state.set(CreationState.Complete);
         replace(path.profileProjects());
         return;
     }
@@ -50,26 +50,24 @@
   }
 </style>
 
-<ModalLayout
-  hideCloseButton={$launchFlowStore === LaunchFlowState.Welcome}
-  {onClose}>
-  {#if $launchFlowStore === LaunchFlowState.Welcome}
+<ModalLayout hideCloseButton={$state === CreationState.Welcome} {onClose}>
+  {#if $state === CreationState.Welcome}
     <div class="container">
       <Placeholder
         style="flex-shrink: 0; width: 800px; height: 400px; margin-bottom: 20px;" />
       <Button
         style="flex-shrink: 0; margin-bottom: 24px;"
-        on:click={() => launchFlowStore.set(LaunchFlowState.Form)}
+        on:click={() => state.set(CreationState.Form)}
         dataCy="get-started-button">
         Get started
       </Button>
     </div>
-  {:else if $launchFlowStore === LaunchFlowState.Form}
+  {:else if $state === CreationState.Form}
     <IdentityCreationForm
-      onSuccess={() => launchFlowStore.set(LaunchFlowState.SuccessView)}
+      onSuccess={() => state.set(CreationState.SuccessView)}
       {onError}
       onCancel={returnToWelcomeStep} />
-  {:else if $launchFlowStore === LaunchFlowState.SuccessView}
+  {:else if $state === CreationState.SuccessView}
     <IdentityCreationSuccess {onClose} />
   {/if}
 </ModalLayout>
