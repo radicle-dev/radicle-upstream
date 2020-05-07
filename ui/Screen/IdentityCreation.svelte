@@ -16,11 +16,11 @@
     $launchFlowStore.set(LaunchFlowState.Welcome);
   };
 
-  const onError = error => {
+  const onError = (error) => {
     pop();
     showNotification({
       text: `Could not create identity: ${error}`,
-      level: "error"
+      level: "error",
     });
   };
 

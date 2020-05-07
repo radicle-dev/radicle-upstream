@@ -47,5 +47,5 @@ export {
   Transaction,
   TransactionAccordion,
   TransactionStatusbar,
-  UserCard
+  UserCard,
 };

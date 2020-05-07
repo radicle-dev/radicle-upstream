@@ -9,35 +9,35 @@
   const stateToColor = {
     pending: "var(--color-caution)",
     success: "var(--color-positive)",
-    error: "var(--color-negative)"
+    error: "var(--color-negative)",
   };
 
   const stateToDescription = {
     pending: "Pending",
     success: "Success",
-    error: "Error"
+    error: "Error",
   };
 
   const stateToIconState = {
     pending: "caution",
     success: "positive",
-    error: "negative"
+    error: "negative",
   };
 
   const stateToSummary = {
     pending: "pending",
     success: "succeeded",
-    error: "failed"
+    error: "failed",
   };
 
   const summary = {
     pending: { count: 0, progress: 0 },
     success: { count: 0, progress: 0 },
-    error: { count: 0, progress: 0 }
+    error: { count: 0, progress: 0 },
   };
 
   const fillSummary = () => {
-    transactions.forEach(transaction => {
+    transactions.forEach((transaction) => {
       summary[transaction.state].count += 1;
       summary[transaction.state].progress += transaction.progress || 0;
     });

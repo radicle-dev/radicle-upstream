@@ -27,7 +27,7 @@
     expanded = false;
   };
 
-  const optionSelectedHandler = event => {
+  const optionSelectedHandler = (event) => {
     value = event.detail.value;
     toggleMenu();
   };
@@ -38,7 +38,7 @@
       : "var(--color-foreground-level-6)";
   };
 
-  $: optionByValue = options.find(option => option.value === value);
+  $: optionByValue = options.find((option) => option.value === value);
 </script>
 
 <style>
@@ -67,10 +67,6 @@
     box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground);
-  }
-
-  .button[hidden] {
-    visibility: hidden;
   }
 
   .menu {

@@ -2,8 +2,8 @@ import { Readable } from "svelte/store";
 
 import * as api from "./api";
 import * as event from "./event";
-import * as identity from "./identity";
 import * as remote from "./remote";
+import { Identity } from "./identity";
 
 // Types.
 export enum MessageType {
@@ -139,7 +139,7 @@ export enum Variant {
   Project = "PROJECT"
 }
 
-export const formatPayer = (identity: identity.Identity): object => {
+export const formatPayer = (identity: Identity): object => {
   return {
     name: identity.metadata.displayName || identity.metadata.handle,
     variant: Variant.User,
@@ -149,7 +149,7 @@ export const formatPayer = (identity: identity.Identity): object => {
 };
 
 // TODO(sos): add avatarFallback for org registration once endpoint is ready
-export const formatSubject = (identity: identity.Identity, msg: Message): object => {
+export const formatSubject = (identity: Identity, msg: Message): object => {
   let name, variant;
 
   switch (msg.type) {

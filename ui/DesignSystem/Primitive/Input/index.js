@@ -7,5 +7,5 @@ export default {
   Checkbox,
   Directory,
   Dropdown,
-  Text
+  Text,
 };

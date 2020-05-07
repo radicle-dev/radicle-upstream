@@ -5,7 +5,7 @@ export default {
   input: "native/main.js",
   output: {
     file: "native/main.comp.js",
-    format: "cjs"
+    format: "cjs",
   },
   plugins: [
     babel({
@@ -18,13 +18,13 @@ export default {
       // for this to work:
       // @babel/plugin-transform-runtime
       // @babel/runtime
-      runtimeHelpers: true
+      runtimeHelpers: true,
     }),
 
     // This avoids the following warning:
     //
     // (!) Unresolved dependencies
     // https://rollupjs.org/guide/en/#warning-treating-module-as-external-dependency
-    externals({ builtins: true, deps: true })
-  ]
+    externals({ builtins: true, deps: true }),
+  ],
 };

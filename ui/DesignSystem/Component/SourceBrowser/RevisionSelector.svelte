@@ -19,7 +19,7 @@
     expanded = false;
   };
 
-  const handleClick = ev => {
+  const handleClick = (ev) => {
     // Any click *outside* the dropdown should hide the dropdown.
     if (dropdown !== ev.target && !dropdown.contains(ev.target)) {
       hideDropdown();

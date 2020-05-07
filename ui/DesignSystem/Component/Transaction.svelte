@@ -2,14 +2,14 @@
   import {
     formatMessage,
     formatStake,
-    Variant
+    Variant,
   } from "../../src/transaction.ts";
 
   import {
     Avatar,
     Caption,
     Numeric,
-    Title
+    Title,
   } from "../../DesignSystem/Primitive";
 
   import Rad from "./Rad.svelte";
