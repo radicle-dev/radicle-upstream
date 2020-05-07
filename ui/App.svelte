@@ -9,7 +9,6 @@
 
   import Remote from "./DesignSystem/Component/Remote.svelte";
 
-  import CreateProject from "./Screen/CreateProject.svelte";
   import Blank from "./Screen/Blank.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
@@ -18,6 +17,7 @@
   import Org from "./Screen/Org.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
+  import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
@@ -58,7 +58,7 @@
     "/orgs/register": OrgRegistration,
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
-    "/projects/new": CreateProject,
+    "/projects/new": ProjectCreation,
     "/projects/register/:registrarId": ProjectRegistration,
     "/projects/:projectId/register/:registrarId": ProjectRegistration,
     "/projects/:id/*": Project,
