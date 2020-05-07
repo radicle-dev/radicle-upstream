@@ -47,10 +47,6 @@
     cursor: pointer;
   }
 
-  .dropdown > * {
-    width: 100%;
-  }
-
   .button {
     height: 40px;
     border: 1px solid var(--color-foreground-level-3);
@@ -67,6 +63,12 @@
     box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground);
+  }
+
+  .button.disabled {
+    cursor: default;
+    box-shadow: 0px 0px 0px 0px;
+    background-color: var(--color-background);
   }
 
   .menu {
@@ -102,16 +104,17 @@
   <div
     class="button"
     class:invalid={!valid}
+    class:disabled
     on:click|stopPropagation={toggleMenu}>
     {#if value && optionByValue}
       <Option {...optionByValue} {disabled} />
     {:else}
-      <Text style={`margin-left: 12px; color: ${disabledColor()}`}>
+      <Text style={`margin: 0 12px; color: ${disabledColor()}`}>
         {placeholder}
       </Text>
     {/if}
     <Icon.Expand
-      style={`flex-shrink: 0; margin: 0 8px 0 8px; fill: ${disabledColor()}`} />
+      style={`flex-shrink: 0; margin-right: 8px; fill: ${disabledColor()}`} />
   </div>
 
   <div class="menu" hidden={!expanded}>
