@@ -306,7 +306,7 @@
             <Text
               style="margin-bottom: 12px; color:
               var(--color-foreground-level-6); text-align:left">
-              Choose the existing repository
+              Choose an existing repository
             </Text>
             <Input.Directory
               placeholder="~/path/to/folder"
