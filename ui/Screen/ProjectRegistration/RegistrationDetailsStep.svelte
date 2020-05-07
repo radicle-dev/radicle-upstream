@@ -154,6 +154,7 @@
 </style>
 
 <Dropdown
+  optionStyle="width: 540px"
   placeholder="Select project to register"
   valid={!(validations && validations.projectId)}
   validationMessage={validations && validations.projectId && validations.projectId[0]}

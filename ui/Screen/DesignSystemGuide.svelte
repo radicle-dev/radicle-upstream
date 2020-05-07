@@ -187,7 +187,11 @@
 
   const dropdownOptions1 = [
     { variant: "text", value: "1", textProps: { title: "Option 1" } },
-    { variant: "text", value: "2", textProps: { title: "Option 2" } },
+    {
+      variant: "text",
+      value: "2",
+      textProps: { title: "Longer option keeps going" },
+    },
     { variant: "text", value: "3", textProps: { title: "Option 3" } },
   ];
 
@@ -532,14 +536,6 @@
           <Avatar size="small" avatarFallback={avatarFallback2} />
         </div>
       </Input.Text>
-    </Swatch>
-
-    <Swatch>
-      <Input.Dropdown items={['master', 'dev']} value={'dev'} />
-    </Swatch>
-
-    <Swatch>
-      <Input.Dropdown disabled items={['master', 'dev']} value={'dev'} />
     </Swatch>
 
     <Swatch>

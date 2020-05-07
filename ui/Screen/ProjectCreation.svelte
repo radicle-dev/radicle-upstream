@@ -9,7 +9,6 @@
   import { getLocalBranches } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
 
-  import { ModalLayout, RadioOption } from "../DesignSystem/Component";
   import {
     Button,
     Flex,
@@ -18,6 +17,11 @@
     Text,
     Title,
   } from "../DesignSystem/Primitive";
+  import {
+    Dropdown,
+    ModalLayout,
+    RadioOption,
+  } from "../DesignSystem/Component";
 
   let currentSelection;
 
@@ -239,7 +243,6 @@
   .default-branch-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-top: 16px;
   }
 
@@ -306,20 +309,24 @@
               validation={existingRepositoryPathValidation}
               bind:path={existingRepositoryPath} />
             <div class="default-branch-row">
-              <Text style="color: var(--color-foreground-level-6)">
-                Select the default branch
+              <Text
+                style="margin-right: 16px; color:
+                var(--color-foreground-level-6)">
+                Default branch
               </Text>
               {#if localBranches.length > 0}
-                <Input.Dropdown
-                  items={localBranches}
-                  bind:value={defaultBranch}
-                  style="min-width: 240px; --focus-outline-color:
-                  var(--color-primary)" />
+                <Dropdown
+                  style="max-width: 22.9rem;"
+                  options={localBranches.map((branch) => {
+                    return { variant: 'text', value: branch, textProps: { title: branch } };
+                  })}
+                  bind:value={defaultBranch} />
               {:else}
-                <Input.Dropdown
-                  items={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
-                  disabled
-                  style="min-width: 240px" />
+                <Dropdown
+                  style="max-width: 22.9rem;"
+                  placeholder={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
+                  options={[]}
+                  disabled />
               {/if}
             </div>
           </div>
