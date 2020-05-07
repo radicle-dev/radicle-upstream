@@ -6,6 +6,7 @@
 
   export let options = null;
   export let style = null;
+  export let optionStyle = null;
   export let valid = true;
   export let validationMessage = null;
   export let validationPending = false;
@@ -49,6 +50,7 @@
 
   .button {
     height: 40px;
+    background-color: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     display: flex;
@@ -83,6 +85,7 @@
     background-color: var(--color-background);
     overflow: hidden; /* hack to make inner option corners rounded */
     z-index: 1;
+    margin-bottom: 24px;
   }
 
   .validation-row {
@@ -109,17 +112,18 @@
     {#if value && optionByValue}
       <Option {...optionByValue} {disabled} />
     {:else}
-      <Text style={`margin: 0 12px; color: ${disabledColor()}`}>
+      <Text style={`margin: 0 42px 0 12px; color: ${disabledColor()}`}>
         {placeholder}
       </Text>
     {/if}
     <Icon.Expand
-      style={`flex-shrink: 0; margin-right: 8px; fill: ${disabledColor()}`} />
+      style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
   </div>
 
   <div class="menu" hidden={!expanded}>
     {#each options as option}
       <Option
+        style={optionStyle}
         {...option}
         on:selected={optionSelectedHandler}
         selected={value === option.value} />

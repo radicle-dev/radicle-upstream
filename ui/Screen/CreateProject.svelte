@@ -247,7 +247,6 @@
   .default-branch-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     margin-top: 16px;
   }
 
@@ -307,24 +306,28 @@
             <Text
               style="margin-bottom: 12px; color:
               var(--color-foreground-level-6); text-align:left">
-              Choose an existing repository
+              Choose the existing repository
             </Text>
             <Input.Directory
               placeholder="~/path/to/folder"
               validation={existingRepositoryPathValidation}
               bind:path={existingRepositoryPath} />
             <div class="default-branch-row">
-              <Text style="color: var(--color-foreground-level-6)">
-                Select the default branch
+              <Text
+                style="margin-right: 16px; color:
+                var(--color-foreground-level-6)">
+                Default branch
               </Text>
               {#if localBranches.length > 0}
                 <Dropdown
+                  style="max-width: 22.9rem;"
                   options={localBranches.map((branch) => {
                     return { variant: 'text', value: branch, textProps: { title: branch } };
                   })}
                   bind:value={defaultBranch} />
               {:else}
                 <Dropdown
+                  style="max-width: 22.9rem;"
                   placeholder={[DEFAULT_BRANCH_FOR_NEW_PROJECTS]}
                   options={[]}
                   disabled />
