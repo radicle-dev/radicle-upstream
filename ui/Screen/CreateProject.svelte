@@ -3,7 +3,7 @@
   import validatejs from "validate.js";
 
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
-  import { showNotification } from "../store/notification.js";
+  import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import { create } from "../src/project.ts";
   import { getLocalBranches } from "../src/source.ts";
@@ -164,16 +164,12 @@
       );
 
       push(path.projectSource(response.id));
-      showNotification({
-        text: `Project ${response.metadata.name} successfully created`,
-        level: "info",
+      notification.info({
+        message: `Project ${response.metadata.name} successfully created`,
       });
     } catch (error) {
       push(path.profile());
-      showNotification({
-        text: "Could not create project",
-        level: "error",
-      });
+      notification.error({ message: "Could not create project" });
     }
   };
 

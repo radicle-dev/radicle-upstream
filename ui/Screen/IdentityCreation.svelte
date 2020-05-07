@@ -1,7 +1,7 @@
 <script>
   import { pop, replace } from "svelte-spa-router";
 
-  import { showNotification } from "../store/notification.js";
+  import * as notification from "../src/notification.ts";
   import { State, store } from "../src/onboard.ts";
   import * as path from "../src/path.ts";
   import * as session from "../src/session.ts";
@@ -18,10 +18,7 @@
 
   const onError = (error) => {
     pop();
-    showNotification({
-      text: `Could not create identity: ${error}`,
-      level: "error",
-    });
+    notification.error({ message: `Could not create identity: ${error}` });
   };
 
   const complete = (redirectPath) => {

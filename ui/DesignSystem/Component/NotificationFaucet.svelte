@@ -1,17 +1,16 @@
 <script>
   import { onDestroy } from "svelte";
+  import { blur } from "svelte/transition";
 
-  import { notificationStore } from "../../store/notification.js";
   import { NOTIFICATION_TIMEOUT } from "../../config.js";
+  import { store } from "../../src/notification.ts";
 
   import Notification from "./Notification.svelte";
-
-  import { blur } from "svelte/transition";
 
   export let style = null;
   let messages = [];
 
-  const unsubscribe = notificationStore.subscribe((message) => {
+  const unsubscribe = store.subscribe((message) => {
     if (!message) {
       return;
     }
@@ -21,7 +20,7 @@
       ...messages,
       { id: id, message: message.text, level: message.level },
     ];
-    notificationStore.set();
+    store.set(null);
     setTimeout(() => {
       remove(id);
     }, NOTIFICATION_TIMEOUT);
@@ -54,12 +53,11 @@
   {#each messages as message}
     <div class="notification" transition:blur={{ duration: 300 }}>
       <Notification
-        variant={message.level}
+        level={message.level}
+        message={message.message}
         on:click={() => {
           remove(message.id);
-        }}>
-        {message.message}
-      </Notification>
+        }} />
     </div>
   {/each}
 </div>

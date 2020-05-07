@@ -2,8 +2,8 @@
   import { pop } from "svelte-spa-router";
   import validatejs from "validate.js";
 
+  import * as notification from "../../src/notification.ts";
   import * as user from "../../src/user.ts";
-  import { showNotification } from "../../store/notification.js";
   import {
     getValidationState,
     ValidationStatus,
@@ -34,10 +34,7 @@
         validations = { handle: ["Handle already taken"] };
       }
     } catch (error) {
-      showNotification({
-        text: `Proxy: ${JSON.stringify(error)}`,
-        level: "error",
-      });
+      notification.error({ message: `Proxy: ${JSON.stringify(error)}` });
     }
   };
 

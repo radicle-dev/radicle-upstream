@@ -1,7 +1,7 @@
 <script>
   import { format } from "timeago.js";
 
-  import { showNotification } from "../../store/notification.js";
+  import * as notification from "../../src/notification.ts";
   import { commit as store, fetchCommit } from "../../src/source.ts";
   import * as remote from "../../src/remote.ts";
 
@@ -16,10 +16,7 @@
 
   $: if ($store.status === remote.Status.Error) {
     console.log($store.error);
-    showNotification({
-      text: "Could not fetch commit",
-      level: "error",
-    });
+    notification.error({ message: "Could not fetch commit" });
   }
 
   fetchCommit({ projectId, sha1: commitHash });

@@ -3,7 +3,7 @@
   import { pop } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
-  import { showNotification } from "../store/notification.js";
+  import * as notification from "../src/notification.ts";
   import * as user from "../src/user.ts";
 
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
@@ -38,10 +38,7 @@
     try {
       await user.register(handle, id);
     } catch (error) {
-      showNotification({
-        text: `Could not register user: ${error}`,
-        level: "error",
-      });
+      notification.error({ message: `Could not register user: ${error}` });
     } finally {
       pop();
     }
