@@ -310,6 +310,7 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
+    use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -436,7 +437,12 @@ mod test {
                 &alice,
                 org_id.to_string(),
                 project_name.to_string(),
-                None,
+                Some(
+                    librad::project::ProjectId::from_str(
+                        "ac1cac587b49612fbac39775a07fb05c6e5de08d.git",
+                    )
+                    .expect("Project id"),
+                ),
                 10,
             )
             .await
@@ -456,7 +462,7 @@ mod test {
             json!([registry::Project {
                 name: registry::ProjectName::try_from(project_name).unwrap(),
                 org_id: registry::Id::try_from(org_id).unwrap(),
-                maybe_project_id: None,
+                maybe_project_id: Some("ac1cac587b49612fbac39775a07fb05c6e5de08d.git".to_string()),
             }])
         );
     }

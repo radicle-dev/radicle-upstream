@@ -1,5 +1,6 @@
 //! Integrations with the radicle Registry.
 
+use serde_cbor::from_reader;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -360,11 +361,19 @@ impl Registry {
             .client
             .get_project(project_name, org_id)
             .await?
-            .map(|project| Project {
-                name: project.name,
-                org_id: project.org_id,
-                // TODO(xla): Proper conversion of ProjectIds.
-                maybe_project_id: None,
+            .map(|project| {
+                let metadata_vec: Vec<u8> = project.metadata.into();
+                Project {
+                    name: project.name,
+                    org_id: project.org_id,
+                    maybe_project_id: if let [] = metadata_vec[..] {
+                        None
+                    } else {
+                        let maybe_metadata: Result<Metadata, serde_cbor::error::Error> =
+                            from_reader(&metadata_vec[..]);
+                        Some(maybe_metadata.expect("Could not read Metadata").id)
+                    },
+                }
             }))
     }
 
@@ -723,6 +732,10 @@ mod tests {
             .unwrap();
         assert_eq!(projects.len(), 1);
         assert_eq!(projects[0].name, ProjectName::try_from("radicle").unwrap());
+        assert_eq!(
+            projects[0].maybe_project_id,
+            Some("0000000000000000000000000000000000000000.git".to_string())
+        );
     }
 
     #[tokio::test]
