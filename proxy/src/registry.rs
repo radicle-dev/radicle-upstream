@@ -366,7 +366,7 @@ impl Registry {
                 Project {
                     name: project.name,
                     org_id: project.org_id,
-                    maybe_project_id: if let [] = metadata_vec[..] {
+                    maybe_project_id: if metadata_vec[..].is_empty() {
                         None
                     } else {
                         let maybe_metadata: Result<Metadata, serde_cbor::error::Error> =

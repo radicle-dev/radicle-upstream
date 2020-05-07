@@ -224,10 +224,9 @@ mod handler {
         let fake_fee: Balance = 100;
 
         let mut reg = registry.write().await;
-        let maybe_coco_id = match input.maybe_coco_id {
-            Some(id) => Some(librad::project::ProjectId::from_str(&id).expect("Project id")),
-            None => None,
-        };
+        let maybe_coco_id = input
+            .maybe_coco_id
+            .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
         let tx = reg
             .register_project(
                 &fake_pair,
