@@ -15,9 +15,9 @@
       {
         type: transaction.MessageType.UserRegistration,
         handle,
-        id: identity.id
-      }
-    ]
+        id: identity.id,
+      },
+    ],
   };
   const payer = transaction.formatPayer(identity);
   const subject = transaction.formatSubject(identity, tx.messages[0]);

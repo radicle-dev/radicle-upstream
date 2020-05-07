@@ -9,7 +9,7 @@
     ModalLayout,
     Remote,
     Transaction,
-    TransactionStatusbar
+    TransactionStatusbar,
   } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
 

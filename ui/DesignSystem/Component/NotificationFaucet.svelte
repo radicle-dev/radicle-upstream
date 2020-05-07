@@ -11,7 +11,7 @@
   export let style = null;
   let messages = [];
 
-  const unsubscribe = notificationStore.subscribe(message => {
+  const unsubscribe = notificationStore.subscribe((message) => {
     if (!message) {
       return;
     }
@@ -19,7 +19,7 @@
     const id = Math.random();
     messages = [
       ...messages,
-      { id: id, message: message.text, level: message.level }
+      { id: id, message: message.text, level: message.level },
     ];
     notificationStore.set();
     setTimeout(() => {
@@ -27,8 +27,8 @@
     }, NOTIFICATION_TIMEOUT);
   });
 
-  const remove = id => {
-    messages = messages.filter(m => m.id != id);
+  const remove = (id) => {
+    messages = messages.filter((m) => m.id != id);
   };
 
   onDestroy(() => {

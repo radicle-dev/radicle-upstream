@@ -30,13 +30,13 @@ Cypress.Commands.add(
     fetch("http://localhost:8080/v1/control/create-project", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         name,
         description,
-        defaultBranch
-      })
+        defaultBranch,
+      }),
     })
 );
 
@@ -44,12 +44,12 @@ Cypress.Commands.add("registerUser", (handle = "nope", id = "123abcd.git") =>
   fetch("http://localhost:8080/v1/users", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       handle,
-      id
-    })
+      id,
+    }),
   })
 );
 
@@ -63,12 +63,12 @@ Cypress.Commands.add(
     fetch("http://localhost:8080/v1/identities", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         handle,
         displayName,
-        avatarUrl
-      })
+        avatarUrl,
+      }),
     })
 );

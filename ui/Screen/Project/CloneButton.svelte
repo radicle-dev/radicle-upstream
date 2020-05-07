@@ -11,12 +11,12 @@
   // Icon to show next to clone command.
   let copyIcon = Icon.Copy;
 
-  const toggleDropdown = ev => {
+  const toggleDropdown = (ev) => {
     expanded = !expanded;
     ev.stopPropagation();
   };
 
-  const clickOutside = ev => {
+  const clickOutside = (ev) => {
     // Any click *outside* the dropdown should hide the dropdown.
     if (expanded && dropdown !== ev.target && !dropdown.contains(ev.target)) {
       expanded = false;

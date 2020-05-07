@@ -21,7 +21,7 @@ const startApp = () => {
 
 ipcMain.handle(IPC_DIALOG_SHOWOPENDIALOG, async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
-    properties: ["openDirectory", "showHiddenFiles", "createDirectory"]
+    properties: ["openDirectory", "showHiddenFiles", "createDirectory"],
   });
 
   if (result.filePaths.length === 1) {
@@ -42,8 +42,8 @@ const createWindow = () => {
     icon: path.join(__dirname, "../public/icon.png"),
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js")
-    }
+      preload: path.join(__dirname, "preload.js"),
+    },
   });
 
   mainWindow.once("ready-to-show", () => {
@@ -54,10 +54,10 @@ const createWindow = () => {
   let watcher;
   if (isDev) {
     watcher = require("chokidar").watch(path.join(__dirname, "../public/**"), {
-      ignoreInitial: true
+      ignoreInitial: true,
     });
 
-    watcher.on("change", _p => {
+    watcher.on("change", (_p) => {
       mainWindow.reload();
     });
   }

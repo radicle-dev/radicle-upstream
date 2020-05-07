@@ -6,7 +6,7 @@
   import { showNotification } from "../../store/notification.js";
   import {
     getValidationState,
-    ValidationStatus
+    ValidationStatus,
   } from "../../src/validation.ts";
 
   import { Avatar, Button, Flex, Input } from "../../DesignSystem/Primitive";
@@ -36,13 +36,13 @@
     } catch (error) {
       showNotification({
         text: `Proxy: ${JSON.stringify(error)}`,
-        level: "error"
+        level: "error",
       });
     }
   };
 
   validatejs.options = {
-    fullMessages: false
+    fullMessages: false,
   };
 
   const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
@@ -51,13 +51,13 @@
     handle: {
       presence: {
         message: "Handle is required",
-        allowEmpty: false
+        allowEmpty: false,
       },
       format: {
         pattern: new RegExp(HANDLE_MATCH),
-        message: `Handle should match ${HANDLE_MATCH}`
-      }
-    }
+        message: `Handle should match ${HANDLE_MATCH}`,
+      },
+    },
   };
 
   let handleValidation = { status: ValidationStatus.NotStarted };

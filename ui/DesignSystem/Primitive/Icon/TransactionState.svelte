@@ -7,13 +7,13 @@
   const size = {
     regular: 32,
     inverted: 24,
-    small: 16
+    small: 16,
   }[variant];
 
   const strokeWidth = {
     regular: 4,
     inverted: 6,
-    small: 2
+    small: 2,
   }[variant];
 
   const center = size / 2;
@@ -23,13 +23,13 @@
   $: color = {
     caution: "var(--color-caution)",
     positive: "var(--color-positive)",
-    negative: "var(--color-negative)"
+    negative: "var(--color-negative)",
   }[state];
 
   const defaultDashLength = {
     caution: progress || 100 / 6,
     positive: 100,
-    negative: 0
+    negative: 0,
   };
 
   $: dashLength =

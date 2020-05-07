@@ -13,7 +13,7 @@
   export let variant = "circle"; // circle | square
   export let size = "regular"; // small | regular | medium | big | huge
 
-  const fmt = background => {
+  const fmt = (background) => {
     return `rgb(${background.r}, ${background.g}, ${background.b})`;
   };
 
@@ -153,7 +153,7 @@
         className: `emoji ${size}`,
         base: '',
         folder: 'twemoji/',
-        ext: '.svg'
+        ext: '.svg',
       })}
     </div>
   {:else}

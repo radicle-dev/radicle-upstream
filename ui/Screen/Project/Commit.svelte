@@ -18,7 +18,7 @@
     console.log($store.error);
     showNotification({
       text: "Could not fetch commit",
-      level: "error"
+      level: "error",
     });
   }
 

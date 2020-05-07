@@ -81,9 +81,7 @@ context("source code browsing", () => {
           "Merge pull request #4 from FintanH/fintan/update-readme-no-sig"
         )
         .should("exist");
-      cy.get("[data-cy=commit-teaser]")
-        .contains("223aaf8")
-        .should("exist");
+      cy.get("[data-cy=commit-teaser]").contains("223aaf8").should("exist");
 
       // the readme is shown
       cy.get("[data-cy=file-source]").within(() => {

@@ -14,7 +14,7 @@
   const steps = {
     WELCOME: 1,
     FORM: 2,
-    SUCCESS: 3
+    SUCCESS: 3,
   };
 
   let currentStep = steps.WELCOME;
@@ -27,11 +27,11 @@
     currentStep = steps.WELCOME;
   };
 
-  const onError = error => {
+  const onError = (error) => {
     pop();
     showNotification({
       text: `Could not create identity: ${error}`,
-      level: "error"
+      level: "error",
     });
   };
 

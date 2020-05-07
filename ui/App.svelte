@@ -46,7 +46,7 @@
       console.log($store.error);
       showNotification({
         text: "Session could not be fetched",
-        level: "error"
+        level: "error",
       });
       break;
   }
@@ -69,7 +69,7 @@
     "/help": Help,
     "/user-registration": UserRegistration,
     "/transactions/:id": TransactionDetails,
-    "*": NotFound
+    "*": NotFound,
   };
 </script>
 
