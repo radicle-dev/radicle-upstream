@@ -297,9 +297,8 @@ impl Registry {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    pub async fn list_orgs(&self, _user_id: String) -> Result<Vec<Org>, error::Error> {
+    pub async fn list_orgs(&self, user_id: String) -> Result<Vec<Org>, error::Error> {
         // TODO(merle): Remove temp_public_key once members are returned as user ids
-        let temp_public_key = ed25519::Pair::from_legacy_string("//Alice", None).public();
         let org_ids = self.client.list_orgs().await?.into_iter();
         let mut orgs = Vec::new();
         for org_id in org_ids {
@@ -308,7 +307,10 @@ impl Registry {
         Ok(orgs
             .into_iter()
             .filter_map(|org| {
-                if org.members.contains(&temp_public_key) {
+                if org
+                    .members
+                    .contains(&Id::try_from(user_id.clone()).expect("Invalid user id"))
+                {
                     Some(Org {
                         id: org.id.to_string(),
                         avatar_fallback: avatar::Avatar::from(
@@ -519,9 +521,7 @@ impl Registry {
 )]
 #[cfg(test)]
 mod tests {
-    use radicle_registry_client::{
-        ed25519, Client, ClientT, CryptoPair, Hash, Id, ProjectName, TxHash,
-    };
+    use radicle_registry_client::{ed25519, Client, ClientT, Hash, Id, ProjectName, TxHash};
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
     use std::time;
@@ -583,6 +583,12 @@ mod tests {
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
         let result =
             futures::executor::block_on(registry.register_org(&alice, "monadic".into(), 10));
         assert!(result.is_ok());
@@ -592,7 +598,7 @@ mod tests {
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.id, org_id);
-        assert_eq!(org.members[0], alice.public());
+        assert_eq!(org.members[0], Id::try_from("alice").unwrap());
     }
 
     #[tokio::test]
@@ -601,6 +607,12 @@ mod tests {
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = Id::try_from("monadic").unwrap();
@@ -621,6 +633,12 @@ mod tests {
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = Id::try_from("monadic").unwrap();
@@ -670,6 +688,12 @@ mod tests {
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = Id::try_from("monadic").unwrap();

@@ -290,9 +290,17 @@ mod test {
         )));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        registry
+            .write()
+            .await
+            .register_user(&alice, "alice".to_string(), None, 10)
+            .await
+            .unwrap();
 
         // Register the org
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let fee: radicle_registry_client::Balance = 100;
         registry
             .write()
@@ -326,12 +334,20 @@ mod test {
         )));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         let project_name = "upstream";
         let org_id = "radicle";
 
+        // Register the user
+        registry
+            .write()
+            .await
+            .register_user(&alice, "alice".to_string(), None, 10)
+            .await
+            .unwrap();
+
         // Register the org.
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         registry
             .write()
             .await
@@ -380,6 +396,15 @@ mod test {
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(Arc::clone(&registry), subscriptions);
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        registry
+            .write()
+            .await
+            .register_user(&alice, "alice".to_string(), None, 10)
+            .await
+            .unwrap();
 
         let res = request()
             .method("POST")
