@@ -13,7 +13,7 @@
   import IdentityCreationSuccess from "./Identity/IdentityCreationSuccess.svelte";
 
   const returnToWelcomeStep = () => {
-    $store.set(State.Welcome);
+    store.set(State.Welcome);
   };
 
   const onError = (error) => {
