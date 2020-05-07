@@ -82,7 +82,6 @@ const update = (msg: Msg): void => {
       break;
 
     case Kind.Remove:
-      console.log("remove", msg.id);
       filter(msg.id);
 
       break;

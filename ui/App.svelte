@@ -7,7 +7,7 @@
   import * as remote from "./src/remote.ts";
   import { fetch, session as store } from "./src/session.ts";
 
-  import Remote from "./DesignSystem/Component/Remote.svelte";
+  import { NotificationFaucet, Remote } from "./DesignSystem/Component";
 
   import Blank from "./Screen/Blank.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
@@ -70,6 +70,7 @@
   };
 </script>
 
+<NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Remote {store} context="session">
   <Router {routes} />
 </Remote>
