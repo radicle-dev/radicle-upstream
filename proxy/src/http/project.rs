@@ -139,6 +139,7 @@ mod handler {
     use librad::paths::Paths;
     use librad::surf;
     use radicle_registry_client::Balance;
+    use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -223,8 +224,17 @@ mod handler {
         let fake_fee: Balance = 100;
 
         let mut reg = registry.write().await;
+        let maybe_coco_id = input
+            .maybe_coco_id
+            .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
         let tx = reg
-            .register_project(&fake_pair, input.org_id, input.project_name, None, fake_fee)
+            .register_project(
+                &fake_pair,
+                input.org_id,
+                input.project_name,
+                maybe_coco_id,
+                fake_fee,
+            )
             .await?;
 
         subscriptions
@@ -643,7 +653,7 @@ mod test {
             .json(&super::RegisterInput {
                 project_name: "upstream".into(),
                 org_id: "radicle".into(),
-                maybe_coco_id: None,
+                maybe_coco_id: Some("1234.git".to_string()),
             })
             .reply(&api)
             .await;

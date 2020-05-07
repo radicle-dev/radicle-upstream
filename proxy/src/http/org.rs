@@ -18,6 +18,7 @@ pub fn routes(
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
+            .or(get_projects_filter(Arc::clone(&registry)))
             .or(register_filter(registry, subscriptions)),
     )
 }
@@ -30,6 +31,7 @@ fn filters(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
+        .or(get_projects_filter(Arc::clone(&registry)))
         .or(register_filter(registry, subscriptions))
 }
 
@@ -94,6 +96,29 @@ fn get_project_filter(
         .and_then(handler::get_project)
 }
 
+/// `GET /<id>/projects`
+fn get_projects_filter(
+    registry: Arc<RwLock<registry::Registry>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    super::with_registry(registry)
+        .and(warp::get())
+        .and(document::param::<String>("org_id", "Unique ID of the Org"))
+        .and(path("projects"))
+        .and(path::end())
+        .and(document::document(document::description(
+            "Lists all Projects of the Org",
+        )))
+        .and(document::document(document::tag("Org")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(registry::Project::document()).mime("application/json"),
+            )
+            .description("Successful retrieval"),
+        ))
+        .and_then(handler::get_projects)
+}
+
 /// `POST /`
 fn register_filter(
     registry: Arc<RwLock<registry::Registry>>,
@@ -153,6 +178,17 @@ mod handler {
         let project = reg.get_project(org_id, project_name).await?;
 
         Ok(reply::json(&project))
+    }
+
+    /// Get all projects under the given org id.
+    pub async fn get_projects(
+        registry: Arc<RwLock<registry::Registry>>,
+        org_id: String,
+    ) -> Result<impl Reply, Rejection> {
+        let reg = registry.read().await;
+        let projects = reg.list_org_projects(org_id).await?;
+
+        Ok(reply::json(&projects))
     }
 
     /// Register an org on the Registry.
@@ -274,6 +310,7 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
+    use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -369,6 +406,64 @@ mod test {
                 org_id: registry::Id::try_from(org_id).unwrap(),
                 maybe_project_id: None,
             })
+        );
+    }
+
+    #[tokio::test]
+    async fn get_projects() {
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        )));
+        let subscriptions = notification::Subscriptions::default();
+        let api = super::filters(Arc::clone(&registry), subscriptions);
+
+        let project_name = "upstream";
+        let org_id = "radicle";
+
+        // Register the org.
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        registry
+            .write()
+            .await
+            .register_org(&alice, org_id.to_string(), 10)
+            .await
+            .unwrap();
+
+        // Register the project.
+        registry
+            .write()
+            .await
+            .register_project(
+                &alice,
+                org_id.to_string(),
+                project_name.to_string(),
+                Some(
+                    librad::project::ProjectId::from_str(
+                        "ac1cac587b49612fbac39775a07fb05c6e5de08d.git",
+                    )
+                    .expect("Project id"),
+                ),
+                10,
+            )
+            .await
+            .unwrap();
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/{}/projects", org_id))
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(
+            have,
+            json!([registry::Project {
+                name: registry::ProjectName::try_from(project_name).unwrap(),
+                org_id: registry::Id::try_from(org_id).unwrap(),
+                maybe_project_id: Some("ac1cac587b49612fbac39775a07fb05c6e5de08d.git".to_string()),
+            }])
         );
     }
 
