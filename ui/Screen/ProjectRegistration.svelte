@@ -8,13 +8,12 @@
     ModalLayout,
     Remote,
     StepCounter,
-    Transaction
+    Transaction,
   } from "../DesignSystem/Component";
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
 
   import { projects as projectStore } from "../src/project.ts";
-  import { orgMocks } from "../lib/orgMocks.js";
   import * as transaction from "../src/transaction.ts";
   import * as project from "../src/project.ts";
 
@@ -49,7 +48,7 @@
       name: registrarHandle,
       imageUrl: registrarImageUrl,
       avatarFallback: registrarAvatarFallback,
-      variant: registrarVariant
+      variant: registrarVariant,
     };
   };
 
@@ -58,12 +57,12 @@
       name: `${registrarHandle} / ${projectName}`,
       imageUrl: registrarImageUrl,
       avatarFallback: registrarAvatarFallback,
-      variant: registrarVariant
+      variant: registrarVariant,
     };
   };
 
   const tx = {
-    messages: [{ type: transaction.MessageType.ProjectRegistration }]
+    messages: [{ type: transaction.MessageType.ProjectRegistration }],
   };
 </script>
 
@@ -97,11 +96,11 @@
             {session}
             {projects}
             {skipNamePreselection}
-            orgs={orgMocks.data.orgs}
+            orgs={session.orgs}
             bind:projectId
             bind:registrarId
             bind:projectName
-            on:next={event => {
+            on:next={(event) => {
               registrarHandle = event.detail.registrarHandle;
               registrarImageUrl = event.detail.registrarImageUrl;
               registrarAvatarFallback = event.detail.registrarAvatarFallback;

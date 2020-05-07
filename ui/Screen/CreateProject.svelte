@@ -16,7 +16,7 @@
     Icon,
     Input,
     Text,
-    Title
+    Title,
   } from "../DesignSystem/Primitive";
 
   let currentSelection;
@@ -39,7 +39,7 @@
   let beginValidation = false;
 
   validatejs.options = {
-    fullMessages: false
+    fullMessages: false,
   };
 
   validatejs.validators.optional = (value, options) => {
@@ -97,25 +97,25 @@
     name: {
       presence: {
         message: "Project name is required",
-        allowEmpty: false
+        allowEmpty: false,
       },
       format: {
         pattern: new RegExp(projectNameMatch, "i"),
-        message: `Project name should match ${projectNameMatch}`
-      }
+        message: `Project name should match ${projectNameMatch}`,
+      },
     },
     currentSelection: {
       presence: {
         message:
-          "Select whether to start a new repository or use an existing one"
-      }
+          "Select whether to start a new repository or use an existing one",
+      },
     },
     newRepositoryPath: {
-      validateNewRepositoryPath: true
+      validateNewRepositoryPath: true,
     },
     existingRepositoryPath: {
-      validateExistingRepositoryPath: true
-    }
+      validateExistingRepositoryPath: true,
+    },
   };
 
   const validate = () => {
@@ -128,7 +128,7 @@
         name: name,
         currentSelection: currentSelection,
         newRepositoryPath: newRepositoryPath,
-        existingRepositoryPath: existingRepositoryPath
+        existingRepositoryPath: existingRepositoryPath,
       },
       constraints
     );
@@ -158,7 +158,7 @@
         {
           name,
           description,
-          defaultBranch
+          defaultBranch,
         },
         isNew ? newRepositoryPath : existingRepositoryPath
       );
@@ -166,13 +166,13 @@
       push(path.projectSource(response.id));
       showNotification({
         text: `Project ${response.metadata.name} successfully created`,
-        level: "info"
+        level: "info",
       });
     } catch (error) {
       push(path.profile());
       showNotification({
         text: "Could not create project",
-        level: "error"
+        level: "error",
       });
     }
   };
@@ -180,7 +180,7 @@
   let localBranches;
   let localBranchesError;
 
-  const fetchBranches = async path => {
+  const fetchBranches = async (path) => {
     // Revert to defaults whenever the path changes in case this query fails
     // or the user clicks cancel in the directory selection dialog.
     localBranches = "";

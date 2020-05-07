@@ -40,7 +40,7 @@
     } catch (error) {
       showNotification({
         text: `Could not register user: ${error}`,
-        level: "error"
+        level: "error",
       });
     } finally {
       pop();

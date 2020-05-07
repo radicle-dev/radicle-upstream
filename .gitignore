@@ -4,6 +4,7 @@ dist
 .DS_Store
 native/main.comp.js
 public/bundle.*
+public/twemoji
 cypress/videos
 cypress/screenshots
 cypress/fixtures/example.json

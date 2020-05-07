@@ -19,11 +19,22 @@ If you have questions or would like to get in touch, check out
 [radicle.community][rc].
 
 
+### Attribution
+
+Upstream uses:
+  - [Twemoji by Twitter][tw]
+  - [The Inter typeface family by Rasmus Andersson][ra]
+  - [Source Code Pro font family by Adobe][so]
+
+
 [ba]: https://badge.buildkite.com/4fb43c6b471ab7cc26509eae235b0e4bbbaace11cc1848eae6.svg?branch=master
 [de]: DEVELOPMENT.md
 [pr]: proxy
+[ra]: https://rsms.me/inter
 [rc]: https://radicle.community
 [ru]: https://www.rust-lang.org
 [st]: https://buildkite.com/monadic/radicle-upstream
+[so]: https://adobe-fonts.github.io/source-code-pro
 [sv]: https://svelte.dev
+[tw]: https://twemoji.twitter.com
 [ui]: ui

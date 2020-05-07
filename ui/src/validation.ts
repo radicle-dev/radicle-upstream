@@ -14,7 +14,7 @@ type ValidationState =
   { status: ValidationStatus.Error; message: string } |
   { status: ValidationStatus.Success }
 
-interface ValidationStore extends Readable<ValidationState> {
+export interface ValidationStore extends Readable<ValidationState> {
   validate: (input: string) => void;
   updateInput: (input: string) => void;
 }

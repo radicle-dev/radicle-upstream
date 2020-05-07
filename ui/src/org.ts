@@ -1,19 +1,34 @@
 import * as api from "./api"
 import * as user from "./user"
+import * as event from "./event";
+import * as remote from "./remote";
+
 import { createValidationStore } from "./validation"
 import { Transaction, MessageType } from './transaction';
 import { EmojiAvatar } from "./avatar"
 import { Avatar } from '../DesignSystem/Primitive';
+
+
+// Types
+export interface Org {
+  name: string;
+  avatarFallback: EmojiAvatar;
+}
+
+interface RegisterOrgInput {
+  id: string;
+}
 
 export enum RegistrationFlowState {
   NameSelection,
   TransactionConfirmation
 }
 
-export interface Org {
-  name: string;
-  avatarFallback: EmojiAvatar;
-}
+
+// State
+const orgStore = remote.createStore<Org>();
+export const org = orgStore.readable;
+
 
 // Api 
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`)
@@ -26,6 +41,51 @@ const validateUserExistence = (handle: string): Promise<boolean> =>
 export const mockAvatarUrl = "https://www.washingtonian.com/wp-content/uploads/2017/06/6-30-17-goat-yoga-congressional-cemetery-1.jpg"
 export const getUserAvatar = (handle: string): Promise<Avatar | undefined> => new Promise<Avatar>(() => ({ url: mockAvatarUrl }))
 // user.get(handle).then((user: user.User | null) => user ? user.avatar : undefined)
+
+
+// Events
+enum Kind {
+  Fetch = "FETCH"
+}
+
+interface Fetch extends event.Event<Kind> {
+  kind: Kind.Fetch;
+  id: string;
+}
+
+type Msg = Fetch;
+
+const update = (msg: Msg): void => {
+  switch (msg.kind) {
+    case Kind.Fetch:
+      orgStore.loading();
+      api
+        .get<Org>(`orgs/${msg.id}`)
+        .then(orgStore.success)
+        .catch(orgStore.error);
+
+      break;
+  }
+};
+
+export const registerMemberTransaction = (orgId: string, userId: string) => ({
+  messages: [
+    {
+      type: MessageType.OrgMemberRegistration,
+      orgId,
+      userId
+    }
+  ]
+})
+
+export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
+export const register = (id: string): Promise<Transaction> => {
+  return api.post<RegisterOrgInput, Transaction>(`orgs`, {
+    id
+  });
+}
+
+
 
 // Name validation
 const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
@@ -58,9 +118,11 @@ export const memberNameValidationStore = () => createValidationStore(memberNameC
   validationMessage: "Cannot find this user"
 })
 
-// MOCK DATA
-// TODO(sos): Replace with actual avatar fallback request once the endpoint is ready
-export const generateAvatar = (id: string): EmojiAvatar => {
+
+// Mock Data
+// TODO(sos): Replace with actual avatar fallback request once the endpoint
+// is ready
+export const generateAvatar = (): EmojiAvatar => {
   return {
     background: {
       r: 0,
@@ -68,25 +130,5 @@ export const generateAvatar = (id: string): EmojiAvatar => {
       b: 222
     },
     emoji: "😘"
-  }
-}
-
-interface RegisterOrgInput {
-  id: string;
-}
-
-export const register = (id: string): Promise<Transaction> => {
-  return api.post<RegisterOrgInput, Transaction>(`orgs`, {
-    id
-  });
-}
-
-export const registerMemberTransaction = (orgId: string, userId: string) => ({
-  messages: [
-    {
-      type: MessageType.OrgMemberRegistration,
-      orgId,
-      userId
-    }
-  ]
-})
+  };
+};

@@ -14,7 +14,7 @@
         ? "Waiting for confirmation"
         : "Waiting for transaction to settle",
     negative: `Transaction failed ${format(time * 1000)}`,
-    positive: `Transaction settled ${format(time * 1000)}`
+    positive: `Transaction settled ${format(time * 1000)}`,
   };
 </script>
 

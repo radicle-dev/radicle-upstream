@@ -8,7 +8,7 @@
     AdditionalActionsDropdown,
     HorizontalMenu,
     SidebarLayout,
-    Topbar
+    Topbar,
   } from "../DesignSystem/Component";
   import { Avatar, Icon } from "../DesignSystem/Primitive";
 
@@ -24,7 +24,7 @@
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
     "/profile/settings": Settings,
-    "*": NotFound
+    "*": NotFound,
   };
 
   import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
@@ -34,7 +34,7 @@
   const menuRoutes = {
     "/profile/projects": ProjectsMenu,
     "/profile/wallet": WalletMenu,
-    "/profile/settings": SettingsMenu
+    "/profile/settings": SettingsMenu,
   };
 
   const topbarMenuItems = [
@@ -42,20 +42,20 @@
       icon: Icon.Source,
       title: "Projects",
       href: path.profileProjects(),
-      looseActiveStateMatching: true
+      looseActiveStateMatching: true,
     },
     {
       icon: Icon.Fund,
       title: "Wallet",
       href: path.profileWallet(),
-      looseActiveStateMatching: false
+      looseActiveStateMatching: false,
     },
     {
       icon: Icon.Settings,
       title: "Settings",
       href: path.profileSettings(),
-      looseActiveStateMatching: false
-    }
+      looseActiveStateMatching: false,
+    },
   ];
 
   const dropdownMenuItems = [
@@ -63,14 +63,14 @@
       title: "New project",
       dataCy: "new-project",
       icon: Icon.Plus,
-      event: () => push(path.createProject())
+      event: () => push(path.createProject()),
     },
     {
       title: "Register handle",
       dataCy: "register-handle",
       icon: Icon.Register,
-      event: () => push(path.registerUser())
-    }
+      event: () => push(path.registerUser()),
+    },
   ];
 
   const session = getContext("session");
@@ -92,6 +92,7 @@
       <!-- TODO(xla): Handle other states -->
       <div class="profile-avatar">
         <Avatar
+          dataCy="profile-avatar"
           avatarFallback={session.identity.avatarFallback}
           imageUrl={session.identity.metadata.avatarUrl}
           variant="circle"

@@ -21,9 +21,9 @@ impl From<error::Error> for Rejection {
 #[derive(serde_derive::Serialize)]
 pub struct Error {
     /// Human readable message to convery error case.
-    message: String,
+    pub message: String,
     /// The triggered error variant.
-    variant: String,
+    pub variant: String,
 }
 
 impl ToDocumentedType for Error {

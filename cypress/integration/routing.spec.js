@@ -17,7 +17,7 @@ context("routing", () => {
             cy.createIdentity();
             cy.visit("./public/index.html");
 
-            cy.location().should(loc => {
+            cy.location().should((loc) => {
               expect(loc.hash).to.eq("#/profile");
             });
           });
@@ -34,13 +34,13 @@ context("routing", () => {
 
             cy.get('[data-cy="sidebar"] [data-cy="search"]').click();
 
-            cy.location().should(loc => {
+            cy.location().should((loc) => {
               expect(loc.hash).to.eq("#/search");
             });
 
             cy.reload();
 
-            cy.location().should(loc => {
+            cy.location().should((loc) => {
               expect(loc.hash).to.eq("#/search");
             });
           });

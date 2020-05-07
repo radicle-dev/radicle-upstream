@@ -1,18 +1,17 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import validatejs from "validate.js";
 
   import { create, store } from "../../src/identity.ts";
   import * as remote from "../../src/remote.ts";
   import {
     ValidationStatus,
-    getValidationState
+    getValidationState,
   } from "../../src/validation.ts";
 
   import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
 
-  export let onSuccess,
-    onCancel,
-    onError = null;
+  const dispatch = createEventDispatcher();
 
   const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
   const DISPLAY_NAME_MATCH = "^[a-z0-9 ]+$";
@@ -24,7 +23,7 @@
     beginValidation = false;
 
   validatejs.options = {
-    fullMessages: false
+    fullMessages: false,
   };
 
   validatejs.validators.optional = (value, options) => {
@@ -37,30 +36,30 @@
     handle: {
       presence: {
         message: "You must provide a handle",
-        allowEmpty: false
+        allowEmpty: false,
       },
       format: {
         pattern: new RegExp(HANDLE_MATCH, "i"),
-        message: `Handle should match ${HANDLE_MATCH}`
-      }
+        message: `Handle should match ${HANDLE_MATCH}`,
+      },
     },
     displayName: {
       optional: {
         format: {
           pattern: new RegExp(DISPLAY_NAME_MATCH, "i"),
-          message: `Display name should match ${DISPLAY_NAME_MATCH}`
-        }
-      }
+          message: `Display name should match ${DISPLAY_NAME_MATCH}`,
+        },
+      },
     },
     avatarUrl: {
       optional: {
         url: {
           schemes: ["http", "https"],
           message: "Not a valid image URL",
-          allowLocal: false
-        }
-      }
-    }
+          allowLocal: false,
+        },
+      },
+    },
   };
 
   let handleValidation = { status: ValidationStatus.NotStarted };
@@ -75,7 +74,7 @@
       {
         handle: handle,
         displayName: displayName,
-        avatarUrl: avatarUrl
+        avatarUrl: avatarUrl,
       },
       constraints
     );
@@ -88,9 +87,9 @@
   $: validate(handle, displayName, avatarUrl);
 
   $: if ($store.status === remote.Status.Success) {
-    onSuccess();
+    dispatch("success");
   } else if ($store.status === remote.Status.Error) {
-    onError();
+    dispatch("error");
   }
 </script>
 
@@ -133,9 +132,10 @@
       validation={avatarUrlValidation} />
     <div class="buttons">
       <Button
+        dataCy="cancel-button"
         variant="transparent"
         style="margin-right: 16px;"
-        on:click={onCancel}>
+        on:click={() => dispatch('cancel')}>
         Cancel
       </Button>
       <Button
@@ -148,7 +148,7 @@
           create({
             handle: handle,
             displayName: displayName,
-            avatarUrl: avatarUrl
+            avatarUrl: avatarUrl,
           });
         }}>
         Create

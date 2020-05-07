@@ -1,5 +1,4 @@
 <script>
-  import { link } from "svelte-spa-router";
   import { Title } from "../Primitive";
 
   export let user = null;
@@ -7,7 +6,7 @@
 </script>
 
 <style>
-  a {
+  .user {
     display: flex;
     align-items: center;
   }
@@ -20,7 +19,7 @@
   }
 </style>
 
-<a href={`/users/${user.username}`} use:link {style}>
+<span class="user" {style}>
   <img src={user.avatar} alt="user-avatar" />
   <Title>{user.username}</Title>
-</a>
+</span>

@@ -83,5 +83,5 @@ export default {
   Source,
   Spinner,
   StepCounter,
-  TransactionState
+  TransactionState,
 };

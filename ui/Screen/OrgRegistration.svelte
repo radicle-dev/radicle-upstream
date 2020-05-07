@@ -5,13 +5,13 @@
     RegistrationFlowState,
     orgNameValidationStore,
     register,
-    generateAvatar
+    generateAvatar,
   } from "../src/org.ts";
-  import { session } from "../src/session.ts";
+  import { session, fetch as fetchSession } from "../src/session.ts";
   import {
     formatPayer,
     formatSubject,
-    MessageType
+    MessageType,
   } from "../src/transaction.ts";
 
   import { showNotification } from "../store/notification.js";
@@ -21,7 +21,7 @@
   import {
     NavigationButtons,
     StepModalLayout,
-    Transaction
+    Transaction,
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
@@ -40,11 +40,11 @@
             messages: [
               {
                 type: MessageType.OrgRegistration,
-                orgId: orgName
-              }
-            ]
+                orgId: orgName,
+              },
+            ],
           };
-          avatarFallback = generateAvatar(orgName);
+          avatarFallback = generateAvatar();
           subject = formatSubject(
             $session.data.identity,
             transaction.messages[0]
@@ -61,10 +61,11 @@
   const registerOrg = async () => {
     try {
       await register(orgName);
+      await fetchSession();
     } catch (error) {
       showNotification({
         text: `Could not register org: ${error.message}`,
-        level: "error"
+        level: "error",
       });
     } finally {
       pop();

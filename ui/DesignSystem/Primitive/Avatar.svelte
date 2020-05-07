@@ -1,7 +1,9 @@
 <script>
+  import twemoji from "twemoji";
   import Title from "./Title.svelte";
 
   export let style = null;
+  export let dataCy = null;
 
   // the hierarchy of usage for the following avatars is:
   // imageUrl > avatarFallback
@@ -12,7 +14,7 @@
   export let variant = "circle"; // circle | square
   export let size = "regular"; // small | regular | medium | big | huge
 
-  const fmt = background => {
+  const fmt = (background) => {
     return `rgb(${background.r}, ${background.g}, ${background.b})`;
   };
 
@@ -26,7 +28,6 @@
     border-radius: 16px;
   }
 
-  img,
   .circle.regular {
     width: 32px;
     height: 32px;
@@ -83,6 +84,13 @@
   .square.big {
     width: 64px;
     height: 64px;
+    border-radius: 4px;
+  }
+
+  .square.huge {
+    width: 72px;
+    height: 72px;
+    border-radius: 4px;
   }
 
   .container {
@@ -98,12 +106,43 @@
     align-items: center;
     user-select: none;
   }
+
+  .image {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+  }
+
+  .avatar :global(.emoji.small) {
+    height: 12px;
+    width: 12px;
+  }
+
+  .avatar :global(.emoji.regular) {
+    height: 16px;
+    width: 16px;
+  }
+
+  .avatar :global(.emoji.medium) {
+    height: 18px;
+    width: 18px;
+  }
+
+  .avatar :global(.emoji.big) {
+    height: 32px;
+    width: 32px;
+  }
+
+  .avatar :global(.emoji.huge) {
+    height: 36px;
+    width: 36px;
+  }
 </style>
 
-<div class={`container ${size}`} {style}>
+<div data-cy={dataCy} class={`container ${size}`} {style}>
   {#if imageUrl}
     <img
-      class={avatarClass}
+      class={`image ${avatarClass}`}
       src={imageUrl}
       alt="user-avatar"
       onerror="this.style.display='none'" />
@@ -111,9 +150,12 @@
     <div
       class={`avatar ${avatarClass}`}
       style="background: {fmt(avatarFallback.background)}">
-      <Title variant={size} style="min-width: 27px; text-align: end;">
-        {avatarFallback.emoji}
-      </Title>
+      {@html twemoji.parse(avatarFallback.emoji, {
+        className: `emoji ${size}`,
+        base: '',
+        folder: 'twemoji/',
+        ext: '.svg',
+      })}
     </div>
   {:else}
     <div
@@ -122,7 +164,7 @@
   {/if}
 
   {#if title}
-    {#if size === 'big'}
+    {#if size === 'big' || size === 'huge'}
       <Title variant="big" style="white-space: nowrap; margin-left: 12px">
         {title}
       </Title>
