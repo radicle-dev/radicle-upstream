@@ -68,12 +68,15 @@
     <Text style="margin: 20px 0; color: var(--color-foreground-level-5);">
       This is your peer-to-peer identity. Even though your radicleID is unique,
       your handle isn't. To get a unique handle, you have to
-      <span class="registration-link" on:click={() => dispatch('register')}>
+      <span
+        data-cy="register-identity-link"
+        class="registration-link"
+        on:click={() => dispatch('register')}>
         register it.
       </span>
     </Text>
     <Remote {store} let:data={identity}>
-      <div class="identity-card">
+      <div class="identity-card" data-cy="identity-card">
         <Avatar
           size="huge"
           imageUrl={identity.metadata.avatarUrl}
@@ -97,6 +100,8 @@
       </div>
     </Remote>
 
-    <Button on:click={() => dispatch('close')}>Go to profile</Button>
+    <Button dataCy="go-to-profile-button" on:click={() => dispatch('close')}>
+      Go to profile
+    </Button>
   </div>
 </div>

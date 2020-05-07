@@ -92,6 +92,7 @@
       <!-- TODO(xla): Handle other states -->
       <div class="profile-avatar">
         <Avatar
+          dataCy="profile-avatar"
           avatarFallback={session.identity.avatarFallback}
           imageUrl={session.identity.metadata.avatarUrl}
           variant="circle"
