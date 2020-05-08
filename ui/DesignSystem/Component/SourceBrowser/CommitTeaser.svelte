@@ -1,8 +1,11 @@
 <script>
   import { link } from "svelte-spa-router";
+
+  import * as path from "../../../src/path.ts";
+
   import { Text, Icon } from "../../Primitive";
+
   import UserCard from "../UserCard.svelte";
-  import * as path from "../../../lib/path.js";
 
   export let projectId = null;
   export let commitMessage = null;

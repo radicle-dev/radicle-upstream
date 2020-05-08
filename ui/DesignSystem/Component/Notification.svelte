@@ -1,9 +1,12 @@
 <script>
+  import { Level } from "../../src/notification.ts";
+
   import { Icon, Text, Title } from "../Primitive";
 
   export let style = null;
-  export let variant = "info"; // info | error
+  export let level = Level.Info;
   export let showIcon = false;
+  export let message = null;
 </script>
 
 <style>
@@ -50,20 +53,18 @@
   }
 </style>
 
-<div class={`notification ${variant}`} {style}>
+<div class={`notification ${level.toLowerCase()}`} {style}>
   {#if showIcon}
-    {#if variant === 'info'}
+    {#if level === Level.Info}
       <Icon.Info style="margin-left: 8px; height: 24px" />
-    {:else if variant === 'error'}
+    {:else if level === Level.Error}
       <Icon.Important variant="small" style="margin-left: 8px; height: 24px" />
     {/if}
   {/if}
 
-  <Text style="padding-left: 8px;">
-    <slot />
-  </Text>
+  <Text style="padding-left: 8px;">{message}</Text>
 
-  <div class={`close ${variant}`} on:click>
+  <div class={`close ${level.toLowerCase()}`} on:click>
     <Title>Close</Title>
   </div>
 </div>

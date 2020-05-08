@@ -1,6 +1,10 @@
 <script>
-  import { TREE } from "../../../../native/types.js";
-  import { currentPath, currentRevision, tree } from "../../../src/source.ts";
+  import {
+    currentPath,
+    currentRevision,
+    tree,
+    ObjectType,
+  } from "../../../src/source.ts";
 
   import { Icon } from "../../Primitive";
   import { Remote } from "../../Component";
@@ -67,7 +71,7 @@
   <div class="container" class:toplevel>
     {#if expanded || toplevel}
       {#each tree.entries as entry}
-        {#if entry.info.objectType === TREE}
+        {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
             {projectId}
             name={entry.info.name}

@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import Router, { link, push } from "svelte-spa-router";
 
-  import * as path from "../lib/path.js";
+  import * as path from "../src/path.ts";
   import { fetch, project as store } from "../src/project.ts";
 
   import {
@@ -16,7 +16,6 @@
   import { Icon } from "../DesignSystem/Primitive";
 
   import Breadcrumb from "./Project/Breadcrumb.svelte";
-
   import Source from "./Project/Source.svelte";
   import Issues from "./Project/Issues.svelte";
   import Revisions from "./Project/Revisions.svelte";

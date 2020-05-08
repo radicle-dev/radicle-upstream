@@ -1,16 +1,16 @@
 <script>
   import { pop, replace } from "svelte-spa-router";
 
-  import * as path from "../lib/path.js";
-  import { showNotification } from "../store/notification.js";
-  import * as session from "../src/session.ts";
+  import * as notification from "../src/notification.ts";
   import { State, store } from "../src/onboard.ts";
+  import * as path from "../src/path.ts";
+  import * as session from "../src/session.ts";
 
   import { ModalLayout, Placeholder } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
 
-  import IdentityCreationForm from "./Identity/IdentityCreationForm.svelte";
-  import IdentityCreationSuccess from "./Identity/IdentityCreationSuccess.svelte";
+  import Form from "./IdentityCreation/Form.svelte";
+  import Success from "./IdentityCreation/Success.svelte";
 
   const returnToWelcomeStep = () => {
     store.set(State.Welcome);
@@ -18,10 +18,7 @@
 
   const onError = (error) => {
     pop();
-    showNotification({
-      text: `Could not create identity: ${error}`,
-      level: "error",
-    });
+    notification.error(`Could not create identity: ${error}`);
   };
 
   const complete = (redirectPath) => {
@@ -72,11 +69,11 @@
       </Button>
     </div>
   {:else if $store === State.Form}
-    <IdentityCreationForm
+    <Form
       on:cancel={returnToWelcomeStep}
       on:error={onError}
       on:success={() => store.set(State.SuccessView)} />
   {:else if $store === State.SuccessView}
-    <IdentityCreationSuccess on:close={onClose} on:register={onRegister} />
+    <Success on:close={onClose} on:register={onRegister} />
   {/if}
 </ModalLayout>

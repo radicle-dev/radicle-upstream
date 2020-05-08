@@ -1,4 +1,6 @@
 <script>
+  import * as notification from "../src/notification.ts";
+
   import {
     Avatar,
     Button,
@@ -688,25 +690,26 @@
 
   <Section title="Notifications" subTitle="Info, Warnings and Errors">
     <Swatch>
-      <Notification showIcon="true">
-        This is harmless, but you should know anyway.
-      </Notification>
+      <Notification
+        showIcon="true"
+        message="This is harmless, but you should know anyway." />
     </Swatch>
 
     <Swatch>
-      <Notification>This is harmless without an icon.</Notification>
+      <Notification message="This is harmless without an icon." />
     </Swatch>
 
     <Swatch>
-      <Notification showIcon="true" variant="error">
-        Something bad happened, halp!
-      </Notification>
+      <Notification
+        level={notification.Level.Error}
+        showIcon="true"
+        message="Something bad happened, halp!" />
     </Swatch>
 
     <Swatch>
-      <Notification variant="error">
-        Something bad happened with no icon!
-      </Notification>
+      <Notification
+        level={notification.Level.Error}
+        message="Something bad happened with no icon!" />
     </Swatch>
   </Section>
 

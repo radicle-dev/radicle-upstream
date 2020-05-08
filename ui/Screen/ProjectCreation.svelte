@@ -2,9 +2,9 @@
   import { pop, push } from "svelte-spa-router";
   import validatejs from "validate.js";
 
-  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../config.js";
-  import * as path from "../lib/path.js";
-  import { showNotification } from "../store/notification.js";
+  import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config.ts";
+  import * as notification from "../src/notification.ts";
+  import * as path from "../src/path.ts";
   import { create } from "../src/project.ts";
   import { getLocalBranches } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
@@ -168,16 +168,12 @@
       );
 
       push(path.projectSource(response.id));
-      showNotification({
-        text: `Project ${response.metadata.name} successfully created`,
-        level: "info",
-      });
+      notification.info(
+        `Project ${response.metadata.name} successfully created`
+      );
     } catch (error) {
       push(path.profile());
-      showNotification({
-        text: "Could not create project",
-        level: "error",
-      });
+      notification.error("Could not create project");
     }
   };
 

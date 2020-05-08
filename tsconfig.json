@@ -9,7 +9,6 @@
     /* Specify library files to be included in the compilation. */
     "lib": ["dom", "es6", "es7"],
     /* Allow javascript files to be compiled. */
-    /* Allow javascript files to be compiled. */
     "allowJs": true,
     /* Report errors in .js files. */
     // "checkJs": true,

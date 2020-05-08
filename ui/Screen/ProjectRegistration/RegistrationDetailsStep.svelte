@@ -2,8 +2,9 @@
   import { createEventDispatcher } from "svelte";
   import { pop } from "svelte-spa-router";
   import validatejs from "validate.js";
+
+  import * as notification from "../../src/notification.ts";
   import * as project from "../../src/project.ts";
-  import { showNotification } from "../../store/notification.js";
 
   import { Text, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
@@ -101,10 +102,7 @@
         validations = { projectName: ["Project name already taken"] };
       }
     } catch (error) {
-      showNotification({
-        text: `Proxy: ${JSON.stringify(error)}`,
-        level: "error",
-      });
+      notification.error(`Proxy: ${JSON.stringify(error)}`);
     }
   };
 

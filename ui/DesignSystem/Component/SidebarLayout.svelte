@@ -2,9 +2,9 @@
   import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../lib/path.js";
+  import * as path from "../../src/path.ts";
+
   import Sidebar from "./Sidebar.svelte";
-  import NotificationFaucet from "./NotificationFaucet.svelte";
   import TransactionCenter from "./Transaction/Center.svelte";
 
   export let dataCy = null;
@@ -37,8 +37,6 @@
     identity={session.identity} />
 
   <div class="container" data-cy="scrollable-content">
-    <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
-
     <div class="content" {style}>
       <slot />
     </div>

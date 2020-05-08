@@ -1,13 +1,14 @@
 <script>
   import Router, { link, push } from "svelte-spa-router";
-  import * as path from "../lib/path.js";
-  import { Avatar, Icon } from "../DesignSystem/Primitive";
-  import { Remote } from "../DesignSystem/Component";
-  import { fetch, org as store } from "../src/org.ts";
 
+  import { fetch, org as store } from "../src/org.ts";
+  import * as path from "../src/path.ts";
+
+  import { Avatar, Icon } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
+    Remote,
     SidebarLayout,
     Topbar,
   } from "../DesignSystem/Component";
