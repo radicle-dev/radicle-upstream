@@ -1,15 +1,12 @@
 before(() => {
-  cy.nukeAllState();
+  cy.nukeRegistryState();
+  cy.nukeSessionState();
+
   cy.createIdentity();
-  cy.visit("public/index.html");
-
-  // create an org
-  cy.select("sidebar", "add-org-button").click();
-  cy.select("org-reg-modal", "name-input").type("thatorg");
-  cy.select("org-reg-modal", "submit-button").click();
-  cy.select("org-reg-modal", "submit-button").click();
-
+  cy.registerOrg("coolorg");
   cy.registerUser("coolname");
+
+  cy.visit("public/index.html");
 });
 
 context("add member to org", () => {
@@ -51,7 +48,7 @@ context("add member to org", () => {
   context("validations", () => {
     it("prevents the user from adding an invalid user", () => {
       // no empty input
-      cy.select("add-member-modal", "name-input").type("a_name");
+      cy.select("add-member-modal", "name-input").type("aname");
       cy.select("add-member-modal", "name-input").clear();
       cy.select("add-member-modal").contains("Member name is required");
       cy.select("add-member-modal", "submit-button").should("be.disabled");

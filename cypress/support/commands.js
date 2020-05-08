@@ -45,6 +45,18 @@ Cypress.Commands.add(
     })
 );
 
+Cypress.Commands.add("registerOrg", (id = "monadic") =>
+  fetch("http://localhost:8080/v1/orgs", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id,
+    }),
+  })
+);
+
 Cypress.Commands.add("registerUser", (handle = "nope", id = "123abcd.git") =>
   fetch("http://localhost:8080/v1/users", {
     method: "POST",
