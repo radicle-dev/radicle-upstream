@@ -270,11 +270,6 @@ overrides, components expose a `style` prop:
 
 ```html
   <Rad amount={200} style="margin-right: 24px" size="big" />
-
-  <Input.Dropdown
-    items={localBranches}
-    bind:value={defaultBranch}
-    style="min-width: 240px; --focus-outline-color: var(--color-primary)" />
 ```
 
 For very common alignment cases we have a helper primitive called `<Flex>`.

@@ -1,6 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
 
+  import * as notification from "../src/notification.ts";
   import {
     RegistrationFlowState,
     orgNameValidationStore,
@@ -13,9 +14,6 @@
     formatSubject,
     MessageType,
   } from "../src/transaction.ts";
-
-  import { showNotification } from "../store/notification.js";
-
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -63,10 +61,7 @@
       await register(orgName);
       await fetchSession();
     } catch (error) {
-      showNotification({
-        text: `Could not register org: ${error.message}`,
-        level: "error",
-      });
+      notification.error(`Could not register org: ${error.message}`);
     } finally {
       pop();
     }

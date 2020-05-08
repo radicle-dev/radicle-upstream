@@ -1,13 +1,13 @@
 <script>
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../lib/path.js";
+  import * as path from "../../src/path.ts";
 
   import { Text, Button } from "../../DesignSystem/Primitive";
   import Placeholder from "../../DesignSystem/Component/Placeholder.svelte";
 
   const create = () => push(path.registerProject());
-  const register = () => push(path.addOrgMember("888"));
+  const register = () => push(path.addMember("888"));
 </script>
 
 <style>

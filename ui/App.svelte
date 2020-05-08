@@ -2,14 +2,13 @@
   import Router, { push, location } from "svelte-spa-router";
 
   import { initializeHotkeys } from "./lib/hotkeys.js";
-  import * as path from "./lib/path.js";
-  import { showNotification } from "./store/notification.js";
+  import * as notification from "./src/notification.ts";
+  import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
   import { fetch, session as store } from "./src/session.ts";
 
-  import Remote from "./DesignSystem/Component/Remote.svelte";
+  import { NotificationFaucet, Remote } from "./DesignSystem/Component";
 
-  import CreateProject from "./Screen/CreateProject.svelte";
   import Blank from "./Screen/Blank.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
@@ -18,6 +17,7 @@
   import Org from "./Screen/Org.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
+  import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
   import OrgMemberRegistration from "./Screen/Org/OrgMemberRegistration.svelte";
@@ -45,10 +45,7 @@
 
     case remote.Status.Error:
       console.log($store.error);
-      showNotification({
-        text: "Session could not be fetched",
-        level: "error",
-      });
+      notification.error("Session could not be fetched");
       break;
   }
 
@@ -63,7 +60,7 @@
     "/orgs/:id": Org,
     "/orgs/:id/members/new": OrgMemberRegistration,
     "/orgs/:id/*": Org,
-    "/projects/new": CreateProject,
+    "/projects/new": ProjectCreation,
     "/projects/register/:registrarId": ProjectRegistration,
     "/projects/:projectId/register/:registrarId": ProjectRegistration,
     "/projects/:id/*": Project,
@@ -75,6 +72,7 @@
   };
 </script>
 
+<NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Remote {store} context="session">
   <Router {routes} />
 </Remote>

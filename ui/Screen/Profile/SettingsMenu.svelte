@@ -1,12 +1,14 @@
 <script>
   import { push } from "svelte-spa-router";
+
+  import * as path from "../../src/path.ts";
+
   import { Icon, Button } from "../../DesignSystem/Primitive";
-  import { registerUser } from "../../lib/path.js";
 </script>
 
 <Button
   variant="transparent"
   icon={Icon.Register}
-  on:click={() => push(registerUser())}>
+  on:click={() => push(path.registerUser())}>
   Register handle
 </Button>

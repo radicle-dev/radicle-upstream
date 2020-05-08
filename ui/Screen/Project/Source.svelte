@@ -3,7 +3,7 @@
   import { location, link } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import * as path from "../../lib/path.js";
+  import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import {
     currentPath,

@@ -1,4 +1,6 @@
 <script>
+  import * as notification from "../src/notification.ts";
+
   import {
     Avatar,
     Button,
@@ -185,7 +187,11 @@
 
   const dropdownOptions1 = [
     { variant: "text", value: "1", textProps: { title: "Option 1" } },
-    { variant: "text", value: "2", textProps: { title: "Option 2" } },
+    {
+      variant: "text",
+      value: "2",
+      textProps: { title: "Longer option keeps going" },
+    },
     { variant: "text", value: "3", textProps: { title: "Option 3" } },
   ];
 
@@ -533,14 +539,6 @@
     </Swatch>
 
     <Swatch>
-      <Input.Dropdown items={['master', 'dev']} value={'dev'} />
-    </Swatch>
-
-    <Swatch>
-      <Input.Dropdown disabled items={['master', 'dev']} value={'dev'} />
-    </Swatch>
-
-    <Swatch>
       <Input.Checkbox>How about a checkbox?</Input.Checkbox>
     </Swatch>
 
@@ -692,25 +690,26 @@
 
   <Section title="Notifications" subTitle="Info, Warnings and Errors">
     <Swatch>
-      <Notification showIcon="true">
-        This is harmless, but you should know anyway.
-      </Notification>
+      <Notification
+        showIcon="true"
+        message="This is harmless, but you should know anyway." />
     </Swatch>
 
     <Swatch>
-      <Notification>This is harmless without an icon.</Notification>
+      <Notification message="This is harmless without an icon." />
     </Swatch>
 
     <Swatch>
-      <Notification showIcon="true" variant="error">
-        Something bad happened, halp!
-      </Notification>
+      <Notification
+        level={notification.Level.Error}
+        showIcon="true"
+        message="Something bad happened, halp!" />
     </Swatch>
 
     <Swatch>
-      <Notification variant="error">
-        Something bad happened with no icon!
-      </Notification>
+      <Notification
+        level={notification.Level.Error}
+        message="Something bad happened with no icon!" />
     </Swatch>
   </Section>
 

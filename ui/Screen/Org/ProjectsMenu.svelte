@@ -1,7 +1,9 @@
 <script>
   import { push } from "svelte-spa-router";
+
+  import * as path from "../../src/path.ts";
+
   import { Icon, Button } from "../../DesignSystem/Primitive";
-  import * as path from "../../lib/path.js";
 
   export let params = null;
 </script>

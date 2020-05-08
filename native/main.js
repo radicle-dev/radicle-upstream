@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, dialog, clipboard } from "electron";
 import path from "path";
-import { IPC_DIALOG_SHOWOPENDIALOG, IPC_CLIPBOARD_WRITETEXT } from "./types.js";
+import * as ipc from "./ipc.js";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -19,7 +19,7 @@ const startApp = () => {
   createWindow();
 };
 
-ipcMain.handle(IPC_DIALOG_SHOWOPENDIALOG, async () => {
+ipcMain.handle(ipc.DIALOG_SHOWOPENDIALOG, async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openDirectory", "showHiddenFiles", "createDirectory"],
   });
@@ -31,7 +31,7 @@ ipcMain.handle(IPC_DIALOG_SHOWOPENDIALOG, async () => {
   }
 });
 
-ipcMain.handle(IPC_CLIPBOARD_WRITETEXT, async (_event, text) => {
+ipcMain.handle(ipc.CLIPBOARD_WRITETEXT, async (_event, text) => {
   clipboard.writeText(text);
 });
 

@@ -1,7 +1,8 @@
 import hotkeys from "hotkeys-js";
 import { get } from "svelte/store";
 import { push, pop, location } from "svelte-spa-router";
-import * as path from "./path.js";
+
+import * as path from "../src/path.ts";
 import { colorConfig } from "../../tokens/colors.js";
 
 const hotModal = (key, destinationPath) =>
@@ -39,7 +40,7 @@ export const initializeHotkeys = () => {
       path.active(path.registerUser(), get(location)) ||
       path.active(path.transactions("**"), get(location)) ||
       path.active(path.orgRegistration(), get(location)) ||
-      path.active(path.addOrgMember("**"), get(location))
+      path.active(path.addMember("**"), get(location))
     ) {
       pop();
     }
