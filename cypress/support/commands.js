@@ -20,6 +20,11 @@ Cypress.Commands.add("nukeAllState", () => {
   fetch("http://localhost:8080/v1/control/nuke/session");
 });
 
+Cypress.Commands.add("select", (...ids) => {
+  const selectorString = ids.map((id) => `[data-cy="${id}"]`).join(" ");
+  cy.get(selectorString);
+});
+
 Cypress.Commands.add(
   "createProjectWithFixture",
   (

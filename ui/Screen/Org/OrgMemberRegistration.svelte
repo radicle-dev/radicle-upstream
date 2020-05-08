@@ -8,7 +8,7 @@
     RegistrationFlowState,
     registerMemberTransaction,
     mockAvatarUrl,
-    memberNameValidationStore
+    memberNameValidationStore,
   } from "../../src/org.ts";
   import { formatPayer, formatSubject } from "../../src/transaction.ts";
 
@@ -16,7 +16,7 @@
   import {
     NavigationButtons,
     StepModalLayout,
-    Transaction
+    Transaction,
   } from "../../DesignSystem/Component";
 
   let state = RegistrationFlowState.NameSelection;
@@ -65,7 +65,10 @@
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
-<StepModalLayout steps={['Prepare', 'Submit']} selectedStep={state + 1}>
+<StepModalLayout
+  steps={['Prepare', 'Submit']}
+  selectedStep={state + 1}
+  dataCy="add-member-modal">
   <div slot="title">Register a member</div>
   {#if state === RegistrationFlowState.NameSelection}
     <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
@@ -77,7 +80,8 @@
       bind:value={userHandle}
       style="width: 100%;"
       showSuccessCheck
-      validation={$validation}>
+      validation={$validation}
+      dataCy="name-input">
       <div slot="avatar">
         <Avatar {imageUrl} size="small" variant="circle" />
       </div>

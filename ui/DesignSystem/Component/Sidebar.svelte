@@ -175,6 +175,7 @@
     {#each orgs as org}
       <li
         class="item indicator"
+        data-cy="org"
         class:active={path.active(path.orgs(org.id), $location, true)}>
         <a href={path.orgProjects(org.id)} use:link>
           <Avatar

@@ -28,7 +28,7 @@
   }
 </style>
 
-<div class="wrapper">
+<div class="wrapper" data-cy="projects">
   <div class="content">
     <Placeholder style="width: 100%; height: 217px; margin-bottom: 24px;" />
     <Text style="margin-bottom: 24px;">
@@ -39,7 +39,9 @@
       <Button variant="vanilla" style="margin-right: 25px;" on:click={create}>
         Register a project
       </Button>
-      <Button variant="vanilla" on:click={register}>Add a member</Button>
+      <Button variant="vanilla" on:click={register} dataCy="add-member-button">
+        Add a member
+      </Button>
     </div>
   </div>
 </div>

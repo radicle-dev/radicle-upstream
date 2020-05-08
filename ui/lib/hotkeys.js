@@ -38,7 +38,8 @@ export const initializeHotkeys = () => {
       path.active(path.registerProject("**"), get(location), true) ||
       path.active(path.registerUser(), get(location)) ||
       path.active(path.transactions("**"), get(location)) ||
-      path.active(path.orgRegistration(), get(location))
+      path.active(path.orgRegistration(), get(location)) ||
+      path.active(path.addOrgMember("**"), get(location))
     ) {
       pop();
     }
