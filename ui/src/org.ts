@@ -15,15 +15,10 @@ export interface Org {
   avatarFallback: EmojiAvatar;
 }
 
-interface RegisterOrgInput {
-  id: string;
-}
-
 export enum RegistrationFlowState {
   NameSelection,
   TransactionConfirmation
 }
-
 
 // State
 const orgStore = remote.createStore<Org>();
@@ -55,6 +50,10 @@ interface Fetch extends event.Event<Kind> {
 
 type Msg = Fetch;
 
+interface RegisterInput {
+  id: string;
+}
+
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Fetch:
@@ -79,13 +78,8 @@ export const registerMemberTransaction = (orgId: string, userId: string) => ({
 })
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
-export const register = (id: string): Promise<Transaction> => {
-  return api.post<RegisterOrgInput, Transaction>(`orgs`, {
-    id
-  });
-}
-
-
+export const register = (id: string): Promise<Transaction> =>
+ api.post<RegisterInput, Transaction>(`orgs`, { id });
 
 // Name validation
 const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
@@ -117,18 +111,3 @@ export const memberNameValidationStore = () => createValidationStore(memberNameC
   promise: validateUserExistence,
   validationMessage: "Cannot find this user"
 })
-
-
-// Mock Data
-// TODO(sos): Replace with actual avatar fallback request once the endpoint
-// is ready
-export const generateAvatar = (): EmojiAvatar => {
-  return {
-    background: {
-      r: 0,
-      g: 200,
-      b: 222
-    },
-    emoji: "😘"
-  };
-};

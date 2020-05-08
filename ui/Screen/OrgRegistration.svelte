@@ -1,12 +1,12 @@
 <script>
   import { pop } from "svelte-spa-router";
 
+  import * as avatar from "../src/avatar.ts";
   import * as notification from "../src/notification.ts";
   import {
     RegistrationFlowState,
     orgNameValidationStore,
     register,
-    generateAvatar,
   } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
   import {
@@ -30,7 +30,7 @@
   let validating = false;
   const validation = orgNameValidationStore();
 
-  const next = () => {
+  const next = async () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
         if ($validation.status === ValidationStatus.Success) {
@@ -42,7 +42,6 @@
               },
             ],
           };
-          avatarFallback = generateAvatar();
           subject = formatSubject(
             $session.data.identity,
             transaction.messages[0]
@@ -77,6 +76,13 @@
     }
   };
 
+  const updateAvatar = async (id) => {
+    if (id !== "") {
+      avatarFallback = await avatar.get(avatar.Usage.Org, id);
+    }
+  };
+
+  $: updateAvatar(orgName);
   $: submitLabel =
     state === RegistrationFlowState.TransactionConfirmation
       ? "Submit transaction"
@@ -94,7 +100,7 @@
 <StepModalLayout
   dataCy="org-reg-modal"
   selectedStep={state + 1}
-  steps={['Prepare', 'Submit']}>
+  steps={["Prepare", "Submit"]}>
   <div slot="title">Register an org</div>
   {#if state === RegistrationFlowState.NameSelection}
     <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
