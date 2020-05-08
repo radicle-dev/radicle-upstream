@@ -2,7 +2,6 @@
   import { pop } from "svelte-spa-router";
 
   import { session } from "../../src/session.ts";
-  // import { Status } from "../../src/remote.ts";
   import { ValidationStatus } from "../../src/validation.ts";
   import {
     RegistrationFlowState,

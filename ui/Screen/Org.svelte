@@ -67,7 +67,7 @@
     {
       title: "Add member",
       icon: Icon.Plus,
-      event: () => console.log("event(add-member-to-org)"),
+      event: () => push(path.memberRegistration(params.id)),
     },
     {
       title: "Send funds",
@@ -76,7 +76,7 @@
     },
   ];
 
-  $: fetch({ id: params.id });
+  fetch({ id: params.id });
 </script>
 
 <SidebarLayout

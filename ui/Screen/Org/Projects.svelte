@@ -6,8 +6,10 @@
   import { Text, Button } from "../../DesignSystem/Primitive";
   import Placeholder from "../../DesignSystem/Component/Placeholder.svelte";
 
+  export let params = null;
+
   const create = () => push(path.registerProject());
-  const register = () => push(path.addMember("888"));
+  const register = () => push(path.memberRegistration(params.id));
 </script>
 
 <style>

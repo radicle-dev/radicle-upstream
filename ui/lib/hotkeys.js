@@ -40,7 +40,7 @@ export const initializeHotkeys = () => {
       path.active(path.registerUser(), get(location)) ||
       path.active(path.transactions("**"), get(location)) ||
       path.active(path.orgRegistration(), get(location)) ||
-      path.active(path.addMember("**"), get(location))
+      path.active(path.memberRegistration("**"), get(location))
     ) {
       pop();
     }
