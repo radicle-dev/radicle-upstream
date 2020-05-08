@@ -8,8 +8,8 @@
 
   export let params = null;
 
-  const create = () => push(path.registerProject());
-  const register = () => push(path.memberRegistration(params.id));
+  const registerProject = () => push(path.registerProject(params.id));
+  const registerMember = () => push(path.memberRegistration(params.id));
 </script>
 
 <style>
@@ -38,10 +38,16 @@
       adding a member to your organization.
     </Text>
     <div class="buttons">
-      <Button variant="vanilla" style="margin-right: 25px;" on:click={create}>
+      <Button
+        variant="vanilla"
+        style="margin-right: 25px;"
+        on:click={registerProject}>
         Register a project
       </Button>
-      <Button variant="vanilla" on:click={register} dataCy="add-member-button">
+      <Button
+        variant="vanilla"
+        on:click={registerMember}
+        dataCy="add-member-button">
         Add a member
       </Button>
     </div>
