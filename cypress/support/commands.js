@@ -20,6 +20,11 @@ Cypress.Commands.add("nukeAllState", () => {
   fetch("http://localhost:8080/v1/control/nuke/session");
 });
 
+Cypress.Commands.add("select", (...ids) => {
+  const selectorString = ids.map((id) => `[data-cy="${id}"]`).join(" ");
+  cy.get(selectorString);
+});
+
 Cypress.Commands.add(
   "createProjectWithFixture",
   (
@@ -38,6 +43,18 @@ Cypress.Commands.add(
         defaultBranch,
       }),
     })
+);
+
+Cypress.Commands.add("registerOrg", (id = "monadic") =>
+  fetch("http://localhost:8080/v1/orgs", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id,
+    }),
+  })
 );
 
 Cypress.Commands.add("registerUser", (handle = "nope", id = "123abcd.git") =>

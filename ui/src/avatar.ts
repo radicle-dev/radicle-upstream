@@ -1,3 +1,6 @@
+import * as api from "./api";
+
+// TYPES
 export interface EmojiAvatar {
   background: {
     r: number;
@@ -12,3 +15,13 @@ export interface RemoteAvatar {
 }
 
 export type Avatar = EmojiAvatar | RemoteAvatar
+
+export enum Usage {
+  Any = "any",
+  Identity = "identity",
+  Org = "org",
+}
+
+// EVENTS
+export const get = (usage: Usage, id: string): Promise<EmojiAvatar> =>
+  api.get<EmojiAvatar>(`avatars/${id}?usage=${usage}`);
