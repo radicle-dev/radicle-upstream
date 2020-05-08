@@ -189,7 +189,7 @@
       </li>
     {/each}
 
-    <li class="item">
+    <li class="item" data-cy="add-org-button">
       <AddOrgButton on:click={() => dispatch('createorg')} />
       <div class="tooltip">
         <Title>Add org</Title>

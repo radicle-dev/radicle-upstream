@@ -3,6 +3,7 @@
   import ModalLayout from "../ModalLayout.svelte";
   import StepCounter from "../StepCounter.svelte";
 
+  export let dataCy = null;
   export let selectedStep = null;
   export let steps = null;
 </script>
@@ -17,7 +18,7 @@
   }
 </style>
 
-<ModalLayout>
+<ModalLayout {dataCy}>
   <div class="container">
     <StepCounter {selectedStep} {steps} style="margin-bottom: 50px;" />
     <Title variant="big" style="margin-bottom: 16px;">

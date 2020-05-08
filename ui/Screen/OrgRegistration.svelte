@@ -96,7 +96,10 @@
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
-<StepModalLayout selectedStep={state + 1} steps={['Prepare', 'Submit']}>
+<StepModalLayout
+  dataCy="org-reg-modal"
+  selectedStep={state + 1}
+  steps={['Prepare', 'Submit']}>
   <div slot="title">Register an org</div>
   {#if state === RegistrationFlowState.NameSelection}
     <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
@@ -104,6 +107,7 @@
       transactions, like adding other members or adding projects.
     </Text>
     <Input.Text
+      dataCy="name-input"
       placeholder="Org name (e.g. Flowerpot)"
       bind:value={orgName}
       style="width: 100%;"
