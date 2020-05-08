@@ -53,7 +53,7 @@ interface UserRegistration {
 
 type Message = OrgRegistration | OrgUnregistration | OrgMemberRegistration | OrgMemberUnregistration | ProjectRegistration | UserRegistration;
 
-enum StateType {
+export enum StateType {
   Applied = "APPLIED",
 }
 

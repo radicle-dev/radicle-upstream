@@ -1,15 +1,15 @@
 <script>
   import { pop } from "svelte-spa-router";
 
+  import * as avatar from "../../src/avatar.ts";
   import { session } from "../../src/session.ts";
-  import { ValidationStatus } from "../../src/validation.ts";
   import {
     RegistrationFlowState,
     registerMemberTransaction,
-    mockAvatarUrl,
     memberNameValidationStore,
   } from "../../src/org.ts";
   import { formatPayer, formatSubject } from "../../src/transaction.ts";
+  import { ValidationStatus } from "../../src/validation.ts";
 
   import { Avatar, Input, Text } from "../../DesignSystem/Primitive";
   import {
@@ -20,6 +20,7 @@
 
   let state = RegistrationFlowState.NameSelection;
   let userHandle,
+    avatarFallback,
     transaction,
     subject,
     payer,
@@ -59,8 +60,14 @@
     if (validating) validation.updateInput(userHandle);
   }
 
-  $: imageUrl =
-    $validation.status === ValidationStatus.Success && mockAvatarUrl;
+  const updateAvatar = async (handle) => {
+    if (handle !== "") {
+      avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
+    }
+  };
+
+  $: updateAvatar(userHandle);
+  $: imageUrl = $validation.status === ValidationStatus.Success && "";
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
@@ -82,7 +89,7 @@
       validation={$validation}
       dataCy="name-input">
       <div slot="avatar">
-        <Avatar {imageUrl} size="small" variant="circle" />
+        <Avatar {avatarFallback} size="small" variant="circle" />
       </div>
     </Input.Text>
   {:else if state === RegistrationFlowState.TransactionConfirmation}

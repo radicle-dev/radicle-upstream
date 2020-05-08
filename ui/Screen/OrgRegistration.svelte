@@ -30,7 +30,7 @@
   let validating = false;
   const validation = orgNameValidationStore();
 
-  const next = async () => {
+  const next = () => {
     switch (state) {
       case RegistrationFlowState.NameSelection:
         if ($validation.status === ValidationStatus.Success) {
@@ -100,7 +100,7 @@
 <StepModalLayout
   dataCy="org-reg-modal"
   selectedStep={state + 1}
-  steps={["Prepare", "Submit"]}>
+  steps={['Prepare', 'Submit']}>
   <div slot="title">Register an org</div>
   {#if state === RegistrationFlowState.NameSelection}
     <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">

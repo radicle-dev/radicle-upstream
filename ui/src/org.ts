@@ -1,18 +1,15 @@
 import * as api from "./api"
-import * as user from "./user"
+import * as avatar from "./avatar";
 import * as event from "./event";
 import * as remote from "./remote";
-
-import { createValidationStore } from "./validation"
-import { Transaction, MessageType } from './transaction';
-import { EmojiAvatar } from "./avatar"
-import { Avatar } from '../DesignSystem/Primitive';
-
+import * as validation from "./validation";
+import * as transaction from "./transaction";
+import * as user from "./user"
 
 // Types
 export interface Org {
   name: string;
-  avatarFallback: EmojiAvatar;
+  avatarFallback: avatar.EmojiAvatar;
 }
 
 export enum RegistrationFlowState {
@@ -24,19 +21,12 @@ export enum RegistrationFlowState {
 const orgStore = remote.createStore<Org>();
 export const org = orgStore.readable;
 
-
 // Api 
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`)
 export const getNameAvailability = (id: string): Promise<boolean> =>
   getOrg(id).then(org => !org)
 const validateUserExistence = (handle: string): Promise<boolean> =>
   user.get(handle).then(user => !!user)
-
-// TODO(sos): replace with actual user avatar once api is ready, probably as remote store
-export const mockAvatarUrl = "https://www.washingtonian.com/wp-content/uploads/2017/06/6-30-17-goat-yoga-congressional-cemetery-1.jpg"
-export const getUserAvatar = (handle: string): Promise<Avatar | undefined> => new Promise<Avatar>(() => ({ url: mockAvatarUrl }))
-// user.get(handle).then((user: user.User | null) => user ? user.avatar : undefined)
-
 
 // Events
 enum Kind {
@@ -67,19 +57,24 @@ const update = (msg: Msg): void => {
   }
 };
 
-export const registerMemberTransaction = (orgId: string, userId: string) => ({
+export const registerMemberTransaction = (
+  orgId: string,
+  userId: string,
+): transaction.Transaction => ({
+  id: "",
   messages: [
     {
-      type: MessageType.OrgMemberRegistration,
+      type: transaction.MessageType.OrgMemberRegistration,
       orgId,
       userId
     }
-  ]
+  ],
+  state: { type: transaction.StateType.Applied, blockHash: "0x000" },
 })
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
-export const register = (id: string): Promise<Transaction> =>
- api.post<RegisterInput, Transaction>(`orgs`, { id });
+export const register = (id: string): Promise<transaction.Transaction> =>
+ api.post<RegisterInput, transaction.Transaction>(`orgs`, { id });
 
 // Name validation
 const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
@@ -95,7 +90,7 @@ export const nameConstraints = {
 };
 
 // Make sure we make a new one every time
-export const orgNameValidationStore = () => createValidationStore(nameConstraints, {
+export const orgNameValidationStore = (): validation.ValidationStore => validation.createValidationStore(nameConstraints, {
   promise: getNameAvailability,
   validationMessage: "Sorry, this name is already taken"
 })
@@ -107,7 +102,7 @@ const memberNameConstraints = {
   }
 }
 
-export const memberNameValidationStore = () => createValidationStore(memberNameConstraints, {
+export const memberNameValidationStore = (): validation.ValidationStore => validation.createValidationStore(memberNameConstraints, {
   promise: validateUserExistence,
   validationMessage: "Cannot find this user"
 })
