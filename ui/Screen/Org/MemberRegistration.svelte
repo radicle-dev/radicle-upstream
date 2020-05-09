@@ -21,6 +21,7 @@
   let state = RegistrationFlowState.NameSelection;
   let userHandle,
     avatarFallback,
+    showAvatar,
     transaction,
     subject,
     payer,
@@ -61,9 +62,13 @@
   }
 
   const updateAvatar = async (handle) => {
-    if (handle !== "") {
+    if (handle && handle !== "") {
       avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
+      showAvatar = !!avatarFallback;
+      return;
     }
+
+    showAvatar = false;
   };
 
   $: updateAvatar(userHandle);
@@ -87,9 +92,14 @@
       style="width: 100%;"
       showSuccessCheck
       validation={$validation}
+      {showAvatar}
       dataCy="name-input">
       <div slot="avatar">
-        <Avatar {avatarFallback} size="small" variant="circle" />
+        <Avatar
+          {avatarFallback}
+          size="small"
+          variant="circle"
+          dataCy="avatar" />
       </div>
     </Input.Text>
   {:else if state === RegistrationFlowState.TransactionConfirmation}

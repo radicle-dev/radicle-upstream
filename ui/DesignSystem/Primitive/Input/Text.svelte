@@ -10,12 +10,8 @@
   export let dataCy = null;
 
   export let disabled = null;
-
-  // TODO(sos): replace with actual slot presence check once
-  // https://github.com/sveltejs/svelte/issues/2106 is solved
-  let slotFallback;
-
   export let validation = null;
+  export let showAvatar;
   export let showSuccessCheck = false;
 </script>
 
@@ -85,23 +81,25 @@
     justify-content: center;
     align-items: center;
   }
+
+  .hide {
+    display: none;
+  }
 </style>
 
 <div {style} class="wrapper">
   <input
     data-cy={dataCy}
     class:invalid={validation && validation.status === ValidationStatus.Error}
-    class:avatar={!slotFallback}
+    class:avatar={showAvatar}
     {placeholder}
     bind:value
     {disabled}
     on:change
     on:input />
 
-  <div class="avatar-wrapper">
-    <slot name="avatar">
-      <div bind:this={slotFallback} />
-    </slot>
+  <div class={showAvatar ? 'avatar-wrapper' : 'hide'}>
+    <slot name="avatar" />
   </div>
 
   {#if validation}
