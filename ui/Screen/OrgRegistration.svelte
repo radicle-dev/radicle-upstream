@@ -23,7 +23,7 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
-  let orgName, transaction, subject, payer, avatarFallback;
+  let orgName, transaction, subject, payer, avatarFallback, showAvatar;
   let state = RegistrationFlowState.NameSelection;
 
   // Create a new validation store
@@ -77,9 +77,13 @@
   };
 
   const updateAvatar = async (id) => {
-    if (id !== "") {
+    if (id && id !== "") {
       avatarFallback = await avatar.get(avatar.Usage.Org, id);
+      showAvatar = !!avatarFallback;
+      return;
     }
+
+    showAvatar = false;
   };
 
   $: updateAvatar(orgName);
@@ -113,9 +117,14 @@
       bind:value={orgName}
       style="width: 100%;"
       showSuccessCheck
+      {showAvatar}
       validation={$validation}>
       <div slot="avatar">
-        <Avatar {avatarFallback} size="small" variant="square" />
+        <Avatar
+          {avatarFallback}
+          size="small"
+          variant="square"
+          dataCy="avatar" />
       </div>
     </Input.Text>
   {:else if state === RegistrationFlowState.TransactionConfirmation}

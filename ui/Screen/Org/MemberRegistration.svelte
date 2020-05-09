@@ -61,6 +61,7 @@
     if (validating) validation.updateInput(userHandle);
   }
 
+  // TODO(sos): only show avatar when we find valid user
   const updateAvatar = async (handle) => {
     if (handle && handle !== "") {
       avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
