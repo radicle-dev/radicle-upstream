@@ -77,13 +77,15 @@
   };
 
   const updateAvatar = async (id) => {
-    if (id && id !== "") {
-      avatarFallback = await avatar.get(avatar.Usage.Org, id);
-      showAvatar = !!avatarFallback;
+    if (!id || id.length < 1) {
+      showAvatar = false;
       return;
     }
 
-    showAvatar = false;
+    avatarFallback = await avatar.get(avatar.Usage.Org, id);
+
+    // check orgName in case input was cleared during the promise
+    showAvatar = orgName.length && !!avatarFallback;
   };
 
   $: updateAvatar(orgName);

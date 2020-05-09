@@ -61,15 +61,17 @@
     if (validating) validation.updateInput(userHandle);
   }
 
-  // TODO(sos): only show avatar when we find valid user
+  // TODO(sos): replace with user avatar fetch
   const updateAvatar = async (handle) => {
-    if (handle && handle !== "") {
-      avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
-      showAvatar = !!avatarFallback;
+    if (!handle || handle.length < 1) {
+      showAvatar = false;
       return;
     }
 
-    showAvatar = false;
+    avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
+
+    // check userHandle in case input was cleared during the promise
+    showAvatar = userHandle.length && !!avatarFallback;
   };
 
   $: updateAvatar(userHandle);

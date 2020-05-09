@@ -11,7 +11,7 @@
 
   export let disabled = null;
   export let validation = null;
-  export let showAvatar;
+  export let showAvatar = false;
   export let showSuccessCheck = false;
 </script>
 
