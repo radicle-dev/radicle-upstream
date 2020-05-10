@@ -3,13 +3,13 @@ import * as transaction from "./transaction";
 
 // TYPES
 
+// TODO(sos): Avatar should not be optional once users can have avatarUrls
 export interface User {
   handle: string;
   maybeEntityId?: string;
 }
 
 // EVENTS
-
 interface RegisterInput {
   handle: string;
   maybeEntityId?: string;

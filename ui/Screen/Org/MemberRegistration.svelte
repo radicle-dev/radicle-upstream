@@ -21,6 +21,7 @@
   let state = RegistrationFlowState.NameSelection;
   let userHandle,
     avatarFallback,
+    showAvatar,
     transaction,
     subject,
     payer,
@@ -60,10 +61,17 @@
     if (validating) validation.updateInput(userHandle);
   }
 
+  // TODO(sos): replace with user avatar fetch
   const updateAvatar = async (handle) => {
-    if (handle !== "") {
-      avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
+    if (!handle || handle.length < 1) {
+      showAvatar = false;
+      return;
     }
+
+    avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
+
+    // check userHandle in case input was cleared during the promise
+    showAvatar = userHandle.length && !!avatarFallback;
   };
 
   $: updateAvatar(userHandle);
@@ -87,9 +95,14 @@
       style="width: 100%;"
       showSuccessCheck
       validation={$validation}
+      {showAvatar}
       dataCy="name-input">
       <div slot="avatar">
-        <Avatar {avatarFallback} size="small" variant="circle" />
+        <Avatar
+          {avatarFallback}
+          size="small"
+          variant="circle"
+          dataCy="avatar" />
       </div>
     </Input.Text>
   {:else if state === RegistrationFlowState.TransactionConfirmation}
