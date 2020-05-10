@@ -72,18 +72,14 @@
   }
 
   .avatar-wrapper {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    padding-left: 8px;
+    align-items: center;
     display: flex;
     height: 40px;
     justify-content: center;
-    align-items: center;
-  }
-
-  .hide {
-    display: none;
+    left: 0px;
+    padding-left: 8px;
+    position: absolute;
+    top: 0px;
   }
 </style>
 
@@ -98,9 +94,11 @@
     on:change
     on:input />
 
-  <div class={showAvatar ? 'avatar-wrapper' : 'hide'}>
-    <slot name="avatar" />
-  </div>
+  {#if showAvatar}
+    <div class="avatar-wrapper">
+      <slot name="avatar" />
+    </div>
+  {/if}
 
   {#if validation}
     {#if validation.status === ValidationStatus.Loading}
