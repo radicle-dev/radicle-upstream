@@ -1,5 +1,6 @@
 <script>
   import { pop } from "svelte-spa-router";
+
   import { Icon } from "../Primitive";
 
   export let dataCy = null;
@@ -13,7 +14,7 @@
       event.target === document.body &&
       event.code === "Escape"
     ) {
-      pop();
+      onClose();
     }
   };
 </script>
