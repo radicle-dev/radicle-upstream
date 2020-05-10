@@ -4,11 +4,15 @@
 
   export let dataCy = null;
   export let full = false;
-  export let hideCloseButton = null;
+  export let escapable = true;
   export let onClose = pop;
 
   const onKeydown = (event) => {
-    if (event.target === document.body && event.key === "Escape") {
+    if (
+      escapable &&
+      event.target === document.body &&
+      event.code === "Escape"
+    ) {
       pop();
     }
   };
@@ -45,7 +49,7 @@
 
 <svelte:window on:keydown={onKeydown} />
 
-{#if !hideCloseButton}
+{#if escapable}
   <div data-cy="modal-close-button" class="close">
     <Icon.CrossBig on:click={onClose} />
   </div>

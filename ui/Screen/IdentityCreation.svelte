@@ -56,7 +56,7 @@
   }
 </style>
 
-<ModalLayout hideCloseButton={$store === State.Welcome} {onClose}>
+<ModalLayout escapable={$store !== State.Welcome} {onClose}>
   {#if $store === State.Welcome}
     <div class="container">
       <Placeholder
