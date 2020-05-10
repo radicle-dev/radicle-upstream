@@ -10,11 +10,12 @@ before(() => {
 });
 
 context("add member to org", () => {
-  beforeEach(() => {
-    cy.select("sidebar", "org").click();
-    cy.select("projects", "add-member-button").click();
-  });
   context("navigation", () => {
+    beforeEach(() => {
+      cy.select("sidebar", "org").click();
+      cy.select("projects", "add-member-button").click();
+    });
+
     it("can be closed by pressing cancel", () => {
       cy.select("add-member-modal").contains("Register a member");
       cy.select("add-member-modal", "cancel-button").click();
@@ -46,6 +47,11 @@ context("add member to org", () => {
   });
 
   context("validations", () => {
+    beforeEach(() => {
+      cy.select("sidebar", "org").click();
+      cy.select("projects", "add-member-button").click();
+    });
+
     it("prevents the user from adding an invalid user", () => {
       // no empty input
       cy.select("add-member-modal", "name-input").type("aname");
@@ -57,6 +63,17 @@ context("add member to org", () => {
       cy.select("add-member-modal", "name-input").type("aname");
       cy.select("add-member-modal").contains("Cannot find this user");
       cy.select("add-member-modal", "submit-button").should("be.disabled");
+    });
+  });
+
+  context("aesthetics", () => {
+    it("shows avatar when handle exists and hides otherwise", () => {
+      cy.select("add-member-modal", "name-input").clear();
+      cy.select("add-member-modal", "name-input").type("sickhandle");
+      cy.select("add-member-modal", "avatar").should("be.visible");
+
+      cy.select("add-member-modal", "name-input").clear();
+      cy.select("add-member-modal", "avatar").should("not.be.visible");
     });
   });
 });

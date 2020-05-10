@@ -89,4 +89,15 @@ context("org registration", () => {
       cy.select("org-reg-modal", "submit-button").should("be.disabled");
     });
   });
+
+  context("aesthetics", () => {
+    it("shows avatar when handle exists and hides otherwise", () => {
+      cy.select("org-reg-modal", "name-input").clear();
+      cy.select("org-reg-modal", "name-input").type("sick_org");
+      cy.select("org-reg-modal", "avatar").should("be.visible");
+
+      cy.select("org-reg-modal", "name-input").clear();
+      cy.select("org-reg-modal", "avatar").should("not.be.visible");
+    });
+  });
 });
