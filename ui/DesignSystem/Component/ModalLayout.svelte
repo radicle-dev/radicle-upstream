@@ -8,7 +8,7 @@
   export let onClose = pop;
 
   const onKeydown = (event) => {
-    if (event.key === "Escape") {
+    if (event.target === document.body && event.key === "Escape") {
       pop();
     }
   };
