@@ -1,4 +1,3 @@
-import { Avatar } from "./avatar"
 import * as api from "./api";
 import * as transaction from "./transaction";
 
@@ -8,11 +7,9 @@ import * as transaction from "./transaction";
 export interface User {
   handle: string;
   maybeEntityId?: string;
-  avatar?: Avatar;
 }
 
 // EVENTS
-
 interface RegisterInput {
   handle: string;
   maybeEntityId?: string;
