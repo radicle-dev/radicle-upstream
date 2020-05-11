@@ -20,7 +20,7 @@ Cypress.Commands.add("nukeAllState", () => {
   fetch("http://localhost:8080/v1/control/nuke/session");
 });
 
-Cypress.Commands.add("select", (...ids) => {
+Cypress.Commands.add("pick", (...ids) => {
   const selectorString = ids.map((id) => `[data-cy="${id}"]`).join(" ");
   cy.get(selectorString);
 });
