@@ -57,7 +57,7 @@ context("identity creation", () => {
     });
 
     context(
-"when clicking cancel, close or hitting esc before the identity is created",
+      "when clicking cancel, close or hitting esc before the identity is created",
       () => {
         it("sends the user back to the intro screen", () => {
           cy.get('[data-cy="get-started-button"]').click();
