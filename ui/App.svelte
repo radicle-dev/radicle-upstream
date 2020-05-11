@@ -1,7 +1,6 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
-  import { initializeHotkeys } from "./lib/hotkeys.js";
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
@@ -9,24 +8,24 @@
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
 
+  import Hotkeys from "./Hotkeys.svelte";
+
   import Blank from "./Screen/Blank.svelte";
+  import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
   import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
+  import OrgRegistration from "./Screen/OrgRegistration.svelte";
+  import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
   import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
-  import OrgRegistration from "./Screen/OrgRegistration.svelte";
-  import MemberRegistration from "./Screen/Org/MemberRegistration.svelte";
-  import UserRegistration from "./Screen/UserRegistration.svelte";
   import Search from "./Screen/Search.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
-  import CreateIdentity from "./Screen/IdentityCreation.svelte";
-
-  initializeHotkeys();
+  import UserRegistration from "./Screen/UserRegistration.svelte";
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
@@ -51,7 +50,7 @@
 
   const routes = {
     "/": Blank,
-    "/identity/new": CreateIdentity,
+    "/identity/new": IdentityCreation,
     "/search": Search,
     "/network": Network,
     "/profile": Profile,
@@ -72,6 +71,7 @@
   };
 </script>
 
+<Hotkeys />
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Remote {store} context="session">
   <Router {routes} />

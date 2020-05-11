@@ -57,7 +57,7 @@ context("identity creation", () => {
     });
 
     context(
-      "when clicking cancel or modal close button before the identity is created",
+      "when clicking cancel, close or hitting esc before the identity is created",
       () => {
         it("sends the user back to the intro screen", () => {
           cy.get('[data-cy="get-started-button"]').click();
@@ -68,6 +68,12 @@ context("identity creation", () => {
 
           // Now try to close the modal via the "x" button
           cy.get('[data-cy="modal-close-button"]').click();
+
+          // We should land back on the intro screen
+          cy.get('[data-cy="get-started-button"]').click();
+
+          // Now try the escape key
+          cy.get("body").type("{esc}");
 
           // We should land back on the intro screen
           cy.get('[data-cy="get-started-button"]').should("exist");
@@ -96,6 +102,27 @@ context("identity creation", () => {
         });
       }
     );
+
+    context("when pressing escape on the success screen", () => {
+      it("lands the user on the profile screen", () => {
+        cy.get('[data-cy="get-started-button"]').click();
+
+        cy.get('[data-cy="form"] [data-cy="handle"]').type("rafalca");
+        cy.get('[data-cy="create-id-button"]').click();
+
+        cy.get('[data-cy="identity-card"]')
+          .contains("rafalca@123abcd.git")
+          .should("exist");
+
+        // Now try the escape key
+        cy.get("body").type("{esc}");
+
+        // Land on profile screen
+        // TODO(rudolfs): change this to the actual handle that we
+        // just created once the backend is wired up
+        cy.get('[data-cy="profile-avatar"]').contains("cloudhead");
+      });
+    });
   });
 
   context("validations", () => {

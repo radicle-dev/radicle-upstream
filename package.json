@@ -114,7 +114,6 @@
   "dependencies": {
     "@babel/runtime": "^7.9.6",
     "@types/qs": "^6.9.2",
-    "hotkeys-js": "^3.7.3",
     "timeago.js": "^4.0.2",
     "twemoji": "^12.1.6",
     "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v12.1.6",
