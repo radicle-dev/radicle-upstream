@@ -9,6 +9,8 @@ import { Identity } from "./identity";
 export enum MessageType {
   OrgRegistration = "ORG_REGISTRATION",
   OrgUnregistration = "ORG_UNREGISTRATION",
+  OrgMemberRegistration = "ORG_MEMBER_REGISTRATION",
+  OrgMemberUnregistration = "ORG_MEMBER_UNREGISTRATION",
   ProjectRegistration = "PROJECT_REGISTRATION",
   UserRegistration = "USER_REGISTRATION",
 }
@@ -21,6 +23,18 @@ interface OrgRegistration {
 interface OrgUnregistration {
   type: MessageType.OrgUnregistration;
   orgId: string;
+}
+
+interface OrgMemberRegistration {
+  type: MessageType.OrgMemberRegistration;
+  orgId: string;
+  userId: string;
+}
+
+interface OrgMemberUnregistration {
+  type: MessageType.OrgMemberUnregistration;
+  orgId: string;
+  userId: string;
 }
 
 interface ProjectRegistration {
@@ -37,9 +51,9 @@ interface UserRegistration {
   id: string;
 }
 
-type Message = OrgRegistration | OrgUnregistration | ProjectRegistration | UserRegistration;
+type Message = OrgRegistration | OrgUnregistration | OrgMemberRegistration | OrgMemberUnregistration | ProjectRegistration | UserRegistration;
 
-enum StateType {
+export enum StateType {
   Applied = "APPLIED",
 }
 
@@ -112,6 +126,12 @@ export const formatMessage = (msg: Message): string => {
 
     case MessageType.OrgUnregistration:
       return "Org unregistration";
+
+    case MessageType.OrgMemberRegistration:
+      return "Org member registration"
+
+    case MessageType.OrgMemberUnregistration:
+      return "Org member unregistration"
 
     case MessageType.ProjectRegistration:
       return "Project registration";

@@ -1,5 +1,6 @@
 //! Integrations with the radicle Registry.
 
+use serde_cbor::from_reader;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -323,6 +324,27 @@ impl Registry {
             .collect())
     }
 
+    /// List all projects of the Registry for an org.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    pub async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error> {
+        let org_id = Id::try_from(id.clone())?;
+        let project_ids = self.client.list_projects().await?.into_iter();
+        let mut projects = Vec::new();
+        for project_id in project_ids {
+            if project_id.1 == org_id {
+                projects.push(
+                    self.get_project(org_id.to_string(), project_id.0.to_string())
+                        .await?
+                        .expect("Get project"),
+                );
+            }
+        }
+        Ok(projects)
+    }
+
     /// Try to retrieve project from the Registry by name for an id.
     ///
     /// # Errors
@@ -340,11 +362,19 @@ impl Registry {
             .client
             .get_project(project_name, org_id)
             .await?
-            .map(|project| Project {
-                name: project.name,
-                org_id: project.org_id,
-                // TODO(xla): Proper conversion of ProjectIds.
-                maybe_project_id: None,
+            .map(|project| {
+                let metadata_vec: Vec<u8> = project.metadata.into();
+                Project {
+                    name: project.name,
+                    org_id: project.org_id,
+                    maybe_project_id: if metadata_vec[..].is_empty() {
+                        None
+                    } else {
+                        let maybe_metadata: Result<Metadata, serde_cbor::error::Error> =
+                            from_reader(&metadata_vec[..]);
+                        Some(maybe_metadata.expect("Could not read Metadata").id)
+                    },
+                }
             }))
     }
 
@@ -662,6 +692,51 @@ mod tests {
         let orgs = registry.list_orgs("alice".to_string()).await.unwrap();
         assert_eq!(orgs.len(), 1);
         assert_eq!(orgs[0].id, "monadic");
+    }
+
+    #[tokio::test]
+    async fn test_list_org_projects() {
+        // Test that a registered project is included in the list of org projects.
+        let client = Client::new_emulator();
+        let mut registry = Registry::new(client.clone());
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Register the org
+        let org_id = Id::try_from("monadic").unwrap();
+        let org_registration = registry
+            .register_org(&alice, org_id.clone().into(), 10)
+            .await;
+        assert!(org_registration.is_ok());
+
+        // Register the project
+        let result = registry
+            .register_project(
+                &alice,
+                org_id.into(),
+                "radicle".into(),
+                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
+                10,
+            )
+            .await;
+        assert!(result.is_ok());
+
+        // List the projects
+        let projects = registry
+            .list_org_projects("monadic".to_string())
+            .await
+            .unwrap();
+        assert_eq!(projects.len(), 1);
+        assert_eq!(projects[0].name, ProjectName::try_from("radicle").unwrap());
+        assert_eq!(
+            projects[0].maybe_project_id,
+            Some("0000000000000000000000000000000000000000.git".to_string())
+        );
     }
 
     #[tokio::test]

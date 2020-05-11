@@ -9,6 +9,7 @@
   export let selected = false;
 
   export let value = null;
+  export let style = null;
   export let disabled = false;
   export let variant = "text"; // text | avatar
 
@@ -27,6 +28,7 @@
     height: 38px;
     align-items: center;
     white-space: nowrap;
+    overflow: hidden;
   }
 
   .option.selected,
@@ -35,15 +37,17 @@
   }
 </style>
 
-<div class="option" on:click={clickHandler} class:selected>
+<div class="option" on:click={clickHandler} class:selected {style}>
   {#if variant === 'avatar'}
     <Avatar
       size="small"
-      style="margin-left: 8px; --title-color: var(--color-foreground-level-6);"
+      style="overflow:hidden; text-overflow: ellipsis; margin: 0 42px 0 8px;
+      --title-color: var(--color-foreground-level-6);"
       {...avatarProps}
       {disabled} />
   {:else}
-    <Text style={`margin-left: 12px; color: ${disabledColor}`}>
+    <Text
+      style={`overflow:hidden; text-overflow: ellipsis; margin: 0 42px  0 12px; color: ${disabledColor}`}>
       {textProps.title}
     </Text>
   {/if}

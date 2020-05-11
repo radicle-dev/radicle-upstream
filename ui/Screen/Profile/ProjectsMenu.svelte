@@ -1,12 +1,14 @@
 <script>
   import { push } from "svelte-spa-router";
+
+  import * as path from "../../src/path.ts";
+
   import { Icon, Button } from "../../DesignSystem/Primitive";
-  import { createProject } from "../../lib/path.js";
 </script>
 
 <Button
   variant="transparent"
   icon={Icon.Plus}
-  on:click={() => push(createProject())}>
+  on:click={() => push(path.createProject())}>
   New project
 </Button>

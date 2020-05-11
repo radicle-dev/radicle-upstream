@@ -33,7 +33,11 @@
   </div>
 
   <div>
-    <Button disabled={disableSubmit} on:click={submit} variant="primary">
+    <Button
+      dataCy="submit-button"
+      disabled={disableSubmit}
+      on:click={submit}
+      variant="primary">
       {submitLabel}
     </Button>
   </div>

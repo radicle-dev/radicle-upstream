@@ -1,41 +1,62 @@
 <script>
   import { pop } from "svelte-spa-router";
+
   import { Icon } from "../Primitive";
-  import NotificationFaucet from "./NotificationFaucet.svelte";
 
   export let dataCy = null;
-  export let hideCloseButton = null;
+  export let full = false;
+  export let escapable = true;
   export let onClose = pop;
+
+  const onKeydown = (event) => {
+    if (
+      escapable &&
+      event.target === document.body &&
+      event.code === "Escape"
+    ) {
+      onClose();
+    }
+  };
 </script>
 
 <style>
   .close {
-    position: absolute;
-    top: 22px;
-    right: 32px;
     cursor: pointer;
+    position: absolute;
+    right: 32px;
+    top: 22px;
   }
 
-  .wrapper {
+  .modal {
+    align-items: center;
     display: flex;
+    height: 100vh;
     justify-content: center;
+    overflow: auto;
     width: 100vw;
   }
 
   .content {
+    overflow: visible;
+    height: 100%;
+    width: 100%;
+  }
+  .content.center {
+    padding: 92px 0 72px 0;
     width: 540px;
   }
 </style>
 
-{#if !hideCloseButton}
-  <div class="close">
+<svelte:window on:keydown={onKeydown} />
+
+{#if escapable}
+  <div data-cy="modal-close-button" class="close">
     <Icon.CrossBig on:click={onClose} />
   </div>
 {/if}
 
-<div class="wrapper" data-cy={dataCy}>
-  <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
-  <div class="content">
+<div class="modal" data-cy={dataCy}>
+  <div class="content" class:center={!full}>
     <slot />
   </div>
 </div>

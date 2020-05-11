@@ -2,7 +2,7 @@
   import { getContext } from "svelte";
   import Router, { link, push } from "svelte-spa-router";
 
-  import * as path from "../lib/path.js";
+  import * as path from "../src/path.ts";
 
   import {
     AdditionalActionsDropdown,
@@ -92,6 +92,7 @@
       <!-- TODO(xla): Handle other states -->
       <div class="profile-avatar">
         <Avatar
+          dataCy="profile-avatar"
           avatarFallback={session.identity.avatarFallback}
           imageUrl={session.identity.metadata.avatarUrl}
           variant="circle"

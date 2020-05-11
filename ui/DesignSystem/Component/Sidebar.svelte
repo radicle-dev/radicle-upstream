@@ -1,8 +1,11 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { location, link } from "svelte-spa-router";
-  import * as path from "../../lib/path.js";
+
+  import * as path from "../../src/path.ts";
+
   import { Avatar, Icon, Title } from "../Primitive";
+
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
   const dispatch = createEventDispatcher();
@@ -175,6 +178,7 @@
     {#each orgs as org}
       <li
         class="item indicator"
+        data-cy="org"
         class:active={path.active(path.orgs(org.id), $location, true)}>
         <a href={path.orgProjects(org.id)} use:link>
           <Avatar
@@ -189,7 +193,7 @@
       </li>
     {/each}
 
-    <li class="item">
+    <li class="item" data-cy="add-org-button">
       <AddOrgButton on:click={() => dispatch('createorg')} />
       <div class="tooltip">
         <Title>Add org</Title>

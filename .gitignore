@@ -12,4 +12,4 @@ proxy/target
 proxy/**/*.rs.bk
 schema.gql
 ui/src/*.js
-ui/src/*.js.map
+ui/**/*.js.map

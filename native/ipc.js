@@ -1,4 +1,5 @@
-import { IPC_CLIPBOARD_WRITETEXT, IPC_DIALOG_SHOWOPENDIALOG } from "./types.js";
+export const DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG";
+export const CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT";
 
 // We have to be able to select empty directories when we create new
 // projects. Unfortunately we can't use the HTML5 open dialog via
@@ -8,7 +9,7 @@ import { IPC_CLIPBOARD_WRITETEXT, IPC_DIALOG_SHOWOPENDIALOG } from "./types.js";
 // The workaround is to use the electron native open dialog. As a bonus we
 // can configure it to allow users to create new directories.
 export const getDirectoryPath = () =>
-  window.electron.ipcRenderer.invoke(IPC_DIALOG_SHOWOPENDIALOG);
+  window.electron.ipcRenderer.invoke(DIALOG_SHOWOPENDIALOG);
 
 export const copyToClipboard = (text) =>
-  window.electron.ipcRenderer.invoke(IPC_CLIPBOARD_WRITETEXT, text);
+  window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);

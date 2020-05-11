@@ -1,16 +1,16 @@
 import { derived, writable, Readable } from 'svelte/store'
 
 import * as api from "./api"
+import * as config from "./config";
 import * as event from "./event"
 import * as identity from "./identity";
 import * as remote from "./remote";
 
-import { mockChangeset } from '../lib/commitMocks'
-import { HIDDEN_BRANCHES } from "../config"
+import { mockChangeset } from './commitMocks'
 
 // TOOLING
 const filterBranches = (branches: string[]): string[] =>
-  branches.filter(branch => !HIDDEN_BRANCHES.includes(branch));
+  branches.filter(branch => !config.HIDDEN_BRANCHES.includes(branch));
 
 // TYPES
 interface Person {

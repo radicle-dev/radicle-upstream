@@ -1,11 +1,14 @@
 <script>
   import { link } from "svelte-spa-router";
 
-  import { Icon } from "../../Primitive";
+  import * as path from "../../../src/path.ts";
+  import {
+    currentPath,
+    currentRevision,
+    ObjectType,
+  } from "../../../src/source.ts";
 
-  import * as path from "../../../lib/path.js";
-  import { BLOB } from "../../../../native/types.js";
-  import { currentPath, currentRevision } from "../../../src/source.ts";
+  import { Icon } from "../../Primitive";
 
   export let projectId = null;
   export let filePath = null;
@@ -58,7 +61,7 @@
 <a
   class="file"
   class:active
-  href={path.projectSource(projectId, $currentRevision, BLOB, filePath)}
+  href={path.projectSource(projectId, $currentRevision, ObjectType.Blob, filePath)}
   use:link>
   <Icon.File />
   <span class="file-name">{name}</span>

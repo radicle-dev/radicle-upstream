@@ -1,11 +1,12 @@
 <script>
   import { pop } from "svelte-spa-router";
 
+  import * as avatar from "../src/avatar.ts";
+  import * as notification from "../src/notification.ts";
   import {
     RegistrationFlowState,
-    validationStore,
+    orgNameValidationStore,
     register,
-    generateAvatar,
   } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
   import {
@@ -13,25 +14,21 @@
     formatSubject,
     MessageType,
   } from "../src/transaction.ts";
-
-  import { showNotification } from "../store/notification.js";
-
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
-    ModalLayout,
     NavigationButtons,
-    StepCounter,
+    StepModalLayout,
     Transaction,
   } from "../DesignSystem/Component";
-  import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
+  import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
-  let orgName, transaction, subject, payer, avatarFallback;
+  let orgName, transaction, subject, payer, avatarFallback, showAvatar;
   let state = RegistrationFlowState.NameSelection;
 
   // Create a new validation store
   let validating = false;
-  const validation = validationStore();
+  const validation = orgNameValidationStore();
 
   const next = () => {
     switch (state) {
@@ -45,7 +42,6 @@
               },
             ],
           };
-          avatarFallback = generateAvatar();
           subject = formatSubject(
             $session.data.identity,
             transaction.messages[0]
@@ -64,10 +60,7 @@
       await register(orgName);
       await fetchSession();
     } catch (error) {
-      showNotification({
-        text: `Could not register org: ${error.message}`,
-        level: "error",
-      });
+      notification.error(`Could not register org: ${error.message}`);
     } finally {
       pop();
     }
@@ -83,6 +76,19 @@
     }
   };
 
+  const updateAvatar = async (id) => {
+    if (!id || id.length < 1) {
+      showAvatar = false;
+      return;
+    }
+
+    avatarFallback = await avatar.get(avatar.Usage.Org, id);
+
+    // check orgName in case input was cleared during the promise
+    showAvatar = orgName.length && !!avatarFallback;
+  };
+
+  $: updateAvatar(orgName);
   $: submitLabel =
     state === RegistrationFlowState.TransactionConfirmation
       ? "Submit transaction"
@@ -97,49 +103,41 @@
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
-<style>
-  .container {
-    margin: 86px 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-</style>
-
-<ModalLayout>
-  <div class="container">
-    <StepCounter
-      selectedStep={state + 1}
-      steps={['Prepare', 'Submit']}
-      style="margin-bottom: 50px;" />
-    <Title variant="big" style="margin-bottom: 16px;">Register an org</Title>
-    {#if state === RegistrationFlowState.NameSelection}
-      <Text
-        style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
-        Registering an org allows you to give others in your org the right to
-        sign transactions, like adding other members or adding projects.
-      </Text>
-      <Input.Text
-        placeholder="Org name (e.g. Flowerpot)"
-        bind:value={orgName}
-        style="width: 100%;"
-        showSuccessCheck
-        validation={$validation}>
-        <div slot="avatar">
-          <Avatar {avatarFallback} size="small" variant="square" />
-        </div>
-      </Input.Text>
-    {:else if state === RegistrationFlowState.TransactionConfirmation}
-      <div style="width: 100%;">
-        <Transaction {transaction} {subject} {payer} />
+<StepModalLayout
+  dataCy="org-reg-modal"
+  selectedStep={state + 1}
+  steps={['Prepare', 'Submit']}>
+  <div slot="title">Register an org</div>
+  {#if state === RegistrationFlowState.NameSelection}
+    <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
+      Registering an org allows you to give others in your org the right to sign
+      transactions, like adding other members or adding projects.
+    </Text>
+    <Input.Text
+      dataCy="name-input"
+      placeholder="Org name (e.g. Flowerpot)"
+      bind:value={orgName}
+      style="width: 100%;"
+      showSuccessCheck
+      {showAvatar}
+      validation={$validation}>
+      <div slot="avatar">
+        <Avatar
+          {avatarFallback}
+          size="small"
+          variant="square"
+          dataCy="avatar" />
       </div>
-    {/if}
-    <NavigationButtons
-      style="margin-top: 32px;"
-      {submitLabel}
-      {disableSubmit}
-      on:cancel={cancel}
-      on:submit={next} />
-  </div>
-</ModalLayout>
+    </Input.Text>
+  {:else if state === RegistrationFlowState.TransactionConfirmation}
+    <div style="width: 100%;">
+      <Transaction {transaction} {subject} {payer} />
+    </div>
+  {/if}
+  <NavigationButtons
+    style="margin-top: 32px;"
+    {submitLabel}
+    {disableSubmit}
+    on:cancel={cancel}
+    on:submit={next} />
+</StepModalLayout>
