@@ -18,6 +18,7 @@
   import Breadcrumb from "./Project/Breadcrumb.svelte";
   import Source from "./Project/Source.svelte";
   import Issues from "./Project/Issues.svelte";
+  import Issue from "./Project/Issue.svelte";
   import Revisions from "./Project/Revisions.svelte";
   import Commit from "./Project/Commit.svelte";
   import Commits from "./Project/Commits.svelte";
@@ -31,6 +32,7 @@
     "/projects/:id/source": Source,
     "/projects/:id/source/*": Source,
     "/projects/:id/issues": Issues,
+    "/projects/:id/issue": Issue,
     "/projects/:id/commit/:hash": Commit,
     "/projects/:id/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions,

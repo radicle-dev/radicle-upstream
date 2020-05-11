@@ -29,11 +29,12 @@ export const createProject = (): string => "/projects/new";
 export const registerProject = (registrarId: string): string =>
   `/projects/register/${registrarId}`;
 export const registerExistingProject = (
-  projectId: string, 
+  projectId: string,
   registrarId: string,
 ): string =>
   `/projects/${projectId}/register/${registrarId}`;
 export const projectIssues = (id: string): string => `/projects/${id}/issues`;
+export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string => `/projects/${id}/revisions`;
 export const projectSource = (
   id: string,
@@ -44,7 +45,7 @@ export const projectSource = (
   if (revision && path) {
     return `/projects/${id}/source/${revision}/${objectType}/${
       objectType === ObjectType.Tree ? `${path}/` : path
-    }`;
+      }`;
   } else {
     return `/projects/${id}/source`;
   }
