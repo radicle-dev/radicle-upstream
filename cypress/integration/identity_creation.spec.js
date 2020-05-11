@@ -57,7 +57,7 @@ context("identity creation", () => {
     });
 
     context(
-      "when cancel, close or escape before the identity is created",
+"when clicking cancel, close or hitting esc before the identity is created",
       () => {
         it("sends the user back to the intro screen", () => {
           cy.get('[data-cy="get-started-button"]').click();
@@ -70,7 +70,7 @@ context("identity creation", () => {
           cy.get('[data-cy="modal-close-button"]').click();
 
           // We should land back on the intro screen
-          cy.get('[data-cy="get-started-button"]').should("exist");
+          cy.get('[data-cy="get-started-button"]').click();
 
           // Now try the escape key
           cy.get("body").type("{esc}");
