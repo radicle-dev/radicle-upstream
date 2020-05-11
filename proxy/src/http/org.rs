@@ -2,17 +2,17 @@
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::http;
 use crate::notification;
 use crate::registry;
 
 /// Prefixed filters..
 pub fn routes(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("orgs").and(
@@ -26,7 +26,7 @@ pub fn routes(
 /// Combination of all org routes.
 #[cfg(test)]
 fn filters(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::clone(&registry))
@@ -37,7 +37,7 @@ fn filters(
 
 /// `GET /<id>`
 fn get_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     super::with_registry(registry)
         .and(warp::get())
@@ -64,7 +64,7 @@ fn get_filter(
 
 /// `GET /<id>/projects/<project_name>`
 fn get_project_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     super::with_registry(registry)
         .and(warp::get())
@@ -98,7 +98,7 @@ fn get_project_filter(
 
 /// `GET /<id>/projects`
 fn get_projects_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     super::with_registry(registry)
         .and(warp::get())
@@ -121,7 +121,7 @@ fn get_projects_filter(
 
 /// `POST /`
 fn register_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     super::with_registry(registry)
@@ -149,19 +149,14 @@ fn register_filter(
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::http;
     use crate::notification;
-    use crate::registry;
 
     /// Get the Org for the given `id`.
-    pub async fn get(
-        registry: Arc<RwLock<registry::Registry>>,
-        id: String,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn get(registry: http::Registry, id: String) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
         let org = reg.get_org(id).await?;
 
@@ -170,7 +165,7 @@ mod handler {
 
     /// Get the [`registry::Project`] under the given org id.
     pub async fn get_project(
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Registry,
         org_id: String,
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
@@ -182,7 +177,7 @@ mod handler {
 
     /// Get all projects under the given org id.
     pub async fn get_projects(
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Registry,
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -193,7 +188,7 @@ mod handler {
 
     /// Register an org on the Registry.
     pub async fn register(
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Registry,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -317,14 +312,15 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
+    use crate::http;
     use crate::notification;
     use crate::registry;
 
     #[tokio::test]
     async fn get() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
+        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        )));
+        ))));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
 
@@ -358,9 +354,9 @@ mod test {
 
     #[tokio::test]
     async fn get_project() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
+        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        )));
+        ))));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
 
@@ -411,9 +407,9 @@ mod test {
 
     #[tokio::test]
     async fn get_projects() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
+        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        )));
+        ))));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
 
@@ -469,9 +465,9 @@ mod test {
 
     #[tokio::test]
     async fn register() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
+        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        )));
+        ))));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(Arc::clone(&registry), subscriptions);

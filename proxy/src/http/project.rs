@@ -10,6 +10,7 @@ use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::http;
 use crate::notification;
 use crate::project;
 use crate::registry;
@@ -17,11 +18,11 @@ use crate::registry;
 /// Combination of all routes.
 pub fn filters(
     paths: Arc<RwLock<Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    list_filter(Arc::<RwLock<Paths>>::clone(&paths))
-        .or(create_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+    list_filter(Arc::clone(&paths))
+        .or(create_filter(Arc::clone(&paths)))
         .or(get_filter(paths))
         .or(register_filter(registry, subscriptions))
 }
@@ -104,7 +105,7 @@ fn list_filter(
 
 /// `POST /projects/register`
 fn register_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / "register")
@@ -146,9 +147,9 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::http;
     use crate::notification;
     use crate::project;
-    use crate::registry;
 
     /// Create a new [`project::Project`].
     pub async fn create(
@@ -214,7 +215,7 @@ mod handler {
 
     /// Register a project on the Registry.
     pub async fn register(
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Registry,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -503,6 +504,7 @@ mod test {
     use warp::test::request;
 
     use crate::coco;
+    use crate::http;
     use crate::notification;
     use crate::project;
     use crate::registry;
@@ -520,7 +522,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths.clone())),
-            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(Box::new(registry))),
             subscriptions,
         );
         let res = request()
@@ -583,7 +585,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths)),
-            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(Box::new(registry))),
             subscriptions,
         );
         let res = request()
@@ -622,7 +624,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths)),
-            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(Box::new(registry))),
             subscriptions,
         );
         let res = request().method("GET").path("/projects").reply(&api).await;
@@ -637,14 +639,14 @@ mod test {
     async fn register() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path()).unwrap()));
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
+        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        )));
+        ))));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
-            Arc::<RwLock<Paths>>::clone(&librad_paths),
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
+            Arc::clone(&librad_paths),
+            Arc::clone(&registry),
             subscriptions,
         );
         let res = request()

@@ -1,7 +1,5 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-#![allow(clippy::doc_markdown)]
-
 use librad::paths;
 use std::convert::Infallible;
 use std::sync::Arc;
@@ -26,7 +24,7 @@ mod user;
 /// Main entry point for HTTP API.
 pub fn routes(
     librad_paths: Arc<RwLock<paths::Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: Registry,
     store: Arc<RwLock<kv::Store>>,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
@@ -69,11 +67,14 @@ pub fn with_paths(
     warp::any().map(move || Arc::clone(&paths))
 }
 
+/// Thread-safe container for our [`registry::Client`] implementation.
+pub type Registry = Arc<RwLock<Box<dyn registry::Client>>>;
+
 /// State filter to expose the [`registry::Registry`] to handlers.
 #[must_use]
 pub fn with_registry(
-    reg: Arc<RwLock<registry::Registry>>,
-) -> impl Filter<Extract = (Arc<RwLock<registry::Registry>>,), Error = Infallible> + Clone {
+    reg: Registry,
+) -> impl Filter<Extract = (Registry,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&reg))
 }
 

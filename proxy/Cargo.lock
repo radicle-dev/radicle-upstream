@@ -2631,6 +2631,7 @@ checksum = "8e86d370532557ae7573551a1ec8235a0f8d6cb276c7c9e6aa490b511c447485"
 name = "proxy"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "directories",
  "futures 0.3.4",
  "hex",

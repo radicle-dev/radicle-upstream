@@ -8,12 +8,12 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::http;
 use crate::identity;
-use crate::registry;
 
 /// Combination of all identity routes.
 pub fn filters(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter().or(create_filter(registry, store))
@@ -21,7 +21,7 @@ pub fn filters(
 
 /// `POST /identities`
 fn create_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("identities")
@@ -81,20 +81,20 @@ mod handler {
 
     use crate::avatar;
     use crate::error;
+    use crate::http;
     use crate::identity;
-    use crate::registry;
     use crate::session;
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Registry,
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::get(&reg, &store).await?.identity {
+        if let Some(identity) = session::get(reg.as_ref(), &store).await?.identity {
             return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
         }
 
@@ -352,7 +352,7 @@ mod test {
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let api = super::filters(
-            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(Box::new(registry))),
             Arc::new(RwLock::new(store)),
         );
 
@@ -397,7 +397,7 @@ mod test {
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let api = super::filters(
-            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(Box::new(registry))),
             Arc::new(RwLock::new(store)),
         );
 

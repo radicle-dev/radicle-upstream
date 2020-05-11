@@ -6,13 +6,11 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::{path, reject, Filter, Rejection, Reply};
 
-use crate::registry;
-
 /// Prefixed control filters.
 pub fn routes(
     enable: bool,
     librad_paths: Arc<RwLock<paths::Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("control")
@@ -37,7 +35,7 @@ pub fn routes(
 #[allow(dead_code)]
 fn filters(
     librad_paths: Arc<RwLock<paths::Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     create_project_filter(Arc::clone(&librad_paths))
@@ -67,7 +65,7 @@ fn nuke_coco_filter(
 
 /// GET /nuke/registry
 fn nuke_registry_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "registry")
         .and(super::with_registry(registry))
@@ -93,8 +91,8 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::http;
     use crate::project;
-    use crate::registry::Registry;
     use crate::session;
 
     /// Create a project from the fixture repo.
@@ -140,7 +138,7 @@ mod handler {
     }
 
     /// Reset the Registry state by replacing the emulator in place.
-    pub async fn nuke_registry(registry: Arc<RwLock<Registry>>) -> Result<impl Reply, Rejection> {
+    pub async fn nuke_registry(registry: http::Registry) -> Result<impl Reply, Rejection> {
         registry
             .write()
             .await

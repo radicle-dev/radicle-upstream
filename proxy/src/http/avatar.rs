@@ -49,6 +49,7 @@ mod handler {
     use crate::http::error;
 
     /// Get the avatar for the given `id`.
+    #[allow(clippy::wildcard_enum_match_arm)]
     pub async fn get(
         id: String,
         super::GetAvatarQuery { usage }: super::GetAvatarQuery,

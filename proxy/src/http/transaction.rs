@@ -4,8 +4,6 @@ use hex::ToHex;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -13,14 +11,14 @@ use crate::registry;
 
 /// Combination of all transaction routes.
 pub fn filters(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(registry)
 }
 
 /// `POST /transactions`
 fn list_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("transactions")
         .and(warp::post())
@@ -51,15 +49,13 @@ fn list_filter(
 /// request fullfilment.
 mod handler {
     use std::str::FromStr;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::{reply, Rejection, Reply};
 
-    use crate::registry;
+    use crate::http;
 
     /// List all transactions.
     pub async fn list(
-        reg: Arc<RwLock<registry::Registry>>,
+        reg: http::Registry,
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection> {
         let tx_ids = input
@@ -241,7 +237,7 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use crate::registry;
+    use crate::registry::{self, Client as _};
 
     #[tokio::test]
     async fn list() {
@@ -261,7 +257,7 @@ mod test {
 
         let transactions = registry.list_transactions(vec![]).await.unwrap();
 
-        let api = super::filters(Arc::new(RwLock::new(registry)));
+        let api = super::filters(Arc::new(RwLock::new(Box::new(registry))));
         let res = request()
             .method("POST")
             .path("/transactions")

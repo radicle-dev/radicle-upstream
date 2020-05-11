@@ -11,6 +11,7 @@ keywords = [ "radicle-upstream", "proxy" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
 
 [dependencies]
+async-trait = "0.1"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
 hex = "0.4"

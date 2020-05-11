@@ -4,7 +4,6 @@ use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -13,7 +12,7 @@ use crate::registry;
 
 /// Prefixed filter
 pub fn routes(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("users").and(
@@ -26,7 +25,7 @@ pub fn routes(
 /// Combination of all user filters.
 #[cfg(test)]
 fn filters(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_orgs_filter(Arc::clone(&registry))
@@ -36,7 +35,7 @@ fn filters(
 
 /// GET /<handle>
 fn get_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(super::with_registry(registry))
@@ -58,7 +57,7 @@ fn get_filter(
 
 /// POST /
 fn register_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
@@ -81,7 +80,7 @@ fn register_filter(
 
 /// `GET /<handle>/orgs`
 fn list_orgs_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: super::Registry,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(super::with_registry(registry))
@@ -107,26 +106,21 @@ fn list_orgs_filter(
 /// User handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::http;
     use crate::notification;
-    use crate::registry;
 
     /// Get the [`registry::User`] for the given `handle`.
-    pub async fn get(
-        registry: Arc<RwLock<registry::Registry>>,
-        handle: String,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn get(registry: http::Registry, handle: String) -> Result<impl Reply, Rejection> {
         let user = registry.read().await.get_user(handle).await?;
         Ok(reply::json(&user))
     }
 
     /// Register a user on the Registry.
     pub async fn register(
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Registry,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -149,7 +143,7 @@ mod handler {
 
     /// List the orgs the user is a member of.
     pub async fn list_orgs(
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Registry,
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -238,23 +232,28 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
+    use crate::http;
     use crate::notification;
     use crate::registry;
 
     #[tokio::test]
     async fn get() {
-        let mut registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        ))));
         let subscriptions = notification::Subscriptions::default();
         let author = ed25519::Pair::from_legacy_string("//Alice", None);
 
         let handle = "cloudhead";
 
         let _tx = registry
+            .write()
+            .await
             .register_user(&author, handle.to_string(), None, 100)
             .await
             .unwrap();
 
-        let api = super::filters(Arc::new(RwLock::new(registry)), subscriptions);
+        let api = super::filters(registry, subscriptions);
         let res = request()
             .method("GET")
             .path(&format!("/{}", handle))
@@ -275,9 +274,9 @@ mod test {
 
     #[tokio::test]
     async fn list_orgs() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
+        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        )));
+        ))));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
 
@@ -319,9 +318,9 @@ mod test {
 
     #[tokio::test]
     async fn register() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
+        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        )));
+        ))));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(Arc::clone(&registry), subscriptions);

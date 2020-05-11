@@ -7,13 +7,14 @@ use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::http;
 use crate::identity;
 use crate::registry;
 use crate::session;
 
 /// `GET /`
 pub fn get_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Registry,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("session")
@@ -40,17 +41,17 @@ mod handler {
     use tokio::sync::RwLock;
     use warp::{reply, Rejection, Reply};
 
-    use crate::registry;
+    use crate::http;
     use crate::session;
 
     /// Fetch the [`session::Session`].
     pub async fn get(
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Registry,
         store: Arc<RwLock<kv::Store>>,
     ) -> Result<impl Reply, Rejection> {
         let store = store.read().await;
         let reg = registry.read().await;
-        let sess = session::get(&reg, &store).await?;
+        let sess = session::get(reg.as_ref(), &store).await?;
 
         Ok(reply::json(&sess))
     }
@@ -82,6 +83,7 @@ impl ToDocumentedType for session::Session {
     }
 }
 
+#[allow(clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -99,7 +101,7 @@ mod test {
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let api = super::get_filter(
-            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(Box::new(registry))),
             Arc::new(RwLock::new(store)),
         );
 

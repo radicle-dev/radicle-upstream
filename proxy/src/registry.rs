@@ -1,5 +1,8 @@
 //! Integrations with the radicle Registry.
 
+#![allow(clippy::empty_line_after_outer_attr)]
+
+use async_trait::async_trait;
 use serde_cbor::from_reader;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -7,8 +10,7 @@ use std::convert::TryFrom;
 use std::time::SystemTime;
 
 use radicle_registry_client::{
-    self as registry, ed25519, message, Balance, Client, ClientT, CryptoPair, Hash,
-    TransactionExtra, H256,
+    self as registry, ed25519, message, Balance, ClientT, CryptoPair, Hash, TransactionExtra, H256,
 };
 
 pub use radicle_registry_client::{Id, ProjectName};
@@ -44,7 +46,6 @@ pub struct Metadata {
 #[derive(Clone, Debug)]
 pub enum Message {
     /// Issue a new org registration with a given id.
-    #[allow(dead_code)]
     OrgRegistration(Id),
 
     /// Issue an org unregistration with a given id.
@@ -110,11 +111,137 @@ pub struct User {
     pub maybe_entity_id: Option<String>,
 }
 
+/// Methods to interact with the Registry in a uniform way.
+#[async_trait]
+pub trait Client: Send + Sync {
+    /// Returns all cached transactions.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn list_transactions(
+        &self,
+        ids: Vec<registry::TxHash>,
+    ) -> Result<Vec<Transaction>, error::Error>;
+
+    /// Try to retrieve org from the Registry by id.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error>;
+
+    /// List orgs of the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn list_orgs(&self, _user_id: String) -> Result<Vec<Org>, error::Error>;
+
+    /// Create a new unique Org on the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn register_org(
+        &mut self,
+        author: &ed25519::Pair,
+        org_id: String,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
+    /// Remove a registered Org from the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn unregister_org(
+        &mut self,
+        author: &ed25519::Pair,
+        org_id: String,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
+    /// Try to retrieve project from the Registry by name for an id.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn get_project(
+        &self,
+        id: String,
+        project_name: String,
+    ) -> Result<Option<Project>, error::Error>;
+
+    /// List all projects of the Registry for an org.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error>;
+
+    /// List projects of the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn list_projects(&self) -> Result<Vec<registry::ProjectId>, error::Error>;
+
+    /// Register a new project on the chain.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn register_project(
+        &mut self,
+        author: &ed25519::Pair,
+        org_id: String,
+        project_name: String,
+        maybe_project_id: Option<librad::project::ProjectId>,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
+    /// Try to retrieve user from the Registry by handle.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error>;
+
+    /// Create a new unique user on the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn register_user(
+        &mut self,
+        author: &ed25519::Pair,
+        handle: String,
+        id: Option<String>,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
+    /// Graciously pay some tokens to the recipient out of Alices pocket.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn prepay_account(
+        &self,
+        recipient: registry::AccountId,
+        balance: Balance,
+    ) -> Result<(), error::Error>;
+
+    /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
+    /// to a different nework.
+    fn reset(&mut self, client: radicle_registry_client::Client);
+}
+
 /// Registry client wrapper.
 #[derive(Clone)]
 pub struct Registry {
     /// Registry client, whether an emulator or otherwise.
-    client: Client,
+    client: radicle_registry_client::Client,
     /// Cached transactions.
     transactions: HashMap<registry::TxHash, Transaction>,
 }
@@ -123,27 +250,11 @@ pub struct Registry {
 impl Registry {
     /// Wrap a registry client.
     #[must_use]
-    pub fn new(client: Client) -> Self {
+    pub fn new(client: radicle_registry_client::Client) -> Self {
         Self {
             client,
             transactions: HashMap::new(),
         }
-    }
-
-    /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
-    /// to a different nework.
-    pub fn reset(&mut self, client: Client) {
-        self.client = client;
-        self.transactions = HashMap::new();
-    }
-
-    /// List projects of the Registry.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn list_projects(&self) -> Result<Vec<registry::ProjectId>, error::Error> {
-        self.client.list_projects().await.map_err(|e| e.into())
     }
 
     /// Caches a transaction locally in the Registry.
@@ -151,36 +262,53 @@ impl Registry {
         self.transactions.insert(tx.id, tx);
     }
 
-    /// Returns all cached transactions.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn list_transactions(
-        &self,
-        ids: Vec<registry::TxHash>,
-    ) -> Result<Vec<Transaction>, error::Error> {
-        Ok(self
-            .transactions
-            .values()
-            .cloned()
-            .filter(|tx| {
-                if ids.is_empty() {
-                    true
-                } else {
-                    ids.contains(&tx.id)
-                }
-            })
-            .collect::<Vec<Transaction>>())
+    /// Returns the configured thresholds for [`Transaction`] acceptance stages.
+    #[must_use]
+    pub const fn thresholds() -> Thresholds {
+        Thresholds {
+            confirmation: 3,
+            settlement: 9,
+        }
+    }
+}
+
+#[async_trait]
+impl Client for Registry {
+    async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error> {
+        let org_id = Id::try_from(id.clone())?;
+        Ok(self.client.get_org(org_id).await?.map(|_org| Org {
+            id: id.clone(),
+            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
+        }))
     }
 
-    /// Create a new unique Org on the Registry.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    #[allow(dead_code)]
-    pub async fn register_org(
+    async fn list_orgs(&self, _user_id: String) -> Result<Vec<Org>, error::Error> {
+        // TODO(merle): Remove temp_public_key once members are returned as user ids
+        let temp_public_key = ed25519::Pair::from_legacy_string("//Alice", None).public();
+        let org_ids = self.client.list_orgs().await?.into_iter();
+        let mut orgs = Vec::new();
+        for org_id in org_ids {
+            orgs.push(self.client.get_org(org_id).await?.expect("Get org"));
+        }
+        Ok(orgs
+            .into_iter()
+            .filter_map(|org| {
+                if org.members.contains(&temp_public_key) {
+                    Some(Org {
+                        id: org.id.to_string(),
+                        avatar_fallback: avatar::Avatar::from(
+                            &org.id.to_string(),
+                            avatar::Usage::Org,
+                        ),
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect())
+    }
+
+    async fn register_org(
         &mut self,
         author: &ed25519::Pair,
         org_id: String,
@@ -220,13 +348,7 @@ impl Registry {
         Ok(tx)
     }
 
-    /// Remove a registered Org from the Registry.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    #[allow(dead_code)]
-    pub async fn unregister_org(
+    async fn unregister_org(
         &mut self,
         author: &ed25519::Pair,
         org_id: String,
@@ -263,94 +385,7 @@ impl Registry {
         Ok(tx)
     }
 
-    /// Try to retrieve user from the Registry by handle.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error> {
-        let user_id = Id::try_from(handle.clone())?;
-        Ok(self
-            .client
-            .get_user(user_id.clone())
-            .await?
-            .map(|_user| User {
-                handle: user_id,
-                maybe_entity_id: None,
-            }))
-    }
-
-    /// Try to retrieve org from the Registry by id.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error> {
-        let org_id = Id::try_from(id.clone())?;
-        Ok(self.client.get_org(org_id).await?.map(|_org| Org {
-            id: id.clone(),
-            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
-        }))
-    }
-
-    /// List orgs of the Registry.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn list_orgs(&self, _user_id: String) -> Result<Vec<Org>, error::Error> {
-        // TODO(merle): Remove temp_public_key once members are returned as user ids
-        let temp_public_key = ed25519::Pair::from_legacy_string("//Alice", None).public();
-        let org_ids = self.client.list_orgs().await?.into_iter();
-        let mut orgs = Vec::new();
-        for org_id in org_ids {
-            orgs.push(self.client.get_org(org_id).await?.expect("Get org"));
-        }
-        Ok(orgs
-            .into_iter()
-            .filter_map(|org| {
-                if org.members.contains(&temp_public_key) {
-                    Some(Org {
-                        id: org.id.to_string(),
-                        avatar_fallback: avatar::Avatar::from(
-                            &org.id.to_string(),
-                            avatar::Usage::Org,
-                        ),
-                    })
-                } else {
-                    None
-                }
-            })
-            .collect())
-    }
-
-    /// List all projects of the Registry for an org.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error> {
-        let org_id = Id::try_from(id.clone())?;
-        let project_ids = self.client.list_projects().await?.into_iter();
-        let mut projects = Vec::new();
-        for project_id in project_ids {
-            if project_id.1 == org_id {
-                projects.push(
-                    self.get_project(org_id.to_string(), project_id.0.to_string())
-                        .await?
-                        .expect("Get project"),
-                );
-            }
-        }
-        Ok(projects)
-    }
-
-    /// Try to retrieve project from the Registry by name for an id.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn get_project(
+    async fn get_project(
         &self,
         id: String,
         project_name: String,
@@ -378,12 +413,27 @@ impl Registry {
             }))
     }
 
-    /// Register a new project on the chain.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn register_project(
+    async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error> {
+        let org_id = Id::try_from(id.clone())?;
+        let project_ids = self.client.list_projects().await?.into_iter();
+        let mut projects = Vec::new();
+        for project_id in project_ids {
+            if project_id.1 == org_id {
+                projects.push(
+                    self.get_project(org_id.to_string(), project_id.0.to_string())
+                        .await?
+                        .expect("Get project"),
+                );
+            }
+        }
+        Ok(projects)
+    }
+
+    async fn list_projects(&self) -> Result<Vec<registry::ProjectId>, error::Error> {
+        self.client.list_projects().await.map_err(|e| e.into())
+    }
+
+    async fn register_project(
         &mut self,
         author: &ed25519::Pair,
         org_id: String,
@@ -465,32 +515,19 @@ impl Registry {
         Ok(tx)
     }
 
-    /// Graciously pay some tokens to the recipient out of Alices pocket.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn prepay_account(
-        &self,
-        recipient: registry::AccountId,
-        balance: Balance,
-    ) -> Result<(), error::Error> {
-        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
-
-        let _tx_applied = self
+    async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error> {
+        let user_id = Id::try_from(handle.clone())?;
+        Ok(self
             .client
-            .sign_and_submit_message(&alice, message::Transfer { recipient, balance }, 1)
-            .await?;
-
-        Ok(())
+            .get_user(user_id.clone())
+            .await?
+            .map(|_user| User {
+                handle: user_id,
+                maybe_entity_id: None,
+            }))
     }
 
-    /// Create a new unique user on the Registry.
-    ///
-    /// # Errors
-    ///
-    /// Will return `Err` if a protocol error occurs.
-    pub async fn register_user(
+    async fn register_user(
         &mut self,
         author: &ed25519::Pair,
         handle: String,
@@ -531,13 +568,42 @@ impl Registry {
         Ok(tx)
     }
 
-    /// Returns the configured thresholds for [`Transaction`] acceptance stages.
-    #[must_use]
-    pub const fn thresholds() -> Thresholds {
-        Thresholds {
-            confirmation: 3,
-            settlement: 9,
-        }
+    async fn list_transactions(
+        &self,
+        ids: Vec<registry::TxHash>,
+    ) -> Result<Vec<Transaction>, error::Error> {
+        Ok(self
+            .transactions
+            .values()
+            .cloned()
+            .filter(|tx| {
+                if ids.is_empty() {
+                    true
+                } else {
+                    ids.contains(&tx.id)
+                }
+            })
+            .collect::<Vec<Transaction>>())
+    }
+
+    async fn prepay_account(
+        &self,
+        recipient: registry::AccountId,
+        balance: Balance,
+    ) -> Result<(), error::Error> {
+        let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let _tx_applied = self
+            .client
+            .sign_and_submit_message(&alice, message::Transfer { recipient, balance }, 1)
+            .await?;
+
+        Ok(())
+    }
+
+    fn reset(&mut self, client: radicle_registry_client::Client) {
+        self.client = client;
+        self.transactions = HashMap::new();
     }
 }
 
@@ -549,19 +615,17 @@ impl Registry {
 )]
 #[cfg(test)]
 mod tests {
-    use radicle_registry_client::{
-        ed25519, Client, ClientT, CryptoPair, Hash, Id, ProjectName, TxHash,
-    };
+    use radicle_registry_client::{ed25519, ClientT, CryptoPair, Hash, Id, ProjectName, TxHash};
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
     use std::time;
 
-    use super::{Metadata, Registry, Transaction, TransactionState};
+    use super::{Client, Metadata, Registry, Transaction, TransactionState};
     use crate::avatar;
 
     #[tokio::test]
     async fn list_transactions() {
-        let client = Client::new_emulator();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut registry = Registry::new(client);
 
         let tx = Transaction {
@@ -609,7 +673,7 @@ mod tests {
     #[tokio::test]
     async fn test_register_org() {
         // Test that org registration submits valid transactions and they succeed.
-        let client = Client::new_emulator();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
@@ -628,7 +692,7 @@ mod tests {
     #[tokio::test]
     async fn test_unregister_org() {
         // Test that org unregistration submits valid transactions and they succeed.
-        let client = Client::new_emulator();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
@@ -648,7 +712,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_org() {
         // Test that a registered org can be retrieved.
-        let client = Client::new_emulator();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
@@ -671,7 +735,7 @@ mod tests {
     #[tokio::test]
     async fn test_list_org() {
         // Test that a registered org can be retrieved.
-        let client = Client::new_emulator();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
@@ -697,7 +761,7 @@ mod tests {
     #[tokio::test]
     async fn test_list_org_projects() {
         // Test that a registered project is included in the list of org projects.
-        let client = Client::new_emulator();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
@@ -742,7 +806,7 @@ mod tests {
     #[tokio::test]
     async fn test_register_project() {
         // Test that project registration submits valid transactions and they succeed.
-        let client = Client::new_emulator();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
@@ -784,7 +848,7 @@ mod tests {
 
     #[tokio::test]
     async fn register_user() {
-        let client = Client::new_emulator();
+        let client = radicle_registry_client::Client::new_emulator();
         let mut registry = Registry::new(client);
         let robo = ed25519::Pair::from_legacy_string("//Alice", None);
 
