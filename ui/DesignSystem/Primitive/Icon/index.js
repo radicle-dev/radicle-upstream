@@ -33,6 +33,7 @@ import Plus from "./Plus.svelte";
 import Projects from "./Projects.svelte";
 import Register from "./Register.svelte";
 import Revisions from "./Revisions.svelte";
+import Replies from "./Replies.svelte";
 import Search from "./Search.svelte";
 import SearchSmall from "./SearchSmall.svelte";
 import Settings from "./Settings.svelte";
@@ -77,6 +78,7 @@ export default {
   Projects,
   Register,
   Revisions,
+  Replies,
   Search,
   SearchSmall,
   Settings,

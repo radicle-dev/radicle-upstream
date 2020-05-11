@@ -342,6 +342,7 @@
     <Icon.Projects />
     <Icon.Register />
     <Icon.Revisions />
+    <Icon.Replies />
     <Icon.Search />
     <Icon.SearchSmall />
     <Icon.Settings />
