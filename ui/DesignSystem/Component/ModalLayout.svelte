@@ -27,23 +27,22 @@
     top: 22px;
   }
 
-  .wrapper {
+  .modal {
+    align-items: center;
     display: flex;
+    height: 100vh;
     justify-content: center;
+    overflow: auto;
     width: 100vw;
   }
 
-  .wrapper.center {
-    align-items: center;
-  }
-
   .content {
+    overflow: visible;
     height: 100%;
     width: 100%;
   }
-
   .content.center {
-    height: auto;
+    padding: 92px 0 72px 0;
     width: 540px;
   }
 </style>
@@ -56,7 +55,7 @@
   </div>
 {/if}
 
-<div class="wrapper" class:center={!full} data-cy={dataCy}>
+<div class="modal" data-cy={dataCy}>
   <div class="content" class:center={!full}>
     <slot />
   </div>
