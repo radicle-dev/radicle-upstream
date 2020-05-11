@@ -76,6 +76,7 @@
       style="margin-right: 44px;" />
 
     <AdditionalActionsDropdown
+      dataCy="context-menu"
       headerTitle={projectId}
       menuItems={contextMenuItems} />
   </div>

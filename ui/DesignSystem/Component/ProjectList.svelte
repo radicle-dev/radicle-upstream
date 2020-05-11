@@ -35,6 +35,7 @@
 <ul>
   {#each projects as project}
     <li
+      data-cy={`project-list-entry-${project.metadata.name}`}
       on:click={() => {
         dispatch('select', project);
       }}

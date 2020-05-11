@@ -154,6 +154,7 @@
 </style>
 
 <Dropdown
+  dataCy="project-dropdown"
   optionStyle="width: 540px"
   placeholder="Select project to register"
   valid={!(validations && validations.projectId)}
@@ -163,13 +164,17 @@
   style="margin-bottom: 16px;" />
 
 <div class="name">
-  <Dropdown bind:value={registrarId} options={registrarDropdownOptions} />
+  <Dropdown
+    dataCy="registrar-dropdown"
+    bind:value={registrarId}
+    options={registrarDropdownOptions} />
   <Title
     style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);"
     variant="regular">
     /
   </Title>
   <Input.Text
+    dataCy="name-input"
     placeholder="Project name*"
     style="width: 100%;"
     bind:value={projectName}

@@ -20,6 +20,7 @@
       return [
         {
           title: "Register project",
+          dataCy: "register-project",
           icon: Icon.Register,
           event: () =>
             push(path.registerExistingProject(projectId, session.identity.id)),
@@ -29,6 +30,7 @@
       return [
         {
           title: "Register project",
+          dataCy: "register-project",
           icon: Icon.Register,
           disabled: true,
           tooltip:
