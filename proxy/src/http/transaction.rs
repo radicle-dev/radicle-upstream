@@ -7,22 +7,23 @@ use std::collections::HashMap;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::http;
 use crate::registry;
 
 /// Combination of all transaction routes.
-pub fn filters(
-    registry: super::Registry,
+pub fn filters<R: registry::Client>(
+    registry: http::Container<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(registry)
 }
 
 /// `POST /transactions`
-fn list_filter(
-    registry: super::Registry,
+fn list_filter<R: registry::Client>(
+    registry: http::Container<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("transactions")
         .and(warp::post())
-        .and(super::with_registry(registry))
+        .and(http::with_container(registry))
         .and(warp::body::json())
         .and(document::document(document::description(
             "List transactions",
@@ -52,10 +53,11 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::http;
+    use crate::registry;
 
     /// List all transactions.
-    pub async fn list(
-        reg: http::Registry,
+    pub async fn list<R: registry::Client>(
+        reg: http::Container<R>,
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection> {
         let tx_ids = input
@@ -257,7 +259,7 @@ mod test {
 
         let transactions = registry.list_transactions(vec![]).await.unwrap();
 
-        let api = super::filters(Arc::new(RwLock::new(Box::new(registry))));
+        let api = super::filters(Arc::new(RwLock::new(registry)));
         let res = request()
             .method("POST")
             .path("/transactions")

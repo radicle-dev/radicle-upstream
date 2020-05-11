@@ -11,8 +11,8 @@ use crate::notification;
 use crate::registry;
 
 /// Prefixed filters..
-pub fn routes(
-    registry: http::Registry,
+pub fn routes<R: registry::Client>(
+    registry: http::Container<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("orgs").and(
@@ -25,8 +25,8 @@ pub fn routes(
 
 /// Combination of all org routes.
 #[cfg(test)]
-fn filters(
-    registry: http::Registry,
+fn filters<R: registry::Client>(
+    registry: http::Container<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::clone(&registry))
@@ -36,10 +36,10 @@ fn filters(
 }
 
 /// `GET /<id>`
-fn get_filter(
-    registry: http::Registry,
+fn get_filter<R: registry::Client>(
+    registry: http::Container<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_container(registry)
         .and(warp::get())
         .and(document::param::<String>("id", "Unique ID of the Org"))
         .and(path::end())
@@ -63,10 +63,10 @@ fn get_filter(
 }
 
 /// `GET /<id>/projects/<project_name>`
-fn get_project_filter(
-    registry: http::Registry,
+fn get_project_filter<R: registry::Client>(
+    registry: http::Container<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_container(registry)
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -97,10 +97,10 @@ fn get_project_filter(
 }
 
 /// `GET /<id>/projects`
-fn get_projects_filter(
-    registry: http::Registry,
+fn get_projects_filter<R: registry::Client>(
+    registry: http::Container<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_container(registry)
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -120,11 +120,11 @@ fn get_projects_filter(
 }
 
 /// `POST /`
-fn register_filter(
-    registry: http::Registry,
+fn register_filter<R: registry::Client>(
+    registry: http::Container<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_container(registry)
         .and(super::with_subscriptions(subscriptions))
         .and(warp::post())
         .and(warp::body::json())
@@ -154,9 +154,13 @@ mod handler {
 
     use crate::http;
     use crate::notification;
+    use crate::registry;
 
     /// Get the Org for the given `id`.
-    pub async fn get(registry: http::Registry, id: String) -> Result<impl Reply, Rejection> {
+    pub async fn get<R: registry::Client>(
+        registry: http::Container<R>,
+        id: String,
+    ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
         let org = reg.get_org(id).await?;
 
@@ -164,8 +168,8 @@ mod handler {
     }
 
     /// Get the [`registry::Project`] under the given org id.
-    pub async fn get_project(
-        registry: http::Registry,
+    pub async fn get_project<R: registry::Client>(
+        registry: http::Container<R>,
         org_id: String,
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
@@ -176,8 +180,8 @@ mod handler {
     }
 
     /// Get all projects under the given org id.
-    pub async fn get_projects(
-        registry: http::Registry,
+    pub async fn get_projects<R: registry::Client>(
+        registry: http::Container<R>,
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -187,8 +191,8 @@ mod handler {
     }
 
     /// Register an org on the Registry.
-    pub async fn register(
-        registry: http::Registry,
+    pub async fn register<R: registry::Client>(
+        registry: http::Container<R>,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -312,15 +316,14 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
-    use crate::http;
     use crate::notification;
-    use crate::registry;
+    use crate::registry::{self, Client as _};
 
     #[tokio::test]
     async fn get() {
-        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        ))));
+        )));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
 
@@ -354,9 +357,9 @@ mod test {
 
     #[tokio::test]
     async fn get_project() {
-        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        ))));
+        )));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
 
@@ -407,9 +410,9 @@ mod test {
 
     #[tokio::test]
     async fn get_projects() {
-        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        ))));
+        )));
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(Arc::clone(&registry), subscriptions);
 
@@ -465,9 +468,9 @@ mod test {
 
     #[tokio::test]
     async fn register() {
-        let registry: http::Registry = Arc::new(RwLock::new(Box::new(registry::Registry::new(
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
-        ))));
+        )));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(Arc::clone(&registry), subscriptions);

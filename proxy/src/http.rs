@@ -22,12 +22,15 @@ mod transaction;
 mod user;
 
 /// Main entry point for HTTP API.
-pub fn routes(
+pub fn routes<R>(
     librad_paths: Arc<RwLock<paths::Paths>>,
-    registry: Registry,
+    registry: Container<R>,
     store: Arc<RwLock<kv::Store>>,
     enable_control: bool,
-) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone
+where
+    R: registry::Client,
+{
     let subscriptions = crate::notification::Subscriptions::default();
 
     let api = path("v1").and(
@@ -67,15 +70,18 @@ pub fn with_paths(
     warp::any().map(move || Arc::clone(&paths))
 }
 
-/// Thread-safe container for our [`registry::Client`] implementation.
-pub type Registry = Arc<RwLock<Box<dyn registry::Client>>>;
+/// Thread-safe container for threadsafe pass-through to filters and handlers.
+pub type Container<T> = Arc<RwLock<T>>;
 
-/// State filter to expose the [`registry::Registry`] to handlers.
+/// State filter to expose a [`Container`] and its content.
 #[must_use]
-pub fn with_registry(
-    reg: Registry,
-) -> impl Filter<Extract = (Registry,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&reg))
+pub fn with_container<T>(
+    container: Container<T>,
+) -> impl Filter<Extract = (Container<T>,), Error = Infallible> + Clone
+where
+    T: Send + Sync,
+{
+    warp::any().map(move || Arc::clone(&container))
 }
 
 /// State filter to expose [`kv::Store`] to handlers.

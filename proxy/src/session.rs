@@ -35,8 +35,8 @@ pub fn clear(store: &kv::Store) -> Result<(), error::Error> {
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub async fn get(
-    registry: &dyn registry::Client,
+pub async fn get<R: registry::Client>(
+    registry: R,
     store: &kv::Store,
 ) -> Result<Session, error::Error> {
     let bucket = store

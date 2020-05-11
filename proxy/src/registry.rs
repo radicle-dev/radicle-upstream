@@ -113,7 +113,7 @@ pub struct User {
 
 /// Methods to interact with the Registry in a uniform way.
 #[async_trait]
-pub trait Client: Send + Sync {
+pub trait Client: Clone + Send + Sync {
     /// Returns all cached transactions.
     ///
     /// # Errors

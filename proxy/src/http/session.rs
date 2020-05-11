@@ -13,14 +13,14 @@ use crate::registry;
 use crate::session;
 
 /// `GET /`
-pub fn get_filter(
-    registry: http::Registry,
+pub fn get_filter<R: registry::Client>(
+    registry: http::Container<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("session")
         .and(warp::get())
-        .and(super::with_registry(registry))
-        .and(super::with_store(store))
+        .and(http::with_container(registry))
+        .and(http::with_store(store))
         .and(document::document(document::description(
             "Fetch active Session",
         )))
@@ -42,16 +42,17 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::http;
+    use crate::registry;
     use crate::session;
 
     /// Fetch the [`session::Session`].
-    pub async fn get(
-        registry: http::Registry,
+    pub async fn get<R: registry::Client>(
+        registry: http::Container<R>,
         store: Arc<RwLock<kv::Store>>,
     ) -> Result<impl Reply, Rejection> {
         let store = store.read().await;
         let reg = registry.read().await;
-        let sess = session::get(reg.as_ref(), &store).await?;
+        let sess = session::get((*reg).clone(), &store).await?;
 
         Ok(reply::json(&sess))
     }
@@ -101,7 +102,7 @@ mod test {
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let api = super::get_filter(
-            Arc::new(RwLock::new(Box::new(registry))),
+            Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
 
