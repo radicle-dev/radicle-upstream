@@ -7,7 +7,7 @@
   export let title = null;
   export let description = null;
   export let isRegistered = false;
-  export let stats = { branches: -1, commits: -1, contributors: -1 };
+  export let stats = null;
 
   export let contextMenuItems = null;
 </script>
@@ -57,26 +57,30 @@
     <Text
       style="color: var(--color-foreground-level-5); white-space: nowrap;
       overflow: hidden; text-overflow: ellipsis;">
-      {description}
+      {#if description}{description}{/if}
     </Text>
   </div>
 
   <div class="right">
-    <Stat
-      icon={Icon.Commit}
-      count={stats.commits}
-      style="margin-right: 32px;" />
-    <Stat
-      icon={Icon.Branch}
-      count={stats.branches}
-      style="margin-right: 32px;" />
-    <Stat
-      icon={Icon.Member}
-      count={stats.contributors}
-      style="margin-right: 44px;" />
+    {#if stats}
+      <Stat
+        icon={Icon.Commit}
+        count={stats.commits}
+        style="margin-right: 32px;" />
+      <Stat
+        icon={Icon.Branch}
+        count={stats.branches}
+        style="margin-right: 32px;" />
+      <Stat
+        icon={Icon.Member}
+        count={stats.contributors}
+        style="margin-right: 44px;" />
+    {/if}
 
-    <AdditionalActionsDropdown
-      headerTitle={projectId}
-      menuItems={contextMenuItems} />
+    {#if contextMenuItems}
+      <AdditionalActionsDropdown
+        headerTitle={projectId}
+        menuItems={contextMenuItems} />
+    {/if}
   </div>
 </div>

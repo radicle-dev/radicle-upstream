@@ -13,17 +13,19 @@
     Topbar,
   } from "../DesignSystem/Component";
 
-  import Projects from "./Org/Projects.svelte";
   import Fund from "./Org/Fund.svelte";
   import Members from "./Org/Members.svelte";
+  import Onboard from "./Org/Onboard.svelte";
+  import Projects from "./Org/Projects.svelte";
 
   export let params = null;
 
   const routes = {
     "/orgs/:id": Projects,
-    "/orgs/:id/projects": Projects,
     "/orgs/:id/fund": Fund,
     "/orgs/:id/members": Members,
+    "/orgs/:id/onboard": Onboard,
+    "/orgs/:id/projects": Projects,
   };
 
   import ProjectsMenu from "./Org/ProjectsMenu.svelte";
@@ -88,6 +90,7 @@
         <Avatar
           title={org.id}
           avatarFallback={org.avatarFallback}
+          registered={true}
           variant="square" />
       </a>
 

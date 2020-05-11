@@ -625,6 +625,7 @@
           style="margin-right: 16px"
           size="regular"
           variant="circle"
+          registered={true}
           avatarFallback={avatarFallback1}
           title="cloudhead" />
       </Swatch>

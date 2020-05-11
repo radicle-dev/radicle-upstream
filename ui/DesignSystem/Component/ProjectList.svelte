@@ -3,7 +3,7 @@
   import ProjectCard from "./ProjectCard.svelte";
 
   export let projects = null;
-  export let contextMenuItems = () => [];
+  export let contextMenuItems = null;
 
   const dispatch = createEventDispatcher();
 </script>
@@ -42,9 +42,9 @@
       <ProjectCard
         title={project.metadata.name}
         projectId={project.id}
-        contextMenuItems={contextMenuItems(project.id)}
+        contextMenuItems={contextMenuItems && contextMenuItems(project.id)}
         description={project.metadata.description}
-        isRegistered={false}
+        isRegistered={project.registration}
         stats={project.stats} />
     </li>
   {/each}

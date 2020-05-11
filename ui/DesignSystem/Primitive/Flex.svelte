@@ -30,10 +30,8 @@
 </style>
 
 {#if align !== null}
-  <div class="row" {style}>
-    <div class={`align-${align}`}>
-      <slot />
-    </div>
+  <div class={`row align-${align}`} {style}>
+    <slot />
   </div>
 {:else}
   <div class="row" {style}>
