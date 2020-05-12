@@ -1,4 +1,6 @@
 //! Endpoints for Org.
+
+use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
@@ -8,17 +10,19 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::notification;
+use crate::project;
 use crate::registry;
 
 /// Prefixed filters..
 pub fn routes(
+    paths: Arc<RwLock<Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(Arc::clone(&registry)))
+            .or(get_projects_filter(paths, Arc::clone(&registry)))
             .or(register_filter(registry, subscriptions)),
     )
 }
@@ -26,12 +30,13 @@ pub fn routes(
 /// Combination of all org routes.
 #[cfg(test)]
 fn filters(
+    paths: Arc<RwLock<Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
-        .or(get_projects_filter(Arc::clone(&registry)))
+        .or(get_projects_filter(paths, Arc::clone(&registry)))
         .or(register_filter(registry, subscriptions))
 }
 
@@ -98,9 +103,11 @@ fn get_project_filter(
 
 /// `GET /<id>/projects`
 fn get_projects_filter(
+    paths: Arc<RwLock<Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    super::with_paths(paths)
+        .and(super::with_registry(registry))
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -148,6 +155,7 @@ fn register_filter(
 
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
+    use librad::paths::Paths;
     use radicle_registry_client::Balance;
     use std::sync::Arc;
     use tokio::sync::RwLock;
@@ -155,6 +163,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::notification;
+    use crate::project;
     use crate::registry;
 
     /// Get the Org for the given `id`.
@@ -182,13 +191,30 @@ mod handler {
 
     /// Get all projects under the given org id.
     pub async fn get_projects(
+        paths: Arc<RwLock<Paths>>,
         registry: Arc<RwLock<registry::Registry>>,
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
         let projects = reg.list_org_projects(org_id).await?;
+        let mut mapped_projects = Vec::new();
+        for p in &projects {
+            let maybe_project = if let Some(id) = &p.maybe_project_id {
+                let paths = paths.read().await;
+                Some(project::get(&paths, &id).await.unwrap())
+            } else {
+                None
+            };
 
-        Ok(reply::json(&projects))
+            let org_project = super::OrgProject {
+                name: p.name.to_string(),
+                org_id: p.org_id.to_string(),
+                maybe_project: maybe_project,
+            };
+            mapped_projects.push(org_project);
+        }
+
+        Ok(reply::json(&mapped_projects))
     }
 
     /// Register an org on the Registry.
@@ -280,6 +306,15 @@ impl ToDocumentedType for registry::Project {
 
         document::DocumentedType::from(properties).description("Project")
     }
+}
+
+/// Bundled input data for org registration.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrgProject {
+    org_id: String,
+    name: String,
+    maybe_project: Option<project::Project>,
 }
 
 /// Bundled input data for org registration.
