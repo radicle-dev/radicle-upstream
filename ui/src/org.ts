@@ -1,6 +1,7 @@
 import * as api from "./api";
 import * as avatar from "./avatar";
 import * as event from "./event";
+import * as project from "./project";
 import * as remote from "./remote";
 import * as validation from "./validation";
 import * as transaction from "./transaction";
@@ -12,14 +13,13 @@ export interface Org {
   avatarFallback: avatar.EmojiAvatar;
 }
 
-export interface OrgProject {
+export interface Project {
   name: string;
   orgId: string;
-  maybeProjectId: string;
+  maybeProject: project.Project;
 }
 
-type OrgProjects = OrgProject[];
-
+type Projects = Project[];
 
 export enum RegistrationFlowState {
   NameSelection,
@@ -30,8 +30,8 @@ export enum RegistrationFlowState {
 const orgStore = remote.createStore<Org>();
 export const org = orgStore.readable;
 
-const orgProjectsStore = remote.createStore<OrgProjects>();
-export const orgs = orgProjectsStore.readable;
+const projectsStore = remote.createStore<Projects>();
+export const projects = projectsStore.readable;
 
 // Api
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`);
@@ -73,11 +73,11 @@ const update = (msg: Msg): void => {
 
       break;
     case Kind.FetchProjectList:
-      orgProjectsStore.loading();
+      projectsStore.loading();
       api
-        .get<OrgProjects>(`orgs/${msg.id}/projects`)
-        .then(orgProjectsStore.success)
-        .catch(orgProjectsStore.error);
+        .get<Projects>(`orgs/${msg.id}/projects`)
+        .then(projectsStore.success)
+        .catch(projectsStore.error);
 
       break;
   }

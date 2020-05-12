@@ -1,7 +1,7 @@
 <script>
   import { push } from "svelte-spa-router";
 
-  import { orgs as orgsStore, fetchProjectList } from "../../src/org.ts";
+  import { projects as store, fetchProjectList } from "../../src/org.ts";
   import * as path from "../../src/path.ts";
 
   import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
@@ -50,7 +50,7 @@
   $: fetchProjectList({ id: params.id });
 </script>
 
-<Remote store={orgsStore} let:data={orgProjects}>
+<Remote {store} let:data={orgProjects}>
   {#if orgProjects.length > 0}
     <List items={orgProjects} on:select={select} let:item={orgProject}>
       {#if orgProject.maybeProject}
