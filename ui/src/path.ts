@@ -8,7 +8,7 @@ const PROJECT_SOURCE_PATH_MATCH = new RegExp(
 );
 
 export const search = (): string => "/search";
-export const network = (): string => "/network";
+export const settings = (): string => "/settings";
 
 export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
@@ -29,7 +29,7 @@ export const createProject = (): string => "/projects/new";
 export const registerProject = (registrarId: string): string =>
   `/projects/register/${registrarId}`;
 export const registerExistingProject = (
-  projectId: string, 
+  projectId: string,
   registrarId: string,
 ): string =>
   `/projects/${projectId}/register/${registrarId}`;
@@ -44,7 +44,7 @@ export const projectSource = (
   if (revision && path) {
     return `/projects/${id}/source/${revision}/${objectType}/${
       objectType === ObjectType.Tree ? `${path}/` : path
-    }`;
+      }`;
   } else {
     return `/projects/${id}/source`;
   }

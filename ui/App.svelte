@@ -14,7 +14,7 @@
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
-  import Network from "./Screen/Network.svelte";
+  import Settings from "./Screen/Settings.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
@@ -52,7 +52,7 @@
     "/": Blank,
     "/identity/new": IdentityCreation,
     "/search": Search,
-    "/network": Network,
+    "/settings": Settings,
     "/profile": Profile,
     "/profile/*": Profile,
     "/orgs/register": OrgRegistration,

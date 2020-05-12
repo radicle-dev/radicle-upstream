@@ -4,5 +4,5 @@
 </script>
 
 <SidebarLayout dataCy="page">
-  <Title variant="big">Network</Title>
+  <Title variant="big">Settings</Title>
 </SidebarLayout>

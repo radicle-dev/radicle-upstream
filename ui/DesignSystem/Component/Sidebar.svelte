@@ -143,14 +143,14 @@
 
     <li
       class="item indicator"
-      data-cy="network"
-      class:active={path.active(path.network(), $location)}>
-      <a href={path.network()} use:link>
-        <Icon.Peer />
+      data-cy="settings"
+      class:active={path.active(path.settings(), $location)}>
+      <a href={path.settings()} use:link>
+        <Icon.Settings />
       </a>
 
       <div class="tooltip">
-        <Title style="white-space: nowrap;">Network</Title>
+        <Title style="white-space: nowrap;">Settings</Title>
       </div>
     </li>
 
