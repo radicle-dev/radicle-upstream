@@ -2,6 +2,8 @@
   import {
     formatMessage,
     formatStake,
+    formatSubject,
+    SubjectType,
     Variant,
   } from "../../src/transaction.ts";
 
@@ -17,24 +19,38 @@
 
   export let transaction = null;
   export let payer = null;
-  export let subject = null;
+
+  const subject = formatSubject(transaction.messages[0]);
+  const subjectAvatarShape = () => {
+    switch (subject.type) {
+      case SubjectType.User:
+      case SubjectType.Member:
+      case SubjectType.UserProject:
+        return "circle";
+      default:
+        return "square";
+    }
+  };
 </script>
 
 <Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Your transaction
 </Caption>
+
 <Row dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
   <div slot="left">
     <Title>{formatMessage(transaction.messages[0])}</Title>
   </div>
 
   <div slot="right">
-    <Avatar
-      title={subject.name}
-      imageUrl={subject.imageUrl}
-      avatarFallback={subject.avatarFallback}
-      variant={subject.variant === Variant.User ? 'circle' : 'square'}
-      style="color: var(--color-foreground)" />
+    {#await subject.avatarSource then avatar}
+      <Avatar
+        title={subject.name}
+        imageUrl={avatar.url}
+        avatarFallback={avatar.emoji && avatar}
+        variant={subjectAvatarShape()}
+        style="color: var(--color-foreground)" />
+    {/await}
   </div>
 </Row>
 

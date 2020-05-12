@@ -26,13 +26,13 @@ export const orgMembers = (id: string): string => `/orgs/${id}/members`;
 export const memberRegistration = (id: string): string => `/orgs/${id}/members/register`;
 
 export const createProject = (): string => "/projects/new";
-export const registerProject = (registrarId: string): string =>
-  `/projects/register/${registrarId}`;
+export const registerProject = (domainId: string): string =>
+  `/projects/register/${domainId}`;
 export const registerExistingProject = (
-  projectId: string, 
-  registrarId: string,
+  projectId: string,
+  domainId: string,
 ): string =>
-  `/projects/${projectId}/register/${registrarId}`;
+  `/projects/${projectId}/register/${domainId}`;
 export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectRevisions = (id: string): string => `/projects/${id}/revisions`;
 export const projectSource = (
@@ -44,7 +44,7 @@ export const projectSource = (
   if (revision && path) {
     return `/projects/${id}/source/${revision}/${objectType}/${
       objectType === ObjectType.Tree ? `${path}/` : path
-    }`;
+      }`;
   } else {
     return `/projects/${id}/source`;
   }

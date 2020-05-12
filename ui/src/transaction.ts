@@ -1,9 +1,11 @@
 import { Readable } from "svelte/store";
 
 import * as api from "./api";
+import { Avatar, getAvatar, Usage } from "./avatar"
 import * as event from "./event";
 import * as remote from "./remote";
 import { Identity } from "./identity";
+import { Domain } from "./project"
 
 // Types.
 export enum MessageType {
@@ -39,7 +41,8 @@ interface OrgMemberUnregistration {
 
 interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
-  orgId: string;
+  domain: Domain;
+  domainId: string; // domain under which project falls, e.g. User or Org
   cocoId: string;
   projectName: string;
   projectDescription: string;
@@ -168,36 +171,74 @@ export const formatPayer = (identity: Identity): object => {
   };
 };
 
-// TODO(sos): add avatarFallback for org registration once endpoint is ready
-export const formatSubject = (identity: Identity, msg: Message): object => {
-  let name, variant;
+
+
+// Having both enums & interfaces here is somewhat verbose; the reason we do this 
+// is so we have compatibility with non-TS svelte components while still enjoying 
+// some type strictness
+export enum SubjectType {
+  User = "user",
+  OrgProject = "org_project",
+  UserProject = "user_project",
+  Org = "org",
+  Member = "member"
+}
+
+interface Subject {
+  name: string;
+  type: SubjectType;
+  avatarSource: Promise<Avatar>;
+}
+
+export const formatSubject = (msg: Message): Subject => {
+  let avatarSource, name, type
 
   switch (msg.type) {
     case MessageType.OrgRegistration:
       name = msg.orgId;
-      variant = Variant.Org
+      type = SubjectType.Org
+      avatarSource = getAvatar(Usage.Org, msg.orgId)
       break;
 
     case MessageType.OrgUnregistration:
       name = msg.orgId;
-      variant = Variant.Org
+      type = SubjectType.Org
+      avatarSource = getAvatar(Usage.Org, msg.orgId)
       break;
 
+    // TODO(sos): replace with actual avatar lookup for the identity associated with
+    // the member, should it exist
+    case MessageType.OrgMemberRegistration:
+      name = msg.userId;
+      type = SubjectType.Member
+      avatarSource = getAvatar(Usage.Identity, msg.userId)
+      break;
+
+    case MessageType.OrgMemberUnregistration:
+      name = msg.userId;
+      type = SubjectType.Member
+      avatarSource = getAvatar(Usage.Identity, msg.userId)
+      break;
+
+    // TODO(sos): replace with actual avatar lookup for the identity associated with
+    // the user, should it exist
     case MessageType.UserRegistration:
       name = msg.handle;
-      variant = Variant.User
+      type = SubjectType.User
+      avatarSource = getAvatar(Usage.Identity, msg.handle)
       break;
 
+    // TODO(sos): replace with associated identity handle for user, should it exist
     case MessageType.ProjectRegistration:
-      name = `${identity.metadata.handle} / ${msg.projectName}`;
-      variant = Variant.Project
+      name = `${msg.domainId} / ${msg.projectName}`
+      type = msg.domain === Domain.Org ? SubjectType.OrgProject : SubjectType.UserProject
+      avatarSource = getAvatar(msg.domain === Domain.User ? Usage.Identity : Usage.Org, msg.domainId)
       break;
   }
 
   return {
     name,
-    variant,
-    avatarFallback: identity.avatarFallback,
-    imageUrl: identity.metadata.avatarUrl
-  };
-};
+    type,
+    avatarSource
+  }
+}

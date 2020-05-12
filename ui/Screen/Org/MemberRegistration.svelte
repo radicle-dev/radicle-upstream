@@ -1,14 +1,14 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import * as avatar from "../../src/avatar.ts";
+  import { getAvatar, Usage } from "../../src/avatar.ts";
   import { session } from "../../src/session.ts";
   import {
     RegistrationFlowState,
     registerMemberTransaction,
     memberNameValidationStore,
   } from "../../src/org.ts";
-  import { formatPayer, formatSubject } from "../../src/transaction.ts";
+  import { formatPayer } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
   import { Avatar, Input, Text } from "../../DesignSystem/Primitive";
@@ -33,10 +33,6 @@
       case RegistrationFlowState.NameSelection:
         if ($validation.status === ValidationStatus.Success) {
           transaction = registerMemberTransaction("monadic", userHandle);
-          subject = formatSubject(
-            $session.data.identity,
-            transaction.messages[0]
-          );
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.TransactionConfirmation;
         }
@@ -68,7 +64,7 @@
       return;
     }
 
-    avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
+    avatarFallback = await getAvatar(Usage.Identity, handle);
 
     // check userHandle in case input was cleared during the promise
     showAvatar = userHandle.length && !!avatarFallback;

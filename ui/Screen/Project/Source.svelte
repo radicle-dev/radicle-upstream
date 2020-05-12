@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import { location, link } from "svelte-spa-router";
+  import { location, link, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
@@ -190,6 +190,8 @@
           </div>
           <div class="repo-stat-item">
             <Icon.Branch />
+            <button on:click={() => push('/hoers')}>(())</button>
+
             <Text style="margin: 0 8px;">Branches</Text>
             <span class="stat">{project.stats.branches}</span>
           </div>

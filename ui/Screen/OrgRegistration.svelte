@@ -1,7 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import * as avatar from "../src/avatar.ts";
+  import { getAvatar, Usage } from "../src/avatar.ts";
   import * as notification from "../src/notification.ts";
   import {
     RegistrationFlowState,
@@ -9,11 +9,7 @@
     register,
   } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
-  import {
-    formatPayer,
-    formatSubject,
-    MessageType,
-  } from "../src/transaction.ts";
+  import { formatPayer, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -42,10 +38,6 @@
               },
             ],
           };
-          subject = formatSubject(
-            $session.data.identity,
-            transaction.messages[0]
-          );
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.TransactionConfirmation;
         }
@@ -82,7 +74,7 @@
       return;
     }
 
-    avatarFallback = await avatar.get(avatar.Usage.Org, id);
+    avatarFallback = await getAvatar(Usage.Org, id);
 
     // check orgName in case input was cleared during the promise
     showAvatar = orgName.length && !!avatarFallback;

@@ -569,7 +569,7 @@
 
       <Swatch>
         <Dropdown
-          placeholder="Select registrar..."
+          placeholder="Select domain..."
           value="2"
           options={dropdownOptions2} />
       </Swatch>

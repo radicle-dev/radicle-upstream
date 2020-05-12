@@ -19,6 +19,11 @@ export interface Project {
 
 type Projects = Project[]
 
+// The domain under which a registered project falls
+export enum Domain {
+  User = "user",
+  Org = "org"
+}
 export interface Registered {
   name: string;
   orgId: string;
