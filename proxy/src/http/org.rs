@@ -365,7 +365,11 @@ mod test {
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())), Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
 
         // Register the org
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -403,7 +407,11 @@ mod test {
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())), Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
 
         let project_name = "upstream";
         let org_id = "radicle";
@@ -458,7 +466,11 @@ mod test {
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())),Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
 
         let repo_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
         let path = repo_dir.path().to_str().unwrap().to_string();
@@ -475,8 +487,8 @@ mod test {
             &project_name,
             &project_description,
             &default_branch,
-        ).unwrap();
-
+        )
+        .unwrap();
 
         // Register the org.
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -496,10 +508,8 @@ mod test {
                 org_id.to_string(),
                 project_name.to_string(),
                 Some(
-                    librad::project::ProjectId::from_str(
-                        &project_id.to_string()
-                    )
-                    .expect("Project id"),
+                    librad::project::ProjectId::from_str(&project_id.to_string())
+                        .expect("Project id"),
                 ),
                 10,
             )
@@ -546,7 +556,11 @@ mod test {
         )));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())),Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
 
         let res = request()
             .method("POST")
