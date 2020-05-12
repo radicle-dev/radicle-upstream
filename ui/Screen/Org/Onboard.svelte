@@ -35,7 +35,9 @@
       <Button style="margin-right: 26px" variant="vanilla" on:click={create}>
         Register a project
       </Button>
-      <Button variant="vanilla" on:click={register}>Add a member</Button>
+      <Button dataCy="add-member-button" variant="vanilla" on:click={register}>
+        Add a member
+      </Button>
     </Flex>
   </div>
 </div>

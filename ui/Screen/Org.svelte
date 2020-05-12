@@ -82,8 +82,8 @@
 </script>
 
 <SidebarLayout
-  style="margin-top: calc(var(--topbar-height) + 33px)"
-  dataCy="page-container">
+  dataCy="org-screen"
+  style="margin-top: calc(var(--topbar-height) + 33px)">
   <Remote {store} let:data={org}>
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.orgProjects(params.id)} use:link>

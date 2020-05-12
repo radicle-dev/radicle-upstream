@@ -13,19 +13,19 @@ context("add member to org", () => {
   context("navigation", () => {
     beforeEach(() => {
       cy.select("sidebar", "org").click();
-      cy.select("projects", "add-member-button").click();
+      cy.select("org-screen", "add-member-button").click();
     });
 
     it("can be closed by pressing cancel", () => {
       cy.select("add-member-modal").contains("Register a member");
       cy.select("add-member-modal", "cancel-button").click();
-      cy.select("projects").should("exist");
+      cy.select("org-screen").should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
       cy.select("add-member-modal").contains("Register a member");
       cy.get("body").type("{esc}");
-      cy.select("projects").should("exist");
+      cy.select("org-screen").should("exist");
     });
 
     it("can be traversed with navigation buttons", () => {
@@ -42,14 +42,14 @@ context("add member to org", () => {
       cy.select("add-member-modal", "submit-button").click();
       cy.select("add-member-modal", "summary").should("exist");
       cy.select("add-member-modal", "submit-button").click();
-      cy.select("projects").should("exist");
+      cy.select("org-screen").should("exist");
     });
   });
 
   context("validations", () => {
     beforeEach(() => {
       cy.select("sidebar", "org").click();
-      cy.select("projects", "add-member-button").click();
+      cy.select("org-screen", "add-member-button").click();
     });
 
     it("prevents the user from adding an invalid user", () => {
