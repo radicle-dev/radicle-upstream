@@ -3,19 +3,151 @@
 #![allow(clippy::empty_line_after_outer_attr)]
 
 use async_trait::async_trait;
+use hex::ToHex;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_cbor::from_reader;
-use serde_derive::{Deserialize, Serialize};
 use std::convert::TryFrom;
+use std::fmt;
+use std::str::FromStr;
 use std::time::SystemTime;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
-pub use radicle_registry_client::{Id, ProjectName};
 
 use crate::avatar;
 use crate::error;
 
 mod transaction;
 pub use transaction::{Cache, Cacher, Message, State, Transaction};
+
+/// Wrapper for [`protocol::Id`] to add serialization.
+#[derive(Clone, Debug)]
+pub struct Id(protocol::Id);
+
+impl fmt::Display for Id {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0.to_string())
+    }
+}
+
+impl TryFrom<String> for Id {
+    type Error = error::Error;
+
+    fn try_from(input: String) -> Result<Self, error::Error> {
+        Ok(Self(protocol::Id::try_from(input)?))
+    }
+}
+
+impl TryFrom<&str> for Id {
+    type Error = error::Error;
+
+    fn try_from(input: &str) -> Result<Self, error::Error> {
+        Ok(Self(protocol::Id::try_from(input)?))
+    }
+}
+
+// TODO(xla): This should go into the radicle-registry.
+impl<'de> Deserialize<'de> for Id {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: &str = Deserialize::deserialize(deserializer)?;
+        Self::try_from(s).map_err(|_err| {
+            serde::de::Error::invalid_value(serde::de::Unexpected::Str(s), &"a Registry Id")
+        })
+    }
+}
+
+// TODO(xla): This should go into the radicle-registry.
+impl Serialize for Id {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.0.to_string())
+    }
+}
+
+/// Wrapper for [`protocol::ProjectName`] to add serialization.
+#[derive(Clone, Debug, PartialEq)]
+pub struct ProjectName(protocol::ProjectName);
+
+impl fmt::Display for ProjectName {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for ProjectName {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: &str = Deserialize::deserialize(deserializer)?;
+        Self::try_from(s).map_err(|_err| {
+            serde::de::Error::invalid_value(
+                serde::de::Unexpected::Str(s),
+                &"a Registry ProjectName",
+            )
+        })
+    }
+}
+
+impl Serialize for ProjectName {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.0.to_string())
+    }
+}
+
+impl TryFrom<String> for ProjectName {
+    type Error = error::Error;
+
+    fn try_from(input: String) -> Result<Self, error::Error> {
+        Ok(Self(protocol::ProjectName::try_from(input)?))
+    }
+}
+
+impl TryFrom<&str> for ProjectName {
+    type Error = error::Error;
+
+    fn try_from(input: &str) -> Result<Self, error::Error> {
+        Ok(Self(protocol::ProjectName::try_from(input)?))
+    }
+}
+
+/// Wrapper for [`protocol::Hash`] to add serialization.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Hash(pub protocol::Hash);
+
+// TODO(xla): This should go into the radicle-registry.
+impl<'de> Deserialize<'de> for Hash {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: &str = Deserialize::deserialize(deserializer)?;
+
+        let hash = protocol::TxHash::from_str(s).map_err(|err| {
+            serde::de::Error::custom(err)
+            // serde::de::Error::invalid_value(serde::de::Unexpected::Str(s), &"a TxHash")
+        })?;
+
+        Ok(Self(hash))
+    }
+}
+
+// TODO(xla): This should go into the radicle-registry.
+impl Serialize for Hash {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.0.encode_hex::<String>())
+    }
+}
 
 /// `ProjectID` wrapper for serde de/serialization
 #[derive(Serialize, Deserialize)]
@@ -205,7 +337,7 @@ impl Registry {
 #[async_trait]
 impl Client for Registry {
     async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error> {
-        let org_id = Id::try_from(id.clone())?;
+        let org_id = protocol::Id::try_from(id.clone())?;
         Ok(self.client.get_org(org_id).await?.map(|_org| Org {
             id: id.clone(),
             avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
@@ -245,7 +377,7 @@ impl Client for Registry {
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id = Id::try_from(org_id.clone())?;
+        let org_id = protocol::Id::try_from(org_id.clone())?;
 
         // Prepare and submit org registration transaction.
         let register_message = protocol::message::RegisterOrg {
@@ -263,9 +395,13 @@ impl Client for Registry {
         // TODO(xla): Unpack the result to find out if the application of the transaction failed.
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
         let tx = Transaction {
-            id: register_applied.tx_hash,
-            messages: vec![Message::OrgRegistration(org_id.clone())],
-            state: transaction::State::Applied(register_applied.block),
+            id: Hash(register_applied.tx_hash),
+            messages: vec![Message::OrgRegistration {
+                id: Id(org_id.clone()),
+            }],
+            state: transaction::State::Applied {
+                block: Hash(register_applied.block),
+            },
             timestamp: SystemTime::now(),
         };
 
@@ -283,7 +419,7 @@ impl Client for Registry {
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id = Id::try_from(org_id.clone())?;
+        let org_id = protocol::Id::try_from(org_id.clone())?;
 
         // Prepare and submit org unregistration transaction.
         let unregister_message = protocol::message::UnregisterOrg {
@@ -302,9 +438,11 @@ impl Client for Registry {
         let unregister_applied = self.client.submit_transaction(register_tx).await?.await?;
 
         Ok(Transaction {
-            id: unregister_applied.tx_hash,
-            messages: vec![Message::OrgUnregistration(org_id)],
-            state: transaction::State::Applied(unregister_applied.block),
+            id: Hash(unregister_applied.tx_hash),
+            messages: vec![Message::OrgUnregistration { id: Id(org_id) }],
+            state: transaction::State::Applied {
+                block: Hash(unregister_applied.block),
+            },
             timestamp: SystemTime::now(),
         })
     }
@@ -314,7 +452,7 @@ impl Client for Registry {
         id: String,
         project_name: String,
     ) -> Result<Option<Project>, error::Error> {
-        let org_id = Id::try_from(id.clone())?;
+        let org_id = protocol::Id::try_from(id.clone())?;
         let project_name = protocol::ProjectName::try_from(project_name)?;
 
         Ok(self
@@ -324,8 +462,8 @@ impl Client for Registry {
             .map(|project| {
                 let metadata_vec: Vec<u8> = project.metadata.into();
                 Project {
-                    name: project.name,
-                    org_id: project.org_id,
+                    name: ProjectName(project.name),
+                    org_id: Id(project.org_id),
                     maybe_project_id: if metadata_vec[..].is_empty() {
                         None
                     } else {
@@ -338,7 +476,7 @@ impl Client for Registry {
     }
 
     async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error> {
-        let org_id = Id::try_from(id.clone())?;
+        let org_id = protocol::Id::try_from(id.clone())?;
         let project_ids = self.client.list_projects().await?.into_iter();
         let mut projects = Vec::new();
         for project_id in project_ids {
@@ -366,7 +504,7 @@ impl Client for Registry {
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let org_id = Id::try_from(org_id.clone())?;
+        let org_id = protocol::Id::try_from(org_id.clone())?;
         let project_name = protocol::ProjectName::try_from(project_name.clone())?;
 
         // Prepare and submit checkpoint transaction.
@@ -425,24 +563,26 @@ impl Client for Registry {
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
         Ok(Transaction {
-            id: register_applied.tx_hash,
+            id: Hash(register_applied.tx_hash),
             messages: vec![Message::ProjectRegistration {
-                project_name: project_name,
-                org_id: org_id,
+                project_name: ProjectName(project_name),
+                org_id: Id(org_id),
             }],
-            state: transaction::State::Applied(register_applied.block),
+            state: transaction::State::Applied {
+                block: Hash(register_applied.block),
+            },
             timestamp: SystemTime::now(),
         })
     }
 
     async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error> {
-        let user_id = Id::try_from(handle.clone())?;
+        let user_id = protocol::Id::try_from(handle.clone())?;
         Ok(self
             .client
             .get_user(user_id.clone())
             .await?
             .map(|_user| User {
-                handle: user_id,
+                handle: Id(user_id),
                 maybe_entity_id: None,
             }))
     }
@@ -455,7 +595,7 @@ impl Client for Registry {
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         // Verify that inputs are valid.
-        let user_id = Id::try_from(handle.clone())?;
+        let user_id = protocol::Id::try_from(handle.clone())?;
 
         // Prepare and submit user registration transaction.
         let register_message = protocol::message::RegisterUser {
@@ -474,12 +614,14 @@ impl Client for Registry {
         let register_applied = self.client.submit_transaction(register_tx).await?.await?;
 
         Ok(Transaction {
-            id: register_applied.tx_hash,
+            id: Hash(register_applied.tx_hash),
             messages: vec![Message::UserRegistration {
-                handle: user_id,
+                handle: Id(user_id),
                 id: id,
             }],
-            state: transaction::State::Applied(register_applied.block),
+            state: transaction::State::Applied {
+                block: Hash(register_applied.block),
+            },
             timestamp: SystemTime::now(),
         })
     }
@@ -520,7 +662,7 @@ mod test {
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
 
-    use super::{Client, Id, Metadata, Registry};
+    use super::{Client, Metadata, ProjectName, Registry};
     use crate::avatar;
 
     #[tokio::test]
@@ -534,7 +676,7 @@ mod test {
             futures::executor::block_on(registry.register_org(&alice, "monadic".into(), 10));
         assert!(result.is_ok());
 
-        let org_id = Id::try_from("monadic").unwrap();
+        let org_id = protocol::Id::try_from("monadic").unwrap();
         let maybe_org = client.get_org(org_id.clone()).await.unwrap();
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
@@ -550,7 +692,7 @@ mod test {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
-        let org_id = Id::try_from("monadic").unwrap();
+        let org_id = protocol::Id::try_from("monadic").unwrap();
         let registration = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -570,7 +712,7 @@ mod test {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
-        let org_id = Id::try_from("monadic").unwrap();
+        let org_id = protocol::Id::try_from("monadic").unwrap();
         let registration = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -599,7 +741,7 @@ mod test {
         assert!(user_registration.is_ok());
 
         // Register the org
-        let org_id = Id::try_from("monadic").unwrap();
+        let org_id = protocol::Id::try_from("monadic").unwrap();
         let org_registration = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -625,7 +767,7 @@ mod test {
         assert!(user_registration.is_ok());
 
         // Register the org
-        let org_id = Id::try_from("monadic").unwrap();
+        let org_id = protocol::Id::try_from("monadic").unwrap();
         let org_registration = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -649,10 +791,7 @@ mod test {
             .await
             .unwrap();
         assert_eq!(projects.len(), 1);
-        assert_eq!(
-            projects[0].name,
-            protocol::ProjectName::try_from("radicle").unwrap()
-        );
+        assert_eq!(projects[0].name, ProjectName::try_from("radicle").unwrap());
         assert_eq!(
             projects[0].maybe_project_id,
             Some("0000000000000000000000000000000000000000.git".to_string())
@@ -667,7 +806,7 @@ mod test {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the org
-        let org_id = Id::try_from("monadic").unwrap();
+        let org_id = protocol::Id::try_from("monadic").unwrap();
         let org_result = registry
             .register_org(&alice, org_id.clone().into(), 10)
             .await;
@@ -685,7 +824,7 @@ mod test {
             .await;
         assert!(result.is_ok());
 
-        let org_id = Id::try_from("monadic").unwrap();
+        let org_id = protocol::Id::try_from("monadic").unwrap();
         let project_name = protocol::ProjectName::try_from("radicle").unwrap();
         let maybe_project = client
             .get_project(project_name.clone(), org_id.clone())

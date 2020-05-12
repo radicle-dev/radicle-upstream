@@ -40,12 +40,11 @@ pub async fn get<R: registry::Client>(
     store: &kv::Store,
 ) -> Result<Session, error::Error> {
     let bucket = store
-        .bucket::<kv::Raw, String>(Some("session"))
+        .bucket::<&str, String>(Some("session"))
         .expect("unable to get session bucket");
 
     let identity = bucket
-        .get("identity")
-        .expect("unable to fetch identity")
+        .get("identity")?
         .and_then(|id| identity::get(id.as_ref()).expect("unable to retrieve identity"));
     // TODO(xla): Get actual attested handle from identity metadata. Alternatively use the stored
     // keypair of the current session to find the associated user and look it up that way.
@@ -60,14 +59,11 @@ pub async fn get<R: registry::Client>(
 ///
 /// Errors if access to the session state fails.
 pub fn set(store: &kv::Store, sess: Session) -> Result<(), error::Error> {
-    let bucket = store
-        .bucket::<kv::Raw, String>(Some("session"))
-        .expect("unable to get session bucket");
+    let bucket = store.bucket::<&str, String>(Some("session"))?;
 
     if let Some(identity) = sess.identity {
-        bucket
-            .set("identity", identity.id)
-            .expect("unable to save identity");
+        bucket.set("identity", identity.id)?;
+        bucket.flush()?;
     }
 
     Ok(())

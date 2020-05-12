@@ -1542,6 +1542,7 @@ checksum = "cde1d1ce05b9169af359041cf834075ca4478f5917e6198d9454773e98aae143"
 dependencies = [
  "bincode",
  "serde",
+ "serde_json",
  "sled",
  "thiserror",
  "toml",
@@ -2646,7 +2647,6 @@ dependencies = [
  "rand 0.7.3",
  "serde",
  "serde_cbor 0.11.1",
- "serde_derive",
  "serde_json",
  "tempfile",
  "tokio 0.2.18",

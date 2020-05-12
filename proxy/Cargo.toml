@@ -15,15 +15,14 @@ async-trait = "0.1"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
 hex = "0.4"
-kv = { version = "0.20", features = [ "bincode-value" ] }
+kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
 log = "0.4"
 nonempty = "0.2"
 pico-args = "0.3"
 pretty_env_logger = "0.3"
 rand = "0.7"
-serde = "1.0"
+serde = { version = "1.0", features = [ "derive" ] }
 serde_cbor = "0.11.1"
-serde_derive = "1.0"
 serde_json = "1.0"
 tempfile = "3.1"
 tokio = { version = "0.2", features = [ "macros" ] }

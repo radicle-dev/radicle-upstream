@@ -1,7 +1,9 @@
 //! Abstractions and types to handle, persist and interact with transactions.
 
 use async_trait::async_trait;
-use std::collections::HashMap;
+use hex::ToHex;
+use kv::Codec as _;
+use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 use radicle_registry_client as protocol;
@@ -10,11 +12,12 @@ use crate::error;
 use crate::registry;
 
 /// A container to dissiminate and apply operations on the [`Registry`].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Transaction {
     /// Unique identifier, in actuality the Hash of the transaction. This handle should be used by
     /// the API consumer to query state changes of a transaction.
-    pub id: protocol::TxHash,
+    pub id: registry::Hash,
     /// List of operations to be applied to the Registry. Currently limited to exactly one. We use
     /// a Vec here to accommodate future extensibility.
     pub messages: Vec<Message>,
@@ -25,13 +28,20 @@ pub struct Transaction {
 }
 
 /// Possible messages a [`Transaction`] can carry.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
 pub enum Message {
-    /// Issue a new org registration with a given id.
-    OrgRegistration(registry::Id),
+    /// Issue a new org registration.
+    OrgRegistration {
+        /// The [`registry::Org`] id.
+        id: registry::Id,
+    },
 
     /// Issue an org unregistration with a given id.
-    OrgUnregistration(registry::Id),
+    OrgUnregistration {
+        /// The [`registry::Org`] id.
+        id: registry::Id,
+    },
 
     /// Issue a new project registration with a given name under a given org.
     ProjectRegistration {
@@ -52,10 +62,14 @@ pub enum Message {
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
 /// whereabouts of a given [`Transaction`].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
 pub enum State {
     /// [`Transaction`] has been applied to a block, carries the hash of the block.
-    Applied(protocol::Hash),
+    Applied {
+        /// The hash of the block the transaction has been applied to.
+        block: registry::Hash,
+    },
 }
 
 /// Behaviour to manage and persist observed [`Transaction`].
@@ -75,6 +89,8 @@ pub trait Cache: Send + Sync {
     ) -> Result<Vec<Transaction>, error::Error>;
 }
 
+type Transactions = kv::Bucket<'static, &'static str, kv::Json<Transaction>>;
+
 /// Cacher persists and manages observed transactions.
 #[derive(Clone)]
 pub struct Cacher<C>
@@ -84,7 +100,7 @@ where
     /// The [`registry::Client`] to store the returned transactions.
     client: C,
     /// Cached transactions.
-    transactions: HashMap<protocol::TxHash, Transaction>,
+    transactions: Transactions,
 }
 
 impl<C> Cacher<C>
@@ -92,10 +108,12 @@ where
     C: registry::Client,
 {
     /// Cacher persists and manages observed transactions.
-    pub fn new(client: C) -> Self {
+    pub fn new(client: C, store: &kv::Store) -> Self {
         Self {
             client,
-            transactions: HashMap::new(),
+            transactions: store
+                .bucket::<&'static str, kv::Json<Transaction>>(Some("transactions"))
+                .expect("unable to get 'transactions' bucket"),
         }
     }
 }
@@ -107,7 +125,9 @@ where
 {
     /// Caches a transaction locally in the Registry.
     async fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error> {
-        self.transactions.insert(tx.id, tx);
+        self.transactions
+            .set(tx.id.0.encode_hex::<String>().as_str(), kv::Json(tx))?;
+        self.transactions.flush()?;
 
         Ok(())
     }
@@ -121,18 +141,17 @@ where
         &self,
         ids: Vec<protocol::TxHash>,
     ) -> Result<Vec<Transaction>, error::Error> {
-        Ok(self
-            .transactions
-            .values()
-            .cloned()
-            .filter(|tx| {
-                if ids.is_empty() {
-                    true
-                } else {
-                    ids.contains(&tx.id)
-                }
-            })
-            .collect::<Vec<Transaction>>())
+        let mut txs = Vec::new();
+
+        for item in self.transactions.iter() {
+            let tx = item?.value::<kv::Json<Transaction>>()?.to_inner();
+
+            if ids.is_empty() || ids.contains(&tx.id.0) {
+                txs.push(tx);
+            }
+        }
+
+        Ok(txs)
     }
 }
 
@@ -237,7 +256,7 @@ where
 
     fn reset(&mut self, client: protocol::Client) {
         self.client.reset(client);
-        self.transactions = HashMap::new();
+        // self.transactions = HashMap::new();
     }
 }
 
@@ -252,49 +271,68 @@ mod test {
 
     #[tokio::test]
     async fn list_transactions() {
-        let client = protocol::Client::new_emulator();
-        let registry = registry::Registry::new(client);
-        let mut cache = Cacher::new(registry);
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
 
-        let tx = Transaction {
-            id: protocol::TxHash::random(),
-            messages: vec![],
-            state: State::Applied(protocol::Hash::random()),
-            timestamp: time::SystemTime::now(),
-        };
+        {
+            let client = protocol::Client::new_emulator();
+            let registry = registry::Registry::new(client);
+            let mut cache = Cacher::new(registry, &store);
 
-        cache.cache_transaction(tx.clone()).await.unwrap();
-
-        for _ in 0..9 {
             let tx = Transaction {
-                id: protocol::TxHash::random(),
+                id: registry::Hash(protocol::TxHash::random()),
                 messages: vec![],
-                state: State::Applied(protocol::Hash::random()),
+                state: State::Applied {
+                    block: registry::Hash(protocol::Hash::random()),
+                },
                 timestamp: time::SystemTime::now(),
             };
 
             cache.cache_transaction(tx.clone()).await.unwrap();
+
+            for _ in 0..9 {
+                let tx = Transaction {
+                    id: registry::Hash(protocol::TxHash::random()),
+                    messages: vec![],
+                    state: State::Applied {
+                        block: registry::Hash(protocol::Hash::random()),
+                    },
+                    timestamp: time::SystemTime::now(),
+                };
+
+                cache.cache_transaction(tx.clone()).await.unwrap();
+            }
+
+            // Get all transactions.
+            {
+                let txs = cache.list_transactions(Vec::new()).await.unwrap();
+                assert_eq!(txs.len(), 10);
+            }
+
+            // Get single transaction.
+            {
+                let txs = cache.list_transactions(vec![tx.id.0]).await.unwrap();
+                assert_eq!(txs.len(), 1);
+            }
+
+            // Filter and get none.
+            {
+                let txs = cache
+                    .list_transactions(vec![protocol::TxHash::random()])
+                    .await
+                    .unwrap();
+                assert_eq!(txs.len(), 0);
+            }
         }
 
-        // Get all transactions.
+        // Test persistance.
         {
+            let client = protocol::Client::new_emulator();
+            let registry = registry::Registry::new(client);
+            let cache = Cacher::new(registry, &store);
+
             let txs = cache.list_transactions(Vec::new()).await.unwrap();
             assert_eq!(txs.len(), 10);
-        }
-
-        // Get single transaction.
-        {
-            let txs = cache.list_transactions(vec![tx.id]).await.unwrap();
-            assert_eq!(txs.len(), 1);
-        }
-
-        // Filter and get none.
-        {
-            let txs = cache
-                .list_transactions(vec![protocol::TxHash::random()])
-                .await
-                .unwrap();
-            assert_eq!(txs.len(), 0);
         }
     }
 }

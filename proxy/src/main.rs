@@ -55,15 +55,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         kv::Store::new(kv::Config::new(temp_dir.path().join("store")))?
     } else {
         let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
-        kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?
+        let store = kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?;
+
+        store
     };
 
     log::info!("Starting API");
 
     let lib_paths = Arc::new(RwLock::new(librad_paths));
-    let registry_cache = Arc::new(RwLock::new(registry::Cacher::new(registry::Registry::new(
-        registry_client,
-    ))));
+    let registry_cache = Arc::new(RwLock::new(registry::Cacher::new(
+        registry::Registry::new(registry_client),
+        &store,
+    )));
     let st = Arc::new(RwLock::new(store));
     let routes = http::routes(lib_paths, registry_cache, st, args.test).with(
         warp::cors()

@@ -640,7 +640,8 @@ mod test {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path()).unwrap()));
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry)));
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(Arc::clone(&librad_paths), Arc::clone(&cache), subscriptions);

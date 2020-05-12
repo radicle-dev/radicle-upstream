@@ -1,8 +1,6 @@
 //! Endpoints and serialisation for [`registry::Transaction`] related types.
 
-use hex::ToHex;
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
@@ -64,6 +62,7 @@ mod handler {
             .ids
             .iter()
             .map(|id| {
+                println!("INPUT ID: {}", id);
                 radicle_registry_client::TxHash::from_str(id)
                     .expect("unable to get hash from string")
             })
@@ -71,20 +70,6 @@ mod handler {
         let txs = cache.read().await.list_transactions(tx_ids).await?;
 
         Ok(reply::json(&txs))
-    }
-}
-
-impl Serialize for registry::Transaction {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Transaction", 4)?;
-        state.serialize_field("id", &self.id.encode_hex::<String>())?;
-        state.serialize_field("messages", &self.messages)?;
-        state.serialize_field("state", &self.state)?;
-        state.serialize_field("timestamp", &self.timestamp)?;
-        state.end()
     }
 }
 
@@ -127,69 +112,11 @@ impl ToDocumentedType for registry::Transaction {
     }
 }
 
-impl Serialize for registry::Message {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::OrgRegistration(org_id) => {
-                let mut state = serializer.serialize_struct("OrgRegistration", 2)?;
-                state.serialize_field("type", "ORG_REGISTRATION")?;
-                state.serialize_field("orgId", &org_id.to_string())?;
-
-                state.end()
-            },
-            Self::OrgUnregistration(org_id) => {
-                let mut state = serializer.serialize_struct("OrgUnegistration", 2)?;
-                state.serialize_field("type", "ORG_UNREGISTRATION")?;
-                state.serialize_field("orgId", &org_id.to_string())?;
-
-                state.end()
-            },
-            Self::ProjectRegistration {
-                org_id,
-                project_name,
-            } => {
-                let mut state = serializer.serialize_struct("ProjectRegistration", 3)?;
-                state.serialize_field("type", "PROJECT_REGISTRATION")?;
-                state.serialize_field("orgId", &org_id.to_string())?;
-                state.serialize_field("projectName", &project_name.to_string())?;
-                state.end()
-            },
-            Self::UserRegistration { handle, id } => {
-                let mut state = serializer.serialize_struct("UserRegistration", 3)?;
-                state.serialize_field("type", "USER_REGISTRATION")?;
-                state.serialize_field("handle", &handle.to_string())?;
-                state.serialize_field("id", &id)?;
-                state.end()
-            },
-        }
-    }
-}
-
 impl ToDocumentedType for registry::Message {
     fn document() -> document::DocumentedType {
         let properties = std::collections::HashMap::with_capacity(2);
 
         document::DocumentedType::from(properties).description("Transaction payload")
-    }
-}
-
-impl Serialize for registry::State {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Applied(block_hash) => {
-                let mut state = serializer.serialize_struct("TransactionApplied", 2)?;
-                state.serialize_field("type", "APPLIED")?;
-                state.serialize_field("blockHash", &block_hash.to_string())?;
-
-                state.end()
-            },
-        }
     }
 }
 
@@ -229,7 +156,7 @@ impl ToDocumentedType for ListInput {
 #[allow(clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
-    use std::str::FromStr;
+    use std::convert::TryFrom;
     use std::sync::Arc;
     use std::time;
 
@@ -243,16 +170,20 @@ mod test {
 
     #[tokio::test]
     async fn list() {
+        let tmp_dir = tempfile::tempdir().unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
-        let mut cache = registry::Cacher::new(registry);
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let mut cache = registry::Cacher::new(registry, &store);
 
         let tx = registry::Transaction {
-            id: radicle_registry_client::TxHash::random(),
+            id: registry::Hash(radicle_registry_client::TxHash::random()),
             messages: vec![registry::Message::ProjectRegistration {
-                project_name: radicle_registry_client::ProjectName::from_str("upstream").unwrap(),
-                org_id: registry::Id::from_str("radicle").unwrap(),
+                project_name: registry::ProjectName::try_from("upstream").unwrap(),
+                org_id: registry::Id::try_from("radicle").unwrap(),
             }],
-            state: registry::State::Applied(radicle_registry_client::Hash::random()),
+            state: registry::State::Applied {
+                block: registry::Hash(radicle_registry_client::Hash::random()),
+            },
             timestamp: time::SystemTime::now(),
         };
 
