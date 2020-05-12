@@ -1,7 +1,9 @@
 <script>
   import { push } from "svelte-spa-router";
 
+  import { orgs as orgsStore, fetchProjectList } from "../../src/org.ts";
   import * as path from "../../src/path.ts";
+
   import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
@@ -10,7 +12,6 @@
     Remote,
     Stats,
   } from "../../DesignSystem/Component";
-  import { orgs as orgsStore, fetchProjectList } from "../../src/org.ts";
 
   export let params = null;
 
