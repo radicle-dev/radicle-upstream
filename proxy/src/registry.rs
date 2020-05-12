@@ -320,15 +320,22 @@ impl Registry {
         for org_id in org_ids {
             orgs.push(self.get_org(org_id.to_string()).await?.expect("Get org"));
         }
-        Ok(orgs
-            .into_iter()
-            .filter(|org| {
-                org.members
-                    .clone()
-                    .into_iter()
-                    .any(|member| member.handle.to_string() == user_id)
-            })
-            .collect())
+
+        // TODO(rudolfs): remove this branching once we have a list of Orgs in
+        // the session endpoint
+        if user_id.is_empty() {
+            Ok(orgs)
+        } else {
+            Ok(orgs
+                .into_iter()
+                .filter(|org| {
+                    org.members
+                        .clone()
+                        .into_iter()
+                        .any(|member| member.handle.to_string() == user_id)
+                })
+                .collect())
+        }
     }
 
     /// List all projects of the Registry for an org.
