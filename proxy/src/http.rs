@@ -42,7 +42,11 @@ pub fn routes(
             ))
             .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
             .or(notification::filters(subscriptions.clone()))
-            .or(org::routes(Arc::clone(&registry), subscriptions.clone()))
+            .or(org::routes(
+                Arc::clone(&librad_paths),
+                Arc::clone(&registry),
+                subscriptions.clone(),
+            ))
             .or(project::filters(
                 Arc::clone(&librad_paths),
                 Arc::clone(&registry),
