@@ -4,7 +4,7 @@
     formatStake,
     formatSubject,
     SubjectType,
-    Variant,
+    PayerType,
   } from "../../src/transaction.ts";
 
   import {
@@ -114,7 +114,7 @@
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}
-      variant={payer.variant === Variant.User ? 'circle' : 'square'}
+      variant={payer.type === PayerType.User ? 'circle' : 'square'}
       style="color: var(--color-foreground)" />
   </div>
 

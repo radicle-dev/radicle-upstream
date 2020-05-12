@@ -156,26 +156,24 @@ export const format = (tx: Transaction): object => {
 
 export const formatStake = (msg: Message): string => `${formatMessage(msg)} deposit`;
 
-export enum Variant {
-  Org = "ORG",
-  User = "USER",
-  Project = "PROJECT"
+
+// Having both enums & interfaces here is somewhat verbose; the reason we do this 
+// is so we have compatibility with non-TS svelte components while still enjoying 
+// some type strictness
+export enum PayerType {
+  Org = "org",
+  User = "user"
 }
 
-export const formatPayer = (identity: Identity): object => {
+export const formatPayer = (identity: Identity, type?: PayerType): object => {
   return {
     name: identity.metadata.displayName || identity.metadata.handle,
-    variant: Variant.User,
+    type: PayerType.User,
     avatarFallback: identity.avatarFallback,
     imageUrl: identity.metadata.avatarUrl
   };
 };
 
-
-
-// Having both enums & interfaces here is somewhat verbose; the reason we do this 
-// is so we have compatibility with non-TS svelte components while still enjoying 
-// some type strictness
 export enum SubjectType {
   User = "user",
   OrgProject = "org_project",
