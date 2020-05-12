@@ -1,11 +1,9 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import ProjectCard from "./ProjectCard.svelte";
-
-  export let projects = null;
-  export let contextMenuItems = () => [];
 
   const dispatch = createEventDispatcher();
+
+  export let items = null;
 </script>
 
 <style>
@@ -21,6 +19,7 @@
     border-bottom: 1px solid var(--color-foreground-level-3);
     cursor: pointer;
     padding: 22px 15px 26px 12px;
+    user-select: none;
   }
 
   li:hover {
@@ -33,19 +32,12 @@
 </style>
 
 <ul>
-  {#each projects as project}
+  {#each items as item}
     <li
       on:click={() => {
-        dispatch('select', project);
-      }}
-      class="project-card">
-      <ProjectCard
-        title={project.metadata.name}
-        projectId={project.id}
-        contextMenuItems={contextMenuItems(project.id)}
-        description={project.metadata.description}
-        isRegistered={false}
-        stats={project.stats} />
+        dispatch('select', item);
+      }}>
+      <slot {item} />
     </li>
   {/each}
 </ul>
