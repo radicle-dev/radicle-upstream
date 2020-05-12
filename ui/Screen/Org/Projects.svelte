@@ -46,6 +46,8 @@
       };
     }
   };
+
+  $: fetchProjectList({ id: params.id });
 </script>
 
 <Remote store={orgsStore} let:data={orgProjects}>
