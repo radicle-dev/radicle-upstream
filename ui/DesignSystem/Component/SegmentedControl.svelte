@@ -1,7 +1,7 @@
 <script>
   // Currently active option.
   export let active = null;
-  // Called when a selection is made.
+  // The available options.
   export let options = null;
 
   const onClick = (option) => {
