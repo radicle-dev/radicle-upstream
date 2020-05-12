@@ -36,8 +36,7 @@
     <li
       on:click={() => {
         dispatch('select', item);
-      }}
-      class="project-card">
+      }}>
       <slot {item} />
     </li>
   {/each}
