@@ -182,9 +182,10 @@ impl Serialize for registry::Org {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Org", 2)?;
+        let mut state = serializer.serialize_struct("Org", 3)?;
         state.serialize_field("id", &self.id)?;
         state.serialize_field("avatarFallback", &self.avatar_fallback)?;
+        state.serialize_field("members", &self.members)?;
 
         state.end()
     }
@@ -192,13 +193,17 @@ impl Serialize for registry::Org {
 
 impl ToDocumentedType for registry::Org {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
+        let mut properties = std::collections::HashMap::with_capacity(3);
         properties.insert("avatarFallback".into(), avatar::Avatar::document());
         properties.insert(
             "id".into(),
             document::string()
                 .description("The id of the org")
                 .example("monadic"),
+        );
+        properties.insert(
+            "members".into(),
+            document::array(registry::User::document()),
         );
 
         document::DocumentedType::from(properties).description("Org")
@@ -268,7 +273,11 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
-#[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
+#[allow(
+    clippy::option_unwrap_used,
+    clippy::result_unwrap_used,
+    clippy::indexing_slicing
+)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -300,6 +309,14 @@ mod test {
             .await
             .unwrap();
 
+        let user = registry
+            .read()
+            .await
+            .get_user("alice".to_string())
+            .await
+            .unwrap()
+            .unwrap();
+
         // Register the org
         let fee: radicle_registry_client::Balance = 100;
         registry
@@ -323,6 +340,7 @@ mod test {
             json!(registry::Org {
                 id: "monadic".to_string(),
                 avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
+                members: vec![user]
             })
         );
     }
@@ -421,11 +439,18 @@ mod test {
             .list_transactions(vec![])
             .await
             .unwrap();
-        let tx = txs.first().unwrap();
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        // Get the registered org
+        let org = registry
+            .read()
+            .await
+            .get_org("monadic".to_string())
+            .await
+            .unwrap()
+            .unwrap();
 
         assert_eq!(res.status(), StatusCode::CREATED);
-        assert_eq!(have, json!(tx));
+        assert_eq!(txs.len(), 2);
+        assert_eq!(org.id, "monadic")
     }
 }

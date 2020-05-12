@@ -83,12 +83,14 @@ pub struct Thresholds {
 }
 
 /// The registered org with identifier and avatar
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Org {
     /// The unique identifier of the org
     pub id: String,
     /// Generated fallback avatar
     pub avatar_fallback: avatar::Avatar,
+    /// List of members of the org
+    pub members: Vec<User>,
 }
 
 /// A project registered under an [`Org`] or [`User`] on the Registry.
@@ -102,6 +104,7 @@ pub struct Project {
 }
 
 /// The registered user with associated coco id.
+#[derive(Clone, Debug)]
 pub struct User {
     /// Unique handle regsistered on the Regisry.
     pub handle: Id,
@@ -286,10 +289,23 @@ impl Registry {
     /// Will return `Err` if a protocol error occurs.
     pub async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error> {
         let org_id = Id::try_from(id.clone())?;
-        Ok(self.client.get_org(org_id).await?.map(|_org| Org {
-            id: id.clone(),
-            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
-        }))
+        if let Some(org) = self.client.get_org(org_id).await? {
+            let mut members = Vec::new();
+            for member in org.members.clone() {
+                members.push(
+                    self.get_user(member.to_string())
+                        .await?
+                        .expect("Couldn't retrieve org member"),
+                );
+            }
+            Ok(Some(Org {
+                id: id.clone(),
+                avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
+                members,
+            }))
+        } else {
+            Ok(None)
+        }
     }
 
     /// List orgs of the Registry.
@@ -298,29 +314,18 @@ impl Registry {
     ///
     /// Will return `Err` if a protocol error occurs.
     pub async fn list_orgs(&self, user_id: String) -> Result<Vec<Org>, error::Error> {
-        // TODO(merle): Remove temp_public_key once members are returned as user ids
         let org_ids = self.client.list_orgs().await?.into_iter();
         let mut orgs = Vec::new();
         for org_id in org_ids {
-            orgs.push(self.client.get_org(org_id).await?.expect("Get org"));
+            orgs.push(self.get_org(org_id.to_string()).await?.expect("Get org"));
         }
         Ok(orgs
             .into_iter()
-            .filter_map(|org| {
-                if org
-                    .members
-                    .contains(&Id::try_from(user_id.clone()).expect("Invalid user id"))
-                {
-                    Some(Org {
-                        id: org.id.to_string(),
-                        avatar_fallback: avatar::Avatar::from(
-                            &org.id.to_string(),
-                            avatar::Usage::Org,
-                        ),
-                    })
-                } else {
-                    None
-                }
+            .filter(|org| {
+                org.members
+                    .clone()
+                    .into_iter()
+                    .any(|member| member.handle.to_string() == user_id)
             })
             .collect())
     }
