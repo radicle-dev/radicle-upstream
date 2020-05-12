@@ -190,7 +190,7 @@ impl ToDocumentedType for registry::User {
         );
 
         document::DocumentedType::from(props)
-            .description("Input for Uesr registration")
+            .description("Input for User registration")
             .nullable(true)
     }
 }
@@ -290,6 +290,14 @@ mod test {
             .await
             .unwrap();
 
+        let user = registry
+            .read()
+            .await
+            .get_user("alice".to_string())
+            .await
+            .unwrap()
+            .unwrap();
+
         // Register the org
         let fee: radicle_registry_client::Balance = 100;
         registry
@@ -313,6 +321,7 @@ mod test {
             json!([registry::Org {
                 id: "monadic".to_string(),
                 avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
+                members: vec![user]
             }])
         );
     }

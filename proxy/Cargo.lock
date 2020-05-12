@@ -2703,7 +2703,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-client"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=f05517c470e426d2f59c9f873845b5e1019b57b4#f05517c470e426d2f59c9f873845b5e1019b57b4"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=1b044c0c408adafb4956760178c10d4779d087d4#1b044c0c408adafb4956760178c10d4779d087d4"
 dependencies = [
  "async-trait",
  "derive_more 0.15.0",
@@ -2737,7 +2737,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-core"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=f05517c470e426d2f59c9f873845b5e1019b57b4#f05517c470e426d2f59c9f873845b5e1019b57b4"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=1b044c0c408adafb4956760178c10d4779d087d4#1b044c0c408adafb4956760178c10d4779d087d4"
 dependencies = [
  "derive-try-from-primitive",
  "parity-scale-codec",
@@ -2750,7 +2750,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-runtime"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=f05517c470e426d2f59c9f873845b5e1019b57b4#f05517c470e426d2f59c9f873845b5e1019b57b4"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=1b044c0c408adafb4956760178c10d4779d087d4#1b044c0c408adafb4956760178c10d4779d087d4"
 dependencies = [
  "frame-executive",
  "frame-support",

@@ -84,12 +84,14 @@ pub struct Thresholds {
 }
 
 /// The registered org with identifier and avatar
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Org {
     /// The unique identifier of the org
     pub id: String,
     /// Generated fallback avatar
     pub avatar_fallback: avatar::Avatar,
+    /// List of members of the org
+    pub members: Vec<User>,
 }
 
 /// A project registered under an [`Org`] or [`User`] on the Registry.
@@ -103,6 +105,7 @@ pub struct Project {
 }
 
 /// The registered user with associated coco id.
+#[derive(Clone, Debug)]
 pub struct User {
     /// Unique handle regsistered on the Regisry.
     pub handle: Id,
@@ -287,10 +290,23 @@ impl Registry {
     /// Will return `Err` if a protocol error occurs.
     pub async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error> {
         let org_id = Id::try_from(id.clone())?;
-        Ok(self.client.get_org(org_id).await?.map(|_org| Org {
-            id: id.clone(),
-            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
-        }))
+        if let Some(org) = self.client.get_org(org_id).await? {
+            let mut members = Vec::new();
+            for member in org.members.clone() {
+                members.push(
+                    self.get_user(member.to_string())
+                        .await?
+                        .expect("Couldn't retrieve org member"),
+                );
+            }
+            Ok(Some(Org {
+                id: id.clone(),
+                avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
+                members,
+            }))
+        } else {
+            Ok(None)
+        }
     }
 
     /// List orgs of the Registry.
@@ -298,28 +314,19 @@ impl Registry {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    pub async fn list_orgs(&self, _user_id: String) -> Result<Vec<Org>, error::Error> {
-        // TODO(merle): Remove temp_public_key once members are returned as user ids
-        let temp_public_key = ed25519::Pair::from_legacy_string("//Alice", None).public();
+    pub async fn list_orgs(&self, user_id: String) -> Result<Vec<Org>, error::Error> {
         let org_ids = self.client.list_orgs().await?.into_iter();
         let mut orgs = Vec::new();
         for org_id in org_ids {
-            orgs.push(self.client.get_org(org_id).await?.expect("Get org"));
+            orgs.push(self.get_org(org_id.to_string()).await?.expect("Get org"));
         }
         Ok(orgs
             .into_iter()
-            .filter_map(|org| {
-                if org.members.contains(&temp_public_key) {
-                    Some(Org {
-                        id: org.id.to_string(),
-                        avatar_fallback: avatar::Avatar::from(
-                            &org.id.to_string(),
-                            avatar::Usage::Org,
-                        ),
-                    })
-                } else {
-                    None
-                }
+            .filter(|org| {
+                org.members
+                    .clone()
+                    .into_iter()
+                    .any(|member| member.handle.to_string() == user_id)
             })
             .collect())
     }
@@ -549,9 +556,7 @@ impl Registry {
 )]
 #[cfg(test)]
 mod tests {
-    use radicle_registry_client::{
-        ed25519, Client, ClientT, CryptoPair, Hash, Id, ProjectName, TxHash,
-    };
+    use radicle_registry_client::{ed25519, Client, ClientT, Hash, Id, ProjectName, TxHash};
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
     use std::time;
@@ -613,6 +618,12 @@ mod tests {
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
 
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
         let result =
             futures::executor::block_on(registry.register_org(&alice, "monadic".into(), 10));
         assert!(result.is_ok());
@@ -622,7 +633,7 @@ mod tests {
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.id, org_id);
-        assert_eq!(org.members[0], alice.public());
+        assert_eq!(org.members[0], Id::try_from("alice").unwrap());
     }
 
     #[tokio::test]
@@ -631,6 +642,12 @@ mod tests {
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = Id::try_from("monadic").unwrap();
@@ -651,6 +668,12 @@ mod tests {
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = Id::try_from("monadic").unwrap();
@@ -745,6 +768,12 @@ mod tests {
         let client = Client::new_emulator();
         let mut registry = Registry::new(client.clone());
         let alice = ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = Id::try_from("monadic").unwrap();
