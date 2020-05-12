@@ -1,31 +1,30 @@
 before(() => {
-  cy.nukeRegistryState();
   cy.nukeSessionState();
+  cy.nukeRegistryState();
 
-  cy.createIdentity();
-  cy.registerOrg("coolorg");
+  cy.createIdentity("coolname");
   cy.registerUser("coolname");
-
-  cy.visit("public/index.html");
+  cy.registerOrg("coolorg");
 });
 
 context("add member to org", () => {
-  context("navigation", () => {
-    beforeEach(() => {
-      cy.pick("sidebar", "org").click();
-      cy.pick("projects", "add-member-button").click();
-    });
+  beforeEach(() => {
+    cy.visit("public/index.html");
+    cy.pick("sidebar", "org").click();
+    cy.pick("org-screen", "add-member-button").click();
+  });
 
+  context("navigation", () => {
     it("can be closed by pressing cancel", () => {
       cy.pick("add-member-modal").contains("Register a member");
       cy.pick("add-member-modal", "cancel-button").click();
-      cy.pick("projects").should("exist");
+      cy.pick("org-screen").should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
       cy.pick("add-member-modal").contains("Register a member");
       cy.get("body").type("{esc}");
-      cy.pick("projects").should("exist");
+      cy.pick("org-screen").should("exist");
     });
 
     it("can be traversed with navigation buttons", () => {
@@ -42,16 +41,11 @@ context("add member to org", () => {
       cy.pick("add-member-modal", "submit-button").click();
       cy.pick("add-member-modal", "summary").should("exist");
       cy.pick("add-member-modal", "submit-button").click();
-      cy.pick("projects").should("exist");
+      cy.pick("org-screen").should("exist");
     });
   });
 
   context("validations", () => {
-    beforeEach(() => {
-      cy.pick("sidebar", "org").click();
-      cy.pick("projects", "add-member-button").click();
-    });
-
     it("prevents the user from adding an invalid user", () => {
       // no empty input
       cy.pick("add-member-modal", "name-input").type("aname");

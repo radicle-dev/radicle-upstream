@@ -1,4 +1,6 @@
 //! Endpoints for Org.
+
+use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
@@ -8,17 +10,19 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::notification;
+use crate::project;
 use crate::registry;
 
 /// Prefixed filters..
 pub fn routes(
+    paths: Arc<RwLock<Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(Arc::clone(&registry)))
+            .or(get_projects_filter(paths, Arc::clone(&registry)))
             .or(register_filter(registry, subscriptions)),
     )
 }
@@ -26,12 +30,13 @@ pub fn routes(
 /// Combination of all org routes.
 #[cfg(test)]
 fn filters(
+    paths: Arc<RwLock<Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
-        .or(get_projects_filter(Arc::clone(&registry)))
+        .or(get_projects_filter(paths, Arc::clone(&registry)))
         .or(register_filter(registry, subscriptions))
 }
 
@@ -98,9 +103,11 @@ fn get_project_filter(
 
 /// `GET /<id>/projects`
 fn get_projects_filter(
+    paths: Arc<RwLock<Paths>>,
     registry: Arc<RwLock<registry::Registry>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    super::with_paths(paths)
+        .and(super::with_registry(registry))
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -148,6 +155,7 @@ fn register_filter(
 
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
+    use librad::paths::Paths;
     use radicle_registry_client::Balance;
     use std::sync::Arc;
     use tokio::sync::RwLock;
@@ -155,6 +163,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::notification;
+    use crate::project;
     use crate::registry;
 
     /// Get the Org for the given `id`.
@@ -182,13 +191,30 @@ mod handler {
 
     /// Get all projects under the given org id.
     pub async fn get_projects(
+        paths: Arc<RwLock<Paths>>,
         registry: Arc<RwLock<registry::Registry>>,
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
         let projects = reg.list_org_projects(org_id).await?;
+        let mut mapped_projects = Vec::new();
+        for p in &projects {
+            let maybe_project = if let Some(id) = &p.maybe_project_id {
+                let paths = paths.read().await;
+                Some(project::get(&paths, id).await.expect("Project not found"))
+            } else {
+                None
+            };
 
-        Ok(reply::json(&projects))
+            let org_project = super::Project {
+                name: p.name.to_string(),
+                org_id: p.org_id.to_string(),
+                maybe_project,
+            };
+            mapped_projects.push(org_project);
+        }
+
+        Ok(reply::json(&mapped_projects))
     }
 
     /// Register an org on the Registry.
@@ -287,6 +313,18 @@ impl ToDocumentedType for registry::Project {
     }
 }
 
+/// Object the API returns for a project that is registered under an org.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Project {
+    /// Id of the Org.
+    org_id: String,
+    /// Name of the project.
+    name: String,
+    /// Associated CoCo project.
+    maybe_project: Option<project::Project>,
+}
+
 /// Bundled input data for org registration.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -316,6 +354,7 @@ impl ToDocumentedType for RegisterInput {
 )]
 #[cfg(test)]
 mod test {
+    use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
@@ -326,16 +365,23 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
+    use crate::coco;
     use crate::notification;
     use crate::registry;
 
     #[tokio::test]
     async fn get() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the user
@@ -384,11 +430,17 @@ mod test {
 
     #[tokio::test]
     async fn get_project() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         let project_name = "upstream";
@@ -445,17 +497,46 @@ mod test {
 
     #[tokio::test]
     async fn get_projects() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
+
+        let repo_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
+        let path = repo_dir.path().to_str().unwrap().to_string();
+        coco::init_repo(path.clone()).unwrap();
 
         let project_name = "upstream";
+        let project_description = "desktop client for radicle";
         let org_id = "radicle";
+        let default_branch = "master";
+
+        let (project_id, _meta) = coco::init_project(
+            &librad_paths,
+            &path,
+            project_name,
+            project_description,
+            default_branch,
+        )
+        .unwrap();
+
+        // Register the user
+        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        registry
+            .write()
+            .await
+            .register_user(&alice, "alice".to_string(), None, 10)
+            .await
+            .unwrap();
 
         // Register the org.
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         registry
             .write()
             .await
@@ -472,10 +553,8 @@ mod test {
                 org_id.to_string(),
                 project_name.to_string(),
                 Some(
-                    librad::project::ProjectId::from_str(
-                        "ac1cac587b49612fbac39775a07fb05c6e5de08d.git",
-                    )
-                    .expect("Project id"),
+                    librad::project::ProjectId::from_str(&project_id.to_string())
+                        .expect("Project id"),
                 ),
                 10,
             )
@@ -490,25 +569,43 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
+        let want = json!([{
+            "name": project_name.to_string(),
+            "orgId": org_id.to_string(),
+            "maybeProject": {
+                "id": project_id.to_string(),
+                "metadata": {
+                    "defaultBranch": default_branch.to_string(),
+                    "description": project_description.to_string(),
+                    "name": project_name.to_string(),
+                },
+                "registration": Value::Null,
+                "stats": {
+                    "branches": 11,
+                    "commits": 267,
+                    "contributors": 8,
+                },
+            }
+        }]);
+
         assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!([registry::Project {
-                name: registry::ProjectName::try_from(project_name).unwrap(),
-                org_id: registry::Id::try_from(org_id).unwrap(),
-                maybe_project_id: Some("ac1cac587b49612fbac39775a07fb05c6e5de08d.git".to_string()),
-            }])
-        );
+        assert_eq!(have, want);
     }
 
     #[tokio::test]
     async fn register() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the user

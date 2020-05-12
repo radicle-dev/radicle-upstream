@@ -155,7 +155,7 @@
 
 <Dropdown
   dataCy="project-dropdown"
-  optionStyle="width: 540px"
+  optionStyle="width: 538px"
   placeholder="Select project to register"
   valid={!(validations && validations.projectId)}
   validationMessage={validations && validations.projectId && validations.projectId[0]}
