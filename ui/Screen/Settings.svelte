@@ -4,6 +4,11 @@
 </script>
 
 <style>
+  .container {
+    max-width: 71.25rem;
+    margin: 0 auto;
+    min-width: 640px;
+  }
   .sectionHeader {
     margin: 32px 0 24px 0;
     border-bottom: 1px solid var(--color-foreground-level-3);
@@ -19,6 +24,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-left: 16px;
   }
   .tabs {
     display: flex;
@@ -49,67 +55,69 @@
 </style>
 
 <SidebarLayout dataCy="page">
-  <Title variant="big">Settings</Title>
+  <div class="container">
+    <Title variant="big">Settings</Title>
 
-  <h2 class="sectionHeader">
-    <Title variant="large">Version</Title>
-  </h2>
-  <div class="sectionContent">
-    <div class="info">
-      <Text>Version 01.45.02</Text>
-    </div>
-    <div class="action">
-      <Text>There’s a new version of Radicle Upstream</Text>
-      <Button style="margin-left: 16px;">Update to Version 01.45.03</Button>
-    </div>
-  </div>
-
-  <h2 class="sectionHeader">
-    <Title variant="large">Appearance</Title>
-  </h2>
-  <div class="sectionContent">
-    <div class="info">
-      <Text style="font-family: var(--typeface-medium);">Theme</Text>
-    </div>
-    <div class="action">
-      <div class="tabs">
-        <button class="active">Light</button>
-        <button>Dark</button>
+    <h2 class="sectionHeader">
+      <Title variant="large">Version</Title>
+    </h2>
+    <div class="sectionContent">
+      <div class="info">
+        <Text>Version 01.45.02</Text>
+      </div>
+      <div class="action">
+        <Text>There’s a new version of Radicle Upstream</Text>
+        <Button style="margin-left: 16px;">Update to Version 01.45.03</Button>
       </div>
     </div>
-  </div>
 
-  <h2 class="sectionHeader">
-    <Title variant="large">Registry</Title>
-  </h2>
-  <div class="sectionContent">
-    <div class="info">
-      <Text style="font-family: var(--typeface-medium);">Network</Text>
-    </div>
-    <div class="action">
-      <div class="tabs">
-        <button class="active">Testnet</button>
-        <button>Mainnet</button>
+    <h2 class="sectionHeader">
+      <Title variant="large">Appearance</Title>
+    </h2>
+    <div class="sectionContent">
+      <div class="info">
+        <Text style="font-family: var(--typeface-medium);">Theme</Text>
+      </div>
+      <div class="action">
+        <div class="tabs">
+          <button class="active">Light</button>
+          <button>Dark</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <h2 class="sectionHeader">
-    <Title variant="large">Developer tools</Title>
-  </h2>
-  <div class="sectionContent">
-    <div class="info">
-      <Text style="font-family: var(--typeface-medium);">
-        Remove all unregistered projects from my profile
-      </Text>
-      <Text style="">
-        This unlinks your local repositories from Upstream. The local data will
-        remain on your computer.
-      </Text>
+    <h2 class="sectionHeader">
+      <Title variant="large">Registry</Title>
+    </h2>
+    <div class="sectionContent">
+      <div class="info">
+        <Text style="font-family: var(--typeface-medium);">Network</Text>
+      </div>
+      <div class="action">
+        <div class="tabs">
+          <button class="active">Testnet</button>
+          <button>Mainnet</button>
+        </div>
+      </div>
     </div>
-    <div class="action">
-      <Button variant="destructive">Remove</Button>
-    </div>
-  </div>
 
+    <h2 class="sectionHeader">
+      <Title variant="large">Developer tools</Title>
+    </h2>
+    <div class="sectionContent">
+      <div class="info">
+        <Text style="font-family: var(--typeface-medium);">
+          Remove all unregistered projects from my profile
+        </Text>
+        <Text style="">
+          This unlinks your local repositories from Upstream. The local data
+          will remain on your computer.
+        </Text>
+      </div>
+      <div class="action">
+        <Button variant="destructive">Remove</Button>
+      </div>
+    </div>
+
+  </div>
 </SidebarLayout>
