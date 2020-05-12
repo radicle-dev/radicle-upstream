@@ -342,6 +342,7 @@ impl ToDocumentedType for RegisterInput {
 #[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
+    use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
@@ -352,16 +353,19 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
+    use crate::coco;
     use crate::notification;
     use crate::registry;
 
     #[tokio::test]
     async fn get() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())), Arc::clone(&registry), subscriptions);
 
         // Register the org
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -393,11 +397,13 @@ mod test {
 
     #[tokio::test]
     async fn get_project() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())), Arc::clone(&registry), subscriptions);
 
         let project_name = "upstream";
         let org_id = "radicle";
@@ -446,14 +452,31 @@ mod test {
 
     #[tokio::test]
     async fn get_projects() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())),Arc::clone(&registry), subscriptions);
+
+        let repo_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
+        let path = repo_dir.path().to_str().unwrap().to_string();
+        coco::init_repo(path.clone()).unwrap();
 
         let project_name = "upstream";
+        let project_description = "desktop client for radicle";
         let org_id = "radicle";
+        let default_branch = "master";
+
+        let (project_id, _meta) = coco::init_project(
+            &librad_paths,
+            &path,
+            &project_name,
+            &project_description,
+            &default_branch,
+        ).unwrap();
+
 
         // Register the org.
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -474,7 +497,7 @@ mod test {
                 project_name.to_string(),
                 Some(
                     librad::project::ProjectId::from_str(
-                        "ac1cac587b49612fbac39775a07fb05c6e5de08d.git",
+                        &project_id.to_string()
                     )
                     .expect("Project id"),
                 ),
@@ -491,25 +514,39 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
+        let want = json!([{
+            "name": project_name.to_string(),
+            "orgId": org_id.to_string(),
+            "maybeProject": {
+                "id": project_id.to_string(),
+                "metadata": {
+                    "defaultBranch": default_branch.to_string(),
+                    "description": project_description.to_string(),
+                    "name": project_name.to_string(),
+                },
+                "registration": Value::Null,
+                "stats": {
+                    "branches": 11,
+                    "commits": 267,
+                    "contributors": 8,
+                },
+            }
+        }]);
+
         assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!([registry::Project {
-                name: registry::ProjectName::try_from(project_name).unwrap(),
-                org_id: registry::Id::try_from(org_id).unwrap(),
-                maybe_project_id: Some("ac1cac587b49612fbac39775a07fb05c6e5de08d.git".to_string()),
-            }])
-        );
+        assert_eq!(have, want);
     }
 
     #[tokio::test]
     async fn register() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())),Arc::clone(&registry), subscriptions);
 
         let res = request()
             .method("POST")
