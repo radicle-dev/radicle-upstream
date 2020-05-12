@@ -21,6 +21,7 @@
     ProjectCard,
     Rad,
     Row,
+    SegmentedControl,
     StepCounter,
     TrackToggle,
     TransactionAccordion,
@@ -224,6 +225,24 @@
         title: orgs[1].metadata.name,
         avatarFallback: orgs[1].avatarFallback,
       },
+    },
+  ];
+
+  const segmentedControlOptions = [
+    {
+      title: "Open",
+      value: 0,
+      event: () => {},
+    },
+    {
+      title: "Closed",
+      value: 1,
+      event: () => {},
+    },
+    {
+      title: "All",
+      value: 2,
+      event: () => {},
     },
   ];
 </script>
@@ -843,6 +862,10 @@
 
       <Swatch>
         <TrackToggle peerCount="2.3k" />
+      </Swatch>
+
+      <Swatch>
+        <SegmentedControl active={1} options={segmentedControlOptions} />
       </Swatch>
     </Section>
   </div>
