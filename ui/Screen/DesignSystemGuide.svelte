@@ -227,6 +227,13 @@
       },
     },
   ];
+
+  const stats = [
+    { icon: Icon.Commit, count: 12 },
+    { icon: Icon.Branch, count: 1 },
+    { icon: Icon.Member, count: 2 },
+    { icon: Icon.Graph, count: 32 },
+  ];
 </script>
 
 <style>
@@ -730,14 +737,15 @@
     </Section>
 
     <Section title="Cards" subTitle="Project, user, etc">
+      <Swatch>
+        <ProjectCard title="Radicle" />
+      </Swatch>
 
       <Swatch>
         <ProjectCard
-          projectId="2fFdyRzay2Rew9CpjEunPLp2PWe7HSvXWB3AJ.git"
           title="Radicle"
           description="Best project in the world"
-          isRegistered={true}
-          stats={{ branches: '12', commits: '12k', contributors: '120' }} />
+          showRegisteredBadge={true} />
       </Swatch>
 
       <Swatch>
@@ -848,7 +856,7 @@
       </Swatch>
 
       <Swatch>
-        <Stats />
+        <Stats {stats} />
       </Swatch>
     </Section>
   </div>
