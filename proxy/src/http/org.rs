@@ -313,7 +313,7 @@ impl ToDocumentedType for registry::Project {
     }
 }
 
-/// Object the API returns for an project that is registered under an org.
+/// Object the API returns for a project that is registered under an org.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Project {
