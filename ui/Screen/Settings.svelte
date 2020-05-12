@@ -108,7 +108,7 @@
       </Text>
     </div>
     <div class="action">
-      <Button>Remove</Button>
+      <Button variant="destructive">Remove</Button>
     </div>
   </div>
 
