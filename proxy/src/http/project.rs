@@ -507,7 +507,7 @@ mod test {
     use crate::coco;
     use crate::notification;
     use crate::project;
-    use crate::registry::{self, Client as _};
+    use crate::registry::{self, Cache as _};
 
     #[tokio::test]
     async fn create() {
@@ -639,16 +639,11 @@ mod test {
     async fn register() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path()).unwrap()));
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(
-            Arc::clone(&librad_paths),
-            Arc::clone(&registry),
-            subscriptions,
-        );
+        let api = super::filters(Arc::clone(&librad_paths), Arc::clone(&cache), subscriptions);
         let res = request()
             .method("POST")
             .path("/projects/register")
@@ -660,12 +655,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = registry
-            .write()
-            .await
-            .list_transactions(vec![])
-            .await
-            .unwrap();
+        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();

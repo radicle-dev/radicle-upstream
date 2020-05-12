@@ -29,7 +29,7 @@ pub fn routes<R>(
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone
 where
-    R: registry::Client,
+    R: registry::Cache + registry::Client,
 {
     let subscriptions = crate::notification::Subscriptions::default();
 

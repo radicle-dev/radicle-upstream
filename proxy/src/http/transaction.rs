@@ -11,19 +11,19 @@ use crate::http;
 use crate::registry;
 
 /// Combination of all transaction routes.
-pub fn filters<R: registry::Client>(
-    registry: http::Container<R>,
+pub fn filters<C: registry::Cache>(
+    cache: http::Container<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    list_filter(registry)
+    list_filter(cache)
 }
 
 /// `POST /transactions`
-fn list_filter<R: registry::Client>(
-    registry: http::Container<R>,
+fn list_filter<C: registry::Cache>(
+    cache: http::Container<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("transactions")
         .and(warp::post())
-        .and(http::with_container(registry))
+        .and(http::with_container(cache))
         .and(warp::body::json())
         .and(document::document(document::description(
             "List transactions",
@@ -56,8 +56,8 @@ mod handler {
     use crate::registry;
 
     /// List all transactions.
-    pub async fn list<R: registry::Client>(
-        reg: http::Container<R>,
+    pub async fn list<C: registry::Cache>(
+        cache: http::Container<C>,
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection> {
         let tx_ids = input
@@ -68,7 +68,7 @@ mod handler {
                     .expect("unable to get hash from string")
             })
             .collect();
-        let txs = reg.read().await.list_transactions(tx_ids).await?;
+        let txs = cache.read().await.list_transactions(tx_ids).await?;
 
         Ok(reply::json(&txs))
     }
@@ -120,7 +120,7 @@ impl ToDocumentedType for registry::Transaction {
             "messages".into(),
             document::array(registry::Message::document()),
         );
-        properties.insert("state".into(), registry::TransactionState::document());
+        properties.insert("state".into(), registry::State::document());
         properties.insert("timestamp".into(), timestamp);
 
         document::DocumentedType::from(properties).description("Input for project creation")
@@ -176,7 +176,7 @@ impl ToDocumentedType for registry::Message {
     }
 }
 
-impl Serialize for registry::TransactionState {
+impl Serialize for registry::State {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -193,7 +193,7 @@ impl Serialize for registry::TransactionState {
     }
 }
 
-impl ToDocumentedType for registry::TransactionState {
+impl ToDocumentedType for registry::State {
     fn document() -> document::DocumentedType {
         let properties = std::collections::HashMap::with_capacity(2);
 
@@ -239,11 +239,12 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use crate::registry::{self, Client as _};
+    use crate::registry::{self, Cache as _};
 
     #[tokio::test]
     async fn list() {
-        let mut registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let mut cache = registry::Cacher::new(registry);
 
         let tx = registry::Transaction {
             id: radicle_registry_client::TxHash::random(),
@@ -251,15 +252,15 @@ mod test {
                 project_name: radicle_registry_client::ProjectName::from_str("upstream").unwrap(),
                 org_id: registry::Id::from_str("radicle").unwrap(),
             }],
-            state: registry::TransactionState::Applied(radicle_registry_client::Hash::random()),
+            state: registry::State::Applied(radicle_registry_client::Hash::random()),
             timestamp: time::SystemTime::now(),
         };
 
-        registry.cache_transaction(tx.clone()).await;
+        cache.cache_transaction(tx.clone()).await.unwrap();
 
-        let transactions = registry.list_transactions(vec![]).await.unwrap();
+        let transactions = cache.list_transactions(vec![]).await.unwrap();
 
-        let api = super::filters(Arc::new(RwLock::new(registry)));
+        let api = super::filters(Arc::new(RwLock::new(cache)));
         let res = request()
             .method("POST")
             .path("/transactions")

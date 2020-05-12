@@ -61,9 +61,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let lib_paths = Arc::new(RwLock::new(librad_paths));
-    let reg = Arc::new(RwLock::new(registry::Registry::new(registry_client)));
+    let registry_cache = Arc::new(RwLock::new(registry::Cacher::new(registry::Registry::new(
+        registry_client,
+    ))));
     let st = Arc::new(RwLock::new(store));
-    let routes = http::routes(lib_paths, reg, st, args.test).with(
+    let routes = http::routes(lib_paths, registry_cache, st, args.test).with(
         warp::cors()
             .allow_any_origin()
             .allow_headers(&[warp::http::header::CONTENT_TYPE])

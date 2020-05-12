@@ -238,7 +238,7 @@ mod test {
 
     use crate::avatar;
     use crate::notification;
-    use crate::registry::{self, Client as _};
+    use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn get() {
@@ -322,12 +322,11 @@ mod test {
 
     #[tokio::test]
     async fn register() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(Arc::clone(&cache), subscriptions);
         let res = request()
             .method("POST")
             .path("/")
@@ -338,12 +337,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = registry
-            .read()
-            .await
-            .list_transactions(vec![])
-            .await
-            .unwrap();
+        let txs = cache.read().await.list_transactions(vec![]).await.unwrap();
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
