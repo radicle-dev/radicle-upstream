@@ -201,7 +201,7 @@ mod handler {
         for p in &projects {
             let maybe_project = if let Some(id) = &p.maybe_project_id {
                 let paths = paths.read().await;
-                Some(project::get(&paths, &id).await.unwrap())
+                Some(project::get(&paths, id).await.expect("Project"))
             } else {
                 None
             };
@@ -313,12 +313,15 @@ impl ToDocumentedType for registry::Project {
     }
 }
 
-/// Bundled input data for org registration.
+/// Object the API returns for an project that is registered under an org.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Project {
+    /// Id of the Org.
     org_id: String,
+    /// Name of the project.
     name: String,
+    /// Associated CoCo project.
     maybe_project: Option<project::Project>,
 }
 
@@ -518,9 +521,9 @@ mod test {
         let (project_id, _meta) = coco::init_project(
             &librad_paths,
             &path,
-            &project_name,
-            &project_description,
-            &default_branch,
+            project_name,
+            project_description,
+            default_branch,
         )
         .unwrap();
 
