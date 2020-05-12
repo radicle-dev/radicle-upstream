@@ -1,14 +1,13 @@
 <script>
   import { Icon, Title, Text } from "../../DesignSystem/Primitive";
 
-  export let open = true;
+  export let open = null;
   export let title = null;
   export let author = null;
   export let replies = null;
   export let created = null;
   export let updated = null;
   export let closed = null;
-  const iconColor = open ? "var(--color-positive)" : "var(--color-negative)";
 </script>
 
 <style>
@@ -42,16 +41,24 @@
 
 <div class="issueCard">
   <div class="title">
-    <Icon.Issue style="margin-right: 12px; fill: {iconColor}" />
-    <div>
-      <Title>{title}</Title>
-      <Text style="color: var(--color-foreground-level-5); padding-top: 6px">
-        {#if open}
+    {#if open}
+      <Icon.Issue style="margin-right: 12px; fill: var(--color-positive)" />
+      <div>
+        <Title>{title}</Title>
+        <Text style="color: var(--color-foreground-level-5); padding-top: 6px">
           Opened {created} ago by {author}
-        {:else}Created by {author} closed {closed} ago{/if}
-      </Text>
+        </Text>
+      </div>
+    {:else}
+      <Icon.Issue style="margin-right: 12px; fill: var(--color-negative)" />
+      <div>
+        <Title>{title}</Title>
+        <Text style="color: var(--color-foreground-level-5); padding-top: 6px">
+          Created by {author} closed {closed} ago
+        </Text>
+      </div>
+    {/if}
 
-    </div>
   </div>
   <div class="right">
     {#if replies > 0}
