@@ -1,16 +1,19 @@
-beforeEach(() => {
-  cy.nukeAllState();
+before(() => {
+  cy.nukeSessionState();
+  cy.nukeRegistryState();
 
   cy.createIdentity("coolname");
   cy.registerUser("coolname");
   cy.registerOrg("coolorg");
-
-  cy.visit("public/index.html");
-  cy.select("sidebar", "org").click();
-  cy.select("org-screen", "add-member-button").click();
 });
 
 context("add member to org", () => {
+  beforeEach(() => {
+    cy.visit("public/index.html");
+    cy.select("sidebar", "org").click();
+    cy.select("org-screen", "add-member-button").click();
+  });
+
   context("navigation", () => {
     it("can be closed by pressing cancel", () => {
       cy.select("add-member-modal").contains("Register a member");
