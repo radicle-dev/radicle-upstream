@@ -12,7 +12,6 @@
   } from "../DesignSystem/Component";
   import { Avatar, Icon } from "../DesignSystem/Primitive";
 
-  import Onboard from "./Profile/Onboard.svelte";
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
   import Settings from "./Profile/Settings.svelte";
@@ -20,7 +19,6 @@
 
   const screenRoutes = {
     "/profile/": Projects,
-    "/profile/onboard/": Onboard,
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
     "/profile/settings": Settings,

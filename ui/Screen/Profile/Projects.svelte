@@ -14,6 +14,8 @@
     Stats,
   } from "../../DesignSystem/Component";
 
+  import Onboard from "./Onboard.svelte";
+
   const session = getContext("session");
 
   const select = (event) => {
@@ -77,7 +79,9 @@
         </div>
       </Flex>
     </List>
-  {:else}{push(path.profileOnboard())}{/if}
+  {:else}
+    <Onboard />
+  {/if}
 
   <div slot="error" let:error>
     <Text>{error}</Text>

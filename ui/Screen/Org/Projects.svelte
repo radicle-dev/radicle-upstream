@@ -13,6 +13,8 @@
     Stats,
   } from "../../DesignSystem/Component";
 
+  import Onboard from "./Onboard.svelte";
+
   export let params = null;
 
   const select = (event) => {
@@ -21,8 +23,6 @@
       push(path.projectSource(orgProject.maybeProject.id));
     }
   };
-
-  $: fetchProjectList({ id: params.id });
 
   const statsProps = (stats) => {
     return [
@@ -77,7 +77,9 @@
         </Flex>
       {/if}
     </List>
-  {:else}{push(path.orgOnboard(params.id))}{/if}
+  {:else}
+    <Onboard orgId={params.id} />
+  {/if}
 
   <div slot="error" let:error>
     <Text>{error}</Text>

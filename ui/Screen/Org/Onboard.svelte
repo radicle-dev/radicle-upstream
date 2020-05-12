@@ -4,11 +4,12 @@
   import * as path from "../../src/path.ts";
 
   import { Flex, Text, Button } from "../../DesignSystem/Primitive";
-  import Placeholder from "../../DesignSystem/Component/Placeholder.svelte";
+  import { Placeholder } from "../../DesignSystem/Component";
 
-  export let params = null;
-  const create = () => push(path.registerProject(params.id));
-  const register = () => push(path.memberRegistration(params.id));
+  export let orgId = null;
+
+  const create = () => push(path.registerProject(orgId));
+  const register = () => push(path.memberRegistration(orgId));
 </script>
 
 <style>

@@ -15,7 +15,6 @@
 
   import Fund from "./Org/Fund.svelte";
   import Members from "./Org/Members.svelte";
-  import Onboard from "./Org/Onboard.svelte";
   import Projects from "./Org/Projects.svelte";
 
   export let params = null;
@@ -24,7 +23,6 @@
     "/orgs/:id": Projects,
     "/orgs/:id/fund": Fund,
     "/orgs/:id/members": Members,
-    "/orgs/:id/onboard": Onboard,
     "/orgs/:id/projects": Projects,
   };
 
