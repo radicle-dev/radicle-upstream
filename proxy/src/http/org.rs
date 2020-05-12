@@ -201,7 +201,7 @@ mod handler {
         for p in &projects {
             let maybe_project = if let Some(id) = &p.maybe_project_id {
                 let paths = paths.read().await;
-                Some(project::get(&paths, id).await.expect("Project"))
+                Some(project::get(&paths, id).await.expect("Project not found"))
             } else {
                 None
             };
