@@ -206,10 +206,10 @@ mod handler {
                 None
             };
 
-            let org_project = super::OrgProject {
+            let org_project = super::Project {
                 name: p.name.to_string(),
                 org_id: p.org_id.to_string(),
-                maybe_project: maybe_project,
+                maybe_project,
             };
             mapped_projects.push(org_project);
         }
@@ -316,7 +316,7 @@ impl ToDocumentedType for registry::Project {
 /// Bundled input data for org registration.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OrgProject {
+pub struct Project {
     org_id: String,
     name: String,
     maybe_project: Option<project::Project>,
