@@ -88,7 +88,6 @@
   },
   "scripts": {
     "start": "run-p --race svelte:watch proxy:start electron:start",
-    "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' run-p --race proxy:start:test test:run",
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test cypress:open",
     "test:run": "wait-on tcp:8080 && yarn svelte:build && yarn cypress:run",
