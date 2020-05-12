@@ -524,8 +524,16 @@ mod test {
         )
         .unwrap();
 
-        // Register the org.
+        // Register the user
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        registry
+            .write()
+            .await
+            .register_user(&alice, "alice".to_string(), None, 10)
+            .await
+            .unwrap();
+
+        // Register the org.
         registry
             .write()
             .await
