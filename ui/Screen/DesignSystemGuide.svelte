@@ -21,6 +21,7 @@
     ProjectCard,
     Rad,
     Row,
+    Stats,
     StepCounter,
     TrackToggle,
     TransactionAccordion,
@@ -844,6 +845,10 @@
 
       <Swatch>
         <TrackToggle peerCount="2.3k" />
+      </Swatch>
+
+      <Swatch>
+        <Stats />
       </Swatch>
     </Section>
   </div>
