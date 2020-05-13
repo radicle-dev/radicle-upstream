@@ -241,20 +241,6 @@ mod handler {
     }
 }
 
-impl Serialize for registry::Org {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Org", 3)?;
-        state.serialize_field("id", &self.id)?;
-        state.serialize_field("avatarFallback", &self.avatar_fallback)?;
-        state.serialize_field("members", &self.members)?;
-
-        state.end()
-    }
-}
-
 impl ToDocumentedType for registry::Org {
     fn document() -> document::DocumentedType {
         let mut properties = std::collections::HashMap::with_capacity(3);
@@ -366,6 +352,8 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use radicle_registry_client as protocol;
+
     use crate::avatar;
     use crate::coco;
     use crate::notification;
@@ -384,20 +372,21 @@ mod test {
             Arc::clone(&registry),
             subscriptions,
         );
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice").unwrap();
 
         // Register the user
         registry
             .write()
             .await
-            .register_user(&alice, "alice".to_string(), None, 10)
+            .register_user(&author, handle.clone(), None, 10)
             .await
             .unwrap();
 
         let user = registry
             .read()
             .await
-            .get_user("alice".to_string())
+            .get_user(handle)
             .await
             .unwrap()
             .unwrap();
@@ -407,7 +396,7 @@ mod test {
         registry
             .write()
             .await
-            .register_org(&alice, "monadic".to_string(), fee)
+            .register_org(&author, "monadic".to_string(), fee)
             .await
             .unwrap();
 
@@ -443,7 +432,8 @@ mod test {
             Arc::clone(&registry),
             subscriptions,
         );
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice").unwrap();
 
         let project_name = "upstream";
         let org_id = "radicle";
@@ -452,7 +442,7 @@ mod test {
         registry
             .write()
             .await
-            .register_user(&alice, "alice".to_string(), None, 10)
+            .register_user(&author, handle, None, 10)
             .await
             .unwrap();
 
@@ -460,7 +450,7 @@ mod test {
         registry
             .write()
             .await
-            .register_org(&alice, org_id.to_string(), 10)
+            .register_org(&author, org_id.to_string(), 10)
             .await
             .unwrap();
 
@@ -469,7 +459,7 @@ mod test {
             .write()
             .await
             .register_project(
-                &alice,
+                &author,
                 org_id.to_string(),
                 project_name.to_string(),
                 None,
@@ -530,11 +520,13 @@ mod test {
         .unwrap();
 
         // Register the user
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice").unwrap();
+
         registry
             .write()
             .await
-            .register_user(&alice, "alice".to_string(), None, 10)
+            .register_user(&author, handle, None, 10)
             .await
             .unwrap();
 
@@ -542,7 +534,7 @@ mod test {
         registry
             .write()
             .await
-            .register_org(&alice, org_id.to_string(), 10)
+            .register_org(&author, org_id.to_string(), 10)
             .await
             .unwrap();
 
@@ -551,7 +543,7 @@ mod test {
             .write()
             .await
             .register_project(
-                &alice,
+                &author,
                 org_id.to_string(),
                 project_name.to_string(),
                 Some(
@@ -608,13 +600,14 @@ mod test {
             Arc::clone(&cache),
             subscriptions,
         );
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice").unwrap();
 
         // Register the user
         cache
             .write()
             .await
-            .register_user(&alice, "alice".to_string(), None, 10)
+            .register_user(&author, handle, None, 10)
             .await
             .unwrap();
 

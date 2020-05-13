@@ -20,7 +20,7 @@ mod transaction;
 pub use transaction::{Cache, Cacher, Message, State, Transaction};
 
 /// Wrapper for [`protocol::Id`] to add serialization.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Id(protocol::Id);
 
 impl fmt::Display for Id {
@@ -151,6 +151,7 @@ impl Serialize for Hash {
 
 /// `ProjectID` wrapper for serde de/serialization
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Librad project ID.
     pub id: String,
@@ -167,7 +168,8 @@ pub struct Thresholds {
 }
 
 /// The registered org with identifier and avatar
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Org {
     /// The unique identifier of the org
     pub id: String,
@@ -188,7 +190,8 @@ pub struct Project {
 }
 
 /// The registered user with associated coco id.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct User {
     /// Unique handle regsistered on the Regisry.
     pub handle: Id,
@@ -211,7 +214,7 @@ pub trait Client: Clone + Send + Sync {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    async fn list_orgs(&self, user_id: String) -> Result<Vec<Org>, error::Error>;
+    async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error>;
 
     /// Create a new unique Org on the Registry.
     ///
@@ -281,7 +284,7 @@ pub trait Client: Clone + Send + Sync {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error>;
+    async fn get_user(&self, handle: Id) -> Result<Option<User>, error::Error>;
 
     /// Create a new unique user on the Registry.
     ///
@@ -291,7 +294,7 @@ pub trait Client: Clone + Send + Sync {
     async fn register_user(
         &mut self,
         author: &protocol::ed25519::Pair,
-        handle: String,
+        handle: Id,
         id: Option<String>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error>;
@@ -345,7 +348,7 @@ impl Client for Registry {
             let mut members = Vec::new();
             for member in org.members.clone() {
                 members.push(
-                    self.get_user(member.to_string())
+                    self.get_user(Id(member))
                         .await?
                         .expect("Couldn't retrieve org member"),
                 );
@@ -360,28 +363,19 @@ impl Client for Registry {
         }
     }
 
-    async fn list_orgs(&self, user_id: String) -> Result<Vec<Org>, error::Error> {
-        let org_ids = self.client.list_orgs().await?.into_iter();
+    async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error> {
         let mut orgs = Vec::new();
-        for org_id in org_ids {
-            orgs.push(self.get_org(org_id.to_string()).await?.expect("Get org"));
+        for org_id in &self.client.list_orgs().await? {
+            let org = self
+                .get_org(org_id.to_string())
+                .await?
+                .expect("org missing for id");
+            if org.members.iter().any(|m| m.handle == handle) {
+                orgs.push(org);
+            }
         }
 
-        // TODO(rudolfs): remove this branching once we have a list of Orgs in
-        // the session endpoint
-        if user_id.is_empty() {
-            Ok(orgs)
-        } else {
-            Ok(orgs
-                .into_iter()
-                .filter(|org| {
-                    org.members
-                        .clone()
-                        .into_iter()
-                        .any(|member| member.handle.to_string() == user_id)
-                })
-                .collect())
-        }
+        Ok(orgs)
     }
 
     async fn register_org(
@@ -589,14 +583,13 @@ impl Client for Registry {
         })
     }
 
-    async fn get_user(&self, handle: String) -> Result<Option<User>, error::Error> {
-        let user_id = protocol::Id::try_from(handle.clone())?;
+    async fn get_user(&self, handle: Id) -> Result<Option<User>, error::Error> {
         Ok(self
             .client
-            .get_user(user_id.clone())
+            .get_user(handle.0.clone())
             .await?
             .map(|_user| User {
-                handle: Id(user_id),
+                handle,
                 maybe_entity_id: None,
             }))
     }
@@ -604,16 +597,13 @@ impl Client for Registry {
     async fn register_user(
         &mut self,
         author: &protocol::ed25519::Pair,
-        handle: String,
+        handle: Id,
         id: Option<String>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
-        // Verify that inputs are valid.
-        let user_id = protocol::Id::try_from(handle.clone())?;
-
         // Prepare and submit user registration transaction.
         let register_message = protocol::message::RegisterUser {
-            user_id: user_id.clone(),
+            user_id: handle.0.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -629,10 +619,7 @@ impl Client for Registry {
 
         Ok(Transaction {
             id: Hash(register_applied.tx_hash),
-            messages: vec![Message::UserRegistration {
-                handle: Id(user_id),
-                id: id,
-            }],
+            messages: vec![Message::UserRegistration { handle, id: id }],
             state: transaction::State::Applied {
                 block: Hash(register_applied.block),
             },
@@ -676,7 +663,7 @@ mod test {
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
 
-    use super::{Client, Metadata, ProjectName, Registry};
+    use super::{Client, Id, Metadata, ProjectName, Registry};
     use crate::avatar;
 
     #[tokio::test]
@@ -684,16 +671,17 @@ mod test {
         // Test that org registration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
-        let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice").unwrap();
 
         // Register the user
         let user_registration = registry
-            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
         let result =
-            futures::executor::block_on(registry.register_org(&alice, "monadic".into(), 10));
+            futures::executor::block_on(registry.register_org(&author, "monadic".into(), 10));
         assert!(result.is_ok());
 
         let org_id = protocol::Id::try_from("monadic").unwrap();
@@ -709,24 +697,25 @@ mod test {
         // Test that org unregistration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
-        let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice").unwrap();
 
         // Register the user
         let user_registration = registry
-            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = protocol::Id::try_from("monadic").unwrap();
         let registration = registry
-            .register_org(&alice, org_id.clone().into(), 10)
+            .register_org(&author, org_id.clone().into(), 10)
             .await;
         assert!(registration.is_ok());
 
         // Unregister the org
         let unregistration =
-            futures::executor::block_on(registry.unregister_org(&alice, "monadic".into(), 10));
+            futures::executor::block_on(registry.unregister_org(&author, "monadic".into(), 10));
         assert!(unregistration.is_ok());
     }
 
@@ -735,18 +724,19 @@ mod test {
         // Test that a registered org can be retrieved.
         let client = protocol::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
-        let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice").unwrap();
 
         // Register the user
         let user_registration = registry
-            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = protocol::Id::try_from("monadic").unwrap();
         let registration = registry
-            .register_org(&alice, org_id.clone().into(), 10)
+            .register_org(&author, org_id.clone().into(), 10)
             .await;
         assert!(registration.is_ok());
 
@@ -764,23 +754,24 @@ mod test {
         // Test that a registered org can be retrieved.
         let client = protocol::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
-        let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice").unwrap();
 
         // Register the user
         let user_registration = registry
-            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = protocol::Id::try_from("monadic").unwrap();
         let org_registration = registry
-            .register_org(&alice, org_id.clone().into(), 10)
+            .register_org(&author, org_id.clone().into(), 10)
             .await;
         assert!(org_registration.is_ok());
 
         // List the orgs
-        let orgs = registry.list_orgs("alice".to_string()).await.unwrap();
+        let orgs = registry.list_orgs(handle).await.unwrap();
         assert_eq!(orgs.len(), 1);
         assert_eq!(orgs[0].id, "monadic");
     }
@@ -790,25 +781,26 @@ mod test {
         // Test that a registered project is included in the list of org projects.
         let client = protocol::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
-        let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice").unwrap();
 
         // Register the user
         let user_registration = registry
-            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = protocol::Id::try_from("monadic").unwrap();
         let org_registration = registry
-            .register_org(&alice, org_id.clone().into(), 10)
+            .register_org(&author, org_id.clone().into(), 10)
             .await;
         assert!(org_registration.is_ok());
 
         // Register the project
         let result = registry
             .register_project(
-                &alice,
+                &author,
                 org_id.into(),
                 "radicle".into(),
                 Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
@@ -835,25 +827,26 @@ mod test {
         // Test that project registration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
         let mut registry = Registry::new(client.clone());
-        let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice").unwrap();
 
         // Register the user
         let user_registration = registry
-            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
         // Register the org
         let org_id = protocol::Id::try_from("monadic").unwrap();
         let org_result = registry
-            .register_org(&alice, org_id.clone().into(), 10)
+            .register_org(&author, org_id.clone().into(), 10)
             .await;
         assert!(org_result.is_ok());
 
         // Register the project
         let result = registry
             .register_project(
-                &alice,
+                &author,
                 org_id.into(),
                 "radicle".into(),
                 Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
@@ -883,10 +876,11 @@ mod test {
     async fn register_user() {
         let client = protocol::Client::new_emulator();
         let mut registry = Registry::new(client);
-        let robo = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("cloudhead").unwrap();
 
         let res = registry
-            .register_user(&robo, "cloudhead".into(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
             .await;
         assert!(res.is_ok());
     }

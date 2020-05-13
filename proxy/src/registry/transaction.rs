@@ -164,8 +164,8 @@ where
         self.client.get_org(id).await
     }
 
-    async fn list_orgs(&self, user_id: String) -> Result<Vec<registry::Org>, error::Error> {
-        self.client.list_orgs(user_id).await
+    async fn list_orgs(&self, handle: registry::Id) -> Result<Vec<registry::Org>, error::Error> {
+        self.client.list_orgs(handle).await
     }
 
     async fn register_org(
@@ -228,14 +228,14 @@ where
         Ok(tx)
     }
 
-    async fn get_user(&self, handle: String) -> Result<Option<registry::User>, error::Error> {
+    async fn get_user(&self, handle: registry::Id) -> Result<Option<registry::User>, error::Error> {
         self.client.get_user(handle).await
     }
 
     async fn register_user(
         &mut self,
         author: &protocol::ed25519::Pair,
-        handle: String,
+        handle: registry::Id,
         id: Option<String>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {

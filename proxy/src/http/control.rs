@@ -156,7 +156,7 @@ mod handler {
     /// Reset the session state by clearing all buckets of the underlying store.
     pub async fn nuke_session(store: Arc<RwLock<Store>>) -> Result<impl Reply, Rejection> {
         let store = store.read().await;
-        session::clear(&store)?;
+        session::clear_current(&store)?;
 
         Ok(reply::json(&true))
     }
