@@ -33,7 +33,7 @@ fn create_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -58,7 +58,7 @@ fn get_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("projects")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(document::param::<String>("id", "Project id"))
         .and(document::document(document::description(
             "Find Project by ID",
@@ -87,7 +87,7 @@ fn list_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
