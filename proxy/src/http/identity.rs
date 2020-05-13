@@ -14,7 +14,7 @@ use crate::registry;
 
 /// Combination of all identity routes.
 pub fn filters<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter().or(create_filter(registry, store))
@@ -22,7 +22,7 @@ pub fn filters<R: registry::Client>(
 
 /// `POST /identities`
 fn create_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("identities")
@@ -89,7 +89,7 @@ mod handler {
 
     /// Create a new [`identity::Identity`].
     pub async fn create<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {

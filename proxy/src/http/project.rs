@@ -18,7 +18,7 @@ use crate::registry;
 /// Combination of all routes.
 pub fn filters<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(Arc::clone(&paths))
@@ -105,7 +105,7 @@ fn list_filter(
 
 /// `POST /projects/register`
 fn register_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / "register")
@@ -216,7 +216,7 @@ mod handler {
 
     /// Register a project on the Registry.
     pub async fn register<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {

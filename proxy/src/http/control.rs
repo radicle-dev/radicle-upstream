@@ -13,7 +13,7 @@ use crate::registry;
 pub fn routes<R: registry::Client>(
     enable: bool,
     librad_paths: Arc<RwLock<paths::Paths>>,
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("control")
@@ -38,7 +38,7 @@ pub fn routes<R: registry::Client>(
 #[allow(dead_code)]
 fn filters<R: registry::Client>(
     librad_paths: Arc<RwLock<paths::Paths>>,
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     create_project_filter(Arc::clone(&librad_paths))
@@ -68,7 +68,7 @@ fn nuke_coco_filter(
 
 /// GET /nuke/registry
 fn nuke_registry_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "registry")
         .and(http::with_container(registry))
@@ -143,7 +143,7 @@ mod handler {
 
     /// Reset the Registry state by replacing the emulator in place.
     pub async fn nuke_registry<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
     ) -> Result<impl Reply, Rejection> {
         registry
             .write()

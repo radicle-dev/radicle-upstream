@@ -13,7 +13,7 @@ use crate::registry;
 
 /// Prefixed filter
 pub fn routes<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("users").and(
@@ -26,7 +26,7 @@ pub fn routes<R: registry::Client>(
 /// Combination of all user filters.
 #[cfg(test)]
 fn filters<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_orgs_filter(Arc::clone(&registry))
@@ -36,7 +36,7 @@ fn filters<R: registry::Client>(
 
 /// GET /<handle>
 fn get_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(http::with_container(registry))
@@ -58,7 +58,7 @@ fn get_filter<R: registry::Client>(
 
 /// POST /
 fn register_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
@@ -81,7 +81,7 @@ fn register_filter<R: registry::Client>(
 
 /// `GET /<handle>/orgs`
 fn list_orgs_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(http::with_container(registry))
@@ -116,7 +116,7 @@ mod handler {
 
     /// Get the [`registry::User`] for the given `handle`.
     pub async fn get<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let user = registry.read().await.get_user(handle).await?;
@@ -125,7 +125,7 @@ mod handler {
 
     /// Register a user on the Registry.
     pub async fn register<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -148,7 +148,7 @@ mod handler {
 
     /// List the orgs the user is a member of.
     pub async fn list_orgs<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;

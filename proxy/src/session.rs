@@ -5,7 +5,7 @@ use crate::error;
 use crate::identity;
 use crate::registry;
 
-/// Container for all local state.
+/// Shared for all local state.
 #[derive(Debug)]
 pub struct Session {
     /// The currently used [`identity::Identity`].

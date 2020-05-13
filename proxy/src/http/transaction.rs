@@ -10,14 +10,14 @@ use crate::registry;
 
 /// Combination of all transaction routes.
 pub fn filters<C: registry::Cache>(
-    cache: http::Container<C>,
+    cache: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(cache)
 }
 
 /// `POST /transactions`
 fn list_filter<C: registry::Cache>(
-    cache: http::Container<C>,
+    cache: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("transactions")
         .and(warp::post())
@@ -55,7 +55,7 @@ mod handler {
 
     /// List all transactions.
     pub async fn list<C: registry::Cache>(
-        cache: http::Container<C>,
+        cache: http::Shared<C>,
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection> {
         let tx_ids = input

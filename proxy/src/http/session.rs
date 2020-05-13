@@ -14,7 +14,7 @@ use crate::session;
 
 /// `GET /`
 pub fn get_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("session")
@@ -47,7 +47,7 @@ mod handler {
 
     /// Fetch the [`session::Session`].
     pub async fn get<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
     ) -> Result<impl Reply, Rejection> {
         let store = store.read().await;

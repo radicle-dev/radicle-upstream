@@ -1,4 +1,4 @@
-//! Container to bundle and associate information around an identity.
+//! Shared to bundle and associate information around an identity.
 
 use crate::avatar;
 use crate::error;

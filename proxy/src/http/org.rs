@@ -17,7 +17,7 @@ use crate::registry;
 /// Prefixed filters..
 pub fn routes<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("orgs").and(
@@ -32,7 +32,7 @@ pub fn routes<R: registry::Client>(
 #[cfg(test)]
 fn filters<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::clone(&registry))
@@ -43,7 +43,7 @@ fn filters<R: registry::Client>(
 
 /// `GET /<id>`
 fn get_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_container(registry)
         .and(warp::get())
@@ -70,7 +70,7 @@ fn get_filter<R: registry::Client>(
 
 /// `GET /<id>/projects/<project_name>`
 fn get_project_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_container(registry)
         .and(warp::get())
@@ -105,7 +105,7 @@ fn get_project_filter<R: registry::Client>(
 /// `GET /<id>/projects`
 fn get_projects_filter<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_paths(paths)
         .and(http::with_container(registry))
@@ -129,7 +129,7 @@ fn get_projects_filter<R: registry::Client>(
 
 /// `POST /`
 fn register_filter<R: registry::Client>(
-    registry: http::Container<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_container(registry)
@@ -170,7 +170,7 @@ mod handler {
 
     /// Get the Org for the given `id`.
     pub async fn get<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -181,7 +181,7 @@ mod handler {
 
     /// Get the [`registry::Project`] under the given org id.
     pub async fn get_project<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         org_id: String,
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
@@ -194,7 +194,7 @@ mod handler {
     /// Get all projects under the given org id.
     pub async fn get_projects<R: registry::Client>(
         paths: Arc<RwLock<Paths>>,
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -221,7 +221,7 @@ mod handler {
 
     /// Register an org on the Registry.
     pub async fn register<R: registry::Client>(
-        registry: http::Container<R>,
+        registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {

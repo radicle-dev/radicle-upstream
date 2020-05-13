@@ -24,7 +24,7 @@ mod user;
 /// Main entry point for HTTP API.
 pub fn routes<R>(
     librad_paths: Arc<RwLock<paths::Paths>>,
-    registry: Container<R>,
+    registry: Shared<R>,
     store: Arc<RwLock<kv::Store>>,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone
@@ -85,13 +85,13 @@ pub fn with_paths(
 }
 
 /// Thread-safe container for threadsafe pass-through to filters and handlers.
-pub type Container<T> = Arc<RwLock<T>>;
+pub type Shared<T> = Arc<RwLock<T>>;
 
-/// State filter to expose a [`Container`] and its content.
+/// State filter to expose a [`Shared`] and its content.
 #[must_use]
 pub fn with_container<T>(
-    container: Container<T>,
-) -> impl Filter<Extract = (Container<T>,), Error = Infallible> + Clone
+    container: Shared<T>,
+) -> impl Filter<Extract = (Shared<T>,), Error = Infallible> + Clone
 where
     T: Send + Sync,
 {
