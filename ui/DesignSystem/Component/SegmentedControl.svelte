@@ -19,6 +19,9 @@
   .segmented-control {
     display: flex;
   }
+  .segmented-control:hover button.active:not(:hover) {
+    background: none;
+  }
   .segmented-control button {
     cursor: pointer;
     padding: 8px 16px;
