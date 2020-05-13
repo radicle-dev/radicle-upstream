@@ -62,7 +62,6 @@ mod handler {
             .ids
             .iter()
             .map(|id| {
-                println!("INPUT ID: {}", id);
                 radicle_registry_client::TxHash::from_str(id)
                     .expect("unable to get hash from string")
             })
