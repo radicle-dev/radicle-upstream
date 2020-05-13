@@ -1,12 +1,15 @@
 //! Container to bundle and associate information around an identity.
 
+use serde::{Deserialize, Serialize};
+
 use crate::avatar;
 use crate::error;
 use crate::registry;
 use std::convert::TryFrom;
 
 /// The users personal identifying metadata and keys.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Identity {
     /// The librad id.
     pub id: String,
@@ -21,7 +24,8 @@ pub struct Identity {
 }
 
 /// User maintained information for an identity, which can evolve over time.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Similar to a nickname, the users chosen short identifier.
     pub handle: String,
@@ -39,17 +43,17 @@ pub fn create(
     display_name: Option<String>,
     avatar_url: Option<String>,
 ) -> Result<Identity, error::Error> {
-    let id = "123abcd.git";
+    let id = format!("{}@123abcd.git", handle);
     Ok(Identity {
-        id: id.into(),
-        shareable_entity_identifier: format!("{}@123abcd.git", handle),
+        id: id.clone(),
+        shareable_entity_identifier: id.clone(),
         metadata: Metadata {
             handle,
             display_name,
             avatar_url,
         },
         registered: None,
-        avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
+        avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
     })
 }
 

@@ -1,7 +1,5 @@
 //! Endpoints and serialisation for [`session::Session`] related types.
 
-use serde::ser::SerializeStruct as _;
-use serde::{Serialize, Serializer};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
@@ -52,22 +50,9 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let store = store.read().await;
         let reg = registry.read().await;
-        let sess = session::get((*reg).clone(), &store).await?;
+        let sess = session::current(&store, (*reg).clone()).await?;
 
         Ok(reply::json(&sess))
-    }
-}
-
-impl Serialize for session::Session {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Session", 1)?;
-        state.serialize_field("identity", &self.identity)?;
-        state.serialize_field("orgs", &self.orgs)?;
-
-        state.end()
     }
 }
 
