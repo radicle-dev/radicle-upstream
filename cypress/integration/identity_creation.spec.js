@@ -26,7 +26,7 @@ context("identity creation", () => {
 
       // Confirmation screen
       // TODO(rudolfs): change the emoji once the backend returns the right one
-      cy.get('[data-cy="identity-card"] img[alt="🐽"]').should("exist");
+      cy.get('[data-cy="identity-card"] img[alt="🥌"]').should("exist");
       cy.get('[data-cy="identity-card"]')
         .contains("Rafalca Romney")
         .should("exist");
@@ -38,7 +38,7 @@ context("identity creation", () => {
       cy.get('[data-cy="go-to-profile-button"]').click();
       // TODO(rudolfs): change this to the actual handle that we
       // just created once the backend is wired up
-      cy.get('[data-cy="profile-avatar"]').contains("cloudhead");
+      cy.get('[data-cy="profile-avatar"]').contains("rafalca");
     });
 
     it("is possible to directly register your identity after creating it", () => {
@@ -51,9 +51,7 @@ context("identity creation", () => {
       cy.contains("Register your handle").should("exist");
 
       cy.get('[data-cy="cancel-button"]').click();
-      // TODO(rudolfs): change this to the actual handle that we
-      // just created once the backend is wired up
-      cy.get('[data-cy="profile-avatar"]').contains("cloudhead");
+      cy.get('[data-cy="profile-avatar"]').contains("rafalca");
     });
 
     context(
@@ -96,9 +94,7 @@ context("identity creation", () => {
 
           // Land on profile screen
           cy.get('[data-cy="modal-close-button"]').click();
-          // TODO(rudolfs): change this to the actual handle that we
-          // just created once the backend is wired up
-          cy.get('[data-cy="profile-avatar"]').contains("cloudhead");
+          cy.get('[data-cy="profile-avatar"]').contains("rafalca");
         });
       }
     );
@@ -118,9 +114,7 @@ context("identity creation", () => {
         cy.get("body").type("{esc}");
 
         // Land on profile screen
-        // TODO(rudolfs): change this to the actual handle that we
-        // just created once the backend is wired up
-        cy.get('[data-cy="profile-avatar"]').contains("cloudhead");
+        cy.get('[data-cy="profile-avatar"]').contains("rafalca");
       });
     });
   });

@@ -21,6 +21,8 @@
     ProjectCard,
     Rad,
     Row,
+    SegmentedControl,
+    Stats,
     StepCounter,
     TrackToggle,
     TransactionAccordion,
@@ -225,6 +227,28 @@
         avatarFallback: orgs[1].avatarFallback,
       },
     },
+  ];
+
+  const segmentedControlOptions = [
+    {
+      title: "Open",
+      value: 0,
+    },
+    {
+      title: "Closed",
+      value: 1,
+    },
+    {
+      title: "All",
+      value: 2,
+    },
+  ];
+
+  const stats = [
+    { icon: Icon.Commit, count: 12 },
+    { icon: Icon.Branch, count: 1 },
+    { icon: Icon.Member, count: 2 },
+    { icon: Icon.Graph, count: 32 },
   ];
 </script>
 
@@ -641,6 +665,7 @@
           style="margin-right: 16px"
           size="regular"
           variant="circle"
+          registered={true}
           avatarFallback={avatarFallback1}
           title="cloudhead" />
       </Swatch>
@@ -744,14 +769,15 @@
     </Section>
 
     <Section title="Cards" subTitle="Project, user, etc">
+      <Swatch>
+        <ProjectCard title="Radicle" />
+      </Swatch>
 
       <Swatch>
         <ProjectCard
-          projectId="2fFdyRzay2Rew9CpjEunPLp2PWe7HSvXWB3AJ.git"
           title="Radicle"
           description="Best project in the world"
-          isRegistered={true}
-          stats={{ branches: '12', commits: '12k', contributors: '120' }} />
+          showRegisteredBadge={true} />
       </Swatch>
 
       <Swatch>
@@ -859,6 +885,17 @@
 
       <Swatch>
         <TrackToggle peerCount="2.3k" />
+      </Swatch>
+
+      <Swatch>
+        <SegmentedControl
+          active={1}
+          options={segmentedControlOptions}
+          on:select={() => console.log('event(select)')} />
+      </Swatch>
+
+      <Swatch>
+        <Stats {stats} />
       </Swatch>
     </Section>
   </div>

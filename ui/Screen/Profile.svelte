@@ -12,14 +12,12 @@
   } from "../DesignSystem/Component";
   import { Avatar, Icon } from "../DesignSystem/Primitive";
 
-  import Onboard from "./Profile/Onboard.svelte";
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/": Projects,
-    "/profile/onboard/": Onboard,
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
     "*": NotFound,
@@ -66,13 +64,6 @@
   const session = getContext("session");
 </script>
 
-<style>
-  .profile-avatar {
-    display: flex;
-    align-items: center;
-  }
-</style>
-
 <SidebarLayout
   style="margin-top: calc(var(--topbar-height) + 33px)"
   dataCy="profile-screen">
@@ -80,19 +71,15 @@
   <Topbar style="position: fixed; top: 0;">
     <a slot="left" href={path.profileProjects()} use:link>
       <!-- TODO(xla): Handle other states -->
-      <div class="profile-avatar">
-        <Avatar
-          dataCy="profile-avatar"
-          avatarFallback={session.identity.avatarFallback}
-          imageUrl={session.identity.metadata.avatarUrl}
-          variant="circle"
-          title={session.identity.metadata.handle}
-          size="regular"
-          style="color: var(--color-secondary)" />
-        {#if session.identity.registered}
-          <Icon.Badge style="margin-left: 8px; fill: var(--color-primary);" />
-        {/if}
-      </div>
+      <Avatar
+        dataCy="profile-avatar"
+        avatarFallback={session.identity.avatarFallback}
+        imageUrl={session.identity.metadata.avatarUrl}
+        variant="circle"
+        title={session.identity.metadata.handle}
+        size="regular"
+        registered={session.identity.registered}
+        style="color: var(--color-secondary)" />
     </a>
     <div slot="middle">
       <HorizontalMenu items={topbarMenuItems} />

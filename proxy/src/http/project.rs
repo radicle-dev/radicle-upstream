@@ -10,18 +10,19 @@ use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::http;
 use crate::notification;
 use crate::project;
 use crate::registry;
 
 /// Combination of all routes.
-pub fn filters(
+pub fn filters<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    list_filter(Arc::<RwLock<Paths>>::clone(&paths))
-        .or(create_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+    list_filter(Arc::clone(&paths))
+        .or(create_filter(Arc::clone(&paths)))
         .or(get_filter(paths))
         .or(register_filter(registry, subscriptions))
 }
@@ -103,14 +104,14 @@ fn list_filter(
 }
 
 /// `POST /projects/register`
-fn register_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn register_filter<R: registry::Client>(
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / "register")
         .and(warp::post())
-        .and(super::with_registry(registry))
-        .and(super::with_subscriptions(subscriptions))
+        .and(http::with_shared(registry))
+        .and(http::with_subscriptions(subscriptions))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Register a Project on the Registry",
@@ -146,6 +147,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::http;
     use crate::notification;
     use crate::project;
     use crate::registry;
@@ -213,8 +215,8 @@ mod handler {
     }
 
     /// Register a project on the Registry.
-    pub async fn register(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn register<R: registry::Client>(
+        registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -505,7 +507,7 @@ mod test {
     use crate::coco;
     use crate::notification;
     use crate::project;
-    use crate::registry;
+    use crate::registry::{self, Cache as _};
 
     #[tokio::test]
     async fn create() {
@@ -637,16 +639,12 @@ mod test {
     async fn register() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path()).unwrap()));
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(
-            Arc::<RwLock<Paths>>::clone(&librad_paths),
-            Arc::<RwLock<registry::Registry>>::clone(&registry),
-            subscriptions,
-        );
+        let api = super::filters(Arc::clone(&librad_paths), Arc::clone(&cache), subscriptions);
         let res = request()
             .method("POST")
             .path("/projects/register")
@@ -658,12 +656,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = registry
-            .write()
-            .await
-            .list_transactions(vec![])
-            .await
-            .unwrap();
+        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();

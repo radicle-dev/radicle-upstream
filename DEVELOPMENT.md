@@ -493,7 +493,6 @@ yarn lint                 # Check UI code for linting errors
 yarn proxy:build          # Build the proxy binary
 yarn proxy:build:release  # Build the release version of the proxy, stripped of debug symbols
 yarn proxy:start          # Start only the proxy with its default configuration
-yarn proxy:start:test     # Start the proxy in test mode, where state is isolated and lives in memory or temporary directories
 ```
 
 ## CI setup

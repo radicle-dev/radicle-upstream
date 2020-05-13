@@ -1542,6 +1542,7 @@ checksum = "cde1d1ce05b9169af359041cf834075ca4478f5917e6198d9454773e98aae143"
 dependencies = [
  "bincode",
  "serde",
+ "serde_json",
  "sled",
  "thiserror",
  "toml",
@@ -2631,6 +2632,7 @@ checksum = "8e86d370532557ae7573551a1ec8235a0f8d6cb276c7c9e6aa490b511c447485"
 name = "proxy"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "directories",
  "futures 0.3.4",
  "hex",
@@ -2645,7 +2647,6 @@ dependencies = [
  "rand 0.7.3",
  "serde",
  "serde_cbor 0.11.1",
- "serde_derive",
  "serde_json",
  "tempfile",
  "tokio 0.2.18",
@@ -2703,7 +2704,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-client"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=f05517c470e426d2f59c9f873845b5e1019b57b4#f05517c470e426d2f59c9f873845b5e1019b57b4"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=1b044c0c408adafb4956760178c10d4779d087d4#1b044c0c408adafb4956760178c10d4779d087d4"
 dependencies = [
  "async-trait",
  "derive_more 0.15.0",
@@ -2737,7 +2738,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-core"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=f05517c470e426d2f59c9f873845b5e1019b57b4#f05517c470e426d2f59c9f873845b5e1019b57b4"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=1b044c0c408adafb4956760178c10d4779d087d4#1b044c0c408adafb4956760178c10d4779d087d4"
 dependencies = [
  "derive-try-from-primitive",
  "parity-scale-codec",
@@ -2750,7 +2751,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-runtime"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=f05517c470e426d2f59c9f873845b5e1019b57b4#f05517c470e426d2f59c9f873845b5e1019b57b4"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=1b044c0c408adafb4956760178c10d4779d087d4#1b044c0c408adafb4956760178c10d4779d087d4"
 dependencies = [
  "frame-executive",
  "frame-support",

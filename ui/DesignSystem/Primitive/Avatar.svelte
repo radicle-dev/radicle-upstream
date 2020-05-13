@@ -1,5 +1,6 @@
 <script>
   import twemoji from "twemoji";
+  import Icon from "./Icon";
   import Title from "./Title.svelte";
 
   export let style = null;
@@ -10,6 +11,7 @@
   export let imageUrl = null;
   export let avatarFallback = null; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
   export let title = null;
+  export let registered = false;
 
   export let variant = "circle"; // circle | square
   export let size = "regular"; // small | regular | medium | big | huge
@@ -174,12 +176,18 @@
         var(--title-color, var(--color-foreground))">
         {title}
       </Title>
+      {#if registered}
+        <Icon.Badge style="margin-left: 8px; fill: var(--color-primary);" />
+      {/if}
     {:else}
       <Title
         style="white-space: nowrap; margin-left: 12px; color: var(--title-color,
         var(--color-foreground))">
         {title}
       </Title>
+      {#if registered}
+        <Icon.Badge style="margin-left: 8px; fill: var(--color-primary);" />
+      {/if}
     {/if}
   {/if}
 </div>
