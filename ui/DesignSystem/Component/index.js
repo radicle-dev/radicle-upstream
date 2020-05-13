@@ -13,6 +13,7 @@ import Rad from "./Rad.svelte";
 import RadioOption from "./RadioOption.svelte";
 import StepModalLayout from "./Registration/StepModalLayout.svelte";
 import Remote from "./Remote.svelte";
+import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Stats from "./Stats.svelte";
@@ -43,6 +44,7 @@ export {
   StepModalLayout,
   Remote,
   Row,
+  SegmentedControl,
   Sidebar,
   SidebarLayout,
   StepCounter,
