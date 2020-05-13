@@ -51,19 +51,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         librad::paths::Paths::new()?
     };
-    let store = if args.test {
-        kv::Store::new(kv::Config::new(temp_dir.path().join("store")))?
-    } else {
-        let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
-        kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?
+    let store = {
+        let store_path = if args.test {
+            temp_dir.path().join("store")
+        } else {
+            let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
+            dir.data_dir().join("store")
+        };
+        let config = kv::Config::new(store_path).flush_every_ms(100);
+
+        kv::Store::new(config)?
     };
 
     log::info!("Starting API");
 
     let lib_paths = Arc::new(RwLock::new(librad_paths));
-    let reg = Arc::new(RwLock::new(registry::Registry::new(registry_client)));
+    let registry_cache = Arc::new(RwLock::new(registry::Cacher::new(
+        registry::Registry::new(registry_client),
+        &store,
+    )));
     let st = Arc::new(RwLock::new(store));
-    let routes = http::routes(lib_paths, reg, st, args.test).with(
+    let routes = http::routes(lib_paths, registry_cache, st, args.test).with(
         warp::cors()
             .allow_any_origin()
             .allow_headers(&[warp::http::header::CONTENT_TYPE])

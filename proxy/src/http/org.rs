@@ -9,14 +9,15 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::http;
 use crate::notification;
 use crate::project;
 use crate::registry;
 
 /// Prefixed filters..
-pub fn routes(
+pub fn routes<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("orgs").and(
@@ -29,9 +30,9 @@ pub fn routes(
 
 /// Combination of all org routes.
 #[cfg(test)]
-fn filters(
+fn filters<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::clone(&registry))
@@ -41,10 +42,10 @@ fn filters(
 }
 
 /// `GET /<id>`
-fn get_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn get_filter<R: registry::Client>(
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_shared(registry)
         .and(warp::get())
         .and(document::param::<String>("id", "Unique ID of the Org"))
         .and(path::end())
@@ -60,7 +61,7 @@ fn get_filter(
         .and(document::document(
             document::response(
                 404,
-                document::body(super::error::Error::document()).mime("application/json"),
+                document::body(http::error::Error::document()).mime("application/json"),
             )
             .description("Org not found"),
         ))
@@ -68,10 +69,10 @@ fn get_filter(
 }
 
 /// `GET /<id>/projects/<project_name>`
-fn get_project_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn get_project_filter<R: registry::Client>(
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_shared(registry)
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -94,7 +95,7 @@ fn get_project_filter(
         .and(document::document(
             document::response(
                 404,
-                document::body(super::error::Error::document()).mime("application/json"),
+                document::body(http::error::Error::document()).mime("application/json"),
             )
             .description("Project not found"),
         ))
@@ -102,12 +103,12 @@ fn get_project_filter(
 }
 
 /// `GET /<id>/projects`
-fn get_projects_filter(
+fn get_projects_filter<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_paths(paths)
-        .and(super::with_registry(registry))
+    http::with_paths(paths)
+        .and(http::with_shared(registry))
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -127,12 +128,12 @@ fn get_projects_filter(
 }
 
 /// `POST /`
-fn register_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn register_filter<R: registry::Client>(
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
-        .and(super::with_subscriptions(subscriptions))
+    http::with_shared(registry)
+        .and(http::with_subscriptions(subscriptions))
         .and(warp::post())
         .and(warp::body::json())
         .and(path::end())
@@ -162,13 +163,14 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::http;
     use crate::notification;
     use crate::project;
     use crate::registry;
 
     /// Get the Org for the given `id`.
-    pub async fn get(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn get<R: registry::Client>(
+        registry: http::Shared<R>,
         id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -178,8 +180,8 @@ mod handler {
     }
 
     /// Get the [`registry::Project`] under the given org id.
-    pub async fn get_project(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn get_project<R: registry::Client>(
+        registry: http::Shared<R>,
         org_id: String,
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
@@ -190,9 +192,9 @@ mod handler {
     }
 
     /// Get all projects under the given org id.
-    pub async fn get_projects(
+    pub async fn get_projects<R: registry::Client>(
         paths: Arc<RwLock<Paths>>,
-        registry: Arc<RwLock<registry::Registry>>,
+        registry: http::Shared<R>,
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -218,8 +220,8 @@ mod handler {
     }
 
     /// Register an org on the Registry.
-    pub async fn register(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn register<R: registry::Client>(
+        registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -367,7 +369,7 @@ mod test {
     use crate::avatar;
     use crate::coco;
     use crate::notification;
-    use crate::registry;
+    use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn get() {
@@ -596,20 +598,20 @@ mod test {
     async fn register() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths.clone())),
-            Arc::clone(&registry),
+            Arc::clone(&cache),
             subscriptions,
         );
         let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         // Register the user
-        registry
+        cache
             .write()
             .await
             .register_user(&alice, "alice".to_string(), None, 10)
@@ -625,15 +627,10 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = registry
-            .write()
-            .await
-            .list_transactions(vec![])
-            .await
-            .unwrap();
+        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
 
         // Get the registered org
-        let org = registry
+        let org = cache
             .read()
             .await
             .get_org("monadic".to_string())

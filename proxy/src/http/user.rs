@@ -4,16 +4,16 @@ use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::http;
 use crate::notification;
 use crate::registry;
 
 /// Prefixed filter
-pub fn routes(
-    registry: Arc<RwLock<registry::Registry>>,
+pub fn routes<R: registry::Client>(
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("users").and(
@@ -25,8 +25,8 @@ pub fn routes(
 
 /// Combination of all user filters.
 #[cfg(test)]
-fn filters(
-    registry: Arc<RwLock<registry::Registry>>,
+fn filters<R: registry::Client>(
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_orgs_filter(Arc::clone(&registry))
@@ -35,11 +35,11 @@ fn filters(
 }
 
 /// GET /<handle>
-fn get_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn get_filter<R: registry::Client>(
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
-        .and(super::with_registry(registry))
+        .and(http::with_shared(registry))
         .and(document::param::<String>(
             "handle",
             "ID of the user to query for",
@@ -57,13 +57,13 @@ fn get_filter(
 }
 
 /// POST /
-fn register_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn register_filter<R: registry::Client>(
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
-        .and(super::with_registry(registry))
-        .and(super::with_subscriptions(subscriptions))
+        .and(http::with_shared(registry))
+        .and(http::with_subscriptions(subscriptions))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Register a handle on the Registry",
@@ -80,11 +80,11 @@ fn register_filter(
 }
 
 /// `GET /<handle>/orgs`
-fn list_orgs_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn list_orgs_filter<R: registry::Client>(
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
-        .and(super::with_registry(registry))
+        .and(http::with_shared(registry))
         .and(document::param::<String>(
             "handle",
             "ID of the user to query for",
@@ -107,17 +107,16 @@ fn list_orgs_filter(
 /// User handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::http;
     use crate::notification;
     use crate::registry;
 
     /// Get the [`registry::User`] for the given `handle`.
-    pub async fn get(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn get<R: registry::Client>(
+        registry: http::Shared<R>,
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let user = registry.read().await.get_user(handle).await?;
@@ -125,8 +124,8 @@ mod handler {
     }
 
     /// Register a user on the Registry.
-    pub async fn register(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn register<R: registry::Client>(
+        registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -148,8 +147,8 @@ mod handler {
     }
 
     /// List the orgs the user is a member of.
-    pub async fn list_orgs(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn list_orgs<R: registry::Client>(
+        registry: http::Shared<R>,
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -239,22 +238,26 @@ mod test {
 
     use crate::avatar;
     use crate::notification;
-    use crate::registry;
+    use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn get() {
-        let mut registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        )));
         let subscriptions = notification::Subscriptions::default();
         let author = ed25519::Pair::from_legacy_string("//Alice", None);
 
         let handle = "cloudhead";
 
         let _tx = registry
+            .write()
+            .await
             .register_user(&author, handle.to_string(), None, 100)
             .await
             .unwrap();
 
-        let api = super::filters(Arc::new(RwLock::new(registry)), subscriptions);
+        let api = super::filters(registry, subscriptions);
         let res = request()
             .method("GET")
             .path(&format!("/{}", handle))
@@ -328,12 +331,13 @@ mod test {
 
     #[tokio::test]
     async fn register() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(Arc::clone(&cache), subscriptions);
         let res = request()
             .method("POST")
             .path("/")
@@ -344,12 +348,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = registry
-            .read()
-            .await
-            .list_transactions(vec![])
-            .await
-            .unwrap();
+        let txs = cache.read().await.list_transactions(vec![]).await.unwrap();
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
