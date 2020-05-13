@@ -2,6 +2,22 @@
   import * as path from "../../src/path.ts";
   import { push } from "svelte-spa-router";
   import IssuesCard from "./IssuesCard.svelte";
+  import { SegmentedControl } from "../../DesignSystem/Component";
+
+  const filterOptions = [
+    {
+      title: "Open",
+      value: 0,
+    },
+    {
+      title: "Closed",
+      value: 1,
+    },
+    {
+      title: "All",
+      value: 2,
+    },
+  ];
 
   export let params = null;
   const issues = [
@@ -36,14 +52,14 @@
       closed_at: "27 days",
     },
   ];
-  let currentFilter = "open";
+  let currentFilter = "Open";
   function updateFilter(newFilter) {
     currentFilter = newFilter;
   }
   $: filteredIssues =
-    currentFilter === "all"
+    currentFilter === "All"
       ? issues
-      : currentFilter === "open"
+      : currentFilter === "Open"
       ? issues.filter((issue) => issue.open)
       : issues.filter((issue) => !issue.open);
 </script>
@@ -61,51 +77,17 @@
     border-bottom: 0;
   }
 
-  .issueFilter {
+  .filters {
     margin-bottom: 24px;
-  }
-  .issueFilter button {
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 4px;
-    margin: 0;
-    background-color: var(--color-background);
-    color: var(--color-foreground-level-6);
-    font-family: var(--typeface-medium);
-  }
-  .issueFilter button:focus {
-    outline: none;
-  }
-  .issueFilter button.active {
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-secondary);
-  }
-  .issueFilter button:hover {
-    background-color: var(--color-foreground-level-1);
-  }
-  .issueFilter button:active {
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-5);
   }
 </style>
 
 <div class="container">
-  <div class="issueFilter">
-    <button
-      on:click={() => updateFilter('open')}
-      class:active={currentFilter === 'open'}>
-      open
-    </button>
-    <button
-      on:click={() => updateFilter('closed')}
-      class:active={currentFilter === 'closed'}>
-      closed
-    </button>
-    <button
-      on:click={() => updateFilter('all')}
-      class:active={currentFilter === 'all'}>
-      all
-    </button>
+  <div class="filters">
+    <SegmentedControl
+      active={0}
+      options={filterOptions}
+      on:select={(option) => updateFilter(option.detail.title)} />
   </div>
   <ul>
     {#each filteredIssues as issue}
