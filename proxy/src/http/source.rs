@@ -696,7 +696,11 @@ impl ToDocumentedType for coco::TreeEntry {
     }
 }
 
-#[allow(clippy::non_ascii_literal, clippy::result_unwrap_used)]
+#[allow(
+    clippy::non_ascii_literal,
+    clippy::option_unwrap_used,
+    clippy::result_unwrap_used
+)]
 #[cfg(test)]
 mod test {
     use librad::paths::Paths;

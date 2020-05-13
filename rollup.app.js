@@ -55,6 +55,6 @@ export default {
     chokidar: {
       usePolling: true,
     },
-    clearScreen: true,
+    clearScreen: false,
   },
 };

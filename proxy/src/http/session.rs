@@ -7,19 +7,20 @@ use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::http;
 use crate::identity;
 use crate::registry;
 use crate::session;
 
 /// `GET /`
-pub fn get_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+pub fn get_filter<R: registry::Client>(
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("session")
         .and(warp::get())
-        .and(super::with_registry(registry))
-        .and(super::with_store(store))
+        .and(http::with_shared(registry))
+        .and(http::with_store(store))
         .and(document::document(document::description(
             "Fetch active Session",
         )))
@@ -40,17 +41,18 @@ mod handler {
     use tokio::sync::RwLock;
     use warp::{reply, Rejection, Reply};
 
+    use crate::http;
     use crate::registry;
     use crate::session;
 
     /// Fetch the [`session::Session`].
-    pub async fn get(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn get<R: registry::Client>(
+        registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
     ) -> Result<impl Reply, Rejection> {
         let store = store.read().await;
         let reg = registry.read().await;
-        let sess = session::get(&reg, &store).await?;
+        let sess = session::get((*reg).clone(), &store).await?;
 
         Ok(reply::json(&sess))
     }
@@ -82,6 +84,7 @@ impl ToDocumentedType for session::Session {
     }
 }
 
+#[allow(clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
