@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.10](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.9...v0.0.10) (2020-05-13)
+
+
+### Features
+
+* **build:** improve dev ergonomics ([#379](https://github.com/radicle-dev/radicle-upstream/issues/379)) ([d929a1a](https://github.com/radicle-dev/radicle-upstream/commit/d929a1a9cfaaf0dc11590329c0032da83e9ed261))
+* **proxy:** add avatar endpoint ([#330](https://github.com/radicle-dev/radicle-upstream/issues/330)) ([d51bcfc](https://github.com/radicle-dev/radicle-upstream/commit/d51bcfcdbba10563d29a646d7fb9f30ec4c1f872))
+* **proxy:** expose current user orgs list in session ([#341](https://github.com/radicle-dev/radicle-upstream/issues/341)) ([9535b18](https://github.com/radicle-dev/radicle-upstream/commit/9535b18d0e5953ea36b3ed76e75854e9a671523b)), closes [#340](https://github.com/radicle-dev/radicle-upstream/issues/340)
+* **proxy:** fetch registered project ([#322](https://github.com/radicle-dev/radicle-upstream/issues/322)) ([b75c7eb](https://github.com/radicle-dev/radicle-upstream/commit/b75c7eb56ebd9664f2abe536b851a92b81dba03f))
+* **proxy:** improve session ([#380](https://github.com/radicle-dev/radicle-upstream/issues/380)) ([c698330](https://github.com/radicle-dev/radicle-upstream/commit/c698330f741756e7fe2cd3a7c1a2e444a593ad6b)), closes [#378](https://github.com/radicle-dev/radicle-upstream/issues/378)
+* **proxy:** add org project list endpoint ([#343](https://github.com/radicle-dev/radicle-upstream/issues/343)) ([dd3433f](https://github.com/radicle-dev/radicle-upstream/commit/dd3433f1611193b31667307267f38ece1e5c507c))
+* **proxy:** persist transactions ([#370](https://github.com/radicle-dev/radicle-upstream/issues/370)) ([fbc7016](https://github.com/radicle-dev/radicle-upstream/commit/fbc70162388846cf9abe764dc8b7883a326518f4))
+* **proxy:** return member list for an org ([#360](https://github.com/radicle-dev/radicle-upstream/issues/360)) ([ae0ca4f](https://github.com/radicle-dev/radicle-upstream/commit/ae0ca4f98c7d7b9e47236bbf9860c45f42f617ba))
+* **ui:** add commit history view ([#337](https://github.com/radicle-dev/radicle-upstream/issues/337)) ([50eceb9](https://github.com/radicle-dev/radicle-upstream/commit/50eceb9b352986e5e5b136409c4d39d3c32b4eed))
+* **ui:** finalize design on project source view ([#311](https://github.com/radicle-dev/radicle-upstream/issues/311)) ([71864b3](https://github.com/radicle-dev/radicle-upstream/commit/71864b36a5e2615efae70ec1ba40ddf960c700d1))
+* **ui:** fix input avatars for org & member registration ([#366](https://github.com/radicle-dev/radicle-upstream/issues/366)) ([965f8e1](https://github.com/radicle-dev/radicle-upstream/commit/965f8e1efc4b7e4f72bff05c2596738fa320a09c))
+* **ui:** implement 'Clone' button ([#329](https://github.com/radicle-dev/radicle-upstream/issues/329)) ([9685ccb](https://github.com/radicle-dev/radicle-upstream/commit/9685ccb5816b0f08772d0b90ed7730d0ad0da98b))
+* **ui:** implement tracking button ([#325](https://github.com/radicle-dev/radicle-upstream/issues/325)) ([5290146](https://github.com/radicle-dev/radicle-upstream/commit/5290146bbf1210884bd26eb9bbf0829ddc32caf9))
+* **ui:** add org registration visuals & validation store ([#280](https://github.com/radicle-dev/radicle-upstream/issues/280)) ([9e62e30](https://github.com/radicle-dev/radicle-upstream/commit/9e62e309a533dabafe0628944266b2cc03a02920))
+* **ui:** implement project registration flow ([#292](https://github.com/radicle-dev/radicle-upstream/issues/292)) ([b5d4046](https://github.com/radicle-dev/radicle-upstream/commit/b5d40460f8af7cf896efbebc9b0a247e0e1ee0b4))
+* **ui:** add SegmentedControl component ([#377](https://github.com/radicle-dev/radicle-upstream/issues/377)) ([6c92ebd](https://github.com/radicle-dev/radicle-upstream/commit/6c92ebda328d42a1f66b6421c9be560eabbfc443))
+* **ui:** integrate org registration flow ([#333](https://github.com/radicle-dev/radicle-upstream/issues/333)) ([c3b33b5](https://github.com/radicle-dev/radicle-upstream/commit/c3b33b5d3080dc48a4382375f671f77c5b49ea35))
+* **ui:** use Twitter SVG emojis in Avatar component ([#339](https://github.com/radicle-dev/radicle-upstream/issues/339)) ([75ba3d0](https://github.com/radicle-dev/radicle-upstream/commit/75ba3d0405765e6937c92060c484d4b02ed42149)), closes [#231](https://github.com/radicle-dev/radicle-upstream/issues/231) [#290](https://github.com/radicle-dev/radicle-upstream/issues/290)
+* **ui:** implement visuals for add member to org flow ([#334](https://github.com/radicle-dev/radicle-upstream/issues/334)) ([9aede9c](https://github.com/radicle-dev/radicle-upstream/commit/9aede9ca61e62444ea8fb1b5bb61c37f82329006)), closes [#364](https://github.com/radicle-dev/radicle-upstream/issues/364)
+* **ui:** wire up org project list ([#361](https://github.com/radicle-dev/radicle-upstream/issues/361)) ([fa49629](https://github.com/radicle-dev/radicle-upstream/commit/fa49629ba39667d4be9ba93a5d4cb735f554e569))
+* **ui:** wire up orgs in sidebar ([#345](https://github.com/radicle-dev/radicle-upstream/issues/345)) ([eac1cfd](https://github.com/radicle-dev/radicle-upstream/commit/eac1cfd901e7e74b14560d7626805883387ed162))
+
+
+### Bug Fixes
+
+* **build:** bundle missing dependencies ([#351](https://github.com/radicle-dev/radicle-upstream/issues/351)) ([e7e04f9](https://github.com/radicle-dev/radicle-upstream/commit/e7e04f9378de486e4c91997fb4feb2f1ce3c4abd))
+* **proxy:** correct attestion field name in user ([#336](https://github.com/radicle-dev/radicle-upstream/issues/336)) ([04e4892](https://github.com/radicle-dev/radicle-upstream/commit/04e4892e205638fc618badf8066b8ec670b8da44))
+* **proxy:** remove 🌱 from whitelist ([#338](https://github.com/radicle-dev/radicle-upstream/issues/338)) ([d17e348](https://github.com/radicle-dev/radicle-upstream/commit/d17e348ebb386b360871d6358a52563e9b31adeb))
+* **ui:** fix identity creation regression ([#354](https://github.com/radicle-dev/radicle-upstream/issues/354)) ([1e08134](https://github.com/radicle-dev/radicle-upstream/commit/1e081341f29cbb560fd7c2d6385fe959cda44446)), closes [#353](https://github.com/radicle-dev/radicle-upstream/issues/353)
+
 ### [0.0.9](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.8...v0.0.9) (2020-04-29)
 
 
