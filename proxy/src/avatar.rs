@@ -9,6 +9,7 @@
 
 //! Org and user avatar generation.
 
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 /// Emoji whitelist for all usages.
@@ -59,7 +60,7 @@ const EMOJIS_USER: &[&str] = &[
 ];
 
 /// An emoji.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub struct Emoji(&'static str);
 
 impl fmt::Display for Emoji {
@@ -69,7 +70,8 @@ impl fmt::Display for Emoji {
 }
 
 /// Avatar usage.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum Usage {
     /// A generic avatar.
     Any,
@@ -80,10 +82,11 @@ pub enum Usage {
 }
 
 /// An avatar.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Avatar {
     /// The emoji component.
-    pub emoji: Emoji,
+    pub emoji: String,
     /// The background color component.
     pub background: Color,
 }
@@ -93,14 +96,15 @@ impl Avatar {
     #[must_use]
     pub fn from(input: &str, usage: Usage) -> Self {
         Self {
-            emoji: generate_emoji(input, usage),
+            emoji: generate_emoji(input, usage).to_string(),
             background: compress_color(generate_color(input)),
         }
     }
 }
 
 /// A 32-bit RGBA color.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Color {
     /// The red channel.
     pub r: u8,
@@ -111,6 +115,7 @@ pub struct Color {
 
     /// The alpha is here to facilitate working with `u32` values.
     /// We don't use it as part of the output.
+    #[serde(skip)]
     a: u8,
 }
 
@@ -234,7 +239,7 @@ mod test {
         assert_eq!(
             Avatar::from("cloudhead", Usage::Identity),
             Avatar {
-                emoji: Emoji("🏍"),
+                emoji: "🏍".to_string(),
                 background: Color::new(24, 105, 216)
             }
         );

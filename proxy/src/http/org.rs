@@ -1,4 +1,6 @@
 //! Endpoints for Org.
+
+use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
@@ -7,39 +9,43 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::http;
 use crate::notification;
+use crate::project;
 use crate::registry;
 
 /// Prefixed filters..
-pub fn routes(
-    registry: Arc<RwLock<registry::Registry>>,
+pub fn routes<R: registry::Client>(
+    paths: Arc<RwLock<Paths>>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(Arc::clone(&registry)))
+            .or(get_projects_filter(paths, Arc::clone(&registry)))
             .or(register_filter(registry, subscriptions)),
     )
 }
 
 /// Combination of all org routes.
 #[cfg(test)]
-fn filters(
-    registry: Arc<RwLock<registry::Registry>>,
+fn filters<R: registry::Client>(
+    paths: Arc<RwLock<Paths>>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
-        .or(get_projects_filter(Arc::clone(&registry)))
+        .or(get_projects_filter(paths, Arc::clone(&registry)))
         .or(register_filter(registry, subscriptions))
 }
 
 /// `GET /<id>`
-fn get_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn get_filter<R: registry::Client>(
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_shared(registry)
         .and(warp::get())
         .and(document::param::<String>("id", "Unique ID of the Org"))
         .and(path::end())
@@ -55,7 +61,7 @@ fn get_filter(
         .and(document::document(
             document::response(
                 404,
-                document::body(super::error::Error::document()).mime("application/json"),
+                document::body(http::error::Error::document()).mime("application/json"),
             )
             .description("Org not found"),
         ))
@@ -63,10 +69,10 @@ fn get_filter(
 }
 
 /// `GET /<id>/projects/<project_name>`
-fn get_project_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn get_project_filter<R: registry::Client>(
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_shared(registry)
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -89,7 +95,7 @@ fn get_project_filter(
         .and(document::document(
             document::response(
                 404,
-                document::body(super::error::Error::document()).mime("application/json"),
+                document::body(http::error::Error::document()).mime("application/json"),
             )
             .description("Project not found"),
         ))
@@ -97,10 +103,12 @@ fn get_project_filter(
 }
 
 /// `GET /<id>/projects`
-fn get_projects_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn get_projects_filter<R: registry::Client>(
+    paths: Arc<RwLock<Paths>>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
+    http::with_paths(paths)
+        .and(http::with_shared(registry))
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -120,12 +128,12 @@ fn get_projects_filter(
 }
 
 /// `POST /`
-fn register_filter(
-    registry: Arc<RwLock<registry::Registry>>,
+fn register_filter<R: registry::Client>(
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    super::with_registry(registry)
-        .and(super::with_subscriptions(subscriptions))
+    http::with_shared(registry)
+        .and(http::with_subscriptions(subscriptions))
         .and(warp::post())
         .and(warp::body::json())
         .and(path::end())
@@ -148,18 +156,21 @@ fn register_filter(
 
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
+    use librad::paths::Paths;
     use radicle_registry_client::Balance;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::http;
     use crate::notification;
+    use crate::project;
     use crate::registry;
 
     /// Get the Org for the given `id`.
-    pub async fn get(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn get<R: registry::Client>(
+        registry: http::Shared<R>,
         id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
@@ -169,8 +180,8 @@ mod handler {
     }
 
     /// Get the [`registry::Project`] under the given org id.
-    pub async fn get_project(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn get_project<R: registry::Client>(
+        registry: http::Shared<R>,
         org_id: String,
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
@@ -181,19 +192,36 @@ mod handler {
     }
 
     /// Get all projects under the given org id.
-    pub async fn get_projects(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn get_projects<R: registry::Client>(
+        paths: Arc<RwLock<Paths>>,
+        registry: http::Shared<R>,
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
         let projects = reg.list_org_projects(org_id).await?;
+        let mut mapped_projects = Vec::new();
+        for p in &projects {
+            let maybe_project = if let Some(id) = &p.maybe_project_id {
+                let paths = paths.read().await;
+                Some(project::get(&paths, id).await.expect("Project not found"))
+            } else {
+                None
+            };
 
-        Ok(reply::json(&projects))
+            let org_project = super::Project {
+                name: p.name.to_string(),
+                org_id: p.org_id.to_string(),
+                maybe_project,
+            };
+            mapped_projects.push(org_project);
+        }
+
+        Ok(reply::json(&mapped_projects))
     }
 
     /// Register an org on the Registry.
-    pub async fn register(
-        registry: Arc<RwLock<registry::Registry>>,
+    pub async fn register<R: registry::Client>(
+        registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection> {
@@ -213,28 +241,19 @@ mod handler {
     }
 }
 
-impl Serialize for registry::Org {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Org", 2)?;
-        state.serialize_field("id", &self.id)?;
-        state.serialize_field("avatarFallback", &self.avatar_fallback)?;
-
-        state.end()
-    }
-}
-
 impl ToDocumentedType for registry::Org {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
+        let mut properties = std::collections::HashMap::with_capacity(3);
         properties.insert("avatarFallback".into(), avatar::Avatar::document());
         properties.insert(
             "id".into(),
             document::string()
                 .description("The id of the org")
                 .example("monadic"),
+        );
+        properties.insert(
+            "members".into(),
+            document::array(registry::User::document()),
         );
 
         document::DocumentedType::from(properties).description("Org")
@@ -282,6 +301,18 @@ impl ToDocumentedType for registry::Project {
     }
 }
 
+/// Object the API returns for a project that is registered under an org.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Project {
+    /// Id of the Org.
+    org_id: String,
+    /// Name of the project.
+    name: String,
+    /// Associated CoCo project.
+    maybe_project: Option<project::Project>,
+}
+
 /// Bundled input data for org registration.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -304,9 +335,14 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
-#[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
+#[allow(
+    clippy::option_unwrap_used,
+    clippy::result_unwrap_used,
+    clippy::indexing_slicing
+)]
 #[cfg(test)]
 mod test {
+    use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
@@ -316,25 +352,51 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use radicle_registry_client as protocol;
+
     use crate::avatar;
+    use crate::coco;
     use crate::notification;
-    use crate::registry;
+    use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn get() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice").unwrap();
+
+        // Register the user
+        registry
+            .write()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await
+            .unwrap();
+
+        let user = registry
+            .read()
+            .await
+            .get_user(handle)
+            .await
+            .unwrap()
+            .unwrap();
 
         // Register the org
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let fee: radicle_registry_client::Balance = 100;
         registry
             .write()
             .await
-            .register_org(&alice, "monadic".to_string(), fee)
+            .register_org(&author, "monadic".to_string(), fee)
             .await
             .unwrap();
 
@@ -352,27 +414,43 @@ mod test {
             json!(registry::Org {
                 id: "monadic".to_string(),
                 avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
+                members: vec![user]
             })
         );
     }
 
     #[tokio::test]
     async fn get_project() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice").unwrap();
 
         let project_name = "upstream";
         let org_id = "radicle";
 
-        // Register the org.
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        // Register the user
         registry
             .write()
             .await
-            .register_org(&alice, org_id.to_string(), 10)
+            .register_user(&author, handle, None, 10)
+            .await
+            .unwrap();
+
+        // Register the org.
+        registry
+            .write()
+            .await
+            .register_org(&author, org_id.to_string(), 10)
             .await
             .unwrap();
 
@@ -381,7 +459,7 @@ mod test {
             .write()
             .await
             .register_project(
-                &alice,
+                &author,
                 org_id.to_string(),
                 project_name.to_string(),
                 None,
@@ -411,21 +489,52 @@ mod test {
 
     #[tokio::test]
     async fn get_projects() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&registry),
+            subscriptions,
+        );
+
+        let repo_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
+        let path = repo_dir.path().to_str().unwrap().to_string();
+        coco::init_repo(path.clone()).unwrap();
 
         let project_name = "upstream";
+        let project_description = "desktop client for radicle";
         let org_id = "radicle";
+        let default_branch = "master";
 
-        // Register the org.
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let (project_id, _meta) = coco::init_project(
+            &librad_paths,
+            &path,
+            project_name,
+            project_description,
+            default_branch,
+        )
+        .unwrap();
+
+        // Register the user
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice").unwrap();
+
         registry
             .write()
             .await
-            .register_org(&alice, org_id.to_string(), 10)
+            .register_user(&author, handle, None, 10)
+            .await
+            .unwrap();
+
+        // Register the org.
+        registry
+            .write()
+            .await
+            .register_org(&author, org_id.to_string(), 10)
             .await
             .unwrap();
 
@@ -434,14 +543,12 @@ mod test {
             .write()
             .await
             .register_project(
-                &alice,
+                &author,
                 org_id.to_string(),
                 project_name.to_string(),
                 Some(
-                    librad::project::ProjectId::from_str(
-                        "ac1cac587b49612fbac39775a07fb05c6e5de08d.git",
-                    )
-                    .expect("Project id"),
+                    librad::project::ProjectId::from_str(&project_id.to_string())
+                        .expect("Project id"),
                 ),
                 10,
             )
@@ -456,25 +563,53 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
+        let want = json!([{
+            "name": project_name.to_string(),
+            "orgId": org_id.to_string(),
+            "maybeProject": {
+                "id": project_id.to_string(),
+                "metadata": {
+                    "defaultBranch": default_branch.to_string(),
+                    "description": project_description.to_string(),
+                    "name": project_name.to_string(),
+                },
+                "registration": Value::Null,
+                "stats": {
+                    "branches": 11,
+                    "commits": 267,
+                    "contributors": 8,
+                },
+            }
+        }]);
+
         assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!([registry::Project {
-                name: registry::ProjectName::try_from(project_name).unwrap(),
-                org_id: registry::Id::try_from(org_id).unwrap(),
-                maybe_project_id: Some("ac1cac587b49612fbac39775a07fb05c6e5de08d.git".to_string()),
-            }])
-        );
+        assert_eq!(have, want);
     }
 
     #[tokio::test]
     async fn register() {
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&cache),
+            subscriptions,
+        );
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice").unwrap();
+
+        // Register the user
+        cache
+            .write()
+            .await
+            .register_user(&author, handle, None, 10)
+            .await
+            .unwrap();
 
         let res = request()
             .method("POST")
@@ -485,17 +620,19 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = registry
-            .write()
-            .await
-            .list_transactions(vec![])
-            .await
-            .unwrap();
-        let tx = txs.first().unwrap();
+        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        // Get the registered org
+        let org = cache
+            .read()
+            .await
+            .get_org("monadic".to_string())
+            .await
+            .unwrap()
+            .unwrap();
 
         assert_eq!(res.status(), StatusCode::CREATED);
-        assert_eq!(have, json!(tx));
+        assert_eq!(txs.len(), 2);
+        assert_eq!(org.id, "monadic")
     }
 }

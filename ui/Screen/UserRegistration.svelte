@@ -4,6 +4,7 @@
 
   import { fallback } from "../src/identity.ts";
   import * as notification from "../src/notification.ts";
+  import * as session from "../src/session.ts";
   import * as user from "../src/user.ts";
 
   import { ModalLayout, StepCounter } from "../DesignSystem/Component";
@@ -12,19 +13,13 @@
   import PickHandleStep from "./UserRegistration/PickHandleStep.svelte";
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
 
-  const session = getContext("session");
+  let { identity } = getContext("session");
+
+  let handle = identity ? identity.metadata.handle : null;
+  const id = identity ? identity.id : null;
+  identity = identity ? identity : fallback;
 
   let step = 1;
-
-  let identity = fallback;
-  let handle = null;
-  let id = null;
-
-  if (session.identity !== null) {
-    identity = session.identity;
-    handle = session.identity.metadata.handle;
-    id = session.identity.id;
-  }
 
   const nextStep = () => {
     step += 1;
@@ -37,6 +32,7 @@
   const registerUser = async () => {
     try {
       await user.register(handle, id);
+      await session.fetch();
     } catch (error) {
       notification.error(`Could not register user: ${error}`);
     } finally {

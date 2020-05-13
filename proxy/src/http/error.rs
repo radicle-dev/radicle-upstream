@@ -2,6 +2,7 @@
 //! for API consumers to act on.
 
 use librad::surf;
+use serde::Serialize;
 use std::convert::Infallible;
 use warp::document::{self, ToDocumentedType};
 use warp::http::StatusCode;
@@ -18,7 +19,7 @@ impl From<error::Error> for Rejection {
 }
 
 /// Error type to carry context for failed requests.
-#[derive(serde_derive::Serialize)]
+#[derive(Serialize)]
 pub struct Error {
     /// Human readable message to convery error case.
     pub message: String,
