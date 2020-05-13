@@ -5,6 +5,7 @@ import HorizontalMenu from "./HorizontalMenu.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
+import Markdown from "./Markdown.svelte";
 import ModalLayout from "./ModalLayout.svelte";
 import Placeholder from "./Placeholder.svelte";
 import ProjectCard from "./ProjectCard.svelte";
@@ -32,6 +33,7 @@ export {
   NavigationButtons,
   Notification,
   NotificationFaucet,
+  Markdown,
   ModalLayout,
   Placeholder,
   ProjectCard,
