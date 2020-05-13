@@ -98,7 +98,7 @@ pub struct Cacher<C>
 where
     C: registry::Client,
 {
-    /// The [`registry::Client`] to store the returned transactions.
+    /// The [`registry::Client`] to observe the transactions to be stored.
     client: C,
     /// Cached transactions.
     transactions: Transactions,
