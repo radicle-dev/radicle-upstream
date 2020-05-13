@@ -71,7 +71,7 @@ fn nuke_registry_filter<R: registry::Client>(
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "registry")
-        .and(http::with_container(registry))
+        .and(http::with_shared(registry))
         .and_then(handler::nuke_registry)
 }
 

@@ -21,7 +21,7 @@ fn list_filter<C: registry::Cache>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("transactions")
         .and(warp::post())
-        .and(http::with_container(cache))
+        .and(http::with_shared(cache))
         .and(warp::body::json())
         .and(document::document(document::description(
             "List transactions",

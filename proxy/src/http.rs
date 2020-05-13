@@ -89,7 +89,7 @@ pub type Shared<T> = Arc<RwLock<T>>;
 
 /// State filter to expose a [`Shared`] and its content.
 #[must_use]
-pub fn with_container<T>(
+pub fn with_shared<T>(
     container: Shared<T>,
 ) -> impl Filter<Extract = (Shared<T>,), Error = Infallible> + Clone
 where

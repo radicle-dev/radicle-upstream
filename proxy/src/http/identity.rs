@@ -27,7 +27,7 @@ fn create_filter<R: registry::Client>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("identities")
         .and(warp::post())
-        .and(http::with_container(registry))
+        .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(warp::body::json())
         .and(document::document(document::description(

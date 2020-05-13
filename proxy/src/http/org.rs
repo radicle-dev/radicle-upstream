@@ -45,7 +45,7 @@ fn filters<R: registry::Client>(
 fn get_filter<R: registry::Client>(
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_container(registry)
+    http::with_shared(registry)
         .and(warp::get())
         .and(document::param::<String>("id", "Unique ID of the Org"))
         .and(path::end())
@@ -72,7 +72,7 @@ fn get_filter<R: registry::Client>(
 fn get_project_filter<R: registry::Client>(
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_container(registry)
+    http::with_shared(registry)
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -108,7 +108,7 @@ fn get_projects_filter<R: registry::Client>(
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_paths(paths)
-        .and(http::with_container(registry))
+        .and(http::with_shared(registry))
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -132,7 +132,7 @@ fn register_filter<R: registry::Client>(
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_container(registry)
+    http::with_shared(registry)
         .and(http::with_subscriptions(subscriptions))
         .and(warp::post())
         .and(warp::body::json())

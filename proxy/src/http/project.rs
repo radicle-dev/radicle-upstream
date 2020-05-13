@@ -110,7 +110,7 @@ fn register_filter<R: registry::Client>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects" / "register")
         .and(warp::post())
-        .and(http::with_container(registry))
+        .and(http::with_shared(registry))
         .and(http::with_subscriptions(subscriptions))
         .and(warp::body::json())
         .and(document::document(document::description(

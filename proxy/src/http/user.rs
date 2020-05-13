@@ -39,7 +39,7 @@ fn get_filter<R: registry::Client>(
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
-        .and(http::with_container(registry))
+        .and(http::with_shared(registry))
         .and(document::param::<String>(
             "handle",
             "ID of the user to query for",
@@ -62,7 +62,7 @@ fn register_filter<R: registry::Client>(
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
-        .and(http::with_container(registry))
+        .and(http::with_shared(registry))
         .and(http::with_subscriptions(subscriptions))
         .and(warp::body::json())
         .and(document::document(document::description(
@@ -84,7 +84,7 @@ fn list_orgs_filter<R: registry::Client>(
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
-        .and(http::with_container(registry))
+        .and(http::with_shared(registry))
         .and(document::param::<String>(
             "handle",
             "ID of the user to query for",

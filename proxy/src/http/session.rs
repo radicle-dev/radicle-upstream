@@ -19,7 +19,7 @@ pub fn get_filter<R: registry::Client>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("session")
         .and(warp::get())
-        .and(http::with_container(registry))
+        .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(document::document(document::description(
             "Fetch active Session",
