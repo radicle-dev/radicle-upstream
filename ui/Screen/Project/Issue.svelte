@@ -1,7 +1,6 @@
 <script>
-  import marked from "marked";
-
   import { Title, Text } from "../../DesignSystem/Primitive";
+  import { Markdown } from "../../DesignSystem/Component";
 
   $: openClass = issue.open ? "open" : "closed";
 
@@ -106,6 +105,6 @@
     </div>
   </div>
   <div class="issueDescription">
-    {@html marked(issue.description)}
+    <Markdown content={issue.description} />
   </div>
 </div>
