@@ -53,7 +53,6 @@
     max-width: 71.25rem;
     margin: 0 auto;
     padding: 32px 0;
-    min-width: 500px;
   }
   ul > li {
     border-bottom: 1px solid var(--color-foreground-level-3);
