@@ -3,11 +3,14 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as org from "./org";
 import * as remote from "./remote";
+import * as settings from "./settings";
 
 // TYPES
+
 export interface Session {
   identity?: identity.Identity;
   orgs: org.Org[];
+  settings: settings.Settings;
 }
 
 // STATE
