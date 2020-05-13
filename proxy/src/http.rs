@@ -32,6 +32,18 @@ pub fn routes(
 ) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
     let subscriptions = crate::notification::Subscriptions::default();
 
+    let log = warp::log::custom(|info| {
+        log::info!(
+            target: "proxy::http",
+            "\"{} {} {:?}\" {} {:?}",
+            info.method(),
+            info.path(),
+            info.version(),
+            info.status().as_u16(),
+            info.elapsed(),
+        );
+    });
+
     let api = path("v1").and(
         avatar::get_filter()
             .or(control::routes(
@@ -60,9 +72,7 @@ pub fn routes(
     // let docs = path("docs").and(doc::filters(&api));
     let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));
 
-    api.or(docs)
-        .with(warp::log("proxy::http"))
-        .recover(error::recover)
+    api.or(docs).with(log).recover(error::recover)
 }
 
 /// State filter to expose the [`librad::paths::Paths`] to handlers.
