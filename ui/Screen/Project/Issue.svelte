@@ -1,4 +1,6 @@
 <script>
+  import marked from "marked";
+
   import { Title, Text } from "../../DesignSystem/Primitive";
 
   $: openClass = issue.open ? "open" : "closed";
@@ -8,31 +10,29 @@
     hash: "blka",
     open: true,
     title: "Split server into CentralChain, and ChainApi",
-    description: `
-            # H1 heading
+    description: `# H1 heading
 
-            ## H2 heading
+## H2 heading
 
-            ### H3 heading
+### H3 heading
 
-            ---
+---
 
-            **bold text**
+**bold text**
 
-            *italicized text*
+*italicized text*
 
-            ---
+---
 
-            1. First item
-            2. Second item
-            3. Third item
+1. First item
+2. Second item
+3. Third item
 
-            - First item
-            - Second item
-            - Third item
+- First item
+- Second item
+- Third item
 
-            [Svelte](https://svelte.dev/)
-          `,
+[Svelte](https://svelte.dev/)`,
     author: "julien",
     replies: 12,
     created_at: "12 days",
@@ -106,6 +106,6 @@
     </div>
   </div>
   <div class="issueDescription">
-    <Text>{issue.description}</Text>
+    {@html marked(issue.description)}
   </div>
 </div>
