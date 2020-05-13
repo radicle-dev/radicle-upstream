@@ -1,6 +1,27 @@
 <script>
   import { Title, Text, Button } from "../DesignSystem/Primitive";
-  import { SidebarLayout } from "../DesignSystem/Component";
+  import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
+
+  const themeOptions = [
+    {
+      title: "Light",
+      value: 0,
+    },
+    {
+      title: "Dark",
+      value: 1,
+    },
+  ];
+  const networkOptions = [
+    {
+      title: "Testnet",
+      value: 0,
+    },
+    {
+      title: "Mainnet",
+      value: 1,
+    },
+  ];
 </script>
 
 <style>
@@ -26,32 +47,6 @@
     justify-content: space-between;
     align-items: center;
     margin-left: 16px;
-  }
-  .tabs {
-    display: flex;
-    flex-direction: row;
-  }
-  .tabs button {
-    cursor: pointer;
-    padding: 8px 16px;
-    border-radius: 4px;
-    background-color: var(--color-background);
-    color: var(--color-foreground-level-6);
-    font-family: var(--typeface-medium);
-  }
-  .tabs button:focus {
-    outline: none;
-  }
-  .tabs button.active {
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-secondary);
-  }
-  .tabs button:hover {
-    background-color: var(--color-foreground-level-1);
-  }
-  .tabs button:active {
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-5);
   }
 </style>
 
@@ -80,10 +75,10 @@
         <Text style="font-family: var(--typeface-medium);">Theme</Text>
       </div>
       <div class="action">
-        <div class="tabs">
-          <button class="active">Light</button>
-          <button>Dark</button>
-        </div>
+        <SegmentedControl
+          active={0}
+          options={themeOptions}
+          on:select={() => console.log('event(select)')} />
       </div>
     </div>
 
@@ -95,10 +90,10 @@
         <Text style="font-family: var(--typeface-medium);">Network</Text>
       </div>
       <div class="action">
-        <div class="tabs">
-          <button class="active">Testnet</button>
-          <button>Mainnet</button>
-        </div>
+        <SegmentedControl
+          active={0}
+          options={networkOptions}
+          on:select={() => console.log('event(select)')} />
       </div>
     </div>
 
