@@ -1,11 +1,14 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
+
   // Currently active option.
   export let active = null;
   // The available options.
   export let options = null;
 
   const onClick = (option) => {
-    option.event();
+    dispatch("select", option);
     currentlyActive = option.value;
   };
 

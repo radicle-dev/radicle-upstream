@@ -233,17 +233,14 @@
     {
       title: "Open",
       value: 0,
-      event: () => {},
     },
     {
       title: "Closed",
       value: 1,
-      event: () => {},
     },
     {
       title: "All",
       value: 2,
-      event: () => {},
     },
   ];
 
@@ -875,7 +872,10 @@
       </Swatch>
 
       <Swatch>
-        <SegmentedControl active={1} options={segmentedControlOptions} />
+        <SegmentedControl
+          active={1}
+          options={segmentedControlOptions}
+          on:select={() => console.log('event(select)')} />
       </Swatch>
 
       <Swatch>
