@@ -89,6 +89,7 @@ pub trait Cache: Send + Sync {
     ) -> Result<Vec<Transaction>, error::Error>;
 }
 
+/// Storage bucket description for [`kv::Store`].
 type Transactions = kv::Bucket<'static, &'static str, kv::Json<Transaction>>;
 
 /// Cacher persists and manages observed transactions.

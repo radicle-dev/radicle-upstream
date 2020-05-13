@@ -55,9 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         kv::Store::new(kv::Config::new(temp_dir.path().join("store")))?
     } else {
         let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
-        let store = kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?;
-
-        store
+        kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?
     };
 
     log::info!("Starting API");
