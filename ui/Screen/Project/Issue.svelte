@@ -1,6 +1,5 @@
 <script>
-  import { Title, Text } from "../../DesignSystem/Primitive";
-  import { Markdown } from "../../DesignSystem/Component";
+  import { Title, Text, Markdown } from "../../DesignSystem/Primitive";
 
   $: openClass = issue.open ? "open" : "closed";
 
@@ -9,29 +8,24 @@
     hash: "blka",
     open: true,
     title: "Split server into CentralChain, and ChainApi",
-    description: `# H1 heading
+    description: `
+### Outstanding work for member management.
 
-## H2 heading
+**proxy**
 
-### H3 heading
+- [x] list members for org
+- [ ] add member endpoint
+- [ ] remove member endpoint
+- [ ] refactor user org list to filter by handle instead key
 
----
+**ui**
 
-**bold text**
+- [x] add member flow
+- [ ] member list
+- [ ] ensure correct handling of member txs in transaction center
 
-*italicized text*
-
----
-
-1. First item
-2. Second item
-3. Third item
-
-- First item
-- Second item
-- Third item
-
-[Svelte](https://svelte.dev/)`,
+Part of #277
+    `,
     author: "julien",
     replies: 12,
     created_at: "12 days",
