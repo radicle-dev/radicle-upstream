@@ -30,12 +30,12 @@
     margin: 0 auto;
     min-width: 640px;
   }
-  .sectionHeader {
+  .section-header {
     margin: 16px 0 24px 0;
     border-bottom: 1px solid var(--color-foreground-level-3);
     padding: 12px;
   }
-  .sectionItem {
+  .section-item {
     padding: 0 12px;
     display: flex;
     justify-content: space-between;
@@ -54,10 +54,10 @@
   <div class="container">
     <Title variant="big">Settings</Title>
 
-    <h2 class="sectionHeader">
+    <header class="section-header">
       <Title variant="large">Version</Title>
-    </h2>
-    <div class="sectionItem">
+    </header>
+    <div class="section-item">
       <div class="info">
         <Text>Version 01.45.02</Text>
       </div>
@@ -67,12 +67,12 @@
       </div>
     </div>
 
-    <h2 class="sectionHeader">
+    <header class="section-header">
       <Title variant="large">Appearance</Title>
-    </h2>
-    <div class="sectionItem">
+    </header>
+    <div class="section-item">
       <div class="info">
-        <Text style="font-family: var(--typeface-medium);">Theme</Text>
+        <Text variant="medium">Theme</Text>
       </div>
       <div class="action">
         <SegmentedControl
@@ -82,12 +82,12 @@
       </div>
     </div>
 
-    <h2 class="sectionHeader">
+    <header class="section-header">
       <Title variant="large">Registry</Title>
-    </h2>
-    <div class="sectionItem">
+    </header>
+    <div class="section-item">
       <div class="info">
-        <Text style="font-family: var(--typeface-medium);">Network</Text>
+        <Text variant="medium">Network</Text>
       </div>
       <div class="action">
         <SegmentedControl
@@ -97,25 +97,21 @@
       </div>
     </div>
 
-    <h2 class="sectionHeader">
+    <header class="section-header">
       <Title variant="large">Session management</Title>
-    </h2>
-    <div class="sectionItem">
+    </header>
+    <div class="section-item">
       <div class="info">
-        <Text style="font-family: var(--typeface-medium);">
-          Clear local cache
-        </Text>
+        <Text variant="medium">Clear local cache</Text>
         <Text>Removes all locally-stored temporary data from your device.</Text>
       </div>
       <div class="action">
         <Button variant="outline">Clear cache</Button>
       </div>
     </div>
-    <div class="sectionItem">
+    <div class="section-item">
       <div class="info">
-        <Text style="font-family: var(--typeface-medium);">
-          Clears all authentication data
-        </Text>
+        <Text variant="medium">Clears all authentication data</Text>
         <Text>
           This is similar to how logout works. You will have to create a new
           identity or restore your existing identity.
@@ -126,12 +122,12 @@
       </div>
     </div>
 
-    <h2 class="sectionHeader">
+    <header class="section-header">
       <Title variant="large">Developer tools</Title>
-    </h2>
-    <div class="sectionItem">
+    </header>
+    <div class="section-item">
       <div class="info">
-        <Text style="font-family: var(--typeface-medium);">
+        <Text variant="medium">
           Unlink all unregistered projects from my profile
         </Text>
         <Text>
