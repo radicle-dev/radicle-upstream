@@ -1,55 +1,87 @@
 <script>
   import { push } from "svelte-spa-router";
 
+  import { projects as store, fetchProjectList } from "../../src/org.ts";
   import * as path from "../../src/path.ts";
 
-  import { Text, Button } from "../../DesignSystem/Primitive";
-  import Placeholder from "../../DesignSystem/Component/Placeholder.svelte";
+  import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
+  import {
+    AdditionalActionsDropdown,
+    List,
+    ProjectCard,
+    Remote,
+    Stats,
+  } from "../../DesignSystem/Component";
+
+  import Onboard from "./Onboard.svelte";
 
   export let params = null;
 
-  const registerProject = () => push(path.registerProject(params.id));
-  const registerMember = () => push(path.memberRegistration(params.id));
+  const select = (event) => {
+    const orgProject = event.detail;
+    if (orgProject.maybeProject) {
+      push(path.projectSource(orgProject.maybeProject.id));
+    }
+  };
+
+  const statsProps = (stats) => {
+    return [
+      { icon: Icon.Commit, count: stats.commits },
+      { icon: Icon.Branch, count: stats.branches },
+      { icon: Icon.Member, count: stats.contributors },
+    ];
+  };
+
+  const projectCardProps = (orgProject) => {
+    if (orgProject.maybeProject) {
+      return {
+        title: orgProject.name,
+        description: orgProject.maybeProject.metadata.description,
+        showRegisteredBadge: true,
+      };
+    } else {
+      return {
+        title: orgProject.name,
+        showRegisteredBadge: true,
+      };
+    }
+  };
+
+  $: fetchProjectList({ id: params.id });
 </script>
 
-<style>
-  .wrapper {
-    margin-top: 156px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+<Remote {store} let:data={orgProjects}>
+  {#if orgProjects.length > 0}
+    <List items={orgProjects} on:select={select} let:item={orgProject}>
+      {#if orgProject.maybeProject}
+        <Flex style="flex: 1">
+          <div slot="left">
+            <ProjectCard {...projectCardProps(orgProject)} />
+          </div>
 
-  .content {
-    width: 420px;
-  }
+          <div slot="right" style="display: flex; align-items: center;">
+            <Stats stats={statsProps(orgProject.maybeProject.stats)} />
+            <AdditionalActionsDropdown headerTitle={orgProject.name} />
+          </div>
+        </Flex>
+      {:else}
+        <!-- TODO(julien): what should the registered but no coco metadata
+        state look like visually? -->
+        <Flex style="flex: 1">
+          <div slot="left">
+            <ProjectCard {...projectCardProps(orgProject)} />
+          </div>
+          <div slot="right" style="display: flex; align-items: center;">
+            <AdditionalActionsDropdown headerTitle={orgProject.name} />
+          </div>
+        </Flex>
+      {/if}
+    </List>
+  {:else}
+    <Onboard orgId={params.id} />
+  {/if}
 
-  .buttons {
-    display: flex;
-    justify-content: center;
-  }
-</style>
-
-<div class="wrapper" data-cy="projects">
-  <div class="content">
-    <Placeholder style="width: 100%; height: 217px; margin-bottom: 24px;" />
-    <Text style="margin-bottom: 24px;">
-      There's nothing here yet. Get started by creating your first project or
-      adding a member to your organization.
-    </Text>
-    <div class="buttons">
-      <Button
-        variant="vanilla"
-        style="margin-right: 25px;"
-        on:click={registerProject}>
-        Register a project
-      </Button>
-      <Button
-        variant="vanilla"
-        on:click={registerMember}
-        dataCy="add-member-button">
-        Add a member
-      </Button>
-    </div>
+  <div slot="error" let:error>
+    <Text>{error}</Text>
   </div>
-</div>
+</Remote>

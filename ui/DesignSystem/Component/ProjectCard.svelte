@@ -1,15 +1,9 @@
 <script>
   import { Icon, Text, Title } from "../Primitive";
-  import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
-  import Stat from "./Stat.svelte";
 
-  export let projectId = null;
   export let title = null;
   export let description = null;
-  export let isRegistered = false;
-  export let stats = { branches: -1, commits: -1, contributors: -1 };
-
-  export let contextMenuItems = null;
+  export let showRegisteredBadge = false;
 </script>
 
 <style>
@@ -26,7 +20,7 @@
     width: 10%;
   }
 
-  .first-row {
+  .title-row {
     display: flex;
     margin-bottom: 2px;
     white-space: nowrap;
@@ -36,18 +30,13 @@
     display: flex;
     margin-left: 9px;
   }
-
-  .right {
-    display: flex;
-    align-items: center;
-  }
 </style>
 
 <div class="project-card">
   <div class="container">
-    <div class="first-row">
+    <div class="title-row">
       <Title>{title}</Title>
-      {#if isRegistered}
+      {#if showRegisteredBadge}
         <div class="registered">
           <Icon.Badge
             style="fill: var(--color-primary); position: relative; bottom: -3px;" />
@@ -57,26 +46,7 @@
     <Text
       style="color: var(--color-foreground-level-5); white-space: nowrap;
       overflow: hidden; text-overflow: ellipsis;">
-      {description}
+      {#if description}{description}{/if}
     </Text>
-  </div>
-
-  <div class="right">
-    <Stat
-      icon={Icon.Commit}
-      count={stats.commits}
-      style="margin-right: 32px;" />
-    <Stat
-      icon={Icon.Branch}
-      count={stats.branches}
-      style="margin-right: 32px;" />
-    <Stat
-      icon={Icon.Member}
-      count={stats.contributors}
-      style="margin-right: 44px;" />
-
-    <AdditionalActionsDropdown
-      headerTitle={projectId}
-      menuItems={contextMenuItems} />
   </div>
 </div>

@@ -5,8 +5,16 @@
   import * as path from "../../src/path.ts";
   import { projects as projectStore } from "../../src/project.ts";
 
-  import { Icon, Text } from "../../DesignSystem/Primitive";
-  import { ProjectList, Remote } from "../../DesignSystem/Component";
+  import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
+  import {
+    AdditionalActionsDropdown,
+    List,
+    ProjectCard,
+    Remote,
+    Stats,
+  } from "../../DesignSystem/Component";
+
+  import Onboard from "./Onboard.svelte";
 
   const session = getContext("session");
 
@@ -37,15 +45,43 @@
       ];
     }
   };
+
+  const statsProps = (stats) => {
+    return [
+      { icon: Icon.Commit, count: stats.commits },
+      { icon: Icon.Branch, count: stats.branches },
+      { icon: Icon.Member, count: stats.contributors },
+    ];
+  };
+
+  const projectCardProps = (project) => {
+    return {
+      title: project.metadata.name,
+      description: project.metadata.description,
+      showRegisteredBadge: project.registration,
+    };
+  };
 </script>
 
 <Remote store={projectStore} let:data={projects}>
   {#if projects.length > 0}
-    <ProjectList
-      {projects}
-      contextMenuItems={(projectId) => contextMenuItems(projectId, session)}
-      on:select={select} />
-  {:else}{push(path.profileOnboard())}{/if}
+    <List items={projects} on:select={select} let:item={project}>
+      <Flex style="flex: 1">
+        <div slot="left">
+          <ProjectCard {...projectCardProps(project)} />
+        </div>
+
+        <div slot="right" style="display: flex; align-items: center;">
+          <Stats stats={statsProps(project.stats)} />
+          <AdditionalActionsDropdown
+            headerTitle={project.id}
+            menuItems={contextMenuItems(project.id, session)} />
+        </div>
+      </Flex>
+    </List>
+  {:else}
+    <Onboard />
+  {/if}
 
   <div slot="error" let:error>
     <Text>{error}</Text>
