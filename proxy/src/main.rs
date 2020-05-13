@@ -51,11 +51,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         librad::paths::Paths::new()?
     };
-    let store = if args.test {
-        kv::Store::new(kv::Config::new(temp_dir.path().join("store")))?
-    } else {
-        let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
-        kv::Store::new(kv::Config::new(dir.data_dir().join("store")))?
+    let store = {
+        let store_path = if args.test {
+            temp_dir.path().join("store")
+        } else {
+            let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
+            dir.data_dir().join("store")
+        };
+        let config = kv::Config::new(store_path).flush_every_ms(100);
+
+        kv::Store::new(config)?
     };
 
     log::info!("Starting API");

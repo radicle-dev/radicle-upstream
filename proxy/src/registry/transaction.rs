@@ -126,9 +126,8 @@ where
 {
     /// Caches a transaction locally in the Registry.
     async fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error> {
-        self.transactions
-            .set(tx.id.0.encode_hex::<String>().as_str(), kv::Json(tx))?;
-        self.transactions.flush()?;
+        let key = tx.id.0.encode_hex::<String>();
+        self.transactions.set(key.as_str(), kv::Json(tx))?;
 
         Ok(())
     }

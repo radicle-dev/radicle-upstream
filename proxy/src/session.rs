@@ -5,7 +5,10 @@ use crate::error;
 use crate::identity;
 use crate::registry;
 
-/// Shared for all local state.
+/// Name for the storage bucket used for all session data.
+const BUCKET_NAME: &str = "session";
+
+/// Container for all local state.
 #[derive(Debug)]
 pub struct Session {
     /// The currently used [`identity::Identity`].
@@ -20,13 +23,9 @@ pub struct Session {
 ///
 /// Errors if the state on disk can't be accessed.
 pub fn clear(store: &kv::Store) -> Result<(), error::Error> {
-    let bucket = store
-        .bucket::<kv::Raw, String>(Some("session"))
-        .expect("unable to get session bucket");
-
-    bucket.clear().expect("unable to clear session bucket");
-
-    Ok(())
+    Ok(store
+        .bucket::<kv::Raw, String>(Some(BUCKET_NAME))?
+        .clear()?)
 }
 
 /// Reads the current session.
@@ -39,9 +38,7 @@ pub async fn get<R: registry::Client>(
     registry: R,
     store: &kv::Store,
 ) -> Result<Session, error::Error> {
-    let bucket = store
-        .bucket::<&str, String>(Some("session"))
-        .expect("unable to get session bucket");
+    let bucket = store.bucket::<&str, String>(Some(BUCKET_NAME))?;
 
     let identity = bucket
         .get("identity")?
@@ -59,11 +56,10 @@ pub async fn get<R: registry::Client>(
 ///
 /// Errors if access to the session state fails.
 pub fn set(store: &kv::Store, sess: Session) -> Result<(), error::Error> {
-    let bucket = store.bucket::<&str, String>(Some("session"))?;
+    let bucket = store.bucket::<&str, String>(Some(BUCKET_NAME))?;
 
     if let Some(identity) = sess.identity {
         bucket.set("identity", identity.id)?;
-        bucket.flush()?;
     }
 
     Ok(())
