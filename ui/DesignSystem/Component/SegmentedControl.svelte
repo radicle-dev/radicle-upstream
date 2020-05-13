@@ -37,7 +37,7 @@
   }
   .segmented-control button:active {
     background-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-5);
+    color: var(--color-secondary-level-2);
   }
 </style>
 
