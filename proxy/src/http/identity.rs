@@ -1,7 +1,6 @@
 //! Endpoints and serialisation for [`identity::Identity`] related types.
 
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
@@ -96,19 +95,13 @@ mod handler {
         let reg = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::get((*reg).clone(), &store).await?.identity {
+        if let Some(identity) = session::current(&store, (*reg).clone()).await?.identity {
             return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
         }
 
         let id = identity::create(input.handle, input.display_name, input.avatar_url)?;
 
-        session::set(
-            &store,
-            session::Session {
-                identity: Some(id.clone()),
-                orgs: vec![],
-            },
-        )?;
+        session::set_identity(&store, id.clone())?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
@@ -128,28 +121,6 @@ mod handler {
         };
 
         Ok(reply::json(&id))
-    }
-}
-
-impl Serialize for identity::Identity {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Identity", 4)?;
-        state.serialize_field("id", &self.id)?;
-        state.serialize_field(
-            "shareableEntityIdentifier",
-            &self.shareable_entity_identifier,
-        )?;
-        state.serialize_field("metadata", &self.metadata)?;
-        state.serialize_field(
-            "registered",
-            &self.registered.as_ref().map(ToString::to_string),
-        )?;
-        state.serialize_field("avatarFallback", &self.avatar_fallback)?;
-
-        state.end()
     }
 }
 
@@ -182,20 +153,6 @@ impl ToDocumentedType for identity::Identity {
     }
 }
 
-impl Serialize for identity::Metadata {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Metadata", 3)?;
-        state.serialize_field("handle", &self.handle)?;
-        state.serialize_field("displayName", &self.display_name)?;
-        state.serialize_field("avatarUrl", &self.avatar_url)?;
-
-        state.end()
-    }
-}
-
 impl ToDocumentedType for identity::Metadata {
     fn document() -> document::DocumentedType {
         let mut properties = std::collections::HashMap::with_capacity(3);
@@ -225,19 +182,6 @@ impl ToDocumentedType for identity::Metadata {
     }
 }
 
-impl Serialize for avatar::Avatar {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Avatar", 2)?;
-        state.serialize_field("background", &self.background)?;
-        state.serialize_field("emoji", &self.emoji.to_string())?;
-
-        state.end()
-    }
-}
-
 #[allow(clippy::non_ascii_literal)]
 impl ToDocumentedType for avatar::Avatar {
     fn document() -> document::DocumentedType {
@@ -252,20 +196,6 @@ impl ToDocumentedType for avatar::Avatar {
 
         document::DocumentedType::from(properties)
             .description("Generated avatar based on unique information")
-    }
-}
-
-impl Serialize for avatar::Color {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Color", 3)?;
-        state.serialize_field("r", &self.r)?;
-        state.serialize_field("g", &self.g)?;
-        state.serialize_field("b", &self.b)?;
-
-        state.end()
     }
 }
 
@@ -373,13 +303,13 @@ mod test {
         let want = json!({
             "avatarFallback": {
                 "background": {
-                    "r": 122,
-                    "g": 112,
-                    "b": 90,
+                    "r": 52,
+                    "g": 124,
+                    "b": 239,
                 },
-                "emoji": "🐽",
+                "emoji": "🍝",
             },
-            "id": "123abcd.git",
+            "id": "cloudhead@123abcd.git",
             "metadata": {
                 "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
                 "displayName": "Alexis Sellier",

@@ -1,9 +1,9 @@
 //! Endpoints and serialisaton for [`registry::User`] related types.
 
-use serde::ser::SerializeStruct as _;
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -14,10 +14,11 @@ use crate::registry;
 /// Prefixed filter
 pub fn routes<R: registry::Client>(
     registry: http::Shared<R>,
+    store: Arc<RwLock<kv::Store>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("users").and(
-        register_filter(Arc::clone(&registry), subscriptions)
+        register_filter(Arc::clone(&registry), store, subscriptions)
             .or(list_orgs_filter(Arc::clone(&registry)))
             .or(get_filter(registry)),
     )
@@ -27,11 +28,12 @@ pub fn routes<R: registry::Client>(
 #[cfg(test)]
 fn filters<R: registry::Client>(
     registry: http::Shared<R>,
+    store: Arc<RwLock<kv::Store>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_orgs_filter(Arc::clone(&registry))
         .or(get_filter(Arc::clone(&registry)))
-        .or(register_filter(registry, subscriptions))
+        .or(register_filter(registry, store, subscriptions))
 }
 
 /// GET /<handle>
@@ -59,10 +61,12 @@ fn get_filter<R: registry::Client>(
 /// POST /
 fn register_filter<R: registry::Client>(
     registry: http::Shared<R>,
+    store: Arc<RwLock<kv::Store>>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
         .and(http::with_shared(registry))
+        .and(http::with_store(store))
         .and(http::with_subscriptions(subscriptions))
         .and(warp::body::json())
         .and(document::document(document::description(
@@ -107,43 +111,25 @@ fn list_orgs_filter<R: registry::Client>(
 /// User handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use radicle_registry_client::Balance;
+    use std::convert::TryFrom;
+    use std::sync::Arc;
+    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
     use crate::http;
     use crate::notification;
     use crate::registry;
+    use crate::session;
 
     /// Get the [`registry::User`] for the given `handle`.
     pub async fn get<R: registry::Client>(
         registry: http::Shared<R>,
         handle: String,
     ) -> Result<impl Reply, Rejection> {
+        let handle = registry::Id::try_from(handle)?;
         let user = registry.read().await.get_user(handle).await?;
         Ok(reply::json(&user))
-    }
-
-    /// Register a user on the Registry.
-    pub async fn register<R: registry::Client>(
-        registry: http::Shared<R>,
-        subscriptions: notification::Subscriptions,
-        input: super::RegisterInput,
-    ) -> Result<impl Reply, Rejection> {
-        // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        // TODO(xla): Use real fee defined by the user.
-        let fake_fee: Balance = 100;
-
-        let mut reg = registry.write().await;
-        let tx = reg
-            .register_user(&fake_pair, input.handle, input.maybe_entity_id, fake_fee)
-            .await?;
-
-        subscriptions
-            .broadcast(notification::Notification::Transaction(tx.clone()))
-            .await;
-
-        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
     }
 
     /// List the orgs the user is a member of.
@@ -152,22 +138,40 @@ mod handler {
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
+        let handle = registry::Id::try_from(handle)?;
         let orgs = reg.list_orgs(handle).await?;
 
         Ok(reply::json(&orgs))
     }
-}
 
-impl Serialize for registry::User {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("User", 2)?;
-        state.serialize_field("handle", &self.handle.to_string())?;
-        state.serialize_field("maybeEntityId", &self.maybe_entity_id)?;
+    /// Register a user on the Registry.
+    pub async fn register<R: registry::Client>(
+        registry: http::Shared<R>,
+        store: Arc<RwLock<kv::Store>>,
+        subscriptions: notification::Subscriptions,
+        input: super::RegisterInput,
+    ) -> Result<impl Reply, Rejection> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        // TODO(xla): Use real fee defined by the user.
+        let fake_fee: Balance = 100;
 
-        state.end()
+        let handle = registry::Id::try_from(input.handle)?;
+        let mut reg = registry.write().await;
+        let tx = reg
+            .register_user(&fake_pair, handle.clone(), input.maybe_entity_id, fake_fee)
+            .await?;
+
+        // TODO(xla): This should only happen once the corresponding tx is confirmed.
+        // Store registered user in session.
+        let store = store.read().await;
+        session::set_handle(&store, handle)?;
+
+        subscriptions
+            .broadcast(notification::Notification::Transaction(tx.clone()))
+            .await;
+
+        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
     }
 }
 
@@ -229,12 +233,14 @@ impl ToDocumentedType for RegisterInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use radicle_registry_client::ed25519;
     use serde_json::{json, Value};
+    use std::convert::TryFrom;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
+
+    use radicle_registry_client as protocol;
 
     use crate::avatar;
     use crate::notification;
@@ -242,22 +248,26 @@ mod test {
 
     #[tokio::test]
     async fn get() {
+        let tmp_dir = tempfile::tempdir().unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
+        let store = Arc::new(RwLock::new(
+            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
+        ));
         let subscriptions = notification::Subscriptions::default();
-        let author = ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let handle = "cloudhead";
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("cloudhead").unwrap();
 
         let _tx = registry
             .write()
             .await
-            .register_user(&author, handle.to_string(), None, 100)
+            .register_user(&author, handle.clone(), None, 100)
             .await
             .unwrap();
 
-        let api = super::filters(registry, subscriptions);
+        let api = super::filters(registry, store, subscriptions);
         let res = request()
             .method("GET")
             .path(&format!("/{}", handle))
@@ -278,41 +288,46 @@ mod test {
 
     #[tokio::test]
     async fn list_orgs() {
+        let tmp_dir = tempfile::tempdir().unwrap();
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
+        let store = Arc::new(RwLock::new(
+            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
+        ));
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), subscriptions);
+        let api = super::filters(Arc::clone(&registry), store, subscriptions);
 
         // Register the user
-        let alice = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("cloudhead").unwrap();
+
         registry
             .write()
             .await
-            .register_user(&alice, "alice".into(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
             .await
             .unwrap();
 
         let user = registry
             .read()
             .await
-            .get_user("alice".to_string())
+            .get_user(handle.clone())
             .await
             .unwrap()
             .unwrap();
 
         // Register the org
-        let fee: radicle_registry_client::Balance = 100;
         registry
             .write()
             .await
-            .register_org(&alice, "monadic".to_string(), fee)
+            .register_org(&author, "monadic".to_string(), 100)
             .await
             .unwrap();
 
         let res = request()
             .method("GET")
-            .path("/alice/orgs")
+            .path(&format!("/{}/orgs", handle))
             .reply(&api)
             .await;
 
@@ -337,7 +352,12 @@ mod test {
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(Arc::clone(&cache), subscriptions);
+        let api = super::filters(
+            Arc::clone(&cache),
+            Arc::new(RwLock::new(store)),
+            subscriptions,
+        );
+
         let res = request()
             .method("POST")
             .path("/")
