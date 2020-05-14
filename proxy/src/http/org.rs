@@ -211,7 +211,11 @@ mod handler {
             let org_project = super::Project {
                 name: p.name.to_string(),
                 org_id: p.org_id.to_string(),
-                shareable_entity_identifier: format!("%{}/{}", p.org_id.to_string(), p.name.to_string()),
+                shareable_entity_identifier: format!(
+                    "%{}/{}",
+                    p.org_id.to_string(),
+                    p.name.to_string()
+                ),
                 maybe_project,
             };
             mapped_projects.push(org_project);

@@ -256,7 +256,10 @@ impl Serialize for project::Project {
     {
         let mut state = serializer.serialize_struct("Project", 4)?;
         state.serialize_field("id", &self.id.to_string())?;
-        state.serialize_field("shareableEntityIdentifier", &self.shareable_entity_identifier.to_string())?;
+        state.serialize_field(
+            "shareableEntityIdentifier",
+            &self.shareable_entity_identifier.to_string(),
+        )?;
         state.serialize_field("metadata", &self.metadata)?;
         state.serialize_field("registration", &self.registration)?;
         state.serialize_field("stats", &self.stats)?;
@@ -621,7 +624,7 @@ mod test {
         let projects = coco::list_projects(&librad_paths)
             .into_iter()
             .map(|(id, meta)| project::Project {
-                id:id.clone(),
+                id: id.clone(),
                 shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
