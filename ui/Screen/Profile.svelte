@@ -14,25 +14,21 @@
 
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
-  import Settings from "./Profile/Settings.svelte";
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/": Projects,
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
-    "/profile/settings": Settings,
     "*": NotFound,
   };
 
   import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
   import WalletMenu from "./Profile/WalletMenu.svelte";
-  import SettingsMenu from "./Profile/SettingsMenu.svelte";
 
   const menuRoutes = {
     "/profile/projects": ProjectsMenu,
     "/profile/wallet": WalletMenu,
-    "/profile/settings": SettingsMenu,
   };
 
   const topbarMenuItems = [
@@ -46,12 +42,6 @@
       icon: Icon.Fund,
       title: "Wallet",
       href: path.profileWallet(),
-      looseActiveStateMatching: false,
-    },
-    {
-      icon: Icon.Settings,
-      title: "Settings",
-      href: path.profileSettings(),
       looseActiveStateMatching: false,
     },
   ];

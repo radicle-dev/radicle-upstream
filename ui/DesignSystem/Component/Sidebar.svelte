@@ -45,8 +45,8 @@
     background-color: var(--color-foreground-level-5);
     top: -4px;
     left: -16px;
-    border-top-right-radius: 2px;
-    border-bottom-right-radius: 2px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
   }
 
   .indicator.active:before {
@@ -57,8 +57,8 @@
     background-color: var(--color-secondary);
     top: -4px;
     left: -16px;
-    border-top-right-radius: 2px;
-    border-bottom-right-radius: 2px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
   }
 
   .wrapper :global(li:hover svg) {
@@ -91,7 +91,7 @@
     background-color: var(--color-foreground);
     color: var(--color-background);
     text-align: center;
-    border-radius: 2px;
+    border-radius: 4px;
     padding: 4px 8px 6px 8px;
 
     position: absolute;
@@ -143,14 +143,14 @@
 
     <li
       class="item indicator"
-      data-cy="network"
-      class:active={path.active(path.network(), $location)}>
-      <a href={path.network()} use:link>
-        <Icon.Peer />
+      data-cy="settings"
+      class:active={path.active(path.settings(), $location)}>
+      <a href={path.settings()} use:link>
+        <Icon.Settings />
       </a>
 
       <div class="tooltip">
-        <Title style="white-space: nowrap;">Network</Title>
+        <Title style="white-space: nowrap;">Settings</Title>
       </div>
     </li>
 
