@@ -1,7 +1,5 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-#![allow(clippy::doc_markdown)]
-
 use librad::paths;
 use std::convert::Infallible;
 use std::sync::Arc;
@@ -24,13 +22,28 @@ mod transaction;
 mod user;
 
 /// Main entry point for HTTP API.
-pub fn routes(
+pub fn routes<R>(
     librad_paths: Arc<RwLock<paths::Paths>>,
-    registry: Arc<RwLock<registry::Registry>>,
+    registry: Shared<R>,
     store: Arc<RwLock<kv::Store>>,
     enable_control: bool,
-) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone
+where
+    R: registry::Cache + registry::Client,
+{
     let subscriptions = crate::notification::Subscriptions::default();
+
+    let log = warp::log::custom(|info| {
+        log::info!(
+            target: "proxy::http",
+            "\"{} {} {:?}\" {} {:?}",
+            info.method(),
+            info.path(),
+            info.version(),
+            info.status().as_u16(),
+            info.elapsed(),
+        );
+    });
 
     let api = path("v1").and(
         avatar::get_filter()
@@ -42,23 +55,28 @@ pub fn routes(
             ))
             .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
             .or(notification::filters(subscriptions.clone()))
-            .or(org::routes(Arc::clone(&registry), subscriptions.clone()))
+            .or(org::routes(
+                Arc::clone(&librad_paths),
+                Arc::clone(&registry),
+                subscriptions.clone(),
+            ))
             .or(project::filters(
                 Arc::clone(&librad_paths),
                 Arc::clone(&registry),
                 subscriptions.clone(),
             ))
-            .or(session::get_filter(Arc::clone(&registry), store))
+            .or(session::get_filter(
+                Arc::clone(&registry),
+                Arc::clone(&store),
+            ))
             .or(source::routes(librad_paths))
             .or(transaction::filters(Arc::clone(&registry)))
-            .or(user::routes(registry, subscriptions)),
+            .or(user::routes(registry, store, subscriptions)),
     );
     // let docs = path("docs").and(doc::filters(&api));
     let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));
 
-    api.or(docs)
-        .with(warp::log("proxy::http"))
-        .recover(error::recover)
+    api.or(docs).with(log).recover(error::recover)
 }
 
 /// State filter to expose the [`librad::paths::Paths`] to handlers.
@@ -69,12 +87,18 @@ pub fn with_paths(
     warp::any().map(move || Arc::clone(&paths))
 }
 
-/// State filter to expose the [`registry::Registry`] to handlers.
+/// Thread-safe container for threadsafe pass-through to filters and handlers.
+pub type Shared<T> = Arc<RwLock<T>>;
+
+/// State filter to expose a [`Shared`] and its content.
 #[must_use]
-pub fn with_registry(
-    reg: Arc<RwLock<registry::Registry>>,
-) -> impl Filter<Extract = (Arc<RwLock<registry::Registry>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&reg))
+pub fn with_shared<T>(
+    container: Shared<T>,
+) -> impl Filter<Extract = (Shared<T>,), Error = Infallible> + Clone
+where
+    T: Send + Sync,
+{
+    warp::any().map(move || Arc::clone(&container))
 }
 
 /// State filter to expose [`kv::Store`] to handlers.

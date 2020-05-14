@@ -3,14 +3,15 @@
 
 use librad::meta;
 use librad::project;
-use radicle_registry_client as registry;
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
 
 use crate::coco;
 use crate::error;
+use crate::registry;
 
 /// Object the API returns for project metadata.
-#[derive(serde_derive::Deserialize, serde_derive::Serialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Project name.
@@ -45,7 +46,6 @@ pub struct Project {
 }
 
 /// Variants for possible registration states of a project.
-// TODO(xla): Remove once properly integrated.
 #[allow(dead_code)]
 pub enum Registration {
     /// Project is registered under an Org.

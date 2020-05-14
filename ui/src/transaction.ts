@@ -9,12 +9,12 @@ import { Domain } from "./project"
 
 // Types.
 export enum MessageType {
-  OrgRegistration = "ORG_REGISTRATION",
-  OrgUnregistration = "ORG_UNREGISTRATION",
-  OrgMemberRegistration = "ORG_MEMBER_REGISTRATION",
-  OrgMemberUnregistration = "ORG_MEMBER_UNREGISTRATION",
-  ProjectRegistration = "PROJECT_REGISTRATION",
-  UserRegistration = "USER_REGISTRATION",
+  OrgRegistration = "orgRegistration",
+  OrgUnregistration = "orgUnregistration",
+  OrgMemberRegistration = "orgMemberRegistration",
+  OrgMemberUnregistration = "orgMemberUnregistration",
+  ProjectRegistration = "projectRegistration",
+  UserRegistration = "userRegistration",
 }
 
 interface OrgRegistration {
@@ -54,10 +54,16 @@ interface UserRegistration {
   id: string;
 }
 
-type Message = OrgRegistration | OrgUnregistration | OrgMemberRegistration | OrgMemberUnregistration | ProjectRegistration | UserRegistration;
+type Message
+  = OrgRegistration
+  | OrgUnregistration
+  | OrgMemberRegistration
+  | OrgMemberUnregistration
+  | ProjectRegistration
+  | UserRegistration;
 
 export enum StateType {
-  Applied = "APPLIED",
+  Applied = "applied",
 }
 
 interface Applied {

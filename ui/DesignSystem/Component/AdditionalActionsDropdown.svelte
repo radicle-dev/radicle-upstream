@@ -83,7 +83,6 @@
 
   .header {
     padding: 12px 16px;
-    border-bottom: solid 1px var(--color-foreground-level-3);
     color: var(--color-foreground-level-5);
     display: flex;
     justify-content: space-between;
@@ -95,6 +94,7 @@
 
   .menu {
     cursor: pointer;
+    border-top: solid 1px var(--color-foreground-level-3);
   }
 
   .menu-item {
@@ -141,19 +141,21 @@
         </Copyable>
       {/if}
 
-      <div class="menu" data-cy="dropdown-menu">
-        {#each menuItems as item, index}
-          <div
-            title={item.tooltip}
-            data-cy={item.dataCy}
-            class="menu-item"
-            class:disabled={item.disabled}
-            on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
-            <svelte:component this={item.icon} style="margin-right: 12px" />
-            <Text>{item.title}</Text>
-          </div>
-        {/each}
-      </div>
+      {#if menuItems}
+        <div class="menu" data-cy="dropdown-menu">
+          {#each menuItems as item, index}
+            <div
+              title={item.tooltip}
+              data-cy={item.dataCy}
+              class="menu-item"
+              class:disabled={item.disabled}
+              on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
+              <svelte:component this={item.icon} style="margin-right: 12px" />
+              <Text>{item.title}</Text>
+            </div>
+          {/each}
+        </div>
+      {/if}
     </div>
   {/if}
 </div>

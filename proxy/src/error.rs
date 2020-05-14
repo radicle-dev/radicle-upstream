@@ -61,6 +61,8 @@ pub enum Error {
     Protocol(registry::Error),
     /// Issues with the Radicle runtime.
     Runtime(registry::DispatchError),
+    /// Issues when access persistent storage.
+    Store(kv::Error),
     /// Errors from handling time.
     Time(SystemTimeError),
     /// Errors from transactions.
@@ -82,6 +84,12 @@ impl From<surf::git::error::Error> for Error {
 impl From<git2::Error> for Error {
     fn from(git2_error: git2::Error) -> Self {
         Self::Git2(git2_error)
+    }
+}
+
+impl From<kv::Error> for Error {
+    fn from(kv_error: kv::Error) -> Self {
+        Self::Store(kv_error)
     }
 }
 

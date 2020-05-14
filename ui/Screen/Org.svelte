@@ -13,17 +13,17 @@
     Topbar,
   } from "../DesignSystem/Component";
 
-  import Projects from "./Org/Projects.svelte";
   import Fund from "./Org/Fund.svelte";
   import Members from "./Org/Members.svelte";
+  import Projects from "./Org/Projects.svelte";
 
   export let params = null;
 
   const routes = {
     "/orgs/:id": Projects,
-    "/orgs/:id/projects": Projects,
     "/orgs/:id/fund": Fund,
     "/orgs/:id/members": Members,
+    "/orgs/:id/projects": Projects,
   };
 
   import ProjectsMenu from "./Org/ProjectsMenu.svelte";
@@ -80,14 +80,15 @@
 </script>
 
 <SidebarLayout
-  style="margin-top: calc(var(--topbar-height) + 33px)"
-  dataCy="page-container">
+  dataCy="org-screen"
+  style="margin-top: calc(var(--topbar-height) + 33px)">
   <Remote {store} let:data={org}>
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.orgProjects(params.id)} use:link>
         <Avatar
           title={org.id}
           avatarFallback={org.avatarFallback}
+          registered={true}
           variant="square" />
       </a>
 

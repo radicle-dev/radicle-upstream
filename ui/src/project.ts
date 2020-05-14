@@ -12,9 +12,17 @@ export interface Metadata {
   description?: string;
 }
 
+interface Stats {
+  branches: number;
+  commits: number;
+  contributors: number;
+}
+
 export interface Project {
   id: string;
   metadata: Metadata;
+  registration: string; // TODO(rudolfs): what will this type be?
+  stats: Stats;
 }
 
 type Projects = Project[]
