@@ -413,7 +413,7 @@ impl Client for Registry {
             timestamp: SystemTime::now(),
         };
 
-        // TODO(xla): Remove autmoatic prepayment once we have proper balances.
+        // TODO(xla): Remove automatic prepayment once we have proper balances.
         let org = self.client.get_org(org_id).await?.expect("org not present");
         self.prepay_account(org.account_id, 1000).await?;
 
