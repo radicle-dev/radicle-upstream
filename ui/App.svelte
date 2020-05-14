@@ -27,27 +27,6 @@
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
 
-  $: switch ($store.status) {
-    case remote.Status.NotAsked:
-      fetch();
-      break;
-
-    case remote.Status.Success:
-      if ($store.data.identity === null) {
-        push(path.createIdentity());
-      } else {
-        if ($location === "/" || $location === "/identity/new") {
-          push(path.profile());
-        }
-      }
-      break;
-
-    case remote.Status.Error:
-      console.error($store.error);
-      notification.error("Session could not be fetched");
-      break;
-  }
-
   const routes = {
     "/": Blank,
     "/identity/new": IdentityCreation,
@@ -69,6 +48,27 @@
     "/transactions/:id": TransactionDetails,
     "*": NotFound,
   };
+
+  $: switch ($store.status) {
+    case remote.Status.NotAsked:
+      fetch();
+      break;
+
+    case remote.Status.Success:
+      if ($store.data.identity === null) {
+        push(path.createIdentity());
+      } else {
+        if ($location === "/" || $location === "/identity/new") {
+          push(path.profile());
+        }
+      }
+      break;
+
+    case remote.Status.Error:
+      console.error($store.error);
+      notification.error("Session could not be fetched");
+      break;
+  }
 </script>
 
 <Hotkeys />

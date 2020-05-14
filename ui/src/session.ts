@@ -4,6 +4,7 @@ import * as identity from "./identity";
 import * as org from "./org";
 import * as remote from "./remote";
 import * as settings from "./settings";
+import * as transaction from "./transaction";
 
 // TYPES
 
@@ -20,6 +21,7 @@ export const session = sessionStore.readable;
 // EVENTS
 enum Kind {
   Clear = "CLEAR",
+  ClearCache = "CLEAR_CACHE",
   Fetch = "FETCH",
 }
 
@@ -27,11 +29,15 @@ interface Clear extends event.Event<Kind> {
   kind: Kind.Clear;
 }
 
+interface ClearCache extends event.Event<Kind> {
+  kind: Kind.ClearCache;
+}
+
 interface Fetch extends event.Event<Kind> {
   kind: Kind.Fetch;
 }
 
-type Msg = Clear | Fetch;
+type Msg = Clear | ClearCache | Fetch;
 
 const fetchSession = (): Promise<void> =>
       api.get<Session>(`session`)
@@ -45,6 +51,13 @@ const update = (msg: Msg): void => {
         .then(fetchSession)
 
       break;
+
+    case Kind.ClearCache:
+      api.del(`session/cache`)
+        .then(() => transaction.fetchList())
+
+      break;
+
     case Kind.Fetch:
       sessionStore.loading();
       fetchSession();
@@ -54,4 +67,5 @@ const update = (msg: Msg): void => {
 }
 
 export const clear = event.create<Kind, Msg>(Kind.Clear, update);
+export const clearCache = event.create<Kind, Msg>(Kind.ClearCache, update);
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
