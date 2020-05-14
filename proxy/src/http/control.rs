@@ -116,7 +116,8 @@ mod handler {
 
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: librad::project::ProjectId::from(id),
+                id: librad::project::ProjectId::from(id.clone()),
+                shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {

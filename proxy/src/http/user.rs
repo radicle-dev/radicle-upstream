@@ -338,6 +338,7 @@ mod test {
             have,
             json!([registry::Org {
                 id: "monadic".to_string(),
+                shareable_entity_identifier: "%monadic".to_string(),
                 avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
                 members: vec![user]
             }])

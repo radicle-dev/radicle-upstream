@@ -83,7 +83,7 @@
           <Stats stats={statsProps(project.stats)} />
           <AdditionalActionsDropdown
             dataCy="context-menu"
-            headerTitle={project.id}
+            headerTitle={project.shareableEntityIdentifier}
             menuItems={contextMenuItems(project.id, session)} />
         </div>
       </Flex>
