@@ -14,10 +14,10 @@ Cypress.Commands.add("nukeSessionState", () => {
 });
 
 Cypress.Commands.add("nukeAllState", () => {
-  console.log("Nuking CoCo and Registry state");
-  fetch("http://localhost:8080/v1/control/nuke/coco");
-  fetch("http://localhost:8080/v1/control/nuke/registry");
+  console.log("Nuking CoCo, Registry and session state");
   fetch("http://localhost:8080/v1/control/nuke/session");
+  fetch("http://localhost:8080/v1/control/nuke/registry");
+  fetch("http://localhost:8080/v1/control/nuke/coco");
 });
 
 Cypress.Commands.add("pick", (...ids) => {
