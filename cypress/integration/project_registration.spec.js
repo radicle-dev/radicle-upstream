@@ -185,7 +185,7 @@ context("project registration", () => {
 
   context("happy path", () => {
     context("when registering under an org", () => {
-      it.only("registers the project and shows it in the org project list", () => {
+      it("registers the project and shows it in the org project list", () => {
         cy.pick("sidebar", `org-${org1()}`).click();
         cy.pick("context-menu").click();
         cy.pick("dropdown-menu", "add-project").click();
