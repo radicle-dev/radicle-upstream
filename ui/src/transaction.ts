@@ -1,7 +1,7 @@
 import { Readable } from "svelte/store";
 
 import * as api from "./api";
-import { Avatar, getAvatar, Usage } from "./avatar"
+import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar"
 import * as event from "./event";
 import * as remote from "./remote";
 import { Identity } from "./identity";
@@ -19,12 +19,12 @@ export enum MessageType {
 
 interface OrgRegistration {
   type: MessageType.OrgRegistration;
-  orgId: string;
+  id: string;
 }
 
 interface OrgUnregistration {
   type: MessageType.OrgUnregistration;
-  orgId: string;
+  id: string;
 }
 
 interface OrgMemberRegistration {
@@ -39,10 +39,13 @@ interface OrgMemberUnregistration {
   userId: string;
 }
 
+// TODO(sos): coordinate message format for project registration with proxy
 interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
   domain: Domain;
-  domainId: string; // domain under which project falls, e.g. User or Org
+  org_id: string;
+  project_name: string;
+  // domainId: string; // domain under which project falls, e.g. User or Org
   cocoId: string;
   projectName: string;
   projectDescription: string;
@@ -171,7 +174,8 @@ export enum PayerType {
   User = "user"
 }
 
-export const formatPayer = (identity: Identity, type?: PayerType): object => {
+// TODO(sos): update to support orgs
+export const formatPayer = (identity: Identity): object => {
   return {
     name: identity.metadata.displayName || identity.metadata.handle,
     type: PayerType.User,
@@ -199,15 +203,15 @@ export const formatSubject = (msg: Message): Subject => {
 
   switch (msg.type) {
     case MessageType.OrgRegistration:
-      name = msg.orgId;
+      name = msg.id;
       type = SubjectType.Org
-      avatarSource = getAvatar(Usage.Org, msg.orgId)
+      avatarSource = getAvatar(Usage.Org, msg.id)
       break;
 
     case MessageType.OrgUnregistration:
-      name = msg.orgId;
+      name = msg.id;
       type = SubjectType.Org
-      avatarSource = getAvatar(Usage.Org, msg.orgId)
+      avatarSource = getAvatar(Usage.Org, msg.id)
       break;
 
     // TODO(sos): replace with actual avatar lookup for the identity associated with
@@ -234,9 +238,9 @@ export const formatSubject = (msg: Message): Subject => {
 
     // TODO(sos): replace with associated identity handle for user, should it exist
     case MessageType.ProjectRegistration:
-      name = `${msg.domainId} / ${msg.projectName}`
+      name = `${msg.org_id} / ${msg.project_name}`
       type = msg.domain === Domain.Org ? SubjectType.OrgProject : SubjectType.UserProject
-      avatarSource = getAvatar(msg.domain === Domain.User ? Usage.Identity : Usage.Org, msg.domainId)
+      avatarSource = getAvatar(msg.domain === Domain.User ? Usage.Identity : Usage.Org, msg.org_id)
       break;
   }
 

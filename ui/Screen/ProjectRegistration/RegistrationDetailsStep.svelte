@@ -23,8 +23,9 @@
 
   const next = () => {
     dispatch("next", {
-      domainHandle: selectedDomain().value,
+      domainId: selectedDomain().value,
       domainType: selectedDomain().type,
+      domainAvatar: selectedDomain().avatarProps.avatarFallback,
     });
   };
 
@@ -36,11 +37,11 @@
 
   const identityOption = {
     variant: "avatar",
-    value: session.identity.id,
+    value: session.identity.registered,
     type: Domain.User,
     avatarProps: {
       variant: "circle",
-      title: session.identity.metadata.handle,
+      title: session.identity.registered,
       avatarFallback: session.identity.avatarFallback,
       imageUrl: session.identity.imageUrl,
     },
@@ -60,7 +61,6 @@
   });
 
   const domainDropdownOptions = [identityOption, ...orgOptions];
-  console.log(domainDropdownOptions);
 
   const projectDropdownOptions = projects.map((project) => {
     return {

@@ -22,7 +22,6 @@
   if (session.identity !== null) {
     identity = session.identity;
   }
-
   const store = fetch(params.id);
 </script>
 

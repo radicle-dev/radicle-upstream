@@ -6,7 +6,7 @@
   import {
     RegistrationFlowState,
     registerMemberTransaction,
-    memberNameValidationStore,
+    memberHandleValidationStore,
   } from "../../src/org.ts";
   import { formatPayer } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
@@ -26,7 +26,7 @@
     subject,
     payer,
     validating = false;
-  const validation = memberNameValidationStore();
+  const validation = memberHandleValidationStore();
 
   const next = () => {
     switch (state) {

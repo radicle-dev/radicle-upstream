@@ -22,38 +22,33 @@
   const session = getContext("session");
 
   let projectId = params.projectId || null;
-  let domainId = params.domainId || null;
-
-  let domainHandle = null;
-  let domainType = null;
-
-  let skipNamePreselection = false;
-
   let projectName = null;
 
+  let domainId = params.domainId || null;
+  let domainType = null;
+  let domainAvatar = null;
+
+  let skipNamePreselection = false;
   let showRegistrationDetails = true;
 
   // summary
 
   const onSubmitTransaction = () => {
-    project.register(domainHandle, projectName, projectId);
+    project.register(domainId, projectName, projectId);
 
     pop();
   };
 
-  const wallet = () => {
-    return {
-      name: domainHandle,
-    };
-  };
+  const wallet = () => transaction.formatPayer(session.identity);
 
+  // TODO(sos): coordinate message format for project registration with proxy
   const tx = () => ({
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
-        domain: domainType,
-        domainId,
-        projectName,
+        // domain: domainType,
+        org_id: domainId,
+        project_name: projectName,
       },
     ],
   });
@@ -94,9 +89,10 @@
             bind:domainId
             bind:projectName
             on:next={(event) => {
-              domainHandle = event.detail.domainHandle;
+              domainId = event.detail.domainId;
               domainType = event.detail.domainType;
               showRegistrationDetails = false;
+              domainAvatar = event.detail.domainAvatar;
             }} />
         {:else}
           <Transaction payer={wallet()} transaction={tx()} />

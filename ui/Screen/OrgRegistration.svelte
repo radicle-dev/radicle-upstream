@@ -5,7 +5,7 @@
   import * as notification from "../src/notification.ts";
   import {
     RegistrationFlowState,
-    orgNameValidationStore,
+    orgIdValidationStore,
     register,
   } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
@@ -19,12 +19,12 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
-  let orgName, transaction, subject, payer, avatarFallback, showAvatar;
+  let orgId, transaction, subject, payer, avatarFallback, showAvatar;
   let state = RegistrationFlowState.NameSelection;
 
   // Create a new validation store
   let validating = false;
-  const validation = orgNameValidationStore();
+  const validation = orgIdValidationStore();
 
   const next = () => {
     switch (state) {
@@ -34,7 +34,7 @@
             messages: [
               {
                 type: MessageType.OrgRegistration,
-                orgId: orgName,
+                id: orgId,
               },
             ],
           };
@@ -49,7 +49,7 @@
 
   const registerOrg = async () => {
     try {
-      await register(orgName);
+      await register(orgId);
       await fetchSession();
     } catch (error) {
       notification.error(`Could not register org: ${error.message}`);
@@ -76,11 +76,11 @@
 
     avatarFallback = await getAvatar(Usage.Org, id);
 
-    // check orgName in case input was cleared during the promise
-    showAvatar = orgName.length && !!avatarFallback;
+    // check orgId in case input was cleared during the promise
+    showAvatar = orgId.length && !!avatarFallback;
   };
 
-  $: updateAvatar(orgName);
+  $: updateAvatar(orgId);
   $: submitLabel =
     state === RegistrationFlowState.TransactionConfirmation
       ? "Submit transaction"
@@ -88,8 +88,8 @@
 
   $: {
     // Start validating once the user enters something for the first time
-    if (orgName && orgName.length > 0) validating = true;
-    if (validating) validation.updateInput(orgName);
+    if (orgId && orgId.length > 0) validating = true;
+    if (validating) validation.updateInput(orgId);
   }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
@@ -108,7 +108,7 @@
     <Input.Text
       dataCy="name-input"
       placeholder="Org name (e.g. Flowerpot)"
-      bind:value={orgName}
+      bind:value={orgId}
       style="width: 100%;"
       showSuccessCheck
       {showAvatar}
