@@ -12,12 +12,16 @@ use crate::registry;
 use crate::session;
 
 /// Prefixed fitlers.
-pub fn routes<R: registry::Client>(
+pub fn routes<R>(
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + registry::Client,
+{
     path("session").and(
-        delete_filter(Arc::clone(&store))
+        clear_cache_filter(Arc::clone(&registry))
+            .or(delete_filter(Arc::clone(&store)))
             .or(get_filter(registry, Arc::clone(&store)))
             .or(update_settings_filter(store)),
     )
@@ -25,13 +29,35 @@ pub fn routes<R: registry::Client>(
 
 /// Combination of all session filters.
 #[cfg(test)]
-pub fn filters<R: registry::Client>(
+pub fn filters<R>(
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    delete_filter(Arc::clone(&store))
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + registry::Client,
+{
+    clear_cache_filter(Arc::clone(&registry))
+        .or(delete_filter(Arc::clone(&store)))
         .or(get_filter(registry, Arc::clone(&store)))
         .or(update_settings_filter(store))
+}
+
+/// `DELETE /cache`
+fn clear_cache_filter<R: registry::Cache>(
+    registry: http::Shared<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("cache")
+        .and(warp::delete())
+        .and(path::end())
+        .and(http::with_shared(registry))
+        .and(document::document(document::description(
+            "Clear cached data",
+        )))
+        .and(document::document(document::tag("Session")))
+        .and(document::document(
+            document::response(204, None).description("Cache cleared"),
+        ))
+        .and_then(handler::clear_cache)
 }
 
 /// `DELETE /`
@@ -46,7 +72,7 @@ fn delete_filter(
         )))
         .and(document::document(document::tag("Session")))
         .and(document::document(
-            document::response(204, None).description("Currently active Session"),
+            document::response(204, None).description("Current session deleted"),
         ))
         .and_then(handler::delete)
 }
@@ -101,6 +127,16 @@ mod handler {
     use crate::http;
     use crate::registry;
     use crate::session;
+
+    /// Clear [`registry::Cache`].
+    pub async fn clear_cache<R: registry::Cache>(
+        cache: http::Shared<R>,
+    ) -> Result<impl Reply, Rejection> {
+        let cache = cache.read().await;
+        cache.clear()?;
+
+        Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
+    }
 
     /// Clear the current [`session::Session`].
     pub async fn delete(store: Arc<RwLock<kv::Store>>) -> Result<impl Reply, Rejection> {
@@ -209,25 +245,36 @@ mod test {
     use crate::session;
 
     #[tokio::test]
+    async fn clear_cache() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
+    }
+
+    #[tokio::test]
     async fn delete() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
         let store = Arc::new(RwLock::new(
             kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
         ));
-        let api = super::filters(Arc::clone(&registry), Arc::clone(&store));
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(
+            registry,
+            &*store.read().await,
+        )));
+        let api = super::filters(Arc::clone(&cache), Arc::clone(&store));
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
-        session::set_settings(&(*store.read().await), settings).unwrap();
+        session::set_settings(&*store.read().await, settings).unwrap();
 
         let res = request().method("DELETE").path("/").reply(&api).await;
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         // Test that we reset the session to default.
-        let have = session::current(&(*store.read().await), registry.read().await.clone())
+        let have = session::current(&*store.read().await, cache.read().await.clone())
             .await
             .unwrap()
             .settings;
@@ -239,12 +286,10 @@ mod test {
     #[tokio::test]
     async fn get() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let api = super::filters(
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
 
         let res = request().method("GET").path("/").reply(&api).await;
 
@@ -271,12 +316,10 @@ mod test {
     #[tokio::test]
     async fn udpate_settings() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let api = super::filters(
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;

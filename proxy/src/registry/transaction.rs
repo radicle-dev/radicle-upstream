@@ -74,6 +74,13 @@ pub enum State {
 
 /// Behaviour to manage and persist observed [`Transaction`].
 pub trait Cache: Send + Sync {
+    /// Clears the cached transactions.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if access to the underlying [`kv::Store`] fails.
+    fn clear(&self) -> Result<(), error::Error>;
+
     /// Caches a transaction locally in the Registry.
     ///
     /// # Errors
@@ -126,6 +133,11 @@ impl<C> Cache for Cacher<C>
 where
     C: registry::Client,
 {
+    /// Clears the cached transactions.
+    fn clear(&self) -> Result<(), error::Error> {
+        Ok(self.transactions.clear()?)
+    }
+
     /// Caches a transaction locally in the Registry.
     fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error> {
         let key = tx.id.0.encode_hex::<String>();
