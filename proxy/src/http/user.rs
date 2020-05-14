@@ -368,7 +368,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = cache.read().await.list_transactions(vec![]).await.unwrap();
+        let txs = cache.read().await.list_transactions(vec![]).unwrap();
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();

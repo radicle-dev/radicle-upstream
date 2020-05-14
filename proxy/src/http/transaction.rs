@@ -66,7 +66,7 @@ mod handler {
                     .expect("unable to get hash from string")
             })
             .collect();
-        let txs = cache.read().await.list_transactions(tx_ids).await?;
+        let txs = cache.read().await.list_transactions(tx_ids)?;
 
         Ok(reply::json(&txs))
     }
@@ -186,9 +186,9 @@ mod test {
             timestamp: time::SystemTime::now(),
         };
 
-        cache.cache_transaction(tx.clone()).await.unwrap();
+        cache.cache_transaction(tx.clone()).unwrap();
 
-        let transactions = cache.list_transactions(vec![]).await.unwrap();
+        let transactions = cache.list_transactions(vec![]).unwrap();
 
         let api = super::filters(Arc::new(RwLock::new(cache)));
         let res = request()

@@ -620,7 +620,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
+        let txs = cache.write().await.list_transactions(vec![]).unwrap();
 
         // Get the registered org
         let org = cache

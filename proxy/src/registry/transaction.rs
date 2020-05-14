@@ -73,17 +73,20 @@ pub enum State {
 }
 
 /// Behaviour to manage and persist observed [`Transaction`].
-#[async_trait]
 pub trait Cache: Send + Sync {
     /// Caches a transaction locally in the Registry.
-    async fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error>;
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if access to the underlying [`kv::Store`] fails.
+    fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error>;
 
     /// Returns all cached transactions.
     ///
     /// # Errors
     ///
-    /// Will return `Err` if a protocol error occurs.
-    async fn list_transactions(
+    /// Will return `Err` if access to the underlying [`kv::Store`] fails.
+    fn list_transactions(
         &self,
         ids: Vec<protocol::TxHash>,
     ) -> Result<Vec<Transaction>, error::Error>;
@@ -119,13 +122,12 @@ where
     }
 }
 
-#[async_trait]
 impl<C> Cache for Cacher<C>
 where
     C: registry::Client,
 {
     /// Caches a transaction locally in the Registry.
-    async fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error> {
+    fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error> {
         let key = tx.id.0.encode_hex::<String>();
         self.transactions.set(key.as_str(), kv::Json(tx))?;
 
@@ -137,7 +139,7 @@ where
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    async fn list_transactions(
+    fn list_transactions(
         &self,
         ids: Vec<protocol::TxHash>,
     ) -> Result<Vec<Transaction>, error::Error> {
@@ -176,7 +178,7 @@ where
     ) -> Result<Transaction, error::Error> {
         let tx = self.client.register_org(author, org_id, fee).await?;
 
-        self.cache_transaction(tx.clone()).await?;
+        self.cache_transaction(tx.clone())?;
 
         Ok(tx)
     }
@@ -189,7 +191,7 @@ where
     ) -> Result<Transaction, error::Error> {
         let tx = self.unregister_org(author, org_id, fee).await?;
 
-        self.cache_transaction(tx.clone()).await?;
+        self.cache_transaction(tx.clone())?;
 
         Ok(tx)
     }
@@ -223,7 +225,7 @@ where
             .register_project(author, org_id, project_name, maybe_project_id, fee)
             .await?;
 
-        self.cache_transaction(tx.clone()).await?;
+        self.cache_transaction(tx.clone())?;
 
         Ok(tx)
     }
@@ -241,7 +243,7 @@ where
     ) -> Result<Transaction, error::Error> {
         let tx = self.client.register_user(author, handle, id, fee).await?;
 
-        self.cache_transaction(tx.clone()).await?;
+        self.cache_transaction(tx.clone())?;
 
         Ok(tx)
     }
@@ -288,7 +290,7 @@ mod test {
                 timestamp: time::SystemTime::now(),
             };
 
-            cache.cache_transaction(tx.clone()).await.unwrap();
+            cache.cache_transaction(tx.clone()).unwrap();
 
             for _ in 0..9 {
                 let tx = Transaction {
@@ -300,18 +302,18 @@ mod test {
                     timestamp: time::SystemTime::now(),
                 };
 
-                cache.cache_transaction(tx.clone()).await.unwrap();
+                cache.cache_transaction(tx.clone()).unwrap();
             }
 
             // Get all transactions.
             {
-                let txs = cache.list_transactions(Vec::new()).await.unwrap();
+                let txs = cache.list_transactions(Vec::new()).unwrap();
                 assert_eq!(txs.len(), 10);
             }
 
             // Get single transaction.
             {
-                let txs = cache.list_transactions(vec![tx.id.0]).await.unwrap();
+                let txs = cache.list_transactions(vec![tx.id.0]).unwrap();
                 assert_eq!(txs.len(), 1);
             }
 
@@ -319,7 +321,6 @@ mod test {
             {
                 let txs = cache
                     .list_transactions(vec![protocol::TxHash::random()])
-                    .await
                     .unwrap();
                 assert_eq!(txs.len(), 0);
             }
@@ -331,7 +332,7 @@ mod test {
             let registry = registry::Registry::new(client);
             let cache = Cacher::new(registry, &store);
 
-            let txs = cache.list_transactions(Vec::new()).await.unwrap();
+            let txs = cache.list_transactions(Vec::new()).unwrap();
             assert_eq!(txs.len(), 10);
         }
     }
