@@ -126,7 +126,7 @@ pub mod settings {
     use serde::{Deserialize, Serialize};
 
     /// User controlled parameters for application appearance, behaviour and state.
-    #[derive(Debug, Default, Deserialize, Serialize)]
+    #[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
     #[serde(rename_all = "camelCase")]
     pub struct Settings {
         /// Currently set appearance parameters.
@@ -136,7 +136,7 @@ pub mod settings {
     }
 
     /// Knobs for the look and feel.
-    #[derive(Debug, Default, Deserialize, Serialize)]
+    #[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
     #[serde(rename_all = "camelCase")]
     pub struct Appearance {
         /// Currently active color scheme.
@@ -144,7 +144,7 @@ pub mod settings {
     }
 
     /// Color schemes available.
-    #[derive(Debug, Deserialize, Serialize)]
+    #[derive(Debug, PartialEq, Deserialize, Serialize)]
     #[serde(rename_all = "camelCase")]
     pub enum Theme {
         /// A dark theme.
@@ -160,7 +160,7 @@ pub mod settings {
     }
 
     /// Registry parameters.
-    #[derive(Debug, Default, Deserialize, Serialize)]
+    #[derive(Debug, Default, PartialEq, Deserialize, Serialize)]
     #[serde(rename_all = "camelCase")]
     pub struct Registry {
         /// Currently configured network.
@@ -168,7 +168,7 @@ pub mod settings {
     }
 
     /// Known networks the application can connect to.
-    #[derive(Debug, Deserialize, Serialize)]
+    #[derive(Debug, PartialEq, Deserialize, Serialize)]
     #[serde(rename_all = "camelCase")]
     pub enum Network {
         /// In-memory registry, which only lives as long as the app does.

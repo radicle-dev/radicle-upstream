@@ -1,13 +1,13 @@
 context("user registration", () => {
   context("modal navigation", () => {
     beforeEach(() => {
+      cy.nukeSessionState();
       cy.createIdentity();
+
       cy.visit("./public/index.html");
       cy.get('[data-cy="profile-context-menu"]').click();
       cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();
     });
-
-    // TODO(merle): Replace opening via hotkey
 
     it("can be closed by pressing cancel", () => {
       cy.get('[data-cy="page"] [data-cy="register-user"]').should("exist");
@@ -42,7 +42,9 @@ context("user registration", () => {
 
   context("validations", () => {
     beforeEach(() => {
+      cy.nukeSessionState();
       cy.createIdentity();
+
       cy.visit("./public/index.html");
       cy.get('[data-cy="profile-context-menu"]').click();
       cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();

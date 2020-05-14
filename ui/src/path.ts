@@ -8,13 +8,12 @@ const PROJECT_SOURCE_PATH_MATCH = new RegExp(
 );
 
 export const search = (): string => "/search";
-export const network = (): string => "/network";
+export const settings = (): string => "/settings";
 
 export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
 export const profileProjects = (): string => "/profile/projects";
 export const profileWallet = (): string => "/profile/wallet";
-export const profileSettings = (): string => "/profile/settings";
 export const registerUser = (): string => "/user-registration";
 export const createIdentity = (): string => "/identity/new";
 

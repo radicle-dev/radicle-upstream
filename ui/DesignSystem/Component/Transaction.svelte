@@ -30,6 +30,7 @@
 
   <div slot="right">
     <Avatar
+      dataCy="subject-avatar"
       title={subject.name}
       imageUrl={subject.imageUrl}
       avatarFallback={subject.avatarFallback}
@@ -95,6 +96,7 @@
 <Row style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Avatar
+      dataCy="payer-avatar"
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}

@@ -369,6 +369,7 @@
       <Icon.Important />
       <Icon.Inbox />
       <Icon.Info />
+      <Icon.Issue />
       <Icon.Member />
       <Icon.Minus />
       <Icon.Peer />
@@ -497,6 +498,22 @@
           <td>
             <Button icon={Icon.Check} variant="transparent" disabled>
               Transparent
+            </Button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <Button variant="destructive">Destructive</Button>
+          </td>
+          <td>
+            <Button variant="destructive" disabled>Destructive</Button>
+          </td>
+          <td>
+            <Button icon={Icon.Cross} variant="destructive">Destructive</Button>
+          </td>
+          <td>
+            <Button icon={Icon.Cross} variant="destructive" disabled>
+              Destructive
             </Button>
           </td>
         </tr>

@@ -89,6 +89,7 @@
 
   if (session.identity.registered) {
     registerProjectMenuItem = {
+      dataCy: "register-project",
       title: "Register project",
       icon: Icon.Register,
       event: () =>
@@ -96,6 +97,7 @@
     };
   } else {
     registerProjectMenuItem = {
+      dataCy: "register-project",
       title: "Register project",
       icon: Icon.Register,
       disabled: true,
@@ -109,7 +111,7 @@
 
 <SidebarLayout
   style="margin: calc(var(--topbar-height)) 2em 0 2em; min-width: 60em;"
-  dataCy="page-container">
+  dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.projectSource(params.id)} use:link>
@@ -128,6 +130,7 @@
         <Router routes={menuRoutes} />
         <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
         <AdditionalActionsDropdown
+          dataCy="context-menu"
           style="margin: 0 24px 0 16px"
           headerTitle={params.id}
           menuItems={dropdownMenuItems} />
