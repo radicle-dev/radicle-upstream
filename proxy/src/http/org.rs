@@ -14,7 +14,7 @@ use crate::notification;
 use crate::project;
 use crate::registry;
 
-/// Prefixed filters..
+/// Prefixed filters.
 pub fn routes<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
     registry: http::Shared<R>,
