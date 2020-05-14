@@ -356,7 +356,7 @@
       <Icon.Commit />
       <Icon.Copy />
       <Icon.Cross />
-      <Icon.CrossBig />
+      <Icon.Cross size="big" />
       <Icon.Ellipse />
       <Icon.EllipseBig />
       <Icon.Ellipses />

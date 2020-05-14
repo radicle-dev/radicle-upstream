@@ -11,7 +11,6 @@ import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
 import CopyToClipboard from "./CopyToClipboard.svelte";
 import Cross from "./Cross.svelte";
-import CrossBig from "./CrossBig.svelte";
 import Ellipse from "./Ellipse.svelte";
 import EllipseBig from "./EllipseBig.svelte";
 import Ellipses from "./Ellipses.svelte";
@@ -56,7 +55,6 @@ export default {
   Copy,
   CopyToClipboard,
   Cross,
-  CrossBig,
   Ellipse,
   EllipseBig,
   Ellipses,
