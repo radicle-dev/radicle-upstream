@@ -37,7 +37,7 @@
     <div class="title-row">
       <Title>{title}</Title>
       {#if showRegisteredBadge}
-        <div class="registered">
+        <div data-cy="registered" class="registered">
           <Icon.Badge
             style="fill: var(--color-primary); position: relative; bottom: -3px;" />
         </div>
