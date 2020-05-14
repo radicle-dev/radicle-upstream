@@ -1,21 +1,21 @@
 <script>
   import * as path from "../../src/path.ts";
   import { push } from "svelte-spa-router";
-  import IssuesCard from "./IssuesCard.svelte";
+  import IssuesCard from "./Issues/IssuesCard.svelte";
   import { SegmentedControl } from "../../DesignSystem/Component";
 
   const filterOptions = [
     {
       title: "Open",
-      value: 0,
+      value: "Open",
     },
     {
       title: "Closed",
-      value: 1,
+      value: "Closed",
     },
     {
       title: "All",
-      value: 2,
+      value: "All",
     },
   ];
 
@@ -85,9 +85,9 @@
 <div class="container">
   <div class="filters">
     <SegmentedControl
-      active={0}
+      active={'Open'}
       options={filterOptions}
-      on:select={(option) => updateFilter(option.detail.title)} />
+      on:select={(option) => updateFilter(option.detail)} />
   </div>
   <ul>
     {#each filteredIssues as issue}
