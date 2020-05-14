@@ -1,10 +1,7 @@
-export enum Theme {
-  Dark = "dark",
-  Light = "light",
-}
+import * as theme from "./theme";
 
 export interface Appearance {
-  theme: Theme;
+  theme: theme.Theme;
 }
 
 export enum Network {

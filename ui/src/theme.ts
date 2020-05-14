@@ -1,14 +1,26 @@
 import * as colors from "../../tokens/colors.js";
 
-export const next = (): void => {
-  const currentTheme = document.documentElement.getAttribute("data-theme");
+import * as session from "./session";
 
-  const nextTheme = colors.colorConfig.themes
+export enum Theme {
+  Dark = "dark",
+  Light = "light",
+}
+
+export const next = (): Theme => {
+  const currentTheme = document.documentElement.getAttribute("data-theme");
+  const next = colors.colorConfig.themes
     .map((theme) => theme.name)
     .filter((e) => e !== currentTheme)
     .pop();
-    
-  document.documentElement.setAttribute("data-theme", nextTheme ? nextTheme : "lightMode");
 
-  console.log(`Switch to ${nextTheme}`);
-}
+  return next ? next as Theme : Theme.Light;
+};
+
+session.settings.subscribe((settings) => {
+  if (settings) {
+    const theme = settings.appearance.theme;
+    document.documentElement.setAttribute("data-theme", theme);
+    console.log(`Switch to ${theme}`);
+  }
+});

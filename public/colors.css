@@ -37,7 +37,7 @@
   --color-foreground-level-6: #546474;
 }
 
-[data-theme="darkMode"] {
+[data-theme="dark"] {
   --color-primary: #ff55ff;
   --color-primary-level-1: #382847;
   --color-primary-level-2: #62326d;

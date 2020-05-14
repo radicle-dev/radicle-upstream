@@ -1,8 +1,8 @@
 export const colorConfig = {
-  defaultTheme: "lightMode",
+  defaultTheme: "light",
   themes: [
     {
-      name: "lightMode",
+      name: "light",
       colors: [
         { name: "primary", hex: "#ff55ff" },
         { name: "primary-level-1", hex: "#ffd4ff" },
@@ -39,7 +39,7 @@ export const colorConfig = {
       ],
     },
     {
-      name: "darkMode",
+      name: "dark",
       colors: [
         { name: "primary", hex: "#ff55ff" },
         { name: "primary-level-1", hex: "#382847" },

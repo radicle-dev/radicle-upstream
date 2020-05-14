@@ -2,6 +2,7 @@
   import { location, pop, push } from "svelte-spa-router";
 
   import * as path from "./src/path.ts";
+  import * as session from "./src/session.ts";
   import * as theme from "./src/theme.ts";
 
   const toggle = (destination) => {
@@ -17,7 +18,7 @@
     }
 
     if (event.shiftKey && event.code === "KeyC") {
-      theme.next();
+      session.updateAppearance({ theme: theme.next() });
     }
 
     if (event.shiftKey && event.code === "KeyD") {
