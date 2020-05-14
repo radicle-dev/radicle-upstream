@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title, Text } from "../../DesignSystem/Primitive";
+  import { Icon, Title, Text } from "../../../DesignSystem/Primitive";
 
   export let open = null;
   export let title = null;
