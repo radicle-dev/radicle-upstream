@@ -1,7 +1,3 @@
-use std::sync::Arc;
-use tokio::sync::RwLock;
-use warp::Filter;
-
 use proxy::coco;
 use proxy::env;
 use proxy::http;
@@ -65,25 +61,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log::info!("Starting API");
 
-    let lib_paths = Arc::new(RwLock::new(librad_paths));
-    let registry_cache = Arc::new(RwLock::new(registry::Cacher::new(
-        registry::Registry::new(registry_client),
-        &store,
-    )));
-    let st = Arc::new(RwLock::new(store));
-    let routes = http::routes(lib_paths, registry_cache, st, args.test).with(
-        warp::cors()
-            .allow_any_origin()
-            .allow_headers(&[warp::http::header::CONTENT_TYPE])
-            .allow_methods(&[
-                warp::http::Method::DELETE,
-                warp::http::Method::GET,
-                warp::http::Method::POST,
-                warp::http::Method::OPTIONS,
-            ]),
-    );
+    let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
+    let api = http::api(librad_paths, cache, store, args.test);
 
-    warp::serve(routes).run(([127, 0, 0, 1], 8080)).await;
+    warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 
     Ok(())
 }
