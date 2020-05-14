@@ -20,6 +20,8 @@ pub struct Session {
     pub identity: Option<identity::Identity>,
     /// List of the orgs of the user associated with the current identity.
     pub orgs: Vec<registry::Org>,
+    /// User controlled parameters to control the behaviour and state of the application.
+    pub settings: settings::Settings,
 }
 
 /// Resets the session state.
@@ -91,6 +93,18 @@ pub fn set_identity(store: &kv::Store, id: identity::Identity) -> Result<(), err
     set(store, KEY_CURRENT, sess)
 }
 
+/// Stores the [`settings::Settings`] in the current session.
+///
+/// # Errors
+///
+/// Errors if access to the session state fails.
+pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(), error::Error> {
+    let mut sess = get(store, KEY_CURRENT)?;
+    sess.settings = settings;
+
+    set(store, KEY_CURRENT, sess)
+}
+
 /// Fetches the session for the given item key.
 fn get(store: &kv::Store, key: &str) -> Result<Session, error::Error> {
     Ok(store
@@ -105,4 +119,69 @@ fn set(store: &kv::Store, key: &str, sess: Session) -> Result<(), error::Error> 
     Ok(store
         .bucket::<&str, kv::Json<Session>>(Some(BUCKET_NAME))?
         .set(key, kv::Json(sess))?)
+}
+
+/// User controlled parameters for application appearance, behaviour and state.
+pub mod settings {
+    use serde::{Deserialize, Serialize};
+
+    /// User controlled parameters for application appearance, behaviour and state.
+    #[derive(Debug, Default, Deserialize, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Settings {
+        /// Currently set appearance parameters.
+        pub appearance: Appearance,
+        /// Currently set registry parameters.
+        pub registry: Registry,
+    }
+
+    /// Knobs for the look and feel.
+    #[derive(Debug, Default, Deserialize, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Appearance {
+        /// Currently active color scheme.
+        pub theme: Theme,
+    }
+
+    /// Color schemes available.
+    #[derive(Debug, Deserialize, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub enum Theme {
+        /// A dark theme.
+        Dark,
+        /// A light theme.
+        Light,
+    }
+
+    impl Default for Theme {
+        fn default() -> Self {
+            Self::Light
+        }
+    }
+
+    /// Registry parameters.
+    #[derive(Debug, Default, Deserialize, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Registry {
+        /// Currently configured network.
+        pub network: Network,
+    }
+
+    /// Known networks the application can connect to.
+    #[derive(Debug, Deserialize, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub enum Network {
+        /// In-memory registry, which only lives as long as the app does.
+        Emulator,
+        /// The friends-n-family network. For the loved ones.
+        FFnet,
+        /// Test network.
+        Testnet,
+    }
+
+    impl Default for Network {
+        fn default() -> Self {
+            Self::Emulator
+        }
+    }
 }
