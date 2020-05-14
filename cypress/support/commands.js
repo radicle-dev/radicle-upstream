@@ -10,7 +10,7 @@ Cypress.Commands.add("nukeRegistryState", () => {
 
 Cypress.Commands.add("nukeSessionState", () => {
   console.log("Nuking Session state");
-  fetch("http://localhost:8080/v1/control/nuke/session");
+  fetch("http://localhost:8080/v1/session", { method: "DELETE" });
 });
 
 Cypress.Commands.add("nukeAllState", () => {

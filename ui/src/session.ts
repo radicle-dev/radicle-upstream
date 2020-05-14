@@ -19,25 +19,39 @@ export const session = sessionStore.readable;
 
 // EVENTS
 enum Kind {
+  Clear = "CLEAR",
   Fetch = "FETCH",
+}
+
+interface Clear extends event.Event<Kind> {
+  kind: Kind.Clear;
 }
 
 interface Fetch extends event.Event<Kind> {
   kind: Kind.Fetch;
 }
 
-type Msg = Fetch;
+type Msg = Clear | Fetch;
 
-const update = (msg: Msg): void => {
-  switch (msg.kind) {
-    case Kind.Fetch:
-      sessionStore.loading();
+const fetchSession = (): Promise<void> =>
       api.get<Session>(`session`)
         .then(sessionStore.success)
         .catch(sessionStore.error)
+
+const update = (msg: Msg): void => {
+  switch (msg.kind) {
+    case Kind.Clear:
+      api.del(`session`)
+        .then(fetchSession)
+
+      break;
+    case Kind.Fetch:
+      sessionStore.loading();
+      fetchSession();
 
       break;
   }
 }
 
+export const clear = event.create<Kind, Msg>(Kind.Clear, update);
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);

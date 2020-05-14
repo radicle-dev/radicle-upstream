@@ -37,6 +37,10 @@ async function http<T>(req: RequestInfo): Promise<T> {
   return body;
 }
 
+export async function del(endpoint: string, options?: Options): Promise<void> {
+  return http<void>(request(endpoint, { method: "DELETE", ...options }));
+}
+
 export async function get<T>(endpoint: string, options?: Options): Promise<T> {
   return http<T>(request(endpoint, { method: "GET", ...options }));
 }

@@ -16,7 +16,11 @@ pub fn routes<R: registry::Client>(
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("session").and(get_filter(registry, Arc::clone(&store)).or(update_settings_filter(store)))
+    path("session").and(
+        delete_filter(Arc::clone(&store))
+            .or(get_filter(registry, Arc::clone(&store)))
+            .or(update_settings_filter(store)),
+    )
 }
 
 /// Combination of all session filters.
@@ -25,11 +29,30 @@ pub fn filters<R: registry::Client>(
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter(registry, Arc::clone(&store)).or(update_settings_filter(store))
+    delete_filter(Arc::clone(&store))
+        .or(get_filter(registry, Arc::clone(&store)))
+        .or(update_settings_filter(store))
+}
+
+/// `DELETE /`
+fn delete_filter(
+    store: Arc<RwLock<kv::Store>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::delete()
+        .and(path::end())
+        .and(http::with_store(store))
+        .and(document::document(document::description(
+            "Clear current Session",
+        )))
+        .and(document::document(document::tag("Session")))
+        .and(document::document(
+            document::response(204, None).description("Currently active Session"),
+        ))
+        .and_then(handler::delete)
 }
 
 /// `GET /`
-pub fn get_filter<R: registry::Client>(
+fn get_filter<R: registry::Client>(
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -38,7 +61,7 @@ pub fn get_filter<R: registry::Client>(
         .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(document::document(document::description(
-            "Fetch active Session",
+            "Fetch current Session",
         )))
         .and(document::document(document::tag("Session")))
         .and(document::document(
@@ -52,7 +75,7 @@ pub fn get_filter<R: registry::Client>(
 }
 
 /// `Post /settings`
-pub fn update_settings_filter(
+fn update_settings_filter(
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("settings")
@@ -78,6 +101,14 @@ mod handler {
     use crate::http;
     use crate::registry;
     use crate::session;
+
+    /// Clear the current [`session::Session`].
+    pub async fn delete(store: Arc<RwLock<kv::Store>>) -> Result<impl Reply, Rejection> {
+        let store = store.read().await;
+        session::clear_current(&store)?;
+
+        Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
+    }
 
     /// Fetch the [`session::Session`].
     pub async fn get<R: registry::Client>(
@@ -176,6 +207,34 @@ mod test {
 
     use crate::registry;
     use crate::session;
+
+    #[tokio::test]
+    async fn delete() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let registry = Arc::new(RwLock::new(registry::Registry::new(
+            radicle_registry_client::Client::new_emulator(),
+        )));
+        let store = Arc::new(RwLock::new(
+            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
+        ));
+        let api = super::filters(Arc::clone(&registry), Arc::clone(&store));
+
+        let mut settings = session::settings::Settings::default();
+        settings.appearance.theme = session::settings::Theme::Dark;
+        session::set_settings(&(*store.read().await), settings).unwrap();
+
+        let res = request().method("DELETE").path("/").reply(&api).await;
+        assert_eq!(res.status(), StatusCode::NO_CONTENT);
+
+        // Test that we reset the session to default.
+        let have = session::current(&(*store.read().await), registry.read().await.clone())
+            .await
+            .unwrap()
+            .settings;
+        let want = session::settings::Settings::default();
+
+        assert_eq!(have, want);
+    }
 
     #[tokio::test]
     async fn get() {

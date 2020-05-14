@@ -76,6 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .allow_any_origin()
             .allow_headers(&[warp::http::header::CONTENT_TYPE])
             .allow_methods(&[
+                warp::http::Method::DELETE,
                 warp::http::Method::GET,
                 warp::http::Method::POST,
                 warp::http::Method::OPTIONS,
