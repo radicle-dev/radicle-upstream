@@ -34,6 +34,40 @@ Part of #277
     created_at: "12 days",
     updated_at: "1 day",
     closed_at: null,
+    timeline: [
+      {
+        variant: "timestamp",
+        value: "August 9th, 2020",
+        time_ago: "2 weeks ago",
+      },
+      {
+        variant: "open-issue",
+        user: {
+          handle: "julien",
+          avatar_url:
+            "https://avatars3.githubusercontent.com/u/2326909?s=24&u=1968a2daca982c6deaf89ec71c16d94333092fe3&v=4",
+        },
+        time_ago: "2 weeks ago",
+      },
+      {
+        variant: "close-issue",
+        user: {
+          handle: "julien",
+          avatar_url:
+            "https://avatars3.githubusercontent.com/u/2326909?s=24&u=1968a2daca982c6deaf89ec71c16d94333092fe3&v=4",
+        },
+        time_ago: "2 weeks ago",
+      },
+      {
+        variant: "reopen-issue",
+        user: {
+          handle: "julien",
+          avatar_url:
+            "https://avatars3.githubusercontent.com/u/2326909?s=24&u=1968a2daca982c6deaf89ec71c16d94333092fe3&v=4",
+        },
+        time_ago: "2 weeks ago",
+      },
+    ],
   };
 </script>
 
@@ -105,6 +139,6 @@ Part of #277
     <Markdown content={issue.description} />
   </article>
   <section class="timeline">
-    <Timeline />
+    <Timeline items={issue.timeline} />
   </section>
 </div>
