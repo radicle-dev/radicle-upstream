@@ -1,31 +1,46 @@
 <script>
+  import {
+    clear,
+    clearCache,
+    settings,
+    updateAppearance,
+    updateRegistry,
+  } from "../src/session.ts";
+
   import { Title, Text, Button } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
+
+  const networkOptions = [
+    {
+      title: "Emulator",
+      value: "emulator",
+    },
+    {
+      title: "FFnet",
+      value: "ffnet",
+    },
+    {
+      title: "Testnet",
+      value: "testnet",
+    },
+  ];
+
+  const updateNetwork = (event) =>
+    updateRegistry({ ...$settings.registry, network: event.detail });
 
   const themeOptions = [
     {
       title: "Light",
-      value: 0,
+      value: "light",
     },
     {
       title: "Dark",
-      value: 1,
+      value: "dark",
     },
   ];
-  const networkOptions = [
-    {
-      title: "Emulator",
-      value: 0,
-    },
-    {
-      title: "FFnet",
-      value: 1,
-    },
-    {
-      title: "Testnet",
-      value: 2,
-    },
-  ];
+
+  const updateTheme = (event) =>
+    updateAppearance({ ...$settings.apperane, theme: event.detail });
 </script>
 
 <style>
@@ -83,9 +98,9 @@
         </div>
         <div class="action">
           <SegmentedControl
-            active={0}
+            active={$settings.appearance.theme}
             options={themeOptions}
-            on:select={() => console.log('event(select)')} />
+            on:select={updateTheme} />
         </div>
       </div>
     </section>
@@ -100,9 +115,9 @@
         </div>
         <div class="action">
           <SegmentedControl
-            active={0}
+            active={$settings.registry.network}
             options={networkOptions}
-            on:select={() => console.log('event(select)')} />
+            on:select={updateNetwork} />
         </div>
       </div>
     </section>
@@ -119,7 +134,7 @@
           </Text>
         </div>
         <div class="action">
-          <Button variant="outline">Clear cache</Button>
+          <Button variant="outline" on:click={clearCache}>Clear cache</Button>
         </div>
       </div>
       <div class="section-item">
@@ -131,7 +146,7 @@
           </Text>
         </div>
         <div class="action">
-          <Button variant="outline">Clear session</Button>
+          <Button variant="outline" on:click={clear}>Clear session</Button>
         </div>
       </div>
     </section>

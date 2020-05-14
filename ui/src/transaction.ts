@@ -110,7 +110,7 @@ const update = (msg: Msg): void => {
 }
 
 export const fetchList = (ids?: Array<string>): void =>
-  event.create<Kind, Msg>(Kind.FetchList, update)({ ids });
+  event.create<Kind, Msg>(Kind.FetchList, update)({ ids: ids || [] });
 
 export const fetch = (id: string): Readable<remote.Data<Transaction | null>> => {
   const store = remote.createStore<Transaction | null>();
