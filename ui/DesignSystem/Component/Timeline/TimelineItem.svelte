@@ -1,7 +1,21 @@
 <script>
-  import { Text, Icon, Avatar } from "../../../DesignSystem/Primitive";
+  import {
+    Avatar,
+    Button,
+    Text,
+    Icon,
+    Input,
+  } from "../../../DesignSystem/Primitive";
 
   export let item = { variant: "comment" }; // timestamp | open-issue | close-issue | reopen-issue | comment
+  const avatarFallback2 = {
+    background: {
+      r: 122,
+      g: 112,
+      b: 90,
+    },
+    emoji: "💡",
+  };
 </script>
 
 <style>
@@ -28,6 +42,17 @@
   .comment {
     padding-left: 0;
   }
+  .comment-section {
+    flex: 1;
+  }
+  .comment-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+  }
+  .actions {
+    display: flex;
+  }
 </style>
 
 {#if item.variant === 'timestamp'}
@@ -43,7 +68,9 @@
       variant="circle"
       imageUrl={item.user.avatar_url}
       title={item.user.handle} />
-    <Text>opened the issue</Text>
+    <Text style="color: var(--color-foreground-level-6);">
+      opened the issue
+    </Text>
     <Text style="color: var(--color-foreground-level-5); margin-left: 8px;">
       {item.time_ago}
     </Text>
@@ -57,7 +84,9 @@
       variant="circle"
       imageUrl={item.user.avatar_url}
       title={item.user.handle} />
-    <Text>closed the issue</Text>
+    <Text style="color: var(--color-foreground-level-6);">
+      closed the issue
+    </Text>
     <Text style="color: var(--color-foreground-level-5); margin-left: 8px;">
       {item.time_ago}
     </Text>
@@ -71,11 +100,33 @@
       variant="circle"
       imageUrl={item.user.avatar_url}
       title={item.user.handle} />
-    <Text>reopened the issue</Text>
+    <Text style="color: var(--color-foreground-level-6);">
+      reopened the issue
+    </Text>
     <Text style="color: var(--color-foreground-level-5); margin-left: 8px;">
       {item.time_ago}
     </Text>
   </li>
 {:else if item.variant === 'comment'}
-  <li class={item.variant}>{item.variant}</li>
+  <li class={item.variant}>
+    <Avatar
+      style="margin-right: 16px"
+      size="regular"
+      variant="circle"
+      avatarFallback={avatarFallback2} />
+    <div class="comment-section">
+      <Input.Text placeholder="Leave a comment" style="flex: 1" />
+      <div class="comment-meta">
+        <Text
+          variant="tiny"
+          style="margin-left: 12px; color: var(--color-foreground-level-4);">
+          Markdown supported
+        </Text>
+        <div class="actions">
+          <Button variant="vanilla">Close Issue</Button>
+          <Button style="margin-left: 16px;">Comment</Button>
+        </div>
+      </div>
+    </div>
+  </li>
 {/if}
