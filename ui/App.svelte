@@ -43,7 +43,7 @@
       break;
 
     case remote.Status.Error:
-      console.log($store.error);
+      console.error($store.error);
       notification.error("Session could not be fetched");
       break;
   }
