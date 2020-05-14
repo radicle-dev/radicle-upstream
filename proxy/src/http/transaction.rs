@@ -172,7 +172,7 @@ mod test {
         let tmp_dir = tempfile::tempdir().unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let mut cache = registry::Cacher::new(registry, &store);
+        let cache = registry::Cacher::new(registry, &store);
 
         let tx = registry::Transaction {
             id: registry::Hash(radicle_registry_client::TxHash::random()),

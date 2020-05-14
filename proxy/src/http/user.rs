@@ -157,7 +157,7 @@ mod handler {
         let fake_fee: Balance = 100;
 
         let handle = registry::Id::try_from(input.handle)?;
-        let mut reg = registry.write().await;
+        let reg = registry.write().await;
         let tx = reg
             .register_user(&fake_pair, handle.clone(), input.maybe_entity_id, fake_fee)
             .await?;

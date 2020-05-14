@@ -245,15 +245,6 @@ mod test {
     use crate::session;
 
     #[tokio::test]
-    async fn clear_cache() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
-    }
-
-    #[tokio::test]
     async fn delete() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let store = Arc::new(RwLock::new(

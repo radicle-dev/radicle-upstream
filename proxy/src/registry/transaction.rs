@@ -86,7 +86,7 @@ pub trait Cache: Send + Sync {
     /// # Errors
     ///
     /// Will return `Err` if access to the underlying [`kv::Store`] fails.
-    fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error>;
+    fn cache_transaction(&self, tx: Transaction) -> Result<(), error::Error>;
 
     /// Returns all cached transactions.
     ///
@@ -139,7 +139,7 @@ where
     }
 
     /// Caches a transaction locally in the Registry.
-    fn cache_transaction(&mut self, tx: Transaction) -> Result<(), error::Error> {
+    fn cache_transaction(&self, tx: Transaction) -> Result<(), error::Error> {
         let key = tx.id.0.encode_hex::<String>();
         self.transactions.set(key.as_str(), kv::Json(tx))?;
 
@@ -183,7 +183,7 @@ where
     }
 
     async fn register_org(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         fee: protocol::Balance,
@@ -196,7 +196,7 @@ where
     }
 
     async fn unregister_org(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         fee: protocol::Balance,
@@ -225,7 +225,7 @@ where
     }
 
     async fn register_project(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         project_name: String,
@@ -247,7 +247,7 @@ where
     }
 
     async fn register_user(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         handle: registry::Id,
         id: Option<String>,
@@ -291,7 +291,7 @@ mod test {
         {
             let client = protocol::Client::new_emulator();
             let registry = registry::Registry::new(client);
-            let mut cache = Cacher::new(registry, &store);
+            let cache = Cacher::new(registry, &store);
 
             let tx = Transaction {
                 id: registry::Hash(protocol::TxHash::random()),

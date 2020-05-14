@@ -225,7 +225,7 @@ mod handler {
         // TODO(xla): Use real fee defined by the user.
         let fake_fee: Balance = 100;
 
-        let mut reg = registry.write().await;
+        let reg = registry.read().await;
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
