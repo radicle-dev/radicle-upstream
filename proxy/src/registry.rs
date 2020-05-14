@@ -222,7 +222,7 @@ pub trait Client: Clone + Send + Sync {
     ///
     /// Will return `Err` if a protocol error occurs.
     async fn register_org(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         fee: protocol::Balance,
@@ -234,7 +234,7 @@ pub trait Client: Clone + Send + Sync {
     ///
     /// Will return `Err` if a protocol error occurs.
     async fn unregister_org(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         fee: protocol::Balance,
@@ -271,7 +271,7 @@ pub trait Client: Clone + Send + Sync {
     ///
     /// Will return `Err` if a protocol error occurs.
     async fn register_project(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         project_name: String,
@@ -292,7 +292,7 @@ pub trait Client: Clone + Send + Sync {
     ///
     /// Will return `Err` if a protocol error occurs.
     async fn register_user(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         handle: Id,
         id: Option<String>,
@@ -379,7 +379,7 @@ impl Client for Registry {
     }
 
     async fn register_org(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         fee: protocol::Balance,
@@ -421,7 +421,7 @@ impl Client for Registry {
     }
 
     async fn unregister_org(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         fee: protocol::Balance,
@@ -504,7 +504,7 @@ impl Client for Registry {
     }
 
     async fn register_project(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         org_id: String,
         project_name: String,
@@ -595,7 +595,7 @@ impl Client for Registry {
     }
 
     async fn register_user(
-        &mut self,
+        &self,
         author: &protocol::ed25519::Pair,
         handle: Id,
         id: Option<String>,
@@ -670,7 +670,7 @@ mod test {
     async fn test_register_org() {
         // Test that org registration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
-        let mut registry = Registry::new(client.clone());
+        let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice").unwrap();
 
@@ -696,7 +696,7 @@ mod test {
     async fn test_unregister_org() {
         // Test that org unregistration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
-        let mut registry = Registry::new(client.clone());
+        let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice").unwrap();
 
@@ -723,7 +723,7 @@ mod test {
     async fn test_get_org() {
         // Test that a registered org can be retrieved.
         let client = protocol::Client::new_emulator();
-        let mut registry = Registry::new(client.clone());
+        let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice").unwrap();
 
@@ -753,7 +753,7 @@ mod test {
     async fn test_list_org() {
         // Test that a registered org can be retrieved.
         let client = protocol::Client::new_emulator();
-        let mut registry = Registry::new(client.clone());
+        let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice").unwrap();
 
@@ -780,7 +780,7 @@ mod test {
     async fn test_list_org_projects() {
         // Test that a registered project is included in the list of org projects.
         let client = protocol::Client::new_emulator();
-        let mut registry = Registry::new(client.clone());
+        let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice").unwrap();
 
@@ -826,7 +826,7 @@ mod test {
     async fn test_register_project() {
         // Test that project registration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
-        let mut registry = Registry::new(client.clone());
+        let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice").unwrap();
 
@@ -875,7 +875,7 @@ mod test {
     #[tokio::test]
     async fn register_user() {
         let client = protocol::Client::new_emulator();
-        let mut registry = Registry::new(client);
+        let registry = Registry::new(client);
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("cloudhead").unwrap();
 

@@ -1,6 +1,9 @@
 context("org registration", () => {
   beforeEach(() => {
+    cy.nukeSessionState();
     cy.createIdentity();
+    cy.registerUser();
+
     cy.visit("public/index.html");
     cy.select("sidebar", "add-org-button").click();
   });
