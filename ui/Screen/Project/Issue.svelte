@@ -1,5 +1,6 @@
 <script>
   import { Title, Text, Markdown } from "../../DesignSystem/Primitive";
+  import { Timeline } from "../../DesignSystem/Component";
 
   $: openClass = issue.open ? "open" : "closed";
 
@@ -43,7 +44,7 @@ Part of #277
     padding: 32px 0;
     min-width: 500px;
   }
-  .issueHeader {
+  header {
     padding: 0 16px 24px 16px;
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
@@ -66,14 +67,14 @@ Part of #277
     background-color: var(--color-negative);
   }
 
-  .issueDescription {
+  article {
     padding: 24px 16px 32px 16px;
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
 </style>
 
 <div class="container">
-  <div class="issueHeader">
+  <header>
     <Title variant="large">{issue.title}</Title>
     <div class="metadata">
       <div class="stateBadge {openClass}">
@@ -99,8 +100,11 @@ Part of #277
         </Text>
       {/if}
     </div>
-  </div>
-  <div class="issueDescription">
+  </header>
+  <article>
     <Markdown content={issue.description} />
-  </div>
+  </article>
+  <section class="timeline">
+    <Timeline />
+  </section>
 </div>

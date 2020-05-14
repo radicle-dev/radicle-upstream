@@ -18,6 +18,7 @@ import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Stats from "./Stats.svelte";
 import StepCounter from "./StepCounter.svelte";
+import Timeline from "./Timeline.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
 import Transaction from "./Transaction.svelte";
@@ -48,6 +49,7 @@ export {
   Sidebar,
   SidebarLayout,
   StepCounter,
+  Timeline,
   Topbar,
   TrackToggle,
   Transaction,
