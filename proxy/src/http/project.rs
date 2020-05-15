@@ -140,6 +140,7 @@ mod handler {
     use librad::paths::Paths;
     use librad::surf;
     use radicle_registry_client::Balance;
+    use std::convert::TryFrom;
     use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
@@ -231,14 +232,10 @@ mod handler {
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
+        let org_id = registry::Id::try_from(input.org_id)?;
+        let project_name = registry::ProjectName::try_from(input.project_name)?;
         let tx = reg
-            .register_project(
-                &fake_pair,
-                input.org_id,
-                input.project_name,
-                maybe_coco_id,
-                fake_fee,
-            )
+            .register_project(&fake_pair, org_id, project_name, maybe_coco_id, fake_fee)
             .await?;
 
         subscriptions
@@ -511,15 +508,17 @@ mod test {
     use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
+    use std::convert::TryFrom;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
     use crate::coco;
+    use crate::error;
     use crate::notification;
     use crate::project;
-    use crate::registry::{self, Cache as _};
+    use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn create() {
@@ -650,32 +649,53 @@ mod test {
     }
 
     #[tokio::test]
-    async fn register() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path()).unwrap()));
+    async fn register() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path())?));
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(Arc::clone(&librad_paths), Arc::clone(&cache), subscriptions);
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
+
+        // Register user.
+        cache
+            .read()
+            .await
+            .register_user(&author, handle, None, 10)
+            .await?;
+
+        // Register org.
+        cache
+            .read()
+            .await
+            .register_org(&author, org_id.clone(), 10)
+            .await?;
+
         let res = request()
             .method("POST")
             .path("/projects/register")
             .json(&super::RegisterInput {
                 project_name: "upstream".into(),
-                org_id: "radicle".into(),
+                org_id: org_id.to_string(),
                 maybe_coco_id: Some("1234.git".to_string()),
             })
             .reply(&api)
             .await;
 
-        let txs = cache.write().await.list_transactions(vec![]).unwrap();
+        assert_eq!(res.status(), StatusCode::CREATED);
+
+        let txs = cache.read().await.list_transactions(vec![])?;
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
-        assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, json!(tx));
+
+        Ok(())
     }
 }
