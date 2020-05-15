@@ -5,6 +5,7 @@
 
   import * as notification from "../../src/notification.ts";
   import * as project from "../../src/project.ts";
+  import * as transaction from "../../src/transaction.ts";
 
   import { Text, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
@@ -26,7 +27,10 @@
       registrarHandle: selectedRegistrar().avatarProps.title,
       registrarImageUrl: selectedRegistrar().avatarProps.imageUrl,
       registrarAvatarFallback: selectedRegistrar().avatarProps.avatarFallback,
-      registrarVariant: selectedRegistrar().avatarProps.variant,
+      registrarVariant:
+        selectedRegistrar().avatarProps.variant === "circle"
+          ? transaction.Variant.User
+          : transaction.Variant.Org,
     });
   };
 
@@ -43,7 +47,7 @@
       variant: "circle",
       title: session.identity.metadata.handle,
       avatarFallback: session.identity.avatarFallback,
-      imageUrl: session.identity.imageUrl,
+      imageUrl: session.identity.metadata.avatarUrl,
     },
   };
 
