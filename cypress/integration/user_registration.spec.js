@@ -1,14 +1,15 @@
 context("user registration", () => {
+  beforeEach(() => {
+    cy.nukeRegistryState();
+    cy.nukeSessionState();
+    cy.createIdentity();
+
+    cy.visit("public/index.html");
+    cy.get('[data-cy="profile-context-menu"]').click();
+    cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();
+  });
+
   context("modal navigation", () => {
-    beforeEach(() => {
-      cy.nukeSessionState();
-      cy.createIdentity();
-
-      cy.visit("./public/index.html");
-      cy.get('[data-cy="profile-context-menu"]').click();
-      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();
-    });
-
     it("can be closed by pressing cancel", () => {
       cy.get('[data-cy="page"] [data-cy="register-user"]').should("exist");
       cy.get('[data-cy="register-user"] [data-cy="cancel-button"]').click();
@@ -41,15 +42,6 @@ context("user registration", () => {
   });
 
   context("validations", () => {
-    beforeEach(() => {
-      cy.nukeSessionState();
-      cy.createIdentity();
-
-      cy.visit("./public/index.html");
-      cy.get('[data-cy="profile-context-menu"]').click();
-      cy.get('[data-cy="dropdown-menu"] [data-cy="register-handle"]').click();
-    });
-
     context("handle", () => {
       it("prevents the user from registering an invalid handle", () => {
         // shows a validation message when handle is not present
@@ -92,11 +84,11 @@ context("user registration", () => {
         );
       });
 
-      // TODO(merle): Add test setup, when mocks are replaced
-      it.skip("prevents the user from registering an unavailable handle", () => {
-        // shows a validation message when handle is not available
+      it("prevents the user from registering an unavailable handle", () => {
+        cy.registerUser("taken");
+
         cy.get('[data-cy="page"] [data-cy="handle"]').clear();
-        cy.get('[data-cy="page"] [data-cy="handle"]').type("nope");
+        cy.get('[data-cy="page"] [data-cy="handle"]').type("taken");
         cy.get('[data-cy="page"]').contains("Handle already taken");
       });
     });
