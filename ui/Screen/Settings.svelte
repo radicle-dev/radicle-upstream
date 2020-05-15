@@ -109,7 +109,12 @@
           </Text>
         </div>
         <div class="action">
-          <Button variant="outline" on:click={clearCache}>Clear cache</Button>
+          <Button
+            dataCy="clear-cache-button"
+            variant="outline"
+            on:click={clearCache}>
+            Clear cache
+          </Button>
         </div>
       </div>
       <div class="section-item">
@@ -121,7 +126,12 @@
           </Text>
         </div>
         <div class="action">
-          <Button variant="outline" on:click={clear}>Clear session</Button>
+          <Button
+            dataCy="clear-session-button"
+            variant="outline"
+            on:click={clear}>
+            Clear session
+          </Button>
         </div>
       </div>
     </section>
