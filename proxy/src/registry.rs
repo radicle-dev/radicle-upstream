@@ -173,6 +173,8 @@ pub struct Thresholds {
 pub struct Org {
     /// The unique identifier of the org
     pub id: String,
+    /// Unambiguous identifier pointing at this identity.
+    pub shareable_entity_identifier: String,
     /// Generated fallback avatar
     pub avatar_fallback: avatar::Avatar,
     /// List of members of the org
@@ -355,6 +357,7 @@ impl Client for Registry {
             }
             Ok(Some(Org {
                 id: id.clone(),
+                shareable_entity_identifier: format!("%{}", id.clone()),
                 avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
                 members,
             }))

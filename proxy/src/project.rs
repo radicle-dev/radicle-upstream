@@ -36,6 +36,8 @@ impl From<meta::Project> for Metadata {
 pub struct Project {
     /// Unique identifier of the project in the network.
     pub id: project::ProjectId,
+    /// Unambiguous identifier pointing at this identity.
+    pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
     /// Informs if the project is present in the Registry and under what top-level entity it can be
@@ -70,6 +72,7 @@ pub async fn get(paths: &librad::paths::Paths, id: &str) -> Result<Project, erro
 
     Ok(Project {
         id: librad::project::ProjectId::from_str(id)?,
+        shareable_entity_identifier: format!("%{}", id),
         metadata: meta.into(),
         registration: None,
         stats: Stats {

@@ -211,6 +211,11 @@ mod handler {
             let org_project = super::Project {
                 name: p.name.to_string(),
                 org_id: p.org_id.to_string(),
+                shareable_entity_identifier: format!(
+                    "%{}/{}",
+                    p.org_id.to_string(),
+                    p.name.to_string()
+                ),
                 maybe_project,
             };
             mapped_projects.push(org_project);
@@ -252,6 +257,12 @@ impl ToDocumentedType for registry::Org {
                 .example("monadic"),
         );
         properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("%monadic"),
+        );
+        properties.insert(
             "members".into(),
             document::array(registry::User::document()),
         );
@@ -290,6 +301,12 @@ impl ToDocumentedType for registry::Project {
                 .example("radicle"),
         );
         properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("%monadic/radicle-link"),
+        );
+        properties.insert(
             "maybeProjectId".into(),
             document::string()
                 .description("The id project attested in coco")
@@ -307,6 +324,8 @@ impl ToDocumentedType for registry::Project {
 pub struct Project {
     /// Id of the Org.
     org_id: String,
+    /// Unambiguous identifier pointing at this identity.
+    shareable_entity_identifier: String,
     /// Name of the project.
     name: String,
     /// Associated CoCo project.
@@ -413,6 +432,7 @@ mod test {
             have,
             json!(registry::Org {
                 id: "monadic".to_string(),
+                shareable_entity_identifier: "%monadic".to_string(),
                 avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
                 members: vec![user]
             })
@@ -566,6 +586,7 @@ mod test {
         let want = json!([{
             "name": project_name.to_string(),
             "orgId": org_id.to_string(),
+            "shareableEntityIdentifier": format!("%{}/{}", org_id.to_string(), project_name.to_string()),
             "maybeProject": {
                 "id": project_id.to_string(),
                 "metadata": {
@@ -574,6 +595,7 @@ mod test {
                     "name": project_name.to_string(),
                 },
                 "registration": Value::Null,
+                "shareableEntityIdentifier": format!("%{}", project_id.to_string()),
                 "stats": {
                     "branches": 11,
                     "commits": 267,
