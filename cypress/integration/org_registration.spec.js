@@ -110,6 +110,13 @@ context("org registration", () => {
   });
 
   context("transaction", () => {
+    before(() => {
+      cy.nukeAllState();
+      cy.createIdentity();
+      cy.registerUser();
+      cy.visit("public/index.html");
+      cy.select("sidebar", "add-org-button").click();
+    });
     // TODO(sos): add tests for tx costs/wallet when it makes sense to do so
     it("shows correct transaction details for confirmation", () => {
       cy.select("org-reg-modal", "input").clear();

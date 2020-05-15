@@ -70,4 +70,37 @@ context("add member to org", () => {
       cy.select("add-member-modal", "avatar").should("not.be.visible");
     });
   });
+
+  context("transaction", () => {
+    // TODO(sos): add tests for tx costs/wallet when it makes sense to do so
+    it("shows correct transaction details for confirmation", () => {
+      cy.select("add-member-modal", "input").clear();
+      cy.select("add-member-modal", "input").type("coolname");
+      cy.select("add-member-modal", "submit-button").click();
+
+      cy.select("add-member-modal", "message").contains(
+        "Org member registration"
+      );
+      cy.select("add-member-modal", "subject").contains("coolname");
+      cy.select("add-member-modal", "subject-avatar", "emoji").should(
+        "have.class",
+        "circle"
+      );
+    });
+
+    // TODO(sos): add actual transaction details check once we can make this tx
+    // it("submits correct transaction details to proxy", () => {
+    //   cy.select("add-member-modal", "submit-button").click();
+    //   cy.select("accordion").click();
+
+    //   select most recent transaction
+    //   cy.select("accordion", "cards", "card").last().click();
+    //   cy.select("summary", "message").contains("Org member registration");
+    //   cy.select("summary", "subject").contains("coolname");
+    //    cy.select("summary", "subject-avatar", "emoji").should(
+    //      "have.class",
+    //      "circle"
+    //    );
+    // });
+  });
 });

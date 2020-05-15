@@ -103,4 +103,37 @@ context("user registration", () => {
       });
     });
   });
+
+  context("transaction", () => {
+    // TODO(sos): add tests for tx costs/wallet when it makes sense to do so
+    before(() => {
+      cy.nukeAllState();
+      cy.createIdentity();
+      cy.visit("./public/index.html");
+      cy.select("profile-context-menu").click();
+      cy.select("dropdown-menu", "register-handle").click();
+    });
+
+    it("shows the correct transaction details for confirmation", () => {
+      cy.select("next-button").click();
+
+      cy.select("message").contains("User registration");
+      cy.select("subject").contains("secretariat");
+      cy.select("subject-avatar", "emoji").should("have.class", "circle");
+    });
+
+    it("submits correct transaction details to proxy", () => {
+      cy.select("submit-button").click();
+      cy.select("accordion").click();
+
+      // select most recent transaction
+      cy.select("accordion", "cards", "card").last().click();
+      cy.select("summary", "message").contains("User registration");
+      cy.select("summary", "subject").contains("secretariat");
+      cy.select("summary", "subject-avatar", "emoji").should(
+        "have.class",
+        "circle"
+      );
+    });
+  });
 });
