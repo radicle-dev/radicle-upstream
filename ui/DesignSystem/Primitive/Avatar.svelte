@@ -151,7 +151,8 @@
   {:else if avatarFallback}
     <div
       class={`avatar ${avatarClass}`}
-      style="background: {fmt(avatarFallback.background)}">
+      style="background: {fmt(avatarFallback.background)}"
+      data-cy="emoji">
       {@html twemoji.parse(avatarFallback.emoji, {
         className: `emoji ${size}`,
         base: '',

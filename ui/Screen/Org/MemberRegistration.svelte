@@ -18,7 +18,7 @@
     Transaction,
   } from "../../DesignSystem/Component";
 
-  let state = RegistrationFlowState.NameSelection;
+  let state = RegistrationFlowState.Preparation;
   let userHandle,
     avatarFallback,
     showAvatar,
@@ -30,25 +30,25 @@
 
   const next = () => {
     switch (state) {
-      case RegistrationFlowState.NameSelection:
+      case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
           transaction = registerMemberTransaction("monadic", userHandle);
           payer = formatPayer($session.data.identity);
-          state = RegistrationFlowState.TransactionConfirmation;
+          state = RegistrationFlowState.Confirmation;
         }
         break;
-      case RegistrationFlowState.TransactionConfirmation:
+      case RegistrationFlowState.Confirmation:
         pop();
     }
   };
 
   const cancel = () => {
     switch (state) {
-      case RegistrationFlowState.NameSelection:
+      case RegistrationFlowState.Preparation:
         pop();
         break;
-      case RegistrationFlowState.TransactionConfirmation:
-        state = RegistrationFlowState.NameSelection;
+      case RegistrationFlowState.Confirmation:
+        state = RegistrationFlowState.Preparation;
     }
   };
 
@@ -80,7 +80,7 @@
   selectedStep={state + 1}
   dataCy="add-member-modal">
   <div slot="title">Register a member</div>
-  {#if state === RegistrationFlowState.NameSelection}
+  {#if state === RegistrationFlowState.Preparation}
     <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
       Registering a member will allow them to sign transactions for your org.
       Only registered users can be added as members.
@@ -92,7 +92,7 @@
       showSuccessCheck
       validation={$validation}
       {showAvatar}
-      dataCy="name-input">
+      dataCy="input">
       <div slot="avatar">
         <Avatar
           {avatarFallback}
@@ -101,7 +101,7 @@
           dataCy="avatar" />
       </div>
     </Input.Text>
-  {:else if state === RegistrationFlowState.TransactionConfirmation}
+  {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
       <Transaction {transaction} {subject} {payer} />
     </div>

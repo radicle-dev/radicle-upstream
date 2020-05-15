@@ -125,14 +125,19 @@
   }
 </style>
 
-<div class="pipeline" class:negative={iconState === 'negative'} {style}>
-  <div class="cards" class:hidden>
+<div
+  class="pipeline"
+  class:negative={iconState === 'negative'}
+  {style}
+  data-cy="accordion">
+  <div class="cards" class:hidden data-cy="cards">
     {#each transactions as transaction}
       <div
         class="card"
         on:click={() => {
           push(path.transactions(transaction.id));
-        }}>
+        }}
+        data-cy="card">
         <Flex style="height: 100%">
           <div slot="left" style="display: flex;">
             <Icon.TransactionState

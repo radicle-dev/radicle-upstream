@@ -20,7 +20,7 @@
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
   let orgId, transaction, subject, payer, avatarFallback, showAvatar;
-  let state = RegistrationFlowState.NameSelection;
+  let state = RegistrationFlowState.Preparation;
 
   // Create a new validation store
   let validating = false;
@@ -28,7 +28,7 @@
 
   const next = () => {
     switch (state) {
-      case RegistrationFlowState.NameSelection:
+      case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
           transaction = {
             messages: [
@@ -39,10 +39,10 @@
             ],
           };
           payer = formatPayer($session.data.identity);
-          state = RegistrationFlowState.TransactionConfirmation;
+          state = RegistrationFlowState.Confirmation;
         }
         break;
-      case RegistrationFlowState.TransactionConfirmation:
+      case RegistrationFlowState.Confirmation:
         registerOrg();
     }
   };
@@ -60,11 +60,11 @@
 
   const cancel = () => {
     switch (state) {
-      case RegistrationFlowState.NameSelection:
+      case RegistrationFlowState.Preparation:
         pop();
         break;
-      case RegistrationFlowState.TransactionConfirmation:
-        state = RegistrationFlowState.NameSelection;
+      case RegistrationFlowState.Confirmation:
+        state = RegistrationFlowState.Preparation;
     }
   };
 
@@ -82,7 +82,7 @@
 
   $: updateAvatar(orgId);
   $: submitLabel =
-    state === RegistrationFlowState.TransactionConfirmation
+    state === RegistrationFlowState.Confirmation
       ? "Submit transaction"
       : "Next";
 
@@ -98,15 +98,15 @@
 <StepModalLayout
   dataCy="org-reg-modal"
   selectedStep={state + 1}
-  steps={['Prepare', 'Submit']}>
+  steps={['Preparation', 'Submit']}>
   <div slot="title">Register an org</div>
-  {#if state === RegistrationFlowState.NameSelection}
+  {#if state === RegistrationFlowState.Preparation}
     <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
       Registering an org allows you to give others in your org the right to sign
       transactions, like adding other members or adding projects.
     </Text>
     <Input.Text
-      dataCy="name-input"
+      dataCy="input"
       placeholder="Org name (e.g. Flowerpot)"
       bind:value={orgId}
       style="width: 100%;"
@@ -121,7 +121,7 @@
           dataCy="avatar" />
       </div>
     </Input.Text>
-  {:else if state === RegistrationFlowState.TransactionConfirmation}
+  {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
       <Transaction {transaction} {subject} {payer} />
     </div>

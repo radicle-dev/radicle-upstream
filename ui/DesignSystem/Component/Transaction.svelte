@@ -38,18 +38,19 @@
 </Caption>
 
 <Row dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
-  <div slot="left">
+  <div slot="left" data-cy="message">
     <Title>{formatMessage(transaction.messages[0])}</Title>
   </div>
 
-  <div slot="right">
+  <div slot="right" data-cy="subject">
     {#await subject.avatarSource then avatar}
       <Avatar
         title={subject.name}
         imageUrl={avatar.url}
         avatarFallback={avatar.emoji && avatar}
         variant={subjectAvatarShape()}
-        style="color: var(--color-foreground)" />
+        style="color: var(--color-foreground)"
+        dataCy="subject-avatar" />
     {/await}
   </div>
 </Row>

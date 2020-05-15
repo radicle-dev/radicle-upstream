@@ -22,8 +22,8 @@ export interface Project {
 type Projects = Project[];
 
 export enum RegistrationFlowState {
-  IdSelection,
-  TransactionConfirmation
+  Preparation,
+  Confirmation
 }
 
 // State

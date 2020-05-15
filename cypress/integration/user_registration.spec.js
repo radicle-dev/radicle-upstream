@@ -1,4 +1,9 @@
 context("user registration", () => {
+  before(() => {
+    cy.nukeAllState();
+    cy.registerUser();
+  });
+
   context("modal navigation", () => {
     beforeEach(() => {
       cy.createIdentity();
@@ -90,8 +95,7 @@ context("user registration", () => {
         );
       });
 
-      // TODO(merle): Add test setup, when mocks are replaced
-      it.skip("prevents the user from registering an unavailable handle", () => {
+      it("prevents the user from registering an unavailable handle", () => {
         // shows a validation message when handle is not available
         cy.get('[data-cy="page"] [data-cy="handle"]').clear();
         cy.get('[data-cy="page"] [data-cy="handle"]').type("nope");
