@@ -6,41 +6,16 @@
     updateAppearance,
     updateRegistry,
   } from "../src/session.ts";
+  import { networkOptions, themeOptions } from "../src/settings.ts";
 
   import { Title, Text, Button } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
-  const networkOptions = [
-    {
-      title: "Emulator",
-      value: "emulator",
-    },
-    {
-      title: "FFnet",
-      value: "ffnet",
-    },
-    {
-      title: "Testnet",
-      value: "testnet",
-    },
-  ];
-
   const updateNetwork = (event) =>
     updateRegistry({ ...$settings.registry, network: event.detail });
 
-  const themeOptions = [
-    {
-      title: "Light",
-      value: "light",
-    },
-    {
-      title: "Dark",
-      value: "dark",
-    },
-  ];
-
   const updateTheme = (event) =>
-    updateAppearance({ ...$settings.apperane, theme: event.detail });
+    updateAppearance({ ...$settings.appearance, theme: event.detail });
 </script>
 
 <style>
