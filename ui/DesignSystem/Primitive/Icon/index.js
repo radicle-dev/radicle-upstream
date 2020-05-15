@@ -25,6 +25,7 @@ import Important from "./Important.svelte";
 import Inbox from "./Inbox.svelte";
 import Info from "./Info.svelte";
 import Issue from "./Issue.svelte";
+import Label from "./Label.svelte";
 import Member from "./Member.svelte";
 import Minus from "./Minus.svelte";
 import Peer from "./Peer.svelte";
@@ -69,6 +70,7 @@ export default {
   Inbox,
   Info,
   Issue,
+  Label,
   Member,
   Minus,
   Peer,
