@@ -1,4 +1,11 @@
 context("identity creation", () => {
+  const validUser = {
+    handle: "rafalca",
+    displayName: "Rafalca Romney",
+    shareableEntityIdentifier: "rafalca@123abcd.git",
+    fallbackAvatar: "🥌",
+  };
+
   beforeEach(() => {
     cy.nukeSessionState();
     cy.nukeRegistryState();
@@ -19,31 +26,35 @@ context("identity creation", () => {
       cy.pick("get-started-button").click();
 
       // Enter details screen
-      cy.pick("form", "handle").type("rafalca");
-      cy.pick("form", "display-name").type("Rafalca Romney");
+      cy.pick("form", "handle").type(validUser.handle);
+      cy.pick("form", "display-name").type(validUser.displayName);
       cy.pick("create-id-button").click();
 
       // Confirmation screen
-      cy.get('[data-cy="identity-card"] img[alt="🥌"]').should("exist");
-      cy.pick("identity-card").contains("Rafalca Romney").should("exist");
-      cy.pick("identity-card").contains("rafalca@123abcd.git").should("exist");
+      cy.get(
+        `[data-cy="identity-card"] img[alt=${validUser.fallbackAvatar}]`
+      ).should("exist");
+      cy.pick("identity-card").contains(validUser.displayName).should("exist");
+      cy.pick("identity-card")
+        .contains(validUser.shareableEntityIdentifier)
+        .should("exist");
 
       // Land on profile screen
       cy.pick("go-to-profile-button").click();
-      cy.pick("profile-avatar").contains("rafalca");
+      cy.pick("profile-avatar").contains(validUser.handle);
     });
 
     it("is possible to directly register your identity after creating it", () => {
       cy.pick("get-started-button").click();
 
-      cy.pick("form", "handle").type("rafalca");
+      cy.pick("form", "handle").type(validUser.handle);
       cy.pick("create-id-button").click();
       cy.pick("register-identity-link").click();
 
       cy.contains("Register your handle").should("exist");
       cy.pick("next-button").click();
       cy.pick("submit-button").click();
-      cy.pick("profile-screen", "profile-avatar").contains("rafalca");
+      cy.pick("profile-screen", "profile-avatar").contains(validUser.handle);
       cy.pick("profile-screen", "profile-avatar", "registered-badge").should(
         "exist"
       );
@@ -80,16 +91,16 @@ context("identity creation", () => {
         it("lands the user on the profile screen", () => {
           cy.pick("get-started-button").click();
 
-          cy.pick("form", "handle").type("rafalca");
+          cy.pick("form", "handle").type(validUser.handle);
           cy.pick("create-id-button").click();
 
           cy.pick("identity-card")
-            .contains("rafalca@123abcd.git")
+            .contains(validUser.shareableEntityIdentifier)
             .should("exist");
 
           // Land on profile screen
           cy.pick("modal-close-button").click();
-          cy.pick("profile-avatar").contains("rafalca");
+          cy.pick("profile-avatar").contains(validUser.handle);
         });
       }
     );
@@ -98,18 +109,18 @@ context("identity creation", () => {
       it("lands the user on the profile screen", () => {
         cy.pick("get-started-button").click();
 
-        cy.pick("form", "handle").type("rafalca");
+        cy.pick("form", "handle").type(validUser.handle);
         cy.pick("create-id-button").click();
 
         cy.pick("identity-card")
-          .contains("rafalca@123abcd.git")
+          .contains(validUser.shareableEntityIdentifier)
           .should("exist");
 
         // Now try the escape key
         cy.get("body").type("{esc}");
 
         // Land on profile screen
-        cy.pick("profile-avatar").contains("rafalca");
+        cy.pick("profile-avatar").contains(validUser.handle);
       });
     });
   });
@@ -118,7 +129,7 @@ context("identity creation", () => {
     beforeEach(() => {
       cy.pick("get-started-button").click();
       cy.pick("form", "handle").type("_rafalca");
-      cy.pick("form", "display-name").type("Rafalca Romney");
+      cy.pick("form", "display-name").type(validUser.displayName);
       cy.pick("form", "avatar-url").type(
         "https://www.motherjones.com/wp-content/uploads/images/horsehop.jpg"
       );
@@ -126,6 +137,8 @@ context("identity creation", () => {
     });
 
     context("handle", () => {
+      const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
+
       it("prevents the user from submitting an invalid handle", () => {
         // handle is required
         cy.pick("form", "handle").clear();
@@ -133,27 +146,27 @@ context("identity creation", () => {
 
         // no spaces
         cy.pick("form", "handle").type("no spaces");
-        cy.pick("form").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+        cy.pick("form").contains(validationError);
 
         // no special characters
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("$bad");
-        cy.pick("form").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+        cy.pick("form").contains(validationError);
 
         // can't start with an underscore
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("_nein");
-        cy.pick("form").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+        cy.pick("form").contains(validationError);
 
         // can't start with a dash
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("-não");
-        cy.pick("form").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+        cy.pick("form").contains(validationError);
 
         // has to be at least two characters long
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("x");
-        cy.pick("form").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+        cy.pick("form").contains(validationError);
       });
     });
 
