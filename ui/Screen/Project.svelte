@@ -132,7 +132,7 @@
         <AdditionalActionsDropdown
           dataCy="context-menu"
           style="margin: 0 24px 0 16px"
-          headerTitle={params.id}
+          headerTitle={project.shareableEntityIdentifier}
           menuItems={dropdownMenuItems} />
       </div>
     </Topbar>

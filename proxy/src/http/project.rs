@@ -172,7 +172,8 @@ mod handler {
 
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: librad::project::ProjectId::from(id),
+                id: librad::project::ProjectId::from(id.clone()),
+                shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
@@ -200,7 +201,8 @@ mod handler {
         let projects = coco::list_projects(&paths)
             .into_iter()
             .map(|(id, meta)| project::Project {
-                id,
+                id: id.clone(),
+                shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
@@ -254,6 +256,10 @@ impl Serialize for project::Project {
     {
         let mut state = serializer.serialize_struct("Project", 4)?;
         state.serialize_field("id", &self.id.to_string())?;
+        state.serialize_field(
+            "shareableEntityIdentifier",
+            &self.shareable_entity_identifier.to_string(),
+        )?;
         state.serialize_field("metadata", &self.metadata)?;
         state.serialize_field("registration", &self.registration)?;
         state.serialize_field("stats", &self.stats)?;
@@ -269,6 +275,12 @@ impl ToDocumentedType for project::Project {
             document::string()
                 .description("ID of the project")
                 .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
+        );
+        properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("%123abcd.git"),
         );
         properties.insert("metadata".into(), project::Metadata::document());
         properties.insert("registration".into(), project::Registration::document());
@@ -551,6 +563,7 @@ mod test {
                 "name": "Upstream",
             },
             "registration": Value::Null,
+            "shareableEntityIdentifier": format!("%{}", id.to_string()),
             "stats": {
                 "branches": 11,
                 "commits": 267,
@@ -611,7 +624,8 @@ mod test {
         let projects = coco::list_projects(&librad_paths)
             .into_iter()
             .map(|(id, meta)| project::Project {
-                id,
+                id: id.clone(),
+                shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {

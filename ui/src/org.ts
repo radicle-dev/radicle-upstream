@@ -10,12 +10,14 @@ import * as user from "./user";
 // Types
 export interface Org {
   name: string;
+  shareableEntityIdentifier: string;
   avatarFallback: avatar.EmojiAvatar;
 }
 
 export interface Project {
   name: string;
   orgId: string;
+  shareableEntityIdentifier: string;
   maybeProject: project.Project;
 }
 

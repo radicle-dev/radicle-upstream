@@ -125,7 +125,11 @@
   }
 </style>
 
-<div class="pipeline" class:negative={iconState === 'negative'} {style}>
+<div
+  data-cy="transaction-center"
+  class="pipeline"
+  class:negative={iconState === 'negative'}
+  {style}>
   <div class="cards" class:hidden>
     {#each transactions as transaction}
       <div
