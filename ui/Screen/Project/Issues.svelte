@@ -95,14 +95,7 @@
         on:click={() => {
           push(path.projectIssue(params.id));
         }}>
-        <IssuesCard
-          open={issue.open}
-          title={issue.title}
-          author={issue.author}
-          replies={issue.replies}
-          created={issue.created_at}
-          updated={issue.updated_at}
-          closed={issue.closed_at} />
+        <IssuesCard {issue} />
       </li>
     {/each}
   </ul>
