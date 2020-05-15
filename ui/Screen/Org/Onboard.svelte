@@ -33,7 +33,11 @@
       adding a member to your organism.
     </Text>
     <Flex align="center" style="flex-direction: row">
-      <Button style="margin-right: 26px" variant="vanilla" on:click={create}>
+      <Button
+        dataCy="add-project"
+        style="margin-right: 26px"
+        variant="vanilla"
+        on:click={create}>
         Register a project
       </Button>
       <Button dataCy="add-member-button" variant="vanilla" on:click={register}>

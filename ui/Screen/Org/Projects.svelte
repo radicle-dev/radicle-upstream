@@ -52,9 +52,13 @@
 
 <Remote {store} let:data={orgProjects}>
   {#if orgProjects.length > 0}
-    <List items={orgProjects} on:select={select} let:item={orgProject}>
+    <List
+      dataCy="project-list"
+      items={orgProjects}
+      on:select={select}
+      let:item={orgProject}>
       {#if orgProject.maybeProject}
-        <Flex style="flex: 1">
+        <Flex style="flex: 1" dataCy={`project-${orgProject.name}`}>
           <div slot="left">
             <ProjectCard {...projectCardProps(orgProject)} />
           </div>

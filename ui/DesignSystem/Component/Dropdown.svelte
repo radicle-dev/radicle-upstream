@@ -4,6 +4,7 @@
 
   export let placeholder = null;
 
+  export let dataCy = null;
   export let options = null;
   export let style = null;
   export let optionStyle = null;
@@ -103,7 +104,7 @@
 
 <svelte:window on:click={hideMenu} />
 
-<div class="dropdown" {style}>
+<div data-cy={dataCy} class="dropdown" {style}>
   <div
     class="button"
     class:invalid={!valid}
