@@ -1,6 +1,7 @@
 context("identity creation", () => {
   beforeEach(() => {
     cy.nukeSessionState();
+    cy.nukeRegistryState();
     cy.visit("./public/index.html");
   });
 
@@ -25,7 +26,6 @@ context("identity creation", () => {
       cy.get('[data-cy="create-id-button"]').click();
 
       // Confirmation screen
-      // TODO(rudolfs): change the emoji once the backend returns the right one
       cy.get('[data-cy="identity-card"] img[alt="🥌"]').should("exist");
       cy.get('[data-cy="identity-card"]')
         .contains("Rafalca Romney")
@@ -47,9 +47,12 @@ context("identity creation", () => {
       cy.get('[data-cy="register-identity-link"]').click();
 
       cy.contains("Register your handle").should("exist");
-
-      cy.get('[data-cy="cancel-button"]').click();
-      cy.get('[data-cy="profile-avatar"]').contains("rafalca");
+      cy.pick("next-button").click();
+      cy.pick("submit-button").click();
+      cy.pick("profile-screen", "profile-avatar").contains("rafalca");
+      cy.pick("profile-screen", "profile-avatar", "registered-badge").should(
+        "exist"
+      );
     });
 
     context(
