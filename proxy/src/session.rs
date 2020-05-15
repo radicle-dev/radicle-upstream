@@ -169,7 +169,7 @@ pub mod settings {
 
     /// Known networks the application can connect to.
     #[derive(Debug, PartialEq, Deserialize, Serialize)]
-    #[serde(rename_all = "camelCase")]
+    #[serde(rename_all = "lowercase")]
     pub enum Network {
         /// In-memory registry, which only lives as long as the app does.
         Emulator,

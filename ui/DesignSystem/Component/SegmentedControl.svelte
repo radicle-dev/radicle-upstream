@@ -8,7 +8,7 @@
   export let options = null;
 
   const onClick = (option) => {
-    dispatch("select", option);
+    dispatch("select", option.value);
     currentlyActive = option.value;
   };
 

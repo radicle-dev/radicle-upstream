@@ -36,8 +36,6 @@ context("identity creation", () => {
 
       // Land on profile screen
       cy.get('[data-cy="go-to-profile-button"]').click();
-      // TODO(rudolfs): change this to the actual handle that we
-      // just created once the backend is wired up
       cy.get('[data-cy="profile-avatar"]').contains("rafalca");
     });
 

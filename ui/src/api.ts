@@ -26,10 +26,11 @@ const request = (endpoint: string, init?: Init): Request => {
     });
 }
 
-async function http<T>(req: RequestInfo): Promise<T> {
+const http = async <T>(req: RequestInfo): Promise<T> => {
   const res = await fetch(req);
   const body = await res.json();
 
+  // For non-success status codes we throw the body as it carries the error type.
   if (!res.ok) {
     throw body;
   }
@@ -37,18 +38,33 @@ async function http<T>(req: RequestInfo): Promise<T> {
   return body;
 }
 
-export async function del(endpoint: string, options?: Options): Promise<void> {
-  return http<void>(request(endpoint, { method: "DELETE", ...options }));
+const noContent = async (req: RequestInfo): Promise<null> => {
+  const res = await fetch(req);
+
+  if (res.status !== 204) {
+    const body = await res.json();
+    throw body;
+  }
+
+  return null;
 }
 
-export async function get<T>(endpoint: string, options?: Options): Promise<T> {
-  return http<T>(request(endpoint, { method: "GET", ...options }));
-}
+export const del = async (endpoint: string, options?: Options): Promise<null> =>
+  noContent(request(endpoint, { method: "DELETE", ...options }));
 
-export async function post<I, D>(endpoint: string, body: I, options?: Options): Promise<D> {
-  return http<D>(request(endpoint, {
+export const get = async <T>(endpoint: string, options?: Options): Promise<T> =>
+  http<T>(request(endpoint, { method: "GET", ...options }));
+
+export const post = async <I, D>(endpoint: string, body: I, options?: Options): Promise<D> =>
+  http<D>(request(endpoint, {
     method: "POST",
     body: JSON.stringify(body),
     ...options,
   }));
-}
+
+export const set = async <T>(endpoint: string, body: T, options?: Options): Promise<null> =>
+ noContent(request(endpoint, {
+    method: "POST",
+    body: JSON.stringify(body),
+    ...options,
+  }));
