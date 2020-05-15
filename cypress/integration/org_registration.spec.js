@@ -1,5 +1,6 @@
 context("org registration", () => {
   beforeEach(() => {
+    cy.nukeRegistryState();
     cy.nukeSessionState();
     cy.createIdentity();
     cy.registerUser();
@@ -87,6 +88,8 @@ context("org registration", () => {
     });
 
     it("prevents the user from registering an unavailable org name", () => {
+      cy.registerOrg("coolname");
+
       cy.pick("org-reg-modal", "name-input").type("coolname");
       cy.pick("org-reg-modal").contains("Sorry, this name is already taken");
       cy.pick("org-reg-modal", "submit-button").should("be.disabled");

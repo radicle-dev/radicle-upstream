@@ -164,6 +164,7 @@ where
                 txs.push(tx);
             }
         }
+        txs.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
 
         Ok(txs)
     }
@@ -174,7 +175,7 @@ impl<C> registry::Client for Cacher<C>
 where
     C: registry::Client,
 {
-    async fn get_org(&self, id: String) -> Result<Option<registry::Org>, error::Error> {
+    async fn get_org(&self, id: registry::Id) -> Result<Option<registry::Org>, error::Error> {
         self.client.get_org(id).await
     }
 
@@ -185,7 +186,7 @@ where
     async fn register_org(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
+        org_id: registry::Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self.client.register_org(author, org_id, fee).await?;
@@ -198,7 +199,7 @@ where
     async fn unregister_org(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
+        org_id: registry::Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self.unregister_org(author, org_id, fee).await?;
@@ -210,14 +211,17 @@ where
 
     async fn get_project(
         &self,
-        id: String,
-        project_name: String,
+        org_id: registry::Id,
+        project_name: registry::ProjectName,
     ) -> Result<Option<registry::Project>, error::Error> {
-        self.client.get_project(id, project_name).await
+        self.client.get_project(org_id, project_name).await
     }
 
-    async fn list_org_projects(&self, id: String) -> Result<Vec<registry::Project>, error::Error> {
-        self.client.list_org_projects(id).await
+    async fn list_org_projects(
+        &self,
+        org_id: registry::Id,
+    ) -> Result<Vec<registry::Project>, error::Error> {
+        self.client.list_org_projects(org_id).await
     }
 
     async fn list_projects(&self) -> Result<Vec<protocol::ProjectId>, error::Error> {
@@ -227,8 +231,8 @@ where
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
-        project_name: String,
+        org_id: registry::Id,
+        project_name: registry::ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
