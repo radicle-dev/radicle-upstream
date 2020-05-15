@@ -5,7 +5,7 @@ context("settings", () => {
     cy.createIdentity();
 
     cy.visit("public/index.html");
-    cy.select("sidebar", "settings").click();
+    cy.pick("sidebar", "settings").click();
   });
 
   context("theme", () => {
@@ -21,19 +21,19 @@ context("settings", () => {
 
   context("session", () => {
     it("state can be cleared", () => {
-      cy.get("[data-cy='clear-session-button']").click();
-      cy.get('[data-cy="get-started-button"]').should("exist");
+      cy.pick("clear-session-button").click();
+      cy.pick("get-started-button").should("exist");
     });
 
     it("cache can be cleared", () => {
       // Prepare transaction center.
       cy.registerUser();
       cy.get("body").type("{shift}T");
-      cy.get("[data-cy='transaction-center']").should("exist");
+      cy.pick("transaction-center").should("exist");
 
       // Clear cache.
-      cy.get("[data-cy='clear-cache-button']").click();
-      cy.get("[data-cy='transaction-center']").should("not.exist");
+      cy.pick("clear-cache-button").click();
+      cy.pick("transaction-center").should("not.exist");
     });
   });
 });
