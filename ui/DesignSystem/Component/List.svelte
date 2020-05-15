@@ -3,6 +3,7 @@
 
   const dispatch = createEventDispatcher();
 
+  export let dataCy = null;
   export let items = null;
 </script>
 
@@ -31,7 +32,7 @@
   }
 </style>
 
-<ul>
+<ul data-cy={dataCy}>
   {#each items as item}
     <li
       on:click={() => {

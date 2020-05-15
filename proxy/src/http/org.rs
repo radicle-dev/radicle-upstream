@@ -14,7 +14,7 @@ use crate::notification;
 use crate::project;
 use crate::registry;
 
-/// Prefixed filters..
+/// Prefixed filters.
 pub fn routes<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
     registry: http::Shared<R>,
@@ -230,7 +230,7 @@ mod handler {
         // TODO(xla): Use real fee defined by the user.
         let fake_fee: Balance = 100;
 
-        let mut reg = registry.write().await;
+        let reg = registry.read().await;
         let tx = reg.register_org(&fake_pair, input.id, fake_fee).await?;
 
         subscriptions
@@ -620,7 +620,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
+        let txs = cache.write().await.list_transactions(vec![]).unwrap();
 
         // Get the registered org
         let org = cache

@@ -28,6 +28,7 @@
       return [
         {
           title: "Register project",
+          dataCy: "register-project",
           icon: Icon.Register,
           event: () =>
             push(
@@ -42,6 +43,7 @@
       return [
         {
           title: "Register project",
+          dataCy: "register-project",
           icon: Icon.Register,
           disabled: true,
           tooltip:
@@ -70,8 +72,14 @@
 
 <Remote store={projectStore} let:data={projects}>
   {#if projects.length > 0}
-    <List items={projects} on:select={select} let:item={project}>
-      <Flex style="flex: 1">
+    <List
+      dataCy="project-list"
+      items={projects}
+      on:select={select}
+      let:item={project}>
+      <Flex
+        style="flex: 1"
+        dataCy={`project-list-entry-${project.metadata.name}`}>
         <div slot="left">
           <ProjectCard {...projectCardProps(project)} />
         </div>
@@ -79,6 +87,7 @@
         <div slot="right" style="display: flex; align-items: center;">
           <Stats stats={statsProps(project.stats)} />
           <AdditionalActionsDropdown
+            dataCy="context-menu"
             headerTitle={project.id}
             menuItems={contextMenuItems(project.id, session)} />
         </div>

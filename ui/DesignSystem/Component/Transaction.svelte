@@ -112,6 +112,7 @@
 <Row style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Avatar
+      dataCy="payer-avatar"
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}

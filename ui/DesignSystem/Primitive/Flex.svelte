@@ -1,4 +1,5 @@
 <script>
+  export let dataCy = null;
   export let style = null;
   export let align = null; // left | right
 </script>
@@ -30,11 +31,11 @@
 </style>
 
 {#if align !== null}
-  <div class={`row align-${align}`} {style}>
+  <div data-cy={dataCy} class={`row align-${align}`} {style}>
     <slot />
   </div>
 {:else}
-  <div class="row" {style}>
+  <div data-cy={dataCy} class="row" {style}>
     <div class="align-left">
       <slot name="left" />
     </div>

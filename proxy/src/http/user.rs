@@ -157,7 +157,7 @@ mod handler {
         let fake_fee: Balance = 100;
 
         let handle = registry::Id::try_from(input.handle)?;
-        let mut reg = registry.write().await;
+        let reg = registry.write().await;
         let tx = reg
             .register_user(&fake_pair, handle.clone(), input.maybe_entity_id, fake_fee)
             .await?;
@@ -368,7 +368,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = cache.read().await.list_transactions(vec![]).await.unwrap();
+        let txs = cache.read().await.list_transactions(vec![]).unwrap();
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();

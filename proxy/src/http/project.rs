@@ -33,7 +33,7 @@ fn create_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -58,7 +58,7 @@ fn get_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("projects")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(document::param::<String>("id", "Project id"))
         .and(document::document(document::description(
             "Find Project by ID",
@@ -87,7 +87,7 @@ fn list_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -225,7 +225,7 @@ mod handler {
         // TODO(xla): Use real fee defined by the user.
         let fake_fee: Balance = 100;
 
-        let mut reg = registry.write().await;
+        let reg = registry.read().await;
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
@@ -656,7 +656,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
+        let txs = cache.write().await.list_transactions(vec![]).unwrap();
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();

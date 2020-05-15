@@ -67,7 +67,7 @@
 </style>
 
 <Remote store={projectStore} let:data={projects}>
-  <ModalLayout>
+  <ModalLayout dataCy="project-registration-screen">
     <div class="wrapper">
       <div class="project-registration">
         <Flex align="center" style="margin-bottom: 40px;">

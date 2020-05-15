@@ -1,5 +1,6 @@
 //! Endpoints and serialisation for [`session::Session`] related types.
 
+use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
@@ -10,17 +11,83 @@ use crate::identity;
 use crate::registry;
 use crate::session;
 
+/// Prefixed fitlers.
+pub fn routes<R>(
+    registry: http::Shared<R>,
+    store: Arc<RwLock<kv::Store>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + registry::Client,
+{
+    path("session").and(
+        clear_cache_filter(Arc::clone(&registry))
+            .or(delete_filter(Arc::clone(&store)))
+            .or(get_filter(registry, Arc::clone(&store)))
+            .or(update_settings_filter(store)),
+    )
+}
+
+/// Combination of all session filters.
+#[cfg(test)]
+pub fn filters<R>(
+    registry: http::Shared<R>,
+    store: Arc<RwLock<kv::Store>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + registry::Client,
+{
+    clear_cache_filter(Arc::clone(&registry))
+        .or(delete_filter(Arc::clone(&store)))
+        .or(get_filter(registry, Arc::clone(&store)))
+        .or(update_settings_filter(store))
+}
+
+/// `DELETE /cache`
+fn clear_cache_filter<R: registry::Cache>(
+    registry: http::Shared<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("cache")
+        .and(warp::delete())
+        .and(path::end())
+        .and(http::with_shared(registry))
+        .and(document::document(document::description(
+            "Clear cached data",
+        )))
+        .and(document::document(document::tag("Session")))
+        .and(document::document(
+            document::response(204, None).description("Cache cleared"),
+        ))
+        .and_then(handler::clear_cache)
+}
+
+/// `DELETE /`
+fn delete_filter(
+    store: Arc<RwLock<kv::Store>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::delete()
+        .and(path::end())
+        .and(http::with_store(store))
+        .and(document::document(document::description(
+            "Clear current Session",
+        )))
+        .and(document::document(document::tag("Session")))
+        .and(document::document(
+            document::response(204, None).description("Current session deleted"),
+        ))
+        .and_then(handler::delete)
+}
+
 /// `GET /`
-pub fn get_filter<R: registry::Client>(
+fn get_filter<R: registry::Client>(
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("session")
-        .and(warp::get())
+    warp::get()
+        .and(path::end())
         .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(document::document(document::description(
-            "Fetch active Session",
+            "Fetch current Session",
         )))
         .and(document::document(document::tag("Session")))
         .and(document::document(
@@ -33,15 +100,51 @@ pub fn get_filter<R: registry::Client>(
         .and_then(handler::get)
 }
 
+/// `Post /settings`
+fn update_settings_filter(
+    store: Arc<RwLock<kv::Store>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("settings")
+        .and(warp::post())
+        .and(path::end())
+        .and(http::with_store(store))
+        .and(warp::body::json())
+        .and(document::document(document::description("Update settings")))
+        .and(document::document(document::tag("Session")))
+        .and(document::document(
+            document::response(204, None).description("Settings successfully updated"),
+        ))
+        .and_then(handler::update_settings)
+}
+
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
 mod handler {
     use std::sync::Arc;
     use tokio::sync::RwLock;
+    use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
     use crate::http;
     use crate::registry;
     use crate::session;
+
+    /// Clear [`registry::Cache`].
+    pub async fn clear_cache<R: registry::Cache>(
+        cache: http::Shared<R>,
+    ) -> Result<impl Reply, Rejection> {
+        let cache = cache.read().await;
+        cache.clear()?;
+
+        Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
+    }
+
+    /// Clear the current [`session::Session`].
+    pub async fn delete(store: Arc<RwLock<kv::Store>>) -> Result<impl Reply, Rejection> {
+        let store = store.read().await;
+        session::clear_current(&store)?;
+
+        Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
+    }
 
     /// Fetch the [`session::Session`].
     pub async fn get<R: registry::Client>(
@@ -54,18 +157,77 @@ mod handler {
 
         Ok(reply::json(&sess))
     }
+
+    /// Set the [`session::settings::Settings`] to the passed value.
+    pub async fn update_settings(
+        store: Arc<RwLock<kv::Store>>,
+        settings: session::settings::Settings,
+    ) -> Result<impl Reply, Rejection> {
+        let store = store.read().await;
+        session::set_settings(&store, settings)?;
+
+        Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
+    }
 }
 
 impl ToDocumentedType for session::Session {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(1);
+        let mut properties = HashMap::with_capacity(1);
         properties.insert(
             "identity".into(),
             identity::Identity::document().nullable(true),
         );
         properties.insert("orgs".into(), document::array(registry::Org::document()));
+        properties.insert("settings".into(), session::settings::Settings::document());
 
         document::DocumentedType::from(properties).description("Session")
+    }
+}
+
+impl ToDocumentedType for session::settings::Settings {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(2);
+        properties.insert(
+            "appearance".into(),
+            session::settings::Appearance::document(),
+        );
+        properties.insert("registry".into(), session::settings::Registry::document());
+
+        document::DocumentedType::from(properties).description("Settings")
+    }
+}
+
+impl ToDocumentedType for session::settings::Appearance {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(1);
+        properties.insert("theme".into(), session::settings::Theme::document());
+
+        document::DocumentedType::from(properties).description("Appearance")
+    }
+}
+
+impl ToDocumentedType for session::settings::Theme {
+    fn document() -> document::DocumentedType {
+        document::enum_string(vec!["dark".into(), "light".into()])
+            .description("Variants for possible color schemes.")
+            .example("dark")
+    }
+}
+
+impl ToDocumentedType for session::settings::Registry {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(1);
+        properties.insert("network".into(), session::settings::Network::document());
+
+        document::DocumentedType::from(properties).description("Registry")
+    }
+}
+
+impl ToDocumentedType for session::settings::Network {
+    fn document() -> document::DocumentedType {
+        document::enum_string(vec!["emulator".into(), "ffnet".into(), "testnet".into()])
+            .description("Variants for possible networks of the Registry to connect to.")
+            .example("testnet")
     }
 }
 
@@ -80,18 +242,47 @@ mod test {
     use warp::test::request;
 
     use crate::registry;
+    use crate::session;
+
+    #[tokio::test]
+    async fn delete() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let store = Arc::new(RwLock::new(
+            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
+        ));
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(
+            registry,
+            &*store.read().await,
+        )));
+        let api = super::filters(Arc::clone(&cache), Arc::clone(&store));
+
+        let mut settings = session::settings::Settings::default();
+        settings.appearance.theme = session::settings::Theme::Dark;
+        session::set_settings(&*store.read().await, settings).unwrap();
+
+        let res = request().method("DELETE").path("/").reply(&api).await;
+        assert_eq!(res.status(), StatusCode::NO_CONTENT);
+
+        // Test that we reset the session to default.
+        let have = session::current(&*store.read().await, cache.read().await.clone())
+            .await
+            .unwrap()
+            .settings;
+        let want = session::settings::Settings::default();
+
+        assert_eq!(have, want);
+    }
 
     #[tokio::test]
     async fn get() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let api = super::get_filter(
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
 
-        let res = request().method("GET").path("/session").reply(&api).await;
+        let res = request().method("GET").path("/").reply(&api).await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
@@ -101,6 +292,53 @@ mod test {
             json!({
                 "identity": Value::Null,
                 "orgs": [],
+                "settings": {
+                    "appearance": {
+                        "theme": "light",
+                    },
+                    "registry": {
+                        "network": "emulator",
+                    },
+                },
+            }),
+        );
+    }
+
+    #[tokio::test]
+    async fn udpate_settings() {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
+
+        let mut settings = session::settings::Settings::default();
+        settings.appearance.theme = session::settings::Theme::Dark;
+
+        let res = request()
+            .method("POST")
+            .path("/settings")
+            .json(&settings)
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::NO_CONTENT);
+
+        let res = request().method("GET").path("/").reply(&api).await;
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        assert_eq!(
+            have,
+            json!({
+                "identity": Value::Null,
+                "orgs": [],
+                "settings": {
+                    "appearance": {
+                        "theme": "dark",
+                    },
+                    "registry": {
+                        "network": "emulator",
+                    },
+                },
             }),
         );
     }
