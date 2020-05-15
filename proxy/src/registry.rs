@@ -172,7 +172,9 @@ pub struct Thresholds {
 #[serde(rename_all = "camelCase")]
 pub struct Org {
     /// The unique identifier of the org
-    pub id: String,
+    pub id: Id,
+    /// Unambiguous identifier pointing at this identity.
+    pub shareable_entity_identifier: String,
     /// Generated fallback avatar
     pub avatar_fallback: avatar::Avatar,
     /// List of members of the org
@@ -207,7 +209,7 @@ pub trait Client: Clone + Send + Sync {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error>;
+    async fn get_org(&self, id: Id) -> Result<Option<Org>, error::Error>;
 
     /// List orgs of the Registry.
     ///
@@ -224,7 +226,7 @@ pub trait Client: Clone + Send + Sync {
     async fn register_org(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
+        org_id: Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -236,7 +238,7 @@ pub trait Client: Clone + Send + Sync {
     async fn unregister_org(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
+        org_id: Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -247,8 +249,8 @@ pub trait Client: Clone + Send + Sync {
     /// Will return `Err` if a protocol error occurs.
     async fn get_project(
         &self,
-        id: String,
-        project_name: String,
+        org_id: Id,
+        project_name: ProjectName,
     ) -> Result<Option<Project>, error::Error>;
 
     /// List all projects of the Registry for an org.
@@ -256,7 +258,7 @@ pub trait Client: Clone + Send + Sync {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error>;
+    async fn list_org_projects(&self, id: Id) -> Result<Vec<Project>, error::Error>;
 
     /// List projects of the Registry.
     ///
@@ -273,8 +275,8 @@ pub trait Client: Clone + Send + Sync {
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
-        project_name: String,
+        org_id: Id,
+        project_name: ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error>;
@@ -342,9 +344,8 @@ impl Registry {
 
 #[async_trait]
 impl Client for Registry {
-    async fn get_org(&self, id: String) -> Result<Option<Org>, error::Error> {
-        let org_id = protocol::Id::try_from(id.clone())?;
-        if let Some(org) = self.client.get_org(org_id).await? {
+    async fn get_org(&self, org_id: Id) -> Result<Option<Org>, error::Error> {
+        if let Some(org) = self.client.get_org(org_id.clone().0).await? {
             let mut members = Vec::new();
             for member in org.members.clone() {
                 members.push(
@@ -354,8 +355,9 @@ impl Client for Registry {
                 );
             }
             Ok(Some(Org {
-                id: id.clone(),
-                avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Org),
+                id: org_id.clone(),
+                shareable_entity_identifier: format!("%{}", org_id.clone()),
+                avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                 members,
             }))
         } else {
@@ -365,9 +367,9 @@ impl Client for Registry {
 
     async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error> {
         let mut orgs = Vec::new();
-        for org_id in &self.client.list_orgs().await? {
+        for id in &self.client.list_orgs().await? {
             let org = self
-                .get_org(org_id.to_string())
+                .get_org(Id(id.clone()))
                 .await?
                 .expect("org missing for id");
             if org.members.iter().any(|m| m.handle == handle) {
@@ -381,15 +383,12 @@ impl Client for Registry {
     async fn register_org(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
+        org_id: Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
-        // Verify that inputs are valid.
-        let org_id = protocol::Id::try_from(org_id.clone())?;
-
         // Prepare and submit org registration transaction.
         let register_message = protocol::message::RegisterOrg {
-            org_id: org_id.clone(),
+            org_id: org_id.0.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -400,21 +399,24 @@ impl Client for Registry {
                 fee,
             },
         );
-        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
-        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
+        let applied = self.client.submit_transaction(register_tx).await?.await?;
+        applied.result?;
+
         let tx = Transaction {
-            id: Hash(register_applied.tx_hash),
-            messages: vec![Message::OrgRegistration {
-                id: Id(org_id.clone()),
-            }],
+            id: Hash(applied.tx_hash),
+            messages: vec![Message::OrgRegistration { id: org_id.clone() }],
             state: transaction::State::Applied {
-                block: Hash(register_applied.block),
+                block: Hash(applied.block),
             },
             timestamp: SystemTime::now(),
         };
 
         // TODO(xla): Remove autmoatic prepayment once we have proper balances.
-        let org = self.client.get_org(org_id).await?.expect("org not present");
+        let org = self
+            .client
+            .get_org(org_id.0)
+            .await?
+            .expect("org not present");
         self.prepay_account(org.account_id, 1000).await?;
 
         Ok(tx)
@@ -423,15 +425,12 @@ impl Client for Registry {
     async fn unregister_org(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
+        org_id: Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
-        // Verify that inputs are valid.
-        let org_id = protocol::Id::try_from(org_id.clone())?;
-
         // Prepare and submit org unregistration transaction.
         let unregister_message = protocol::message::UnregisterOrg {
-            org_id: org_id.clone(),
+            org_id: org_id.0.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -442,14 +441,15 @@ impl Client for Registry {
                 fee,
             },
         );
-        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
-        let unregister_applied = self.client.submit_transaction(register_tx).await?.await?;
+
+        let applied = self.client.submit_transaction(register_tx).await?.await?;
+        applied.result?;
 
         Ok(Transaction {
-            id: Hash(unregister_applied.tx_hash),
-            messages: vec![Message::OrgUnregistration { id: Id(org_id) }],
+            id: Hash(applied.tx_hash),
+            messages: vec![Message::OrgUnregistration { id: org_id }],
             state: transaction::State::Applied {
-                block: Hash(unregister_applied.block),
+                block: Hash(applied.block),
             },
             timestamp: SystemTime::now(),
         })
@@ -457,15 +457,12 @@ impl Client for Registry {
 
     async fn get_project(
         &self,
-        id: String,
-        project_name: String,
+        org_id: Id,
+        project_name: ProjectName,
     ) -> Result<Option<Project>, error::Error> {
-        let org_id = protocol::Id::try_from(id.clone())?;
-        let project_name = protocol::ProjectName::try_from(project_name)?;
-
         Ok(self
             .client
-            .get_project(project_name, org_id)
+            .get_project(project_name.0, org_id.0)
             .await?
             .map(|project| {
                 let metadata_vec: Vec<u8> = project.metadata.into();
@@ -483,16 +480,15 @@ impl Client for Registry {
             }))
     }
 
-    async fn list_org_projects(&self, id: String) -> Result<Vec<Project>, error::Error> {
-        let org_id = protocol::Id::try_from(id.clone())?;
-        let project_ids = self.client.list_projects().await?.into_iter();
+    async fn list_org_projects(&self, org_id: Id) -> Result<Vec<Project>, error::Error> {
+        let ids = self.client.list_projects().await?;
         let mut projects = Vec::new();
-        for project_id in project_ids {
-            if project_id.1 == org_id {
+        for id in &ids {
+            if id.1 == org_id.clone().0 {
                 projects.push(
-                    self.get_project(org_id.to_string(), project_id.0.to_string())
+                    self.get_project(org_id.clone(), ProjectName(id.clone().0))
                         .await?
-                        .expect("Get project"),
+                        .expect("project not present"),
                 );
             }
         }
@@ -506,15 +502,11 @@ impl Client for Registry {
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: String,
-        project_name: String,
+        org_id: Id,
+        project_name: ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
-        // Verify that inputs are valid.
-        let org_id = protocol::Id::try_from(org_id.clone())?;
-        let project_name = protocol::ProjectName::try_from(project_name.clone())?;
-
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = protocol::message::CreateCheckpoint {
             project_hash: protocol::H256::random(),
@@ -553,8 +545,8 @@ impl Client for Registry {
 
         // Prepare and submit project registration transaction.
         let register_message = protocol::message::RegisterProject {
-            project_name: project_name.clone(),
-            org_id: org_id.clone(),
+            project_name: project_name.0.clone(),
+            org_id: org_id.0.clone(),
             checkpoint_id,
             metadata: register_metadata,
         };
@@ -567,17 +559,17 @@ impl Client for Registry {
                 fee,
             },
         );
-        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
-        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
+        let applied = self.client.submit_transaction(register_tx).await?.await?;
+        applied.result?;
 
         Ok(Transaction {
-            id: Hash(register_applied.tx_hash),
+            id: Hash(applied.tx_hash),
             messages: vec![Message::ProjectRegistration {
-                project_name: ProjectName(project_name),
-                org_id: Id(org_id),
+                project_name: project_name,
+                org_id: org_id,
             }],
             state: transaction::State::Applied {
-                block: Hash(register_applied.block),
+                block: Hash(applied.block),
             },
             timestamp: SystemTime::now(),
         })
@@ -614,14 +606,14 @@ impl Client for Registry {
                 fee,
             },
         );
-        // TODO(xla): Unpack the result to find out if the application of the transaction failed.
-        let register_applied = self.client.submit_transaction(register_tx).await?.await?;
+        let applied = self.client.submit_transaction(register_tx).await?.await?;
+        applied.result?;
 
         Ok(Transaction {
-            id: Hash(register_applied.tx_hash),
+            id: Hash(applied.tx_hash),
             messages: vec![Message::UserRegistration { handle, id: id }],
             state: transaction::State::Applied {
-                block: Hash(register_applied.block),
+                block: Hash(applied.block),
             },
             timestamp: SystemTime::now(),
         })
@@ -634,14 +626,15 @@ impl Client for Registry {
     ) -> Result<(), error::Error> {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let _tx_applied = self
-            .client
+        self.client
             .sign_and_submit_message(
                 &alice,
                 protocol::message::Transfer { recipient, balance },
                 1,
             )
-            .await?;
+            .await?
+            .await?
+            .result?;
 
         Ok(())
     }
@@ -663,16 +656,19 @@ mod test {
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
 
-    use super::{Client, Id, Metadata, ProjectName, Registry};
     use crate::avatar;
+    use crate::error;
+
+    use super::{Client, Id, Metadata, ProjectName, Registry};
 
     #[tokio::test]
-    async fn test_register_org() {
+    async fn test_register_org() -> Result<(), error::Error> {
         // Test that org registration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = Id::try_from("alice").unwrap();
+        let handle = Id::try_from("alice")?;
+        let org_id = Id::try_from("monadic")?;
 
         // Register the user
         let user_registration = registry
@@ -680,25 +676,27 @@ mod test {
             .await;
         assert!(user_registration.is_ok());
 
-        let result =
-            futures::executor::block_on(registry.register_org(&author, "monadic".into(), 10));
+        let result = registry.register_org(&author, org_id, 10).await;
         assert!(result.is_ok());
 
-        let org_id = protocol::Id::try_from("monadic").unwrap();
-        let maybe_org = client.get_org(org_id.clone()).await.unwrap();
+        let org_id = protocol::Id::try_from("monadic")?;
+        let maybe_org = client.get_org(org_id.clone()).await?;
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.id, org_id);
-        assert_eq!(org.members[0], protocol::Id::try_from("alice").unwrap());
+        assert_eq!(org.members[0], protocol::Id::try_from("alice")?);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_unregister_org() {
+    async fn test_unregister_org() -> Result<(), error::Error> {
         // Test that org unregistration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = Id::try_from("alice").unwrap();
+        let handle = Id::try_from("alice")?;
+        let org_id = Id::try_from("monadic")?;
 
         // Register the user
         let user_registration = registry
@@ -707,25 +705,24 @@ mod test {
         assert!(user_registration.is_ok());
 
         // Register the org
-        let org_id = protocol::Id::try_from("monadic").unwrap();
-        let registration = registry
-            .register_org(&author, org_id.clone().into(), 10)
-            .await;
+        let registration = registry.register_org(&author, org_id.clone(), 10).await;
         assert!(registration.is_ok());
 
         // Unregister the org
-        let unregistration =
-            futures::executor::block_on(registry.unregister_org(&author, "monadic".into(), 10));
+        let unregistration = registry.unregister_org(&author, org_id, 10).await;
         assert!(unregistration.is_ok());
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_get_org() {
+    async fn test_get_org() -> Result<(), error::Error> {
         // Test that a registered org can be retrieved.
         let client = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = Id::try_from("alice").unwrap();
+        let handle = Id::try_from("alice")?;
+        let org_id = Id::try_from("monadic")?;
 
         // Register the user
         let user_registration = registry
@@ -734,28 +731,28 @@ mod test {
         assert!(user_registration.is_ok());
 
         // Register the org
-        let org_id = protocol::Id::try_from("monadic").unwrap();
-        let registration = registry
-            .register_org(&author, org_id.clone().into(), 10)
-            .await;
+        let registration = registry.register_org(&author, org_id.clone(), 10).await;
         assert!(registration.is_ok());
 
         // Query the org
-        let org = registry.get_org("monadic".into()).await.unwrap().unwrap();
-        assert_eq!(org.id, "monadic");
+        let org = registry.get_org(org_id.clone()).await?.unwrap();
+        assert_eq!(org.id, org_id);
         assert_eq!(
             org.avatar_fallback,
             avatar::Avatar::from("monadic", avatar::Usage::Org)
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_list_org() {
+    async fn test_list_org() -> Result<(), error::Error> {
         // Test that a registered org can be retrieved.
         let client = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = Id::try_from("alice").unwrap();
+        let handle = Id::try_from("alice")?;
+        let org_id = Id::try_from("monadic")?;
 
         // Register the user
         let user_registration = registry
@@ -764,25 +761,26 @@ mod test {
         assert!(user_registration.is_ok());
 
         // Register the org
-        let org_id = protocol::Id::try_from("monadic").unwrap();
-        let org_registration = registry
-            .register_org(&author, org_id.clone().into(), 10)
-            .await;
+        let org_registration = registry.register_org(&author, org_id.clone(), 10).await;
         assert!(org_registration.is_ok());
 
         // List the orgs
-        let orgs = registry.list_orgs(handle).await.unwrap();
+        let orgs = registry.list_orgs(handle).await?;
         assert_eq!(orgs.len(), 1);
-        assert_eq!(orgs[0].id, "monadic");
+        assert_eq!(orgs[0].id, org_id);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_list_org_projects() {
+    async fn test_list_org_projects() -> Result<(), error::Error> {
         // Test that a registered project is included in the list of org projects.
         let client = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = Id::try_from("alice").unwrap();
+        let handle = Id::try_from("alice")?;
+        let org_id = Id::try_from("monadic")?;
+        let project_name = ProjectName::try_from("upstream")?;
 
         // Register the user
         let user_registration = registry
@@ -791,18 +789,15 @@ mod test {
         assert!(user_registration.is_ok());
 
         // Register the org
-        let org_id = protocol::Id::try_from("monadic").unwrap();
-        let org_registration = registry
-            .register_org(&author, org_id.clone().into(), 10)
-            .await;
+        let org_registration = registry.register_org(&author, org_id.clone(), 10).await;
         assert!(org_registration.is_ok());
 
         // Register the project
         let result = registry
             .register_project(
                 &author,
-                org_id.into(),
-                "radicle".into(),
+                org_id.clone(),
+                project_name.clone(),
                 Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
                 10,
             )
@@ -810,25 +805,26 @@ mod test {
         assert!(result.is_ok());
 
         // List the projects
-        let projects = registry
-            .list_org_projects("monadic".to_string())
-            .await
-            .unwrap();
+        let projects = registry.list_org_projects(org_id).await?;
         assert_eq!(projects.len(), 1);
-        assert_eq!(projects[0].name, ProjectName::try_from("radicle").unwrap());
+        assert_eq!(projects[0].name, project_name);
         assert_eq!(
             projects[0].maybe_project_id,
             Some("0000000000000000000000000000000000000000.git".to_string())
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_register_project() {
+    async fn test_register_project() -> Result<(), error::Error> {
         // Test that project registration submits valid transactions and they succeed.
         let client = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = Id::try_from("alice").unwrap();
+        let handle = Id::try_from("alice")?;
+        let org_id = Id::try_from("monadic")?;
+        let project_name = ProjectName::try_from("radicle")?;
 
         // Register the user
         let user_registration = registry
@@ -837,51 +833,49 @@ mod test {
         assert!(user_registration.is_ok());
 
         // Register the org
-        let org_id = protocol::Id::try_from("monadic").unwrap();
-        let org_result = registry
-            .register_org(&author, org_id.clone().into(), 10)
-            .await;
+        let org_result = registry.register_org(&author, org_id.clone(), 10).await;
         assert!(org_result.is_ok());
 
         // Register the project
         let result = registry
             .register_project(
                 &author,
-                org_id.into(),
-                "radicle".into(),
+                org_id.clone(),
+                project_name.clone(),
                 Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
                 10,
             )
             .await;
         assert!(result.is_ok());
 
-        let org_id = protocol::Id::try_from("monadic").unwrap();
-        let project_name = protocol::ProjectName::try_from("radicle").unwrap();
         let maybe_project = client
-            .get_project(project_name.clone(), org_id.clone())
-            .await
-            .unwrap();
+            .get_project(project_name.clone().0, org_id.clone().0)
+            .await?;
 
         assert!(maybe_project.is_some());
 
         let project = maybe_project.unwrap();
-        assert_eq!(project.name, project_name);
-        assert_eq!(project.org_id, org_id);
+        assert_eq!(project.name, project_name.0);
+        assert_eq!(project.org_id, org_id.0);
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn register_user() {
+    async fn register_user() -> Result<(), error::Error> {
         let client = protocol::Client::new_emulator();
         let registry = Registry::new(client);
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = Id::try_from("cloudhead").unwrap();
+        let handle = Id::try_from("cloudhead")?;
 
         let res = registry
             .register_user(&author, handle, Some("123abcd.git".into()), 100)
             .await;
         assert!(res.is_ok());
+
+        Ok(())
     }
 }

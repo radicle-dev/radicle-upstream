@@ -2,7 +2,7 @@
   import { location, pop, push } from "svelte-spa-router";
 
   import * as path from "./src/path.ts";
-  import * as theme from "./src/theme.ts";
+  import * as transaction from "./src/transaction.ts";
 
   const toggle = (destination) => {
     if (path.active(destination, $location)) {
@@ -16,12 +16,13 @@
       return false;
     }
 
-    if (event.shiftKey && event.code === "KeyC") {
-      theme.next();
-    }
-
     if (event.shiftKey && event.code === "KeyD") {
       toggle(path.designSystemGuide());
+    }
+
+    // TODO(xla): Remove once we have tx polling.
+    if (event.shiftKey && event.code === "KeyT") {
+      transaction.fetchList();
     }
 
     if (event.shiftKey && event.code === "Slash") {

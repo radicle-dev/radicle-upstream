@@ -44,13 +44,17 @@
 
   <div slot="right" data-cy="subject">
     {#await subject.avatarSource then avatar}
-      <Avatar
-        title={subject.name}
-        imageUrl={avatar.url}
-        avatarFallback={avatar.emoji && avatar}
-        variant={subjectAvatarShape()}
-        style="color: var(--color-foreground)"
-        dataCy="subject-avatar" />
+      {#if avatar}
+        <Avatar
+          title={subject.name}
+          imageUrl={avatar.url}
+          avatarFallback={avatar.emoji && avatar}
+          variant={subjectAvatarShape()}
+          style="color: var(--color-foreground)"
+          dataCy="subject-avatar" />
+      {:else}
+        <Title>{subject.name}</Title>
+      {/if}
     {/await}
   </div>
 </Row>

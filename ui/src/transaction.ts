@@ -116,7 +116,7 @@ const update = (msg: Msg): void => {
 }
 
 export const fetchList = (ids?: Array<string>): void =>
-  event.create<Kind, Msg>(Kind.FetchList, update)({ ids });
+  event.create<Kind, Msg>(Kind.FetchList, update)({ ids: ids || [] });
 
 export const fetch = (id: string): Readable<remote.Data<Transaction | null>> => {
   const store = remote.createStore<Transaction | null>();
@@ -196,7 +196,7 @@ export enum SubjectType {
 interface Subject {
   name: string;
   type: SubjectType;
-  avatarSource: Promise<Avatar>;
+  avatarSource?: Promise<Avatar>;
 }
 
 export const formatSubject = (msg: Message): Subject => {
@@ -220,13 +220,13 @@ export const formatSubject = (msg: Message): Subject => {
     case MessageType.OrgMemberRegistration:
       name = msg.userId;
       type = SubjectType.Member
-      avatarSource = getAvatar(Usage.Identity, msg.userId)
+      // avatarSource = getAvatar(Usage.Identity, msg.userId)
       break;
 
     case MessageType.OrgMemberUnregistration:
       name = msg.userId;
       type = SubjectType.Member
-      avatarSource = getAvatar(Usage.Identity, msg.userId)
+      // avatarSource = getAvatar(Usage.Identity, msg.userId)
       break;
 
     // TODO(sos): replace with actual avatar lookup for the identity associated with
@@ -234,13 +234,14 @@ export const formatSubject = (msg: Message): Subject => {
     case MessageType.UserRegistration:
       name = msg.handle;
       type = SubjectType.User
-      avatarSource = getAvatar(Usage.Identity, msg.handle)
+      avatarSource = getAvatar(Usage.Identity, msg.id)
       break;
 
     // TODO(sos): replace with associated identity handle for user, should it exist
+    // TODO(sos): once we can register projects to users, accommodate circle avatars
     case MessageType.ProjectRegistration:
       name = `${msg.org_id} / ${msg.project_name}`
-      type = msg.domain === Domain.Org ? SubjectType.OrgProject : SubjectType.UserProject
+      type = SubjectType.OrgProject
       avatarSource = getAvatar(msg.domain === Domain.User ? Usage.Identity : Usage.Org, msg.org_id)
       break;
   }

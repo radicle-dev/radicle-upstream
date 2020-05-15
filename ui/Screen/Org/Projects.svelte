@@ -65,7 +65,8 @@
 
           <div slot="right" style="display: flex; align-items: center;">
             <Stats stats={statsProps(orgProject.maybeProject.stats)} />
-            <AdditionalActionsDropdown headerTitle={orgProject.name} />
+            <AdditionalActionsDropdown
+              headerTitle={orgProject.shareableEntityIdentifier} />
           </div>
         </Flex>
       {:else}
@@ -76,7 +77,8 @@
             <ProjectCard {...projectCardProps(orgProject)} />
           </div>
           <div slot="right" style="display: flex; align-items: center;">
-            <AdditionalActionsDropdown headerTitle={orgProject.name} />
+            <AdditionalActionsDropdown
+              headerTitle={orgProject.shareableEntityIdentifier} />
           </div>
         </Flex>
       {/if}

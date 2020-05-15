@@ -126,11 +126,11 @@
 </style>
 
 <div
+  data-cy="transaction-center"
   class="pipeline"
   class:negative={iconState === 'negative'}
-  {style}
-  data-cy="accordion">
-  <div class="cards" class:hidden data-cy="cards">
+  {style}>
+  <div class="cards" class:hidden>
     {#each transactions as transaction}
       <div
         class="card"

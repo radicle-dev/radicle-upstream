@@ -1,7 +1,6 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import { getAvatar, Usage } from "../../src/avatar.ts";
   import { session } from "../../src/session.ts";
   import {
     RegistrationFlowState,
@@ -11,7 +10,7 @@
   import { formatPayer } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
-  import { Avatar, Input, Text } from "../../DesignSystem/Primitive";
+  import { Input, Text } from "../../DesignSystem/Primitive";
   import {
     NavigationButtons,
     StepModalLayout,
@@ -20,8 +19,6 @@
 
   let state = RegistrationFlowState.Preparation;
   let userHandle,
-    avatarFallback,
-    showAvatar,
     transaction,
     subject,
     payer,
@@ -57,20 +54,6 @@
     if (validating) validation.updateInput(userHandle);
   }
 
-  // TODO(sos): replace with user avatar fetch
-  const updateAvatar = async (handle) => {
-    if (!handle || handle.length < 1) {
-      showAvatar = false;
-      return;
-    }
-
-    avatarFallback = await getAvatar(Usage.Identity, handle);
-
-    // check userHandle in case input was cleared during the promise
-    showAvatar = userHandle.length && !!avatarFallback;
-  };
-
-  $: updateAvatar(userHandle);
   $: imageUrl = $validation.status === ValidationStatus.Success && "";
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
@@ -91,16 +74,7 @@
       style="width: 100%;"
       showSuccessCheck
       validation={$validation}
-      {showAvatar}
-      dataCy="input">
-      <div slot="avatar">
-        <Avatar
-          {avatarFallback}
-          size="small"
-          variant="circle"
-          dataCy="avatar" />
-      </div>
-    </Input.Text>
+      dataCy="input" />
   {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
       <Transaction {transaction} {subject} {payer} />

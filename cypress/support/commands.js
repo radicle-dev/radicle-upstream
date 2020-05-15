@@ -1,3 +1,8 @@
+Cypress.Commands.add("nukeCache", () => {
+  console.log("Nuking Cache");
+  fetch("http://localhost:8080/v1/session/cache", { method: "DELETE" });
+});
+
 Cypress.Commands.add("nukeCocoState", () => {
   console.log("Nuking CoCo state");
   fetch("http://localhost:8080/v1/control/nuke/coco");

@@ -43,7 +43,7 @@
       variant: "circle",
       title: session.identity.registered,
       avatarFallback: session.identity.avatarFallback,
-      imageUrl: session.identity.imageUrl,
+      imageUrl: session.identity.metadata.avatarUrl,
     },
   };
 

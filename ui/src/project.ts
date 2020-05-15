@@ -20,6 +20,7 @@ interface Stats {
 
 export interface Project {
   id: string;
+  shareableEntityIdentifier: string;
   metadata: Metadata;
   registration: string; // TODO(rudolfs): what will this type be?
   stats: Stats;

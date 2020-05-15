@@ -145,7 +145,7 @@
     <div class="project-id">
       <Code>
         <Copyable {afterCopy}>
-          %{project.id}
+          {project.shareableEntityIdentifier}
           <svelte:component this={copyIcon} style="vertical-align: bottom" />
         </Copyable>
       </Code>

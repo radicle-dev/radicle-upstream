@@ -243,6 +243,7 @@ mod test {
     use radicle_registry_client as protocol;
 
     use crate::avatar;
+    use crate::error;
     use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
 
@@ -287,8 +288,8 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_orgs() {
-        let tmp_dir = tempfile::tempdir().unwrap();
+    async fn list_orgs() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
@@ -300,30 +301,28 @@ mod test {
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = registry::Id::try_from("cloudhead").unwrap();
+        let handle = registry::Id::try_from("cloudhead")?;
+        let org_id = registry::Id::try_from("radicle")?;
 
         registry
             .write()
             .await
             .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
-            .await
-            .unwrap();
+            .await?;
 
         let user = registry
             .read()
             .await
             .get_user(handle.clone())
-            .await
-            .unwrap()
+            .await?
             .unwrap();
 
         // Register the org
         registry
             .write()
             .await
-            .register_org(&author, "monadic".to_string(), 100)
-            .await
-            .unwrap();
+            .register_org(&author, org_id.clone(), 100)
+            .await?;
 
         let res = request()
             .method("GET")
@@ -337,11 +336,14 @@ mod test {
         assert_eq!(
             have,
             json!([registry::Org {
-                id: "monadic".to_string(),
-                avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
+                id: org_id.clone(),
+                shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                 members: vec![user]
             }])
         );
+
+        Ok(())
     }
 
     #[tokio::test]
