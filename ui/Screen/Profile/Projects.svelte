@@ -73,7 +73,7 @@
       on:select={select}
       let:item={project}>
       <Flex
-        style="flex: 1"
+        style="flex: 1; padding: 22px 15px 26px 12px;"
         dataCy={`project-list-entry-${project.metadata.name}`}>
         <div slot="left">
           <ProjectCard {...projectCardProps(project)} />
