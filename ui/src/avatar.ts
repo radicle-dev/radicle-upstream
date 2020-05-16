@@ -23,5 +23,5 @@ export enum Usage {
 }
 
 // EVENTS
-export const get = (usage: Usage, id: string): Promise<EmojiAvatar> =>
+export const getAvatar = (usage: Usage, id: string): Promise<EmojiAvatar> =>
   api.get<EmojiAvatar>(`avatars/${id}?usage=${usage}`);

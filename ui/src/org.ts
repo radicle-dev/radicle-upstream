@@ -9,7 +9,7 @@ import * as user from "./user";
 
 // Types
 export interface Org {
-  name: string;
+  id: string;
   shareableEntityIdentifier: string;
   avatarFallback: avatar.EmojiAvatar;
 }
@@ -24,8 +24,8 @@ export interface Project {
 type Projects = Project[];
 
 export enum RegistrationFlowState {
-  NameSelection,
-  TransactionConfirmation
+  Preparation,
+  Confirmation
 }
 
 // State
@@ -37,7 +37,7 @@ export const projects = projectsStore.readable;
 
 // Api
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`);
-export const getNameAvailability = (id: string): Promise<boolean> =>
+export const getIdAvailability = (id: string): Promise<boolean> =>
   getOrg(id).then(org => !org);
 const validateUserExistence = (handle: string): Promise<boolean> =>
   user.get(handle).then(user => !!user);
@@ -108,35 +108,35 @@ export const fetchProjectList = event.create<Kind, Msg>(
 export const register = (id: string): Promise<transaction.Transaction> =>
   api.post<RegisterInput, transaction.Transaction>(`orgs`, { id });
 
-// Name validation
-const VALID_NAME_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
-export const nameConstraints = {
+// ID validation
+const VALID_ID_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
+export const idConstraints = {
   presence: {
-    message: `Org name is required`,
+    message: `Org id is required`,
     allowEmpty: false
   },
   format: {
-    pattern: VALID_NAME_MATCH,
-    message: `Org name should match [a-z0-9][a-z0-9_-]+`
+    pattern: VALID_ID_MATCH,
+    message: `Org id should match [a-z0-9][a-z0-9_-]+`
   }
 };
 
 // Make sure we make a new one every time
-export const orgNameValidationStore = (): validation.ValidationStore =>
-  validation.createValidationStore(nameConstraints, {
-    promise: getNameAvailability,
-    validationMessage: "Sorry, this name is already taken"
+export const orgIdValidationStore = (): validation.ValidationStore =>
+  validation.createValidationStore(idConstraints, {
+    promise: getIdAvailability,
+    validationMessage: "Sorry, this id is already taken"
   });
 
-const memberNameConstraints = {
+const memberHandleConstraints = {
   presence: {
-    message: "Member name is required",
+    message: "Member handle is required",
     allowEmpty: false
   }
 };
 
-export const memberNameValidationStore = (): validation.ValidationStore =>
-  validation.createValidationStore(memberNameConstraints, {
+export const memberHandleValidationStore = (): validation.ValidationStore =>
+  validation.createValidationStore(memberHandleConstraints, {
     promise: validateUserExistence,
     validationMessage: "Cannot find this user"
   });

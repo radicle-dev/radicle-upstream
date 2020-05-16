@@ -1,58 +1,51 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import * as avatar from "../../src/avatar.ts";
   import { session } from "../../src/session.ts";
   import {
     RegistrationFlowState,
     registerMemberTransaction,
-    memberNameValidationStore,
+    memberHandleValidationStore,
   } from "../../src/org.ts";
-  import { formatPayer, formatSubject } from "../../src/transaction.ts";
+  import { formatPayer } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
-  import { Avatar, Input, Text } from "../../DesignSystem/Primitive";
+  import { Input, Text } from "../../DesignSystem/Primitive";
   import {
     NavigationButtons,
     StepModalLayout,
     Transaction,
   } from "../../DesignSystem/Component";
 
-  let state = RegistrationFlowState.NameSelection;
+  let state = RegistrationFlowState.Preparation;
   let userHandle,
-    avatarFallback,
-    showAvatar,
     transaction,
     subject,
     payer,
     validating = false;
-  const validation = memberNameValidationStore();
+  const validation = memberHandleValidationStore();
 
   const next = () => {
     switch (state) {
-      case RegistrationFlowState.NameSelection:
+      case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
           transaction = registerMemberTransaction("monadic", userHandle);
-          subject = formatSubject(
-            $session.data.identity,
-            transaction.messages[0]
-          );
           payer = formatPayer($session.data.identity);
-          state = RegistrationFlowState.TransactionConfirmation;
+          state = RegistrationFlowState.Confirmation;
         }
         break;
-      case RegistrationFlowState.TransactionConfirmation:
+      case RegistrationFlowState.Confirmation:
         pop();
     }
   };
 
   const cancel = () => {
     switch (state) {
-      case RegistrationFlowState.NameSelection:
+      case RegistrationFlowState.Preparation:
         pop();
         break;
-      case RegistrationFlowState.TransactionConfirmation:
-        state = RegistrationFlowState.NameSelection;
+      case RegistrationFlowState.Confirmation:
+        state = RegistrationFlowState.Preparation;
     }
   };
 
@@ -61,20 +54,6 @@
     if (validating) validation.updateInput(userHandle);
   }
 
-  // TODO(sos): replace with user avatar fetch
-  const updateAvatar = async (handle) => {
-    if (!handle || handle.length < 1) {
-      showAvatar = false;
-      return;
-    }
-
-    avatarFallback = await avatar.get(avatar.Usage.Identity, handle);
-
-    // check userHandle in case input was cleared during the promise
-    showAvatar = userHandle.length && !!avatarFallback;
-  };
-
-  $: updateAvatar(userHandle);
   $: imageUrl = $validation.status === ValidationStatus.Success && "";
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
@@ -84,7 +63,7 @@
   selectedStep={state + 1}
   dataCy="add-member-modal">
   <div slot="title">Register a member</div>
-  {#if state === RegistrationFlowState.NameSelection}
+  {#if state === RegistrationFlowState.Preparation}
     <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
       Registering a member will allow them to sign transactions for your org.
       Only registered users can be added as members.
@@ -95,17 +74,8 @@
       style="width: 100%;"
       showSuccessCheck
       validation={$validation}
-      {showAvatar}
-      dataCy="name-input">
-      <div slot="avatar">
-        <Avatar
-          {avatarFallback}
-          size="small"
-          variant="circle"
-          dataCy="avatar" />
-      </div>
-    </Input.Text>
-  {:else if state === RegistrationFlowState.TransactionConfirmation}
+      dataCy="input" />
+  {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
       <Transaction {transaction} {subject} {payer} />
     </div>

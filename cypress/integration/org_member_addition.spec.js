@@ -17,7 +17,7 @@ context("add member to org", () => {
   context("navigation", () => {
     it("can be closed by pressing cancel", () => {
       cy.pick("add-member-modal").contains("Register a member");
-      cy.pick("add-member-modal", "cancel-button").click();
+      cy.pick("cancel-button").click();
       cy.pick("org-screen").should("exist");
     });
 
@@ -29,18 +29,18 @@ context("add member to org", () => {
 
     it("can be traversed with navigation buttons", () => {
       // form -> tx confirmation
-      cy.pick("add-member-modal", "name-input").type("coolname");
-      cy.pick("add-member-modal", "submit-button").click();
-      cy.pick("add-member-modal", "summary").should("exist");
+      cy.pick("input").type("coolname");
+      cy.pick("submit-button").click();
+      cy.pick("summary").should("exist");
 
       // tx confirmation -> form
-      cy.pick("add-member-modal", "cancel-button").click();
-      cy.pick("add-member-modal", "name-input").should("exist");
+      cy.pick("cancel-button").click();
+      cy.pick("input").should("exist");
 
       // form -> tx confirmation -> submit
-      cy.pick("add-member-modal", "submit-button").click();
-      cy.pick("add-member-modal", "summary").should("exist");
-      cy.pick("add-member-modal", "submit-button").click();
+      cy.pick("submit-button").click();
+      cy.pick("summary").should("exist");
+      cy.pick("submit-button").click();
       cy.pick("org-screen").should("exist");
     });
   });
@@ -48,26 +48,43 @@ context("add member to org", () => {
   context("validations", () => {
     it("prevents the user from adding an invalid user", () => {
       // no empty input
-      cy.pick("add-member-modal", "name-input").type("aname");
-      cy.pick("add-member-modal", "name-input").clear();
-      cy.pick("add-member-modal").contains("Member name is required");
-      cy.pick("add-member-modal", "submit-button").should("be.disabled");
+      cy.pick("input").type("aname");
+      cy.pick("input").clear();
+      cy.pick("add-member-modal").contains("Member handle is required");
+      cy.pick("submit-button").should("be.disabled");
 
       // no non-existing users
-      cy.pick("add-member-modal", "name-input").type("aname");
+      cy.pick("input").type("aname");
       cy.pick("add-member-modal").contains("Cannot find this user");
-      cy.pick("add-member-modal", "submit-button").should("be.disabled");
+      cy.pick("submit-button").should("be.disabled");
     });
   });
 
-  context("aesthetics", () => {
-    it("shows avatar when handle exists and hides otherwise", () => {
-      cy.pick("add-member-modal", "name-input").clear();
-      cy.pick("add-member-modal", "name-input").type("sickhandle");
-      cy.pick("add-member-modal", "avatar").should("be.visible");
+  context("transaction", () => {
+    it("shows correct transaction details for confirmation", () => {
+      cy.pick("input").type("coolname");
+      cy.pick("submit-button").click();
 
-      cy.pick("add-member-modal", "name-input").clear();
-      cy.pick("add-member-modal", "avatar").should("not.be.visible");
+      cy.pick("message").contains("Org member registration");
+      cy.pick("subject").contains("coolname");
+    });
+
+    // TODO(sos): add actual transaction details check once we can make this tx
+    it.skip("submits correct transaction details to proxy", () => {
+      cy.pick("input").type("coolname");
+      cy.pick("submit-button").click();
+      cy.pick("submit-button").click();
+
+      cy.pick("transaction-center").click();
+
+      // pick most recent transaction
+      cy.pick("accordion", "cards", "card").last().click();
+      cy.pick("summary", "message").contains("Org member registration");
+      cy.pick("summary", "subject").contains("coolname");
+      cy.pick("summary", "subject-avatar", "emoji").should(
+        "have.class",
+        "circle"
+      );
     });
   });
 });

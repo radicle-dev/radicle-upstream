@@ -1,19 +1,15 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import * as avatar from "../src/avatar.ts";
+  import { getAvatar, Usage } from "../src/avatar.ts";
   import * as notification from "../src/notification.ts";
   import {
     RegistrationFlowState,
-    orgNameValidationStore,
+    orgIdValidationStore,
     register,
   } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
-  import {
-    formatPayer,
-    formatSubject,
-    MessageType,
-  } from "../src/transaction.ts";
+  import { formatPayer, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -23,41 +19,37 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
-  let orgName, transaction, subject, payer, avatarFallback, showAvatar;
-  let state = RegistrationFlowState.NameSelection;
+  let orgId, transaction, subject, payer, avatarFallback, showAvatar;
+  let state = RegistrationFlowState.Preparation;
 
   // Create a new validation store
   let validating = false;
-  const validation = orgNameValidationStore();
+  const validation = orgIdValidationStore();
 
   const next = () => {
     switch (state) {
-      case RegistrationFlowState.NameSelection:
+      case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
           transaction = {
             messages: [
               {
                 type: MessageType.OrgRegistration,
-                orgId: orgName,
+                id: orgId,
               },
             ],
           };
-          subject = formatSubject(
-            { avatarFallback: avatarFallback, metadata: { avatarUrl: null } },
-            transaction.messages[0]
-          );
           payer = formatPayer($session.data.identity);
-          state = RegistrationFlowState.TransactionConfirmation;
+          state = RegistrationFlowState.Confirmation;
         }
         break;
-      case RegistrationFlowState.TransactionConfirmation:
+      case RegistrationFlowState.Confirmation:
         registerOrg();
     }
   };
 
   const registerOrg = async () => {
     try {
-      await register(orgName);
+      await register(orgId);
       await fetchSession();
     } catch (error) {
       notification.error(`Could not register org: ${error.message}`);
@@ -68,11 +60,11 @@
 
   const cancel = () => {
     switch (state) {
-      case RegistrationFlowState.NameSelection:
+      case RegistrationFlowState.Preparation:
         pop();
         break;
-      case RegistrationFlowState.TransactionConfirmation:
-        state = RegistrationFlowState.NameSelection;
+      case RegistrationFlowState.Confirmation:
+        state = RegistrationFlowState.Preparation;
     }
   };
 
@@ -82,22 +74,22 @@
       return;
     }
 
-    avatarFallback = await avatar.get(avatar.Usage.Org, id);
+    avatarFallback = await getAvatar(Usage.Org, id);
 
-    // check orgName in case input was cleared during the promise
-    showAvatar = orgName.length && !!avatarFallback;
+    // check orgId in case input was cleared during the promise
+    showAvatar = orgId.length && !!avatarFallback;
   };
 
-  $: updateAvatar(orgName);
+  $: updateAvatar(orgId);
   $: submitLabel =
-    state === RegistrationFlowState.TransactionConfirmation
+    state === RegistrationFlowState.Confirmation
       ? "Submit transaction"
       : "Next";
 
   $: {
     // Start validating once the user enters something for the first time
-    if (orgName && orgName.length > 0) validating = true;
-    if (validating) validation.updateInput(orgName);
+    if (orgId && orgId.length > 0) validating = true;
+    if (validating) validation.updateInput(orgId);
   }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
@@ -106,17 +98,17 @@
 <StepModalLayout
   dataCy="org-reg-modal"
   selectedStep={state + 1}
-  steps={['Prepare', 'Submit']}>
+  steps={['Preparation', 'Submit']}>
   <div slot="title">Register an org</div>
-  {#if state === RegistrationFlowState.NameSelection}
+  {#if state === RegistrationFlowState.Preparation}
     <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
       Registering an org allows you to give others in your org the right to sign
       transactions, like adding other members or adding projects.
     </Text>
     <Input.Text
-      dataCy="name-input"
+      dataCy="input"
       placeholder="Org name (e.g. Flowerpot)"
-      bind:value={orgName}
+      bind:value={orgId}
       style="width: 100%;"
       showSuccessCheck
       {showAvatar}
@@ -129,7 +121,7 @@
           dataCy="avatar" />
       </div>
     </Input.Text>
-  {:else if state === RegistrationFlowState.TransactionConfirmation}
+  {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
       <Transaction {transaction} {subject} {payer} />
     </div>
