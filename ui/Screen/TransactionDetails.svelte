@@ -3,7 +3,7 @@
   import { pop } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
-  import { fetch, formatPayer, formatSubject } from "../src/transaction.ts";
+  import { fetch, formatPayer } from "../src/transaction.ts";
 
   import {
     ModalLayout,
@@ -22,7 +22,6 @@
   if (session.identity !== null) {
     identity = session.identity;
   }
-
   const store = fetch(params.id);
 </script>
 
@@ -48,10 +47,7 @@
         variant="caution"
         progress={0}
         time={tx.timestamp} />
-      <Transaction
-        transaction={tx}
-        payer={formatPayer(identity)}
-        subject={formatSubject(identity, tx.messages[0])} />
+      <Transaction transaction={tx} payer={formatPayer(identity)} />
     </Remote>
 
     <div class="button-row">

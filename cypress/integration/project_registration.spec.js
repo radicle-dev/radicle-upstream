@@ -51,8 +51,8 @@ context("project registration", () => {
 
       // The project is pre-selected to what we chose on the previous screen
       cy.pick("project-dropdown").contains(project2.name).should("be.visible");
-      // Registrar is pre-selected to our own identity
-      cy.pick("registrar-dropdown").contains(user).should("be.visible");
+      // Domain is pre-selected to our own identity
+      cy.pick("domain-dropdown").contains(user).should("be.visible");
       // The project name is pre-filled in the to-be-registered handle field
       cy.pick("name-input").should("have.value", project2.name);
     });
@@ -68,8 +68,8 @@ context("project registration", () => {
 
       // The project is pre-selected to what we chose on the previous screen
       cy.pick("project-dropdown").contains(project2.name).should("be.visible");
-      // Registrar is pre-selected to our own identity
-      cy.pick("registrar-dropdown").contains(user).should("be.visible");
+      // Domain is pre-selected to our own identity
+      cy.pick("domain-dropdown").contains(user).should("be.visible");
       // The project name is pre-filled in the to-be-registered handle field
       cy.pick("name-input").should("have.value", project2.name);
     });
@@ -83,8 +83,8 @@ context("project registration", () => {
       cy.pick("project-dropdown")
         .contains("Select project to register")
         .should("be.visible");
-      // Registrar is pre-selected to the org we chose
-      cy.pick("registrar-dropdown").contains(org2).should("be.visible");
+      // Domain is pre-selected to the org we chose
+      cy.pick("domain-dropdown").contains(org2).should("be.visible");
       cy.pick("name-input").should("have.value", "");
     });
 
@@ -98,8 +98,8 @@ context("project registration", () => {
       cy.pick("project-dropdown")
         .contains("Select project to register")
         .should("be.visible");
-      // Registrar is pre-selected to the org we chose
-      cy.pick("registrar-dropdown").contains(org1).should("be.visible");
+      // Domain is pre-selected to the org we chose
+      cy.pick("domain-dropdown").contains(org1).should("be.visible");
       cy.pick("name-input").should("have.value", "");
     });
 
@@ -131,8 +131,9 @@ context("project registration", () => {
   });
 
   context("summary screen", () => {
+    // TODO(sos): test this when we can actually register projects under users
     context("when registering under a user", () => {
-      it("shows the selected subject and payer information", () => {
+      it.skip("shows the selected subject and payer information", () => {
         cy.pick(`project-list-entry-${project1.name}`, "context-menu").click();
         cy.pick(`project-list-entry-${project1.name}`).click();
 
@@ -159,8 +160,8 @@ context("project registration", () => {
         cy.pick("project-registration-screen").should("exist");
 
         cy.pick("project-dropdown").click().contains(project1.name).click();
-        // Registrar is pre-selected to the org we chose
-        cy.pick("registrar-dropdown").contains(org1).should("be.visible");
+        // Domain is pre-selected to the org we chose
+        cy.pick("domain-dropdown").contains(org1).should("be.visible");
         cy.pick("name-input").should("have.value", project1.name);
 
         cy.pick("submit-button").click();
@@ -168,8 +169,9 @@ context("project registration", () => {
         cy.get('[data-cy="subject-avatar"] img[alt="🥂"]').should("exist");
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
 
-        cy.get('[data-cy="payer-avatar"] img[alt="🥂"]').should("exist");
-        cy.pick("payer-avatar").contains(org1);
+        // TODO(sos): test this when we can actually change transaction payer
+        // cy.get('[data-cy="payer-avatar"] img[alt="🥂"]').should("exist");
+        // cy.pick("payer-avatar").contains(org1);
       });
     });
   });

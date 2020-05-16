@@ -2,7 +2,9 @@
   import {
     formatMessage,
     formatStake,
-    Variant,
+    formatSubject,
+    SubjectType,
+    PayerType,
   } from "../../src/transaction.ts";
 
   import {
@@ -17,25 +19,46 @@
 
   export let transaction = null;
   export let payer = null;
-  export let subject = null;
+  let avatar;
+
+  const subject = formatSubject(transaction.messages[0]);
+  const subjectAvatarShape = () => {
+    switch (subject.type) {
+      case SubjectType.User:
+      case SubjectType.Member:
+      case SubjectType.UserProject:
+        return "circle";
+      default:
+        return "square";
+    }
+  };
+
+  const updateAvatar = async () => (avatar = await subject.avatarSource);
+
+  $: updateAvatar();
 </script>
 
 <Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
   Your transaction
 </Caption>
+
 <Row dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
-  <div slot="left">
+  <div slot="left" data-cy="message">
     <Title>{formatMessage(transaction.messages[0])}</Title>
   </div>
 
-  <div slot="right">
-    <Avatar
-      dataCy="subject-avatar"
-      title={subject.name}
-      imageUrl={subject.imageUrl}
-      avatarFallback={subject.avatarFallback}
-      variant={subject.variant === Variant.User ? 'circle' : 'square'}
-      style="color: var(--color-foreground)" />
+  <div slot="right" data-cy="subject">
+    {#if avatar}
+      <Avatar
+        title={subject.name}
+        imageUrl={avatar.url}
+        avatarFallback={avatar.emoji && avatar}
+        variant={subjectAvatarShape()}
+        style="color: var(--color-foreground)"
+        dataCy="subject-avatar" />
+    {:else}
+      <Title>{subject.name}</Title>
+    {/if}
   </div>
 </Row>
 
@@ -100,7 +123,7 @@
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}
-      variant={payer.variant === Variant.User ? 'circle' : 'square'}
+      variant={payer.type === PayerType.User ? 'circle' : 'square'}
       style="color: var(--color-foreground)" />
   </div>
 

@@ -31,7 +31,12 @@
           dataCy: "register-project",
           icon: Icon.Register,
           event: () =>
-            push(path.registerExistingProject(projectId, session.identity.id)),
+            push(
+              path.registerExistingProject(
+                projectId,
+                session.identity.registered
+              )
+            ),
         },
       ];
     } else {

@@ -22,48 +22,36 @@
   const session = getContext("session");
 
   let projectId = params.projectId || null;
-  let registrarId = params.registrarId || null;
-
-  let registrarHandle = null;
-  let registrarAvatarFallback = null;
-  let registrarImageUrl = null;
-  let registrarVariant = null;
-
-  let skipNamePreselection = false;
-
   let projectName = null;
 
+  let domainId = params.domainId || null;
+  let domainType = null;
+  let domainAvatar = null;
+
+  let skipNamePreselection = false;
   let showRegistrationDetails = true;
 
   // summary
 
   const onSubmitTransaction = () => {
-    project.register(registrarHandle, projectName, projectId);
+    project.register(domainId, projectName, projectId);
 
     pop();
   };
 
-  const wallet = () => {
-    return {
-      name: registrarHandle,
-      imageUrl: registrarImageUrl,
-      avatarFallback: registrarAvatarFallback,
-      variant: registrarVariant,
-    };
-  };
+  const wallet = () => transaction.formatPayer(session.identity);
 
-  const subject = () => {
-    return {
-      name: `${registrarHandle} / ${projectName}`,
-      imageUrl: registrarImageUrl,
-      avatarFallback: registrarAvatarFallback,
-      variant: registrarVariant,
-    };
-  };
-
-  const tx = {
-    messages: [{ type: transaction.MessageType.ProjectRegistration }],
-  };
+  // TODO(sos): coordinate message format for project registration with proxy
+  const tx = () => ({
+    messages: [
+      {
+        type: transaction.MessageType.ProjectRegistration,
+        // domain: domainType,
+        org_id: domainId,
+        project_name: projectName,
+      },
+    ],
+  });
 </script>
 
 <style>
@@ -98,17 +86,16 @@
             {skipNamePreselection}
             orgs={session.orgs}
             bind:projectId
-            bind:registrarId
+            bind:domainId
             bind:projectName
             on:next={(event) => {
-              registrarHandle = event.detail.registrarHandle;
-              registrarImageUrl = event.detail.registrarImageUrl;
-              registrarAvatarFallback = event.detail.registrarAvatarFallback;
-              registrarVariant = event.detail.registrarVariant;
+              domainId = event.detail.domainId;
+              domainType = event.detail.domainType;
               showRegistrationDetails = false;
+              domainAvatar = event.detail.domainAvatar;
             }} />
         {:else}
-          <Transaction payer={wallet()} subject={subject()} transaction={tx} />
+          <Transaction payer={wallet()} transaction={tx()} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}
