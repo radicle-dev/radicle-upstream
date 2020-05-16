@@ -19,6 +19,7 @@
 
   export let transaction = null;
   export let payer = null;
+  let avatar;
 
   const subject = formatSubject(transaction.messages[0]);
   const subjectAvatarShape = () => {
@@ -31,6 +32,10 @@
         return "square";
     }
   };
+
+  const updateAvatar = async () => (avatar = await subject.avatarSource);
+
+  $: updateAvatar();
 </script>
 
 <Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
@@ -43,19 +48,17 @@
   </div>
 
   <div slot="right" data-cy="subject">
-    {#await subject.avatarSource then avatar}
-      {#if avatar}
-        <Avatar
-          title={subject.name}
-          imageUrl={avatar.url}
-          avatarFallback={avatar.emoji && avatar}
-          variant={subjectAvatarShape()}
-          style="color: var(--color-foreground)"
-          dataCy="subject-avatar" />
-      {:else}
-        <Title>{subject.name}</Title>
-      {/if}
-    {/await}
+    {#if avatar}
+      <Avatar
+        title={subject.name}
+        imageUrl={avatar.url}
+        avatarFallback={avatar.emoji && avatar}
+        variant={subjectAvatarShape()}
+        style="color: var(--color-foreground)"
+        dataCy="subject-avatar" />
+    {:else}
+      <Title>{subject.name}</Title>
+    {/if}
   </div>
 </Row>
 
