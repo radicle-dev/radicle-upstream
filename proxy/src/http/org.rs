@@ -14,7 +14,7 @@ use crate::notification;
 use crate::project;
 use crate::registry;
 
-/// Prefixed filters..
+/// Prefixed filters.
 pub fn routes<R: registry::Client>(
     paths: Arc<RwLock<Paths>>,
     registry: http::Shared<R>,
@@ -158,6 +158,7 @@ fn register_filter<R: registry::Client>(
 mod handler {
     use librad::paths::Paths;
     use radicle_registry_client::Balance;
+    use std::convert::TryFrom;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -171,10 +172,11 @@ mod handler {
     /// Get the Org for the given `id`.
     pub async fn get<R: registry::Client>(
         registry: http::Shared<R>,
-        id: String,
+        org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let org = reg.get_org(id).await?;
+        let org_id = registry::Id::try_from(org_id)?;
+        let org = reg.get_org(org_id).await?;
 
         Ok(reply::json(&org))
     }
@@ -186,6 +188,8 @@ mod handler {
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
+        let org_id = registry::Id::try_from(org_id)?;
+        let project_name = registry::ProjectName::try_from(project_name)?;
         let project = reg.get_project(org_id, project_name).await?;
 
         Ok(reply::json(&project))
@@ -198,6 +202,7 @@ mod handler {
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
+        let org_id = registry::Id::try_from(org_id)?;
         let projects = reg.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
         for p in &projects {
@@ -211,6 +216,11 @@ mod handler {
             let org_project = super::Project {
                 name: p.name.to_string(),
                 org_id: p.org_id.to_string(),
+                shareable_entity_identifier: format!(
+                    "%{}/{}",
+                    p.org_id.to_string(),
+                    p.name.to_string()
+                ),
                 maybe_project,
             };
             mapped_projects.push(org_project);
@@ -230,8 +240,9 @@ mod handler {
         // TODO(xla): Use real fee defined by the user.
         let fake_fee: Balance = 100;
 
-        let mut reg = registry.write().await;
-        let tx = reg.register_org(&fake_pair, input.id, fake_fee).await?;
+        let reg = registry.read().await;
+        let org_id = registry::Id::try_from(input.id)?;
+        let tx = reg.register_org(&fake_pair, org_id, fake_fee).await?;
 
         subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
@@ -250,6 +261,12 @@ impl ToDocumentedType for registry::Org {
             document::string()
                 .description("The id of the org")
                 .example("monadic"),
+        );
+        properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("%monadic"),
         );
         properties.insert(
             "members".into(),
@@ -290,6 +307,12 @@ impl ToDocumentedType for registry::Project {
                 .example("radicle"),
         );
         properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("%monadic/radicle-link"),
+        );
+        properties.insert(
             "maybeProjectId".into(),
             document::string()
                 .description("The id project attested in coco")
@@ -307,6 +330,8 @@ impl ToDocumentedType for registry::Project {
 pub struct Project {
     /// Id of the Org.
     org_id: String,
+    /// Unambiguous identifier pointing at this identity.
+    shareable_entity_identifier: String,
     /// Name of the project.
     name: String,
     /// Associated CoCo project.
@@ -356,13 +381,14 @@ mod test {
 
     use crate::avatar;
     use crate::coco;
+    use crate::error;
     use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
-    async fn get() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn get() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let librad_paths = Paths::from_root(tmp_dir.path())?;
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
@@ -373,36 +399,29 @@ mod test {
             subscriptions,
         );
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = registry::Id::try_from("alice").unwrap();
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
 
         // Register the user
         registry
             .write()
             .await
             .register_user(&author, handle.clone(), None, 10)
-            .await
-            .unwrap();
+            .await?;
 
-        let user = registry
-            .read()
-            .await
-            .get_user(handle)
-            .await
-            .unwrap()
-            .unwrap();
+        let user = registry.read().await.get_user(handle).await?.unwrap();
 
         // Register the org
         let fee: radicle_registry_client::Balance = 100;
         registry
             .write()
             .await
-            .register_org(&author, "monadic".to_string(), fee)
-            .await
-            .unwrap();
+            .register_org(&author, org_id.clone(), fee)
+            .await?;
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}", "monadic"))
+            .path(&format!("/{}", org_id.to_string()))
             .reply(&api)
             .await;
 
@@ -412,17 +431,20 @@ mod test {
         assert_eq!(
             have,
             json!(registry::Org {
-                id: "monadic".to_string(),
-                avatar_fallback: avatar::Avatar::from("monadic", avatar::Usage::Org),
+                id: org_id.clone(),
+                shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                 members: vec![user]
             })
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn get_project() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn get_project() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let librad_paths = Paths::from_root(tmp_dir.path())?;
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
@@ -433,40 +455,30 @@ mod test {
             subscriptions,
         );
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = registry::Id::try_from("alice").unwrap();
-
-        let project_name = "upstream";
-        let org_id = "radicle";
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
+        let project_name = registry::ProjectName::try_from("upstream")?;
 
         // Register the user
         registry
             .write()
             .await
             .register_user(&author, handle, None, 10)
-            .await
-            .unwrap();
+            .await?;
 
         // Register the org.
         registry
             .write()
             .await
-            .register_org(&author, org_id.to_string(), 10)
-            .await
-            .unwrap();
+            .register_org(&author, org_id.clone(), 10)
+            .await?;
 
         // Register the project.
         registry
             .write()
             .await
-            .register_project(
-                &author,
-                org_id.to_string(),
-                project_name.to_string(),
-                None,
-                10,
-            )
-            .await
-            .unwrap();
+            .register_project(&author, org_id.clone(), project_name.clone(), None, 10)
+            .await?;
 
         let res = request()
             .method("GET")
@@ -480,17 +492,19 @@ mod test {
         assert_eq!(
             have,
             json!(registry::Project {
-                name: registry::ProjectName::try_from(project_name).unwrap(),
-                org_id: registry::Id::try_from(org_id).unwrap(),
+                name: project_name,
+                org_id: org_id,
                 maybe_project_id: None,
             })
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn get_projects() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn get_projects() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let librad_paths = Paths::from_root(tmp_dir.path())?;
         let registry = Arc::new(RwLock::new(registry::Registry::new(
             radicle_registry_client::Client::new_emulator(),
         )));
@@ -501,13 +515,12 @@ mod test {
             subscriptions,
         );
 
-        let repo_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
+        let repo_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let path = repo_dir.path().to_str().unwrap().to_string();
-        coco::init_repo(path.clone()).unwrap();
+        coco::init_repo(path.clone())?;
 
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
-        let org_id = "radicle";
         let default_branch = "master";
 
         let (project_id, _meta) = coco::init_project(
@@ -516,27 +529,26 @@ mod test {
             project_name,
             project_description,
             default_branch,
-        )
-        .unwrap();
+        )?;
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = registry::Id::try_from("alice").unwrap();
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
+        let project_name = registry::ProjectName::try_from(project_name)?;
 
         registry
             .write()
             .await
             .register_user(&author, handle, None, 10)
-            .await
-            .unwrap();
+            .await?;
 
         // Register the org.
         registry
             .write()
             .await
-            .register_org(&author, org_id.to_string(), 10)
-            .await
-            .unwrap();
+            .register_org(&author, org_id.clone(), 10)
+            .await?;
 
         // Register the project.
         registry
@@ -544,20 +556,19 @@ mod test {
             .await
             .register_project(
                 &author,
-                org_id.to_string(),
-                project_name.to_string(),
+                org_id.clone(),
+                project_name.clone(),
                 Some(
                     librad::project::ProjectId::from_str(&project_id.to_string())
                         .expect("Project id"),
                 ),
                 10,
             )
-            .await
-            .unwrap();
+            .await?;
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}/projects", org_id))
+            .path(&format!("/{}/projects", org_id.to_string()))
             .reply(&api)
             .await;
 
@@ -566,6 +577,7 @@ mod test {
         let want = json!([{
             "name": project_name.to_string(),
             "orgId": org_id.to_string(),
+            "shareableEntityIdentifier": format!("%{}/{}", org_id.to_string(), project_name.to_string()),
             "maybeProject": {
                 "id": project_id.to_string(),
                 "metadata": {
@@ -574,6 +586,7 @@ mod test {
                     "name": project_name.to_string(),
                 },
                 "registration": Value::Null,
+                "shareableEntityIdentifier": format!("%{}", project_id.to_string()),
                 "stats": {
                     "branches": 11,
                     "commits": 267,
@@ -584,14 +597,16 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, want);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn register() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn register() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let librad_paths = Paths::from_root(tmp_dir.path())?;
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
@@ -601,38 +616,34 @@ mod test {
             subscriptions,
         );
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = registry::Id::try_from("alice").unwrap();
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
 
         // Register the user
         cache
             .write()
             .await
             .register_user(&author, handle, None, 10)
-            .await
-            .unwrap();
+            .await?;
 
         let res = request()
             .method("POST")
             .path("/")
             .json(&super::RegisterInput {
-                id: "monadic".into(),
+                id: org_id.to_string(),
             })
             .reply(&api)
             .await;
 
-        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
+        let txs = cache.write().await.list_transactions(vec![])?;
 
         // Get the registered org
-        let org = cache
-            .read()
-            .await
-            .get_org("monadic".to_string())
-            .await
-            .unwrap()
-            .unwrap();
+        let org = cache.read().await.get_org(org_id.clone()).await?.unwrap();
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(txs.len(), 2);
-        assert_eq!(org.id, "monadic")
+        assert_eq!(org.id, org_id);
+
+        Ok(())
     }
 }

@@ -5,6 +5,7 @@
 
   import * as notification from "../../src/notification.ts";
   import * as project from "../../src/project.ts";
+  import * as transaction from "../../src/transaction.ts";
 
   import { Text, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
@@ -26,7 +27,10 @@
       registrarHandle: selectedRegistrar().avatarProps.title,
       registrarImageUrl: selectedRegistrar().avatarProps.imageUrl,
       registrarAvatarFallback: selectedRegistrar().avatarProps.avatarFallback,
-      registrarVariant: selectedRegistrar().avatarProps.variant,
+      registrarVariant:
+        selectedRegistrar().avatarProps.variant === "circle"
+          ? transaction.Variant.User
+          : transaction.Variant.Org,
     });
   };
 
@@ -43,7 +47,7 @@
       variant: "circle",
       title: session.identity.metadata.handle,
       avatarFallback: session.identity.avatarFallback,
-      imageUrl: session.identity.imageUrl,
+      imageUrl: session.identity.metadata.avatarUrl,
     },
   };
 
@@ -154,6 +158,7 @@
 </style>
 
 <Dropdown
+  dataCy="project-dropdown"
   optionStyle="width: 538px"
   placeholder="Select project to register"
   valid={!(validations && validations.projectId)}
@@ -163,13 +168,17 @@
   style="margin-bottom: 16px;" />
 
 <div class="name">
-  <Dropdown bind:value={registrarId} options={registrarDropdownOptions} />
+  <Dropdown
+    dataCy="registrar-dropdown"
+    bind:value={registrarId}
+    options={registrarDropdownOptions} />
   <Title
     style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);"
     variant="regular">
     /
   </Title>
   <Input.Text
+    dataCy="name-input"
     placeholder="Project name*"
     style="width: 100%;"
     bind:value={projectName}

@@ -43,7 +43,7 @@
             ],
           };
           subject = formatSubject(
-            $session.data.identity,
+            { avatarFallback: avatarFallback, metadata: { avatarUrl: null } },
             transaction.messages[0]
           );
           payer = formatPayer($session.data.identity);

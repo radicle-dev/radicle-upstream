@@ -1,3 +1,8 @@
+Cypress.Commands.add("nukeCache", () => {
+  console.log("Nuking Cache");
+  fetch("http://localhost:8080/v1/session/cache", { method: "DELETE" });
+});
+
 Cypress.Commands.add("nukeCocoState", () => {
   console.log("Nuking CoCo state");
   fetch("http://localhost:8080/v1/control/nuke/coco");
@@ -10,17 +15,17 @@ Cypress.Commands.add("nukeRegistryState", () => {
 
 Cypress.Commands.add("nukeSessionState", () => {
   console.log("Nuking Session state");
-  fetch("http://localhost:8080/v1/control/nuke/session");
+  fetch("http://localhost:8080/v1/session", { method: "DELETE" });
 });
 
 Cypress.Commands.add("nukeAllState", () => {
-  console.log("Nuking CoCo and Registry state");
-  fetch("http://localhost:8080/v1/control/nuke/coco");
-  fetch("http://localhost:8080/v1/control/nuke/registry");
+  console.log("Nuking CoCo, Registry and session state");
   fetch("http://localhost:8080/v1/control/nuke/session");
+  fetch("http://localhost:8080/v1/control/nuke/registry");
+  fetch("http://localhost:8080/v1/control/nuke/coco");
 });
 
-Cypress.Commands.add("select", (...ids) => {
+Cypress.Commands.add("pick", (...ids) => {
   const selectorString = ids.map((id) => `[data-cy="${id}"]`).join(" ");
   cy.get(selectorString);
 });

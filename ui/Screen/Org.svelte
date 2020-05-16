@@ -60,6 +60,7 @@
 
   const dropdownMenuItems = [
     {
+      dataCy: "add-project",
       title: "Add project",
       icon: Icon.Plus,
       event: () => push(path.registerProject(params.id)),
@@ -99,8 +100,9 @@
       <div style="display: flex" slot="right">
         <Router routes={menuRoutes} />
         <AdditionalActionsDropdown
+          dataCy="context-menu"
           style="margin: 0 24px 0 16px"
-          headerTitle={params.id}
+          headerTitle={org.shareableEntityIdentifier}
           menuItems={dropdownMenuItems} />
       </div>
     </Topbar>

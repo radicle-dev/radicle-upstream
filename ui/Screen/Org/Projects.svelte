@@ -52,16 +52,21 @@
 
 <Remote {store} let:data={orgProjects}>
   {#if orgProjects.length > 0}
-    <List items={orgProjects} on:select={select} let:item={orgProject}>
+    <List
+      dataCy="project-list"
+      items={orgProjects}
+      on:select={select}
+      let:item={orgProject}>
       {#if orgProject.maybeProject}
-        <Flex style="flex: 1">
+        <Flex style="flex: 1" dataCy={`project-${orgProject.name}`}>
           <div slot="left">
             <ProjectCard {...projectCardProps(orgProject)} />
           </div>
 
           <div slot="right" style="display: flex; align-items: center;">
             <Stats stats={statsProps(orgProject.maybeProject.stats)} />
-            <AdditionalActionsDropdown headerTitle={orgProject.name} />
+            <AdditionalActionsDropdown
+              headerTitle={orgProject.shareableEntityIdentifier} />
           </div>
         </Flex>
       {:else}
@@ -72,7 +77,8 @@
             <ProjectCard {...projectCardProps(orgProject)} />
           </div>
           <div slot="right" style="display: flex; align-items: center;">
-            <AdditionalActionsDropdown headerTitle={orgProject.name} />
+            <AdditionalActionsDropdown
+              headerTitle={orgProject.shareableEntityIdentifier} />
           </div>
         </Flex>
       {/if}

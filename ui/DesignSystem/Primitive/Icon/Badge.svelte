@@ -1,8 +1,10 @@
 <script>
+  export let dataCy = null;
   export let style = null;
 </script>
 
 <svg
+  data-cy={dataCy}
   {style}
   width="16"
   height="16"

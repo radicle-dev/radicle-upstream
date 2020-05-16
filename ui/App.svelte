@@ -9,12 +9,12 @@
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
 
   import Hotkeys from "./Hotkeys.svelte";
+  import Theme from "./Theme.svelte";
 
   import Blank from "./Screen/Blank.svelte";
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Help from "./Screen/Help.svelte";
-  import Network from "./Screen/Network.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
@@ -24,8 +24,31 @@
   import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import Search from "./Screen/Search.svelte";
+  import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
+
+  const routes = {
+    "/": Blank,
+    "/identity/new": IdentityCreation,
+    "/search": Search,
+    "/settings": Settings,
+    "/profile": Profile,
+    "/profile/*": Profile,
+    "/orgs/register": OrgRegistration,
+    "/orgs/:id/members/register": MemberRegistration,
+    "/orgs/:id": Org,
+    "/orgs/:id/*": Org,
+    "/projects/new": ProjectCreation,
+    "/projects/register/:registrarId": ProjectRegistration,
+    "/projects/:projectId/register/:registrarId": ProjectRegistration,
+    "/projects/:id/*": Project,
+    "/design-system-guide": DesignSystemGuide,
+    "/help": Help,
+    "/user-registration": UserRegistration,
+    "/transactions/:id": TransactionDetails,
+    "*": NotFound,
+  };
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
@@ -43,36 +66,15 @@
       break;
 
     case remote.Status.Error:
-      console.log($store.error);
+      console.error($store.error);
       notification.error("Session could not be fetched");
       break;
   }
-
-  const routes = {
-    "/": Blank,
-    "/identity/new": IdentityCreation,
-    "/search": Search,
-    "/network": Network,
-    "/profile": Profile,
-    "/profile/*": Profile,
-    "/orgs/register": OrgRegistration,
-    "/orgs/:id/members/register": MemberRegistration,
-    "/orgs/:id": Org,
-    "/orgs/:id/*": Org,
-    "/projects/new": ProjectCreation,
-    "/projects/register/:registrarId": ProjectRegistration,
-    "/projects/:projectId/register/:registrarId": ProjectRegistration,
-    "/projects/:id/*": Project,
-    "/design-system-guide": DesignSystemGuide,
-    "/help": Help,
-    "/user-registration": UserRegistration,
-    "/transactions/:id": TransactionDetails,
-    "*": NotFound,
-  };
 </script>
 
 <Hotkeys />
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
-<Remote {store} context="session">
+<Theme />
+<Remote {store} let:data={session} context="session">
   <Router {routes} />
 </Remote>

@@ -66,7 +66,7 @@ mod handler {
                     .expect("unable to get hash from string")
             })
             .collect();
-        let txs = cache.read().await.list_transactions(tx_ids).await?;
+        let txs = cache.read().await.list_transactions(tx_ids)?;
 
         Ok(reply::json(&txs))
     }
@@ -172,7 +172,7 @@ mod test {
         let tmp_dir = tempfile::tempdir().unwrap();
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let mut cache = registry::Cacher::new(registry, &store);
+        let cache = registry::Cacher::new(registry, &store);
 
         let tx = registry::Transaction {
             id: registry::Hash(radicle_registry_client::TxHash::random()),
@@ -186,9 +186,9 @@ mod test {
             timestamp: time::SystemTime::now(),
         };
 
-        cache.cache_transaction(tx.clone()).await.unwrap();
+        cache.cache_transaction(tx.clone()).unwrap();
 
-        let transactions = cache.list_transactions(vec![]).await.unwrap();
+        let transactions = cache.list_transactions(vec![]).unwrap();
 
         let api = super::filters(Arc::new(RwLock::new(cache)));
         let res = request()

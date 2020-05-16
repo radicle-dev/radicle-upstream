@@ -146,7 +146,7 @@ impl ToDocumentedType for identity::Identity {
             "shareableEntityIdentifier".into(),
             document::string()
                 .description("Unique identifier that can be shared and looked up")
-                .example("upstream://coco/identity/cloudhead@123abcd.git"),
+                .example("cloudhead@123abcd.git"),
         );
 
         document::DocumentedType::from(properties).description("Unique identity")

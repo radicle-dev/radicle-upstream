@@ -109,7 +109,8 @@ const update = (msg: Msg): void => {
   }
 }
 
-const fetchList = event.create<Kind, Msg>(Kind.FetchList, update)
+export const fetchList = (ids?: Array<string>): void =>
+  event.create<Kind, Msg>(Kind.FetchList, update)({ ids: ids || [] });
 
 export const fetch = (id: string): Readable<remote.Data<Transaction | null>> => {
   const store = remote.createStore<Transaction | null>();
@@ -122,7 +123,7 @@ export const fetch = (id: string): Readable<remote.Data<Transaction | null>> => 
 }
 
 // Fetch initial list when the store has been subcribed to for the first time.
-transactionsStore.start(() => { fetchList({ ids: [] }) });
+transactionsStore.start(fetchList);
 
 // FORMATTING
 export const formatMessage = (msg: Message): string => {

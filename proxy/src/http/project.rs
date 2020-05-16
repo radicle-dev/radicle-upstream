@@ -33,7 +33,7 @@ fn create_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -58,7 +58,7 @@ fn get_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("projects")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(document::param::<String>("id", "Project id"))
         .and(document::document(document::description(
             "Find Project by ID",
@@ -87,7 +87,7 @@ fn list_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -140,6 +140,7 @@ mod handler {
     use librad::paths::Paths;
     use librad::surf;
     use radicle_registry_client::Balance;
+    use std::convert::TryFrom;
     use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
@@ -172,7 +173,8 @@ mod handler {
 
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: librad::project::ProjectId::from(id),
+                id: librad::project::ProjectId::from(id.clone()),
+                shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
@@ -200,7 +202,8 @@ mod handler {
         let projects = coco::list_projects(&paths)
             .into_iter()
             .map(|(id, meta)| project::Project {
-                id,
+                id: id.clone(),
+                shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
@@ -225,18 +228,14 @@ mod handler {
         // TODO(xla): Use real fee defined by the user.
         let fake_fee: Balance = 100;
 
-        let mut reg = registry.write().await;
+        let reg = registry.read().await;
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
+        let org_id = registry::Id::try_from(input.org_id)?;
+        let project_name = registry::ProjectName::try_from(input.project_name)?;
         let tx = reg
-            .register_project(
-                &fake_pair,
-                input.org_id,
-                input.project_name,
-                maybe_coco_id,
-                fake_fee,
-            )
+            .register_project(&fake_pair, org_id, project_name, maybe_coco_id, fake_fee)
             .await?;
 
         subscriptions
@@ -254,6 +253,10 @@ impl Serialize for project::Project {
     {
         let mut state = serializer.serialize_struct("Project", 4)?;
         state.serialize_field("id", &self.id.to_string())?;
+        state.serialize_field(
+            "shareableEntityIdentifier",
+            &self.shareable_entity_identifier.to_string(),
+        )?;
         state.serialize_field("metadata", &self.metadata)?;
         state.serialize_field("registration", &self.registration)?;
         state.serialize_field("stats", &self.stats)?;
@@ -269,6 +272,12 @@ impl ToDocumentedType for project::Project {
             document::string()
                 .description("ID of the project")
                 .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
+        );
+        properties.insert(
+            "shareableEntityIdentifier".into(),
+            document::string()
+                .description("Unique identifier that can be shared and looked up")
+                .example("%123abcd.git"),
         );
         properties.insert("metadata".into(), project::Metadata::document());
         properties.insert("registration".into(), project::Registration::document());
@@ -499,15 +508,17 @@ mod test {
     use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
+    use std::convert::TryFrom;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
     use crate::coco;
+    use crate::error;
     use crate::notification;
     use crate::project;
-    use crate::registry::{self, Cache as _};
+    use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn create() {
@@ -551,6 +562,7 @@ mod test {
                 "name": "Upstream",
             },
             "registration": Value::Null,
+            "shareableEntityIdentifier": format!("%{}", id.to_string()),
             "stats": {
                 "branches": 11,
                 "commits": 267,
@@ -611,7 +623,8 @@ mod test {
         let projects = coco::list_projects(&librad_paths)
             .into_iter()
             .map(|(id, meta)| project::Project {
-                id,
+                id: id.clone(),
+                shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
@@ -636,32 +649,53 @@ mod test {
     }
 
     #[tokio::test]
-    async fn register() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path()).unwrap()));
+    async fn register() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path())?));
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(Arc::clone(&librad_paths), Arc::clone(&cache), subscriptions);
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
+
+        // Register user.
+        cache
+            .read()
+            .await
+            .register_user(&author, handle, None, 10)
+            .await?;
+
+        // Register org.
+        cache
+            .read()
+            .await
+            .register_org(&author, org_id.clone(), 10)
+            .await?;
+
         let res = request()
             .method("POST")
             .path("/projects/register")
             .json(&super::RegisterInput {
                 project_name: "upstream".into(),
-                org_id: "radicle".into(),
+                org_id: org_id.to_string(),
                 maybe_coco_id: Some("1234.git".to_string()),
             })
             .reply(&api)
             .await;
 
-        let txs = cache.write().await.list_transactions(vec![]).await.unwrap();
+        assert_eq!(res.status(), StatusCode::CREATED);
+
+        let txs = cache.read().await.list_transactions(vec![])?;
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
-        assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, json!(tx));
+
+        Ok(())
     }
 }
