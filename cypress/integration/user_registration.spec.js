@@ -3,6 +3,7 @@ context("user registration", () => {
     cy.nukeAllState();
     cy.nukeCache();
     cy.registerUser();
+    cy.createProjectWithFixture();
   });
 
   beforeEach(() => {
@@ -86,6 +87,13 @@ context("user registration", () => {
   });
 
   context("transaction", () => {
+    before(() => {
+      // Clear everything again so transaction center is empty
+      cy.nukeAllState();
+      cy.nukeCache();
+      cy.createProjectWithFixture();
+    });
+
     it("shows the correct transaction details for confirmation", () => {
       cy.pick("next-button").click();
 

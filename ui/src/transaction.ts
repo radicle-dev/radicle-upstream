@@ -1,11 +1,11 @@
 import { Readable } from "svelte/store";
 
 import * as api from "./api";
-import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar"
+import { Avatar, getAvatar, Usage } from "./avatar"
 import * as event from "./event";
-import * as remote from "./remote";
 import { Identity } from "./identity";
 import { Domain } from "./project"
+import * as remote from "./remote";
 
 // Types.
 export enum MessageType {

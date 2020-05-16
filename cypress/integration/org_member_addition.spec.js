@@ -70,21 +70,21 @@ context("add member to org", () => {
     });
 
     // TODO(sos): add actual transaction details check once we can make this tx
-    // it("submits correct transaction details to proxy", () => {
-    //   cy.pick("input").type("coolname");
-    //   cy.pick("submit-button").click();
-    //   cy.pick("submit-button").click();
+    it.skip("submits correct transaction details to proxy", () => {
+      cy.pick("input").type("coolname");
+      cy.pick("submit-button").click();
+      cy.pick("submit-button").click();
 
-    // cy.pick("transaction-center").click();
+      cy.pick("transaction-center").click();
 
-    // pick most recent transaction
-    // cy.pick("accordion", "cards", "card").last().click();
-    // cy.pick("summary", "message").contains("Org member registration");
-    // cy.pick("summary", "subject").contains("coolname");
-    // cy.pick("summary", "subject-avatar", "emoji").should(
-    //   "have.class",
-    //   "circle"
-    // );
-    // });
+      // pick most recent transaction
+      cy.pick("accordion", "cards", "card").last().click();
+      cy.pick("summary", "message").contains("Org member registration");
+      cy.pick("summary", "subject").contains("coolname");
+      cy.pick("summary", "subject-avatar", "emoji").should(
+        "have.class",
+        "circle"
+      );
+    });
   });
 });

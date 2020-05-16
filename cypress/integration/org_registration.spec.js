@@ -4,6 +4,7 @@ context("org registration", () => {
     cy.nukeCache();
     cy.createIdentity();
     cy.registerUser();
+    cy.createProjectWithFixture();
 
     cy.visit("public/index.html");
     cy.pick("sidebar", "add-org-button").click();
