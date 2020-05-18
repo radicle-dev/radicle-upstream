@@ -11,7 +11,6 @@ import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
 import CopyToClipboard from "./CopyToClipboard.svelte";
 import Cross from "./Cross.svelte";
-import CrossBig from "./CrossBig.svelte";
 import Ellipse from "./Ellipse.svelte";
 import EllipseBig from "./EllipseBig.svelte";
 import Ellipses from "./Ellipses.svelte";
@@ -26,6 +25,7 @@ import Important from "./Important.svelte";
 import Inbox from "./Inbox.svelte";
 import Info from "./Info.svelte";
 import Issue from "./Issue.svelte";
+import Label from "./Label.svelte";
 import Member from "./Member.svelte";
 import Minus from "./Minus.svelte";
 import Peer from "./Peer.svelte";
@@ -33,6 +33,7 @@ import Plus from "./Plus.svelte";
 import Projects from "./Projects.svelte";
 import Register from "./Register.svelte";
 import Revisions from "./Revisions.svelte";
+import Replies from "./Replies.svelte";
 import Search from "./Search.svelte";
 import SearchSmall from "./SearchSmall.svelte";
 import Settings from "./Settings.svelte";
@@ -55,7 +56,6 @@ export default {
   Copy,
   CopyToClipboard,
   Cross,
-  CrossBig,
   Ellipse,
   EllipseBig,
   Ellipses,
@@ -70,6 +70,7 @@ export default {
   Inbox,
   Info,
   Issue,
+  Label,
   Member,
   Minus,
   Peer,
@@ -77,6 +78,7 @@ export default {
   Projects,
   Register,
   Revisions,
+  Replies,
   Search,
   SearchSmall,
   Settings,

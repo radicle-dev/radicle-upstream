@@ -356,7 +356,7 @@
       <Icon.Commit />
       <Icon.Copy />
       <Icon.Cross />
-      <Icon.CrossBig />
+      <Icon.Cross size="big" />
       <Icon.Ellipse />
       <Icon.EllipseBig />
       <Icon.Ellipses />
@@ -377,6 +377,7 @@
       <Icon.Projects />
       <Icon.Register />
       <Icon.Revisions />
+      <Icon.Replies />
       <Icon.Search />
       <Icon.SearchSmall />
       <Icon.Settings />
