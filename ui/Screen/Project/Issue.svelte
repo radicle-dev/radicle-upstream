@@ -175,5 +175,5 @@ Part of #277
       startDate={issue.created_at}
       items={issue.timeline} />
   </section>
-  <Comment user={issue.author} />
+  <Comment user={issue.author} style="margin-bottom: 64px;" />
 </div>

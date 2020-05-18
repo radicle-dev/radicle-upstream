@@ -1,6 +1,7 @@
 <script>
   import { Avatar, Button, Text, Input } from "../../DesignSystem/Primitive";
 
+  export let style = null;
   export let user = null;
 </script>
 
@@ -8,7 +9,6 @@
   .comment {
     padding-left: 0;
     display: flex;
-    margin-bottom: 64px;
   }
   section {
     flex: 1;
@@ -23,7 +23,7 @@
   }
 </style>
 
-<div class="comment">
+<div class="comment" {style}>
   <Avatar
     style="margin-right: 16px; height: 32px;"
     size="regular"
