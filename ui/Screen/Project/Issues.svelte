@@ -2,7 +2,7 @@
   import * as path from "../../src/path.ts";
   import { push } from "svelte-spa-router";
   import IssueCard from "./Issues/IssueCard.svelte";
-  import { SegmentedControl } from "../../DesignSystem/Component";
+  import { List, SegmentedControl } from "../../DesignSystem/Component";
 
   const filterOptions = [
     {
@@ -70,13 +70,6 @@
     margin: 0 auto;
     padding: 32px 0;
   }
-  ul > li {
-    border-bottom: 1px solid var(--color-foreground-level-3);
-  }
-  ul > li:last-child {
-    border-bottom: 0;
-  }
-
   .filters {
     margin-bottom: 24px;
   }
@@ -89,14 +82,13 @@
       options={filterOptions}
       on:select={(option) => updateFilter(option.detail)} />
   </div>
-  <ul>
-    {#each filteredIssues as issue}
-      <li
-        on:click={() => {
-          push(path.projectIssue(params.id));
-        }}>
-        <IssueCard {issue} />
-      </li>
-    {/each}
-  </ul>
+  <List
+    dataCy="issue-list"
+    items={filteredIssues}
+    on:select={() => {
+      push(path.projectIssue(params.id));
+    }}
+    let:item={issue}>
+    <IssueCard {issue} />
+  </List>
 </div>

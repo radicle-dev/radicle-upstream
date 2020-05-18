@@ -19,7 +19,7 @@
     flex: 1;
     border-bottom: 1px solid var(--color-foreground-level-3);
     cursor: pointer;
-    padding: 22px 15px 26px 12px;
+    padding: 24px 16px;
     user-select: none;
   }
 

@@ -20,15 +20,8 @@
   .issue-card {
     display: flex;
     justify-content: space-between;
-    width: 100%;
-    height: 85px;
     flex: 1;
-    cursor: pointer;
-    padding: 16px;
-  }
-
-  .issue-card:hover {
-    background-color: var(--color-foreground-level-1);
+    padding-right: 8px;
   }
 
   .title {
