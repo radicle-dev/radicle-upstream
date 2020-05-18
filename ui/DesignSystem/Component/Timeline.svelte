@@ -17,6 +17,7 @@
 <style>
   ul {
     margin-top: 24px;
+    margin-bottom: 64px;
   }
 
   li {

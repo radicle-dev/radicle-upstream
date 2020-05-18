@@ -29,7 +29,7 @@
     variant="circle"
     imageUrl={user.avatar_url} />
   <section>
-    <Input.Text placeholder="Leave a comment" style="flex: 1" />
+    <Input.Textarea placeholder="Leave a comment" style="flex: 1" />
     <div class="comment-meta">
       <Text
         variant="tiny"
