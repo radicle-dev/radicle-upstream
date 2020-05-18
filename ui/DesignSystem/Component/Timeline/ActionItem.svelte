@@ -18,8 +18,8 @@
     return {
       "open-issue": "opened the issue",
       "reopen-issue": "closed the issue",
-      label: "added the label",
-      assign: "assigned",
+      "label": "added the label",
+      "assign": "assigned",
       "close-issue": "reopened the issue",
     }[variant];
   };
