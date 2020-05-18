@@ -57,31 +57,24 @@
       items={orgProjects}
       on:select={select}
       let:item={orgProject}>
-      {#if orgProject.maybeProject}
-        <Flex style="flex: 1" dataCy={`project-${orgProject.name}`}>
-          <div slot="left">
-            <ProjectCard {...projectCardProps(orgProject)} />
-          </div>
-
-          <div slot="right" style="display: flex; align-items: center;">
-            <Stats stats={statsProps(orgProject.maybeProject.stats)} />
-            <AdditionalActionsDropdown
-              headerTitle={orgProject.shareableEntityIdentifier} />
-          </div>
-        </Flex>
-      {:else}
-        <!-- TODO(julien): what should the registered but no coco metadata
+      <!-- TODO(julien): what should the registered but no coco metadata
         state look like visually? -->
-        <Flex style="flex: 1">
-          <div slot="left">
-            <ProjectCard {...projectCardProps(orgProject)} />
-          </div>
-          <div slot="right" style="display: flex; align-items: center;">
-            <AdditionalActionsDropdown
-              headerTitle={orgProject.shareableEntityIdentifier} />
-          </div>
-        </Flex>
-      {/if}
+      <Flex
+        style="flex: 1; padding: 22px 15px 26px 12px;"
+        dataCy={`project-${orgProject.name}`}>
+        <div slot="left">
+          <ProjectCard {...projectCardProps(orgProject)} />
+        </div>
+
+        <div slot="right" style="display: flex; align-items: center;">
+          {#if orgProject.maybeProject}
+            <Stats stats={statsProps(orgProject.maybeProject.stats)} />
+          {/if}
+
+          <AdditionalActionsDropdown
+            headerTitle={orgProject.shareableEntityIdentifier} />
+        </div>
+      </Flex>
     </List>
   {:else}
     <Onboard orgId={params.id} />
