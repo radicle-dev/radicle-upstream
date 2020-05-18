@@ -1,6 +1,6 @@
 <script>
   import { Avatar, Text, Icon } from "../../../DesignSystem/Primitive";
-  import { Label } from "../../../DesignSystem/Component";
+  import Label from "../Label.svelte";
 
   export let item = null;
 
