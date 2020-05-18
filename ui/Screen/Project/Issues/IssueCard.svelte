@@ -21,7 +21,7 @@
     display: flex;
     justify-content: space-between;
     flex: 1;
-    padding-right: 8px;
+    padding: 16px;
   }
 
   .title {
