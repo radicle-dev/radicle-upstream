@@ -9,22 +9,6 @@
 </script>
 
 <style>
-  li {
-    display: flex;
-    flex: 1;
-    position: relative;
-    padding-bottom: 24px;
-  }
-  li::before {
-    position: absolute;
-    height: 24px;
-    bottom: 0;
-    left: 59px;
-    display: block;
-    width: 2px;
-    content: "";
-    background-color: var(--color-foreground-level-2);
-  }
   .comment-box {
     flex: 1;
     border: 1px solid var(--color-foreground-level-3);
@@ -41,22 +25,20 @@
   }
 </style>
 
-<li>
-  <Avatar
-    style="margin-right: 16px; height: 32px;"
-    size="regular"
-    variant="circle"
-    imageUrl={item.user.avatar_url} />
-  <div class="comment-box">
-    <div class="meta">
-      <Title style="margin-right: 8px;">{item.user.handle}</Title>
-      <Text style="color: var(--color-foreground-level-6);">commented</Text>
-      <Text style="color: var(--color-foreground-level-5); margin-left: 8px;">
-        {item.time_ago}
-      </Text>
-    </div>
-    <div class="content">
-      <Markdown content={item.comment} />
-    </div>
+<Avatar
+  style="margin-right: 16px; height: 32px;"
+  size="regular"
+  variant="circle"
+  imageUrl={item.user.avatar_url} />
+<div class="comment-box">
+  <div class="meta">
+    <Title style="margin-right: 8px;">{item.user.handle}</Title>
+    <Text style="color: var(--color-foreground-level-6);">commented</Text>
+    <Text style="color: var(--color-foreground-level-5); margin-left: 8px;">
+      {item.time_ago}
+    </Text>
   </div>
-</li>
+  <div class="content">
+    <Markdown content={item.comment} />
+  </div>
+</div>

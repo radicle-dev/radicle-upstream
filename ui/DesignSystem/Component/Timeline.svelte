@@ -22,8 +22,6 @@
   li {
     display: flex;
     flex: 1;
-    padding: 0 16px 0 48px;
-    height: 48px;
     position: relative;
   }
   li::before {
@@ -39,17 +37,26 @@
   li:last-child::before {
     display: none;
   }
+  .base-item {
+    padding: 0 16px 0 48px;
+    height: 48px;
+  }
+  .comment-item {
+    padding-bottom: 24px;
+  }
 </style>
 
 <ul>
-  <li>
+  <li class="base-item">
     <Text style="color: var(--color-foreground-level-4)">{startDate}</Text>
   </li>
   {#each items as item}
     {#if item.variant === 'comment'}
-      <CommentItem {item} />
+      <li class="comment-item">
+        <CommentItem {item} />
+      </li>
     {:else}
-      <li>
+      <li class="base-item">
         <ActionItem {item} />
       </li>
     {/if}
