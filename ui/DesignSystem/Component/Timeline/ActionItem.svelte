@@ -8,8 +8,8 @@
     return {
       "open-issue": Icon.Issue,
       "reopen-issue": Icon.Issue,
-      label: Icon.Label,
-      assign: Icon.Member,
+      "label": Icon.Label,
+      "assign": Icon.Member,
       "close-issue": Icon.CloseIssue,
     }[variant];
   };
@@ -18,8 +18,8 @@
     return {
       "open-issue": "opened the issue",
       "reopen-issue": "closed the issue",
-      label: "added the label",
-      assign: "assigned",
+      "label": "added the label",
+      "assign": "assigned",
       "close-issue": "reopened the issue",
     }[variant];
   };
