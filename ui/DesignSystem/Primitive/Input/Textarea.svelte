@@ -15,7 +15,7 @@
 
   function resize({ target }) {
     target.style.height = "40px";
-    target.style.height = `${+target.scrollHeight}px`;
+    target.style.height = `${+target.scrollHeight + 2}px`;
   }
 
   export function textAreaResize(el) {
@@ -51,7 +51,7 @@
   }
 
   textarea:focus {
-    min-height: 100px;
+    min-height: 98px;
     outline: none;
     box-shadow: 0 0 0 1px
       var(--focus-outline-color, var(--color-foreground-level-3));
