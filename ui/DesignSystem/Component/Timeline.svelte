@@ -2,24 +2,12 @@
   import { Text } from "../../DesignSystem/Primitive";
   import ActionItem from "./Timeline/ActionItem.svelte";
   import CommentItem from "./Timeline/CommentItem.svelte";
-  import CommentAction from "./Timeline/CommentAction.svelte";
   export let startDate = null;
   export let items = null;
-
-  // fake current user
-  const currentUser = {
-    handle: "julien",
-    avatar_url:
-      "https://avatars3.githubusercontent.com/u/2326909?s=24&u=1968a2daca982c6deaf89ec71c16d94333092fe3&v=4",
-  };
+  export let style = null;
 </script>
 
 <style>
-  ul {
-    margin-top: 24px;
-    margin-bottom: 64px;
-  }
-
   li {
     display: flex;
     flex: 1;
@@ -35,9 +23,6 @@
     content: "";
     background-color: var(--color-foreground-level-2);
   }
-  li:last-child::before {
-    display: none;
-  }
   .base-item {
     padding: 0 16px 0 48px;
     height: 48px;
@@ -47,7 +32,7 @@
   }
 </style>
 
-<ul>
+<ul {style}>
   <li class="base-item">
     <Text style="color: var(--color-foreground-level-4)">{startDate}</Text>
   </li>
@@ -62,5 +47,4 @@
       </li>
     {/if}
   {/each}
-  <CommentAction user={currentUser} />
 </ul>

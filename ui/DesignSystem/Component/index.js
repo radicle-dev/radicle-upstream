@@ -1,4 +1,5 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
+import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import Dropdown from "./Dropdown.svelte";
 import HorizontalMenu from "./HorizontalMenu.svelte";
@@ -30,6 +31,7 @@ import UserCard from "./UserCard.svelte";
 
 export {
   AdditionalActionsDropdown,
+  Comment,
   Copyable,
   Dropdown,
   HorizontalMenu,

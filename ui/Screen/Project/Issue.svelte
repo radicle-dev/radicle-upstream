@@ -1,6 +1,6 @@
 <script>
   import { Title, Text, Markdown } from "../../DesignSystem/Primitive";
-  import { Timeline } from "../../DesignSystem/Component";
+  import { Comment, Timeline } from "../../DesignSystem/Component";
 
   $: openClass = issue.open ? "open" : "closed";
 
@@ -29,7 +29,11 @@
 
 Part of #277
     `,
-    author: "julien",
+    author: {
+      handle: "julien",
+      avatar_url:
+        "https://avatars3.githubusercontent.com/u/2326909?s=24&u=1968a2daca982c6deaf89ec71c16d94333092fe3&v=4",
+    },
     replies: 12,
     created_at: "Friday, August 9th",
     updated_at: "1 day",
@@ -158,7 +162,7 @@ Part of #277
           <span
             style="color: var(--color-foreground-level-6); font-family:
             var(--typeface-medium);">
-            {issue.author}
+            {issue.author.handle}
           </span>
         </Text>
       {:else}
@@ -167,7 +171,7 @@ Part of #277
           <span
             style="color: var(--color-foreground-level-6); font-family:
             var(--typeface-medium);">
-            {issue.author}
+            {issue.author.handle}
           </span>
         </Text>
       {/if}
@@ -177,6 +181,10 @@ Part of #277
     <Markdown content={issue.description} />
   </article>
   <section class="timeline">
-    <Timeline startDate={issue.created_at} items={issue.timeline} />
+    <Timeline
+      style="margin-top: 24px;"
+      startDate={issue.created_at}
+      items={issue.timeline} />
   </section>
+  <Comment user={issue.author} />
 </div>
