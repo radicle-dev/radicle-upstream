@@ -8,8 +8,8 @@
     return {
       "open-issue": Icon.Issue,
       "reopen-issue": Icon.Issue,
-      label: Icon.Label,
-      assign: Icon.Member,
+      "label": Icon.Label,
+      "assign": Icon.Member,
       "close-issue": Icon.CloseIssue,
     }[variant];
   };
