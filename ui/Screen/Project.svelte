@@ -93,7 +93,9 @@
       title: "Register project",
       icon: Icon.Register,
       event: () =>
-        push(path.registerExistingProject(params.id, session.identity.id)),
+        push(
+          path.registerExistingProject(params.id, session.identity.registered)
+        ),
     };
   } else {
     registerProjectMenuItem = {

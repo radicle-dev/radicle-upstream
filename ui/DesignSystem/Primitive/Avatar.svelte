@@ -151,7 +151,8 @@
   {:else if avatarFallback}
     <div
       class={`avatar ${avatarClass}`}
-      style="background: {fmt(avatarFallback.background)}">
+      style="background: {fmt(avatarFallback.background)}"
+      data-cy="emoji">
       {@html twemoji.parse(avatarFallback.emoji, {
         className: `emoji ${size}`,
         base: '',
@@ -177,7 +178,9 @@
         {title}
       </Title>
       {#if registered}
-        <Icon.Badge style="margin-left: 8px; fill: var(--color-primary);" />
+        <Icon.Badge
+          dataCy="registered-badge"
+          style="margin-left: 8px; fill: var(--color-primary);" />
       {/if}
     {:else}
       <Title
@@ -186,7 +189,9 @@
         {title}
       </Title>
       {#if registered}
-        <Icon.Badge style="margin-left: 8px; fill: var(--color-primary);" />
+        <Icon.Badge
+          dataCy="registered-badge"
+          style="margin-left: 8px; fill: var(--color-primary);" />
       {/if}
     {/if}
   {/if}

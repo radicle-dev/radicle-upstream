@@ -20,10 +20,9 @@
     ],
   };
   const payer = transaction.formatPayer(identity);
-  const subject = transaction.formatSubject(identity, tx.messages[0]);
 </script>
 
-<Transaction transaction={tx} {payer} {subject} />
+<Transaction transaction={tx} {payer} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button

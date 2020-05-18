@@ -136,7 +136,8 @@
         class="card"
         on:click={() => {
           push(path.transactions(transaction.id));
-        }}>
+        }}
+        data-cy="card">
         <Flex style="height: 100%">
           <div slot="left" style="display: flex;">
             <Icon.TransactionState
