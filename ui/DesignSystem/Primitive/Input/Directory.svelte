@@ -29,5 +29,10 @@
     disabled
     style="margin-right: 16px; flex: 1" />
 
-  <Button variant="primary" on:click={openFileDialog}>Choose</Button>
+  <Button
+    dataCy="choose-path-button"
+    variant="primary"
+    on:click={openFileDialog}>
+    Choose
+  </Button>
 </div>
