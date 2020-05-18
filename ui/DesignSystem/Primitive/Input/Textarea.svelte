@@ -15,7 +15,7 @@
 
   function resize({ target }) {
     target.style.height = "40px";
-    target.style.height = `${+target.scrollHeight  }px`;
+    target.style.height = `${+target.scrollHeight}px`;
   }
 
   export function textAreaResize(el) {
