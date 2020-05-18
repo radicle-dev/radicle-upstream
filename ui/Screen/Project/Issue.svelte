@@ -156,25 +156,14 @@ Part of #277
       <div class="state-badge {openClass}">
         <Text variant="small">{issue.open ? 'Open' : 'Closed'}</Text>
       </div>
-      {#if issue.open}
-        <Text style="color: var(--color-foreground-level-5)">
-          Openend {issue.created_at} by
-          <span
-            style="color: var(--color-foreground-level-6); font-family:
-            var(--typeface-medium);">
-            {issue.author.handle}
-          </span>
-        </Text>
-      {:else}
-        <Text style="color: var(--color-foreground-level-5)">
-          closed {issue.closed_at} by
-          <span
-            style="color: var(--color-foreground-level-6); font-family:
-            var(--typeface-medium);">
-            {issue.author.handle}
-          </span>
-        </Text>
-      {/if}
+      <Text style="color: var(--color-foreground-level-5)">
+        {issue.open ? 'Opened' : 'Closed'} {issue.created_at} by
+        <span
+          style="color: var(--color-foreground-level-6); font-family:
+          var(--typeface-medium);">
+          {issue.author.handle}
+        </span>
+      </Text>
     </div>
   </header>
   <article>
