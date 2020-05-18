@@ -1,7 +1,7 @@
 <script>
   import * as path from "../../src/path.ts";
   import { push } from "svelte-spa-router";
-  import IssuesCard from "./Issues/IssuesCard.svelte";
+  import IssueCard from "./Issues/IssueCard.svelte";
   import { SegmentedControl } from "../../DesignSystem/Component";
 
   const filterOptions = [
@@ -95,7 +95,7 @@
         on:click={() => {
           push(path.projectIssue(params.id));
         }}>
-        <IssuesCard {issue} />
+        <IssueCard {issue} />
       </li>
     {/each}
   </ul>

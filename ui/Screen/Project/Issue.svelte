@@ -126,16 +126,16 @@ Part of #277
     align-items: center;
     margin-top: 12px;
   }
-  .stateBadge {
+  .state-badge {
     color: var(--color-background);
     padding: 8px 12px;
     border-radius: 4px;
     margin-right: 16px;
   }
-  .stateBadge.open {
+  .state-badge.open {
     background-color: var(--color-positive);
   }
-  .stateBadge.closed {
+  .state-badge.closed {
     background-color: var(--color-negative);
   }
 
@@ -149,7 +149,7 @@ Part of #277
   <header>
     <Title variant="large">{issue.title}</Title>
     <div class="metadata">
-      <div class="stateBadge {openClass}">
+      <div class="state-badge {openClass}">
         <Text variant="small">{issue.open ? 'Open' : 'Closed'}</Text>
       </div>
       {#if issue.open}

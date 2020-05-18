@@ -2,10 +2,22 @@
   import { Icon, Title, Text } from "../../../DesignSystem/Primitive";
 
   export let issue = null;
+
+  const issueCaption = (issue) => {
+    if (issue.open) {
+      return `Opened ${issue.created_at} ago by ${issue.author}`;
+    } else {
+      return `Created by ${issue.author} closed ${issue.closed_at} ago`;
+    }
+  };
+
+  const issueIconColor = (issueOpen) => {
+    return issueOpen ? "--color-positive" : "--color-negative";
+  };
 </script>
 
 <style>
-  .issueCard {
+  .issue-card {
     display: flex;
     justify-content: space-between;
     width: 100%;
@@ -15,7 +27,7 @@
     padding: 16px;
   }
 
-  .issueCard:hover {
+  .issue-card:hover {
     background-color: var(--color-foreground-level-1);
   }
 
@@ -33,26 +45,16 @@
   }
 </style>
 
-<div class="issueCard">
+<div class="issue-card">
   <div class="title">
-    {#if issue.open}
-      <Icon.Issue style="margin-right: 12px; fill: var(--color-positive)" />
-      <div>
-        <Title>{issue.title}</Title>
-        <Text style="color: var(--color-foreground-level-5); padding-top: 6px">
-          Opened {issue.created} ago by {issue.author}
-        </Text>
-      </div>
-    {:else}
-      <Icon.Issue style="margin-right: 12px; fill: var(--color-negative)" />
-      <div>
-        <Title>{issue.title}</Title>
-        <Text style="color: var(--color-foreground-level-5); padding-top: 6px">
-          Created by {issue.author} closed {issue.closed} ago
-        </Text>
-      </div>
-    {/if}
-
+    <Icon.Issue
+      style="margin-right: 12px; fill: var({issueIconColor(issue.open)})" />
+    <div>
+      <Title>{issue.title}</Title>
+      <Text style="color: var(--color-foreground-level-5); padding-top: 6px">
+        {issueCaption(issue)}
+      </Text>
+    </div>
   </div>
   <div class="right">
     {#if issue.replies > 0}
@@ -66,7 +68,7 @@
       </div>
     {/if}
     <Text style="color: var(--color-foreground-level-5);">
-      Updated {issue.updated} ago
+      Updated {issue.updated_at} ago
     </Text>
   </div>
 </div>
