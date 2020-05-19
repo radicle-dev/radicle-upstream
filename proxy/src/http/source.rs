@@ -1178,45 +1178,14 @@ mod test {
                 "info": {
                     "name": "src",
                     "objectType": "TREE",
-                    "lastCommit": {
-                        "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
-                        "author": {
-                            "avatar":  "https://avatars.dicebear.com/v2/jdenticon/4800695552551917589.svg",
-                            "name": "Alexander Simmerl",
-                            "email": "a.simmerl@gmail.com",
-                        },
-                        "committer": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
-                            "email": "noreply@github.com",
-                            "name": "GitHub",
-                        },
-                        "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
-                        "description": "Updated README",
-                        "committerTime": 1_584_367_899,
-                    },
-                },
-                "entries": [
+                    "lastCommit": null,                },
+                    "entries": [
                     {
                         "path": "src/Eval.hs",
                         "info": {
                             "name": "Eval.hs",
                             "objectType": "BLOB",
-                            "lastCommit": {
-                                "sha1": "223aaf87d6ea62eef0014857640fd7c8dd0f80b5",
-                                "author": {
-                                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/4800695552551917589.svg",
-                                    "name": "Alexander Simmerl",
-                                    "email": "a.simmerl@gmail.com",
-                                },
-                        "committer": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
-                            "email": "noreply@github.com",
-                            "name": "GitHub",
-                        },
-                                "summary": "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
-                                "description": "Updated README",
-                                "committerTime": 1_584_367_899,
-                            },
+                            "lastCommit": null,
                         },
                     },
                     {
@@ -1224,22 +1193,7 @@ mod test {
                         "info": {
                             "name": "memory.rs",
                             "objectType": "BLOB",
-                            "lastCommit": {
-                                "sha1": "e24124b7538658220b5aaf3b6ef53758f0a106dc",
-                                "author": {
-                                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                                    "name": "Rūdolfs Ošiņš",
-                                    "email": "rudolfs@osins.org",
-                                },
-                                "committer": {
-                                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                                    "name": "Rūdolfs Ošiņš",
-                                    "email": "rudolfs@osins.org",
-                                },
-                                "summary": "Move examples to \"src\"",
-                                "description": "",
-                                "committerTime": 1_575_283_266,
-                            },
+                            "lastCommit": null,
                         },
                     },
                 ],
