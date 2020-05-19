@@ -1,10 +1,5 @@
 <script>
-  import { Button } from "../../DesignSystem/Primitive";
+  import { SupportButton } from "../../DesignSystem/Component";
 </script>
 
-<Button
-  style="color: var(--color-secondary); border: 2px solid var(--color-secondary)"
-  variant="outline"
-  on:click={() => console.log('event(support-project)')}>
-  Support
-</Button>
+<SupportButton on:click={() => console.log('event(support-project)')} />

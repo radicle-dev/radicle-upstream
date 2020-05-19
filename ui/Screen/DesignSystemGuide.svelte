@@ -23,6 +23,7 @@
     Row,
     SegmentedControl,
     Stats,
+    SupportButton,
     StepCounter,
     TrackToggle,
     TransactionAccordion,
@@ -887,6 +888,10 @@
 
       <Swatch>
         <TrackToggle peerCount="2.3k" />
+      </Swatch>
+
+      <Swatch>
+        <SupportButton />
       </Swatch>
 
       <Swatch>
