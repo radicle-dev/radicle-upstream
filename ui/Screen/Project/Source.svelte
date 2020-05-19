@@ -94,8 +94,9 @@
   .column-right {
     display: flex;
     flex-direction: column;
-    padding: 0 0.75rem;
-    width: 960px;
+    padding: 0 1.5rem 0 0.75rem;
+    min-width: 640px;
+    width: 100%;
   }
 
   .commit-header {
