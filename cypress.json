@@ -1,6 +1,5 @@
 {
   "video": false,
   "viewportWidth": 1200,
-  "viewportHeight": 600,
-  "chromeWebSecurity": false
+  "viewportHeight": 600
 }

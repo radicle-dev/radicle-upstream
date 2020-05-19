@@ -4,7 +4,7 @@ use librad::paths;
 use std::convert::Infallible;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use warp::{path, Filter, Reply};
+use warp::{path, Filter, Rejection, Reply};
 
 use crate::registry;
 
@@ -27,7 +27,7 @@ pub fn api<R>(
     registry: R,
     store: kv::Store,
     enable_control: bool,
-) -> impl Filter<Extract = impl Reply, Error = Infallible> + Clone
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Cache + registry::Client + 'static,
 {
@@ -84,7 +84,9 @@ where
         );
     });
 
-    api.or(docs).with(cors).with(log).recover(error::recover)
+    let recovered = api.or(docs).recover(error::recover);
+
+    recovered.with(cors).with(log)
 }
 
 /// State filter to expose the [`librad::paths::Paths`] to handlers.
