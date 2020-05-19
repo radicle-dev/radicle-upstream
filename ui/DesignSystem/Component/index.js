@@ -1,7 +1,9 @@
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
+import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import Dropdown from "./Dropdown.svelte";
 import HorizontalMenu from "./HorizontalMenu.svelte";
+import Label from "./Label.svelte";
 import List from "./List.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
@@ -18,6 +20,7 @@ import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Stats from "./Stats.svelte";
 import StepCounter from "./StepCounter.svelte";
+import Timeline from "./Timeline.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
 import Transaction from "./Transaction.svelte";
@@ -28,9 +31,11 @@ import UserCard from "./UserCard.svelte";
 
 export {
   AdditionalActionsDropdown,
+  Comment,
   Copyable,
   Dropdown,
   HorizontalMenu,
+  Label,
   List,
   NavigationButtons,
   Notification,
@@ -48,6 +53,7 @@ export {
   Sidebar,
   SidebarLayout,
   StepCounter,
+  Timeline,
   Topbar,
   TrackToggle,
   Transaction,

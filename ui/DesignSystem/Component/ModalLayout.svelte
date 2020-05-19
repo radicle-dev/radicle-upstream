@@ -51,7 +51,7 @@
 
 {#if escapable}
   <div data-cy="modal-close-button" class="close">
-    <Icon.CrossBig on:click={onClose} />
+    <Icon.Cross size="big" on:click={onClose} />
   </div>
 {/if}
 

@@ -24,7 +24,10 @@
 
 <div class="wrapper" {style}>
   {#each $store as notification (notification.id)}
-    <div class="notification" transition:blur={{ duration: 300 }}>
+    <div
+      data-cy="notification"
+      class="notification"
+      transition:blur={{ duration: 300 }}>
       <Notification
         level={notification.level}
         message={notification.message}
