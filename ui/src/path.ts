@@ -34,6 +34,7 @@ export const registerExistingProject = (
 ): string =>
   `/projects/${projectId}/register/${domainId}`;
 export const projectIssues = (id: string): string => `/projects/${id}/issues`;
+export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string => `/projects/${id}/revisions`;
 export const projectSource = (
   id: string,

@@ -140,3 +140,27 @@ export const memberHandleValidationStore = (): validation.ValidationStore =>
     promise: validateUserExistence,
     validationMessage: "Cannot find this user"
   });
+
+
+// MOCKS
+
+type MemberList = { handle: string; pending: boolean; joined: string }[]
+
+// TODO(sos): replace with actual members
+export const mockMemberList: MemberList = [
+  {
+    handle: "eisenia_fetida",
+    pending: false,
+    joined: "06/2019"
+  },
+  {
+    handle: "eisenia_hortensis",
+    pending: true,
+    joined: "11/1992"
+  },
+  {
+    handle: "eisenia_andrei",
+    pending: false,
+    joined: "05/2020"
+  }
+]
