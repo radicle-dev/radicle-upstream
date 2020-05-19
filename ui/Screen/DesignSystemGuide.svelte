@@ -1,5 +1,6 @@
 <script>
   import * as notification from "../src/notification.ts";
+  import * as transaction from "../src/transaction.ts";
 
   import {
     Avatar,
@@ -25,7 +26,7 @@
     Stats,
     StepCounter,
     TrackToggle,
-    TransactionAccordion,
+    TransactionCenter,
     TransactionStatusbar,
     UserCard,
   } from "../DesignSystem/Component";
@@ -111,37 +112,110 @@
 
   const transactions1 = [
     {
-      message: "Project registration",
-      state: "pending",
-      progress: 50,
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.UserRegistration,
+          handle: "xla",
+          id: "xla@123abcd.git",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Settled,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Member registration",
-      state: "error",
+      id: "0a1b2c3b",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Org registration",
-      state: "success",
+      id: "0a1b2c3c",
+      messages: [
+        {
+          type: transaction.MessageType.MemberRegistration,
+          orgId: "monadic",
+          handle: "xla",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Failed,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
   const transactions2 = [
     {
-      message: "Project registration",
-      state: "pending",
-      progress: 70,
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Org registration",
-      state: "pending",
-      progress: 0,
+      id: "0a1b2c3b",
+      messages: [
+        {
+          type: transaction.MessageType.ProjectRegistration,
+          orgId: "monadic",
+          projectName: "upstream",
+          cocId: "upstream@123abcd.git",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
   const transactions3 = [
     {
-      message: "Org registration",
-      state: "success",
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Settled,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
@@ -835,17 +909,20 @@
       <Swatch>
         <div style="display: flex;">
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions1)}
               transactions={transactions1}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions2)}
               transactions={transactions2}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions3)}
               transactions={transactions3}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>

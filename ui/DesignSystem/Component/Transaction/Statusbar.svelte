@@ -1,29 +1,18 @@
 <script>
-  import { format } from "timeago.js";
-
   import { Icon, Text } from "../../Primitive";
 
+  export let progress = null; // only applys on variant: caution
   export let style = null;
-  export let variant = "caution"; // caution | negative | positive
-  export let progress = 0; // only applys on variant: caution
-  export let time = null;
-
-  const text = {
-    caution:
-      progress === 0
-        ? "Waiting for confirmation"
-        : "Waiting for transaction to settle",
-    negative: `Transaction failed ${format(time * 1000)}`,
-    positive: `Transaction settled ${format(time * 1000)}`,
-  };
+  export let text = null;
+  export let variant = null;
 </script>
 
 <style>
   .statusbar {
-    height: 40px;
-    width: 100%;
     border-radius: 4px;
     display: flex;
+    height: 40px;
+    width: 100%;
   }
 
   .caution {
@@ -51,5 +40,5 @@
       style="margin: 8px; fill: var(--color-background)"
       state={variant} />
   {/if}
-  <Text variant="tiny" style="align-self: center;">{text[variant]}</Text>
+  <Text variant="tiny" style="align-self: center;">{text}</Text>
 </div>

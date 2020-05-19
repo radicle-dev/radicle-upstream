@@ -4,12 +4,42 @@ use async_trait::async_trait;
 use hex::ToHex;
 use kv::Codec as _;
 use serde::{Deserialize, Serialize};
-use std::time::SystemTime;
+use std::time::{self, Duration, SystemTime};
 
 use radicle_registry_client as protocol;
 
 use crate::error;
 use crate::registry;
+
+/// Amount of blocks we assume to have been mined before a transaction is
+/// considered to have settled.
+const SETTLEMENT_OFFSET: u32 = 6;
+
+/// Wrapper for [`SystemTime`] carrying the time since epoch.
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, PartialOrd, Ord)]
+#[serde(rename_all = "camelCase")]
+pub struct Timestamp {
+    /// Seconds since unix epoch.
+    secs: u64,
+    /// Sub-second nanos part.
+    nanos: u32,
+}
+
+impl Timestamp {
+    /// Creates a new [`Timestamp`] at the current time.
+    #[must_use]
+    pub fn now() -> Self {
+        let now = SystemTime::now();
+        let duration = now
+            .duration_since(time::UNIX_EPOCH)
+            .expect("time should be after unix epoch");
+
+        Self {
+            nanos: duration.subsec_nanos(),
+            secs: duration.as_secs(),
+        }
+    }
+}
 
 /// A container to dissiminate and apply operations on the [`Registry`].
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -24,7 +54,26 @@ pub struct Transaction {
     /// Current state of the transaction.
     pub state: State,
     /// Creation time.
-    pub timestamp: SystemTime,
+    pub timestamp: Timestamp,
+}
+
+impl Transaction {
+    /// Constructs a new confirmed [`Transaction`] with a single [`Message`].
+    #[must_use]
+    pub fn confirmed(id: registry::Hash, block: protocol::BlockNumber, message: Message) -> Self {
+        let now = Timestamp::now();
+
+        Self {
+            id,
+            messages: vec![message],
+            state: State::Confirmed {
+                block,
+                progress: 1,
+                timestamp: now,
+            },
+            timestamp: now,
+        }
+    }
 }
 
 /// Possible messages a [`Transaction`] can carry.
@@ -65,10 +114,36 @@ pub enum Message {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum State {
-    /// [`Transaction`] has been applied to a block, carries the hash of the block.
-    Applied {
-        /// The hash of the block the transaction has been applied to.
-        block: registry::Hash,
+    /// [`Transaction`] has been applied to a block, carries the height of the block.
+    Confirmed {
+        /// The height of the block the transaction has been applied to.
+        block: protocol::BlockNumber,
+        /// Amount of progress made towards settlement. We assume height+6 to
+        /// be mathematically impossible to be reverted.
+        progress: u32,
+        /// Time when it was applied.
+        timestamp: Timestamp,
+    },
+
+    /// [`Transaction`] failed to be applied or processed.
+    // TODO(xla): Embbed original [`protocol::TransactionError`] and serialize it.
+    Failed {
+        /// Description of the error that occurred.
+        error: String,
+        /// Time when it failed.
+        timestamp: Timestamp,
+    },
+
+    /// [`Transaction`] has been send but not yet applied to a block.
+    Pending {
+        /// Time when it was applied.
+        timestamp: Timestamp,
+    },
+
+    /// [`Transaction`] has been settled on the network and is unlikely to be reverted.
+    Settled {
+        /// Time when it settled.
+        timestamp: Timestamp,
     },
 }
 
@@ -127,6 +202,60 @@ where
                 .expect("unable to get 'transactions' bucket"),
         }
     }
+
+    /// Starts up the machinery to check for latest block information and advance the state of
+    /// cached transactions.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs or access to [`kv::Store`] fails.
+    pub async fn run(&self) -> Result<(), error::Error> {
+        let mut interval = tokio::time::interval(Duration::from_secs(10));
+        loop {
+            interval.tick().await;
+
+            self.advance(self.client.latest_height().await?)?;
+        }
+    }
+
+    /// Updates cached transactions progress given the latest height.
+    fn advance(&self, latest_height: protocol::BlockNumber) -> Result<(), error::Error> {
+        let mut txs = self.list_transactions(vec![])?;
+
+        for tx in &mut txs {
+            match tx.state {
+                State::Confirmed {
+                    block, timestamp, ..
+                } => {
+                    let target = block
+                        .checked_add(SETTLEMENT_OFFSET)
+                        .unwrap_or(SETTLEMENT_OFFSET);
+
+                    if latest_height >= target {
+                        tx.state = State::Settled {
+                            timestamp: Timestamp::now(),
+                        };
+                    } else {
+                        let offset = latest_height
+                            .checked_add(SETTLEMENT_OFFSET)
+                            .unwrap_or(SETTLEMENT_OFFSET);
+                        let progress = offset.saturating_sub(target);
+
+                        tx.state = State::Confirmed {
+                            block,
+                            progress,
+                            timestamp,
+                        };
+                    }
+
+                    self.cache_transaction(tx.clone())?;
+                },
+                State::Failed { .. } | State::Pending { .. } | State::Settled { .. } => continue,
+            }
+        }
+
+        Ok(())
+    }
 }
 
 impl<C> Cache for Cacher<C>
@@ -175,6 +304,10 @@ impl<C> registry::Client for Cacher<C>
 where
     C: registry::Client,
 {
+    async fn latest_height(&self) -> Result<u32, error::Error> {
+        self.client.latest_height().await
+    }
+
     async fn get_org(&self, id: registry::Id) -> Result<Option<registry::Org>, error::Error> {
         self.client.get_org(id).await
     }
@@ -282,9 +415,8 @@ where
 #[cfg(test)]
 mod test {
     use radicle_registry_client as protocol;
-    use std::time;
 
-    use super::{Cache, Cacher, State, Transaction};
+    use super::{Cache, Cacher, State, Timestamp, Transaction};
     use crate::registry;
 
     #[tokio::test]
@@ -296,26 +428,31 @@ mod test {
             let client = protocol::Client::new_emulator();
             let registry = registry::Registry::new(client);
             let cache = Cacher::new(registry, &store);
+            let now = Timestamp::now();
 
             let tx = Transaction {
                 id: registry::Hash(protocol::TxHash::random()),
                 messages: vec![],
-                state: State::Applied {
-                    block: registry::Hash(protocol::Hash::random()),
+                state: State::Confirmed {
+                    block: 1,
+                    progress: 3,
+                    timestamp: now,
                 },
-                timestamp: time::SystemTime::now(),
+                timestamp: now,
             };
 
             cache.cache_transaction(tx.clone()).unwrap();
 
-            for _ in 0..9 {
+            for height in 0..9 {
                 let tx = Transaction {
                     id: registry::Hash(protocol::TxHash::random()),
                     messages: vec![],
-                    state: State::Applied {
-                        block: registry::Hash(protocol::Hash::random()),
+                    state: State::Confirmed {
+                        block: height,
+                        progress: 2,
+                        timestamp: now,
                     },
-                    timestamp: time::SystemTime::now(),
+                    timestamp: now,
                 };
 
                 cache.cache_transaction(tx.clone()).unwrap();

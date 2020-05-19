@@ -9,7 +9,6 @@ use serde_cbor::from_reader;
 use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
-use std::time::SystemTime;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 
@@ -17,7 +16,7 @@ use crate::avatar;
 use crate::error;
 
 mod transaction;
-pub use transaction::{Cache, Cacher, Message, State, Transaction};
+pub use transaction::{Cache, Cacher, Message, State, Timestamp, Transaction};
 
 /// Wrapper for [`protocol::Id`] to add serialization.
 #[derive(Clone, Debug, PartialEq)]
@@ -204,6 +203,12 @@ pub struct User {
 /// Methods to interact with the Registry in a uniform way.
 #[async_trait]
 pub trait Client: Clone + Send + Sync {
+    /// Fetch latest height by virtue of checking the block header of the best chain.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn latest_height(&self) -> Result<u32, error::Error>;
     /// Try to retrieve org from the Registry by id.
     ///
     /// # Errors
@@ -344,6 +349,12 @@ impl Registry {
 
 #[async_trait]
 impl Client for Registry {
+    async fn latest_height(&self) -> Result<u32, error::Error> {
+        let header = self.client.block_header_best_chain().await?;
+
+        Ok(header.number)
+    }
+
     async fn get_org(&self, org_id: Id) -> Result<Option<Org>, error::Error> {
         if let Some(org) = self.client.get_org(org_id.clone().0).await? {
             let mut members = Vec::new();
@@ -401,15 +412,12 @@ impl Client for Registry {
         );
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
-
-        let tx = Transaction {
-            id: Hash(applied.tx_hash),
-            messages: vec![Message::OrgRegistration { id: org_id.clone() }],
-            state: transaction::State::Applied {
-                block: Hash(applied.block),
-            },
-            timestamp: SystemTime::now(),
-        };
+        let block = self.client.block_header(applied.block).await?;
+        let tx = Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::OrgRegistration { id: org_id.clone() },
+        );
 
         // TODO(xla): Remove automatic prepayment once we have proper balances.
         let org = self
@@ -444,15 +452,13 @@ impl Client for Registry {
 
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
+        let block = self.client.block_header(applied.block).await?;
 
-        Ok(Transaction {
-            id: Hash(applied.tx_hash),
-            messages: vec![Message::OrgUnregistration { id: org_id }],
-            state: transaction::State::Applied {
-                block: Hash(applied.block),
-            },
-            timestamp: SystemTime::now(),
-        })
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::OrgUnregistration { id: org_id },
+        ))
     }
 
     async fn get_project(
@@ -561,18 +567,16 @@ impl Client for Registry {
         );
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
+        let block = self.client.block_header(applied.block).await?;
 
-        Ok(Transaction {
-            id: Hash(applied.tx_hash),
-            messages: vec![Message::ProjectRegistration {
-                project_name: project_name,
-                org_id: org_id,
-            }],
-            state: transaction::State::Applied {
-                block: Hash(applied.block),
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::ProjectRegistration {
+                project_name,
+                org_id,
             },
-            timestamp: SystemTime::now(),
-        })
+        ))
     }
 
     async fn get_user(&self, handle: Id) -> Result<Option<User>, error::Error> {
@@ -608,15 +612,13 @@ impl Client for Registry {
         );
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
+        let block = self.client.block_header(applied.block).await?;
 
-        Ok(Transaction {
-            id: Hash(applied.tx_hash),
-            messages: vec![Message::UserRegistration { handle, id: id }],
-            state: transaction::State::Applied {
-                block: Hash(applied.block),
-            },
-            timestamp: SystemTime::now(),
-        })
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::UserRegistration { handle, id },
+        ))
     }
 
     async fn prepay_account(

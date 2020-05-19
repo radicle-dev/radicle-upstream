@@ -1,7 +1,8 @@
 <script>
+  export let progress = 0; // 0-100% of progress, overwrites the defaults
+  export let required = 6;
   export let style = null;
   export let state = "caution"; // negative | caution | positive
-  export let progress = null; // 0-100% of progress, overwrites the defaults
   export let variant = "regular"; // small | regular | inverted
 
   const size = {
@@ -20,20 +21,19 @@
   const radius = size / 2 - strokeWidth / 2;
   const circumference = 2 * Math.PI * radius;
 
+  const defaultDashLength = {
+    caution: progress || required / required,
+    positive: required,
+    negative: 0,
+  }[state];
+
   $: color = {
     caution: "var(--color-caution)",
     positive: "var(--color-positive)",
     negative: "var(--color-negative)",
   }[state];
 
-  const defaultDashLength = {
-    caution: progress || 100 / 6,
-    positive: 100,
-    negative: 0,
-  };
-
-  $: dashLength =
-    progress === 0 ? 100 / 6 : progress || defaultDashLength[state];
+  $: dashLength = progress === 0 ? defaultDashLength : progress;
 
   $: rotate = progress === 0;
 </script>
@@ -82,7 +82,7 @@
     transform="rotate(-90, {center}, {center})"
     stroke={variant === 'inverted' ? 'var(--color-background)' : color}
     stroke-width={strokeWidth}
-    stroke-dasharray="{(dashLength * circumference) / 100}, {circumference}" />
+    stroke-dasharray="{(dashLength * circumference) / required}, {circumference}" />
   {#if variant === 'inverted'}
     <circle cx={center} cy={center} r={radius} fill={color} />
   {/if}

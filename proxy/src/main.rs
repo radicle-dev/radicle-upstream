@@ -62,7 +62,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(librad_paths, cache, store, args.test);
+    let api = http::api(librad_paths, cache.clone(), store, args.test);
+
+    tokio::spawn(async move {
+        cache.run().await.expect("cacher run failed");
+    });
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 

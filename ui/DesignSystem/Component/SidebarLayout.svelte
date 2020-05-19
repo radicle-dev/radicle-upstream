@@ -5,7 +5,6 @@
   import * as path from "../../src/path.ts";
 
   import Sidebar from "./Sidebar.svelte";
-  import TransactionCenter from "./Transaction/Center.svelte";
 
   export let dataCy = null;
   export let style = null;
@@ -41,5 +40,4 @@
       <slot />
     </div>
   </div>
-  <TransactionCenter />
 </div>

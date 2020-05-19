@@ -1,4 +1,5 @@
-import { Readable } from "svelte/store";
+import { Readable, Writable, get, derived, writable } from "svelte/store";
+import * as timeago from "timeago.js";
 
 import * as api from "./api";
 import { Avatar, getAvatar, Usage } from "./avatar"
@@ -7,12 +8,22 @@ import { Identity } from "./identity";
 import { Domain } from "./project"
 import * as remote from "./remote";
 
+const POLL_INTERVAL = 10000;
+export const REQUIRED = 6;
+
 // Types.
+type Height = number;
+
+interface Timestamp {
+  secs: number;
+  nanos: number;
+}
+
 export enum MessageType {
   OrgRegistration = "orgRegistration",
   OrgUnregistration = "orgUnregistration",
-  OrgMemberRegistration = "orgMemberRegistration",
-  OrgMemberUnregistration = "orgMemberUnregistration",
+  MemberRegistration = "memberRegistration",
+  MemberUnregistration = "memberUnregistration",
   ProjectRegistration = "projectRegistration",
   UserRegistration = "userRegistration",
 }
@@ -27,14 +38,14 @@ interface OrgUnregistration {
   id: string;
 }
 
-interface OrgMemberRegistration {
-  type: MessageType.OrgMemberRegistration;
+interface MemberRegistration {
+  type: MessageType.MemberRegistration;
   orgId: string;
-  userId: string;
+  handle: string;
 }
 
-interface OrgMemberUnregistration {
-  type: MessageType.OrgMemberUnregistration;
+interface MemberUnregistration {
+  type: MessageType.MemberUnregistration;
   orgId: string;
   userId: string;
 }
@@ -48,7 +59,6 @@ interface ProjectRegistration {
   // domainId: string; // domain under which project falls, e.g. User or Org
   cocoId: string;
   projectName: string;
-  projectDescription: string;
 }
 
 interface UserRegistration {
@@ -60,44 +70,120 @@ interface UserRegistration {
 type Message
   = OrgRegistration
   | OrgUnregistration
-  | OrgMemberRegistration
-  | OrgMemberUnregistration
+  | MemberRegistration
+  | MemberUnregistration
   | ProjectRegistration
   | UserRegistration;
 
 export enum StateType {
-  Applied = "applied",
+  Confirmed = "confirmed",
+  Failed = "failed",
+  Pending = "pending",
+  Settled = "settled",
 }
 
-interface Applied {
-  type: StateType.Applied;
-  blockHash: string;
+interface Confirmed {
+  type: StateType.Confirmed;
+  block: Height;
+  progress: number;
+  timestamp: Timestamp;
 }
 
-type State = Applied;
+interface Failed {
+  type: StateType.Failed;
+  error: string;
+  timestamp: Timestamp;
+}
+
+interface Pending {
+  type: StateType.Pending;
+  timestamp: Timestamp;
+}
+
+interface Settled {
+  type: StateType.Settled;
+  timestamp: Timestamp;
+}
+
+type State = Confirmed | Failed | Pending | Settled;
 
 export interface Transaction {
   id: string;
   messages: Message[];
   state: State;
+  timestamp: Timestamp;
 }
 
 type Transactions = Transaction[];
 
-const transactionsStore = remote.createStore<Transactions>();
+interface SummaryCounts {
+  confirmed: number;
+  failed: number;
+  pending: number;
+  settled: number;
+  sum: number;
+}
 
+interface Summary {
+  counts: SummaryCounts;
+  progress: number;
+}
+
+export const summarizeTransactions = (txs: Transactions): Summary =>
+  txs.reduce((acc, tx): Summary => {
+      acc.counts.sum += 1;
+      acc.counts[tx.state.type] += 1;
+      
+      if (tx.state.type === StateType.Confirmed) {
+        acc.progress += tx.state.progress;
+      } else if (tx.state.type === StateType.Settled) {
+        acc.progress += 6;
+      }
+      
+      return acc;
+    }, {
+      counts: {
+        confirmed: 0,
+        failed: 0,
+        pending: 0,
+        settled: 0,
+        sum: 0,
+      },
+      progress: 0,
+    });
+
+const transactionsStore = remote.createStore<Transactions>();
 export const transactions = transactionsStore.readable;
+
+const summaryStore: Writable<Summary | null> = writable(null);
+export const summary = derived(transactionsStore, (store) => {
+  if (store.status === remote.Status.Success) {
+    const updated = summarizeTransactions(store.data)
+
+    summaryStore.set(updated);
+
+    return updated;
+  }
+
+  return get(summaryStore);
+});
 
 // Events.
 enum Kind {
   FetchList = "FETCH_LIST",
+  RefetchList = "REFETCH_LIST",
 }
 
 interface FetchList extends event.Event<Kind> {
+  kind: Kind.FetchList;
   ids: Array<string>;
 }
 
-type Msg = FetchList;
+interface RefetchList extends event.Event<Kind> {
+  kind: Kind.RefetchList; 
+}
+
+type Msg = FetchList | RefetchList;
 
 interface ListInput {
   ids: Array<string>;
@@ -108,6 +194,13 @@ const update = (msg: Msg): void => {
     case Kind.FetchList:
       transactionsStore.loading();
       api.post<ListInput, Transactions>("transactions", { ids: msg.ids })
+        .then(transactionsStore.success)
+        .catch(transactionsStore.error);
+
+      break;
+
+    case Kind.RefetchList:
+      api.post<ListInput, Transactions>("transactions", { ids: [] })
         .then(transactionsStore.success)
         .catch(transactionsStore.error);
 
@@ -127,9 +220,15 @@ export const fetch = (id: string): Readable<remote.Data<Transaction | null>> => 
 
   return store;
 }
+export const refetchList = event.create<Kind, Msg>(Kind.RefetchList, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
-transactionsStore.start(fetchList);
+transactionsStore.start(() => {
+  const poll = setInterval(() => refetchList(), POLL_INTERVAL);
+  fetchList();
+
+  return (): void => clearInterval(poll);
+});
 
 // FORMATTING
 export const formatMessage = (msg: Message): string => {
@@ -140,10 +239,10 @@ export const formatMessage = (msg: Message): string => {
     case MessageType.OrgUnregistration:
       return "Org unregistration";
 
-    case MessageType.OrgMemberRegistration:
+    case MessageType.MemberRegistration:
       return "Org member registration"
 
-    case MessageType.OrgMemberUnregistration:
+    case MessageType.MemberUnregistration:
       return "Org member unregistration"
 
     case MessageType.ProjectRegistration:
@@ -165,7 +264,6 @@ export const format = (tx: Transaction): object => {
 }
 
 export const formatStake = (msg: Message): string => `${formatMessage(msg)} deposit`;
-
 
 // Having both enums & interfaces here is somewhat verbose; the reason we do this 
 // is so we have compatibility with non-TS svelte components while still enjoying 
@@ -217,13 +315,13 @@ export const formatSubject = (msg: Message): Subject => {
 
     // TODO(sos): replace with actual avatar lookup for the identity associated with
     // the member, should it exist
-    case MessageType.OrgMemberRegistration:
-      name = msg.userId;
+    case MessageType.MemberRegistration:
+      name = msg.handle;
       type = SubjectType.Member
       // avatarSource = getAvatar(Usage.Identity, msg.userId)
       break;
 
-    case MessageType.OrgMemberUnregistration:
+    case MessageType.MemberUnregistration:
       name = msg.userId;
       type = SubjectType.Member
       // avatarSource = getAvatar(Usage.Identity, msg.userId)
@@ -251,4 +349,83 @@ export const formatSubject = (msg: Message): Subject => {
     type,
     avatarSource
   }
+}
+
+export const iconProgress = (state: State): number => {
+  switch (state.type) {
+    case StateType.Confirmed:
+      return state.progress;
+    case StateType.Settled:
+      return REQUIRED;
+    default:
+      return 0;
+  }
+}
+
+export enum IconState {
+  Caution = "caution",
+  Negative = "negative",
+  Positive = "positive",
+}
+
+export const iconState = (state: State): IconState => {
+  switch (state.type) {
+    case StateType.Failed:
+      return IconState.Negative;
+    case StateType.Settled:
+      return IconState.Positive;
+    default:
+      return IconState.Caution;
+  }
+}
+
+export const statusText = (state: State): string => {
+  const timestamp = timeago.format(state.timestamp.secs * 1000);
+
+  switch (state.type) {
+    case StateType.Confirmed:
+      return `Waiting for transaction to settle`;
+
+    case StateType.Failed:
+      return `Transaction failed ${timestamp}`;
+
+    case StateType.Pending:
+      return `Waiting for confirmation`;
+
+    case StateType.Settled:
+      return `Transaction settled ${timestamp}`;
+  }
+}
+
+export const summaryIconState = (counts: SummaryCounts): IconState => {
+  if (counts.failed > 0) {
+    return IconState.Negative;
+  } else if (counts.confirmed > 0 || counts.pending > 0) {
+    return IconState.Caution;
+  }
+
+  return IconState.Positive;
+}
+
+export const summaryText = (counts: SummaryCounts): string => {
+  let sum = 0;
+  let state = StateType.Settled; 
+
+  if (counts[StateType.Settled] > 0) {
+    sum = counts[StateType.Settled];
+  }
+  if (counts[StateType.Failed] > 0) {
+    sum = counts[StateType.Failed];
+    state = StateType.Failed;
+  }
+  if (counts[StateType.Confirmed] > 0 || counts[StateType.Pending] > 0) {
+    sum = counts[StateType.Confirmed] + counts[StateType.Pending];
+    state = StateType.Pending
+  }
+
+  if (counts.sum > 1) {
+    return `${sum} transactions ${state}`;
+  }
+
+  return `transaction ${state}`;
 }

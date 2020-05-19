@@ -3,7 +3,7 @@
   import { pop } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
-  import { fetch, formatPayer } from "../src/transaction.ts";
+  import * as transaction from "../src/transaction.ts";
 
   import {
     ModalLayout,
@@ -22,7 +22,9 @@
   if (session.identity !== null) {
     identity = session.identity;
   }
-  const store = fetch(params.id);
+
+  $: payer = transaction.formatPayer(identity);
+  $: store = transaction.fetch(params.id);
 </script>
 
 <style>
@@ -41,13 +43,12 @@
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
     <Remote {store} let:data={tx}>
-      <!-- TODO(merle): Retrieve actual data for variant, progress & timestamp -->
       <TransactionStatusbar
-        style="margin-bottom: 32px; margin-top: 96px;"
-        variant="caution"
-        progress={0}
-        time={tx.timestamp} />
-      <Transaction transaction={tx} payer={formatPayer(identity)} />
+        progress={transaction.iconProgress(tx.state)}
+        text={transaction.statusText(tx.state)}
+        variant={transaction.iconState(tx.state)}
+        style="margin-bottom: 32px; margin-top: 96px;" />
+      <Transaction transaction={tx} {payer} />
     </Remote>
 
     <div class="button-row">

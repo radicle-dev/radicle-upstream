@@ -58,6 +58,7 @@ mod handler {
         cache: http::Shared<C>,
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection> {
+        // TODO(xla): Don't panic when trying to convert ids.
         let tx_ids = input
             .ids
             .iter()
@@ -74,25 +75,6 @@ mod handler {
 
 impl ToDocumentedType for registry::Transaction {
     fn document() -> document::DocumentedType {
-        let timestamp = {
-            let mut fields = HashMap::with_capacity(2);
-            fields.insert(
-                "nanos_since_epoch".into(),
-                document::integer()
-                    .description("Nanosecond part of timestamp")
-                    .example(561_320_872),
-            );
-            fields.insert(
-                "secs_since_epoch".into(),
-                document::integer()
-                    .description("Seconds since epoch")
-                    .example(1_586_852_801),
-            );
-            document::DocumentedType::from(fields).description(
-                "Time since epoch, broken apart in seconds since and the leftover nanos",
-            )
-        };
-
         let mut properties = std::collections::HashMap::with_capacity(4);
         properties.insert(
             "id".into(),
@@ -105,9 +87,30 @@ impl ToDocumentedType for registry::Transaction {
             document::array(registry::Message::document()),
         );
         properties.insert("state".into(), registry::State::document());
-        properties.insert("timestamp".into(), timestamp);
+        properties.insert("timestamp".into(), registry::Timestamp::document());
 
-        document::DocumentedType::from(properties).description("Input for project creation")
+        document::DocumentedType::from(properties).description("A transaction on the Registry")
+    }
+}
+
+impl ToDocumentedType for registry::Timestamp {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(2);
+        properties.insert(
+            "nanos".into(),
+            document::integer()
+                .description("Sub-second nano part")
+                .example(561_320_872),
+        );
+        properties.insert(
+            "secs".into(),
+            document::integer()
+                .description("Seconds since UNIX epoch")
+                .example(1_586_852_801),
+        );
+
+        document::DocumentedType::from(properties)
+            .description("Time since epoch, broken apart in seconds since and the leftover nanos")
     }
 }
 
@@ -121,9 +124,60 @@ impl ToDocumentedType for registry::Message {
 
 impl ToDocumentedType for registry::State {
     fn document() -> document::DocumentedType {
-        let properties = std::collections::HashMap::with_capacity(2);
+        let confirmed = {
+            let mut fields = HashMap::with_capacity(3);
+            fields.insert(
+                "block".into(),
+                document::integer()
+                    .description("The height of the block the transaction has been included in")
+                    .example(13),
+            );
+            fields.insert(
+                "progress".into(),
+                document::integer()
+                    .description(
+                        "Amount of blocks that have been mined on top of the confirmed block",
+                    )
+                    .example(4),
+            );
+            fields.insert("timestamp".into(), registry::Timestamp::document());
 
-        document::DocumentedType::from(properties).description("Transaction lifecycle state")
+            document::DocumentedType::from(fields)
+                .description("Transaction has been included and waits for settlement")
+        };
+        let failed = {
+            let mut fields = HashMap::with_capacity(2);
+            fields.insert(
+                "error".into(),
+                document::string()
+                    .description("Description of the error")
+                    .example("Org exists"),
+            );
+            fields.insert("timestamp".into(), registry::Timestamp::document());
+
+            document::DocumentedType::from(fields).description("Transaction failed")
+        };
+        let pending = {
+            let mut fields = HashMap::with_capacity(1);
+            fields.insert("timestamp".into(), registry::Timestamp::document());
+
+            document::DocumentedType::from(fields)
+                .description("Transaction has been sent and waits for confirmation")
+        };
+        let settled = {
+            let mut fields = HashMap::with_capacity(1);
+            fields.insert("timestamp".into(), registry::Timestamp::document());
+
+            document::DocumentedType::from(fields).description(
+                "Transaction has been settle and is mathematically unlikely to be rejected",
+            )
+        };
+
+        document::one_of(vec![confirmed, failed, pending, settled])
+            .description("Transaction lifecycle state")
+            .example(Self::Settled {
+                timestamp: registry::Timestamp::now(),
+            })
     }
 }
 
@@ -157,7 +211,6 @@ impl ToDocumentedType for ListInput {
 mod test {
     use std::convert::TryFrom;
     use std::sync::Arc;
-    use std::time;
 
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
@@ -173,6 +226,7 @@ mod test {
         let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let cache = registry::Cacher::new(registry, &store);
+        let now = registry::Timestamp::now();
 
         let tx = registry::Transaction {
             id: registry::Hash(radicle_registry_client::TxHash::random()),
@@ -180,10 +234,12 @@ mod test {
                 project_name: registry::ProjectName::try_from("upstream").unwrap(),
                 org_id: registry::Id::try_from("radicle").unwrap(),
             }],
-            state: registry::State::Applied {
-                block: registry::Hash(radicle_registry_client::Hash::random()),
+            state: registry::State::Confirmed {
+                block: 1,
+                progress: 1,
+                timestamp: now,
             },
-            timestamp: time::SystemTime::now(),
+            timestamp: now,
         };
 
         cache.cache_transaction(tx.clone()).unwrap();
