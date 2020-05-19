@@ -1,5 +1,5 @@
 <script>
-  import { Icon } from "../../Primitive";
+  import { Icon, Markdown } from "../../Primitive";
 
   export let content = null;
   export let path = null;
@@ -27,15 +27,8 @@
     margin-left: 0.5rem;
   }
 
-  .code {
-    font-family: var(--typeface-mono-regular);
-    font-size: 16px;
-    padding: 1.5rem;
-    overflow-x: auto;
-  }
-
   .container {
-    display: flex;
+    padding: 24px 24px 16px 24px;
   }
 </style>
 
@@ -47,6 +40,6 @@
     </div>
   </header>
   <div class="container">
-    <pre class="code">{content}</pre>
+    <Markdown {content} />
   </div>
 </div>
