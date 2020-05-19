@@ -1,4 +1,63 @@
-before(() => {
+import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
+
+const withEmptyRepositoryStub = (callback) => {
+  cy.exec("pwd").then((result) => {
+    const pwd = result.stdout;
+    const emptyDirectoryPath = `${pwd}/fixtures/empty-repo`;
+
+    cy.exec(`rm -rf ${emptyDirectoryPath}`);
+    cy.exec(`mkdir ${emptyDirectoryPath}`);
+
+    // stub native call and return the directory path to the UI
+    cy.window().then((appWindow) => {
+      appWindow.electron = {
+        ipcRenderer: {
+          invoke: (msg) => {
+            if (msg === DIALOG_SHOWOPENDIALOG) {
+              return emptyDirectoryPath;
+            }
+          },
+        },
+      };
+    });
+
+    callback();
+
+    // clean up the fixture
+    cy.exec(`rm -rf ${emptyDirectoryPath}`);
+  });
+};
+
+const withPlatinumStub = (callback) => {
+  cy.exec("pwd").then((result) => {
+    const pwd = result.stdout;
+    const platinumPath = `${pwd}/fixtures/git-platinum-copy`;
+
+    cy.exec(`rm -rf ${platinumPath}`);
+    cy.exec(
+      `git clone ${pwd}/.git/modules/fixtures/git-platinum ${platinumPath}`
+    );
+
+    // stub native call and return the directory path to the UI
+    cy.window().then((appWindow) => {
+      appWindow.electron = {
+        ipcRenderer: {
+          invoke: (msg) => {
+            if (msg === DIALOG_SHOWOPENDIALOG) {
+              return platinumPath;
+            }
+          },
+        },
+      };
+    });
+
+    callback();
+
+    cy.exec(`rm -rf ${platinumPath}`);
+  });
+};
+
+beforeEach(() => {
   cy.nukeAllState();
   cy.createIdentity();
   cy.createProjectWithFixture();
@@ -91,7 +150,14 @@ context("project creation", () => {
           .contains("Pick a directory for the new project")
           .should("exist");
 
-        // TODO(rudolfs): test non-empty directory validation
+        withPlatinumStub(() => {
+          cy.pick("new-project", "choose-path-button").click();
+          cy.pick("create-project-button").click();
+
+          cy.get('[data-cy="page"] [data-cy="new-project"]')
+            .contains("The directory should be empty")
+            .should("exist");
+        });
       });
     });
 
@@ -104,8 +170,30 @@ context("project creation", () => {
           .contains("Pick a directory with an existing repository")
           .should("exist");
 
-        // TODO(rudolfs): test empty directory validation
-        // TODO(rudolfs): test existing Radicle directory validation
+        withEmptyRepositoryStub(() => {
+          cy.pick("existing-project", "choose-path-button").click();
+
+          // shows a validation message when an empty directory is chosen
+          cy.get('[data-cy="page"] [data-cy="existing-project"]')
+            .contains("The directory should contain a git repository")
+            .should("exist");
+        });
+
+        withPlatinumStub(() => {
+          cy.pick("existing-project", "choose-path-button").click();
+          cy.pick("create-project-button").click();
+          cy.pick("profile").click();
+
+          cy.pick("profile-context-menu").click();
+          cy.pick("dropdown-menu", "new-project").click();
+          cy.get('[data-cy="page"] [data-cy="name"]').type("another-project");
+          cy.get('[data-cy="page"] [data-cy="existing-project"]').click();
+          cy.pick("existing-project", "choose-path-button").click();
+
+          cy.get('[data-cy="page"] [data-cy="existing-project"]')
+            .contains("This repository is already managed by Radicle")
+            .should("exist");
+        });
       });
     });
 
@@ -121,6 +209,65 @@ context("project creation", () => {
         cy.get('[data-cy="page"] [data-cy="existing-project"]')
           .contains("Pick a directory with an existing repository")
           .should("exist");
+      });
+    });
+  });
+
+  context("happy paths", () => {
+    it("creates a new project from an empty directory", () => {
+      withEmptyRepositoryStub(() => {
+        cy.pick("profile-context-menu").click();
+        cy.pick("dropdown-menu", "new-project").click();
+
+        cy.pick("name").type("new-fancy-project");
+        cy.pick("description").type("My new fancy project");
+
+        cy.pick("new-project").click();
+        cy.pick("new-project", "choose-path-button").click();
+        cy.pick("create-project-button").click();
+
+        cy.pick("project-screen", "topbar", "project-avatar").contains(
+          "new-fancy-project"
+        );
+
+        cy.pick("notification").contains(
+          "Project new-fancy-project successfully created"
+        );
+
+        cy.pick("profile").click();
+        cy.pick("profile-screen", "project-list").contains("new-fancy-project");
+        cy.pick("profile-screen", "project-list").contains(
+          "My new fancy project"
+        );
+      });
+    });
+
+    it("creates a new project from an existing repository", () => {
+      withPlatinumStub(() => {
+        cy.pick("profile-context-menu").click();
+        cy.pick("dropdown-menu", "new-project").click();
+
+        cy.pick("name").type("git-platinum-copy");
+        cy.pick("description").type("Best project");
+
+        cy.pick("existing-project").click();
+        cy.pick("existing-project", "choose-path-button").click();
+        cy.pick("create-project-button").click();
+        cy.pick("project-screen", "topbar", "project-avatar").contains(
+          "git-platinum-copy"
+        );
+
+        cy.pick("project-screen").contains(
+          "This repository is a data source for the Upstream front-end tests"
+        );
+
+        cy.pick("notification").contains(
+          "Project git-platinum-copy successfully created"
+        );
+
+        cy.pick("profile").click();
+        cy.pick("profile-screen", "project-list").contains("git-platinum-copy");
+        cy.pick("profile-screen", "project-list").contains("Best project");
       });
     });
   });

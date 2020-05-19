@@ -265,6 +265,7 @@
         validation={nameValidation} />
 
       <Input.Text
+        dataCy="description"
         style="margin-top: 16px; margin-bottom: 16px;"
         placeholder="Project description"
         bind:value={description} />

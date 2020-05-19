@@ -13,7 +13,7 @@
   }
 </style>
 
-<div class="project-avatar">
+<div data-cy="project-avatar" class="project-avatar">
   {#if user}
     <Avatar
       avatarFallback={user.avatarFallback}
