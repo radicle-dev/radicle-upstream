@@ -41,7 +41,7 @@
   }
 </style>
 
-<div class="item" on:click>
+<div class="item" on:click data-cy="transaction-item">
   <div class="info">
     <div class="icon">
       <Icon.TransactionState {progress} {required} state={iconState} />
