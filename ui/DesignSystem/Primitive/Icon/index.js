@@ -7,7 +7,6 @@ import Check from "./Check.svelte";
 import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
-import CopyToClipboard from "./CopyToClipboard.svelte";
 import Cross from "./Cross.svelte";
 import Circle from "./Circle.svelte";
 import Ellipses from "./Ellipses.svelte";
@@ -48,7 +47,6 @@ export default {
   CloseIssue,
   Commit,
   Copy,
-  CopyToClipboard,
   Cross,
   Circle,
   Ellipses,

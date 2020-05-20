@@ -354,7 +354,6 @@
       <Icon.CloseIssue />
       <Icon.Commit />
       <Icon.Copy />
-      <Icon.CopyToClipboard />
       <Icon.Cross />
       <Icon.Cross variant="medium" />
       <Icon.Cross variant="big" />
