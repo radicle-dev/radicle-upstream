@@ -10,8 +10,7 @@ import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
 import CopyToClipboard from "./CopyToClipboard.svelte";
 import Cross from "./Cross.svelte";
-import Ellipse from "./Ellipse.svelte";
-import EllipseBig from "./EllipseBig.svelte";
+import Circle from "./Circle.svelte";
 import Ellipses from "./Ellipses.svelte";
 import Expand from "./Expand.svelte";
 import Feed from "./Feed.svelte";
@@ -54,8 +53,7 @@ export default {
   Copy,
   CopyToClipboard,
   Cross,
-  Ellipse,
-  EllipseBig,
+  Circle,
   Ellipses,
   Expand,
   Feed,

@@ -345,21 +345,22 @@
       subTitle="Icons at 16px, 24px, 36px and 64px width and height with 2px
       stroke weight, multiple color variations">
 
-      <Icon.Badge />
       <Icon.ArrowDown />
       <Icon.ArrowUp />
+      <Icon.Badge />
       <Icon.Branch />
-      <Icon.Chevron />
       <Icon.Check />
       <Icon.CheckCircle />
+      <Icon.Chevron />
       <Icon.CloseIssue />
       <Icon.Commit />
       <Icon.Copy />
+      <Icon.CopyToClipboard />
+      <Icon.Circle />
       <Icon.Cross />
       <Icon.Cross variant="big" />
-      <Icon.Ellipse />
-      <Icon.EllipseBig />
       <Icon.Ellipses />
+      <Icon.Expand />
       <Icon.Feed />
       <Icon.File />
       <Icon.Folder />
@@ -367,17 +368,19 @@
       <Icon.Graph />
       <Icon.Home />
       <Icon.Important />
+      <Icon.Important variant="small" />
       <Icon.Inbox />
       <Icon.Info />
       <Icon.Issue />
+      <Icon.Label />
       <Icon.Member />
       <Icon.Minus />
       <Icon.Peer />
       <Icon.Plus />
       <Icon.Projects />
       <Icon.Register />
-      <Icon.Revisions />
       <Icon.Replies />
+      <Icon.Revisions />
       <Icon.Search />
       <Icon.SearchSmall />
       <Icon.Settings />
