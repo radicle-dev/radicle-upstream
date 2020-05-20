@@ -7,9 +7,9 @@
 
   export let tx = null;
 
-  const message = transaction.formatMessage(tx.messages[0]);
-  const progress = transaction.iconProgress(tx.state);
-  const iconState = transaction.iconState(tx.state);
+  $: message = transaction.formatMessage(tx.messages[0]);
+  $: progress = transaction.iconProgress(tx.state);
+  $: iconState = transaction.iconState(tx.state);
 </script>
 
 <style>

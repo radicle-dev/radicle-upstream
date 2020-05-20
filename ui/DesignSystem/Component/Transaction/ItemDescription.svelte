@@ -4,7 +4,7 @@
   export let message = null;
   export let state = null;
 
-  const color = {
+  $: color = {
     confirmed: "var(--color-caution)",
     failed: "var(--color-negative)",
     pending: "var(--color-caution)",

@@ -5,10 +5,10 @@
 
   export let summary = null;
 
-  const progress = transaction.summaryIconProgress(summary);
-  const rotate = transaction.summaryIconRotate(summary.counts);
-  const state = transaction.summaryIconState(summary.counts);
-  const text = transaction.summaryText(summary.counts);
+  $: progress = transaction.summaryIconProgress(summary);
+  $: rotate = transaction.summaryIconRotate(summary.counts);
+  $: state = transaction.summaryIconState(summary.counts);
+  $: text = transaction.summaryText(summary.counts);
 </script>
 
 <style>

@@ -51,5 +51,5 @@
   <div class="list-wrapper" class:hidden>
     <List on:select {transactions} />
   </div>
-  <Summary {summary} on:click={toggleList} />
+  <Summary on:click={toggleList} {summary} />
 </div>
