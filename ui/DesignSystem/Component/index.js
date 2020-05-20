@@ -19,6 +19,7 @@ import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Stats from "./Stats.svelte";
+import SupportButton from "./SupportButton.svelte";
 import StepCounter from "./StepCounter.svelte";
 import Timeline from "./Timeline.svelte";
 import Topbar from "./Topbar.svelte";
@@ -52,6 +53,7 @@ export {
   SegmentedControl,
   Sidebar,
   SidebarLayout,
+  SupportButton,
   StepCounter,
   Timeline,
   Topbar,
