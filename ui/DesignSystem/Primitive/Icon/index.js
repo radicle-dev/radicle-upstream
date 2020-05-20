@@ -1,6 +1,7 @@
-import Badge from "./Badge.svelte";
 import ArrowDown from "./ArrowDown.svelte";
 import ArrowUp from "./ArrowUp.svelte";
+import At from "./At.svelte";
+import Badge from "./Badge.svelte";
 import Branch from "./Branch.svelte";
 import Check from "./Check.svelte";
 import Chevron from "./Chevron.svelte";
@@ -26,12 +27,13 @@ import Issue from "./Issue.svelte";
 import Key from "./Key.svelte";
 import Label from "./Label.svelte";
 import Member from "./Member.svelte";
+import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
 import Peer from "./Peer.svelte";
 import Plus from "./Plus.svelte";
 import Projects from "./Projects.svelte";
 import Register from "./Register.svelte";
-import Revisions from "./Revisions.svelte";
+import Revision from "./Revision.svelte";
 import Replies from "./Replies.svelte";
 import Search from "./Search.svelte";
 import Settings from "./Settings.svelte";
@@ -42,9 +44,10 @@ import TransactionState from "./TransactionState.svelte";
 import Trash from "./Trash.svelte";
 
 export default {
-  Badge,
   ArrowDown,
   ArrowUp,
+  At,
+  Badge,
   Branch,
   Check,
   Chevron,
@@ -70,12 +73,13 @@ export default {
   Key,
   Label,
   Member,
+  Merge,
   Minus,
   Peer,
   Plus,
   Projects,
   Register,
-  Revisions,
+  Revision,
   Replies,
   Search,
   Settings,

@@ -34,6 +34,7 @@
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
+  import IconSwatch from "./DesignSystemGuide/IconSwatch.svelte";
   import { ValidationStatus } from "../src/validation.ts";
 
   const colors = Array.from(document.styleSheets)
@@ -344,62 +345,84 @@
       title="Icons"
       subTitle="Icons at 24px,width and height with 2px stroke weight, multiple
       color variations">
-
-      <Icon.ArrowDown />
-      <Icon.ArrowUp />
-      <Icon.Branch />
-      <Icon.Check />
-      <Icon.Check variant="filled" />
-      <Icon.Chevron />
-      <Icon.CloseIssue />
-      <Icon.Commit />
-      <Icon.Copy />
-      <Icon.Cross />
-      <Icon.Cross variant="medium" />
-      <Icon.Cross variant="big" />
-      <Icon.Cross variant="filled" />
-      <Icon.Edit />
-      <Icon.Ellipses />
-      <Icon.Expand />
-      <Icon.Eye />
-      <Icon.Feed />
-      <Icon.File />
-      <Icon.Folder />
-      <Icon.Fund />
-      <Icon.Graph />
-      <Icon.Home />
-      <Icon.Important />
-      <Icon.Important variant="big" />
-      <Icon.Important variant="no-circle" />
-      <Icon.Inbox />
-      <Icon.Info />
-      <Icon.Info variant="big" />
-      <Icon.Info variant="no-circle" />
-      <Icon.Issue />
-      <Icon.Key />
-      <Icon.Label />
-      <Icon.Member />
-      <Icon.Minus />
-      <Icon.Peer />
-      <Icon.Plus />
-      <Icon.Plus variant="small" />
-      <Icon.Projects />
-      <Icon.Register />
-      <Icon.Replies />
-      <Icon.Revisions />
-      <Icon.Search />
-      <Icon.Search variant="small" />
-      <Icon.Settings />
-      <Icon.Source />
-      <Icon.Trash />
+      <Swatch>
+        <Caption>Main</Caption>
+      </Swatch>
+      <IconSwatch>
+        <Icon.Home />
+        <Icon.Source />
+        <Icon.Fund />
+        <Icon.Member />
+        <Icon.Issue />
+        <Icon.Settings />
+      </IconSwatch>
+      <Swatch>
+        <Caption>Functional</Caption>
+      </Swatch>
+      <IconSwatch>
+        <Icon.ArrowDown />
+        <Icon.ArrowUp />
+        <Icon.Check />
+        <Icon.Check variant="filled" />
+        <Icon.Chevron />
+        <Icon.Copy />
+        <Icon.Cross />
+        <Icon.Cross variant="medium" />
+        <Icon.Cross variant="big" />
+        <Icon.Cross variant="filled" />
+        <Icon.Ellipses />
+        <Icon.Expand />
+        <Icon.Important variant="no-circle" />
+        <Icon.Important />
+        <Icon.Important variant="big" />
+        <Icon.Info variant="no-circle" />
+        <Icon.Info />
+        <Icon.Info variant="big" />
+        <Icon.Minus />
+        <Icon.Plus />
+        <Icon.Plus variant="small" />
+        <Icon.Search />
+        <Icon.Search variant="small" />
+      </IconSwatch>
+      <Swatch>
+        <Caption>Representational</Caption>
+      </Swatch>
+      <IconSwatch>
+        <Icon.Replies />
+        <Icon.Register />
+        <Icon.Edit />
+        <Icon.Inbox />
+        <Icon.File />
+        <Icon.Feed />
+        <Icon.Folder />
+        <Icon.At />
+        <Icon.Key />
+        <Icon.CloseIssue />
+        <Icon.Projects />
+        <Icon.Eye />
+        <Icon.Trash />
+        <Icon.Label />
+      </IconSwatch>
+      <Swatch>
+        <Caption>Code</Caption>
+      </Swatch>
+      <IconSwatch>
+        <Icon.Commit />
+        <Icon.Revision />
+        <Icon.Peer />
+        <Icon.Branch />
+        <Icon.Graph />
+        <Icon.Merge />
+      </IconSwatch>
     </Section>
 
     <Section
       title="Small Icons"
       subTitle="Icons at 16px with 2px stroke weight, multiple color variations">
-
-      <Icon.Badge />
-      <Icon.Circle />
+      <IconSwatch>
+        <Icon.Badge />
+        <Icon.Circle />
+      </IconSwatch>
 
     </Section>
 
