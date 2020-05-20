@@ -382,7 +382,7 @@
       <Icon.Replies />
       <Icon.Revisions />
       <Icon.Search />
-      <Icon.SearchSmall />
+      <Icon.Search variant="small" />
       <Icon.Settings />
       <Icon.Source />
     </Section>
@@ -448,12 +448,10 @@
             <Button variant="secondary" disabled>Secondary</Button>
           </td>
           <td>
-            <Button icon={Icon.SearchSmall} variant="secondary">
-              Secondary
-            </Button>
+            <Button icon={Icon.Search} variant="secondary">Secondary</Button>
           </td>
           <td>
-            <Button icon={Icon.SearchSmall} variant="secondary" disabled>
+            <Button icon={Icon.Search} variant="secondary" disabled>
               Secondary
             </Button>
           </td>

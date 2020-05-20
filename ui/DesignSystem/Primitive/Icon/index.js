@@ -33,7 +33,6 @@ import Register from "./Register.svelte";
 import Revisions from "./Revisions.svelte";
 import Replies from "./Replies.svelte";
 import Search from "./Search.svelte";
-import SearchSmall from "./SearchSmall.svelte";
 import Settings from "./Settings.svelte";
 import Source from "./Source.svelte";
 import Spinner from "./Spinner.svelte";
@@ -76,7 +75,6 @@ export default {
   Revisions,
   Replies,
   Search,
-  SearchSmall,
   Settings,
   Source,
   Spinner,
