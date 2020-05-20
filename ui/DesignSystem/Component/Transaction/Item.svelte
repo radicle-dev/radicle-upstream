@@ -8,7 +8,7 @@
   export let tx = null;
 
   const message = transaction.formatMessage(tx.messages[0]);
-  const progress = tx.state.progress || 0;
+  const progress = tx.state.confirmations || 0;
   const required = transaction.REQUIRED;
   const iconState = transaction.iconState(tx.state);
 </script>

@@ -133,7 +133,7 @@ impl ToDocumentedType for registry::State {
                     .example(13),
             );
             fields.insert(
-                "progress".into(),
+                "confirmations".into(),
                 document::integer()
                     .description(
                         "Amount of blocks that have been mined on top of the confirmed block",
@@ -236,7 +236,7 @@ mod test {
             }],
             state: registry::State::Confirmed {
                 block: 1,
-                progress: 1,
+                confirmations: 1,
                 timestamp: now,
             },
             timestamp: now,

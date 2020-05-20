@@ -100,7 +100,7 @@ export const registerMemberTransaction = (
   state: {
     type: transaction.StateType.Confirmed,
     block: 1,
-    progress: 2,
+    confirmations: 2,
     timestamp: {
       secs: 1,
       nanos: 1,

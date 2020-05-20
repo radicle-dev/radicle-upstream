@@ -13,7 +13,7 @@ use crate::registry;
 
 /// Amount of blocks we assume to have been mined before a transaction is
 /// considered to have settled.
-const SETTLEMENT_OFFSET: u32 = 6;
+const MIN_CONFIRMATIONS: u32 = 6;
 
 /// Wrapper for [`SystemTime`] carrying the time since epoch.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, PartialOrd, Ord)]
@@ -68,7 +68,7 @@ impl Transaction {
             messages: vec![message],
             state: State::Confirmed {
                 block,
-                progress: 1,
+                confirmations: 1,
                 timestamp: now,
             },
             timestamp: now,
@@ -118,9 +118,9 @@ pub enum State {
     Confirmed {
         /// The height of the block the transaction has been applied to.
         block: protocol::BlockNumber,
-        /// Amount of progress made towards settlement. We assume height+6 to
+        /// Amount of progress made towards settlement. We assume height+5 to
         /// be mathematically impossible to be reverted.
-        progress: u32,
+        confirmations: u32,
         /// Time when it was applied.
         timestamp: Timestamp,
     },
@@ -219,7 +219,7 @@ where
     }
 
     /// Updates cached transactions progress given the latest height.
-    fn advance(&self, latest_height: protocol::BlockNumber) -> Result<(), error::Error> {
+    fn advance(&self, best_height: protocol::BlockNumber) -> Result<(), error::Error> {
         let mut txs = self.list_transactions(vec![])?;
 
         for tx in &mut txs {
@@ -228,22 +228,22 @@ where
                     block, timestamp, ..
                 } => {
                     let target = block
-                        .checked_add(SETTLEMENT_OFFSET)
-                        .unwrap_or(SETTLEMENT_OFFSET);
+                        .checked_add(MIN_CONFIRMATIONS - 1)
+                        .unwrap_or(MIN_CONFIRMATIONS);
 
-                    if latest_height >= target {
+                    if best_height >= target {
                         tx.state = State::Settled {
                             timestamp: Timestamp::now(),
                         };
                     } else {
-                        let offset = latest_height
-                            .checked_add(SETTLEMENT_OFFSET)
-                            .unwrap_or(SETTLEMENT_OFFSET);
-                        let progress = offset.saturating_sub(target);
+                        let offset = best_height
+                            .checked_add(MIN_CONFIRMATIONS - 1)
+                            .unwrap_or(MIN_CONFIRMATIONS);
+                        let confirmations = offset.saturating_sub(target) + 1;
 
                         tx.state = State::Confirmed {
                             block,
-                            progress,
+                            confirmations,
                             timestamp,
                         };
                     }
@@ -435,7 +435,7 @@ mod test {
                 messages: vec![],
                 state: State::Confirmed {
                     block: 1,
-                    progress: 3,
+                    confirmations: 3,
                     timestamp: now,
                 },
                 timestamp: now,
@@ -449,7 +449,7 @@ mod test {
                     messages: vec![],
                     state: State::Confirmed {
                         block: height,
-                        progress: 2,
+                        confirmations: 2,
                         timestamp: now,
                     },
                     timestamp: now,

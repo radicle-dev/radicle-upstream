@@ -85,7 +85,7 @@ export enum StateType {
 interface Confirmed {
   type: StateType.Confirmed;
   block: Height;
-  progress: number;
+  confirmations: number;
   timestamp: Timestamp;
 }
 
@@ -135,9 +135,9 @@ export const summarizeTransactions = (txs: Transactions): Summary =>
       acc.counts[tx.state.type] += 1;
       
       if (tx.state.type === StateType.Confirmed) {
-        acc.progress += tx.state.progress;
+        acc.progress += tx.state.confirmations;
       } else if (tx.state.type === StateType.Settled) {
-        acc.progress += 6;
+        acc.progress += REQUIRED;
       }
       
       return acc;
@@ -354,7 +354,7 @@ export const formatSubject = (msg: Message): Subject => {
 export const iconProgress = (state: State): number => {
   switch (state.type) {
     case StateType.Confirmed:
-      return state.progress;
+      return state.confirmations;
     case StateType.Settled:
       return REQUIRED;
     default:
@@ -397,8 +397,11 @@ export const statusText = (state: State): string => {
   }
 }
 
-export const summaryIconProgress = (progress: number, counts: SummaryCounts): number => {
-  const res = progress / (counts.sum - counts[StateType.Failed]);
+export const summaryIconProgress = (
+  confirmations: number,
+  counts: SummaryCounts,
+): number => {
+  const res = confirmations / (counts.sum - counts[StateType.Failed]);
 
   return res === 0 ? 1 : res;
 }
