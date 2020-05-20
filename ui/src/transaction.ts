@@ -47,7 +47,7 @@ interface MemberRegistration {
 interface MemberUnregistration {
   type: MessageType.MemberUnregistration;
   orgId: string;
-  userId: string;
+  handle: string;
 }
 
 // TODO(sos): coordinate message format for project registration with proxy
@@ -318,13 +318,13 @@ export const formatSubject = (msg: Message): Subject => {
     case MessageType.MemberRegistration:
       name = msg.handle;
       type = SubjectType.Member
-      // avatarSource = getAvatar(Usage.Identity, msg.userId)
+      // avatarSource = getAvatar(Usage.Identity, msg.handle)
       break;
 
     case MessageType.MemberUnregistration:
-      name = msg.userId;
+      name = msg.handle;
       type = SubjectType.Member
-      // avatarSource = getAvatar(Usage.Identity, msg.userId)
+      // avatarSource = getAvatar(Usage.Identity, msg.handle)
       break;
 
     // TODO(sos): replace with actual avatar lookup for the identity associated with
