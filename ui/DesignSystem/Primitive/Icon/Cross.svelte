@@ -1,9 +1,9 @@
 <script>
   export let style = null;
-  export let size = "small"; // normal | "big"
+  export let variant = "small"; // normal | "big"
 </script>
 
-{#if size === 'small'}
+{#if variant === 'small'}
   <svg
     {style}
     width="24"
@@ -26,7 +26,7 @@
       17.0977 8.31658 16.7071 8.70711L8.70714 16.7071C8.31661 17.0976 7.68345
       17.0976 7.29292 16.7071Z" />
   </svg>
-{:else if (size = 'big')}
+{:else if (variant = 'big')}
   <svg
     {style}
     on:click
