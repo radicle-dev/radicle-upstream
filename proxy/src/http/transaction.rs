@@ -224,7 +224,10 @@ mod test {
     #[tokio::test]
     async fn list() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let cache = registry::Cacher::new(registry, &store);
         let now = registry::Timestamp::now();

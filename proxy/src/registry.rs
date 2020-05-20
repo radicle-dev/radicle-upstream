@@ -666,7 +666,7 @@ mod test {
     #[tokio::test]
     async fn test_register_org() -> Result<(), error::Error> {
         // Test that org registration submits valid transactions and they succeed.
-        let client = protocol::Client::new_emulator();
+        let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
@@ -694,7 +694,7 @@ mod test {
     #[tokio::test]
     async fn test_unregister_org() -> Result<(), error::Error> {
         // Test that org unregistration submits valid transactions and they succeed.
-        let client = protocol::Client::new_emulator();
+        let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
@@ -720,7 +720,7 @@ mod test {
     #[tokio::test]
     async fn test_get_org() -> Result<(), error::Error> {
         // Test that a registered org can be retrieved.
-        let client = protocol::Client::new_emulator();
+        let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
@@ -750,7 +750,7 @@ mod test {
     #[tokio::test]
     async fn test_list_org() -> Result<(), error::Error> {
         // Test that a registered org can be retrieved.
-        let client = protocol::Client::new_emulator();
+        let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
@@ -777,7 +777,7 @@ mod test {
     #[tokio::test]
     async fn test_list_org_projects() -> Result<(), error::Error> {
         // Test that a registered project is included in the list of org projects.
-        let client = protocol::Client::new_emulator();
+        let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
@@ -821,7 +821,7 @@ mod test {
     #[tokio::test]
     async fn test_register_project() -> Result<(), error::Error> {
         // Test that project registration submits valid transactions and they succeed.
-        let client = protocol::Client::new_emulator();
+        let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
@@ -868,7 +868,7 @@ mod test {
 
     #[tokio::test]
     async fn register_user() -> Result<(), error::Error> {
-        let client = protocol::Client::new_emulator();
+        let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client);
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("cloudhead")?;

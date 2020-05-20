@@ -420,7 +420,6 @@ where
 
     fn reset(&mut self, client: protocol::Client) {
         self.client.reset(client);
-        // self.transactions = HashMap::new();
     }
 }
 
@@ -438,7 +437,7 @@ mod test {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
 
         {
-            let client = protocol::Client::new_emulator();
+            let (client, _) = protocol::Client::new_emulator();
             let registry = registry::Registry::new(client);
             let cache = Cacher::new(registry, &store);
             let now = Timestamp::now();
@@ -496,7 +495,7 @@ mod test {
 
         // Test persistance.
         {
-            let client = protocol::Client::new_emulator();
+            let (client, _) = protocol::Client::new_emulator();
             let registry = registry::Registry::new(client);
             let cache = Cacher::new(registry, &store);
 

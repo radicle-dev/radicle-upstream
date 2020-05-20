@@ -28,7 +28,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "devnet" => radicle_registry_client::Client::create_with_executor(devnet_host)
             .await
             .expect("unable to construct devnet client"),
-        "emulator" => radicle_registry_client::Client::new_emulator(),
+        "emulator" => {
+            let (client, control) = radicle_registry_client::Client::new_emulator();
+
+            tokio::spawn(async move {
+                let mut interval = tokio::time::interval(std::time::Duration::from_secs(10));
+                loop {
+                    interval.tick().await;
+
+                    control.add_blocks(1);
+                }
+            });
+
+            client
+        },
         _ => panic!(format!("unknown registry source '{}'", args.registry)),
     };
 
