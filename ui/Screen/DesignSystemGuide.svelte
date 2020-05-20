@@ -368,10 +368,12 @@
       <Icon.Graph />
       <Icon.Home />
       <Icon.Important />
-      <Icon.Important variant="small" />
+      <Icon.Important variant="big" />
       <Icon.Important variant="no-circle" />
       <Icon.Inbox />
       <Icon.Info />
+      <Icon.Info variant="big" />
+      <Icon.Info variant="no-circle" />
       <Icon.Issue />
       <Icon.Label />
       <Icon.Member />

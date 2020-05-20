@@ -1,6 +1,6 @@
 <script>
   export let style = null;
-  export let variant = "regular"; // small | regular
+  export let variant = "regular"; // regular | big | no-circle
 </script>
 
 <svg
@@ -10,7 +10,7 @@
   viewBox="0 0 24 24"
   fill="var(--color-foreground-level-5)"
   xmlns="http://www.w3.org/2000/svg">
-  {#if variant === 'small'}
+  {#if variant === 'regular'}
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
@@ -28,7 +28,7 @@
       17.4874C12.9092 17.8156 12.4641 18 12 18C11.5359 18 11.0908 17.8156
       10.7626 17.4874C10.4344 17.1592 10.25 16.7141 10.25 16.25C10.25 15.7859
       10.4344 15.3408 10.7626 15.0126Z" />
-  {:else if variant === 'regular'}
+  {:else if variant === 'big'}
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
