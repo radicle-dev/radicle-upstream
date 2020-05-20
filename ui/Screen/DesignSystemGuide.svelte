@@ -356,7 +356,9 @@
       <Icon.Copy />
       <Icon.CopyToClipboard />
       <Icon.Cross />
+      <Icon.Cross variant="medium" />
       <Icon.Cross variant="big" />
+      <Icon.Cross variant="filled" />
       <Icon.Ellipses />
       <Icon.Expand />
       <Icon.Feed />
