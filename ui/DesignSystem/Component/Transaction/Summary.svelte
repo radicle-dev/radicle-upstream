@@ -5,9 +5,11 @@
 
   export let summary = null;
 
-  const progress =
-    summary.progress /
-    (summary.counts.sum - summary.counts[transaction.StateType.Failed]);
+  const progress = transaction.summaryIconProgress(
+    summary.progress,
+    summary.counts
+  );
+  const rotate = transaction.summaryIconRotate(summary.counts);
   const state = transaction.summaryIconState(summary.counts);
   const text = transaction.summaryText(summary.counts);
 </script>
@@ -30,6 +32,7 @@
       <Icon.TransactionState
         {progress}
         required={transaction.REQUIRED}
+        {rotate}
         {state}
         style="margin: 12px 12px 12px 18px;" />
       <Text

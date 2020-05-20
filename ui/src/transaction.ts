@@ -397,6 +397,16 @@ export const statusText = (state: State): string => {
   }
 }
 
+export const summaryIconProgress = (progress: number, counts: SummaryCounts): number => {
+  const res = progress / (counts.sum - counts[StateType.Failed]);
+
+  return res === 0 ? 1 : res;
+}
+
+export const summaryIconRotate = (counts: SummaryCounts): boolean => {
+  return (counts.failed > 0 && counts.pending > 0) && (counts.confirmed === 0 && counts.settled === 0);
+}
+
 export const summaryIconState = (counts: SummaryCounts): IconState => {
   if (counts.failed > 0) {
     return IconState.Negative;
@@ -423,7 +433,7 @@ export const summaryText = (counts: SummaryCounts): string => {
     state = StateType.Pending
   }
 
-  if (counts.sum > 1) {
+  if (sum > 1) {
     return `${sum} transactions ${state}`;
   }
 
