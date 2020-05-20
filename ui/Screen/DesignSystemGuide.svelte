@@ -369,6 +369,7 @@
       <Icon.Home />
       <Icon.Important />
       <Icon.Important variant="small" />
+      <Icon.Important variant="no-circle" />
       <Icon.Inbox />
       <Icon.Info />
       <Icon.Issue />
