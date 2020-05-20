@@ -137,7 +137,8 @@
         },
       ],
       state: {
-        type: transaction.StateType.Pending,
+        type: transaction.StateType.Confirmed,
+        progress: 2,
         timestamp: {
           nanos: 0,
           secs: 1589806729,
@@ -146,6 +147,22 @@
     },
     {
       id: "0a1b2c3c",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
+    },
+    {
+      id: "0a1b2c3d",
       messages: [
         {
           type: transaction.MessageType.MemberRegistration,
@@ -931,13 +948,48 @@
 
       <Swatch>
         <div style="flex-direction: column; width: 100%">
-          <TransactionStatusbar style="margin-bottom: 5px;" />
-          <TransactionStatusbar progress={30} style="margin-bottom: 5px;" />
           <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Pending,
+              timestamp: {
+                nanos: 0,
+                secs: 1589806729,
+              },
+            })}
+            progress={0}
+            variant="caution"
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Confirmed,
+              progress: 2,
+              timestamp: {
+                nanos: 0,
+                secs: 1589806729,
+              },
+            })}
+            progress={2}
+            variant="caution"
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Failed,
+              timestamp: {
+                nanos: 0,
+                secs: 1585819617,
+              },
+            })}
             variant="negative"
-            style="margin-bottom: 5px;"
-            time="1585819617" />
-          <TransactionStatusbar variant="positive" time="1585819617" />
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Settled,
+              timestamp: {
+                nanos: 0,
+                secs: 1585819617,
+              },
+            })}
+            variant="positive" />
         </div>
       </Swatch>
     </Section>
