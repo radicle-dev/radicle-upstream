@@ -379,6 +379,7 @@
       <Icon.Minus />
       <Icon.Peer />
       <Icon.Plus />
+      <Icon.Plus variant="small" />
       <Icon.Projects />
       <Icon.Register />
       <Icon.Replies />
