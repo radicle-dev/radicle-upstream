@@ -214,7 +214,7 @@ where
         loop {
             interval.tick().await;
 
-            self.advance(self.client.latest_height().await?)?;
+            self.advance(self.client.best_height().await?)?;
         }
     }
 
@@ -304,8 +304,8 @@ impl<C> registry::Client for Cacher<C>
 where
     C: registry::Client,
 {
-    async fn latest_height(&self) -> Result<u32, error::Error> {
-        self.client.latest_height().await
+    async fn best_height(&self) -> Result<u32, error::Error> {
+        self.client.best_height().await
     }
 
     async fn get_org(&self, id: registry::Id) -> Result<Option<registry::Org>, error::Error> {

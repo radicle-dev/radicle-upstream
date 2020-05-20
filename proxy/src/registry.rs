@@ -203,12 +203,12 @@ pub struct User {
 /// Methods to interact with the Registry in a uniform way.
 #[async_trait]
 pub trait Client: Clone + Send + Sync {
-    /// Fetch latest height by virtue of checking the block header of the best chain.
+    /// Fetch the current best height by virtue of checking the block header of the best chain.
     ///
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    async fn latest_height(&self) -> Result<u32, error::Error>;
+    async fn best_height(&self) -> Result<u32, error::Error>;
     /// Try to retrieve org from the Registry by id.
     ///
     /// # Errors
@@ -349,7 +349,7 @@ impl Registry {
 
 #[async_trait]
 impl Client for Registry {
-    async fn latest_height(&self) -> Result<u32, error::Error> {
+    async fn best_height(&self) -> Result<u32, error::Error> {
         let header = self.client.block_header_best_chain().await?;
 
         Ok(header.number)
