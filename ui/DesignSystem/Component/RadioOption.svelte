@@ -46,7 +46,8 @@
 <div class="option" class:active data-cy={dataCy}>
   <div class="header" on:click>
     <Title style="color: var(--color-foreground-level-6)">{title}</Title>
-    <Icon.CheckCircle
+    <Icon.Check
+      variant="filled"
       style={active ? 'display: block; fill: var(--color-primary)' : 'display: none'} />
   </div>
   {#if active}

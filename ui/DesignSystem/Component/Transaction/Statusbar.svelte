@@ -43,7 +43,9 @@
   {#if variant === 'negative'}
     <Icon.Important style="margin: 8px; fill: var(--color-background)" />
   {:else if variant === 'positive'}
-    <Icon.CheckCircle style="margin: 8px; fill: var(--color-background)" />
+    <Icon.Check
+      variant="filled"
+      style="margin: 8px; fill: var(--color-background)" />
   {:else}
     <Icon.TransactionState
       variant="inverted"

@@ -342,21 +342,19 @@
 
     <Section
       title="Icons"
-      subTitle="Icons at 16px, 24px, 36px and 64px width and height with 2px
-      stroke weight, multiple color variations">
+      subTitle="Icons at 24px,width and height with 2px stroke weight, multiple
+      color variations">
 
       <Icon.ArrowDown />
       <Icon.ArrowUp />
-      <Icon.Badge />
       <Icon.Branch />
       <Icon.Check />
-      <Icon.CheckCircle />
+      <Icon.Check variant="filled" />
       <Icon.Chevron />
       <Icon.CloseIssue />
       <Icon.Commit />
       <Icon.Copy />
       <Icon.CopyToClipboard />
-      <Icon.Circle />
       <Icon.Cross />
       <Icon.Cross variant="big" />
       <Icon.Ellipses />
@@ -385,6 +383,15 @@
       <Icon.Search variant="small" />
       <Icon.Settings />
       <Icon.Source />
+    </Section>
+
+    <Section
+      title="Small Icons"
+      subTitle="Icons at 16px with 2px stroke weight, multiple color variations">
+
+      <Icon.Badge />
+      <Icon.Circle />
+
     </Section>
 
     <Section

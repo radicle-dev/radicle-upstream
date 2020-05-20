@@ -4,7 +4,6 @@ import ArrowUp from "./ArrowUp.svelte";
 import Branch from "./Branch.svelte";
 import Chevron from "./Chevron.svelte";
 import Check from "./Check.svelte";
-import CheckCircle from "./CheckCircle.svelte";
 import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
@@ -46,7 +45,6 @@ export default {
   Branch,
   Chevron,
   Check,
-  CheckCircle,
   CloseIssue,
   Commit,
   Copy,
