@@ -2,15 +2,17 @@ import Badge from "./Badge.svelte";
 import ArrowDown from "./ArrowDown.svelte";
 import ArrowUp from "./ArrowUp.svelte";
 import Branch from "./Branch.svelte";
-import Chevron from "./Chevron.svelte";
 import Check from "./Check.svelte";
+import Chevron from "./Chevron.svelte";
+import Circle from "./Circle.svelte";
 import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
 import Cross from "./Cross.svelte";
-import Circle from "./Circle.svelte";
+import Edit from "./Edit.svelte";
 import Ellipses from "./Ellipses.svelte";
 import Expand from "./Expand.svelte";
+import Eye from "./Eye.svelte";
 import Feed from "./Feed.svelte";
 import File from "./File.svelte";
 import Folder from "./Folder.svelte";
@@ -21,6 +23,7 @@ import Important from "./Important.svelte";
 import Inbox from "./Inbox.svelte";
 import Info from "./Info.svelte";
 import Issue from "./Issue.svelte";
+import Key from "./Key.svelte";
 import Label from "./Label.svelte";
 import Member from "./Member.svelte";
 import Minus from "./Minus.svelte";
@@ -36,21 +39,24 @@ import Source from "./Source.svelte";
 import Spinner from "./Spinner.svelte";
 import StepCounter from "./StepCounter.svelte";
 import TransactionState from "./TransactionState.svelte";
+import Trash from "./Trash.svelte";
 
 export default {
   Badge,
   ArrowDown,
   ArrowUp,
   Branch,
-  Chevron,
   Check,
+  Chevron,
+  Circle,
   CloseIssue,
   Commit,
   Copy,
   Cross,
-  Circle,
+  Edit,
   Ellipses,
   Expand,
+  Eye,
   Feed,
   File,
   Folder,
@@ -61,6 +67,7 @@ export default {
   Inbox,
   Info,
   Issue,
+  Key,
   Label,
   Member,
   Minus,
@@ -76,4 +83,5 @@ export default {
   Spinner,
   StepCounter,
   TransactionState,
+  Trash,
 };

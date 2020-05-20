@@ -358,8 +358,10 @@
       <Icon.Cross variant="medium" />
       <Icon.Cross variant="big" />
       <Icon.Cross variant="filled" />
+      <Icon.Edit />
       <Icon.Ellipses />
       <Icon.Expand />
+      <Icon.Eye />
       <Icon.Feed />
       <Icon.File />
       <Icon.Folder />
@@ -374,6 +376,7 @@
       <Icon.Info variant="big" />
       <Icon.Info variant="no-circle" />
       <Icon.Issue />
+      <Icon.Key />
       <Icon.Label />
       <Icon.Member />
       <Icon.Minus />
@@ -388,6 +391,7 @@
       <Icon.Search variant="small" />
       <Icon.Settings />
       <Icon.Source />
+      <Icon.Trash />
     </Section>
 
     <Section
