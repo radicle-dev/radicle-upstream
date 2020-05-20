@@ -13,7 +13,7 @@ use crate::registry;
 
 /// Amount of blocks we assume to have been mined before a transaction is
 /// considered to have settled.
-const MIN_CONFIRMATIONS: u32 = 6;
+pub const MIN_CONFIRMATIONS: u32 = 6;
 
 /// Wrapper for [`SystemTime`] carrying the time since epoch.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, PartialOrd, Ord)]
@@ -69,6 +69,7 @@ impl Transaction {
             state: State::Confirmed {
                 block,
                 confirmations: 1,
+                min_confirmations: MIN_CONFIRMATIONS,
                 timestamp: now,
             },
             timestamp: now,
@@ -115,18 +116,23 @@ pub enum Message {
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum State {
     /// [`Transaction`] has been applied to a block, carries the height of the block.
+    #[serde(rename_all = "camelCase")]
     Confirmed {
         /// The height of the block the transaction has been applied to.
         block: protocol::BlockNumber,
         /// Amount of progress made towards settlement. We assume height+5 to
         /// be mathematically impossible to be reverted.
         confirmations: u32,
+        /// Amount of blocks we assume to have been mined before a transaction is
+        /// considered to have settled.
+        min_confirmations: u32,
         /// Time when it was applied.
         timestamp: Timestamp,
     },
 
     /// [`Transaction`] failed to be applied or processed.
     // TODO(xla): Embbed original [`protocol::TransactionError`] and serialize it.
+    #[serde(rename_all = "camelCase")]
     Failed {
         /// Description of the error that occurred.
         error: String,
@@ -135,13 +141,18 @@ pub enum State {
     },
 
     /// [`Transaction`] has been send but not yet applied to a block.
+    #[serde(rename_all = "camelCase")]
     Pending {
         /// Time when it was applied.
         timestamp: Timestamp,
     },
 
     /// [`Transaction`] has been settled on the network and is unlikely to be reverted.
+    #[serde(rename_all = "camelCase")]
     Settled {
+        /// Amount of blocks we assume to have been mined before a transaction is
+        /// considered to have settled.
+        min_confirmations: u32,
         /// Time when it settled.
         timestamp: Timestamp,
     },
@@ -233,6 +244,7 @@ where
 
                     if best_height >= target {
                         tx.state = State::Settled {
+                            min_confirmations: MIN_CONFIRMATIONS,
                             timestamp: Timestamp::now(),
                         };
                     } else {
@@ -244,6 +256,7 @@ where
                         tx.state = State::Confirmed {
                             block,
                             confirmations,
+                            min_confirmations: MIN_CONFIRMATIONS,
                             timestamp,
                         };
                     }
@@ -416,7 +429,7 @@ where
 mod test {
     use radicle_registry_client as protocol;
 
-    use super::{Cache, Cacher, State, Timestamp, Transaction};
+    use super::{Cache, Cacher, State, Timestamp, Transaction, MIN_CONFIRMATIONS};
     use crate::registry;
 
     #[tokio::test]
@@ -436,6 +449,7 @@ mod test {
                 state: State::Confirmed {
                     block: 1,
                     confirmations: 3,
+                    min_confirmations: MIN_CONFIRMATIONS,
                     timestamp: now,
                 },
                 timestamp: now,
@@ -450,6 +464,7 @@ mod test {
                     state: State::Confirmed {
                         block: height,
                         confirmations: 2,
+                        min_confirmations: MIN_CONFIRMATIONS,
                         timestamp: now,
                     },
                     timestamp: now,

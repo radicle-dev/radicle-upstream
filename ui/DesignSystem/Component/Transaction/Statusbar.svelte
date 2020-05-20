@@ -35,8 +35,8 @@
     <Icon.CheckCircle style="margin: 8px; fill: var(--color-background)" />
   {:else}
     <Icon.TransactionState
-      variant="inverted"
       {progress}
+      variant="inverted"
       style="margin: 8px; fill: var(--color-background)"
       state={variant} />
   {/if}

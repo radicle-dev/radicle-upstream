@@ -9,7 +9,6 @@ import { Domain } from "./project"
 import * as remote from "./remote";
 
 const POLL_INTERVAL = 10000;
-export const REQUIRED = 6;
 
 // Types.
 type Height = number;
@@ -85,6 +84,7 @@ export enum StateType {
 interface Confirmed {
   type: StateType.Confirmed;
   block: Height;
+  minConfirmations: number;
   confirmations: number;
   timestamp: Timestamp;
 }
@@ -102,6 +102,7 @@ interface Pending {
 
 interface Settled {
   type: StateType.Settled;
+  minConfirmations: number;
   timestamp: Timestamp;
 }
 
@@ -125,23 +126,28 @@ interface SummaryCounts {
 }
 
 interface Summary {
+  confirmations: number;
+  minConfirmations: number;
   counts: SummaryCounts;
-  progress: number;
 }
 
 export const summarizeTransactions = (txs: Transactions): Summary =>
-  txs.reduce((acc, tx): Summary => {
+  txs.reduce((acc, tx): Summary => { 
       acc.counts.sum += 1;
       acc.counts[tx.state.type] += 1;
       
       if (tx.state.type === StateType.Confirmed) {
-        acc.progress += tx.state.confirmations;
+        acc.confirmations += tx.state.confirmations;
+        acc.minConfirmations = tx.state.minConfirmations;
       } else if (tx.state.type === StateType.Settled) {
-        acc.progress += REQUIRED;
+        acc.confirmations += tx.state.minConfirmations;
+        acc.minConfirmations = tx.state.minConfirmations;
       }
       
       return acc;
     }, {
+      confirmations: 0,
+      minConfirmations: 0,
       counts: {
         confirmed: 0,
         failed: 0,
@@ -149,7 +155,6 @@ export const summarizeTransactions = (txs: Transactions): Summary =>
         settled: 0,
         sum: 0,
       },
-      progress: 0,
     });
 
 const transactionsStore = remote.createStore<Transactions>();
@@ -351,12 +356,23 @@ export const formatSubject = (msg: Message): Subject => {
   }
 }
 
+export const iconMinimum = (state: State): number => {
+  switch (state.type) {
+    case StateType.Confirmed:
+      return state.minConfirmations;
+    case StateType.Settled:
+      return state.minConfirmations;
+    default:
+      return -1;
+  }
+}
+
 export const iconProgress = (state: State): number => {
   switch (state.type) {
     case StateType.Confirmed:
-      return state.confirmations;
+      return state.confirmations / state.minConfirmations * 100;
     case StateType.Settled:
-      return REQUIRED;
+      return 100;
     default:
       return 0;
   }
@@ -397,13 +413,13 @@ export const statusText = (state: State): string => {
   }
 }
 
-export const summaryIconProgress = (
-  confirmations: number,
-  counts: SummaryCounts,
-): number => {
-  const res = confirmations / (counts.sum - counts[StateType.Failed]);
+export const summaryIconProgress = (summary: Summary): number => {
+  const sum = summary.counts[StateType.Confirmed] + summary.counts[StateType.Settled];
+  if (sum === 0) { return 0; }
 
-  return res === 0 ? 1 : res;
+  const progress = summary.confirmations / (summary.minConfirmations * sum);
+
+  return progress !== 0 ? progress * 100 : 15;
 }
 
 export const summaryIconRotate = (counts: SummaryCounts): boolean => {

@@ -8,8 +8,7 @@
   export let tx = null;
 
   const message = transaction.formatMessage(tx.messages[0]);
-  const progress = tx.state.confirmations || 0;
-  const required = transaction.REQUIRED;
+  const progress = transaction.iconProgress(tx.state);
   const iconState = transaction.iconState(tx.state);
 </script>
 
@@ -44,7 +43,7 @@
 <div class="item" on:click data-cy="transaction-item">
   <div class="info">
     <div class="icon">
-      <Icon.TransactionState {progress} {required} state={iconState} />
+      <Icon.TransactionState {progress} state={iconState} />
     </div>
     <ItemDescription {message} state={tx.state.type} />
   </div>

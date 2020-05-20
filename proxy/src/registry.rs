@@ -16,7 +16,7 @@ use crate::avatar;
 use crate::error;
 
 mod transaction;
-pub use transaction::{Cache, Cacher, Message, State, Timestamp, Transaction};
+pub use transaction::{Cache, Cacher, Message, State, Timestamp, Transaction, MIN_CONFIRMATIONS};
 
 /// Wrapper for [`protocol::Id`] to add serialization.
 #[derive(Clone, Debug, PartialEq)]

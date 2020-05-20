@@ -176,6 +176,7 @@ impl ToDocumentedType for registry::State {
         document::one_of(vec![confirmed, failed, pending, settled])
             .description("Transaction lifecycle state")
             .example(Self::Settled {
+                min_confirmations: registry::MIN_CONFIRMATIONS,
                 timestamp: registry::Timestamp::now(),
             })
     }
@@ -237,6 +238,7 @@ mod test {
             state: registry::State::Confirmed {
                 block: 1,
                 confirmations: 1,
+                min_confirmations: registry::MIN_CONFIRMATIONS,
                 timestamp: now,
             },
             timestamp: now,

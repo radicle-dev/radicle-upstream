@@ -122,6 +122,7 @@
       ],
       state: {
         type: transaction.StateType.Settled,
+        minConfirmations: 6,
         timestamp: {
           nanos: 0,
           secs: 1589806729,
@@ -138,7 +139,8 @@
       ],
       state: {
         type: transaction.StateType.Confirmed,
-        progress: 2,
+        confirmations: 2,
+        minConfirmations: 6,
         timestamp: {
           nanos: 0,
           secs: 1589806729,
@@ -228,6 +230,7 @@
       ],
       state: {
         type: transaction.StateType.Settled,
+        minConfirmations: 6,
         timestamp: {
           nanos: 0,
           secs: 1589806729,
@@ -481,13 +484,13 @@
       reactive coloring.">
       <Icon.Spinner />
       <Icon.TransactionState state="positive" />
-      <Icon.TransactionState progress={0} variant="small" />
-      <Icon.TransactionState progress={0} />
-      <Icon.TransactionState progress={1} />
-      <Icon.TransactionState progress={2} />
-      <Icon.TransactionState state="negative" progress={1} rotate />
-      <Icon.TransactionState state="negative" progress={4} />
-      <Icon.TransactionState state="negative" progress={6} />
+      <Icon.TransactionState variant="small" />
+      <Icon.TransactionState />
+      <Icon.TransactionState progress={(1 / 6) * 100} />
+      <Icon.TransactionState progress={(2 / 6) * 100} />
+      <Icon.TransactionState state="negative" progress={(2 / 6) * 100} rotate />
+      <Icon.TransactionState state="negative" progress={(4 / 6) * 100} />
+      <Icon.TransactionState state="negative" progress={100} />
       <Icon.TransactionState state="negative" />
     </Section>
 
@@ -962,13 +965,14 @@
           <TransactionStatusbar
             text={transaction.statusText({
               type: transaction.StateType.Confirmed,
-              progress: 2,
+              confirmations: 2,
+              minConfirmations: 6,
               timestamp: {
                 nanos: 0,
                 secs: 1589806729,
               },
             })}
-            progress={2}
+            progress={(2 / 6) * 100}
             variant="caution"
             style="margin-bottom: 5px;" />
           <TransactionStatusbar
@@ -984,6 +988,7 @@
           <TransactionStatusbar
             text={transaction.statusText({
               type: transaction.StateType.Settled,
+              minConfirmations: 6,
               timestamp: {
                 nanos: 0,
                 secs: 1585819617,

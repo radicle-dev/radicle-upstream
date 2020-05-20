@@ -101,6 +101,7 @@ export const registerMemberTransaction = (
     type: transaction.StateType.Confirmed,
     block: 1,
     confirmations: 2,
+    minConfirmations: 6,
     timestamp: {
       secs: 1,
       nanos: 1,
