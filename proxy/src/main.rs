@@ -35,7 +35,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let mut interval = tokio::time::interval(std::time::Duration::from_secs(10));
                 loop {
                     interval.tick().await;
-
                     control.add_blocks(1);
                 }
             });

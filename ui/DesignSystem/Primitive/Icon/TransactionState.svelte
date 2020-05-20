@@ -6,32 +6,30 @@
   export let variant = "regular"; // small | regular | inverted
 
   const max = 100;
-  const size = {
+  $: size = {
     regular: 32,
     inverted: 24,
     small: 16,
   }[variant];
 
-  const strokeWidth = {
+  $: strokeWidth = {
     regular: 4,
     inverted: 6,
     small: 2,
   }[variant];
 
-  const center = size / 2;
-  const radius = size / 2 - strokeWidth / 2;
-  const circumference = 2 * Math.PI * radius;
-
-  const defaultDashLength = {
-    caution: (1 / 6) * 100,
-    positive: max,
-    negative: 0,
-  }[state];
-
+  $: center = size / 2;
+  $: radius = size / 2 - strokeWidth / 2;
+  $: circumference = 2 * Math.PI * radius;
   $: color = {
     caution: "var(--color-caution)",
     positive: "var(--color-positive)",
     negative: "var(--color-negative)",
+  }[state];
+  $: defaultDashLength = {
+    caution: (1 / 6) * 100,
+    positive: max,
+    negative: 0,
   }[state];
   $: dashLength = progress === 0 ? defaultDashLength : progress;
   $: dashArray = (dashLength * circumference) / max;

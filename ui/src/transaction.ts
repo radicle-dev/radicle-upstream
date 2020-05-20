@@ -356,17 +356,6 @@ export const formatSubject = (msg: Message): Subject => {
   }
 }
 
-export const iconMinimum = (state: State): number => {
-  switch (state.type) {
-    case StateType.Confirmed:
-      return state.minConfirmations;
-    case StateType.Settled:
-      return state.minConfirmations;
-    default:
-      return -1;
-  }
-}
-
 export const iconProgress = (state: State): number => {
   switch (state.type) {
     case StateType.Confirmed:

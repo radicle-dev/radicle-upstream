@@ -13,7 +13,7 @@
     hidden = !hidden;
   };
 
-  const negative = summaryIconState(summary.counts) === IconState.Negative;
+  $: negative = summaryIconState(summary.counts) === IconState.Negative;
 </script>
 
 <style>
