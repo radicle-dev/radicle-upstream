@@ -2,8 +2,7 @@ import Badge from "./Badge.svelte";
 import ArrowDown from "./ArrowDown.svelte";
 import ArrowUp from "./ArrowUp.svelte";
 import Branch from "./Branch.svelte";
-import Carret from "./Carret.svelte";
-import CarretBig from "./CarretBig.svelte";
+import Chevron from "./Chevron.svelte";
 import Check from "./Check.svelte";
 import CheckCircle from "./CheckCircle.svelte";
 import CloseIssue from "./CloseIssue.svelte";
@@ -47,8 +46,7 @@ export default {
   ArrowDown,
   ArrowUp,
   Branch,
-  Carret,
-  CarretBig,
+  Chevron,
   Check,
   CheckCircle,
   CloseIssue,

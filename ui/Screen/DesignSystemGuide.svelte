@@ -349,8 +349,7 @@
       <Icon.ArrowDown />
       <Icon.ArrowUp />
       <Icon.Branch />
-      <Icon.Carret />
-      <Icon.CarretBig />
+      <Icon.Chevron />
       <Icon.Check />
       <Icon.CheckCircle />
       <Icon.CloseIssue />

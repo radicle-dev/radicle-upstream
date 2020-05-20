@@ -156,8 +156,7 @@
             </div>
           </div>
           <div slot="right">
-            <Icon.CarretBig
-              style="vertical-align: middle; margin-right: 16px;" />
+            <Icon.Chevron style="vertical-align: middle; margin-right: 16px;" />
           </div>
         </Flex>
       </div>
