@@ -466,11 +466,11 @@
       <Icon.TransactionState state="positive" />
       <Icon.TransactionState progress={0} variant="small" />
       <Icon.TransactionState progress={0} />
-      <Icon.TransactionState progress={10} />
-      <Icon.TransactionState progress={100 / 3} />
+      <Icon.TransactionState progress={1} />
+      <Icon.TransactionState progress={2} />
       <Icon.TransactionState state="negative" progress={0} />
-      <Icon.TransactionState state="negative" progress={80} />
-      <Icon.TransactionState state="negative" progress={100} />
+      <Icon.TransactionState state="negative" progress={4} />
+      <Icon.TransactionState state="negative" progress={6} />
       <Icon.TransactionState state="negative" />
     </Section>
 
