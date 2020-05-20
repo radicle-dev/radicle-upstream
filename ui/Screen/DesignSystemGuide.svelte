@@ -485,7 +485,7 @@
       <Icon.TransactionState progress={0} />
       <Icon.TransactionState progress={1} />
       <Icon.TransactionState progress={2} />
-      <Icon.TransactionState state="negative" progress={0} />
+      <Icon.TransactionState state="negative" progress={1} rotate />
       <Icon.TransactionState state="negative" progress={4} />
       <Icon.TransactionState state="negative" progress={6} />
       <Icon.TransactionState state="negative" />

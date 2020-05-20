@@ -1,6 +1,7 @@
 <script>
   export let progress = 0; // 0-100% of progress, overwrites the defaults
   export let required = 6;
+  export let rotate = false;
   export let style = null;
   export let state = "caution"; // negative | caution | positive
   export let variant = "regular"; // small | regular | inverted
@@ -35,7 +36,7 @@
 
   $: dashLength = progress === 0 ? defaultDashLength : progress;
 
-  $: rotate = progress === 0;
+  $: spin = progress === 0 || rotate;
 </script>
 
 <style>
@@ -43,12 +44,12 @@
     opacity: 0.3;
   }
 
-  .rotate {
+  .spin {
     transform-origin: var(--origin);
-    animation: rotate 5s infinite linear;
+    animation: spin 5s infinite linear;
   }
 
-  @keyframes rotate {
+  @keyframes spin {
     from {
       transform: rotate(0deg);
     }
@@ -75,7 +76,7 @@
     stroke-width={strokeWidth} />
   <circle
     style="--origin: {center}px {center}px"
-    class:rotate
+    class:spin
     cx={center}
     cy={center}
     r={radius}
