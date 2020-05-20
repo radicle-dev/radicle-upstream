@@ -42,7 +42,6 @@
     width: 100%;
   }
   .content.center {
-    /* padding: 92px 0 72px 0; */
     width: 540px;
   }
 </style>
