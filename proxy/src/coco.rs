@@ -8,12 +8,12 @@ use librad::keys;
 use librad::uri::{self, RadUrn};
 use librad::meta::entity;
 use librad::meta::user::User;
-use librad::meta::project::Project;
+use librad::meta::project;
 use librad::paths::Paths;
 use librad::surf;
 use librad::surf::git::git2;
 use librad::git::storage::Storage;
-use radicle_keystore::Keystore;
+use radicle_keystore::{Keystore, SecretKeyExt};
 
 use crate::error;
 
@@ -21,18 +21,24 @@ mod types;
 pub use types::*; // TODO: make explicit
 
 // TODO(finto): should bundle these up so we can pass them all in at once
-pub async fn get_browser<'a, Store, Resolver>(
-    paths: Paths,
-    key_store: Store,
-    project_resolver: Resolver,
-    project_urn: RadUrn,
+pub async fn get_browser<'a, K, R>(
+    paths: &Paths,
+    key_store: &K,
+    project_resolver: &R,
+    project_urn: String,
 ) -> Result<(surf::git::Browser<'a>, project::Project), error::Error>
 where
-    Store: Keystore,
-    Resolver: entity::Resolver<project::Project>,
+    K: Keystore<
+        PublicKey = keys::PublicKey,
+        SecretKey = keys::SecretKey,
+        Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+        Error = error::Error
+    >,
+    R: entity::Resolver<project::Project>,
 {
+    let project_urn = RadUrn::from_str(&project_urn)?;
     let keypair = key_store.get_key()?;
-    let project = project.resolve(&project_urn).await?;
+    let project = project_resolver.resolve(&project_urn).await?;
 
     let storage = Storage::open(paths, keypair.secret_key)?;
     let mut repo = git::repo::Repo::open(storage, project_urn)?;
@@ -48,12 +54,10 @@ where
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob<'a>(
     browser: &surf::git::Browser<'a>,
-    maybe_revision: Option<String>,
-    default_branch: String,
+    revision: String,
     maybe_path: Option<String>,
 ) -> Result<Blob, error::Error> {
     let path = maybe_path.clone().unwrap_or_default();
-    let revision = maybe_revision.unwrap_or(default_branch);
 
     // Best effort to guess the revision.
     browser.revspec(&revision)?;
@@ -266,13 +270,13 @@ pub fn tree<'a>(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project for the given `id` doesn't exist.
-pub async fn get_project_meta(paths: &Paths, urn: &RadUrn, project: impl entity::Resolver<Project>) -> Result<Project, error::Error> {
+pub async fn get_project_meta(paths: &Paths, urn: &RadUrn, project: impl entity::Resolver<project::Project>) -> Result<project::Project, error::Error> {
     Ok(project.resolve(&urn).await?)
 }
 
 /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
 #[must_use]
-pub fn list_projects(paths: &Paths) -> Vec<Project> {
+pub fn list_projects(paths: &Paths) -> Vec<(RadUrn, project::Project)> {
     todo!() // TODO: not implemented by link yet
 }
 
@@ -291,15 +295,20 @@ pub async fn init_project(
     description: &str,
     default_branch: &str,
 ) -> Result<(RadUrn, git::repo::Repo), error::Error> {
-    let key = keys::SecretKey::new();
+    // Fetch the owner and build the repo path
     let user = user.resolve(&owner).await?; // TODO: verify
     let path = uri::Path::from_str(path)?;
     let urn = RadUrn::new(user.root_hash().clone(), uri::Protocol::Git, path);
-    let mut meta = Project::new(name, urn)?.to_builder();
+
+    // Create the project meta
+    let mut meta = project::Project::new(name, urn)?.to_builder();
     meta.set_description(description.to_string());
     meta.set_default_branch(default_branch.to_string());
     let meta = meta.build()?;
-    let storage = Storage::open(librad_paths, key)?;
+
+    // Set up storage
+    let key = keys::SecretKey::new();
+    let storage = Storage::init(librad_paths, key)?;
 
     Ok((urn, git::repo::Repo::create(storage, &meta)?))
 }
@@ -343,7 +352,7 @@ pub fn replicate_platinum(
     name: &str,
     description: &str,
     default_branch: &str,
-) -> Result<(RadUrn, Project), error::Error> {
+) -> Result<(RadUrn, project::Project), error::Error> {
     // Craft the absolute path to git-platinum fixtures.
     let mut platinum_path = env::current_dir()?;
     platinum_path.push("../fixtures/git-platinum");

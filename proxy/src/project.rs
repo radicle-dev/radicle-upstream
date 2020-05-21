@@ -5,6 +5,7 @@ use librad::meta::project;
 use librad::uri;
 use librad::meta::entity;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 use crate::error;
 use crate::registry;
@@ -66,12 +67,14 @@ pub struct Stats {
 }
 
 /// TODO(xla): Add documentation.
-pub async fn get(paths: &librad::paths::Paths, project_id: &uri::RadUrn, project: impl entity::Resolver<project::Project>) -> Result<Project, error::Error> {
-    let meta = project.resolve(&project_id).await?;
+pub async fn get(paths: &librad::paths::Paths, project_urn: &str, project_resolver: impl entity::Resolver<project::Project>) -> Result<Project, error::Error> {
+    let project_urn = uri::RadUrn::from_str(project_urn)?;
+    let meta = project_resolver.resolve(&project_urn).await?;
+    let shareable_entity_identifier = format!("%{}", project_urn);
 
     Ok(Project {
-        id: project_id.clone(),
-        shareable_entity_identifier: format!("%{}", project_id),
+        id: project_urn,
+        shareable_entity_identifier,
         metadata: meta.into(),
         registration: None,
         stats: Stats {

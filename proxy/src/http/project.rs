@@ -138,9 +138,12 @@ fn register_filter<R: registry::Client>(
 /// fullfilment.
 mod handler {
     use librad::paths::Paths;
+    use librad::meta::entity;
+    use librad::meta;
     use librad::surf;
     use radicle_registry_client::Balance;
     use std::convert::TryFrom;
+    use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -157,6 +160,7 @@ mod handler {
         librad_paths: Arc<RwLock<Paths>>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
+        // TODO(fintohaps): I don't think this is needed
         if surf::git::git2::Repository::open(input.path.clone()).is_err() {
             coco::init_repo(input.path.clone())?;
         };
@@ -187,12 +191,16 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(
+    pub async fn get<Resolver>(
         librad_paths: Arc<RwLock<Paths>>,
+        resolver: Resolver,
         id: String,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        Resolver: entity::Resolver<meta::project::Project>
+    {
         let paths = librad_paths.read().await;
-        Ok(reply::json(&project::get(&paths, id.as_ref()).await?))
+        Ok(reply::json(&project::get(&paths, id.as_ref(), resolver).await?))
     }
 
     /// List all known projects.

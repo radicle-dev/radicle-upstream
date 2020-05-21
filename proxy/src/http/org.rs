@@ -194,6 +194,8 @@ fn register_member_filter<R: registry::Client>(
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use librad::paths::Paths;
+    use librad::meta::entity;
+    use librad::meta;
     use radicle_registry_client::Balance;
     use std::convert::TryFrom;
     use std::sync::Arc;
@@ -233,11 +235,16 @@ mod handler {
     }
 
     /// Get all projects under the given org id.
-    pub async fn get_projects<R: registry::Client>(
+    pub async fn get_projects<R, Resolver>(
         paths: Arc<RwLock<Paths>>,
         registry: http::Shared<R>,
+        resolver: Resolver,
         org_id: String,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+        Resolver: entity::Resolver<meta::project::Project>,
+    {
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(org_id)?;
         let projects = reg.list_org_projects(org_id).await?;
@@ -245,7 +252,7 @@ mod handler {
         for p in &projects {
             let maybe_project = if let Some(id) = &p.maybe_project_id {
                 let paths = paths.read().await;
-                Some(project::get(&paths, id).await.expect("Project not found"))
+                Some(project::get(&paths, id, resolver).await.expect("Project not found"))
             } else {
                 None
             };

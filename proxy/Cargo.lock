@@ -2597,6 +2597,7 @@ dependencies = [
  "serde_cbor 0.11.1",
  "serde_json",
  "tempfile",
+ "thiserror",
  "tokio 0.2.21",
  "url 1.7.2",
  "url 2.1.1",

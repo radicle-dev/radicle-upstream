@@ -6,6 +6,7 @@ use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client as registry;
 use std::time::SystemTimeError;
+use thiserror;
 
 /// Project problems.
 #[derive(Debug)]
@@ -26,12 +27,12 @@ pub enum UserValidation {
 }
 
 /// All error variants the API will return.
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Returned when an attempt to create an identity was made and there is one present.
     IdentityExists(String),
     /// FileSystem errors from interacting with code in repository.
-    FS(surf::file_system::Error),
+    FS(#[from] surf::file_system::Error),
     /// TODO(fintan)
     PathNotFound,
     /// Originated from `radicle_surf`.

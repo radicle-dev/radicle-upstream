@@ -302,9 +302,8 @@ mod handler {
     use librad::meta::entity;
     use librad::meta::project;
     use librad::paths::Paths;
-    use librad::uri::RadUrn;
-    use radicle_keystore as keystore;
-    use std::str::FromStr;
+    use librad::keys;
+    use radicle_keystore::{Keystore, SecretKeyExt};
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::path::Tail;
@@ -313,51 +312,109 @@ mod handler {
     use crate::avatar;
     use crate::coco;
     use crate::http;
+    use crate::error;
     use crate::identity;
 
     /// Fetch a [`coco::Blob`].
-    pub async fn blob(
+    pub async fn blob<K, R>(
         librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        key_store: http::Shared<K>,
+        project_resolver: http::Shared<R>,
+        project_urn: String,
         super::BlobQuery { path, revision }: super::BlobQuery,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        K: Keystore<
+            PublicKey = keys::PublicKey,
+            SecretKey = keys::SecretKey,
+            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+            Error = error::Error
+        >,
+        R: entity::Resolver<project::Project>,
+    {
         let paths = librad_paths.read().await;
-        let blob = coco::blob(&paths, &project_id, revision, path)?;
+        let keys = *key_store.read().await;
+        let resolver = *project_resolver.read().await;
+        let (bro, project) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
+        let blob = coco::blob(&bro, revision, path)?;
 
         Ok(reply::json(&blob))
     }
 
     /// Fetch the list [`coco::Branch`].
-    pub async fn branches(
+    pub async fn branches<K, R>(
         librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
-    ) -> Result<impl Reply, Rejection> {
+        key_store: http::Shared<K>,
+        project_resolver: http::Shared<R>,
+        project_urn: String,
+    ) -> Result<impl Reply, Rejection>
+    where
+        K: Keystore<
+            PublicKey = keys::PublicKey,
+            SecretKey = keys::SecretKey,
+            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+            Error = error::Error
+        >,
+        R: entity::Resolver<project::Project>,
+    {
         let paths = librad_paths.read().await;
-        let branches = coco::branches(&paths, &project_id)?;
+        let keys = *key_store.read().await;
+        let resolver = *project_resolver.read().await;
+        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let branches = coco::branches(&bro)?;
 
         Ok(reply::json(&branches))
     }
 
     /// Fetch a [`coco::Commit`].
-    pub async fn commit(
+    pub async fn commit<K, R>(
         librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        key_store: http::Shared<K>,
+        project_resolver: http::Shared<R>,
+        project_urn: String,
         sha1: String,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        K: Keystore<
+            PublicKey = keys::PublicKey,
+            SecretKey = keys::SecretKey,
+            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+            Error = error::Error
+        >,
+        R: entity::Resolver<project::Project>,
+    {
         let paths = librad_paths.read().await;
-        let commit = coco::commit(&paths, &project_id, &sha1)?;
+        let keys = *key_store.read().await;
+        let resolver = *project_resolver.read().await;
+        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let commit = coco::commit(&bro, &sha1)?;
 
         Ok(reply::json(&commit))
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
-    pub async fn commits(
+    pub async fn commits<K, R>(
         librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        key_store: http::Shared<K>,
+        project_resolver: http::Shared<R>,
+        project_urn: String,
         branch: String,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        K: Keystore<
+            PublicKey = keys::PublicKey,
+            SecretKey = keys::SecretKey,
+            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+            Error = error::Error
+        >,
+        R: entity::Resolver<project::Project>,
+    {
         let paths = librad_paths.read().await;
-        let commits = coco::commits(&paths, &project_id, &branch)?;
+        let keys = *key_store.read().await;
+        let resolver = *project_resolver.read().await;
+        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let commits = coco::commits(&bro, &branch)?;
 
         Ok(reply::json(&commits))
     }
@@ -370,13 +427,27 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions(
+    pub async fn revisions<K, R>(
         librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
-    ) -> Result<impl Reply, Rejection> {
+        key_store: http::Shared<K>,
+        project_resolver: http::Shared<R>,
+        project_urn: String,
+    ) -> Result<impl Reply, Rejection>
+    where
+        K: Keystore<
+            PublicKey = keys::PublicKey,
+            SecretKey = keys::SecretKey,
+            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+            Error = error::Error
+        >,
+        R: entity::Resolver<project::Project>,
+    {
         let paths = librad_paths.read().await;
-        let branches = coco::branches(&paths, &project_id)?;
-        let tags = coco::tags(&paths, &project_id)?;
+        let keys = *key_store.read().await;
+        let resolver = *project_resolver.read().await;
+        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let branches = coco::branches(&bro)?;
+        let tags = coco::tags(&bro)?;
         let revs = ["cloudhead", "rudolfs", "xla"]
             .iter()
             .map(|handle| super::Revision {
@@ -407,15 +478,18 @@ mod handler {
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
     where
-        K: keystore::Keystore,
+        K: Keystore<
+            PublicKey = keys::PublicKey,
+            SecretKey = keys::SecretKey,
+            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+            Error = error::Error
+        >,
         R: entity::Resolver<project::Project>,
     {
         let paths = librad_paths.read().await;
-        let keys = key_store.read().await;
-        let resolver = project_resolver.read().await;
-
-        let urn = RadUrn::from_str(&project_urn).expect("unable to parse URN");
-        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, urn).await?;
+        let keys = *key_store.read().await;
+        let resolver = *project_resolver.read().await;
+        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
         let tags = coco::tags(&bro)?;
 
         Ok(reply::json(&tags))
@@ -430,15 +504,18 @@ mod handler {
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection>
     where
-        K: keystore::Keystore,
+        K: Keystore<
+            PublicKey = keys::PublicKey,
+            SecretKey = keys::SecretKey,
+            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+            Error = error::Error
+        >,
         R: entity::Resolver<project::Project>,
     {
         let paths = librad_paths.read().await;
-        let keys = key_store.read().await;
-        let resolver = project_resolver.read().await;
-
-        let urn = RadUrn::from_str(project_urn).expect("unable to parse URN");
-        let (bro, project) = coco::get_browser(&paths, &keys, &resolver, urn).await?;
+        let keys = *key_store.read().await;
+        let resolver = *project_resolver.read().await;
+        let (bro, project) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
         let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
         let tree = coco::tree(&bro, revision, prefix)?;
 
