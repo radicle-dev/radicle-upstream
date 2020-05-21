@@ -4,6 +4,7 @@
 </script>
 
 <svg
+  on:click
   data-cy={dataCy}
   {style}
   width="16"

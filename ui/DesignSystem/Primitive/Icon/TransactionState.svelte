@@ -59,6 +59,7 @@
 </style>
 
 <svg
+  on:click
   {style}
   width={size}
   height={size}

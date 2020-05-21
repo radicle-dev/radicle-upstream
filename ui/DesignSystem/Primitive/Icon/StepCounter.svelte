@@ -4,6 +4,7 @@
 </script>
 
 <svg
+  on:click
   {style}
   width="15"
   height="15"
