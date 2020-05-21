@@ -51,7 +51,7 @@
 
   $: {
     if (userHandle && userHandle.length > 0) validating = true;
-    if (validating) validation.updateInput(userHandle);
+    if (validating) validation.validate(userHandle);
   }
 
   $: imageUrl = $validation.status === ValidationStatus.Success && "";

@@ -89,7 +89,7 @@
   $: {
     // Start validating once the user enters something for the first time
     if (orgId && orgId.length > 0) validating = true;
-    if (validating) validation.updateInput(orgId);
+    if (validating) validation.validate(orgId);
   }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
