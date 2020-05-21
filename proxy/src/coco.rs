@@ -359,7 +359,7 @@ pub fn tree(
 
     browser.revspec(&revision)?;
 
-    let mut path = if prefix == "/" || prefix == "" {
+    let path = if prefix == "/" || prefix == "" {
         surf::file_system::Path::root()
     } else {
         surf::file_system::Path::from_str(&prefix)?
@@ -395,14 +395,13 @@ pub fn tree(
             let mut commit_path = surf::file_system::Path::root();
             commit_path.append(&mut entry_path);
 
-            let last_commit = browser.last_commit(&commit_path)?.map(|c| Commit::from(&c));
             let info = Info {
                 name: label.to_string(),
                 object_type: match system_type {
                     surf::file_system::SystemType::Directory => ObjectType::Tree,
                     surf::file_system::SystemType::File => ObjectType::Blob,
                 },
-                last_commit,
+                last_commit: None,
             };
 
             Ok(TreeEntry {
@@ -423,10 +422,7 @@ pub fn tree(
     let last_commit = if path.is_root() {
         Some(Commit::from(browser.get().first()))
     } else {
-        let mut commit_path = surf::file_system::Path::root();
-        commit_path.append(&mut path);
-
-        browser.last_commit(&commit_path)?.map(|c| Commit::from(&c))
+        None
     };
     let name = if path.is_root() {
         "".into()

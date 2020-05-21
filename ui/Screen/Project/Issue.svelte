@@ -117,8 +117,8 @@ Part of #277
   .container {
     max-width: 71.25rem;
     margin: 0 auto;
-    padding: 32px 0;
-    min-width: 500px;
+    padding: 2rem;
+    min-width: 30rem;
   }
   header {
     padding: 0 16px 24px 16px;

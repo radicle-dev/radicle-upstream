@@ -120,6 +120,10 @@
         pattern: new RegExp(NAME_MATCH),
         message: `Project name should match ${NAME_MATCH}`,
       },
+      length: {
+        maximum: 32,
+        message: "Project name cannot exceed 32 characters",
+      },
     },
   };
 

@@ -68,10 +68,10 @@
   .container {
     max-width: 71.25rem;
     margin: 0 auto;
-    padding: 32px 0;
+    padding: 2rem;
   }
   .filters {
-    margin-bottom: 24px;
+    margin-bottom: 1.5rem;
   }
 </style>
 
