@@ -1,29 +1,32 @@
 //! Endpoints for Org.
 
-use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::coco;
 use crate::http;
 use crate::notification;
 use crate::project;
 use crate::registry;
 
 /// Prefixed filters.
-pub fn routes<R: registry::Client>(
-    paths: Arc<RwLock<Paths>>,
+pub fn routes<R, C>(
     registry: http::Shared<R>,
+    coco: http::Shared<C>,
     subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+    C: coco::Client,
+{
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(paths, Arc::clone(&registry)))
+            .or(get_projects_filter(Arc::clone(&registry), Arc::clone(&coco)))
             .or(register_filter(
                 Arc::clone(&registry),
                 subscriptions.clone(),
@@ -34,11 +37,15 @@ pub fn routes<R: registry::Client>(
 
 /// Combination of all org routes.
 #[cfg(test)]
-fn filters<R: registry::Client>(
-    paths: Arc<RwLock<Paths>>,
+fn filters<R, C>(
     registry: http::Shared<R>,
+    coco: http::Shared<C>,
     subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+    C: coco::Client,
+{
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
         .or(get_projects_filter(paths, Arc::clone(&registry)))
@@ -52,7 +59,10 @@ fn filters<R: registry::Client>(
 /// `GET /<id>`
 fn get_filter<R: registry::Client>(
     registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
     http::with_shared(registry)
         .and(warp::get())
         .and(document::param::<String>("id", "Unique ID of the Org"))
@@ -111,12 +121,16 @@ fn get_project_filter<R: registry::Client>(
 }
 
 /// `GET /<id>/projects`
-fn get_projects_filter<R: registry::Client>(
-    paths: Arc<RwLock<Paths>>,
+fn get_projects_filter<R, C>(
     registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_paths(paths)
-        .and(http::with_shared(registry))
+    coco: http::Shared<C>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+    C: coco::Client,
+{
+    http::with_shared(registry)
+        .and(http::with_shared(coco))
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -193,16 +207,12 @@ fn register_member_filter<R: registry::Client>(
 
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use librad::paths::Paths;
-    use librad::meta::entity;
-    use librad::meta;
     use radicle_registry_client::Balance;
     use std::convert::TryFrom;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::coco;
     use crate::http;
     use crate::notification;
     use crate::project;
@@ -235,24 +245,23 @@ mod handler {
     }
 
     /// Get all projects under the given org id.
-    pub async fn get_projects<R, Resolver>(
-        paths: Arc<RwLock<Paths>>,
+    pub async fn get_projects<R, C>(
         registry: http::Shared<R>,
-        resolver: Resolver,
+        coco: http::Shared<C>,
         org_id: String,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
-        Resolver: entity::Resolver<meta::project::Project>,
+        C: coco::Client
     {
         let reg = registry.read().await;
+        let coco = &*coco.read().await;
         let org_id = registry::Id::try_from(org_id)?;
         let projects = reg.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
         for p in &projects {
             let maybe_project = if let Some(id) = &p.maybe_project_id {
-                let paths = paths.read().await;
-                Some(project::get(&paths, id, resolver).await.expect("Project not found"))
+                Some(project::get(id, coco).await.expect("Project not found"))
             } else {
                 None
             };

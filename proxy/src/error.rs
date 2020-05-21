@@ -110,8 +110,8 @@ pub enum Error {
     Protocol(#[from] registry::Error),
 
     /// Issues with the Radicle runtime.
-    #[cfg_attr(feature = "std", error(transparent))]
-    Runtime(#[cfg_attr(feature = "std", from)] registry::DispatchError),
+    #[error("runtime error in registry: {0:?}")]
+    Runtime(registry::DispatchError),
 
     /// Issues when access persistent storage.
     #[error(transparent)]
@@ -124,4 +124,22 @@ pub enum Error {
     /// Errors from transactions.
     #[error(transparent)]
     Transaction(#[from] registry::TransactionError),
+}
+
+impl From<registry::DispatchError> for Error {
+    fn from(dispactch: registry::DispatchError) -> Self {
+        Self::Runtime(dispactch)
+    }
+}
+
+impl From<registry::InvalidIdError> for Error {
+    fn from(invalid_id: registry::InvalidIdError) -> Self {
+        Self::InvalidId(invalid_id.to_string())
+    }
+}
+
+impl From<registry::InvalidProjectNameError> for Error {
+    fn from(invalid_project_name: registry::InvalidProjectNameError) -> Self {
+        Self::InvalidProjectName(invalid_project_name.to_string())
+    }
 }

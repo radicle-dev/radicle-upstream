@@ -1,5 +1,6 @@
 //! Abstractions and utilities for git interactions through the API.
 
+use async_trait::async_trait;
 use std::env;
 use std::str::FromStr;
 
@@ -13,38 +14,160 @@ use librad::paths::Paths;
 use librad::surf;
 use librad::surf::git::git2;
 use librad::git::storage::Storage;
-use radicle_keystore::{Keystore, SecretKeyExt};
+use radicle_keystore::{Keystore, SecretKeyExt, Keypair};
 
 use crate::error;
 
 mod types;
 pub use types::*; // TODO: make explicit
 
-// TODO(finto): should bundle these up so we can pass them all in at once
-pub async fn get_browser<'a, K, R>(
-    paths: &Paths,
-    key_store: &K,
-    project_resolver: &R,
-    project_urn: String,
-) -> Result<(surf::git::Browser<'a>, project::Project), error::Error>
+/// The set of capabilities necessary for interacting with `radicle-link`.
+pub trait Client: Keystore<PublicKey = keys::PublicKey, SecretKey = keys::SecretKey, Metadata = <keys::SecretKey as SecretKeyExt>::Metadata, Error = error::Error> + entity::Resolver<project::Project> + entity::Resolver<user::User> + HasPaths + Me + Send + Sync {}
+
+/// Fetching and setting [`Paths`] of some data structure.
+pub trait HasPaths {
+    /// Get the [`Paths`].
+    fn get_paths(&self) -> &Paths;
+    /// Set the [`Paths`].
+    fn set_paths(&mut self, paths: Paths);
+}
+
+/// Get a reference to the [`user::User`] that is logged in.
+pub trait Me {
+    /// Who am I?
+    fn me(&self) -> &user::User;
+}
+
+/// The set of data and capabilities that are needed for interacting with `radicle-link`.
+/// It implements [`Client`], which is a collection of these trait capabilities. `Client` should be
+/// used by functions lower down the stack, while `Coco` should be passed down from the top.
+pub struct Coco<
+    K: Keystore<PublicKey = keys::PublicKey, SecretKey = keys::SecretKey, Metadata = <keys::SecretKey as SecretKeyExt>::Metadata, Error = error::Error> + Send + Sync,
+    P: entity::Resolver<project::Project>,
+    U: entity::Resolver<user::User>,
+> {
+    /// The `librad` paths.
+    pub paths: Paths,
+    /// Storage for where to retrieve your keys from.
+    pub keystore: K,
+    /// The project resolver.
+    pub project: P,
+    /// The user resolver.
+    pub user: U,
+    /// The user that is logged in for Upstream.
+    pub me: user::User,
+}
+
+impl<K, P, U> Me for Coco<K, P, U>
 where
-    K: Keystore<
-        PublicKey = keys::PublicKey,
-        SecretKey = keys::SecretKey,
-        Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-        Error = error::Error
-    >,
-    R: entity::Resolver<project::Project>,
+    K: Keystore<PublicKey = keys::PublicKey, SecretKey = keys::SecretKey, Metadata = <keys::SecretKey as SecretKeyExt>::Metadata, Error = error::Error> + Send + Sync,
+    P: entity::Resolver<project::Project> + Send + Sync,
+    U: entity::Resolver<user::User> + Send + Sync,
 {
+    fn me(&self) -> &user::User {
+        &self.me
+    }
+}
+
+impl<K, P, U> HasPaths for Coco<K, P, U>
+where
+    K: Keystore<PublicKey = keys::PublicKey, SecretKey = keys::SecretKey, Metadata = <keys::SecretKey as SecretKeyExt>::Metadata, Error = error::Error> + Send + Sync,
+    P: entity::Resolver<project::Project> + Send + Sync,
+    U: entity::Resolver<user::User> + Send + Sync,
+{
+    fn get_paths(&self) -> &Paths {
+        &self.paths
+    }
+
+    fn set_paths(&mut self, paths: Paths) {
+        self.paths = paths;
+    }
+}
+
+impl<K, P, U> Keystore for Coco<K, P, U>
+where
+    K: Keystore<PublicKey = keys::PublicKey, SecretKey = keys::SecretKey, Metadata = <keys::SecretKey as SecretKeyExt>::Metadata, Error = error::Error> + Send + Sync,
+    P: entity::Resolver<project::Project> + Send + Sync,
+    U: entity::Resolver<user::User> + Send + Sync,
+{
+    type PublicKey = K::PublicKey;
+    type SecretKey = K::SecretKey;
+    type Metadata = K::Metadata;
+    type Error = K::Error;
+
+    fn put_key(&mut self, key: Self::SecretKey) -> Result<(), Self::Error> {
+        self.keystore.put_key(key)
+    }
+
+    fn get_key(
+        &self
+    ) -> Result<Keypair<Self::PublicKey, Self::SecretKey>, Self::Error> {
+        self.keystore.get_key()
+    }
+
+    fn show_key(&self) -> Result<(Self::PublicKey, Self::Metadata), Self::Error> {
+        self.keystore.show_key()
+    }
+}
+
+#[async_trait]
+impl<K, P, U> entity::Resolver<project::Project> for Coco<K, P, U>
+where
+    K: Keystore<PublicKey = keys::PublicKey, SecretKey = keys::SecretKey, Metadata = <keys::SecretKey as SecretKeyExt>::Metadata, Error = error::Error> + Send + Sync,
+    P: entity::Resolver<project::Project> + Send + Sync,
+    U: entity::Resolver<user::User> + Send + Sync,
+{
+    /// Resolve the given URN and deserialize the target `Entity`
+    async fn resolve(&self, uri: &RadUrn) -> Result<project::Project, entity::Error> {
+        self.project.resolve(uri).await
+    }
+
+    async fn resolve_revision(&self, uri: &RadUrn, revision: u64) -> Result<project::Project, entity::Error> {
+        self.project.resolve_revision(uri, revision).await
+    }
+}
+
+#[async_trait]
+impl<K, P, U> entity::Resolver<user::User> for Coco<K, P, U>
+where
+    K: Keystore<PublicKey = keys::PublicKey, SecretKey = keys::SecretKey, Metadata = <keys::SecretKey as SecretKeyExt>::Metadata, Error = error::Error> + Send + Sync,
+    P: entity::Resolver<project::Project> + Send + Sync,
+    U: entity::Resolver<user::User> + Send + Sync,
+{
+    /// Resolve the given URN and deserialize the target `Entity`
+    async fn resolve(&self, uri: &RadUrn) -> Result<user::User, entity::Error> {
+        self.user.resolve(uri).await
+    }
+
+    async fn resolve_revision(&self, uri: &RadUrn, revision: u64) -> Result<user::User, entity::Error> {
+        self.user.resolve_revision(uri, revision).await
+    }
+}
+
+impl<K, P, U> Client for Coco<K, P, U>
+where
+    K: Keystore<PublicKey = keys::PublicKey, SecretKey = keys::SecretKey, Metadata = <keys::SecretKey as SecretKeyExt>::Metadata, Error = error::Error> + Send + Sync,
+    P: entity::Resolver<project::Project> + Send + Sync,
+    U: entity::Resolver<user::User> + Send + Sync,
+{}
+
+/// Get the [`git::repo::Repo`] for the given `project_urn`.
+pub async fn get_repo<'a, C>(
+    coco: &C,
+    project_urn: String,
+) -> Result<(git::repo::Repo, project::Project), error::Error>
+where
+    C: Client,
+{
+    let paths = coco.get_paths();
     let project_urn = RadUrn::from_str(&project_urn)?;
-    let keypair = key_store.get_key()?;
-    let project = project_resolver.resolve(&project_urn).await?;
+    let keypair = coco.get_key()?;
+    let project: project::Project = coco.resolve(&project_urn).await?;
 
     let storage = Storage::open(paths, keypair.secret_key)?;
-    let mut repo = git::repo::Repo::open(storage, project_urn)?;
-    let bro = repo.locked().browser()?;
+    let repo = git::repo::Repo::open(storage, project_urn)?;
 
-    Ok((bro, project))
+    Ok((repo, project))
 }
 
 /// Returns the [`Blob`] for a file at `revision` under `path`.
@@ -53,7 +176,7 @@ where
 ///
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob<'a>(
-    browser: &surf::git::Browser<'a>,
+    browser: &mut surf::git::Browser<'a>,
     revision: String,
     maybe_path: Option<String>,
 ) -> Result<Blob, error::Error> {
@@ -64,16 +187,16 @@ pub fn blob<'a>(
 
     let root = browser.get_directory()?;
 
-    let mut p = surf::file_system::Path::from_str(&path)?;
+    let p = surf::file_system::Path::from_str(&path)?;
 
     let file = root
-        .find_file(&p)
+        .find_file(p.clone())
         .ok_or_else(|| error::Error::PathNotFound)?;
 
     let mut commit_path = surf::file_system::Path::root();
-    commit_path.append(&mut p);
+    commit_path.append(p.clone());
 
-    let last_commit = browser.last_commit(&commit_path)?.map(|c| Commit::from(&c));
+    let last_commit = browser.last_commit(commit_path)?.map(|c| Commit::from(&c));
     let (_rest, last) = p.split_last();
     let content = match std::str::from_utf8(&file.contents) {
         Ok(content) => BlobContent::Ascii(content.to_string()),
@@ -132,7 +255,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit<'a>(browser: &surf::git::Browser<'a>, sha1: &str) -> Result<Commit, error::Error> {
+pub fn commit<'a>(browser: &mut surf::git::Browser<'a>, sha1: &str) -> Result<Commit, error::Error> {
     browser.commit(surf::git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
@@ -146,7 +269,7 @@ pub fn commit<'a>(browser: &surf::git::Browser<'a>, sha1: &str) -> Result<Commit
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits<'a>(browser: &surf::git::Browser<'a>, branch: &str) -> Result<Vec<Commit>, error::Error> {
+pub fn commits<'a>(browser: &mut surf::git::Browser<'a>, branch: &str) -> Result<Vec<Commit>, error::Error> {
     browser.branch(surf::git::BranchName::new(branch))?;
 
     let commits = browser.get().iter().map(Commit::from).collect();
@@ -179,7 +302,7 @@ pub fn tags<'a>(browser: &surf::git::Browser<'a>) -> Result<Vec<Tag>, error::Err
 /// Will return [`error::Error`] if any of the surf interactions fail.
 /// TODO(fintohaps): default branch fall back from Browser
 pub fn tree<'a>(
-    browser: &surf::git::Browser<'a>,
+    browser: &mut surf::git::Browser<'a>,
     revision: String,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, error::Error> {
@@ -198,7 +321,7 @@ pub fn tree<'a>(
         root_dir
     } else {
         root_dir
-            .find_directory(&path)
+            .find_directory(path.clone())
             .ok_or_else(|| error::Error::PathNotFound)?
     };
     let mut prefix_contents = prefix_dir.list_directory();
@@ -207,15 +330,15 @@ pub fn tree<'a>(
     let entries_results: Result<Vec<TreeEntry>, error::Error> = prefix_contents
         .iter()
         .map(|(label, system_type)| {
-            let mut entry_path = if path.is_root() {
-                surf::file_system::Path::try_from(vec![label.clone()])
+            let entry_path = if path.is_root() {
+                surf::file_system::Path::new(label.clone())
             } else {
                 let mut p = path.clone();
                 p.push(label.clone());
                 p
             };
             let mut commit_path = surf::file_system::Path::root();
-            commit_path.append(&mut entry_path);
+            commit_path.append(entry_path.clone());
 
             let info = Info {
                 name: label.to_string(),
@@ -265,19 +388,10 @@ pub fn tree<'a>(
     })
 }
 
-/// Retrieves project metadata.
-///
-/// # Errors
-///
-/// Will return [`error::Error`] if the project for the given `id` doesn't exist.
-pub async fn get_project_meta(paths: &Paths, urn: &RadUrn, project: impl entity::Resolver<project::Project>) -> Result<project::Project, error::Error> {
-    Ok(project.resolve(&urn).await?)
-}
-
 /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
 #[must_use]
-pub fn list_projects(paths: &Paths) -> Vec<(RadUrn, project::Project)> {
-    todo!() // TODO: not implemented by link yet
+pub fn list_projects(_paths: &Paths) -> Vec<(RadUrn, project::Project)> {
+    todo!() // TODO(fintohaps): not implemented by link yet
 }
 
 /// Initialize a [`librad::project::Project`] in the location of the given `path`.
@@ -286,32 +400,34 @@ pub fn list_projects(paths: &Paths) -> Vec<(RadUrn, project::Project)> {
 ///
 /// Will return [`error::Error`] if the git2 repository is not present for the `path` or any of the
 /// librad interactions fail.
-pub async fn init_project<U>(
-    librad_paths: &Paths,
+pub fn init_project<C>(
+    coco: &mut C,
     path: &str,
-    owner_id: &RadUrn,
-    owner: &U,
     name: &str,
     description: &str,
     default_branch: &str,
 ) -> Result<(RadUrn, project::Project), error::Error>
 where
-    U: entity::Resolver<user::User>,
+    C: Client,
 {
-    // Fetch the owner and build the repo path
-    let owner = owner.resolve(&owner_id).await?; // TODO: verify
-    let path = uri::Path::from_str(path)?;
-    let urn = RadUrn::new(owner.root_hash().clone(), uri::Protocol::Git, path);
-
-    // Create the project meta
-    let mut meta = project::Project::new(name.to_string(), urn)?.to_builder();
-    meta.set_description(description.to_string());
-    meta.set_default_branch(default_branch.to_string());
-    let meta = meta.build()?;
+    let paths = coco.get_paths();
+    let me = coco.me();
 
     // Set up storage
-    let key = keys::SecretKey::new();
-    let storage = Storage::init(librad_paths, key)?;
+    let key = coco.get_key()?.secret_key;
+    let storage = Storage::init(paths, key)?;
+
+    // Fetch the owner and build the repo path
+    let path = uri::Path::from_str(path)?;
+    let urn = RadUrn::new(me.root_hash().clone(), uri::Protocol::Git, path);
+
+    // Create the project meta
+    let meta = project::Project::new(name.to_string(), urn.clone())?
+        .to_builder()
+        .set_description(description.to_string())
+        .set_default_branch(default_branch.to_string());
+    let meta = meta.build()?;
+
     let _repo = git::repo::Repo::create(storage, &meta)?;
 
     Ok((urn, meta))
@@ -350,13 +466,16 @@ pub fn init_repo(path: String) -> Result<(), error::Error> {
 ///
 /// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of the
 /// coco project.
-pub fn replicate_platinum(
+pub fn replicate_platinum<C>(
+    coco: &mut C,
     tmp_dir: &tempfile::TempDir,
-    librad_paths: &Paths,
     name: &str,
     description: &str,
     default_branch: &str,
-) -> Result<(RadUrn, project::Project), error::Error> {
+) -> Result<(RadUrn, project::Project), error::Error>
+where
+    C: Client,
+{
     // Craft the absolute path to git-platinum fixtures.
     let mut platinum_path = env::current_dir()?;
     platinum_path.push("../fixtures/git-platinum");
@@ -413,7 +532,7 @@ pub fn replicate_platinum(
 
     // Init as rad project.
     let (id, repo) = init_project(
-        librad_paths,
+        coco,
         platinum_into.to_str().expect("unable to get path"),
         name,
         description,
@@ -435,7 +554,10 @@ pub fn replicate_platinum(
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), error::Error> {
+pub async fn setup_fixtures<C>(coco: &mut C, root: &str) -> Result<(), error::Error>
+where
+    C: Client,
+{
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -460,7 +582,7 @@ pub fn setup_fixtures(librad_paths: &Paths, root: &str) -> Result<(), error::Err
         std::fs::create_dir_all(path.clone())?;
 
         init_repo(path.clone())?;
-        init_project(librad_paths, &path, info.0, info.1, info.2)?;
+        init_project(coco, &path, info.0, info.1, info.2)?;
     }
 
     Ok(())

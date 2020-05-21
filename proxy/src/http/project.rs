@@ -1,39 +1,45 @@
 //! Endpoints and serialisation for [`project::Project`] related types.
 
-use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
+use crate::coco;
 use crate::notification;
 use crate::project;
 use crate::registry;
 
 /// Combination of all routes.
-pub fn filters<R: registry::Client>(
-    paths: Arc<RwLock<Paths>>,
+pub fn filters<R, C>(
     registry: http::Shared<R>,
+    coco: http::Shared<C>,
     subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    list_filter(Arc::clone(&paths))
-        .or(create_filter(Arc::clone(&paths)))
-        .or(get_filter(paths))
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+    C: coco::Client,
+{
+    list_filter(Arc::clone(&coco))
+        .or(create_filter(Arc::clone(&coco)))
+        .or(get_filter(coco))
         .or(register_filter(registry, subscriptions))
 }
 
 /// `POST /projects`
-fn create_filter(
-    paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn create_filter<C>(
+    coco: http::Shared<C>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    C: coco::Client,
+{
     path!("projects")
         .and(warp::post())
-        .and(http::with_paths(paths))
+        .and(http::with_shared(coco))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -53,12 +59,15 @@ fn create_filter(
 }
 
 /// `GET /projects/<id>`
-fn get_filter(
-    paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter<C>(
+    coco: http::Shared<C>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    C: coco::Client,
+{
     path("projects")
         .and(warp::get())
-        .and(http::with_paths(paths))
+        .and(http::with_shared(coco))
         .and(document::param::<String>("id", "Project id"))
         .and(document::document(document::description(
             "Find Project by ID",
@@ -82,12 +91,15 @@ fn get_filter(
 }
 
 /// `GET /projects`
-fn list_filter(
-    paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_filter<C>(
+    coco: http::Shared<C>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    C: coco::Client,
+{
     path!("projects")
         .and(warp::get())
-        .and(http::with_paths(paths))
+        .and(http::with_shared(coco))
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -137,16 +149,9 @@ fn register_filter<R: registry::Client>(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use librad::paths::Paths;
-    use librad::meta::entity;
-    use librad::meta;
-    use librad::uri;
-    use librad::surf;
     use radicle_registry_client::Balance;
     use std::convert::TryFrom;
     use std::str::FromStr;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -157,31 +162,22 @@ mod handler {
     use crate::registry;
 
     /// Create a new [`project::Project`].
-    pub async fn create<U>(
-        librad_paths: Arc<RwLock<Paths>>,
-        me: http::Shared<(uri::RadUrn, U)>,
+    pub async fn create<C>(
+        coco: http::Shared<C>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
     where
-        U: entity::Resolver<meta::user::User>
+        C: coco::Client,
     {
-        // TODO(fintohaps): I don't think this is needed
-        if surf::git::git2::Repository::open(input.path.clone()).is_err() {
-            coco::init_repo(input.path.clone())?;
-        };
+        let coco = &mut *coco.write().await;
 
-        let (owner_id, owner) = *me.read().await;
-
-        let paths = librad_paths.read().await;
         let (id, meta) = coco::init_project(
-            &paths,
+            coco,
             &input.path,
-            &owner_id,
-            &owner,
             &input.metadata.name,
             &input.metadata.description,
             &input.metadata.default_branch,
-        ).await?;
+        )?;
 
         let shareable_entity_identifier = format!("%{}", id);
         Ok(reply::with_status(
@@ -201,21 +197,24 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get<Resolver>(
-        librad_paths: Arc<RwLock<Paths>>,
-        resolver: Resolver,
+    pub async fn get<C>(
+        coco: http::Shared<C>,
         id: String,
     ) -> Result<impl Reply, Rejection>
     where
-        Resolver: entity::Resolver<meta::project::Project>
+        C: coco::Client,
     {
-        let paths = librad_paths.read().await;
-        Ok(reply::json(&project::get(&paths, id.as_ref(), resolver).await?))
+        let coco = &*coco.read().await;
+        Ok(reply::json(&project::get(id.as_ref(), coco).await?))
     }
 
     /// List all known projects.
-    pub async fn list(librad_paths: Arc<RwLock<Paths>>) -> Result<impl Reply, Rejection> {
-        let paths = librad_paths.read().await;
+    pub async fn list<C>(coco: http::Shared<C>) -> Result<impl Reply, Rejection>
+    where
+        C: coco::Client,
+    {
+        let coco = &*coco.read().await;
+        let paths = coco.get_paths();
         let projects = coco::list_projects(&paths)
             .into_iter()
             .map(|(id, meta)| project::Project {

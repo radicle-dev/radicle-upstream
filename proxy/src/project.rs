@@ -26,7 +26,7 @@ impl From<project::Project> for Metadata {
     fn from(project_meta: project::Project) -> Self {
         Self {
             name: project_meta.name().to_string(),
-            description: project_meta.description().unwrap_or_else(|| "".into()),
+            description: project_meta.description().clone().unwrap_or_else(|| "".into()),
             default_branch: project_meta.default_branch().to_string(),
         }
     }
@@ -67,7 +67,10 @@ pub struct Stats {
 }
 
 /// TODO(xla): Add documentation.
-pub async fn get(paths: &librad::paths::Paths, project_urn: &str, project_resolver: impl entity::Resolver<project::Project>) -> Result<Project, error::Error> {
+pub async fn get<P>(project_urn: &str, project_resolver: &P) -> Result<Project, error::Error>
+where
+    P: entity::Resolver<project::Project>,
+{
     let project_urn = uri::RadUrn::from_str(project_urn)?;
     let meta = project_resolver.resolve(&project_urn).await?;
     let shareable_entity_identifier = format!("%{}", project_urn);

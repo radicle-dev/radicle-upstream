@@ -1,13 +1,8 @@
 //! Endpoints and serialisation for source code browsing.
 
-use librad::meta::entity;
-use librad::meta::project;
-use librad::paths::Paths;
-use radicle_keystore as keystore;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -15,70 +10,53 @@ use crate::coco;
 use crate::http;
 use crate::identity;
 
-pub struct Coco<K: keystore::Keystore, P: entity::Resolver<project::Project>> {
-    /// The `librad` paths.
-    paths: Arc<RwLock<Paths>>,
-    /// Storage for where to retrieve your keys from.
-    keystore: http::Shared<K>,
-    /// The project which you are browsing.
-    project: http::Shared<P>,
-}
-
 /// Prefixed filters.
-pub fn routes<K, R>(coco @ Coco {
-    paths,
-    keystore,
-    project
-}: Coco<K, R>
+pub fn routes<C>(
+    coco: http::Shared<C>
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    K: keystore::Keystore,
-    R: entity::Resolver<project::Project>,
+    C: coco::Client
 {
     path("source").and(
-        blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
-            .or(branches_filter(Arc::clone(&paths)))
-            .or(commit_filter(Arc::clone(&paths)))
-            .or(commits_filter(Arc::clone(&paths)))
+        blob_filter(Arc::clone(&coco))
+            .or(branches_filter(Arc::clone(&coco)))
+            .or(commit_filter(Arc::clone(&coco)))
+            .or(commits_filter(Arc::clone(&coco)))
             .or(local_branches_filter())
-            .or(revisions_filter(Arc::clone(&paths)))
-            .or(tags_filter(coco))
+            .or(revisions_filter(Arc::clone(&coco)))
+            .or(tags_filter(Arc::clone(&coco)))
             .or(tree_filter(coco)),
     )
 }
 
 /// Combination of all source filters.
 #[cfg(test)]
-fn filters<K, R>(coco @ Coco {
-    paths,
-    keystore,
-    project,
-}: Coco<K, R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn filters<C>(
+    coco: http::Shared<C>
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    K: keystore::Keystore,
-    R: entity::Resolver<project::Project>,
+    C: coco::Client
 {
-    blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
-        .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+    blob_filter(Arc::clone(&coco))
+        .or(branches_filter(Arc::clone(&coco)))
+        .or(commit_filter(Arc::clone(&coco)))
+        .or(commits_filter(Arc::clone(&coco)))
         .or(local_branches_filter())
-        .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(tags_filter(
-            Arc::clone(&paths),
-            Arc::clone(&keystore),
-            Arc::clone(&project),
-        ))
+        .or(revisions_filter(Arc::clone(&coco)))
+        .or(tags_filter(coco))
         .or(tree_filter(coco))
 }
 
 /// `GET /blob/<project_id>/<revision>/<path...>`
-fn blob_filter(
-    paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn blob_filter<C>(
+    coco: http::Shared<C>
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    C: coco::Client
+{
     path("blob")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_shared(coco))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -104,12 +82,15 @@ fn blob_filter(
 }
 
 /// `GET /branches/<project_id>`
-fn branches_filter(
-    paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn branches_filter<C>(
+    coco: http::Shared<C>
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    C: coco::Client
+{
     path("branches")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_shared(coco))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -130,12 +111,15 @@ fn branches_filter(
 }
 
 /// `GET /commit/<project_id>/<sha1>`
-fn commit_filter(
-    paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn commit_filter<C>(
+    coco: http::Shared<C>
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    C: coco::Client
+{
     path("commit")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_shared(coco))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -154,12 +138,15 @@ fn commit_filter(
 }
 
 /// `GET /commits/<project_id>/<branch>`
-fn commits_filter(
-    paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn commits_filter<C>(
+    coco: http::Shared<C>
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    C: coco::Client
+{
     path("commits")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_shared(coco))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -205,12 +192,15 @@ fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejectio
 }
 
 /// `GET /revisions/<project_id>`
-fn revisions_filter(
-    paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn revisions_filter<C>(
+    coco: http::Shared<C>
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    C: coco::Client
+{
     path("revisions")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_shared(coco))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -233,18 +223,15 @@ fn revisions_filter(
 }
 
 /// `GET /tags/<project_id>`
-fn tags_filter<K, R>(
-    Coco { paths, keystore, project }: Coco<K, R>
+fn tags_filter<C>(
+    coco: http::Shared<C>
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    K: keystore::Keystore,
-    R: entity::Resolver<project::Project>,
+    C: coco::Client
 {
     path("tags")
         .and(warp::get())
-        .and(http::with_paths(paths))
-        .and(http::with_shared(keystore))
-        .and(http::with_shared(project))
+        .and(http::with_shared(coco))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -263,18 +250,15 @@ where
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
-fn tree_filter<K, R>(
-    Coco { paths, keystore, project }: Coco<K, R>
+fn tree_filter<C>(
+    coco: http::Shared<C>
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    K: keystore::Keystore,
-    R: entity::Resolver<project::Project>,
+    C: coco::Client
 {
     path("tree")
         .and(warp::get())
-        .and(http::with_paths(paths))
-        .and(http::with_shared(keystore))
-        .and(http::with_shared(project))
+        .and(http::with_shared(coco))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -301,122 +285,82 @@ where
 
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use librad::meta::entity;
-    use librad::meta::project;
-    use librad::paths::Paths;
-    use librad::keys;
-    use radicle_keystore::{Keystore, SecretKeyExt};
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
     use crate::avatar;
     use crate::coco;
     use crate::http;
-    use crate::error;
     use crate::identity;
 
     /// Fetch a [`coco::Blob`].
-    pub async fn blob<K, R>(
-        librad_paths: Arc<RwLock<Paths>>,
-        keystore: http::Shared<K>,
-        project: http::Shared<R>,
+    pub async fn blob<C>(
+        coco: http::Shared<C>,
         project_urn: String,
-        super::BlobQuery { path, revision }: super::BlobQuery,
+        super::BlobQuery { path, revision }: super::BlobQuery
     ) -> Result<impl Reply, Rejection>
     where
-        K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error
-        >,
-        R: entity::Resolver<project::Project>,
+        C: coco::Client,
     {
-        let paths = librad_paths.read().await;
-        let keys = *keystore.read().await;
-        let resolver = *project.read().await;
-        let (bro, project) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let coco = &*coco.read().await;
+        let (mut repo, project) = coco::get_repo(coco, project_urn).await?;
+        let locked = repo.locked();
         let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
-        let blob = coco::blob(&bro, revision, path)?;
+        let mut bro = locked.browser().expect("failed to open browser");
+        let blob = coco::blob(&mut bro, revision, path)?;
 
         Ok(reply::json(&blob))
     }
 
     /// Fetch the list [`coco::Branch`].
-    pub async fn branches<K, R>(
-        librad_paths: Arc<RwLock<Paths>>,
-        keystore: http::Shared<K>,
-        project: http::Shared<R>,
+    pub async fn branches<C>(
+        coco: http::Shared<C>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
     where
-        K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error
-        >,
-        R: entity::Resolver<project::Project>,
+        C: coco::Client,
     {
-        let paths = librad_paths.read().await;
-        let keys = *keystore.read().await;
-        let resolver = *project.read().await;
-        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let coco = &*coco.read().await;
+        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let locked = repo.locked();
+        let bro = locked.browser().expect("failed to open browser");
         let branches = coco::branches(&bro)?;
 
         Ok(reply::json(&branches))
     }
 
     /// Fetch a [`coco::Commit`].
-    pub async fn commit<K, R>(
-        librad_paths: Arc<RwLock<Paths>>,
-        keystore: http::Shared<K>,
-        project: http::Shared<R>,
+    pub async fn commit<C>(
+        coco: http::Shared<C>,
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection>
     where
-        K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error
-        >,
-        R: entity::Resolver<project::Project>,
+        C: coco::Client,
     {
-        let paths = librad_paths.read().await;
-        let keys = *keystore.read().await;
-        let resolver = *project.read().await;
-        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
-        let commit = coco::commit(&bro, &sha1)?;
+        let coco = &*coco.read().await;
+        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let locked = repo.locked();
+        let mut bro = locked.browser().expect("failed to open browser");
+        let commit = coco::commit(&mut bro, &sha1)?;
 
         Ok(reply::json(&commit))
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
-    pub async fn commits<K, R>(
-        librad_paths: Arc<RwLock<Paths>>,
-        keystore: http::Shared<K>,
-        project: http::Shared<R>,
+    pub async fn commits<C>(
+        coco: http::Shared<C>,
         project_urn: String,
         branch: String,
     ) -> Result<impl Reply, Rejection>
     where
-        K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error
-        >,
-        R: entity::Resolver<project::Project>,
+        C: coco::Client,
     {
-        let paths = librad_paths.read().await;
-        let keys = *keystore.read().await;
-        let resolver = *project.read().await;
-        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
-        let commits = coco::commits(&bro, &branch)?;
+        let coco = &*coco.read().await;
+        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let locked = repo.locked();
+        let mut bro = locked.browser().expect("failed to open browser");
+        let commits = coco::commits(&mut bro, &branch)?;
 
         Ok(reply::json(&commits))
     }
@@ -429,25 +373,17 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions<K, R>(
-        librad_paths: Arc<RwLock<Paths>>,
-        keystore: http::Shared<K>,
-        project: http::Shared<R>,
+    pub async fn revisions<C>(
+        coco: http::Shared<C>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
     where
-        K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error
-        >,
-        R: entity::Resolver<project::Project>,
+        C: coco::Client,
     {
-        let paths = librad_paths.read().await;
-        let keys = *keystore.read().await;
-        let resolver = *project.read().await;
-        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let coco = &*coco.read().await;
+        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let locked = repo.locked();
+        let bro = locked.browser().expect("failed to open browser");
         let branches = coco::branches(&bro)?;
         let tags = coco::tags(&bro)?;
         let revs = ["cloudhead", "rudolfs", "xla"]
@@ -473,53 +409,37 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags<K, R>(
-        librad_paths: Arc<RwLock<Paths>>,
-        keystore: http::Shared<K>,
-        project: http::Shared<R>,
+    pub async fn tags<C>(
+        coco: http::Shared<C>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
     where
-        K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error
-        >,
-        R: entity::Resolver<project::Project>,
+        C: coco::Client,
     {
-        let paths = librad_paths.read().await;
-        let keys = *keystore.read().await;
-        let resolver = *project.read().await;
-        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let coco = &*coco.read().await;
+        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let locked = repo.locked();
+        let bro = locked.browser().expect("failed to open browser");
         let tags = coco::tags(&bro)?;
 
         Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
-    pub async fn tree<K, R>(
-        librad_paths: Arc<RwLock<Paths>>,
-        keystore: http::Shared<K>,
-        project: http::Shared<R>,
+    pub async fn tree<C>(
+        coco: http::Shared<C>,
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection>
     where
-        K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error
-        >,
-        R: entity::Resolver<project::Project>,
+        C: coco::Client,
     {
-        let paths = librad_paths.read().await;
-        let keys = *keystore.read().await;
-        let resolver = *project.read().await;
-        let (bro, project) = coco::get_browser(&paths, &keys, &resolver, project_urn).await?;
+        let coco = &*coco.read().await;
+        let (mut repo, project) = coco::get_repo(coco, project_urn).await?;
+        let locked = repo.locked();
+        let mut bro = locked.browser().expect("failed to open browser");
         let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
-        let tree = coco::tree(&bro, revision, prefix)?;
+        let tree = coco::tree(&mut bro, revision, prefix)?;
 
         Ok(reply::json(&tree))
     }

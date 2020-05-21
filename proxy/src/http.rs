@@ -1,11 +1,16 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
+use librad::keys;
+use librad::meta::{self, entity};
 use librad::paths;
+use radicle_keystore::{Keystore, SecretKeyExt};
 use std::convert::Infallible;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
+use crate::error::Error;
 use crate::registry;
 
 mod avatar;
@@ -22,16 +27,36 @@ mod transaction;
 mod user;
 
 /// Main entry point for HTTP API.
-pub fn api<R>(
+pub fn api<R, K, P, U>(
     librad_paths: paths::Paths,
+    keystore: K,
+    me: meta::user::User,
+    user: U,
+    project: P,
     registry: R,
     store: kv::Store,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Cache + registry::Client + 'static,
+    K: Keystore<
+            PublicKey = keys::PublicKey,
+            SecretKey = keys::SecretKey,
+            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
+            Error = Error,
+        > + Send
+        + Sync
+        + 'static,
+    P: entity::Resolver<meta::project::Project> + Send + Sync + 'static,
+    U: entity::Resolver<meta::user::User> + Send + Sync + 'static,
 {
-    let librad_paths = Arc::new(RwLock::new(librad_paths));
+    let coco = Arc::new(RwLock::new(coco::Coco {
+        paths: librad_paths,
+        project,
+        user,
+        me,
+        keystore,
+    }));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
@@ -40,24 +65,24 @@ where
         avatar::get_filter()
             .or(control::routes(
                 enable_control,
-                Arc::clone(&librad_paths),
+                Arc::clone(&coco),
                 Arc::clone(&registry),
                 Arc::clone(&store),
             ))
             .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
             .or(notification::filters(subscriptions.clone()))
             .or(org::routes(
-                Arc::clone(&librad_paths),
                 Arc::clone(&registry),
+                Arc::clone(&coco),
                 subscriptions.clone(),
             ))
             .or(project::filters(
-                Arc::clone(&librad_paths),
                 Arc::clone(&registry),
+                Arc::clone(&coco),
                 subscriptions.clone(),
             ))
             .or(session::routes(Arc::clone(&registry), Arc::clone(&store)))
-            .or(source::routes(librad_paths))
+            .or(source::routes(Arc::clone(&coco)))
             .or(transaction::filters(Arc::clone(&registry)))
             .or(user::routes(registry, store, subscriptions)),
     );
