@@ -1,6 +1,9 @@
 //! Endpoints and serialisation for source code browsing.
 
+use librad::meta::entity;
+use librad::meta::project;
 use librad::paths::Paths;
+use radicle_keystore as keystore;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
@@ -9,37 +12,58 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::http;
 use crate::identity;
 
 /// Prefixed filters.
-pub fn routes(
+pub fn routes<K, R>(
     paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    key_store: http::Shared<K>,
+    project_resolver: http::Shared<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    K: keystore::Keystore,
+    R: entity::Resolver<project::Project>,
+{
     path("source").and(
         blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
-            .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
+            .or(branches_filter(Arc::clone(&paths)))
+            .or(commit_filter(Arc::clone(&paths)))
+            .or(commits_filter(Arc::clone(&paths)))
             .or(local_branches_filter())
-            .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(tree_filter(paths)),
+            .or(revisions_filter(Arc::clone(&paths)))
+            .or(tags_filter(
+                Arc::clone(&paths),
+                Arc::clone(&key_store),
+                Arc::clone(&project_resolver),
+            ))
+            .or(tree_filter(paths, key_store, project_resolver)),
     )
 }
 
 /// Combination of all source filters.
 #[cfg(test)]
-fn filters(
+fn filters<K, R>(
     paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    key_store: http::Shared<K>,
+    project_resolver: http::Shared<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    K: keystore::Keystore,
+    R: entity::Resolver<project::Project>,
+{
     blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
         .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
         .or(local_branches_filter())
         .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(tree_filter(paths))
+        .or(tags_filter(
+            Arc::clone(&paths),
+            Arc::clone(&key_store),
+            Arc::clone(&project_resolver),
+        ))
+        .or(tree_filter(paths, key_store, project_resolver))
 }
 
 /// `GET /blob/<project_id>/<revision>/<path...>`
@@ -203,12 +227,20 @@ fn revisions_filter(
 }
 
 /// `GET /tags/<project_id>`
-fn tags_filter(
+fn tags_filter<K, R>(
     paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    key_store: http::Shared<K>,
+    project_resolver: http::Shared<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    K: keystore::Keystore,
+    R: entity::Resolver<project::Project>,
+{
     path("tags")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
+        .and(http::with_shared(key_store))
+        .and(http::with_shared(project_resolver))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -227,12 +259,20 @@ fn tags_filter(
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
-fn tree_filter(
+fn tree_filter<K, R>(
     paths: Arc<RwLock<Paths>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    key_store: http::Shared<K>,
+    project_resolver: http::Shared<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    K: keystore::Keystore,
+    R: entity::Resolver<project::Project>,
+{
     path("tree")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_paths(paths))
+        .and(http::with_shared(key_store))
+        .and(http::with_shared(project_resolver))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -259,19 +299,20 @@ fn tree_filter(
 
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use librad::paths::Paths;
     use librad::meta::entity;
     use librad::meta::project;
+    use librad::paths::Paths;
     use librad::uri::RadUrn;
-    use radicle_keystore::Keystore;
-    use std::sync::Arc;
+    use radicle_keystore as keystore;
     use std::str::FromStr;
+    use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
     use crate::avatar;
     use crate::coco;
+    use crate::http;
     use crate::identity;
 
     /// Fetch a [`coco::Blob`].
@@ -359,40 +400,45 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags<Store, Resolver>(
+    pub async fn tags<K, R>(
         librad_paths: Arc<RwLock<Paths>>,
-        key_store: Store,
-        project_resolver: Resolver,
+        key_store: http::Shared<K>,
+        project_resolver: http::Shared<R>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
     where
-        Store: Keystore,
-        Resolver: entity::Resolver<project::Project>,
+        K: keystore::Keystore,
+        R: entity::Resolver<project::Project>,
     {
         let paths = librad_paths.read().await;
-        let paths = librad_paths.read().await;
-        let project_urn = RadUrn::from_str(&project_urn)?;
-        let (bro, _) = coco::get_browser(paths, key_store, project_urn, project_resolver).await?;
+        let keys = key_store.read().await;
+        let resolver = project_resolver.read().await;
+
+        let urn = RadUrn::from_str(&project_urn).expect("unable to parse URN");
+        let (bro, _) = coco::get_browser(&paths, &keys, &resolver, urn).await?;
         let tags = coco::tags(&bro)?;
 
         Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
-    pub async fn tree<Store, Resolver>(
+    pub async fn tree<K, R>(
         librad_paths: Arc<RwLock<Paths>>,
-        key_store: Store,
-        project_resolver: Resolver,
+        key_store: http::Shared<K>,
+        project_resolver: http::Shared<R>,
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection>
     where
-        Store: Keystore,
-        Resolver: entity::Resolver<project::Project>,
+        K: keystore::Keystore,
+        R: entity::Resolver<project::Project>,
     {
         let paths = librad_paths.read().await;
-        let project_urn = RadUrn::from_str(project_urn)?;
-        let (bro, project) = coco::get_browser(paths, key_store, project_resolver, project_urn).await?;
+        let keys = key_store.read().await;
+        let resolver = project_resolver.read().await;
+
+        let urn = RadUrn::from_str(project_urn).expect("unable to parse URN");
+        let (bro, project) = coco::get_browser(&paths, &keys, &resolver, urn).await?;
         let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
         let tree = coco::tree(&bro, revision, prefix)?;
 
