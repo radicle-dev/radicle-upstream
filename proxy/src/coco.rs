@@ -7,7 +7,7 @@ use librad::git;
 use librad::keys;
 use librad::uri::{self, RadUrn};
 use librad::meta::entity;
-use librad::meta::user::User;
+use librad::meta::user;
 use librad::meta::project;
 use librad::paths::Paths;
 use librad::surf;
@@ -286,22 +286,25 @@ pub fn list_projects(paths: &Paths) -> Vec<(RadUrn, project::Project)> {
 ///
 /// Will return [`error::Error`] if the git2 repository is not present for the `path` or any of the
 /// librad interactions fail.
-pub async fn init_project(
+pub async fn init_project<U>(
     librad_paths: &Paths,
     path: &str,
-    owner: RadUrn,
-    user: impl entity::Resolver<User>,
-    name: String,
+    owner_id: &RadUrn,
+    owner: &U,
+    name: &str,
     description: &str,
     default_branch: &str,
-) -> Result<(RadUrn, git::repo::Repo), error::Error> {
+) -> Result<(RadUrn, project::Project), error::Error>
+where
+    U: entity::Resolver<user::User>,
+{
     // Fetch the owner and build the repo path
-    let user = user.resolve(&owner).await?; // TODO: verify
+    let owner = owner.resolve(&owner_id).await?; // TODO: verify
     let path = uri::Path::from_str(path)?;
-    let urn = RadUrn::new(user.root_hash().clone(), uri::Protocol::Git, path);
+    let urn = RadUrn::new(owner.root_hash().clone(), uri::Protocol::Git, path);
 
     // Create the project meta
-    let mut meta = project::Project::new(name, urn)?.to_builder();
+    let mut meta = project::Project::new(name.to_string(), urn)?.to_builder();
     meta.set_description(description.to_string());
     meta.set_default_branch(default_branch.to_string());
     let meta = meta.build()?;
@@ -309,8 +312,9 @@ pub async fn init_project(
     // Set up storage
     let key = keys::SecretKey::new();
     let storage = Storage::init(librad_paths, key)?;
+    let _repo = git::repo::Repo::create(storage, &meta)?;
 
-    Ok((urn, git::repo::Repo::create(storage, &meta)?))
+    Ok((urn, meta))
 }
 
 /// Initialize a [`radicle_surf::git::git2::Repository`] at the given path.

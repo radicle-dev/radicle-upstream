@@ -140,6 +140,7 @@ mod handler {
     use librad::paths::Paths;
     use librad::meta::entity;
     use librad::meta;
+    use librad::uri;
     use librad::surf;
     use radicle_registry_client::Balance;
     use std::convert::TryFrom;
@@ -156,28 +157,37 @@ mod handler {
     use crate::registry;
 
     /// Create a new [`project::Project`].
-    pub async fn create(
+    pub async fn create<U>(
         librad_paths: Arc<RwLock<Paths>>,
+        me: http::Shared<(uri::RadUrn, U)>,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        U: entity::Resolver<meta::user::User>
+    {
         // TODO(fintohaps): I don't think this is needed
         if surf::git::git2::Repository::open(input.path.clone()).is_err() {
             coco::init_repo(input.path.clone())?;
         };
 
+        let (owner_id, owner) = *me.read().await;
+
         let paths = librad_paths.read().await;
         let (id, meta) = coco::init_project(
             &paths,
             &input.path,
+            &owner_id,
+            &owner,
             &input.metadata.name,
             &input.metadata.description,
             &input.metadata.default_branch,
-        )?;
+        ).await?;
 
+        let shareable_entity_identifier = format!("%{}", id);
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: id.clone(),
-                shareable_entity_identifier: format!("%{}", id),
+                id: id,
+                shareable_entity_identifier,
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
