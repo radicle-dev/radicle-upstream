@@ -141,7 +141,6 @@ mod handler {
     use librad::surf;
     use radicle_registry_client::Balance;
     use std::convert::TryFrom;
-    use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -173,7 +172,7 @@ mod handler {
 
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: librad::project::ProjectId::from(id.clone()),
+                id: id.clone(),
                 shareable_entity_identifier: format!("%{}", id),
                 metadata: meta.into(),
                 registration: None,
@@ -231,7 +230,7 @@ mod handler {
         let reg = registry.read().await;
         let maybe_coco_id = input
             .maybe_coco_id
-            .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
+            .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project id"));
         let org_id = registry::Id::try_from(input.org_id)?;
         let project_name = registry::ProjectName::try_from(input.project_name)?;
         let tx = reg

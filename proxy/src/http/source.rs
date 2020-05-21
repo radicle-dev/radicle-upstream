@@ -260,7 +260,12 @@ fn tree_filter(
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use librad::paths::Paths;
+    use librad::meta::entity;
+    use librad::meta::project;
+    use librad::uri::RadUrn;
+    use radicle_keystore::Keystore;
     use std::sync::Arc;
+    use std::str::FromStr;
     use tokio::sync::RwLock;
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
@@ -354,24 +359,42 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags(
+    pub async fn tags<Store, Resolver>(
         librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
-    ) -> Result<impl Reply, Rejection> {
+        key_store: Store,
+        project_resolver: Resolver,
+        project_urn: String,
+    ) -> Result<impl Reply, Rejection>
+    where
+        Store: Keystore,
+        Resolver: entity::Resolver<project::Project>,
+    {
         let paths = librad_paths.read().await;
-        let tags = coco::tags(&paths, &project_id)?;
+        let paths = librad_paths.read().await;
+        let project_urn = RadUrn::from_str(&project_urn)?;
+        let (bro, _) = coco::get_browser(paths, key_store, project_urn, project_resolver).await?;
+        let tags = coco::tags(&bro)?;
 
         Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
-    pub async fn tree(
+    pub async fn tree<Store, Resolver>(
         librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        key_store: Store,
+        project_resolver: Resolver,
+        project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        Store: Keystore,
+        Resolver: entity::Resolver<project::Project>,
+    {
         let paths = librad_paths.read().await;
-        let tree = coco::tree(&paths, &project_id, revision, prefix)?;
+        let project_urn = RadUrn::from_str(project_urn)?;
+        let (bro, project) = coco::get_browser(paths, key_store, project_resolver, project_urn).await?;
+        let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
+        let tree = coco::tree(&bro, revision, prefix)?;
 
         Ok(reply::json(&tree))
     }

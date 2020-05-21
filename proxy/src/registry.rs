@@ -295,7 +295,7 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         org_id: Id,
         project_name: ProjectName,
-        maybe_project_id: Option<librad::project::ProjectId>,
+        maybe_project_id: Option<librad::uri::RadUrn>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -556,7 +556,7 @@ impl Client for Registry {
         author: &protocol::ed25519::Pair,
         org_id: Id,
         project_name: ProjectName,
-        maybe_project_id: Option<librad::project::ProjectId>,
+        maybe_project_id: Option<librad::uri::RadUrn>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit checkpoint transaction.

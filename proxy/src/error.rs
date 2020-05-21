@@ -1,6 +1,7 @@
 //! Proxy library errors usable for caller control flow and additional context for API responses.
 
 use librad::meta::common::url;
+use librad::meta::entity;
 use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client as registry;
@@ -30,7 +31,9 @@ pub enum Error {
     /// Returned when an attempt to create an identity was made and there is one present.
     IdentityExists(String),
     /// FileSystem errors from interacting with code in repository.
-    FS(surf::file_system::error::Error),
+    FS(surf::file_system::Error),
+    /// TODO(fintan)
+    PathNotFound,
     /// Originated from `radicle_surf`.
     Git(surf::git::error::Error),
     /// Originated from `radicle_surf::git::git2`.
@@ -44,11 +47,15 @@ pub enum Error {
     /// Project name input is invalid, variant carries the reason.
     InvalidProjectName(String),
     /// Originated from `librad`.
-    Librad(librad::git::Error),
-    /// Parse error for `librad::project::ProjectId`.
-    LibradParse(librad::project::projectid::ParseError),
+    LibradRepo(librad::git::repo::Error),
+    /// Originated from `librad::Storage`.
+    LibradStorage(librad::git::storage::Error),
+    /// Parse error for `librad::uri::path::Path`.
+    LibradParse(librad::uri::path::ParseError),
+    /// Parse error for `RadUrn`
+    LibradParseUrn(librad::uri::rad_urn::ParseError),
     /// Project error from `librad`.
-    LibradProject(librad::project::Error),
+    LibradProject(entity::Error),
     /// Common I/O errors.
     Io(std::io::Error),
     /// Url parse error.
@@ -69,8 +76,8 @@ pub enum Error {
     Transaction(registry::TransactionError),
 }
 
-impl From<surf::file_system::error::Error> for Error {
-    fn from(fs_error: surf::file_system::error::Error) -> Self {
+impl From<surf::file_system::Error> for Error {
+    fn from(fs_error: surf::file_system::Error) -> Self {
         Self::FS(fs_error)
     }
 }
@@ -93,21 +100,33 @@ impl From<kv::Error> for Error {
     }
 }
 
-impl From<librad::git::Error> for Error {
-    fn from(librad_error: librad::git::Error) -> Self {
-        Self::Librad(librad_error)
+impl From<librad::git::repo::Error> for Error {
+    fn from(librad_error: librad::git::repo::Error) -> Self {
+        Self::LibradRepo(librad_error)
     }
 }
 
-impl From<librad::project::Error> for Error {
-    fn from(project_error: librad::project::Error) -> Self {
+impl From<librad::git::storage::Error> for Error {
+    fn from(librad_error: librad::git::storage::Error) -> Self {
+        Self::LibradStorage(librad_error)
+    }
+}
+
+impl From<entity::Error> for Error {
+    fn from(project_error: entity::Error) -> Self {
         Self::LibradProject(project_error)
     }
 }
 
-impl From<librad::project::projectid::ParseError> for Error {
-    fn from(parse_error: librad::project::projectid::ParseError) -> Self {
+impl From<librad::uri::path::ParseError> for Error {
+    fn from(parse_error: librad::uri::path::ParseError) -> Self {
         Self::LibradParse(parse_error)
+    }
+}
+
+impl From<librad::uri::rad_urn::ParseError> for Error {
+    fn from(parse_error: librad::uri::rad_urn::ParseError) -> Self {
+        Self::LibradParseUrn(parse_error)
     }
 }
 

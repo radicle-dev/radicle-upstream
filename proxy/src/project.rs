@@ -1,12 +1,11 @@
 //! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
 //! abstraction.
 
-use librad::meta;
-use librad::project;
+use librad::meta::project;
+use librad::uri;
+use librad::meta::entity;
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
-use crate::coco;
 use crate::error;
 use crate::registry;
 
@@ -22,12 +21,12 @@ pub struct Metadata {
     pub default_branch: String,
 }
 
-impl From<meta::Project> for Metadata {
-    fn from(project_meta: meta::Project) -> Self {
+impl From<project::Project> for Metadata {
+    fn from(project_meta: project::Project) -> Self {
         Self {
-            name: project_meta.name.unwrap_or_else(|| "name unknown".into()),
-            description: project_meta.description.unwrap_or_else(|| "".into()),
-            default_branch: project_meta.default_branch,
+            name: project_meta.name().to_string(),
+            description: project_meta.description().unwrap_or_else(|| "".into()),
+            default_branch: project_meta.default_branch().to_string(),
         }
     }
 }
@@ -35,7 +34,7 @@ impl From<meta::Project> for Metadata {
 /// Radicle project for sharing and collaborating.
 pub struct Project {
     /// Unique identifier of the project in the network.
-    pub id: project::ProjectId,
+    pub id: uri::RadUrn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
@@ -67,12 +66,12 @@ pub struct Stats {
 }
 
 /// TODO(xla): Add documentation.
-pub async fn get(paths: &librad::paths::Paths, id: &str) -> Result<Project, error::Error> {
-    let meta = coco::get_project_meta(paths, id)?;
+pub async fn get(paths: &librad::paths::Paths, project_id: &uri::RadUrn, project: impl entity::Resolver<project::Project>) -> Result<Project, error::Error> {
+    let meta = project.resolve(&project_id).await?;
 
     Ok(Project {
-        id: librad::project::ProjectId::from_str(id)?,
-        shareable_entity_identifier: format!("%{}", id),
+        id: project_id.clone(),
+        shareable_entity_identifier: format!("%{}", project_id),
         metadata: meta.into(),
         registration: None,
         stats: Stats {

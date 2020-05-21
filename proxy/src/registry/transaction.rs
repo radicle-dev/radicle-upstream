@@ -396,7 +396,7 @@ where
         author: &protocol::ed25519::Pair,
         org_id: registry::Id,
         project_name: registry::ProjectName,
-        maybe_project_id: Option<librad::project::ProjectId>,
+        maybe_project_id: Option<librad::uri::RadUrn>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self

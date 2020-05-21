@@ -1,179 +1,44 @@
 //! Abstractions and utilities for git interactions through the API.
 
-use std::collections::hash_map::DefaultHasher;
 use std::env;
-use std::fmt;
-use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 use librad::git;
 use librad::keys;
-use librad::meta;
+use librad::uri::{self, RadUrn};
+use librad::meta::entity;
+use librad::meta::user::User;
+use librad::meta::project::Project;
 use librad::paths::Paths;
-use librad::peer;
-use librad::project;
 use librad::surf;
 use librad::surf::git::git2;
+use librad::git::storage::Storage;
+use radicle_keystore::Keystore;
 
 use crate::error;
 
-/// Branch name representation.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Branch(String);
+mod types;
+pub use types::*; // TODO: make explicit
 
-impl fmt::Display for Branch {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
+// TODO(finto): should bundle these up so we can pass them all in at once
+pub async fn get_browser<'a, Store, Resolver>(
+    paths: Paths,
+    key_store: Store,
+    project_resolver: Resolver,
+    project_urn: RadUrn,
+) -> Result<(surf::git::Browser<'a>, project::Project), error::Error>
+where
+    Store: Keystore,
+    Resolver: entity::Resolver<project::Project>,
+{
+    let keypair = key_store.get_key()?;
+    let project = project.resolve(&project_urn).await?;
 
-/// Tag name representation.
-///
-/// We still need full tag support.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Tag(String);
+    let storage = Storage::open(paths, keypair.secret_key)?;
+    let mut repo = git::repo::Repo::open(storage, project_urn)?;
+    let bro = repo.locked().browser()?;
 
-impl fmt::Display for Tag {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-/// Representation of a person (e.g. committer, author, signer) from a repository. Usually
-/// extracted from a signature.
-pub struct Person {
-    /// Name part of the commit signature.
-    pub name: String,
-    /// Email part of the commit signature.
-    pub email: String,
-    /// Reference (url/uri) to a persons avatar image.
-    pub avatar: String,
-}
-
-/// Representation of a code commit.
-pub struct Commit {
-    /// Identifier of the commit in the form of a sha1 hash. Often referred to as oid or object
-    /// id.
-    pub sha1: git2::Oid,
-    /// The author of the commit.
-    pub author: Person,
-    /// The summary of the commit message body.
-    pub summary: String,
-    /// The entire commit message body.
-    pub message: String,
-    /// The committer of the commit.
-    pub committer: Person,
-    /// The recorded time of the committer signature. This is a convenience alias until we
-    /// expose the actual author and commiter signatures.
-    pub committer_time: git2::Time,
-}
-
-impl Commit {
-    /// Returns the commit description text. This is the text after the one-line summary.
-    #[must_use]
-    pub fn description(&self) -> &str {
-        self.message
-            .strip_prefix(&self.summary)
-            .unwrap_or(&self.message)
-            .trim()
-    }
-}
-
-impl From<&surf::git::Commit> for Commit {
-    fn from(commit: &surf::git::Commit) -> Self {
-        let avatar = |input: &String| {
-            let mut s = DefaultHasher::new();
-            input.hash(&mut s);
-
-            format!(
-                "https://avatars.dicebear.com/v2/jdenticon/{}.svg",
-                s.finish().to_string()
-            )
-        };
-
-        Self {
-            sha1: commit.id,
-            author: Person {
-                name: commit.author.name.clone(),
-                email: commit.author.email.clone(),
-                avatar: avatar(&commit.author.email),
-            },
-            summary: commit.summary.clone(),
-            message: commit.message.clone(),
-            committer: Person {
-                name: commit.committer.name.clone(),
-                email: commit.committer.email.clone(),
-                avatar: avatar(&commit.committer.email),
-            },
-            committer_time: commit.author.time,
-        }
-    }
-}
-
-/// Git object types.
-///
-/// `shafiul.github.io/gitbook/1_the_git_object_model.html`
-#[derive(Debug, Eq, Ord, PartialOrd, PartialEq)]
-pub enum ObjectType {
-    /// References a list of other trees and blobs.
-    Tree,
-    /// Used to store file data.
-    Blob,
-}
-
-/// Set of extra information we carry for blob and tree objects returned from the API.
-pub struct Info {
-    /// Name part of an object.
-    pub name: String,
-    /// The type of the object.
-    pub object_type: ObjectType,
-    /// The last commmit that touched this object.
-    pub last_commit: Option<Commit>,
-}
-
-/// File data abstraction.
-pub struct Blob {
-    /// Actual content of the file, if the content is ASCII.
-    pub content: BlobContent,
-    /// Extra info for the file.
-    pub info: Info,
-    /// Absolute path to the object from the root of the repo.
-    pub path: String,
-}
-
-impl Blob {
-    /// Indicates if the content of the [`Blob`] is binary.
-    #[must_use]
-    pub fn is_binary(&self) -> bool {
-        self.content == BlobContent::Binary
-    }
-}
-
-/// Variants of blob content.
-#[derive(PartialEq)]
-pub enum BlobContent {
-    /// Content is ASCII and can be passed as a string.
-    Ascii(String),
-    /// Content is binary and needs special treatment.
-    Binary,
-}
-
-/// Result of a directory listing, carries other trees and blobs.
-pub struct Tree {
-    /// Absolute path to the tree object from the repo root.
-    pub path: String,
-    /// Entries listed in that tree result.
-    pub entries: Vec<TreeEntry>,
-    /// Extra info for the tree object.
-    pub info: Info,
-}
-
-/// Entry in a Tree result.
-pub struct TreeEntry {
-    /// Extra info for the entry.
-    pub info: Info,
-    /// Absolute path to the object from the root of the repo.
-    pub path: String,
+    Ok((bro, project))
 }
 
 /// Returns the [`Blob`] for a file at `revision` under `path`.
@@ -181,22 +46,14 @@ pub struct TreeEntry {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
-pub fn blob(
-    paths: &Paths,
-    id: &str,
+pub fn blob<'a>(
+    browser: &surf::git::Browser<'a>,
     maybe_revision: Option<String>,
+    default_branch: String,
     maybe_path: Option<String>,
 ) -> Result<Blob, error::Error> {
-    let project_id = project::ProjectId::from_str(id)?;
-    let project = project::Project::open(paths, &project_id)?;
-    let meta = project::Project::show(paths, &project_id)?;
-
-    let mut browser = match project {
-        project::Project::Git(git_project) => git_project.browser()?,
-    };
-
     let path = maybe_path.clone().unwrap_or_default();
-    let revision = maybe_revision.unwrap_or(meta.default_branch);
+    let revision = maybe_revision.unwrap_or(default_branch);
 
     // Best effort to guess the revision.
     browser.revspec(&revision)?;
@@ -205,9 +62,9 @@ pub fn blob(
 
     let mut p = surf::file_system::Path::from_str(&path)?;
 
-    let file = root.find_file(&p).ok_or_else(|| {
-        surf::file_system::error::Error::Path(surf::file_system::error::Path::Empty)
-    })?;
+    let file = root
+        .find_file(&p)
+        .ok_or_else(|| error::Error::PathNotFound)?;
 
     let mut commit_path = surf::file_system::Path::root();
     commit_path.append(&mut p);
@@ -235,16 +92,9 @@ pub fn blob(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches(paths: &Paths, id: &str) -> Result<Vec<Branch>, error::Error> {
-    let project_id = project::ProjectId::from_str(id)?;
-    let project = project::Project::open(paths, &project_id)?;
-    let browser = match project {
-        project::Project::Git(git_project) => git_project.browser()?,
-    };
-
+pub fn branches<'a>(browser: &surf::git::Browser<'a>) -> Result<Vec<Branch>, error::Error> {
     let mut branches = browser
-        .list_branches(None)
-        .expect("Getting branches failed")
+        .list_branches(None)?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
@@ -261,7 +111,7 @@ pub fn branches(paths: &Paths, id: &str) -> Result<Vec<Branch>, error::Error> {
 /// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
     let repo = surf::git::Repository::new(repo_path)?;
-    let browser = surf::git::Browser::new(repo)?;
+    let browser = surf::git::Browser::new(&repo)?;
     let mut branches = browser
         .list_branches(None)?
         .into_iter()
@@ -278,13 +128,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Error> {
-    let project_id = project::ProjectId::from_str(id)?;
-    let project = project::Project::open(paths, &project_id)?;
-    let mut browser = match project {
-        project::Project::Git(git_project) => git_project.browser()?,
-    };
-
+pub fn commit<'a>(browser: &surf::git::Browser<'a>, sha1: &str) -> Result<Commit, error::Error> {
     browser.commit(surf::git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
@@ -298,12 +142,7 @@ pub fn commit(paths: &Paths, id: &str, sha1: &str) -> Result<Commit, error::Erro
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits(paths: &Paths, id: &str, branch: &str) -> Result<Vec<Commit>, error::Error> {
-    let project_id = project::ProjectId::from_str(id)?;
-    let project = project::Project::open(paths, &project_id)?;
-    let mut browser = match project {
-        project::Project::Git(git_project) => git_project.browser()?,
-    };
+pub fn commits<'a>(browser: &surf::git::Browser<'a>, branch: &str) -> Result<Vec<Commit>, error::Error> {
     browser.branch(surf::git::BranchName::new(branch))?;
 
     let commits = browser.get().iter().map(Commit::from).collect();
@@ -316,13 +155,7 @@ pub fn commits(paths: &Paths, id: &str, branch: &str) -> Result<Vec<Commit>, err
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
-    let project_id = project::ProjectId::from_str(id)?;
-    let project = project::Project::open(paths, &project_id)?;
-    let browser = match project {
-        project::Project::Git(git_project) => git_project.browser()?,
-    };
-
+pub fn tags<'a>(browser: &surf::git::Browser<'a>) -> Result<Vec<Tag>, error::Error> {
     let tag_names = browser.list_tags()?;
 
     let mut tags: Vec<Tag> = tag_names
@@ -340,22 +173,13 @@ pub fn tags(paths: &Paths, id: &str) -> Result<Vec<Tag>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if any of the surf interactions fail.
-pub fn tree(
-    paths: &Paths,
-    id: &str,
-    maybe_revision: Option<String>,
+/// TODO(fintohaps): default branch fall back from Browser
+pub fn tree<'a>(
+    browser: &surf::git::Browser<'a>,
+    revision: String,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, error::Error> {
-    let project_id = project::ProjectId::from_str(id)?;
-    let project = project::Project::open(paths, &project_id)?;
-    let meta = project::Project::show(paths, &project_id)?;
-
-    let mut browser = match project {
-        project::Project::Git(git_project) => git_project.browser()?,
-    };
-
     let prefix = maybe_prefix.unwrap_or_default();
-    let revision = maybe_revision.unwrap_or(meta.default_branch);
 
     browser.revspec(&revision)?;
 
@@ -369,9 +193,9 @@ pub fn tree(
     let prefix_dir = if path.is_root() {
         root_dir
     } else {
-        root_dir.find_directory(&path).ok_or_else(|| {
-            surf::file_system::error::Error::Path(surf::file_system::error::Path::Empty)
-        })?
+        root_dir
+            .find_directory(&path)
+            .ok_or_else(|| error::Error::PathNotFound)?
     };
     let mut prefix_contents = prefix_dir.list_directory();
     prefix_contents.sort();
@@ -380,13 +204,7 @@ pub fn tree(
         .iter()
         .map(|(label, system_type)| {
             let mut entry_path = if path.is_root() {
-                let label_path =
-                    nonempty::NonEmpty::from_slice(&[label.clone()]).ok_or_else(|| {
-                        surf::file_system::error::Error::Label(
-                            surf::file_system::error::Label::Empty,
-                        )
-                    })?;
-                surf::file_system::Path(label_path)
+                surf::file_system::Path::try_from(vec![label.clone()])
             } else {
                 let mut p = path.clone();
                 p.push(label.clone());
@@ -448,28 +266,14 @@ pub fn tree(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project for the given `id` doesn't exist.
-pub fn get_project_meta(paths: &Paths, id: &str) -> Result<meta::Project, error::Error> {
-    let project_id = project::ProjectId::from_str(id)?;
-    let meta = project::Project::show(paths, &project_id)?;
-
-    Ok(meta)
+pub async fn get_project_meta(paths: &Paths, urn: &RadUrn, project: impl entity::Resolver<Project>) -> Result<Project, error::Error> {
+    Ok(project.resolve(&urn).await?)
 }
 
 /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
 #[must_use]
-pub fn list_projects(paths: &Paths) -> Vec<(project::ProjectId, meta::Project)> {
-    let mut projects = project::Project::list(paths)
-        .map(|id| {
-            (
-                id.clone(),
-                project::Project::show(paths, &id).expect("unable to get project meta"),
-            )
-        })
-        .collect::<Vec<(project::ProjectId, meta::Project)>>();
-
-    projects.sort_by(|a, b| a.1.name.cmp(&b.1.name));
-
-    projects
+pub fn list_projects(paths: &Paths) -> Vec<Project> {
+    todo!() // TODO: not implemented by link yet
 }
 
 /// Initialize a [`librad::project::Project`] in the location of the given `path`.
@@ -478,25 +282,26 @@ pub fn list_projects(paths: &Paths) -> Vec<(project::ProjectId, meta::Project)> 
 ///
 /// Will return [`error::Error`] if the git2 repository is not present for the `path` or any of the
 /// librad interactions fail.
-pub fn init_project(
+pub async fn init_project(
     librad_paths: &Paths,
     path: &str,
-    name: &str,
+    owner: RadUrn,
+    user: impl entity::Resolver<User>,
+    name: String,
     description: &str,
     default_branch: &str,
-) -> Result<(git::ProjectId, meta::Project), error::Error> {
-    let key = keys::device::Key::new();
-    let peer_id = peer::PeerId::from(key.public());
-    let founder = meta::contributor::Contributor::new();
-    let sources = git2::Repository::open(std::path::Path::new(path))?;
-    let mut meta = meta::Project::new(name, &peer_id);
+) -> Result<(RadUrn, git::repo::Repo), error::Error> {
+    let key = keys::SecretKey::new();
+    let user = user.resolve(&owner).await?; // TODO: verify
+    let path = uri::Path::from_str(path)?;
+    let urn = RadUrn::new(user.root_hash().clone(), uri::Protocol::Git, path);
+    let mut meta = Project::new(name, urn)?.to_builder();
+    meta.set_description(description.to_string());
+    meta.set_default_branch(default_branch.to_string());
+    let meta = meta.build()?;
+    let storage = Storage::open(librad_paths, key)?;
 
-    meta.description = Some(description.to_string());
-    meta.default_branch = default_branch.to_string();
-
-    let id = git::GitProject::init(librad_paths, &key, &sources, meta.clone(), founder)?;
-
-    Ok((id, meta))
+    Ok((urn, git::repo::Repo::create(storage, &meta)?))
 }
 
 /// Initialize a [`radicle_surf::git::git2::Repository`] at the given path.
@@ -538,7 +343,7 @@ pub fn replicate_platinum(
     name: &str,
     description: &str,
     default_branch: &str,
-) -> Result<(git::ProjectId, meta::Project), error::Error> {
+) -> Result<(RadUrn, Project), error::Error> {
     // Craft the absolute path to git-platinum fixtures.
     let mut platinum_path = env::current_dir()?;
     platinum_path.push("../fixtures/git-platinum");
@@ -564,7 +369,7 @@ pub fn replicate_platinum(
             .to_str()
             .expect("unable to convert into string"),
     )?;
-    let platinum_browser = surf::git::Browser::new(platinum_surf_repo)?;
+    let platinum_browser = surf::git::Browser::new(&platinum_surf_repo)?;
 
     let tags = platinum_browser
         .list_tags()
@@ -594,7 +399,7 @@ pub fn replicate_platinum(
     }
 
     // Init as rad project.
-    let (id, meta) = init_project(
+    let (id, repo) = init_project(
         librad_paths,
         platinum_into.to_str().expect("unable to get path"),
         name,
@@ -608,7 +413,7 @@ pub fn replicate_platinum(
     // Push dev branch.
     rad_remote.push(&["+refs/heads/dev"], None)?;
 
-    Ok((id, meta))
+    Ok((id, repo))
 }
 
 /// Creates a small set of projects in [`Paths`].
