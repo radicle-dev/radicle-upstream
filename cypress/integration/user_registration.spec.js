@@ -115,8 +115,8 @@ context("user registration", () => {
 
       cy.pick("transaction-center").click();
 
-      // // pick most recent transaction
-      cy.pick("card").last().click();
+      // pick most recent transaction
+      cy.pick("transaction-item").last().click();
       cy.pick("summary", "message").contains("User registration");
       cy.pick("summary", "subject").contains("secretariat");
 

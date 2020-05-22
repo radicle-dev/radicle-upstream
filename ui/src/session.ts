@@ -72,18 +72,20 @@ const update = (msg: Msg): void => {
     case Kind.Clear:
       api.del(`session`)
         .then(fetchSession)
+        .then(() => transaction.fetchList());
 
       break;
 
     case Kind.ClearCache:
       api.del(`session/cache`)
-        .then(() => transaction.fetchList())
+        .then(() => transaction.fetchList());
 
       break;
 
     case Kind.Fetch:
       sessionStore.loading();
-      fetchSession();
+      fetchSession()
+        .then(() => transaction.fetchList());
 
       break;
 

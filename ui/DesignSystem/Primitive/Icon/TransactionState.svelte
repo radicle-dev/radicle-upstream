@@ -1,41 +1,39 @@
 <script>
+  export let progress = 0;
+  export let rotate = false;
   export let style = null;
   export let state = "caution"; // negative | caution | positive
-  export let progress = null; // 0-100% of progress, overwrites the defaults
   export let variant = "regular"; // small | regular | inverted
 
-  const size = {
+  const max = 100;
+  $: size = {
     regular: 32,
     inverted: 24,
     small: 16,
   }[variant];
 
-  const strokeWidth = {
+  $: strokeWidth = {
     regular: 4,
     inverted: 6,
     small: 2,
   }[variant];
 
-  const center = size / 2;
-  const radius = size / 2 - strokeWidth / 2;
-  const circumference = 2 * Math.PI * radius;
-
+  $: center = size / 2;
+  $: radius = size / 2 - strokeWidth / 2;
+  $: circumference = 2 * Math.PI * radius;
   $: color = {
     caution: "var(--color-caution)",
     positive: "var(--color-positive)",
     negative: "var(--color-negative)",
   }[state];
-
-  const defaultDashLength = {
-    caution: progress || 100 / 6,
-    positive: 100,
+  $: defaultDashLength = {
+    caution: (1 / 6) * 100,
+    positive: max,
     negative: 0,
-  };
-
-  $: dashLength =
-    progress === 0 ? 100 / 6 : progress || defaultDashLength[state];
-
-  $: rotate = progress === 0;
+  }[state];
+  $: dashLength = progress === 0 ? defaultDashLength : progress;
+  $: dashArray = (dashLength * circumference) / max;
+  $: spin = progress === 0 || rotate;
 </script>
 
 <style>
@@ -43,12 +41,12 @@
     opacity: 0.3;
   }
 
-  .rotate {
+  .spin {
     transform-origin: var(--origin);
-    animation: rotate 5s infinite linear;
+    animation: spin 5s infinite linear;
   }
 
-  @keyframes rotate {
+  @keyframes spin {
     from {
       transform: rotate(0deg);
     }
@@ -75,14 +73,14 @@
     stroke-width={strokeWidth} />
   <circle
     style="--origin: {center}px {center}px"
-    class:rotate
+    class:spin
     cx={center}
     cy={center}
     r={radius}
     transform="rotate(-90, {center}, {center})"
     stroke={variant === 'inverted' ? 'var(--color-background)' : color}
     stroke-width={strokeWidth}
-    stroke-dasharray="{(dashLength * circumference) / 100}, {circumference}" />
+    stroke-dasharray="{dashArray}, {circumference}" />
   {#if variant === 'inverted'}
     <circle cx={center} cy={center} r={radius} fill={color} />
   {/if}

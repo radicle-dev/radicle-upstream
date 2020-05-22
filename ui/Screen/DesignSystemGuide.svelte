@@ -1,5 +1,6 @@
 <script>
   import * as notification from "../src/notification.ts";
+  import * as transaction from "../src/transaction.ts";
 
   import {
     Avatar,
@@ -26,7 +27,7 @@
     SupportButton,
     StepCounter,
     TrackToggle,
-    TransactionAccordion,
+    TransactionCenter,
     TransactionStatusbar,
     UserCard,
   } from "../DesignSystem/Component";
@@ -112,37 +113,130 @@
 
   const transactions1 = [
     {
-      message: "Project registration",
-      state: "pending",
-      progress: 50,
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.UserRegistration,
+          handle: "xla",
+          id: "xla@123abcd.git",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Settled,
+        minConfirmations: 6,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Member registration",
-      state: "error",
+      id: "0a1b2c3b",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Confirmed,
+        confirmations: 2,
+        minConfirmations: 6,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Org registration",
-      state: "success",
+      id: "0a1b2c3c",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
+    },
+    {
+      id: "0a1b2c3d",
+      messages: [
+        {
+          type: transaction.MessageType.MemberRegistration,
+          orgId: "monadic",
+          handle: "xla",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Failed,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
   const transactions2 = [
     {
-      message: "Project registration",
-      state: "pending",
-      progress: 70,
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Org registration",
-      state: "pending",
-      progress: 0,
+      id: "0a1b2c3b",
+      messages: [
+        {
+          type: transaction.MessageType.ProjectRegistration,
+          orgId: "monadic",
+          projectName: "upstream",
+          cocId: "upstream@123abcd.git",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
   const transactions3 = [
     {
-      message: "Org registration",
-      state: "success",
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Settled,
+        minConfirmations: 6,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
@@ -391,12 +485,12 @@
       reactive coloring.">
       <Icon.Spinner />
       <Icon.TransactionState state="positive" />
-      <Icon.TransactionState progress={0} variant="small" />
-      <Icon.TransactionState progress={0} />
-      <Icon.TransactionState progress={10} />
-      <Icon.TransactionState progress={100 / 3} />
-      <Icon.TransactionState state="negative" progress={0} />
-      <Icon.TransactionState state="negative" progress={80} />
+      <Icon.TransactionState variant="small" />
+      <Icon.TransactionState />
+      <Icon.TransactionState progress={(1 / 6) * 100} />
+      <Icon.TransactionState progress={(2 / 6) * 100} />
+      <Icon.TransactionState state="negative" progress={(2 / 6) * 100} rotate />
+      <Icon.TransactionState state="negative" progress={(4 / 6) * 100} />
       <Icon.TransactionState state="negative" progress={100} />
       <Icon.TransactionState state="negative" />
     </Section>
@@ -836,17 +930,20 @@
       <Swatch>
         <div style="display: flex;">
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions1)}
               transactions={transactions1}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions2)}
               transactions={transactions2}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions3)}
               transactions={transactions3}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>
@@ -855,13 +952,50 @@
 
       <Swatch>
         <div style="flex-direction: column; width: 100%">
-          <TransactionStatusbar style="margin-bottom: 5px;" />
-          <TransactionStatusbar progress={30} style="margin-bottom: 5px;" />
           <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Pending,
+              timestamp: {
+                nanos: 0,
+                secs: 1589806729,
+              },
+            })}
+            progress={0}
+            variant="caution"
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Confirmed,
+              confirmations: 2,
+              minConfirmations: 6,
+              timestamp: {
+                nanos: 0,
+                secs: 1589806729,
+              },
+            })}
+            progress={(2 / 6) * 100}
+            variant="caution"
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Failed,
+              timestamp: {
+                nanos: 0,
+                secs: 1585819617,
+              },
+            })}
             variant="negative"
-            style="margin-bottom: 5px;"
-            time="1585819617" />
-          <TransactionStatusbar variant="positive" time="1585819617" />
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Settled,
+              minConfirmations: 6,
+              timestamp: {
+                nanos: 0,
+                secs: 1585819617,
+              },
+            })}
+            variant="positive" />
         </div>
       </Swatch>
     </Section>

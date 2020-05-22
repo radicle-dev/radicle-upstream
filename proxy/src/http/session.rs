@@ -250,7 +250,10 @@ mod test {
         let store = Arc::new(RwLock::new(
             kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
         ));
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let cache = Arc::new(RwLock::new(registry::Cacher::new(
             registry,
             &*store.read().await,
@@ -278,7 +281,10 @@ mod test {
     async fn get() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
 
@@ -308,7 +314,10 @@ mod test {
     async fn udpate_settings() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
 

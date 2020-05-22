@@ -124,10 +124,12 @@ context("org registration", () => {
       cy.pick("submit-button").click();
       cy.pick("submit-button").click();
 
+      // wait until routed back to main screen
+      cy.pick("sidebar").should("exist");
       cy.pick("transaction-center").click();
 
       // pick most recent transaction
-      cy.pick("card").first().click();
+      cy.pick("transaction-center", "transaction-item").first().click();
       cy.pick("summary", "message").contains("Org registration");
       cy.pick("summary", "subject").contains("mariposa");
       cy.pick("summary", "subject-avatar", "emoji").should(

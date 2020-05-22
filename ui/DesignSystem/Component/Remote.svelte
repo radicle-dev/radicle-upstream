@@ -1,10 +1,17 @@
 <script>
+  import * as notification from "../../src/notification.ts";
   import * as remote from "../../src/remote.ts";
 
   import WithContext from "./WithContext.svelte";
 
   export let store = null;
   export let context = null;
+
+  const errorSlot = $$props.$$slots.error;
+  $: if ($store.status === remote.Status.Error && !errorSlot) {
+    console.error("Remote error", $store.error);
+    notification.error($store.error.message);
+  }
 </script>
 
 {#if $store.status === remote.Status.NotAsked}

@@ -281,7 +281,10 @@ mod test {
     #[tokio::test]
     async fn create() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let api = super::filters(
             Arc::new(RwLock::new(registry)),
@@ -326,7 +329,10 @@ mod test {
     #[tokio::test]
     async fn get() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let api = super::filters(
             Arc::new(RwLock::new(registry)),

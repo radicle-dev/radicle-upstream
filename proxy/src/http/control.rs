@@ -146,10 +146,8 @@ mod handler {
     pub async fn nuke_registry<R: registry::Client>(
         registry: http::Shared<R>,
     ) -> Result<impl Reply, Rejection> {
-        registry
-            .write()
-            .await
-            .reset(radicle_registry_client::Client::new_emulator());
+        let (client, _) = radicle_registry_client::Client::new_emulator();
+        registry.write().await.reset(client);
 
         Ok(reply::json(&true))
     }

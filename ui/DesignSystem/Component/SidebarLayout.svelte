@@ -4,8 +4,9 @@
 
   import * as path from "../../src/path.ts";
 
+  import TransactionCenter from "../../App/TransactionCenter.svelte";
+
   import Sidebar from "./Sidebar.svelte";
-  import TransactionCenter from "./Transaction/Center.svelte";
 
   export let dataCy = null;
   export let style = null;
@@ -31,6 +32,8 @@
 </style>
 
 <div data-cy={dataCy}>
+  <TransactionCenter />
+
   <Sidebar
     on:createorg={() => push(path.orgRegistration())}
     orgs={session.orgs}
@@ -41,5 +44,4 @@
       <slot />
     </div>
   </div>
-  <TransactionCenter />
 </div>

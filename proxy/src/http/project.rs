@@ -524,7 +524,10 @@ mod test {
     async fn create() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let subscriptions = notification::Subscriptions::default();
 
         let repos_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
@@ -578,7 +581,10 @@ mod test {
     async fn get() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let subscriptions = notification::Subscriptions::default();
 
         let repo_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
@@ -615,7 +621,10 @@ mod test {
     async fn list() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let subscriptions = notification::Subscriptions::default();
 
         coco::setup_fixtures(&librad_paths, tmp_dir.path().as_os_str().to_str().unwrap()).unwrap();
@@ -652,7 +661,10 @@ mod test {
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path())?));
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
