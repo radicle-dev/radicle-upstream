@@ -643,6 +643,8 @@ impl Client for Registry {
         id: Option<String>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
+        // TODO(xla): Remove automatic prepayment once we have proper balances.
+        self.prepay_account(author.public(), 1000).await?;
         // Prepare and submit user registration transaction.
         let register_message = protocol::message::RegisterUser {
             user_id: handle.0.clone(),
