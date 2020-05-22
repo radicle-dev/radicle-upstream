@@ -22,18 +22,23 @@
 <style>
   .close {
     cursor: pointer;
-    position: absolute;
+    position: fixed;
     right: 32px;
     top: 22px;
   }
 
   .modal {
     align-items: center;
+    background: var(--color-background);
     display: flex;
     height: 100vh;
     justify-content: center;
     overflow: auto;
+    position: fixed;
+    right: 0;
+    top: 0;
     width: 100vw;
+    z-index: 10000;
   }
 
   .content {
@@ -48,13 +53,13 @@
 
 <svelte:window on:keydown={onKeydown} />
 
-{#if escapable}
-  <div data-cy="modal-close-button" class="close">
-    <Icon.Cross size="big" on:click={onClose} />
-  </div>
-{/if}
-
 <div class="modal" data-cy={dataCy}>
+  {#if escapable}
+    <div data-cy="modal-close-button" class="close">
+      <Icon.Cross size="big" on:click={onClose} />
+    </div>
+  {/if}
+
   <div class="content" class:center={!full}>
     <slot />
   </div>

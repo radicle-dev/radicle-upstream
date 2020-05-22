@@ -19,6 +19,7 @@
     display: flex;
     justify-content: space-between;
     height: 64px;
+    transition: background-color 0.3s ease;
   }
 
   .item:hover {

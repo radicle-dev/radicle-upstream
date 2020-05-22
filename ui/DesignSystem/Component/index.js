@@ -17,7 +17,6 @@ import StepModalLayout from "./Registration/StepModalLayout.svelte";
 import Remote from "./Remote.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
-import SidebarLayout from "./SidebarLayout.svelte";
 import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
 import StepCounter from "./StepCounter.svelte";
@@ -52,7 +51,6 @@ export {
   Row,
   SegmentedControl,
   Sidebar,
-  SidebarLayout,
   SupportButton,
   StepCounter,
   Timeline,

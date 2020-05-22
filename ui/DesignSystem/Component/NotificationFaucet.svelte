@@ -1,4 +1,5 @@
 <script>
+  import { flip } from "svelte/animate";
   import { blur } from "svelte/transition";
 
   import { remove, store } from "../../src/notification.ts";
@@ -9,7 +10,7 @@
 </script>
 
 <style>
-  .wrapper {
+  .faucet {
     position: absolute;
     bottom: 32px;
     z-index: 1001;
@@ -22,11 +23,12 @@
   }
 </style>
 
-<div class="wrapper" {style}>
+<div class="faucet" {style}>
   {#each $store as notification (notification.id)}
     <div
       data-cy="notification"
       class="notification"
+      animate:flip
       transition:blur={{ duration: 300 }}>
       <Notification
         level={notification.level}

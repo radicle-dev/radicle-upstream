@@ -9,7 +9,6 @@
     AdditionalActionsDropdown,
     HorizontalMenu,
     Remote,
-    SidebarLayout,
     Topbar,
   } from "../DesignSystem/Component";
 
@@ -80,9 +79,7 @@
   fetch({ id: params.id });
 </script>
 
-<SidebarLayout
-  dataCy="org-screen"
-  style="margin-top: calc(var(--topbar-height) + 33px)">
+<main id="org-screen" data-cy="org-screen">
   <Remote {store} let:data={org}>
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.orgProjects(params.id)} use:link>
@@ -108,4 +105,4 @@
     </Topbar>
     <Router {routes} />
   </Remote>
-</SidebarLayout>
+</main>

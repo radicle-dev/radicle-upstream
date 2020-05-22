@@ -1,14 +1,15 @@
 html,
 body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   font-family: var(--typeface-regular);
   font-size: 16px;
-  line-height: 24px;
-  display: flex;
   height: 100%;
-  color: var(--color-foreground);
-  background-color: var(--color-background);
+  line-height: 24px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --scrollbar-width: calc(100vw - 100%);
 }
 
 a {
@@ -18,7 +19,7 @@ a {
 }
 
 :root {
+  --content-min-width: 700px;
   --sidebar-width: 68px;
   --topbar-height: 61px;
-  --content-min-width: 700px;
 }

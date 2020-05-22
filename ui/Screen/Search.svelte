@@ -1,10 +1,9 @@
 <script>
   import { Flex, Title } from "../DesignSystem/Primitive";
-  import { SidebarLayout } from "../DesignSystem/Component";
 </script>
 
-<SidebarLayout dataCy="page">
+<main id="search-screen" data-cy="search-screen">
   <Flex align="left">
     <Title variant="big">Search</Title>
   </Flex>
-</SidebarLayout>
+</main>

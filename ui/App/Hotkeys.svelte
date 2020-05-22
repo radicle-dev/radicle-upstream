@@ -1,8 +1,8 @@
 <script>
   import { location, pop, push } from "svelte-spa-router";
 
-  import * as path from "./src/path.ts";
-  import * as transaction from "./src/transaction.ts";
+  import * as path from "../src/path.ts";
+  import * as transaction from "../src/transaction.ts";
 
   const toggle = (destination) => {
     if (path.active(destination, $location)) {

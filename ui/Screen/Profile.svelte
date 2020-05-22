@@ -7,20 +7,19 @@
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
-    SidebarLayout,
     Topbar,
   } from "../DesignSystem/Component";
   import { Avatar, Icon } from "../DesignSystem/Primitive";
 
+  import Screen from "../Layout/Screen.svelte";
+
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
-  import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
     "/profile/": Projects,
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
-    "*": NotFound,
   };
 
   import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
@@ -64,35 +63,34 @@
   const session = getContext("session");
 </script>
 
-<SidebarLayout
-  style="margin-top: calc(var(--topbar-height) + 33px)"
-  dataCy="profile-screen">
-
-  <Topbar style="position: fixed; top: 0;">
-    <a slot="left" href={path.profileProjects()} use:link>
-      <!-- TODO(xla): Handle other states -->
-      <Avatar
-        dataCy="profile-avatar"
-        avatarFallback={session.identity.avatarFallback}
-        imageUrl={session.identity.metadata.avatarUrl}
-        variant="circle"
-        title={session.identity.metadata.handle}
-        size="regular"
-        registered={session.identity.registered}
-        style="color: var(--color-secondary)" />
-    </a>
-    <div slot="middle">
-      <HorizontalMenu items={topbarMenuItems} />
-    </div>
-    <div slot="right" style="display: flex">
-      <Router routes={menuRoutes} />
-      <AdditionalActionsDropdown
-        dataCy="profile-context-menu"
-        style="margin: 0 24px 0 16px"
-        headerTitle={session.identity.shareableEntityIdentifier}
-        menuItems={dropdownMenuItems} />
-    </div>
-  </Topbar>
+<Screen id="profile-screen" dataCy="profile-screen">
+  <div slot="topbar">
+    <Topbar>
+      <a slot="left" href={path.profileProjects()} use:link>
+        <!-- TODO(xla): Handle other states -->
+        <Avatar
+          dataCy="profile-avatar"
+          avatarFallback={session.identity.avatarFallback}
+          imageUrl={session.identity.metadata.avatarUrl}
+          variant="circle"
+          title={session.identity.metadata.handle}
+          size="regular"
+          registered={session.identity.registered}
+          style="color: var(--color-secondary)" />
+      </a>
+      <div slot="middle">
+        <HorizontalMenu items={topbarMenuItems} />
+      </div>
+      <div slot="right" style="display: flex">
+        <Router routes={menuRoutes} />
+        <AdditionalActionsDropdown
+          dataCy="profile-context-menu"
+          style="margin: 0 24px 0 16px"
+          headerTitle={session.identity.shareableEntityIdentifier}
+          menuItems={dropdownMenuItems} />
+      </div>
+    </Topbar>
+  </div>
 
   <Router routes={screenRoutes} />
-</SidebarLayout>
+</Screen>

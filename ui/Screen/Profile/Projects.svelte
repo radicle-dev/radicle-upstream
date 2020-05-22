@@ -5,7 +5,7 @@
   import * as path from "../../src/path.ts";
   import { projects as projectStore } from "../../src/project.ts";
 
-  import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
+  import { Flex, Icon } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     List,
@@ -70,34 +70,38 @@
   };
 </script>
 
+<style>
+  main {
+    padding: 34px 95px;
+  }
+</style>
+
 <Remote store={projectStore} let:data={projects}>
-  {#if projects.length > 0}
-    <List
-      dataCy="project-list"
-      items={projects}
-      on:select={select}
-      let:item={project}>
-      <Flex
-        style="flex: 1; padding: 24px 16px 24px 24px;"
-        dataCy={`project-list-entry-${project.metadata.name}`}>
-        <div slot="left">
-          <ProjectCard {...projectCardProps(project)} />
-        </div>
+  <main>
+    {#if projects.length > 0}
+      <List
+        dataCy="project-list"
+        items={projects}
+        on:select={select}
+        let:item={project}>
+        <Flex
+          style="flex: 1; padding: 24px 16px 24px 24px;"
+          dataCy={`project-list-entry-${project.metadata.name}`}>
+          <div slot="left">
+            <ProjectCard {...projectCardProps(project)} />
+          </div>
 
-        <div slot="right" style="display: flex; align-items: center;">
-          <Stats stats={statsProps(project.stats)} />
-          <AdditionalActionsDropdown
-            dataCy="context-menu"
-            headerTitle={project.shareableEntityIdentifier}
-            menuItems={contextMenuItems(project.id, session)} />
-        </div>
-      </Flex>
-    </List>
-  {:else}
-    <Onboard />
-  {/if}
-
-  <div slot="error" let:error>
-    <Text>{error}</Text>
-  </div>
+          <div slot="right" style="display: flex; align-items: center;">
+            <Stats stats={statsProps(project.stats)} />
+            <AdditionalActionsDropdown
+              dataCy="context-menu"
+              headerTitle={project.shareableEntityIdentifier}
+              menuItems={contextMenuItems(project.id, session)} />
+          </div>
+        </Flex>
+      </List>
+    {:else}
+      <Onboard />
+    {/if}
+  </main>
 </Remote>

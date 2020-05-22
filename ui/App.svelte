@@ -8,8 +8,11 @@
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
 
-  import Hotkeys from "./Hotkeys.svelte";
-  import Theme from "./Theme.svelte";
+  import Hotkeys from "./App/Hotkeys.svelte";
+  import Theme from "./App/Theme.svelte";
+  import TransactionCenter from "./App/TransactionCenter.svelte";
+
+  import Layout from "./Layout/Sidebar.svelte";
 
   import Blank from "./Screen/Blank.svelte";
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
@@ -76,5 +79,8 @@
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Theme />
 <Remote {store} let:data={session} context="session">
-  <Router {routes} />
+  <TransactionCenter />
+  <Layout {session}>
+    <Router {routes} />
+  </Layout>
 </Remote>

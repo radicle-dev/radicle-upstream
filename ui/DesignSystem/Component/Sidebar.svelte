@@ -15,16 +15,16 @@
 </script>
 
 <style>
-  .wrapper {
-    width: var(--sidebar-width);
-    height: 100%;
+  .sidebar {
+    align-items: center;
     background-color: var(--color-foreground-level-2);
-    position: fixed;
-    padding-top: 31px;
-    z-index: 10;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    height: 100%;
+    padding-top: 21px;
+    position: fixed;
+    width: var(--sidebar-width);
+    z-index: 10;
   }
 
   .item {
@@ -61,7 +61,7 @@
     border-bottom-right-radius: 4px;
   }
 
-  .wrapper :global(li:hover svg) {
+  .sidebar :global(li:hover svg) {
     fill: var(--color-secondary);
   }
 
@@ -126,7 +126,7 @@
   }
 </style>
 
-<div class="wrapper" data-cy="sidebar">
+<div class="sidebar" data-cy="sidebar">
   <ul>
     <li
       class="item indicator"
