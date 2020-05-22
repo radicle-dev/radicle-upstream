@@ -59,6 +59,8 @@
     "@types/node": "^14.0.4",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
+    "ava": "^3.8.2",
+    "ava-ts": "^0.25.2",
     "babel-eslint": "^10.1.0",
     "chokidar": "^3.4.0",
     "cypress": "^4.5.0",
@@ -73,6 +75,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "prettier-plugin-svelte": "^1.1.0",
+    "rewiremock": "^3.14.2",
     "rollup": "^2.8.0",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10  .0.0",
@@ -87,6 +90,7 @@
     "svelte": "^3.22.2",
     "svelte-spa-router": "^2.1.0",
     "ts-jest": "^26.0.0",
+    "ts-node": "^8.10.1",
     "typescript": "3.8.3",
     "wait-on": "^5.0.0"
   },
@@ -96,6 +100,8 @@
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
     "jest": "jest",
     "jest:watch": "jest --watchAll",
+    "ava": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' ava-ts",
+    "ava:watch": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' ava-ts --watch",
     "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn cypress:run",
     "wait:debug": "wait-on tcp:8080 && yarn cypress:open",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp proxy/target/release/proxy dist && electron-builder --publish never",
@@ -121,6 +127,7 @@
     "@babel/runtime": "^7.9.6",
     "@types/jest": "^25.2.3",
     "@types/qs": "^6.9.2",
+    "babel-register": "^6.26.0",
     "marked": "^1.0.0",
     "timeago.js": "^4.0.2",
     "twemoji": "^12.1.6",
@@ -150,6 +157,11 @@
     ],
     "*.ts": [
       "eslint --fix"
+    ]
+  },
+  "ava": {
+    "files": [
+      "ui/src/tests"
     ]
   }
 }
