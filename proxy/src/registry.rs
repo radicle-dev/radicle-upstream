@@ -504,14 +504,6 @@ impl Client for Registry {
             Message::OrgRegistration { id: org_id.clone() },
         );
 
-        // TODO(xla): Remove automatic prepayment once we have proper balances.
-        let org = self
-            .client
-            .get_org(org_id.0)
-            .await?
-            .expect("org not present");
-        self.prepay_account(org.account_id, 1000).await?;
-
         Ok(tx)
     }
 
