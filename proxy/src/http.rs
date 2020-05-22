@@ -1,16 +1,11 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-use librad::keys;
-use librad::meta::{self, entity};
-use librad::paths;
-use radicle_keystore::{Keystore, SecretKeyExt};
 use std::convert::Infallible;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
-use crate::error::Error;
 use crate::registry;
 
 mod avatar;
@@ -27,36 +22,17 @@ mod transaction;
 mod user;
 
 /// Main entry point for HTTP API.
-pub fn api<R, K, P, U>(
-    librad_paths: paths::Paths,
-    keystore: K,
-    me: meta::user::User,
-    user: U,
-    project: P,
+pub fn api<C, R>(
+    coco: C,
     registry: R,
     store: kv::Store,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
+    C: coco::Client + 'static,
     R: registry::Cache + registry::Client + 'static,
-    K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = Error,
-        > + Send
-        + Sync
-        + 'static,
-    P: entity::Resolver<meta::project::Project> + Send + Sync + 'static,
-    U: entity::Resolver<meta::user::User> + Send + Sync + 'static,
 {
-    let coco = Arc::new(RwLock::new(coco::Coco {
-        paths: librad_paths,
-        project,
-        user,
-        me,
-        keystore,
-    }));
+    let coco = Arc::new(RwLock::new(coco));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
@@ -112,14 +88,6 @@ where
     let recovered = api.or(docs).recover(error::recover);
 
     recovered.with(cors).with(log)
-}
-
-/// State filter to expose the [`librad::paths::Paths`] to handlers.
-#[must_use]
-pub fn with_paths(
-    paths: Arc<RwLock<paths::Paths>>,
-) -> impl Filter<Extract = (Arc<RwLock<paths::Paths>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&paths))
 }
 
 /// Thread-safe container for threadsafe pass-through to filters and handlers.

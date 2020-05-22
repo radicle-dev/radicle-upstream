@@ -8,8 +8,8 @@ use std::sync::Arc;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::http;
 use crate::coco;
+use crate::http;
 use crate::notification;
 use crate::project;
 use crate::registry;
@@ -169,10 +169,13 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = &mut *coco.write().await;
+        let coco = coco.read().await;
 
-        let (id, meta) = coco::init_project(
-            coco,
+        // TODO(xla): Get owner from session.
+        let owner = coco::fake_owner();
+
+        let (id, meta) = coco.init_project(
+            &owner,
             &input.path,
             &input.metadata.name,
             &input.metadata.description,
@@ -182,7 +185,7 @@ mod handler {
         let shareable_entity_identifier = format!("%{}", id);
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: id,
+                id,
                 shareable_entity_identifier,
                 metadata: meta.into(),
                 registration: None,
@@ -197,10 +200,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get<C>(
-        coco: http::Shared<C>,
-        id: String,
-    ) -> Result<impl Reply, Rejection>
+    pub async fn get<C>(coco: http::Shared<C>, id: String) -> Result<impl Reply, Rejection>
     where
         C: coco::Client,
     {
@@ -213,9 +213,9 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let paths = coco.get_paths();
-        let projects = coco::list_projects(&paths)
+        let coco = coco.read().await;
+        let projects = coco
+            .list_projects()
             .into_iter()
             .map(|(id, meta)| project::Project {
                 id: id.clone(),

@@ -45,19 +45,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-    let librad_paths = if args.test {
-        let librad_paths =
-            librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
+    let coco_client = if args.test {
+        let client = coco::Coco::tmp(temp_dir.path()).expect("unable to construct coco client");
 
-        coco::setup_fixtures(
-            &librad_paths,
-            temp_dir.path().to_str().expect("path extraction failed"),
-        )
-        .expect("fixture creation failed");
+        client
+            .setup_fixtures(temp_dir.path().to_str().expect("path extraction failed"))
+            .expect("fixture creation failed");
 
-        librad_paths
+        client
     } else {
-        librad::paths::Paths::new()?
+        todo!()
     };
     let store = {
         let store_path = if args.test {
@@ -74,7 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(librad_paths, cache.clone(), store, args.test);
+    let api = http::api(coco_client, cache.clone(), store, args.test);
 
     tokio::spawn(async move {
         cache.run().await.expect("cacher run failed");

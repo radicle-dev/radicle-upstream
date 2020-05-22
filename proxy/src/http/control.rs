@@ -101,7 +101,6 @@ fn nuke_session_filter(
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
     use kv::Store;
-    use librad::paths::Paths;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -121,16 +120,10 @@ mod handler {
     where
         C: coco::Client,
     {
-        let dir = tempfile::tempdir().expect("tmp dir creation failed");
-        let coco = &mut *coco.write().await;
+        let coco = coco.read().await;
 
-        let (id, meta) = coco::replicate_platinum(
-            coco,
-            &dir,
-            &input.name,
-            &input.description,
-            &input.default_branch,
-        )?;
+        let (id, meta) =
+            coco.replicate_platinum(&input.name, &input.description, &input.default_branch)?;
 
         Ok(reply::with_status(
             reply::json(&project::Project {
@@ -149,16 +142,15 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco<C>(coco: http::Shared<C>) -> Result<impl Reply, Rejection>
+    pub async fn nuke_coco<C>(_coco: http::Shared<C>) -> Result<impl Reply, Rejection>
     where
         C: coco::Client,
     {
-        let dir = tempfile::tempdir().expect("tmp dir creation failed");
-        let new = Paths::from_root(dir.path()).expect("unable to get paths");
+        // let tmp = coco::Coco::tmp()?;
+        // let mut coco: coco::Coco = &mut *coco.write().await;
+        // *coco = tmp;
 
-        let mut coco = coco.write().await;
-
-        coco.set_paths(new);
+        // Ok(reply::json(&true))
 
         Ok(reply::json(&true))
     }

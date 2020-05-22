@@ -48,7 +48,7 @@ where
 {
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
-        .or(get_projects_filter(paths, Arc::clone(&registry)))
+        .or(get_projects_filter(paths, Arc::clone(&registry), Arc::clone(&project)))
         .or(register_filter(
             Arc::clone(&registry),
             subscriptions.clone(),

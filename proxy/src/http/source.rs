@@ -12,10 +12,10 @@ use crate::identity;
 
 /// Prefixed filters.
 pub fn routes<C>(
-    coco: http::Shared<C>
+    coco: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     path("source").and(
         blob_filter(Arc::clone(&coco))
@@ -31,11 +31,9 @@ where
 
 /// Combination of all source filters.
 #[cfg(test)]
-fn filters<C>(
-    coco: http::Shared<C>
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn filters<C>(coco: http::Shared<C>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     blob_filter(Arc::clone(&coco))
         .or(branches_filter(Arc::clone(&coco)))
@@ -43,16 +41,16 @@ where
         .or(commits_filter(Arc::clone(&coco)))
         .or(local_branches_filter())
         .or(revisions_filter(Arc::clone(&coco)))
-        .or(tags_filter(coco))
+        .or(tags_filter(Arc::clone(coco)))
         .or(tree_filter(coco))
 }
 
 /// `GET /blob/<project_id>/<revision>/<path...>`
 fn blob_filter<C>(
-    coco: http::Shared<C>
+    coco: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     path("blob")
         .and(warp::get())
@@ -83,10 +81,10 @@ where
 
 /// `GET /branches/<project_id>`
 fn branches_filter<C>(
-    coco: http::Shared<C>
+    coco: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     path("branches")
         .and(warp::get())
@@ -112,10 +110,10 @@ where
 
 /// `GET /commit/<project_id>/<sha1>`
 fn commit_filter<C>(
-    coco: http::Shared<C>
+    coco: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     path("commit")
         .and(warp::get())
@@ -139,10 +137,10 @@ where
 
 /// `GET /commits/<project_id>/<branch>`
 fn commits_filter<C>(
-    coco: http::Shared<C>
+    coco: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     path("commits")
         .and(warp::get())
@@ -193,10 +191,10 @@ fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejectio
 
 /// `GET /revisions/<project_id>`
 fn revisions_filter<C>(
-    coco: http::Shared<C>
+    coco: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     path("revisions")
         .and(warp::get())
@@ -224,10 +222,10 @@ where
 
 /// `GET /tags/<project_id>`
 fn tags_filter<C>(
-    coco: http::Shared<C>
+    coco: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     path("tags")
         .and(warp::get())
@@ -251,10 +249,10 @@ where
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
 fn tree_filter<C>(
-    coco: http::Shared<C>
+    coco: http::Shared<C>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client
+    C: coco::Client,
 {
     path("tree")
         .and(warp::get())
@@ -297,13 +295,13 @@ mod handler {
     pub async fn blob<C>(
         coco: http::Shared<C>,
         project_urn: String,
-        super::BlobQuery { path, revision }: super::BlobQuery
+        super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection>
     where
         C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let (mut repo, project) = coco::get_repo(coco, project_urn).await?;
+        let coco = coco.read().await;
+        let (mut repo, project) = coco.get_repo(project_urn).await?;
         let locked = repo.locked();
         let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
         let mut bro = locked.browser().expect("failed to open browser");
@@ -320,8 +318,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let coco = coco.read().await;
+        let (mut repo, _) = coco.get_repo(project_urn).await?;
         let locked = repo.locked();
         let bro = locked.browser().expect("failed to open browser");
         let branches = coco::branches(&bro)?;
@@ -338,8 +336,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let coco = coco.read().await;
+        let (mut repo, _) = coco.get_repo(project_urn).await?;
         let locked = repo.locked();
         let mut bro = locked.browser().expect("failed to open browser");
         let commit = coco::commit(&mut bro, &sha1)?;
@@ -356,8 +354,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let coco = coco.read().await;
+        let (mut repo, _) = coco.get_repo(project_urn).await?;
         let locked = repo.locked();
         let mut bro = locked.browser().expect("failed to open browser");
         let commits = coco::commits(&mut bro, &branch)?;
@@ -380,8 +378,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let coco = coco.read().await;
+        let (mut repo, _) = coco.get_repo(project_urn).await?;
         let locked = repo.locked();
         let bro = locked.browser().expect("failed to open browser");
         let branches = coco::branches(&bro)?;
@@ -416,8 +414,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let (mut repo, _) = coco::get_repo(coco, project_urn).await?;
+        let coco = coco.read().await;
+        let (mut repo, _) = coco.get_repo(project_urn).await?;
         let locked = repo.locked();
         let bro = locked.browser().expect("failed to open browser");
         let tags = coco::tags(&bro)?;
@@ -434,8 +432,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let (mut repo, project) = coco::get_repo(coco, project_urn).await?;
+        let coco = coco.read().await;
+        let (mut repo, project) = coco.get_repo(project_urn).await?;
         let locked = repo.locked();
         let mut bro = locked.browser().expect("failed to open browser");
         let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
@@ -786,17 +784,12 @@ mod test {
     #[tokio::test]
     async fn blob() {
         let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
+        let client = coco::Coco::tmp(tmp_dir);
+        let (platinum_id, _platinum_project) =
+            client::replicate_platinum(&librad_paths, "git-platinum", "fixture data", "master")
+                .unwrap();
         let revision = "master";
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::new(RwLock::new(client.clone())));
 
         // Get ASCII blob.
         let path = "text/arrows.txt";
@@ -811,7 +804,7 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = coco::blob(
-            &librad_paths,
+            &client,
             &platinum_id.to_string(),
             Some(revision.to_string()),
             Some(path.to_string()),
