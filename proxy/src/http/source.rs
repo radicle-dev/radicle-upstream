@@ -300,12 +300,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = coco.read().await;
-        let (mut repo, project) = coco.get_repo(project_urn).await?;
-        let locked = repo.locked();
-        let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
-        let mut bro = locked.browser().expect("failed to open browser");
-        let blob = coco::blob(&mut bro, revision, path)?;
+        let coco = &*coco.read().await;
+        let blob = coco::blob(coco, project_urn, revision, path).await?;
 
         Ok(reply::json(&blob))
     }
@@ -318,11 +314,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = coco.read().await;
-        let (mut repo, _) = coco.get_repo(project_urn).await?;
-        let locked = repo.locked();
-        let bro = locked.browser().expect("failed to open browser");
-        let branches = coco::branches(&bro)?;
+        let coco = &*coco.read().await;
+        let branches = coco::branches(coco, project_urn).await?;
 
         Ok(reply::json(&branches))
     }
@@ -336,11 +329,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = coco.read().await;
-        let (mut repo, _) = coco.get_repo(project_urn).await?;
-        let locked = repo.locked();
-        let mut bro = locked.browser().expect("failed to open browser");
-        let commit = coco::commit(&mut bro, &sha1)?;
+        let coco = &*coco.read().await;
+        let commit = coco::commit(coco, project_urn, &sha1).await?;
 
         Ok(reply::json(&commit))
     }
@@ -354,11 +344,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = coco.read().await;
-        let (mut repo, _) = coco.get_repo(project_urn).await?;
-        let locked = repo.locked();
-        let mut bro = locked.browser().expect("failed to open browser");
-        let commits = coco::commits(&mut bro, &branch)?;
+        let coco = &*coco.read().await;
+        let commits = coco::commits(coco, project_urn, &branch).await?;
 
         Ok(reply::json(&commits))
     }
@@ -378,12 +365,9 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = coco.read().await;
-        let (mut repo, _) = coco.get_repo(project_urn).await?;
-        let locked = repo.locked();
-        let bro = locked.browser().expect("failed to open browser");
-        let branches = coco::branches(&bro)?;
-        let tags = coco::tags(&bro)?;
+        let coco = &*coco.read().await;
+        let branches = coco::branches(coco, project_urn.clone()).await?;
+        let tags = coco::tags(coco, project_urn).await?;
         let revs = ["cloudhead", "rudolfs", "xla"]
             .iter()
             .map(|handle| super::Revision {
@@ -414,11 +398,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = coco.read().await;
-        let (mut repo, _) = coco.get_repo(project_urn).await?;
-        let locked = repo.locked();
-        let bro = locked.browser().expect("failed to open browser");
-        let tags = coco::tags(&bro)?;
+        let coco = &*coco.read().await;
+        let tags = coco::tags(coco, project_urn).await?;
 
         Ok(reply::json(&tags))
     }
@@ -432,12 +413,8 @@ mod handler {
     where
         C: coco::Client,
     {
-        let coco = coco.read().await;
-        let (mut repo, project) = coco.get_repo(project_urn).await?;
-        let locked = repo.locked();
-        let mut bro = locked.browser().expect("failed to open browser");
-        let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
-        let tree = coco::tree(&mut bro, revision, prefix)?;
+        let coco = &*coco.read().await;
+        let tree = coco::tree(coco, project_urn, revision, prefix).await?;
 
         Ok(reply::json(&tree))
     }
