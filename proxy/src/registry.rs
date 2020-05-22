@@ -247,6 +247,19 @@ pub trait Client: Clone + Send + Sync {
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error>;
 
+    /// Register a User as a member of an Org on the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn register_member(
+        &self,
+        author: &protocol::ed25519::Pair,
+        org_id: Id,
+        user_id: Id,
+        fee: protocol::Balance,
+    ) -> Result<Transaction, error::Error>;
+
     /// Try to retrieve project from the Registry by name for an id.
     ///
     /// # Errors
@@ -459,6 +472,47 @@ impl Client for Registry {
             block.number,
             Message::OrgUnregistration { id: org_id },
         ))
+    }
+
+    async fn register_member(
+        &self,
+        author: &protocol::ed25519::Pair,
+        org_id: Id,
+        user_id: Id,
+        fee: protocol::Balance,
+    ) -> Result<Transaction, error::Error> {
+        // Prepare and submit member registration transaction.
+        let register_message = protocol::message::RegisterMember {
+            org_id: org_id.0.clone(),
+            user_id: user_id.0.clone(),
+        };
+        let register_tx = protocol::Transaction::new_signed(
+            author,
+            register_message,
+            protocol::TransactionExtra {
+                genesis_hash: self.client.genesis_hash(),
+                nonce: self.client.account_nonce(&author.public()).await?,
+                fee,
+            },
+        );
+        let applied = self.client.submit_transaction(register_tx).await?.await?;
+        applied.result?;
+        let block = self.client.block_header(applied.block).await?;
+        let tx = Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::OrgRegistration { id: org_id.clone() },
+        );
+
+        // TODO(xla): Remove automatic prepayment once we have proper balances.
+        let org = self
+            .client
+            .get_org(org_id.0)
+            .await?
+            .expect("org not present");
+        self.prepay_account(org.account_id, 1000).await?;
+
+        Ok(tx)
     }
 
     async fn get_project(
@@ -713,6 +767,47 @@ mod test {
         // Unregister the org
         let unregistration = registry.unregister_org(&author, org_id, 10).await;
         assert!(unregistration.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_register_member() -> Result<(), error::Error> {
+        // Test that member registration submits valid transactions and they succeed.
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice")?;
+        let org_id = Id::try_from("monadic")?;
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        let result = registry.register_org(&author, org_id.clone(), 10).await;
+        assert!(result.is_ok());
+
+        // Register the second user
+        let author2 = protocol::ed25519::Pair::from_legacy_string("//Bob", None);
+        let handle2 = Id::try_from("bob")?;
+        let user_registration2 = registry
+            .register_user(&author2, handle2.clone(), Some("456efgh.git".into()), 100)
+            .await;
+        assert!(user_registration2.is_ok());
+
+        // Register the second user as a member
+        let member_registration = registry
+            .register_member(&author, org_id, handle2, 100)
+            .await;
+        assert!(member_registration.is_ok());
+
+        let org_id = protocol::Id::try_from("monadic")?;
+        let org = client.get_org(org_id).await?.unwrap();
+        assert_eq!(org.members.len(), 2);
+        assert!(org.members.contains(&protocol::Id::try_from("alice")?));
+        assert!(org.members.contains(&protocol::Id::try_from("bob")?));
 
         Ok(())
     }
