@@ -14,19 +14,19 @@ use crate::project;
 use crate::registry;
 
 /// Prefixed filters.
-pub fn routes<R, C>(
-    registry: http::Shared<R>,
+pub fn routes<C, R>(
     coco: http::Shared<C>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
     C: coco::Client,
+    R: registry::Client,
 {
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(Arc::clone(&registry), Arc::clone(&coco)))
+            .or(get_projects_filter(Arc::clone(&coco), Arc::clone(&registry)))
             .or(register_filter(
                 Arc::clone(&registry),
                 subscriptions.clone(),
@@ -37,18 +37,18 @@ where
 
 /// Combination of all org routes.
 #[cfg(test)]
-fn filters<R, C>(
-    registry: http::Shared<R>,
+fn filters<C, R>(
     coco: http::Shared<C>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
     C: coco::Client,
+    R: registry::Client,
 {
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
-        .or(get_projects_filter(paths, Arc::clone(&registry), Arc::clone(&project)))
+        .or(get_projects_filter(coco, Arc::clone(&registry)))
         .or(register_filter(
             Arc::clone(&registry),
             subscriptions.clone(),
@@ -122,12 +122,12 @@ fn get_project_filter<R: registry::Client>(
 
 /// `GET /<id>/projects`
 fn get_projects_filter<R, C>(
-    registry: http::Shared<R>,
     coco: http::Shared<C>,
+    registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
     C: coco::Client,
+    R: registry::Client,
 {
     http::with_shared(registry)
         .and(http::with_shared(coco))
@@ -260,8 +260,8 @@ mod handler {
         let projects = reg.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
         for p in &projects {
-            let maybe_project = if let Some(id) = &p.maybe_project_id {
-                Some(project::get(id, coco).await.expect("Project not found"))
+            let maybe_project = if let Some(urn) = &p.maybe_project_id {
+                Some(project::get(coco, urn).await.expect("Project not found"))
             } else {
                 None
             };
@@ -469,11 +469,9 @@ impl ToDocumentedType for RegisterMemberInput {
 )]
 #[cfg(test)]
 mod test {
-    use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
-    use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -482,7 +480,7 @@ mod test {
     use radicle_registry_client as protocol;
 
     use crate::avatar;
-    use crate::coco;
+    use crate::coco::{self, Client as _};
     use crate::error;
     use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
@@ -490,14 +488,14 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let coco_client = coco::Coco::tmp(tmp_dir.path())?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::new(RwLock::new(coco_client)),
             Arc::clone(&registry),
             subscriptions,
         );
@@ -547,14 +545,14 @@ mod test {
     #[tokio::test]
     async fn get_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let coco_client = coco::Coco::tmp(tmp_dir.path())?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::new(RwLock::new(coco_client)),
             Arc::clone(&registry),
             subscriptions,
         );
@@ -608,14 +606,14 @@ mod test {
     #[tokio::test]
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let coco_client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&coco_client),
             Arc::clone(&registry),
             subscriptions,
         );
@@ -628,8 +626,9 @@ mod test {
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
-        let (project_id, _meta) = coco::init_project(
-            &librad_paths,
+        let owner = coco::fake_owner();
+        let (urn, _meta) = (&*coco_client.read().await).init_project(
+            &owner,
             &path,
             project_name,
             project_description,
@@ -663,10 +662,7 @@ mod test {
                 &author,
                 org_id.clone(),
                 project_name.clone(),
-                Some(
-                    librad::project::ProjectId::from_str(&project_id.to_string())
-                        .expect("Project id"),
-                ),
+                Some(urn.clone()),
                 10,
             )
             .await?;
@@ -684,14 +680,14 @@ mod test {
             "orgId": org_id.to_string(),
             "shareableEntityIdentifier": format!("%{}/{}", org_id.to_string(), project_name.to_string()),
             "maybeProject": {
-                "id": project_id.to_string(),
+                "id": urn.to_string(),
                 "metadata": {
                     "defaultBranch": default_branch.to_string(),
                     "description": project_description.to_string(),
                     "name": project_name.to_string(),
                 },
                 "registration": Value::Null,
-                "shareableEntityIdentifier": format!("%{}", project_id.to_string()),
+                "shareableEntityIdentifier": urn.to_string(),
                 "stats": {
                     "branches": 11,
                     "commits": 267,
@@ -709,7 +705,7 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let coco_client = coco::Coco::tmp(tmp_dir.path())?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -719,7 +715,7 @@ mod test {
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::new(RwLock::new(coco_client)),
             Arc::clone(&cache),
             subscriptions,
         );

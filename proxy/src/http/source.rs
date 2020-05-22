@@ -41,7 +41,7 @@ where
         .or(commits_filter(Arc::clone(&coco)))
         .or(local_branches_filter())
         .or(revisions_filter(Arc::clone(&coco)))
-        .or(tags_filter(Arc::clone(coco)))
+        .or(tags_filter(Arc::clone(&coco)))
         .or(tree_filter(coco))
 }
 
@@ -746,7 +746,6 @@ impl ToDocumentedType for coco::TreeEntry {
 )]
 #[cfg(test)]
 mod test {
-    use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
@@ -755,18 +754,18 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
-    use crate::coco;
+    use crate::coco::{self, Client as _};
+    use crate::error;
     use crate::identity;
 
     #[tokio::test]
-    async fn blob() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let client = coco::Coco::tmp(tmp_dir);
-        let (platinum_id, _platinum_project) =
-            client::replicate_platinum(&librad_paths, "git-platinum", "fixture data", "master")
-                .unwrap();
+    async fn blob() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let (urn, _platinum_project) =
+            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
         let revision = "master";
-        let api = super::filters(Arc::new(RwLock::new(client.clone())));
+        let api = super::filters(Arc::clone(&client));
 
         // Get ASCII blob.
         let path = "text/arrows.txt";
@@ -774,19 +773,19 @@ mod test {
             .method("GET")
             .path(&format!(
                 "/blob/{}?revision={}&path={}",
-                platinum_id, revision, path
+                urn, revision, path
             ))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = coco::blob(
-            &client,
-            &platinum_id.to_string(),
+            &*client.read().await,
+            urn.to_string(),
             Some(revision.to_string()),
             Some(path.to_string()),
         )
-        .unwrap();
+        .await?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -832,19 +831,21 @@ mod test {
             .method("GET")
             .path(&format!(
                 "/blob/{}?revision={}&path={}",
-                platinum_id, revision, path
+                urn.to_string(),
+                revision,
+                path
             ))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = coco::blob(
-            &librad_paths,
-            &platinum_id.to_string(),
+            &*client.read().await,
+            urn.to_string(),
             Some(revision.to_string()),
             Some(path.to_string()),
         )
-        .unwrap();
+        .await?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -875,29 +876,26 @@ mod test {
                 "path": "bin/ls",
             })
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn branches() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+    async fn branches() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let (urn, _platinum_project) =
+            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
+
+        let api = super::filters(Arc::clone(&client));
         let res = request()
             .method("GET")
-            .path(&format!("/branches/{}", platinum_id))
+            .path(&format!("/branches/{}", urn.to_string()))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::branches(&librad_paths, &platinum_id.to_string()).unwrap();
+        let want = coco::branches(&*client.read().await, urn.to_string()).await?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -905,32 +903,28 @@ mod test {
             have,
             json!(["dev", "master", "rad/contributor", "rad/project"]),
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn commit() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
+    async fn commit() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let (urn, _platinum_project) =
+            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
 
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::clone(&client));
         let res = request()
             .method("GET")
-            .path(&format!("/commit/{}/{}", platinum_id, sha1))
+            .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::commit(&librad_paths, &platinum_id.to_string(), sha1).unwrap();
+        let want = coco::commit(&*client.read().await, urn.to_string(), sha1).await?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -953,54 +947,54 @@ mod test {
                 "committerTime": 1_578_309_972,
             }),
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn commits() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
+    async fn commits() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let (urn, _platinum_project) =
+            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
 
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::clone(&client));
         let res = request()
             .method("GET")
-            .path(&format!("/commits/{}/{}", platinum_id, branch))
+            .path(&format!("/commits/{}/{}", urn.to_string(), branch))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::commits(&librad_paths, &platinum_id.to_string(), branch).unwrap();
+        let want = coco::commits(&*client.read().await, urn.to_string(), branch).await?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
         assert_eq!(have.as_array().unwrap().len(), 14);
 
-        let head_commit = coco::commit(&librad_paths, &platinum_id.to_string(), head).unwrap();
+        let head_commit = coco::commit(&*client.read().await, urn.to_string(), head)
+            .await
+            .unwrap();
 
         assert_eq!(
             have.as_array().unwrap().first().unwrap(),
             &serde_json::to_value(&head_commit).unwrap(),
             "the first commit is the head of the branch"
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn local_branches() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn local_branches() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
 
         let path = "../fixtures/git-platinum";
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::clone(&client));
         let res = request()
             .method("GET")
             .path(&format!("/local-branches/{}", path))
@@ -1022,31 +1016,29 @@ mod test {
                 "origin/master"
             ]),
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn revisions() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+    async fn revisions() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let (urn, _platinum_project) = (&*client.read().await)
+            .replicate_platinum("git-platinum", "fixture data", "master")
+            .unwrap();
+
+        let api = super::filters(Arc::clone(&client));
         let res = request()
             .method("GET")
-            .path(&format!("/revisions/{}", platinum_id))
+            .path(&format!("/revisions/{}", urn.to_string()))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = {
-            let branches = coco::branches(&librad_paths, &platinum_id.to_string()).unwrap();
-            let tags = coco::tags(&librad_paths, &platinum_id.to_string()).unwrap();
+            let branches = coco::branches(&*client.read().await, urn.to_string()).await?;
+            let tags = coco::tags(&*client.read().await, urn.to_string()).await?;
             ["cloudhead", "rudolfs", "xla"]
                 .iter()
                 .map(|handle| super::Revision {
@@ -1140,29 +1132,27 @@ mod test {
                 },
             ]),
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn tags() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+    async fn tags() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let (urn, _platinum_project) = (&*client.read().await)
+            .replicate_platinum("git-platinum", "fixture data", "master")
+            .unwrap();
+
+        let api = super::filters(Arc::clone(&client));
         let res = request()
             .method("GET")
-            .path(&format!("/tags/{}", platinum_id))
+            .path(&format!("/tags/{}", urn.to_string()))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::tags(&librad_paths, &platinum_id.to_string()).unwrap();
+        let want = coco::tags(&*client.read().await, urn.to_string()).await?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -1170,42 +1160,40 @@ mod test {
             have,
             json!(["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]),
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn tree() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
+    async fn tree() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let (urn, _platinum_project) =
+            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
 
         let revision = "master";
         let prefix = "src";
 
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::clone(&client));
         let res = request()
             .method("GET")
             .path(&format!(
                 "/tree/{}?revision={}&prefix={}",
-                platinum_id, revision, prefix
+                urn.to_string(),
+                revision,
+                prefix
             ))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = coco::tree(
-            &librad_paths,
-            &platinum_id.to_string(),
+            &*client.read().await,
+            urn.to_string(),
             Some(revision.to_string()),
             Some(prefix.to_string()),
         )
-        .unwrap();
+        .await?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -1237,5 +1225,7 @@ mod test {
                 ],
             }),
         );
+
+        Ok(())
     }
 }

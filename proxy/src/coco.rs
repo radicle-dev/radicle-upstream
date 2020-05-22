@@ -20,8 +20,8 @@ use crate::error;
 
 mod source;
 pub use source::{
-    blob, branches, commit, commits, local_branches, tags, tree, Blob, BlobContent, Branch, Commit,
-    Info, ObjectType, Person, Tag, Tree, TreeEntry,
+    blob, branches, commit, commits, init_repo, local_branches, tags, tree, Blob, BlobContent,
+    Branch, Commit, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
 
 /// The set of capabilities necessary for interacting with `radicle-link`.
@@ -42,6 +42,11 @@ pub trait Client:
         &self,
         project_urn: String,
     ) -> Result<(git::repo::Repo, project::Project), error::Error>;
+
+    async fn get_project(
+        &self,
+        project_urn: &str,
+    ) -> Result<(RadUrn, project::Project), error::Error>;
 
     /// Initialize a [`librad::project::Project`] in the location of the given `path`.
     ///
@@ -212,6 +217,16 @@ where
     P: entity::Resolver<project::Project> + Send + Sync,
     U: entity::Resolver<user::User> + Send + Sync,
 {
+    async fn get_project(
+        &self,
+        project_urn: &str,
+    ) -> Result<(RadUrn, project::Project), error::Error> {
+        let urn = uri::RadUrn::from_str(project_urn)?;
+        let meta = self.project_resolver.resolve(&urn).await?;
+
+        Ok((urn, meta))
+    }
+
     async fn get_repo(
         &self,
         project_urn: String,
@@ -383,7 +398,7 @@ where
             let path = format!("{}/{}/{}", root, "repos", info.0);
             std::fs::create_dir_all(path.clone())?;
 
-            source::init_repo(path.clone())?;
+            init_repo(path.clone())?;
             self.init_project(&owner, &path, info.0, info.1, info.2)?;
         }
 

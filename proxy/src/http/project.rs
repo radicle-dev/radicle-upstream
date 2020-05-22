@@ -16,13 +16,13 @@ use crate::registry;
 
 /// Combination of all routes.
 pub fn filters<R, C>(
-    registry: http::Shared<R>,
     coco: http::Shared<C>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
     C: coco::Client,
+    R: registry::Client,
 {
     list_filter(Arc::clone(&coco))
         .or(create_filter(Arc::clone(&coco)))
@@ -200,12 +200,12 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get<C>(coco: http::Shared<C>, id: String) -> Result<impl Reply, Rejection>
+    pub async fn get<C>(coco: http::Shared<C>, urn: String) -> Result<impl Reply, Rejection>
     where
         C: coco::Client,
     {
         let coco = &*coco.read().await;
-        Ok(reply::json(&project::get(id.as_ref(), coco).await?))
+        Ok(reply::json(&project::get(coco, &urn).await?))
     }
 
     /// List all known projects.
@@ -247,7 +247,7 @@ mod handler {
         let reg = registry.read().await;
         let maybe_coco_id = input
             .maybe_coco_id
-            .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project id"));
+            .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project RadUrn"));
         let org_id = registry::Id::try_from(input.org_id)?;
         let project_name = registry::ProjectName::try_from(input.project_name)?;
         let tx = reg
@@ -521,7 +521,6 @@ impl ToDocumentedType for RegisterInput {
 #[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
-    use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
@@ -530,28 +529,28 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use crate::coco;
+    use crate::coco::{self, Client as _};
     use crate::error;
     use crate::notification;
     use crate::project;
     use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
-    async fn create() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn create() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let coco_client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let subscriptions = notification::Subscriptions::default();
 
-        let repos_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
-        let dir = tempfile::tempdir_in(repos_dir.path()).unwrap();
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+        let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
 
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&coco_client),
             Arc::new(RwLock::new(registry)),
             subscriptions,
         );
@@ -569,7 +568,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = coco::list_projects(&librad_paths);
+        let projects = (&*coco_client.read().await).list_projects();
         let (id, _) = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -591,61 +590,68 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, want);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn get() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn get() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let coco_client = coco::Coco::tmp(tmp_dir.path())?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let subscriptions = notification::Subscriptions::default();
 
-        let repo_dir = tempfile::tempdir_in(tmp_dir.path()).unwrap();
+        let repo_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let path = repo_dir.path().to_str().unwrap().to_string();
-        coco::init_repo(path.clone()).unwrap();
+        coco::init_repo(path.clone())?;
 
-        let (id, _meta) = coco::init_project(
-            &librad_paths,
+        // TODO(xla): Do we need another source of owner here.
+        let owner = coco::fake_owner();
+
+        let (urn, _meta) = coco_client.init_project(
+            &owner,
             &path,
             "Upstream",
             "Desktop client for radicle.",
             "master",
-        )
-        .unwrap();
-        let project = project::get(&librad_paths, &id.to_string()).await.unwrap();
+        )?;
+        let project = project::get(&coco_client, &urn.to_string()).await?;
 
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths)),
+            Arc::new(RwLock::new(coco_client)),
             Arc::new(RwLock::new(registry)),
             subscriptions,
         );
         let res = request()
             .method("GET")
-            .path(&format!("/projects/{}", id.to_string()))
+            .path(&format!("/projects/{}", urn.to_string()))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(project));
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn list() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn list() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let coco_client = coco::Coco::tmp(tmp_dir.path())?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let subscriptions = notification::Subscriptions::default();
 
-        coco::setup_fixtures(&librad_paths, tmp_dir.path().as_os_str().to_str().unwrap()).unwrap();
+        coco_client.setup_fixtures(tmp_dir.path().as_os_str().to_str().unwrap())?;
 
-        let projects = coco::list_projects(&librad_paths)
+        let projects = coco_client
+            .list_projects()
             .into_iter()
             .map(|(id, meta)| project::Project {
                 id: id.clone(),
@@ -661,7 +667,7 @@ mod test {
             .collect::<Vec<project::Project>>();
 
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths)),
+            Arc::new(RwLock::new(coco_client)),
             Arc::new(RwLock::new(registry)),
             subscriptions,
         );
@@ -671,12 +677,14 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(projects));
+
+        Ok(())
     }
 
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path())?));
+        let coco_client = coco::Coco::tmp(tmp_dir.path())?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -685,10 +693,20 @@ mod test {
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(Arc::clone(&librad_paths), Arc::clone(&cache), subscriptions);
+        let api = super::filters(
+            Arc::new(RwLock::new(coco_client)),
+            Arc::clone(&cache),
+            subscriptions,
+        );
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
+        let owner = coco::fake_owner();
+        let urn = librad::uri::RadUrn::new(
+            owner.root_hash().clone(),
+            librad::uri::Protocol::Git,
+            librad::uri::Path::new(),
+        );
 
         // Register user.
         cache
@@ -710,7 +728,7 @@ mod test {
             .json(&super::RegisterInput {
                 project_name: "upstream".into(),
                 org_id: org_id.to_string(),
-                maybe_coco_id: Some("1234.git".to_string()),
+                maybe_coco_id: Some(urn.to_string()),
             })
             .reply(&api)
             .await;

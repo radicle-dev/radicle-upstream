@@ -872,6 +872,11 @@ mod test {
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
         let project_name = ProjectName::try_from("upstream")?;
+        let urn = librad::uri::RadUrn::new(
+            librad::hash::Hash::hash(b"cloudhead"),
+            librad::uri::Protocol::Git,
+            librad::uri::Path::new(),
+        );
 
         // Register the user
         let user_registration = registry
@@ -885,13 +890,7 @@ mod test {
 
         // Register the project
         let result = registry
-            .register_project(
-                &author,
-                org_id.clone(),
-                project_name.clone(),
-                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
-                10,
-            )
+            .register_project(&author, org_id.clone(), project_name.clone(), Some(urn), 10)
             .await;
         assert!(result.is_ok());
 
@@ -901,7 +900,7 @@ mod test {
         assert_eq!(projects[0].name, project_name);
         assert_eq!(
             projects[0].maybe_project_id,
-            Some("0000000000000000000000000000000000000000.git".to_string())
+            Some("rad:git:hwd1yrerjqujexs8p9barieeoo3q6nwczgdn48g9zf8msw5bn9dnsy5eqph".to_string())
         );
 
         Ok(())
@@ -916,6 +915,11 @@ mod test {
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
         let project_name = ProjectName::try_from("radicle")?;
+        let urn = librad::uri::RadUrn::new(
+            librad::hash::Hash::hash(b"cloudhead"),
+            librad::uri::Protocol::Git,
+            librad::uri::Path::new(),
+        );
 
         // Register the user
         let user_registration = registry
@@ -929,13 +933,7 @@ mod test {
 
         // Register the project
         let result = registry
-            .register_project(
-                &author,
-                org_id.clone(),
-                project_name.clone(),
-                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
-                10,
-            )
+            .register_project(&author, org_id.clone(), project_name.clone(), Some(urn), 10)
             .await;
         assert!(result.is_ok());
 

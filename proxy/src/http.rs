@@ -48,13 +48,13 @@ where
             .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
             .or(notification::filters(subscriptions.clone()))
             .or(org::routes(
-                Arc::clone(&registry),
                 Arc::clone(&coco),
+                Arc::clone(&registry),
                 subscriptions.clone(),
             ))
             .or(project::filters(
-                Arc::clone(&registry),
                 Arc::clone(&coco),
+                Arc::clone(&registry),
                 subscriptions.clone(),
             ))
             .or(session::routes(Arc::clone(&registry), Arc::clone(&store)))
