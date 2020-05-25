@@ -87,17 +87,30 @@ const update = (msg: Msg): void => {
 
 export const registerMemberTransaction = (
   orgId: string,
-  userId: string
+  handle: string
 ): transaction.Transaction => ({
   id: "",
   messages: [
     {
-      type: transaction.MessageType.OrgMemberRegistration,
+      type: transaction.MessageType.MemberRegistration,
       orgId,
-      userId
+      handle
     }
   ],
-  state: { type: transaction.StateType.Applied, blockHash: "0x000" }
+  state: {
+    type: transaction.StateType.Confirmed,
+    block: 1,
+    confirmations: 2,
+    minConfirmations: 6,
+    timestamp: {
+      secs: 1,
+      nanos: 1,
+    }
+  },
+  timestamp: {
+    secs: 1,
+    nanos: 1,
+  }
 });
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);

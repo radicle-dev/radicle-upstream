@@ -78,7 +78,7 @@ context("add member to org", () => {
       cy.pick("transaction-center").click();
 
       // pick most recent transaction
-      cy.pick("accordion", "cards", "card").last().click();
+      cy.pick("transaction-center", "transaction-item").last().click();
       cy.pick("summary", "message").contains("Org member registration");
       cy.pick("summary", "subject").contains("coolname");
       cy.pick("summary", "subject-avatar", "emoji").should(

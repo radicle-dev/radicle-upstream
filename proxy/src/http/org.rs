@@ -389,9 +389,10 @@ mod test {
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Paths::from_root(tmp_dir.path())?;
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths.clone())),
@@ -445,9 +446,10 @@ mod test {
     async fn get_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Paths::from_root(tmp_dir.path())?;
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths.clone())),
@@ -505,9 +507,10 @@ mod test {
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Paths::from_root(tmp_dir.path())?;
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths.clone())),
@@ -605,7 +608,10 @@ mod test {
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Paths::from_root(tmp_dir.path())?;
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();

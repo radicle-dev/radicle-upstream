@@ -25,7 +25,7 @@ import Timeline from "./Timeline.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
 import Transaction from "./Transaction.svelte";
-import TransactionAccordion from "./Transaction/Accordion.svelte";
+import TransactionCenter from "./Transaction/Center.svelte";
 import TransactionStatusbar from "./Transaction/Statusbar.svelte";
 import Row from "./Transaction/Row.svelte";
 import UserCard from "./UserCard.svelte";
@@ -59,7 +59,7 @@ export {
   Topbar,
   TrackToggle,
   Transaction,
-  TransactionAccordion,
+  TransactionCenter,
   TransactionStatusbar,
   UserCard,
 };

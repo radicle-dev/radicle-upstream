@@ -28,7 +28,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "devnet" => radicle_registry_client::Client::create_with_executor(devnet_host)
             .await
             .expect("unable to construct devnet client"),
-        "emulator" => radicle_registry_client::Client::new_emulator(),
+        "emulator" => {
+            let (client, control) = radicle_registry_client::Client::new_emulator();
+
+            tokio::spawn(async move {
+                let mut interval = tokio::time::interval(std::time::Duration::from_secs(10));
+                loop {
+                    interval.tick().await;
+                    control.add_blocks(1);
+                }
+            });
+
+            client
+        },
         _ => panic!(format!("unknown registry source '{}'", args.registry)),
     };
 
@@ -62,7 +74,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(librad_paths, cache, store, args.test);
+    let api = http::api(librad_paths, cache.clone(), store, args.test);
+
+    tokio::spawn(async move {
+        cache.run().await.expect("cacher run failed");
+    });
 
     warp::serve(api).run(([127, 0, 0, 1], 8080)).await;
 

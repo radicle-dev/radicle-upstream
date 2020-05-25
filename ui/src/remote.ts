@@ -44,7 +44,7 @@ declare type Starter = () => void;
 export const createStore = <T>(): Store<T> => {
   let starter: Starter | null;
   const initialState = { status: Status.NotAsked } as Data<T>
-  const internalStore = writable(initialState, () => { starter && starter() })
+  const internalStore = writable(initialState, () => { if (starter) { return starter() } })
   const { subscribe, update } = internalStore
 
   const updateInternalStore: Update<T> = (status: UpdateableStatus, payload?: T | Error) => {
