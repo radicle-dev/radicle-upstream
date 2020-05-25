@@ -362,7 +362,10 @@ where
         user_id: registry::Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
-        let tx = self.client.register_member(author, org_id, user_id, fee).await?;
+        let tx = self
+            .client
+            .register_member(author, org_id, user_id, fee)
+            .await?;
 
         self.cache_transaction(tx.clone())?;
 

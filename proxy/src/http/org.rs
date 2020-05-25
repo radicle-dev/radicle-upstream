@@ -24,7 +24,10 @@ pub fn routes<R: registry::Client>(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
             .or(get_projects_filter(paths, Arc::clone(&registry)))
-            .or(register_filter(Arc::clone(&registry), subscriptions.clone()))
+            .or(register_filter(
+                Arc::clone(&registry),
+                subscriptions.clone(),
+            ))
             .or(register_member_filter(registry, subscriptions)),
     )
 }
@@ -39,7 +42,10 @@ fn filters<R: registry::Client>(
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
         .or(get_projects_filter(paths, Arc::clone(&registry)))
-        .or(register_filter(Arc::clone(&registry), subscriptions.clone()))
+        .or(register_filter(
+            Arc::clone(&registry),
+            subscriptions.clone(),
+        ))
         .or(register_member_filter(registry, subscriptions))
 }
 
@@ -158,31 +164,31 @@ fn register_filter<R: registry::Client>(
 
 /// `POST /<id>/members`
 fn register_member_filter<R: registry::Client>(
-    registry:http::Shared<R>,
+    registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_shared(registry)
-    .and(http::with_subscriptions(subscriptions))
-    .and(warp::post())
-    .and(document::param::<String>("id", "Unique ID of the Org"))
-    .and(path("members"))
-    .and(path::end())
-    .and(warp::body::json())
-    .and(document::document(document::description(
-        "Register a member",
-    )))
-    .and(document::document(document::tag("Org")))
-    .and(document::document(
-        document::body(RegisterMemberInput::document()).mime("application/json"),
-    ))
-    .and(document::document(
-        document::response(
-            201,
-            document::body(registry::Org::document()).mime("application/json"),
-        )
-        .description("Creation succeeded"),
-    ))
-    .and_then(handler::register_member)
+        .and(http::with_subscriptions(subscriptions))
+        .and(warp::post())
+        .and(document::param::<String>("id", "Unique ID of the Org"))
+        .and(path("members"))
+        .and(path::end())
+        .and(warp::body::json())
+        .and(document::document(document::description(
+            "Register a member",
+        )))
+        .and(document::document(document::tag("Org")))
+        .and(document::document(
+            document::body(RegisterMemberInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(registry::Org::document()).mime("application/json"),
+            )
+            .description("Creation succeeded"),
+        ))
+        .and_then(handler::register_member)
 }
 
 /// Org handlers for conversion between core domain and http request fullfilment.
@@ -297,7 +303,9 @@ mod handler {
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(id)?;
         let handle = registry::Id::try_from(input.handle)?;
-        let tx = reg.register_member(&fake_pair, org_id, handle, fake_fee).await?;
+        let tx = reg
+            .register_member(&fake_pair, org_id, handle, fake_fee)
+            .await?;
 
         subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
@@ -789,7 +797,8 @@ mod test {
 
         // Get the org and its members
         let org = cache.read().await.get_org(org_id).await?.unwrap();
-        let member_handles: Vec<registry::Id> = org.members.iter().map(|user| user.handle.clone()).collect();
+        let member_handles: Vec<registry::Id> =
+            org.members.iter().map(|user| user.handle.clone()).collect();
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(txs.len(), 4);
