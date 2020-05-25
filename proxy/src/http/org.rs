@@ -137,8 +137,8 @@ fn register_filter<R: registry::Client>(
     http::with_shared(registry)
         .and(http::with_subscriptions(subscriptions))
         .and(warp::post())
-        .and(warp::body::json())
         .and(path::end())
+        .and(warp::body::json())
         .and(document::document(document::description(
             "Register a new unique Org",
         )))
@@ -166,8 +166,8 @@ fn register_member_filter<R: registry::Client>(
     .and(warp::post())
     .and(document::param::<String>("id", "Unique ID of the Org"))
     .and(path("members"))
-    .and(warp::body::json())
     .and(path::end())
+    .and(warp::body::json())
     .and(document::document(document::description(
         "Register a member",
     )))
