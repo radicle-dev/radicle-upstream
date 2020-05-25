@@ -341,10 +341,7 @@
       </TypographySwatch>
     </Section>
 
-    <Section
-      title="Icons"
-      subTitle="Icons at 24px,width and height with 2px stroke weight, multiple
-      color variations">
+    <Section title="Icons" subTitle="Icons at 24px width and height">
       <Swatch>
         <Caption>Main</Caption>
       </Swatch>
@@ -416,9 +413,7 @@
       </IconSwatch>
     </Section>
 
-    <Section
-      title="Small Icons"
-      subTitle="Icons at 16px with 2px stroke weight, multiple color variations">
+    <Section title="Small Icons" subTitle="Icons at 16px width and height">
       <IconSwatch>
         <Icon.Badge />
         <Icon.Circle />
