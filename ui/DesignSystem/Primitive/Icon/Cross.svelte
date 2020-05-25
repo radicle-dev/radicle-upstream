@@ -1,6 +1,6 @@
 <script>
   export let style = null;
-  export let variant = "small"; // small | medium | big | filled | outline
+  export let variant = "small"; // small | medium | big | filled
 </script>
 
 <svg
