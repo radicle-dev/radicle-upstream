@@ -355,6 +355,23 @@ where
         Ok(tx)
     }
 
+    async fn register_member(
+        &self,
+        author: &protocol::ed25519::Pair,
+        org_id: registry::Id,
+        user_id: registry::Id,
+        fee: protocol::Balance,
+    ) -> Result<Transaction, error::Error> {
+        let tx = self
+            .client
+            .register_member(author, org_id, user_id, fee)
+            .await?;
+
+        self.cache_transaction(tx.clone())?;
+
+        Ok(tx)
+    }
+
     async fn get_project(
         &self,
         org_id: registry::Id,
