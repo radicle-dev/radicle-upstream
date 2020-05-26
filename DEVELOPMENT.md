@@ -95,9 +95,6 @@ context("a bazillion tests in this context", () => {
 Then, to execute just this single test, fire up the Cypress GUI:
 `yarn test:debug` and choose the respective `.spec.js` file from the list.
 
-💡 *Don't forget to remove all `.only` methods from the tests before
-committing changes, otherwise these tests will be skipped on CI.*
-
 
 ### Design System
 
