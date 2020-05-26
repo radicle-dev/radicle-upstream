@@ -304,63 +304,14 @@ use slots:
 
 #### Colors
 
-Colors amongst other design system tokens are stored in the `tokens` folder.
-If a color gets added, removed or changed in the style guide, we have to make
-changes to `tokens/colors.js` accordingly.
-
-Read more about the colors used in Upstream in the [Color System post][cg].
-
-The design system supports multiple color palettes via themes. You can rotate
-through the available themes by pressing <kbd>SHIFT</kbd> + <kbd>C</kbd> from
-within Upstream.
-
-Entries in `colors.js` have the following shape:
-```javascript
-export const colorConfig = {
-  defaultTheme: "lightMode",
-  themes: [
-    {
-      name: "lightMode",
-      colors: [
-        { name: "primary", hex: "#ff55ff" },
-        { name: "primary-level-1", hex: "#ffd4ff" },
-        { name: "primary-level-2", hex: "#ff87ff" },
-        { name: "primary-level-6", hex: "#663b66" },
-        // ...
-      ]
-    },
-    {
-      name: "darkMode",
-      colors: [
-        { name: "primary", hex: "#ff55ff" },
-        { name: "primary-level-1", hex: "#382847" },
-        { name: "primary-level-2", hex: "#62326d" },
-        { name: "primary-level-6", hex: "#ffd4ff" },
-        // ...
-      ]
-    }
-  ]
-};
-```
-
-When `tokens/colors.js` is changed, we have to re-generate all tints and shades
-via: `yarn generate:colors`. This will update the global color CSS variables in
-`public/colors.css`. Changes to both files should be committed.
+The design system supports multiple color palettes via themes which can be
+changed in the Settings screen.
 
 Throughout the codebase we use only CSS variables. Raw color codes should not
-be used so changes to global styling can be applied in a central place.
+be used so changes to global styling can be applied in one central place:
+`public/colors.css`.
 
-```html
-<style>
-  button {
-    background-color: var(--color-foreground);
-    border-color: var(--color-caution-level-1);
-  }
-</style>
-
-<button>
-</button>
-```
+Read more about the colors used in Upstream in the [Color System post][cg].
 
 
 ### Building an Upstream package for your platform
@@ -380,9 +331,6 @@ yarn test             # Run Cypress end-to-end tests
 yarn test:debug       # Show the Cypress GUI, handy for visual debugging
 
 yarn dist             # Bundles Upstream into an installable package
-
-yarn generate:colors  # Update color CSS variables in public/colors.css from
-                      # colors.js
 
 yarn release          # Start a two-step process to cut a new release, for more
                       # details have a look at ../DEVELOPMENT.md
@@ -479,9 +427,6 @@ yarn test                 # Run Cypress end-to-end tests
 yarn test:debug           # Show the Cypress GUI, handy for visual debugging
 
 yarn dist                 # Bundles Upstream into an installable package
-
-yarn generate:colors      # Update color CSS variables in public/colors.css from
-                          # colors.js
 
 yarn release              # Start a two-step process to cut a new release, for more
                           # details have a look at ../DEVELOPMENT.md
