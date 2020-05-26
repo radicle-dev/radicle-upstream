@@ -62,7 +62,7 @@
   {#if !toplevel}
     <div class="folder" on:click={toggle}>
       <span class:expanded class:active style="height: 24px">
-        <Icon.CarretBig dataCy={`expand-${name}`} />
+        <Icon.Chevron dataCy={`expand-${name}`} />
       </span>
       <span class="folder-name">{name}</span>
     </div>

@@ -1,20 +1,19 @@
-import Badge from "./Badge.svelte";
 import ArrowDown from "./ArrowDown.svelte";
 import ArrowUp from "./ArrowUp.svelte";
+import At from "./At.svelte";
+import Badge from "./Badge.svelte";
 import Branch from "./Branch.svelte";
-import Carret from "./Carret.svelte";
-import CarretBig from "./CarretBig.svelte";
 import Check from "./Check.svelte";
-import CheckCircle from "./CheckCircle.svelte";
+import Chevron from "./Chevron.svelte";
+import Circle from "./Circle.svelte";
 import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
-import CopyToClipboard from "./CopyToClipboard.svelte";
 import Cross from "./Cross.svelte";
-import Ellipse from "./Ellipse.svelte";
-import EllipseBig from "./EllipseBig.svelte";
+import Edit from "./Edit.svelte";
 import Ellipses from "./Ellipses.svelte";
 import Expand from "./Expand.svelte";
+import Eye from "./Eye.svelte";
 import Feed from "./Feed.svelte";
 import File from "./File.svelte";
 import Folder from "./Folder.svelte";
@@ -25,41 +24,42 @@ import Important from "./Important.svelte";
 import Inbox from "./Inbox.svelte";
 import Info from "./Info.svelte";
 import Issue from "./Issue.svelte";
+import Key from "./Key.svelte";
 import Label from "./Label.svelte";
 import Member from "./Member.svelte";
+import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
 import Peer from "./Peer.svelte";
 import Plus from "./Plus.svelte";
 import Projects from "./Projects.svelte";
 import Register from "./Register.svelte";
-import Revisions from "./Revisions.svelte";
+import Revision from "./Revision.svelte";
 import Replies from "./Replies.svelte";
 import Search from "./Search.svelte";
-import SearchSmall from "./SearchSmall.svelte";
 import Settings from "./Settings.svelte";
 import Source from "./Source.svelte";
 import Spinner from "./Spinner.svelte";
 import StepCounter from "./StepCounter.svelte";
 import TransactionState from "./TransactionState.svelte";
+import Trash from "./Trash.svelte";
 
 export default {
-  Badge,
   ArrowDown,
   ArrowUp,
+  At,
+  Badge,
   Branch,
-  Carret,
-  CarretBig,
   Check,
-  CheckCircle,
+  Chevron,
+  Circle,
   CloseIssue,
   Commit,
   Copy,
-  CopyToClipboard,
   Cross,
-  Ellipse,
-  EllipseBig,
+  Edit,
   Ellipses,
   Expand,
+  Eye,
   Feed,
   File,
   Folder,
@@ -70,20 +70,22 @@ export default {
   Inbox,
   Info,
   Issue,
+  Key,
   Label,
   Member,
+  Merge,
   Minus,
   Peer,
   Plus,
   Projects,
   Register,
-  Revisions,
+  Revision,
   Replies,
   Search,
-  SearchSmall,
   Settings,
   Source,
   Spinner,
   StepCounter,
   TransactionState,
+  Trash,
 };

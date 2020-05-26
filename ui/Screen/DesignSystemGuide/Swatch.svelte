@@ -1,7 +1,7 @@
 <style>
   .swatch {
     display: flex;
-    margin-bottom: 34px;
+    margin-bottom: 32px;
     align-items: flex-end;
   }
 </style>

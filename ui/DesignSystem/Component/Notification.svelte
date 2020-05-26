@@ -58,7 +58,7 @@
     {#if level === Level.Info}
       <Icon.Info style="margin-left: 8px; height: 24px" />
     {:else if level === Level.Error}
-      <Icon.Important variant="small" style="margin-left: 8px; height: 24px" />
+      <Icon.Important style="margin-left: 8px; height: 24px" />
     {/if}
   {/if}
 
