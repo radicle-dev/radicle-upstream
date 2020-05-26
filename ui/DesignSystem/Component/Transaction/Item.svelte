@@ -48,6 +48,6 @@
     <ItemDescription {message} state={tx.state.type} />
   </div>
   <div class="carret">
-    <Icon.CarretBig />
+    <Icon.Chevron />
   </div>
 </div>
