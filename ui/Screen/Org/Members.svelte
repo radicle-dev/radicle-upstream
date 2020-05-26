@@ -71,9 +71,6 @@
           </Text>
         </div>
       {/if}
-      <Text style="color: var(--color-foreground-level-5); margin-right: 24px;">
-        {member.joined}
-      </Text>
       <AdditionalActionsDropdown menuItems={menuItems(member)} />
     </div>
   </div>
