@@ -293,11 +293,6 @@ export const formatPayerFromIdentity = (identity: Identity): Payer => (identity 
   imageUrl: identity.metadata.avatarUrl
 });
 
-export const formatPayerFromOrg = (orgId: string): Payer => ({
-  name: orgId,
-  type: PayerType.Org
-})
-
 export enum SubjectType {
   User = "user",
   OrgProject = "org_project",
