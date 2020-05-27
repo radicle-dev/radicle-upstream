@@ -286,7 +286,7 @@ interface Payer {
   imageUrl?: string;
 }
 
-export const formatPayerFromIdentity = (identity: Identity): Payer => ({
+export const formatPayerFromIdentity = (identity: Identity): Payer => (identity && {
   name: identity.metadata.displayName || identity.metadata.handle,
   type: PayerType.User,
   avatarFallback: identity.avatarFallback,

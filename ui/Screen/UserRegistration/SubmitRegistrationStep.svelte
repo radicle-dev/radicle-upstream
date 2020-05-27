@@ -19,10 +19,9 @@
       },
     ],
   };
-  const payer = transaction.formatPayerFromIdentity(identity);
 </script>
 
-<Transaction transaction={tx} {payer} />
+<Transaction transaction={tx} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button

@@ -1,13 +1,11 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import { session } from "../../src/session.ts";
   import {
     RegistrationFlowState,
     registerMemberTransaction,
     memberHandleValidationStore,
   } from "../../src/org.ts";
-  import { formatPayerFromIdentity } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
   import { Input, Text } from "../../DesignSystem/Primitive";
@@ -24,7 +22,6 @@
   let userHandle,
     transaction,
     subject,
-    payer,
     validating = false;
   const validation = memberHandleValidationStore();
 
@@ -33,7 +30,6 @@
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
           transaction = registerMemberTransaction(orgId, userHandle);
-          payer = formatPayerFromIdentity($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }
         break;
@@ -80,7 +76,7 @@
       dataCy="input" />
   {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
-      <Transaction {transaction} {subject} {payer} />
+      <Transaction {transaction} {subject} />
     </div>
   {/if}
   <NavigationButtons

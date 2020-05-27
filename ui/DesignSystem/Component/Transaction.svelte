@@ -1,8 +1,10 @@
 <script>
+  import { session } from "../../src/session.ts";
   import {
     formatMessage,
     formatStake,
     formatSubject,
+    formatPayerFromIdentity,
     SubjectType,
     PayerType,
   } from "../../src/transaction.ts";
@@ -18,7 +20,6 @@
   import Row from "./Transaction/Row.svelte";
 
   export let transaction = null;
-  export let payer = null;
   let avatar;
 
   const subject = formatSubject(transaction.messages[0]);
@@ -36,6 +37,7 @@
   const updateAvatar = async () => (avatar = await subject.avatarSource);
 
   $: updateAvatar();
+  $: payer = formatPayerFromIdentity($session.data.identity);
 </script>
 
 <Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
@@ -118,13 +120,15 @@
 
 <Row style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
-    <Avatar
-      dataCy="payer-avatar"
-      title={payer.name}
-      imageUrl={payer.imageUrl}
-      avatarFallback={payer.avatarFallback}
-      variant={payer.type === PayerType.User ? 'circle' : 'square'}
-      style="color: var(--color-foreground)" />
+    {#if payer}
+      <Avatar
+        dataCy="payer-avatar"
+        title={payer.name}
+        imageUrl={payer.imageUrl}
+        avatarFallback={payer.avatarFallback}
+        variant={payer.type === PayerType.User ? 'circle' : 'square'}
+        style="color: var(--color-foreground)" />
+    {/if}
   </div>
 
   <div slot="right">

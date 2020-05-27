@@ -39,8 +39,6 @@
     pop();
   };
 
-  const wallet = () => transaction.formatPayerFromIdentity(session.identity);
-
   // TODO(sos): coordinate message format for project registration with proxy
   const tx = () => ({
     messages: [
@@ -95,7 +93,7 @@
               domainAvatar = event.detail.domainAvatar;
             }} />
         {:else}
-          <Transaction payer={wallet()} transaction={tx()} />
+          <Transaction transaction={tx()} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

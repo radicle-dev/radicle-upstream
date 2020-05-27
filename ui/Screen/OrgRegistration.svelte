@@ -8,8 +8,8 @@
     orgIdValidationStore,
     register,
   } from "../src/org.ts";
-  import { session, fetch as fetchSession } from "../src/session.ts";
-  import { formatPayerFromIdentity, MessageType } from "../src/transaction.ts";
+  import { fetch as fetchSession } from "../src/session.ts";
+  import { MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -19,7 +19,7 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
-  let orgId, transaction, subject, payer, avatarFallback, showAvatar;
+  let orgId, transaction, subject, avatarFallback, showAvatar;
   let state = RegistrationFlowState.Preparation;
 
   // Create a new validation store
@@ -38,7 +38,6 @@
               },
             ],
           };
-          payer = formatPayerFromIdentity($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }
         break;
@@ -123,7 +122,7 @@
     </Input.Text>
   {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
-      <Transaction {transaction} {subject} {payer} />
+      <Transaction {transaction} {subject} />
     </div>
   {/if}
   <NavigationButtons
