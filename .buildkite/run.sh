@@ -72,8 +72,6 @@ echo "--- Run cargo fmt"
 (cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy lints"
-(cd proxy && time cargo check --all --all-features --all-targets)
-(cd proxy && time cargo clean)
 (cd proxy && time cargo clippy --all --all-features --all-targets)
 
 echo "--- Run proxy tests"
