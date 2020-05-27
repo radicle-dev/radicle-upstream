@@ -7,7 +7,7 @@
     registerMemberTransaction,
     memberHandleValidationStore,
   } from "../../src/org.ts";
-  import { formatPayer } from "../../src/transaction.ts";
+  import { formatPayerFromIdentity } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
   import { Input, Text } from "../../DesignSystem/Primitive";
@@ -16,6 +16,9 @@
     StepModalLayout,
     Transaction,
   } from "../../DesignSystem/Component";
+
+  export let params = null;
+  const orgId = params.id;
 
   let state = RegistrationFlowState.Preparation;
   let userHandle,
@@ -29,8 +32,8 @@
     switch (state) {
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
-          transaction = registerMemberTransaction("monadic", userHandle);
-          payer = formatPayer($session.data.identity);
+          transaction = registerMemberTransaction(orgId, userHandle);
+          payer = formatPayerFromIdentity($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }
         break;

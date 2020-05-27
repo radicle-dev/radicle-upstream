@@ -2,7 +2,7 @@ import { Readable, Writable, get, derived, writable } from "svelte/store";
 import * as timeago from "timeago.js";
 
 import * as api from "./api";
-import { Avatar, getAvatar, Usage } from "./avatar"
+import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar"
 import * as event from "./event";
 import { Identity } from "./identity";
 import { Domain } from "./project"
@@ -132,30 +132,30 @@ interface Summary {
 }
 
 export const summarizeTransactions = (txs: Transactions): Summary =>
-  txs.reduce((acc, tx): Summary => { 
-      acc.counts.sum += 1;
-      acc.counts[tx.state.type] += 1;
-      
-      if (tx.state.type === StateType.Confirmed) {
-        acc.confirmations += tx.state.confirmations;
-        acc.minConfirmations = tx.state.minConfirmations;
-      } else if (tx.state.type === StateType.Settled) {
-        acc.confirmations += tx.state.minConfirmations;
-        acc.minConfirmations = tx.state.minConfirmations;
-      }
-      
-      return acc;
-    }, {
-      confirmations: 0,
-      minConfirmations: 0,
-      counts: {
-        confirmed: 0,
-        failed: 0,
-        pending: 0,
-        settled: 0,
-        sum: 0,
-      },
-    });
+  txs.reduce((acc, tx): Summary => {
+    acc.counts.sum += 1;
+    acc.counts[tx.state.type] += 1;
+
+    if (tx.state.type === StateType.Confirmed) {
+      acc.confirmations += tx.state.confirmations;
+      acc.minConfirmations = tx.state.minConfirmations;
+    } else if (tx.state.type === StateType.Settled) {
+      acc.confirmations += tx.state.minConfirmations;
+      acc.minConfirmations = tx.state.minConfirmations;
+    }
+
+    return acc;
+  }, {
+    confirmations: 0,
+    minConfirmations: 0,
+    counts: {
+      confirmed: 0,
+      failed: 0,
+      pending: 0,
+      settled: 0,
+      sum: 0,
+    },
+  });
 
 const transactionsStore = remote.createStore<Transactions>();
 export const transactions = transactionsStore.readable;
@@ -185,7 +185,7 @@ interface FetchList extends event.Event<Kind> {
 }
 
 interface RefetchList extends event.Event<Kind> {
-  kind: Kind.RefetchList; 
+  kind: Kind.RefetchList;
 }
 
 type Msg = FetchList | RefetchList;
@@ -278,15 +278,25 @@ export enum PayerType {
   User = "user"
 }
 
-// TODO(sos): update to support orgs
-export const formatPayer = (identity: Identity): object => {
-  return {
-    name: identity.metadata.displayName || identity.metadata.handle,
-    type: PayerType.User,
-    avatarFallback: identity.avatarFallback,
-    imageUrl: identity.metadata.avatarUrl
-  };
-};
+// TODO(sos): coordinate payer shape with proxy/registry
+interface Payer {
+  type: PayerType;
+  name: string;
+  avatarFallback?: EmojiAvatar;
+  imageUrl?: string;
+}
+
+export const formatPayerFromIdentity = (identity: Identity): Payer => ({
+  name: identity.metadata.displayName || identity.metadata.handle,
+  type: PayerType.User,
+  avatarFallback: identity.avatarFallback,
+  imageUrl: identity.metadata.avatarUrl
+});
+
+export const formatPayerFromOrg = (orgId: string): Payer => ({
+  name: orgId,
+  type: PayerType.Org
+})
 
 export enum SubjectType {
   User = "user",
@@ -427,7 +437,7 @@ export const summaryIconState = (counts: SummaryCounts): IconState => {
 
 export const summaryText = (counts: SummaryCounts): string => {
   let sum = 0;
-  let state = StateType.Settled; 
+  let state = StateType.Settled;
 
   if (counts[StateType.Settled] > 0) {
     sum = counts[StateType.Settled];

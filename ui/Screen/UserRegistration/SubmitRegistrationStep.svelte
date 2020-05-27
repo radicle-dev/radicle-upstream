@@ -19,7 +19,7 @@
       },
     ],
   };
-  const payer = transaction.formatPayer(identity);
+  const payer = transaction.formatPayerFromIdentity(identity);
 </script>
 
 <Transaction transaction={tx} {payer} />

@@ -9,7 +9,7 @@
     register,
   } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
-  import { formatPayer, MessageType } from "../src/transaction.ts";
+  import { formatPayerFromIdentity, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -38,7 +38,7 @@
               },
             ],
           };
-          payer = formatPayer($session.data.identity);
+          payer = formatPayerFromIdentity($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }
         break;
