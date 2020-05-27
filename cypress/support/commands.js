@@ -1,28 +1,28 @@
-Cypress.Commands.add("nukeCache", () => {
+Cypress.Commands.add("nukeCache", async () => {
   console.log("Nuking Cache");
-  fetch("http://localhost:8080/v1/session/cache", { method: "DELETE" });
+  await fetch("http://localhost:8080/v1/session/cache", { method: "DELETE" });
 });
 
-Cypress.Commands.add("nukeCocoState", () => {
+Cypress.Commands.add("nukeCocoState", async () => {
   console.log("Nuking CoCo state");
-  fetch("http://localhost:8080/v1/control/nuke/coco");
+  await fetch("http://localhost:8080/v1/control/nuke/coco");
 });
 
-Cypress.Commands.add("nukeRegistryState", () => {
+Cypress.Commands.add("nukeRegistryState", async () => {
   console.log("Nuking Registry state");
-  fetch("http://localhost:8080/v1/control/nuke/registry");
+  await fetch("http://localhost:8080/v1/control/nuke/registry");
 });
 
-Cypress.Commands.add("nukeSessionState", () => {
+Cypress.Commands.add("nukeSessionState", async () => {
   console.log("Nuking Session state");
-  fetch("http://localhost:8080/v1/session", { method: "DELETE" });
+  await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
 });
 
-Cypress.Commands.add("nukeAllState", () => {
+Cypress.Commands.add("nukeAllState", async () => {
   console.log("Nuking CoCo, Registry and session state");
-  fetch("http://localhost:8080/v1/control/nuke/session");
-  fetch("http://localhost:8080/v1/control/nuke/registry");
-  fetch("http://localhost:8080/v1/control/nuke/coco");
+  await fetch("http://localhost:8080/v1/control/nuke/session");
+  await fetch("http://localhost:8080/v1/control/nuke/registry");
+  await fetch("http://localhost:8080/v1/control/nuke/coco");
 });
 
 Cypress.Commands.add("pick", (...ids) => {
@@ -32,12 +32,12 @@ Cypress.Commands.add("pick", (...ids) => {
 
 Cypress.Commands.add(
   "createProjectWithFixture",
-  (
+  async (
     name = "Monadic",
     description = "Monadic is currently supporting radicle.",
     defaultBranch = "master"
   ) =>
-    fetch("http://localhost:8080/v1/control/create-project", {
+    await fetch("http://localhost:8080/v1/control/create-project", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -50,39 +50,43 @@ Cypress.Commands.add(
     })
 );
 
-Cypress.Commands.add("registerOrg", (id = "monadic") =>
-  fetch("http://localhost:8080/v1/orgs", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id,
-    }),
-  })
+Cypress.Commands.add(
+  "registerOrg",
+  async (id = "monadic") =>
+    await fetch("http://localhost:8080/v1/orgs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+      }),
+    })
 );
 
-Cypress.Commands.add("registerUser", (handle = "nope", id = "123abcd.git") =>
-  fetch("http://localhost:8080/v1/users", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      handle,
-      id,
-    }),
-  })
+Cypress.Commands.add(
+  "registerUser",
+  async (handle = "nope", id = "123abcd.git") =>
+    await fetch("http://localhost:8080/v1/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        handle,
+        id,
+      }),
+    })
 );
 
 Cypress.Commands.add(
   "createIdentity",
-  (
+  async (
     handle = "secretariat",
     displayName = "Christopher Chenery",
     avatarUrl = null
   ) =>
-    fetch("http://localhost:8080/v1/identities", {
+    await fetch("http://localhost:8080/v1/identities", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
