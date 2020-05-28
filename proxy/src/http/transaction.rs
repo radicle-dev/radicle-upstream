@@ -207,6 +207,7 @@ impl ToDocumentedType for ListInput {
     }
 }
 
+#[allow(clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
     use std::convert::TryFrom;
@@ -222,22 +223,20 @@ mod test {
 
     #[tokio::test]
     async fn list() {
-        let tmp_dir = tempfile::tempdir().expect("tmp dir creation failed");
+        let tmp_dir = tempfile::tempdir().unwrap();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))
-            .expect("Store creation failed");
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let cache = registry::Cacher::new(registry, &store);
         let now = registry::Timestamp::now();
 
         let tx = registry::Transaction {
             id: registry::Hash(radicle_registry_client::TxHash::random()),
             messages: vec![registry::Message::ProjectRegistration {
-                project_name: registry::ProjectName::try_from("upstream")
-                    .expect("String conversion failed"),
-                org_id: registry::Id::try_from("radicle").expect("String conversion failed"),
+                project_name: registry::ProjectName::try_from("upstream").unwrap(),
+                org_id: registry::Id::try_from("radicle").unwrap(),
             }],
             state: registry::State::Confirmed {
                 block: 1,
@@ -248,13 +247,9 @@ mod test {
             timestamp: now,
         };
 
-        cache
-            .cache_transaction(tx.clone())
-            .expect("Caching transaction failed");
+        cache.cache_transaction(tx.clone()).unwrap();
 
-        let transactions = cache
-            .list_transactions(vec![])
-            .expect("Listing transactions failed");
+        let transactions = cache.list_transactions(vec![]).unwrap();
 
         let api = super::filters(Arc::new(RwLock::new(cache)));
         let res = request()
@@ -264,7 +259,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).expect("Serialization to JSON failed");
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(transactions));
