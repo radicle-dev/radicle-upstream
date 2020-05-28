@@ -1,3 +1,4 @@
+#![allow(clippy::integer_arithmetic)]
 //! Abstractions and types to handle, persist and interact with transactions.
 
 use async_trait::async_trait;
