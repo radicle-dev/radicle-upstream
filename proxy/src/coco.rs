@@ -43,6 +43,7 @@ pub trait Client:
         project_urn: String,
     ) -> Result<(git::repo::Repo, project::Project), error::Error>;
 
+    /// Get the project found at `project_urn`.
     async fn get_project(
         &self,
         project_urn: &str,
