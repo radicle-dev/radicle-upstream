@@ -93,8 +93,9 @@
   },
   "scripts": {
     "start": "run-p --race svelte:watch proxy:start electron:start",
-    "test": "yarn test:unit && TZ='UTC' run-p --race proxy:start:test wait:test",
-    "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
+    "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
+    "test:integration": "run-p --race proxy:start:test wait:test",
+    "test:integration:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn cypress:run",

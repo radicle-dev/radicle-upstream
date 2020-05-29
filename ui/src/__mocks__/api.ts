@@ -33,6 +33,5 @@ export const get = async (endpoint: string): Promise<MockedResponse> => {
       break;
   }
 
-
   return new Promise((resolve) => resolve(response))
 }
