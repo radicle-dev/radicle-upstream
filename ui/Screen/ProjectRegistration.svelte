@@ -39,7 +39,7 @@
     pop();
   };
 
-  const wallet = () => transaction.formatPayer($session.data.identity);
+  const wallet = () => transaction.formatPayer(session.data.identity);
 
   // TODO(sos): coordinate message format for project registration with proxy
   const tx = () => ({
