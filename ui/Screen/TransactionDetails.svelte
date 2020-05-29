@@ -23,7 +23,7 @@
     identity = session.identity;
   }
 
-  $: payer = transaction.formatPayerFromIdentity(identity);
+  $: payer = transaction.formatPayer(identity);
   $: store = transaction.fetch(params.id);
 </script>
 

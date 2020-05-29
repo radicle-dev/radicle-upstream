@@ -282,11 +282,11 @@ export enum PayerType {
 interface Payer {
   type: PayerType;
   name: string;
-  avatarFallback?: EmojiAvatar;
+  avatarFallback: EmojiAvatar;
   imageUrl?: string;
 }
 
-export const formatPayerFromIdentity = (identity: Identity): Payer => (identity && {
+export const formatPayer = (identity: Identity): Payer => (identity && {
   name: identity.metadata.displayName || identity.metadata.handle,
   type: PayerType.User,
   avatarFallback: identity.avatarFallback,

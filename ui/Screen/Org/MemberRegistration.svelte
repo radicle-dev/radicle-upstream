@@ -6,6 +6,8 @@
     registerMemberTransaction,
     memberHandleValidationStore,
   } from "../../src/org.ts";
+  import { session } from "../../src/session.ts";
+  import { formatPayer } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
   import { Input, Text } from "../../DesignSystem/Primitive";
@@ -19,9 +21,10 @@
   const orgId = params.id;
 
   let state = RegistrationFlowState.Preparation;
-  let userHandle,
-    transaction,
+  let payer,
     subject,
+    transaction,
+    userHandle,
     validating = false;
   const validation = memberHandleValidationStore();
 
@@ -30,6 +33,7 @@
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
           transaction = registerMemberTransaction(orgId, userHandle);
+          payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }
         break;
@@ -76,7 +80,7 @@
       dataCy="input" />
   {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
-      <Transaction {transaction} {subject} />
+      <Transaction {transaction} {subject} {payer} />
     </div>
   {/if}
   <NavigationButtons
