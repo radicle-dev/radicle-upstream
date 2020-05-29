@@ -4,5 +4,5 @@ module.exports = {
     "^.+\\.ts$": "ts-jest",
   },
   testRegex: "(/__tests__/.*|(\\.|/)(test))\\.ts$",
-  moduleFileExtensions: ["ts", "js", "json", "node"],
+  moduleFileExtensions: ["ts", "js", "json"],
 };
