@@ -13,9 +13,8 @@
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
 
-  import { projects as projectStore } from "../src/project.ts";
+  import { register, projects as projectStore } from "../src/project.ts";
   import * as transaction from "../src/transaction.ts";
-  import * as project from "../src/project.ts";
 
   export let params = null;
 
@@ -34,12 +33,11 @@
   // summary
 
   const onSubmitTransaction = () => {
-    project.register(domainId, projectName, projectId);
-
+    register(domainId, projectName, projectId);
     pop();
   };
 
-  const wallet = () => transaction.formatPayer(session.data.identity);
+  const wallet = () => transaction.formatPayer(session.identity);
 
   // TODO(sos): coordinate message format for project registration with proxy
   const tx = () => ({

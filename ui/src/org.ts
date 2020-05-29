@@ -88,8 +88,7 @@ const update = (msg: Msg): void => {
 export const registerMemberTransaction = (
   orgId: string,
   handle: string
-): transaction.Transaction => ({
-  id: orgId,
+) => ({
   messages: [
     {
       type: transaction.MessageType.MemberRegistration,
