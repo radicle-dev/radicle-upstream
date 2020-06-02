@@ -4,7 +4,7 @@
 
 <Button
   variant="transparent"
-  icon={Icon.Revisions}
+  icon={Icon.Revision}
   on:click={() => console.log('event(new-revision)')}>
   New revision
 </Button>
