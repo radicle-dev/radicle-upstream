@@ -285,6 +285,10 @@ const findReadme = (tree: Tree): string | null => {
   return null;
 }
 
+export const isMarkdown = (path: string): boolean => {
+  return /\.(md|mkd|markdown)$/i.test(path);
+}
+
 export const formatTime = (t: number): string => {
   return new Date(t).toLocaleDateString("en-US", {
     month: "long",

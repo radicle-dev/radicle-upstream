@@ -1,5 +1,6 @@
 <script>
   import { Icon, Markdown } from "../../Primitive";
+  import { isMarkdown } from "../../../src/source.ts";
 
   export let content = null;
   export let path = null;
@@ -27,6 +28,13 @@
     margin-left: 0.5rem;
   }
 
+  .code {
+    font-family: var(--typeface-mono-regular);
+    font-size: 16px;
+    padding: 1.5rem;
+    overflow-x: auto;
+  }
+
   .container {
     padding: 24px 24px 16px 24px;
   }
@@ -40,6 +48,10 @@
     </div>
   </header>
   <div class="container">
-    <Markdown {content} />
+    {#if isMarkdown(path)}
+      <Markdown {content} />
+    {:else}
+      <pre class="code">{content}</pre>
+    {/if}
   </div>
 </div>
