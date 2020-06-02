@@ -87,17 +87,30 @@ const update = (msg: Msg): void => {
 
 export const registerMemberTransaction = (
   orgId: string,
-  userId: string
+  handle: string
 ): transaction.Transaction => ({
   id: "",
   messages: [
     {
-      type: transaction.MessageType.OrgMemberRegistration,
+      type: transaction.MessageType.MemberRegistration,
       orgId,
-      userId
+      handle
     }
   ],
-  state: { type: transaction.StateType.Applied, blockHash: "0x000" }
+  state: {
+    type: transaction.StateType.Confirmed,
+    block: 1,
+    confirmations: 2,
+    minConfirmations: 6,
+    timestamp: {
+      secs: 1,
+      nanos: 1,
+    }
+  },
+  timestamp: {
+    secs: 1,
+    nanos: 1,
+  }
 });
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
@@ -144,23 +157,20 @@ export const memberHandleValidationStore = (): validation.ValidationStore =>
 
 // MOCKS
 
-type MemberList = { handle: string; pending: boolean; joined: string }[]
+type MemberList = { handle: string; pending: boolean}[]
 
 // TODO(sos): replace with actual members
 export const mockMemberList: MemberList = [
   {
     handle: "eisenia_fetida",
-    pending: false,
-    joined: "06/2019"
+    pending: false
   },
   {
     handle: "eisenia_hortensis",
-    pending: true,
-    joined: "11/1992"
+    pending: true
   },
   {
     handle: "eisenia_andrei",
-    pending: false,
-    joined: "05/2020"
+    pending: false
   }
 ]

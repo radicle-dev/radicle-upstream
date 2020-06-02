@@ -6,8 +6,8 @@
 
 <style>
   .row {
-    display: flex;
     align-items: center;
+    display: flex;
   }
 
   .align-left {
@@ -16,11 +16,11 @@
   }
 
   .align-center {
+    align-items: center;
     display: flex;
     flex: 1;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
   }
 
   .align-right {
@@ -31,11 +31,11 @@
 </style>
 
 {#if align !== null}
-  <div data-cy={dataCy} class={`row align-${align}`} {style}>
+  <div data-cy={dataCy} class={`row align-${align}`} on:click {style}>
     <slot />
   </div>
 {:else}
-  <div data-cy={dataCy} class="row" {style}>
+  <div data-cy={dataCy} class="row" on:click {style}>
     <div class="align-left">
       <slot name="left" />
     </div>

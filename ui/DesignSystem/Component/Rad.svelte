@@ -22,7 +22,7 @@
 
 <div class="wrapper" {style}>
   <div class="rad-amount">
-    <Icon.EllipseBig style="fill: var(--color-primary); margin-right: 4px" />
+    <Icon.Circle style="fill: var(--color-primary); margin-right: 4px" />
     {#if size === 'big'}
       <Numeric
         variant="big"

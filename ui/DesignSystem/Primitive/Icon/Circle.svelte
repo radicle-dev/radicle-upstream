@@ -3,6 +3,7 @@
 </script>
 
 <svg
+  on:click
   {style}
   width="16"
   height="16"

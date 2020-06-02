@@ -226,11 +226,13 @@
   .wrapper {
     display: flex;
     justify-content: center;
+    margin: 92px 0 72px 0;
   }
 
   .create-project {
     text-align: center;
     flex: 1;
+    width: 540px;
   }
 
   .double-button {

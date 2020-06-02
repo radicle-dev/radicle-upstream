@@ -24,7 +24,11 @@ pub fn routes<R: registry::Client>(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
             .or(get_projects_filter(paths, Arc::clone(&registry)))
-            .or(register_filter(registry, subscriptions)),
+            .or(register_filter(
+                Arc::clone(&registry),
+                subscriptions.clone(),
+            ))
+            .or(register_member_filter(registry, subscriptions)),
     )
 }
 
@@ -38,7 +42,11 @@ fn filters<R: registry::Client>(
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
         .or(get_projects_filter(paths, Arc::clone(&registry)))
-        .or(register_filter(registry, subscriptions))
+        .or(register_filter(
+            Arc::clone(&registry),
+            subscriptions.clone(),
+        ))
+        .or(register_member_filter(registry, subscriptions))
 }
 
 /// `GET /<id>`
@@ -135,8 +143,8 @@ fn register_filter<R: registry::Client>(
     http::with_shared(registry)
         .and(http::with_subscriptions(subscriptions))
         .and(warp::post())
-        .and(warp::body::json())
         .and(path::end())
+        .and(warp::body::json())
         .and(document::document(document::description(
             "Register a new unique Org",
         )))
@@ -152,6 +160,35 @@ fn register_filter<R: registry::Client>(
             .description("Creation succeeded"),
         ))
         .and_then(handler::register)
+}
+
+/// `POST /<id>/members`
+fn register_member_filter<R: registry::Client>(
+    registry: http::Shared<R>,
+    subscriptions: notification::Subscriptions,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_shared(registry)
+        .and(http::with_subscriptions(subscriptions))
+        .and(warp::post())
+        .and(document::param::<String>("id", "Unique ID of the Org"))
+        .and(path("members"))
+        .and(path::end())
+        .and(warp::body::json())
+        .and(document::document(document::description(
+            "Register a member",
+        )))
+        .and(document::document(document::tag("Org")))
+        .and(document::document(
+            document::body(RegisterMemberInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(registry::Org::document()).mime("application/json"),
+            )
+            .description("Creation succeeded"),
+        ))
+        .and_then(handler::register_member)
 }
 
 /// Org handlers for conversion between core domain and http request fullfilment.
@@ -243,6 +280,32 @@ mod handler {
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(input.id)?;
         let tx = reg.register_org(&fake_pair, org_id, fake_fee).await?;
+
+        subscriptions
+            .broadcast(notification::Notification::Transaction(tx.clone()))
+            .await;
+
+        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+    }
+
+    /// Register a member under an org on the Registry.
+    pub async fn register_member<R: registry::Client>(
+        registry: http::Shared<R>,
+        subscriptions: notification::Subscriptions,
+        id: String,
+        input: super::RegisterMemberInput,
+    ) -> Result<impl Reply, Rejection> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        // TODO(xla): Use real fee defined by the user.
+        let fake_fee: Balance = 100;
+
+        let reg = registry.read().await;
+        let org_id = registry::Id::try_from(id)?;
+        let handle = registry::Id::try_from(input.handle)?;
+        let tx = reg
+            .register_member(&fake_pair, org_id, handle, fake_fee)
+            .await?;
 
         subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
@@ -360,10 +423,33 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
+/// Bundled input data for member registration.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RegisterMemberInput {
+    /// Id of the User.
+    handle: String,
+}
+
+impl ToDocumentedType for RegisterMemberInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(1);
+        properties.insert(
+            "handle".into(),
+            document::string()
+                .description("Handle of the user")
+                .example("cloudhead"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for member registration")
+    }
+}
+
 #[allow(
     clippy::option_unwrap_used,
     clippy::result_unwrap_used,
-    clippy::indexing_slicing
+    clippy::indexing_slicing,
+    clippy::panic
 )]
 #[cfg(test)]
 mod test {
@@ -389,9 +475,10 @@ mod test {
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Paths::from_root(tmp_dir.path())?;
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths.clone())),
@@ -445,9 +532,10 @@ mod test {
     async fn get_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Paths::from_root(tmp_dir.path())?;
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths.clone())),
@@ -505,9 +593,10 @@ mod test {
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Paths::from_root(tmp_dir.path())?;
-        let registry = Arc::new(RwLock::new(registry::Registry::new(
-            radicle_registry_client::Client::new_emulator(),
-        )));
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
             Arc::new(RwLock::new(librad_paths.clone())),
@@ -605,7 +694,10 @@ mod test {
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Paths::from_root(tmp_dir.path())?;
-        let registry = registry::Registry::new(radicle_registry_client::Client::new_emulator());
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
@@ -643,6 +735,76 @@ mod test {
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(txs.len(), 2);
         assert_eq!(org.id, org_id);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn register_member() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let subscriptions = notification::Subscriptions::default();
+
+        let api = super::filters(
+            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::clone(&cache),
+            subscriptions,
+        );
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
+
+        // Register the user
+        cache
+            .write()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register the org
+        cache
+            .write()
+            .await
+            .register_org(&author, org_id.clone(), 10)
+            .await?;
+
+        // Register a second user
+        let author2 = protocol::ed25519::Pair::from_legacy_string("//Bob", None);
+        let handle2 = registry::Id::try_from("bob")?;
+        cache
+            .write()
+            .await
+            .register_user(&author2, handle2.clone(), None, 10)
+            .await?;
+
+        // Register the second user as a member of the org
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/members", org_id.clone()))
+            .json(&super::RegisterMemberInput {
+                handle: handle2.clone().to_string(),
+            })
+            .reply(&api)
+            .await;
+
+        let txs = cache.write().await.list_transactions(vec![])?;
+
+        // Get the org and its members
+        let org = cache.read().await.get_org(org_id).await?.unwrap();
+        let member_handles: Vec<registry::Id> =
+            org.members.iter().map(|user| user.handle.clone()).collect();
+
+        assert_eq!(res.status(), StatusCode::CREATED);
+        assert_eq!(txs.len(), 4);
+        assert_eq!(org.members.len(), 2);
+        assert!(member_handles.contains(&handle));
+        assert!(member_handles.contains(&handle2));
 
         Ok(())
     }

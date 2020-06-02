@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.11](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.10...v0.0.11) (2020-05-25)
+
+
+### Features
+
+* **proxy:** extend session with settings ([#383](https://github.com/radicle-dev/radicle-upstream/issues/383)) ([9f6c4ff](https://github.com/radicle-dev/radicle-upstream/commit/9f6c4ffd8e3517fb224696c13da539d4f6752f47)), closes [#385](https://github.com/radicle-dev/radicle-upstream/issues/385) [#128](https://github.com/radicle-dev/radicle-upstream/issues/128) [#375](https://github.com/radicle-dev/radicle-upstream/issues/375)
+* **proxy:** implement settings endpoints ([#389](https://github.com/radicle-dev/radicle-upstream/issues/389)) ([6b9446c](https://github.com/radicle-dev/radicle-upstream/commit/6b9446ca9ebcc17a17b1809924a5bbf4f65ae008)), closes [#385](https://github.com/radicle-dev/radicle-upstream/issues/385)
+* **ui:** add org members list ([#402](https://github.com/radicle-dev/radicle-upstream/issues/402)) ([97187e0](https://github.com/radicle-dev/radicle-upstream/commit/97187e0dcde336af25245065bc538732e9fc4d83)), closes [#349](https://github.com/radicle-dev/radicle-upstream/issues/349)
+* **ui:** streamline transaction formatting ([#373](https://github.com/radicle-dev/radicle-upstream/issues/373)) ([1f38924](https://github.com/radicle-dev/radicle-upstream/commit/1f38924820ba45afe8afb837d15d094ad75c6152)), closes [#347](https://github.com/radicle-dev/radicle-upstream/issues/347)
+* **ui:** wire up settings endpoints ([#390](https://github.com/radicle-dev/radicle-upstream/issues/390)) ([d84f604](https://github.com/radicle-dev/radicle-upstream/commit/d84f6047fd4d2eba967c05e7ab3574b0d83752c8)), closes [#385](https://github.com/radicle-dev/radicle-upstream/issues/385)
+* **ui:** wire up shareable entity identifiers ([#393](https://github.com/radicle-dev/radicle-upstream/issues/393)) ([a696875](https://github.com/radicle-dev/radicle-upstream/commit/a696875676957b969d40a45a3d934611c2de2d3e))
+* implement tx polling ([#407](https://github.com/radicle-dev/radicle-upstream/issues/407)) ([9573df0](https://github.com/radicle-dev/radicle-upstream/commit/9573df08dd3bf2863190969b52222b569c51eebc)), closes [#347](https://github.com/radicle-dev/radicle-upstream/issues/347)
+
+
+### Bug Fixes
+
+* **proxy:** only fetch commit for root tree ([#405](https://github.com/radicle-dev/radicle-upstream/issues/405)) ([cfd88b6](https://github.com/radicle-dev/radicle-upstream/commit/cfd88b62f6c951dec0abf5c2448b9e65f0abaa7a)), closes [#350](https://github.com/radicle-dev/radicle-upstream/issues/350)
+* **ui:** check for project name length before registration ([#410](https://github.com/radicle-dev/radicle-upstream/issues/410)) ([7cd7761](https://github.com/radicle-dev/radicle-upstream/commit/7cd77616d0b6eb5799b3502ab22953e00f76fe74))
+* **ui:** add padding to issues screen [#412](https://github.com/radicle-dev/radicle-upstream/issues/412) ([2c3c4a9](https://github.com/radicle-dev/radicle-upstream/commit/2c3c4a918b8a6d4020bad6e3f5a551a80a299997))
+* **ui:** show correct avatars in summary pages ([#399](https://github.com/radicle-dev/radicle-upstream/issues/399)) ([01053c1](https://github.com/radicle-dev/radicle-upstream/commit/01053c145d49cc18266fce01a010826162cf00c2))
+
 ### [0.0.10](https://github.com/radicle-dev/radicle-upstream/compare/v0.0.9...v0.0.10) (2020-05-13)
 
 

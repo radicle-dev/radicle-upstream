@@ -1,5 +1,6 @@
 <script>
   import * as notification from "../src/notification.ts";
+  import * as transaction from "../src/transaction.ts";
 
   import {
     Avatar,
@@ -26,7 +27,7 @@
     SupportButton,
     StepCounter,
     TrackToggle,
-    TransactionAccordion,
+    TransactionCenter,
     TransactionStatusbar,
     UserCard,
   } from "../DesignSystem/Component";
@@ -34,6 +35,7 @@
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
+  import IconSwatch from "./DesignSystemGuide/IconSwatch.svelte";
   import { ValidationStatus } from "../src/validation.ts";
 
   const colors = Array.from(document.styleSheets)
@@ -112,37 +114,130 @@
 
   const transactions1 = [
     {
-      message: "Project registration",
-      state: "pending",
-      progress: 50,
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.UserRegistration,
+          handle: "xla",
+          id: "xla@123abcd.git",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Settled,
+        minConfirmations: 6,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Member registration",
-      state: "error",
+      id: "0a1b2c3b",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Confirmed,
+        confirmations: 2,
+        minConfirmations: 6,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Org registration",
-      state: "success",
+      id: "0a1b2c3c",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
+    },
+    {
+      id: "0a1b2c3d",
+      messages: [
+        {
+          type: transaction.MessageType.MemberRegistration,
+          orgId: "monadic",
+          handle: "xla",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Failed,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
   const transactions2 = [
     {
-      message: "Project registration",
-      state: "pending",
-      progress: 70,
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
     {
-      message: "Org registration",
-      state: "pending",
-      progress: 0,
+      id: "0a1b2c3b",
+      messages: [
+        {
+          type: transaction.MessageType.ProjectRegistration,
+          orgId: "monadic",
+          projectName: "upstream",
+          cocId: "upstream@123abcd.git",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Pending,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
   const transactions3 = [
     {
-      message: "Org registration",
-      state: "success",
+      id: "0a1b2c3a",
+      messages: [
+        {
+          type: transaction.MessageType.OrgRegistration,
+          orgId: "monadic",
+        },
+      ],
+      state: {
+        type: transaction.StateType.Settled,
+        minConfirmations: 6,
+        timestamp: {
+          nanos: 0,
+          secs: 1589806729,
+        },
+      },
     },
   ];
 
@@ -340,49 +435,84 @@
       </TypographySwatch>
     </Section>
 
-    <Section
-      title="Icons"
-      subTitle="Icons at 16px, 24px, 36px and 64px width and height with 2px
-      stroke weight, multiple color variations">
+    <Section title="Icons" subTitle="Icons at 24px width and height">
+      <Swatch>
+        <Caption>Main</Caption>
+      </Swatch>
+      <IconSwatch>
+        <Icon.Home />
+        <Icon.Source />
+        <Icon.Fund />
+        <Icon.Member />
+        <Icon.Issue />
+        <Icon.Settings />
+      </IconSwatch>
+      <Swatch>
+        <Caption>Functional</Caption>
+      </Swatch>
+      <IconSwatch>
+        <Icon.ArrowDown />
+        <Icon.ArrowUp />
+        <Icon.Check />
+        <Icon.Check variant="filled" />
+        <Icon.Chevron />
+        <Icon.Copy />
+        <Icon.Cross />
+        <Icon.Cross variant="medium" />
+        <Icon.Cross variant="big" />
+        <Icon.Cross variant="filled" />
+        <Icon.Ellipses />
+        <Icon.Expand />
+        <Icon.Important variant="no-circle" />
+        <Icon.Important />
+        <Icon.Important variant="big" />
+        <Icon.Info variant="no-circle" />
+        <Icon.Info />
+        <Icon.Info variant="big" />
+        <Icon.Minus />
+        <Icon.Plus />
+        <Icon.Plus variant="small" />
+        <Icon.Search />
+        <Icon.Search variant="small" />
+      </IconSwatch>
+      <Swatch>
+        <Caption>Representational</Caption>
+      </Swatch>
+      <IconSwatch>
+        <Icon.Replies />
+        <Icon.Register />
+        <Icon.Edit />
+        <Icon.Inbox />
+        <Icon.File />
+        <Icon.Feed />
+        <Icon.Folder />
+        <Icon.At />
+        <Icon.Key />
+        <Icon.CloseIssue />
+        <Icon.Projects />
+        <Icon.Eye />
+        <Icon.Trash />
+        <Icon.Label />
+      </IconSwatch>
+      <Swatch>
+        <Caption>Code</Caption>
+      </Swatch>
+      <IconSwatch>
+        <Icon.Commit />
+        <Icon.Revision />
+        <Icon.Peer />
+        <Icon.Branch />
+        <Icon.Graph />
+        <Icon.Merge />
+      </IconSwatch>
+    </Section>
 
-      <Icon.Badge />
-      <Icon.ArrowDown />
-      <Icon.ArrowUp />
-      <Icon.Branch />
-      <Icon.Carret />
-      <Icon.CarretBig />
-      <Icon.Check />
-      <Icon.CheckCircle />
-      <Icon.CloseIssue />
-      <Icon.Commit />
-      <Icon.Copy />
-      <Icon.Cross />
-      <Icon.Cross size="big" />
-      <Icon.Ellipse />
-      <Icon.EllipseBig />
-      <Icon.Ellipses />
-      <Icon.Feed />
-      <Icon.File />
-      <Icon.Folder />
-      <Icon.Fund />
-      <Icon.Graph />
-      <Icon.Home />
-      <Icon.Important />
-      <Icon.Inbox />
-      <Icon.Info />
-      <Icon.Issue />
-      <Icon.Member />
-      <Icon.Minus />
-      <Icon.Peer />
-      <Icon.Plus />
-      <Icon.Projects />
-      <Icon.Register />
-      <Icon.Revisions />
-      <Icon.Replies />
-      <Icon.Search />
-      <Icon.SearchSmall />
-      <Icon.Settings />
-      <Icon.Source />
+    <Section title="Small Icons" subTitle="Icons at 16px width and height">
+      <IconSwatch>
+        <Icon.Badge />
+        <Icon.Circle />
+      </IconSwatch>
+
     </Section>
 
     <Section
@@ -391,12 +521,12 @@
       reactive coloring.">
       <Icon.Spinner />
       <Icon.TransactionState state="positive" />
-      <Icon.TransactionState progress={0} variant="small" />
-      <Icon.TransactionState progress={0} />
-      <Icon.TransactionState progress={10} />
-      <Icon.TransactionState progress={100 / 3} />
-      <Icon.TransactionState state="negative" progress={0} />
-      <Icon.TransactionState state="negative" progress={80} />
+      <Icon.TransactionState variant="small" />
+      <Icon.TransactionState />
+      <Icon.TransactionState progress={(1 / 6) * 100} />
+      <Icon.TransactionState progress={(2 / 6) * 100} />
+      <Icon.TransactionState state="negative" progress={(2 / 6) * 100} rotate />
+      <Icon.TransactionState state="negative" progress={(4 / 6) * 100} />
       <Icon.TransactionState state="negative" progress={100} />
       <Icon.TransactionState state="negative" />
     </Section>
@@ -446,12 +576,10 @@
             <Button variant="secondary" disabled>Secondary</Button>
           </td>
           <td>
-            <Button icon={Icon.SearchSmall} variant="secondary">
-              Secondary
-            </Button>
+            <Button icon={Icon.Search} variant="secondary">Secondary</Button>
           </td>
           <td>
-            <Button icon={Icon.SearchSmall} variant="secondary" disabled>
+            <Button icon={Icon.Search} variant="secondary" disabled>
               Secondary
             </Button>
           </td>
@@ -836,17 +964,20 @@
       <Swatch>
         <div style="display: flex;">
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions1)}
               transactions={transactions1}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions2)}
               transactions={transactions2}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>
           <div style="position: relative; height: 200px; width: 280px;">
-            <TransactionAccordion
+            <TransactionCenter
+              summary={transaction.summarizeTransactions(transactions3)}
               transactions={transactions3}
               style="position: absolute; bottom: 0; right: 0;" />
           </div>
@@ -855,13 +986,50 @@
 
       <Swatch>
         <div style="flex-direction: column; width: 100%">
-          <TransactionStatusbar style="margin-bottom: 5px;" />
-          <TransactionStatusbar progress={30} style="margin-bottom: 5px;" />
           <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Pending,
+              timestamp: {
+                nanos: 0,
+                secs: 1589806729,
+              },
+            })}
+            progress={0}
+            variant="caution"
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Confirmed,
+              confirmations: 2,
+              minConfirmations: 6,
+              timestamp: {
+                nanos: 0,
+                secs: 1589806729,
+              },
+            })}
+            progress={(2 / 6) * 100}
+            variant="caution"
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Failed,
+              timestamp: {
+                nanos: 0,
+                secs: 1585819617,
+              },
+            })}
             variant="negative"
-            style="margin-bottom: 5px;"
-            time="1585819617" />
-          <TransactionStatusbar variant="positive" time="1585819617" />
+            style="margin-bottom: 5px;" />
+          <TransactionStatusbar
+            text={transaction.statusText({
+              type: transaction.StateType.Settled,
+              minConfirmations: 6,
+              timestamp: {
+                nanos: 0,
+                secs: 1585819617,
+              },
+            })}
+            variant="positive" />
         </div>
       </Swatch>
     </Section>

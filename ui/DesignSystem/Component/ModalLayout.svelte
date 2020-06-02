@@ -42,7 +42,6 @@
     width: 100%;
   }
   .content.center {
-    padding: 92px 0 72px 0;
     width: 540px;
   }
 </style>
@@ -51,7 +50,7 @@
 
 {#if escapable}
   <div data-cy="modal-close-button" class="close">
-    <Icon.Cross size="big" on:click={onClose} />
+    <Icon.Cross variant="big" on:click={onClose} />
   </div>
 {/if}
 

@@ -4,7 +4,7 @@ context("routing", () => {
       it("opens on the identity creation wizard", () => {
         cy.nukeSessionState();
         cy.visit("./public/index.html");
-        cy.get('[data-cy="get-started-button"]').should("exist");
+        cy.pick("get-started-button").should("exist");
       });
     });
 
@@ -32,7 +32,7 @@ context("routing", () => {
             cy.createIdentity();
             cy.visit("./public/index.html");
 
-            cy.get('[data-cy="sidebar"] [data-cy="search"]').click();
+            cy.pick("sidebar", "search").click();
 
             cy.location().should((loc) => {
               expect(loc.hash).to.eq("#/search");

@@ -4,6 +4,7 @@
     "es6": true,
     "node": true
   },
+  "plugins": ["no-only-tests"],
   "extends": ["eslint:recommended"],
   "parserOptions": {
     "ecmaVersion": 2017,
@@ -35,6 +36,7 @@
     }
   ],
   "rules": {
+    "no-only-tests/no-only-tests": "error",
     // Disallow Unused Variables
     // https://eslint.org/docs/rules/no-unused-vars
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],

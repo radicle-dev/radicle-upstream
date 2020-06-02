@@ -1,40 +1,36 @@
 # How do we work?
 
-Our current workflow is to put our changes in feature branches which get
-submitted for review on GitHub as pull requests. Ideally a pull request is
-small and changes only one aspect of the code at a time. After a pull request
-is reviewed by at least one peer and passes all tests, it can be squash-merged
-into master.
+Our workflow is to put changes in feature branches which we submit for review
+on GitHub as pull requests. Ideally a pull request is small and changes only
+one aspect of the code at a time. After a pull request is reviewed by at least
+one peer and passes all tests, it can be squash-merged into master.
 
 💡 *We require all commits to be signed for a branch to be merged into
-master. Learn more on setting up commit signing [here][cs].*
+master. Learn more on setting up [commit signing][cs].*
 
 To automate our release process as much as possible we're using
-[Standard Version][sv] and commits on master should be formatted according to
+[Standard Version][sv]. Commits on master should be formatted according to
 the [conventional commits specification][cc].
 
 Here are a couple of examples:
 ```
-  chore: remove leftover error mod reference (#74)
-  fix: improve project creation validations (#76)
-  feat: project creation (#70)
+  fix: fix clippy on CI (#430)
+  refactor(ui): improve cypress spec reliability (#429)
+  style(ui): icon refresh (#411)
+  chore(release): 0.0.11 (#417)
+  test(ui): add missing project creation specs (#404)
+  feat(proxy): improve session (#380)
 ```
 
-The pull request ref goes in brackets at the end of the subject.
-Generally we also follow [good commit message hygene][tp].
+When a release is performed, a section in [CHANGELOG.md][ch] is automatically
+generated with all the changes from these commit messages.
 
-Work on the UI and proxy can happen in parallel. However for this to work, the
-teams working on both code bases have to agree on a common API. The definitive
-source-of-truth for this API is the proxy source code.
-
-To change or extend the API, first open an issue on GitHub, discuss what is
-needed and then propose proxy code changes which implement the API.
 
 ## UI
 
 The UI is written in JavaScript, [Svelte][se] is our [component language][cl]
 of choice and [Electron][el] wraps it all together into a native desktop
-experience. The UI code is respectively split up into [`/native`] and [`/ui`].
+experience. The UI code is split into `/native` and `/ui`.
 
 For dependency management and script execution we use `yarn`. Code formatting
 is dictated by [prettier][pr] and linting is provided by [eslint][es]. Both
@@ -42,7 +38,7 @@ linting and formatting are enforced locally on a pre-commit basis with
 [husky][hu] and [lint-staged][ls].
 
 Additionally we run the same checks as separate build steps on our CI, just to
-make sure only properly formatted and linted code lands into master.
+make sure only properly formatted and lint-free code lands into master.
 
 
 ### Running Upstream
@@ -55,7 +51,7 @@ sudo xcodebuild -license
 brew install pkgconfig nettle
 ```
 
-1. Get the code: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
+1. Get Upstream: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
 2. Install dependencies: `cd radicle-upstream && yarn install`.
 3. Start Upstream in development mode: `yarn start`.
 
@@ -75,28 +71,35 @@ to the test fixture repository.*
 
 - To run tests call: `yarn test`.
 - To troubleshoot tests via the Cypress GUI, run: `yarn test:debug`.
-- To isolate a single test for debugging purposes, use the `.only` method like
-  so:
+- To isolate a single test for debugging purposes use the [`.only` method][on].
 
-```javascript
-context("a bazillion tests in this context", () => {
-  it("does one thing", () => {
-    ...
-  });
 
-  it.only("does another thing", () => {
-    ...
-  });
+### Building an Upstream package for your platform
 
-  ...
-});
+You can build and package Upstream with: `yarn dist`. The generated package
+will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|snap}`.
+
+
+### Scripts
+
+To get a list of all available script commands, run: `yarn run`.
+Here is a list of the most commonly used ones:
+
+```sh
+yarn start            # Start Upstream in development mode
+
+yarn test             # Run Cypress end-to-end tests
+yarn test:debug       # Show the Cypress GUI, handy for visual debugging
+
+yarn dist             # Bundles Upstream into an installable package
+
+yarn release          # Start a two-step process to cut a new release, for more
+                      # details have a look at ../DEVELOPMENT.md
+
+yarn prettier:check   # Check UI code formatting
+yarn prettier:write   # Auto-format UI code
+yarn lint             # Check UI code for linting errors
 ```
-
-Then, to execute just this single test, fire up the Cypress GUI:
-`yarn test:debug` and choose the respective `.spec.js` file from the list.
-
-💡 *Don't forget to remove all `.only` methods from the tests before
-committing changes, otherwise these tests will be skipped on CI.*
 
 
 ### Design System
@@ -108,7 +111,7 @@ turn, can be composed to create rich user experiences.
 
 Most of the components defined by the design system can be conveniently seen on
 one page within Upstream by pressing <kbd>shift</kbd> + <kbd>D</kbd>. This will
-bring up the Design System Guide modal. To close the modal, hit <kbd>ESC</kbd>.
+bring up the Design System Guide modal.
 
 The purpose of the Design System Guide is to showcase all available primitives
 and components. Having them all on a single screen allows us to see how changes
@@ -201,69 +204,12 @@ Finally, our file and directory naming rules are as follows:
   - all folders in `/ui` should be named in singular form as they represent a
     type, not content.
 
-```sh
-.
-├── App.svelte                     # Root component
-├── DesignSystem
-│   ├── Component
-│   │   ├── Rad.svelte             # Simple component
-│   │   ├── Sidebar                # Folder containing Sidebar fragments
-│   │   │   ├── Avatar.svelte      # These are private to Sidebar.svelte
-│   │   │   ├── Item.svelte        # and should not be exported via index.js
-│   │   │   └── Tooltip.svelte
-│   │   ├── Sidebar.svelte
-│   │   ├── SidebarLayout.svelte   # Layout containing a Sidebar component
-│   │   └── index.js               # Exports components for public use
-│   └── Primitive
-│       ├── Button.svelte          # Single-file component
-│       ├── Icon                   # Name-spaced components
-│       │   ├── Branch.svelte
-│       │   └── index.js
-│       └── index.js               # Exports primitives for public use
-├── Screen
-│   ├── Profile.svelte             # Simple screen
-│   ├── Project                    # Project screen fragments
-│   │   ├── Feed.svelte
-│   │   └── Source.svelte
-│   ├── Project.svelte             # Data fetching and routing for Project fragments
-│   └── Wallet.svelte
-├── config.js                      # UI Configuration constants
-├── index.js                       # UI entry-point, loaded from main renderer
-├── lib                            # Reusable utilities and other business
-│   ├── hash.js                    # logic which doesn't fit in components
-│   ├── path.js
-│   └── type.js
-└── store                          # Svelte stores grouped by use-case
-    ├── notification.js
-    ├── project.js
-    └── sourceBrowser.js
-```
 
-#### State
-
-Shared state used by multiple Screen fragments or components to build a more
-complex feature should be extracted into a separate store file. A store file
-contains one or more Svelte stores and functions which act on these stores.
-
-```sh
-stores
-├── notification.js
-├── project.js
-└── sourceBrowser.js
-```
-
-
-#### CSS
+#### Styling
 
 The main entry point of the electron renderer is `public/index.html`. This is
-the file where any global styling not managed by Svelte should be imported:
-
-```html
-<link rel="stylesheet" href="reset.css" />       <!-- style resets -->
-<link rel="stylesheet" href="colors.css" />      <!-- color CSS variables -->
-<link rel="stylesheet" href="global.css" />      <!-- global CSS rules -->
-<link rel="stylesheet" href="bundle.css" />      <!-- compiled Svelte component CSS -->
-```
+the file where any global styling which is not managed by Svelte should be
+imported.
 
 To avoid extra wrappers for positioning and spacing, and to allow style
 overrides, components expose a `style` prop:
@@ -304,100 +250,21 @@ use slots:
 
 #### Colors
 
-Colors amongst other design system tokens are stored in the `tokens` folder.
-If a color gets added, removed or changed in the style guide, we have to make
-changes to `tokens/colors.js` accordingly.
-
-Read more about the colors used in Upstream in the [Color System post][cg].
-
-The design system supports multiple color palettes via themes. You can rotate
-through the available themes by pressing <kbd>SHIFT</kbd> + <kbd>C</kbd> from
-within Upstream.
-
-Entries in `colors.js` have the following shape:
-```javascript
-export const colorConfig = {
-  defaultTheme: "lightMode",
-  themes: [
-    {
-      name: "lightMode",
-      colors: [
-        { name: "primary", hex: "#ff55ff" },
-        { name: "primary-level-1", hex: "#ffd4ff" },
-        { name: "primary-level-2", hex: "#ff87ff" },
-        { name: "primary-level-6", hex: "#663b66" },
-        // ...
-      ]
-    },
-    {
-      name: "darkMode",
-      colors: [
-        { name: "primary", hex: "#ff55ff" },
-        { name: "primary-level-1", hex: "#382847" },
-        { name: "primary-level-2", hex: "#62326d" },
-        { name: "primary-level-6", hex: "#ffd4ff" },
-        // ...
-      ]
-    }
-  ]
-};
-```
-
-When `tokens/colors.js` is changed, we have to re-generate all tints and shades
-via: `yarn generate:colors`. This will update the global color CSS variables in
-`public/colors.css`. Changes to both files should be committed.
+The design system supports multiple color palettes via themes which can be
+changed in the Settings screen.
 
 Throughout the codebase we use only CSS variables. Raw color codes should not
-be used so changes to global styling can be applied in a central place.
+be used so changes to global styling can be applied in one central place:
+`public/colors.css`.
 
-```html
-<style>
-  button {
-    background-color: var(--color-foreground);
-    border-color: var(--color-caution-level-1);
-  }
-</style>
-
-<button>
-</button>
-```
-
-
-### Building an Upstream package for your platform
-
-You can build and package Upstream with: `yarn dist`. The generated package
-will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|snap}`.
-
-## Scripts
-
-To get a list of all available script commands, run: `yarn run`.
-Here is a list of the most commonly used ones:
-
-```sh
-yarn start            # Start Upstream in development mode
-
-yarn test             # Run Cypress end-to-end tests
-yarn test:debug       # Show the Cypress GUI, handy for visual debugging
-
-yarn dist             # Bundles Upstream into an installable package
-
-yarn generate:colors  # Update color CSS variables in public/colors.css from
-                      # colors.js
-
-yarn release          # Start a two-step process to cut a new release, for more
-                      # details have a look at ../DEVELOPMENT.md
-
-yarn prettier:check   # Check UI code formatting
-yarn prettier:write   # Auto-format UI code
-yarn lint             # Check UI code for linting errors
-```
+Read more about the colors used in Upstream in the [Color System post][cg].
 
 
 ## Proxy
 
-All of Upstream's business logic tying together the radicle code collaboration and
-registry protocols is provided to the UI via an HTTP API by a rust binary called
-the proxy. It uses [warp][wa] to serve a RESTish JSON API.
+All of Upstream's business logic tying together the radicle code collaboration
+and registry protocols is provided to the UI via an HTTP API by a rust binary
+called the proxy. It uses [warp][wa] to serve a RESTish JSON API.
 
 For dependency management and execution of common tasks we use [Cargo][co]. To
 get up to speed with common functionality and manifest file intricacies consult
@@ -429,71 +296,24 @@ to the test fixture repository.*
 
 Then run tests as usual: `cargo test --all-features --all-targets`.
 
-We strive for two kinds of tests: classic unit tests contained in implementation
-files and integration tests. The integration tests are meant to assert correctness
-of the API provided by the proxy, these can be found under `proxy/tests`. To find
-out where to place and how to lay out tests, check the Rust book [test chapter][rt].
+We strive for two kinds of tests: classic unit tests contained in
+implementation files and integration tests. The integration tests are meant to
+assert correctness of the API provided by the proxy, these can be found under
+`proxy/tests`. To find out where to place and how to lay out tests, check the
+Rust book [test chapter][rt].
+
 
 ### File structure
 
-The API exposes the application's domain logic. Therefore we try to treat
-it as a thin layer exposing well-typed entities. The heavy lifting is done in the
+The API exposes the application's domain logic. Therefore we try to treat it as
+a thin layer exposing well-typed entities. The heavy lifting is done in the
 modules named after the protocols we consume - [radicle-link][rl] through it
-[radicle-surf][rs], for code collaboration and [radicle-registry][rr] for global
-unique entries for users, projects and organisations. By isolating concerns this
-way, we hope to enable ease-of-contribution to downstream teams. Empowering them
-to reflect changes in their public APIs easily with code contributions to Upstream.
+[radicle-surf][rs], for code collaboration and [radicle-registry][rr] for
+global unique entries for users, projects and organisations. By isolating
+concerns this way, we hope to enable ease-of-contribution to downstream teams.
+Empowering them to reflect changes in their public APIs easily with code
+contributions to Upstream.
 
-```
-proxy/src/
-├── coco.rs
-├── env.rs
-├── error.rs
-├── http
-│   ├── control.rs
-│   ├── doc.rs
-│   ├── error.rs
-│   ├── identity.rs
-│   ├── notification.rs
-│   ├── project.rs
-│   ├── transaction.rs
-│   ├── source.rs
-│   └── user.rs
-├── http.rs
-├── identity.rs
-├── lib.rs
-├── main.rs
-├── project.rs
-└── registry.rs
-```
-
-## Scripts
-
-To get a list of all available script commands, run: `yarn run`.
-Here is a list of the most commonly used ones:
-
-```sh
-yarn start                # Start Upstream in development mode
-
-yarn test                 # Run Cypress end-to-end tests
-yarn test:debug           # Show the Cypress GUI, handy for visual debugging
-
-yarn dist                 # Bundles Upstream into an installable package
-
-yarn generate:colors      # Update color CSS variables in public/colors.css from
-                          # colors.js
-
-yarn release              # Start a two-step process to cut a new release, for more
-                          # details have a look at ../DEVELOPMENT.md
-
-yarn prettier:check       # Check UI code formatting
-yarn prettier:write       # Auto-format UI code
-yarn lint                 # Check UI code for linting errors
-
-yarn proxy:build          # Build the proxy binary
-yarn proxy:build:release  # Build the release version of the proxy, stripped of debug symbols
-yarn proxy:start          # Start only the proxy with its default configuration
-```
 
 ## CI setup
 
@@ -582,20 +402,20 @@ Cutting release v0.0.11:
 Now ask a peer to review the following pull request,
 but don't merge it just yet:
 
-  👉 https://github.com/rudolfs/test/pull/17
+  👉 https://github.com/radicle-upstream/pull/417
 
 To merge the pull request and finalize this release run:
 
-  👉 yarn release:finalize v0.0.11 17
+  👉 yarn release:finalize v0.0.11 417
 
 
-$ yarn release:finalize v0.0.11 17
+$ yarn release:finalize v0.0.11 417
 
 Finalizing release v0.0.11:
 
-  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/17/merge"
+  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/417/merge"
   ✔ git checkout master && git pull
-  ✔ git tag v0.0.11 74369ee3c078bc3688f0b668cc94a36491271d52
+  ✔ git tag v0.0.11 ed968ee61ec30a18653b621f645a6abe354d2d16
   ✔ git push --tags
 
 Release v0.0.11 successfully completed! 👏 🎉 🚀
@@ -608,6 +428,7 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [cb]: https://doc.rust-lang.org/cargo/
 [cc]: https://www.conventionalcommits.org/en/v1.0.0
 [cg]: https://radicle.community/t/color-system/166
+[ch]: CHANGELOG.md
 [cl]: https://gist.github.com/Rich-Harris/0f910048478c2a6505d1c32185b61934
 [co]: https://github.com/rust-lang/cargo
 [cs]: https://help.github.com/en/github/authenticating-to-github/signing-commits
@@ -617,6 +438,7 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [hb]: https://github.com/github/hub
 [hu]: https://github.com/typicode/husky
 [ls]: https://github.com/okonet/lint-staged
+[on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
 [rl]: https://github.com/radicle-dev/radicle-link
 [rr]: https://github.com/radicle-dev/radicle-registry
