@@ -21,8 +21,11 @@ pub struct Metadata {
     pub default_branch: String,
 }
 
-impl From<project::Project> for Metadata {
-    fn from(project_meta: project::Project) -> Self {
+impl<ST> From<project::Project<ST>> for Metadata
+where
+    ST: Clone,
+{
+    fn from(project_meta: project::Project<ST>) -> Self {
         Self {
             name: project_meta.name().to_string(),
             description: project_meta
@@ -69,8 +72,8 @@ pub struct Stats {
 }
 
 /// TODO(xla): Add documentation.
-pub async fn get<C: coco::Client>(client: &C, project_urn: &str) -> Result<Project, error::Error> {
-    let (urn, meta) = client.get_project(&project_urn).await?;
+pub fn get(peer: &coco::UserPeer, project_urn: &str) -> Result<Project, error::Error> {
+    let (urn, meta) = peer.get_project(&project_urn)?;
 
     Ok(Project {
         id: urn,

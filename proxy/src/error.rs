@@ -69,6 +69,14 @@ pub enum Error {
     #[error("the Project Name '{0}' is invalid")]
     InvalidProjectName(String),
 
+    /// Accept error from `librad`.
+    #[error(transparent)]
+    LibradAccept(#[from] librad::net::peer::AcceptError),
+
+    /// Bootstrap error from `librad`.
+    #[error(transparent)]
+    LibradBootstrap(#[from] librad::net::peer::BootstrapError),
+
     /// Originated from `librad`.
     #[error(transparent)]
     LibradRepo(#[from] librad::git::repo::Error),

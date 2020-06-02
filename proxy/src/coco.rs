@@ -1,20 +1,19 @@
 //! Abstractions and utilities for git interactions through the API.
 
-use async_trait::async_trait;
 use std::env;
-use std::str::FromStr;
 
-use librad::git;
-use librad::git::storage::Storage;
-use librad::keys;
+pub use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
 use librad::meta::user;
-use librad::paths::Paths;
-use librad::surf;
-use librad::surf::git::git2;
-use librad::uri::{self, RadUrn};
-use radicle_keystore::{Keypair, Keystore, SecretKeyExt};
+pub use librad::net;
+pub use librad::peer;
+pub use librad::paths;
+use librad::surf::vcs::git as surf;
+use librad::surf::vcs::git::git2;
+use librad::uri::RadUrn;
+use std::net::{SocketAddr, IpAddr, Ipv4Addr};
+use std::path;
 
 use crate::error;
 
@@ -24,30 +23,82 @@ pub use source::{
     Branch, Commit, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
 
-/// The set of capabilities necessary for interacting with `radicle-link`.
-#[async_trait]
-pub trait Client:
-    Keystore<
-        PublicKey = keys::PublicKey,
-        SecretKey = keys::SecretKey,
-        Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-        Error = error::Error,
-    > + entity::Resolver<project::Project>
-    + entity::Resolver<user::User>
-    + Send
-    + Sync
-{
-    /// Get the [`git::repo::Repo`] for the given `project_urn`.
-    async fn get_repo(
-        &self,
+/// `UserPeer` carries the user that is logged-in as well as the [`peer::PeerApi`] so we can
+/// interact with the protocol.
+pub struct UserPeer {
+    /// Me, myself, and I.
+    pub me: user::User<entity::Draft>, // TODO(finto): this should be signed.
+    /// The protocol API for shelling out commands.
+    pub api: net::peer::PeerApi,
+    /// The paths used to configure this Peer.
+    pub paths: paths::Paths,
+}
+
+// TODO(finto): Peer is not Sync, so we need to figure out how we share it.
+unsafe impl Sync for UserPeer {}
+
+impl UserPeer {
+    /// We create a default `UserPeer` using the `tmp_dir_path` we provide.
+    pub async fn tmp(tmp_dir_path: impl AsRef<path::Path>) -> Result<Self, error::Error> {
+        let secret = keys::SecretKey::new();
+        let me = fake_owner(secret.public());
+        let paths = paths::Paths::from_root(tmp_dir_path)?;
+        let gossip_params = Default::default();
+        let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8081);
+        // TODO(finto): could we initialise with known seeds from a cache?
+        let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
+        let disco = net::discovery::Static::new(seeds);
+
+        let peer_config = net::peer::PeerConfig {
+            key: secret,
+            paths: paths.clone(),
+            listen_addr,
+            gossip_params,
+            disco,
+        };
+
+        let peer = peer_config.try_into_peer().await?;
+        let (api, _futures) = peer.accept()?;
+        Ok(Self {
+            me,
+            api,
+            paths, // TODO(finto): See https://github.com/radicle-dev/radicle-link/issues/157
+        })
+    }
+
+    /// Fetch a browser for the `project_urn` we supplied to this function.
+    ///
+    /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
+    pub fn project_browser<'a>(
+        &'a self,
         project_urn: String,
-    ) -> Result<(git::repo::Repo, project::Project), error::Error>;
+    ) -> Result<surf::Browser<'a>, error::Error> {
+        let project_urn = project_urn.parse()?;
+        Ok(self.api.storage().browser(&project_urn)?)
+    }
+
+    /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
+    #[must_use]
+    pub fn list_projects(
+        &self,
+    ) -> Result<Vec<(RadUrn, project::Project<entity::Draft>)>, error::Error> {
+        let peers = self.api.storage().tracked(&self.me.urn())?;
+        let projects = vec![];
+        for _peer_id in peers {
+            // TODO(finto): fetch the projects via the peer id
+            todo!()
+        }
+        Ok(projects)
+    }
 
     /// Get the project found at `project_urn`.
-    async fn get_project(
+    pub fn get_project(
         &self,
-        project_urn: &str,
-    ) -> Result<(RadUrn, project::Project), error::Error>;
+        _project_urn: &str,
+    ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
+        // TODO(finto): we need the storage to be a resolver
+        todo!()
+    }
 
     /// Initialize a [`librad::project::Project`] in the location of the given `path`.
     ///
@@ -55,18 +106,26 @@ pub trait Client:
     ///
     /// Will return [`error::Error`] if the git2 repository is not present for the `path` or any of
     /// the librad interactions fail.
-    fn init_project(
+    pub fn init_project(
         &self,
-        owner: &user::User,
-        path: &str,
         name: &str,
         description: &str,
         default_branch: &str,
-    ) -> Result<(RadUrn, project::Project), error::Error>;
+    ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
+        // Set up storage
+        let storage = self.api.storage();
 
-    /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
-    #[must_use]
-    fn list_projects(&self) -> Vec<(RadUrn, project::Project)>;
+        // Create the project meta
+        let meta = project::Project::<entity::Draft>::create(name.to_string(), self.me.urn())?
+            .to_builder()
+            .set_description(description.to_string())
+            .set_default_branch(default_branch.to_string());
+        let meta = meta.build()?;
+
+        let _repo = storage.create_repo(&meta)?;
+
+        Ok((meta.urn(), meta))
+    }
 
     /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
     /// branch.
@@ -75,211 +134,12 @@ pub trait Client:
     ///
     /// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
     /// the coco project.
-    fn replicate_platinum(
+    pub fn replicate_platinum(
         &self,
         name: &str,
         description: &str,
         default_branch: &str,
-    ) -> Result<(RadUrn, project::Project), error::Error>;
-}
-
-/// The set of data and capabilities that are needed for interacting with `radicle-link`.
-/// It implements [`Client`], which is a collection of these trait capabilities. `Client` should be
-/// used by functions up the stack, while `Coco` should be passed down from the top.
-pub struct Coco<
-    K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error,
-        > + Send
-        + Sync,
-    P: entity::Resolver<project::Project>,
-    U: entity::Resolver<user::User>,
-> {
-    /// The `librad` paths.
-    paths: Paths,
-    /// Storage for where to retrieve your keys from.
-    keystore: K,
-    /// The project resolver.
-    project_resolver: P,
-    /// The user resolver.
-    user_resolver: U,
-}
-
-impl Coco<NoopKeystore, NoopProjectResolver, NoopUserResolver> {
-    /// Constructs a [`Coco`] with state being backed by a temporary directory.
-    pub fn tmp(tmp_path: &std::path::Path) -> Result<Self, error::Error> {
-        let paths = Paths::from_root(tmp_path)?;
-
-        Ok(Self {
-            paths,
-            keystore: NoopKeystore {},
-            project_resolver: NoopProjectResolver {},
-            user_resolver: NoopUserResolver {},
-        })
-    }
-}
-
-impl<K, P, U> Keystore for Coco<K, P, U>
-where
-    K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error,
-        > + Send
-        + Sync,
-    P: entity::Resolver<project::Project> + Send + Sync,
-    U: entity::Resolver<user::User> + Send + Sync,
-{
-    type PublicKey = K::PublicKey;
-    type SecretKey = K::SecretKey;
-    type Metadata = K::Metadata;
-    type Error = K::Error;
-
-    fn put_key(&mut self, key: Self::SecretKey) -> Result<(), Self::Error> {
-        self.keystore.put_key(key)
-    }
-
-    fn get_key(&self) -> Result<Keypair<Self::PublicKey, Self::SecretKey>, Self::Error> {
-        self.keystore.get_key()
-    }
-
-    fn show_key(&self) -> Result<(Self::PublicKey, Self::Metadata), Self::Error> {
-        self.keystore.show_key()
-    }
-}
-
-#[async_trait]
-impl<K, P, U> entity::Resolver<project::Project> for Coco<K, P, U>
-where
-    K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error,
-        > + Send
-        + Sync,
-    P: entity::Resolver<project::Project> + Send + Sync,
-    U: entity::Resolver<user::User> + Send + Sync,
-{
-    /// Resolve the given URN and deserialize the target `Entity`
-    async fn resolve(&self, uri: &RadUrn) -> Result<project::Project, entity::Error> {
-        self.project_resolver.resolve(uri).await
-    }
-
-    async fn resolve_revision(
-        &self,
-        uri: &RadUrn,
-        revision: u64,
-    ) -> Result<project::Project, entity::Error> {
-        self.project_resolver.resolve_revision(uri, revision).await
-    }
-}
-
-#[async_trait]
-impl<K, P, U> entity::Resolver<user::User> for Coco<K, P, U>
-where
-    K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error,
-        > + Send
-        + Sync,
-    P: entity::Resolver<project::Project> + Send + Sync,
-    U: entity::Resolver<user::User> + Send + Sync,
-{
-    /// Resolve the given URN and deserialize the target `Entity`
-    async fn resolve(&self, uri: &RadUrn) -> Result<user::User, entity::Error> {
-        self.user_resolver.resolve(uri).await
-    }
-
-    async fn resolve_revision(
-        &self,
-        uri: &RadUrn,
-        revision: u64,
-    ) -> Result<user::User, entity::Error> {
-        self.user_resolver.resolve_revision(uri, revision).await
-    }
-}
-
-#[async_trait]
-impl<K, P, U> Client for Coco<K, P, U>
-where
-    K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error,
-        > + Send
-        + Sync,
-    P: entity::Resolver<project::Project> + Send + Sync,
-    U: entity::Resolver<user::User> + Send + Sync,
-{
-    async fn get_project(
-        &self,
-        project_urn: &str,
-    ) -> Result<(RadUrn, project::Project), error::Error> {
-        let urn = uri::RadUrn::from_str(project_urn)?;
-        let meta = self.project_resolver.resolve(&urn).await?;
-
-        Ok((urn, meta))
-    }
-
-    async fn get_repo(
-        &self,
-        project_urn: String,
-    ) -> Result<(git::repo::Repo, project::Project), error::Error> {
-        let project_urn = RadUrn::from_str(&project_urn)?;
-        let keypair = self.get_key()?;
-        let project: project::Project = self.project_resolver.resolve(&project_urn).await?;
-
-        let storage = Storage::open(&self.paths, keypair.secret_key)?;
-        let repo = git::repo::Repo::open(storage, project_urn)?;
-
-        Ok((repo, project))
-    }
-
-    fn list_projects(&self) -> Vec<(RadUrn, project::Project)> {
-        todo!() // TODO(fintohaps): not implemented by link yet
-    }
-
-    fn init_project(
-        &self,
-        owner: &user::User,
-        path: &str,
-        name: &str,
-        description: &str,
-        default_branch: &str,
-    ) -> Result<(RadUrn, project::Project), error::Error> {
-        // Set up storage
-        let key = self.get_key()?.secret_key;
-        let storage = Storage::init(&self.paths, key)?;
-
-        // Fetch the owner and build the repo path
-        let path = uri::Path::from_str(path)?;
-        let urn = RadUrn::new(owner.root_hash().clone(), uri::Protocol::Git, path);
-
-        // Create the project meta
-        let meta = project::Project::new(name.to_string(), urn.clone())?
-            .to_builder()
-            .set_description(description.to_string())
-            .set_default_branch(default_branch.to_string());
-        let meta = meta.build()?;
-
-        let _repo = git::repo::Repo::create(storage, &meta)?;
-
-        Ok((urn, meta))
-    }
-
-    fn replicate_platinum(
-        &self,
-        name: &str,
-        description: &str,
-        default_branch: &str,
-    ) -> Result<(RadUrn, project::Project), error::Error> {
+    ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
         // Craft the absolute path to git-platinum fixtures.
         let mut platinum_path = env::current_dir()?;
         platinum_path.push("../fixtures/git-platinum");
@@ -300,12 +160,12 @@ where
             .clone(&platinum_from, platinum_into.as_path())
             .expect("unable to clone fixtures repo");
 
-        let platinum_surf_repo = surf::git::Repository::new(
+        let platinum_surf_repo = surf::Repository::new(
             platinum_into
                 .to_str()
                 .expect("unable to convert into string"),
         )?;
-        let platinum_browser = surf::git::Browser::new(&platinum_surf_repo)?;
+        let platinum_browser = surf::Browser::new(&platinum_surf_repo)?;
 
         let tags = platinum_browser
             .list_tags()
@@ -336,9 +196,6 @@ where
 
         // Init as rad project.
         let (id, repo) = self.init_project(
-            // TODO(xla): Construct or expect a proper user.
-            &fake_owner(),
-            platinum_into.to_str().expect("unable to get path"),
             name,
             description,
             default_branch,
@@ -352,20 +209,7 @@ where
 
         Ok((id, repo))
     }
-}
 
-impl<K, P, U> Coco<K, P, U>
-where
-    K: Keystore<
-            PublicKey = keys::PublicKey,
-            SecretKey = keys::SecretKey,
-            Metadata = <keys::SecretKey as SecretKeyExt>::Metadata,
-            Error = error::Error,
-        > + Send
-        + Sync,
-    P: entity::Resolver<project::Project> + Send + Sync,
-    U: entity::Resolver<user::User> + Send + Sync,
-{
     /// Creates a small set of projects in [`Paths`].
     ///
     /// # Errors
@@ -392,82 +236,20 @@ where
             ),
         ];
 
-        // TODO(xla): Do we need a proper owner here?
-        let owner = fake_owner();
-
         for info in infos {
             let path = format!("{}/{}/{}", root, "repos", info.0);
             std::fs::create_dir_all(path.clone())?;
 
             init_repo(path.clone())?;
-            self.init_project(&owner, &path, info.0, info.1, info.2)?;
+            self.init_project(info.0, info.1, info.2)?;
         }
 
         Ok(())
     }
 }
 
-/// Intermediate type until we have a proper implementation.
-pub struct NoopKeystore {}
-
-impl Keystore for NoopKeystore {
-    type PublicKey = keys::PublicKey;
-    type SecretKey = keys::SecretKey;
-    type Metadata = <keys::SecretKey as SecretKeyExt>::Metadata;
-    type Error = error::Error;
-
-    fn get_key(&self) -> Result<Keypair<Self::PublicKey, Self::SecretKey>, Self::Error> {
-        todo!()
-    }
-
-    fn put_key(&mut self, _key: Self::SecretKey) -> Result<(), Self::Error> {
-        todo!()
-    }
-
-    fn show_key(&self) -> Result<(Self::PublicKey, Self::Metadata), Self::Error> {
-        todo!()
-    }
-}
-
-/// Intermediate type until we have a proper implementation.
-pub struct NoopProjectResolver {}
-
-#[async_trait]
-impl entity::Resolver<project::Project> for NoopProjectResolver {
-    async fn resolve(&self, _uri: &RadUrn) -> Result<project::Project, entity::Error> {
-        todo!()
-    }
-
-    async fn resolve_revision(
-        &self,
-        _uri: &RadUrn,
-        _revision: u64,
-    ) -> Result<project::Project, entity::Error> {
-        todo!()
-    }
-}
-
-/// Intermediate type until we have a proper implementation.
-pub struct NoopUserResolver {}
-
-#[async_trait]
-impl entity::Resolver<user::User> for NoopUserResolver {
-    async fn resolve(&self, _uri: &RadUrn) -> Result<user::User, entity::Error> {
-        todo!()
-    }
-
-    async fn resolve_revision(
-        &self,
-        _uri: &RadUrn,
-        _revision: u64,
-    ) -> Result<user::User, entity::Error> {
-        todo!()
-    }
-}
-
 /// Constructs a fake user to be used as an owner of projects until we have more permanent key and
 /// user management.
-pub fn fake_owner() -> user::User {
-    let p = keys::SecretKey::new().public();
-    user::User::new("cloudhead".into(), p).expect("unable to create user")
+pub fn fake_owner(p: keys::PublicKey) -> user::User<entity::Draft> {
+    user::User::<entity::Draft>::create("cloudhead".into(), p).expect("unable to create user")
 }

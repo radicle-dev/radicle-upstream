@@ -2,11 +2,11 @@ use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
+use super::UserPeer;
 
 use librad::surf;
 use librad::surf::git::git2;
 
-use crate::coco;
 use crate::error;
 
 /// Branch name representation.
@@ -71,8 +71,8 @@ impl Commit {
     }
 }
 
-impl From<&surf::git::Commit> for Commit {
-    fn from(commit: &surf::git::Commit) -> Self {
+impl From<&surf::vcs::git::Commit> for Commit {
+    fn from(commit: &surf::vcs::git::Commit) -> Self {
         let avatar = |input: &String| {
             let mut s = DefaultHasher::new();
             input.hash(&mut s);
@@ -173,18 +173,16 @@ pub struct TreeEntry {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
-pub async fn blob<C: coco::Client>(
-    client: &C,
+pub fn blob<'a>(
+    user_peer: &UserPeer,
     project_urn: String,
+    default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
     revision: Option<String>,
     maybe_path: Option<String>,
 ) -> Result<Blob, error::Error> {
-    let (mut repo, project) = client.get_repo(project_urn).await?;
-    let locked = repo.locked();
-    let mut browser = locked.browser()?;
-
+    let mut browser = user_peer.project_browser(project_urn)?;
     // Best effort to guess the revision.
-    let revision = revision.unwrap_or_else(|| project.default_branch().to_string());
+    let revision = revision.unwrap_or_else(|| default_branch);
     browser.revspec(&revision)?;
 
     let root = browser.get_directory()?;
@@ -221,14 +219,8 @@ pub async fn blob<C: coco::Client>(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub async fn branches<C: coco::Client>(
-    client: &C,
-    project_urn: String,
-) -> Result<Vec<Branch>, error::Error> {
-    let (mut repo, _project) = client.get_repo(project_urn).await?;
-    let locked = repo.locked();
-    let browser = locked.browser()?;
-
+pub fn branches<'a>(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Branch>, error::Error> {
+    let browser = user_peer.project_browser(project_urn)?;
     let mut branches = browser
         .list_branches(None)?
         .into_iter()
@@ -246,8 +238,8 @@ pub async fn branches<C: coco::Client>(
 ///
 /// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
-    let repo = surf::git::Repository::new(repo_path)?;
-    let browser = surf::git::Browser::new(&repo)?;
+    let repo = surf::vcs::git::Repository::new(repo_path)?;
+    let browser = surf::vcs::git::Browser::new(&repo)?;
     let mut branches = browser
         .list_branches(None)?
         .into_iter()
@@ -264,16 +256,13 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub async fn commit<C: coco::Client>(
-    client: &C,
+pub fn commit<'a>(
+    user_peer: &UserPeer,
     project_urn: String,
     sha1: &str,
 ) -> Result<Commit, error::Error> {
-    let (mut repo, _project) = client.get_repo(project_urn).await?;
-    let locked = repo.locked();
-    let mut browser = locked.browser()?;
-
-    browser.commit(surf::git::Oid::from_str(sha1)?)?;
+    let mut browser = user_peer.project_browser(project_urn)?;
+    browser.commit(surf::vcs::git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
     let commit = history.first();
@@ -286,16 +275,13 @@ pub async fn commit<C: coco::Client>(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub async fn commits<C: coco::Client>(
-    client: &C,
+pub fn commits<'a>(
+    user_peer: &UserPeer,
     project_urn: String,
     branch: &str,
 ) -> Result<Vec<Commit>, error::Error> {
-    let (mut repo, _project) = client.get_repo(project_urn).await?;
-    let locked = repo.locked();
-    let mut browser = locked.browser()?;
-
-    browser.branch(surf::git::BranchName::new(branch))?;
+    let mut browser = user_peer.project_browser(project_urn)?;
+    browser.branch(surf::vcs::git::BranchName::new(branch))?;
 
     let commits = browser.get().iter().map(Commit::from).collect();
 
@@ -307,14 +293,8 @@ pub async fn commits<C: coco::Client>(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub async fn tags<C: coco::Client>(
-    client: &C,
-    project_urn: String,
-) -> Result<Vec<Tag>, error::Error> {
-    let (mut repo, _project) = client.get_repo(project_urn).await?;
-    let locked = repo.locked();
-    let browser = locked.browser()?;
-
+pub fn tags<'a>(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Tag>, error::Error> {
+    let browser = user_peer.project_browser(project_urn)?;
     let tag_names = browser.list_tags()?;
     let mut tags: Vec<Tag> = tag_names
         .into_iter()
@@ -332,17 +312,15 @@ pub async fn tags<C: coco::Client>(
 ///
 /// Will return [`error::Error`] if any of the surf interactions fail.
 /// TODO(fintohaps): default branch fall back from Browser
-pub async fn tree<C: coco::Client>(
-    client: &C,
+pub fn tree<'a>(
+    user_peer: &UserPeer,
     project_urn: String,
+    default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
     maybe_revision: Option<String>,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, error::Error> {
-    let (mut repo, project) = client.get_repo(project_urn).await?;
-    let locked = repo.locked();
-    let mut browser = locked.browser()?;
-
-    let revision = maybe_revision.unwrap_or_else(|| project.default_branch().to_string());
+    let mut browser = user_peer.project_browser(project_urn)?;
+    let revision = maybe_revision.unwrap_or_else(|| default_branch);
     let prefix = maybe_prefix.unwrap_or_default();
 
     browser.revspec(&revision)?;

@@ -22,17 +22,16 @@ mod transaction;
 mod user;
 
 /// Main entry point for HTTP API.
-pub fn api<C, R>(
-    coco: C,
+pub fn api<R>(
+    peer: coco::UserPeer,
     registry: R,
     store: kv::Store,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    C: coco::Client + 'static,
     R: registry::Cache + registry::Client + 'static,
 {
-    let coco = Arc::new(RwLock::new(coco));
+    let peer = Arc::new(RwLock::new(peer));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
@@ -41,24 +40,24 @@ where
         avatar::get_filter()
             .or(control::routes(
                 enable_control,
-                Arc::clone(&coco),
+                Arc::clone(&peer),
                 Arc::clone(&registry),
                 Arc::clone(&store),
             ))
             .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
             .or(notification::filters(subscriptions.clone()))
             .or(org::routes(
-                Arc::clone(&coco),
+                Arc::clone(&peer),
                 Arc::clone(&registry),
                 subscriptions.clone(),
             ))
             .or(project::filters(
-                Arc::clone(&coco),
+                Arc::clone(&peer),
                 Arc::clone(&registry),
                 subscriptions.clone(),
             ))
             .or(session::routes(Arc::clone(&registry), Arc::clone(&store)))
-            .or(source::routes(Arc::clone(&coco)))
+            .or(source::routes(Arc::clone(&peer)))
             .or(transaction::filters(Arc::clone(&registry)))
             .or(user::routes(registry, store, subscriptions)),
     );

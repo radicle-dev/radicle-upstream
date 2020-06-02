@@ -11,50 +11,44 @@ use crate::http;
 use crate::identity;
 
 /// Prefixed filters.
-pub fn routes<C>(
-    coco: http::Shared<C>,
+pub fn routes(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path("source").and(
-        blob_filter(Arc::clone(&coco))
-            .or(branches_filter(Arc::clone(&coco)))
-            .or(commit_filter(Arc::clone(&coco)))
-            .or(commits_filter(Arc::clone(&coco)))
+        blob_filter(Arc::clone(&peer))
+            .or(branches_filter(Arc::clone(&peer)))
+            .or(commit_filter(Arc::clone(&peer)))
+            .or(commits_filter(Arc::clone(&peer)))
             .or(local_branches_filter())
-            .or(revisions_filter(Arc::clone(&coco)))
-            .or(tags_filter(Arc::clone(&coco)))
-            .or(tree_filter(coco)),
+            .or(revisions_filter(Arc::clone(&peer)))
+            .or(tags_filter(Arc::clone(&peer)))
+            .or(tree_filter(peer)),
     )
 }
 
 /// Combination of all source filters.
 #[cfg(test)]
-fn filters<C>(coco: http::Shared<C>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
+fn filters(peer: http::Shared<coco::UserPeer>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 {
-    blob_filter(Arc::clone(&coco))
-        .or(branches_filter(Arc::clone(&coco)))
-        .or(commit_filter(Arc::clone(&coco)))
-        .or(commits_filter(Arc::clone(&coco)))
+    blob_filter(Arc::clone(&peer))
+        .or(branches_filter(Arc::clone(&peer)))
+        .or(commit_filter(Arc::clone(&peer)))
+        .or(commits_filter(Arc::clone(&peer)))
         .or(local_branches_filter())
-        .or(revisions_filter(Arc::clone(&coco)))
-        .or(tags_filter(Arc::clone(&coco)))
-        .or(tree_filter(coco))
+        .or(revisions_filter(Arc::clone(&peer)))
+        .or(tags_filter(Arc::clone(&peer)))
+        .or(tree_filter(peer))
 }
 
 /// `GET /blob/<project_id>/<revision>/<path...>`
-fn blob_filter<C>(
-    coco: http::Shared<C>,
+fn blob_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path("blob")
         .and(warp::get())
-        .and(super::with_shared(coco))
+        .and(super::with_shared(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -80,15 +74,13 @@ where
 }
 
 /// `GET /branches/<project_id>`
-fn branches_filter<C>(
-    coco: http::Shared<C>,
+fn branches_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path("branches")
         .and(warp::get())
-        .and(super::with_shared(coco))
+        .and(super::with_shared(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -109,15 +101,13 @@ where
 }
 
 /// `GET /commit/<project_id>/<sha1>`
-fn commit_filter<C>(
-    coco: http::Shared<C>,
+fn commit_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path("commit")
         .and(warp::get())
-        .and(super::with_shared(coco))
+        .and(super::with_shared(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -136,15 +126,13 @@ where
 }
 
 /// `GET /commits/<project_id>/<branch>`
-fn commits_filter<C>(
-    coco: http::Shared<C>,
+fn commits_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path("commits")
         .and(warp::get())
-        .and(super::with_shared(coco))
+        .and(super::with_shared(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -190,15 +178,13 @@ fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejectio
 }
 
 /// `GET /revisions/<project_id>`
-fn revisions_filter<C>(
-    coco: http::Shared<C>,
+fn revisions_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path("revisions")
         .and(warp::get())
-        .and(super::with_shared(coco))
+        .and(super::with_shared(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -221,15 +207,13 @@ where
 }
 
 /// `GET /tags/<project_id>`
-fn tags_filter<C>(
-    coco: http::Shared<C>,
+fn tags_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path("tags")
         .and(warp::get())
-        .and(http::with_shared(coco))
+        .and(http::with_shared(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -248,15 +232,13 @@ where
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
-fn tree_filter<C>(
-    coco: http::Shared<C>,
+fn tree_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path("tree")
         .and(warp::get())
-        .and(http::with_shared(coco))
+        .and(http::with_shared(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -292,60 +274,54 @@ mod handler {
     use crate::identity;
 
     /// Fetch a [`coco::Blob`].
-    pub async fn blob<C>(
-        coco: http::Shared<C>,
+    pub async fn blob(
+        peer: http::Shared<coco::UserPeer>,
         project_urn: String,
         super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection>
-    where
-        C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let blob = coco::blob(coco, project_urn, revision, path).await?;
+        let peer = &*peer.read().await;
+        let default_branch = "master".to_string();
+        let blob = coco::blob(&peer, project_urn, default_branch, revision, path)?;
 
         Ok(reply::json(&blob))
     }
 
     /// Fetch the list [`coco::Branch`].
-    pub async fn branches<C>(
-        coco: http::Shared<C>,
+    pub async fn branches(
+        peer: http::Shared<coco::UserPeer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
     where
-        C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let branches = coco::branches(coco, project_urn).await?;
+        let peer = &*peer.read().await;
+        let branches = coco::branches(&peer, project_urn)?;
 
         Ok(reply::json(&branches))
     }
 
     /// Fetch a [`coco::Commit`].
-    pub async fn commit<C>(
-        coco: http::Shared<C>,
+    pub async fn commit(
+        peer: http::Shared<coco::UserPeer>,
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection>
-    where
-        C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let commit = coco::commit(coco, project_urn, &sha1).await?;
+        let peer = &*peer.read().await;
+        let commit = coco::commit(&peer, project_urn, &sha1)?;
 
         Ok(reply::json(&commit))
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
-    pub async fn commits<C>(
-        coco: http::Shared<C>,
+    pub async fn commits(
+        peer: http::Shared<coco::UserPeer>,
         project_urn: String,
         branch: String,
     ) -> Result<impl Reply, Rejection>
-    where
-        C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let commits = coco::commits(coco, project_urn, &branch).await?;
+        let peer = &*peer.read().await;
+        let commits = coco::commits(&peer, project_urn, &branch)?;
 
         Ok(reply::json(&commits))
     }
@@ -358,16 +334,14 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions<C>(
-        coco: http::Shared<C>,
+    pub async fn revisions(
+        peer: http::Shared<coco::UserPeer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
-    where
-        C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let branches = coco::branches(coco, project_urn.clone()).await?;
-        let tags = coco::tags(coco, project_urn).await?;
+        let peer = &*peer.read().await;
+        let branches = coco::branches(&peer, project_urn.clone())?;
+        let tags = coco::tags(&peer, project_urn)?;
         let revs = ["cloudhead", "rudolfs", "xla"]
             .iter()
             .map(|handle| super::Revision {
@@ -391,30 +365,27 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags<C>(
-        coco: http::Shared<C>,
+    pub async fn tags(
+        peer: http::Shared<coco::UserPeer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
-    where
-        C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let tags = coco::tags(coco, project_urn).await?;
+        let peer = &*peer.read().await;
+        let tags = coco::tags(&peer, project_urn)?;
 
         Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
-    pub async fn tree<C>(
-        coco: http::Shared<C>,
+    pub async fn tree(
+        peer: http::Shared<coco::UserPeer>,
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection>
-    where
-        C: coco::Client,
     {
-        let coco = &*coco.read().await;
-        let tree = coco::tree(coco, project_urn, revision, prefix).await?;
+        let peer = &*peer.read().await;
+        let default_branch = "master".to_string();
+        let tree = coco::tree(&peer, project_urn, default_branch, revision, prefix)?;
 
         Ok(reply::json(&tree))
     }
@@ -754,14 +725,14 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
-    use crate::coco::{self, Client as _};
+    use crate::coco;
     use crate::error;
     use crate::identity;
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
             (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
         let revision = "master";
@@ -778,14 +749,15 @@ mod test {
             .reply(&api)
             .await;
 
+        let default_branch = "master".to_string(); // TODO(finto): need to change this
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = coco::blob(
             &*client.read().await,
             urn.to_string(),
+            default_branch.clone(),
             Some(revision.to_string()),
             Some(path.to_string()),
-        )
-        .await?;
+        )?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -842,10 +814,10 @@ mod test {
         let want = coco::blob(
             &*client.read().await,
             urn.to_string(),
+            default_branch,
             Some(revision.to_string()),
             Some(path.to_string()),
-        )
-        .await?;
+        )?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -883,7 +855,7 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
             (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
 
@@ -895,7 +867,7 @@ mod test {
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::branches(&*client.read().await, urn.to_string()).await?;
+        let want = coco::branches(&*client.read().await, urn.to_string())?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -910,7 +882,7 @@ mod test {
     #[tokio::test]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
             (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
 
@@ -924,7 +896,7 @@ mod test {
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::commit(&*client.read().await, urn.to_string(), sha1).await?;
+        let want = coco::commit(&*client.read().await, urn.to_string(), sha1)?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -954,7 +926,7 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
             (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
 
@@ -969,14 +941,13 @@ mod test {
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::commits(&*client.read().await, urn.to_string(), branch).await?;
+        let want = coco::commits(&*client.read().await, urn.to_string(), branch)?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
         assert_eq!(have.as_array().unwrap().len(), 14);
 
         let head_commit = coco::commit(&*client.read().await, urn.to_string(), head)
-            .await
             .unwrap();
 
         assert_eq!(
@@ -991,7 +962,7 @@ mod test {
     #[tokio::test]
     async fn local_branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
 
         let path = "../fixtures/git-platinum";
         let api = super::filters(Arc::clone(&client));
@@ -1023,7 +994,7 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) = (&*client.read().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .unwrap();
@@ -1037,8 +1008,8 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = {
-            let branches = coco::branches(&*client.read().await, urn.to_string()).await?;
-            let tags = coco::tags(&*client.read().await, urn.to_string()).await?;
+            let branches = coco::branches(&*client.read().await, urn.to_string())?;
+            let tags = coco::tags(&*client.read().await, urn.to_string())?;
             ["cloudhead", "rudolfs", "xla"]
                 .iter()
                 .map(|handle| super::Revision {
@@ -1139,7 +1110,7 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) = (&*client.read().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .unwrap();
@@ -1152,7 +1123,8 @@ mod test {
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::tags(&*client.read().await, urn.to_string()).await?;
+        let peer = &*client.read().await;
+        let want = coco::tags(&peer, urn.to_string())?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
@@ -1167,7 +1139,7 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Coco::tmp(tmp_dir.path())?));
+        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
             (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
 
@@ -1187,13 +1159,16 @@ mod test {
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
+
+        let client = &*client.read().await;
+        let default_branch = "master".to_string(); // TODO(finto): need to change this
         let want = coco::tree(
-            &*client.read().await,
+            client,
             urn.to_string(),
+            default_branch,
             Some(revision.to_string()),
             Some(prefix.to_string()),
-        )
-        .await?;
+        )?;
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));

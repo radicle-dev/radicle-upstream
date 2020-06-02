@@ -10,15 +10,14 @@ use crate::http;
 use crate::registry;
 
 /// Prefixed control filters.
-pub fn routes<R, C>(
+pub fn routes<R>(
     enable: bool,
-    coco: http::Shared<C>,
+    peer: http::Shared<coco::UserPeer>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
-    C: coco::Client,
 {
     path("control")
         .map(move || enable)
@@ -31,8 +30,8 @@ where
         })
         .untuple_one()
         .and(
-            create_project_filter(Arc::clone(&coco))
-                .or(nuke_coco_filter(coco))
+            create_project_filter(Arc::clone(&peer))
+                .or(nuke_coco_filter(peer))
                 .or(nuke_registry_filter(registry))
                 .or(nuke_session_filter(store)),
         )
@@ -41,42 +40,37 @@ where
 /// Combination of all control filters.
 #[allow(dead_code)]
 fn filters<R, C>(
-    coco: http::Shared<C>,
+    peer: http::Shared<coco::UserPeer>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
-    C: coco::Client,
 {
-    create_project_filter(Arc::clone(&coco))
-        .or(nuke_coco_filter(coco))
+    create_project_filter(Arc::clone(&peer))
+        .or(nuke_coco_filter(peer))
         .or(nuke_registry_filter(registry))
         .or(nuke_session_filter(store))
 }
 
 /// POST /nuke/create-project
-fn create_project_filter<C>(
-    coco: http::Shared<C>,
+fn create_project_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path!("create-project")
-        .and(super::with_shared(coco))
+        .and(super::with_shared(peer))
         .and(warp::body::json())
         .and_then(handler::create_project)
 }
 
 /// GET /nuke/coco
-fn nuke_coco_filter<C>(
-    coco: http::Shared<C>,
+fn nuke_coco_filter(
+    peer: http::Shared<coco::UserPeer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    C: coco::Client,
 {
     path!("nuke" / "coco")
-        .and(super::with_shared(coco))
+        .and(super::with_shared(peer))
         .and_then(handler::nuke_coco)
 }
 
@@ -113,17 +107,15 @@ mod handler {
     use crate::session;
 
     /// Create a project from the fixture repo.
-    pub async fn create_project<C>(
-        coco: http::Shared<C>,
+    pub async fn create_project(
+        peer: http::Shared<coco::UserPeer>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
-    where
-        C: coco::Client,
     {
-        let coco = coco.read().await;
+        let peer = peer.read().await;
 
         let (id, meta) =
-            coco.replicate_platinum(&input.name, &input.description, &input.default_branch)?;
+            peer.replicate_platinum(&input.name, &input.description, &input.default_branch)?;
 
         Ok(reply::with_status(
             reply::json(&project::Project {
@@ -142,9 +134,7 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco<C>(_coco: http::Shared<C>) -> Result<impl Reply, Rejection>
-    where
-        C: coco::Client,
+    pub async fn nuke_coco(_peer: http::Shared<coco::UserPeer>) -> Result<impl Reply, Rejection>
     {
         // let tmp = coco::Coco::tmp()?;
         // let mut coco: coco::Coco = &mut *coco.write().await;
