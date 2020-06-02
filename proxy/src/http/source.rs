@@ -974,13 +974,7 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!([
-                "dev",
-                "master",
-            ]),
-        );
+        assert_eq!(have, json!(["dev", "master",]),);
     }
 
     #[tokio::test]
