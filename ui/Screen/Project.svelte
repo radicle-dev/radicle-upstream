@@ -62,7 +62,7 @@
       looseActiveStateMatching: false,
     },
     {
-      icon: Icon.Revisions,
+      icon: Icon.Revision,
       title: "Revisions",
       href: path.projectRevisions(projectId),
       looseActiveStateMatching: false,
@@ -78,7 +78,7 @@
     },
     {
       title: "New revision",
-      icon: Icon.Revisions,
+      icon: Icon.Revision,
       event: () => console.log("event(new-revision)"),
     },
   ];
