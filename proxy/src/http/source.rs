@@ -979,9 +979,6 @@ mod test {
             json!([
                 "dev",
                 "master",
-                "origin/HEAD",
-                "origin/dev",
-                "origin/master"
             ]),
         );
     }

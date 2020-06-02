@@ -14,6 +14,7 @@ use librad::peer;
 use librad::project;
 use librad::surf;
 use librad::surf::git::git2;
+use librad::surf::git::BranchType;
 
 use crate::error;
 
@@ -263,7 +264,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
     let repo = surf::git::Repository::new(repo_path)?;
     let browser = surf::git::Browser::new(repo)?;
     let mut branches = browser
-        .list_branches(None)?
+        .list_branches(Some(BranchType::Local))?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
