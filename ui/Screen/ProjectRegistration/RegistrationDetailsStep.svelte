@@ -5,7 +5,6 @@
 
   import * as notification from "../../src/notification.ts";
   import { getOrgProject, Domain } from "../../src/project.ts";
-  import { session } from "../../src/session.ts";
 
   import { Text, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
@@ -15,6 +14,8 @@
   export let projectId = null;
   export let domainId = null;
   export let projectName = null;
+
+  export let identity = null;
 
   export let projects = null;
   export let orgs = null;
@@ -37,13 +38,13 @@
 
   const identityOption = {
     variant: "avatar",
-    value: $session.data.identity.registered,
+    value: identity.registered,
     type: Domain.User,
     avatarProps: {
       variant: "circle",
-      title: $session.data.identity.registered,
-      avatarFallback: $session.data.identity.avatarFallback,
-      imageUrl: $session.data.identity.metadata.avatarUrl,
+      title: identity.registered,
+      avatarFallback: identity.avatarFallback,
+      imageUrl: identity.metadata.avatarUrl,
     },
   };
 

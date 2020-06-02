@@ -40,6 +40,7 @@
   const wallet = () => transaction.formatPayer(session.identity);
 
   // TODO(sos): coordinate message format for project registration with proxy
+  // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
     messages: [
       {
@@ -79,7 +80,7 @@
 
         {#if showRegistrationDetails === true}
           <RegistrationDetailsStep
-            {session}
+            identity={session.identity}
             {projects}
             {skipNamePreselection}
             orgs={session.orgs}
