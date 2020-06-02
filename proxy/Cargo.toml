@@ -35,10 +35,6 @@ warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", featur
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "be2d757ed19877c399d7a25ef8e25471edd26a03"
 
-[dependencies.radicle-keystore]
-git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "be2d757ed19877c399d7a25ef8e25471edd26a03"
-
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "a94b22bb5bcdc8d70d059d69c364f061d13e0741"
