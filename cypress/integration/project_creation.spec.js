@@ -1,54 +1,60 @@
 import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
 
-const withEmptyRepositoryStub = async (callback) => {
-  const pwd = await cy.exec("pwd").stdout;
-  const emptyDirectoryPath = `${pwd}/fixtures/empty-repo`;
+const withEmptyRepositoryStub = (callback) => {
+  cy.exec("pwd").then((result) => {
+    const pwd = result.stdout;
+    const emptyDirectoryPath = `${pwd}/fixtures/empty-repo`;
 
-  await cy.exec(`rm -rf ${emptyDirectoryPath}`);
-  await cy.exec(`mkdir ${emptyDirectoryPath}`);
+    cy.exec(`rm -rf ${emptyDirectoryPath}`);
+    cy.exec(`mkdir ${emptyDirectoryPath}`);
 
-  // stub native call and return the directory path to the UI
-  const appWindow = await cy.window();
-  appWindow.electron = {
-    ipcRenderer: {
-      invoke: (msg) => {
-        if (msg === DIALOG_SHOWOPENDIALOG) {
-          return emptyDirectoryPath;
-        }
-      },
-    },
-  };
+    // stub native call and return the directory path to the UI
+    cy.window().then((appWindow) => {
+      appWindow.electron = {
+        ipcRenderer: {
+          invoke: (msg) => {
+            if (msg === DIALOG_SHOWOPENDIALOG) {
+              return emptyDirectoryPath;
+            }
+          },
+        },
+      };
+    });
 
-  await callback();
+    callback();
 
-  // clean up the fixture
-  await cy.exec(`rm -rf ${emptyDirectoryPath}`);
+    // clean up the fixture
+    cy.exec(`rm -rf ${emptyDirectoryPath}`);
+  });
 };
 
-const withPlatinumStub = async (callback) => {
-  const pwd = await cy.exec("pwd").result;
-  const platinumPath = `${pwd}/fixtures/git-platinum-copy`;
+const withPlatinumStub = (callback) => {
+  cy.exec("pwd").then((result) => {
+    const pwd = result.stdout;
+    const platinumPath = `${pwd}/fixtures/git-platinum-copy`;
 
-  await cy.exec(`rm -rf ${platinumPath}`);
-  await cy.exec(
-    `git clone ${pwd}/.git/modules/fixtures/git-platinum ${platinumPath}`
-  );
+    cy.exec(`rm -rf ${platinumPath}`);
+    cy.exec(
+      `git clone ${pwd}/.git/modules/fixtures/git-platinum ${platinumPath}`
+    );
 
-  // stub native call and return the directory path to the UI
-  const appWindow = await cy.window();
-  appWindow.electron = {
-    ipcRenderer: {
-      invoke: (msg) => {
-        if (msg === DIALOG_SHOWOPENDIALOG) {
-          return platinumPath;
-        }
-      },
-    },
-  };
+    // stub native call and return the directory path to the UI
+    cy.window().then((appWindow) => {
+      appWindow.electron = {
+        ipcRenderer: {
+          invoke: (msg) => {
+            if (msg === DIALOG_SHOWOPENDIALOG) {
+              return platinumPath;
+            }
+          },
+        },
+      };
+    });
 
-  await callback();
+    callback();
 
-  await cy.exec(`rm -rf ${platinumPath}`);
+    cy.exec(`rm -rf ${platinumPath}`);
+  });
 };
 
 beforeEach(() => {
