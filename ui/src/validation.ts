@@ -16,7 +16,6 @@ type ValidationState =
 
 export interface ValidationStore extends Readable<ValidationState> {
   validate: (input: string) => void;
-  updateInput: (input: string) => void;
 }
 
 // TODO(sos): While we're figuring out consistent validations, this method makes
@@ -54,7 +53,7 @@ export const createValidationStore = (constraints: FormatConstraints, remoteVali
   const { subscribe, update } = internalStore
   let inputStore: Writable<string> | undefined = undefined
 
-  const validate = async (input: string): Promise<void> => {
+  const runValidations = async (input: string): Promise<void> => {
     // Always start with Loading
     update(() => { return { status: ValidationStatus.Loading, input: input } })
 
@@ -94,10 +93,10 @@ export const createValidationStore = (constraints: FormatConstraints, remoteVali
     update(() => { return { status: ValidationStatus.Success } })
   }
 
-  const updateInput = (input: string): void => {
+  const validate = (input: string): void => {
     if (!inputStore) {
       inputStore = writable(input)
-      inputStore.subscribe((input: string) => { validate(input) })
+      inputStore.subscribe((input: string) => { runValidations(input) })
       return
     }
     inputStore.set(input)
@@ -105,7 +104,6 @@ export const createValidationStore = (constraints: FormatConstraints, remoteVali
 
   return {
     subscribe,
-    validate,
-    updateInput
+    validate
   }
 }
