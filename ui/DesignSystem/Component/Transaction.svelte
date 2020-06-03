@@ -17,8 +17,8 @@
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
 
-  export let transaction = null;
-  export let payer = null;
+  export let transaction = null,
+    payer = null;
   let avatar;
 
   const subject = formatSubject(transaction.messages[0]);

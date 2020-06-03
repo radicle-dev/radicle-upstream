@@ -88,8 +88,7 @@ const update = (msg: Msg): void => {
 export const registerMemberTransaction = (
   orgId: string,
   handle: string
-): transaction.Transaction => ({
-  id: "",
+) => ({
   messages: [
     {
       type: transaction.MessageType.MemberRegistration,
@@ -157,7 +156,7 @@ export const memberHandleValidationStore = (): validation.ValidationStore =>
 
 // MOCKS
 
-type MemberList = { handle: string; pending: boolean}[]
+type MemberList = { handle: string; pending: boolean }[]
 
 // TODO(sos): replace with actual members
 export const mockMemberList: MemberList = [

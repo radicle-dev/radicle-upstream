@@ -13,9 +13,8 @@
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
 
-  import { projects as projectStore } from "../src/project.ts";
+  import { register, projects as projectStore } from "../src/project.ts";
   import * as transaction from "../src/transaction.ts";
-  import * as project from "../src/project.ts";
 
   export let params = null;
 
@@ -34,14 +33,14 @@
   // summary
 
   const onSubmitTransaction = () => {
-    project.register(domainId, projectName, projectId);
-
+    register(domainId, projectName, projectId);
     pop();
   };
 
   const wallet = () => transaction.formatPayer(session.identity);
 
   // TODO(sos): coordinate message format for project registration with proxy
+  // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
     messages: [
       {
@@ -81,7 +80,7 @@
 
         {#if showRegistrationDetails === true}
           <RegistrationDetailsStep
-            {session}
+            identity={session.identity}
             {projects}
             {skipNamePreselection}
             orgs={session.orgs}
@@ -95,7 +94,7 @@
               domainAvatar = event.detail.domainAvatar;
             }} />
         {:else}
-          <Transaction payer={wallet()} transaction={tx()} />
+          <Transaction transaction={tx()} payer={wallet()} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

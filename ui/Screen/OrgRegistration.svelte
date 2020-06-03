@@ -19,7 +19,7 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
-  let orgId, transaction, subject, payer, avatarFallback, showAvatar;
+  let avatarFallback, orgId, payer, showAvatar, subject, transaction;
   let state = RegistrationFlowState.Preparation;
 
   // Create a new validation store

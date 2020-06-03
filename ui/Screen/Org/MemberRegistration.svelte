@@ -1,12 +1,12 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import { session } from "../../src/session.ts";
   import {
     RegistrationFlowState,
     registerMemberTransaction,
     memberHandleValidationStore,
   } from "../../src/org.ts";
+  import { session } from "../../src/session.ts";
   import { formatPayer } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
@@ -17,11 +17,14 @@
     Transaction,
   } from "../../DesignSystem/Component";
 
+  export let params = null;
+  const orgId = params.id;
+
   let state = RegistrationFlowState.Preparation;
-  let userHandle,
-    transaction,
+  let payer,
     subject,
-    payer,
+    transaction,
+    userHandle,
     validating = false;
   const validation = memberHandleValidationStore();
 
@@ -29,7 +32,7 @@
     switch (state) {
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
-          transaction = registerMemberTransaction("monadic", userHandle);
+          transaction = registerMemberTransaction(orgId, userHandle);
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }
