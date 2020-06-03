@@ -16,7 +16,8 @@ describe("fetching an org", () => {
           r: 255, g: 67, b: 34
         },
         emoji: "🔥"
-      }
+      },
+      members: [{handle: "rafalca"}]
     })
   })
 })

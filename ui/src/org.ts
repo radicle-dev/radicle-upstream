@@ -12,6 +12,7 @@ export interface Org {
   id: string;
   shareableEntityIdentifier: string;
   avatarFallback: avatar.EmojiAvatar;
+  members: [user.User];
 }
 
 export interface Project {
@@ -62,6 +63,10 @@ type Msg = Fetch | FetchProjectList;
 
 interface RegisterInput {
   id: string;
+}
+
+interface RegisterMemberInput {
+  handle: string;
 }
 
 const update = (msg: Msg): void => {
@@ -119,6 +124,8 @@ export const fetchProjectList = event.create<Kind, Msg>(
 );
 export const register = (id: string): Promise<transaction.Transaction> =>
   api.post<RegisterInput, transaction.Transaction>(`orgs`, { id });
+export const registerMember = (orgId: string, handle: string): Promise<transaction.Transaction> =>
+  api.post<RegisterMemberInput, transaction.Transaction>(`orgs/${orgId}/members`, { handle });
 
 // ID validation
 const VALID_ID_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
@@ -153,23 +160,3 @@ export const memberHandleValidationStore = (): validation.ValidationStore =>
     validationMessage: "Cannot find this user"
   });
 
-
-// MOCKS
-
-type MemberList = { handle: string; pending: boolean }[]
-
-// TODO(sos): replace with actual members
-export const mockMemberList: MemberList = [
-  {
-    handle: "eisenia_fetida",
-    pending: false
-  },
-  {
-    handle: "eisenia_hortensis",
-    pending: true
-  },
-  {
-    handle: "eisenia_andrei",
-    pending: false
-  }
-]

@@ -3,6 +3,7 @@
 
   import {
     RegistrationFlowState,
+    registerMember,
     registerMemberTransaction,
     memberHandleValidationStore,
   } from "../../src/org.ts";
@@ -38,6 +39,7 @@
         }
         break;
       case RegistrationFlowState.Confirmation:
+        registerMember(orgId, userHandle);
         pop();
     }
   };
