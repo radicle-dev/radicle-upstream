@@ -43,12 +43,22 @@ make sure only properly formatted and lint-free code lands into master.
 
 ### Running Upstream
 
-On macOS you'll have to install some external dependencies, to be able to
-compile everything:
+You'll have to install some external dependencies to be able to compile
+everything.
+
+On macOS:
 ```
 xcode-select --install
 sudo xcodebuild -license
 brew install pkgconfig nettle
+```
+
+On Debian/Ubuntu:
+```
+sudo apt-get install libssl-dev
+sudo apt-get install libgmp3-dev
+sudo apt-get install m4
+sudo apt-get install clang
 ```
 
 1. Get Upstream: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
