@@ -25,7 +25,10 @@ where
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(Arc::clone(&peer), Arc::clone(&registry)))
+            .or(get_projects_filter(
+                Arc::clone(&peer),
+                Arc::clone(&registry),
+            ))
             .or(register_filter(
                 Arc::clone(&registry),
                 subscriptions.clone(),
@@ -622,11 +625,9 @@ mod test {
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
-        let (urn, _meta) = (coco_client.write().await).init_project(
-            project_name,
-            project_description,
-            default_branch,
-        ).await?;
+        let (urn, _meta) = (coco_client.write().await)
+            .init_project(project_name, project_description, default_branch)
+            .await?;
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);

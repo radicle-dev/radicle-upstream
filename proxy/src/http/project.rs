@@ -32,8 +32,7 @@ where
 /// `POST /projects`
 fn create_filter(
     peer: http::Shared<coco::UserPeer>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-{
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
         .and(http::with_shared(peer))
@@ -58,8 +57,7 @@ fn create_filter(
 /// `GET /projects/<id>`
 fn get_filter(
     peer: http::Shared<coco::UserPeer>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-{
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("projects")
         .and(warp::get())
         .and(http::with_shared(peer))
@@ -88,8 +86,7 @@ fn get_filter(
 /// `GET /projects`
 fn list_filter(
     peer: http::Shared<coco::UserPeer>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-{
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
         .and(http::with_shared(peer))
@@ -158,15 +155,16 @@ mod handler {
     pub async fn create(
         peer: http::Shared<coco::UserPeer>,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection>
-    {
+    ) -> Result<impl Reply, Rejection> {
         let mut peer = peer.write().await;
 
-        let (id, meta) = peer.init_project(
-            &input.metadata.name,
-            &input.metadata.description,
-            &input.metadata.default_branch,
-        ).await?;
+        let (id, meta) = peer
+            .init_project(
+                &input.metadata.name,
+                &input.metadata.description,
+                &input.metadata.default_branch,
+            )
+            .await?;
 
         let shareable_entity_identifier = format!("%{}", id);
         Ok(reply::with_status(
@@ -186,15 +184,16 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(peer: http::Shared<coco::UserPeer>, urn: String) -> Result<impl Reply, Rejection>
-    {
+    pub async fn get(
+        peer: http::Shared<coco::UserPeer>,
+        urn: String,
+    ) -> Result<impl Reply, Rejection> {
         let peer = &*peer.read().await;
         Ok(reply::json(&project::get(peer, &urn).await?))
     }
 
     /// List all known projects.
-    pub async fn list(peer: http::Shared<coco::UserPeer>) -> Result<impl Reply, Rejection>
-    {
+    pub async fn list(peer: http::Shared<coco::UserPeer>) -> Result<impl Reply, Rejection> {
         let peer = peer.read().await;
         let projects = peer
             .list_projects()?
@@ -590,11 +589,9 @@ mod test {
         let path = repo_dir.path().to_str().unwrap().to_string();
         coco::init_repo(path.clone())?;
 
-        let (urn, _meta) = coco_client.init_project(
-            "Upstream",
-            "Desktop client for radicle.",
-            "master",
-        ).await?;
+        let (urn, _meta) = coco_client
+            .init_project("Upstream", "Desktop client for radicle.", "master")
+            .await?;
         let project = project::get(&coco_client, &urn.to_string()).await?;
 
         let api = super::filters(
@@ -625,7 +622,9 @@ mod test {
         };
         let subscriptions = notification::Subscriptions::default();
 
-        coco_client.setup_fixtures(tmp_dir.path().as_os_str().to_str().unwrap()).await?;
+        coco_client
+            .setup_fixtures(tmp_dir.path().as_os_str().to_str().unwrap())
+            .await?;
 
         let projects = coco_client
             .list_projects()?

@@ -1,8 +1,8 @@
+use super::UserPeer;
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
-use super::UserPeer;
 
 use librad::surf;
 use librad::surf::git::git2;
@@ -221,7 +221,10 @@ pub fn blob<'a>(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches<'a>(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Branch>, error::Error> {
+pub fn branches<'a>(
+    user_peer: &UserPeer,
+    project_urn: String,
+) -> Result<Vec<Branch>, error::Error> {
     let repo = user_peer.project_repo(project_urn)?;
     let browser = surf::vcs::git::Browser::new(&repo)?;
 

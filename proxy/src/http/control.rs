@@ -56,8 +56,7 @@ where
 /// POST /nuke/create-project
 fn create_project_filter(
     peer: http::Shared<coco::UserPeer>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-{
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
         .and(super::with_shared(peer))
         .and(warp::body::json())
@@ -67,8 +66,7 @@ fn create_project_filter(
 /// GET /nuke/coco
 fn nuke_coco_filter(
     peer: http::Shared<coco::UserPeer>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-{
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_shared(peer))
         .and_then(handler::nuke_coco)
@@ -110,12 +108,12 @@ mod handler {
     pub async fn create_project(
         peer: http::Shared<coco::UserPeer>,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection>
-    {
+    ) -> Result<impl Reply, Rejection> {
         let mut peer = peer.write().await;
 
-        let (id, meta) =
-            peer.replicate_platinum(&input.name, &input.description, &input.default_branch).await?;
+        let (id, meta) = peer
+            .replicate_platinum(&input.name, &input.description, &input.default_branch)
+            .await?;
 
         Ok(reply::with_status(
             reply::json(&project::Project {
@@ -134,8 +132,7 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(_peer: http::Shared<coco::UserPeer>) -> Result<impl Reply, Rejection>
-    {
+    pub async fn nuke_coco(_peer: http::Shared<coco::UserPeer>) -> Result<impl Reply, Rejection> {
         // let tmp = coco::Coco::tmp()?;
         // let mut coco: coco::Coco = &mut *coco.write().await;
         // *coco = tmp;

@@ -3,19 +3,19 @@
 use async_trait::async_trait;
 use std::env;
 
+use librad::git::storage;
 pub use librad::keys;
 use librad::meta::entity::{self, Resolver as _};
 use librad::meta::project;
 use librad::meta::user;
-use librad::git::storage;
 pub use librad::net;
-pub use librad::peer;
 pub use librad::paths;
+pub use librad::peer;
 use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
-use std::net::{SocketAddr, IpAddr, Ipv4Addr};
-use std::path;
 use std::collections::HashMap;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::path;
 
 use crate::error;
 
@@ -29,11 +29,11 @@ pub use source::{
 /// interact with the protocol.
 pub struct UserPeer {
     /// Me, myself, and I.
-    pub me: user::User<entity::Draft>, // TODO(finto): this should be verified.
+    pub me: user::User<entity::Draft>, // TODO(finto): this should be verified. Unpublic
     /// The protocol API for shelling out commands.
     pub api: net::peer::PeerApi,
     /// The paths used to configure this Peer.
-    pub paths: paths::Paths,
+    pub paths: paths::Paths, // TODO(finto): Unpublify
     projects: HashMap<RadUrn, project::Project<entity::Draft>>,
 }
 
@@ -44,18 +44,29 @@ impl entity::Resolver<user::User<entity::Draft>> for UserPeer {
         Ok(self.me.clone())
     }
 
-    async fn resolve_revision(&self, _uri: &RadUrn, _revision: u64) -> Result<user::User<entity::Draft>, entity::Error> {
+    async fn resolve_revision(
+        &self,
+        _uri: &RadUrn,
+        _revision: u64,
+    ) -> Result<user::User<entity::Draft>, entity::Error> {
         Ok(self.me.clone())
     }
 }
 
 #[async_trait]
 impl entity::Resolver<project::Project<entity::Draft>> for UserPeer {
-    async fn resolve(&self, uri: &RadUrn) -> Result<project::Project<entity::Draft>, entity::Error> {
+    async fn resolve(
+        &self,
+        uri: &RadUrn,
+    ) -> Result<project::Project<entity::Draft>, entity::Error> {
         Ok(self.projects.get(uri).expect("project was missing").clone())
     }
 
-    async fn resolve_revision(&self, uri: &RadUrn, _revision: u64) -> Result<project::Project<entity::Draft>, entity::Error> {
+    async fn resolve_revision(
+        &self,
+        uri: &RadUrn,
+        _revision: u64,
+    ) -> Result<project::Project<entity::Draft>, entity::Error> {
         Ok(self.projects.get(uri).expect("project was missing").clone())
     }
 }
@@ -88,6 +99,8 @@ impl UserPeer {
         };
 
         let peer = peer_config.try_into_peer().await?;
+        // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
+        // publish events.
         let (api, _futures) = peer.accept()?;
         Ok(Self {
             me,
@@ -100,10 +113,7 @@ impl UserPeer {
     /// Fetch a browser for the `project_urn` we supplied to this function.
     ///
     /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
-    pub fn project_repo(
-        &self,
-        project_urn: String,
-    ) -> Result<git2::Repository, error::Error> {
+    pub fn project_repo(&self, project_urn: String) -> Result<git2::Repository, error::Error> {
         let _project_urn: RadUrn = project_urn.parse()?;
         // TODO(finto): fetch project meta and build browser
         let project_name = "git-platinum";
@@ -152,7 +162,7 @@ impl UserPeer {
             .set_default_branch(default_branch.to_string())
             .add_key(key.public())
             .build()?;
-        meta.sign(&key, &entity::Signatory::User(self.me.urn()), self).await?;
+        meta.sign_owned(&key)?;
 
         let storage = self.api.storage().reopen()?;
         let _repo = storage.create_repo(&meta)?;
@@ -165,7 +175,10 @@ impl UserPeer {
 
     // This function exists as a standalone because the logic does not play well with async in
     // `replicate_platinum`.
-    fn clone_platinum(platinum_from: String, platinum_into: std::path::PathBuf) -> Result<(), error::Error> {
+    fn clone_platinum(
+        platinum_from: String,
+        platinum_into: std::path::PathBuf,
+    ) -> Result<(), error::Error> {
         // Clone a copy into temp directory.
         let mut fetch_options = git2::FetchOptions::new();
         fetch_options.download_tags(git2::AutotagOption::All);
@@ -197,7 +210,6 @@ impl UserPeer {
             }
         }
 
-
         Ok(())
     }
 
@@ -226,11 +238,7 @@ impl UserPeer {
         Self::clone_platinum(platinum_from, platinum_into)?;
 
         // Init as rad project.
-        let (id, project) = self.init_project(
-            name,
-            description,
-            default_branch,
-        ).await?;
+        let (id, project) = self.init_project(name, description, default_branch).await?;
 
         Ok((id, project))
     }
@@ -276,7 +284,8 @@ impl UserPeer {
 /// Constructs a fake user to be used as an owner of projects until we have more permanent key and
 /// user management.
 pub fn fake_owner(key: keys::SecretKey) -> user::User<entity::Draft> {
-    let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public().clone()).expect("unable to create user");
+    let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public().clone())
+        .expect("unable to create user");
     user.sign_owned(&key).expect("unable to sign user");
     user
 }

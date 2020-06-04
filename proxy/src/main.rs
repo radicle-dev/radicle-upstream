@@ -48,8 +48,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let user_peer = if args.test {
         let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
-        let mut user_peer = coco::UserPeer::tmp(tmp_path).await.expect("failed to create /tmp user peer");
-        user_peer.setup_fixtures(tmp_path).await.expect("fixture creation failed");
+        let mut user_peer = coco::UserPeer::tmp(tmp_path)
+            .await
+            .expect("failed to create /tmp user peer");
+        user_peer
+            .setup_fixtures(tmp_path)
+            .await
+            .expect("fixture creation failed");
         user_peer
     } else {
         todo!()
