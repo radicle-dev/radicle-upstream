@@ -23,7 +23,8 @@ mod user;
 
 /// Main entry point for HTTP API.
 pub fn api<R>(
-    peer: coco::UserPeer,
+    peer: coco::Peer,
+    owner: coco::User,
     registry: R,
     store: kv::Store,
     enable_control: bool,
@@ -32,6 +33,7 @@ where
     R: registry::Cache + registry::Client + 'static,
 {
     let peer = Arc::new(RwLock::new(peer));
+    let owner = Arc::new(RwLock::new(owner));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
@@ -41,6 +43,7 @@ where
             .or(control::routes(
                 enable_control,
                 Arc::clone(&peer),
+                Arc::clone(&owner),
                 Arc::clone(&registry),
                 Arc::clone(&store),
             ))
@@ -53,6 +56,7 @@ where
             ))
             .or(project::filters(
                 Arc::clone(&peer),
+                Arc::clone(&owner),
                 Arc::clone(&registry),
                 subscriptions.clone(),
             ))

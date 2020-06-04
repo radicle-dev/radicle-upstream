@@ -27,11 +27,12 @@ pub use source::{
     Branch, Commit, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
 
-/// `UserPeer` carries the user that is logged-in as well as the [`peer::PeerApi`] so we can
+/// Export a verified [`user::User`] type.
+pub type User = user::User<entity::Verified>;
+
+/// `Peer` carries the user that is logged-in as well as the [`peer::PeerApi`] so we can
 /// interact with the protocol.
-pub struct UserPeer {
-    /// Me, myself, and I.
-    pub me: user::User<entity::Draft>, // TODO(finto): this should be verified. Unpublic
+pub struct Peer {
     /// The protocol API for shelling out commands.
     pub api: net::peer::PeerApi,
     /// The paths used to configure this Peer.
@@ -41,7 +42,7 @@ pub struct UserPeer {
 }
 
 #[async_trait]
-impl entity::Resolver<project::Project<entity::Draft>> for UserPeer {
+impl entity::Resolver<project::Project<entity::Draft>> for Peer {
     async fn resolve(
         &self,
         uri: &RadUrn,
@@ -59,13 +60,12 @@ impl entity::Resolver<project::Project<entity::Draft>> for UserPeer {
 }
 
 // TODO(finto): Peer is not Sync, so we need to figure out how we share it.
-unsafe impl Sync for UserPeer {}
+unsafe impl Sync for Peer {}
 
-impl UserPeer {
-    /// We create a default `UserPeer` using the `tmp_dir_path` we provide.
+impl Peer {
+    /// We create a default `Peer` using the `tmp_dir_path` we provide.
     pub async fn tmp(tmp_dir_path: impl AsRef<path::Path>) -> Result<Self, error::Error> {
         let key = keys::SecretKey::new();
-        let me = fake_owner(key.clone());
         let paths = paths::Paths::from_root(tmp_dir_path)?;
         let gossip_params = Default::default();
         let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
@@ -74,8 +74,7 @@ impl UserPeer {
         let disco = net::discovery::Static::new(seeds);
 
         // Initialise the storage
-        let storage = storage::Storage::init(&paths, key.clone())?;
-        let _ = storage.create_repo(&me)?;
+        let _ = storage::Storage::init(&paths, key.clone())?;
 
         let peer_config = net::peer::PeerConfig {
             key,
@@ -90,7 +89,6 @@ impl UserPeer {
         // publish events.
         let (api, _futures) = peer.accept()?;
         Ok(Self {
-            me,
             api,
             paths, // TODO(finto): See https://github.com/radicle-dev/radicle-link/issues/157
             projects: HashMap::new(),
@@ -137,6 +135,7 @@ impl UserPeer {
     /// the librad interactions fail.
     pub async fn init_project<'a>(
         &mut self,
+        owner: &User, // TODO(finto): verify and testify
         name: &str,
         description: &str,
         default_branch: &str,
@@ -144,7 +143,7 @@ impl UserPeer {
         let key = self.api.key();
 
         // Create the project meta
-        let mut meta = project::Project::<entity::Draft>::create(name.to_string(), self.me.urn())?
+        let mut meta = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
             .to_builder()
             .set_description(description.to_string())
             .set_default_branch(default_branch.to_string())
@@ -210,6 +209,7 @@ impl UserPeer {
     /// the coco project.
     pub async fn replicate_platinum(
         &mut self,
+        owner: &User,
         name: &str,
         description: &str,
         default_branch: &str,
@@ -226,7 +226,7 @@ impl UserPeer {
         Self::clone_platinum(platinum_from, platinum_into)?;
 
         // Init as rad project.
-        Ok(self.init_project(name, description, default_branch).await?)
+        Ok(self.init_project(&owner, name, description, default_branch).await?)
     }
 
     /// Creates a small set of projects in [`Paths`].
@@ -235,7 +235,7 @@ impl UserPeer {
     ///
     /// Will error if filesystem access is not granted or broken for the configured
     /// [`librad::paths::Paths`].
-    pub async fn setup_fixtures(&mut self, root: &str) -> Result<(), error::Error> {
+    pub async fn setup_fixtures(&mut self, owner: &User, root: &str) -> Result<(), error::Error> {
         let infos = vec![
             ("monokel", "A looking glass into the future", "master"),
             (
@@ -260,18 +260,39 @@ impl UserPeer {
             std::fs::create_dir_all(path.clone())?;
 
             init_repo(path.clone())?;
-            self.init_project(info.0, info.1, info.2).await?;
+            self.init_project(&owner, info.0, info.1, info.2).await?;
         }
 
         Ok(())
     }
 }
 
+struct FakeUserResolver(user::User<entity::Draft>);
+
+#[async_trait]
+impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
+    async fn resolve(
+        &self,
+        _uri: &RadUrn,
+    ) -> Result<user::User<entity::Draft>, entity::Error> {
+        Ok(self.0.clone())
+    }
+
+    async fn resolve_revision(
+        &self,
+        _uri: &RadUrn,
+        _revision: u64,
+    ) -> Result<user::User<entity::Draft>, entity::Error> {
+        Ok(self.0.clone())
+    }
+}
+
 /// Constructs a fake user to be used as an owner of projects until we have more permanent key and
 /// user management.
-pub fn fake_owner(key: keys::SecretKey) -> user::User<entity::Draft> {
+pub async fn fake_owner(key: keys::SecretKey) -> User {
     let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public().clone())
         .expect("unable to create user");
     user.sign_owned(&key).expect("unable to sign user");
-    user
+    let fake_resolver = FakeUserResolver(user.clone());
+    user.check_history_status(&fake_resolver, &fake_resolver).await.expect("failed to verify user")
 }

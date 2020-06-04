@@ -1,4 +1,4 @@
-use super::UserPeer;
+use super::Peer;
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -174,7 +174,7 @@ pub struct TreeEntry {
 ///
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob(
-    user_peer: &UserPeer,
+    user_peer: &Peer,
     project_urn: String,
     default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
     revision: Option<String>,
@@ -222,7 +222,7 @@ pub fn blob(
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn branches(
-    user_peer: &UserPeer,
+    user_peer: &Peer,
     project_urn: String,
 ) -> Result<Vec<Branch>, error::Error> {
     let repo = user_peer.project_repo(project_urn)?;
@@ -264,7 +264,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit(
-    user_peer: &UserPeer,
+    user_peer: &Peer,
     project_urn: String,
     sha1: &str,
 ) -> Result<Commit, error::Error> {
@@ -285,7 +285,7 @@ pub fn commit(
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commits(
-    user_peer: &UserPeer,
+    user_peer: &Peer,
     project_urn: String,
     branch: &str,
 ) -> Result<Vec<Commit>, error::Error> {
@@ -304,7 +304,7 @@ pub fn commits(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn tags(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Tag>, error::Error> {
+pub fn tags(user_peer: &Peer, project_urn: String) -> Result<Vec<Tag>, error::Error> {
     let repo = user_peer.project_repo(project_urn)?;
     let browser = surf::vcs::git::Browser::new(&repo)?;
 
@@ -326,7 +326,7 @@ pub fn tags(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Tag>, error
 /// Will return [`error::Error`] if any of the surf interactions fail.
 /// TODO(fintohaps): default branch fall back from Browser
 pub fn tree(
-    user_peer: &UserPeer,
+    user_peer: &Peer,
     project_urn: String,
     default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
     maybe_revision: Option<String>,

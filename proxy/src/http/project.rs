@@ -16,7 +16,8 @@ use crate::registry;
 
 /// Combination of all routes.
 pub fn filters<R>(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
+    owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -24,18 +25,20 @@ where
     R: registry::Client,
 {
     list_filter(Arc::clone(&peer))
-        .or(create_filter(Arc::clone(&peer)))
+        .or(create_filter(Arc::clone(&peer), owner))
         .or(get_filter(peer))
         .or(register_filter(registry, subscriptions))
 }
 
 /// `POST /projects`
 fn create_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
+    owner: http::Shared<coco::User>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
         .and(http::with_shared(peer))
+        .and(http::with_shared(owner))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -56,7 +59,7 @@ fn create_filter(
 
 /// `GET /projects/<id>`
 fn get_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("projects")
         .and(warp::get())
@@ -85,7 +88,7 @@ fn get_filter(
 
 /// `GET /projects`
 fn list_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
@@ -153,13 +156,17 @@ mod handler {
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
+        owner: http::Shared<coco::User>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let mut peer = peer.write().await;
+        let owner = &*owner.read().await;
 
+        // TODO(finto): Still using `peer.me` but we should pass the owner in
         let meta = peer
             .init_project(
+                &owner,
                 &input.metadata.name,
                 &input.metadata.description,
                 &input.metadata.default_branch,
@@ -186,7 +193,7 @@ mod handler {
 
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
         urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = &*peer.read().await;
@@ -194,7 +201,7 @@ mod handler {
     }
 
     /// List all known projects.
-    pub async fn list(peer: http::Shared<coco::UserPeer>) -> Result<impl Reply, Rejection> {
+    pub async fn list(peer: http::Shared<coco::Peer>) -> Result<impl Reply, Rejection> {
         let peer = peer.read().await;
         let projects = peer
             .list_projects()?
@@ -520,7 +527,9 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let coco_client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = Arc::new(RwLock::new(coco::fake_owner(peer.api.key().clone()).await));
+        let coco_client = Arc::new(RwLock::new(peer));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -533,6 +542,7 @@ mod test {
 
         let api = super::filters(
             Arc::clone(&coco_client),
+            Arc::clone(&owner),
             Arc::new(RwLock::new(registry)),
             subscriptions,
         );
@@ -579,7 +589,8 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut coco_client = coco::UserPeer::tmp(tmp_dir.path()).await?;
+        let mut coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(coco_client.api.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -591,7 +602,7 @@ mod test {
         coco::init_repo(path.clone())?;
 
         let meta = coco_client
-            .init_project("Upstream", "Desktop client for radicle.", "master")
+            .init_project(&owner, "Upstream", "Desktop client for radicle.", "master")
             .await?;
         let urn = meta.urn();
 
@@ -599,6 +610,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(RwLock::new(coco_client)),
+            Arc::new(RwLock::new(owner)),
             Arc::new(RwLock::new(registry)),
             subscriptions,
         );
@@ -618,7 +630,8 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut coco_client = coco::UserPeer::tmp(tmp_dir.path()).await?;
+        let mut coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(coco_client.api.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -626,7 +639,7 @@ mod test {
         let subscriptions = notification::Subscriptions::default();
 
         coco_client
-            .setup_fixtures(tmp_dir.path().as_os_str().to_str().unwrap())
+            .setup_fixtures(&owner, tmp_dir.path().as_os_str().to_str().unwrap())
             .await?;
 
         let projects = coco_client
@@ -647,6 +660,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(RwLock::new(coco_client)),
+            Arc::new(RwLock::new(owner)),
             Arc::new(RwLock::new(registry)),
             subscriptions,
         );
@@ -663,8 +677,9 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let coco_client = coco::UserPeer::tmp(tmp_dir.path()).await?;
+        let coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
         let key = coco_client.api.key().clone();
+        let owner = coco::fake_owner(key.clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -675,13 +690,13 @@ mod test {
 
         let api = super::filters(
             Arc::new(RwLock::new(coco_client)),
+            Arc::new(RwLock::new(owner.clone())),
             Arc::clone(&cache),
             subscriptions,
         );
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
-        let owner = coco::fake_owner(key.clone());
         let urn = librad::uri::RadUrn::new(
             owner.root_hash().clone(),
             librad::uri::Protocol::Git,

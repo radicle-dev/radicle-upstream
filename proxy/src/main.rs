@@ -45,20 +45,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+    let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
 
-    let user_peer = if args.test {
-        let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
-        let mut user_peer = coco::UserPeer::tmp(tmp_path)
+    let mut user_peer = if args.test {
+        coco::Peer::tmp(tmp_path)
             .await
-            .expect("failed to create /tmp user peer");
-        user_peer
-            .setup_fixtures(tmp_path)
-            .await
-            .expect("fixture creation failed");
-        user_peer
+            .expect("failed to create /tmp user peer")
     } else {
         todo!()
     };
+
+    let owner = coco::fake_owner(user_peer.api.key().clone()).await;
+    user_peer
+        .setup_fixtures(&owner, tmp_path)
+        .await
+        .expect("fixture creation failed");
 
     let store = {
         let store_path = if args.test {
@@ -75,7 +76,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(user_peer, cache.clone(), store, args.test);
+    let api = http::api(user_peer, owner, cache.clone(), store, args.test);
 
     tokio::spawn(async move {
         cache.run().await.expect("cacher run failed");

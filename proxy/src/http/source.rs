@@ -12,7 +12,7 @@ use crate::identity;
 
 /// Prefixed filters.
 pub fn routes(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("source").and(
         blob_filter(Arc::clone(&peer))
@@ -29,7 +29,7 @@ pub fn routes(
 /// Combination of all source filters.
 #[cfg(test)]
 fn filters(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     blob_filter(Arc::clone(&peer))
         .or(branches_filter(Arc::clone(&peer)))
@@ -43,7 +43,7 @@ fn filters(
 
 /// `GET /blob/<project_id>/<revision>/<path...>`
 fn blob_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
@@ -74,7 +74,7 @@ fn blob_filter(
 
 /// `GET /branches/<project_id>`
 fn branches_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
         .and(warp::get())
@@ -100,7 +100,7 @@ fn branches_filter(
 
 /// `GET /commit/<project_id>/<sha1>`
 fn commit_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(warp::get())
@@ -124,7 +124,7 @@ fn commit_filter(
 
 /// `GET /commits/<project_id>/<branch>`
 fn commits_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commits")
         .and(warp::get())
@@ -175,7 +175,7 @@ fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejectio
 
 /// `GET /revisions/<project_id>`
 fn revisions_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
@@ -203,7 +203,7 @@ fn revisions_filter(
 
 /// `GET /tags/<project_id>`
 fn tags_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
         .and(warp::get())
@@ -227,7 +227,7 @@ fn tags_filter(
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
 fn tree_filter(
-    peer: http::Shared<coco::UserPeer>,
+    peer: http::Shared<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
         .and(warp::get())
@@ -268,7 +268,7 @@ mod handler {
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
         project_urn: String,
         super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
@@ -281,7 +281,7 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`].
     pub async fn branches(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
 where {
@@ -293,7 +293,7 @@ where {
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
@@ -305,7 +305,7 @@ where {
 
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
         project_urn: String,
         branch: String,
     ) -> Result<impl Reply, Rejection> {
@@ -324,7 +324,7 @@ where {
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = &*peer.read().await;
@@ -354,7 +354,7 @@ where {
 
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = &*peer.read().await;
@@ -365,7 +365,7 @@ where {
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        peer: http::Shared<coco::UserPeer>,
+        peer: http::Shared<coco::Peer>,
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
@@ -729,9 +729,11 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(peer.api.key().clone()).await;
+        let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await?;
         let urn = platinum_project.urn();
 
@@ -855,9 +857,11 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(peer.api.key().clone()).await;
+        let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await?;
         let urn = platinum_project.urn();
 
@@ -884,9 +888,11 @@ mod test {
     #[tokio::test]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(peer.api.key().clone()).await;
+        let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await?;
         let urn = platinum_project.urn();
 
@@ -930,9 +936,11 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(peer.api.key().clone()).await;
+        let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await?;
         let urn = platinum_project.urn();
 
@@ -968,7 +976,7 @@ mod test {
     #[tokio::test]
     async fn local_branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let client = Arc::new(RwLock::new(coco::Peer::tmp(tmp_dir.path()).await?));
 
         let path = "../fixtures/git-platinum";
         let api = super::filters(Arc::clone(&client));
@@ -1000,9 +1008,11 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(peer.api.key().clone()).await;
+        let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await
             .unwrap();
         let urn = platinum_project.urn();
@@ -1119,9 +1129,11 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(peer.api.key().clone()).await;
+        let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await
             .unwrap();
         let urn = platinum_project.urn();
@@ -1150,9 +1162,11 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
+        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let owner = coco::fake_owner(peer.api.key().clone()).await;
+        let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await?;
         let urn = platinum_project.urn();
 
