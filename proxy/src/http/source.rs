@@ -283,8 +283,7 @@ mod handler {
     pub async fn branches(
         peer: http::Shared<coco::Peer>,
         project_urn: String,
-    ) -> Result<impl Reply, Rejection>
-where {
+    ) -> Result<impl Reply, Rejection> {
         let peer = &*peer.read().await;
         let branches = coco::branches(&peer, project_urn)?;
 
