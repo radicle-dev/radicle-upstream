@@ -32,10 +32,13 @@ type Projects = Project[]
 export enum Domain {
   User = "user",
   Org = "org"
+
 }
+
 export interface Registered {
+  domain_type: Domain;
+  domain_id: string;
   name: string;
-  orgId: string;
   maybeProjectId?: string;
 }
 
@@ -81,7 +84,8 @@ interface CreateInput {
 }
 
 interface RegisterInput {
-  orgId: string;
+  domainType: Domain;
+  domainId: string;
   projectName: string;
   maybeCocoId?: string;
 }
@@ -134,12 +138,14 @@ export const getOrgProject = (
 }
 
 export const register = (
-  orgId: string,
+  domainType: Domain,
+  domainId: string,
   projectName: string,
   maybeCocoId?: string
 ): Promise<transaction.Transaction> => {
   return api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
-    orgId,
+    domainType,
+    domainId,
     projectName,
     maybeCocoId
   });

@@ -232,10 +232,12 @@ mod handler {
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
-        let org_id = registry::Id::try_from(input.org_id)?;
+        let domain_id = registry::Id::try_from(input.domain_id)?;
+        let domain: registry::ProjectDomain = (input.domain_type.clone(), domain_id.clone()).into();
         let project_name = registry::ProjectName::try_from(input.project_name)?;
+
         let tx = reg
-            .register_project(&fake_pair, org_id, project_name, maybe_coco_id, fake_fee)
+            .register_project(&fake_pair, domain, project_name, maybe_coco_id, fake_fee)
             .await?;
 
         subscriptions
@@ -243,6 +245,15 @@ mod handler {
             .await;
 
         Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+    }
+}
+
+impl From<(DomainType, registry::Id)> for registry::ProjectDomain {
+    fn from((domain, id): (DomainType, registry::Id)) -> Self {
+        match domain {
+            DomainType::Org => Self::Org(id),
+            DomainType::User => Self::User(id),
+        }
     }
 }
 
@@ -464,12 +475,24 @@ impl ToDocumentedType for MetadataInput {
     }
 }
 
+/// The domains we support under which a project can live.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DomainType {
+    /// An Org
+    Org,
+    /// A User
+    User,
+}
+
 /// Bundled input data for project registration.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RegisterInput {
-    /// Id of the Org the project will be registered under.
-    org_id: String,
+    /// The type of domain the project will be registered under.
+    domain_type: DomainType,
+    /// Id of the domain the project will be registered under.
+    domain_id: String,
     /// Unique name under Org of the project.
     project_name: String,
     /// Optionally passed coco id to store for attestion.
@@ -480,9 +503,15 @@ impl ToDocumentedType for RegisterInput {
     fn document() -> document::DocumentedType {
         let mut properties = HashMap::with_capacity(3);
         properties.insert(
-            "orgId".into(),
+            "domainType".into(),
+            document::enum_string(vec!["org".into(), "user".into()])
+                .description("The type of domain the project will be registered under")
+                .example("user"),
+        );
+        properties.insert(
+            "domainId".into(),
             document::string()
-                .description("ID of the Org the project will be registered under")
+                .description("ID of the domain the project will be registered under")
                 .example("monadic"),
         );
         properties.insert(
@@ -519,6 +548,8 @@ mod test {
     use crate::notification;
     use crate::project;
     use crate::registry::{self, Cache as _, Client as _};
+
+    use super::DomainType;
 
     #[tokio::test]
     async fn create() {
@@ -658,7 +689,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn register() -> Result<(), error::Error> {
+    async fn register_under_org() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path())?));
         let registry = {
@@ -692,8 +723,56 @@ mod test {
             .method("POST")
             .path("/projects/register")
             .json(&super::RegisterInput {
+                domain_type: DomainType::Org,
+                domain_id: org_id.to_string(),
                 project_name: "upstream".into(),
-                org_id: org_id.to_string(),
+                maybe_coco_id: Some("1234.git".to_string()),
+            })
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::CREATED);
+
+        let txs = cache.read().await.list_transactions(vec![])?;
+        let tx = txs.first().unwrap();
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+
+        assert_eq!(have, json!(tx));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn register_under_user() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let librad_paths = Arc::new(RwLock::new(Paths::from_root(tmp_dir.path())?));
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let subscriptions = notification::Subscriptions::default();
+
+        let api = super::filters(Arc::clone(&librad_paths), Arc::clone(&cache), subscriptions);
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+
+        // Register user.
+        cache
+            .read()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        let res = request()
+            .method("POST")
+            .path("/projects/register")
+            .json(&super::RegisterInput {
+                domain_type: DomainType::User,
+                domain_id: handle.to_string(),
+                project_name: "upstream".into(),
                 maybe_coco_id: Some("1234.git".to_string()),
             })
             .reply(&api)

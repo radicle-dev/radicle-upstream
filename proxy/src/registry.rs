@@ -184,8 +184,8 @@ pub struct Org {
 pub struct Project {
     /// Name of the project, unique under the top-level entity.
     pub name: ProjectName,
-    /// Id of the top-level entity.
-    pub org_id: Id,
+    /// The domain of the project.
+    pub domain: ProjectDomain,
     /// Optionally associated project id for attestation in other systems.
     pub maybe_project_id: Option<String>,
 }
@@ -198,6 +198,43 @@ pub struct User {
     pub handle: Id,
     /// Associated entity id for attestion.
     pub maybe_entity_id: Option<String>,
+}
+
+/// The domain of a project
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub enum ProjectDomain {
+    /// An org
+    Org(Id),
+    /// A user
+    User(Id),
+}
+
+impl ProjectDomain {
+    /// Extract the Id of the domain.
+    #[must_use]
+    pub fn id(&self) -> Id {
+        match self.clone() {
+            Self::Org(id) | Self::User(id) => id,
+        }
+    }
+}
+
+impl From<protocol::ProjectDomain> for ProjectDomain {
+    fn from(pd: protocol::ProjectDomain) -> Self {
+        match pd {
+            protocol::ProjectDomain::Org(id) => Self::Org(Id(id)),
+            protocol::ProjectDomain::User(id) => Self::User(Id(id)),
+        }
+    }
+}
+
+impl From<ProjectDomain> for protocol::ProjectDomain {
+    fn from(pd: ProjectDomain) -> Self {
+        match pd {
+            ProjectDomain::Org(id) => Self::Org(id.0),
+            ProjectDomain::User(id) => Self::User(id.0),
+        }
+    }
 }
 
 /// Methods to interact with the Registry in a uniform way.
@@ -267,7 +304,7 @@ pub trait Client: Clone + Send + Sync {
     /// Will return `Err` if a protocol error occurs.
     async fn get_project(
         &self,
-        org_id: Id,
+        project_domain: ProjectDomain,
         project_name: ProjectName,
     ) -> Result<Option<Project>, error::Error>;
 
@@ -293,7 +330,7 @@ pub trait Client: Clone + Send + Sync {
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: Id,
+        project_domain: ProjectDomain,
         project_name: ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: protocol::Balance,
@@ -512,21 +549,18 @@ impl Client for Registry {
 
     async fn get_project(
         &self,
-        org_id: Id,
+        project_domain: ProjectDomain,
         project_name: ProjectName,
     ) -> Result<Option<Project>, error::Error> {
         Ok(self
             .client
-            .get_project(
-                project_name.clone().0,
-                protocol::ProjectDomain::Org(org_id.clone().0),
-            )
+            .get_project(project_name.clone().0, project_domain.clone().into())
             .await?
             .map(|project| {
                 let metadata_vec: Vec<u8> = project.metadata.into();
                 Project {
                     name: project_name.clone(),
-                    org_id: org_id.clone(),
+                    domain: project_domain,
                     maybe_project_id: if metadata_vec[..].is_empty() {
                         None
                     } else {
@@ -541,10 +575,11 @@ impl Client for Registry {
     async fn list_org_projects(&self, org_id: Id) -> Result<Vec<Project>, error::Error> {
         let ids = self.client.list_projects().await?;
         let mut projects = Vec::new();
+        let domain = ProjectDomain::Org(org_id.clone());
         for id in &ids {
             if id.1 == protocol::ProjectDomain::Org(org_id.clone().0) {
                 projects.push(
-                    self.get_project(org_id.clone(), ProjectName(id.clone().0))
+                    self.get_project(domain.clone(), ProjectName(id.clone().0))
                         .await?
                         .expect("project not present"),
                 );
@@ -560,7 +595,7 @@ impl Client for Registry {
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: Id,
+        project_domain: ProjectDomain,
         project_name: ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: protocol::Balance,
@@ -604,7 +639,7 @@ impl Client for Registry {
         // Prepare and submit project registration transaction.
         let register_message = protocol::message::RegisterProject {
             project_name: project_name.0.clone(),
-            project_domain: protocol::ProjectDomain::Org(org_id.0.clone()),
+            project_domain: project_domain.clone().into(),
             checkpoint_id,
             metadata: register_metadata,
         };
@@ -626,7 +661,7 @@ impl Client for Registry {
             block.number,
             Message::ProjectRegistration {
                 project_name,
-                org_id,
+                project_domain,
             },
         ))
     }
@@ -715,7 +750,7 @@ mod test {
     use crate::avatar;
     use crate::error;
 
-    use super::{Client, Id, Metadata, ProjectName, Registry};
+    use super::{Client, Id, Metadata, ProjectDomain, ProjectName, Registry};
 
     #[tokio::test]
     async fn test_register_org() -> Result<(), error::Error> {
@@ -893,7 +928,7 @@ mod test {
         let result = registry
             .register_project(
                 &author,
-                org_id.clone(),
+                ProjectDomain::Org(org_id.clone()),
                 project_name.clone(),
                 Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
                 10,
@@ -914,7 +949,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_register_project() -> Result<(), error::Error> {
+    async fn test_register_project_under_org() -> Result<(), error::Error> {
         // Test that project registration submits valid transactions and they succeed.
         let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
@@ -937,7 +972,7 @@ mod test {
         let result = registry
             .register_project(
                 &author,
-                org_id.clone(),
+                ProjectDomain::Org(org_id.clone()),
                 project_name.clone(),
                 Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
                 10,
@@ -957,6 +992,52 @@ mod test {
         let project = maybe_project.unwrap();
         assert_eq!(project.name, project_name.0);
         assert_eq!(project.domain, protocol::ProjectDomain::Org(org_id.0));
+        let metadata_vec: Vec<u8> = project.metadata.into();
+        let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
+        assert_eq!(metadata.version, 1);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_register_project() -> Result<(), error::Error> {
+        // Test that project registration submits valid transactions and they succeed.
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice")?;
+        let project_name = ProjectName::try_from("radicle")?;
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Register the project
+        let result = registry
+            .register_project(
+                &author,
+                ProjectDomain::User(handle.clone()),
+                project_name.clone(),
+                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
+                10,
+            )
+            .await;
+        assert!(result.is_ok());
+
+        let maybe_project = client
+            .get_project(
+                project_name.clone().0,
+                protocol::ProjectDomain::User(handle.clone().0),
+            )
+            .await?;
+
+        assert!(maybe_project.is_some());
+
+        let project = maybe_project.unwrap();
+        assert_eq!(project.name, project_name.0);
+        assert_eq!(project.domain, protocol::ProjectDomain::User(handle.0));
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);

@@ -120,7 +120,8 @@ Register a project on the Radicle Registry.
 
 Request JSON object:
 
-- `org_id`: ID of the organization under which the project will be registered.
+- `domain_type`: The type of domain under which the project will be registered.
+- `domain_id`: ID of the domain under which the project will be registered.
 - `project_name`: Name of the project to use in the registry.
 - `maybe_coco_id`: Optional librad ID for the project, used for mutual attestation.
 

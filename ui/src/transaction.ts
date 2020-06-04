@@ -52,8 +52,9 @@ interface MemberUnregistration {
 // TODO(sos): coordinate message format for project registration with proxy
 interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
-  domain: Domain;
-  orgId: string;
+  domain_type: Domain;
+  domain_id: string;
+  project_name: string;
   // domainId: string; // domain under which project falls, e.g. User or Org
   cocoId: string;
   projectName: string;
@@ -269,8 +270,8 @@ export const format = (tx: Transaction): object => {
 
 export const formatStake = (msg: Message): string => `${formatMessage(msg)} deposit`;
 
-// Having both enums & interfaces here is somewhat verbose; the reason we do this 
-// is so we have compatibility with non-TS svelte components while still enjoying 
+// Having both enums & interfaces here is somewhat verbose; the reason we do this
+// is so we have compatibility with non-TS svelte components while still enjoying
 // some type strictness
 export enum PayerType {
   Org = "org",
@@ -347,9 +348,9 @@ export const formatSubject = (msg: Message): Subject => {
     // TODO(sos): replace with associated identity handle for user, should it exist
     // TODO(sos): once we can register projects to users, accommodate circle avatars
     case MessageType.ProjectRegistration:
-      name = `${msg.orgId} / ${msg.projectName}`
+      name = `${msg.domain_id} / ${msg.project_name}`
       type = SubjectType.OrgProject
-      avatarSource = getAvatar(msg.domain === Domain.User ? Usage.Identity : Usage.Org, msg.orgId)
+      avatarSource = getAvatar(msg.domain_type === Domain.User ? Usage.Identity : Usage.Org, msg.domain_id)
       break;
   }
 
