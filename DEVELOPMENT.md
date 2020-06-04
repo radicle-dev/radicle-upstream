@@ -44,21 +44,24 @@ make sure only properly formatted and lint-free code lands into master.
 ### Running Upstream
 
 You'll have to install some external dependencies to be able to compile
-everything.
+the proxy as well as the UI.
 
 On macOS:
 ```
 xcode-select --install
 sudo xcodebuild -license
-brew install pkgconfig nettle
+brew install yarn pkgconfig nettle
 ```
 
 On Debian/Ubuntu:
 ```
-sudo apt-get install libssl-dev
-sudo apt-get install libgmp3-dev
-sudo apt-get install m4
-sudo apt-get install clang
+# Install yarn (UI dependency):
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+sudo apt update && sudo apt install yarn
+
+# Install proxy dependencies
+sudo apt-get install libssl-dev libgmp3-dev m4 clang
 ```
 
 1. Get Upstream: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
@@ -286,6 +289,9 @@ application package by [electron-builder][eb].
 
 
 ### Running the proxy in stand-alone mode
+
+To be able to build the proxy first install all required dependencies from the
+[Running Upstream](#running-upstream) section.
 
 To start the proxy binary, run: `cd proxy && cargo run -- --registry=emulator`.
 After that the API docs are served under `http://127.0.0.1:8080/docs`.
