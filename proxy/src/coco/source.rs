@@ -221,10 +221,7 @@ pub fn blob(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches(
-    user_peer: &Peer,
-    project_urn: String,
-) -> Result<Vec<Branch>, error::Error> {
+pub fn branches(user_peer: &Peer, project_urn: String) -> Result<Vec<Branch>, error::Error> {
     let repo = user_peer.project_repo(project_urn)?;
     let browser = surf::vcs::git::Browser::new(&repo)?;
 
@@ -263,11 +260,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit(
-    user_peer: &Peer,
-    project_urn: String,
-    sha1: &str,
-) -> Result<Commit, error::Error> {
+pub fn commit(user_peer: &Peer, project_urn: String, sha1: &str) -> Result<Commit, error::Error> {
     let repo = user_peer.project_repo(project_urn)?;
     let mut browser = surf::vcs::git::Browser::new(&repo)?;
 

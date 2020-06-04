@@ -1,3 +1,5 @@
+use librad::keys;
+
 use proxy::coco;
 use proxy::env;
 use proxy::http;
@@ -48,7 +50,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
 
     let mut user_peer = if args.test {
-        coco::Peer::tmp(tmp_path)
+        let key = keys::SecretKey::new();
+        let config = coco::default_config(key, tmp_path).expect("failed to get config");
+        coco::Peer::new(config)
             .await
             .expect("failed to create /tmp user peer")
     } else {

@@ -118,7 +118,12 @@ mod handler {
         let owner = &*owner.read().await;
 
         let meta = peer
-            .replicate_platinum(&owner, &input.name, &input.description, &input.default_branch)
+            .replicate_platinum(
+                &owner,
+                &input.name,
+                &input.description,
+                &input.default_branch,
+            )
             .await?;
 
         Ok(reply::with_status(

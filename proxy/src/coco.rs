@@ -3,18 +3,18 @@
 use std::collections::HashMap;
 use std::env;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::path;
 
 use async_trait::async_trait;
 
 use librad::git::storage;
-pub use librad::keys;
+use librad::keys;
 use librad::meta::entity::{self, Resolver as _};
 use librad::meta::project;
 use librad::meta::user;
-pub use librad::net;
-pub use librad::paths;
-pub use librad::peer;
+use librad::net;
+use librad::net::discovery;
+use librad::paths;
+use librad::peer;
 use librad::surf::vcs::git as surf;
 use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
@@ -64,27 +64,17 @@ unsafe impl Sync for Peer {}
 
 impl Peer {
     /// We create a default `Peer` using the `tmp_dir_path` we provide.
-    pub async fn tmp(tmp_dir_path: impl AsRef<path::Path>) -> Result<Self, error::Error> {
-        let key = keys::SecretKey::new();
-        let paths = paths::Paths::from_root(tmp_dir_path)?;
-        let gossip_params = Default::default();
-        let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
-        // TODO(finto): could we initialise with known seeds from a cache?
-        let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
-        let disco = net::discovery::Static::new(seeds);
-
+    pub async fn new<I>(
+        config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>>,
+    ) -> Result<Self, error::Error>
+    where
+        I: Iterator<Item = (peer::PeerId, SocketAddr)> + Send + 'static,
+    {
         // Initialise the storage
-        let _ = storage::Storage::init(&paths, key.clone())?;
+        let _ = storage::Storage::init(&config.paths, config.key.clone())?;
+        let paths = config.paths.clone();
 
-        let peer_config = net::peer::PeerConfig {
-            key,
-            paths: paths.clone(),
-            listen_addr,
-            gossip_params,
-            disco,
-        };
-
-        let peer = peer_config.try_into_peer().await?;
+        let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
         // publish events.
         let (api, _futures) = peer.accept()?;
@@ -110,9 +100,7 @@ impl Peer {
 
     /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
     #[must_use]
-    pub fn list_projects(
-        &self,
-    ) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
+    pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
         Ok(self.projects.values().cloned().collect())
     }
 
@@ -226,7 +214,9 @@ impl Peer {
         Self::clone_platinum(platinum_from, platinum_into)?;
 
         // Init as rad project.
-        Ok(self.init_project(&owner, name, description, default_branch).await?)
+        Ok(self
+            .init_project(&owner, name, description, default_branch)
+            .await?)
     }
 
     /// Creates a small set of projects in [`Paths`].
@@ -271,10 +261,7 @@ struct FakeUserResolver(user::User<entity::Draft>);
 
 #[async_trait]
 impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
-    async fn resolve(
-        &self,
-        _uri: &RadUrn,
-    ) -> Result<user::User<entity::Draft>, entity::Error> {
+    async fn resolve(&self, _uri: &RadUrn) -> Result<user::User<entity::Draft>, entity::Error> {
         Ok(self.0.clone())
     }
 
@@ -294,5 +281,32 @@ pub async fn fake_owner(key: keys::SecretKey) -> User {
         .expect("unable to create user");
     user.sign_owned(&key).expect("unable to sign user");
     let fake_resolver = FakeUserResolver(user.clone());
-    user.check_history_status(&fake_resolver, &fake_resolver).await.expect("failed to verify user")
+    user.check_history_status(&fake_resolver, &fake_resolver)
+        .await
+        .expect("failed to verify user")
+}
+
+/// Provide the default config.
+///
+/// Address: 127.0.0.1:0
+/// No seeds.
+/// Default gossip parameters.
+pub fn default_config(
+    key: keys::SecretKey,
+    path: impl AsRef<std::path::Path>,
+) -> Result<net::peer::PeerConfig<discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>>, error::Error>
+{
+    let gossip_params = Default::default();
+    let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
+    // TODO(finto): could we initialise with known seeds from a cache?
+    let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
+    let disco = discovery::Static::new(seeds);
+    let paths = paths::Paths::from_root(path)?;
+    Ok(net::peer::PeerConfig {
+        key,
+        paths,
+        listen_addr,
+        gossip_params,
+        disco,
+    })
 }

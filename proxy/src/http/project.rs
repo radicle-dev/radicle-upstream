@@ -192,10 +192,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(
-        peer: http::Shared<coco::Peer>,
-        urn: String,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn get(peer: http::Shared<coco::Peer>, urn: String) -> Result<impl Reply, Rejection> {
         let peer = &*peer.read().await;
         Ok(reply::json(&project::get(peer, &urn).await?))
     }
@@ -518,6 +515,8 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
+
     use crate::coco;
     use crate::error;
     use crate::notification;
@@ -527,7 +526,9 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
         let owner = Arc::new(RwLock::new(coco::fake_owner(peer.api.key().clone()).await));
         let coco_client = Arc::new(RwLock::new(peer));
         let registry = {
@@ -589,7 +590,9 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let mut coco_client = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(coco_client.api.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
@@ -630,7 +633,9 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let mut coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let mut coco_client = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(coco_client.api.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
@@ -677,7 +682,9 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let coco_client = coco::Peer::new(config).await?;
         let key = coco_client.api.key().clone();
         let owner = coco::fake_owner(key.clone()).await;
         let registry = {

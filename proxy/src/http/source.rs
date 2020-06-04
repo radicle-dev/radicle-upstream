@@ -711,6 +711,8 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
+
     use crate::avatar;
     use crate::coco;
     use crate::error;
@@ -728,7 +730,9 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let peer = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(peer.api.key().clone()).await;
         let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
@@ -856,7 +860,9 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let peer = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(peer.api.key().clone()).await;
         let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
@@ -887,7 +893,9 @@ mod test {
     #[tokio::test]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let peer = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(peer.api.key().clone()).await;
         let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
@@ -935,7 +943,9 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let peer = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(peer.api.key().clone()).await;
         let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
@@ -975,7 +985,9 @@ mod test {
     #[tokio::test]
     async fn local_branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let client = Arc::new(RwLock::new(coco::Peer::tmp(tmp_dir.path()).await?));
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let client = Arc::new(RwLock::new(coco::Peer::new(config).await?));
 
         let path = "../fixtures/git-platinum";
         let api = super::filters(Arc::clone(&client));
@@ -1007,7 +1019,9 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let peer = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(peer.api.key().clone()).await;
         let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
@@ -1128,7 +1142,9 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let peer = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(peer.api.key().clone()).await;
         let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)
@@ -1161,7 +1177,9 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let peer = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(peer.api.key().clone()).await;
         let client = Arc::new(RwLock::new(peer));
         let platinum_project = (client.write().await)

@@ -476,6 +476,7 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
     use radicle_registry_client as protocol;
 
     use crate::avatar;
@@ -487,7 +488,9 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let coco_client = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -544,7 +547,9 @@ mod test {
     #[tokio::test]
     async fn get_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let coco_client = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -605,7 +610,9 @@ mod test {
     #[tokio::test]
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
         let owner = coco::fake_owner(peer.api.key().clone()).await;
         let coco_client = Arc::new(RwLock::new(peer));
         let registry = {
@@ -702,7 +709,9 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let coco_client = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let coco_client = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -751,7 +760,9 @@ mod test {
     #[tokio::test]
     async fn register_member() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let user_peer = coco::Peer::tmp(tmp_dir.path()).await?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let user_peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
