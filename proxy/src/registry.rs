@@ -947,7 +947,7 @@ mod test {
 
         let project = maybe_project.unwrap();
         assert_eq!(project.name, project_name.0);
-        assert_eq!(project.domain, org_id.0);
+        assert_eq!(project.domain, ProjectDomain::Org(org_id.0));
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
