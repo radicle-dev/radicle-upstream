@@ -6,7 +6,6 @@ use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client as registry;
 use std::time::SystemTimeError;
-use thiserror;
 
 /// Project problems.
 #[derive(Debug, thiserror::Error)]

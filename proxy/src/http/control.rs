@@ -111,14 +111,14 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let mut peer = peer.write().await;
 
-        let (id, meta) = peer
+        let meta = peer
             .replicate_platinum(&input.name, &input.description, &input.default_branch)
             .await?;
 
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: id.clone(),
-                shareable_entity_identifier: format!("%{}", id),
+                id: meta.urn().clone(),
+                shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {

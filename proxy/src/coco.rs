@@ -36,23 +36,8 @@ pub struct UserPeer {
     pub api: net::peer::PeerApi,
     /// The paths used to configure this Peer.
     pub paths: paths::Paths, // TODO(finto): Unpublify
+    /// Mocking a way to look up and store projects
     projects: HashMap<RadUrn, project::Project<entity::Draft>>,
-}
-
-// TODO(finto): Stub to resolve to `me`
-#[async_trait]
-impl entity::Resolver<user::User<entity::Draft>> for UserPeer {
-    async fn resolve(&self, _uri: &RadUrn) -> Result<user::User<entity::Draft>, entity::Error> {
-        Ok(self.me.clone())
-    }
-
-    async fn resolve_revision(
-        &self,
-        _uri: &RadUrn,
-        _revision: u64,
-    ) -> Result<user::User<entity::Draft>, entity::Error> {
-        Ok(self.me.clone())
-    }
 }
 
 #[async_trait]
@@ -129,19 +114,19 @@ impl UserPeer {
     #[must_use]
     pub fn list_projects(
         &self,
-    ) -> Result<Vec<(RadUrn, project::Project<entity::Draft>)>, error::Error> {
-        Ok(self.projects.clone().into_iter().collect())
+    ) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
+        Ok(self.projects.values().cloned().collect())
     }
 
     /// Get the project found at `project_urn`.
     pub async fn get_project(
         &self,
         project_urn: &str,
-    ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
+    ) -> Result<project::Project<entity::Draft>, error::Error> {
         // TODO(finto): we need the storage to be a resolver
         let urn = project_urn.parse()?;
         let project = self.resolve(&urn).await?;
-        Ok((urn, project))
+        Ok(project)
     }
 
     /// Initialize a [`librad::project::Project`] in the location of the given `path`.
@@ -155,7 +140,7 @@ impl UserPeer {
         name: &str,
         description: &str,
         default_branch: &str,
-    ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
+    ) -> Result<project::Project<entity::Draft>, error::Error> {
         let key = self.api.key();
 
         // Create the project meta
@@ -173,7 +158,7 @@ impl UserPeer {
         // TODO(finto): mocking
         self.projects.insert(meta.urn().clone(), meta.clone());
 
-        Ok((meta.urn(), meta))
+        Ok(meta)
     }
 
     // This function exists as a standalone because the logic does not play well with async in
@@ -228,7 +213,7 @@ impl UserPeer {
         name: &str,
         description: &str,
         default_branch: &str,
-    ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
+    ) -> Result<project::Project<entity::Draft>, error::Error> {
         // Craft the absolute path to git-platinum fixtures.
         let mut platinum_path = env::current_dir()?;
         platinum_path.push("../fixtures/git-platinum");
@@ -241,9 +226,7 @@ impl UserPeer {
         Self::clone_platinum(platinum_from, platinum_into)?;
 
         // Init as rad project.
-        let (id, project) = self.init_project(name, description, default_branch).await?;
-
-        Ok((id, project))
+        Ok(self.init_project(name, description, default_branch).await?)
     }
 
     /// Creates a small set of projects in [`Paths`].

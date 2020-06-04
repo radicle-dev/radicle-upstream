@@ -625,9 +625,10 @@ mod test {
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
-        let (urn, _meta) = (coco_client.write().await)
+        let meta = (coco_client.write().await)
             .init_project(project_name, project_description, default_branch)
             .await?;
+        let urn = meta.urn();
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);

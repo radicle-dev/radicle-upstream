@@ -73,10 +73,10 @@ pub struct Stats {
 
 /// TODO(xla): Add documentation.
 pub async fn get(peer: &coco::UserPeer, project_urn: &str) -> Result<Project, error::Error> {
-    let (urn, meta) = peer.get_project(&project_urn).await?;
+    let meta = peer.get_project(&project_urn).await?;
 
     Ok(Project {
-        id: urn,
+        id: meta.urn().clone(),
         shareable_entity_identifier: project_urn.to_string(),
         metadata: meta.into(),
         registration: None,

@@ -730,9 +730,11 @@ mod test {
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (client.write().await)
+        let platinum_project = (client.write().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .await?;
+        let urn = platinum_project.urn();
+
         let revision = "master";
         let api = super::filters(Arc::clone(&client));
 
@@ -854,9 +856,10 @@ mod test {
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (client.write().await)
+        let platinum_project = (client.write().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .await?;
+        let urn = platinum_project.urn();
 
         let api = super::filters(Arc::clone(&client));
         let res = request()
@@ -882,9 +885,10 @@ mod test {
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (client.write().await)
+        let platinum_project = (client.write().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .await?;
+        let urn = platinum_project.urn();
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
 
@@ -927,9 +931,10 @@ mod test {
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (client.write().await)
+        let platinum_project = (client.write().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .await?;
+        let urn = platinum_project.urn();
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
@@ -996,10 +1001,11 @@ mod test {
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (client.write().await)
+        let platinum_project = (client.write().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .await
             .unwrap();
+        let urn = platinum_project.urn();
 
         let api = super::filters(Arc::clone(&client));
         let res = request()
@@ -1114,10 +1120,11 @@ mod test {
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (client.write().await)
+        let platinum_project = (client.write().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .await
             .unwrap();
+        let urn = platinum_project.urn();
 
         let api = super::filters(Arc::clone(&client));
         let res = request()
@@ -1144,9 +1151,10 @@ mod test {
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (client.write().await)
+        let platinum_project = (client.write().await)
             .replicate_platinum("git-platinum", "fixture data", "master")
             .await?;
+        let urn = platinum_project.urn();
 
         let revision = "master";
         let prefix = "src";

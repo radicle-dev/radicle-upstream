@@ -158,18 +158,19 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let mut peer = peer.write().await;
 
-        let (id, meta) = peer
+        let meta = peer
             .init_project(
                 &input.metadata.name,
                 &input.metadata.description,
                 &input.metadata.default_branch,
             )
             .await?;
+        let urn = meta.urn();
 
-        let shareable_entity_identifier = format!("%{}", id);
+        let shareable_entity_identifier = format!("%{}", urn);
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id,
+                id: urn.clone(),
                 shareable_entity_identifier,
                 metadata: meta.into(),
                 registration: None,
@@ -198,9 +199,9 @@ mod handler {
         let projects = peer
             .list_projects()?
             .into_iter()
-            .map(|(id, meta)| project::Project {
-                id: id.clone(),
-                shareable_entity_identifier: format!("%{}", id),
+            .map(|meta| project::Project {
+                id: meta.urn().clone(),
+                shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
@@ -550,18 +551,18 @@ mod test {
             .await;
 
         let projects = (&*coco_client.read().await).list_projects()?;
-        let (id, _) = projects.first().unwrap();
+        let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "id": id.to_string(),
+            "id": meta.urn().to_string(),
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
             },
             "registration": Value::Null,
-            "shareableEntityIdentifier": format!("%{}", id.to_string()),
+            "shareableEntityIdentifier": format!("%{}", meta.urn().to_string()),
             "stats": {
                 "branches": 11,
                 "commits": 267,
@@ -589,9 +590,11 @@ mod test {
         let path = repo_dir.path().to_str().unwrap().to_string();
         coco::init_repo(path.clone())?;
 
-        let (urn, _meta) = coco_client
+        let meta = coco_client
             .init_project("Upstream", "Desktop client for radicle.", "master")
             .await?;
+        let urn = meta.urn();
+
         let project = project::get(&coco_client, &urn.to_string()).await?;
 
         let api = super::filters(
@@ -601,7 +604,7 @@ mod test {
         );
         let res = request()
             .method("GET")
-            .path(&format!("/projects/{}", urn.to_string()))
+            .path(&format!("/projects/{}", urn))
             .reply(&api)
             .await;
 
@@ -629,9 +632,9 @@ mod test {
         let projects = coco_client
             .list_projects()?
             .into_iter()
-            .map(|(id, meta)| project::Project {
-                id: id.clone(),
-                shareable_entity_identifier: format!("%{}", id),
+            .map(|meta| project::Project {
+                id: meta.urn().clone(),
+                shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
