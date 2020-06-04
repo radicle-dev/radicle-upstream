@@ -468,7 +468,7 @@ impl ToDocumentedType for MetadataInput {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RegisterInput {
-    /// Id of the Org the project will be registered under.
+    /// The domain the project will be registered under.
     project_domain: registry::ProjectDomain,
     /// Unique name under Org of the project.
     project_name: String,
@@ -480,7 +480,7 @@ impl ToDocumentedType for RegisterInput {
     fn document() -> document::DocumentedType {
         let mut properties = HashMap::with_capacity(3);
         properties.insert(
-            "orgId".into(),
+            "projectDomain".into(),
             document::string()
                 .description("ID of the Org the project will be registered under")
                 .example("monadic"),
