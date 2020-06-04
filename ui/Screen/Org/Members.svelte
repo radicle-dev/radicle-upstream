@@ -56,7 +56,11 @@
 </style>
 
 <Remote {store} let:data={org}>
-  <List items={org.members} let:item={member} on:select={select}>
+  <List
+    items={org.members}
+    let:item={member}
+    on:select={select}
+    dataCy="member-list">
     <div class="member">
       <div class="info">
         <Title>{member.handle}</Title>

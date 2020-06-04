@@ -5,6 +5,7 @@ before(() => {
   cy.createIdentity("coolname");
   cy.registerUser("coolname");
   cy.registerOrg("coolorg");
+  cy.registerAlternativeUser("user2");
 });
 
 context("add member to org", () => {
@@ -12,37 +13,6 @@ context("add member to org", () => {
     cy.visit("public/index.html");
     cy.pick("sidebar", "org-coolorg").click();
     cy.pick("org-screen", "add-member-button").click();
-  });
-
-  context("navigation", () => {
-    it("can be closed by pressing cancel", () => {
-      cy.pick("add-member-modal").contains("Register a member");
-      cy.pick("cancel-button").click();
-      cy.pick("org-screen").should("exist");
-    });
-
-    it("can be closed by pressing escape key", () => {
-      cy.pick("add-member-modal").contains("Register a member");
-      cy.get("body").type("{esc}");
-      cy.pick("org-screen").should("exist");
-    });
-
-    it("can be traversed with navigation buttons", () => {
-      // form -> tx confirmation
-      cy.pick("input").type("coolname");
-      cy.pick("submit-button").click();
-      cy.pick("summary").should("exist");
-
-      // tx confirmation -> form
-      cy.pick("cancel-button").click();
-      cy.pick("input").should("exist");
-
-      // form -> tx confirmation -> submit
-      cy.pick("submit-button").click();
-      cy.pick("summary").should("exist");
-      cy.pick("submit-button").click();
-      cy.pick("org-screen").should("exist");
-    });
   });
 
   context("validations", () => {
@@ -60,31 +30,71 @@ context("add member to org", () => {
     });
   });
 
-  context("transaction", () => {
-    it("shows correct transaction details for confirmation", () => {
-      cy.pick("input").type("coolname");
+  context("transaction confirmation", () => {
+    it("shows correct transaction details", () => {
+      cy.pick("input").type("user2");
       cy.pick("submit-button").click();
 
+      // check the transaction details before submition
       cy.pick("message").contains("Org member registration");
-      cy.pick("subject").contains("coolname");
+      cy.pick("subject").contains("user2");
+    });
+  });
+
+  context("navigation", () => {
+    it("can be closed by pressing cancel", () => {
+      cy.pick("add-member-modal").contains("Register a member");
+      cy.pick("cancel-button").click();
+      cy.pick("org-screen").should("exist");
     });
 
-    // TODO(sos): add actual transaction details check once we can make this tx
-    it.skip("submits correct transaction details to proxy", () => {
-      cy.pick("input").type("coolname");
-      cy.pick("submit-button").click();
-      cy.pick("submit-button").click();
-
-      cy.pick("transaction-center").click();
-
-      // pick most recent transaction
-      cy.pick("transaction-center", "transaction-item").last().click();
-      cy.pick("summary", "message").contains("Org member registration");
-      cy.pick("summary", "subject").contains("coolname");
-      cy.pick("summary", "subject-avatar", "emoji").should(
-        "have.class",
-        "circle"
-      );
+    it("can be closed by pressing escape key", () => {
+      cy.pick("add-member-modal").contains("Register a member");
+      cy.get("body").type("{esc}");
+      cy.pick("org-screen").should("exist");
     });
+
+    it("can be traversed with navigation buttons", () => {
+      // form -> tx confirmation
+      cy.pick("input").type("user2");
+      cy.pick("submit-button").click();
+      cy.pick("summary").should("exist");
+
+      // tx confirmation -> form
+      cy.pick("cancel-button").click();
+      cy.pick("input").should("exist");
+
+      // form -> tx confirmation -> submit
+      cy.pick("submit-button").click();
+      cy.pick("summary").should("exist");
+      cy.pick("submit-button").click();
+      cy.pick("org-screen").should("exist");
+    });
+  });
+});
+
+context("after submitting the transaction", () => {
+  it("shows correct transaction details", () => {
+    // Register a new member
+    cy.visit("public/index.html");
+    cy.pick("sidebar", "org-coolorg").click();
+    // cy.pick("org-screen", "add-member-button").click();
+    // cy.pick("input").type("user2");
+    // cy.pick("submit-button").click();
+    // cy.pick("submit-button").click();
+
+    // pick most recent transaction to check the transaction details
+    cy.pick("transaction-center").click();
+    cy.pick("transaction-center", "transaction-item").first().click();
+    cy.pick("summary", "message").contains("Org member registration");
+    cy.pick("summary", "subject").contains("user2");
+  });
+
+  it("shows both users in the list", () => {
+    cy.visit("public/index.html");
+    cy.pick("sidebar", "org-coolorg").click();
+    cy.pick("horizontal-menu", "Members").click();
+    cy.pick("member-list").contains("coolname");
+    cy.pick("member-list").contains("user2");
   });
 });
