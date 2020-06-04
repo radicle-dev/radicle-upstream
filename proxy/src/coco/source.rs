@@ -180,7 +180,9 @@ pub fn blob<'a>(
     revision: Option<String>,
     maybe_path: Option<String>,
 ) -> Result<Blob, error::Error> {
-    let mut browser = user_peer.project_browser(project_urn)?;
+    let repo = user_peer.project_repo(project_urn)?;
+    let mut browser = surf::vcs::git::Browser::new(&repo)?;
+
     // Best effort to guess the revision.
     let revision = revision.unwrap_or_else(|| default_branch);
     browser.revspec(&revision)?;
@@ -191,7 +193,7 @@ pub fn blob<'a>(
 
     let file = root
         .find_file(p.clone())
-        .ok_or_else(|| error::Error::PathNotFound)?;
+        .ok_or_else(|| error::Error::PathNotFound(p.clone()))?;
 
     let mut commit_path = surf::file_system::Path::root();
     commit_path.append(p.clone());
@@ -220,7 +222,9 @@ pub fn blob<'a>(
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn branches<'a>(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Branch>, error::Error> {
-    let browser = user_peer.project_browser(project_urn)?;
+    let repo = user_peer.project_repo(project_urn)?;
+    let browser = surf::vcs::git::Browser::new(&repo)?;
+
     let mut branches = browser
         .list_branches(None)?
         .into_iter()
@@ -261,7 +265,9 @@ pub fn commit<'a>(
     project_urn: String,
     sha1: &str,
 ) -> Result<Commit, error::Error> {
-    let mut browser = user_peer.project_browser(project_urn)?;
+    let repo = user_peer.project_repo(project_urn)?;
+    let mut browser = surf::vcs::git::Browser::new(&repo)?;
+
     browser.commit(surf::vcs::git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
@@ -280,7 +286,9 @@ pub fn commits<'a>(
     project_urn: String,
     branch: &str,
 ) -> Result<Vec<Commit>, error::Error> {
-    let mut browser = user_peer.project_browser(project_urn)?;
+    let repo = user_peer.project_repo(project_urn)?;
+    let mut browser = surf::vcs::git::Browser::new(&repo)?;
+
     browser.branch(surf::vcs::git::BranchName::new(branch))?;
 
     let commits = browser.get().iter().map(Commit::from).collect();
@@ -294,7 +302,9 @@ pub fn commits<'a>(
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn tags<'a>(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Tag>, error::Error> {
-    let browser = user_peer.project_browser(project_urn)?;
+    let repo = user_peer.project_repo(project_urn)?;
+    let browser = surf::vcs::git::Browser::new(&repo)?;
+
     let tag_names = browser.list_tags()?;
     let mut tags: Vec<Tag> = tag_names
         .into_iter()
@@ -319,7 +329,9 @@ pub fn tree<'a>(
     maybe_revision: Option<String>,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, error::Error> {
-    let mut browser = user_peer.project_browser(project_urn)?;
+    let repo = user_peer.project_repo(project_urn)?;
+    let mut browser = surf::vcs::git::Browser::new(&repo)?;
+
     let revision = maybe_revision.unwrap_or_else(|| default_branch);
     let prefix = maybe_prefix.unwrap_or_default();
 
@@ -337,7 +349,7 @@ pub fn tree<'a>(
     } else {
         root_dir
             .find_directory(path.clone())
-            .ok_or_else(|| error::Error::PathNotFound)?
+            .ok_or_else(|| error::Error::PathNotFound(path.clone()))?
     };
     let mut prefix_contents = prefix_dir.list_directory();
     prefix_contents.sort();

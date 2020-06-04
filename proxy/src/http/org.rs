@@ -257,7 +257,7 @@ mod handler {
         let mut mapped_projects = Vec::new();
         for p in &projects {
             let maybe_project = if let Some(urn) = &p.maybe_project_id {
-                Some(project::get(peer, urn).expect("Project not found"))
+                Some(project::get(peer, urn).await.expect("Project not found"))
             } else {
                 None
             };
@@ -622,11 +622,11 @@ mod test {
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
-        let (urn, _meta) = (&*coco_client.read().await).init_project(
+        let (urn, _meta) = (coco_client.write().await).init_project(
             project_name,
             project_description,
             default_branch,
-        )?;
+        ).await?;
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);

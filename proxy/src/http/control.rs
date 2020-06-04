@@ -112,10 +112,10 @@ mod handler {
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
     {
-        let peer = peer.read().await;
+        let mut peer = peer.write().await;
 
         let (id, meta) =
-            peer.replicate_platinum(&input.name, &input.description, &input.default_branch)?;
+            peer.replicate_platinum(&input.name, &input.description, &input.default_branch).await?;
 
         Ok(reply::with_status(
             reply::json(&project::Project {

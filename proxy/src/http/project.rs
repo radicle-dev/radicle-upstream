@@ -160,13 +160,13 @@ mod handler {
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
     {
-        let peer = peer.read().await;
+        let mut peer = peer.write().await;
 
         let (id, meta) = peer.init_project(
             &input.metadata.name,
             &input.metadata.description,
             &input.metadata.default_branch,
-        )?;
+        ).await?;
 
         let shareable_entity_identifier = format!("%{}", id);
         Ok(reply::with_status(
@@ -189,7 +189,7 @@ mod handler {
     pub async fn get(peer: http::Shared<coco::UserPeer>, urn: String) -> Result<impl Reply, Rejection>
     {
         let peer = &*peer.read().await;
-        Ok(reply::json(&project::get(peer, &urn)?))
+        Ok(reply::json(&project::get(peer, &urn).await?))
     }
 
     /// List all known projects.
@@ -579,7 +579,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let coco_client = coco::UserPeer::tmp(tmp_dir.path()).await?;
+        let mut coco_client = coco::UserPeer::tmp(tmp_dir.path()).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -594,8 +594,8 @@ mod test {
             "Upstream",
             "Desktop client for radicle.",
             "master",
-        )?;
-        let project = project::get(&coco_client, &urn.to_string())?;
+        ).await?;
+        let project = project::get(&coco_client, &urn.to_string()).await?;
 
         let api = super::filters(
             Arc::new(RwLock::new(coco_client)),
@@ -618,14 +618,14 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let coco_client = coco::UserPeer::tmp(tmp_dir.path()).await?;
+        let mut coco_client = coco::UserPeer::tmp(tmp_dir.path()).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let subscriptions = notification::Subscriptions::default();
 
-        coco_client.setup_fixtures(tmp_dir.path().as_os_str().to_str().unwrap())?;
+        coco_client.setup_fixtures(tmp_dir.path().as_os_str().to_str().unwrap()).await?;
 
         let projects = coco_client
             .list_projects()?
@@ -662,7 +662,7 @@ mod test {
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let coco_client = coco::UserPeer::tmp(tmp_dir.path()).await?;
-        let public_key = coco_client.api.public_key();
+        let key = coco_client.api.key().clone();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -679,7 +679,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
-        let owner = coco::fake_owner(public_key);
+        let owner = coco::fake_owner(key.clone());
         let urn = librad::uri::RadUrn::new(
             owner.root_hash().clone(),
             librad::uri::Protocol::Git,

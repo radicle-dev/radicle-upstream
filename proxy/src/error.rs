@@ -41,9 +41,9 @@ pub enum Error {
     #[error(transparent)]
     FS(#[from] surf::file_system::Error),
 
-    /// TODO(fintan)
-    #[error("the path 'TODO' was not found")]
-    PathNotFound,
+    /// Trying to find a file path which could not be found.
+    #[error("the path '{0}' was not found")]
+    PathNotFound(surf::file_system::Path),
 
     /// Originated from `radicle_surf`.
     #[error(transparent)]

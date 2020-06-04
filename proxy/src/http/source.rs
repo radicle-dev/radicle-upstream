@@ -717,6 +717,8 @@ impl ToDocumentedType for coco::TreeEntry {
 )]
 #[cfg(test)]
 mod test {
+    use bytes::Bytes;
+    use http::response::Response;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
@@ -729,12 +731,16 @@ mod test {
     use crate::error;
     use crate::identity;
 
+    fn assert_status(res: &Response<Bytes>) {
+        assert_eq!(res.status(), StatusCode::OK, "response status was not 200, the body is:\n{:#?}", res.body())
+    }
+
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
-            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
+            (client.write().await).replicate_platinum("git-platinum", "fixture data", "master").await?;
         let revision = "master";
         let api = super::filters(Arc::clone(&client));
 
@@ -857,7 +863,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
-            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
+            (client.write().await).replicate_platinum("git-platinum", "fixture data", "master").await?;
 
         let api = super::filters(Arc::clone(&client));
         let res = request()
@@ -873,7 +879,7 @@ mod test {
         assert_eq!(have, json!(want));
         assert_eq!(
             have,
-            json!(["dev", "master", "rad/contributor", "rad/project"]),
+            json!(["dev", "master", "origin/dev", "origin/master"])
         );
 
         Ok(())
@@ -884,7 +890,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
-            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
+            (client.write().await).replicate_platinum("git-platinum", "fixture data", "master").await?;
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
 
@@ -928,7 +934,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
-            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
+            (client.write().await).replicate_platinum("git-platinum", "fixture data", "master").await?;
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
@@ -940,10 +946,11 @@ mod test {
             .reply(&api)
             .await;
 
+        assert_status(&res);
+
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = coco::commits(&*client.read().await, urn.to_string(), branch)?;
 
-        assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
         assert_eq!(have.as_array().unwrap().len(), 14);
 
@@ -995,8 +1002,8 @@ mod test {
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (&*client.read().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+        let (urn, _platinum_project) = (client.write().await)
+            .replicate_platinum("git-platinum", "fixture data", "master").await
             .unwrap();
 
         let api = super::filters(Arc::clone(&client));
@@ -1005,6 +1012,8 @@ mod test {
             .path(&format!("/revisions/{}", urn.to_string()))
             .reply(&api)
             .await;
+
+        assert_status(&res);
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = {
@@ -1030,7 +1039,6 @@ mod test {
                 .collect::<Vec<super::Revision>>()
         };
 
-        assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(want));
         assert_eq!(
             have,
@@ -1054,7 +1062,7 @@ mod test {
                             "emoji": "🏍",
                         },
                     },
-                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
+                    "branches": [ "dev", "master", "origin/dev", "origin/master" ],
                     "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
                 },
                 {
@@ -1076,7 +1084,7 @@ mod test {
                             "emoji": "🛷",
                         },
                     },
-                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
+                    "branches": [ "dev", "master", "origin/dev", "origin/master" ],
                     "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
                 },
                 {
@@ -1098,7 +1106,7 @@ mod test {
                             "emoji": "🗻",
                         },
                     },
-                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
+                    "branches": [ "dev", "master", "origin/dev", "origin/master" ],
                     "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
                 },
             ]),
@@ -1111,8 +1119,8 @@ mod test {
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
-        let (urn, _platinum_project) = (&*client.read().await)
-            .replicate_platinum("git-platinum", "fixture data", "master")
+        let (urn, _platinum_project) = (client.write().await)
+            .replicate_platinum("git-platinum", "fixture data", "master").await
             .unwrap();
 
         let api = super::filters(Arc::clone(&client));
@@ -1141,7 +1149,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let client = Arc::new(RwLock::new(coco::UserPeer::tmp(tmp_dir.path()).await?));
         let (urn, _platinum_project) =
-            (&*client.read().await).replicate_platinum("git-platinum", "fixture data", "master")?;
+            (client.write().await).replicate_platinum("git-platinum", "fixture data", "master").await?;
 
         let revision = "master";
         let prefix = "src";

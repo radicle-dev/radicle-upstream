@@ -1,19 +1,21 @@
 //! Abstractions and utilities for git interactions through the API.
 
+use async_trait::async_trait;
 use std::env;
 
 pub use librad::keys;
-use librad::meta::entity;
+use librad::meta::entity::{self, Resolver as _};
 use librad::meta::project;
 use librad::meta::user;
+use librad::git::storage;
 pub use librad::net;
 pub use librad::peer;
 pub use librad::paths;
-use librad::surf::vcs::git as surf;
 use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
 use std::net::{SocketAddr, IpAddr, Ipv4Addr};
 use std::path;
+use std::collections::HashMap;
 
 use crate::error;
 
@@ -27,11 +29,35 @@ pub use source::{
 /// interact with the protocol.
 pub struct UserPeer {
     /// Me, myself, and I.
-    pub me: user::User<entity::Draft>, // TODO(finto): this should be signed.
+    pub me: user::User<entity::Draft>, // TODO(finto): this should be verified.
     /// The protocol API for shelling out commands.
     pub api: net::peer::PeerApi,
     /// The paths used to configure this Peer.
     pub paths: paths::Paths,
+    projects: HashMap<RadUrn, project::Project<entity::Draft>>,
+}
+
+// TODO(finto): Stub to resolve to `me`
+#[async_trait]
+impl entity::Resolver<user::User<entity::Draft>> for UserPeer {
+    async fn resolve(&self, _uri: &RadUrn) -> Result<user::User<entity::Draft>, entity::Error> {
+        Ok(self.me.clone())
+    }
+
+    async fn resolve_revision(&self, _uri: &RadUrn, _revision: u64) -> Result<user::User<entity::Draft>, entity::Error> {
+        Ok(self.me.clone())
+    }
+}
+
+#[async_trait]
+impl entity::Resolver<project::Project<entity::Draft>> for UserPeer {
+    async fn resolve(&self, uri: &RadUrn) -> Result<project::Project<entity::Draft>, entity::Error> {
+        Ok(self.projects.get(uri).expect("project was missing").clone())
+    }
+
+    async fn resolve_revision(&self, uri: &RadUrn, _revision: u64) -> Result<project::Project<entity::Draft>, entity::Error> {
+        Ok(self.projects.get(uri).expect("project was missing").clone())
+    }
 }
 
 // TODO(finto): Peer is not Sync, so we need to figure out how we share it.
@@ -40,17 +66,21 @@ unsafe impl Sync for UserPeer {}
 impl UserPeer {
     /// We create a default `UserPeer` using the `tmp_dir_path` we provide.
     pub async fn tmp(tmp_dir_path: impl AsRef<path::Path>) -> Result<Self, error::Error> {
-        let secret = keys::SecretKey::new();
-        let me = fake_owner(secret.public());
+        let key = keys::SecretKey::new();
+        let me = fake_owner(key.clone());
         let paths = paths::Paths::from_root(tmp_dir_path)?;
         let gossip_params = Default::default();
-        let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8081);
+        let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
         // TODO(finto): could we initialise with known seeds from a cache?
         let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
         let disco = net::discovery::Static::new(seeds);
 
+        // Initialise the storage
+        let storage = storage::Storage::init(&paths, key.clone())?;
+        let _ = storage.create_repo(&me)?;
+
         let peer_config = net::peer::PeerConfig {
-            key: secret,
+            key,
             paths: paths.clone(),
             listen_addr,
             gossip_params,
@@ -63,18 +93,23 @@ impl UserPeer {
             me,
             api,
             paths, // TODO(finto): See https://github.com/radicle-dev/radicle-link/issues/157
+            projects: HashMap::new(),
         })
     }
 
     /// Fetch a browser for the `project_urn` we supplied to this function.
     ///
     /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
-    pub fn project_browser<'a>(
-        &'a self,
+    pub fn project_repo(
+        &self,
         project_urn: String,
-    ) -> Result<surf::Browser<'a>, error::Error> {
-        let project_urn = project_urn.parse()?;
-        Ok(self.api.storage().browser(&project_urn)?)
+    ) -> Result<git2::Repository, error::Error> {
+        let _project_urn: RadUrn = project_urn.parse()?;
+        // TODO(finto): fetch project meta and build browser
+        let project_name = "git-platinum";
+        let path = self.paths.git_dir().join(project_name);
+
+        Ok(git2::Repository::open(path)?)
     }
 
     /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
@@ -82,22 +117,18 @@ impl UserPeer {
     pub fn list_projects(
         &self,
     ) -> Result<Vec<(RadUrn, project::Project<entity::Draft>)>, error::Error> {
-        let peers = self.api.storage().tracked(&self.me.urn())?;
-        let projects = vec![];
-        for _peer_id in peers {
-            // TODO(finto): fetch the projects via the peer id
-            todo!()
-        }
-        Ok(projects)
+        Ok(self.projects.clone().into_iter().collect())
     }
 
     /// Get the project found at `project_urn`.
-    pub fn get_project(
+    pub async fn get_project(
         &self,
-        _project_urn: &str,
+        project_urn: &str,
     ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
         // TODO(finto): we need the storage to be a resolver
-        todo!()
+        let urn = project_urn.parse()?;
+        let project = self.resolve(&urn).await?;
+        Ok((urn, project))
     }
 
     /// Initialize a [`librad::project::Project`] in the location of the given `path`.
@@ -106,49 +137,35 @@ impl UserPeer {
     ///
     /// Will return [`error::Error`] if the git2 repository is not present for the `path` or any of
     /// the librad interactions fail.
-    pub fn init_project(
-        &self,
+    pub async fn init_project<'a>(
+        &mut self,
         name: &str,
         description: &str,
         default_branch: &str,
     ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
-        // Set up storage
-        let storage = self.api.storage();
+        let key = self.api.key();
 
         // Create the project meta
-        let meta = project::Project::<entity::Draft>::create(name.to_string(), self.me.urn())?
+        let mut meta = project::Project::<entity::Draft>::create(name.to_string(), self.me.urn())?
             .to_builder()
             .set_description(description.to_string())
-            .set_default_branch(default_branch.to_string());
-        let meta = meta.build()?;
+            .set_default_branch(default_branch.to_string())
+            .add_key(key.public())
+            .build()?;
+        meta.sign(&key, &entity::Signatory::User(self.me.urn()), self).await?;
 
+        let storage = self.api.storage().reopen()?;
         let _repo = storage.create_repo(&meta)?;
+
+        // TODO(finto): mocking
+        self.projects.insert(meta.urn().clone(), meta.clone());
 
         Ok((meta.urn(), meta))
     }
 
-    /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
-    /// branch.
-    ///
-    /// # Errors
-    ///
-    /// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
-    /// the coco project.
-    pub fn replicate_platinum(
-        &self,
-        name: &str,
-        description: &str,
-        default_branch: &str,
-    ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
-        // Craft the absolute path to git-platinum fixtures.
-        let mut platinum_path = env::current_dir()?;
-        platinum_path.push("../fixtures/git-platinum");
-        let mut platinum_from = String::from("file://");
-        platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
-
-        // Construct path for fixtures to clone into.
-        let platinum_into = self.paths.git_dir().join("../git-platinum");
-
+    // This function exists as a standalone because the logic does not play well with async in
+    // `replicate_platinum`.
+    fn clone_platinum(platinum_from: String, platinum_into: std::path::PathBuf) -> Result<(), error::Error> {
         // Clone a copy into temp directory.
         let mut fetch_options = git2::FetchOptions::new();
         fetch_options.download_tags(git2::AutotagOption::All);
@@ -159,20 +176,6 @@ impl UserPeer {
             .fetch_options(fetch_options)
             .clone(&platinum_from, platinum_into.as_path())
             .expect("unable to clone fixtures repo");
-
-        let platinum_surf_repo = surf::Repository::new(
-            platinum_into
-                .to_str()
-                .expect("unable to convert into string"),
-        )?;
-        let platinum_browser = surf::Browser::new(&platinum_surf_repo)?;
-
-        let tags = platinum_browser
-            .list_tags()
-            .expect("unable to get list of tags")
-            .iter()
-            .map(|t| format!("+refs/tags/{}", t.name()))
-            .collect::<Vec<String>>();
 
         {
             let branches = platinum_repo.branches(Some(git2::BranchType::Remote))?;
@@ -194,20 +197,42 @@ impl UserPeer {
             }
         }
 
+
+        Ok(())
+    }
+
+    /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
+    /// branch.
+    ///
+    /// # Errors
+    ///
+    /// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
+    /// the coco project.
+    pub async fn replicate_platinum(
+        &mut self,
+        name: &str,
+        description: &str,
+        default_branch: &str,
+    ) -> Result<(RadUrn, project::Project<entity::Draft>), error::Error> {
+        // Craft the absolute path to git-platinum fixtures.
+        let mut platinum_path = env::current_dir()?;
+        platinum_path.push("../fixtures/git-platinum");
+        let mut platinum_from = String::from("file://");
+        platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
+
+        // Construct path for fixtures to clone into.
+        let platinum_into = self.paths.git_dir().join("git-platinum");
+
+        Self::clone_platinum(platinum_from, platinum_into)?;
+
         // Init as rad project.
-        let (id, repo) = self.init_project(
+        let (id, project) = self.init_project(
             name,
             description,
             default_branch,
-        )?;
-        let mut rad_remote = platinum_repo.find_remote("rad")?;
+        ).await?;
 
-        // Push all tags to rad remote.
-        rad_remote.push(&tags.iter().map(String::as_str).collect::<Vec<_>>(), None)?;
-        // Push dev branch.
-        rad_remote.push(&["+refs/heads/dev"], None)?;
-
-        Ok((id, repo))
+        Ok((id, project))
     }
 
     /// Creates a small set of projects in [`Paths`].
@@ -216,7 +241,7 @@ impl UserPeer {
     ///
     /// Will error if filesystem access is not granted or broken for the configured
     /// [`librad::paths::Paths`].
-    pub fn setup_fixtures(&self, root: &str) -> Result<(), error::Error> {
+    pub async fn setup_fixtures(&mut self, root: &str) -> Result<(), error::Error> {
         let infos = vec![
             ("monokel", "A looking glass into the future", "master"),
             (
@@ -241,7 +266,7 @@ impl UserPeer {
             std::fs::create_dir_all(path.clone())?;
 
             init_repo(path.clone())?;
-            self.init_project(info.0, info.1, info.2)?;
+            self.init_project(info.0, info.1, info.2).await?;
         }
 
         Ok(())
@@ -250,6 +275,8 @@ impl UserPeer {
 
 /// Constructs a fake user to be used as an owner of projects until we have more permanent key and
 /// user management.
-pub fn fake_owner(p: keys::PublicKey) -> user::User<entity::Draft> {
-    user::User::<entity::Draft>::create("cloudhead".into(), p).expect("unable to create user")
+pub fn fake_owner(key: keys::SecretKey) -> user::User<entity::Draft> {
+    let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public().clone()).expect("unable to create user");
+    user.sign_owned(&key).expect("unable to sign user");
+    user
 }

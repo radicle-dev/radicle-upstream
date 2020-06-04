@@ -110,9 +110,9 @@ checksum = "cff77d8686867eceff3105329d4698d96c2391c176d5d03adc90c7389162b5b8"
 
 [[package]]
 name = "async-trait"
-version = "0.1.31"
+version = "0.1.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26c4f3195085c36ea8d24d32b2f828d23296a9370a28aa39d111f6f16bef9f3b"
+checksum = "0eb7f9ad01405feb3c1dac82463038945cf88eea4569acaf3ad662233496dd96"
 dependencies = [
  "proc-macro2 1.0.18",
  "quote 1.0.6",
@@ -1573,7 +1573,7 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=be2d757ed19877c399d7a25ef8e25471edd26a03#be2d757ed19877c399d7a25ef8e25471edd26a03"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=6be43773712dd5d470c2f23ff392ed834a749d03#6be43773712dd5d470c2f23ff392ed834a749d03"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1986,9 +1986,9 @@ checksum = "6954982ece17426b038f84895b4a6771c541299dc7141fab20ee676b19d9d97f"
 
 [[package]]
 name = "nonempty"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab47dfd48409c1c38b632639cce6e919d1ad2771ddbb5e338e12ae6f42de2f2d"
+checksum = "9ff7ac1e5ea23db6d61ad103e91864675049644bf47c35912336352fa4e9c109"
 
 [[package]]
 name = "nonzero_ext"
@@ -2312,9 +2312,9 @@ dependencies = [
 
 [[package]]
 name = "paste"
-version = "0.1.15"
+version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d53181dcd37421c08d3b69f887784956674d09c3f9a47a04fece2b130a5b346b"
+checksum = "d508492eeb1e5c38ee696371bf7b9fc33c83d46a7d451606b96458fbbbdc2dec"
 dependencies = [
  "paste-impl",
  "proc-macro-hack",
@@ -2322,9 +2322,9 @@ dependencies = [
 
 [[package]]
 name = "paste-impl"
-version = "0.1.15"
+version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05ca490fa1c034a71412b4d1edcb904ec5a0981a4426c9eb2128c0fda7a68d17"
+checksum = "84f328a6a63192b333fce5fbb4be79db6758a4d518dfac6d54412f1492f72d32"
 dependencies = [
  "proc-macro-hack",
  "proc-macro2 1.0.18",
@@ -2580,9 +2580,11 @@ name = "proxy"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bytes 0.5.4",
  "directories",
  "futures 0.3.5",
  "hex",
+ "http",
  "kv",
  "librad",
  "log 0.4.8",
@@ -2674,7 +2676,7 @@ dependencies = [
 [[package]]
 name = "radicle-keystore"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=be2d757ed19877c399d7a25ef8e25471edd26a03#be2d757ed19877c399d7a25ef8e25471edd26a03"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=6be43773712dd5d470c2f23ff392ed834a749d03#6be43773712dd5d470c2f23ff392ed834a749d03"
 dependencies = [
  "lazy_static",
  "rpassword",
@@ -2766,10 +2768,12 @@ dependencies = [
 [[package]]
 name = "radicle-surf"
 version = "0.2.1"
-source = "git+https://github.com/radicle-dev/radicle-surf?rev=18bb6ff3641cd2c9785fd441872e9a8c13dd3bbc#18bb6ff3641cd2c9785fd441872e9a8c13dd3bbc"
+source = "git+https://github.com/radicle-dev/radicle-surf?rev=e484b1b13dfdbdb8e078095b3b28737b042155c3#e484b1b13dfdbdb8e078095b3b28737b042155c3"
 dependencies = [
  "git2",
- "nonempty 0.4.0",
+ "lazy_static",
+ "nonempty 0.5.0",
+ "regex",
  "thiserror",
 ]
 
@@ -3092,8 +3096,7 @@ dependencies = [
 [[package]]
 name = "rustls"
 version = "0.17.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0d4a31f5d68413404705d6982529b0e11a9aacd4839d1d6222ee3b8cb4015e1"
+source = "git+https://github.com/kim/rustls?rev=558405ac3c229947ca17b9285d60368ce67835ce#558405ac3c229947ca17b9285d60368ce67835ce"
 dependencies = [
  "base64 0.11.0",
  "log 0.4.8",
@@ -4303,9 +4306,9 @@ checksum = "e987b6bf443f4b5b3b6f38704195592cca41c5bb7aedd3c3693c7081f8289860"
 
 [[package]]
 name = "tracing"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7c6b59d116d218cb2d990eb06b77b64043e0268ef7323aae63d8b30ae462923"
+checksum = "a41f40ed0e162c911ac6fcb53ecdc8134c46905fdbbae8c50add462a538b495f"
 dependencies = [
  "cfg-if",
  "tracing-attributes",
