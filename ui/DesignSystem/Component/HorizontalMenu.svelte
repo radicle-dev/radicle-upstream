@@ -33,7 +33,7 @@
   }
 </style>
 
-<nav data-cy="project-topbar-menu">
+<nav data-cy="horizontal-menu">
   <ul class="menu-list">
     {#each items as item, i}
       <li class="menu-list-item">

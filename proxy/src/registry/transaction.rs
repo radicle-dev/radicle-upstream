@@ -109,6 +109,14 @@ pub enum Message {
         /// Identity id originated from librad.
         id: Option<String>,
     },
+
+    /// Issue a member registration for a given handle under a given org.
+    MemberRegistration {
+        /// Globally unique user handle.
+        handle: registry::Id,
+        /// The Org in which to register the member.
+        org_id: registry::Id,
+    },
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and

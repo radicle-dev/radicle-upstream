@@ -1,10 +1,11 @@
 <script>
-  import { mockMemberList } from "../../src/org.ts";
+  import { org as store } from "../../src/org.ts";
 
   import { Icon, Text, Title } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     List,
+    Remote,
   } from "../../DesignSystem/Component";
 
   // TODO(sos): replace console.log's with actual navigation
@@ -54,24 +55,30 @@
   }
 </style>
 
-<List items={mockMemberList} let:item={member} on:select={select}>
-  <div class="member">
-    <div class="info">
-      <Title>{member.handle}</Title>
-      <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
-    </div>
+<Remote {store} let:data={org}>
+  <List
+    items={org.members}
+    let:item={member}
+    on:select={select}
+    dataCy="member-list">
+    <div class="member">
+      <div class="info">
+        <Title>{member.handle}</Title>
+        <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
+      </div>
 
-    <div class="membership-details">
-      {#if member.pending}
-        <div class="pending">
-          <Text
-            variant="tiny"
-            style="color: var(--color-caution); padding: 8px;">
-            Pending
-          </Text>
-        </div>
-      {/if}
-      <AdditionalActionsDropdown menuItems={menuItems(member)} />
+      <div class="membership-details">
+        {#if member.pending}
+          <div class="pending">
+            <Text
+              variant="tiny"
+              style="color: var(--color-caution); padding: 8px;">
+              Pending
+            </Text>
+          </div>
+        {/if}
+        <AdditionalActionsDropdown menuItems={menuItems(member)} />
+      </div>
     </div>
-  </div>
-</List>
+  </List>
+</Remote>

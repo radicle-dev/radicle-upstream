@@ -3,7 +3,12 @@ import { User } from "../user"
 
 type MockedResponse = Org | User | null
 
-const radicleMock = {
+// just to give an idea of how we'd stub the api with other endpoints
+const userMock: User = {
+  handle: "rafalca"
+}
+
+const radicleMock: Org = {
   id: "radicle",
   shareableEntityIdentifier: "radicle@123abcd.git",
   avatarFallback: {
@@ -11,12 +16,8 @@ const radicleMock = {
       r: 255, g: 67, b: 34
     },
     emoji: "🔥"
-  }
-}
-
-// just to give an idea of how we'd stub the api with other endpoints
-const userMock = {
-  handle: "rafalca"
+  },
+  members: [userMock]
 }
 
 export const get = async (endpoint: string): Promise<MockedResponse> => {

@@ -501,7 +501,10 @@ impl Client for Registry {
         let tx = Transaction::confirmed(
             Hash(applied.tx_hash),
             block.number,
-            Message::OrgRegistration { id: org_id.clone() },
+            Message::MemberRegistration {
+                org_id: org_id.clone(),
+                handle: user_id,
+            },
         );
 
         Ok(tx)
