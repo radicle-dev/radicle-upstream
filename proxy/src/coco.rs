@@ -1,7 +1,11 @@
 //! Abstractions and utilities for git interactions through the API.
 
-use async_trait::async_trait;
+use std::collections::HashMap;
 use std::env;
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::path;
+
+use async_trait::async_trait;
 
 use librad::git::storage;
 pub use librad::keys;
@@ -11,11 +15,9 @@ use librad::meta::user;
 pub use librad::net;
 pub use librad::paths;
 pub use librad::peer;
+use librad::surf::vcs::git as surf;
 use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
-use std::collections::HashMap;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::path;
 
 use crate::error;
 
