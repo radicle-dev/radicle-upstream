@@ -115,13 +115,14 @@ impl UserPeer {
     /// Fetch a browser for the `project_urn` we supplied to this function.
     ///
     /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
-    pub fn project_repo(&self, project_urn: String) -> Result<git2::Repository, error::Error> {
-        let _project_urn: RadUrn = project_urn.parse()?;
+    pub fn project_repo(&self, _project_urn: String) -> Result<surf::Repository, error::Error> {
         // TODO(finto): fetch project meta and build browser
         let project_name = "git-platinum";
         let path = self.paths.git_dir().join(project_name);
+        // TODO(finto): https://github.com/radicle-dev/radicle-surf/issues/126
+        let repo = surf::Repository::new(path.to_str().unwrap())?;
 
-        Ok(git2::Repository::open(path)?)
+        Ok(repo)
     }
 
     /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
