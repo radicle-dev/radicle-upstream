@@ -78,10 +78,6 @@ context("after submitting the transaction", () => {
     // Register a new member
     cy.visit("public/index.html");
     cy.pick("sidebar", "org-coolorg").click();
-    // cy.pick("org-screen", "add-member-button").click();
-    // cy.pick("input").type("user2");
-    // cy.pick("submit-button").click();
-    // cy.pick("submit-button").click();
 
     // pick most recent transaction to check the transaction details
     cy.pick("transaction-center").click();
