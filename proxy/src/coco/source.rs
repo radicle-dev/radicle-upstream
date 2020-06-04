@@ -173,7 +173,7 @@ pub struct TreeEntry {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
-pub fn blob<'a>(
+pub fn blob(
     user_peer: &UserPeer,
     project_urn: String,
     default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
@@ -221,7 +221,7 @@ pub fn blob<'a>(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches<'a>(
+pub fn branches(
     user_peer: &UserPeer,
     project_urn: String,
 ) -> Result<Vec<Branch>, error::Error> {
@@ -263,7 +263,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit<'a>(
+pub fn commit(
     user_peer: &UserPeer,
     project_urn: String,
     sha1: &str,
@@ -284,7 +284,7 @@ pub fn commit<'a>(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits<'a>(
+pub fn commits(
     user_peer: &UserPeer,
     project_urn: String,
     branch: &str,
@@ -304,7 +304,7 @@ pub fn commits<'a>(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn tags<'a>(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Tag>, error::Error> {
+pub fn tags(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Tag>, error::Error> {
     let repo = user_peer.project_repo(project_urn)?;
     let browser = surf::vcs::git::Browser::new(&repo)?;
 
@@ -325,7 +325,7 @@ pub fn tags<'a>(user_peer: &UserPeer, project_urn: String) -> Result<Vec<Tag>, e
 ///
 /// Will return [`error::Error`] if any of the surf interactions fail.
 /// TODO(fintohaps): default branch fall back from Browser
-pub fn tree<'a>(
+pub fn tree(
     user_peer: &UserPeer,
     project_urn: String,
     default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
