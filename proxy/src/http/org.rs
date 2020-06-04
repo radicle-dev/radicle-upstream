@@ -4,6 +4,7 @@ use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
+use std::convert::From;
 use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
@@ -545,6 +546,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
+        let project_domain = protocol::ProjectDomain::Org(org_id.clone().into());
         let project_name = registry::ProjectName::try_from("upstream")?;
 
         // Register the user
@@ -565,7 +567,7 @@ mod test {
         registry
             .write()
             .await
-            .register_project(&author, org_id.clone(), project_name.clone(), None, 10)
+            .register_project(&author, project_domain.into(), project_name.clone(), None, 10)
             .await?;
 
         let res = request()
@@ -624,6 +626,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
+        let project_domain = protocol::ProjectDomain::Org(org_id.clone().into());
         let project_name = registry::ProjectName::try_from(project_name)?;
 
         registry
@@ -645,7 +648,7 @@ mod test {
             .await
             .register_project(
                 &author,
-                org_id.clone(),
+                project_domain.into(),
                 project_name.clone(),
                 Some(
                     librad::project::ProjectId::from_str(&project_id.to_string())

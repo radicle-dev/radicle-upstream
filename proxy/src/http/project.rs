@@ -4,7 +4,7 @@ use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
-use std::convert::TryFrom;
+use std::convert::{From, Into, TryFrom};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
@@ -232,10 +232,10 @@ mod handler {
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
-        let org_id = registry::Id::try_from(input.org_id)?;
+        let project_domain = input.project_domain;
         let project_name = registry::ProjectName::try_from(input.project_name)?;
         let tx = reg
-            .register_project(&fake_pair, org_id, project_name, maybe_coco_id, fake_fee)
+            .register_project(&fake_pair, project_domain, project_name, maybe_coco_id, fake_fee)
             .await?;
 
         subscriptions
@@ -469,7 +469,7 @@ impl ToDocumentedType for MetadataInput {
 #[serde(rename_all = "camelCase")]
 pub struct RegisterInput {
     /// Id of the Org the project will be registered under.
-    org_id: String,
+    project_domain: registry::ProjectDomain,
     /// Unique name under Org of the project.
     project_name: String,
     /// Optionally passed coco id to store for attestion.
@@ -519,6 +519,7 @@ mod test {
     use crate::notification;
     use crate::project;
     use crate::registry::{self, Cache as _, Client as _};
+    use radicle_registry_client as protocol;
 
     #[tokio::test]
     async fn create() {
@@ -673,6 +674,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
+        let project_domain = protocol::ProjectDomain::Org(org_id.clone().into());
 
         // Register user.
         cache
@@ -693,7 +695,7 @@ mod test {
             .path("/projects/register")
             .json(&super::RegisterInput {
                 project_name: "upstream".into(),
-                org_id: org_id.to_string(),
+                project_domain: project_domain.into(),
                 maybe_coco_id: Some("1234.git".to_string()),
             })
             .reply(&api)

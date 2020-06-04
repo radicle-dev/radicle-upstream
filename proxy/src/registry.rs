@@ -10,7 +10,7 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
-use radicle_registry_client::{self as protocol, ClientT, CryptoPair, ProjectDomain};
+use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 
 use crate::avatar;
 use crate::error;
@@ -33,6 +33,12 @@ impl TryFrom<String> for Id {
 
     fn try_from(input: String) -> Result<Self, error::Error> {
         Ok(Self(protocol::Id::try_from(input)?))
+    }
+}
+
+impl Into<protocol::Id> for Id {
+    fn into(self) -> protocol::Id {
+        self.0
     }
 }
 
@@ -64,6 +70,44 @@ impl Serialize for Id {
         S: Serializer,
     {
         serializer.serialize_str(&self.0.to_string())
+    }
+}
+
+/// Tmp
+#[derive(Clone, Debug, PartialEq)]
+pub struct ProjectDomain(protocol::ProjectDomain);
+
+// TODO(xla): This should go into the radicle-registry.
+impl Serialize for ProjectDomain {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.0.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for ProjectDomain {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s: &str = Deserialize::deserialize(deserializer)?;
+        let id = Id::try_from(s).map_err(|_err| {
+            serde::de::Error::invalid_value(
+                serde::de::Unexpected::Str(s),
+                &"a Registry ProjectDomain id",
+            )
+        })?;
+
+        //TODO(nuno): make this right
+        Ok(protocol::ProjectDomain::Org(id.0).into())
+    }
+}
+
+impl From<protocol::ProjectDomain> for ProjectDomain {
+    fn from(pd: protocol::ProjectDomain) -> Self {
+        ProjectDomain(pd)
     }
 }
 
@@ -293,7 +337,7 @@ pub trait Client: Clone + Send + Sync {
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: Id,
+        project_domain: ProjectDomain,
         project_name: ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: protocol::Balance,
@@ -507,6 +551,7 @@ impl Client for Registry {
         Ok(tx)
     }
 
+    //TODO(nuno) make it for for any domain
     async fn get_project(
         &self,
         org_id: Id,
@@ -514,7 +559,7 @@ impl Client for Registry {
     ) -> Result<Option<Project>, error::Error> {
         Ok(self
             .client
-            .get_project(project_name.clone().0, ProjectDomain::Org(org_id.clone().0))
+            .get_project(project_name.clone().0, protocol::ProjectDomain::Org(org_id.clone().0))
             .await?
             .map(|project| {
                 let metadata_vec: Vec<u8> = project.metadata.into();
@@ -536,7 +581,7 @@ impl Client for Registry {
         let ids = self.client.list_projects().await?;
         let mut projects = Vec::new();
         for id in &ids {
-            if id.1 == ProjectDomain::Org(org_id.clone().0) {
+            if id.1 == protocol::ProjectDomain::Org(org_id.clone().0) {
                 projects.push(
                     self.get_project(org_id.clone(), ProjectName(id.clone().0))
                         .await?
@@ -554,7 +599,7 @@ impl Client for Registry {
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: Id,
+        project_domain: ProjectDomain,
         project_name: ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: protocol::Balance,
@@ -598,7 +643,7 @@ impl Client for Registry {
         // Prepare and submit project registration transaction.
         let register_message = protocol::message::RegisterProject {
             project_name: project_name.0.clone(),
-            project_domain: ProjectDomain::Org(org_id.0.clone()),
+            project_domain: project_domain.clone().0,
             checkpoint_id,
             metadata: register_metadata,
         };
@@ -620,7 +665,7 @@ impl Client for Registry {
             block.number,
             Message::ProjectRegistration {
                 project_name,
-                org_id,
+                project_domain,
             },
         ))
     }
@@ -845,7 +890,7 @@ mod test {
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
 
-        // Register the user
+        // Register the user.
         let user_registration = registry
             .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
             .await;
@@ -871,6 +916,7 @@ mod test {
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
+        let project_domain = protocol::ProjectDomain::Org(org_id.clone().into());
         let project_name = ProjectName::try_from("upstream")?;
 
         // Register the user
@@ -887,7 +933,7 @@ mod test {
         let result = registry
             .register_project(
                 &author,
-                org_id.clone(),
+                project_domain.into(),
                 project_name.clone(),
                 Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
                 10,
@@ -915,6 +961,7 @@ mod test {
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
+        let project_domain = protocol::ProjectDomain::Org(org_id.clone().into());
         let project_name = ProjectName::try_from("radicle")?;
 
         // Register the user
@@ -931,7 +978,7 @@ mod test {
         let result = registry
             .register_project(
                 &author,
-                org_id.clone(),
+                project_domain.into(),
                 project_name.clone(),
                 Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
                 10,

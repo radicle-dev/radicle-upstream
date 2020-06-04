@@ -220,6 +220,7 @@ mod test {
     use warp::test::request;
 
     use crate::registry::{self, Cache as _};
+    use radicle_registry_client as protocol;
 
     #[tokio::test]
     async fn list() {
@@ -236,7 +237,7 @@ mod test {
             id: registry::Hash(radicle_registry_client::TxHash::random()),
             messages: vec![registry::Message::ProjectRegistration {
                 project_name: registry::ProjectName::try_from("upstream").unwrap(),
-                org_id: registry::Id::try_from("radicle").unwrap(),
+                project_domain: protocol::ProjectDomain::Org(registry::Id::try_from("radicle").unwrap().into()).into(),
             }],
             state: registry::State::Confirmed {
                 block: 1,
