@@ -39,7 +39,7 @@ where
 
 /// Combination of all control filters.
 #[allow(dead_code)]
-fn filters<R, C>(
+fn filters<R>(
     peer: http::Shared<coco::UserPeer>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
