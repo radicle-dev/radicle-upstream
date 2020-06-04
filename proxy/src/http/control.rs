@@ -29,8 +29,9 @@ pub fn routes<R: registry::Client>(
         .and(
             create_project_filter(Arc::clone(&librad_paths))
                 .or(nuke_coco_filter(librad_paths))
-                .or(nuke_registry_filter(registry))
-                .or(nuke_session_filter(store)),
+                .or(nuke_registry_filter(Arc::clone(&registry)))
+                .or(nuke_session_filter(store))
+                .or(register_user_filter(registry)),
         )
 }
 
@@ -43,11 +44,12 @@ fn filters<R: registry::Client>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     create_project_filter(Arc::clone(&librad_paths))
         .or(nuke_coco_filter(librad_paths))
-        .or(nuke_registry_filter(registry))
+        .or(nuke_registry_filter(Arc::clone(&registry)))
         .or(nuke_session_filter(store))
+        .or(register_user_filter(registry))
 }
 
-/// POST /nuke/create-project
+/// POST /create-project
 fn create_project_filter(
     librad_paths: Arc<RwLock<paths::Paths>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -55,6 +57,16 @@ fn create_project_filter(
         .and(super::with_paths(librad_paths))
         .and(warp::body::json())
         .and_then(handler::create_project)
+}
+
+/// POST /register-user
+fn register_user_filter<R: registry::Client>(
+    registry: http::Shared<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path!("register-user")
+        .and(http::with_shared(registry))
+        .and(warp::body::json())
+        .and_then(handler::register_user)
 }
 
 /// GET /nuke/coco
@@ -88,6 +100,8 @@ fn nuke_session_filter(
 mod handler {
     use kv::Store;
     use librad::paths::Paths;
+    use radicle_registry_client::Balance;
+    use std::convert::TryFrom;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -130,6 +144,24 @@ mod handler {
         ))
     }
 
+    /// Register a user with another key
+    pub async fn register_user<R: registry::Client>(
+        registry: http::Shared<R>,
+        input: super::RegisterInput,
+    ) -> Result<impl Reply, Rejection> {
+        let fake_pair =
+            radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
+        let fake_fee: Balance = 100;
+
+        let handle = registry::Id::try_from(input.handle)?;
+        let reg = registry.write().await;
+        reg.register_user(&fake_pair, handle.clone(), None, fake_fee)
+            .await
+            .expect("unable to register user");
+
+        Ok(reply::json(&true))
+    }
+
     /// Reset the coco state by creating a new temporary directory for the librad paths.
     pub async fn nuke_coco(librad_paths: Arc<RwLock<Paths>>) -> Result<impl Reply, Rejection> {
         let dir = tempfile::tempdir().expect("tmp dir creation failed");
@@ -165,10 +197,18 @@ mod handler {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateInput {
-    /// Name of the proejct.
+    /// Name of the project.
     name: String,
     /// Long form outline.
     description: String,
     /// Configured default branch.
     default_branch: String,
+}
+
+/// Input for user registration.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RegisterInput {
+    /// Handle of the user.
+    handle: String,
 }
