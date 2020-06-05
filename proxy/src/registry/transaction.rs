@@ -229,6 +229,7 @@ where
         }
     }
 
+    #[allow(clippy::integer_arithmetic)] // TODO(finto): Not so sure about this one, but don't quite understand the logic below.
     /// Updates cached transactions progress given the latest height.
     fn advance(&self, best_height: protocol::BlockNumber) -> Result<(), error::Error> {
         let mut txs = self.list_transactions(vec![])?;
