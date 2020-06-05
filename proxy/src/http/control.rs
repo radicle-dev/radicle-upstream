@@ -12,7 +12,7 @@ use crate::registry;
 /// Prefixed control filters.
 pub fn routes<R>(
     enable: bool,
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
     owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
@@ -41,7 +41,7 @@ where
 /// Combination of all control filters.
 #[allow(dead_code)]
 fn filters<R>(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
     owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
@@ -57,11 +57,11 @@ where
 
 /// POST /nuke/create-project
 fn create_project_filter(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
     owner: http::Shared<coco::User>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
-        .and(super::with_shared(peer))
+        .and(super::with_peer(peer))
         .and(super::with_shared(owner))
         .and(warp::body::json())
         .and_then(handler::create_project)
@@ -69,10 +69,10 @@ fn create_project_filter(
 
 /// GET /nuke/coco
 fn nuke_coco_filter(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
-        .and(super::with_shared(peer))
+        .and(super::with_peer(peer))
         .and_then(handler::nuke_coco)
 }
 
@@ -110,12 +110,12 @@ mod handler {
 
     /// Create a project from the fixture repo.
     pub async fn create_project(
-        peer: http::Shared<coco::Peer>,
+        mut peer: Arc<coco::Peer>,
         owner: http::Shared<coco::User>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let mut peer = peer.write().await;
         let owner = &*owner.read().await;
+        let peer = Arc::make_mut(&mut peer);
 
         let meta = peer
             .replicate_platinum(
@@ -143,7 +143,7 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(_peer: http::Shared<coco::Peer>) -> Result<impl Reply, Rejection> {
+    pub async fn nuke_coco(_peer: Arc<coco::Peer>) -> Result<impl Reply, Rejection> {
         // let tmp = coco::Coco::tmp()?;
         // let mut coco: coco::Coco = &mut *coco.write().await;
         // *coco = tmp;

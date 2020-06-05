@@ -16,7 +16,7 @@ use crate::registry;
 
 /// Combination of all routes.
 pub fn filters<R>(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
     owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
@@ -32,12 +32,12 @@ where
 
 /// `POST /projects`
 fn create_filter(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
     owner: http::Shared<coco::User>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
-        .and(http::with_shared(peer))
+        .and(http::with_peer(peer))
         .and(http::with_shared(owner))
         .and(warp::body::json())
         .and(document::document(document::description(
@@ -59,11 +59,11 @@ fn create_filter(
 
 /// `GET /projects/<id>`
 fn get_filter(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("projects")
         .and(warp::get())
-        .and(http::with_shared(peer))
+        .and(http::with_peer(peer))
         .and(document::param::<String>("id", "Project id"))
         .and(document::document(document::description(
             "Find Project by ID",
@@ -88,11 +88,11 @@ fn get_filter(
 
 /// `GET /projects`
 fn list_filter(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
-        .and(http::with_shared(peer))
+        .and(http::with_peer(peer))
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -145,6 +145,7 @@ mod handler {
     use radicle_registry_client::Balance;
     use std::convert::TryFrom;
     use std::str::FromStr;
+    use std::sync::Arc;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -156,14 +157,13 @@ mod handler {
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        peer: http::Shared<coco::Peer>,
+        mut peer: Arc<coco::Peer>,
         owner: http::Shared<coco::User>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let mut peer = peer.write().await;
         let owner = &*owner.read().await;
+        let peer = Arc::make_mut(&mut peer);
 
-        // TODO(finto): Still using `peer.me` but we should pass the owner in
         let meta = peer
             .init_project(
                 &owner,
@@ -192,14 +192,12 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(peer: http::Shared<coco::Peer>, urn: String) -> Result<impl Reply, Rejection> {
-        let peer = &*peer.read().await;
-        Ok(reply::json(&project::get(peer, &urn).await?))
+    pub async fn get(peer: Arc<coco::Peer>, urn: String) -> Result<impl Reply, Rejection> {
+        Ok(reply::json(&project::get(&peer, &urn).await?))
     }
 
     /// List all known projects.
-    pub async fn list(peer: http::Shared<coco::Peer>) -> Result<impl Reply, Rejection> {
-        let peer = peer.read().await;
+    pub async fn list(peer: Arc<coco::Peer>) -> Result<impl Reply, Rejection> {
         let projects = peer
             .list_projects()?
             .into_iter()
@@ -529,8 +527,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
         let peer = coco::Peer::new(config).await?;
-        let owner = Arc::new(RwLock::new(coco::fake_owner(peer.api.key().clone()).await));
-        let coco_client = Arc::new(RwLock::new(peer));
+        let owner = Arc::new(RwLock::new(coco::fake_owner(&peer).await));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -541,8 +538,10 @@ mod test {
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
 
+        let peer = Arc::new(peer);
+
         let api = super::filters(
-            Arc::clone(&coco_client),
+            Arc::clone(&peer),
             Arc::clone(&owner),
             Arc::new(RwLock::new(registry)),
             subscriptions,
@@ -561,7 +560,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = (&*coco_client.read().await).list_projects()?;
+        let projects = peer.list_projects()?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -592,8 +591,8 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let mut coco_client = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(coco_client.api.key().clone()).await;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -604,15 +603,15 @@ mod test {
         let path = repo_dir.path().to_str().unwrap().to_string();
         coco::init_repo(path.clone())?;
 
-        let meta = coco_client
+        let meta = peer
             .init_project(&owner, "Upstream", "Desktop client for radicle.", "master")
             .await?;
         let urn = meta.urn();
 
-        let project = project::get(&coco_client, &urn.to_string()).await?;
+        let project = project::get(&peer, &urn.to_string()).await?;
 
         let api = super::filters(
-            Arc::new(RwLock::new(coco_client)),
+            Arc::new(peer),
             Arc::new(RwLock::new(owner)),
             Arc::new(RwLock::new(registry)),
             subscriptions,
@@ -635,19 +634,18 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let mut coco_client = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(coco_client.api.key().clone()).await;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let subscriptions = notification::Subscriptions::default();
 
-        coco_client
-            .setup_fixtures(&owner, tmp_dir.path().as_os_str().to_str().unwrap())
+        peer.setup_fixtures(&owner, tmp_dir.path().as_os_str().to_str().unwrap())
             .await?;
 
-        let projects = coco_client
+        let projects = peer
             .list_projects()?
             .into_iter()
             .map(|meta| project::Project {
@@ -664,7 +662,7 @@ mod test {
             .collect::<Vec<project::Project>>();
 
         let api = super::filters(
-            Arc::new(RwLock::new(coco_client)),
+            Arc::new(peer),
             Arc::new(RwLock::new(owner)),
             Arc::new(RwLock::new(registry)),
             subscriptions,
@@ -684,9 +682,8 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let coco_client = coco::Peer::new(config).await?;
-        let key = coco_client.api.key().clone();
-        let owner = coco::fake_owner(key.clone()).await;
+        let peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -696,7 +693,7 @@ mod test {
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
-            Arc::new(RwLock::new(coco_client)),
+            Arc::new(peer),
             Arc::new(RwLock::new(owner.clone())),
             Arc::clone(&cache),
             subscriptions,

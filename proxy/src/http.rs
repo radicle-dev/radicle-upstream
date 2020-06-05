@@ -32,7 +32,7 @@ pub fn api<R>(
 where
     R: registry::Cache + registry::Client + 'static,
 {
-    let peer = Arc::new(RwLock::new(peer));
+    let peer = Arc::new(peer);
     let owner = Arc::new(RwLock::new(owner));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
@@ -61,7 +61,7 @@ where
                 subscriptions.clone(),
             ))
             .or(session::routes(Arc::clone(&registry), Arc::clone(&store)))
-            .or(source::routes(Arc::clone(&peer)))
+            .or(source::routes(peer))
             .or(transaction::filters(Arc::clone(&registry)))
             .or(user::routes(registry, store, subscriptions)),
     );
@@ -105,6 +105,14 @@ where
     T: Send + Sync,
 {
     warp::any().map(move || Arc::clone(&container))
+}
+
+/// State filter to expose a [`Peer`].
+#[must_use]
+pub fn with_peer(
+    peer: Arc<coco::Peer>,
+) -> impl Filter<Extract = (Arc<coco::Peer>,), Error = Infallible> + Clone {
+    warp::any().map(move || Arc::clone(&peer))
 }
 
 /// State filter to expose [`kv::Store`] to handlers.

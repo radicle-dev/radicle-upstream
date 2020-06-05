@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 use std::env;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 
@@ -32,13 +33,14 @@ pub type User = user::User<entity::Verified>;
 
 /// `Peer` carries the user that is logged-in as well as the [`peer::PeerApi`] so we can
 /// interact with the protocol.
+#[derive(Clone)]
 pub struct Peer {
     /// The protocol API for shelling out commands.
-    pub api: net::peer::PeerApi,
+    pub api: Arc<Mutex<net::peer::PeerApi>>,
     /// The paths used to configure this Peer.
     pub paths: paths::Paths, // TODO(finto): Unpublify
     /// Mocking a way to look up and store projects
-    projects: HashMap<RadUrn, project::Project<entity::Draft>>,
+    pub(crate) projects: Arc<Mutex<HashMap<RadUrn, project::Project<entity::Draft>>>>,
 }
 
 #[async_trait]
@@ -47,7 +49,8 @@ impl entity::Resolver<project::Project<entity::Draft>> for Peer {
         &self,
         uri: &RadUrn,
     ) -> Result<project::Project<entity::Draft>, entity::Error> {
-        Ok(self.projects.get(uri).expect("project was missing").clone())
+        let projects = self.projects.lock().unwrap();
+        Ok(projects.get(uri).expect("project was missing").clone())
     }
 
     async fn resolve_revision(
@@ -55,12 +58,10 @@ impl entity::Resolver<project::Project<entity::Draft>> for Peer {
         uri: &RadUrn,
         _revision: u64,
     ) -> Result<project::Project<entity::Draft>, entity::Error> {
-        Ok(self.projects.get(uri).expect("project was missing").clone())
+        let projects = self.projects.lock().unwrap();
+        Ok(projects.get(uri).expect("project was missing").clone())
     }
 }
-
-// TODO(finto): Peer is not Sync, so we need to figure out how we share it.
-unsafe impl Sync for Peer {}
 
 impl Peer {
     /// We create a default `Peer` using the `tmp_dir_path` we provide.
@@ -79,9 +80,9 @@ impl Peer {
         // publish events.
         let (api, _futures) = peer.accept()?;
         Ok(Self {
-            api,
+            api: Arc::new(Mutex::new(api)),
             paths, // TODO(finto): See https://github.com/radicle-dev/radicle-link/issues/157
-            projects: HashMap::new(),
+            projects: Arc::new(Mutex::new(HashMap::new())),
         })
     }
 
@@ -101,7 +102,8 @@ impl Peer {
     /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
     #[must_use]
     pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
-        Ok(self.projects.values().cloned().collect())
+        let projects = self.projects.lock().unwrap();
+        Ok(projects.values().cloned().collect())
     }
 
     /// Get the project found at `project_urn`.
@@ -121,14 +123,15 @@ impl Peer {
     ///
     /// Will return [`error::Error`] if the git2 repository is not present for the `path` or any of
     /// the librad interactions fail.
-    pub async fn init_project<'a>(
+    pub async fn init_project(
         &mut self,
         owner: &User, // TODO(finto): verify and testify
         name: &str,
         description: &str,
         default_branch: &str,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
-        let key = self.api.key();
+        let api = self.api.lock().unwrap();
+        let key = api.key();
 
         // Create the project meta
         let mut meta = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
@@ -139,11 +142,12 @@ impl Peer {
             .build()?;
         meta.sign_owned(&key)?;
 
-        let storage = self.api.storage().reopen()?;
+        let storage = api.storage().reopen()?;
         let _repo = storage.create_repo(&meta)?;
 
         // TODO(finto): mocking
-        self.projects.insert(meta.urn().clone(), meta.clone());
+        let mut projects = self.projects.lock().unwrap();
+        projects.insert(meta.urn().clone(), meta.clone());
 
         Ok(meta)
     }
@@ -276,7 +280,9 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 
 /// Constructs a fake user to be used as an owner of projects until we have more permanent key and
 /// user management.
-pub async fn fake_owner(key: keys::SecretKey) -> User {
+pub async fn fake_owner(peer: &Peer) -> User {
+    let api = peer.api.lock().unwrap();
+    let key = api.key();
     let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public().clone())
         .expect("unable to create user");
     user.sign_owned(&key).expect("unable to sign user");
@@ -294,8 +300,12 @@ pub async fn fake_owner(key: keys::SecretKey) -> User {
 pub fn default_config(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>>, error::Error>
-{
+) -> Result<
+    net::peer::PeerConfig<
+        discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>,
+    >,
+    error::Error,
+> {
     let gossip_params = Default::default();
     let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
     // TODO(finto): could we initialise with known seeds from a cache?

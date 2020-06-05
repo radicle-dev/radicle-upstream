@@ -15,7 +15,7 @@ use crate::registry;
 
 /// Prefixed filters.
 pub fn routes<R>(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -40,7 +40,7 @@ where
 /// Combination of all org routes.
 #[cfg(test)]
 fn filters<R>(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -123,14 +123,14 @@ fn get_project_filter<R: registry::Client>(
 
 /// `GET /<id>/projects`
 fn get_projects_filter<R>(
-    peer: http::Shared<coco::Peer>,
+    peer: Arc<coco::Peer>,
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
 {
     http::with_shared(registry)
-        .and(http::with_shared(peer))
+        .and(http::with_peer(peer))
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -209,6 +209,7 @@ fn register_member_filter<R: registry::Client>(
 mod handler {
     use radicle_registry_client::Balance;
     use std::convert::TryFrom;
+    use std::sync::Arc;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -247,20 +248,19 @@ mod handler {
     /// Get all projects under the given org id.
     pub async fn get_projects<R>(
         registry: http::Shared<R>,
-        peer: http::Shared<coco::Peer>,
+        peer: Arc<coco::Peer>,
         org_id: String,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
     {
         let reg = registry.read().await;
-        let peer = &*peer.read().await;
         let org_id = registry::Id::try_from(org_id)?;
         let projects = reg.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
         for p in &projects {
             let maybe_project = if let Some(urn) = &p.maybe_project_id {
-                Some(project::get(peer, urn).await.expect("Project not found"))
+                Some(project::get(&peer, urn).await.expect("Project not found"))
             } else {
                 None
             };
@@ -490,17 +490,13 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let coco_client = coco::Peer::new(config).await?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::new(RwLock::new(coco_client)),
-            Arc::clone(&registry),
-            subscriptions,
-        );
+        let api = super::filters(Arc::new(peer), Arc::clone(&registry), subscriptions);
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
@@ -549,17 +545,13 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let coco_client = coco::Peer::new(config).await?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::new(RwLock::new(coco_client)),
-            Arc::clone(&registry),
-            subscriptions,
-        );
+        let api = super::filters(Arc::new(peer), Arc::clone(&registry), subscriptions);
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
@@ -612,32 +604,27 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(peer.api.key().clone()).await;
-        let coco_client = Arc::new(RwLock::new(peer));
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::clone(&coco_client),
-            Arc::clone(&registry),
-            subscriptions,
-        );
-
-        let repo_dir = tempfile::tempdir_in(tmp_dir.path())?;
-        let path = repo_dir.path().to_str().unwrap().to_string();
-        coco::init_repo(path.clone())?;
 
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
         let default_branch = "master";
-
-        let meta = (coco_client.write().await)
+        let meta = peer
             .init_project(&owner, project_name, project_description, default_branch)
             .await?;
         let urn = meta.urn();
+
+        let api = super::filters(Arc::new(peer), Arc::clone(&registry), subscriptions);
+
+        let repo_dir = tempfile::tempdir_in(tmp_dir.path())?;
+        let path = repo_dir.path().to_str().unwrap().to_string();
+        coco::init_repo(path.clone())?;
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -711,7 +698,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let coco_client = coco::Peer::new(config).await?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -720,11 +707,7 @@ mod test {
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(
-            Arc::new(RwLock::new(coco_client)),
-            Arc::clone(&cache),
-            subscriptions,
-        );
+        let api = super::filters(Arc::new(peer), Arc::clone(&cache), subscriptions);
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
@@ -762,7 +745,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let user_peer = coco::Peer::new(config).await?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -771,11 +754,7 @@ mod test {
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
         let subscriptions = notification::Subscriptions::default();
 
-        let api = super::filters(
-            Arc::new(RwLock::new(user_peer)),
-            Arc::clone(&cache),
-            subscriptions,
-        );
+        let api = super::filters(Arc::new(peer), Arc::clone(&cache), subscriptions);
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
