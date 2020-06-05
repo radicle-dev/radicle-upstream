@@ -406,29 +406,3 @@ pub fn tree(
         info,
     })
 }
-
-/// Initialize a [`radicle_surf::git::git2::Repository`] at the given path.
-///
-/// # Errors
-///
-/// Will return [`error::Error`] if any of the git interactions break.
-pub fn init_repo(path: String) -> Result<(), error::Error> {
-    let repo = git2::Repository::init(path)?;
-
-    // First use the config to initialize a commit signature for the user.
-    let sig = repo.signature()?;
-    // Now let's create an empty tree for this commit
-    let tree_id = {
-        let mut index = repo.index()?;
-
-        // For our purposes, we'll leave the index empty for now.
-        index.write_tree()?
-    };
-    let tree = repo.find_tree(tree_id)?;
-    // Normally creating a commit would involve looking up the current HEAD
-    // commit and making that be the parent of the initial commit, but here this
-    // is the first commit so there will be no parent.
-    repo.commit(Some("HEAD"), &sig, &sig, "Initial commit", &tree, &[])?;
-
-    Ok(())
-}

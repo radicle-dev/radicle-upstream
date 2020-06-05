@@ -25,8 +25,8 @@ use crate::error;
 /// Module that captures all types and functions for source code.
 mod source;
 pub use source::{
-    blob, branches, commit, commits, init_repo, local_branches, tags, tree, Blob, BlobContent,
-    Branch, Commit, Info, ObjectType, Person, Tag, Tree, TreeEntry,
+    blob, branches, commit, commits, local_branches, tags, tree, Blob, BlobContent, Branch, Commit,
+    Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
 
 /// Export a verified [`user::User`] type.
@@ -264,7 +264,6 @@ impl Peer {
             let path = format!("{}/{}/{}", root, "repos", info.0);
             std::fs::create_dir_all(path.clone())?;
 
-            init_repo(path.clone())?;
             self.init_project(owner, info.0, info.1, info.2).await?;
         }
 

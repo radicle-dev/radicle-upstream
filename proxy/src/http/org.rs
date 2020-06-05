@@ -618,10 +618,6 @@ mod test {
 
         let api = super::filters(Arc::new(peer), Arc::clone(&registry), subscriptions);
 
-        let repo_dir = tempfile::tempdir_in(tmp_dir.path())?;
-        let path = repo_dir.path().to_str().unwrap().to_string();
-        coco::init_repo(path.clone())?;
-
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;

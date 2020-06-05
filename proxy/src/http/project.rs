@@ -600,10 +600,6 @@ mod test {
         };
         let subscriptions = notification::Subscriptions::default();
 
-        let repo_dir = tempfile::tempdir_in(tmp_dir.path())?;
-        let path = repo_dir.path().to_str().unwrap().to_string();
-        coco::init_repo(path.clone())?;
-
         let meta = peer
             .init_project(&owner, "Upstream", "Desktop client for radicle.", "master")
             .await?;
