@@ -46,8 +46,8 @@
       {
         type: transaction.MessageType.ProjectRegistration,
         // domain: domainType,
-        org_id: domainId,
-        project_name: projectName,
+        orgId: domainId,
+        projectName: projectName,
       },
     ],
   });

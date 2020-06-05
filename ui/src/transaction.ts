@@ -53,8 +53,7 @@ interface MemberUnregistration {
 interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
   domain: Domain;
-  org_id: string;
-  project_name: string;
+  orgId: string;
   // domainId: string; // domain under which project falls, e.g. User or Org
   cocoId: string;
   projectName: string;
@@ -348,9 +347,9 @@ export const formatSubject = (msg: Message): Subject => {
     // TODO(sos): replace with associated identity handle for user, should it exist
     // TODO(sos): once we can register projects to users, accommodate circle avatars
     case MessageType.ProjectRegistration:
-      name = `${msg.org_id} / ${msg.project_name}`
+      name = `${msg.orgId} / ${msg.projectName}`
       type = SubjectType.OrgProject
-      avatarSource = getAvatar(msg.domain === Domain.User ? Usage.Identity : Usage.Org, msg.org_id)
+      avatarSource = getAvatar(msg.domain === Domain.User ? Usage.Identity : Usage.Org, msg.orgId)
       break;
   }
 

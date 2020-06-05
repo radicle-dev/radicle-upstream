@@ -83,18 +83,21 @@ impl Transaction {
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Message {
     /// Issue a new org registration.
+    #[serde(rename_all = "camelCase")]
     OrgRegistration {
         /// The [`registry::Org`] id.
         id: registry::Id,
     },
 
     /// Issue an org unregistration with a given id.
+    #[serde(rename_all = "camelCase")]
     OrgUnregistration {
         /// The [`registry::Org`] id.
         id: registry::Id,
     },
 
     /// Issue a new project registration with a given name under a given org.
+    #[serde(rename_all = "camelCase")]
     ProjectRegistration {
         /// Actual project name, unique for org.
         project_name: registry::ProjectName,
@@ -103,6 +106,7 @@ pub enum Message {
     },
 
     /// Issue a user registration for a given handle storing the corresponding identity id.
+    #[serde(rename_all = "camelCase")]
     UserRegistration {
         /// Globally unique user handle.
         handle: registry::Id,
@@ -111,6 +115,7 @@ pub enum Message {
     },
 
     /// Issue a member registration for a given handle under a given org.
+    #[serde(rename_all = "camelCase")]
     MemberRegistration {
         /// Globally unique user handle.
         handle: registry::Id,
