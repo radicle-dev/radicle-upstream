@@ -1,11 +1,12 @@
 //! Proxy library errors usable for caller control flow and additional context for API responses.
 
+use std::time::SystemTimeError;
+
 use librad::meta::common::url;
 use librad::meta::entity;
 use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client as registry;
-use std::time::SystemTimeError;
 
 /// Project problems.
 #[derive(Debug, thiserror::Error)]
@@ -95,6 +96,10 @@ pub enum Error {
     /// Project error from `librad`.
     #[error(transparent)]
     LibradProject(#[from] entity::Error),
+
+    /// Failure to acquire [`std::sync::Mutex`] lock for the peer.
+    #[error("failed to acquire lock for peer")]
+    LibradLock,
 
     /// Common I/O errors.
     #[error(transparent)]

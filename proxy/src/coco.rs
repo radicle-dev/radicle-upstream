@@ -48,7 +48,7 @@ impl entity::Resolver<project::Project<entity::Draft>> for Peer {
         &self,
         uri: &RadUrn,
     ) -> Result<project::Project<entity::Draft>, entity::Error> {
-        let projects = self.projects.lock().unwrap();
+        let projects = self.projects.lock().expect("failed to acquire lock");
         Ok(projects.get(uri).expect("project was missing").clone())
     }
 
@@ -57,7 +57,7 @@ impl entity::Resolver<project::Project<entity::Draft>> for Peer {
         uri: &RadUrn,
         _revision: u64,
     ) -> Result<project::Project<entity::Draft>, entity::Error> {
-        let projects = self.projects.lock().unwrap();
+        let projects = self.projects.lock().expect("failed to acquire lock");
         Ok(projects.get(uri).expect("project was missing").clone())
     }
 }
@@ -84,30 +84,46 @@ impl Peer {
     }
 
     /// Acquire a lock to the [`net::peer::PeerApi`] and apply a function over it.
-    pub fn with_api<F, T>(&self, f: F) -> T
+    ///
+    /// # Errors
+    ///
+    /// The function will result in an error if the mutex guard was poisoned. See
+    /// [`std::sync::Mutex::lock`] for further details.
+    pub fn with_api<F, T>(&self, f: F) -> Result<T, error::Error>
     where
         F: FnOnce(&net::peer::PeerApi) -> T,
     {
-        let api = self.api.lock().unwrap();
-        f(&api)
+        let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
+        Ok(f(&api))
     }
 
     /// Fetch a browser for the `project_urn` we supplied to this function.
     ///
     /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
+    ///
+    /// # Errors
+    ///
+    /// The function will error if:
+    ///   * A lock was poisioned. See [`Self::with_api`].
+    ///   * The repository could not be created. See [`surf::Repository::new`].
     pub fn project_repo(&self, _project_urn: &str) -> Result<surf::Repository, error::Error> {
         // TODO(finto): fetch project meta and build browser
         let project_name = "git-platinum";
-        let path = self.with_api(|api| api.paths().git_dir().join(project_name));
+        let path = self.with_api(|api| api.paths().git_dir().join(project_name))?;
         // TODO(finto): https://github.com/radicle-dev/radicle-surf/issues/126
-        let repo = surf::Repository::new(path.to_str().unwrap())?;
+        let repo = surf::Repository::new(path.to_str().expect("failed to get path"))?;
 
         Ok(repo)
     }
 
     /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
+    ///
+    /// # Errors
+    ///
+    /// The function will error if:
+    ///   * A lock was poisioned. See [`Self::with_api`].
     pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
-        let projects = self.projects.lock().unwrap();
+        let projects = self.projects.lock().map_err(|_| error::Error::LibradLock)?;
         Ok(projects.values().cloned().collect())
     }
 
@@ -135,29 +151,31 @@ impl Peer {
         description: &str,
         default_branch: &str,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
-        let meta: Result<project::Project<entity::Draft>, error::Error> = self.with_api(|api| {
-            let key = api.key();
+        let meta: Result<project::Project<entity::Draft>, error::Error> = self
+            .with_api(|api| {
+                let key = api.key();
 
-            // Create the project meta
-            let mut meta =
-                project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
-                    .to_builder()
-                    .set_description(description.to_string())
-                    .set_default_branch(default_branch.to_string())
-                    .add_key(key.public())
-                    .build()?;
-            meta.sign_owned(key)?;
+                // Create the project meta
+                let mut meta =
+                    project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
+                        .to_builder()
+                        .set_description(description.to_string())
+                        .set_default_branch(default_branch.to_string())
+                        .add_key(key.public())
+                        .build()?;
+                meta.sign_owned(key)?;
 
-            let storage = api.storage().reopen()?;
-            let _repo = storage.create_repo(&meta)?;
-            Ok(meta)
-        });
+                let storage = api.storage().reopen()?;
+                let _repo = storage.create_repo(&meta)?;
+                Ok(meta)
+            })
+            .and_then(|res| res); // unfortunately, flatten is a nightly feature.
 
         // Doing ? above breaks inference. Gaaaawwwwwd Rust!
         let meta = meta?;
 
         // TODO(finto): mocking
-        let mut projects = self.projects.lock().unwrap();
+        let mut projects = self.projects.lock().map_err(|_| error::Error::LibradLock)?;
         projects.insert(meta.urn(), meta.clone());
 
         Ok(meta)
@@ -224,7 +242,7 @@ impl Peer {
         platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
 
         // Construct path for fixtures to clone into.
-        let platinum_into = self.with_api(|api| api.paths().git_dir().join("git-platinum"));
+        let platinum_into = self.with_api(|api| api.paths().git_dir().join("git-platinum"))?;
 
         Self::clone_platinum(&platinum_from, &platinum_into)?;
 
@@ -294,8 +312,10 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 /// Constructs a fake user to be used as an owner of projects until we have more permanent key and
 /// user management.
 pub async fn fake_owner(peer: &Peer) -> User {
-    let key = peer.with_api(|api| api.key().clone());
-    let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public().clone())
+    let key = peer
+        .with_api(|api| api.key().clone())
+        .expect("failed to get key");
+    let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public())
         .expect("unable to create user");
     user.sign_owned(&key).expect("unable to sign user");
     let fake_resolver = FakeUserResolver(user.clone());
@@ -304,20 +324,24 @@ pub async fn fake_owner(peer: &Peer) -> User {
         .expect("failed to verify user")
 }
 
+/// Basic [`net::peer::PeerConfig`] type for a vector of [`peer::PeerId`]s.
+type PeerConfig = net::peer::PeerConfig<
+    discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>,
+>;
+
 /// Provide the default config.
 ///
 /// Address: 127.0.0.1:0
 /// No seeds.
 /// Default gossip parameters.
+///
+/// # Errors
+///
+/// Results in an error if the [`paths::Paths`] could not be created.
 pub fn default_config(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
-) -> Result<
-    net::peer::PeerConfig<
-        discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>,
-    >,
-    error::Error,
-> {
+) -> Result<PeerConfig, error::Error> {
     let gossip_params = net::gossip::MembershipParams::default();
     let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
     // TODO(finto): could we initialise with known seeds from a cache?
