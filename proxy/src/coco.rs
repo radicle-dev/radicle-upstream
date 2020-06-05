@@ -37,8 +37,6 @@ pub type User = user::User<entity::Verified>;
 pub struct Peer {
     /// The protocol API for shelling out commands.
     pub api: Arc<Mutex<net::peer::PeerApi>>,
-    /// The paths used to configure this Peer.
-    pub paths: paths::Paths, // TODO(finto): Unpublify
     /// Mocking a way to look up and store projects
     pub(crate) projects: Arc<Mutex<HashMap<RadUrn, project::Project<entity::Draft>>>>,
 }
@@ -73,7 +71,6 @@ impl Peer {
     {
         // Initialise the storage
         let _ = storage::Storage::init(&config.paths, config.key.clone())?;
-        let paths = config.paths.clone();
 
         let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
@@ -81,9 +78,14 @@ impl Peer {
         let (api, _futures) = peer.accept()?;
         Ok(Self {
             api: Arc::new(Mutex::new(api)),
-            paths, // TODO(finto): See https://github.com/radicle-dev/radicle-link/issues/157
             projects: Arc::new(Mutex::new(HashMap::new())),
         })
+    }
+
+    /// Acquire a lock to the [`net::peer::PeerApi`] and apply a function over it.
+    pub fn with_api<F, T>(&self, f: F) -> T where F: FnOnce(&net::peer::PeerApi) -> T {
+        let api = self.api.lock().unwrap();
+        f(&api)
     }
 
     /// Fetch a browser for the `project_urn` we supplied to this function.
@@ -92,7 +94,7 @@ impl Peer {
     pub fn project_repo(&self, _project_urn: String) -> Result<surf::Repository, error::Error> {
         // TODO(finto): fetch project meta and build browser
         let project_name = "git-platinum";
-        let path = self.paths.git_dir().join(project_name);
+        let path = self.with_api(|api| api.paths().git_dir().join(project_name));
         // TODO(finto): https://github.com/radicle-dev/radicle-surf/issues/126
         let repo = surf::Repository::new(path.to_str().unwrap())?;
 
@@ -130,20 +132,25 @@ impl Peer {
         description: &str,
         default_branch: &str,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
-        let api = self.api.lock().unwrap();
-        let key = api.key();
+        let meta: Result<project::Project<entity::Draft>, error::Error> = self.with_api(|api| {
+            let key = api.key();
 
-        // Create the project meta
-        let mut meta = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
-            .to_builder()
-            .set_description(description.to_string())
-            .set_default_branch(default_branch.to_string())
-            .add_key(key.public())
-            .build()?;
-        meta.sign_owned(&key)?;
+            // Create the project meta
+            let mut meta = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
+                .to_builder()
+                .set_description(description.to_string())
+                .set_default_branch(default_branch.to_string())
+                .add_key(key.public())
+                .build()?;
+            meta.sign_owned(&key)?;
 
-        let storage = api.storage().reopen()?;
-        let _repo = storage.create_repo(&meta)?;
+            let storage = api.storage().reopen()?;
+            let _repo = storage.create_repo(&meta)?;
+            Ok(meta)
+        });
+
+        // Doing ? above breaks inference. Gaaaawwwwwd Rust!
+        let meta = meta?;
 
         // TODO(finto): mocking
         let mut projects = self.projects.lock().unwrap();
@@ -213,7 +220,7 @@ impl Peer {
         platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
 
         // Construct path for fixtures to clone into.
-        let platinum_into = self.paths.git_dir().join("git-platinum");
+        let platinum_into = self.with_api(|api| api.paths().git_dir().join("git-platinum"));
 
         Self::clone_platinum(platinum_from, platinum_into)?;
 
@@ -281,8 +288,7 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 /// Constructs a fake user to be used as an owner of projects until we have more permanent key and
 /// user management.
 pub async fn fake_owner(peer: &Peer) -> User {
-    let api = peer.api.lock().unwrap();
-    let key = api.key();
+    let key = peer.with_api(|api| api.key().clone());
     let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public().clone())
         .expect("unable to create user");
     user.sign_owned(&key).expect("unable to sign user");
