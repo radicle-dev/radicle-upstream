@@ -43,10 +43,8 @@ make sure only properly formatted and lint-free code lands into master.
 
 ### Running Upstream
 
-You'll have to install some external dependencies to be able to compile
-the proxy as well as the UI.
-
-On both platforms make sure to have [`yarn`][ya] installed.
+You'll have to install some external dependencies to be able to compile the
+proxy as well as the UI.
 
 On macOS:
 ```
@@ -55,11 +53,16 @@ sudo xcodebuild -license
 brew install yarn pkgconfig nettle
 ```
 
-On Debian/Ubuntu:
-```
-# Install proxy dependencies
-sudo apt-get install libssl-dev libgmp3-dev m4 clang
-```
+On Linux:
+  - [Autoconf](https://www.gnu.org/software/autoconf)
+  - [Clang](https://clang.llvm.org)
+  - [Git](https://git-scm.com)
+  - [GMP](https://gmplib.org)
+  - [GNU M4](https://www.gnu.org/software/m4)
+  - [Nettle](http://www.lysator.liu.se/~nisse/nettle)
+  - [OpenSSL](https://www.openssl.org)
+
+On both platforms make sure to have [`yarn`][ya] installed.
 
 1. Get Upstream: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
 2. Install dependencies: `cd radicle-upstream && yarn install`.
