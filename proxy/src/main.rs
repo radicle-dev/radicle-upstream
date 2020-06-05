@@ -1,4 +1,9 @@
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
 use librad::keys;
+use librad::net::{self, discovery};
+use librad::paths;
+use librad::peer;
 
 use proxy::coco;
 use proxy::env;
@@ -56,7 +61,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await
             .expect("failed to create /tmp user peer")
     } else {
-        todo!()
+        // TODO(finto): There should be a coco::config module that knows how to parse the
+        // configs/parameters to give us back a `PeerConfig`
+
+        // TODO(finto): Should be fetched from key storage
+        let key = keys::SecretKey::new();
+        // TODO(finto): Should be read from config file
+        let gossip_params = Default::default();
+        // TODO(finto): Read from config or passed as param
+        let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
+        // TODO(finto): could we initialise with known seeds from a cache?
+        let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
+        let disco = discovery::Static::new(seeds);
+        // TODO(finto): read in from config or passed as param
+        let paths = paths::Paths::new()?;
+        let config = net::peer::PeerConfig {
+            key,
+            paths,
+            listen_addr,
+            gossip_params,
+            disco,
+        };
+
+        coco::Peer::new(config)
+            .await
+            .expect("failed to create /tmp user peer")
     };
 
     let owner = coco::fake_owner(&peer).await;

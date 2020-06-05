@@ -83,7 +83,10 @@ impl Peer {
     }
 
     /// Acquire a lock to the [`net::peer::PeerApi`] and apply a function over it.
-    pub fn with_api<F, T>(&self, f: F) -> T where F: FnOnce(&net::peer::PeerApi) -> T {
+    pub fn with_api<F, T>(&self, f: F) -> T
+    where
+        F: FnOnce(&net::peer::PeerApi) -> T,
+    {
         let api = self.api.lock().unwrap();
         f(&api)
     }
@@ -136,12 +139,13 @@ impl Peer {
             let key = api.key();
 
             // Create the project meta
-            let mut meta = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
-                .to_builder()
-                .set_description(description.to_string())
-                .set_default_branch(default_branch.to_string())
-                .add_key(key.public())
-                .build()?;
+            let mut meta =
+                project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
+                    .to_builder()
+                    .set_description(description.to_string())
+                    .set_default_branch(default_branch.to_string())
+                    .add_key(key.public())
+                    .build()?;
             meta.sign_owned(&key)?;
 
             let storage = api.storage().reopen()?;
