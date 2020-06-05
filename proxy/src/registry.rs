@@ -10,7 +10,7 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
-use radicle_registry_client::{self as protocol, ClientT, CryptoPair, ProjectDomain};
+use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 
 use crate::avatar;
 use crate::error;
@@ -514,7 +514,7 @@ impl Client for Registry {
     ) -> Result<Option<Project>, error::Error> {
         Ok(self
             .client
-            .get_project(project_name.clone().0, ProjectDomain::Org(org_id.clone().0))
+            .get_project(project_name.clone().0, protocol::ProjectDomain::Org(org_id.clone().0))
             .await?
             .map(|project| {
                 let metadata_vec: Vec<u8> = project.metadata.into();
@@ -536,7 +536,7 @@ impl Client for Registry {
         let ids = self.client.list_projects().await?;
         let mut projects = Vec::new();
         for id in &ids {
-            if id.1 == ProjectDomain::Org(org_id.clone().0) {
+            if id.1 == protocol::ProjectDomain::Org(org_id.clone().0) {
                 projects.push(
                     self.get_project(org_id.clone(), ProjectName(id.clone().0))
                         .await?
@@ -598,7 +598,7 @@ impl Client for Registry {
         // Prepare and submit project registration transaction.
         let register_message = protocol::message::RegisterProject {
             project_name: project_name.0.clone(),
-            project_domain: ProjectDomain::Org(org_id.0.clone()),
+            project_domain: protocol::ProjectDomain::Org(org_id.0.clone()),
             checkpoint_id,
             metadata: register_metadata,
         };
@@ -702,7 +702,7 @@ impl Client for Registry {
 )]
 #[cfg(test)]
 mod test {
-    use radicle_registry_client::{self as protocol, ClientT, ProjectDomain};
+    use radicle_registry_client::{self as protocol, ClientT};
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
 
@@ -940,14 +940,14 @@ mod test {
         assert!(result.is_ok());
 
         let maybe_project = client
-            .get_project(project_name.clone().0, ProjectDomain::Org(org_id.clone().0))
+            .get_project(project_name.clone().0, protocol::ProjectDomain::Org(org_id.clone().0))
             .await?;
 
         assert!(maybe_project.is_some());
 
         let project = maybe_project.unwrap();
         assert_eq!(project.name, project_name.0);
-        assert_eq!(project.domain, ProjectDomain::Org(org_id.0));
+        assert_eq!(project.domain, protocol::ProjectDomain::Org(org_id.0));
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
