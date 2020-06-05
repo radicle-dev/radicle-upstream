@@ -46,6 +46,8 @@ make sure only properly formatted and lint-free code lands into master.
 You'll have to install some external dependencies to be able to compile
 the proxy as well as the UI.
 
+On both platforms make sure to have [`yarn`][ya] installed.
+
 On macOS:
 ```
 xcode-select --install
@@ -55,11 +57,6 @@ brew install yarn pkgconfig nettle
 
 On Debian/Ubuntu:
 ```
-# Install yarn (UI dependency):
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-sudo apt update && sudo apt install yarn
-
 # Install proxy dependencies
 sudo apt-get install libssl-dev libgmp3-dev m4 clang
 ```
@@ -464,3 +461,4 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [sv]: https://github.com/conventional-changelog/standard-version
 [tp]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [wa]: https://github.com/seanmonstar/warp
+[ya]: https://yarnpkg.com
