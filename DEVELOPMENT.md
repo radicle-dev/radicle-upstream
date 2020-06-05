@@ -61,8 +61,7 @@ On Linux:
   - [GNU M4](https://www.gnu.org/software/m4)
   - [Nettle](http://www.lysator.liu.se/~nisse/nettle)
   - [OpenSSL](https://www.openssl.org)
-
-On both platforms make sure to have [`yarn`][ya] installed.
+  - [Yarn](https://yarnpkg.com)
 
 1. Get Upstream: `git clone git@github.com:radicle-dev/radicle-upstream.git`.
 2. Install dependencies: `cd radicle-upstream && yarn install`.
@@ -464,4 +463,3 @@ Release v0.0.11 successfully completed! 👏 🎉 🚀
 [sv]: https://github.com/conventional-changelog/standard-version
 [tp]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [wa]: https://github.com/seanmonstar/warp
-[ya]: https://yarnpkg.com
