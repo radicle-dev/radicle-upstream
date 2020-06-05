@@ -146,7 +146,7 @@ impl Peer {
     /// the librad interactions fail.
     pub async fn init_project(
         &mut self,
-        owner: &User, // TODO(finto): verify and testify
+        owner: &User,
         name: &str,
         description: &str,
         default_branch: &str,
