@@ -482,6 +482,7 @@ mod test {
     use crate::avatar;
     use crate::coco;
     use crate::error;
+    use crate::http;
     use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
 
@@ -524,18 +525,17 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!(registry::Org {
-                id: org_id.clone(),
-                shareable_entity_identifier: format!("%{}", org_id.to_string()),
-                avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
-                members: vec![user]
-            })
-        );
+        http::test::assert_response(&res, |have| {
+            assert_eq!(
+                have,
+                json!(registry::Org {
+                    id: org_id.clone(),
+                    shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                    avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
+                    members: vec![user]
+                })
+            );
+        });
 
         Ok(())
     }
@@ -584,17 +584,16 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!(registry::Project {
-                name: project_name,
-                org_id: org_id,
-                maybe_project_id: None,
-            })
-        );
+        http::test::assert_response(&res, |have| {
+            assert_eq!(
+                have,
+                json!(registry::Project {
+                    name: project_name,
+                    org_id: org_id,
+                    maybe_project_id: None,
+                })
+            );
+        });
 
         Ok(())
     }
@@ -664,8 +663,6 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
         let want = json!([{
             "name": project_name.to_string(),
             "orgId": org_id.to_string(),
@@ -687,8 +684,9 @@ mod test {
             }
         }]);
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, want);
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, want);
+        });
 
         Ok(())
     }

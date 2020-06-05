@@ -517,6 +517,7 @@ mod test {
 
     use crate::coco;
     use crate::error;
+    use crate::http;
     use crate::notification;
     use crate::project;
     use crate::registry::{self, Cache as _, Client as _};
@@ -622,9 +623,9 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(project));
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(project));
+        });
 
         Ok(())
     }
@@ -669,10 +670,9 @@ mod test {
         );
         let res = request().method("GET").path("/projects").reply(&api).await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(projects));
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(projects));
+        });
 
         Ok(())
     }

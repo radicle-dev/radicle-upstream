@@ -130,3 +130,26 @@ pub fn with_subscriptions(
 ) -> impl Filter<Extract = (crate::notification::Subscriptions,), Error = Infallible> + Clone {
     warp::any().map(move || crate::notification::Subscriptions::clone(&subscriptions))
 }
+
+#[cfg(test)]
+mod test {
+    use bytes::Bytes;
+    use http::response::Response;
+    use serde_json::Value;
+    use warp::http::StatusCode;
+
+    pub fn assert_response<F>(res: &Response<Bytes>, checks: F)
+    where
+        F: FnOnce(Value) -> (),
+    {
+        assert_eq!(
+            res.status(),
+            StatusCode::OK,
+            "response status was not 200, the body is:\n{:#?}",
+            res.body()
+        );
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        checks(have);
+    }
+}

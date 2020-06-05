@@ -691,12 +691,9 @@ impl ToDocumentedType for coco::TreeEntry {
 )]
 #[cfg(test)]
 mod test {
-    use bytes::Bytes;
-    use http::response::Response;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
-    use warp::http::StatusCode;
     use warp::test::request;
 
     use librad::keys::SecretKey;
@@ -704,16 +701,8 @@ mod test {
     use crate::avatar;
     use crate::coco;
     use crate::error;
+    use crate::http;
     use crate::identity;
-
-    fn assert_status(res: &Response<Bytes>) {
-        assert_eq!(
-            res.status(),
-            StatusCode::OK,
-            "response status was not 200, the body is:\n{:#?}",
-            res.body()
-        )
-    }
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
@@ -750,15 +739,13 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!({
-                "binary": false,
-                "content": "  ;;;;;        ;;;;;        ;;;;;
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "binary": false,
+                    "content": "  ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
@@ -766,29 +753,30 @@ mod test {
  ':::::'      ':::::'      ':::::'
    ':`          ':`          ':`
 ",
-                "info": {
-                    "name": "arrows.txt",
-                    "objectType": "BLOB",
-                    "lastCommit": {
-                        "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
-                        "author": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                            "name": "Rūdolfs Ošiņš",
-                            "email": "rudolfs@osins.org",
+                    "info": {
+                        "name": "arrows.txt",
+                        "objectType": "BLOB",
+                        "lastCommit": {
+                            "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
+                            "author": {
+                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
+                            },
+                            "committer": {
+                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
+                            },
+                            "summary": "Add text files",
+                            "description": "",
+                            "committerTime": 1_575_283_425,
                         },
-                        "committer": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                            "name": "Rūdolfs Ošiņš",
-                            "email": "rudolfs@osins.org",
-                        },
-                        "summary": "Add text files",
-                        "description": "",
-                        "committerTime": 1_575_283_425,
                     },
-                },
-                "path": "text/arrows.txt",
-            })
-        );
+                    "path": "text/arrows.txt",
+                })
+            );
+        });
 
         // Get binary blob.
         let path = "bin/ls";
@@ -803,7 +791,6 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = coco::blob(
             &peer,
             urn.to_string(),
@@ -812,35 +799,36 @@ mod test {
             Some(path.to_string()),
         )?;
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!({
-                "binary": true,
-                "content": Value::Null,
-                "info": {
-                    "name": "ls",
-                    "objectType": "BLOB",
-                    "lastCommit": {
-                        "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
-                        "author": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                            "name": "Rūdolfs Ošiņš",
-                            "email": "rudolfs@osins.org",
-                        },
-                        "committer": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                            "name": "Rūdolfs Ošiņš",
-                            "email": "rudolfs@osins.org",
-                        },
-                        "summary": "Add some binary files",
-                        "description": "",
-                        "committerTime": 1_575_282_964, },
-                },
-                "path": "bin/ls",
-            })
-        );
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "binary": true,
+                    "content": Value::Null,
+                    "info": {
+                        "name": "ls",
+                        "objectType": "BLOB",
+                        "lastCommit": {
+                            "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
+                            "author": {
+                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
+                            },
+                            "committer": {
+                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
+                            },
+                            "summary": "Add some binary files",
+                            "description": "",
+                            "committerTime": 1_575_282_964, },
+                    },
+                    "path": "bin/ls",
+                })
+            );
+        });
 
         Ok(())
     }
@@ -865,14 +853,13 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!(["dev", "master", "origin/dev", "origin/master"])
-        );
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!(["dev", "master", "origin/dev", "origin/master"])
+            );
+        });
 
         Ok(())
     }
@@ -899,29 +886,28 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!({
-                "sha1": sha1,
-                "author": {
-                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/6367167426181048581.svg",
-                    "name": "Fintan Halpenny",
-                    "email": "fintan.halpenny@gmail.com",
-                },
-                "committer": {
-                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
-                    "email": "noreply@github.com",
-                    "name": "GitHub",
-                },
-                "summary": "Extend the docs (#2)",
-                "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                "committerTime": 1_578_309_972,
-            }),
-        );
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "sha1": sha1,
+                    "author": {
+                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/6367167426181048581.svg",
+                        "name": "Fintan Halpenny",
+                        "email": "fintan.halpenny@gmail.com",
+                    },
+                    "committer": {
+                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
+                        "email": "noreply@github.com",
+                        "name": "GitHub",
+                    },
+                    "summary": "Extend the docs (#2)",
+                    "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
+                    "committerTime": 1_578_309_972,
+                }),
+            );
+        });
 
         Ok(())
     }
@@ -950,18 +936,15 @@ mod test {
             .reply(&api)
             .await;
 
-        assert_status(&res);
-
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(have, json!(want));
-        assert_eq!(have.as_array().unwrap().len(), 14);
-
-        assert_eq!(
-            have.as_array().unwrap().first().unwrap(),
-            &serde_json::to_value(&head_commit).unwrap(),
-            "the first commit is the head of the branch"
-        );
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(have.as_array().unwrap().len(), 14);
+            assert_eq!(
+                have.as_array().unwrap().first().unwrap(),
+                &serde_json::to_value(&head_commit).unwrap(),
+                "the first commit is the head of the branch"
+            );
+        });
 
         Ok(())
     }
@@ -981,21 +964,21 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = coco::local_branches(path).unwrap();
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!([
-                "dev",
-                "master",
-                "origin/HEAD",
-                "origin/dev",
-                "origin/master"
-            ]),
-        );
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!([
+                    "dev",
+                    "master",
+                    "origin/HEAD",
+                    "origin/dev",
+                    "origin/master"
+                ]),
+            );
+        });
 
         Ok(())
     }
@@ -1043,82 +1026,80 @@ mod test {
             .reply(&api)
             .await;
 
-        assert_status(&res);
-
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!([
-                {
-                    "identity": {
-                        "id": "cloudhead@123abcd.git",
-                        "metadata": {
-                            "handle": "cloudhead",
-                            "displayName": Value::Null,
-                            "avatarUrl": Value::Null,
-                        },
-                        "registered": Value::Null,
-                        "shareableEntityIdentifier": "cloudhead@123abcd.git",
-                        "avatarFallback": {
-                            "background": {
-                                "r": 24,
-                                "g": 105,
-                                "b": 216,
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!([
+                    {
+                        "identity": {
+                            "id": "cloudhead@123abcd.git",
+                            "metadata": {
+                                "handle": "cloudhead",
+                                "displayName": Value::Null,
+                                "avatarUrl": Value::Null,
                             },
-                            "emoji": "🏍",
-                        },
-                    },
-                    "branches": [ "dev", "master", "origin/dev", "origin/master" ],
-                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                },
-                {
-                    "identity": {
-                        "id": "rudolfs@123abcd.git",
-                        "metadata": {
-                            "handle": "rudolfs",
-                            "displayName": Value::Null,
-                            "avatarUrl": Value::Null,
-                        },
-                        "registered": Value::Null,
-                        "shareableEntityIdentifier": "rudolfs@123abcd.git",
-                        "avatarFallback": {
-                            "background": {
-                                "r": 24,
-                                "g": 186,
-                                "b": 214,
+                            "registered": Value::Null,
+                            "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                            "avatarFallback": {
+                                "background": {
+                                    "r": 24,
+                                    "g": 105,
+                                    "b": 216,
+                                },
+                                "emoji": "🏍",
                             },
-                            "emoji": "🛷",
                         },
+                        "branches": [ "dev", "master", "origin/dev", "origin/master" ],
+                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
                     },
-                    "branches": [ "dev", "master", "origin/dev", "origin/master" ],
-                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                },
-                {
-                    "identity": {
-                        "id": "xla@123abcd.git",
-                        "metadata": {
-                            "handle": "xla",
-                            "displayName": Value::Null,
-                            "avatarUrl": Value::Null,
-                        },
-                        "registered": Value::Null,
-                        "shareableEntityIdentifier": "xla@123abcd.git",
-                        "avatarFallback": {
-                            "background": {
-                                "r": 155,
-                                "g": 157,
-                                "b": 169,
+                    {
+                        "identity": {
+                            "id": "rudolfs@123abcd.git",
+                            "metadata": {
+                                "handle": "rudolfs",
+                                "displayName": Value::Null,
+                                "avatarUrl": Value::Null,
                             },
-                            "emoji": "🗻",
+                            "registered": Value::Null,
+                            "shareableEntityIdentifier": "rudolfs@123abcd.git",
+                            "avatarFallback": {
+                                "background": {
+                                    "r": 24,
+                                    "g": 186,
+                                    "b": 214,
+                                },
+                                "emoji": "🛷",
+                            },
                         },
+                        "branches": [ "dev", "master", "origin/dev", "origin/master" ],
+                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
                     },
-                    "branches": [ "dev", "master", "origin/dev", "origin/master" ],
-                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                },
-            ]),
-        );
+                    {
+                        "identity": {
+                            "id": "xla@123abcd.git",
+                            "metadata": {
+                                "handle": "xla",
+                                "displayName": Value::Null,
+                                "avatarUrl": Value::Null,
+                            },
+                            "registered": Value::Null,
+                            "shareableEntityIdentifier": "xla@123abcd.git",
+                            "avatarFallback": {
+                                "background": {
+                                    "r": 155,
+                                    "g": 157,
+                                    "b": 169,
+                                },
+                                "emoji": "🗻",
+                            },
+                        },
+                        "branches": [ "dev", "master", "origin/dev", "origin/master" ],
+                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                    },
+                ]),
+            )
+        });
 
         Ok(())
     }
@@ -1145,14 +1126,13 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!(["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]),
-        );
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!(["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]),
+            );
+        });
 
         Ok(())
     }
@@ -1193,38 +1173,37 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!({
-                "path": "src",
-                "info": {
-                    "name": "src",
-                    "objectType": "TREE",
-                    "lastCommit": null,                },
-                    "entries": [
-                    {
-                        "path": "src/Eval.hs",
-                        "info": {
-                            "name": "Eval.hs",
-                            "objectType": "BLOB",
-                            "lastCommit": null,
+        http::test::assert_response(&res, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "path": "src",
+                    "info": {
+                        "name": "src",
+                        "objectType": "TREE",
+                        "lastCommit": null,                },
+                        "entries": [
+                        {
+                            "path": "src/Eval.hs",
+                            "info": {
+                                "name": "Eval.hs",
+                                "objectType": "BLOB",
+                                "lastCommit": null,
+                            },
                         },
-                    },
-                    {
-                        "path": "src/memory.rs",
-                        "info": {
-                            "name": "memory.rs",
-                            "objectType": "BLOB",
-                            "lastCommit": null,
+                        {
+                            "path": "src/memory.rs",
+                            "info": {
+                                "name": "memory.rs",
+                                "objectType": "BLOB",
+                                "lastCommit": null,
+                            },
                         },
-                    },
-                ],
-            }),
-        );
+                    ],
+                }),
+            );
+        });
 
         Ok(())
     }
