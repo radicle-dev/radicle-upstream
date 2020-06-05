@@ -102,6 +102,8 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use librad::keys::SecretKey;
+
     use crate::coco;
     use crate::http;
     use crate::project;
@@ -143,12 +145,12 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(_peer: Arc<coco::Peer>) -> Result<impl Reply, Rejection> {
-        // let tmp = coco::Coco::tmp()?;
-        // let mut coco: coco::Coco = &mut *coco.write().await;
-        // *coco = tmp;
-
-        // Ok(reply::json(&true))
+    pub async fn nuke_coco(mut peer: Arc<coco::Peer>) -> Result<impl Reply, Rejection> {
+        let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+        let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
+        let config = coco::default_config(SecretKey::new(), tmp_path)?;
+        let new_peer = coco::Peer::new(config).await?;
+        *Arc::make_mut(&mut peer) = new_peer;
 
         Ok(reply::json(&true))
     }
