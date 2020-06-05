@@ -232,8 +232,11 @@ mod handler {
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
-        let org_id = registry::Id::try_from(input.org_id)?;
+        let org_id = registry::Id::try_from(input.domain_id)?;
+        print!("input.project_name is {}", input.project_name);
         let project_name = registry::ProjectName::try_from(input.project_name)?;
+        print!("project_name is {}", project_name);
+
         let tx = reg
             .register_project(&fake_pair, org_id, project_name, maybe_coco_id, fake_fee)
             .await?;
@@ -464,12 +467,21 @@ impl ToDocumentedType for MetadataInput {
     }
 }
 
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DomainType {
+    Org,
+    User
+}
+
 /// Bundled input data for project registration.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RegisterInput {
-    /// Id of the Org the project will be registered under.
-    org_id: String,
+    /// The type of domain the project will be registered under.
+    domain_type: DomainType,
+    /// Id of the domain the project will be registered under.
+    domain_id: String,
     /// Unique name under Org of the project.
     project_name: String,
     /// Optionally passed coco id to store for attestion.
@@ -480,9 +492,15 @@ impl ToDocumentedType for RegisterInput {
     fn document() -> document::DocumentedType {
         let mut properties = HashMap::with_capacity(3);
         properties.insert(
-            "orgId".into(),
+            "domainType".into(),
+            document::enum_string(vec!["org".into(), "user".into()])
+                .description("The type of domain the project will be registered under")
+                .example("user"),
+        );
+        properties.insert(
+            "domainId".into(),
             document::string()
-                .description("ID of the Org the project will be registered under")
+                .description("ID of the domain the project will be registered under")
                 .example("monadic"),
         );
         properties.insert(
@@ -519,6 +537,8 @@ mod test {
     use crate::notification;
     use crate::project;
     use crate::registry::{self, Cache as _, Client as _};
+
+    use super::DomainType;
 
     #[tokio::test]
     async fn create() {
@@ -692,8 +712,9 @@ mod test {
             .method("POST")
             .path("/projects/register")
             .json(&super::RegisterInput {
+                domain_type: DomainType::Org,
+                domain_id: org_id.to_string(),
                 project_name: "upstream".into(),
-                org_id: org_id.to_string(),
                 maybe_coco_id: Some("1234.git".to_string()),
             })
             .reply(&api)

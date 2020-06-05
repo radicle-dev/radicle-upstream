@@ -33,7 +33,7 @@
   // summary
 
   const onSubmitTransaction = () => {
-    register(domainId, projectName, projectId);
+    register(domainType, domainId, projectName, projectId);
     pop();
   };
 
