@@ -514,7 +514,10 @@ impl Client for Registry {
     ) -> Result<Option<Project>, error::Error> {
         Ok(self
             .client
-            .get_project(project_name.clone().0, protocol::ProjectDomain::Org(org_id.clone().0))
+            .get_project(
+                project_name.clone().0,
+                protocol::ProjectDomain::Org(org_id.clone().0),
+            )
             .await?
             .map(|project| {
                 let metadata_vec: Vec<u8> = project.metadata.into();
@@ -940,7 +943,10 @@ mod test {
         assert!(result.is_ok());
 
         let maybe_project = client
-            .get_project(project_name.clone().0, protocol::ProjectDomain::Org(org_id.clone().0))
+            .get_project(
+                project_name.clone().0,
+                protocol::ProjectDomain::Org(org_id.clone().0),
+            )
             .await?;
 
         assert!(maybe_project.is_some());
