@@ -272,7 +272,7 @@ mod handler {
         super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let default_branch = "master".to_string();
-        let blob = coco::blob(&peer, project_urn, default_branch, revision, path)?;
+        let blob = coco::blob(&peer, &project_urn, default_branch, revision, path)?;
 
         Ok(reply::json(&blob))
     }
@@ -282,7 +282,7 @@ mod handler {
         peer: Arc<coco::Peer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let branches = coco::branches(&peer, project_urn)?;
+        let branches = coco::branches(&peer, &project_urn)?;
 
         Ok(reply::json(&branches))
     }
@@ -293,7 +293,7 @@ mod handler {
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
-        let commit = coco::commit(&peer, project_urn, &sha1)?;
+        let commit = coco::commit(&peer, &project_urn, &sha1)?;
 
         Ok(reply::json(&commit))
     }
@@ -304,7 +304,7 @@ mod handler {
         project_urn: String,
         branch: String,
     ) -> Result<impl Reply, Rejection> {
-        let commits = coco::commits(&peer, project_urn, &branch)?;
+        let commits = coco::commits(&peer, &project_urn, &branch)?;
 
         Ok(reply::json(&commits))
     }
@@ -321,8 +321,8 @@ mod handler {
         peer: Arc<coco::Peer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let branches = coco::branches(&peer, project_urn.clone())?;
-        let tags = coco::tags(&peer, project_urn)?;
+        let branches = coco::branches(&peer, &project_urn.clone())?;
+        let tags = coco::tags(&peer, &project_urn)?;
         let revs = ["cloudhead", "rudolfs", "xla"]
             .iter()
             .map(|handle| super::Revision {
@@ -347,7 +347,7 @@ mod handler {
 
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(peer: Arc<coco::Peer>, project_urn: String) -> Result<impl Reply, Rejection> {
-        let tags = coco::tags(&peer, project_urn)?;
+        let tags = coco::tags(&peer, &project_urn)?;
 
         Ok(reply::json(&tags))
     }
@@ -359,7 +359,7 @@ mod handler {
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let default_branch = "master".to_string();
-        let tree = coco::tree(&peer, project_urn, default_branch, revision, prefix)?;
+        let tree = coco::tree(&peer, &project_urn, default_branch, revision, prefix)?;
 
         Ok(reply::json(&tree))
     }
@@ -721,7 +721,7 @@ mod test {
         let path = "text/arrows.txt";
         let want = coco::blob(
             &peer,
-            urn.to_string(),
+            &urn.to_string(),
             default_branch.clone(),
             Some(revision.to_string()),
             Some(path.to_string()),
@@ -793,7 +793,7 @@ mod test {
 
         let want = coco::blob(
             &peer,
-            urn.to_string(),
+            &urn.to_string(),
             default_branch,
             Some(revision.to_string()),
             Some(path.to_string()),
@@ -844,7 +844,7 @@ mod test {
             .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await?;
         let urn = platinum_project.urn();
-        let want = coco::branches(&peer, urn.to_string())?;
+        let want = coco::branches(&peer, &urn.to_string())?;
 
         let api = super::filters(Arc::new(peer));
         let res = request()
@@ -877,7 +877,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
-        let want = coco::commit(&peer, urn.to_string(), sha1)?;
+        let want = coco::commit(&peer, &urn.to_string(), sha1)?;
 
         let api = super::filters(Arc::new(peer));
         let res = request()
@@ -926,8 +926,8 @@ mod test {
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
-        let want = coco::commits(&peer, urn.to_string(), branch)?;
-        let head_commit = coco::commit(&peer, urn.to_string(), head).unwrap();
+        let want = coco::commits(&peer, &urn.to_string(), branch)?;
+        let head_commit = coco::commit(&peer, &urn.to_string(), head).unwrap();
 
         let api = super::filters(Arc::new(peer));
         let res = request()
@@ -997,8 +997,8 @@ mod test {
         let urn = platinum_project.urn();
 
         let want = {
-            let branches = coco::branches(&peer, urn.to_string())?;
-            let tags = coco::tags(&peer, urn.to_string())?;
+            let branches = coco::branches(&peer, &urn.to_string())?;
+            let tags = coco::tags(&peer, &urn.to_string())?;
             ["cloudhead", "rudolfs", "xla"]
                 .iter()
                 .map(|handle| super::Revision {
@@ -1117,7 +1117,7 @@ mod test {
             .unwrap();
         let urn = platinum_project.urn();
 
-        let want = coco::tags(&peer, urn.to_string())?;
+        let want = coco::tags(&peer, &urn.to_string())?;
 
         let api = super::filters(Arc::new(peer));
         let res = request()
@@ -1155,7 +1155,7 @@ mod test {
         let default_branch = "master".to_string(); // TODO(finto): need to change this
         let want = coco::tree(
             &peer,
-            urn.to_string(),
+            &urn.to_string(),
             default_branch,
             Some(revision.to_string()),
             Some(prefix.to_string()),

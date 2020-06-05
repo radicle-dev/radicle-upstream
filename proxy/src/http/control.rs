@@ -121,7 +121,7 @@ mod handler {
 
         let meta = peer
             .replicate_platinum(
-                &owner,
+                owner,
                 &input.name,
                 &input.description,
                 &input.default_branch,
@@ -130,7 +130,7 @@ mod handler {
 
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: meta.urn().clone(),
+                id: meta.urn(),
                 shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,

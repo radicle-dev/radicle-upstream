@@ -149,7 +149,7 @@ mod test {
             res.body()
         );
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let have: Value = serde_json::from_slice(res.body()).expect("failed to deserialise body");
         checks(have);
     }
 }

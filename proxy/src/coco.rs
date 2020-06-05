@@ -22,6 +22,7 @@ use librad::uri::RadUrn;
 
 use crate::error;
 
+/// Module that captures all types and functions for source code.
 mod source;
 pub use source::{
     blob, branches, commit, commits, init_repo, local_branches, tags, tree, Blob, BlobContent,
@@ -94,7 +95,7 @@ impl Peer {
     /// Fetch a browser for the `project_urn` we supplied to this function.
     ///
     /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
-    pub fn project_repo(&self, _project_urn: String) -> Result<surf::Repository, error::Error> {
+    pub fn project_repo(&self, _project_urn: &str) -> Result<surf::Repository, error::Error> {
         // TODO(finto): fetch project meta and build browser
         let project_name = "git-platinum";
         let path = self.with_api(|api| api.paths().git_dir().join(project_name));
@@ -105,7 +106,6 @@ impl Peer {
     }
 
     /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
-    #[must_use]
     pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
         let projects = self.projects.lock().unwrap();
         Ok(projects.values().cloned().collect())
@@ -146,7 +146,7 @@ impl Peer {
                     .set_default_branch(default_branch.to_string())
                     .add_key(key.public())
                     .build()?;
-            meta.sign_owned(&key)?;
+            meta.sign_owned(key)?;
 
             let storage = api.storage().reopen()?;
             let _repo = storage.create_repo(&meta)?;
@@ -158,16 +158,16 @@ impl Peer {
 
         // TODO(finto): mocking
         let mut projects = self.projects.lock().unwrap();
-        projects.insert(meta.urn().clone(), meta.clone());
+        projects.insert(meta.urn(), meta.clone());
 
         Ok(meta)
     }
 
-    // This function exists as a standalone because the logic does not play well with async in
-    // `replicate_platinum`.
+    /// This function exists as a standalone because the logic does not play well with async in
+    /// `replicate_platinum`.
     fn clone_platinum(
-        platinum_from: String,
-        platinum_into: std::path::PathBuf,
+        platinum_from: &str,
+        platinum_into: &std::path::PathBuf,
     ) -> Result<(), error::Error> {
         // Clone a copy into temp directory.
         let mut fetch_options = git2::FetchOptions::new();
@@ -177,7 +177,7 @@ impl Peer {
             .branch("master")
             .clone_local(git2::build::CloneLocal::Auto)
             .fetch_options(fetch_options)
-            .clone(&platinum_from, platinum_into.as_path())
+            .clone(platinum_from, platinum_into.as_path())
             .expect("unable to clone fixtures repo");
 
         {
@@ -226,11 +226,11 @@ impl Peer {
         // Construct path for fixtures to clone into.
         let platinum_into = self.with_api(|api| api.paths().git_dir().join("git-platinum"));
 
-        Self::clone_platinum(platinum_from, platinum_into)?;
+        Self::clone_platinum(&platinum_from, &platinum_into)?;
 
         // Init as rad project.
         Ok(self
-            .init_project(&owner, name, description, default_branch)
+            .init_project(owner, name, description, default_branch)
             .await?)
     }
 
@@ -265,13 +265,16 @@ impl Peer {
             std::fs::create_dir_all(path.clone())?;
 
             init_repo(path.clone())?;
-            self.init_project(&owner, info.0, info.1, info.2).await?;
+            self.init_project(owner, info.0, info.1, info.2).await?;
         }
 
         Ok(())
     }
 }
 
+/// Acting as a fake resolver where a User resolves to itself.
+/// This allows us to check the history status of a single User.
+/// TODO(finto): Remove this once Resolvers are complete.
 struct FakeUserResolver(user::User<entity::Draft>);
 
 #[async_trait]
@@ -316,7 +319,7 @@ pub fn default_config(
     >,
     error::Error,
 > {
-    let gossip_params = Default::default();
+    let gossip_params = net::gossip::MembershipParams::default();
     let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
     // TODO(finto): could we initialise with known seeds from a cache?
     let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];

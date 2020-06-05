@@ -25,10 +25,7 @@ where
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(
-                Arc::clone(&peer),
-                Arc::clone(&registry),
-            ))
+            .or(get_projects_filter(peer, Arc::clone(&registry)))
             .or(register_filter(
                 Arc::clone(&registry),
                 subscriptions.clone(),

@@ -166,7 +166,7 @@ mod handler {
 
         let meta = peer
             .init_project(
-                &owner,
+                owner,
                 &input.metadata.name,
                 &input.metadata.description,
                 &input.metadata.default_branch,
@@ -177,7 +177,7 @@ mod handler {
         let shareable_entity_identifier = format!("%{}", urn);
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: urn.clone(),
+                id: urn,
                 shareable_entity_identifier,
                 metadata: meta.into(),
                 registration: None,
@@ -202,7 +202,7 @@ mod handler {
             .list_projects()?
             .into_iter()
             .map(|meta| project::Project {
-                id: meta.urn().clone(),
+                id: meta.urn(),
                 shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,
@@ -650,7 +650,7 @@ mod test {
             .list_projects()?
             .into_iter()
             .map(|meta| project::Project {
-                id: meta.urn().clone(),
+                id: meta.urn(),
                 shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,

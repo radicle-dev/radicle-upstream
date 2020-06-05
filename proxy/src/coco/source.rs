@@ -175,7 +175,7 @@ pub struct TreeEntry {
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob(
     peer: &Peer,
-    project_urn: String,
+    project_urn: &str,
     default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
     revision: Option<String>,
     maybe_path: Option<String>,
@@ -221,7 +221,7 @@ pub fn blob(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches(peer: &Peer, project_urn: String) -> Result<Vec<Branch>, error::Error> {
+pub fn branches(peer: &Peer, project_urn: &str) -> Result<Vec<Branch>, error::Error> {
     let repo = peer.project_repo(project_urn)?;
     let browser = surf::vcs::git::Browser::new(&repo)?;
 
@@ -260,7 +260,7 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit(peer: &Peer, project_urn: String, sha1: &str) -> Result<Commit, error::Error> {
+pub fn commit(peer: &Peer, project_urn: &str, sha1: &str) -> Result<Commit, error::Error> {
     let repo = peer.project_repo(project_urn)?;
     let mut browser = surf::vcs::git::Browser::new(&repo)?;
 
@@ -277,11 +277,7 @@ pub fn commit(peer: &Peer, project_urn: String, sha1: &str) -> Result<Commit, er
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits(
-    peer: &Peer,
-    project_urn: String,
-    branch: &str,
-) -> Result<Vec<Commit>, error::Error> {
+pub fn commits(peer: &Peer, project_urn: &str, branch: &str) -> Result<Vec<Commit>, error::Error> {
     let repo = peer.project_repo(project_urn)?;
     let mut browser = surf::vcs::git::Browser::new(&repo)?;
 
@@ -297,7 +293,7 @@ pub fn commits(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn tags(peer: &Peer, project_urn: String) -> Result<Vec<Tag>, error::Error> {
+pub fn tags(peer: &Peer, project_urn: &str) -> Result<Vec<Tag>, error::Error> {
     let repo = peer.project_repo(project_urn)?;
     let browser = surf::vcs::git::Browser::new(&repo)?;
 
@@ -320,7 +316,7 @@ pub fn tags(peer: &Peer, project_urn: String) -> Result<Vec<Tag>, error::Error> 
 /// TODO(fintohaps): default branch fall back from Browser
 pub fn tree(
     peer: &Peer,
-    project_urn: String,
+    project_urn: &str,
     default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
     maybe_revision: Option<String>,
     maybe_prefix: Option<String>,
