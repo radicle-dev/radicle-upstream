@@ -146,9 +146,20 @@ mod handler {
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
     pub async fn nuke_coco(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
-        let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-        let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
-        let config = coco::default_config(SecretKey::new(), tmp_path)?;
+        // TmpDir deletes the temporary directory once it DROPS.
+        // This means our new directory goes missing, and future calls will fail.
+        // The Peer creates the directory again.
+        //
+        // N.B. this may gather lot's of tmp files on your system. We're sorry.
+        let tmp_path = {
+            let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+            temp_dir.path().to_path_buf()
+        };
+
+        let config = coco::default_config(
+            SecretKey::new(),
+            tmp_path.to_str().expect("path extraction failed"),
+        )?;
         let new_peer = coco::Peer::new(config).await?;
 
         let mut peer = peer.lock().await;
@@ -191,19 +202,30 @@ mod handler {
             let config = coco::default_config(key, tmp_dir)?;
             let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
 
-            let old_paths = {
+            let (old_paths, old_key, old_peer_id) = {
                 let p = peer.lock().await;
-                p.with_api(|api| api.paths().clone())?
+                p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
             };
 
             super::nuke_coco(Arc::clone(&peer)).await.unwrap();
 
-            let new_paths = {
+            let (new_paths, new_key, new_peer_id) = {
                 let p = peer.lock().await;
-                p.with_api(|api| api.paths().clone())?
+                p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
             };
 
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
+            assert_ne!(old_key, new_key);
+            assert_ne!(old_peer_id, new_peer_id);
+
+            let can_open = {
+                let p = peer.lock().await;
+                p.with_api(|api| {
+                    let _ = api.storage().reopen().expect("failed to reopen Storage");
+                    true
+                })?
+            };
+            assert!(can_open);
 
             Ok(())
         }
