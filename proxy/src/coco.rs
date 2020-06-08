@@ -257,7 +257,8 @@ impl Peer {
         platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
 
         // Construct path for fixtures to clone into.
-        let platinum_into = self.with_api(|api| api.paths().git_dir().join("git-platinum"))?;
+        let workspace = self.with_api(|api| api.paths().git_dir().join("../workspace"))?;
+        let platinum_into = workspace.join(name);
 
         Self::clone_platinum(&platinum_from, &platinum_into)?;
 
