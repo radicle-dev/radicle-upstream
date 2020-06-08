@@ -140,7 +140,7 @@ mod test {
 
     pub fn assert_response<F>(res: &Response<Bytes>, checks: F)
     where
-        F: FnOnce(Value) -> (),
+        F: FnOnce(Value),
     {
         assert_eq!(
             res.status(),

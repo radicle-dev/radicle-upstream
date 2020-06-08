@@ -321,7 +321,7 @@ mod handler {
         peer: Arc<coco::Peer>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let branches = coco::branches(&peer, &project_urn.clone())?;
+        let branches = coco::branches(&peer, &project_urn)?;
         let tags = coco::tags(&peer, &project_urn)?;
         let revs = ["cloudhead", "rudolfs", "xla"]
             .iter()
