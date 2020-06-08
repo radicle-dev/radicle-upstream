@@ -63,7 +63,7 @@ impl entity::Resolver<project::Project<entity::Draft>> for Peer {
 }
 
 impl Peer {
-    /// We create a default `Peer` using the `tmp_dir_path` we provide.
+    /// We create a default `Peer` using the `config` we provide.
     pub async fn new<I>(
         config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>>,
     ) -> Result<Self, error::Error>
