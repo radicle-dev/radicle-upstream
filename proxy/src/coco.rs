@@ -201,8 +201,7 @@ impl Peer {
     fn clone_platinum(
         platinum_from: &str,
         platinum_into: &std::path::PathBuf,
-    ) -> Result<(), error::Error> {
-        // Clone a copy into temp directory.
+    ) -> Result<git2::Repository, error::Error> {
         let mut fetch_options = git2::FetchOptions::new();
         fetch_options.download_tags(git2::AutotagOption::All);
 
@@ -233,7 +232,7 @@ impl Peer {
             }
         }
 
-        Ok(())
+        Ok(platinum_repo)
     }
 
     /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
@@ -257,15 +256,38 @@ impl Peer {
         platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
 
         // Construct path for fixtures to clone into.
-        let workspace = self.with_api(|api| api.paths().git_dir().join("../workspace"))?;
+        let monorepo = self.with_api(|api| api.paths().git_dir().join(""))?;
+        let workspace = monorepo.join("../workspace");
         let platinum_into = workspace.join(name);
 
-        Self::clone_platinum(&platinum_from, &platinum_into)?;
+        let repo = Self::clone_platinum(&platinum_from, &platinum_into)?;
+        let meta = self
+            .init_project(owner, name, description, default_branch)
+            .await?;
+
+        let mut rad_remote = repo.remote_with_fetch(
+            "rad",
+            monorepo.to_str().expect("unable to get str for monorepo"),
+            &format!(
+                "+refs/namespaces/{}/refs/heads/*:refs/heads/*",
+                meta.urn().id
+            ),
+        )?;
+
+        let tags = repo
+            .tag_names(None)?
+            .into_iter()
+            .flatten()
+            .map(|t| format!("+refs/tags/{}", t))
+            .collect::<Vec<_>>();
+
+        // Push all tags to rad remote.
+        rad_remote.push(&tags, None)?;
+        // Push dev branch.
+        rad_remote.push(&["+refs/heads/dev"], None)?;
 
         // Init as rad project.
-        Ok(self
-            .init_project(owner, name, description, default_branch)
-            .await?)
+        Ok(meta)
     }
 
     /// Creates a small set of projects in [`Paths`].
