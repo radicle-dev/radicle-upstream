@@ -1,8 +1,9 @@
 //! Endpoints and serialisation for source code browsing.
-use std::sync::Arc;
 
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -12,7 +13,7 @@ use crate::identity;
 
 /// Prefixed filters.
 pub fn routes(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("source").and(
         blob_filter(Arc::clone(&peer))
@@ -28,7 +29,9 @@ pub fn routes(
 
 /// Combination of all source filters.
 #[cfg(test)]
-fn filters(peer: Arc<coco::Peer>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn filters(
+    peer: Arc<Mutex<coco::Peer>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     blob_filter(Arc::clone(&peer))
         .or(branches_filter(Arc::clone(&peer)))
         .or(commit_filter(Arc::clone(&peer)))
@@ -41,7 +44,7 @@ fn filters(peer: Arc<coco::Peer>) -> impl Filter<Extract = impl Reply, Error = R
 
 /// `GET /blob/<project_id>/<revision>/<path...>`
 fn blob_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
@@ -72,7 +75,7 @@ fn blob_filter(
 
 /// `GET /branches/<project_id>`
 fn branches_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
         .and(warp::get())
@@ -98,7 +101,7 @@ fn branches_filter(
 
 /// `GET /commit/<project_id>/<sha1>`
 fn commit_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(warp::get())
@@ -122,7 +125,7 @@ fn commit_filter(
 
 /// `GET /commits/<project_id>/<branch>`
 fn commits_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commits")
         .and(warp::get())
@@ -173,7 +176,7 @@ fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejectio
 
 /// `GET /revisions/<project_id>`
 fn revisions_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
@@ -201,7 +204,7 @@ fn revisions_filter(
 
 /// `GET /tags/<project_id>`
 fn tags_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
         .and(warp::get())
@@ -225,7 +228,7 @@ fn tags_filter(
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
 fn tree_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
         .and(warp::get())
@@ -257,7 +260,7 @@ fn tree_filter(
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::sync::Arc;
-
+    use tokio::sync::Mutex;
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
@@ -267,10 +270,11 @@ mod handler {
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        peer: Arc<coco::Peer>,
+        peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
         super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
         let default_branch = "master".to_string();
         let blob = coco::blob(&peer, &project_urn, default_branch, revision, path)?;
 
@@ -279,9 +283,10 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`].
     pub async fn branches(
-        peer: Arc<coco::Peer>,
+        peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
         let branches = coco::branches(&peer, &project_urn)?;
 
         Ok(reply::json(&branches))
@@ -289,10 +294,11 @@ mod handler {
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        peer: Arc<coco::Peer>,
+        peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
         let commit = coco::commit(&peer, &project_urn, &sha1)?;
 
         Ok(reply::json(&commit))
@@ -300,10 +306,11 @@ mod handler {
 
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
-        peer: Arc<coco::Peer>,
+        peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
         branch: String,
     ) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
         let commits = coco::commits(&peer, &project_urn, &branch)?;
 
         Ok(reply::json(&commits))
@@ -318,9 +325,10 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
-        peer: Arc<coco::Peer>,
+        peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
         let branches = coco::branches(&peer, &project_urn)?;
         let tags = coco::tags(&peer, &project_urn)?;
         let revs = ["cloudhead", "rudolfs", "xla"]
@@ -346,7 +354,11 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags(peer: Arc<coco::Peer>, project_urn: String) -> Result<impl Reply, Rejection> {
+    pub async fn tags(
+        peer: Arc<Mutex<coco::Peer>>,
+        project_urn: String,
+    ) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
         let tags = coco::tags(&peer, &project_urn)?;
 
         Ok(reply::json(&tags))
@@ -354,11 +366,12 @@ mod handler {
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        peer: Arc<coco::Peer>,
+        peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let default_branch = "master".to_string();
+        let peer = peer.lock().await;
         let tree = coco::tree(&peer, &project_urn, default_branch, revision, prefix)?;
 
         Ok(reply::json(&tree))
@@ -694,6 +707,7 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
+    use tokio::sync::Mutex;
     use warp::test::request;
 
     use librad::keys::SecretKey;
@@ -727,7 +741,7 @@ mod test {
             Some(path.to_string()),
         )?;
 
-        let api = super::filters(Arc::new(peer.clone()));
+        let api = super::filters(Arc::new(Mutex::new(peer.clone())));
 
         // Get ASCII blob.
         let res = request()
@@ -846,7 +860,7 @@ mod test {
         let urn = platinum_project.urn();
         let want = coco::branches(&peer, &urn.to_string())?;
 
-        let api = super::filters(Arc::new(peer));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
             .path(&format!("/branches/{}", urn.to_string()))
@@ -879,7 +893,7 @@ mod test {
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
         let want = coco::commit(&peer, &urn.to_string(), sha1)?;
 
-        let api = super::filters(Arc::new(peer));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
             .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
@@ -929,7 +943,7 @@ mod test {
         let want = coco::commits(&peer, &urn.to_string(), branch)?;
         let head_commit = coco::commit(&peer, &urn.to_string(), head).unwrap();
 
-        let api = super::filters(Arc::new(peer));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
             .path(&format!("/commits/{}/{}", urn.to_string(), branch))
@@ -957,7 +971,7 @@ mod test {
         let peer = coco::Peer::new(config).await?;
 
         let path = "../fixtures/git-platinum";
-        let api = super::filters(Arc::new(peer));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
             .path(&format!("/local-branches/{}", path))
@@ -1019,7 +1033,7 @@ mod test {
                 .collect::<Vec<super::Revision>>()
         };
 
-        let api = super::filters(Arc::new(peer));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
             .path(&format!("/revisions/{}", urn.to_string()))
@@ -1119,7 +1133,7 @@ mod test {
 
         let want = coco::tags(&peer, &urn.to_string())?;
 
-        let api = super::filters(Arc::new(peer));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
             .path(&format!("/tags/{}", urn.to_string()))
@@ -1161,7 +1175,7 @@ mod test {
             Some(prefix.to_string()),
         )?;
 
-        let api = super::filters(Arc::new(peer));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
             .path(&format!(

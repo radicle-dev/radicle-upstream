@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -16,7 +17,7 @@ use crate::registry;
 
 /// Combination of all routes.
 pub fn filters<R>(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
     owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
@@ -32,7 +33,7 @@ where
 
 /// `POST /projects`
 fn create_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
     owner: http::Shared<coco::User>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
@@ -59,7 +60,7 @@ fn create_filter(
 
 /// `GET /projects/<id>`
 fn get_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("projects")
         .and(warp::get())
@@ -88,7 +89,7 @@ fn get_filter(
 
 /// `GET /projects`
 fn list_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
@@ -146,6 +147,7 @@ mod handler {
     use std::convert::TryFrom;
     use std::str::FromStr;
     use std::sync::Arc;
+    use tokio::sync::Mutex;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -157,12 +159,12 @@ mod handler {
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        mut peer: Arc<coco::Peer>,
+        peer: Arc<Mutex<coco::Peer>>,
         owner: http::Shared<coco::User>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let owner = &*owner.read().await;
-        let peer = Arc::make_mut(&mut peer);
+        let mut peer = peer.lock().await;
 
         let meta = peer
             .init_project(
@@ -192,13 +194,17 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(peer: Arc<coco::Peer>, urn: String) -> Result<impl Reply, Rejection> {
+    pub async fn get(peer: Arc<Mutex<coco::Peer>>, urn: String) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
+
         Ok(reply::json(&project::get(&peer, &urn).await?))
     }
 
     /// List all known projects.
-    pub async fn list(peer: Arc<coco::Peer>) -> Result<impl Reply, Rejection> {
+    pub async fn list(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
         let projects = peer
+            .lock()
+            .await
             .list_projects()?
             .into_iter()
             .map(|meta| project::Project {
@@ -509,7 +515,7 @@ mod test {
     use serde_json::{json, Value};
     use std::convert::TryFrom;
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
@@ -539,7 +545,7 @@ mod test {
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
 
-        let peer = Arc::new(peer);
+        let peer = Arc::new(Mutex::new(peer));
 
         let api = super::filters(
             Arc::clone(&peer),
@@ -561,7 +567,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = peer.list_projects()?;
+        let projects = peer.lock().await.list_projects()?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -608,7 +614,7 @@ mod test {
         let project = project::get(&peer, &urn.to_string()).await?;
 
         let api = super::filters(
-            Arc::new(peer),
+            Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(owner)),
             Arc::new(RwLock::new(registry)),
             subscriptions,
@@ -659,7 +665,7 @@ mod test {
             .collect::<Vec<project::Project>>();
 
         let api = super::filters(
-            Arc::new(peer),
+            Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(owner)),
             Arc::new(RwLock::new(registry)),
             subscriptions,
@@ -689,7 +695,7 @@ mod test {
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
-            Arc::new(peer),
+            Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(owner.clone())),
             Arc::clone(&cache),
             subscriptions,

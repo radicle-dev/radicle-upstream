@@ -25,7 +25,6 @@
     clippy::unseparated_literal_suffix,
     clippy::used_underscore_binding
 )]
-#![feature(str_strip)]
 #![feature(result_flattening)]
 
 pub mod avatar;

@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use warp::{path, reject, Filter, Rejection, Reply};
 
 use crate::coco;
@@ -12,7 +12,7 @@ use crate::registry;
 /// Prefixed control filters.
 pub fn routes<R>(
     enable: bool,
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
     owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
@@ -41,7 +41,7 @@ where
 /// Combination of all control filters.
 #[allow(dead_code)]
 fn filters<R>(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
     owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
@@ -57,7 +57,7 @@ where
 
 /// POST /nuke/create-project
 fn create_project_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
     owner: http::Shared<coco::User>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
@@ -69,7 +69,7 @@ fn create_project_filter(
 
 /// GET /nuke/coco
 fn nuke_coco_filter(
-    peer: Arc<coco::Peer>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_peer(peer))
@@ -98,7 +98,7 @@ fn nuke_session_filter(
 mod handler {
     use kv::Store;
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -112,12 +112,12 @@ mod handler {
 
     /// Create a project from the fixture repo.
     pub async fn create_project(
-        mut peer: Arc<coco::Peer>,
+        peer: Arc<Mutex<coco::Peer>>,
         owner: http::Shared<coco::User>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let owner = &*owner.read().await;
-        let peer = Arc::make_mut(&mut peer);
+        let mut peer = peer.lock().await;
 
         let meta = peer
             .replicate_platinum(
@@ -145,12 +145,14 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(mut peer: Arc<coco::Peer>) -> Result<impl Reply, Rejection> {
+    pub async fn nuke_coco(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
         let temp_dir = tempfile::tempdir().expect("test dir creation failed");
         let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
         let config = coco::default_config(SecretKey::new(), tmp_path)?;
         let new_peer = coco::Peer::new(config).await?;
-        *Arc::make_mut(&mut peer) = new_peer;
+
+        let mut peer = peer.lock().await;
+        *peer = new_peer;
 
         Ok(reply::json(&true))
     }
@@ -171,6 +173,40 @@ mod handler {
         session::clear_current(&store)?;
 
         Ok(reply::json(&true))
+    }
+
+    #[cfg(test)]
+    mod test {
+        use pretty_assertions::assert_ne;
+        use std::sync::Arc;
+        use tokio::sync::Mutex;
+
+        use crate::coco;
+        use crate::error;
+
+        #[tokio::test]
+        async fn nuke_coco() -> Result<(), error::Error> {
+            let tmp_dir = tempfile::tempdir()?;
+            let key = librad::keys::SecretKey::new();
+            let config = coco::default_config(key, tmp_dir)?;
+            let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+
+            let old_paths = {
+                let p = peer.lock().await;
+                p.with_api(|api| api.paths().clone())?
+            };
+
+            super::nuke_coco(Arc::clone(&peer)).await.unwrap();
+
+            let new_paths = {
+                let p = peer.lock().await;
+                p.with_api(|api| api.paths().clone())?
+            };
+
+            assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
+
+            Ok(())
+        }
     }
 }
 

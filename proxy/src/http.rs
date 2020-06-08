@@ -2,7 +2,7 @@
 
 use std::convert::Infallible;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
@@ -32,7 +32,7 @@ pub fn api<R>(
 where
     R: registry::Cache + registry::Client + 'static,
 {
-    let peer = Arc::new(peer);
+    let peer = Arc::new(Mutex::new(peer));
     let owner = Arc::new(RwLock::new(owner));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
@@ -110,8 +110,8 @@ where
 /// State filter to expose a [`Peer`].
 #[must_use]
 pub fn with_peer(
-    peer: Arc<coco::Peer>,
-) -> impl Filter<Extract = (Arc<coco::Peer>,), Error = Infallible> + Clone {
+    peer: Arc<Mutex<coco::Peer>>,
+) -> impl Filter<Extract = (Arc<Mutex<coco::Peer>>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&peer))
 }
 
