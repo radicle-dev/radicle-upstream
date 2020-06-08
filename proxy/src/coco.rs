@@ -64,6 +64,12 @@ impl entity::Resolver<project::Project<entity::Draft>> for Peer {
 
 impl Peer {
     /// We create a default `Peer` using the `config` we provide.
+    ///
+    /// # Errors
+    ///
+    /// `new` fails when:
+    ///     * Initialising [`storage::Storage`] fails.
+    ///     * Initialising [`net::peer::Peer`] fails.
     pub async fn new<I>(
         config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>>,
     ) -> Result<Self, error::Error>
@@ -128,6 +134,12 @@ impl Peer {
     }
 
     /// Get the project found at `project_urn`.
+    ///
+    /// # Errors
+    ///
+    /// `get_project` fails if:
+    ///     * Parsing the `project_urn` fails.
+    ///     * Resolving the project fails.
     pub async fn get_project(
         &self,
         project_urn: &str,
@@ -138,12 +150,15 @@ impl Peer {
         Ok(project)
     }
 
-    /// Initialize a [`librad::project::Project`] in the location of the given `path`.
+    /// Initialize a [`librad::project::Project`] that is owned by the `owner`.
+    /// This kicks off the history of the project, tracked by `librad`'s mono-repo.
     ///
     /// # Errors
     ///
-    /// Will return [`error::Error`] if the git2 repository is not present for the `path` or any of
-    /// the librad interactions fail.
+    /// Will error if:
+    ///     * [`Self::with_api`] fails with a poisoned lock.
+    ///     * The signing of the project metadata fails.
+    ///     * The interaction with `librad` [`Storage`] fails.
     pub async fn init_project(
         &mut self,
         owner: &User,
@@ -169,7 +184,7 @@ impl Peer {
                 let _repo = storage.create_repo(&meta)?;
                 Ok(meta)
             })
-            .and_then(|res| res); // unfortunately, flatten is a nightly feature.
+            .flatten();
 
         // Doing ? above breaks inference. Gaaaawwwwwd Rust!
         let meta = meta?;
