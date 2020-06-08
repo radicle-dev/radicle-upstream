@@ -437,6 +437,7 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::OrgRegistration { id: org_id.clone() },
+            fee,
         );
 
         // TODO(xla): Remove automatic prepayment once we have proper balances.
@@ -478,6 +479,7 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::OrgUnregistration { id: org_id },
+            fee,
         ))
     }
 
@@ -512,6 +514,7 @@ impl Client for Registry {
                 org_id: org_id.clone(),
                 handle: user_id,
             },
+            fee,
         );
 
         Ok(tx)
@@ -635,6 +638,7 @@ impl Client for Registry {
                 project_name,
                 org_id,
             },
+            fee,
         ))
     }
 
@@ -679,6 +683,7 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::UserRegistration { handle, id },
+            fee,
         ))
     }
 

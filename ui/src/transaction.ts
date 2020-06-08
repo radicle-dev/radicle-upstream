@@ -112,6 +112,7 @@ export interface Transaction {
   messages: Message[];
   state: State;
   timestamp: Timestamp;
+  fee: number;
 }
 
 type Transactions = Transaction[];

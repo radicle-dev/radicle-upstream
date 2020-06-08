@@ -226,7 +226,7 @@ mod handler {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         // TODO(xla): Use real fee defined by the user.
-        let fake_fee: Balance = 100;
+        let fake_fee: Balance = registry::MINIMUM_FEE;
 
         let reg = registry.read().await;
         let maybe_coco_id = input

@@ -151,7 +151,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
-        let fake_fee: Balance = 100;
+        let fake_fee: Balance = registry::MINIMUM_FEE;
 
         let handle = registry::Id::try_from(input.handle)?;
         let reg = registry.write().await;

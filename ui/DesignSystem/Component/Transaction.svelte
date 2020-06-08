@@ -96,7 +96,7 @@
   </div>
 
   <div slot="right">
-    <Rad amount={4} size="big" />
+    <Rad amount={transaction.fee} size="big" />
   </div>
 </Row>
 

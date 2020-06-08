@@ -36,7 +36,5 @@
       </Numeric>
     {/if}
   </div>
-  <Numeric style="color: var(--color-foreground-level-5)">
-    ${amount / 10}
-  </Numeric>
+  <Numeric style="color: var(--color-foreground-level-5)">${amount}</Numeric>
 </div>
