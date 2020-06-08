@@ -97,7 +97,7 @@ impl Peer {
         Ok(f(&api))
     }
 
-    /// Fetch a browser for the `project_urn` we supplied to this function.
+    /// Fetch a repository for the `project_urn` we supplied to this function.
     ///
     /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
     ///
