@@ -14,6 +14,8 @@ use crate::registry;
 /// Amount of blocks we assume to have been mined before a transaction is
 /// considered to have settled.
 pub const MIN_CONFIRMATIONS: u32 = 6;
+/// The lower bound for transaction block confirmations.
+pub const BLOCK_BOUND: u32 = MIN_CONFIRMATIONS - 1;
 
 /// Wrapper for [`SystemTime`] carrying the time since epoch.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, PartialOrd, Ord)]
@@ -229,7 +231,6 @@ where
         }
     }
 
-    #[allow(clippy::integer_arithmetic)] // TODO(finto): Not so sure about this one, but don't quite understand the logic below.
     /// Updates cached transactions progress given the latest height.
     fn advance(&self, best_height: protocol::BlockNumber) -> Result<(), error::Error> {
         let mut txs = self.list_transactions(vec![])?;
@@ -239,9 +240,7 @@ where
                 State::Confirmed {
                     block, timestamp, ..
                 } => {
-                    let target = block
-                        .checked_add(MIN_CONFIRMATIONS - 1)
-                        .unwrap_or(MIN_CONFIRMATIONS);
+                    let target = block.checked_add(BLOCK_BOUND).unwrap_or(MIN_CONFIRMATIONS);
 
                     if best_height >= target {
                         tx.state = State::Settled {
@@ -250,9 +249,12 @@ where
                         };
                     } else {
                         let offset = best_height
-                            .checked_add(MIN_CONFIRMATIONS - 1)
+                            .checked_add(BLOCK_BOUND)
                             .unwrap_or(MIN_CONFIRMATIONS);
-                        let confirmations = offset.saturating_sub(target) + 1;
+                        let confirmations = offset
+                            .saturating_sub(target)
+                            .checked_add(1)
+                            .ok_or(error::Error::TransactionConfirmationOverflow)?;
 
                         tx.state = State::Confirmed {
                             block,

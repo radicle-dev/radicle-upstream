@@ -136,6 +136,10 @@ pub enum Error {
     /// Errors from transactions.
     #[error(transparent)]
     Transaction(#[from] registry::TransactionError),
+
+    /// Overflow while incrementing confirmed transaction.
+    #[error("while calculating the number of confirmed transactions, we encountered an overflow")]
+    TransactionConfirmationOverflow,
 }
 
 impl From<registry::DispatchError> for Error {
