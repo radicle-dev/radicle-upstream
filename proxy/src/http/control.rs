@@ -221,3 +221,70 @@ pub struct CreateInput {
     /// Configured default branch.
     default_branch: String,
 }
+
+#[cfg(test)]
+mod test {
+    use pretty_assertions::assert_eq;
+    use std::sync::Arc;
+    use tokio::sync::{Mutex, RwLock};
+    use warp::http::StatusCode;
+    use warp::test::request;
+
+    use crate::coco;
+    use crate::error;
+    use crate::http;
+    use crate::registry;
+
+    #[tokio::test]
+    async fn create_project_after_nuke() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = librad::keys::SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(owner)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
+
+        // Create project before nuke.
+        let res = request()
+            .method("POST")
+            .path("/create-project")
+            .json(&super::CreateInput {
+                name: "Monadic".into(),
+                description: "blabla".into(),
+                default_branch: "master".into(),
+            })
+            .reply(&api)
+            .await;
+        http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
+
+        // Reset state.
+        let res = request().method("GET").path("/nuke/coco").reply(&api).await;
+        assert_eq!(res.status(), StatusCode::OK);
+
+        let res = request()
+            .method("POST")
+            .path("/create-project")
+            .json(&super::CreateInput {
+                name: "Monadic".into(),
+                description: "blabla".into(),
+                default_branch: "master".into(),
+            })
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
+
+        Ok(())
+    }
+}

@@ -26,6 +26,7 @@
     clippy::used_underscore_binding
 )]
 #![feature(result_flattening)]
+#![feature(str_strip)]
 
 pub mod avatar;
 pub mod coco;

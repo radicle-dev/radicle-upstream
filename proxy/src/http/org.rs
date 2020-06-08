@@ -529,7 +529,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
                 json!(registry::Org {
@@ -592,7 +592,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
                 json!(registry::Project {
@@ -692,7 +692,7 @@ mod test {
             }
         }]);
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, want);
         });
 

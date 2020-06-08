@@ -135,17 +135,19 @@ pub fn with_subscriptions(
 mod test {
     use bytes::Bytes;
     use http::response::Response;
+    use pretty_assertions::assert_eq;
     use serde_json::Value;
     use warp::http::StatusCode;
 
-    pub fn assert_response<F>(res: &Response<Bytes>, checks: F)
+    pub fn assert_response<F>(res: &Response<Bytes>, code: StatusCode, checks: F)
     where
         F: FnOnce(Value),
     {
         assert_eq!(
             res.status(),
-            StatusCode::OK,
-            "response status was not 200, the body is:\n{:#?}",
+            code,
+            "response status was not {}, the body is:\n{:#?}",
+            code,
             res.body()
         );
 

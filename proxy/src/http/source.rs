@@ -708,6 +708,7 @@ mod test {
     use serde_json::{json, Value};
     use std::sync::Arc;
     use tokio::sync::Mutex;
+    use warp::http::StatusCode;
     use warp::test::request;
 
     use librad::keys::SecretKey;
@@ -753,7 +754,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -813,7 +814,7 @@ mod test {
             Some(path.to_string()),
         )?;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -867,7 +868,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -900,7 +901,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -950,7 +951,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(have.as_array().unwrap().len(), 14);
             assert_eq!(
@@ -980,7 +981,7 @@ mod test {
 
         let want = coco::local_branches(path).unwrap();
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -1040,7 +1041,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -1140,7 +1141,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
@@ -1187,7 +1188,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,

@@ -625,7 +625,7 @@ mod test {
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(project));
         });
 
@@ -672,7 +672,7 @@ mod test {
         );
         let res = request().method("GET").path("/projects").reply(&api).await;
 
-        http::test::assert_response(&res, |have| {
+        http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects));
         });
 
