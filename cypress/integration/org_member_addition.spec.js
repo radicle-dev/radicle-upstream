@@ -27,6 +27,12 @@ context("add member to org", () => {
       cy.pick("input").type("aname");
       cy.pick("add-member-modal").contains("Cannot find this user");
       cy.pick("submit-button").should("be.disabled");
+
+      // no users that are already members
+      cy.pick("input").clear();
+      cy.pick("input").type("coolname");
+      cy.pick("add-member-modal").contains("This user is already a member");
+      cy.pick("submit-button").should("be.disabled");
     });
   });
 
@@ -36,7 +42,7 @@ context("add member to org", () => {
       cy.pick("submit-button").click();
 
       // check the transaction details before submition
-      cy.pick("message").contains("Org member registration");
+      cy.pick("message").contains("Member registration");
       cy.pick("subject").contains("user2");
     });
   });
@@ -82,7 +88,7 @@ context("after submitting the transaction", () => {
     // pick most recent transaction to check the transaction details
     cy.pick("transaction-center").click();
     cy.pick("transaction-center", "transaction-item").first().click();
-    cy.pick("summary", "message").contains("Org member registration");
+    cy.pick("summary", "message").contains("Member registration");
     cy.pick("summary", "subject").contains("user2");
   });
 
