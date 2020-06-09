@@ -751,10 +751,7 @@ mod test {
                 );
                 assert_eq!(project_domain.clone(), registry::ProjectDomain::Org(org_id));
             },
-            _ => assert!(
-                false,
-                "The tx message did not contain the expected content."
-            ),
+            _ => panic!("The tx message did not contain the expected content."),
         }
 
         Ok(())
@@ -818,10 +815,7 @@ mod test {
                     registry::ProjectDomain::User(handle)
                 );
             },
-            _ => assert!(
-                false,
-                "The tx message did not contain the expected content."
-            ),
+            _ => panic!("The tx message did not contain the expected content."),
         }
 
         Ok(())
