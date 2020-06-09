@@ -17,7 +17,7 @@ interface Notification {
   message: string;
 }
 
-type Notifications = Notification[]
+type Notifications = Notification[];
 
 // STATE
 let notifications: Notifications = [];
@@ -50,7 +50,7 @@ type Msg = Remove | ShowError | ShowInfo;
 const filter = (id: ID): void => {
   notifications = notifications.filter((n) => n.id !== id);
   store.set(notifications);
-}
+};
 
 const show = (level: Level, message: string): void => {
   const id = Math.random();
@@ -60,14 +60,14 @@ const show = (level: Level, message: string): void => {
       id,
       level,
       message,
-    }
+    },
   ];
   store.set(notifications);
 
   setTimeout(() => {
     filter(id);
   }, config.NOTIFICATION_TIMEOUT);
-}
+};
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -86,7 +86,7 @@ const update = (msg: Msg): void => {
 
       break;
   }
-}
+};
 
 export const error = (message: string): void =>
   event.create<Kind, Msg>(Kind.ShowError, update)({ message });

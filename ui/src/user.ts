@@ -14,17 +14,16 @@ interface RegisterInput {
   maybeEntityId?: string;
 }
 
-export const get = (
-  handle: string,
-): Promise<User | null> => {
+export const get = (handle: string): Promise<User | null> => {
   return api.get<User>(`users/${handle}`);
-}
+};
 
 export const register = (
   handle: string,
-  maybeEntityId?: string,
+  maybeEntityId?: string
 ): Promise<transaction.Transaction> => {
   return api.post<RegisterInput, transaction.Transaction>(`users`, {
-    handle, maybeEntityId
+    handle,
+    maybeEntityId,
   });
-}
+};

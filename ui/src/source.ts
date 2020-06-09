@@ -1,16 +1,16 @@
-import { derived, writable, Readable } from 'svelte/store'
+import { derived, writable, Readable } from "svelte/store";
 
-import * as api from "./api"
+import * as api from "./api";
 import * as config from "./config";
-import * as event from "./event"
+import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
 
-import { mockChangeset } from './commitMocks'
+import { mockChangeset } from "./commitMocks";
 
 // TOOLING
 const filterBranches = (branches: string[]): string[] =>
-  branches.filter(branch => !config.HIDDEN_BRANCHES.includes(branch));
+  branches.filter((branch) => !config.HIDDEN_BRANCHES.includes(branch));
 
 // TYPES
 interface Person {
@@ -99,10 +99,13 @@ const commitsStore = remote.createStore<CommitHistory>();
 export const commits = commitsStore.readable;
 
 const currentPathStore = writable("");
-export const currentPath = derived(currentPathStore, $store => $store);
+export const currentPath = derived(currentPathStore, ($store) => $store);
 
 const currentRevisionStore = writable("");
-export const currentRevision = derived(currentRevisionStore, $store => $store);
+export const currentRevision = derived(
+  currentRevisionStore,
+  ($store) => $store
+);
 
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
@@ -115,7 +118,7 @@ enum Kind {
   FetchCommit = "FETCH_COMMIT",
   FetchCommits = "FETCH_COMMITS",
   FetchRevisions = "FETCH_REVISIONS",
-  Update = "UPDATE"
+  Update = "UPDATE",
 }
 
 interface FetchCommit extends event.Event<Kind> {
@@ -150,126 +153,128 @@ const groupCommits = (history: CommitSummary[]): CommitHistory => {
   for (const commit of history) {
     const time = commit.committerTime;
     const date = new Date(time * 1000);
-    const isNewDay = !days.length
-      || !groupDate
-      || date.getDate() < groupDate.getDate()
-      || date.getMonth() < groupDate.getMonth()
-      || date.getFullYear() < groupDate.getFullYear();
+    const isNewDay =
+      !days.length ||
+      !groupDate ||
+      date.getDate() < groupDate.getDate() ||
+      date.getMonth() < groupDate.getMonth() ||
+      date.getFullYear() < groupDate.getFullYear();
 
     if (isNewDay) {
       days.push({
         time: time,
-        commits: []
+        commits: [],
       });
       groupDate = date;
     }
     days[days.length - 1].commits.push(commit);
   }
   return days;
-}
+};
 
-type Msg = FetchCommit | FetchCommits | FetchRevisions | Update
+type Msg = FetchCommit | FetchCommits | FetchRevisions | Update;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.FetchCommit:
       commitStore.loading();
 
-      api.get<Commit>(
-        `source/commit/${msg.projectId}/${msg.sha1}`
-      )
-      .then(commit => {
-        commitStore.success({
-          // TODO(cloudhead): Fetch branch from backend.
-          branch: "master",
-          changeset: mockChangeset, ...commit,
+      api
+        .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
+        .then((commit) => {
+          commitStore.success({
+            // TODO(cloudhead): Fetch branch from backend.
+            branch: "master",
+            changeset: mockChangeset,
+            ...commit,
+          });
         })
-      })
-      .catch(commitStore.error);
+        .catch(commitStore.error);
       break;
 
     case Kind.FetchCommits:
       commitsStore.loading();
 
-      api.get<CommitSummary[]>(
-        `source/commits/${msg.projectId}/${msg.branch}`
-      )
-      .then(history => {
-        commitsStore.success(groupCommits(history));
-      })
-      .catch(commitsStore.error);
+      api
+        .get<CommitSummary[]>(`source/commits/${msg.projectId}/${msg.branch}`)
+        .then((history) => {
+          commitsStore.success(groupCommits(history));
+        })
+        .catch(commitsStore.error);
       break;
 
     case Kind.FetchRevisions:
-      api.get<Revisions>(
-        `source/revisions/${msg.projectId}`
-      )
-      .then(revisions =>
-        revisionsStore.success(revisions.map(rev => {
-          return { ...rev, branches: filterBranches(rev.branches) }
-        }))
-      )
-      .catch(revisionsStore.error);
+      api
+        .get<Revisions>(`source/revisions/${msg.projectId}`)
+        .then((revisions) =>
+          revisionsStore.success(
+            revisions.map((rev) => {
+              return { ...rev, branches: filterBranches(rev.branches) };
+            })
+          )
+        )
+        .catch(revisionsStore.error);
       break;
 
     case Kind.Update:
-      currentPathStore.update(() => msg.path)
+      currentPathStore.update(() => msg.path);
       currentRevisionStore.update(() => msg.revision);
       objectStore.loading();
 
       switch (msg.type) {
         case ObjectType.Blob:
-          api.get<SourceObject>(
-            `source/blob/${msg.projectId}`,
-            {
-              query: { revision: msg.revision, path: msg.path }
-            },
-          )
+          api
+            .get<SourceObject>(`source/blob/${msg.projectId}`, {
+              query: { revision: msg.revision, path: msg.path },
+            })
             .then(objectStore.success)
             .catch(objectStore.error);
           break;
 
         case ObjectType.Tree:
-          api.get<SourceObject>(
-            `source/tree/${msg.projectId}`,
-            { query: { revision: msg.revision, prefix: msg.path },
-            }
-          )
+          api
+            .get<SourceObject>(`source/tree/${msg.projectId}`, {
+              query: { revision: msg.revision, prefix: msg.path },
+            })
             .then(objectStore.success)
             .catch(objectStore.error);
           break;
       }
       break;
   }
-}
+};
 
 export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
 export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
-export const fetchRevisions = event.create<Kind, Msg>(Kind.FetchRevisions, update);
+export const fetchRevisions = event.create<Kind, Msg>(
+  Kind.FetchRevisions,
+  update
+);
 export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 
 export const getLocalBranches = (path: string): Promise<string[]> => {
-  return api.get<string[]>(`source/local-branches/${path}`)
-}
+  return api.get<string[]>(`source/local-branches/${path}`);
+};
 
 export const tree = (
   projectId: string,
   revision: string,
-  prefix: string,
+  prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
 
-  api.get<Tree>(`source/tree/${projectId}`, { query: { revision, prefix } })
-        .then(treeStore.success)
-        .catch(treeStore.error);
+  api
+    .get<Tree>(`source/tree/${projectId}`, { query: { revision, prefix } })
+    .then(treeStore.success)
+    .catch(treeStore.error);
 
   return treeStore.readable;
-}
+};
 
 const blob = (
   projectId: string,
   revision: string,
-  path: string,
+  path: string
 ): Promise<Blob> =>
   api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
 
@@ -283,24 +288,24 @@ const findReadme = (tree: Tree): string | null => {
     }
   }
   return null;
-}
+};
 
 export const isMarkdown = (path: string): boolean => {
   return /\.(md|mkd|markdown)$/i.test(path);
-}
+};
 
 export const formatTime = (t: number): string => {
   return new Date(t).toLocaleDateString("en-US", {
     month: "long",
     weekday: "long",
     day: "numeric",
-    year: "numeric"
+    year: "numeric",
   });
-}
+};
 
 export const readme = (
   projectId: string,
-  revision: string,
+  revision: string
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
 
@@ -311,15 +316,15 @@ export const readme = (
         const path = findReadme(object as Tree);
 
         if (path) {
-          return blob(projectId, revision, path)
+          return blob(projectId, revision, path);
         }
       }
 
       return null;
     })
-    .then(blob => (blob && !blob.binary) ? blob : null)
+    .then((blob) => (blob && !blob.binary ? blob : null))
     .then(readme.success)
     .catch(readme.error);
 
   return readme.readable;
-}
+};
