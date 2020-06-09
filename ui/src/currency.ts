@@ -6,6 +6,6 @@ export const microRadToRad = (microRad: MicroRad): Rad => {
   return microRad / 1_000_000;
 };
 
-export const RadToUsd = (rad: Rad): Usd => {
+export const radToUsd = (rad: Rad): Usd => {
   return rad * 1.0;
 }

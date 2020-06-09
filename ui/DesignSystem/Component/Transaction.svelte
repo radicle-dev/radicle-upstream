@@ -1,5 +1,6 @@
 <script>
   import {
+    costSummary,
     formatMessage,
     formatStake,
     formatSubject,
@@ -17,8 +18,10 @@
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
 
-  export let transaction = null,
-    payer = null;
+  export let transaction = null;
+  export let payer = null;
+  export let transactionCosts = null;
+
   let avatar;
 
   const subject = formatSubject(transaction.messages[0]);
@@ -34,6 +37,12 @@
   };
 
   const updateAvatar = async () => (avatar = await subject.avatarSource);
+
+  const summary = costSummary(
+    transaction.messages[0].type,
+    transaction.fee,
+    transactionCosts
+  );
 
   $: updateAvatar();
 </script>
@@ -86,7 +95,7 @@
   </div>
 
   <div slot="right">
-    <Rad amount={20} />
+    <Rad rad={summary.depositRad} usd={summary.depositUsd} />
   </div>
 </Row>
 
@@ -96,7 +105,7 @@
   </div>
 
   <div slot="right">
-    <Rad amount={transaction.fee} size="big" />
+    <Rad rad={summary.feeRad} usd={summary.feeUsd} size="big" />
   </div>
 </Row>
 
@@ -108,7 +117,7 @@
   </div>
 
   <div slot="right">
-    <Rad amount={24} size="big" />
+    <Rad rad={summary.totalRad} usd={summary.totalUsd} size="big" />
   </div>
 </Row>
 
@@ -128,6 +137,6 @@
   </div>
 
   <div slot="right">
-    <Rad amount={200} size="big" />
+    <Rad rad={999} usd={999} size="big" />
   </div>
 </Row>

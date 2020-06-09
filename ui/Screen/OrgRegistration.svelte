@@ -31,6 +31,7 @@
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
           transaction = {
+            fee: $session.data.transactionCosts.minimumFee,
             messages: [
               {
                 type: MessageType.OrgRegistration,
@@ -123,7 +124,11 @@
     </Input.Text>
   {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
-      <Transaction {transaction} {subject} {payer} />
+      <Transaction
+        {transaction}
+        {subject}
+        {payer}
+        transactionCosts={$session.data.transactionCosts} />
     </div>
   {/if}
   <NavigationButtons

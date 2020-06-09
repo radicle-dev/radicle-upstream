@@ -42,6 +42,7 @@
   // TODO(sos): coordinate message format for project registration with proxy
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
+    fee: session.transactionCosts.minimumFee,
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
@@ -94,7 +95,10 @@
               domainAvatar = event.detail.domainAvatar;
             }} />
         {:else}
-          <Transaction transaction={tx()} payer={wallet()} />
+          <Transaction
+            transaction={tx()}
+            payer={wallet()}
+            transactionCosts={session.transactionCosts} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

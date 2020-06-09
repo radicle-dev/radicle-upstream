@@ -1,4 +1,5 @@
 <script>
+  import { getContext } from "svelte";
   import * as transaction from "../../src/transaction.ts";
 
   import { Button, Flex } from "../../DesignSystem/Primitive";
@@ -7,10 +8,15 @@
   export let handle = null;
   export let identity = null;
 
+  // This will be user-customizable in the future.
+  export let transactionFee = null;
+
   export let onNextStep = null;
   export let onPreviousStep = null;
 
+  const { transactionCosts } = getContext("session");
   const tx = {
+    fee: transactionFee,
     messages: [
       {
         type: transaction.MessageType.UserRegistration,
@@ -23,7 +29,7 @@
   const payer = transaction.formatPayer(identity);
 </script>
 
-<Transaction transaction={tx} {payer} />
+<Transaction transaction={tx} {payer} {transactionCosts} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button

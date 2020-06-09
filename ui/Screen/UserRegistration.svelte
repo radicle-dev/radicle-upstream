@@ -14,6 +14,7 @@
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
 
   let { identity } = getContext("session");
+  const { transactionCosts } = getContext("session");
 
   let handle = identity ? identity.metadata.handle : null;
   const id = identity ? identity.id : null;
@@ -80,6 +81,7 @@
       {#if step === 2}
         <SubmitRegistrationStep
           {identity}
+          transactionFee={transactionCosts.minimumFee}
           onNextStep={registerUser}
           onPreviousStep={previousStep}
           {handle} />

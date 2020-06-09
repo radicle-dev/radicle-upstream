@@ -461,3 +461,57 @@ export const summaryText = (counts: SummaryCounts): string => {
 
   return `transaction ${state}`;
 }
+
+interface CostSummary {
+  depositRad: currency.Rad;
+  depositUsd: currency.Usd;
+  feeRad: currency.Rad;
+  feeUsd: currency.Usd;
+  totalRad: currency.Rad;
+  totalUsd: currency.Usd;
+}
+
+export const costSummary = (
+  messageType: MessageType,
+  fee: currency.MicroRad,
+  costs: Costs): CostSummary => {
+
+  let deposit = 0;
+
+  switch (messageType) {
+    case MessageType.OrgRegistration:
+      deposit = costs.orgRegistrationDeposit;
+      break;
+    case MessageType.MemberRegistration:
+      deposit = costs.memberRegistrationDeposit;
+      break;
+    case MessageType.ProjectRegistration:
+      deposit = costs.projectRegistrationDepoist;
+      break;
+    case MessageType.UserRegistration:
+      deposit = costs.userRegistrationDeposit;
+      break;
+    default:
+      throw(`MessageType: ${messageType} not implemented`)
+      break;
+  }
+
+  const total = deposit + fee;
+
+  const depositRad = currency.microRadToRad(deposit);
+  const feeRad = currency.microRadToRad(fee);
+  const totalRad = currency.microRadToRad(total);
+
+  const depositUsd = currency.radToUsd(depositRad)
+  const feeUsd = currency.radToUsd(feeRad)
+  const totalUsd = currency.radToUsd(totalRad)
+
+  return {
+    depositRad,
+    depositUsd,
+    feeRad,
+    feeUsd,
+    totalRad,
+    totalUsd,
+  }
+}

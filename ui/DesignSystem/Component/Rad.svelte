@@ -1,7 +1,8 @@
 <script>
   import { Icon, Numeric } from "../Primitive";
 
-  export let amount = null;
+  export let rad = null;
+  export let usd = null;
   export let style = null;
   export let size = "regular"; // regular | big
 </script>
@@ -27,14 +28,16 @@
       <Numeric
         variant="big"
         style="display: inline-flex; color: var(--color-foreground-level-6)">
-        {amount}
+        {rad}
       </Numeric>
     {:else}
       <Numeric
         style="display: inline-flex; color: var(--color-foreground-level-6)">
-        {amount}
+        {rad}
       </Numeric>
     {/if}
   </div>
-  <Numeric style="color: var(--color-foreground-level-5)">${amount}</Numeric>
+  {#if usd !== null}
+    <Numeric style="color: var(--color-foreground-level-5)">${usd}</Numeric>
+  {/if}
 </div>

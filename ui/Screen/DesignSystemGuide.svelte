@@ -937,7 +937,7 @@
             </div>
 
             <div slot="right">
-              <Rad amount={4} />
+              <Rad rad={4} usd={4} />
             </div>
           </Row>
           <Row variant="middle">
@@ -946,7 +946,7 @@
             </div>
 
             <div slot="right">
-              <Rad amount={4} />
+              <Rad rad={4} usd={4} />
             </div>
           </Row>
           <Row variant="bottom">
@@ -955,7 +955,7 @@
             </div>
 
             <div slot="right">
-              <Rad amount={8} size="big" />
+              <Rad rad={8} usd={8} size="big" />
             </div>
           </Row>
         </div>
@@ -1041,7 +1041,13 @@
       </Swatch>
 
       <Swatch>
-        <Rad amount="200" />
+        <Rad rad="200" usd="2" />
+      </Swatch>
+      <Swatch>
+        <Rad rad="10" usd="0.1" />
+      </Swatch>
+      <Swatch>
+        <Rad rad="20" />
       </Swatch>
 
       <Swatch>
