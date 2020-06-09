@@ -722,6 +722,7 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
+        println!("PATH: {:?}", tmp_dir.path());
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir)?;
         let mut peer = coco::Peer::new(config).await?;

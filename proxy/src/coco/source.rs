@@ -180,8 +180,9 @@ pub fn blob(
     revision: Option<String>,
     maybe_path: Option<String>,
 ) -> Result<Blob, error::Error> {
-    let repo = peer.project_repo(project_urn)?;
-    let mut browser = surf::vcs::git::Browser::new(&repo)?;
+    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
+    let repo = api.storage().open_repo(project_urn.parse()?)?;
+    let mut browser = repo.browser()?;
 
     // Best effort to guess the revision.
     let revision = revision.unwrap_or_else(|| default_branch);
@@ -222,8 +223,9 @@ pub fn blob(
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn branches(peer: &Peer, project_urn: &str) -> Result<Vec<Branch>, error::Error> {
-    let repo = peer.project_repo(project_urn)?;
-    let browser = surf::vcs::git::Browser::new(&repo)?;
+    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
+    let repo = api.storage().open_repo(project_urn.parse()?)?;
+    let browser = repo.browser()?;
 
     let mut branches = browser
         .list_branches(None)?
@@ -261,8 +263,9 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit(peer: &Peer, project_urn: &str, sha1: &str) -> Result<Commit, error::Error> {
-    let repo = peer.project_repo(project_urn)?;
-    let mut browser = surf::vcs::git::Browser::new(&repo)?;
+    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
+    let repo = api.storage().open_repo(project_urn.parse()?)?;
+    let mut browser = repo.browser()?;
 
     browser.commit(surf::vcs::git::Oid::from_str(sha1)?)?;
 
@@ -278,8 +281,9 @@ pub fn commit(peer: &Peer, project_urn: &str, sha1: &str) -> Result<Commit, erro
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commits(peer: &Peer, project_urn: &str, branch: &str) -> Result<Vec<Commit>, error::Error> {
-    let repo = peer.project_repo(project_urn)?;
-    let mut browser = surf::vcs::git::Browser::new(&repo)?;
+    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
+    let repo = api.storage().open_repo(project_urn.parse()?)?;
+    let mut browser = repo.browser()?;
 
     browser.branch(surf::vcs::git::BranchName::new(branch))?;
 
@@ -294,8 +298,9 @@ pub fn commits(peer: &Peer, project_urn: &str, branch: &str) -> Result<Vec<Commi
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn tags(peer: &Peer, project_urn: &str) -> Result<Vec<Tag>, error::Error> {
-    let repo = peer.project_repo(project_urn)?;
-    let browser = surf::vcs::git::Browser::new(&repo)?;
+    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
+    let repo = api.storage().open_repo(project_urn.parse()?)?;
+    let browser = repo.browser()?;
 
     let tag_names = browser.list_tags()?;
     let mut tags: Vec<Tag> = tag_names
@@ -321,8 +326,9 @@ pub fn tree(
     maybe_revision: Option<String>,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, error::Error> {
-    let repo = peer.project_repo(project_urn)?;
-    let mut browser = surf::vcs::git::Browser::new(&repo)?;
+    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
+    let repo = api.storage().open_repo(project_urn.parse()?)?;
+    let mut browser = repo.browser()?;
 
     let revision = maybe_revision.unwrap_or_else(|| default_branch);
     let prefix = maybe_prefix.unwrap_or_default();

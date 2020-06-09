@@ -7,6 +7,7 @@ use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 
+// use librad::git::repo;
 use librad::git::storage;
 use librad::keys;
 use librad::meta::entity::{self, Resolver as _};
@@ -16,7 +17,7 @@ use librad::net;
 use librad::net::discovery;
 use librad::paths;
 use librad::peer;
-use librad::surf::vcs::git as surf;
+// use librad::surf::vcs::git as surf;
 use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
 
@@ -103,6 +104,7 @@ impl Peer {
         Ok(f(&api))
     }
 
+    /*
     /// Fetch a repository for the `project_urn` we supplied to this function.
     ///
     /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
@@ -112,15 +114,20 @@ impl Peer {
     /// The function will error if:
     ///   * A lock was poisioned. See [`Self::with_api`].
     ///   * The repository could not be created. See [`surf::Repository::new`].
-    pub fn project_repo(&self, _project_urn: &str) -> Result<surf::Repository, error::Error> {
+    pub fn project_repo(&'_ self, project_urn: &str) -> Result<repo::Repo<'_>, error::Error> {
+        let project_urn = project_urn.parse()?;
         // TODO(finto): fetch project meta and build browser
         let project_name = "git-platinum";
         let path = self.with_api(|api| api.paths().git_dir().join(project_name))?;
         // TODO(finto): https://github.com/radicle-dev/radicle-surf/issues/126
-        let repo = surf::Repository::new(path.to_str().expect("failed to get path"))?;
+        let _repo = surf::Repository::new(path.to_str().expect("failed to get path"))?;
+
+        let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
+        let repo = api.storage().open_repo(project_urn)?;
 
         Ok(repo)
     }
+    */
 
     /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
     ///
@@ -259,20 +266,34 @@ impl Peer {
         let monorepo = self.with_api(|api| api.paths().git_dir().join(""))?;
         let workspace = monorepo.join("../workspace");
         let platinum_into = workspace.join(name);
+        println!("INTO: {:?}", platinum_into);
 
         let repo = Self::clone_platinum(&platinum_from, &platinum_into)?;
         let meta = self
             .init_project(owner, name, description, default_branch)
             .await?;
 
-        let mut rad_remote = repo.remote_with_fetch(
-            "rad",
-            monorepo.to_str().expect("unable to get str for monorepo"),
-            &format!(
-                "+refs/namespaces/{}/refs/heads/*:refs/heads/*",
-                meta.urn().id
-            ),
-        )?;
+        {
+            let _rad_remote = repo.remote_with_fetch(
+                "rad",
+                &format!("file://{}", monorepo.to_str().expect("unable to get str for monorepo")),
+                &format!(
+                    "+refs/namespaces/{}/refs/heads/*:refs/heads/*",
+                    // "+refs/namespaces/{}/refs/heads/*:refs/remotes/rad/*",
+                    // "+refs/heads/*:refs/namespaces/{}/refs/heads/*",
+                    meta.urn().id
+                ),
+            )?;
+
+            repo.remote_add_push("rad", &format!(
+                // "+refs/namespaces/{}/refs/heads/*:refs/heads/*",
+              // "+refs/namespaces/{}/refs/heads/*:refs/remotes/rad/*",
+                "+refs/heads/*:refs/namespaces/{}/refs/heads/*",
+              meta.urn().id
+              ))?;
+        }
+
+        let mut rad_remote = repo.find_remote("rad").expect("we just made it. qed.");
 
         let tags = repo
             .tag_names(None)?
@@ -281,10 +302,17 @@ impl Peer {
             .map(|t| format!("+refs/tags/{}", t))
             .collect::<Vec<_>>();
 
+        rad_remote.connect(git2::Direction::Push)?;
+        println!("IS IT CONNECTED: {}", rad_remote.connected());
+
         // Push all tags to rad remote.
         rad_remote.push(&tags, None)?;
         // Push dev branch.
-        rad_remote.push(&["+refs/heads/dev"], None)?;
+        rad_remote.push(&[&format!("refs/heads/master:refs/namespaces/{}/refs/heads/master", meta.urn().id)], None)?;
+
+        for refspec in rad_remote.refspecs() {
+            println!("SPEC: {:?}", refspec.str());
+        }
 
         // Init as rad project.
         Ok(meta)
