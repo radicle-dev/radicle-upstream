@@ -506,7 +506,7 @@ impl ToDocumentedType for RegisterInput {
             "domainType".into(),
             document::enum_string(vec!["org".into(), "user".into()])
                 .description("The type of domain the project will be registered under")
-                .example("user"),
+                .example("org"),
         );
         properties.insert(
             "domainId".into(),

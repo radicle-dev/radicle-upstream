@@ -45,9 +45,9 @@
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
-        domain_type: domainType,
-        domain_id: domainId,
-        project_name: projectName,
+        domainType: domainType,
+        domainId: domainId,
+        projectName: projectName,
       },
     ],
   });

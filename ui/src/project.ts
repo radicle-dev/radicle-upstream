@@ -36,8 +36,8 @@ export enum Domain {
 }
 
 export interface Registered {
-  domain_type: Domain;
-  domain_id: string;
+  domainType: Domain;
+  domainId: string;
   name: string;
   maybeProjectId?: string;
 }
