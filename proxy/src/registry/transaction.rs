@@ -62,7 +62,6 @@ pub struct Transaction {
     //
     // TODO(rudolfs): remove this once https://github.com/serde-rs/json/issues/625
     // is fixed.
-
     /// Transaction fee in μRAD.
     #[serde(serialize_with = "fee_serializer")]
     #[serde(deserialize_with = "fee_deserializer")]
