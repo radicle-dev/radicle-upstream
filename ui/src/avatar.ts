@@ -14,7 +14,7 @@ export interface RemoteAvatar {
   url: string;
 }
 
-export type Avatar = EmojiAvatar | RemoteAvatar
+export type Avatar = EmojiAvatar | RemoteAvatar;
 
 export enum Usage {
   Any = "any",

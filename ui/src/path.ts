@@ -23,29 +23,30 @@ export const orgRegistration = (): string => `/orgs/register`;
 export const orgProjects = (id: string): string => `/orgs/${id}/projects`;
 export const orgFund = (id: string): string => `/orgs/${id}/fund`;
 export const orgMembers = (id: string): string => `/orgs/${id}/members`;
-export const memberRegistration = (id: string): string => `/orgs/${id}/members/register`;
+export const memberRegistration = (id: string): string =>
+  `/orgs/${id}/members/register`;
 
 export const createProject = (): string => "/projects/new";
 export const registerProject = (domainId: string): string =>
   `/projects/register/${domainId}`;
 export const registerExistingProject = (
   projectId: string,
-  domainId: string,
-): string =>
-  `/projects/${projectId}/register/${domainId}`;
+  domainId: string
+): string => `/projects/${projectId}/register/${domainId}`;
 export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
-export const projectRevisions = (id: string): string => `/projects/${id}/revisions`;
+export const projectRevisions = (id: string): string =>
+  `/projects/${id}/revisions`;
 export const projectSource = (
   id: string,
   revision: string,
   objectType: string,
-  path: string,
+  path: string
 ): string => {
   if (revision && path) {
     return `/projects/${id}/source/${revision}/${objectType}/${
       objectType === ObjectType.Tree ? `${path}/` : path
-      }`;
+    }`;
   } else {
     return `/projects/${id}/source`;
   }
@@ -60,7 +61,11 @@ export const transactions = (id: string): string => `/transactions/${id}`;
 export const designSystemGuide = (): string => "/design-system-guide";
 export const help = (): string => "/help";
 
-export const active = (path: string, location: string, loose = false): boolean => {
+export const active = (
+  path: string,
+  location: string,
+  loose = false
+): boolean => {
   return regexparam(path, loose).pattern.test(location);
 };
 

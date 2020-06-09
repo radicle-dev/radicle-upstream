@@ -115,7 +115,7 @@
     "cypress:open": "yarn run cypress open",
     "release": "babel-node --presets \"@babel/env\" scripts/release.js",
     "release:finalize": "babel-node --presets \"@babel/env\" scripts/release.js --finalize",
-    "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
+    "prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts"
@@ -153,6 +153,7 @@
       "eslint --fix"
     ],
     "*.ts": [
+      "prettier --write",
       "eslint --fix"
     ]
   }
