@@ -3,6 +3,7 @@ import * as timeago from "timeago.js";
 
 import * as api from "./api";
 import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar"
+import * as currency from "./currency";
 import * as event from "./event";
 import { Identity } from "./identity";
 import { Domain } from "./project"
@@ -16,6 +17,14 @@ type Height = number;
 interface Timestamp {
   secs: number;
   nanos: number;
+}
+
+export interface Costs {
+  minimumFee: currency.MicroRad;
+  userRegistrationDeposit: currency.MicroRad;
+  orgRegistrationDeposit: currency.MicroRad;
+  projectRegistrationDepoist: currency.MicroRad;
+  memberRegistrationDeposit: currency.MicroRad;
 }
 
 export enum MessageType {

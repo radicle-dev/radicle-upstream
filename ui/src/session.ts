@@ -16,6 +16,7 @@ export interface Session {
   identity?: identity.Identity;
   orgs: org.Org[];
   settings: Settings;
+  transactionCosts: transaction.Costs;
 }
 
 // STATE
