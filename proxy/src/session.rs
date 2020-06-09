@@ -22,6 +22,8 @@ pub struct Session {
     pub orgs: Vec<registry::Org>,
     /// User controlled parameters to control the behaviour and state of the application.
     pub settings: settings::Settings,
+    /// Transaction deposits and fees.
+    pub transaction_costs: registry::Costs,
 }
 
 /// Resets the session state.
@@ -46,6 +48,7 @@ pub async fn current<R: registry::Client>(
     registry: R,
 ) -> Result<Session, error::Error> {
     let mut session = get(store, KEY_CURRENT)?;
+    session.transaction_costs = registry::get_costs();
 
     if let Some(mut id) = session.identity.clone() {
         if let Some(handle) = id.registered.clone() {

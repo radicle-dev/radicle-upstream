@@ -306,6 +306,13 @@ mod test {
                         "network": "emulator",
                     },
                 },
+                "transactionCosts": {
+                    "memberRegistrationDeposit": 10,
+                    "minimumFee": 1,
+                    "orgRegistrationDeposit": 10,
+                    "projectRegistrationDepoist": 10,
+                    "userRegistrationDeposit": 10,
+                },
             }),
         );
     }
@@ -347,6 +354,13 @@ mod test {
                     "registry": {
                         "network": "emulator",
                     },
+                },
+                "transactionCosts": {
+                    "memberRegistrationDeposit": 10,
+                    "minimumFee": 1,
+                    "orgRegistrationDeposit": 10,
+                    "projectRegistrationDepoist": 10,
+                    "userRegistrationDeposit": 10,
                 },
             }),
         );

@@ -481,13 +481,6 @@ where
     fn reset(&mut self, client: protocol::Client) {
         self.client.reset(client);
     }
-
-    fn deposit_costs(
-        &self,
-        message: impl protocol::Message,
-    ) -> Result<protocol::Balance, error::Error> {
-        self.client.deposit_costs(message)
-    }
 }
 
 #[allow(clippy::result_unwrap_used)]

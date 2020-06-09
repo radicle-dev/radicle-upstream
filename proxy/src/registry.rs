@@ -16,7 +16,7 @@ use crate::avatar;
 use crate::error;
 
 mod transaction;
-pub use radicle_registry_client::MINIMUM_FEE;
+pub use radicle_registry_client::{MINIMUM_FEE, REGISTER_MEMBER_DEPOSIT, REGISTER_ORG_DEPOSIT, REGISTER_PROJECT_DEPOSIT, REGISTER_USER_DEPOSIT};
 pub use transaction::{Cache, Cacher, Message, State, Timestamp, Transaction, MIN_CONFIRMATIONS};
 
 /// Wrapper for [`protocol::Id`] to add serialization.
@@ -201,6 +201,33 @@ pub struct User {
     pub maybe_entity_id: Option<String>,
 }
 
+/// Default transaction fees and deposits.
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Costs {
+    /// Smallest possible transaction fee in μRAD.
+    minimum_fee: protocol::Balance,
+    /// User registration deposit cost in μRAD.
+    user_registration_deposit: protocol::Balance,
+    /// Organization registration deposit cost in μRAD.
+    org_registration_deposit: protocol::Balance,
+    /// Project registration deposit cost in μRAD.
+    project_registration_depoist: protocol::Balance,
+    /// Member registration on org deposit cost in μRAD.
+    member_registration_deposit: protocol::Balance
+}
+
+/// Return a list of costs for all supported transactions.
+pub fn get_costs() -> Costs {
+    Costs {
+        minimum_fee: MINIMUM_FEE,
+        user_registration_deposit: REGISTER_USER_DEPOSIT,
+        org_registration_deposit: REGISTER_ORG_DEPOSIT,
+        project_registration_depoist: REGISTER_PROJECT_DEPOSIT,
+        member_registration_deposit: REGISTER_MEMBER_DEPOSIT,
+    }
+}
+
 /// Methods to interact with the Registry in a uniform way.
 #[async_trait]
 pub trait Client: Clone + Send + Sync {
@@ -334,12 +361,6 @@ pub trait Client: Clone + Send + Sync {
     /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
     /// to a different nework.
     fn reset(&mut self, client: protocol::Client);
-
-    /// Return deposit costs for a given transaction type
-    fn deposit_costs(
-        &self,
-        message: impl protocol::Message,
-    ) -> Result<protocol::Balance, error::Error>;
 }
 
 /// Registry client wrapper.
@@ -710,15 +731,6 @@ impl Client for Registry {
     fn reset(&mut self, client: protocol::Client) {
         self.client = client;
     }
-
-    fn deposit_costs(
-        &self,
-        message: impl protocol::Message,
-    ) -> Result<protocol::Balance, error::Error> {
-        let costs = protocol::Client::deposit_costs(message);
-
-        Ok(costs)
-    }
 }
 
 #[allow(
@@ -996,18 +1008,6 @@ mod test {
             .register_user(&author, handle, Some("123abcd.git".into()), 100)
             .await;
         assert!(res.is_ok());
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn deposit_costs() -> Result<(), error::Error> {
-        let org_id = Id::try_from("monadic")?;
-        let register_message = protocol::message::RegisterOrg { org_id: org_id.0 };
-        let res = protocol::Client::deposit_costs(register_message);
-        let register_cost: protocol::Balance = 10;
-
-        assert!(res == register_cost);
 
         Ok(())
     }

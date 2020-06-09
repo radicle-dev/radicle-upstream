@@ -231,6 +231,7 @@ mod test {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let cache = registry::Cacher::new(registry, &store);
         let now = registry::Timestamp::now();
+        let fee = registry::MINIMUM_FEE;
 
         let tx = registry::Transaction {
             id: registry::Hash(radicle_registry_client::TxHash::random()),
@@ -245,6 +246,7 @@ mod test {
                 timestamp: now,
             },
             timestamp: now,
+            fee
         };
 
         cache.cache_transaction(tx.clone()).unwrap();
