@@ -737,8 +737,25 @@ mod test {
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-
         assert_eq!(have, json!(tx));
+
+        let tx_msg = tx.messages.first().unwrap();
+        match tx_msg {
+            registry::Message::ProjectRegistration {
+                project_name,
+                project_domain,
+            } => {
+                assert_eq!(
+                    project_name.clone(),
+                    registry::ProjectName::try_from("upstream").unwrap()
+                );
+                assert_eq!(project_domain.clone(), registry::ProjectDomain::Org(org_id));
+            },
+            _ => assert!(
+                false,
+                "The tx message did not contain the expected content."
+            ),
+        }
 
         Ok(())
     }
@@ -784,8 +801,28 @@ mod test {
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-
         assert_eq!(have, json!(tx));
+
+        let tx_msg = tx.messages.first().unwrap();
+        match tx_msg {
+            registry::Message::ProjectRegistration {
+                project_name,
+                project_domain,
+            } => {
+                assert_eq!(
+                    project_name.clone(),
+                    registry::ProjectName::try_from("upstream").unwrap()
+                );
+                assert_eq!(
+                    project_domain.clone(),
+                    registry::ProjectDomain::User(handle)
+                );
+            },
+            _ => assert!(
+                false,
+                "The tx message did not contain the expected content."
+            ),
+        }
 
         Ok(())
     }

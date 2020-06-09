@@ -19,7 +19,7 @@ mod transaction;
 pub use transaction::{Cache, Cacher, Message, State, Timestamp, Transaction, MIN_CONFIRMATIONS};
 
 /// Wrapper for [`protocol::Id`] to add serialization.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Id(protocol::Id);
 
 impl fmt::Display for Id {
@@ -201,7 +201,7 @@ pub struct User {
 }
 
 /// The domain of a project
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum ProjectDomain {
     /// An org
     Org(Id),
