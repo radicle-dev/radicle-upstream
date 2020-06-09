@@ -3,7 +3,7 @@ export type MicroRad = number;
 export type Usd = number;
 
 export const microRadToRad = (microRad: MicroRad): Rad => {
-  return 1_000_000 / microRad;
+  return microRad / 1_000_000;
 };
 
 export const RadToUsd = (rad: Rad): Usd => {
