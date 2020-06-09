@@ -246,7 +246,7 @@ mod test {
                 timestamp: now,
             },
             timestamp: now,
-            fee
+            fee,
         };
 
         cache.cache_transaction(tx.clone()).unwrap();

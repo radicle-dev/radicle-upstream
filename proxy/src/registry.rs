@@ -16,7 +16,10 @@ use crate::avatar;
 use crate::error;
 
 mod transaction;
-pub use radicle_registry_client::{MINIMUM_FEE, REGISTER_MEMBER_DEPOSIT, REGISTER_ORG_DEPOSIT, REGISTER_PROJECT_DEPOSIT, REGISTER_USER_DEPOSIT};
+pub use radicle_registry_client::{
+    MINIMUM_FEE, REGISTER_MEMBER_DEPOSIT, REGISTER_ORG_DEPOSIT, REGISTER_PROJECT_DEPOSIT,
+    REGISTER_USER_DEPOSIT,
+};
 pub use transaction::{Cache, Cacher, Message, State, Timestamp, Transaction, MIN_CONFIRMATIONS};
 
 /// Wrapper for [`protocol::Id`] to add serialization.
@@ -214,7 +217,7 @@ pub struct Costs {
     /// Project registration deposit cost in μRAD.
     project_registration_depoist: protocol::Balance,
     /// Member registration on org deposit cost in μRAD.
-    member_registration_deposit: protocol::Balance
+    member_registration_deposit: protocol::Balance,
 }
 
 /// Return a list of costs for all supported transactions.
