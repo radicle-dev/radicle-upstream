@@ -56,15 +56,21 @@ pub struct Transaction {
     pub state: State,
     /// Creation time.
     pub timestamp: Timestamp,
+
+    // Unfortunately serde_json doesn't support u128 values, and until it does
+    // we work around it by serializing the value to a String.
+    //
+    // TODO(rudolfs): remove this once https://github.com/serde-rs/json/issues/625
+    // is fixed.
+
     /// Transaction fee in μRAD.
-    /// Unfortunately serde_json doesn't support u128 values, and until it does
-    /// we work around this by serializing the value to a String.
     #[serde(serialize_with = "fee_serializer")]
     #[serde(deserialize_with = "fee_deserializer")]
     pub fee: protocol::Balance,
 }
 
 use serde::Serializer;
+/// Custom serializer for fees, it converts an u128 value to String
 fn fee_serializer<S>(fee: &protocol::Balance, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
@@ -73,6 +79,7 @@ where
 }
 
 use serde::de::{self, Deserializer};
+/// Custom deserializer for fees, it converts a String value to u128
 fn fee_deserializer<'de, D>(deserializer: D) -> Result<protocol::Balance, D::Error>
 where
     D: Deserializer<'de>,

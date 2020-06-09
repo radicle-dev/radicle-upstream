@@ -221,7 +221,8 @@ pub struct Costs {
 }
 
 /// Return a list of costs for all supported transactions.
-pub fn get_costs() -> Costs {
+#[must_use]
+pub const fn get_costs() -> Costs {
     Costs {
         minimum_fee: MINIMUM_FEE,
         user_registration_deposit: REGISTER_USER_DEPOSIT,
