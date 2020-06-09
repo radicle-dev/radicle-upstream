@@ -2,11 +2,11 @@ import { Readable, Writable, get, derived, writable } from "svelte/store";
 import * as timeago from "timeago.js";
 
 import * as api from "./api";
-import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar"
+import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar";
 import * as currency from "./currency";
 import * as event from "./event";
 import { Identity } from "./identity";
-import { Domain } from "./project"
+import { Domain } from "./project";
 import * as remote from "./remote";
 
 const POLL_INTERVAL = 10000;
@@ -74,8 +74,8 @@ interface UserRegistration {
   id: string;
 }
 
-type Message
-  = OrgRegistration
+type Message =
+  | OrgRegistration
   | OrgUnregistration
   | MemberRegistration
   | MemberUnregistration
@@ -141,30 +141,33 @@ interface Summary {
 }
 
 export const summarizeTransactions = (txs: Transactions): Summary =>
-  txs.reduce((acc, tx): Summary => {
-    acc.counts.sum += 1;
-    acc.counts[tx.state.type] += 1;
+  txs.reduce(
+    (acc, tx): Summary => {
+      acc.counts.sum += 1;
+      acc.counts[tx.state.type] += 1;
 
-    if (tx.state.type === StateType.Confirmed) {
-      acc.confirmations += tx.state.confirmations;
-      acc.minConfirmations = tx.state.minConfirmations;
-    } else if (tx.state.type === StateType.Settled) {
-      acc.confirmations += tx.state.minConfirmations;
-      acc.minConfirmations = tx.state.minConfirmations;
-    }
+      if (tx.state.type === StateType.Confirmed) {
+        acc.confirmations += tx.state.confirmations;
+        acc.minConfirmations = tx.state.minConfirmations;
+      } else if (tx.state.type === StateType.Settled) {
+        acc.confirmations += tx.state.minConfirmations;
+        acc.minConfirmations = tx.state.minConfirmations;
+      }
 
-    return acc;
-  }, {
-    confirmations: 0,
-    minConfirmations: 0,
-    counts: {
-      confirmed: 0,
-      failed: 0,
-      pending: 0,
-      settled: 0,
-      sum: 0,
+      return acc;
     },
-  });
+    {
+      confirmations: 0,
+      minConfirmations: 0,
+      counts: {
+        confirmed: 0,
+        failed: 0,
+        pending: 0,
+        settled: 0,
+        sum: 0,
+      },
+    }
+  );
 
 const transactionsStore = remote.createStore<Transactions>();
 export const transactions = transactionsStore.readable;
@@ -172,7 +175,7 @@ export const transactions = transactionsStore.readable;
 const summaryStore: Writable<Summary | null> = writable(null);
 export const summary = derived(transactionsStore, (store) => {
   if (store.status === remote.Status.Success) {
-    const updated = summarizeTransactions(store.data)
+    const updated = summarizeTransactions(store.data);
 
     summaryStore.set(updated);
 
@@ -207,33 +210,38 @@ const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.FetchList:
       transactionsStore.loading();
-      api.post<ListInput, Transactions>("transactions", { ids: msg.ids })
+      api
+        .post<ListInput, Transactions>("transactions", { ids: msg.ids })
         .then(transactionsStore.success)
         .catch(transactionsStore.error);
 
       break;
 
     case Kind.RefetchList:
-      api.post<ListInput, Transactions>("transactions", { ids: [] })
+      api
+        .post<ListInput, Transactions>("transactions", { ids: [] })
         .then(transactionsStore.success)
         .catch(transactionsStore.error);
 
       break;
   }
-}
+};
 
 export const fetchList = (ids?: Array<string>): void =>
   event.create<Kind, Msg>(Kind.FetchList, update)({ ids: ids || [] });
 
-export const fetch = (id: string): Readable<remote.Data<Transaction | null>> => {
+export const fetch = (
+  id: string
+): Readable<remote.Data<Transaction | null>> => {
   const store = remote.createStore<Transaction | null>();
 
-  api.post<ListInput, Transactions>("transactions", { ids: [id] })
-    .then(txs => store.success(txs.length === 1 ? txs[0] : null))
+  api
+    .post<ListInput, Transactions>("transactions", { ids: [id] })
+    .then((txs) => store.success(txs.length === 1 ? txs[0] : null))
     .catch(store.error);
 
   return store;
-}
+};
 export const refetchList = event.create<Kind, Msg>(Kind.RefetchList, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
@@ -254,10 +262,10 @@ export const formatMessage = (msg: Message): string => {
       return "Org unregistration";
 
     case MessageType.MemberRegistration:
-      return "Org member registration"
+      return "Org member registration";
 
     case MessageType.MemberUnregistration:
-      return "Org member unregistration"
+      return "Org member unregistration";
 
     case MessageType.ProjectRegistration:
       return "Project registration";
@@ -273,18 +281,19 @@ export const format = (tx: Transaction): object => {
     id: tx.id,
     message: formatMessage(tx.messages[0]),
     state: "pending",
-    progress: 0
-  }
-}
+    progress: 0,
+  };
+};
 
-export const formatStake = (msg: Message): string => `${formatMessage(msg)} deposit`;
+export const formatStake = (msg: Message): string =>
+  `${formatMessage(msg)} deposit`;
 
-// Having both enums & interfaces here is somewhat verbose; the reason we do this 
-// is so we have compatibility with non-TS svelte components while still enjoying 
+// Having both enums & interfaces here is somewhat verbose; the reason we do this
+// is so we have compatibility with non-TS svelte components while still enjoying
 // some type strictness
 export enum PayerType {
   Org = "org",
-  User = "user"
+  User = "user",
 }
 
 // TODO(sos): coordinate payer shape with proxy/registry
@@ -295,19 +304,20 @@ interface Payer {
   imageUrl?: string;
 }
 
-export const formatPayer = (identity: Identity): Payer => (identity && {
-  name: identity.metadata.displayName || identity.metadata.handle,
-  type: PayerType.User,
-  avatarFallback: identity.avatarFallback,
-  imageUrl: identity.metadata.avatarUrl
-});
+export const formatPayer = (identity: Identity): Payer =>
+  identity && {
+    name: identity.metadata.displayName || identity.metadata.handle,
+    type: PayerType.User,
+    avatarFallback: identity.avatarFallback,
+    imageUrl: identity.metadata.avatarUrl,
+  };
 
 export enum SubjectType {
   User = "user",
   OrgProject = "org_project",
   UserProject = "user_project",
   Org = "org",
-  Member = "member"
+  Member = "member",
 }
 
 interface Subject {
@@ -317,32 +327,32 @@ interface Subject {
 }
 
 export const formatSubject = (msg: Message): Subject => {
-  let avatarSource, name, type
+  let avatarSource, name, type;
 
   switch (msg.type) {
     case MessageType.OrgRegistration:
       name = msg.id;
-      type = SubjectType.Org
-      avatarSource = getAvatar(Usage.Org, msg.id)
+      type = SubjectType.Org;
+      avatarSource = getAvatar(Usage.Org, msg.id);
       break;
 
     case MessageType.OrgUnregistration:
       name = msg.id;
-      type = SubjectType.Org
-      avatarSource = getAvatar(Usage.Org, msg.id)
+      type = SubjectType.Org;
+      avatarSource = getAvatar(Usage.Org, msg.id);
       break;
 
     // TODO(sos): replace with actual avatar lookup for the identity associated with
     // the member, should it exist
     case MessageType.MemberRegistration:
       name = msg.handle;
-      type = SubjectType.Member
+      type = SubjectType.Member;
       // avatarSource = getAvatar(Usage.Identity, msg.handle)
       break;
 
     case MessageType.MemberUnregistration:
       name = msg.handle;
-      type = SubjectType.Member
+      type = SubjectType.Member;
       // avatarSource = getAvatar(Usage.Identity, msg.handle)
       break;
 
@@ -350,36 +360,39 @@ export const formatSubject = (msg: Message): Subject => {
     // the user, should it exist
     case MessageType.UserRegistration:
       name = msg.handle;
-      type = SubjectType.User
-      avatarSource = getAvatar(Usage.Identity, msg.id)
+      type = SubjectType.User;
+      avatarSource = getAvatar(Usage.Identity, msg.id);
       break;
 
     // TODO(sos): replace with associated identity handle for user, should it exist
     // TODO(sos): once we can register projects to users, accommodate circle avatars
     case MessageType.ProjectRegistration:
-      name = `${msg.orgId} / ${msg.projectName}`
-      type = SubjectType.OrgProject
-      avatarSource = getAvatar(msg.domain === Domain.User ? Usage.Identity : Usage.Org, msg.orgId)
+      name = `${msg.orgId} / ${msg.projectName}`;
+      type = SubjectType.OrgProject;
+      avatarSource = getAvatar(
+        msg.domain === Domain.User ? Usage.Identity : Usage.Org,
+        msg.orgId
+      );
       break;
   }
 
   return {
     name,
     type,
-    avatarSource
-  }
-}
+    avatarSource,
+  };
+};
 
 export const iconProgress = (state: State): number => {
   switch (state.type) {
     case StateType.Confirmed:
-      return state.confirmations / state.minConfirmations * 100;
+      return (state.confirmations / state.minConfirmations) * 100;
     case StateType.Settled:
       return 100;
     default:
       return 0;
   }
-}
+};
 
 export enum IconState {
   Caution = "caution",
@@ -396,7 +409,7 @@ export const iconState = (state: State): IconState => {
     default:
       return IconState.Caution;
   }
-}
+};
 
 export const statusText = (state: State): string => {
   const timestamp = timeago.format(state.timestamp.secs * 1000);
@@ -414,20 +427,28 @@ export const statusText = (state: State): string => {
     case StateType.Settled:
       return `Transaction settled ${timestamp}`;
   }
-}
+};
 
 export const summaryIconProgress = (summary: Summary): number => {
-  const sum = summary.counts[StateType.Confirmed] + summary.counts[StateType.Settled];
-  if (sum === 0) { return 0; }
+  const sum =
+    summary.counts[StateType.Confirmed] + summary.counts[StateType.Settled];
+  if (sum === 0) {
+    return 0;
+  }
 
   const progress = summary.confirmations / (summary.minConfirmations * sum);
 
   return progress !== 0 ? progress * 100 : 15;
-}
+};
 
 export const summaryIconRotate = (counts: SummaryCounts): boolean => {
-  return (counts.failed > 0 && counts.pending > 0) && (counts.confirmed === 0 && counts.settled === 0);
-}
+  return (
+    counts.failed > 0 &&
+    counts.pending > 0 &&
+    counts.confirmed === 0 &&
+    counts.settled === 0
+  );
+};
 
 export const summaryIconState = (counts: SummaryCounts): IconState => {
   if (counts.failed > 0) {
@@ -437,7 +458,7 @@ export const summaryIconState = (counts: SummaryCounts): IconState => {
   }
 
   return IconState.Positive;
-}
+};
 
 export const summaryText = (counts: SummaryCounts): string => {
   let sum = 0;
@@ -452,7 +473,7 @@ export const summaryText = (counts: SummaryCounts): string => {
   }
   if (counts[StateType.Confirmed] > 0 || counts[StateType.Pending] > 0) {
     sum = counts[StateType.Confirmed] + counts[StateType.Pending];
-    state = StateType.Pending
+    state = StateType.Pending;
   }
 
   if (sum > 1) {
@@ -460,7 +481,7 @@ export const summaryText = (counts: SummaryCounts): string => {
   }
 
   return `transaction ${state}`;
-}
+};
 
 interface CostSummary {
   depositRad: currency.Rad;
@@ -474,8 +495,8 @@ interface CostSummary {
 export const costSummary = (
   messageType: MessageType,
   fee: currency.MicroRad,
-  costs: Costs): CostSummary => {
-
+  costs: Costs
+): CostSummary => {
   let deposit = 0;
 
   switch (messageType) {
@@ -492,7 +513,7 @@ export const costSummary = (
       deposit = costs.userRegistrationDeposit;
       break;
     default:
-      throw(`MessageType: ${messageType} not implemented`)
+      throw `MessageType: ${messageType} not implemented`;
       break;
   }
 
@@ -502,9 +523,9 @@ export const costSummary = (
   const feeRad = currency.microRadToRad(fee);
   const totalRad = currency.microRadToRad(total);
 
-  const depositUsd = currency.radToUsd(depositRad)
-  const feeUsd = currency.radToUsd(feeRad)
-  const totalUsd = currency.radToUsd(totalRad)
+  const depositUsd = currency.radToUsd(depositRad);
+  const feeUsd = currency.radToUsd(feeRad);
+  const totalUsd = currency.radToUsd(totalRad);
 
   return {
     depositRad,
@@ -513,5 +534,5 @@ export const costSummary = (
     feeUsd,
     totalRad,
     totalUsd,
-  }
-}
+  };
+};

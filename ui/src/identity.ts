@@ -23,7 +23,6 @@ export interface Identity {
   avatarFallback: Avatar;
 }
 
-
 // STATE
 const creationStore = remote.createStore<Identity>();
 export const store = creationStore.readable;
@@ -53,15 +52,16 @@ function update(msg: Msg): void {
   switch (msg.kind) {
     case Kind.Create:
       creationStore.loading();
-      api.post<CreateInput, Identity>("identities", {
-        handle: msg.handle,
-        displayName: msg.displayName,
-        avatarUrl: msg.avatarUrl
-      })
-        .then(id => {
+      api
+        .post<CreateInput, Identity>("identities", {
+          handle: msg.handle,
+          displayName: msg.displayName,
+          avatarUrl: msg.avatarUrl,
+        })
+        .then((id) => {
           creationStore.success(id);
         })
-        .catch(creationStore.error)
+        .catch(creationStore.error);
 
       break;
   }
