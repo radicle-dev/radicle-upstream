@@ -32,8 +32,10 @@
 
   // summary
 
+  const transactionFee = session.transactionCosts.minimumFee;
+
   const onSubmitTransaction = () => {
-    register(domainId, projectName, projectId);
+    register(domainId, projectName, transactionFee, projectId);
     pop();
   };
 
@@ -42,7 +44,7 @@
   // TODO(sos): coordinate message format for project registration with proxy
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
-    fee: session.transactionCosts.minimumFee,
+    fee: transactionFee,
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,

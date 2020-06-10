@@ -277,7 +277,9 @@ mod handler {
 
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(input.id)?;
-        let tx = reg.register_org(&fake_pair, org_id, input.transaction_fee).await?;
+        let tx = reg
+            .register_org(&fake_pair, org_id, input.transaction_fee)
+            .await?;
 
         subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))

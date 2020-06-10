@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 
 import * as api from "./api";
+import * as currency from "./currency";
 import * as event from "./event";
 import * as remote from "./remote";
 import * as transaction from "./transaction";
@@ -83,6 +84,7 @@ interface CreateInput {
 interface RegisterInput {
   orgId: string;
   projectName: string;
+  transactionFee: currency.MicroRad;
   maybeCocoId?: string;
 }
 
@@ -136,11 +138,13 @@ export const getOrgProject = (
 export const register = (
   orgId: string,
   projectName: string,
+  transactionFee: currency.MicroRad,
   maybeCocoId?: string
 ): Promise<transaction.Transaction> => {
   return api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
     orgId,
     projectName,
+    transactionFee,
     maybeCocoId,
   });
 };
