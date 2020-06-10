@@ -531,11 +531,7 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
-#[allow(
-    clippy::panic,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used
-)]
+#[allow(clippy::panic, clippy::option_unwrap_used, clippy::result_unwrap_used)]
 #[cfg(test)]
 mod test {
     use librad::paths::Paths;
