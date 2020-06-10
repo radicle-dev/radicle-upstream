@@ -6,116 +6,16 @@ use async_trait::async_trait;
 use hex::ToHex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_cbor::from_reader;
-use std::convert::TryFrom;
-use std::fmt;
 use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
+pub use radicle_registry_client::{Id, ProjectDomain, ProjectName};
 
 use crate::avatar;
 use crate::error;
 
 mod transaction;
 pub use transaction::{Cache, Cacher, Message, State, Timestamp, Transaction, MIN_CONFIRMATIONS};
-
-/// Wrapper for [`protocol::Id`] to add serialization.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Id(protocol::Id);
-
-impl fmt::Display for Id {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0.to_string())
-    }
-}
-
-impl TryFrom<String> for Id {
-    type Error = error::Error;
-
-    fn try_from(input: String) -> Result<Self, error::Error> {
-        Ok(Self(protocol::Id::try_from(input)?))
-    }
-}
-
-impl TryFrom<&str> for Id {
-    type Error = error::Error;
-
-    fn try_from(input: &str) -> Result<Self, error::Error> {
-        Ok(Self(protocol::Id::try_from(input)?))
-    }
-}
-
-// TODO(xla): This should go into the radicle-registry.
-impl<'de> Deserialize<'de> for Id {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: &str = Deserialize::deserialize(deserializer)?;
-        Self::try_from(s).map_err(|_err| {
-            serde::de::Error::invalid_value(serde::de::Unexpected::Str(s), &"a Registry Id")
-        })
-    }
-}
-
-// TODO(xla): This should go into the radicle-registry.
-impl Serialize for Id {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.0.to_string())
-    }
-}
-
-/// Wrapper for [`protocol::ProjectName`] to add serialization.
-#[derive(Clone, Debug, PartialEq)]
-pub struct ProjectName(protocol::ProjectName);
-
-impl fmt::Display for ProjectName {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0.to_string())
-    }
-}
-
-impl<'de> Deserialize<'de> for ProjectName {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: &str = Deserialize::deserialize(deserializer)?;
-        Self::try_from(s).map_err(|_err| {
-            serde::de::Error::invalid_value(
-                serde::de::Unexpected::Str(s),
-                &"a Registry ProjectName",
-            )
-        })
-    }
-}
-
-impl Serialize for ProjectName {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.0.to_string())
-    }
-}
-
-impl TryFrom<String> for ProjectName {
-    type Error = error::Error;
-
-    fn try_from(input: String) -> Result<Self, error::Error> {
-        Ok(Self(protocol::ProjectName::try_from(input)?))
-    }
-}
-
-impl TryFrom<&str> for ProjectName {
-    type Error = error::Error;
-
-    fn try_from(input: &str) -> Result<Self, error::Error> {
-        Ok(Self(protocol::ProjectName::try_from(input)?))
-    }
-}
 
 /// Wrapper for [`protocol::Hash`] to add serialization.
 #[derive(Clone, Debug, PartialEq)]
@@ -198,43 +98,6 @@ pub struct User {
     pub handle: Id,
     /// Associated entity id for attestion.
     pub maybe_entity_id: Option<String>,
-}
-
-/// The domain of a project
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
-pub enum ProjectDomain {
-    /// An org
-    Org(Id),
-    /// A user
-    User(Id),
-}
-
-impl ProjectDomain {
-    /// Extract the Id of the domain.
-    #[must_use]
-    pub fn id(&self) -> Id {
-        match self.clone() {
-            Self::Org(id) | Self::User(id) => id,
-        }
-    }
-}
-
-impl From<protocol::ProjectDomain> for ProjectDomain {
-    fn from(pd: protocol::ProjectDomain) -> Self {
-        match pd {
-            protocol::ProjectDomain::Org(id) => Self::Org(Id(id)),
-            protocol::ProjectDomain::User(id) => Self::User(Id(id)),
-        }
-    }
-}
-
-impl From<ProjectDomain> for protocol::ProjectDomain {
-    fn from(pd: ProjectDomain) -> Self {
-        match pd {
-            ProjectDomain::Org(id) => Self::Org(id.0),
-            ProjectDomain::User(id) => Self::User(id.0),
-        }
-    }
 }
 
 /// Methods to interact with the Registry in a uniform way.
@@ -406,11 +269,11 @@ impl Client for Registry {
     }
 
     async fn get_org(&self, org_id: Id) -> Result<Option<Org>, error::Error> {
-        if let Some(org) = self.client.get_org(org_id.clone().0).await? {
+        if let Some(org) = self.client.get_org(org_id.clone()).await? {
             let mut members = Vec::new();
             for member in org.members.clone() {
                 members.push(
-                    self.get_user(Id(member))
+                    self.get_user(member)
                         .await?
                         .expect("Couldn't retrieve org member"),
                 );
@@ -430,7 +293,7 @@ impl Client for Registry {
         let mut orgs = Vec::new();
         for id in &self.client.list_orgs().await? {
             let org = self
-                .get_org(Id(id.clone()))
+                .get_org(id.clone())
                 .await?
                 .expect("org missing for id");
             if org.members.iter().any(|m| m.handle == handle) {
@@ -449,7 +312,7 @@ impl Client for Registry {
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit org registration transaction.
         let register_message = protocol::message::RegisterOrg {
-            org_id: org_id.0.clone(),
+            org_id: org_id.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -488,7 +351,7 @@ impl Client for Registry {
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit org unregistration transaction.
         let unregister_message = protocol::message::UnregisterOrg {
-            org_id: org_id.0.clone(),
+            org_id: org_id.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -520,7 +383,7 @@ impl Client for Registry {
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit member registration transaction.
         let register_message = protocol::message::RegisterMember {
-            org_id: org_id.0.clone(),
+            org_id: org_id.clone(),
             user_id: user_id.0.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
@@ -579,7 +442,7 @@ impl Client for Registry {
         for id in &ids {
             if id.1 == protocol::ProjectDomain::Org(org_id.clone().0) {
                 projects.push(
-                    self.get_project(domain.clone(), ProjectName(id.clone().0))
+                    self.get_project(domain.clone(), id.clone())
                         .await?
                         .expect("project not present"),
                 );
