@@ -45,7 +45,7 @@
         }
         break;
       case RegistrationFlowState.Confirmation:
-        registerMember(orgId, userHandle);
+        registerMember(orgId, userHandle, transactionFee);
         pop();
     }
   };
