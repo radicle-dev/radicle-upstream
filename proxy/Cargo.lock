@@ -1573,7 +1573,7 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c620a5bea3c86142761e701245f59e0502966a11#c620a5bea3c86142761e701245f59e0502966a11"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ab8f51ce07bcdd1be45effa6a30fb24fdabef330#ab8f51ce07bcdd1be45effa6a30fb24fdabef330"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -2676,7 +2676,7 @@ dependencies = [
 [[package]]
 name = "radicle-keystore"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=c620a5bea3c86142761e701245f59e0502966a11#c620a5bea3c86142761e701245f59e0502966a11"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ab8f51ce07bcdd1be45effa6a30fb24fdabef330#ab8f51ce07bcdd1be45effa6a30fb24fdabef330"
 dependencies = [
  "lazy_static",
  "rpassword",
@@ -2768,7 +2768,7 @@ dependencies = [
 [[package]]
 name = "radicle-surf"
 version = "0.2.1"
-source = "git+https://github.com/radicle-dev/radicle-surf?rev=cbac9112b844373cd3700401a15bdd1287ba255e#cbac9112b844373cd3700401a15bdd1287ba255e"
+source = "git+https://github.com/radicle-dev/radicle-surf?rev=64a43fe1d0555408998f77125d70001e2e0846fd#64a43fe1d0555408998f77125d70001e2e0846fd"
 dependencies = [
  "git2",
  "lazy_static",

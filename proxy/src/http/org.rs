@@ -617,10 +617,11 @@ mod test {
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
         let default_branch = "master";
-        let meta = peer
-            .init_project(&owner, project_name, project_description, default_branch)
+
+        let platinum_project = peer
+            .replicate_platinum(&owner, project_name, project_description, default_branch)
             .await?;
-        let urn = meta.urn();
+        let urn = platinum_project.urn();
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),

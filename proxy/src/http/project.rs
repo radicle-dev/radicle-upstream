@@ -169,6 +169,7 @@ mod handler {
         let meta = peer
             .init_project(
                 owner,
+                &input.path,
                 &input.metadata.name,
                 &input.metadata.description,
                 &input.metadata.default_branch,
@@ -606,10 +607,10 @@ mod test {
         };
         let subscriptions = notification::Subscriptions::default();
 
-        let meta = peer
-            .init_project(&owner, "Upstream", "Desktop client for radicle.", "master")
+        let platinum_project = peer
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await?;
-        let urn = meta.urn();
+        let urn = platinum_project.urn();
 
         let project = project::get(&peer, &urn.to_string()).await?;
 
@@ -645,8 +646,7 @@ mod test {
         };
         let subscriptions = notification::Subscriptions::default();
 
-        peer.setup_fixtures(&owner, tmp_dir.path().as_os_str().to_str().unwrap())
-            .await?;
+        peer.setup_fixtures(&owner).await?;
 
         let projects = peer
             .list_projects()?

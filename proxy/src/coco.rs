@@ -169,6 +169,7 @@ impl Peer {
     pub async fn init_project(
         &mut self,
         owner: &User,
+        path: impl AsRef<std::path::Path> + Send,
         name: &str,
         description: &str,
         default_branch: &str,
@@ -196,6 +197,8 @@ impl Peer {
         // Doing ? above breaks inference. Gaaaawwwwwd Rust!
         let meta = meta?;
 
+        self.setup_remote(path, &meta.urn().id)?;
+
         // TODO(finto): mocking
         let mut projects = self.projects.lock().map_err(|_| error::Error::LibradLock)?;
         projects.insert(meta.urn(), meta.clone());
@@ -203,12 +206,44 @@ impl Peer {
         Ok(meta)
     }
 
+    /// Equips a repository with a rad remote for the given id. If the directory at the given path
+    /// is not managed by git yet we initialise it first.
+    fn setup_remote(
+        &self,
+        path: impl AsRef<std::path::Path>,
+        id: &librad::hash::Hash,
+    ) -> Result<(), error::Error> {
+        // Check if directory at path is a git repo.
+        let repo = if git2::Repository::open(&path).is_err() {
+            git2::Repository::init(&path)?
+        } else {
+            git2::Repository::open(path)?
+        };
+
+        let monorepo = self.with_api(|api| api.paths().git_dir().join(""))?;
+        let namespace_prefix = format!("refs/namespaces/{}/refs", id);
+        let _remote = repo.remote_with_fetch(
+            "rad",
+            &format!(
+                "file://{}",
+                monorepo.to_str().expect("unable to get str for monorepo")
+            ),
+            &format!("+{}/heads/*:refs/heads/*", namespace_prefix),
+        )?;
+        repo.remote_add_push(
+            "rad",
+            &format!("+refs/heads/*:{}/heads/*", namespace_prefix),
+        )?;
+
+        Ok(())
+    }
+
     /// This function exists as a standalone because the logic does not play well with async in
     /// `replicate_platinum`.
     fn clone_platinum(
         platinum_from: &str,
         platinum_into: &std::path::PathBuf,
-    ) -> Result<git2::Repository, error::Error> {
+    ) -> Result<(), error::Error> {
         let mut fetch_options = git2::FetchOptions::new();
         fetch_options.download_tags(git2::AutotagOption::All);
 
@@ -239,7 +274,7 @@ impl Peer {
             }
         }
 
-        Ok(platinum_repo)
+        Ok(())
     }
 
     /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
@@ -267,43 +302,42 @@ impl Peer {
         let workspace = monorepo.join("../workspace");
         let platinum_into = workspace.join(name);
 
-        let repo = Self::clone_platinum(&platinum_from, &platinum_into)?;
+        Self::clone_platinum(&platinum_from, &platinum_into)?;
+
         let meta = self
-            .init_project(owner, name, description, default_branch)
+            .init_project(
+                owner,
+                platinum_into.clone(),
+                name,
+                description,
+                default_branch,
+            )
             .await?;
-        let namespace_prefix = format!("refs/namespaces/{}/refs", meta.urn().id);
 
-        let mut rad_remote = repo.remote_with_fetch(
-            "rad",
-            &format!(
-                "file://{}",
-                monorepo.to_str().expect("unable to get str for monorepo")
-            ),
-            &format!("+{}/heads/*:refs/heads/*", namespace_prefix),
-        )?;
+        // Push branches and tags.
+        {
+            let repo = git2::Repository::open(platinum_into)?;
+            let mut rad_remote = repo.find_remote("rad")?;
+            let namespace_prefix = format!("refs/namespaces/{}/refs", meta.urn().id);
 
-        repo.remote_add_push(
-            "rad",
-            &format!("+refs/heads/*:{}/heads/*", namespace_prefix),
-        )?;
+            // Push all tags to rad remote.
+            let tags = repo
+                .tag_names(None)?
+                .into_iter()
+                .flatten()
+                .map(|t| format!("+refs/tags/{}:{}/tags/{}", t, namespace_prefix, t))
+                .collect::<Vec<_>>();
+            rad_remote.push(&tags, None)?;
 
-        let tags = repo
-            .tag_names(None)?
-            .into_iter()
-            .flatten()
-            .map(|t| format!("+refs/tags/{}:{}/tags/{}", t, namespace_prefix, t))
-            .collect::<Vec<_>>();
-
-        // Push all tags to rad remote.
-        rad_remote.push(&tags, None)?;
-        // Push branches.
-        rad_remote.push(
-            &[
-                &format!("refs/heads/master:{}/heads/dev", namespace_prefix),
-                &format!("refs/heads/master:{}/heads/master", namespace_prefix),
-            ],
-            None,
-        )?;
+            // Push branches.
+            rad_remote.push(
+                &[
+                    &format!("refs/heads/master:{}/heads/dev", namespace_prefix),
+                    &format!("refs/heads/master:{}/heads/master", namespace_prefix),
+                ],
+                None,
+            )?;
+        }
 
         // Init as rad project.
         Ok(meta)
@@ -315,7 +349,7 @@ impl Peer {
     ///
     /// Will error if filesystem access is not granted or broken for the configured
     /// [`librad::paths::Paths`].
-    pub async fn setup_fixtures(&mut self, owner: &User, root: &str) -> Result<(), error::Error> {
+    pub async fn setup_fixtures(&mut self, owner: &User) -> Result<(), error::Error> {
         let infos = vec![
             ("monokel", "A looking glass into the future", "master"),
             (
@@ -336,10 +370,10 @@ impl Peer {
         ];
 
         for info in infos {
-            let path = format!("{}/{}/{}", root, "repos", info.0);
-            std::fs::create_dir_all(path.clone())?;
-
-            self.init_project(owner, info.0, info.1, info.2).await?;
+            // let path = format!("{}/{}/{}", root, "repos", info.0);
+            // std::fs::create_dir_all(path.clone())?;
+            self.replicate_platinum(owner, info.0, info.1, info.2)
+                .await?;
         }
 
         Ok(())

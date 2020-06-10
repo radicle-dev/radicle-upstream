@@ -90,7 +90,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let owner = coco::fake_owner(&peer).await;
 
-    peer.setup_fixtures(&owner, tmp_path)
+    peer.setup_fixtures(&owner)
         .await
         .expect("fixture creation failed");
 
