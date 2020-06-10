@@ -33,7 +33,11 @@
     switch (state) {
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
-          transaction = registerMemberTransaction(orgId, userHandle);
+          transaction = registerMemberTransaction(
+            orgId,
+            userHandle,
+            $session.data.transactionCosts.minimumFee
+          );
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }
@@ -82,7 +86,11 @@
       dataCy="input" />
   {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
-      <Transaction {transaction} {subject} {payer} />
+      <Transaction
+        {transaction}
+        {subject}
+        {payer}
+        transactionCosts={$session.data.transactionCosts} />
     </div>
   {/if}
   <NavigationButtons

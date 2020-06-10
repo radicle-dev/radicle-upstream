@@ -1,5 +1,6 @@
 import * as api from "./api";
 import * as avatar from "./avatar";
+import * as currency from "./currency";
 import * as event from "./event";
 import * as project from "./project";
 import * as remote from "./remote";
@@ -90,7 +91,12 @@ const update = (msg: Msg): void => {
   }
 };
 
-export const registerMemberTransaction = (orgId: string, handle: string) => ({
+export const registerMemberTransaction = (
+  orgId: string,
+  handle: string,
+  fee: currency.MicroRad
+) => ({
+  fee,
   messages: [
     {
       type: transaction.MessageType.MemberRegistration,
