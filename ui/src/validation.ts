@@ -52,7 +52,7 @@ interface FormatConstraints {
 
 export const createValidationStore = (
   constraints: FormatConstraints,
-  remoteValidation?: RemoteValidation
+  remoteValidations: RemoteValidation[]
 ): ValidationStore => {
   const initialState = {
     status: ValidationStatus.NotStarted,
@@ -82,28 +82,39 @@ export const createValidationStore = (
     }
 
     // Check remote validation
-    if (remoteValidation) {
-      try {
-        const valid = await remoteValidation.promise(input);
+    let invalidRemoteValidation = false;
+    if (remoteValidations.length > 0) {
+      for (const remoteValidation of remoteValidations) {
+        try {
+          const valid = await remoteValidation.promise(input);
 
-        update((store) => {
-          // If the input has changed since this request was fired off, don't update
-          if (get(inputStore) !== input) return store;
-          return valid
-            ? { status: ValidationStatus.Success }
-            : {
+          if (!valid) {
+            update((store) => {
+              // If the input has changed since this request was fired off, don't update
+              if (get(inputStore) !== input) return store;
+              return {
                 status: ValidationStatus.Error,
                 message: remoteValidation.validationMessage,
               };
-        });
-      } catch (error) {
-        update(() => {
-          return {
-            status: ValidationStatus.Error,
-            message: `Cannot validate "${input}": ${error.message}`,
-          };
-        });
+            });
+            invalidRemoteValidation = true;
+            break;
+          }
+        } catch (error) {
+          update(() => {
+            return {
+              status: ValidationStatus.Error,
+              message: `Cannot validate "${input}": ${error.message}`,
+            };
+          });
+          invalidRemoteValidation = true;
+          break;
+        }
       }
+      if (!invalidRemoteValidation)
+        update(() => {
+          return { status: ValidationStatus.Success };
+        });
       return;
     }
 
