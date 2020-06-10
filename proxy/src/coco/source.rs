@@ -1,4 +1,4 @@
-use super::Peer;
+use serde::{Deserialize, Serialize};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -9,8 +9,10 @@ use librad::surf::git::git2;
 
 use crate::error;
 
+use super::Peer;
+
 /// Branch name representation.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
 pub struct Branch(pub(super) String);
 
 impl fmt::Display for Branch {
@@ -238,12 +240,18 @@ pub fn branches(peer: &Peer, project_urn: &str) -> Result<Vec<Branch>, error::Er
     Ok(branches)
 }
 
-/// Given a path to a repo returns the list of branches.
+#[derive(Deserialize, Serialize)]
+pub struct LocalState {
+    branches: Vec<Branch>,
+    managed: bool,
+}
+
+/// Given a path to a repo returns the list of branches and if it is managed by coco.
 ///
 /// # Errors
 ///
 /// Will return [`error::Error`] if the repository doesn't exist.
-pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
+pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
     let repo = surf::vcs::git::Repository::new(repo_path)?;
     let browser = surf::vcs::git::Browser::new(&repo)?;
     let mut branches = browser
@@ -254,7 +262,12 @@ pub fn local_branches(repo_path: &str) -> Result<Vec<Branch>, error::Error> {
 
     branches.sort();
 
-    Ok(branches)
+    let managed = {
+        let repo = git2::Repository::open(repo_path)?;
+        repo.remotes()?.into_iter().flatten().any(|r| r == "rad")
+    };
+
+    Ok(LocalState { branches, managed })
 }
 
 /// Retrieves the [`Commit`] for the given `sha1`.

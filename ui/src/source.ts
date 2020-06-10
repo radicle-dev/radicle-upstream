@@ -62,6 +62,11 @@ interface Info {
   };
 }
 
+interface LocalState {
+  branches: string[];
+  managed: boolean;
+}
+
 interface SourceObject {
   path: string;
   info: Info;
@@ -248,8 +253,8 @@ export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
 export const fetchRevisions = event.create<Kind, Msg>(Kind.FetchRevisions, update);
 export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 
-export const getLocalBranches = (path: string): Promise<string[]> => {
-  return api.get<string[]>(`source/local-branches/${path}`)
+export const getLocalState = (path: string): Promise<LocalState> => {
+  return api.get<LocalState>(`source/local-state/${path}`)
 }
 
 export const tree = (

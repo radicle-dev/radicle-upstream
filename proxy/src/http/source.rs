@@ -20,7 +20,7 @@ pub fn routes(
             .or(branches_filter(Arc::clone(&peer)))
             .or(commit_filter(Arc::clone(&peer)))
             .or(commits_filter(Arc::clone(&peer)))
-            .or(local_branches_filter())
+            .or(local_state_filter())
             .or(revisions_filter(Arc::clone(&peer)))
             .or(tags_filter(Arc::clone(&peer)))
             .or(tree_filter(peer)),
@@ -36,7 +36,7 @@ fn filters(
         .or(branches_filter(Arc::clone(&peer)))
         .or(commit_filter(Arc::clone(&peer)))
         .or(commits_filter(Arc::clone(&peer)))
-        .or(local_branches_filter())
+        .or(local_state_filter())
         .or(revisions_filter(Arc::clone(&peer)))
         .or(tags_filter(Arc::clone(&peer)))
         .or(tree_filter(peer))
@@ -150,15 +150,15 @@ fn commits_filter(
 }
 
 /// `GET /branches/<project_id>`
-fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("local-branches")
+fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("local-state")
         .and(warp::get())
         .and(document::tail(
             "path",
             "Location of the repository on the filesystem",
         ))
         .and(document::document(document::description(
-            "List Branches for a local Repository",
+            "List Branches, Remotes and if it is managed by coco for a local Repository",
         )))
         .and(document::document(document::tag("Source")))
         .and(document::document(
@@ -171,7 +171,7 @@ fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejectio
             )
             .description("List of branches"),
         ))
-        .and_then(handler::local_branches)
+        .and_then(handler::local_state)
 }
 
 /// `GET /revisions/<project_id>`
@@ -317,10 +317,10 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] for a local repository.
-    pub async fn local_branches(path: Tail) -> Result<impl Reply, Rejection> {
-        let branches = coco::local_branches(path.as_str())?;
+    pub async fn local_state(path: Tail) -> Result<impl Reply, Rejection> {
+        let state = coco::local_state(path.as_str())?;
 
-        Ok(reply::json(&branches))
+        Ok(reply::json(&state))
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
@@ -467,15 +467,6 @@ impl ToDocumentedType for coco::BlobContent {
             .description("BlobContent")
             .example("print 'hello world'")
             .nullable(true)
-    }
-}
-
-impl Serialize for coco::Branch {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
     }
 }
 
@@ -958,7 +949,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn local_branches() -> Result<(), error::Error> {
+    async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir)?;
@@ -968,23 +959,26 @@ mod test {
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/local-branches/{}", path))
+            .path(&format!("/local-state/{}", path))
             .reply(&api)
             .await;
 
-        let want = coco::local_branches(path).unwrap();
+        let want = coco::local_state(path).unwrap();
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
             assert_eq!(
                 have,
-                json!([
-                    "dev",
-                    "master",
-                    "origin/HEAD",
-                    "origin/dev",
-                    "origin/master"
-                ]),
+                json!({
+                    "branches": [
+                        "dev",
+                        "master",
+                        "origin/HEAD",
+                        "origin/dev",
+                        "origin/master"
+                    ],
+                    "managed": false,
+                }),
             );
         });
 
