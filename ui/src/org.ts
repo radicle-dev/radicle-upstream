@@ -64,6 +64,7 @@ type Msg = Fetch | FetchProjectList;
 
 interface RegisterInput {
   id: string;
+  transactionFee: currency.MicroRad;
 }
 
 interface RegisterMemberInput {
@@ -125,8 +126,14 @@ export const fetchProjectList = event.create<Kind, Msg>(
   Kind.FetchProjectList,
   update
 );
-export const register = (id: string): Promise<transaction.Transaction> =>
-  api.post<RegisterInput, transaction.Transaction>(`orgs`, { id });
+export const register = (
+  id: string,
+  transactionFee: currency.MicroRad
+): Promise<transaction.Transaction> =>
+  api.post<RegisterInput, transaction.Transaction>(`orgs`, {
+    id,
+    transactionFee,
+  });
 export const registerMember = (
   orgId: string,
   handle: string

@@ -26,12 +26,14 @@
   let validating = false;
   const validation = orgIdValidationStore();
 
+  const transactionFee = $session.data.transactionCosts.minimumFee;
+
   const next = () => {
     switch (state) {
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
           transaction = {
-            fee: $session.data.transactionCosts.minimumFee,
+            fee: transactionFee,
             messages: [
               {
                 type: MessageType.OrgRegistration,
@@ -50,7 +52,7 @@
 
   const registerOrg = async () => {
     try {
-      await register(orgId);
+      await register(orgId, transactionFee);
       await fetchSession();
     } catch (error) {
       notification.error(`Could not register org: ${error.message}`);

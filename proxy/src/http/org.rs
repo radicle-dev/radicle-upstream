@@ -274,12 +274,10 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        // TODO(xla): Use real fee defined by the user.
-        let fake_fee: Balance = registry::MINIMUM_FEE;
 
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(input.id)?;
-        let tx = reg.register_org(&fake_pair, org_id, fake_fee).await?;
+        let tx = reg.register_org(&fake_pair, org_id, input.transaction_fee).await?;
 
         subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
@@ -407,6 +405,8 @@ pub struct Project {
 pub struct RegisterInput {
     /// Id of the Org.
     id: String,
+    /// User specified transaction fee.
+    transaction_fee: registry::protocol::Balance,
 }
 
 impl ToDocumentedType for RegisterInput {
@@ -723,6 +723,7 @@ mod test {
             .path("/")
             .json(&super::RegisterInput {
                 id: org_id.to_string(),
+                transaction_fee: registry::MINIMUM_FEE,
             })
             .reply(&api)
             .await;
