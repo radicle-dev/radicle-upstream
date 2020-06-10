@@ -91,6 +91,7 @@ Cypress.Commands.add(
       },
       body: JSON.stringify({
         handle,
+        transactionFee: 333,
       }),
     })
 );
