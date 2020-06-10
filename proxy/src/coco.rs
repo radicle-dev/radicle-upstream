@@ -266,53 +266,44 @@ impl Peer {
         let monorepo = self.with_api(|api| api.paths().git_dir().join(""))?;
         let workspace = monorepo.join("../workspace");
         let platinum_into = workspace.join(name);
-        println!("INTO: {:?}", platinum_into);
 
         let repo = Self::clone_platinum(&platinum_from, &platinum_into)?;
         let meta = self
             .init_project(owner, name, description, default_branch)
             .await?;
+        let namespace_prefix = format!("refs/namespaces/{}/refs", meta.urn().id);
 
-        {
-            let _rad_remote = repo.remote_with_fetch(
-                "rad",
-                &format!("file://{}", monorepo.to_str().expect("unable to get str for monorepo")),
-                &format!(
-                    "+refs/namespaces/{}/refs/heads/*:refs/heads/*",
-                    // "+refs/namespaces/{}/refs/heads/*:refs/remotes/rad/*",
-                    // "+refs/heads/*:refs/namespaces/{}/refs/heads/*",
-                    meta.urn().id
-                ),
-            )?;
+        let mut rad_remote = repo.remote_with_fetch(
+            "rad",
+            &format!(
+                "file://{}",
+                monorepo.to_str().expect("unable to get str for monorepo")
+            ),
+            &format!("+{}/heads/*:refs/heads/*", namespace_prefix),
+        )?;
 
-            repo.remote_add_push("rad", &format!(
-                // "+refs/namespaces/{}/refs/heads/*:refs/heads/*",
-              // "+refs/namespaces/{}/refs/heads/*:refs/remotes/rad/*",
-                "+refs/heads/*:refs/namespaces/{}/refs/heads/*",
-              meta.urn().id
-              ))?;
-        }
-
-        let mut rad_remote = repo.find_remote("rad").expect("we just made it. qed.");
+        repo.remote_add_push(
+            "rad",
+            &format!("+refs/heads/*:{}/heads/*", namespace_prefix),
+        )?;
 
         let tags = repo
             .tag_names(None)?
             .into_iter()
             .flatten()
-            .map(|t| format!("+refs/tags/{}", t))
+            .map(|t| format!("+refs/tags/{}:{}/tags/{}", t, namespace_prefix, t))
             .collect::<Vec<_>>();
-
-        rad_remote.connect(git2::Direction::Push)?;
-        println!("IS IT CONNECTED: {}", rad_remote.connected());
 
         // Push all tags to rad remote.
         rad_remote.push(&tags, None)?;
-        // Push dev branch.
-        rad_remote.push(&[&format!("refs/heads/master:refs/namespaces/{}/refs/heads/master", meta.urn().id)], None)?;
-
-        for refspec in rad_remote.refspecs() {
-            println!("SPEC: {:?}", refspec.str());
-        }
+        // Push branches.
+        rad_remote.push(
+            &[
+                &format!("refs/heads/master:{}/heads/dev", namespace_prefix),
+                &format!("refs/heads/master:{}/heads/master", namespace_prefix),
+            ],
+            None,
+        )?;
 
         // Init as rad project.
         Ok(meta)
