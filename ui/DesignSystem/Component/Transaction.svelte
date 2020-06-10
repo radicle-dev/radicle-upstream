@@ -89,7 +89,10 @@
   Transaction cost
 </Caption>
 
-<Row variant="top" style="background-color: var(--color-foreground-level-1)">
+<Row
+  dataCy="deposit"
+  variant="top"
+  style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Title>{formatStake(transaction.messages[0])}</Title>
   </div>
@@ -99,7 +102,10 @@
   </div>
 </Row>
 
-<Row variant="middle" style="background-color: var(--color-foreground-level-1)">
+<Row
+  dataCy="transaction-fee"
+  variant="middle"
+  style="background-color: var(--color-foreground-level-1)">
   <div slot="left">
     <Title>Transaction Fee</Title>
   </div>
@@ -110,6 +116,7 @@
 </Row>
 
 <Row
+  dataCy="total"
   variant="bottom"
   style="margin-bottom: 32px; background-color: var(--color-foreground-level-1)">
   <div slot="left">

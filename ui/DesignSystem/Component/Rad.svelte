@@ -26,18 +26,22 @@
     <Icon.Circle style="fill: var(--color-primary); margin-right: 4px" />
     {#if size === 'big'}
       <Numeric
+        dataCy="rad-amount"
         variant="big"
         style="display: inline-flex; color: var(--color-foreground-level-6)">
         {rad}
       </Numeric>
     {:else}
       <Numeric
+        dataCy="rad-amount"
         style="display: inline-flex; color: var(--color-foreground-level-6)">
         {rad}
       </Numeric>
     {/if}
   </div>
   {#if usd !== null}
-    <Numeric style="color: var(--color-foreground-level-5)">${usd}</Numeric>
+    <Numeric dataCy="usd-amount" style="color: var(--color-foreground-level-5)">
+      ${usd}
+    </Numeric>
   {/if}
 </div>

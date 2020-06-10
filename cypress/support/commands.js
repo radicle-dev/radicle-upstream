@@ -52,7 +52,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add(
   "registerOrg",
-  async (id = "monadic") =>
+  async (id = "monadic", transactionFee = 111) =>
     await fetch("http://localhost:8080/v1/orgs", {
       method: "POST",
       headers: {
@@ -60,14 +60,14 @@ Cypress.Commands.add(
       },
       body: JSON.stringify({
         id,
-        transactionFee: 111,
+        transactionFee,
       }),
     })
 );
 
 Cypress.Commands.add(
   "registerUser",
-  async (handle = "nope", id = "123abcd.git") =>
+  async (handle = "nope", id = "123abcd.git", transactionFee = 222) =>
     await fetch("http://localhost:8080/v1/users", {
       method: "POST",
       headers: {
@@ -76,14 +76,14 @@ Cypress.Commands.add(
       body: JSON.stringify({
         handle,
         id,
-        transactionFee: 222,
+        transactionFee,
       }),
     })
 );
 
 Cypress.Commands.add(
   "registerAlternativeUser",
-  async (handle = "anotherUser") =>
+  async (handle = "anotherUser", transactionFee = 333) =>
     await fetch("http://localhost:8080/v1/control/register-user", {
       method: "POST",
       headers: {
@@ -91,7 +91,7 @@ Cypress.Commands.add(
       },
       body: JSON.stringify({
         handle,
-        transactionFee: 333,
+        transactionFee,
       }),
     })
 );

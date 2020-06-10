@@ -189,6 +189,16 @@ context("project registration", () => {
 
         // go to summary screen
         cy.pick("submit-button").click();
+
+        cy.pick("deposit", "rad-amount").contains("0.00001");
+        cy.pick("deposit", "usd-amount").contains("$0.00001");
+
+        cy.pick("transaction-fee", "rad-amount").contains("0.000001");
+        cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+
+        cy.pick("total", "rad-amount").contains("0.000011");
+        cy.pick("total", "usd-amount").contains("$0.000011");
+
         // submit the transaction
         cy.pick("submit-button").click();
 
@@ -203,6 +213,25 @@ context("project registration", () => {
           `project-${project1.name}`,
           "registered"
         ).should("exist");
+
+        // Make sure the transaction that the proxy returns contains the same
+        // cost details as the one we submitted.
+
+        // pick most recent transaction to check the transaction details
+        cy.pick("transaction-center").click();
+        cy.pick("transaction-center", "transaction-item").first().click();
+
+        cy.pick("deposit", "rad-amount").contains("0.00001");
+        cy.pick("deposit", "usd-amount").contains("$0.00001");
+
+        cy.pick("transaction-fee", "rad-amount").contains("0.000001");
+        cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+
+        cy.pick("total", "rad-amount").contains("0.000011");
+        cy.pick("total", "usd-amount").contains("$0.000011");
+
+        cy.pick("summary", "message").contains("Project registration");
+        cy.pick("summary", "subject").contains("monadic / rx");
       });
     });
   });
