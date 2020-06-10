@@ -30,7 +30,7 @@
     step -= 1;
   };
 
-  const transactionFee = transactionCosts.minimum_fee;
+  const transactionFee = transactionCosts.minimumFee;
 
   const registerUser = async () => {
     try {
