@@ -29,6 +29,8 @@
     validating = false;
   const validation = memberHandleValidationStore();
 
+  const transactionFee = $session.data.transactionCosts.minimumFee;
+
   const next = () => {
     switch (state) {
       case RegistrationFlowState.Preparation:
@@ -36,7 +38,7 @@
           transaction = registerMemberTransaction(
             orgId,
             userHandle,
-            $session.data.transactionCosts.minimumFee
+            transactionFee
           );
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.Confirmation;

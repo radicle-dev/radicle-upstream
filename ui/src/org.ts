@@ -69,6 +69,7 @@ interface RegisterInput {
 
 interface RegisterMemberInput {
   handle: string;
+  transactionFee: currency.MicroRad;
 }
 
 const update = (msg: Msg): void => {
@@ -136,11 +137,12 @@ export const register = (
   });
 export const registerMember = (
   orgId: string,
-  handle: string
+  handle: string,
+  transactionFee: currency.MicroRad
 ): Promise<transaction.Transaction> =>
   api.post<RegisterMemberInput, transaction.Transaction>(
     `orgs/${orgId}/members`,
-    { handle }
+    { handle, transactionFee }
   );
 
 // ID validation
