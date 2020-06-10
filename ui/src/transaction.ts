@@ -262,10 +262,10 @@ export const formatMessage = (msg: Message): string => {
       return "Org unregistration";
 
     case MessageType.MemberRegistration:
-      return "Org member registration";
+      return "Member registration";
 
     case MessageType.MemberUnregistration:
-      return "Org member unregistration";
+      return "Member unregistration";
 
     case MessageType.ProjectRegistration:
       return "Project registration";
@@ -273,16 +273,6 @@ export const formatMessage = (msg: Message): string => {
     case MessageType.UserRegistration:
       return "User registration";
   }
-};
-
-// TODO(merle): Use actual data.
-export const format = (tx: Transaction): object => {
-  return {
-    id: tx.id,
-    message: formatMessage(tx.messages[0]),
-    state: "pending",
-    progress: 0,
-  };
 };
 
 export const formatStake = (msg: Message): string =>

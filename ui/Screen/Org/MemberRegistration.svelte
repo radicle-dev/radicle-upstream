@@ -27,7 +27,7 @@
     transaction,
     userHandle,
     validating = false;
-  const validation = memberHandleValidationStore();
+  const validation = memberHandleValidationStore(orgId);
 
   const transactionFee = $session.data.transactionCosts.minimumFee;
 

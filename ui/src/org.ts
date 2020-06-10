@@ -43,6 +43,12 @@ export const getIdAvailability = (id: string): Promise<boolean> =>
   getOrg(id).then((org) => !org);
 const validateUserExistence = (handle: string): Promise<boolean> =>
   user.get(handle).then((user) => !!user);
+const validateNewMember = (orgId: string) => (
+  handle: string
+): Promise<boolean> =>
+  getOrg(orgId).then(
+    (org) => !org.members.find((member) => member.handle == handle)
+  );
 
 // Events
 enum Kind {
@@ -160,10 +166,12 @@ export const idConstraints = {
 
 // Make sure we make a new one every time
 export const orgIdValidationStore = (): validation.ValidationStore =>
-  validation.createValidationStore(idConstraints, {
-    promise: getIdAvailability,
-    validationMessage: "Sorry, this id is already taken",
-  });
+  validation.createValidationStore(idConstraints, [
+    {
+      promise: getIdAvailability,
+      validationMessage: "Sorry, this id is already taken",
+    },
+  ]);
 
 const memberHandleConstraints = {
   presence: {
@@ -172,8 +180,17 @@ const memberHandleConstraints = {
   },
 };
 
-export const memberHandleValidationStore = (): validation.ValidationStore =>
-  validation.createValidationStore(memberHandleConstraints, {
-    promise: validateUserExistence,
-    validationMessage: "Cannot find this user",
-  });
+export const memberHandleValidationStore = (
+  orgId: string
+): validation.ValidationStore => {
+  return validation.createValidationStore(memberHandleConstraints, [
+    {
+      promise: validateUserExistence,
+      validationMessage: "Cannot find this user",
+    },
+    {
+      promise: validateNewMember(orgId),
+      validationMessage: "This user is already a member",
+    },
+  ]);
+};
