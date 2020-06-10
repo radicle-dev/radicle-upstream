@@ -697,11 +697,7 @@ impl ToDocumentedType for coco::TreeEntry {
     }
 }
 
-#[allow(
-    clippy::non_ascii_literal,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used
-)]
+#[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -722,7 +718,6 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        println!("PATH: {:?}", tmp_dir.path());
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir)?;
         let mut peer = coco::Peer::new(config).await?;
@@ -871,10 +866,7 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!(["dev", "master", "origin/dev", "origin/master"])
-            );
+            assert_eq!(have, json!(["dev", "master"]));
         });
 
         Ok(())
@@ -1066,7 +1058,7 @@ mod test {
                                 "emoji": "🏍",
                             },
                         },
-                        "branches": [ "dev", "master", "origin/dev", "origin/master" ],
+                        "branches": [ "dev", "master" ],
                         "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
                     },
                     {
@@ -1088,7 +1080,7 @@ mod test {
                                 "emoji": "🛷",
                             },
                         },
-                        "branches": [ "dev", "master", "origin/dev", "origin/master" ],
+                        "branches": [ "dev", "master" ],
                         "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
                     },
                     {
@@ -1110,7 +1102,7 @@ mod test {
                                 "emoji": "🗻",
                             },
                         },
-                        "branches": [ "dev", "master", "origin/dev", "origin/master" ],
+                        "branches": [ "dev", "master" ],
                         "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
                     },
                 ]),
