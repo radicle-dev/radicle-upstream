@@ -531,7 +531,11 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
-#[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
+#[allow(
+    clippy::panic,
+    clippy::option_unwrap_used,
+    clippy::result_unwrap_used
+)]
 #[cfg(test)]
 mod test {
     use librad::paths::Paths;
@@ -751,7 +755,7 @@ mod test {
                 );
                 assert_eq!(project_domain.clone(), registry::ProjectDomain::Org(org_id));
             },
-            _ => panic!("The tx message did not contain the expected content."),
+            _ => panic!("The tx message is an unexpected variant."),
         }
 
         Ok(())
@@ -815,7 +819,7 @@ mod test {
                     registry::ProjectDomain::User(handle)
                 );
             },
-            _ => panic!("The tx message did not contain the expected content."),
+            _ => panic!("The tx message is an unexpected variant."),
         }
 
         Ok(())
