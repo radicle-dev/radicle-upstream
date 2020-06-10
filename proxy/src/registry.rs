@@ -694,12 +694,7 @@ impl Client for Registry {
     }
 }
 
-#[allow(
-    clippy::indexing_slicing,
-    clippy::panic,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used
-)]
+#[allow(clippy::indexing_slicing, clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use radicle_registry_client::{self as protocol, ClientT};

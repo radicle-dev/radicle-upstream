@@ -443,7 +443,7 @@ where
     }
 }
 
-#[allow(clippy::result_unwrap_used)]
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use radicle_registry_client as protocol;

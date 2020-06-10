@@ -460,12 +460,7 @@ impl ToDocumentedType for RegisterMemberInput {
     }
 }
 
-#[allow(
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used,
-    clippy::indexing_slicing,
-    clippy::panic
-)]
+#[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -597,7 +592,7 @@ mod test {
                 have,
                 json!(registry::Project {
                     name: project_name,
-                    org_id: org_id,
+                    org_id,
                     maybe_project_id: None,
                 })
             );

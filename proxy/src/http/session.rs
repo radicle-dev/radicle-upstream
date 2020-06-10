@@ -231,7 +231,7 @@ impl ToDocumentedType for session::settings::Network {
     }
 }
 
-#[allow(clippy::result_unwrap_used)]
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;

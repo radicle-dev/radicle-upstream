@@ -207,7 +207,7 @@ impl ToDocumentedType for ListInput {
     }
 }
 
-#[allow(clippy::result_unwrap_used)]
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use std::convert::TryFrom;

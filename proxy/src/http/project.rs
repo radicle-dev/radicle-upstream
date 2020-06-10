@@ -508,7 +508,7 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
-#[allow(clippy::option_unwrap_used, clippy::result_unwrap_used)]
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;

@@ -7,8 +7,7 @@
     clippy::nursery,
     clippy::pedantic,
     clippy::restriction,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used,
+    clippy::unwrap_used,
 )]
 // TODO(xla): Handle all Results properly and never panic outside of main.
 // TODO(xla): Remove exception for or_fun_call lint.
@@ -18,9 +17,8 @@
     clippy::implicit_return,
     clippy::let_underscore_must_use,
     clippy::missing_inline_in_public_items,
-    clippy::option_expect_used,
+    clippy::expect_used,
     clippy::or_fun_call,
-    clippy::result_expect_used,
     clippy::shadow_reuse,
     clippy::unseparated_literal_suffix,
     clippy::used_underscore_binding

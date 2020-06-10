@@ -186,6 +186,7 @@ mod handler {
         Ok(reply::json(&true))
     }
 
+    #[allow(clippy::unwrap_used, clippy::panic)]
     #[cfg(test)]
     mod test {
         use pretty_assertions::assert_ne;
