@@ -28,7 +28,7 @@ interface Option {
   title: string;
 }
 
-export  const networkOptions: Option[] = [
+export const networkOptions: Option[] = [
   {
     value: Network.Emulator,
     title: "Emulator",
