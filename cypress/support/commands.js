@@ -60,6 +60,7 @@ Cypress.Commands.add(
       },
       body: JSON.stringify({
         id,
+        transactionFee: 111,
       }),
     })
 );
@@ -75,6 +76,7 @@ Cypress.Commands.add(
       body: JSON.stringify({
         handle,
         id,
+        transactionFee: 222,
       }),
     })
 );

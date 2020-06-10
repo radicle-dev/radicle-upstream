@@ -100,7 +100,6 @@ fn nuke_session_filter(
 mod handler {
     use kv::Store;
     use librad::paths::Paths;
-    use radicle_registry_client::Balance;
     use std::convert::TryFrom;
     use std::sync::Arc;
     use tokio::sync::RwLock;
@@ -151,11 +150,10 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
-        let fake_fee: Balance = registry::MINIMUM_FEE;
 
         let handle = registry::Id::try_from(input.handle)?;
         let reg = registry.write().await;
-        reg.register_user(&fake_pair, handle.clone(), None, fake_fee)
+        reg.register_user(&fake_pair, handle.clone(), None, input.transaction_fee)
             .await
             .expect("unable to register user");
 
@@ -211,4 +209,6 @@ pub struct CreateInput {
 pub struct RegisterInput {
     /// Handle of the user.
     handle: String,
+    /// User specified transaction fee.
+    transaction_fee: registry::protocol::Balance,
 }
