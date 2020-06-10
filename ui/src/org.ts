@@ -45,8 +45,8 @@ const validateUserExistence = (handle: string): Promise<boolean> =>
 const validateNewMember = (orgId: string) => (
   handle: string
 ): Promise<boolean> =>
-  getOrg(orgId).then((org) =>
-    org.members.every((member) => member.handle != handle)
+  getOrg(orgId).then(
+    (org) => !org.members.find((member) => member.handle == handle)
   );
 
 // Events
