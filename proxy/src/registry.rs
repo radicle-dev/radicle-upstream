@@ -10,7 +10,8 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
-use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
+pub use radicle_registry_client::{self as protocol};
+use radicle_registry_client::{ClientT, CryptoPair};
 
 use crate::avatar;
 use crate::error;

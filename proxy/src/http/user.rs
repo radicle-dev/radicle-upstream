@@ -110,7 +110,6 @@ fn list_orgs_filter<R: registry::Client>(
 
 /// User handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use radicle_registry_client::Balance;
     use std::convert::TryFrom;
     use std::sync::Arc;
     use tokio::sync::RwLock;
@@ -153,13 +152,16 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        // TODO(xla): Use real fee defined by the user.
-        let fake_fee: Balance = registry::MINIMUM_FEE;
 
         let handle = registry::Id::try_from(input.handle)?;
         let reg = registry.write().await;
         let tx = reg
-            .register_user(&fake_pair, handle.clone(), input.maybe_entity_id, fake_fee)
+            .register_user(
+                &fake_pair,
+                handle.clone(),
+                input.maybe_entity_id,
+                input.transaction_fee,
+            )
             .await?;
 
         // TODO(xla): This should only happen once the corresponding tx is confirmed.
@@ -204,6 +206,8 @@ impl ToDocumentedType for registry::User {
 pub struct RegisterInput {
     /// Handle the User registered under.
     handle: String,
+    /// User specified transaction fee.
+    transaction_fee: registry::protocol::Balance,
     /// Optionally passed entity id to store for attestion.
     maybe_entity_id: Option<String>,
 }
@@ -371,6 +375,7 @@ mod test {
             .json(&super::RegisterInput {
                 handle: "cloudhead".into(),
                 maybe_entity_id: Some("cloudhead@123abcd.git".into()),
+                transaction_fee: registry::MINIMUM_FEE,
             })
             .reply(&api)
             .await;

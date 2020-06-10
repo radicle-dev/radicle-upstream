@@ -30,9 +30,11 @@
     step -= 1;
   };
 
+  const transactionFee = transactionCosts.minimum_fee;
+
   const registerUser = async () => {
     try {
-      await user.register(handle, id);
+      await user.register(handle, transactionFee, id);
       await session.fetch();
     } catch (error) {
       notification.error(`Could not register user: ${error}`);
@@ -81,7 +83,7 @@
       {#if step === 2}
         <SubmitRegistrationStep
           {identity}
-          transactionFee={transactionCosts.minimumFee}
+          {transactionFee}
           onNextStep={registerUser}
           onPreviousStep={previousStep}
           {handle} />
