@@ -40,7 +40,7 @@
 
   const summary = costSummary(
     transaction.messages[0].type,
-    transaction.fee,
+    parseInt(transaction.fee),
     transactionCosts
   );
 
