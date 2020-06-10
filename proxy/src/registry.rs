@@ -9,7 +9,7 @@ use serde_cbor::from_reader;
 use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
-pub use radicle_registry_client::{Id, ProjectDomain, ProjectName};
+pub use radicle_registry_client::{Id, DomainType, ProjectDomain, ProjectName};
 
 use crate::avatar;
 use crate::error;
@@ -335,7 +335,7 @@ impl Client for Registry {
         // TODO(xla): Remove automatic prepayment once we have proper balances.
         let org = self
             .client
-            .get_org(org_id.0)
+            .get_org(org_id)
             .await?
             .expect("org not present");
         self.prepay_account(org.account_id, 1000).await?;
@@ -384,7 +384,7 @@ impl Client for Registry {
         // Prepare and submit member registration transaction.
         let register_message = protocol::message::RegisterMember {
             org_id: org_id.clone(),
-            user_id: user_id.0.clone(),
+            user_id: user_id.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -417,7 +417,7 @@ impl Client for Registry {
     ) -> Result<Option<Project>, error::Error> {
         Ok(self
             .client
-            .get_project(project_name.clone().0, project_domain.clone().into())
+            .get_project(project_name.clone(), project_domain.clone().into())
             .await?
             .map(|project| {
                 let metadata_vec: Vec<u8> = project.metadata.into();
@@ -440,9 +440,9 @@ impl Client for Registry {
         let mut projects = Vec::new();
         let domain = ProjectDomain::Org(org_id.clone());
         for id in &ids {
-            if id.1 == protocol::ProjectDomain::Org(org_id.clone().0) {
+            if id.1 == protocol::ProjectDomain::Org(org_id.clone()) {
                 projects.push(
-                    self.get_project(domain.clone(), id.clone())
+                    self.get_project(domain.clone(), id.0.clone())
                         .await?
                         .expect("project not present"),
                 );
@@ -501,7 +501,7 @@ impl Client for Registry {
 
         // Prepare and submit project registration transaction.
         let register_message = protocol::message::RegisterProject {
-            project_name: project_name.0.clone(),
+            project_name: project_name.clone(),
             project_domain: project_domain.clone().into(),
             checkpoint_id,
             metadata: register_metadata,
@@ -532,7 +532,7 @@ impl Client for Registry {
     async fn get_user(&self, handle: Id) -> Result<Option<User>, error::Error> {
         Ok(self
             .client
-            .get_user(handle.0.clone())
+            .get_user(handle.clone())
             .await?
             .map(|_user| User {
                 handle,
@@ -551,7 +551,7 @@ impl Client for Registry {
         self.prepay_account(author.public(), 1000).await?;
         // Prepare and submit user registration transaction.
         let register_message = protocol::message::RegisterUser {
-            user_id: handle.0.clone(),
+            user_id: handle.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -845,16 +845,16 @@ mod test {
 
         let maybe_project = client
             .get_project(
-                project_name.clone().0,
-                protocol::ProjectDomain::Org(org_id.clone().0),
+                project_name.clone(),
+                protocol::ProjectDomain::Org(org_id.clone()),
             )
             .await?;
 
         assert!(maybe_project.is_some());
 
         let project = maybe_project.unwrap();
-        assert_eq!(project.name, project_name.0);
-        assert_eq!(project.domain, protocol::ProjectDomain::Org(org_id.0));
+        assert_eq!(project.name, project_name);
+        assert_eq!(project.domain, protocol::ProjectDomain::Org(org_id));
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
@@ -891,16 +891,16 @@ mod test {
 
         let maybe_project = client
             .get_project(
-                project_name.clone().0,
-                protocol::ProjectDomain::User(handle.clone().0),
+                project_name.clone(),
+                protocol::ProjectDomain::User(handle.clone()),
             )
             .await?;
 
         assert!(maybe_project.is_some());
 
         let project = maybe_project.unwrap();
-        assert_eq!(project.name, project_name.0);
-        assert_eq!(project.domain, protocol::ProjectDomain::User(handle.0));
+        assert_eq!(project.name, project_name);
+        assert_eq!(project.domain, protocol::ProjectDomain::User(handle));
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);

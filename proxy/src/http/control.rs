@@ -153,7 +153,7 @@ mod handler {
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
         let fake_fee: Balance = 100;
 
-        let handle = registry::Id::try_from(input.handle)?;
+        let handle = registry::Id::try_from(input.handle).map_err(crate::error::Error::from)?;
         let reg = registry.write().await;
         reg.register_user(&fake_pair, handle.clone(), None, fake_fee)
             .await

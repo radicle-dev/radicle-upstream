@@ -212,7 +212,7 @@ mod handler {
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(org_id)?;
+        let org_id = registry::Id::try_from(org_id).map_err(crate::error::Error::from)?;
         let org = reg.get_org(org_id).await?;
 
         Ok(reply::json(&org))
@@ -225,9 +225,9 @@ mod handler {
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(org_id)?;
+        let org_id = registry::Id::try_from(org_id).map_err(crate::error::Error::from)?;
         let project_domain = registry::ProjectDomain::Org(org_id);
-        let project_name = registry::ProjectName::try_from(project_name)?;
+        let project_name = registry::ProjectName::try_from(project_name).map_err(crate::error::Error::from)?;
         let project = reg.get_project(project_domain, project_name).await?;
 
         Ok(reply::json(&project))
@@ -240,7 +240,7 @@ mod handler {
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(org_id)?;
+        let org_id = registry::Id::try_from(org_id).map_err(crate::error::Error::from)?;
         let projects = reg.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
         for p in &projects {
@@ -251,12 +251,13 @@ mod handler {
                 None
             };
 
+            let domain_id: registry::Id = p.domain.id();
             let org_project = super::Project {
                 name: p.name.to_string(),
-                org_id: p.domain.id().to_string(),
+                org_id: domain_id.to_string(),
                 shareable_entity_identifier: format!(
                     "%{}/{}",
-                    p.domain.id().to_string(),
+                    domain_id.to_string(),
                     p.name.to_string()
                 ),
                 maybe_project,
@@ -279,7 +280,7 @@ mod handler {
         let fake_fee: Balance = 100;
 
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(input.id)?;
+        let org_id = registry::Id::try_from(input.id).map_err(crate::error::Error::from)?;
         let tx = reg.register_org(&fake_pair, org_id, fake_fee).await?;
 
         subscriptions
@@ -302,8 +303,8 @@ mod handler {
         let fake_fee: Balance = 100;
 
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(id)?;
-        let handle = registry::Id::try_from(input.handle)?;
+        let org_id = registry::Id::try_from(id).map_err(crate::error::Error::from)?;
+        let handle = registry::Id::try_from(input.handle).map_err(crate::error::Error::from)?;
         let tx = reg
             .register_member(&fake_pair, org_id, handle, fake_fee)
             .await?;
@@ -632,7 +633,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
-        let project_name = registry::ProjectName::try_from(project_name)?;
+        let project_name = registry::ProjectName::try_from(project_name).map_err(crate::error::Error::from)?;
         let project_domain = registry::ProjectDomain::Org(org_id.clone());
 
         registry

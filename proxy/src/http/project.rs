@@ -5,6 +5,7 @@ use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::convert::TryFrom;
+use std::convert::From;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
@@ -232,9 +233,9 @@ mod handler {
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::project::ProjectId::from_str(&id).expect("Project id"));
-        let domain_id = registry::Id::try_from(input.domain_id)?;
+        let domain_id = registry::Id::try_from(input.domain_id).map_err(crate::error::Error::from)?;
         let domain: registry::ProjectDomain = (input.domain_type.clone(), domain_id.clone()).into();
-        let project_name = registry::ProjectName::try_from(input.project_name)?;
+        let project_name = registry::ProjectName::try_from(input.project_name).map_err(crate::error::Error::from)?;
 
         let tx = reg
             .register_project(&fake_pair, domain, project_name, maybe_coco_id, fake_fee)
@@ -245,15 +246,6 @@ mod handler {
             .await;
 
         Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
-    }
-}
-
-impl From<(DomainType, registry::Id)> for registry::ProjectDomain {
-    fn from((domain, id): (DomainType, registry::Id)) -> Self {
-        match domain {
-            DomainType::Org => Self::Org(id),
-            DomainType::User => Self::User(id),
-        }
     }
 }
 
@@ -475,22 +467,12 @@ impl ToDocumentedType for MetadataInput {
     }
 }
 
-/// The domains we support under which a project can live.
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum DomainType {
-    /// An Org
-    Org,
-    /// A User
-    User,
-}
-
 /// Bundled input data for project registration.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RegisterInput {
     /// The type of domain the project will be registered under.
-    domain_type: DomainType,
+    domain_type: registry::DomainType,
     /// Id of the domain the project will be registered under.
     domain_id: String,
     /// Unique name under Org of the project.
@@ -548,8 +530,6 @@ mod test {
     use crate::notification;
     use crate::project;
     use crate::registry::{self, Cache as _, Client as _};
-
-    use super::DomainType;
 
     #[tokio::test]
     async fn create() {
@@ -723,7 +703,7 @@ mod test {
             .method("POST")
             .path("/projects/register")
             .json(&super::RegisterInput {
-                domain_type: DomainType::Org,
+                domain_type: registry::DomainType::Org,
                 domain_id: org_id.to_string(),
                 project_name: "upstream".into(),
                 maybe_coco_id: Some("1234.git".to_string()),
@@ -784,7 +764,7 @@ mod test {
             .method("POST")
             .path("/projects/register")
             .json(&super::RegisterInput {
-                domain_type: DomainType::User,
+                domain_type: registry::DomainType::User,
                 domain_id: handle.to_string(),
                 project_name: "upstream".into(),
                 maybe_coco_id: Some("1234.git".to_string()),

@@ -127,7 +127,7 @@ mod handler {
         registry: http::Shared<R>,
         handle: String,
     ) -> Result<impl Reply, Rejection> {
-        let handle = registry::Id::try_from(handle)?;
+        let handle = registry::Id::try_from(handle).map_err(crate::error::Error::from)?;
         let user = registry.read().await.get_user(handle).await?;
         Ok(reply::json(&user))
     }
@@ -138,7 +138,7 @@ mod handler {
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let handle = registry::Id::try_from(handle)?;
+        let handle = registry::Id::try_from(handle).map_err(crate::error::Error::from)?;
         let orgs = reg.list_orgs(handle).await?;
 
         Ok(reply::json(&orgs))
@@ -156,7 +156,7 @@ mod handler {
         // TODO(xla): Use real fee defined by the user.
         let fake_fee: Balance = 100;
 
-        let handle = registry::Id::try_from(input.handle)?;
+        let handle = registry::Id::try_from(input.handle).map_err(crate::error::Error::from)?;
         let reg = registry.write().await;
         let tx = reg
             .register_user(&fake_pair, handle.clone(), input.maybe_entity_id, fake_fee)
