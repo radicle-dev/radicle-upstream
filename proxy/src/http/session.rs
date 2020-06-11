@@ -268,7 +268,8 @@ mod test {
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         // Test that we reset the session to default.
-        let have = session::current(&*store.read().await, cache.read().await.clone())
+        let store = store.read().await;
+        let have = session::current(&*store, cache.read().await.clone())
             .await
             .unwrap()
             .settings;

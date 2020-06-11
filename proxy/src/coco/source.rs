@@ -240,9 +240,12 @@ pub fn branches(peer: &Peer, project_urn: &str) -> Result<Vec<Branch>, error::Er
     Ok(branches)
 }
 
+/// Information about a locally checked out repository.
 #[derive(Deserialize, Serialize)]
 pub struct LocalState {
+    /// List of branches.
     branches: Vec<Branch>,
+    /// Indicator if the repository is associated to coco project.
     managed: bool,
 }
 
