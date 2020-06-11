@@ -80,6 +80,20 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add(
+  "registerAlternativeUser",
+  async (handle = "anotherUser") =>
+    await fetch("http://localhost:8080/v1/control/register-user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        handle,
+      }),
+    })
+);
+
+Cypress.Commands.add(
   "createIdentity",
   async (
     handle = "secretariat",

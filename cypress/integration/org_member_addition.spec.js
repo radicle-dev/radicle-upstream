@@ -5,6 +5,7 @@ before(() => {
   cy.createIdentity("coolname");
   cy.registerUser("coolname");
   cy.registerOrg("coolorg");
+  cy.registerAlternativeUser("user2");
 });
 
 context("add member to org", () => {
@@ -12,6 +13,38 @@ context("add member to org", () => {
     cy.visit("public/index.html");
     cy.pick("sidebar", "org-coolorg").click();
     cy.pick("org-screen", "add-member-button").click();
+  });
+
+  context("validations", () => {
+    it("prevents the user from adding an invalid user", () => {
+      // no empty input
+      cy.pick("input").type("aname");
+      cy.pick("input").clear();
+      cy.pick("add-member-modal").contains("Member handle is required");
+      cy.pick("submit-button").should("be.disabled");
+
+      // no non-existing users
+      cy.pick("input").type("aname");
+      cy.pick("add-member-modal").contains("Cannot find this user");
+      cy.pick("submit-button").should("be.disabled");
+
+      // no users that are already members
+      cy.pick("input").clear();
+      cy.pick("input").type("coolname");
+      cy.pick("add-member-modal").contains("This user is already a member");
+      cy.pick("submit-button").should("be.disabled");
+    });
+  });
+
+  context("transaction confirmation", () => {
+    it("shows correct transaction details", () => {
+      cy.pick("input").type("user2");
+      cy.pick("submit-button").click();
+
+      // check the transaction details before submition
+      cy.pick("message").contains("Member registration");
+      cy.pick("subject").contains("user2");
+    });
   });
 
   context("navigation", () => {
@@ -29,7 +62,7 @@ context("add member to org", () => {
 
     it("can be traversed with navigation buttons", () => {
       // form -> tx confirmation
-      cy.pick("input").type("coolname");
+      cy.pick("input").type("user2");
       cy.pick("submit-button").click();
       cy.pick("summary").should("exist");
 
@@ -44,47 +77,26 @@ context("add member to org", () => {
       cy.pick("org-screen").should("exist");
     });
   });
+});
 
-  context("validations", () => {
-    it("prevents the user from adding an invalid user", () => {
-      // no empty input
-      cy.pick("input").type("aname");
-      cy.pick("input").clear();
-      cy.pick("add-member-modal").contains("Member handle is required");
-      cy.pick("submit-button").should("be.disabled");
+context("after submitting the transaction", () => {
+  it("shows correct transaction details", () => {
+    // Register a new member
+    cy.visit("public/index.html");
+    cy.pick("sidebar", "org-coolorg").click();
 
-      // no non-existing users
-      cy.pick("input").type("aname");
-      cy.pick("add-member-modal").contains("Cannot find this user");
-      cy.pick("submit-button").should("be.disabled");
-    });
+    // pick most recent transaction to check the transaction details
+    cy.pick("transaction-center").click();
+    cy.pick("transaction-center", "transaction-item").first().click();
+    cy.pick("summary", "message").contains("Member registration");
+    cy.pick("summary", "subject").contains("user2");
   });
 
-  context("transaction", () => {
-    it("shows correct transaction details for confirmation", () => {
-      cy.pick("input").type("coolname");
-      cy.pick("submit-button").click();
-
-      cy.pick("message").contains("Org member registration");
-      cy.pick("subject").contains("coolname");
-    });
-
-    // TODO(sos): add actual transaction details check once we can make this tx
-    it.skip("submits correct transaction details to proxy", () => {
-      cy.pick("input").type("coolname");
-      cy.pick("submit-button").click();
-      cy.pick("submit-button").click();
-
-      cy.pick("transaction-center").click();
-
-      // pick most recent transaction
-      cy.pick("transaction-center", "transaction-item").last().click();
-      cy.pick("summary", "message").contains("Org member registration");
-      cy.pick("summary", "subject").contains("coolname");
-      cy.pick("summary", "subject-avatar", "emoji").should(
-        "have.class",
-        "circle"
-      );
-    });
+  it("shows both users in the list", () => {
+    cy.visit("public/index.html");
+    cy.pick("sidebar", "org-coolorg").click();
+    cy.pick("horizontal-menu", "Members").click();
+    cy.pick("member-list").contains("coolname");
+    cy.pick("member-list").contains("user2");
   });
 });

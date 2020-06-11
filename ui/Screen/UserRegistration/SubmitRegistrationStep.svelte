@@ -19,6 +19,7 @@
       },
     ],
   };
+
   const payer = transaction.formatPayer(identity);
 </script>
 

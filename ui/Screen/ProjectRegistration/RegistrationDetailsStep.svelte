@@ -15,8 +15,9 @@
   export let domainId = null;
   export let projectName = null;
 
+  export let identity = null;
+
   export let projects = null;
-  export let session = null;
   export let orgs = null;
 
   export let skipNamePreselection = false;
@@ -37,13 +38,13 @@
 
   const identityOption = {
     variant: "avatar",
-    value: session.identity.registered,
+    value: identity.registered,
     type: Domain.User,
     avatarProps: {
       variant: "circle",
-      title: session.identity.registered,
-      avatarFallback: session.identity.avatarFallback,
-      imageUrl: session.identity.metadata.avatarUrl,
+      title: identity.registered,
+      avatarFallback: identity.avatarFallback,
+      imageUrl: identity.metadata.avatarUrl,
     },
   };
 

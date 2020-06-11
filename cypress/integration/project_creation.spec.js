@@ -224,6 +224,10 @@ context("project creation", () => {
 
         cy.pick("new-project").click();
         cy.pick("new-project", "choose-path-button").click();
+        // Make sure UI has time to update path value from stub,
+        // this prevents this spec from failing on CI.
+        cy.wait(500);
+
         cy.pick("create-project-button").click();
 
         cy.pick("project-screen", "topbar", "project-avatar").contains(
@@ -252,6 +256,10 @@ context("project creation", () => {
 
         cy.pick("existing-project").click();
         cy.pick("existing-project", "choose-path-button").click();
+        // Make sure UI has time to update path value from stub,
+        // this prevents this spec from failing on CI.
+        cy.wait(500);
+
         cy.pick("create-project-button").click();
         cy.pick("project-screen", "topbar", "project-avatar").contains(
           "git-platinum-copy"

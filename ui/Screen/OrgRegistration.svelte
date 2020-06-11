@@ -19,7 +19,7 @@
   } from "../DesignSystem/Component";
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
 
-  let orgId, transaction, subject, payer, avatarFallback, showAvatar;
+  let avatarFallback, orgId, payer, showAvatar, subject, transaction;
   let state = RegistrationFlowState.Preparation;
 
   // Create a new validation store
@@ -89,7 +89,7 @@
   $: {
     // Start validating once the user enters something for the first time
     if (orgId && orgId.length > 0) validating = true;
-    if (validating) validation.updateInput(orgId);
+    if (validating) validation.validate(orgId);
   }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;

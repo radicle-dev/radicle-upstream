@@ -48,6 +48,8 @@
     "@babel/node": "^7.8.4",
     "@babel/plugin-transform-runtime": "^7.9.6",
     "@babel/preset-env": "^7.9.6",
+    "@babel/preset-typescript": "^7.9.0",
+    "@types/node": "^14.0.4",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
     "babel-eslint": "^10.1.0",
@@ -60,6 +62,7 @@
     "eslint-plugin-no-only-tests": "^2.4.0",
     "eslint-plugin-svelte3": "^2.7.3",
     "husky": ">=4.2.3",
+    "jest": "^26.0.1",
     "lint-staged": "^10.2.2",
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
@@ -77,13 +80,19 @@
     "standard-version": "^7.1.0",
     "svelte": "^3.22.2",
     "svelte-spa-router": "^2.1.0",
+    "ts-jest": "^26.0.0",
+    "ts-node": "^8.10.1",
     "typescript": "3.8.3",
     "wait-on": "^5.0.0"
   },
   "scripts": {
     "start": "run-p --race svelte:watch proxy:start electron:start",
-    "test": "TZ='UTC' run-p --race proxy:start:test wait:test",
+    "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
     "test:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
+    "test:integration": "run-p --race proxy:start:test wait:test",
+    "test:integration:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
+    "test:unit": "jest",
+    "test:unit:watch": "jest --watchAll",
     "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn cypress:run",
     "wait:debug": "wait-on tcp:8080 && yarn cypress:open",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp proxy/target/release/proxy dist && electron-builder --publish never",
@@ -99,14 +108,16 @@
     "cypress:open": "yarn run cypress open",
     "release": "babel-node --presets \"@babel/env\" scripts/release.js",
     "release:finalize": "babel-node --presets \"@babel/env\" scripts/release.js --finalize",
-    "prettier": "prettier \"**/*.@(js|json|svelte|css|html)\" --ignore-path .gitignore",
+    "prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts"
   },
   "dependencies": {
     "@babel/runtime": "^7.9.6",
+    "@types/jest": "^25.2.3",
     "@types/qs": "^6.9.2",
+    "babel-register": "^6.26.0",
     "marked": "^1.0.0",
     "timeago.js": "^4.0.2",
     "twemoji": "^12.1.6",
@@ -136,6 +147,7 @@
       "eslint --fix"
     ],
     "*.ts": [
+      "prettier --write",
       "eslint --fix"
     ]
   }

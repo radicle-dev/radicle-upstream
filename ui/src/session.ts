@@ -22,13 +22,15 @@ export interface Session {
 const sessionStore = remote.createStore<Session>();
 export const session = sessionStore.readable;
 
-export const settings: Readable<Settings | null> =
-  derived(sessionStore, (sess) => {
+export const settings: Readable<Settings | null> = derived(
+  sessionStore,
+  (sess) => {
     if (sess.status === remote.Status.Success) {
       return sess.data.settings;
     }
     return null;
-  });
+  }
+);
 
 // EVENTS
 enum Kind {
@@ -58,34 +60,35 @@ interface UpdateSettings extends event.Event<Kind> {
 type Msg = Clear | ClearCache | Fetch | UpdateSettings;
 
 const fetchSession = (): Promise<void> =>
-  api.get<Session>(`session`)
+  api
+    .get<Session>(`session`)
     .then(sessionStore.success)
     .catch(sessionStore.error);
 
 const updateSettings = (settings: Settings): Promise<void> =>
-  api.set<Settings>(`session/settings`, settings)
+  api
+    .set<Settings>(`session/settings`, settings)
     .then(fetchSession)
     .catch((err: error.Error) => notification.error(err.message));
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Clear:
-      api.del(`session`)
+      api
+        .del(`session`)
         .then(fetchSession)
         .then(() => transaction.fetchList());
 
       break;
 
     case Kind.ClearCache:
-      api.del(`session/cache`)
-        .then(() => transaction.fetchList());
+      api.del(`session/cache`).then(() => transaction.fetchList());
 
       break;
 
     case Kind.Fetch:
       sessionStore.loading();
-      fetchSession()
-        .then(() => transaction.fetchList());
+      fetchSession().then(() => transaction.fetchList());
 
       break;
 
@@ -94,16 +97,22 @@ const update = (msg: Msg): void => {
 
       break;
   }
-}
+};
 
 export const clear = event.create<Kind, Msg>(Kind.Clear, update);
 export const clearCache = event.create<Kind, Msg>(Kind.ClearCache, update);
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const updateAppearance = (appearance: Appearance): void =>
-  event.create<Kind, Msg>(Kind.UpdateSettings, update)({
-    settings: { ...get(settings), appearance }
+  event.create<Kind, Msg>(
+    Kind.UpdateSettings,
+    update
+  )({
+    settings: { ...get(settings), appearance },
   });
 export const updateRegistry = (registry: Registry): void =>
-  event.create<Kind, Msg>(Kind.UpdateSettings, update)({
-    settings: { ...get(settings), registry }
+  event.create<Kind, Msg>(
+    Kind.UpdateSettings,
+    update
+  )({
+    settings: { ...get(settings), registry },
   });
