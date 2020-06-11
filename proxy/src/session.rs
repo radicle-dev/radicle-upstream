@@ -20,8 +20,22 @@ pub struct Session {
     pub identity: Option<identity::Identity>,
     /// List of the orgs of the user associated with the current identity.
     pub orgs: Vec<registry::Org>,
+    /// Permissions of the user to control actions.
+    pub permissions: Permissions,
     /// User controlled parameters to control the behaviour and state of the application.
     pub settings: settings::Settings,
+}
+
+/// Permissions of the user
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Permissions {
+    /// Permission to register a user handle
+    pub register_handle: bool,
+    /// Permission to register an org
+    pub register_org: bool,
+    /// Permission to register a project
+    pub register_project: bool,
 }
 
 /// Resets the session state.
@@ -47,14 +61,24 @@ pub async fn current<R: registry::Client>(
 ) -> Result<Session, error::Error> {
     let mut session = get(store, KEY_CURRENT)?;
 
+    // Reset the permissions
+    session.permissions.register_handle = false;
+    session.permissions.register_org = false;
+    session.permissions.register_project = false;
+
     if let Some(mut id) = session.identity.clone() {
         if let Some(handle) = id.registered.clone() {
             if registry.get_user(handle.clone()).await?.is_some() {
                 session.orgs = registry.list_orgs(handle).await?;
+                session.permissions.register_org = true;
+                session.permissions.register_project = true;
             } else {
                 id.registered = None;
                 session.identity = Some(id);
+                session.permissions.register_handle = true;
             }
+        } else {
+            session.permissions.register_handle = true;
         }
     }
 
