@@ -39,7 +39,7 @@
       await register(domainId, projectName, transactionFee, projectId);
       await fetchSession();
     } catch (error) {
-      notification.error(`Could not register org: ${error.message}`);
+      notification.error(`Could not register project: ${error.message}`);
     } finally {
       pop();
     }
