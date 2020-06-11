@@ -2,6 +2,11 @@
   import { getContext } from "svelte";
   import { pop } from "svelte-spa-router";
 
+  import * as notification from "../src/notification.ts";
+  import { register, projects as projectStore } from "../src/project.ts";
+  import { fetch as fetchSession } from "../src/session.ts";
+  import * as transaction from "../src/transaction.ts";
+
   import { Flex, Title } from "../DesignSystem/Primitive";
   import {
     NavigationButtons,
@@ -12,9 +17,6 @@
   } from "../DesignSystem/Component";
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
-
-  import { register, projects as projectStore } from "../src/project.ts";
-  import * as transaction from "../src/transaction.ts";
 
   export let params = null;
 
@@ -30,11 +32,15 @@
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
 
-  // summary
-
-  const onSubmitTransaction = () => {
-    register(domainId, projectName, projectId);
-    pop();
+  const registerProject = async () => {
+    try {
+      await register(domainId, projectName, projectId);
+      await fetchSession();
+    } catch (error) {
+      notification.error(`Could not register org: ${error.message}`);
+    } finally {
+      pop();
+    }
   };
 
   const wallet = () => transaction.formatPayer(session.identity);
@@ -104,7 +110,7 @@
               showRegistrationDetails = true;
               skipNamePreselection = true;
             }}
-            on:submit={onSubmitTransaction} />
+            on:submit={registerProject} />
         {/if}
       </div>
     </div>
