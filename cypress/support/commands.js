@@ -15,11 +15,12 @@ Cypress.Commands.add("nukeRegistryState", async () => {
 
 Cypress.Commands.add("nukeSessionState", async () => {
   console.log("Nuking Session state");
-  await fetch("http://localhost:8080/v1/session", { method: "DELETE" });
+  await fetch("http://localhost:8080/v1/control/nuke/session");
 });
 
 Cypress.Commands.add("nukeAllState", async () => {
   console.log("Nuking CoCo, Registry and session state");
+  await fetch("http://localhost:8080/v1/session/cache", { method: "DELETE" });
   await fetch("http://localhost:8080/v1/control/nuke/session");
   await fetch("http://localhost:8080/v1/control/nuke/registry");
   await fetch("http://localhost:8080/v1/control/nuke/coco");

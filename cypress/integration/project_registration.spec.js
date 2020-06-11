@@ -217,9 +217,14 @@ context("project registration", () => {
         // Make sure the transaction that the proxy returns contains the same
         // cost details as the one we submitted.
 
+        // Force the transaction center to fetch all transactions.
+        cy.reload();
+
         // pick most recent transaction to check the transaction details
         cy.pick("transaction-center").click();
-        cy.pick("transaction-center", "transaction-item").first().click();
+        cy.pick("transaction-center", "transaction-item")
+          .contains("Project registration")
+          .click();
 
         cy.pick("deposit", "rad-amount").contains("0.00001");
         cy.pick("deposit", "usd-amount").contains("$0.00001");
