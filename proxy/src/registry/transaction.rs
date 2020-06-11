@@ -4,8 +4,8 @@
 use async_trait::async_trait;
 use hex::ToHex;
 use kv::Codec as _;
-use serde::{Deserialize, Serialize, Serializer};
 use serde::de::{self, Deserializer};
+use serde::{Deserialize, Serialize, Serializer};
 use std::time::{self, Duration, SystemTime};
 
 use radicle_registry_client as protocol;

@@ -10,8 +10,11 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
+use radicle_registry_client::{
+    self as protocol, ClientT, CryptoPair, REGISTER_MEMBER_DEPOSIT, REGISTER_ORG_DEPOSIT,
+    REGISTER_PROJECT_DEPOSIT, REGISTER_USER_DEPOSIT,
+};
 pub use radicle_registry_client::{Balance, MINIMUM_FEE};
-use radicle_registry_client::{self as protocol, ClientT, CryptoPair, REGISTER_MEMBER_DEPOSIT, REGISTER_ORG_DEPOSIT, REGISTER_PROJECT_DEPOSIT, REGISTER_USER_DEPOSIT,};
 
 use crate::avatar;
 use crate::error;
