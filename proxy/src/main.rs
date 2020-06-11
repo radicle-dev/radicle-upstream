@@ -5,7 +5,8 @@ use proxy::registry;
 
 /// Flags accepted by the proxy binary.
 struct Args {
-    /// Signaling which backend type to use.
+    /// Host name or IP for the registry node to connect to. If the special value "emulator" is
+    /// provided the proxy will not connect to a node but emulate the chain in memory.
     registry: String,
     /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
@@ -23,11 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         test: args.contains("--test"),
     };
 
-    let devnet_host = url17::Host::parse("35.241.138.91")?;
     let registry_client = match args.registry.as_str() {
-        "devnet" => radicle_registry_client::Client::create_with_executor(devnet_host)
-            .await
-            .expect("unable to construct devnet client"),
         "emulator" => {
             let (client, control) = radicle_registry_client::Client::new_emulator();
 
@@ -41,7 +38,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             client
         },
-        _ => panic!(format!("unknown registry source '{}'", args.registry)),
+        host => {
+            let host = url17::Host::parse(host)?;
+            radicle_registry_client::Client::create_with_executor(host)
+                .await
+                .expect("unable to construct devnet client")
+        },
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
