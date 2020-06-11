@@ -77,8 +77,10 @@ impl Peer {
     where
         I: Iterator<Item = (peer::PeerId, SocketAddr)> + Send + 'static,
     {
-        // Initialise the storage
-        let _ = storage::Storage::init(&config.paths, config.key.clone())?;
+        // Initialise the storage if it doesn't exist yet.
+        if storage::Storage::open(&config.paths, config.key.clone()).is_err() {
+            let _ = storage::Storage::init(&config.paths, config.key.clone())?;
+        }
 
         let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
@@ -174,6 +176,16 @@ impl Peer {
         description: &str,
         default_branch: &str,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
+        // Test if the repo has setup rad remote.
+        if let Ok(repo) = git2::Repository::open(&path) {
+            if repo.find_remote("rad").is_ok() {
+                return Err(error::Error::RadRemoteExists(format!(
+                    "{}",
+                    path.as_ref().display(),
+                )));
+            }
+        }
+
         let meta: Result<project::Project<entity::Draft>, error::Error> = self
             .with_api(|api| {
                 let key = api.key();
@@ -197,7 +209,7 @@ impl Peer {
         // Doing ? above breaks inference. Gaaaawwwwwd Rust!
         let meta = meta?;
 
-        self.setup_remote(path, &meta.urn().id)?;
+        self.setup_remote(path, &meta.urn().id, default_branch)?;
 
         // TODO(finto): mocking
         let mut projects = self.projects.lock().map_err(|_| error::Error::LibradLock)?;
@@ -212,17 +224,48 @@ impl Peer {
         &self,
         path: impl AsRef<std::path::Path>,
         id: &librad::hash::Hash,
+        default_branch: &str,
     ) -> Result<(), error::Error> {
         // Check if directory at path is a git repo.
-        let repo = if git2::Repository::open(&path).is_err() {
-            git2::Repository::init(&path)?
-        } else {
-            git2::Repository::open(path)?
-        };
+        if git2::Repository::open(&path).is_err() {
+            let repo = git2::Repository::init(&path)?;
+            // First use the config to initialize a commit signature for the user.
+            let sig = repo.signature()?;
+            // Now let's create an empty tree for this commit
+            let tree_id = {
+                let mut index = repo.index()?;
+
+                // For our purposes, we'll leave the index empty for now.
+                index.write_tree()?
+            };
+            let tree = repo.find_tree(tree_id)?;
+            // Normally creating a commit would involve looking up the current HEAD
+            // commit and making that be the parent of the initial commit, but here this
+            // is the first commit so there will be no parent.
+            repo.commit(
+                Some(&format!("refs/heads/{}", default_branch)),
+                &sig,
+                &sig,
+                "Initial commit",
+                &tree,
+                &[],
+            )?;
+        }
+
+        let repo = git2::Repository::open(path)?;
+
+        if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
+            log::error!("error while trying to find default branch: {:?}", err);
+            println!("error while trying to find default branch: {:?}", err);
+            return Err(error::Error::DefaultBranchMissing(
+                id.to_string(),
+                default_branch.to_string(),
+            ));
+        }
 
         let monorepo = self.with_api(|api| api.paths().git_dir().join(""))?;
         let namespace_prefix = format!("refs/namespaces/{}/refs", id);
-        let _remote = repo.remote_with_fetch(
+        let mut remote = repo.remote_with_fetch(
             "rad",
             &format!(
                 "file://{}",
@@ -233,6 +276,13 @@ impl Peer {
         repo.remote_add_push(
             "rad",
             &format!("+refs/heads/*:{}/heads/*", namespace_prefix),
+        )?;
+        remote.push(
+            &[&format!(
+                "refs/heads/{}:{}/heads/{}",
+                default_branch, namespace_prefix, default_branch
+            )],
+            None,
         )?;
 
         Ok(())
@@ -332,7 +382,7 @@ impl Peer {
             // Push branches.
             rad_remote.push(
                 &[
-                    &format!("refs/heads/master:{}/heads/dev", namespace_prefix),
+                    &format!("refs/heads/dev:{}/heads/dev", namespace_prefix),
                     &format!("refs/heads/master:{}/heads/master", namespace_prefix),
                 ],
                 None,

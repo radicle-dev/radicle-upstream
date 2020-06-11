@@ -37,6 +37,14 @@ pub enum Error {
     #[error("the identity '{0}' already exits")]
     IdentityExists(String),
 
+    /// Configured default branch for the project is missing.
+    #[error("repository '{0}' doesn't have the configured default branch '{1}'")]
+    DefaultBranchMissing(String, String),
+
+    /// Repository already has a 'rad' remote.
+    #[error("repository '{0}' has already been setup with a 'rad' remote")]
+    RadRemoteExists(String),
+
     /// FileSystem errors from interacting with code in repository.
     #[error(transparent)]
     FS(#[from] surf::file_system::Error),
