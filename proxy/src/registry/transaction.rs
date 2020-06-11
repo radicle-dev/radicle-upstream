@@ -4,7 +4,8 @@
 use async_trait::async_trait;
 use hex::ToHex;
 use kv::Codec as _;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
+use serde::de::{self, Deserializer};
 use std::time::{self, Duration, SystemTime};
 
 use radicle_registry_client as protocol;
@@ -68,7 +69,6 @@ pub struct Transaction {
     pub fee: protocol::Balance,
 }
 
-use serde::Serializer;
 /// Custom serializer for fees, it converts an u128 value to String
 fn fee_serializer<S>(fee: &protocol::Balance, serializer: S) -> Result<S::Ok, S::Error>
 where
@@ -77,7 +77,6 @@ where
     serializer.serialize_str(&format!("{}", fee))
 }
 
-use serde::de::{self, Deserializer};
 /// Custom deserializer for fees, it converts a String value to u128
 fn fee_deserializer<'de, D>(deserializer: D) -> Result<protocol::Balance, D::Error>
 where
