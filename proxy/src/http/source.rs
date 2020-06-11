@@ -275,8 +275,13 @@ mod handler {
         super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let default_branch = "master".to_string();
-        let blob = coco::blob(&peer, &project_urn, default_branch, revision, path)?;
+        let project = peer.get_project(&project_urn).await?;
+        let default_branch = project.default_branch();
+        let blob = peer
+            .with_browser(&project_urn, |mut browser| {
+                coco::blob(&mut browser, default_branch, revision, path)
+            })
+            .await?;
 
         Ok(reply::json(&blob))
     }
@@ -742,13 +747,16 @@ mod test {
         let revision = "master";
         let default_branch = "master".to_string(); // TODO(finto): need to change this
         let path = "text/arrows.txt";
-        let want = coco::blob(
-            &peer,
-            &urn.to_string(),
-            default_branch.clone(),
-            Some(revision.to_string()),
-            Some(path.to_string()),
-        )?;
+        let want = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::blob(
+                    &mut browser,
+                    &default_branch.clone(),
+                    Some(revision.to_string()),
+                    Some(path.to_string()),
+                )
+            })
+            .await?;
 
         let api = super::filters(Arc::new(Mutex::new(peer.clone())));
 
@@ -814,13 +822,16 @@ mod test {
             .reply(&api)
             .await;
 
-        let want = coco::blob(
-            &peer,
-            &urn.to_string(),
-            default_branch,
-            Some(revision.to_string()),
-            Some(path.to_string()),
-        )?;
+        let want = peer
+            .with_browser(&urn.to_string(), |browser| {
+                coco::blob(
+                    browser,
+                    &default_branch,
+                    Some(revision.to_string()),
+                    Some(path.to_string()),
+                )
+            })
+            .await?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));

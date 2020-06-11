@@ -9,8 +9,6 @@ use librad::surf::git::{git2, BranchName, Browser};
 
 use crate::error;
 
-use super::Peer;
-
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
 pub struct Branch(pub(super) String);
@@ -176,15 +174,12 @@ pub struct TreeEntry {
 ///
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob(
-    peer: &Peer,
-    project_urn: &str,
-    default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
+    browser: &mut Browser,
+    default_branch: &str, // TODO(finto): This should be handled by the broweser surf#115
     revision: Option<String>,
     maybe_path: Option<String>,
 ) -> Result<Blob, error::Error> {
-    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
-    let repo = api.storage().open_repo(project_urn.parse()?)?;
-    let browser = repo.browser(&revision.unwrap_or_else(|| default_branch))?;
+    browser.revspec(&revision.unwrap_or_else(|| default_branch.to_string()))?;
 
     let root = browser.get_directory()?;
     let path = maybe_path.clone().unwrap_or_default();

@@ -246,7 +246,6 @@ impl Peer {
 
         if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
             log::error!("error while trying to find default branch: {:?}", err);
-            println!("error while trying to find default branch: {:?}", err);
             return Err(error::Error::DefaultBranchMissing(
                 id.to_string(),
                 default_branch.to_string(),
