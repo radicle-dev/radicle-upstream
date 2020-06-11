@@ -99,31 +99,6 @@ impl Peer {
         Ok(f(&api))
     }
 
-    /*
-    /// Fetch a repository for the `project_urn` we supplied to this function.
-    ///
-    /// TODO(finto): The call to `browser` is not actually selecting the correct browser yet.
-    ///
-    /// # Errors
-    ///
-    /// The function will error if:
-    ///   * A lock was poisioned. See [`Self::with_api`].
-    ///   * The repository could not be created. See [`surf::Repository::new`].
-    pub fn project_repo(&'_ self, project_urn: &str) -> Result<repo::Repo<'_>, error::Error> {
-        let project_urn = project_urn.parse()?;
-        // TODO(finto): fetch project meta and build browser
-        let project_name = "git-platinum";
-        let path = self.with_api(|api| api.paths().git_dir().join(project_name))?;
-        // TODO(finto): https://github.com/radicle-dev/radicle-surf/issues/126
-        let _repo = surf::Repository::new(path.to_str().expect("failed to get path"))?;
-
-        let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
-        let repo = api.storage().open_repo(project_urn)?;
-
-        Ok(repo)
-    }
-    */
-
     /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
     ///
     /// # Errors
