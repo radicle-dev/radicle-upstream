@@ -42,7 +42,6 @@ where
                 enable_control,
                 Arc::clone(&librad_paths),
                 Arc::clone(&registry),
-                Arc::clone(&store),
             ))
             .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
             .or(notification::filters(subscriptions.clone()))

@@ -14,7 +14,6 @@ pub fn routes<R: registry::Client>(
     enable: bool,
     librad_paths: Arc<RwLock<paths::Paths>>,
     registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("control")
         .map(move || enable)
@@ -30,7 +29,6 @@ pub fn routes<R: registry::Client>(
             create_project_filter(Arc::clone(&librad_paths))
                 .or(nuke_coco_filter(librad_paths))
                 .or(nuke_registry_filter(Arc::clone(&registry)))
-                .or(nuke_session_filter(store))
                 .or(register_user_filter(registry)),
         )
 }
@@ -40,12 +38,10 @@ pub fn routes<R: registry::Client>(
 fn filters<R: registry::Client>(
     librad_paths: Arc<RwLock<paths::Paths>>,
     registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     create_project_filter(Arc::clone(&librad_paths))
         .or(nuke_coco_filter(librad_paths))
         .or(nuke_registry_filter(Arc::clone(&registry)))
-        .or(nuke_session_filter(store))
         .or(register_user_filter(registry))
 }
 
@@ -87,18 +83,8 @@ fn nuke_registry_filter<R: registry::Client>(
         .and_then(handler::nuke_registry)
 }
 
-/// GET /nuke/session
-fn nuke_session_filter(
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("nuke" / "session")
-        .and(super::with_store(store))
-        .and_then(handler::nuke_session)
-}
-
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use kv::Store;
     use librad::paths::Paths;
     use std::convert::TryFrom;
     use std::sync::Arc;
@@ -110,7 +96,6 @@ mod handler {
     use crate::http;
     use crate::project;
     use crate::registry;
-    use crate::session;
 
     /// Create a project from the fixture repo.
     pub async fn create_project(
@@ -178,14 +163,6 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let (client, _) = radicle_registry_client::Client::new_emulator();
         registry.write().await.reset(client);
-
-        Ok(reply::json(&true))
-    }
-
-    /// Reset the session state by clearing all buckets of the underlying store.
-    pub async fn nuke_session(store: Arc<RwLock<Store>>) -> Result<impl Reply, Rejection> {
-        let store = store.read().await;
-        session::clear_current(&store)?;
 
         Ok(reply::json(&true))
     }
