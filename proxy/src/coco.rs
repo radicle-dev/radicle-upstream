@@ -7,8 +7,6 @@ use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
 
-// use librad::git::repo;
-use librad::git::storage;
 use librad::keys;
 use librad::meta::entity::{self, Resolver as _};
 use librad::meta::project;
@@ -17,7 +15,7 @@ use librad::net;
 use librad::net::discovery;
 use librad::paths;
 use librad::peer;
-// use librad::surf::vcs::git as surf;
+use librad::surf;
 use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
 
@@ -77,11 +75,6 @@ impl Peer {
     where
         I: Iterator<Item = (peer::PeerId, SocketAddr)> + Send + 'static,
     {
-        // Initialise the storage if it doesn't exist yet.
-        if storage::Storage::open(&config.paths, config.key.clone()).is_err() {
-            let _ = storage::Storage::init(&config.paths, config.key.clone())?;
-        }
-
         let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
         // publish events.
@@ -157,6 +150,28 @@ impl Peer {
         let urn = project_urn.parse()?;
         let project = self.resolve(&urn).await?;
         Ok(project)
+    }
+
+    /// Get a repo browser for a project.
+    ///
+    /// # Errors
+    ///
+    /// The function will result in an error if the mutex guard was poisoned. See
+    /// [`std::sync::Mutex::lock`] for further details.
+    pub async fn with_browser<F, T>(
+        &self,
+        project_urn: &str,
+        callback: F,
+    ) -> Result<T, error::Error>
+    where
+        F: Send + FnOnce(&mut surf::vcs::git::Browser) -> Result<T, error::Error>,
+    {
+        let project = self.get_project(project_urn).await?;
+        let default_branch = project.default_branch();
+        let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
+        let repo = api.storage().open_repo(project.urn())?;
+        let mut browser = repo.browser(default_branch)?;
+        callback(&mut browser)
     }
 
     /// Initialize a [`librad::project::Project`] that is owned by the `owner`.

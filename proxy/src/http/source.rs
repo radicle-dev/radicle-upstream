@@ -287,7 +287,9 @@ mod handler {
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let branches = coco::branches(&peer, &project_urn)?;
+        let branches = peer
+            .with_browser(&project_urn, |browser| coco::branches(browser))
+            .await?;
 
         Ok(reply::json(&branches))
     }
@@ -299,7 +301,11 @@ mod handler {
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let commit = coco::commit(&peer, &project_urn, &sha1)?;
+        let commit = peer
+            .with_browser(&project_urn, |mut browser| {
+                coco::commit(&mut browser, &sha1)
+            })
+            .await?;
 
         Ok(reply::json(&commit))
     }
@@ -311,7 +317,11 @@ mod handler {
         branch: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let commits = coco::commits(&peer, &project_urn, &branch)?;
+        let commits = peer
+            .with_browser(&project_urn, |mut browser| {
+                coco::commits(&mut browser, &branch)
+            })
+            .await?;
 
         Ok(reply::json(&commits))
     }
@@ -329,8 +339,12 @@ mod handler {
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let branches = coco::branches(&peer, &project_urn)?;
-        let tags = coco::tags(&peer, &project_urn)?;
+        let (branches, tags) = peer
+            .with_browser(&project_urn, |browser| {
+                Ok((coco::branches(browser)?, coco::tags(browser)?))
+            })
+            .await?;
+
         let revs = ["cloudhead", "rudolfs", "xla"]
             .iter()
             .map(|handle| super::Revision {
@@ -359,7 +373,9 @@ mod handler {
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let tags = coco::tags(&peer, &project_urn)?;
+        let tags = peer
+            .with_browser(&project_urn, |browser| coco::tags(browser))
+            .await?;
 
         Ok(reply::json(&tags))
     }
@@ -370,9 +386,14 @@ mod handler {
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        let default_branch = "master".to_string();
         let peer = peer.lock().await;
-        let tree = coco::tree(&peer, &project_urn, default_branch, revision, prefix)?;
+        let project = peer.get_project(&project_urn).await?;
+        let default_branch = project.default_branch();
+        let tree = peer
+            .with_browser(&project_urn, |mut browser| {
+                coco::tree(&mut browser, default_branch, revision, prefix)
+            })
+            .await?;
 
         Ok(reply::json(&tree))
     }
@@ -846,7 +867,10 @@ mod test {
             .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await?;
         let urn = platinum_project.urn();
-        let want = coco::branches(&peer, &urn.to_string())?;
+
+        let want = peer
+            .with_browser(&urn.to_string(), |browser| coco::branches(browser))
+            .await?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -876,7 +900,11 @@ mod test {
         let urn = platinum_project.urn();
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
-        let want = coco::commit(&peer, &urn.to_string(), sha1)?;
+        let want = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::commit(&mut browser, sha1)
+            })
+            .await?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -925,8 +953,16 @@ mod test {
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
-        let want = coco::commits(&peer, &urn.to_string(), branch)?;
-        let head_commit = coco::commit(&peer, &urn.to_string(), head).unwrap();
+        let want = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::commits(&mut browser, branch)
+            })
+            .await?;
+        let head_commit = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::commit(&mut browser, head)
+            })
+            .await?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -999,8 +1035,12 @@ mod test {
         let urn = platinum_project.urn();
 
         let want = {
-            let branches = coco::branches(&peer, &urn.to_string())?;
-            let tags = coco::tags(&peer, &urn.to_string())?;
+            let (branches, tags) = peer
+                .with_browser(&urn.to_string(), |browser| {
+                    Ok((coco::branches(browser)?, coco::tags(browser)?))
+                })
+                .await?;
+
             ["cloudhead", "rudolfs", "xla"]
                 .iter()
                 .map(|handle| super::Revision {
@@ -1119,7 +1159,9 @@ mod test {
             .unwrap();
         let urn = platinum_project.urn();
 
-        let want = coco::tags(&peer, &urn.to_string())?;
+        let want = peer
+            .with_browser(&urn.to_string(), |browser| coco::tags(browser))
+            .await?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -1155,13 +1197,16 @@ mod test {
         let prefix = "src";
 
         let default_branch = "master".to_string(); // TODO(finto): need to change this
-        let want = coco::tree(
-            &peer,
-            &urn.to_string(),
-            default_branch,
-            Some(revision.to_string()),
-            Some(prefix.to_string()),
-        )?;
+        let want = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::tree(
+                    &mut browser,
+                    &default_branch,
+                    Some(revision.to_string()),
+                    Some(prefix.to_string()),
+                )
+            })
+            .await?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()

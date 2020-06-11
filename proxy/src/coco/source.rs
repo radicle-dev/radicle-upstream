@@ -5,7 +5,7 @@ use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 use librad::surf;
-use librad::surf::git::git2;
+use librad::surf::git::{git2, BranchName, Browser};
 
 use crate::error;
 
@@ -184,11 +184,7 @@ pub fn blob(
 ) -> Result<Blob, error::Error> {
     let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
     let repo = api.storage().open_repo(project_urn.parse()?)?;
-    let mut browser = repo.browser()?;
-
-    // Best effort to guess the revision.
-    let revision = revision.unwrap_or_else(|| default_branch);
-    browser.revspec(&revision)?;
+    let browser = repo.browser(&revision.unwrap_or_else(|| default_branch))?;
 
     let root = browser.get_directory()?;
     let path = maybe_path.clone().unwrap_or_default();
@@ -224,11 +220,7 @@ pub fn blob(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches(peer: &Peer, project_urn: &str) -> Result<Vec<Branch>, error::Error> {
-    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
-    let repo = api.storage().open_repo(project_urn.parse()?)?;
-    let browser = repo.browser()?;
-
+pub fn branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
     let mut branches = browser
         .list_branches(None)?
         .into_iter()
@@ -256,7 +248,7 @@ pub struct LocalState {
 /// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
     let repo = surf::vcs::git::Repository::new(repo_path)?;
-    let browser = surf::vcs::git::Browser::new(&repo)?;
+    let browser = Browser::new(&repo, "master")?;
     let mut branches = browser
         .list_branches(None)?
         .into_iter()
@@ -278,11 +270,7 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit(peer: &Peer, project_urn: &str, sha1: &str) -> Result<Commit, error::Error> {
-    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
-    let repo = api.storage().open_repo(project_urn.parse()?)?;
-    let mut browser = repo.browser()?;
-
+pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit, error::Error> {
     browser.commit(surf::vcs::git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
@@ -296,12 +284,11 @@ pub fn commit(peer: &Peer, project_urn: &str, sha1: &str) -> Result<Commit, erro
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commits(peer: &Peer, project_urn: &str, branch: &str) -> Result<Vec<Commit>, error::Error> {
-    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
-    let repo = api.storage().open_repo(project_urn.parse()?)?;
-    let mut browser = repo.browser()?;
-
-    browser.branch(surf::vcs::git::BranchName::new(branch))?;
+pub fn commits<'repo>(
+    browser: &mut Browser<'repo>,
+    branch: &str,
+) -> Result<Vec<Commit>, error::Error> {
+    browser.branch(BranchName::new(branch))?;
 
     let commits = browser.get().iter().map(Commit::from).collect();
 
@@ -313,11 +300,7 @@ pub fn commits(peer: &Peer, project_urn: &str, branch: &str) -> Result<Vec<Commi
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn tags(peer: &Peer, project_urn: &str) -> Result<Vec<Tag>, error::Error> {
-    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
-    let repo = api.storage().open_repo(project_urn.parse()?)?;
-    let browser = repo.browser()?;
-
+pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
     let tag_names = browser.list_tags()?;
     let mut tags: Vec<Tag> = tag_names
         .into_iter()
@@ -335,18 +318,13 @@ pub fn tags(peer: &Peer, project_urn: &str) -> Result<Vec<Tag>, error::Error> {
 ///
 /// Will return [`error::Error`] if any of the surf interactions fail.
 /// TODO(fintohaps): default branch fall back from Browser
-pub fn tree(
-    peer: &Peer,
-    project_urn: &str,
-    default_branch: String, // TODO(finto): This should be handled by the broweser surf#115
+pub fn tree<'repo>(
+    browser: &mut Browser<'repo>,
+    default_branch: &str, // TODO(finto): This should be handled by the broweser surf#115
     maybe_revision: Option<String>,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, error::Error> {
-    let api = peer.api.lock().map_err(|_| error::Error::LibradLock)?;
-    let repo = api.storage().open_repo(project_urn.parse()?)?;
-    let mut browser = repo.browser()?;
-
-    let revision = maybe_revision.unwrap_or_else(|| default_branch);
+    let revision = maybe_revision.unwrap_or_else(|| default_branch.to_string());
     let prefix = maybe_prefix.unwrap_or_default();
 
     browser.revspec(&revision)?;
