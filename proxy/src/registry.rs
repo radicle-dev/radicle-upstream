@@ -216,7 +216,7 @@ pub struct Costs {
     /// Organization registration deposit cost in μRAD.
     org_registration_deposit: protocol::Balance,
     /// Project registration deposit cost in μRAD.
-    project_registration_depoist: protocol::Balance,
+    project_registration_deposit: protocol::Balance,
     /// Member registration on org deposit cost in μRAD.
     member_registration_deposit: protocol::Balance,
 }
