@@ -277,6 +277,7 @@ impl Peer {
         Ok(())
     }
 
+    // TODO(xla): Move into coco::source.
     /// This function exists as a standalone because the logic does not play well with async in
     /// `replicate_platinum`.
     fn clone_platinum(
@@ -316,6 +317,7 @@ impl Peer {
         Ok(())
     }
 
+    // TODO(xla): Move into control module.
     /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
     /// branch.
     ///
@@ -382,6 +384,7 @@ impl Peer {
         Ok(meta)
     }
 
+    // TODO(xla): Move into control module.
     /// Creates a small set of projects in [`Paths`].
     ///
     /// # Errors
@@ -439,6 +442,7 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
     }
 }
 
+// TODO(xla): Transform into Peer::create_user.
 /// Constructs a fake user to be used as an owner of projects until we have more permanent key and
 /// user management.
 pub async fn fake_owner(peer: &Peer) -> User {

@@ -160,6 +160,7 @@ pub struct Tree {
     pub info: Info,
 }
 
+// TODO(xla): Ensure correct by construction.
 /// Entry in a Tree result.
 pub struct TreeEntry {
     /// Extra info for the entry.
@@ -175,15 +176,14 @@ pub struct TreeEntry {
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob(
     browser: &mut Browser,
-    default_branch: &str, // TODO(finto): This should be handled by the broweser surf#115
-    revision: Option<String>,
-    maybe_path: Option<String>,
+    default_branch: &str,
+    maybe_revision: Option<String>,
+    path: &str,
 ) -> Result<Blob, error::Error> {
-    browser.revspec(&revision.unwrap_or_else(|| default_branch.to_string()))?;
+    browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
 
     let root = browser.get_directory()?;
-    let path = maybe_path.clone().unwrap_or_default();
-    let p = surf::file_system::Path::from_str(&path)?;
+    let p = surf::file_system::Path::from_str(path)?;
 
     let file = root
         .find_file(p.clone())
@@ -206,7 +206,7 @@ pub fn blob(
             object_type: ObjectType::Blob,
             last_commit,
         },
-        path: maybe_path.unwrap_or(last.to_string()),
+        path: path.to_string(),
     })
 }
 

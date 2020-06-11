@@ -279,7 +279,7 @@ mod handler {
         let default_branch = project.default_branch();
         let blob = peer
             .with_browser(&project_urn, |mut browser| {
-                coco::blob(&mut browser, default_branch, revision, path)
+                coco::blob(&mut browser, default_branch, revision, &path)
             })
             .await?;
 
@@ -408,7 +408,7 @@ mod handler {
 #[derive(Debug, Deserialize)]
 pub struct BlobQuery {
     /// Location of the blob in tree.
-    path: Option<String>,
+    path: String,
     /// Revision to use for the history of the repo.
     revision: Option<String>,
 }
@@ -753,7 +753,7 @@ mod test {
                     &mut browser,
                     &default_branch.clone(),
                     Some(revision.to_string()),
-                    Some(path.to_string()),
+                    path,
                 )
             })
             .await?;
@@ -824,12 +824,7 @@ mod test {
 
         let want = peer
             .with_browser(&urn.to_string(), |browser| {
-                coco::blob(
-                    browser,
-                    &default_branch,
-                    Some(revision.to_string()),
-                    Some(path.to_string()),
-                )
+                coco::blob(browser, &default_branch, Some(revision.to_string()), path)
             })
             .await?;
 
