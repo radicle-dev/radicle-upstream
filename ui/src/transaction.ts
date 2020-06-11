@@ -23,7 +23,7 @@ export interface Costs {
   minimumFee: currency.MicroRad;
   userRegistrationDeposit: currency.MicroRad;
   orgRegistrationDeposit: currency.MicroRad;
-  projectRegistrationDepoist: currency.MicroRad;
+  projectRegistrationDeposit: currency.MicroRad;
   memberRegistrationDeposit: currency.MicroRad;
 }
 
@@ -497,7 +497,7 @@ export const costSummary = (
       deposit = costs.memberRegistrationDeposit;
       break;
     case MessageType.ProjectRegistration:
-      deposit = costs.projectRegistrationDepoist;
+      deposit = costs.projectRegistrationDeposit;
       break;
     case MessageType.UserRegistration:
       deposit = costs.userRegistrationDeposit;

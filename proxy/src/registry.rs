@@ -228,7 +228,7 @@ pub const fn get_costs() -> Costs {
         minimum_fee: MINIMUM_FEE,
         user_registration_deposit: REGISTER_USER_DEPOSIT,
         org_registration_deposit: REGISTER_ORG_DEPOSIT,
-        project_registration_depoist: REGISTER_PROJECT_DEPOSIT,
+        project_registration_deposit: REGISTER_PROJECT_DEPOSIT,
         member_registration_deposit: REGISTER_MEMBER_DEPOSIT,
     }
 }
