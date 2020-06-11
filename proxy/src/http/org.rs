@@ -405,7 +405,7 @@ pub struct RegisterInput {
     /// Id of the Org.
     id: String,
     /// User specified transaction fee.
-    transaction_fee: registry::protocol::Balance,
+    transaction_fee: registry::Balance,
 }
 
 impl ToDocumentedType for RegisterInput {
@@ -429,7 +429,7 @@ pub struct RegisterMemberInput {
     /// Id of the User.
     handle: String,
     /// User specified transaction fee.
-    transaction_fee: registry::protocol::Balance,
+    transaction_fee: registry::Balance,
 }
 
 impl ToDocumentedType for RegisterMemberInput {
@@ -500,7 +500,7 @@ mod test {
         let user = registry.read().await.get_user(handle).await?.unwrap();
 
         // Register the org
-        let fee: registry::protocol::Balance = 100;
+        let fee: registry::Balance = 100;
         registry
             .write()
             .await

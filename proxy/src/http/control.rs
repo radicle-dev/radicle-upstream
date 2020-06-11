@@ -187,5 +187,5 @@ pub struct RegisterInput {
     /// Handle of the user.
     handle: String,
     /// User specified transaction fee.
-    transaction_fee: registry::protocol::Balance,
+    transaction_fee: registry::Balance,
 }

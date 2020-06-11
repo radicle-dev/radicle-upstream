@@ -476,7 +476,7 @@ pub struct RegisterInput {
     /// Unique name under Org of the project.
     project_name: String,
     /// User specified transaction fee.
-    transaction_fee: registry::protocol::Balance,
+    transaction_fee: registry::Balance,
     /// Optionally passed coco id to store for attestion.
     maybe_coco_id: Option<String>,
 }

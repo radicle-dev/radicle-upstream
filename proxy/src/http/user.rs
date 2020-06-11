@@ -207,7 +207,7 @@ pub struct RegisterInput {
     /// Handle the User registered under.
     handle: String,
     /// User specified transaction fee.
-    transaction_fee: registry::protocol::Balance,
+    transaction_fee: registry::Balance,
     /// Optionally passed entity id to store for attestion.
     maybe_entity_id: Option<String>,
 }
