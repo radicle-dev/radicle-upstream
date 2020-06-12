@@ -310,7 +310,7 @@ mod test {
                     "g": 124,
                     "b": 239,
                 },
-                "emoji": "🍝",
+                "emoji": "🥐",
             },
             "id": "cloudhead@123abcd.git",
             "metadata": {
