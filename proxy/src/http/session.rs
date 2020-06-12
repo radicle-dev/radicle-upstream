@@ -307,12 +307,24 @@ mod test {
                         "network": "emulator",
                     },
                 },
+                "transactionDeposits": {
+                    "memberRegistration": 10,
+                    "orgRegistration": 10,
+                    "projectRegistration": 10,
+                    "userRegistration": 10,
+                },
+                "minimumTransactionFee": 1,
+                "permissions": {
+                    "registerHandle": false,
+                    "registerOrg": false,
+                    "registerProject": false,
+                },
             }),
         );
     }
 
     #[tokio::test]
-    async fn udpate_settings() {
+    async fn update_settings() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let registry = {
@@ -348,6 +360,18 @@ mod test {
                     "registry": {
                         "network": "emulator",
                     },
+                },
+                "transactionDeposits": {
+                    "memberRegistration": 10,
+                    "orgRegistration": 10,
+                    "projectRegistration": 10,
+                    "userRegistration": 10,
+                },
+                "minimumTransactionFee": 1,
+                "permissions": {
+                    "registerHandle": false,
+                    "registerOrg": false,
+                    "registerProject": false,
                 },
             }),
         );

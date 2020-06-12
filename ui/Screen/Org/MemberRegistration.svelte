@@ -29,17 +29,23 @@
     validating = false;
   const validation = memberHandleValidationStore(orgId);
 
+  const transactionFee = $session.data.minimumTransactionFee;
+
   const next = () => {
     switch (state) {
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
-          transaction = registerMemberTransaction(orgId, userHandle);
+          transaction = registerMemberTransaction(
+            orgId,
+            userHandle,
+            transactionFee
+          );
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }
         break;
       case RegistrationFlowState.Confirmation:
-        registerMember(orgId, userHandle);
+        registerMember(orgId, userHandle, transactionFee);
         pop();
     }
   };
@@ -82,7 +88,11 @@
       dataCy="input" />
   {:else if state === RegistrationFlowState.Confirmation}
     <div style="width: 100%;">
-      <Transaction {transaction} {subject} {payer} />
+      <Transaction
+        {transaction}
+        {subject}
+        {payer}
+        transactionDeposits={$session.data.transactionDeposits} />
     </div>
   {/if}
   <NavigationButtons

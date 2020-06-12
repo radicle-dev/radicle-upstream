@@ -143,7 +143,6 @@ fn register_filter<R: registry::Client>(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use radicle_registry_client::Balance;
     use std::convert::TryFrom;
     use std::str::FromStr;
     use std::sync::Arc;
@@ -232,8 +231,6 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        // TODO(xla): Use real fee defined by the user.
-        let fake_fee: Balance = 100;
 
         let reg = registry.read().await;
         let maybe_coco_id = input
@@ -244,7 +241,13 @@ mod handler {
         let project_name = registry::ProjectName::try_from(input.project_name)?;
 
         let tx = reg
-            .register_project(&fake_pair, domain, project_name, maybe_coco_id, fake_fee)
+            .register_project(
+                &fake_pair,
+                domain,
+                project_name,
+                maybe_coco_id,
+                input.transaction_fee,
+            )
             .await?;
 
         subscriptions
@@ -502,6 +505,8 @@ pub struct RegisterInput {
     domain_id: String,
     /// Unique name under Org of the project.
     project_name: String,
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
     /// Optionally passed coco id to store for attestion.
     maybe_coco_id: Option<String>,
 }
@@ -762,6 +767,7 @@ mod test {
                 domain_id: org_id.to_string(),
                 project_name: "upstream".into(),
                 maybe_coco_id: Some(urn.to_string()),
+                transaction_fee: registry::MINIMUM_FEE,
             })
             .reply(&api)
             .await;
@@ -836,6 +842,7 @@ mod test {
                 domain_id: handle.to_string(),
                 project_name: "upstream".into(),
                 maybe_coco_id: Some(urn.to_string()),
+                transaction_fee: registry::MINIMUM_FEE,
             })
             .reply(&api)
             .await;

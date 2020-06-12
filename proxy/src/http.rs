@@ -45,7 +45,6 @@ where
                 Arc::clone(&peer),
                 Arc::clone(&owner),
                 Arc::clone(&registry),
-                Arc::clone(&store),
             ))
             .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
             .or(notification::filters(subscriptions.clone()))

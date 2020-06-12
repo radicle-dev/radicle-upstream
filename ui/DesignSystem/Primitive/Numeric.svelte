@@ -1,5 +1,6 @@
 <script>
   export let style = null;
+  export let dataCy = null;
 
   export let variant = "regular"; // tiny | small | regular | big
 </script>
@@ -30,6 +31,6 @@
   }
 </style>
 
-<p class={variant} {style}>
+<p data-cy={dataCy} class={variant} {style}>
   <slot />
 </p>

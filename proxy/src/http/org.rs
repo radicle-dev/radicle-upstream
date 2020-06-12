@@ -205,7 +205,6 @@ fn register_member_filter<R: registry::Client>(
 
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use radicle_registry_client::Balance;
     use std::convert::TryFrom;
     use std::sync::Arc;
     use tokio::sync::Mutex;
@@ -290,12 +289,12 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        // TODO(xla): Use real fee defined by the user.
-        let fake_fee: Balance = 100;
 
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(input.id)?;
-        let tx = reg.register_org(&fake_pair, org_id, fake_fee).await?;
+        let tx = reg
+            .register_org(&fake_pair, org_id, input.transaction_fee)
+            .await?;
 
         subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
@@ -313,14 +312,12 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        // TODO(xla): Use real fee defined by the user.
-        let fake_fee: Balance = 100;
 
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(id)?;
         let handle = registry::Id::try_from(input.handle)?;
         let tx = reg
-            .register_member(&fake_pair, org_id, handle, fake_fee)
+            .register_member(&fake_pair, org_id, handle, input.transaction_fee)
             .await?;
 
         subscriptions
@@ -423,6 +420,8 @@ pub struct Project {
 pub struct RegisterInput {
     /// Id of the Org.
     id: String,
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
 }
 
 impl ToDocumentedType for RegisterInput {
@@ -445,6 +444,8 @@ impl ToDocumentedType for RegisterInput {
 pub struct RegisterMemberInput {
     /// Id of the User.
     handle: String,
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
 }
 
 impl ToDocumentedType for RegisterMemberInput {
@@ -512,7 +513,7 @@ mod test {
         let user = registry.read().await.get_user(handle).await?.unwrap();
 
         // Register the org
-        let fee: radicle_registry_client::Balance = 100;
+        let fee: registry::Balance = 100;
         registry
             .write()
             .await
@@ -739,6 +740,7 @@ mod test {
             .path("/")
             .json(&super::RegisterInput {
                 id: org_id.to_string(),
+                transaction_fee: registry::MINIMUM_FEE,
             })
             .reply(&api)
             .await;
@@ -807,6 +809,7 @@ mod test {
             .path(&format!("/{}/members", org_id.clone()))
             .json(&super::RegisterMemberInput {
                 handle: handle2.clone().to_string(),
+                transaction_fee: registry::MINIMUM_FEE,
             })
             .reply(&api)
             .await;

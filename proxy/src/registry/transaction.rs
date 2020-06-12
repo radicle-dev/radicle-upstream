@@ -4,7 +4,8 @@
 use async_trait::async_trait;
 use hex::ToHex;
 use kv::Codec as _;
-use serde::{Deserialize, Serialize};
+use serde::de::{self, Deserializer};
+use serde::{Deserialize, Serialize, Serializer};
 use std::time::{self, Duration, SystemTime};
 
 use radicle_registry_client as protocol;
@@ -58,12 +59,44 @@ pub struct Transaction {
     pub state: State,
     /// Creation time.
     pub timestamp: Timestamp,
+
+    // Unfortunately serde_json doesn't support u128 values, and until it does
+    // we work around it by serializing the value to a String.
+    //
+    // TODO(rudolfs): remove this once https://github.com/serde-rs/json/issues/625
+    // is fixed.
+    /// Transaction fee in μRAD.
+    #[serde(serialize_with = "fee_serializer")]
+    #[serde(deserialize_with = "fee_deserializer")]
+    pub fee: protocol::Balance,
+}
+
+/// Custom serializer for fees, it converts an u128 value to String
+fn fee_serializer<S>(fee: &protocol::Balance, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&format!("{}", fee))
+}
+
+/// Custom deserializer for fees, it converts a String value to u128
+fn fee_deserializer<'de, D>(deserializer: D) -> Result<protocol::Balance, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    s.parse().map_err(de::Error::custom)
 }
 
 impl Transaction {
     /// Constructs a new confirmed [`Transaction`] with a single [`Message`].
     #[must_use]
-    pub fn confirmed(id: registry::Hash, block: protocol::BlockNumber, message: Message) -> Self {
+    pub fn confirmed(
+        id: registry::Hash,
+        block: protocol::BlockNumber,
+        message: Message,
+        fee: protocol::Balance,
+    ) -> Self {
         let now = Timestamp::now();
 
         Self {
@@ -76,6 +109,7 @@ impl Transaction {
                 timestamp: now,
             },
             timestamp: now,
+            fee,
         }
     }
 }
@@ -475,6 +509,7 @@ mod test {
             let registry = registry::Registry::new(client);
             let cache = Cacher::new(registry, &store);
             let now = Timestamp::now();
+            let fee = 100;
 
             let tx = Transaction {
                 id: registry::Hash(protocol::TxHash::random()),
@@ -486,6 +521,7 @@ mod test {
                     timestamp: now,
                 },
                 timestamp: now,
+                fee,
             };
 
             cache.cache_transaction(tx.clone()).unwrap();
@@ -501,6 +537,7 @@ mod test {
                         timestamp: now,
                     },
                     timestamp: now,
+                    fee,
                 };
 
                 cache.cache_transaction(tx.clone()).unwrap();

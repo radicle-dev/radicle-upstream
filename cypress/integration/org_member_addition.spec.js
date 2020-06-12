@@ -44,6 +44,15 @@ context("add member to org", () => {
       // check the transaction details before submition
       cy.pick("message").contains("Member registration");
       cy.pick("subject").contains("user2");
+
+      cy.pick("deposit", "rad-amount").contains("0.00001");
+      cy.pick("deposit", "usd-amount").contains("$0.00001");
+
+      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
+      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+
+      cy.pick("total", "rad-amount").contains("0.000011");
+      cy.pick("total", "usd-amount").contains("$0.000011");
     });
   });
 
@@ -88,6 +97,16 @@ context("after submitting the transaction", () => {
     // pick most recent transaction to check the transaction details
     cy.pick("transaction-center").click();
     cy.pick("transaction-center", "transaction-item").first().click();
+
+    cy.pick("deposit", "rad-amount").contains("0.00001");
+    cy.pick("deposit", "usd-amount").contains("$0.00001");
+
+    cy.pick("transaction-fee", "rad-amount").contains("0.000001");
+    cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+
+    cy.pick("total", "rad-amount").contains("0.000011");
+    cy.pick("total", "usd-amount").contains("$0.000011");
+
     cy.pick("summary", "message").contains("Member registration");
     cy.pick("summary", "subject").contains("user2");
   });

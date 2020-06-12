@@ -3,6 +3,7 @@ import * as timeago from "timeago.js";
 
 import * as api from "./api";
 import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar";
+import * as currency from "./currency";
 import * as event from "./event";
 import { Identity } from "./identity";
 import { Domain } from "./project";
@@ -16,6 +17,13 @@ type Height = number;
 interface Timestamp {
   secs: number;
   nanos: number;
+}
+
+export interface Deposits {
+  userRegistration: currency.MicroRad;
+  orgRegistration: currency.MicroRad;
+  projectRegistration: currency.MicroRad;
+  memberRegistration: currency.MicroRad;
 }
 
 export enum MessageType {
@@ -111,6 +119,7 @@ export interface Transaction {
   messages: Message[];
   state: State;
   timestamp: Timestamp;
+  fee: currency.MicroRad;
 }
 
 type Transactions = Transaction[];
@@ -460,4 +469,58 @@ export const summaryText = (counts: SummaryCounts): string => {
   }
 
   return `transaction ${state}`;
+};
+
+interface CostSummary {
+  depositRad: currency.Rad;
+  depositUsd: currency.Usd;
+  feeRad: currency.Rad;
+  feeUsd: currency.Usd;
+  totalRad: currency.Rad;
+  totalUsd: currency.Usd;
+}
+
+export const costSummary = (
+  messageType: MessageType,
+  fee: currency.MicroRad,
+  deposits: Deposits
+): CostSummary => {
+  let deposit = 0;
+
+  switch (messageType) {
+    case MessageType.OrgRegistration:
+      deposit = deposits.orgRegistration;
+      break;
+    case MessageType.MemberRegistration:
+      deposit = deposits.memberRegistration;
+      break;
+    case MessageType.ProjectRegistration:
+      deposit = deposits.projectRegistration;
+      break;
+    case MessageType.UserRegistration:
+      deposit = deposits.userRegistration;
+      break;
+    default:
+      throw `MessageType: ${messageType} not implemented`;
+      break;
+  }
+
+  const total = deposit + fee;
+
+  const depositRad = currency.microRadToRad(deposit);
+  const feeRad = currency.microRadToRad(fee);
+  const totalRad = currency.microRadToRad(total);
+
+  const depositUsd = currency.radToUsd(depositRad);
+  const feeUsd = currency.radToUsd(feeRad);
+  const totalUsd = currency.radToUsd(totalRad);
+
+  return {
+    depositRad,
+    depositUsd,
+    feeRad,
+    feeUsd,
+    totalRad,
+    totalUsd,
+  };
 };

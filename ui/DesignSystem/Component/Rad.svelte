@@ -1,7 +1,8 @@
 <script>
   import { Icon, Numeric } from "../Primitive";
 
-  export let amount = null;
+  export let rad = null;
+  export let usd = null;
   export let style = null;
   export let size = "regular"; // regular | big
 </script>
@@ -25,18 +26,22 @@
     <Icon.Circle style="fill: var(--color-primary); margin-right: 4px" />
     {#if size === 'big'}
       <Numeric
+        dataCy="rad-amount"
         variant="big"
         style="display: inline-flex; color: var(--color-foreground-level-6)">
-        {amount}
+        {rad}
       </Numeric>
     {:else}
       <Numeric
+        dataCy="rad-amount"
         style="display: inline-flex; color: var(--color-foreground-level-6)">
-        {amount}
+        {rad}
       </Numeric>
     {/if}
   </div>
-  <Numeric style="color: var(--color-foreground-level-5)">
-    ${amount / 10}
-  </Numeric>
+  {#if usd !== null}
+    <Numeric dataCy="usd-amount" style="color: var(--color-foreground-level-5)">
+      ${usd}
+    </Numeric>
+  {/if}
 </div>

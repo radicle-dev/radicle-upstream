@@ -32,12 +32,20 @@
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
 
+  const transactionFee = session.minimumTransactionFee;
+
   const registerProject = async () => {
     try {
-      await register(domainId, projectName, projectId);
+      await register(
+        domainType,
+        domainId,
+        projectName,
+        transactionFee,
+        projectId
+      );
       await fetchSession();
     } catch (error) {
-      notification.error(`Could not register org: ${error.message}`);
+      notification.error(`Could not register project: ${error.message}`);
     } finally {
       pop();
     }
@@ -48,6 +56,7 @@
   // TODO(sos): coordinate message format for project registration with proxy
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
+    fee: transactionFee,
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
@@ -100,7 +109,10 @@
               domainAvatar = event.detail.domainAvatar;
             }} />
         {:else}
-          <Transaction transaction={tx()} payer={wallet()} />
+          <Transaction
+            transaction={tx()}
+            payer={wallet()}
+            transactionDeposits={session.transactionDeposits} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

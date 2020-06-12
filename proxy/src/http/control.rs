@@ -2,7 +2,7 @@
 
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::Mutex;
 use warp::{path, reject, Filter, Rejection, Reply};
 
 use crate::coco;
@@ -15,7 +15,6 @@ pub fn routes<R>(
     peer: Arc<Mutex<coco::Peer>>,
     owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
@@ -34,7 +33,6 @@ where
             create_project_filter(Arc::clone(&peer), owner)
                 .or(nuke_coco_filter(peer))
                 .or(nuke_registry_filter(Arc::clone(&registry)))
-                .or(nuke_session_filter(store))
                 .or(register_user_filter(registry)),
         )
 }
@@ -45,7 +43,6 @@ fn filters<R>(
     peer: Arc<Mutex<coco::Peer>>,
     owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
@@ -53,7 +50,6 @@ where
     create_project_filter(Arc::clone(&peer), owner)
         .or(nuke_coco_filter(peer))
         .or(nuke_registry_filter(Arc::clone(&registry)))
-        .or(nuke_session_filter(store))
         .or(register_user_filter(registry))
 }
 
@@ -97,22 +93,11 @@ fn nuke_registry_filter<R: registry::Client>(
         .and_then(handler::nuke_registry)
 }
 
-/// GET /nuke/session
-fn nuke_session_filter(
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("nuke" / "session")
-        .and(super::with_store(store))
-        .and_then(handler::nuke_session)
-}
-
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use kv::Store;
-    use radicle_registry_client::Balance;
     use std::convert::TryFrom;
     use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
+    use tokio::sync::Mutex;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -122,7 +107,6 @@ mod handler {
     use crate::http;
     use crate::project;
     use crate::registry;
-    use crate::session;
 
     /// Create a project from the fixture repo.
     pub async fn create_project(
@@ -165,11 +149,10 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
-        let fake_fee: Balance = 100;
 
         let handle = registry::Id::try_from(input.handle)?;
         let reg = registry.write().await;
-        reg.register_user(&fake_pair, handle.clone(), None, fake_fee)
+        reg.register_user(&fake_pair, handle.clone(), None, input.transaction_fee)
             .await
             .expect("unable to register user");
 
@@ -206,14 +189,6 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let (client, _) = radicle_registry_client::Client::new_emulator();
         registry.write().await.reset(client);
-
-        Ok(reply::json(&true))
-    }
-
-    /// Reset the session state by clearing all buckets of the underlying store.
-    pub async fn nuke_session(store: Arc<RwLock<Store>>) -> Result<impl Reply, Rejection> {
-        let store = store.read().await;
-        session::clear_current(&store)?;
 
         Ok(reply::json(&true))
     }
@@ -282,6 +257,8 @@ pub struct CreateInput {
 pub struct RegisterInput {
     /// Handle of the user.
     handle: String,
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
 }
 
 #[cfg(test)]
@@ -308,13 +285,11 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(owner)),
             Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
         );
 
         // Create project before nuke.

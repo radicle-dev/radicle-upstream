@@ -53,15 +53,17 @@
       icon: Icon.Plus,
       event: () => push(path.createProject()),
     },
-    {
+  ];
+
+  const session = getContext("session");
+  if (session.permissions.registerHandle) {
+    dropdownMenuItems.push({
       title: "Register handle",
       dataCy: "register-handle",
       icon: Icon.Register,
       event: () => push(path.registerUser()),
-    },
-  ];
-
-  const session = getContext("session");
+    });
+  }
 </script>
 
 <SidebarLayout
