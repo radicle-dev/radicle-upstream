@@ -52,7 +52,7 @@ interface FormatConstraints {
 
 export const createValidationStore = (
   constraints: FormatConstraints,
-  remoteValidations: RemoteValidation[]
+  remoteValidations?: RemoteValidation[]
 ): ValidationStore => {
   const initialState = {
     status: ValidationStatus.NotStarted,
@@ -83,7 +83,7 @@ export const createValidationStore = (
 
     // Check remote validation
     let invalidRemoteValidation = false;
-    if (remoteValidations.length > 0) {
+    if (remoteValidations && remoteValidations.length > 0) {
       for (const remoteValidation of remoteValidations) {
         try {
           const valid = await remoteValidation.promise(input);

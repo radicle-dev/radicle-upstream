@@ -27,12 +27,12 @@ export const memberRegistration = (id: string): string =>
   `/orgs/${id}/members/register`;
 
 export const createProject = (): string => "/projects/new";
-export const registerProject = (domainId: string): string =>
-  `/projects/register/${domainId}`;
+export const registerProject = (registrantId: string): string =>
+  `/projects/register/${registrantId}`;
 export const registerExistingProject = (
   projectId: string,
-  domainId: string
-): string => `/projects/${projectId}/register/${domainId}`;
+  registrantId: string
+): string => `/projects/${projectId}/register/${registrantId}`;
 export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string =>

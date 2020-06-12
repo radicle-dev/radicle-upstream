@@ -4,6 +4,9 @@ import * as api from "./api";
 import * as event from "./event";
 import * as remote from "./remote";
 import * as transaction from "./transaction";
+import { Identity } from "./identity";
+import { Org } from "./org";
+import { ValidationStatus, createValidationStore } from "./validation";
 
 // TYPES.
 export interface Metadata {
@@ -22,17 +25,22 @@ export interface Project {
   id: string;
   shareableEntityIdentifier: string;
   metadata: Metadata;
-  registration: string; // TODO(rudolfs): what will this type be?
+  registered: boolean; // TODO(rudolfs): what will this type be?
   stats: Stats;
 }
 
 type Projects = Project[];
 
-// The domain under which a registered project falls
-export enum Domain {
+export enum RegistrantType {
   User = "user",
   Org = "org",
 }
+
+interface Registrant {
+  type: RegistrantType;
+  id: string;
+}
+
 export interface Registered {
   name: string;
   orgId: string;
@@ -133,6 +141,11 @@ export const getOrgProject = (
   return api.get<Registered>(`orgs/${orgId}/projects/${projectName}`);
 };
 
+const validateNameAvailability = (orgId: string) => (
+  projectName: string
+): Promise<boolean> =>
+  getOrgProject(orgId, projectName).then((project) => !project);
+
 export const register = (
   orgId: string,
   projectName: string,
@@ -150,3 +163,84 @@ const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 
 // Fetch initial list when the store has been subcribed to for the first time.
 projectsStore.start(fetchList);
+
+export enum RegistrationState {
+  Preparation,
+  Confirmation,
+}
+
+export const formatRegistrantOptions = (identity: Identity, orgs: Org[]) => {
+  const formattedIdentity = {
+    id: identity.registered,
+    variant: "avatar",
+    value: identity.registered,
+    type: RegistrantType.User,
+    avatarProps: {
+      variant: "circle",
+      title: identity.registered,
+      avatarFallback: identity.avatarFallback,
+      imageUrl: identity.metadata.avatarUrl,
+    },
+  };
+
+  const formattedOrgs = orgs.map((org) => ({
+    id: org.id,
+    value: org.id,
+    variant: "avatar",
+    type: RegistrantType.Org,
+    avatarProps: {
+      variant: "square",
+      title: org.id,
+      avatarFallback: org.avatarFallback,
+    },
+  }));
+
+  return [formattedIdentity, ...formattedOrgs];
+};
+
+export const formatTransaction = (
+  projectName: string,
+  registrant: Registrant
+) => ({
+  messages: [
+    {
+      type: transaction.MessageType.ProjectRegistration,
+      registrantType: registrant.type,
+      orgId: registrant.id,
+      projectName: projectName,
+    },
+  ],
+});
+
+// const MATCH = `some_regex`
+const projectIdConstraints = {
+  presence: { message: "Choose a project to register", allowEmpty: false },
+};
+
+export const projectIdValidationStore = () =>
+  createValidationStore(projectIdConstraints);
+
+const NAME_MATCH = "^[a-z0-9][a-z0-9_-]+$";
+
+const projectNameConstraints = {
+  presence: {
+    message: "Project name is required",
+    allowEmpty: false,
+  },
+  format: {
+    pattern: new RegExp(NAME_MATCH),
+    message: `Project name should match ${NAME_MATCH}`,
+  },
+  length: {
+    maximum: 32,
+    message: "Project name cannot exceed 32 characters",
+  },
+};
+
+export const projectNameValidationStore = (registrantId: string) =>
+  createValidationStore(projectNameConstraints, [
+    {
+      promise: validateNameAvailability(registrantId),
+      validationMessage: `${registrantId} has already registered a project with this name`,
+    },
+  ]);

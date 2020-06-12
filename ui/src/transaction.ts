@@ -5,7 +5,6 @@ import * as api from "./api";
 import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar";
 import * as event from "./event";
 import { Identity } from "./identity";
-import { Domain } from "./project";
 import * as remote from "./remote";
 
 const POLL_INTERVAL = 10000;
@@ -50,11 +49,10 @@ interface MemberUnregistration {
 }
 
 // TODO(sos): coordinate message format for project registration with proxy
-interface ProjectRegistration {
+export interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
-  domain: Domain;
   orgId: string;
-  // domainId: string; // domain under which project falls, e.g. User or Org
+  // registrantId: string;
   cocoId: string;
   projectName: string;
 }
@@ -349,10 +347,7 @@ export const formatSubject = (msg: Message): Subject => {
     case MessageType.ProjectRegistration:
       name = `${msg.orgId} / ${msg.projectName}`;
       type = SubjectType.OrgProject;
-      avatarSource = getAvatar(
-        msg.domain === Domain.User ? Usage.Identity : Usage.Org,
-        msg.orgId
-      );
+      avatarSource = getAvatar(Usage.Org, msg.orgId);
       break;
   }
 

@@ -11,9 +11,15 @@
     Transaction,
   } from "../DesignSystem/Component";
 
-  import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
+  import Form from "./ProjectRegistration/Form.svelte";
 
-  import { register, projects as projectStore } from "../src/project.ts";
+  import {
+    formatRegistrantOptions,
+    formatTransaction,
+    register,
+    projects as projectStore,
+    RegistrationState,
+  } from "../src/project.ts";
   import * as transaction from "../src/transaction.ts";
 
   export let params = null;
@@ -23,34 +29,45 @@
   let projectId = params.projectId || null;
   let projectName = null;
 
-  let domainId = params.domainId || null;
-  let domainType = null;
-  let domainAvatar = null;
+  let registrantId = params.registrantId || null;
 
-  let skipNamePreselection = false;
-  let showRegistrationDetails = true;
-
-  // summary
-
-  const onSubmitTransaction = () => {
-    register(domainId, projectName, projectId);
-    pop();
-  };
+  const skipNamePreselection = false;
+  let state = RegistrationState.Preparation,
+    valid = false;
 
   const wallet = () => transaction.formatPayer(session.identity);
 
-  // TODO(sos): coordinate message format for project registration with proxy
-  // See https://github.com/radicle-dev/radicle-upstream/issues/441
-  const tx = () => ({
-    messages: [
-      {
-        type: transaction.MessageType.ProjectRegistration,
-        // domain: domainType,
-        orgId: domainId,
-        projectName: projectName,
-      },
-    ],
-  });
+  const registrantOptions = formatRegistrantOptions(
+    session.identity,
+    session.orgs
+  );
+
+  const selectedRegistrant = () =>
+    registrantOptions.find((option) => option.value === registrantId);
+
+  const next = () => {
+    switch (state) {
+      case RegistrationState.Preparation:
+        if (valid) state = RegistrationState.Confirmation;
+        break;
+      case RegistrationState.Confirmation:
+        register(registrantId, projectName, projectId);
+        pop();
+    }
+  };
+
+  const cancel = () => {
+    switch (state) {
+      case RegistrationState.Preparation:
+        pop();
+        break;
+      case RegistrationState.Confirmation:
+        state = RegistrationState.Preparation;
+    }
+  };
+
+  $: submitLabel =
+    state === RegistrationState.Confirmation ? "Submit transaction" : "Next";
 </script>
 
 <style>
@@ -71,41 +88,34 @@
       <div class="project-registration">
         <Flex align="center" style="margin-bottom: 40px;">
           <StepCounter
-            selectedStep={showRegistrationDetails ? 1 : 2}
+            selectedStep={state + 1}
             steps={['Prepare', 'Submit']}
             style="margin-bottom: 48px" />
 
           <Title variant="big">Register project</Title>
         </Flex>
 
-        {#if showRegistrationDetails === true}
-          <RegistrationDetailsStep
-            identity={session.identity}
+        {#if state === RegistrationState.Preparation}
+          <Form
+            {registrantOptions}
             {projects}
             {skipNamePreselection}
-            orgs={session.orgs}
             bind:projectId
-            bind:domainId
             bind:projectName
-            on:next={(event) => {
-              domainId = event.detail.domainId;
-              domainType = event.detail.domainType;
-              showRegistrationDetails = false;
-              domainAvatar = event.detail.domainAvatar;
-            }} />
-        {:else}
-          <Transaction transaction={tx()} payer={wallet()} />
-
-          <NavigationButtons
-            style={'margin-top: 32px;'}
-            cancelLabel="Back"
-            submitLabel="Submit transaction"
-            on:cancel={() => {
-              showRegistrationDetails = true;
-              skipNamePreselection = true;
-            }}
-            on:submit={onSubmitTransaction} />
+            bind:registrantId
+            bind:valid />
+        {:else if state === RegistrationState.Confirmation}
+          <Transaction
+            transaction={formatTransaction(projectName, selectedRegistrant())}
+            payer={wallet()} />
         {/if}
+        <NavigationButtons
+          style={'margin-top: 32px;'}
+          cancelLabel={state === RegistrationState.Preparation ? 'Cancel' : 'Back'}
+          submitLabel={state === RegistrationState.Preparation ? 'Next' : 'Submit transaction'}
+          on:cancel={cancel}
+          on:submit={next}
+          disableSubmit={!valid} />
       </div>
     </div>
   </ModalLayout>

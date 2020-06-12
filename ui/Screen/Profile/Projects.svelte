@@ -65,7 +65,7 @@
     return {
       title: project.metadata.name,
       description: project.metadata.description,
-      showRegisteredBadge: project.registration,
+      showRegisteredBadge: project.registered,
     };
   };
 </script>

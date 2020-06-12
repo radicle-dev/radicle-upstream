@@ -13,6 +13,7 @@
   export let validation = null;
   export let showAvatar = false;
   export let showSuccessCheck = false;
+  export let hideValidationMessages = false;
 </script>
 
 <style>
@@ -114,11 +115,13 @@
       <Icon.Important
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
-      <div class="validation-row">
-        <Text style="color: var(--color-negative); text-align: left;">
-          {validation.message}
-        </Text>
-      </div>
+      {#if !hideValidationMessages}
+        <div class="validation-row">
+          <Text style="color: var(--color-negative); text-align: left;">
+            {validation.message}
+          </Text>
+        </div>
+      {/if}
     {/if}
   {/if}
 </div>
