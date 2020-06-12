@@ -25,6 +25,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
+  }
+  .bottom {
+    position: absolute;
+    bottom: 0;
+    background: linear-gradient(
+      0deg,
+      rgba(234, 239, 243, 1) 0%,
+      rgba(234, 239, 243, 1) 85%,
+      rgba(234, 239, 243, 0) 100%
+    );
+    padding-top: 24px;
   }
 
   .item {
@@ -67,17 +79,6 @@
 
   .indicator.active :global(svg) {
     fill: var(--color-secondary);
-  }
-
-  .divider {
-    width: 36px;
-    height: 17px;
-  }
-
-  .line {
-    height: 1px;
-    width: 100%;
-    background-color: var(--color-foreground-level-5);
   }
 
   .item:hover .tooltip {
@@ -130,36 +131,6 @@
   <ul>
     <li
       class="item indicator"
-      data-cy="search"
-      class:active={path.active(path.search(), $location)}>
-      <a href={path.search()} use:link>
-        <Icon.Search />
-      </a>
-
-      <div class="tooltip">
-        <Title style="white-space: nowrap;">Search</Title>
-      </div>
-    </li>
-
-    <li
-      class="item indicator"
-      data-cy="settings"
-      class:active={path.active(path.settings(), $location)}>
-      <a href={path.settings()} use:link>
-        <Icon.Settings />
-      </a>
-
-      <div class="tooltip">
-        <Title style="white-space: nowrap;">Settings</Title>
-      </div>
-    </li>
-
-    <li class="divider">
-      <div class="line" />
-    </li>
-
-    <li
-      class="item indicator"
       data-cy="profile"
       class:active={path.active(path.profile(), $location, true)}>
       <a href={path.profileProjects()} use:link>
@@ -197,6 +168,29 @@
       <AddOrgButton on:click={() => dispatch('createorg')} />
       <div class="tooltip">
         <Title>Add org</Title>
+      </div>
+    </li>
+  </ul>
+  <ul class="bottom">
+    <li class="item indicator" data-cy="wallet">
+      <a href={path.profileWallet()} use:link>
+        <Icon.Fund />
+      </a>
+
+      <div class="tooltip">
+        <Title style="white-space: nowrap;">Wallet</Title>
+      </div>
+    </li>
+    <li
+      class="item indicator"
+      data-cy="settings"
+      class:active={path.active(path.settings(), $location)}>
+      <a href={path.settings()} use:link>
+        <Icon.Settings />
+      </a>
+
+      <div class="tooltip">
+        <Title style="white-space: nowrap;">Settings</Title>
       </div>
     </li>
   </ul>
