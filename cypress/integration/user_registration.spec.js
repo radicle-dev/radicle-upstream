@@ -2,7 +2,7 @@ context("user registration", () => {
   before(() => {
     cy.nukeAllState();
     cy.nukeCache();
-    cy.registerUser();
+    cy.registerAlternativeUser("nope");
     cy.createProjectWithFixture();
   });
 
@@ -130,6 +130,20 @@ context("user registration", () => {
         "background-color",
         "rgb(185, 118, 211)"
       );
+    });
+  });
+
+  context("permissions", () => {
+    before(() => {
+      cy.nukeAllState();
+      cy.nukeCache();
+    });
+
+    it("only allows to register a handle once", () => {
+      cy.pick("next-button").click();
+      cy.pick("submit-button").click();
+      cy.pick("profile-context-menu").click();
+      cy.pick("dropdown-menu", "register-handle").should("not.exist");
     });
   });
 });
