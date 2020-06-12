@@ -233,7 +233,6 @@ context("project registration", () => {
         cy.pick("total", "usd-amount").contains("$0.000011");
 
         cy.pick("summary", "message").contains("Project registration");
-        cy.pick("summary", "subject").contains("monadic / rx");
       });
     });
   });

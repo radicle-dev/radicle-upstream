@@ -206,7 +206,8 @@
       messages: [
         {
           type: transaction.MessageType.ProjectRegistration,
-          orgId: "monadic",
+          domainType: "org",
+          domainId: "monadic",
           projectName: "upstream",
           cocId: "upstream@123abcd.git",
         },

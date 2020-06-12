@@ -60,11 +60,10 @@ interface MemberUnregistration {
 // TODO(sos): coordinate message format for project registration with proxy
 interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
-  domain: Domain;
-  orgId: string;
-  // domainId: string; // domain under which project falls, e.g. User or Org
-  cocoId: string;
+  domainType: Domain;
+  domainId: string;
   projectName: string;
+  cocoId: string;
 }
 
 interface UserRegistration {
@@ -356,11 +355,11 @@ export const formatSubject = (msg: Message): Subject => {
     // TODO(sos): replace with associated identity handle for user, should it exist
     // TODO(sos): once we can register projects to users, accommodate circle avatars
     case MessageType.ProjectRegistration:
-      name = `${msg.orgId} / ${msg.projectName}`;
+      name = `${msg.domainId} / ${msg.projectName}`;
       type = SubjectType.OrgProject;
       avatarSource = getAvatar(
-        msg.domain === Domain.User ? Usage.Identity : Usage.Org,
-        msg.orgId
+        msg.domainType === Domain.User ? Usage.Identity : Usage.Org,
+        msg.domainId
       );
       break;
   }

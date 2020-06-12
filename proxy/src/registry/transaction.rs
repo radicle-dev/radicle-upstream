@@ -135,8 +135,8 @@ pub enum Message {
     ProjectRegistration {
         /// Actual project name, unique for org.
         project_name: registry::ProjectName,
-        /// The Org in which to register the project.
-        org_id: registry::Id,
+        /// The domain in which to register the project.
+        project_domain: registry::ProjectDomain,
     },
 
     /// Issue a user registration for a given handle storing the corresponding identity id.
@@ -422,10 +422,10 @@ where
 
     async fn get_project(
         &self,
-        org_id: registry::Id,
+        project_domain: registry::ProjectDomain,
         project_name: registry::ProjectName,
     ) -> Result<Option<registry::Project>, error::Error> {
-        self.client.get_project(org_id, project_name).await
+        self.client.get_project(project_domain, project_name).await
     }
 
     async fn list_org_projects(
@@ -442,14 +442,14 @@ where
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        org_id: registry::Id,
+        project_domain: registry::ProjectDomain,
         project_name: registry::ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self
             .client
-            .register_project(author, org_id, project_name, maybe_project_id, fee)
+            .register_project(author, project_domain, project_name, maybe_project_id, fee)
             .await?;
 
         self.cache_transaction(tx.clone())?;

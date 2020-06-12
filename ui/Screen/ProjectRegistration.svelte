@@ -36,7 +36,13 @@
 
   const registerProject = async () => {
     try {
-      await register(domainId, projectName, transactionFee, projectId);
+      await register(
+        domainType,
+        domainId,
+        projectName,
+        transactionFee,
+        projectId
+      );
       await fetchSession();
     } catch (error) {
       notification.error(`Could not register project: ${error.message}`);
@@ -54,8 +60,8 @@
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
-        // domain: domainType,
-        orgId: domainId,
+        domainType: domainType,
+        domainId: domainId,
         projectName: projectName,
       },
     ],
