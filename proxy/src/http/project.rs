@@ -530,8 +530,6 @@ mod test {
     use crate::project;
     use crate::registry::{self, Cache as _, Client as _};
 
-    use super::registry::DomainType;
-
     #[tokio::test]
     async fn create() {
         let tmp_dir = tempfile::tempdir().unwrap();
