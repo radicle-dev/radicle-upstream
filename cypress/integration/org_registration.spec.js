@@ -145,7 +145,7 @@ context("org registration", () => {
         "have.class",
         "square"
       );
-      cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🗳");
+      cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🐲");
       cy.pick("subject", "emoji").should(
         "have.css",
         "background-color",
