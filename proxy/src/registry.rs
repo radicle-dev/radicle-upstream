@@ -10,10 +10,7 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
-use radicle_registry_client::{
-    self as protocol, ClientT, CryptoPair, REGISTER_MEMBER_DEPOSIT, REGISTER_ORG_DEPOSIT,
-    REGISTER_PROJECT_DEPOSIT, REGISTER_USER_DEPOSIT,
-};
+use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{Balance, MINIMUM_FEE};
 
 use crate::avatar;
@@ -225,10 +222,10 @@ pub struct Costs {
 pub const fn get_costs() -> Costs {
     Costs {
         minimum_fee: MINIMUM_FEE,
-        user_registration_deposit: REGISTER_USER_DEPOSIT,
-        org_registration_deposit: REGISTER_ORG_DEPOSIT,
-        project_registration_deposit: REGISTER_PROJECT_DEPOSIT,
-        member_registration_deposit: REGISTER_MEMBER_DEPOSIT,
+        user_registration_deposit: protocol::REGISTER_USER_DEPOSIT,
+        org_registration_deposit: protocol::REGISTER_ORG_DEPOSIT,
+        project_registration_deposit: protocol::REGISTER_PROJECT_DEPOSIT,
+        member_registration_deposit: protocol::REGISTER_MEMBER_DEPOSIT,
     }
 }
 
