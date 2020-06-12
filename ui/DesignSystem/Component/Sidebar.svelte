@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher, getContext } from "svelte";
+  import { createEventDispatcher } from "svelte";
   import { location, link } from "svelte-spa-router";
 
   import * as path from "../../src/path.ts";
@@ -9,10 +9,10 @@
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
   const dispatch = createEventDispatcher();
-  const session = getContext("session");
 
   export let identity = null;
   export let orgs = null;
+  export let registerOrgPermission = null;
 </script>
 
 <style>
@@ -195,7 +195,7 @@
     {/each}
 
     <li class="item" data-cy="add-org-button">
-      {#if session.permissions.registerOrg}
+      {#if registerOrgPermission}
         <AddOrgButton on:click={() => dispatch('createorg')} />
         <div class="tooltip">
           <Title>Add org</Title>
