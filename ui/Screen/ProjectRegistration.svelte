@@ -33,7 +33,7 @@
   // summary
 
   const onSubmitTransaction = () => {
-    register(domainId, projectName, projectId);
+    register(domainType, domainId, projectName, projectId);
     pop();
   };
 
@@ -45,8 +45,8 @@
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
-        // domain: domainType,
-        orgId: domainId,
+        domainType: domainType,
+        domainId: domainId,
         projectName: projectName,
       },
     ],
