@@ -313,12 +313,17 @@ mod test {
                     "userRegistration": 10,
                 },
                 "minimumTransactionFee": 1,
+                "permissions": {
+                    "registerHandle": false,
+                    "registerOrg": false,
+                    "registerProject": false,
+                },
             }),
         );
     }
 
     #[tokio::test]
-    async fn udpate_settings() {
+    async fn update_settings() {
         let tmp_dir = tempfile::tempdir().unwrap();
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let registry = {
@@ -362,6 +367,11 @@ mod test {
                     "userRegistration": 10,
                 },
                 "minimumTransactionFee": 1,
+                "permissions": {
+                    "registerHandle": false,
+                    "registerOrg": false,
+                    "registerProject": false,
+                },
             }),
         );
     }

@@ -15,8 +15,15 @@ import * as transaction from "./transaction";
 export interface Session {
   identity?: identity.Identity;
   orgs: org.Org[];
+  permissions: Permissions;
   settings: Settings;
   transactionDeposits: transaction.Deposits;
+}
+
+export interface Permissions {
+  registerHandle: boolean;
+  registerOrg: boolean;
+  registerProject: boolean;
 }
 
 // STATE
@@ -28,6 +35,16 @@ export const settings: Readable<Settings | null> = derived(
   (sess) => {
     if (sess.status === remote.Status.Success) {
       return sess.data.settings;
+    }
+    return null;
+  }
+);
+
+export const permissions: Readable<Permissions | null> = derived(
+  sessionStore,
+  (sess) => {
+    if (sess.status === remote.Status.Success) {
+      return sess.data.permissions;
     }
     return null;
   }
