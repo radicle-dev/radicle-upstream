@@ -200,6 +200,16 @@ pub struct User {
     pub maybe_entity_id: Option<String>,
 }
 
+/// The domains we support under which a project can live.
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum DomainType {
+    /// An Org
+    Org,
+    /// A User
+    User,
+}
+
 /// The domain of a project
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum ProjectDomain {
@@ -233,6 +243,15 @@ impl From<ProjectDomain> for protocol::ProjectDomain {
         match pd {
             ProjectDomain::Org(id) => Self::Org(id.0),
             ProjectDomain::User(id) => Self::User(id.0),
+        }
+    }
+}
+
+impl From<(DomainType, Id)> for ProjectDomain {
+    fn from((domain, id): (DomainType, Id)) -> Self {
+        match domain {
+            DomainType::Org => Self::Org(id),
+            DomainType::User => Self::User(id),
         }
     }
 }
@@ -656,12 +675,18 @@ impl Client for Registry {
         applied.result?;
         let block = self.client.block_header(applied.block).await?;
 
+        let (domain_type, domain_id) = match project_domain {
+            ProjectDomain::Org(id) => (DomainType::Org, id),
+            ProjectDomain::User(id) => (DomainType::User, id),
+        };
+
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),
             block.number,
             Message::ProjectRegistration {
                 project_name,
-                project_domain,
+                domain_type,
+                domain_id,
             },
         ))
     }

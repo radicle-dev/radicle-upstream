@@ -18,6 +18,8 @@ interface Timestamp {
   nanos: number;
 }
 
+// / Note: The schemas of each variant must correspond to
+// / their proxy > registry > Message variant counterpart.
 export enum MessageType {
   OrgRegistration = "orgRegistration",
   OrgUnregistration = "orgUnregistration",
