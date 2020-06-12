@@ -11,6 +11,7 @@ use std::fmt;
 use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
+pub use radicle_registry_client::{Balance, MINIMUM_FEE};
 
 use crate::avatar;
 use crate::error;
@@ -210,6 +211,31 @@ pub enum DomainType {
     User,
 }
 
+/// Default transaction fees and deposits.
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Deposits {
+    /// User registration deposit.
+    user_registration: Balance,
+    /// Organization registration deposit.
+    org_registration: Balance,
+    /// Project registration deposit.
+    project_registration: Balance,
+    /// Member registration on org deposit.
+    member_registration: Balance,
+}
+
+/// Return a list of costs for all supported transactions.
+#[must_use]
+pub const fn get_deposits() -> Deposits {
+    Deposits {
+        user_registration: protocol::REGISTER_USER_DEPOSIT,
+        org_registration: protocol::REGISTER_ORG_DEPOSIT,
+        project_registration: protocol::REGISTER_PROJECT_DEPOSIT,
+        member_registration: protocol::REGISTER_MEMBER_DEPOSIT,
+    }
+}
+
 /// The domain of a project
 #[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
 pub enum ProjectDomain {
@@ -288,7 +314,7 @@ pub trait Client: Clone + Send + Sync {
         &self,
         author: &protocol::ed25519::Pair,
         org_id: Id,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
     /// Remove a registered Org from the Registry.
@@ -300,7 +326,7 @@ pub trait Client: Clone + Send + Sync {
         &self,
         author: &protocol::ed25519::Pair,
         org_id: Id,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
     /// Register a User as a member of an Org on the Registry.
@@ -313,7 +339,7 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         org_id: Id,
         user_id: Id,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
     /// Try to retrieve project from the Registry by name for an id.
@@ -352,7 +378,7 @@ pub trait Client: Clone + Send + Sync {
         project_domain: ProjectDomain,
         project_name: ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
     /// Try to retrieve user from the Registry by handle.
@@ -372,7 +398,7 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         handle: Id,
         id: Option<String>,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
     /// Graciously pay some tokens to the recipient out of Alices pocket.
@@ -383,7 +409,7 @@ pub trait Client: Clone + Send + Sync {
     async fn prepay_account(
         &self,
         recipient: protocol::AccountId,
-        balance: protocol::Balance,
+        balance: Balance,
     ) -> Result<(), error::Error>;
 
     /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
@@ -464,7 +490,7 @@ impl Client for Registry {
         &self,
         author: &protocol::ed25519::Pair,
         org_id: Id,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit org registration transaction.
         let register_message = protocol::message::RegisterOrg {
@@ -486,6 +512,7 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::OrgRegistration { id: org_id.clone() },
+            fee,
         );
 
         // TODO(xla): Remove automatic prepayment once we have proper balances.
@@ -503,7 +530,7 @@ impl Client for Registry {
         &self,
         author: &protocol::ed25519::Pair,
         org_id: Id,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit org unregistration transaction.
         let unregister_message = protocol::message::UnregisterOrg {
@@ -527,6 +554,7 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::OrgUnregistration { id: org_id },
+            fee,
         ))
     }
 
@@ -535,7 +563,7 @@ impl Client for Registry {
         author: &protocol::ed25519::Pair,
         org_id: Id,
         user_id: Id,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit member registration transaction.
         let register_message = protocol::message::RegisterMember {
@@ -561,6 +589,7 @@ impl Client for Registry {
                 org_id: org_id.clone(),
                 handle: user_id,
             },
+            fee,
         );
 
         Ok(tx)
@@ -617,7 +646,7 @@ impl Client for Registry {
         project_domain: ProjectDomain,
         project_name: ProjectName,
         maybe_project_id: Option<librad::project::ProjectId>,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit checkpoint transaction.
         let checkpoint_message = protocol::message::CreateCheckpoint {
@@ -688,6 +717,7 @@ impl Client for Registry {
                 domain_type,
                 domain_id,
             },
+            fee,
         ))
     }
 
@@ -707,7 +737,7 @@ impl Client for Registry {
         author: &protocol::ed25519::Pair,
         handle: Id,
         id: Option<String>,
-        fee: protocol::Balance,
+        fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // TODO(xla): Remove automatic prepayment once we have proper balances.
         self.prepay_account(author.public(), 1000).await?;
@@ -732,13 +762,14 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::UserRegistration { handle, id },
+            fee,
         ))
     }
 
     async fn prepay_account(
         &self,
         recipient: protocol::AccountId,
-        balance: protocol::Balance,
+        balance: Balance,
     ) -> Result<(), error::Error> {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
 

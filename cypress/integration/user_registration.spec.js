@@ -2,7 +2,7 @@ context("user registration", () => {
   before(() => {
     cy.nukeAllState();
     cy.nukeCache();
-    cy.registerUser();
+    cy.registerAlternativeUser("nope");
     cy.createProjectWithFixture();
   });
 
@@ -107,6 +107,15 @@ context("user registration", () => {
         "background-color",
         "rgb(185, 118, 211)"
       );
+
+      cy.pick("deposit", "rad-amount").contains("0.00001");
+      cy.pick("deposit", "usd-amount").contains("$0.00001");
+
+      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
+      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+
+      cy.pick("total", "rad-amount").contains("0.000011");
+      cy.pick("total", "usd-amount").contains("$0.000011");
     });
 
     it("submits correct transaction details to proxy", () => {
@@ -130,6 +139,29 @@ context("user registration", () => {
         "background-color",
         "rgb(185, 118, 211)"
       );
+
+      cy.pick("deposit", "rad-amount").contains("0.00001");
+      cy.pick("deposit", "usd-amount").contains("$0.00001");
+
+      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
+      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+
+      cy.pick("total", "rad-amount").contains("0.000011");
+      cy.pick("total", "usd-amount").contains("$0.000011");
+    });
+  });
+
+  context("permissions", () => {
+    before(() => {
+      cy.nukeAllState();
+      cy.nukeCache();
+    });
+
+    it("only allows to register a handle once", () => {
+      cy.pick("next-button").click();
+      cy.pick("submit-button").click();
+      cy.pick("profile-context-menu").click();
+      cy.pick("dropdown-menu", "register-handle").should("not.exist");
     });
   });
 });
