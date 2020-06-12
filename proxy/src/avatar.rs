@@ -247,7 +247,7 @@ mod test {
         assert_eq!(
             Avatar::from("cloudhead", Usage::Identity),
             Avatar {
-                emoji: "🏍".to_string(),
+                emoji: "🌻".to_string(),
                 background: Color::new(24, 105, 216)
             }
         );
@@ -260,8 +260,8 @@ mod test {
 
     #[test]
     fn test_avatar_emoji() {
-        assert_eq!(generate_emoji("cloudhead", Usage::Identity), Emoji("🏍"));
-        assert_eq!(generate_emoji("radicle", Usage::Org), Emoji("🔥"));
+        assert_eq!(generate_emoji("cloudhead", Usage::Identity), Emoji("🌻"));
+        assert_eq!(generate_emoji("radicle", Usage::Org), Emoji("☕\u{fe0f}"));
     }
 
     #[test]
