@@ -306,13 +306,13 @@ mod test {
                         "network": "emulator",
                     },
                 },
-                "transactionCosts": {
-                    "memberRegistrationDeposit": 10,
-                    "minimumFee": 1,
-                    "orgRegistrationDeposit": 10,
-                    "projectRegistrationDeposit": 10,
-                    "userRegistrationDeposit": 10,
+                "transactionDeposits": {
+                    "memberRegistration": 10,
+                    "orgRegistration": 10,
+                    "projectRegistration": 10,
+                    "userRegistration": 10,
                 },
+                "minimumTransactionFee": 1,
             }),
         );
     }
@@ -355,13 +355,13 @@ mod test {
                         "network": "emulator",
                     },
                 },
-                "transactionCosts": {
-                    "memberRegistrationDeposit": 10,
-                    "minimumFee": 1,
-                    "orgRegistrationDeposit": 10,
-                    "projectRegistrationDeposit": 10,
-                    "userRegistrationDeposit": 10,
+                "transactionDeposits": {
+                    "memberRegistration": 10,
+                    "orgRegistration": 10,
+                    "projectRegistration": 10,
+                    "userRegistration": 10,
                 },
+                "minimumTransactionFee": 1,
             }),
         );
     }

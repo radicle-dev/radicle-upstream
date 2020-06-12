@@ -19,12 +19,11 @@ interface Timestamp {
   nanos: number;
 }
 
-export interface Costs {
-  minimumFee: currency.MicroRad;
-  userRegistrationDeposit: currency.MicroRad;
-  orgRegistrationDeposit: currency.MicroRad;
-  projectRegistrationDeposit: currency.MicroRad;
-  memberRegistrationDeposit: currency.MicroRad;
+export interface Deposits {
+  userRegistration: currency.MicroRad;
+  orgRegistration: currency.MicroRad;
+  projectRegistration: currency.MicroRad;
+  memberRegistration: currency.MicroRad;
 }
 
 export enum MessageType {
@@ -485,22 +484,22 @@ interface CostSummary {
 export const costSummary = (
   messageType: MessageType,
   fee: currency.MicroRad,
-  costs: Costs
+  deposits: Deposits
 ): CostSummary => {
   let deposit = 0;
 
   switch (messageType) {
     case MessageType.OrgRegistration:
-      deposit = costs.orgRegistrationDeposit;
+      deposit = deposits.orgRegistration;
       break;
     case MessageType.MemberRegistration:
-      deposit = costs.memberRegistrationDeposit;
+      deposit = deposits.memberRegistration;
       break;
     case MessageType.ProjectRegistration:
-      deposit = costs.projectRegistrationDeposit;
+      deposit = deposits.projectRegistration;
       break;
     case MessageType.UserRegistration:
-      deposit = costs.userRegistrationDeposit;
+      deposit = deposits.userRegistration;
       break;
     default:
       throw `MessageType: ${messageType} not implemented`;

@@ -26,7 +26,7 @@
   let validating = false;
   const validation = orgIdValidationStore();
 
-  const transactionFee = $session.data.transactionCosts.minimumFee;
+  const transactionFee = $session.data.minimumTransactionFee;
 
   const next = () => {
     switch (state) {
@@ -130,7 +130,7 @@
         {transaction}
         {subject}
         {payer}
-        transactionCosts={$session.data.transactionCosts} />
+        transactionDeposits={$session.data.transactionDeposits} />
     </div>
   {/if}
   <NavigationButtons

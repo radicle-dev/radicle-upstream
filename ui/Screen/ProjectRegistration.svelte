@@ -32,7 +32,7 @@
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
 
-  const transactionFee = session.transactionCosts.minimumFee;
+  const transactionFee = session.minimumTransactionFee;
 
   const registerProject = async () => {
     try {
@@ -106,7 +106,7 @@
           <Transaction
             transaction={tx()}
             payer={wallet()}
-            transactionCosts={session.transactionCosts} />
+            transactionDeposits={session.transactionDeposits} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

@@ -14,7 +14,7 @@
   export let onNextStep = null;
   export let onPreviousStep = null;
 
-  const { transactionCosts } = getContext("session");
+  const { transactionDeposits } = getContext("session");
   const tx = {
     fee: transactionFee,
     messages: [
@@ -29,7 +29,7 @@
   const payer = transaction.formatPayer(identity);
 </script>
 
-<Transaction transaction={tx} {payer} {transactionCosts} />
+<Transaction transaction={tx} {payer} {transactionDeposits} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button

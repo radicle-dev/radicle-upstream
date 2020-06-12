@@ -51,7 +51,7 @@
       <Transaction
         transaction={tx}
         {payer}
-        transactionCosts={session.transactionCosts} />
+        transactionDeposits={session.transactionDeposits} />
     </Remote>
 
     <div class="button-row">

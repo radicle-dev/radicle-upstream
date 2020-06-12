@@ -20,7 +20,7 @@
 
   export let transaction = null;
   export let payer = null;
-  export let transactionCosts = null;
+  export let transactionDeposits = null;
 
   let avatar;
 
@@ -41,7 +41,7 @@
   const summary = costSummary(
     transaction.messages[0].type,
     parseInt(transaction.fee),
-    transactionCosts
+    transactionDeposits
   );
 
   $: updateAvatar();

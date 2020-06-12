@@ -204,28 +204,25 @@ pub struct User {
 /// Default transaction fees and deposits.
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Costs {
-    /// Smallest possible transaction fee in μRAD.
-    minimum_fee: Balance,
-    /// User registration deposit cost in μRAD.
-    user_registration_deposit: Balance,
-    /// Organization registration deposit cost in μRAD.
-    org_registration_deposit: Balance,
-    /// Project registration deposit cost in μRAD.
-    project_registration_deposit: Balance,
-    /// Member registration on org deposit cost in μRAD.
-    member_registration_deposit: Balance,
+pub struct Deposits {
+    /// User registration deposit.
+    user_registration: Balance,
+    /// Organization registration deposit.
+    org_registration: Balance,
+    /// Project registration deposit.
+    project_registration: Balance,
+    /// Member registration on org deposit.
+    member_registration: Balance,
 }
 
 /// Return a list of costs for all supported transactions.
 #[must_use]
-pub const fn get_costs() -> Costs {
-    Costs {
-        minimum_fee: MINIMUM_FEE,
-        user_registration_deposit: protocol::REGISTER_USER_DEPOSIT,
-        org_registration_deposit: protocol::REGISTER_ORG_DEPOSIT,
-        project_registration_deposit: protocol::REGISTER_PROJECT_DEPOSIT,
-        member_registration_deposit: protocol::REGISTER_MEMBER_DEPOSIT,
+pub const fn get_deposits() -> Deposits {
+    Deposits {
+        user_registration: protocol::REGISTER_USER_DEPOSIT,
+        org_registration: protocol::REGISTER_ORG_DEPOSIT,
+        project_registration: protocol::REGISTER_PROJECT_DEPOSIT,
+        member_registration: protocol::REGISTER_MEMBER_DEPOSIT,
     }
 }
 

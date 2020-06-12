@@ -14,7 +14,7 @@
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
 
   let { identity } = getContext("session");
-  const { transactionCosts } = getContext("session");
+  const { minimumTransactionFee } = getContext("session");
 
   let handle = identity ? identity.metadata.handle : null;
   const id = identity ? identity.id : null;
@@ -30,7 +30,7 @@
     step -= 1;
   };
 
-  const transactionFee = transactionCosts.minimumFee;
+  const transactionFee = minimumTransactionFee;
 
   const registerUser = async () => {
     try {
