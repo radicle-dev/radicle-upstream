@@ -231,6 +231,7 @@ mod test {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let cache = registry::Cacher::new(registry, &store);
         let now = registry::Timestamp::now();
+        let fee = registry::MINIMUM_FEE;
 
         let org_id = registry::Id::try_from("radicle").unwrap();
         let project_domain = registry::ProjectDomain::Org(org_id);
@@ -248,6 +249,7 @@ mod test {
                 timestamp: now,
             },
             timestamp: now,
+            fee,
         };
 
         cache.cache_transaction(tx.clone()).unwrap();

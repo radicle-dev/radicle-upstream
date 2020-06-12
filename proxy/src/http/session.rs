@@ -306,6 +306,13 @@ mod test {
                         "network": "emulator",
                     },
                 },
+                "transactionDeposits": {
+                    "memberRegistration": 10,
+                    "orgRegistration": 10,
+                    "projectRegistration": 10,
+                    "userRegistration": 10,
+                },
+                "minimumTransactionFee": 1,
                 "permissions": {
                     "registerHandle": false,
                     "registerOrg": false,
@@ -353,6 +360,13 @@ mod test {
                         "network": "emulator",
                     },
                 },
+                "transactionDeposits": {
+                    "memberRegistration": 10,
+                    "orgRegistration": 10,
+                    "projectRegistration": 10,
+                    "userRegistration": 10,
+                },
+                "minimumTransactionFee": 1,
                 "permissions": {
                     "registerHandle": false,
                     "registerOrg": false,

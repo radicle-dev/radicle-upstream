@@ -2,6 +2,11 @@
   import { getContext } from "svelte";
   import { pop } from "svelte-spa-router";
 
+  import * as notification from "../src/notification.ts";
+  import { register, projects as projectStore } from "../src/project.ts";
+  import { fetch as fetchSession } from "../src/session.ts";
+  import * as transaction from "../src/transaction.ts";
+
   import { Flex, Title } from "../DesignSystem/Primitive";
   import {
     NavigationButtons,
@@ -12,9 +17,6 @@
   } from "../DesignSystem/Component";
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
-
-  import { register, projects as projectStore } from "../src/project.ts";
-  import * as transaction from "../src/transaction.ts";
 
   export let params = null;
 
@@ -30,11 +32,23 @@
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
 
-  // summary
+  const transactionFee = session.minimumTransactionFee;
 
-  const onSubmitTransaction = () => {
-    register(domainType, domainId, projectName, projectId);
-    pop();
+  const registerProject = async () => {
+    try {
+      await register(
+        domainType,
+        domainId,
+        projectName,
+        transactionFee,
+        projectId
+      );
+      await fetchSession();
+    } catch (error) {
+      notification.error(`Could not register project: ${error.message}`);
+    } finally {
+      pop();
+    }
   };
 
   const wallet = () => transaction.formatPayer(session.identity);
@@ -42,6 +56,7 @@
   // TODO(sos): coordinate message format for project registration with proxy
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
+    fee: transactionFee,
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
@@ -94,7 +109,10 @@
               domainAvatar = event.detail.domainAvatar;
             }} />
         {:else}
-          <Transaction transaction={tx()} payer={wallet()} />
+          <Transaction
+            transaction={tx()}
+            payer={wallet()}
+            transactionDeposits={session.transactionDeposits} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}
@@ -104,7 +122,7 @@
               showRegistrationDetails = true;
               skipNamePreselection = true;
             }}
-            on:submit={onSubmitTransaction} />
+            on:submit={registerProject} />
         {/if}
       </div>
     </div>

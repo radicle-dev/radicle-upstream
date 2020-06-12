@@ -17,6 +17,7 @@ export interface Session {
   orgs: org.Org[];
   permissions: Permissions;
   settings: Settings;
+  transactionDeposits: transaction.Deposits;
 }
 
 export interface Permissions {

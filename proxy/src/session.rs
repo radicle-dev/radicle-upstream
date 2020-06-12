@@ -24,6 +24,10 @@ pub struct Session {
     pub permissions: Permissions,
     /// User controlled parameters to control the behaviour and state of the application.
     pub settings: settings::Settings,
+    /// Transaction deposits.
+    pub transaction_deposits: registry::Deposits,
+    /// Minimum transaction fee.
+    pub minimum_transaction_fee: registry::Balance,
 }
 
 /// Set of permitted actions the user can perform.
@@ -60,6 +64,8 @@ pub async fn current<R: registry::Client>(
     registry: R,
 ) -> Result<Session, error::Error> {
     let mut session = get(store, KEY_CURRENT)?;
+    session.transaction_deposits = registry::get_deposits();
+    session.minimum_transaction_fee = registry::MINIMUM_FEE;
 
     // Reset the permissions
     session.permissions = Permissions::default();

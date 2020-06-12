@@ -48,7 +48,10 @@
         text={transaction.statusText(tx.state)}
         variant={transaction.iconState(tx.state)}
         style="margin-bottom: 32px; margin-top: 96px;" />
-      <Transaction transaction={tx} {payer} />
+      <Transaction
+        transaction={tx}
+        {payer}
+        transactionDeposits={session.transactionDeposits} />
     </Remote>
 
     <div class="button-row">

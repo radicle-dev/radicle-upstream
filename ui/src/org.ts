@@ -1,5 +1,6 @@
 import * as api from "./api";
 import * as avatar from "./avatar";
+import * as currency from "./currency";
 import * as event from "./event";
 import * as project from "./project";
 import * as remote from "./remote";
@@ -69,10 +70,12 @@ type Msg = Fetch | FetchProjectList;
 
 interface RegisterInput {
   id: string;
+  transactionFee: currency.MicroRad;
 }
 
 interface RegisterMemberInput {
   handle: string;
+  transactionFee: currency.MicroRad;
 }
 
 const update = (msg: Msg): void => {
@@ -96,7 +99,12 @@ const update = (msg: Msg): void => {
   }
 };
 
-export const registerMemberTransaction = (orgId: string, handle: string) => ({
+export const registerMemberTransaction = (
+  orgId: string,
+  handle: string,
+  fee: currency.MicroRad
+) => ({
+  fee,
   messages: [
     {
       type: transaction.MessageType.MemberRegistration,
@@ -125,15 +133,22 @@ export const fetchProjectList = event.create<Kind, Msg>(
   Kind.FetchProjectList,
   update
 );
-export const register = (id: string): Promise<transaction.Transaction> =>
-  api.post<RegisterInput, transaction.Transaction>(`orgs`, { id });
+export const register = (
+  id: string,
+  transactionFee: currency.MicroRad
+): Promise<transaction.Transaction> =>
+  api.post<RegisterInput, transaction.Transaction>(`orgs`, {
+    id,
+    transactionFee,
+  });
 export const registerMember = (
   orgId: string,
-  handle: string
+  handle: string,
+  transactionFee: currency.MicroRad
 ): Promise<transaction.Transaction> =>
   api.post<RegisterMemberInput, transaction.Transaction>(
     `orgs/${orgId}/members`,
-    { handle }
+    { handle, transactionFee }
   );
 
 // ID validation

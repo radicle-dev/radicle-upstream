@@ -14,6 +14,7 @@
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
 
   let { identity } = getContext("session");
+  const { minimumTransactionFee } = getContext("session");
 
   let handle = identity ? identity.metadata.handle : null;
   const id = identity ? identity.id : null;
@@ -29,9 +30,11 @@
     step -= 1;
   };
 
+  const transactionFee = minimumTransactionFee;
+
   const registerUser = async () => {
     try {
-      await user.register(handle, id);
+      await user.register(handle, transactionFee, id);
       await session.fetch();
     } catch (error) {
       notification.error(`Could not register user: ${error}`);
@@ -80,6 +83,7 @@
       {#if step === 2}
         <SubmitRegistrationStep
           {identity}
+          {transactionFee}
           onNextStep={registerUser}
           onPreviousStep={previousStep}
           {handle} />

@@ -109,7 +109,7 @@ context("org registration", () => {
   });
 
   context("transaction", () => {
-    // TODO(sos): add tests for tx costs/wallet when it makes sense to do so
+    // TODO(sos): add tests for wallet when it makes sense to do so
     it("shows correct transaction details for confirmation", () => {
       cy.pick("input").type("mariposa");
       cy.pick("submit-button").click();
@@ -117,6 +117,15 @@ context("org registration", () => {
       cy.pick("message").contains("Org registration");
       cy.pick("subject").contains("mariposa");
       cy.pick("subject-avatar", "emoji").should("have.class", "square");
+
+      cy.pick("deposit", "rad-amount").contains("0.00001");
+      cy.pick("deposit", "usd-amount").contains("$0.00001");
+
+      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
+      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+
+      cy.pick("total", "rad-amount").contains("0.000011");
+      cy.pick("total", "usd-amount").contains("$0.000011");
     });
 
     it("submits correct transaction details to proxy", () => {
@@ -142,6 +151,15 @@ context("org registration", () => {
         "background-color",
         "rgb(186, 38, 114)"
       );
+
+      cy.pick("deposit", "rad-amount").contains("0.00001");
+      cy.pick("deposit", "usd-amount").contains("$0.00001");
+
+      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
+      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+
+      cy.pick("total", "rad-amount").contains("0.000011");
+      cy.pick("total", "usd-amount").contains("$0.000011");
     });
   });
 });
