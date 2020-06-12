@@ -232,11 +232,14 @@ mod test {
         let cache = registry::Cacher::new(registry, &store);
         let now = registry::Timestamp::now();
 
+        let org_id = registry::Id::try_from("radicle").unwrap();
+        let project_domain = registry::ProjectDomain::Org(org_id);
+
         let tx = registry::Transaction {
             id: registry::Hash(radicle_registry_client::TxHash::random()),
             messages: vec![registry::Message::ProjectRegistration {
                 project_name: registry::ProjectName::try_from("upstream").unwrap(),
-                org_id: registry::Id::try_from("radicle").unwrap(),
+                project_domain,
             }],
             state: registry::State::Confirmed {
                 block: 1,
