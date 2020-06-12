@@ -139,7 +139,7 @@ context("user registration", () => {
       cy.nukeCache();
     });
 
-    it("can only register a handle once", () => {
+    it("only allows to register a handle once", () => {
       cy.pick("next-button").click();
       cy.pick("submit-button").click();
       cy.pick("profile-context-menu").click();

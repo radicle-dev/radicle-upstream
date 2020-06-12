@@ -26,7 +26,7 @@ pub struct Session {
     pub settings: settings::Settings,
 }
 
-/// Permissions of the user
+/// Set of permitted actions the user can perform.
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Permissions {
