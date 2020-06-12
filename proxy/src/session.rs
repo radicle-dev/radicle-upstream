@@ -62,9 +62,7 @@ pub async fn current<R: registry::Client>(
     let mut session = get(store, KEY_CURRENT)?;
 
     // Reset the permissions
-    session.permissions.register_handle = false;
-    session.permissions.register_org = false;
-    session.permissions.register_project = false;
+    session.permissions = Permissions::default();
 
     if let Some(mut id) = session.identity.clone() {
         if let Some(handle) = id.registered.clone() {
