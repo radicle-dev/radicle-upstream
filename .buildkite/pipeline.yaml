@@ -1,17 +1,23 @@
 steps:
   - label: "Test and package app on Linux"
     command: ".buildkite/run.sh"
-    agents:
+    agents: &build-agent
       production: "true"
       platform: "linux"
     timeout_in_minutes: 60
-    env:
+    env: &build-docker
       DOCKER_IMAGE: "gcr.io/opensourcecoin/radicle-upstream:0.4.0"
       SHARED_MASTER_CACHE: true
     artifact_paths:
       - "dist/*.AppImage"
       - "dist/*.snap"
       - "cypress/screenshots/**/*.png"
+
+  - label: "Run clippy and rustfmt"
+    command: ".buildkite/clippy.sh"
+    agents: *build-agent
+    timeout_in_minutes: 60
+    env: *build-docker
 
   - label: "Test and package app on macOS"
     if: build.branch == 'master'
