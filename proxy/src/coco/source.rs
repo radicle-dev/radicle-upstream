@@ -245,7 +245,7 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
     let repo = surf::vcs::git::Repository::new(repo_path)?;
     let browser = Browser::new(&repo, "master")?;
     let mut branches = browser
-        .list_branches(None)?
+        .list_branches(Some(surf::vcs::git::BranchType::Local))?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();

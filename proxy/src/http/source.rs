@@ -1015,9 +1015,6 @@ mod test {
                     "branches": [
                         "dev",
                         "master",
-                        "origin/HEAD",
-                        "origin/dev",
-                        "origin/master"
                     ],
                     "managed": false,
                 }),
