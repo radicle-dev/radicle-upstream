@@ -163,11 +163,6 @@ context("project registration", () => {
 
         cy.get('[data-cy="subject-avatar"] img[alt="🎮"]').should("exist");
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
-
-        // TODO(sos): test this when we can actually change transaction payer
-        // cy.get('[data-cy="payer-avatar"] img[alt="🎮"]').should("exist");
-        // cy.pick("payer-avatar").contains(org1);
-
       });
     });
   });
