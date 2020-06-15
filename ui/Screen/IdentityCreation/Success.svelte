@@ -78,7 +78,7 @@
     <Remote {store} let:data={identity}>
       <div class="identity-card" data-cy="identity-card">
         <Avatar
-          size="huge"
+          size="big"
           imageUrl={identity.metadata.avatarUrl}
           avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">

@@ -38,7 +38,7 @@
       <Title>{title}</Title>
       {#if showRegisteredBadge}
         <div data-cy="registered" class="registered">
-          <Icon.Badge
+          <Icon.Verified
             style="fill: var(--color-primary); position: relative; bottom: -3px;" />
         </div>
       {/if}

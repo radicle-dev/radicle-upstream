@@ -49,15 +49,15 @@
   }
 
   .circle.big {
-    width: 68px;
-    height: 68px;
-    border-radius: 34px;
-  }
-
-  .circle.huge {
     width: 72px;
     height: 72px;
     border-radius: 36px;
+  }
+
+  .circle.huge {
+    width: 120px;
+    height: 120px;
+    border-radius: 60px;
   }
 
   .avatar.circle.big {
@@ -84,15 +84,15 @@
   }
 
   .square.big {
-    width: 64px;
-    height: 64px;
+    width: 72px;
+    height: 72px;
     border-radius: 4px;
   }
 
   .square.huge {
-    width: 72px;
-    height: 72px;
-    border-radius: 4px;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
   }
 
   .container {
@@ -131,13 +131,13 @@
   }
 
   .avatar :global(.emoji.big) {
-    height: 32px;
-    width: 32px;
+    height: 36px;
+    width: 36px;
   }
 
   .avatar :global(.emoji.huge) {
-    height: 36px;
-    width: 36px;
+    height: 60px;
+    width: 60px;
   }
 </style>
 
@@ -178,7 +178,7 @@
         {title}
       </Title>
       {#if registered}
-        <Icon.Badge
+        <Icon.Verified
           dataCy="registered-badge"
           style="margin-left: 8px; fill: var(--color-primary);" />
       {/if}
@@ -189,7 +189,7 @@
         {title}
       </Title>
       {#if registered}
-        <Icon.Badge
+        <Icon.Verified
           dataCy="registered-badge"
           style="margin-left: 8px; fill: var(--color-primary);" />
       {/if}
