@@ -32,16 +32,16 @@ context("routing", () => {
             cy.createIdentity();
             cy.visit("./public/index.html");
 
-            cy.pick("sidebar", "search").click();
+            cy.pick("sidebar", "settings").click();
 
             cy.location().should((loc) => {
-              expect(loc.hash).to.eq("#/search");
+              expect(loc.hash).to.eq("#/settings");
             });
 
             cy.reload();
 
             cy.location().should((loc) => {
-              expect(loc.hash).to.eq("#/search");
+              expect(loc.hash).to.eq("#/settings");
             });
           });
         }
