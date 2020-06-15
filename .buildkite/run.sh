@@ -86,5 +86,7 @@ time yarn prettier:check
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test
 
-echo "--- Packaging and uploading app binaries"
-time yarn dist
+if [[ "${BUILDKITE_BRANCH:-}" == "master" ]]; then
+  echo "--- Packaging and uploading app binaries"
+  time yarn dist
+fi

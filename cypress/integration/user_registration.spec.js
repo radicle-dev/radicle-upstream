@@ -101,7 +101,7 @@ context("user registration", () => {
       cy.pick("subject").contains("secretariat");
 
       cy.pick("subject-avatar", "emoji").should("have.class", "circle");
-      cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🙊");
+      cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🏯");
       cy.pick("subject", "emoji").should(
         "have.css",
         "background-color",
@@ -133,7 +133,7 @@ context("user registration", () => {
         "have.class",
         "circle"
       );
-      cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🙊");
+      cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🏯");
       cy.pick("subject", "emoji").should(
         "have.css",
         "background-color",
