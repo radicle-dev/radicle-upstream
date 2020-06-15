@@ -62,10 +62,7 @@ mod handler {
         let tx_ids = input
             .ids
             .iter()
-            .map(|id| {
-                radicle_registry_client::TxHash::from_str(id)
-                    .expect("unable to get hash from string")
-            })
+            .map(|id| registry::Hash::from_str(id).expect("unable to get hash from string"))
             .collect();
         let txs = cache.read().await.list_transactions(tx_ids)?;
 
