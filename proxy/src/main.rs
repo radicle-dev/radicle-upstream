@@ -1,3 +1,10 @@
+use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+
+use librad::keys;
+use librad::net::{self, discovery};
+use librad::paths;
+use librad::peer;
+
 use proxy::coco;
 use proxy::env;
 use proxy::http;
@@ -45,20 +52,50 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-    let librad_paths = if args.test {
-        let librad_paths =
-            librad::paths::Paths::from_root(temp_dir.path()).expect("librad paths failed");
+    let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
 
-        coco::setup_fixtures(
-            &librad_paths,
-            temp_dir.path().to_str().expect("path extraction failed"),
-        )
-        .expect("fixture creation failed");
-
-        librad_paths
+    let mut peer = if args.test {
+        let key = keys::SecretKey::new();
+        let config = coco::default_config(key, tmp_path).expect("failed to get config");
+        coco::Peer::new(config)
+            .await
+            .expect("failed to create /tmp user peer")
     } else {
-        librad::paths::Paths::new()?
+        // TODO(finto): There should be a coco::config module that knows how to parse the
+        // configs/parameters to give us back a `PeerConfig`
+
+        // TODO(finto): Should be fetched from key storage
+        let key = keys::SecretKey::new();
+        // TODO(finto): Should be read from config file
+        let gossip_params = Default::default();
+        // TODO(finto): Read from config or passed as param
+        let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
+        // TODO(finto): could we initialise with known seeds from a cache?
+        let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
+        let disco = discovery::Static::new(seeds);
+        // TODO(finto): read in from config or passed as param
+        let paths = paths::Paths::new()?;
+        let config = net::peer::PeerConfig {
+            key,
+            paths,
+            listen_addr,
+            gossip_params,
+            disco,
+        };
+
+        coco::Peer::new(config)
+            .await
+            .expect("failed to create /tmp user peer")
     };
+
+    let owner = coco::fake_owner(&peer).await;
+
+    if args.test {
+        peer.setup_fixtures(&owner)
+            .await
+            .expect("fixture creation failed");
+    }
+
     let store = {
         let store_path = if args.test {
             temp_dir.path().join("store")
@@ -74,7 +111,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(librad_paths, cache.clone(), store, args.test);
+    let api = http::api(peer, owner, cache.clone(), store, args.test);
 
     tokio::spawn(async move {
         cache.run().await.expect("cacher run failed");

@@ -6,7 +6,7 @@ steps:
       platform: "linux"
     timeout_in_minutes: 60
     env:
-      DOCKER_IMAGE: "gcr.io/opensourcecoin/radicle-upstream:0.2.2"
+      DOCKER_IMAGE: "gcr.io/opensourcecoin/radicle-upstream:0.4.0"
       SHARED_MASTER_CACHE: true
     artifact_paths:
       - "dist/*.AppImage"

@@ -1,4 +1,4 @@
-FROM gcr.io/opensourcecoin/radicle-registry/ci-base@sha256:18d8cf1e39f4f42d871a2a9d3bcd8641bfda343a1fc7b9fbca4f8aea422bae6f
+FROM gcr.io/opensourcecoin/radicle-registry/ci-base@sha256:4cf947bf233156ea67b149e7a28e318941897371cb462d3c1d6b5d424d0838a5
 
 RUN apt-get -y update
 
@@ -15,4 +15,3 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 RUN apt-get -y update
 RUN apt-get -y install yarn
-RUN rustup component add clippy --toolchain nightly-2020-02-05-x86_64-unknown-linux-gnu

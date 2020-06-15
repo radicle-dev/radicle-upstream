@@ -101,7 +101,7 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
     ))
 }
 
-#[allow(clippy::result_unwrap_used)]
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod tests {
     use futures::stream::TryStreamExt;

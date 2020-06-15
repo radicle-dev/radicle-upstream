@@ -1,11 +1,11 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-use librad::paths;
 use std::convert::Infallible;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::registry;
 
 mod avatar;
@@ -23,7 +23,8 @@ mod user;
 
 /// Main entry point for HTTP API.
 pub fn api<R>(
-    librad_paths: paths::Paths,
+    peer: coco::Peer,
+    owner: coco::User,
     registry: R,
     store: kv::Store,
     enable_control: bool,
@@ -31,7 +32,8 @@ pub fn api<R>(
 where
     R: registry::Cache + registry::Client + 'static,
 {
-    let librad_paths = Arc::new(RwLock::new(librad_paths));
+    let peer = Arc::new(Mutex::new(peer));
+    let owner = Arc::new(RwLock::new(owner));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
@@ -40,23 +42,25 @@ where
         avatar::get_filter()
             .or(control::routes(
                 enable_control,
-                Arc::clone(&librad_paths),
+                Arc::clone(&peer),
+                Arc::clone(&owner),
                 Arc::clone(&registry),
             ))
             .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
             .or(notification::filters(subscriptions.clone()))
             .or(org::routes(
-                Arc::clone(&librad_paths),
+                Arc::clone(&peer),
                 Arc::clone(&registry),
                 subscriptions.clone(),
             ))
             .or(project::filters(
-                Arc::clone(&librad_paths),
+                Arc::clone(&peer),
+                Arc::clone(&owner),
                 Arc::clone(&registry),
                 subscriptions.clone(),
             ))
             .or(session::routes(Arc::clone(&registry), Arc::clone(&store)))
-            .or(source::routes(librad_paths))
+            .or(source::routes(peer))
             .or(transaction::filters(Arc::clone(&registry)))
             .or(user::routes(registry, store, subscriptions)),
     );
@@ -88,14 +92,6 @@ where
     recovered.with(cors).with(log)
 }
 
-/// State filter to expose the [`librad::paths::Paths`] to handlers.
-#[must_use]
-pub fn with_paths(
-    paths: Arc<RwLock<paths::Paths>>,
-) -> impl Filter<Extract = (Arc<RwLock<paths::Paths>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&paths))
-}
-
 /// Thread-safe container for threadsafe pass-through to filters and handlers.
 pub type Shared<T> = Arc<RwLock<T>>;
 
@@ -108,6 +104,14 @@ where
     T: Send + Sync,
 {
     warp::any().map(move || Arc::clone(&container))
+}
+
+/// State filter to expose a [`Peer`].
+#[must_use]
+pub fn with_peer(
+    peer: Arc<Mutex<coco::Peer>>,
+) -> impl Filter<Extract = (Arc<Mutex<coco::Peer>>,), Error = Infallible> + Clone {
+    warp::any().map(move || Arc::clone(&peer))
 }
 
 /// State filter to expose [`kv::Store`] to handlers.
@@ -124,4 +128,29 @@ pub fn with_subscriptions(
     subscriptions: crate::notification::Subscriptions,
 ) -> impl Filter<Extract = (crate::notification::Subscriptions,), Error = Infallible> + Clone {
     warp::any().map(move || crate::notification::Subscriptions::clone(&subscriptions))
+}
+
+#[cfg(test)]
+mod test {
+    use bytes::Bytes;
+    use http::response::Response;
+    use pretty_assertions::assert_eq;
+    use serde_json::Value;
+    use warp::http::StatusCode;
+
+    pub fn assert_response<F>(res: &Response<Bytes>, code: StatusCode, checks: F)
+    where
+        F: FnOnce(Value),
+    {
+        assert_eq!(
+            res.status(),
+            code,
+            "response status was not {}, the body is:\n{:#?}",
+            code,
+            res.body()
+        );
+
+        let have: Value = serde_json::from_slice(res.body()).expect("failed to deserialise body");
+        checks(have);
+    }
 }
