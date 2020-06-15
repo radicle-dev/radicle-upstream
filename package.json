@@ -1,10 +1,17 @@
 {
   "name": "radicle-upstream",
   "version": "0.0.11",
-  "author": "radicle team <dev@radicle.xyz> (https://radicle.xyz)",
+  "author": {
+    "name": "radicle team",
+    "email": "dev@radicle.xyz",
+    "url": "https://radicle.xyz"
+  },
   "license": "GPL-3.0-only",
   "description": "Desktop client for radicle",
-  "repository": "https://github.com/radicle-dev/radicle-upstream.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/radicle-dev/radicle-upstream.git"
+  },
   "build": {
     "appId": "radicle-upstream.monadic.xyz",
     "files": [
@@ -122,8 +129,7 @@
     "timeago.js": "^4.0.2",
     "twemoji": "^12.1.6",
     "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v12.1.6",
-    "validate.js": "^0.13.1",
-    "yarn": "^1.22.4"
+    "validate.js": "^0.13.1"
   },
   "husky": {
     "hooks": {
