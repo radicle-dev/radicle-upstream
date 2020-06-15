@@ -11,7 +11,7 @@
     display: flex;
     flex-direction: column;
     width: calc(100vw - var(--sidebar-width));
-    height: 261px;
+    height: var(--bigheader-height);
     left: var(--sidebar-width);
     z-index: 2;
   }
@@ -22,7 +22,7 @@
 
   .banner-content {
     display: flex;
-    max-width: 1148px;
+    max-width: var(--content-max-width);
     width: 100%;
     margin: 0 auto;
     padding: 40px 16px;
@@ -50,7 +50,8 @@
     justify-content: space-between;
     height: 61px;
     width: 100%;
-    max-width: 1148px;
+    max-width: var(--content-max-width);
+    padding: 0 16px;
     margin: 0 auto;
     align-items: center;
   }

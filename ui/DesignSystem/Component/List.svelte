@@ -9,9 +9,13 @@
 </script>
 
 <style>
-  ul {
+  .list-container {
     min-width: 500px;
-    max-width: 1148px;
+    max-width: var(--content-max-width);
+    padding: 0 16px;
+  }
+  ul {
+    width: 100%;
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 4px;
   }
@@ -34,13 +38,15 @@
   }
 </style>
 
-<ul data-cy={dataCy} {style}>
-  {#each items as item}
-    <li
-      on:click={() => {
-        dispatch('select', item);
-      }}>
-      <slot {item} />
-    </li>
-  {/each}
-</ul>
+<div class="list-container" {style}>
+  <ul data-cy={dataCy}>
+    {#each items as item}
+      <li
+        on:click={() => {
+          dispatch('select', item);
+        }}>
+        <slot {item} />
+      </li>
+    {/each}
+  </ul>
+</div>

@@ -23,7 +23,7 @@
     border-right: 1px solid var(--color-foreground-level-3);
     padding-left: 16px;
     padding-right: 24px;
-    margin-right: 24px;
+    margin-right: 8px;
   }
 
   .right {

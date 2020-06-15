@@ -80,9 +80,7 @@
   fetch({ id: params.id });
 </script>
 
-<SidebarLayout
-  dataCy="org-screen"
-  style="margin-top: calc(var(--topbar-height) + 200px)">
+<SidebarLayout dataCy="org-screen" style="margin-top: var(--bigheader-height);">
   <Remote {store} let:data={org}>
     <BigHeader variant="org" data={org} style="position: fixed; top: 0;">
       <div slot="left">

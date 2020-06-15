@@ -17,7 +17,7 @@
   }
 
   .menu-list-item:first-child {
-    margin-left: 0px;
+    margin-left: 16px;
   }
   .menu-list-item {
     margin-left: 24px;

@@ -67,7 +67,7 @@
 </script>
 
 <SidebarLayout
-  style="margin-top: calc(var(--topbar-height) + 200px)"
+  style="margin-top: var(--bigheader-height);"
   dataCy="profile-screen">
 
   <BigHeader
