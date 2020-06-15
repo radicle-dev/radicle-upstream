@@ -5,18 +5,22 @@
 
   export let dataCy = null;
   export let items = null;
+  export let style = null;
 </script>
 
 <style>
   ul {
     min-width: 500px;
+    max-width: 1148px;
+    border: 1px solid var(--color-foreground-level-2);
+    border-radius: 4px;
   }
 
   li {
     display: flex;
     width: 100%;
     flex: 1;
-    border-bottom: 1px solid var(--color-foreground-level-3);
+    border-bottom: 1px solid var(--color-foreground-level-2);
     cursor: pointer;
     user-select: none;
   }
@@ -30,7 +34,7 @@
   }
 </style>
 
-<ul data-cy={dataCy}>
+<ul data-cy={dataCy} {style}>
   {#each items as item}
     <li
       on:click={() => {

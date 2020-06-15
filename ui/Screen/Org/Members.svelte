@@ -60,7 +60,8 @@
     items={org.members}
     let:item={member}
     on:select={select}
-    dataCy="member-list">
+    dataCy="member-list"
+    style="margin: 0 auto;">
     <div class="member">
       <div class="info">
         <Title>{member.handle}</Title>

@@ -10,6 +10,7 @@ import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import ModalLayout from "./ModalLayout.svelte";
 import Placeholder from "./Placeholder.svelte";
+import BigHeader from "./BigHeader.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import Rad from "./Rad.svelte";
 import RadioOption from "./RadioOption.svelte";
@@ -43,6 +44,7 @@ export {
   NotificationFaucet,
   ModalLayout,
   Placeholder,
+  BigHeader,
   ProjectCard,
   Rad,
   RadioOption,

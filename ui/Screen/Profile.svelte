@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import Router, { link, push } from "svelte-spa-router";
+  import Router, { push } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
 
@@ -8,9 +8,9 @@
     AdditionalActionsDropdown,
     HorizontalMenu,
     SidebarLayout,
-    Topbar,
+    BigHeader,
   } from "../DesignSystem/Component";
-  import { Avatar, Icon } from "../DesignSystem/Primitive";
+  import { Icon } from "../DesignSystem/Primitive";
 
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
@@ -67,34 +67,25 @@
 </script>
 
 <SidebarLayout
-  style="margin-top: calc(var(--topbar-height) + 33px)"
+  style="margin-top: calc(var(--topbar-height) + 200px)"
   dataCy="profile-screen">
 
-  <Topbar style="position: fixed; top: 0;">
-    <a slot="left" href={path.profileProjects()} use:link>
-      <!-- TODO(xla): Handle other states -->
-      <Avatar
-        dataCy="profile-avatar"
-        avatarFallback={session.identity.avatarFallback}
-        imageUrl={session.identity.metadata.avatarUrl}
-        variant="circle"
-        title={session.identity.metadata.handle}
-        size="regular"
-        registered={session.identity.registered}
-        style="color: var(--color-secondary)" />
-    </a>
-    <div slot="middle">
+  <BigHeader
+    variant="profile"
+    data={session.identity}
+    style="position: fixed; top: 0;">
+    <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>
     <div slot="right" style="display: flex">
       <Router routes={menuRoutes} />
       <AdditionalActionsDropdown
         dataCy="profile-context-menu"
-        style="margin: 0 24px 0 16px"
+        style="margin: 0 16px"
         headerTitle={session.identity.shareableEntityIdentifier}
         menuItems={dropdownMenuItems} />
     </div>
-  </Topbar>
+  </BigHeader>
 
   <Router routes={screenRoutes} />
 </SidebarLayout>

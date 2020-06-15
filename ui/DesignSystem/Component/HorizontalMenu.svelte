@@ -16,6 +16,9 @@
     flex-direction: row;
   }
 
+  .menu-list-item:first-child {
+    margin-left: 0px;
+  }
   .menu-list-item {
     margin-left: 24px;
     margin-right: 8px;

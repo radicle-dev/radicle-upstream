@@ -56,7 +56,8 @@
       dataCy="project-list"
       items={orgProjects}
       on:select={select}
-      let:item={orgProject}>
+      let:item={orgProject}
+      style="margin: 0 auto;">
       <!-- TODO(julien): what should the registered but no coco metadata
         state look like visually? -->
       <Flex
