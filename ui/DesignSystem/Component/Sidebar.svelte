@@ -32,6 +32,7 @@
     padding-bottom: 36px;
     padding-top: 16px;
   }
+
   .top::-webkit-scrollbar {
     display: none;
   }
@@ -45,7 +46,7 @@
     position: absolute;
     content: " ";
     height: 36px;
-    width: 36px;
+    width: 68px;
     top: -36px;
     left: 0;
     background: linear-gradient(
@@ -56,7 +57,7 @@
   }
 
   .item {
-    width: 36px;
+    width: 68px;
     height: 36px;
     margin-bottom: 12px;
     position: relative;
@@ -69,10 +70,10 @@
     position: absolute;
     content: "";
     width: 4px;
-    height: 44px;
+    height: 36px;
     background-color: var(--color-foreground-level-5);
-    top: -4px;
-    left: -16px;
+    top: 0px;
+    left: 0px;
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
   }
@@ -81,10 +82,10 @@
     position: absolute;
     content: "";
     width: 4px;
-    height: 44px;
+    height: 36px;
     background-color: var(--color-secondary);
-    top: -4px;
-    left: -16px;
+    top: 0px;
+    left: 0px;
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
   }
@@ -114,8 +115,9 @@
     position: absolute;
     opacity: 0;
     top: 2px;
-    left: 48px;
+    left: 60px;
     pointer-events: none;
+    z-index: 100;
   }
 
   .tooltip:before {
