@@ -9,7 +9,7 @@ use std::convert::TryFrom;
 use std::fmt;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
-pub use radicle_registry_client::{Balance, MINIMUM_FEE};
+pub use radicle_registry_client::{Balance, Hash, MINIMUM_FEE};
 
 use crate::avatar;
 use crate::error;
@@ -115,9 +115,6 @@ impl TryFrom<&str> for ProjectName {
         Ok(Self(protocol::ProjectName::try_from(input)?))
     }
 }
-
-/// The registry Hash type
-pub type Hash = protocol::Hash;
 
 /// `ProjectID` wrapper for serde de/serialization
 #[derive(Serialize, Deserialize)]
