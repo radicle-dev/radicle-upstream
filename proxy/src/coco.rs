@@ -31,7 +31,7 @@ pub use source::{
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
-/// `Peer` carries the user that is logged-in as well as the [`peer::PeerApi`] so we can
+/// `Peer` carries the user that is logged-in as well as the [`net::peer::PeerApi`] so we can
 /// interact with the protocol.
 #[derive(Clone)]
 pub struct Peer {
@@ -67,7 +67,7 @@ impl Peer {
     /// # Errors
     ///
     /// `new` fails when:
-    ///     * Initialising [`storage::Storage`] fails.
+    ///     * Initialising [`librad::git::storage::Storage`] fails.
     ///     * Initialising [`net::peer::Peer`] fails.
     pub async fn new<I>(
         config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>>,
@@ -99,7 +99,7 @@ impl Peer {
         Ok(f(&api))
     }
 
-    /// Returns the list of [`librad::project::Project`] known for the configured [`Paths`].
+    /// Returns the list of [`project::Project`] known for the configured [`paths::Paths`].
     ///
     /// # Errors
     ///
@@ -149,7 +149,7 @@ impl Peer {
         callback(&mut browser)
     }
 
-    /// Initialize a [`librad::project::Project`] that is owned by the `owner`.
+    /// Initialize a [`project::Project`] that is owned by the `owner`.
     /// This kicks off the history of the project, tracked by `librad`'s mono-repo.
     ///
     /// # Errors
@@ -157,7 +157,7 @@ impl Peer {
     /// Will error if:
     ///     * [`Self::with_api`] fails with a poisoned lock.
     ///     * The signing of the project metadata fails.
-    ///     * The interaction with `librad` [`Storage`] fails.
+    ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
     pub async fn init_project(
         &mut self,
         owner: &User,
@@ -385,7 +385,7 @@ impl Peer {
     }
 
     // TODO(xla): Move into control module.
-    /// Creates a small set of projects in [`Paths`].
+    /// Creates a small set of projects in [`paths::Paths`].
     ///
     /// # Errors
     ///

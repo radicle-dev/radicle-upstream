@@ -106,7 +106,7 @@ where
     warp::any().map(move || Arc::clone(&container))
 }
 
-/// State filter to expose a [`Peer`].
+/// State filter to expose a [`coco::Peer`].
 #[must_use]
 pub fn with_peer(
     peer: Arc<Mutex<coco::Peer>>,
