@@ -12,6 +12,16 @@
 
   export let identity = null;
   export let orgs = null;
+
+  let tooltip = { className: "hidden" };
+
+  const hideTooltip = () => {
+    tooltip.className = "hidden";
+  };
+  const showTooltip = (title, e) => {
+    const rect = e.target.closest("[data-tooltip]").getBoundingClientRect();
+    tooltip = { positionY: rect.top, title: title, className: "visible" };
+  };
 </script>
 
 <style>
@@ -99,7 +109,6 @@
   }
 
   .item:hover .tooltip {
-    opacity: 1;
     transition: 0.3s;
   }
 
@@ -111,13 +120,19 @@
     text-align: center;
     border-radius: 4px;
     padding: 4px 8px 6px 8px;
+    position: fixed;
 
-    position: absolute;
-    opacity: 0;
-    top: 2px;
     left: 60px;
     pointer-events: none;
     z-index: 100;
+    margin-top: 2px;
+    margin-bottom: 2px;
+  }
+  .tooltip.visible {
+    visibility: visible;
+  }
+  .tooltip.hidden {
+    visibility: hidden;
   }
 
   .tooltip:before {
@@ -145,23 +160,30 @@
   }
 </style>
 
+<div
+  style={`top: ${tooltip.positionY}px`}
+  class={`tooltip ${tooltip.className}`}>
+  <Title>{tooltip.title}</Title>
+</div>
+
 <div class="wrapper" data-cy="sidebar">
   <ul class="top">
     <li
       class="item indicator"
       data-cy="profile"
       class:active={path.active(path.profile(), $location, true)}>
-      <a href={path.profileProjects()} use:link>
+      <a
+        data-tooltip
+        on:mouseover={(e) => showTooltip(identity.metadata.handle, e)}
+        on:mouseout={hideTooltip}
+        href={path.profileProjects()}
+        use:link>
         <Avatar
           size="medium"
           avatarFallback={identity.avatarFallback}
           imageUrl={identity.metadata.avatarUrl}
           variant="circle" />
       </a>
-
-      <div class="tooltip">
-        <Title>Profile</Title>
-      </div>
     </li>
 
     {#each orgs as org}
@@ -169,47 +191,50 @@
         class="item indicator"
         data-cy={`org-${org.id}`}
         class:active={path.active(path.orgs(org.id), $location, true)}>
-        <a href={path.orgProjects(org.id)} use:link>
+        <a
+          data-tooltip
+          on:mouseover={(e) => showTooltip(org.id, e)}
+          on:mouseout={hideTooltip}
+          href={path.orgProjects(org.id)}
+          use:link>
           <Avatar
             avatarFallback={org.avatarFallback}
             variant="square"
             size="medium" />
         </a>
-
-        <div class="tooltip">
-          <Title>{org.id}</Title>
-        </div>
       </li>
     {/each}
 
     <li class="item" data-cy="add-org-button">
-      <AddOrgButton on:click={() => dispatch('createorg')} />
-      <div class="tooltip">
-        <Title>Add org</Title>
+      <div
+        data-tooltip
+        on:mouseover={(event) => showTooltip('Add org', event)}
+        on:mouseout={hideTooltip}>
+        <AddOrgButton on:click={() => dispatch('createorg')} />
       </div>
     </li>
   </ul>
   <ul class="bottom">
-    <li class="item indicator" data-cy="wallet">
+    <li
+      class="item indicator"
+      data-cy="wallet"
+      data-tooltip
+      on:mouseover={(e) => showTooltip('Wallet', e)}
+      on:mouseout={hideTooltip}>
       <a href={path.profileWallet()} use:link>
         <Icon.Fund />
       </a>
-
-      <div class="tooltip">
-        <Title style="white-space: nowrap;">Wallet</Title>
-      </div>
     </li>
     <li
       class="item indicator"
       data-cy="settings"
-      class:active={path.active(path.settings(), $location)}>
+      class:active={path.active(path.settings(), $location)}
+      data-tooltip
+      on:mouseover={(event) => showTooltip('Settings', event)}
+      on:mouseout={hideTooltip}>
       <a href={path.settings()} use:link>
         <Icon.Settings />
       </a>
-
-      <div class="tooltip">
-        <Title style="white-space: nowrap;">Settings</Title>
-      </div>
     </li>
   </ul>
 </div>
