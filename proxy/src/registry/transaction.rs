@@ -135,10 +135,12 @@ pub enum Message {
     /// Issue a new project registration with a given name under a given org.
     #[serde(rename_all = "camelCase")]
     ProjectRegistration {
-        /// Actual project name, unique for org.
+        /// Actual project name, unique under its domain.
         project_name: registry::ProjectName,
-        /// The domain in which to register the project.
-        project_domain: registry::ProjectDomain,
+        /// The type of domain in which to register the project.
+        domain_type: registry::DomainType,
+        /// The id of the domain in which to register the project
+        domain_id: registry::Id,
     },
 
     /// Issue a user registration for a given handle storing the corresponding identity id.
@@ -358,7 +360,6 @@ where
             }
         }
         txs.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
-
         Ok(txs)
     }
 }

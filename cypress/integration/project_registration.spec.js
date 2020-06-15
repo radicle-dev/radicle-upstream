@@ -131,9 +131,8 @@ context("project registration", () => {
   });
 
   context("summary screen", () => {
-    // TODO(sos): test this when we can actually register projects under users
     context("when registering under a user", () => {
-      it.skip("shows the selected subject and payer information", () => {
+      it("shows the selected subject and payer information", () => {
         cy.pick(`project-list-entry-${project1.name}`, "context-menu").click();
         cy.pick(`project-list-entry-${project1.name}`).click();
 
@@ -143,11 +142,7 @@ context("project registration", () => {
         cy.pick("project-registration-screen").should("exist");
         cy.pick("submit-button").click();
 
-        cy.get('[data-cy="subject-avatar"] img[alt="🐅"]').should("exist");
         cy.pick("subject-avatar").contains(`${user} / ${project1.name}`);
-
-        cy.get('[data-cy="payer-avatar"] img[alt="🐅"]').should("exist");
-        cy.pick("payer-avatar").contains(user);
       });
     });
 
@@ -166,12 +161,8 @@ context("project registration", () => {
 
         cy.pick("submit-button").click();
 
-        cy.get('[data-cy="subject-avatar"] img[alt="🥂"]').should("exist");
+        cy.get('[data-cy="subject-avatar"] img[alt="🎮"]').should("exist");
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
-
-        // TODO(sos): test this when we can actually change transaction payer
-        // cy.get('[data-cy="payer-avatar"] img[alt="🥂"]').should("exist");
-        // cy.pick("payer-avatar").contains(org1);
       });
     });
   });
@@ -189,6 +180,8 @@ context("project registration", () => {
 
         // go to summary screen
         cy.pick("submit-button").click();
+
+        cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
 
         cy.pick("deposit", "rad-amount").contains("0.00001");
         cy.pick("deposit", "usd-amount").contains("$0.00001");
@@ -222,6 +215,8 @@ context("project registration", () => {
         cy.pick("transaction-center", "transaction-item")
           .contains("Project registration")
           .click();
+
+        cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
 
         cy.pick("deposit", "rad-amount").contains("0.00001");
         cy.pick("deposit", "usd-amount").contains("$0.00001");
