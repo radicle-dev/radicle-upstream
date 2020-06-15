@@ -20,23 +20,38 @@
     height: 100%;
     background-color: var(--color-foreground-level-2);
     position: fixed;
-    padding-top: 31px;
+    padding-top: 16px;
     z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
   }
+  .top {
+    overflow-y: scroll;
+    padding-bottom: 36px;
+  }
+  .top::-webkit-scrollbar {
+    display: none;
+  }
+
   .bottom {
+    position: relative;
+    padding-top: 16px;
+  }
+
+  .bottom:before {
     position: absolute;
-    bottom: 0;
+    content: " ";
+    height: 36px;
+    width: 36px;
+    top: -36px;
+    left: 0;
     background: linear-gradient(
       0deg,
-      rgba(234, 239, 243, 1) 0%,
-      rgba(234, 239, 243, 1) 85%,
-      rgba(234, 239, 243, 0) 100%
+      rgba(235, 239, 243, 1) 0%,
+      rgba(235, 239, 243, 0) 100%
     );
-    padding-top: 24px;
   }
 
   .item {
@@ -128,7 +143,7 @@
 </style>
 
 <div class="wrapper" data-cy="sidebar">
-  <ul>
+  <ul class="top">
     <li
       class="item indicator"
       data-cy="profile"
