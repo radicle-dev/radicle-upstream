@@ -40,11 +40,14 @@ impl TryFrom<PathsConfig> for paths::Paths {
 }
 
 /// Configure a [`super::Peer`].
-pub async fn configure(path: Option<std::path::PathBuf>, pw: SecUtf8) -> Result<coco::Peer, error::Error> {
+pub async fn configure(
+    path: Option<std::path::PathBuf>,
+    pw: SecUtf8,
+) -> Result<coco::Peer, error::Error> {
     let paths_config = path
         .map(PathsConfig::FromRoot)
         .unwrap_or(PathsConfig::Default);
-    let paths = paths::Paths::try_from(paths_config).expect("failed to get librad paths");
+    let paths = paths::Paths::try_from(paths_config)?;
     let mut store = keystore::CocoStore::new(&paths, pw)?;
     let key = store.get_key_or_create()?;
 

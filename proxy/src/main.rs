@@ -12,7 +12,7 @@ struct Args {
     /// Host name or IP for the registry node to connect to. If the special value "emulator" is
     /// provided the proxy will not connect to a node but emulate the chain in memory.
     registry: String,
-    /// TODO
+    /// Choosing a base path for Peer configuration. Uses a default location if not provided.
     path: Option<std::path::PathBuf>,
     /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
@@ -66,7 +66,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         (pw, args.path)
     };
 
-    let mut peer = coco::config::configure(path, pw).await;
+    let mut peer = coco::config::configure(path, pw)
+        .await
+        .expect("failed to configure the Peer");
 
     let owner = coco::fake_owner(&peer).await;
 

@@ -1,11 +1,14 @@
 //! Proxy library errors usable for caller control flow and additional context for API responses.
 
+use std::convert::Infallible;
 use std::time::SystemTimeError;
 
+use librad::keys;
 use librad::meta::common::url;
 use librad::meta::entity;
 use librad::surf;
 use librad::surf::git::git2;
+use radicle_keystore::crypto;
 use radicle_registry_client as registry;
 
 /// Project problems.
@@ -108,6 +111,16 @@ pub enum Error {
     /// Failure to acquire [`std::sync::Mutex`] lock for the peer.
     #[error("failed to acquire lock for peer")]
     LibradLock,
+
+    /// Failure when interacting with [`crate::keystore`].
+    #[error(transparent)]
+    KeyStorage(
+        #[from]
+        radicle_keystore::file::Error<
+            crypto::SecretBoxError<Infallible>,
+            keys::IntoSecretKeyError,
+        >,
+    ),
 
     /// Common I/O errors.
     #[error(transparent)]
