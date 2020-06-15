@@ -2,6 +2,7 @@ context("settings", () => {
   beforeEach(() => {
     cy.nukeCache();
     cy.nukeSessionState();
+    cy.nukeRegistryState();
     cy.createIdentity();
 
     cy.visit("public/index.html");
@@ -28,7 +29,8 @@ context("settings", () => {
     it("cache can be cleared", () => {
       // Prepare transaction center.
       cy.registerUser();
-      cy.get("body").type("{shift}T");
+      // Force update transaction center.
+      cy.reload();
       cy.pick("transaction-center").should("exist");
 
       // Clear cache.
