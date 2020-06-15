@@ -8,3 +8,6 @@ echo "--- Run cargo fmt"
 
 echo "--- Run proxy lints"
 (cd proxy && time cargo clippy --all --all-features --all-targets)
+
+echo "--- Run proxy docs"
+(cd proxy && time cargo doc --no-deps)

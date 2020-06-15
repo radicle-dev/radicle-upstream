@@ -13,7 +13,7 @@ steps:
       - "dist/*.snap"
       - "cypress/screenshots/**/*.png"
 
-  - label: "Run clippy and rustfmt"
+  - label: "Run clippy, rustfmt, and docs"
     command: ".buildkite/clippy.sh"
     agents: *build-agent
     timeout_in_minutes: 60
