@@ -83,7 +83,7 @@ impl fmt::Display for Emoji {
 pub enum Usage {
     /// A generic avatar.
     Any,
-    /// An [`identity::Identity`] avatar.
+    /// An [`crate::identity::Identity`] avatar.
     Identity,
     /// An org avatar.
     Org,
@@ -193,7 +193,7 @@ fn generate_emoji(input: &str, usage: Usage) -> Emoji {
                         .expect("index of out of range"),
                 )
             }
-        },
+        }
         Usage::Any | Usage::Org => Emoji(
             EMOJIS
                 .get(ix as usize % EMOJIS.len())

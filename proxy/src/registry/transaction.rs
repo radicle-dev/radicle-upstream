@@ -45,7 +45,7 @@ impl Timestamp {
     }
 }
 
-/// A container to dissiminate and apply operations on the [`Registry`].
+/// A container to dissiminate and apply operations on the [`registry::Registry`].
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Transaction {
