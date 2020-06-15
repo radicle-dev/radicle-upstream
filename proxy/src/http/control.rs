@@ -104,6 +104,7 @@ mod handler {
     use librad::keys::SecretKey;
 
     use crate::coco;
+    use crate::error::Error;
     use crate::http;
     use crate::project;
     use crate::registry;
@@ -150,7 +151,7 @@ mod handler {
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
 
-        let handle = registry::Id::try_from(input.handle)?;
+        let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         let reg = registry.write().await;
         reg.register_user(&fake_pair, handle.clone(), None, input.transaction_fee)
             .await
