@@ -28,6 +28,8 @@ pub use source::{
     Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
 
+pub mod config;
+
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
