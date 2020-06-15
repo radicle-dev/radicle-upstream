@@ -20,16 +20,17 @@
     height: 100%;
     background-color: var(--color-foreground-level-2);
     position: fixed;
-    padding-top: 16px;
     z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
   }
+
   .top {
     overflow-y: scroll;
     padding-bottom: 36px;
+    padding-top: 16px;
   }
   .top::-webkit-scrollbar {
     display: none;
