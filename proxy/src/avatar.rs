@@ -193,7 +193,7 @@ fn generate_emoji(input: &str, usage: Usage) -> Emoji {
                         .expect("index of out of range"),
                 )
             }
-        }
+        },
         Usage::Any | Usage::Org => Emoji(
             EMOJIS
                 .get(ix as usize % EMOJIS.len())
