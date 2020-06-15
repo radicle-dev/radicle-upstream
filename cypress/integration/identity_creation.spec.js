@@ -3,7 +3,7 @@ context("identity creation", () => {
     handle: "rafalca",
     displayName: "Rafalca Romney",
     shareableEntityIdentifier: "rafalca@123abcd.git",
-    fallbackAvatar: "🥌",
+    fallbackAvatar: "🎀",
   };
 
   beforeEach(() => {

@@ -161,7 +161,7 @@ context("project registration", () => {
 
         cy.pick("submit-button").click();
 
-        cy.get('[data-cy="subject-avatar"] img[alt="🥂"]').should("exist");
+        cy.get('[data-cy="subject-avatar"] img[alt="🎮"]').should("exist");
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
       });
     });
