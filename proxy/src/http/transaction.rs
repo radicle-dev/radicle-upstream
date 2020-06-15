@@ -236,7 +236,7 @@ mod test {
         let org_id = registry::Id::try_from("radicle").unwrap();
 
         let tx = registry::Transaction {
-            id: registry::Hash(radicle_registry_client::TxHash::random()),
+            id: registry::Hash::random(),
             messages: vec![registry::Message::ProjectRegistration {
                 project_name: registry::ProjectName::try_from("upstream").unwrap(),
                 domain_type: registry::DomainType::Org,

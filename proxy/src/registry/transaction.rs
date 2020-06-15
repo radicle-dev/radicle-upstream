@@ -229,10 +229,8 @@ pub trait Cache: Send + Sync {
     /// # Errors
     ///
     /// Will return `Err` if access to the underlying [`kv::Store`] fails.
-    fn list_transactions(
-        &self,
-        ids: Vec<protocol::TxHash>,
-    ) -> Result<Vec<Transaction>, error::Error>;
+    fn list_transactions(&self, ids: Vec<registry::Hash>)
+        -> Result<Vec<Transaction>, error::Error>;
 }
 
 /// Storage bucket description for [`kv::Store`].
@@ -332,7 +330,7 @@ where
 
     /// Caches a transaction locally in the Registry.
     fn cache_transaction(&self, tx: Transaction) -> Result<(), error::Error> {
-        let key = tx.id.0.encode_hex::<String>();
+        let key = tx.id.encode_hex::<String>();
         self.transactions.set(key.as_str(), kv::Json(tx))?;
 
         Ok(())
@@ -345,14 +343,14 @@ where
     /// Will return `Err` if a protocol error occurs.
     fn list_transactions(
         &self,
-        ids: Vec<protocol::TxHash>,
+        ids: Vec<registry::Hash>,
     ) -> Result<Vec<Transaction>, error::Error> {
         let mut txs = Vec::new();
 
         for item in self.transactions.iter() {
             let tx = item?.value::<kv::Json<Transaction>>()?.to_inner();
 
-            if ids.is_empty() || ids.contains(&tx.id.0) {
+            if ids.is_empty() || ids.contains(&tx.id) {
                 txs.push(tx);
             }
         }
@@ -510,7 +508,7 @@ mod test {
             let fee = 100;
 
             let tx = Transaction {
-                id: registry::Hash(protocol::TxHash::random()),
+                id: registry::Hash::random(),
                 messages: vec![],
                 state: State::Confirmed {
                     block: 1,
@@ -526,7 +524,7 @@ mod test {
 
             for height in 0..9 {
                 let tx = Transaction {
-                    id: registry::Hash(protocol::TxHash::random()),
+                    id: registry::Hash::random(),
                     messages: vec![],
                     state: State::Confirmed {
                         block: height,
@@ -549,14 +547,14 @@ mod test {
 
             // Get single transaction.
             {
-                let txs = cache.list_transactions(vec![tx.id.0]).unwrap();
+                let txs = cache.list_transactions(vec![tx.id]).unwrap();
                 assert_eq!(txs.len(), 1);
             }
 
             // Filter and get none.
             {
                 let txs = cache
-                    .list_transactions(vec![protocol::TxHash::random()])
+                    .list_transactions(vec![registry::Hash::random()])
                     .unwrap();
                 assert_eq!(txs.len(), 0);
             }

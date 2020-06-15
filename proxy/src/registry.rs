@@ -3,12 +3,10 @@
 #![allow(clippy::empty_line_after_outer_attr)]
 
 use async_trait::async_trait;
-use hex::ToHex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_cbor::from_reader;
 use std::convert::TryFrom;
 use std::fmt;
-use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{Balance, MINIMUM_FEE};
@@ -118,36 +116,8 @@ impl TryFrom<&str> for ProjectName {
     }
 }
 
-/// Wrapper for [`protocol::Hash`] to add serialization.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Hash(pub protocol::Hash);
-
-// TODO(xla): This should go into the radicle-registry.
-impl<'de> Deserialize<'de> for Hash {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: &str = Deserialize::deserialize(deserializer)?;
-
-        let hash = protocol::TxHash::from_str(s).map_err(|err| {
-            serde::de::Error::custom(err)
-            // serde::de::Error::invalid_value(serde::de::Unexpected::Str(s), &"a TxHash")
-        })?;
-
-        Ok(Self(hash))
-    }
-}
-
-// TODO(xla): This should go into the radicle-registry.
-impl Serialize for Hash {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.0.encode_hex::<String>())
-    }
-}
+/// The registry Hash type
+pub type Hash = protocol::Hash;
 
 /// `ProjectID` wrapper for serde de/serialization
 #[derive(Serialize, Deserialize)]
@@ -509,7 +479,7 @@ impl Client for Registry {
         applied.result?;
         let block = self.client.block_header(applied.block).await?;
         let tx = Transaction::confirmed(
-            Hash(applied.tx_hash),
+            applied.tx_hash,
             block.number,
             Message::OrgRegistration { id: org_id.clone() },
             fee,
@@ -551,7 +521,7 @@ impl Client for Registry {
         let block = self.client.block_header(applied.block).await?;
 
         Ok(Transaction::confirmed(
-            Hash(applied.tx_hash),
+            applied.tx_hash,
             block.number,
             Message::OrgUnregistration { id: org_id },
             fee,
@@ -583,7 +553,7 @@ impl Client for Registry {
         applied.result?;
         let block = self.client.block_header(applied.block).await?;
         let tx = Transaction::confirmed(
-            Hash(applied.tx_hash),
+            applied.tx_hash,
             block.number,
             Message::MemberRegistration {
                 org_id: org_id.clone(),
@@ -710,7 +680,7 @@ impl Client for Registry {
         };
 
         Ok(Transaction::confirmed(
-            Hash(applied.tx_hash),
+            applied.tx_hash,
             block.number,
             Message::ProjectRegistration {
                 project_name,
@@ -759,7 +729,7 @@ impl Client for Registry {
         let block = self.client.block_header(applied.block).await?;
 
         Ok(Transaction::confirmed(
-            Hash(applied.tx_hash),
+            applied.tx_hash,
             block.number,
             Message::UserRegistration { handle, id },
             fee,
