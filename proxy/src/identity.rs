@@ -34,16 +34,12 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub fn create(
-    handle: String,
-) -> Result<Identity, error::Error> {
+pub fn create(handle: String) -> Result<Identity, error::Error> {
     let id = format!("{}@123abcd.git", handle);
     Ok(Identity {
         id: id.clone(),
         shareable_entity_identifier: id.clone(),
-        metadata: Metadata {
-            handle,
-        },
+        metadata: Metadata { handle },
         registered: None,
         avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
     })
