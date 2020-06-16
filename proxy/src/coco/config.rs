@@ -1,9 +1,9 @@
 //! Configuration for [`proxy::coco`].
 
-use secstr::SecUtf8;
 use std::convert::TryFrom;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
+use librad::keys;
 use librad::net;
 use librad::net::discovery;
 use librad::paths;
@@ -11,7 +11,6 @@ use librad::peer;
 
 use crate::coco;
 use crate::error;
-use crate::keystore;
 
 /// Path configuration
 pub enum PathsConfig {
@@ -41,16 +40,9 @@ impl TryFrom<PathsConfig> for paths::Paths {
 
 /// Configure a [`super::Peer`].
 pub async fn configure(
-    path: Option<std::path::PathBuf>,
-    pw: SecUtf8,
+    paths: paths::Paths,
+    key: keys::SecretKey,
 ) -> Result<coco::Peer, error::Error> {
-    let paths_config = path
-        .map(PathsConfig::FromRoot)
-        .unwrap_or(PathsConfig::Default);
-    let paths = paths::Paths::try_from(paths_config)?;
-    let mut store = keystore::CocoStore::new(&paths, pw)?;
-    let key = store.get_key_or_create()?;
-
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`
 

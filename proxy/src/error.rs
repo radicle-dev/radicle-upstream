@@ -1,15 +1,14 @@
 //! Proxy library errors usable for caller control flow and additional context for API responses.
 
-use std::convert::Infallible;
 use std::time::SystemTimeError;
 
-use librad::keys;
 use librad::meta::common::url;
 use librad::meta::entity;
 use librad::surf;
 use librad::surf::git::git2;
-use radicle_keystore::crypto;
 use radicle_registry_client as registry;
+
+use crate::keystore;
 
 /// Project problems.
 #[derive(Debug, thiserror::Error)]
@@ -114,13 +113,7 @@ pub enum Error {
 
     /// Failure when interacting with [`crate::keystore`].
     #[error(transparent)]
-    KeyStorage(
-        #[from]
-        radicle_keystore::file::Error<
-            crypto::SecretBoxError<Infallible>,
-            keys::IntoSecretKeyError,
-        >,
-    ),
+    Keystorage(#[from] keystore::Error),
 
     /// Common I/O errors.
     #[error(transparent)]

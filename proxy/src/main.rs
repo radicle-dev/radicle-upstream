@@ -1,10 +1,13 @@
+use std::convert::TryFrom;
 use secstr::SecUtf8;
 
+use librad::paths;
 use radicle_keystore::pinentry::{self, Pinentry as _};
 
 use proxy::coco;
 use proxy::env;
 use proxy::http;
+use proxy::keystore;
 use proxy::registry;
 
 /// Flags accepted by the proxy binary.
@@ -66,7 +69,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         (pw, args.path)
     };
 
-    let mut peer = coco::config::configure(path, pw)
+    let paths_config = path
+        .map(coco::config::PathsConfig::FromRoot)
+        .unwrap_or(coco::config::PathsConfig::Default);
+    let paths = paths::Paths::try_from(paths_config)?;
+
+    let mut store = keystore::Keystorage::new(&paths, pw)?;
+    let key = store.init_librad_key()?;
+
+    let mut peer = coco::config::configure(paths, key)
         .await
         .expect("failed to configure the Peer");
 
