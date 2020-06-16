@@ -54,6 +54,7 @@
     padding: 0 16px;
     margin: 0 auto;
     align-items: center;
+    background-color: var(--color-background);
   }
 </style>
 
