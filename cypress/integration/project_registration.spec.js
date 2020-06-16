@@ -34,6 +34,10 @@ beforeEach(() => {
     project2.defaultBranch
   );
 
+  // The transaction center is populated with transactions that come from this
+  // before block and it covers the dropdown menu that is needed in the tests.
+  cy.nukeCache();
+
   cy.visit("public/index.html");
 });
 
