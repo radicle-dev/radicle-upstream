@@ -2,7 +2,6 @@
 //! Abstractions and types to handle, persist and interact with transactions.
 
 use async_trait::async_trait;
-use hex::ToHex;
 use kv::Codec as _;
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize, Serializer};
@@ -330,7 +329,7 @@ where
 
     /// Caches a transaction locally in the Registry.
     fn cache_transaction(&self, tx: Transaction) -> Result<(), error::Error> {
-        let key = tx.id.encode_hex::<String>();
+        let key = serde_json::to_string(&tx.id).expect("Couldn't serialize registry Hash");
         self.transactions.set(key.as_str(), kv::Json(tx))?;
 
         Ok(())

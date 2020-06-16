@@ -1082,4 +1082,17 @@ mod test {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn deserialize_after_serialize() -> Result<(), error::Error> {
+        let hash = protocol::Hash::random();
+
+        let serialized = serde_json::to_string(&hash).expect("should work");
+        let deserialized =
+            serde_json::from_str::<protocol::Hash>(&serialized).expect("Should work 2");
+
+        assert_eq!(deserialized, hash);
+
+        Ok(())
+    }
 }

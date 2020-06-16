@@ -47,7 +47,6 @@ fn list_filter<C: registry::Cache>(
 /// Transaction handlers to implement conversion and translation between core domain and http
 /// request fullfilment.
 mod handler {
-    use std::str::FromStr;
     use warp::{reply, Rejection, Reply};
 
     use crate::http;
@@ -62,7 +61,9 @@ mod handler {
         let tx_ids = input
             .ids
             .iter()
-            .map(|id| registry::Hash::from_str(id).expect("unable to get hash from string"))
+            .map(|id| {
+                serde_json::from_str::<registry::Hash>(id).expect("unable to get hash from string")
+            })
             .collect();
         let txs = cache.read().await.list_transactions(tx_ids)?;
 
