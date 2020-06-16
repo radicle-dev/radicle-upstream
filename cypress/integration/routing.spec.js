@@ -61,13 +61,13 @@ context("routing", () => {
       cy.visit("./public/index.html");
 
       cy.pick("sidebar", "org-monadic").click();
-      cy.pick("topbar").contains("monadic");
+      cy.pick("header").contains("monadic");
 
       cy.pick("sidebar", "org-github").click();
-      cy.pick("topbar").contains("github");
+      cy.pick("header").contains("github");
 
       cy.pick("sidebar", "org-monadic").click();
-      cy.pick("topbar").contains("monadic");
+      cy.pick("header").contains("monadic");
     });
   });
 });

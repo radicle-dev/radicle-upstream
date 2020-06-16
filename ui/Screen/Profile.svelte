@@ -72,7 +72,7 @@
 
   <BigHeader
     variant="profile"
-    data={session.identity}
+    entity={session.identity}
     style="position: fixed; top: 0;">
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />

@@ -68,15 +68,14 @@
 
       <div class="metadata">
         <div class="user">
-          {#if variant === 'profile'}
-            <Title variant="huge">
+          <Title dataCy="entity-name" variant="huge">
+            {#if variant === 'profile'}
               {entity.registered ? entity.registered : entity.metadata.handle}
-            </Title>
-          {:else if variant === 'org'}
-            <Title variant="huge">{entity.id}</Title>
-          {/if}
+            {:else if variant === 'org'}{entity.id}{/if}
+          </Title>
           {#if variant === 'org' || entity.registered}
             <Icon.Verified
+              dataCy="verified-badge"
               size="large"
               style="fill: var(--color-primary); margin-left: 6px;" />
           {/if}

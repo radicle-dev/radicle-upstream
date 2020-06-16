@@ -1,5 +1,6 @@
 <script>
   export let style = null;
+  export let dataCy = null;
 
   export let variant = "regular"; // regular | medium | large | big | huge
 </script>
@@ -37,15 +38,15 @@
 </style>
 
 {#if variant === 'huge'}
-  <h1 class={variant} {style}>
+  <h1 data-cy={dataCy} class={variant} {style}>
     <slot />
   </h1>
 {:else if variant === 'big'}
-  <h2 class={variant} {style}>
+  <h2 data-cy={dataCy} class={variant} {style}>
     <slot />
   </h2>
 {:else}
-  <h3 class={variant} {style}>
+  <h3 data-cy={dataCy} class={variant} {style}>
     <slot />
   </h3>
 {/if}
