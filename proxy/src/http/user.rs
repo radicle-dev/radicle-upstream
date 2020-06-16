@@ -116,6 +116,7 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::error::Error;
     use crate::http;
     use crate::notification;
     use crate::registry;
@@ -126,7 +127,7 @@ mod handler {
         registry: http::Shared<R>,
         handle: String,
     ) -> Result<impl Reply, Rejection> {
-        let handle = registry::Id::try_from(handle)?;
+        let handle = registry::Id::try_from(handle).map_err(Error::from)?;
         let user = registry.read().await.get_user(handle).await?;
         Ok(reply::json(&user))
     }
@@ -137,7 +138,7 @@ mod handler {
         handle: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let handle = registry::Id::try_from(handle)?;
+        let handle = registry::Id::try_from(handle).map_err(Error::from)?;
         let orgs = reg.list_orgs(handle).await?;
 
         Ok(reply::json(&orgs))
@@ -153,7 +154,7 @@ mod handler {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let handle = registry::Id::try_from(input.handle)?;
+        let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         let reg = registry.write().await;
         let tx = reg
             .register_user(
@@ -247,7 +248,7 @@ mod test {
     use radicle_registry_client as protocol;
 
     use crate::avatar;
-    use crate::error;
+    use crate::error::Error;
     use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
 
@@ -293,7 +294,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_orgs() -> Result<(), error::Error> {
+    async fn list_orgs() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir()?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
@@ -307,8 +308,8 @@ mod test {
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = registry::Id::try_from("cloudhead")?;
-        let org_id = registry::Id::try_from("radicle")?;
+        let handle = registry::Id::try_from("cloudhead").map_err(Error::from)?;
+        let org_id = registry::Id::try_from("radicle").map_err(Error::from)?;
 
         registry
             .write()

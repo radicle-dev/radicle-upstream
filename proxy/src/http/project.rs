@@ -151,6 +151,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::error::Error;
     use crate::http;
     use crate::notification;
     use crate::project;
@@ -236,9 +237,13 @@ mod handler {
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project RadUrn"));
-        let domain_id = registry::Id::try_from(input.domain_id)?;
-        let domain: registry::ProjectDomain = (input.domain_type.clone(), domain_id.clone()).into();
-        let project_name = registry::ProjectName::try_from(input.project_name)?;
+        let domain_id = registry::Id::try_from(input.domain_id).map_err(Error::from)?;
+        let domain: registry::ProjectDomain = match input.domain_type.clone() {
+            registry::DomainType::Org => registry::ProjectDomain::Org(domain_id.clone()),
+            registry::DomainType::User => registry::ProjectDomain::User(domain_id.clone()),
+        };
+        let project_name =
+            registry::ProjectName::try_from(input.project_name).map_err(Error::from)?;
 
         let tx = reg
             .register_project(
