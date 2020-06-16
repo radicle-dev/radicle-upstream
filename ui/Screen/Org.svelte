@@ -80,9 +80,9 @@
   $: fetch({ id: params.id });
 </script>
 
-<SidebarLayout dataCy="org-screen" style="margin-top: var(--bigheader-height);">
+<SidebarLayout dataCy="org-screen" style="margin-top: 0;">
   <Remote {store} let:data={org}>
-    <BigHeader variant="org" entity={org} style="position: fixed; top: 0;">
+    <BigHeader variant="org" entity={org}>
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems(params.id)} />
       </div>
