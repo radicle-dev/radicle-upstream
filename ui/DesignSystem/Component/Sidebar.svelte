@@ -31,7 +31,7 @@
 
   .top {
     overflow-y: scroll;
-    padding-bottom: 36px;
+    padding-bottom: 32px;
     padding-top: 16px;
   }
 
@@ -47,9 +47,9 @@
   .bottom:before {
     position: absolute;
     content: " ";
-    height: 36px;
-    width: 68px;
-    top: -36px;
+    height: 32px;
+    width: var(--sidebar-width);
+    top: -32px;
     left: 0;
     background: linear-gradient(
       0deg,
@@ -59,9 +59,9 @@
   }
 
   .item {
-    width: 68px;
-    height: 36px;
-    margin-bottom: 12px;
+    width: var(--sidebar-width);
+    height: 32px;
+    margin-bottom: 16px;
     position: relative;
     display: flex;
     justify-content: center;
@@ -72,7 +72,7 @@
     position: absolute;
     content: "";
     width: 4px;
-    height: 36px;
+    height: 32px;
     background-color: var(--color-foreground-level-5);
     top: 0px;
     left: 0px;
@@ -84,7 +84,7 @@
     position: absolute;
     content: "";
     width: 4px;
-    height: 36px;
+    height: 32px;
     background-color: var(--color-secondary);
     top: 0px;
     left: 0px;
@@ -118,7 +118,7 @@
       <Tooltip value={identity.metadata.handle}>
         <a href={path.profileProjects()} use:link>
           <Avatar
-            size="medium"
+            size="regular"
             avatarFallback={identity.avatarFallback}
             variant="circle" />
         </a>
@@ -135,7 +135,7 @@
             <Avatar
               avatarFallback={org.avatarFallback}
               variant="square"
-              size="medium" />
+              size="regular" />
           </a>
         </Tooltip>
       </li>
