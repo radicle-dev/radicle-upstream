@@ -111,6 +111,8 @@
     "proxy:build:release": "cd proxy && cargo build --release --all-features --all-targets",
     "proxy:start": "cd proxy && cargo run -- --registry=emulator",
     "proxy:start:test": "cd proxy && cargo run -- --registry=emulator --test",
+    "proxy:start:ffnet": "cd proxy && cargo run -- --registry=rpc.ff.radicle.network",
+    "proxy:start:devnet": "cd proxy && cargo run -- --registry=35.241.138.91",
     "cypress:run": "yarn run cypress run",
     "cypress:open": "yarn run cypress open",
     "release": "babel-node --presets \"@babel/env\" scripts/release.js",
