@@ -12,7 +12,7 @@
 
 <style>
   .wrapper {
-    margin-top: 156px;
+    margin-top: 64px;
     display: flex;
     justify-content: center;
   }

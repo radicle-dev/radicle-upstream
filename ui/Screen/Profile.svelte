@@ -66,14 +66,9 @@
   }
 </script>
 
-<SidebarLayout
-  style="margin-top: var(--bigheader-height);"
-  dataCy="profile-screen">
+<SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
 
-  <BigHeader
-    variant="profile"
-    entity={session.identity}
-    style="position: fixed; top: 0;">
+  <BigHeader variant="profile" entity={session.identity}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

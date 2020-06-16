@@ -95,7 +95,7 @@
     display: flex;
     flex-direction: column;
     padding: 0 1.5rem 0 0.75rem;
-    min-width: 640px;
+    min-width: var(--content-min-width);
     width: 100%;
   }
 

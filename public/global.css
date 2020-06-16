@@ -18,9 +18,9 @@ a {
 }
 
 :root {
-  --sidebar-width: 68px;
-  --topbar-height: 61px;
-  --bigheader-height: 261px;
-  --content-min-width: 700px;
+  --sidebar-width: 64px;
+  --topbar-height: 64px;
+  --bigheader-height: 260px;
+  --content-min-width: 480px;
   --content-max-width: 1148px;
 }
