@@ -29,11 +29,9 @@ impl Keystorage {
         let path = paths.keys_dir();
         let librad_path = path.join(LIBRAD_KEY);
         let registry_path = path.join(REGISTRY_KEY);
-        let crypto = Pwhash::new(pw.clone());
-        let rcrypto = Pwhash::new(pw.clone());
         Ok(Keystorage {
-            librad_store: FileStorage::new(&librad_path, crypto),
-            registry_store: FileStorage::new(&registry_path, rcrypto),
+            librad_store: FileStorage::new(&librad_path, Pwhash::new(pw.clone())),
+            registry_store: FileStorage::new(&registry_path, Pwhash::new(pw)),
         })
     }
 
@@ -70,7 +68,7 @@ impl Keystorage {
                 let key = keys::SecretKey::new();
                 self.librad_store.put_key(key.clone())?;
                 Ok(key)
-            }
+            },
             Err(err) => Err(err.into()),
         }
     }
@@ -87,7 +85,7 @@ impl Keystorage {
                 let (key, _): (ed25519::Pair, _) = CryptoPair::generate();
                 self.registry_store.put_key(Pair(key.clone()))?;
                 Ok(key)
-            }
+            },
             Err(err) => Err(err.into()),
         }
     }
@@ -164,9 +162,7 @@ impl SecretKeyExt for Pair {
         Ok(Pair(CryptoPair::from_seed_slice(bytes.unsecure())?))
     }
 
-    fn metadata(&self) -> Self::Metadata {
-        ()
-    }
+    fn metadata(&self) -> Self::Metadata {}
 }
 
 #[cfg(test)]
@@ -203,7 +199,7 @@ mod tests {
         let mut store = Keystorage::new(&paths, pw)?;
 
         match store.init_registry_key() {
-            Ok(_) => {}
+            Ok(_) => {},
             Err(err) => panic!("could not get or create a key: {:?}", err),
         };
 

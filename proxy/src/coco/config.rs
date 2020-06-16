@@ -13,14 +13,14 @@ use crate::coco;
 use crate::error;
 
 /// Path configuration
-pub enum PathsConfig {
+pub enum PathsConfiguration {
     /// Select the default [`paths::Paths`] for configuration.
     Default,
     /// Use [`paths::Paths::from_root`] for configuration.
     FromRoot(std::path::PathBuf),
 }
 
-impl PathsConfig {
+impl PathsConfiguration {
     /// Get the [`paths::Paths`] for this configuration.
     pub fn to_paths(&self) -> Result<paths::Paths, error::Error> {
         match self {
@@ -30,10 +30,10 @@ impl PathsConfig {
     }
 }
 
-impl TryFrom<PathsConfig> for paths::Paths {
+impl TryFrom<PathsConfiguration> for paths::Paths {
     type Error = error::Error;
 
-    fn try_from(config: PathsConfig) -> Result<Self, Self::Error> {
+    fn try_from(config: PathsConfiguration) -> Result<Self, Self::Error> {
         config.to_paths()
     }
 }

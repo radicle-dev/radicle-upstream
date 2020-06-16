@@ -1,5 +1,5 @@
-use std::convert::TryFrom;
 use secstr::SecUtf8;
+use std::convert::TryFrom;
 
 use librad::paths;
 use radicle_keystore::pinentry::{self, Pinentry as _};
@@ -70,8 +70,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let paths_config = path
-        .map(coco::config::PathsConfig::FromRoot)
-        .unwrap_or(coco::config::PathsConfig::Default);
+        .map(coco::config::PathsConfiguration::FromRoot)
+        .unwrap_or(coco::config::PathsConfiguration::Default);
     let paths = paths::Paths::try_from(paths_config)?;
 
     let mut store = keystore::Keystorage::new(&paths, pw)?;
