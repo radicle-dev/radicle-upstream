@@ -77,7 +77,7 @@
     </Text>
     <Remote {store} let:data={identity}>
       <div class="identity-card" data-cy="identity-card">
-        <Avatar size="huge" avatarFallback={identity.avatarFallback} />
+        <Avatar size="big" avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">
           <Title>{identity.metadata.handle}</Title>
           <Copyable {afterCopy}>

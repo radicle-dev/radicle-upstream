@@ -1,16 +1,16 @@
 <script>
-  import Router, { link, push } from "svelte-spa-router";
+  import Router, { push } from "svelte-spa-router";
 
   import { fetch, org as store } from "../src/org.ts";
   import * as path from "../src/path.ts";
 
-  import { Avatar, Icon } from "../DesignSystem/Primitive";
+  import { Icon } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
     Remote,
     SidebarLayout,
-    Topbar,
+    BigHeader,
   } from "../DesignSystem/Component";
 
   import Fund from "./Org/Fund.svelte";
@@ -80,32 +80,21 @@
   $: fetch({ id: params.id });
 </script>
 
-<SidebarLayout
-  dataCy="org-screen"
-  style="margin-top: calc(var(--topbar-height) + 33px)">
+<SidebarLayout dataCy="org-screen" style="margin-top: var(--bigheader-height);">
   <Remote {store} let:data={org}>
-    <Topbar style="position: fixed; top: 0;">
-      <a slot="left" href={path.orgProjects(params.id)} use:link>
-        <Avatar
-          title={org.id}
-          avatarFallback={org.avatarFallback}
-          registered={true}
-          variant="square" />
-      </a>
-
-      <div slot="middle">
+    <BigHeader variant="org" entity={org} style="position: fixed; top: 0;">
+      <div slot="left">
         <HorizontalMenu items={topbarMenuItems(params.id)} />
       </div>
-
-      <div style="display: flex" slot="right">
+      <div slot="right" style="display: flex">
         <Router routes={menuRoutes} />
         <AdditionalActionsDropdown
           dataCy="context-menu"
-          style="margin: 0 24px 0 16px"
+          style="margin: 0 16px"
           headerTitle={org.shareableEntityIdentifier}
           menuItems={dropdownMenuItems} />
       </div>
-    </Topbar>
+    </BigHeader>
     <Router {routes} />
   </Remote>
 </SidebarLayout>

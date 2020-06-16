@@ -1,7 +1,7 @@
 import ArrowDown from "./ArrowDown.svelte";
 import ArrowUp from "./ArrowUp.svelte";
 import At from "./At.svelte";
-import Badge from "./Badge.svelte";
+import Verified from "./Verified.svelte";
 import Branch from "./Branch.svelte";
 import Check from "./Check.svelte";
 import Chevron from "./Chevron.svelte";
@@ -47,7 +47,7 @@ export default {
   ArrowDown,
   ArrowUp,
   At,
-  Badge,
+  Verified,
   Branch,
   Check,
   Chevron,

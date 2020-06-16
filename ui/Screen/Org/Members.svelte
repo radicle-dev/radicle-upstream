@@ -60,11 +60,12 @@
     items={org.members}
     let:item={member}
     on:select={select}
-    dataCy="member-list">
+    dataCy="member-list"
+    style="margin: 0 auto;">
     <div class="member">
       <div class="info">
         <Title>{member.handle}</Title>
-        <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
+        <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
       </div>
 
       <div class="membership-details">

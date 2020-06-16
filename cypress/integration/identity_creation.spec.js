@@ -38,7 +38,7 @@ context("identity creation", () => {
 
       // Land on profile screen
       cy.pick("go-to-profile-button").click();
-      cy.pick("profile-avatar").contains(validUser.handle);
+      cy.pick("entity-name").contains(validUser.handle);
     });
 
     it("is possible to directly register your identity after creating it", () => {
@@ -51,10 +51,8 @@ context("identity creation", () => {
       cy.contains("Register your handle").should("exist");
       cy.pick("next-button").click();
       cy.pick("submit-button").click();
-      cy.pick("profile-screen", "profile-avatar").contains(validUser.handle);
-      cy.pick("profile-screen", "profile-avatar", "registered-badge").should(
-        "exist"
-      );
+      cy.pick("profile-screen", "entity-name").contains(validUser.handle);
+      cy.pick("profile-screen", "header", "verified-badge").should("exist");
     });
 
     context(
@@ -97,7 +95,7 @@ context("identity creation", () => {
 
           // Land on profile screen
           cy.pick("modal-close-button").click();
-          cy.pick("profile-avatar").contains(validUser.handle);
+          cy.pick("entity-name").contains(validUser.handle);
         });
       }
     );
@@ -117,7 +115,7 @@ context("identity creation", () => {
         cy.get("body").type("{esc}");
 
         // Land on profile screen
-        cy.pick("profile-avatar").contains(validUser.handle);
+        cy.pick("entity-name").contains(validUser.handle);
       });
     });
   });
