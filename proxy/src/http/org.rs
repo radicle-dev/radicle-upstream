@@ -212,6 +212,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
+    use crate::error::Error;
     use crate::http;
     use crate::notification;
     use crate::project;
@@ -223,7 +224,7 @@ mod handler {
         org_id: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(org_id)?;
+        let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let org = reg.get_org(org_id).await?;
 
         Ok(reply::json(&org))
@@ -236,9 +237,9 @@ mod handler {
         project_name: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(org_id)?;
+        let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let project_domain = registry::ProjectDomain::Org(org_id);
-        let project_name = registry::ProjectName::try_from(project_name)?;
+        let project_name = registry::ProjectName::try_from(project_name).map_err(Error::from)?;
         let project = reg.get_project(project_domain, project_name).await?;
 
         Ok(reply::json(&project))
@@ -254,7 +255,7 @@ mod handler {
         R: registry::Client,
     {
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(org_id)?;
+        let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let projects = reg.list_org_projects(org_id).await?;
         let peer = peer.lock().await;
         let mut mapped_projects = Vec::new();
@@ -291,7 +292,7 @@ mod handler {
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(input.id)?;
+        let org_id = registry::Id::try_from(input.id).map_err(Error::from)?;
         let tx = reg
             .register_org(&fake_pair, org_id, input.transaction_fee)
             .await?;
@@ -314,8 +315,8 @@ mod handler {
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         let reg = registry.read().await;
-        let org_id = registry::Id::try_from(id)?;
-        let handle = registry::Id::try_from(input.handle)?;
+        let org_id = registry::Id::try_from(id).map_err(Error::from)?;
+        let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         let tx = reg
             .register_member(&fake_pair, org_id, handle, input.transaction_fee)
             .await?;

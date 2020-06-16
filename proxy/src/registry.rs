@@ -6,12 +6,10 @@ use async_trait::async_trait;
 use hex::ToHex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_cbor::from_reader;
-use std::convert::TryFrom;
-use std::fmt;
 use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
-pub use radicle_registry_client::{Balance, MINIMUM_FEE};
+pub use radicle_registry_client::{Balance, Id, ProjectDomain, ProjectName, MINIMUM_FEE};
 
 use crate::avatar;
 use crate::error;
@@ -19,103 +17,14 @@ use crate::error;
 mod transaction;
 pub use transaction::{Cache, Cacher, Message, State, Timestamp, Transaction, MIN_CONFIRMATIONS};
 
-/// Wrapper for [`protocol::Id`] to add serialization.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Id(protocol::Id);
-
-impl fmt::Display for Id {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0.to_string())
-    }
-}
-
-impl TryFrom<String> for Id {
-    type Error = error::Error;
-
-    fn try_from(input: String) -> Result<Self, error::Error> {
-        Ok(Self(protocol::Id::try_from(input)?))
-    }
-}
-
-impl TryFrom<&str> for Id {
-    type Error = error::Error;
-
-    fn try_from(input: &str) -> Result<Self, error::Error> {
-        Ok(Self(protocol::Id::try_from(input)?))
-    }
-}
-
-// TODO(xla): This should go into the radicle-registry.
-impl<'de> Deserialize<'de> for Id {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: &str = Deserialize::deserialize(deserializer)?;
-        Self::try_from(s).map_err(|_err| {
-            serde::de::Error::invalid_value(serde::de::Unexpected::Str(s), &"a Registry Id")
-        })
-    }
-}
-
-// TODO(xla): This should go into the radicle-registry.
-impl Serialize for Id {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.0.to_string())
-    }
-}
-
-/// Wrapper for [`protocol::ProjectName`] to add serialization.
-#[derive(Clone, Debug, PartialEq)]
-pub struct ProjectName(protocol::ProjectName);
-
-impl fmt::Display for ProjectName {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0.to_string())
-    }
-}
-
-impl<'de> Deserialize<'de> for ProjectName {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s: &str = Deserialize::deserialize(deserializer)?;
-        Self::try_from(s).map_err(|_err| {
-            serde::de::Error::invalid_value(
-                serde::de::Unexpected::Str(s),
-                &"a Registry ProjectName",
-            )
-        })
-    }
-}
-
-impl Serialize for ProjectName {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.0.to_string())
-    }
-}
-
-impl TryFrom<String> for ProjectName {
-    type Error = error::Error;
-
-    fn try_from(input: String) -> Result<Self, error::Error> {
-        Ok(Self(protocol::ProjectName::try_from(input)?))
-    }
-}
-
-impl TryFrom<&str> for ProjectName {
-    type Error = error::Error;
-
-    fn try_from(input: &str) -> Result<Self, error::Error> {
-        Ok(Self(protocol::ProjectName::try_from(input)?))
-    }
+/// The type of domain under which a project is registered.
+#[derive(Clone, Eq, PartialEq, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DomainType {
+    /// An org
+    Org,
+    /// A user
+    User,
 }
 
 /// Wrapper for [`protocol::Hash`] to add serialization.
@@ -201,16 +110,6 @@ pub struct User {
     pub maybe_entity_id: Option<String>,
 }
 
-/// The domains we support under which a project can live.
-#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
-#[serde(rename_all = "lowercase")]
-pub enum DomainType {
-    /// An Org
-    Org,
-    /// A User
-    User,
-}
-
 /// Default transaction fees and deposits.
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -233,52 +132,6 @@ pub const fn get_deposits() -> Deposits {
         org_registration: protocol::REGISTER_ORG_DEPOSIT,
         project_registration: protocol::REGISTER_PROJECT_DEPOSIT,
         member_registration: protocol::REGISTER_MEMBER_DEPOSIT,
-    }
-}
-
-/// The domain of a project
-#[derive(Clone, Debug, Eq, PartialEq, Deserialize, Serialize)]
-pub enum ProjectDomain {
-    /// An org
-    Org(Id),
-    /// A user
-    User(Id),
-}
-
-impl ProjectDomain {
-    /// Extract the Id of the domain.
-    #[must_use]
-    pub fn id(&self) -> Id {
-        match self.clone() {
-            Self::Org(id) | Self::User(id) => id,
-        }
-    }
-}
-
-impl From<protocol::ProjectDomain> for ProjectDomain {
-    fn from(pd: protocol::ProjectDomain) -> Self {
-        match pd {
-            protocol::ProjectDomain::Org(id) => Self::Org(Id(id)),
-            protocol::ProjectDomain::User(id) => Self::User(Id(id)),
-        }
-    }
-}
-
-impl From<ProjectDomain> for protocol::ProjectDomain {
-    fn from(pd: ProjectDomain) -> Self {
-        match pd {
-            ProjectDomain::Org(id) => Self::Org(id.0),
-            ProjectDomain::User(id) => Self::User(id.0),
-        }
-    }
-}
-
-impl From<(DomainType, Id)> for ProjectDomain {
-    fn from((domain, id): (DomainType, Id)) -> Self {
-        match domain {
-            DomainType::Org => Self::Org(id),
-            DomainType::User => Self::User(id),
-        }
     }
 }
 
@@ -451,11 +304,11 @@ impl Client for Registry {
     }
 
     async fn get_org(&self, org_id: Id) -> Result<Option<Org>, error::Error> {
-        if let Some(org) = self.client.get_org(org_id.clone().0).await? {
+        if let Some(org) = self.client.get_org(org_id.clone()).await? {
             let mut members = Vec::new();
             for member in org.members.clone() {
                 members.push(
-                    self.get_user(Id(member))
+                    self.get_user(member)
                         .await?
                         .expect("Couldn't retrieve org member"),
                 );
@@ -474,10 +327,7 @@ impl Client for Registry {
     async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error> {
         let mut orgs = Vec::new();
         for id in &self.client.list_orgs().await? {
-            let org = self
-                .get_org(Id(id.clone()))
-                .await?
-                .expect("org missing for id");
+            let org = self.get_org(id.clone()).await?.expect("org missing for id");
             if org.members.iter().any(|m| m.handle == handle) {
                 orgs.push(org);
             }
@@ -494,7 +344,7 @@ impl Client for Registry {
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit org registration transaction.
         let register_message = protocol::message::RegisterOrg {
-            org_id: org_id.0.clone(),
+            org_id: org_id.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -516,11 +366,7 @@ impl Client for Registry {
         );
 
         // TODO(xla): Remove automatic prepayment once we have proper balances.
-        let org = self
-            .client
-            .get_org(org_id.0)
-            .await?
-            .expect("org not present");
+        let org = self.client.get_org(org_id).await?.expect("org not present");
         self.prepay_account(org.account_id, 1000).await?;
 
         Ok(tx)
@@ -534,7 +380,7 @@ impl Client for Registry {
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit org unregistration transaction.
         let unregister_message = protocol::message::UnregisterOrg {
-            org_id: org_id.0.clone(),
+            org_id: org_id.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -567,8 +413,8 @@ impl Client for Registry {
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit member registration transaction.
         let register_message = protocol::message::RegisterMember {
-            org_id: org_id.0.clone(),
-            user_id: user_id.0.clone(),
+            org_id: org_id.clone(),
+            user_id: user_id.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -602,7 +448,7 @@ impl Client for Registry {
     ) -> Result<Option<Project>, error::Error> {
         Ok(self
             .client
-            .get_project(project_name.clone().0, project_domain.clone().into())
+            .get_project(project_name.clone(), project_domain.clone())
             .await?
             .map(|project| {
                 let metadata_vec: Vec<u8> = project.metadata.into();
@@ -623,11 +469,10 @@ impl Client for Registry {
     async fn list_org_projects(&self, org_id: Id) -> Result<Vec<Project>, error::Error> {
         let ids = self.client.list_projects().await?;
         let mut projects = Vec::new();
-        let domain = ProjectDomain::Org(org_id.clone());
-        for id in &ids {
-            if id.1 == protocol::ProjectDomain::Org(org_id.clone().0) {
+        for (name, domain) in &ids {
+            if domain.clone() == protocol::ProjectDomain::Org(org_id.clone()) {
                 projects.push(
-                    self.get_project(domain.clone(), ProjectName(id.clone().0))
+                    self.get_project(domain.clone(), name.clone())
                         .await?
                         .expect("project not present"),
                 );
@@ -686,8 +531,8 @@ impl Client for Registry {
 
         // Prepare and submit project registration transaction.
         let register_message = protocol::message::RegisterProject {
-            project_name: project_name.0.clone(),
-            project_domain: project_domain.clone().into(),
+            project_name: project_name.clone(),
+            project_domain: project_domain.clone(),
             checkpoint_id,
             metadata: register_metadata,
         };
@@ -724,7 +569,7 @@ impl Client for Registry {
     async fn get_user(&self, handle: Id) -> Result<Option<User>, error::Error> {
         Ok(self
             .client
-            .get_user(handle.0.clone())
+            .get_user(handle.clone())
             .await?
             .map(|_user| User {
                 handle,
@@ -743,7 +588,7 @@ impl Client for Registry {
         self.prepay_account(author.public(), 1000).await?;
         // Prepare and submit user registration transaction.
         let register_message = protocol::message::RegisterUser {
-            user_id: handle.0.clone(),
+            user_id: handle.clone(),
         };
         let register_tx = protocol::Transaction::new_signed(
             author,
@@ -1043,16 +888,16 @@ mod test {
 
         let maybe_project = client
             .get_project(
-                project_name.clone().0,
-                protocol::ProjectDomain::Org(org_id.clone().0),
+                project_name.clone(),
+                protocol::ProjectDomain::Org(org_id.clone()),
             )
             .await?;
 
         assert!(maybe_project.is_some());
 
         let project = maybe_project.unwrap();
-        assert_eq!(project.name, project_name.0);
-        assert_eq!(project.domain, protocol::ProjectDomain::Org(org_id.0));
+        assert_eq!(project.name, project_name);
+        assert_eq!(project.domain, protocol::ProjectDomain::Org(org_id));
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
@@ -1094,16 +939,16 @@ mod test {
 
         let maybe_project = client
             .get_project(
-                project_name.clone().0,
-                protocol::ProjectDomain::User(handle.clone().0),
+                project_name.clone(),
+                protocol::ProjectDomain::User(handle.clone()),
             )
             .await?;
 
         assert!(maybe_project.is_some());
 
         let project = maybe_project.unwrap();
-        assert_eq!(project.name, project_name.0);
-        assert_eq!(project.domain, protocol::ProjectDomain::User(handle.0));
+        assert_eq!(project.name, project_name);
+        assert_eq!(project.domain, protocol::ProjectDomain::User(handle));
         let metadata_vec: Vec<u8> = project.metadata.into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
