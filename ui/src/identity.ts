@@ -16,8 +16,6 @@ export interface Identity {
   id: string;
   metadata: {
     handle: string;
-    displayName?: string;
-    avatarUrl?: string;
   };
   registered?: string;
   avatarFallback: Avatar;
@@ -36,16 +34,12 @@ enum Kind {
 interface Create extends event.Event<Kind> {
   kind: Kind.Create;
   handle: string;
-  displayName?: string;
-  avatarUrl?: string;
 }
 
 type Msg = Create;
 
 interface CreateInput {
   handle: string;
-  displayName?: string;
-  avatarUrl?: string;
 }
 
 function update(msg: Msg): void {
@@ -55,8 +49,6 @@ function update(msg: Msg): void {
       api
         .post<CreateInput, Identity>("identities", {
           handle: msg.handle,
-          displayName: msg.displayName,
-          avatarUrl: msg.avatarUrl,
         })
         .then((id) => {
           creationStore.success(id);
@@ -74,8 +66,6 @@ export const fallback = {
   id: "cloudhead@123abcd.git",
   metadata: {
     handle: "cloudhead",
-    displayName: "Alexis Sellier",
-    avatarUrl: "https://avatars1.githubusercontent.com/u/40774",
   },
   avatarFallback: {
     background: {

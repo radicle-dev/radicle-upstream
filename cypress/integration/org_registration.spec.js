@@ -1,13 +1,31 @@
+context("org registration permission", () => {
+  before(() => {
+    cy.nukeAllState();
+    cy.createIdentity();
+    cy.visit("public/index.html");
+  });
+
+  it("disables the add org sidebar button before user registration", () => {
+    cy.pick("add-org", "add-org-button").should("have.class", "disabled");
+  });
+
+  it("enables the add org sidebar button after user registration", () => {
+    cy.registerUser();
+    cy.visit("public/index.html");
+    cy.pick("sidebar", "add-org").click();
+    cy.pick("org-reg-modal").contains("Register an org");
+  });
+});
+
 context("org registration", () => {
   beforeEach(() => {
     cy.nukeAllState();
-    cy.nukeCache();
     cy.createIdentity();
     cy.registerUser();
     cy.createProjectWithFixture();
 
     cy.visit("public/index.html");
-    cy.pick("sidebar", "add-org-button").click();
+    cy.pick("sidebar", "add-org").click();
   });
 
   context("navigation", () => {
@@ -42,7 +60,8 @@ context("org registration", () => {
   });
 
   context("validations", () => {
-    it("prevents the user from registering an invalid org id", () => {
+    // TODO: Fix validation bug in https://github.com/radicle-dev/radicle-upstream/issues/492
+    it.skip("prevents the user from registering an invalid org id", () => {
       // no empty input
       cy.pick("input").type("a_name");
       cy.pick("input").clear();

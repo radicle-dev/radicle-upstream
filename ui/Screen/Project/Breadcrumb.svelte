@@ -20,14 +20,14 @@
       title={`${user.name} / ${title}`}
       variant="circle" />
 
-    <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
+    <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
   {:else if org}
     <Avatar
       avatarFallback={org.avatarFallback}
       title={`${org.name} / ${title}`}
       variant="square" />
 
-    <Icon.Badge style="margin-left: 6px; fill: var(--color-primary);" />
+    <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}
     <Icon.Projects />
     <Title style="white-space: nowrap; margin-left: 8px;">{title}</Title>

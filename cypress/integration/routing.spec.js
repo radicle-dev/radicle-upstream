@@ -32,20 +32,42 @@ context("routing", () => {
             cy.createIdentity();
             cy.visit("./public/index.html");
 
-            cy.pick("sidebar", "search").click();
+            cy.pick("sidebar", "settings").click();
 
             cy.location().should((loc) => {
-              expect(loc.hash).to.eq("#/search");
+              expect(loc.hash).to.eq("#/settings");
             });
 
             cy.reload();
 
             cy.location().should((loc) => {
-              expect(loc.hash).to.eq("#/search");
+              expect(loc.hash).to.eq("#/settings");
             });
           });
         }
       );
+    });
+  });
+
+  context("navigating between orgs", () => {
+    it("goes to the respective org profile screen", () => {
+      cy.nukeAllState();
+
+      cy.createIdentity();
+      cy.registerUser();
+      cy.registerOrg("monadic");
+      cy.registerOrg("github");
+
+      cy.visit("./public/index.html");
+
+      cy.pick("sidebar", "org-monadic").click();
+      cy.pick("header").contains("monadic");
+
+      cy.pick("sidebar", "org-github").click();
+      cy.pick("header").contains("github");
+
+      cy.pick("sidebar", "org-monadic").click();
+      cy.pick("header").contains("monadic");
     });
   });
 });

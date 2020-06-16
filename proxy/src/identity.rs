@@ -29,29 +29,17 @@ pub struct Identity {
 pub struct Metadata {
     /// Similar to a nickname, the users chosen short identifier.
     pub handle: String,
-    /// A longer name to display, e.g.: full name.
-    pub display_name: Option<String>,
-    /// Url of an image the user wants to present alongside this [`Identity`].
-    pub avatar_url: Option<String>,
 }
 
 /// Creates a new identity.
 ///
 /// # Errors
-pub fn create(
-    handle: String,
-    display_name: Option<String>,
-    avatar_url: Option<String>,
-) -> Result<Identity, error::Error> {
+pub fn create(handle: String) -> Result<Identity, error::Error> {
     let id = format!("{}@123abcd.git", handle);
     Ok(Identity {
         id: id.clone(),
         shareable_entity_identifier: id.clone(),
-        metadata: Metadata {
-            handle,
-            display_name,
-            avatar_url,
-        },
+        metadata: Metadata { handle },
         registered: None,
         avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
     })
@@ -68,8 +56,6 @@ pub fn get(id: &str) -> Result<Option<Identity>, error::Error> {
         shareable_entity_identifier: format!("cloudhead@{}", id),
         metadata: Metadata {
             handle: "cloudhead".into(),
-            display_name: Some("Alexis Sellier".into()),
-            avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
         },
         registered: registry::Id::try_from("cloudhead").ok(),
         avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),

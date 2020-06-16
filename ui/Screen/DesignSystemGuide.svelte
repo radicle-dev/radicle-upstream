@@ -278,8 +278,6 @@
     shareableEntityIdentifier: "cloudhead@123abcd.git",
     metadata: {
       handle: "cloudhead",
-      displayName: "Alexis Sellier",
-      avatarUrl: "https://avatars1.githubusercontent.com/u/40774",
     },
     registered: null,
     avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" },
@@ -494,6 +492,7 @@
         <Icon.Eye />
         <Icon.Trash />
         <Icon.Label />
+        <Icon.Verified size="large" />
       </IconSwatch>
       <Swatch>
         <Caption>Code</Caption>
@@ -510,7 +509,7 @@
 
     <Section title="Small Icons" subTitle="Icons at 16px width and height">
       <IconSwatch>
-        <Icon.Badge />
+        <Icon.Verified />
         <Icon.Circle />
       </IconSwatch>
 

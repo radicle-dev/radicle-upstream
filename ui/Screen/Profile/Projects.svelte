@@ -76,7 +76,8 @@
       dataCy="project-list"
       items={projects}
       on:select={select}
-      let:item={project}>
+      let:item={project}
+      style="margin: 0 auto;">
       <Flex
         style="flex: 1; padding: 24px 16px 24px 24px;"
         dataCy={`project-list-entry-${project.metadata.name}`}>
