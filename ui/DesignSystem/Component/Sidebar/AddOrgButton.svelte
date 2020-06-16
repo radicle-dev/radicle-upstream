@@ -8,13 +8,19 @@
   .button {
     cursor: pointer;
   }
+  .button:hover {
+    fill: var(--color-secondary);
+  }
+  .button:hover :global(svg) {
+    fill: var(--color-secondary);
+  }
 
   .button.disabled:hover {
-    fill: var(--color-foreground-level-3) !important;
+    fill: var(--color-foreground-level-3);
   }
 
   .button.disabled :global(svg) {
-    fill: var(--color-foreground-level-3) !important;
+    fill: var(--color-foreground-level-3);
   }
 </style>
 

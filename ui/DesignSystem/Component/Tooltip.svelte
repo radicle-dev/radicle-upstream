@@ -27,8 +27,6 @@
     left: 64px;
     pointer-events: none;
     z-index: 100;
-    margin-top: 2px;
-    margin-bottom: 2px;
   }
   .tooltip.visible {
     visibility: visible;
@@ -53,6 +51,7 @@
 </style>
 
 <div
+  style="height: 100%;"
   data-tooltip
   on:mouseover={(event) => showTooltip(event)}
   on:mouseout={hideTooltip}>

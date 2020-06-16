@@ -92,7 +92,7 @@
     border-bottom-right-radius: 4px;
   }
 
-  .wrapper :global(li:hover svg) {
+  .indicator :global(li:hover svg) {
     fill: var(--color-secondary);
   }
 
@@ -154,22 +154,22 @@
     </li>
   </ul>
   <ul class="bottom">
-    <Tooltip value="Wallet">
-      <li class="item indicator" data-cy="wallet">
+    <li class="item indicator" data-cy="wallet">
+      <Tooltip value="Wallet">
         <a href={path.profileWallet()} use:link>
           <Icon.Fund />
         </a>
-      </li>
-    </Tooltip>
-    <Tooltip value="Settings">
-      <li
-        class="item indicator"
-        data-cy="settings"
-        class:active={path.active(path.settings(), $location)}>
+      </Tooltip>
+    </li>
+    <li
+      class="item indicator"
+      data-cy="settings"
+      class:active={path.active(path.settings(), $location)}>
+      <Tooltip value="Settings">
         <a href={path.settings()} use:link>
           <Icon.Settings />
         </a>
-      </li>
-    </Tooltip>
+      </Tooltip>
+    </li>
   </ul>
 </div>
