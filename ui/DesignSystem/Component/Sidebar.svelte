@@ -4,7 +4,7 @@
 
   import * as path from "../../src/path.ts";
 
-  import { Tooltip } from "../Component";
+  import Tooltip from "./Tooltip.svelte";
   import { Avatar, Icon } from "../Primitive";
 
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
