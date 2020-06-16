@@ -4,7 +4,8 @@
 
   import * as path from "../../src/path.ts";
 
-  import { Avatar, Icon, Title } from "../Primitive";
+  import { Tooltip } from "../Component";
+  import { Avatar, Icon } from "../Primitive";
 
   import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
 
@@ -20,15 +21,44 @@
     height: 100%;
     background-color: var(--color-foreground-level-2);
     position: fixed;
-    padding-top: 31px;
     z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: space-between;
+  }
+
+  .top {
+    overflow-y: scroll;
+    padding-bottom: 36px;
+    padding-top: 16px;
+  }
+
+  .top::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bottom {
+    position: relative;
+    padding-top: 16px;
+  }
+
+  .bottom:before {
+    position: absolute;
+    content: " ";
+    height: 36px;
+    width: 68px;
+    top: -36px;
+    left: 0;
+    background: linear-gradient(
+      0deg,
+      rgba(235, 239, 243, 1) 0%,
+      rgba(235, 239, 243, 0) 100%
+    );
   }
 
   .item {
-    width: 36px;
+    width: 68px;
     height: 36px;
     margin-bottom: 12px;
     position: relative;
@@ -41,10 +71,10 @@
     position: absolute;
     content: "";
     width: 4px;
-    height: 44px;
+    height: 36px;
     background-color: var(--color-foreground-level-5);
-    top: -4px;
-    left: -16px;
+    top: 0px;
+    left: 0px;
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
   }
@@ -53,10 +83,10 @@
     position: absolute;
     content: "";
     width: 4px;
-    height: 44px;
+    height: 36px;
     background-color: var(--color-secondary);
-    top: -4px;
-    left: -16px;
+    top: 0px;
+    left: 0px;
     border-top-right-radius: 4px;
     border-bottom-right-radius: 4px;
   }
@@ -69,54 +99,6 @@
     fill: var(--color-secondary);
   }
 
-  .divider {
-    width: 36px;
-    height: 17px;
-  }
-
-  .line {
-    height: 1px;
-    width: 100%;
-    background-color: var(--color-foreground-level-5);
-  }
-
-  .item:hover .tooltip {
-    opacity: 1;
-    transition: 0.3s;
-  }
-
-  .tooltip {
-    white-space: nowrap;
-    user-select: none;
-    background-color: var(--color-foreground);
-    color: var(--color-background);
-    text-align: center;
-    border-radius: 4px;
-    padding: 4px 8px 6px 8px;
-
-    position: absolute;
-    opacity: 0;
-    top: 2px;
-    left: 48px;
-    pointer-events: none;
-  }
-
-  .tooltip:before {
-    content: "";
-    display: block;
-    width: 0;
-    height: 0;
-    position: absolute;
-
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-right: 6px solid var(--color-foreground);
-    left: -6px;
-    border-top-left-radius: 30%;
-
-    top: 10px;
-  }
-
   a {
     display: flex;
     align-items: center;
@@ -127,51 +109,19 @@
 </style>
 
 <div class="wrapper" data-cy="sidebar">
-  <ul>
-    <li
-      class="item indicator"
-      data-cy="search"
-      class:active={path.active(path.search(), $location)}>
-      <a href={path.search()} use:link>
-        <Icon.Search />
-      </a>
-
-      <div class="tooltip">
-        <Title style="white-space: nowrap;">Search</Title>
-      </div>
-    </li>
-
-    <li
-      class="item indicator"
-      data-cy="settings"
-      class:active={path.active(path.settings(), $location)}>
-      <a href={path.settings()} use:link>
-        <Icon.Settings />
-      </a>
-
-      <div class="tooltip">
-        <Title style="white-space: nowrap;">Settings</Title>
-      </div>
-    </li>
-
-    <li class="divider">
-      <div class="line" />
-    </li>
-
+  <ul class="top">
     <li
       class="item indicator"
       data-cy="profile"
       class:active={path.active(path.profile(), $location, true)}>
-      <a href={path.profileProjects()} use:link>
-        <Avatar
-          size="medium"
-          avatarFallback={identity.avatarFallback}
-          variant="circle" />
-      </a>
-
-      <div class="tooltip">
-        <Title>Profile</Title>
-      </div>
+      <Tooltip value={identity.metadata.handle}>
+        <a href={path.profileProjects()} use:link>
+          <Avatar
+            size="medium"
+            avatarFallback={identity.avatarFallback}
+            variant="circle" />
+        </a>
+      </Tooltip>
     </li>
 
     {#each orgs as org}
@@ -179,24 +129,40 @@
         class="item indicator"
         data-cy={`org-${org.id}`}
         class:active={path.active(path.orgs(org.id), $location, true)}>
-        <a href={path.orgProjects(org.id)} use:link>
-          <Avatar
-            avatarFallback={org.avatarFallback}
-            variant="square"
-            size="medium" />
-        </a>
-
-        <div class="tooltip">
-          <Title>{org.id}</Title>
-        </div>
+        <Tooltip value={org.id}>
+          <a href={path.orgProjects(org.id)} use:link>
+            <Avatar
+              avatarFallback={org.avatarFallback}
+              variant="square"
+              size="medium" />
+          </a>
+        </Tooltip>
       </li>
     {/each}
 
     <li class="item" data-cy="add-org-button">
-      <AddOrgButton on:click={() => dispatch('createorg')} />
-      <div class="tooltip">
-        <Title>Add org</Title>
-      </div>
+      <Tooltip value="Add org">
+        <AddOrgButton on:click={() => dispatch('createorg')} />
+      </Tooltip>
     </li>
+  </ul>
+  <ul class="bottom">
+    <Tooltip value="Wallet">
+      <li class="item indicator" data-cy="wallet">
+        <a href={path.profileWallet()} use:link>
+          <Icon.Fund />
+        </a>
+      </li>
+    </Tooltip>
+    <Tooltip value="Settings">
+      <li
+        class="item indicator"
+        data-cy="settings"
+        class:active={path.active(path.settings(), $location)}>
+        <a href={path.settings()} use:link>
+          <Icon.Settings />
+        </a>
+      </li>
+    </Tooltip>
   </ul>
 </div>
