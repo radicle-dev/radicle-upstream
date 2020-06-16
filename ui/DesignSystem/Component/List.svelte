@@ -10,7 +10,7 @@
 
 <style>
   .list-container {
-    min-width: 500px;
+    min-width: var(--content-min-width);
     max-width: var(--content-max-width);
     padding: 0 16px;
   }
