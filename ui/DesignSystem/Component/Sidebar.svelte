@@ -119,7 +119,6 @@
           <Avatar
             size="medium"
             avatarFallback={identity.avatarFallback}
-            imageUrl={identity.metadata.avatarUrl}
             variant="circle" />
         </a>
       </Tooltip>

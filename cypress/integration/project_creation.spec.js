@@ -265,9 +265,7 @@ context("project creation", () => {
           "git-platinum-copy"
         );
 
-        cy.pick("project-screen").contains(
-          "This repository is a data source for the Upstream front-end tests"
-        );
+        cy.pick("project-screen").contains("Best project");
 
         cy.pick("notification").contains(
           "Project git-platinum-copy successfully created"

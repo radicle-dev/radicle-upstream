@@ -6,7 +6,7 @@
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
   import { create } from "../src/project.ts";
-  import { getLocalBranches } from "../src/source.ts";
+  import { getLocalState } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
 
   import {
@@ -66,7 +66,7 @@
       return "Pick a directory for the new project";
     }
 
-    if (!localBranchesError.match("could not find repository")) {
+    if (!localStateError.match("could not find repository")) {
       return "The directory should be empty";
     }
   };
@@ -85,14 +85,11 @@
       return "Pick a directory with an existing repository";
     }
 
-    if (localBranchesError.match("could not find repository")) {
+    if (localStateError.match("could not find repository")) {
       return "The directory should contain a git repository";
     }
 
-    if (
-      localBranches.includes("rad/rad/contributor") ||
-      localBranches.includes("rad/rad/project")
-    ) {
+    if (localState.managed) {
       return "This repository is already managed by Radicle";
     }
   };
@@ -177,14 +174,14 @@
     }
   };
 
-  let localBranches;
-  let localBranchesError;
+  let localState;
+  let localStateError;
 
   const fetchBranches = async (path) => {
     // Revert to defaults whenever the path changes in case this query fails
     // or the user clicks cancel in the directory selection dialog.
-    localBranches = "";
-    localBranchesError = "";
+    localState = "";
+    localStateError = "";
     defaultBranch = DEFAULT_BRANCH_FOR_NEW_PROJECTS;
 
     // This function gets executed even for the first path change on page load
@@ -198,9 +195,9 @@
     beginValidation = true;
 
     try {
-      localBranches = await getLocalBranches(path);
+      localState = await getLocalState(path);
     } catch (error) {
-      localBranchesError = error.message;
+      localStateError = error.message;
     }
 
     // Now that we have a response with potential branches or an error from the
@@ -316,10 +313,10 @@
                 var(--color-foreground-level-6)">
                 Default branch
               </Text>
-              {#if localBranches.length > 0}
+              {#if localState.branches && localState.branches.length > 0}
                 <Dropdown
                   style="max-width: 22.9rem;"
-                  options={localBranches.map((branch) => {
+                  options={localState.branches.map((branch) => {
                     return { variant: 'text', value: branch, textProps: { title: branch } };
                   })}
                   bind:value={defaultBranch} />

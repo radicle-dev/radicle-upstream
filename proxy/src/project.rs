@@ -1,10 +1,9 @@
 //! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
 //! abstraction.
 
-use librad::meta;
-use librad::project;
+use librad::meta::project;
+use librad::uri;
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
 
 use crate::coco;
 use crate::error;
@@ -22,12 +21,18 @@ pub struct Metadata {
     pub default_branch: String,
 }
 
-impl From<meta::Project> for Metadata {
-    fn from(project_meta: meta::Project) -> Self {
+impl<ST> From<project::Project<ST>> for Metadata
+where
+    ST: Clone,
+{
+    fn from(project_meta: project::Project<ST>) -> Self {
         Self {
-            name: project_meta.name.unwrap_or_else(|| "name unknown".into()),
-            description: project_meta.description.unwrap_or_else(|| "".into()),
-            default_branch: project_meta.default_branch,
+            name: project_meta.name().to_string(),
+            description: project_meta
+                .description()
+                .clone()
+                .unwrap_or_else(|| "".into()),
+            default_branch: project_meta.default_branch().to_string(),
         }
     }
 }
@@ -35,7 +40,7 @@ impl From<meta::Project> for Metadata {
 /// Radicle project for sharing and collaborating.
 pub struct Project {
     /// Unique identifier of the project in the network.
-    pub id: project::ProjectId,
+    pub id: uri::RadUrn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
@@ -67,13 +72,15 @@ pub struct Stats {
 }
 
 /// TODO(xla): Add documentation.
-pub async fn get(paths: &librad::paths::Paths, id: &str) -> Result<Project, error::Error> {
-    let meta = coco::get_project_meta(paths, id)?;
+pub async fn get(peer: &coco::Peer, project_urn: &str) -> Result<Project, error::Error> {
+    let meta = peer.get_project(project_urn).await?;
+    let id = meta.urn();
+    let metadata = meta.into();
 
     Ok(Project {
-        id: librad::project::ProjectId::from_str(id)?,
-        shareable_entity_identifier: format!("%{}", id),
-        metadata: meta.into(),
+        id,
+        shareable_entity_identifier: project_urn.to_string(),
+        metadata,
         registration: None,
         stats: Stats {
             branches: 11,

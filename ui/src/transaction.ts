@@ -296,10 +296,9 @@ interface Payer {
 
 export const formatPayer = (identity: Identity): Payer =>
   identity && {
-    name: identity.metadata.displayName || identity.metadata.handle,
+    name: identity.metadata.handle,
     type: PayerType.User,
     avatarFallback: identity.avatarFallback,
-    imageUrl: identity.metadata.avatarUrl,
   };
 
 export enum SubjectType {
