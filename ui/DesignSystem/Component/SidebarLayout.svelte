@@ -33,8 +33,9 @@
 
   <Sidebar
     on:createorg={() => push(path.orgRegistration())}
+    identity={session.identity}
     orgs={session.orgs}
-    identity={session.identity} />
+    registerOrgPermission={session.permissions.registerOrg} />
 
   <div class="container" data-cy="scrollable-content">
     <div class="content" {style}>
