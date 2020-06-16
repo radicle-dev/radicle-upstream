@@ -82,7 +82,6 @@
   validation={handleValidation}>
   <div slot="avatar">
     <Avatar
-      imageUrl={identity.metadata.avatarUrl}
       avatarFallback={identity.avatarFallback}
       size="small"
       variant="circle" />

@@ -231,7 +231,7 @@ impl ToDocumentedType for session::settings::Network {
     }
 }
 
-#[allow(clippy::result_unwrap_used)]
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -268,7 +268,8 @@ mod test {
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         // Test that we reset the session to default.
-        let have = session::current(&*store.read().await, cache.read().await.clone())
+        let store = store.read().await;
+        let have = session::current(&*store, cache.read().await.clone())
             .await
             .unwrap()
             .settings;

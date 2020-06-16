@@ -1,54 +1,54 @@
 //! Endpoints and serialisation for source code browsing.
 
-use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
+use crate::http;
 use crate::identity;
 
 /// Prefixed filters.
 pub fn routes(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("source").and(
-        blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
-            .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(local_branches_filter())
-            .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-            .or(tree_filter(paths)),
+        blob_filter(Arc::clone(&peer))
+            .or(branches_filter(Arc::clone(&peer)))
+            .or(commit_filter(Arc::clone(&peer)))
+            .or(commits_filter(Arc::clone(&peer)))
+            .or(local_state_filter())
+            .or(revisions_filter(Arc::clone(&peer)))
+            .or(tags_filter(Arc::clone(&peer)))
+            .or(tree_filter(peer)),
     )
 }
 
 /// Combination of all source filters.
 #[cfg(test)]
 fn filters(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    blob_filter(Arc::<RwLock<Paths>>::clone(&paths))
-        .or(branches_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(commit_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(commits_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(local_branches_filter())
-        .or(revisions_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(tags_filter(Arc::<RwLock<Paths>>::clone(&paths)))
-        .or(tree_filter(paths))
+    blob_filter(Arc::clone(&peer))
+        .or(branches_filter(Arc::clone(&peer)))
+        .or(commit_filter(Arc::clone(&peer)))
+        .or(commits_filter(Arc::clone(&peer)))
+        .or(local_state_filter())
+        .or(revisions_filter(Arc::clone(&peer)))
+        .or(tags_filter(Arc::clone(&peer)))
+        .or(tree_filter(peer))
 }
 
 /// `GET /blob/<project_id>/<revision>/<path...>`
 fn blob_filter(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -75,11 +75,11 @@ fn blob_filter(
 
 /// `GET /branches/<project_id>`
 fn branches_filter(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -101,11 +101,11 @@ fn branches_filter(
 
 /// `GET /commit/<project_id>/<sha1>`
 fn commit_filter(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -125,11 +125,11 @@ fn commit_filter(
 
 /// `GET /commits/<project_id>/<branch>`
 fn commits_filter(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commits")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -150,15 +150,15 @@ fn commits_filter(
 }
 
 /// `GET /branches/<project_id>`
-fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("local-branches")
+fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("local-state")
         .and(warp::get())
         .and(document::tail(
             "path",
             "Location of the repository on the filesystem",
         ))
         .and(document::document(document::description(
-            "List Branches for a local Repository",
+            "List Branches, Remotes and if it is managed by coco for a local Repository",
         )))
         .and(document::document(document::tag("Source")))
         .and(document::document(
@@ -171,16 +171,16 @@ fn local_branches_filter() -> impl Filter<Extract = impl Reply, Error = Rejectio
             )
             .description("List of branches"),
         ))
-        .and_then(handler::local_branches)
+        .and_then(handler::local_state)
 }
 
 /// `GET /revisions/<project_id>`
 fn revisions_filter(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(super::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -204,11 +204,11 @@ fn revisions_filter(
 
 /// `GET /tags/<project_id>`
 fn tags_filter(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -228,11 +228,11 @@ fn tags_filter(
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
 fn tree_filter(
-    paths: Arc<RwLock<Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
         .and(warp::get())
-        .and(super::with_paths(paths))
+        .and(http::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -259,9 +259,8 @@ fn tree_filter(
 
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use librad::paths::Paths;
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::Mutex;
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
@@ -271,66 +270,86 @@ mod handler {
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        peer: Arc<Mutex<coco::Peer>>,
+        project_urn: String,
         super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
-        let paths = librad_paths.read().await;
-        let blob = coco::blob(&paths, &project_id, revision, path)?;
+        let peer = peer.lock().await;
+        let project = peer.get_project(&project_urn).await?;
+        let default_branch = project.default_branch();
+        let blob = peer
+            .with_browser(&project_urn, |mut browser| {
+                coco::blob(&mut browser, default_branch, revision, &path)
+            })
+            .await?;
 
         Ok(reply::json(&blob))
     }
 
     /// Fetch the list [`coco::Branch`].
     pub async fn branches(
-        librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        peer: Arc<Mutex<coco::Peer>>,
+        project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let paths = librad_paths.read().await;
-        let branches = coco::branches(&paths, &project_id)?;
+        let peer = peer.lock().await;
+        let branches = peer
+            .with_browser(&project_urn, |browser| coco::branches(browser))
+            .await?;
 
         Ok(reply::json(&branches))
     }
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        peer: Arc<Mutex<coco::Peer>>,
+        project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
-        let paths = librad_paths.read().await;
-        let commit = coco::commit(&paths, &project_id, &sha1)?;
+        let peer = peer.lock().await;
+        let commit = peer
+            .with_browser(&project_urn, |mut browser| {
+                coco::commit(&mut browser, &sha1)
+            })
+            .await?;
 
         Ok(reply::json(&commit))
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
-        librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        peer: Arc<Mutex<coco::Peer>>,
+        project_urn: String,
         branch: String,
     ) -> Result<impl Reply, Rejection> {
-        let paths = librad_paths.read().await;
-        let commits = coco::commits(&paths, &project_id, &branch)?;
+        let peer = peer.lock().await;
+        let commits = peer
+            .with_browser(&project_urn, |mut browser| {
+                coco::commits(&mut browser, &branch)
+            })
+            .await?;
 
         Ok(reply::json(&commits))
     }
 
     /// Fetch the list [`coco::Branch`] for a local repository.
-    pub async fn local_branches(path: Tail) -> Result<impl Reply, Rejection> {
-        let branches = coco::local_branches(path.as_str())?;
+    pub async fn local_state(path: Tail) -> Result<impl Reply, Rejection> {
+        let state = coco::local_state(path.as_str())?;
 
-        Ok(reply::json(&branches))
+        Ok(reply::json(&state))
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
-        librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        peer: Arc<Mutex<coco::Peer>>,
+        project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let paths = librad_paths.read().await;
-        let branches = coco::branches(&paths, &project_id)?;
-        let tags = coco::tags(&paths, &project_id)?;
+        let peer = peer.lock().await;
+        let (branches, tags) = peer
+            .with_browser(&project_urn, |browser| {
+                Ok((coco::branches(browser)?, coco::tags(browser)?))
+            })
+            .await?;
+
         let revs = ["cloudhead", "rudolfs", "xla"]
             .iter()
             .map(|handle| super::Revision {
@@ -340,8 +359,6 @@ mod handler {
                     id: format!("{}@123abcd.git", handle),
                     metadata: identity::Metadata {
                         handle: (*handle).to_string(),
-                        display_name: None,
-                        avatar_url: None,
                     },
                     avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                     registered: None,
@@ -355,23 +372,31 @@ mod handler {
 
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
-        librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        peer: Arc<Mutex<coco::Peer>>,
+        project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let paths = librad_paths.read().await;
-        let tags = coco::tags(&paths, &project_id)?;
+        let peer = peer.lock().await;
+        let tags = peer
+            .with_browser(&project_urn, |browser| coco::tags(browser))
+            .await?;
 
         Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        librad_paths: Arc<RwLock<Paths>>,
-        project_id: String,
+        peer: Arc<Mutex<coco::Peer>>,
+        project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        let paths = librad_paths.read().await;
-        let tree = coco::tree(&paths, &project_id, revision, prefix)?;
+        let peer = peer.lock().await;
+        let project = peer.get_project(&project_urn).await?;
+        let default_branch = project.default_branch();
+        let tree = peer
+            .with_browser(&project_urn, |mut browser| {
+                coco::tree(&mut browser, default_branch, revision, prefix)
+            })
+            .await?;
 
         Ok(reply::json(&tree))
     }
@@ -381,7 +406,7 @@ mod handler {
 #[derive(Debug, Deserialize)]
 pub struct BlobQuery {
     /// Location of the blob in tree.
-    path: Option<String>,
+    path: String,
     /// Revision to use for the history of the repo.
     revision: Option<String>,
 }
@@ -466,15 +491,6 @@ impl ToDocumentedType for coco::BlobContent {
             .description("BlobContent")
             .example("print 'hello world'")
             .nullable(true)
-    }
-}
-
-impl Serialize for coco::Branch {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
     }
 }
 
@@ -696,67 +712,69 @@ impl ToDocumentedType for coco::TreeEntry {
     }
 }
 
-#[allow(
-    clippy::non_ascii_literal,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used
-)]
+#[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::Mutex;
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
+
     use crate::avatar;
     use crate::coco;
+    use crate::error;
+    use crate::http;
     use crate::identity;
 
     #[tokio::test]
-    async fn blob() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
+    async fn blob() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let platinum_project = peer
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+            .await?;
+        let urn = platinum_project.urn();
+
         let revision = "master";
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let default_branch = "master".to_string(); // TODO(finto): need to change this
+        let path = "text/arrows.txt";
+        let want = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::blob(
+                    &mut browser,
+                    &default_branch.clone(),
+                    Some(revision.to_string()),
+                    path,
+                )
+            })
+            .await?;
+
+        let api = super::filters(Arc::new(Mutex::new(peer.clone())));
 
         // Get ASCII blob.
-        let path = "text/arrows.txt";
         let res = request()
             .method("GET")
             .path(&format!(
                 "/blob/{}?revision={}&path={}",
-                platinum_id, revision, path
+                urn, revision, path
             ))
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::blob(
-            &librad_paths,
-            &platinum_id.to_string(),
-            Some(revision.to_string()),
-            Some(path.to_string()),
-        )
-        .unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!({
-                "binary": false,
-                "content": "  ;;;;;        ;;;;;        ;;;;;
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "binary": false,
+                    "content": "  ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
@@ -764,29 +782,30 @@ mod test {
  ':::::'      ':::::'      ':::::'
    ':`          ':`          ':`
 ",
-                "info": {
-                    "name": "arrows.txt",
-                    "objectType": "BLOB",
-                    "lastCommit": {
-                        "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
-                        "author": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                            "name": "Rūdolfs Ošiņš",
-                            "email": "rudolfs@osins.org",
+                    "info": {
+                        "name": "arrows.txt",
+                        "objectType": "BLOB",
+                        "lastCommit": {
+                            "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
+                            "author": {
+                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
+                            },
+                            "committer": {
+                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
+                            },
+                            "summary": "Add text files",
+                            "description": "",
+                            "committerTime": 1_575_283_425,
                         },
-                        "committer": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                            "name": "Rūdolfs Ošiņš",
-                            "email": "rudolfs@osins.org",
-                        },
-                        "summary": "Add text files",
-                        "description": "",
-                        "committerTime": 1_575_283_425,
                     },
-                },
-                "path": "text/arrows.txt",
-            })
-        );
+                    "path": "text/arrows.txt",
+                })
+            );
+        });
 
         // Get binary blob.
         let path = "bin/ls";
@@ -794,221 +813,235 @@ mod test {
             .method("GET")
             .path(&format!(
                 "/blob/{}?revision={}&path={}",
-                platinum_id, revision, path
+                urn.to_string(),
+                revision,
+                path
             ))
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::blob(
-            &librad_paths,
-            &platinum_id.to_string(),
-            Some(revision.to_string()),
-            Some(path.to_string()),
-        )
-        .unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!({
-                "binary": true,
-                "content": Value::Null,
-                "info": {
-                    "name": "ls",
-                    "objectType": "BLOB",
-                    "lastCommit": {
-                        "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
-                        "author": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                            "name": "Rūdolfs Ošiņš",
-                            "email": "rudolfs@osins.org",
-                        },
-                        "committer": {
-                            "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                            "name": "Rūdolfs Ošiņš",
-                            "email": "rudolfs@osins.org",
-                        },
-                        "summary": "Add some binary files",
-                        "description": "",
-                        "committerTime": 1_575_282_964, },
-                },
-                "path": "bin/ls",
+        let want = peer
+            .with_browser(&urn.to_string(), |browser| {
+                coco::blob(browser, &default_branch, Some(revision.to_string()), path)
             })
-        );
+            .await?;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "binary": true,
+                    "content": Value::Null,
+                    "info": {
+                        "name": "ls",
+                        "objectType": "BLOB",
+                        "lastCommit": {
+                            "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
+                            "author": {
+                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
+                            },
+                            "committer": {
+                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                                "name": "Rūdolfs Ošiņš",
+                                "email": "rudolfs@osins.org",
+                            },
+                            "summary": "Add some binary files",
+                            "description": "",
+                            "committerTime": 1_575_282_964, },
+                    },
+                    "path": "bin/ls",
+                })
+            );
+        });
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn branches() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+    async fn branches() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let platinum_project = peer
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+            .await?;
+        let urn = platinum_project.urn();
+
+        let want = peer
+            .with_browser(&urn.to_string(), |browser| coco::branches(browser))
+            .await?;
+
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/branches/{}", platinum_id))
+            .path(&format!("/branches/{}", urn.to_string()))
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::branches(&librad_paths, &platinum_id.to_string()).unwrap();
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(have, json!(["dev", "master"]));
+        });
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!(["dev", "master", "rad/contributor", "rad/project"]),
-        );
+        Ok(())
     }
 
     #[tokio::test]
-    async fn commit() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
+    async fn commit() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let platinum_project = peer
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+            .await?;
+        let urn = platinum_project.urn();
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
+        let want = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::commit(&mut browser, sha1)
+            })
+            .await?;
 
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/commit/{}/{}", platinum_id, sha1))
+            .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::commit(&librad_paths, &platinum_id.to_string(), sha1).unwrap();
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "sha1": sha1,
+                    "author": {
+                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/6367167426181048581.svg",
+                        "name": "Fintan Halpenny",
+                        "email": "fintan.halpenny@gmail.com",
+                    },
+                    "committer": {
+                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
+                        "email": "noreply@github.com",
+                        "name": "GitHub",
+                    },
+                    "summary": "Extend the docs (#2)",
+                    "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
+                    "committerTime": 1_578_309_972,
+                }),
+            );
+        });
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!({
-                "sha1": sha1,
-                "author": {
-                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/6367167426181048581.svg",
-                    "name": "Fintan Halpenny",
-                    "email": "fintan.halpenny@gmail.com",
-                },
-                "committer": {
-                    "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
-                    "email": "noreply@github.com",
-                    "name": "GitHub",
-                },
-                "summary": "Extend the docs (#2)",
-                "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                "committerTime": 1_578_309_972,
-            }),
-        );
+        Ok(())
     }
 
     #[tokio::test]
-    async fn commits() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
+    async fn commits() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let platinum_project = peer
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+            .await?;
+        let urn = platinum_project.urn();
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
+        let want = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::commits(&mut browser, branch)
+            })
+            .await?;
+        let head_commit = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::commit(&mut browser, head)
+            })
+            .await?;
 
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/commits/{}/{}", platinum_id, branch))
+            .path(&format!("/commits/{}/{}", urn.to_string(), branch))
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::commits(&librad_paths, &platinum_id.to_string(), branch).unwrap();
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(have.as_array().unwrap().len(), 14);
+            assert_eq!(
+                have.as_array().unwrap().first().unwrap(),
+                &serde_json::to_value(&head_commit).unwrap(),
+                "the first commit is the head of the branch"
+            );
+        });
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(have.as_array().unwrap().len(), 14);
-
-        let head_commit = coco::commit(&librad_paths, &platinum_id.to_string(), head).unwrap();
-
-        assert_eq!(
-            have.as_array().unwrap().first().unwrap(),
-            &serde_json::to_value(&head_commit).unwrap(),
-            "the first commit is the head of the branch"
-        );
+        Ok(())
     }
 
     #[tokio::test]
-    async fn local_branches() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
+    async fn local_state() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let peer = coco::Peer::new(config).await?;
 
         let path = "../fixtures/git-platinum";
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/local-branches/{}", path))
+            .path(&format!("/local-state/{}", path))
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::local_branches(path).unwrap();
+        let want = coco::local_state(path).unwrap();
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!([
-                "dev",
-                "master",
-                "origin/HEAD",
-                "origin/dev",
-                "origin/master"
-            ]),
-        );
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "branches": [
+                        "dev",
+                        "master",
+                    ],
+                    "managed": false,
+                }),
+            );
+        });
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn revisions() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
-        let res = request()
-            .method("GET")
-            .path(&format!("/revisions/{}", platinum_id))
-            .reply(&api)
-            .await;
+    async fn revisions() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let platinum_project = peer
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+            .await
+            .unwrap();
+        let urn = platinum_project.urn();
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = {
-            let branches = coco::branches(&librad_paths, &platinum_id.to_string()).unwrap();
-            let tags = coco::tags(&librad_paths, &platinum_id.to_string()).unwrap();
+            let (branches, tags) = peer
+                .with_browser(&urn.to_string(), |browser| {
+                    Ok((coco::branches(browser)?, coco::tags(browser)?))
+                })
+                .await?;
+
             ["cloudhead", "rudolfs", "xla"]
                 .iter()
                 .map(|handle| super::Revision {
@@ -1018,8 +1051,6 @@ mod test {
                         id: format!("{}@123abcd.git", handle),
                         metadata: identity::Metadata {
                             handle: (*handle).to_string(),
-                            display_name: None,
-                            avatar_url: None,
                         },
                         avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                         registered: None,
@@ -1029,175 +1060,191 @@ mod test {
                 .collect::<Vec<super::Revision>>()
         };
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!([
-                {
-                    "identity": {
-                        "id": "cloudhead@123abcd.git",
-                        "metadata": {
-                            "handle": "cloudhead",
-                            "displayName": Value::Null,
-                            "avatarUrl": Value::Null,
-                        },
-                        "registered": Value::Null,
-                        "shareableEntityIdentifier": "cloudhead@123abcd.git",
-                        "avatarFallback": {
-                            "background": {
-                                "r": 24,
-                                "g": 105,
-                                "b": 216,
-                            },
-                            "emoji": "🌻",
-                        },
-                    },
-                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
-                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                },
-                {
-                    "identity": {
-                        "id": "rudolfs@123abcd.git",
-                        "metadata": {
-                            "handle": "rudolfs",
-                            "displayName": Value::Null,
-                            "avatarUrl": Value::Null,
-                        },
-                        "registered": Value::Null,
-                        "shareableEntityIdentifier": "rudolfs@123abcd.git",
-                        "avatarFallback": {
-                            "background": {
-                                "r": 24,
-                                "g": 186,
-                                "b": 214,
-                            },
-                            "emoji": "🧿",
-                        },
-                    },
-                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
-                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                },
-                {
-                    "identity": {
-                        "id": "xla@123abcd.git",
-                        "metadata": {
-                            "handle": "xla",
-                            "displayName": Value::Null,
-                            "avatarUrl": Value::Null,
-                        },
-                        "registered": Value::Null,
-                        "shareableEntityIdentifier": "xla@123abcd.git",
-                        "avatarFallback": {
-                            "background": {
-                                "r": 155,
-                                "g": 157,
-                                "b": 169,
-                            },
-                            "emoji": "🗺",
-                        },
-                    },
-                    "branches": [ "dev", "master", "rad/contributor", "rad/project" ],
-                    "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                },
-            ]),
-        );
-    }
-
-    #[tokio::test]
-    async fn tags() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/tags/{}", platinum_id))
+            .path(&format!("/revisions/{}", urn.to_string()))
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::tags(&librad_paths, &platinum_id.to_string()).unwrap();
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!([
+                    {
+                        "identity": {
+                            "id": "cloudhead@123abcd.git",
+                            "metadata": {
+                                "handle": "cloudhead",
+                            },
+                            "registered": Value::Null,
+                            "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                            "avatarFallback": {
+                                "background": {
+                                    "r": 24,
+                                    "g": 105,
+                                    "b": 216,
+                                },
+                                "emoji": "🌻",
+                            },
+                        },
+                        "branches": [ "dev", "master" ],
+                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                    },
+                    {
+                        "identity": {
+                            "id": "rudolfs@123abcd.git",
+                            "metadata": {
+                                "handle": "rudolfs",
+                            },
+                            "registered": Value::Null,
+                            "shareableEntityIdentifier": "rudolfs@123abcd.git",
+                            "avatarFallback": {
+                                "background": {
+                                    "r": 24,
+                                    "g": 186,
+                                    "b": 214,
+                                },
+                            "emoji": "🧿",
+                            },
+                        },
+                        "branches": [ "dev", "master" ],
+                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                    },
+                    {
+                        "identity": {
+                            "id": "xla@123abcd.git",
+                            "metadata": {
+                                "handle": "xla",
+                            },
+                            "registered": Value::Null,
+                            "shareableEntityIdentifier": "xla@123abcd.git",
+                            "avatarFallback": {
+                                "background": {
+                                    "r": 155,
+                                    "g": 157,
+                                    "b": 169,
+                                },
+                            "emoji": "🗺",
+                            },
+                        },
+                        "branches": [ "dev", "master" ],
+                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                    },
+                ]),
+            )
+        });
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!(["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]),
-        );
+        Ok(())
     }
 
     #[tokio::test]
-    async fn tree() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let librad_paths = Paths::from_root(tmp_dir.path()).unwrap();
-        let (platinum_id, _platinum_project) = coco::replicate_platinum(
-            &tmp_dir,
-            &librad_paths,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )
-        .unwrap();
+    async fn tags() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let platinum_project = peer
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+            .await
+            .unwrap();
+        let urn = platinum_project.urn();
+
+        let want = peer
+            .with_browser(&urn.to_string(), |browser| coco::tags(browser))
+            .await?;
+
+        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let res = request()
+            .method("GET")
+            .path(&format!("/tags/{}", urn.to_string()))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!(["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]),
+            );
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn tree() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir)?;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let platinum_project = peer
+            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+            .await?;
+        let urn = platinum_project.urn();
 
         let revision = "master";
         let prefix = "src";
 
-        let api = super::filters(Arc::new(RwLock::new(librad_paths.clone())));
+        let default_branch = "master".to_string(); // TODO(finto): need to change this
+        let want = peer
+            .with_browser(&urn.to_string(), |mut browser| {
+                coco::tree(
+                    &mut browser,
+                    &default_branch,
+                    Some(revision.to_string()),
+                    Some(prefix.to_string()),
+                )
+            })
+            .await?;
+
+        let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
             .path(&format!(
                 "/tree/{}?revision={}&prefix={}",
-                platinum_id, revision, prefix
+                urn.to_string(),
+                revision,
+                prefix
             ))
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = coco::tree(
-            &librad_paths,
-            &platinum_id.to_string(),
-            Some(revision.to_string()),
-            Some(prefix.to_string()),
-        )
-        .unwrap();
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!({
+                    "path": "src",
+                    "info": {
+                        "name": "src",
+                        "objectType": "TREE",
+                        "lastCommit": null,                },
+                        "entries": [
+                        {
+                            "path": "src/Eval.hs",
+                            "info": {
+                                "name": "Eval.hs",
+                                "objectType": "BLOB",
+                                "lastCommit": null,
+                            },
+                        },
+                        {
+                            "path": "src/memory.rs",
+                            "info": {
+                                "name": "memory.rs",
+                                "objectType": "BLOB",
+                                "lastCommit": null,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!(want));
-        assert_eq!(
-            have,
-            json!({
-                "path": "src",
-                "info": {
-                    "name": "src",
-                    "objectType": "TREE",
-                    "lastCommit": null,                },
-                    "entries": [
-                    {
-                        "path": "src/Eval.hs",
-                        "info": {
-                            "name": "Eval.hs",
-                            "objectType": "BLOB",
-                            "lastCommit": null,
-                        },
-                    },
-                    {
-                        "path": "src/memory.rs",
-                        "info": {
-                            "name": "memory.rs",
-                            "objectType": "BLOB",
-                            "lastCommit": null,
-                        },
-                    },
-                ],
-            }),
-        );
+        Ok(())
     }
 }

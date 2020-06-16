@@ -83,7 +83,7 @@ impl fmt::Display for Emoji {
 pub enum Usage {
     /// A generic avatar.
     Any,
-    /// An [`identity::Identity`] avatar.
+    /// An [`crate::identity::Identity`] avatar.
     Identity,
     /// An org avatar.
     Org,

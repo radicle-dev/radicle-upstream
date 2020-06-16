@@ -295,6 +295,23 @@ To be able to build the proxy first install all required dependencies from the
 To start the proxy binary, run: `cd proxy && cargo run -- --registry=emulator`.
 After that the API docs are served under `http://127.0.0.1:8080/docs`.
 
+### Registry chains
+
+The proxy connects to a registry node to get data from a registry chain. The
+node host is configured via the `--registry` option.
+
+The `--registry` option accepts a special value `emulator`. If set the proxy
+simulates the registry chain in memory on the node.
+
+We provide the following shortcuts.
+
+* `yarn run proxy:start`. Runs the proxy with the emulator.
+* `yarn run proxy:start:ffnet` Connects to a node in the cloud that runs the
+  ffnet chain.
+* `yarn run proxy:start:devnet` Connects to a node in the cloud that runs the
+  devnet chain. This chain is frequently reset and contains the latest master
+  version.
+
 
 ### Testing
 
