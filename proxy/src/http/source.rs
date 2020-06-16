@@ -359,8 +359,6 @@ mod handler {
                     id: format!("{}@123abcd.git", handle),
                     metadata: identity::Metadata {
                         handle: (*handle).to_string(),
-                        display_name: None,
-                        avatar_url: None,
                     },
                     avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                     registered: None,
@@ -1053,8 +1051,6 @@ mod test {
                         id: format!("{}@123abcd.git", handle),
                         metadata: identity::Metadata {
                             handle: (*handle).to_string(),
-                            display_name: None,
-                            avatar_url: None,
                         },
                         avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                         registered: None,
@@ -1081,8 +1077,6 @@ mod test {
                             "id": "cloudhead@123abcd.git",
                             "metadata": {
                                 "handle": "cloudhead",
-                                "displayName": Value::Null,
-                                "avatarUrl": Value::Null,
                             },
                             "registered": Value::Null,
                             "shareableEntityIdentifier": "cloudhead@123abcd.git",
@@ -1103,8 +1097,6 @@ mod test {
                             "id": "rudolfs@123abcd.git",
                             "metadata": {
                                 "handle": "rudolfs",
-                                "displayName": Value::Null,
-                                "avatarUrl": Value::Null,
                             },
                             "registered": Value::Null,
                             "shareableEntityIdentifier": "rudolfs@123abcd.git",
@@ -1125,8 +1117,6 @@ mod test {
                             "id": "xla@123abcd.git",
                             "metadata": {
                                 "handle": "xla",
-                                "displayName": Value::Null,
-                                "avatarUrl": Value::Null,
                             },
                             "registered": Value::Null,
                             "shareableEntityIdentifier": "xla@123abcd.git",

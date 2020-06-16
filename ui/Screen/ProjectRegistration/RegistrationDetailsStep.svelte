@@ -44,7 +44,6 @@
       variant: "circle",
       title: identity.registered,
       avatarFallback: identity.avatarFallback,
-      imageUrl: identity.metadata.avatarUrl,
     },
   };
 
