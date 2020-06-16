@@ -1,9 +1,9 @@
 <script>
-  export let style = null;
-  export let data = null;
-  export let variant = null; // profile | org
-
   import { Avatar, Icon, Title, Text, Numeric } from "../Primitive";
+
+  export let style = null;
+  export let entity = null;
+  export let variant = null; // profile | org
 </script>
 
 <style>
@@ -39,7 +39,7 @@
     align-items: center;
   }
 
-  .id {
+  .shareable-entity-identifier {
     display: flex;
     padding-top: 8px;
     color: var(--color-foreground-level-6);
@@ -64,34 +64,32 @@
         style="margin-right: 32px"
         size="huge"
         variant={variant === 'profile' ? 'circle' : 'square'}
-        avatarFallback={data.avatarFallback} />
+        avatarFallback={entity.avatarFallback} />
 
       <div class="metadata">
         <div class="user">
           {#if variant === 'profile'}
             <Title variant="huge">
-              {data.registered ? data.registered : data.metadata.handle}
+              {entity.registered ? entity.registered : entity.metadata.handle}
             </Title>
           {:else if variant === 'org'}
-            <Title variant="huge">{data.id}</Title>
+            <Title variant="huge">{entity.id}</Title>
           {/if}
-          {#if variant === 'org' || data.registered}
+          {#if variant === 'org' || entity.registered}
             <Icon.Verified
               size="large"
               style="fill: var(--color-primary); margin-left: 6px;" />
           {/if}
         </div>
-        <div class="id">
+        <div class="shareable-entity-identifier">
           <Text variant="tiny" style="margin-right: 4px;">Radicle ID</Text>
-          <Numeric variant="small">{data.shareableEntityIdentifier}</Numeric>
+          <Numeric variant="small">{entity.shareableEntityIdentifier}</Numeric>
         </div>
       </div>
     </div>
   </div>
   <div class="action-bar">
     <slot name="left" />
-    <div class="right">
-      <slot name="right" />
-    </div>
+    <slot name="right" />
   </div>
 </div>
