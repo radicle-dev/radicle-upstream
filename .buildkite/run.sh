@@ -34,6 +34,15 @@ cat "$HOME/.gitconfig"
 echo "--- Run proxy tests"
 (cd proxy && time cargo test --all --all-features --all-targets)
 
+echo "--- Run cargo fmt"
+(cd proxy && time cargo fmt --all -- --check)
+
+echo "--- Run proxy lints"
+(cd proxy && time cargo clippy --all --all-features --all-targets)
+
+echo "--- Run proxy docs"
+(cd proxy && time cargo doc --no-deps)
+
 echo "--- Run app eslint checks"
 time yarn lint
 
