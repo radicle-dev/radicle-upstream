@@ -99,11 +99,7 @@ Cypress.Commands.add(
 
 Cypress.Commands.add(
   "createIdentity",
-  async (
-    handle = "secretariat",
-    displayName = "Christopher Chenery",
-    avatarUrl = null
-  ) =>
+  async (handle = "secretariat") =>
     await fetch("http://localhost:8080/v1/identities", {
       method: "POST",
       headers: {
@@ -111,8 +107,6 @@ Cypress.Commands.add(
       },
       body: JSON.stringify({
         handle,
-        displayName,
-        avatarUrl,
       }),
     })
 );

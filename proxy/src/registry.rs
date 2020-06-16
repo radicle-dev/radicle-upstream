@@ -377,7 +377,7 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         project_domain: ProjectDomain,
         project_name: ProjectName,
-        maybe_project_id: Option<librad::project::ProjectId>,
+        maybe_project_id: Option<librad::uri::RadUrn>,
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -645,7 +645,7 @@ impl Client for Registry {
         author: &protocol::ed25519::Pair,
         project_domain: ProjectDomain,
         project_name: ProjectName,
-        maybe_project_id: Option<librad::project::ProjectId>,
+        maybe_project_id: Option<librad::uri::RadUrn>,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit checkpoint transaction.
@@ -791,12 +791,7 @@ impl Client for Registry {
     }
 }
 
-#[allow(
-    clippy::indexing_slicing,
-    clippy::panic,
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used
-)]
+#[allow(clippy::indexing_slicing, clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use radicle_registry_client::{self as protocol, ClientT};
@@ -969,6 +964,11 @@ mod test {
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
         let project_name = ProjectName::try_from("upstream")?;
+        let urn = librad::uri::RadUrn::new(
+            librad::hash::Hash::hash(b"cloudhead"),
+            librad::uri::Protocol::Git,
+            librad::uri::Path::new(),
+        );
 
         // Register the user
         let user_registration = registry
@@ -986,7 +986,7 @@ mod test {
                 &author,
                 ProjectDomain::Org(org_id.clone()),
                 project_name.clone(),
-                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
+                Some(urn),
                 10,
             )
             .await;
@@ -998,7 +998,7 @@ mod test {
         assert_eq!(projects[0].name, project_name);
         assert_eq!(
             projects[0].maybe_project_id,
-            Some("0000000000000000000000000000000000000000.git".to_string())
+            Some("rad:git:hwd1yrerjqujexs8p9barieeoo3q6nwczgdn48g9zf8msw5bn9dnsy5eqph".to_string())
         );
 
         Ok(())
@@ -1013,6 +1013,11 @@ mod test {
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
         let project_name = ProjectName::try_from("radicle")?;
+        let urn = librad::uri::RadUrn::new(
+            librad::hash::Hash::hash(b"cloudhead"),
+            librad::uri::Protocol::Git,
+            librad::uri::Path::new(),
+        );
 
         // Register the user
         let user_registration = registry
@@ -1030,7 +1035,7 @@ mod test {
                 &author,
                 ProjectDomain::Org(org_id.clone()),
                 project_name.clone(),
-                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
+                Some(urn),
                 10,
             )
             .await;
@@ -1063,6 +1068,11 @@ mod test {
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
         let project_name = ProjectName::try_from("radicle")?;
+        let urn = librad::uri::RadUrn::new(
+            librad::hash::Hash::hash(b"upstream"),
+            librad::uri::Protocol::Git,
+            librad::uri::Path::new(),
+        );
 
         // Register the user
         let user_registration = registry
@@ -1076,7 +1086,7 @@ mod test {
                 &author,
                 ProjectDomain::User(handle.clone()),
                 project_name.clone(),
-                Some(librad::git::ProjectId::new(librad::surf::git::git2::Oid::zero()).into()),
+                Some(urn),
                 10,
             )
             .await;

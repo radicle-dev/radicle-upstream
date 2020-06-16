@@ -14,11 +14,8 @@
   const dispatch = createEventDispatcher();
 
   const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
-  const DISPLAY_NAME_MATCH = "^[a-z0-9 ]+$";
 
   let handle,
-    displayName,
-    avatarUrl,
     validations,
     beginValidation = false;
 
@@ -43,28 +40,9 @@
         message: `Handle should match ${HANDLE_MATCH}`,
       },
     },
-    displayName: {
-      optional: {
-        format: {
-          pattern: new RegExp(DISPLAY_NAME_MATCH, "i"),
-          message: `Display name should match ${DISPLAY_NAME_MATCH}`,
-        },
-      },
-    },
-    avatarUrl: {
-      optional: {
-        url: {
-          schemes: ["http", "https"],
-          message: "Not a valid image URL",
-          allowLocal: false,
-        },
-      },
-    },
   };
 
   let handleValidation = { status: ValidationStatus.NotStarted };
-  let displayNameValidation = { status: ValidationStatus.NotStarted };
-  let avatarUrlValidation = { status: ValidationStatus.NotStarted };
 
   const validate = () => {
     if (!beginValidation) {
@@ -73,18 +51,14 @@
     validations = validatejs(
       {
         handle: handle,
-        displayName: displayName,
-        avatarUrl: avatarUrl,
       },
       constraints
     );
 
     handleValidation = getValidationState("handle", validations);
-    displayNameValidation = getValidationState("displayName", validations);
-    avatarUrlValidation = getValidationState("avatarUrl", validations);
   };
 
-  $: validate(handle, displayName, avatarUrl);
+  $: validate(handle);
 
   $: if ($store.status === remote.Status.Success) {
     dispatch("success");
@@ -117,19 +91,8 @@
       placeholder="Enter a handle*"
       bind:value={handle}
       dataCy="handle"
-      validation={handleValidation} />
-    <Input.Text
-      placeholder="Add a display name"
-      bind:value={displayName}
-      dataCy="display-name"
-      validation={displayNameValidation}
-      style="margin-top: 16px;" />
-    <Input.Text
-      placeholder="Avatar url"
-      bind:value={avatarUrl}
-      dataCy="avatar-url"
-      style="margin: 16px 0 32px 0;"
-      validation={avatarUrlValidation} />
+      validation={handleValidation}
+      style="margin: 16px 0 32px 0;" />
     <div class="buttons">
       <Button
         dataCy="cancel-button"
@@ -145,11 +108,7 @@
           beginValidation = true;
           validate();
           if (!validatejs.isEmpty(validations)) return;
-          create({
-            handle: handle,
-            displayName: displayName,
-            avatarUrl: avatarUrl,
-          });
+          create({ handle: handle });
         }}>
         Create
       </Button>

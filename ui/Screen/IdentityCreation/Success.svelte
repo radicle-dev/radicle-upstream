@@ -77,14 +77,9 @@
     </Text>
     <Remote {store} let:data={identity}>
       <div class="identity-card" data-cy="identity-card">
-        <Avatar
-          size="big"
-          imageUrl={identity.metadata.avatarUrl}
-          avatarFallback={identity.avatarFallback} />
+        <Avatar size="big" avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">
-          <Title>
-            {identity.metadata.displayName || identity.metadata.handle}
-          </Title>
+          <Title>{identity.metadata.handle}</Title>
           <Copyable {afterCopy}>
             <Flex align="left">
               <Text

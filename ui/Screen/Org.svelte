@@ -77,7 +77,7 @@
     },
   ];
 
-  fetch({ id: params.id });
+  $: fetch({ id: params.id });
 </script>
 
 <SidebarLayout dataCy="org-screen" style="margin-top: var(--bigheader-height);">
