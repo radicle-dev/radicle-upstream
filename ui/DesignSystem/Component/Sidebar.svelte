@@ -141,7 +141,7 @@
       </li>
     {/each}
 
-    <li class="item" data-cy="add-org-button">
+    <li class="item" data-cy="add-org">
       {#if registerOrgPermission}
         <Tooltip value="Add org">
           <AddOrgButton on:click={() => dispatch('createorg')} />

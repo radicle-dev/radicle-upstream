@@ -21,6 +21,7 @@
 <svg
   class="button"
   class:disabled
+  data-cy="add-org-button"
   on:click
   width="36"
   height="36"
