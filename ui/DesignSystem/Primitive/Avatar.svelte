@@ -65,12 +65,13 @@
   }
 
   .square {
-    border-radius: 2px;
+    border-radius: 4px;
   }
 
   .square.small {
     width: 24px;
     height: 24px;
+    border-radius: 2px;
   }
 
   .square.regular {

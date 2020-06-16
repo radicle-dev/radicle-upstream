@@ -20,9 +20,10 @@
 
 <style>
   .container {
-    max-width: 71.25rem;
+    max-width: var(--content-max-width);
     margin: 0 auto;
-    min-width: 640px;
+    min-width: var(--content-min-width);
+    padding: 0 32px;
   }
   section header {
     margin: 16px 0 24px 0;
