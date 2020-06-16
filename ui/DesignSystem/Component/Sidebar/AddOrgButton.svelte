@@ -1,15 +1,27 @@
 <script>
   import { Icon } from "../../Primitive";
+
+  export let disabled = false;
 </script>
 
 <style>
   .button {
     cursor: pointer;
   }
+
+  .button.disabled:hover {
+    fill: var(--color-foreground-level-3) !important;
+  }
+
+  .button.disabled :global(svg) {
+    fill: var(--color-foreground-level-3) !important;
+  }
 </style>
 
 <svg
   class="button"
+  class:disabled
+  data-cy="add-org-button"
   on:click
   width="36"
   height="36"

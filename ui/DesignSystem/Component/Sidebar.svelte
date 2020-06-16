@@ -13,6 +13,7 @@
 
   export let identity = null;
   export let orgs = null;
+  export let registerOrgPermission = null;
 </script>
 
 <style>
@@ -140,10 +141,16 @@
       </li>
     {/each}
 
-    <li class="item" data-cy="add-org-button">
-      <Tooltip value="Add org">
-        <AddOrgButton on:click={() => dispatch('createorg')} />
-      </Tooltip>
+    <li class="item" data-cy="add-org">
+      {#if registerOrgPermission}
+        <Tooltip value="Add org">
+          <AddOrgButton on:click={() => dispatch('createorg')} />
+        </Tooltip>
+      {:else}
+        <Tooltip value="Register your handle to create an org">
+          <AddOrgButton disabled={true} />
+        </Tooltip>
+      {/if}
     </li>
   </ul>
   <ul class="bottom">
