@@ -278,8 +278,6 @@
     shareableEntityIdentifier: "cloudhead@123abcd.git",
     metadata: {
       handle: "cloudhead",
-      displayName: "Alexis Sellier",
-      avatarUrl: "https://avatars1.githubusercontent.com/u/40774",
     },
     registered: null,
     avatarFallback: { background: { r: 122, g: 112, b: 90 }, emoji: "💡" },

@@ -76,7 +76,6 @@
       <Avatar
         dataCy="profile-avatar"
         avatarFallback={session.identity.avatarFallback}
-        imageUrl={session.identity.metadata.avatarUrl}
         variant="circle"
         title={session.identity.metadata.handle}
         size="regular"
