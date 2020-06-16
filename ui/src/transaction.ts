@@ -26,6 +26,8 @@ export interface Deposits {
   memberRegistration: currency.MicroRad;
 }
 
+// Note: The schemas of each variant must correspond to
+// their proxy > registry > Message variant counterpart.
 export enum MessageType {
   OrgRegistration = "orgRegistration",
   OrgUnregistration = "orgUnregistration",
@@ -294,10 +296,9 @@ interface Payer {
 
 export const formatPayer = (identity: Identity): Payer =>
   identity && {
-    name: identity.metadata.displayName || identity.metadata.handle,
+    name: identity.metadata.handle,
     type: PayerType.User,
     avatarFallback: identity.avatarFallback,
-    imageUrl: identity.metadata.avatarUrl,
   };
 
 export enum SubjectType {

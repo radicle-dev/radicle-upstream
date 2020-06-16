@@ -1,20 +1,24 @@
 //! Endpoints to manipulate app state in test mode.
 
-use librad::paths;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::Mutex;
 use warp::{path, reject, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::registry;
 
 /// Prefixed control filters.
-pub fn routes<R: registry::Client>(
+pub fn routes<R>(
     enable: bool,
-    librad_paths: Arc<RwLock<paths::Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
+    owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
     path("control")
         .map(move || enable)
         .and_then(|enable| async move {
@@ -26,8 +30,8 @@ pub fn routes<R: registry::Client>(
         })
         .untuple_one()
         .and(
-            create_project_filter(Arc::clone(&librad_paths))
-                .or(nuke_coco_filter(librad_paths))
+            create_project_filter(Arc::clone(&peer), owner)
+                .or(nuke_coco_filter(peer))
                 .or(nuke_registry_filter(Arc::clone(&registry)))
                 .or(register_user_filter(registry)),
         )
@@ -35,22 +39,28 @@ pub fn routes<R: registry::Client>(
 
 /// Combination of all control filters.
 #[allow(dead_code)]
-fn filters<R: registry::Client>(
-    librad_paths: Arc<RwLock<paths::Paths>>,
+fn filters<R>(
+    peer: Arc<Mutex<coco::Peer>>,
+    owner: http::Shared<coco::User>,
     registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    create_project_filter(Arc::clone(&librad_paths))
-        .or(nuke_coco_filter(librad_paths))
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
+    create_project_filter(Arc::clone(&peer), owner)
+        .or(nuke_coco_filter(peer))
         .or(nuke_registry_filter(Arc::clone(&registry)))
         .or(register_user_filter(registry))
 }
 
 /// POST /create-project
 fn create_project_filter(
-    librad_paths: Arc<RwLock<paths::Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
+    owner: http::Shared<coco::User>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
-        .and(super::with_paths(librad_paths))
+        .and(super::with_peer(peer))
+        .and(super::with_shared(owner))
         .and(warp::body::json())
         .and_then(handler::create_project)
 }
@@ -67,10 +77,10 @@ fn register_user_filter<R: registry::Client>(
 
 /// GET /nuke/coco
 fn nuke_coco_filter(
-    librad_paths: Arc<RwLock<paths::Paths>>,
+    peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
-        .and(super::with_paths(librad_paths))
+        .and(super::with_peer(peer))
         .and_then(handler::nuke_coco)
 }
 
@@ -85,12 +95,13 @@ fn nuke_registry_filter<R: registry::Client>(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use librad::paths::Paths;
     use std::convert::TryFrom;
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::Mutex;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
+
+    use librad::keys::SecretKey;
 
     use crate::coco;
     use crate::http;
@@ -99,23 +110,26 @@ mod handler {
 
     /// Create a project from the fixture repo.
     pub async fn create_project(
-        librad_paths: Arc<RwLock<Paths>>,
+        peer: Arc<Mutex<coco::Peer>>,
+        owner: http::Shared<coco::User>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let dir = tempfile::tempdir().expect("tmp dir creation failed");
-        let paths = librad_paths.read().await;
-        let (id, meta) = coco::replicate_platinum(
-            &dir,
-            &paths,
-            &input.name,
-            &input.description,
-            &input.default_branch,
-        )?;
+        let owner = &*owner.read().await;
+        let mut peer = peer.lock().await;
+
+        let meta = peer
+            .replicate_platinum(
+                owner,
+                &input.name,
+                &input.description,
+                &input.default_branch,
+            )
+            .await?;
 
         Ok(reply::with_status(
             reply::json(&project::Project {
-                id: librad::project::ProjectId::from(id.clone()),
-                shareable_entity_identifier: format!("%{}", id),
+                id: meta.urn(),
+                shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,
                 stats: project::Stats {
@@ -146,13 +160,25 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(librad_paths: Arc<RwLock<Paths>>) -> Result<impl Reply, Rejection> {
-        let dir = tempfile::tempdir().expect("tmp dir creation failed");
-        let new = Paths::from_root(dir.path()).expect("unable to get paths");
+    pub async fn nuke_coco(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
+        // TmpDir deletes the temporary directory once it DROPS.
+        // This means our new directory goes missing, and future calls will fail.
+        // The Peer creates the directory again.
+        //
+        // N.B. this may gather lot's of tmp files on your system. We're sorry.
+        let tmp_path = {
+            let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+            temp_dir.path().to_path_buf()
+        };
 
-        let mut paths = librad_paths.write().await;
+        let config = coco::default_config(
+            SecretKey::new(),
+            tmp_path.to_str().expect("path extraction failed"),
+        )?;
+        let new_peer = coco::Peer::new(config).await?;
 
-        *paths = new;
+        let mut peer = peer.lock().await;
+        *peer = new_peer;
 
         Ok(reply::json(&true))
     }
@@ -165,6 +191,52 @@ mod handler {
         registry.write().await.reset(client);
 
         Ok(reply::json(&true))
+    }
+
+    #[allow(clippy::unwrap_used, clippy::panic)]
+    #[cfg(test)]
+    mod test {
+        use pretty_assertions::assert_ne;
+        use std::sync::Arc;
+        use tokio::sync::Mutex;
+
+        use crate::coco;
+        use crate::error;
+
+        #[tokio::test]
+        async fn nuke_coco() -> Result<(), error::Error> {
+            let tmp_dir = tempfile::tempdir()?;
+            let key = librad::keys::SecretKey::new();
+            let config = coco::default_config(key, tmp_dir)?;
+            let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+
+            let (old_paths, old_key, old_peer_id) = {
+                let p = peer.lock().await;
+                p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
+            };
+
+            super::nuke_coco(Arc::clone(&peer)).await.unwrap();
+
+            let (new_paths, new_key, new_peer_id) = {
+                let p = peer.lock().await;
+                p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
+            };
+
+            assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
+            assert_ne!(old_key, new_key);
+            assert_ne!(old_peer_id, new_peer_id);
+
+            let can_open = {
+                let p = peer.lock().await;
+                p.with_api(|api| {
+                    let _ = api.storage().reopen().expect("failed to reopen Storage");
+                    true
+                })?
+            };
+            assert!(can_open);
+
+            Ok(())
+        }
     }
 }
 
@@ -179,7 +251,6 @@ pub struct CreateInput {
     /// Configured default branch.
     default_branch: String,
 }
-
 /// Input for user registration.
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -188,4 +259,69 @@ pub struct RegisterInput {
     handle: String,
     /// User specified transaction fee.
     transaction_fee: registry::Balance,
+}
+
+#[cfg(test)]
+mod test {
+    use pretty_assertions::assert_eq;
+    use std::sync::Arc;
+    use tokio::sync::{Mutex, RwLock};
+    use warp::http::StatusCode;
+    use warp::test::request;
+
+    use crate::coco;
+    use crate::error;
+    use crate::http;
+    use crate::registry;
+
+    #[tokio::test]
+    async fn create_project_after_nuke() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = librad::keys::SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(owner)),
+            Arc::new(RwLock::new(registry)),
+        );
+
+        // Create project before nuke.
+        let res = request()
+            .method("POST")
+            .path("/create-project")
+            .json(&super::CreateInput {
+                name: "Monadic".into(),
+                description: "blabla".into(),
+                default_branch: "master".into(),
+            })
+            .reply(&api)
+            .await;
+        http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
+
+        // Reset state.
+        let res = request().method("GET").path("/nuke/coco").reply(&api).await;
+        assert_eq!(res.status(), StatusCode::OK);
+
+        let res = request()
+            .method("POST")
+            .path("/create-project")
+            .json(&super::CreateInput {
+                name: "Monadic".into(),
+                description: "blabla".into(),
+                default_branch: "master".into(),
+            })
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
+
+        Ok(())
+    }
 }

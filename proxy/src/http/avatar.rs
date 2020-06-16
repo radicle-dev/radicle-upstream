@@ -83,11 +83,7 @@ pub struct GetAvatarQuery {
     usage: Option<String>,
 }
 
-#[allow(
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used,
-    clippy::non_ascii_literal
-)]
+#[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -115,7 +111,7 @@ mod test {
                     "g": 187,
                     "b": 61,
                 },
-                "emoji": "🥂",
+                "emoji": "🎮",
             })
         );
     }

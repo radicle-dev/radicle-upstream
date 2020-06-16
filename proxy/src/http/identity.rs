@@ -99,7 +99,7 @@ mod handler {
             return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
         }
 
-        let id = identity::create(input.handle, input.display_name, input.avatar_url)?;
+        let id = identity::create(input.handle)?;
 
         session::set_identity(&store, id.clone())?;
 
@@ -113,8 +113,6 @@ mod handler {
             shareable_entity_identifier: format!("cloudhead@{}", id),
             metadata: identity::Metadata {
                 handle: "cloudhead".into(),
-                display_name: Some("Alexis Sellier".into()),
-                avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
             },
             registered: None,
             avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
@@ -162,21 +160,6 @@ impl ToDocumentedType for identity::Metadata {
                 .description("User chosen nickname")
                 .example("cloudhead"),
         );
-        properties.insert(
-            "displayName".into(),
-            document::string()
-                .description("Long-form name to be displayed next to the Identity")
-                .example("Alexis Sellier")
-                .nullable(true),
-        );
-        properties.insert(
-            "avatarUrl".into(),
-            document::string()
-                .description("Location of the image to shown as the avatar of the Idenityt")
-                .example("https://avatars1.githubusercontent.com/u/40774")
-                .nullable(true),
-        );
-
         document::DocumentedType::from(properties)
             .description("User provided metadata attached to the Identity")
     }
@@ -229,10 +212,6 @@ impl ToDocumentedType for avatar::Color {
 pub struct CreateInput {
     /// Handle the user wants to go by.
     handle: String,
-    /// Name to be displayed for this identity.
-    display_name: Option<String>,
-    /// A url to an image that can be displayed for the identity.
-    avatar_url: Option<String>,
 }
 
 impl ToDocumentedType for CreateInput {
@@ -244,27 +223,12 @@ impl ToDocumentedType for CreateInput {
                 .description("User chosen nickname")
                 .example("cloudhead"),
         );
-        properties.insert(
-            "displayName".into(),
-            document::string()
-                .description("Long-form name to be displayed next to the Identity")
-                .example("Alexis Sellier")
-                .nullable(true),
-        );
-        properties.insert(
-            "avatarUrl".into(),
-            document::string()
-                .description("Location of the image to shown as the avatar of the Idenityt")
-                .example("https://avatars1.githubusercontent.com/u/40774")
-                .nullable(true),
-        );
-
         document::DocumentedType::from(properties)
             .description("User provided metadata attached to the Identity")
     }
 }
 
-#[allow(clippy::non_ascii_literal, clippy::result_unwrap_used)]
+#[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -296,8 +260,6 @@ mod test {
             .path("/identities")
             .json(&super::CreateInput {
                 handle: "cloudhead".into(),
-                display_name: Some("Alexis Sellier".into()),
-                avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
             })
             .reply(&api)
             .await;
@@ -310,12 +272,10 @@ mod test {
                     "g": 124,
                     "b": 239,
                 },
-                "emoji": "🍝",
+                "emoji": "🥐",
             },
             "id": "cloudhead@123abcd.git",
             "metadata": {
-                "avatarUrl": "https://avatars1.githubusercontent.com/u/40774",
-                "displayName": "Alexis Sellier",
                 "handle": "cloudhead",
             },
             "registered": Value::Null,
@@ -357,8 +317,6 @@ mod test {
                 shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
                 metadata: identity::Metadata {
                     handle: "cloudhead".into(),
-                    display_name: Some("Alexis Sellier".into()),
-                    avatar_url: Some("https://avatars1.githubusercontent.com/u/40774".into()),
                 },
                 registered: None,
                 avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),

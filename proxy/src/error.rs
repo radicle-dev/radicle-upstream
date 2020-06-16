@@ -1,143 +1,158 @@
 //! Proxy library errors usable for caller control flow and additional context for API responses.
 
+use std::time::SystemTimeError;
+
 use librad::meta::common::url;
+use librad::meta::entity;
 use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client as registry;
-use std::time::SystemTimeError;
 
 /// Project problems.
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum ProjectValidation {
     /// Project names (String32) can only be at most 32 bytes.
+    #[error("the Org Name exceeded 32 bytes")]
     NameTooLong,
     /// Org ids (String32) can only be at most 32 bytes.
+    #[error("the Org Name exceeded 32 bytes")]
     OrgTooLong,
 }
 
 /// Validation errors for inputs of user registrations.
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum UserValidation {
     /// Given handle is too long.
+    #[error("the User Handle provided is too long")]
     HandleTooLong,
     /// Given id is too long.
+    #[error("the User Id provided is too long")]
     IdTooLong,
 }
 
 /// All error variants the API will return.
-#[derive(Debug)]
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Returned when an attempt to create an identity was made and there is one present.
+    #[error("the identity '{0}' already exits")]
     IdentityExists(String),
+
+    /// Configured default branch for the project is missing.
+    #[error("repository '{0}' doesn't have the configured default branch '{1}'")]
+    DefaultBranchMissing(String, String),
+
+    /// Repository already has a 'rad' remote.
+    #[error("repository '{0}' has already been setup with a 'rad' remote")]
+    RadRemoteExists(String),
+
     /// FileSystem errors from interacting with code in repository.
-    FS(surf::file_system::error::Error),
+    #[error(transparent)]
+    FS(#[from] surf::file_system::Error),
+
+    /// Trying to find a file path which could not be found.
+    #[error("the path '{0}' was not found")]
+    PathNotFound(surf::file_system::Path),
+
     /// Originated from `radicle_surf`.
-    Git(surf::git::error::Error),
+    #[error(transparent)]
+    Git(#[from] surf::git::error::Error),
+
     /// Originated from `radicle_surf::git::git2`.
-    Git2(git2::Error),
+    #[error(transparent)]
+    Git2(#[from] git2::Error),
+
     /// Integer conversion failed.
-    IntConversion(std::num::TryFromIntError),
+    #[error(transparent)]
+    IntConversion(#[from] std::num::TryFromIntError),
+
     /// Length limitation on String32 has been exceeded.
+    #[error("the provided string's length exceeds 32")]
     InordinateString32(),
+
     /// Id input is invalid, variant carries the reason.
+    #[error("the ID '{0}' is invalid")]
     InvalidId(String),
+
     /// Project name input is invalid, variant carries the reason.
+    #[error("the Project Name '{0}' is invalid")]
     InvalidProjectName(String),
+
+    /// Accept error from `librad`.
+    #[error(transparent)]
+    LibradAccept(#[from] librad::net::peer::AcceptError),
+
+    /// Bootstrap error from `librad`.
+    #[error(transparent)]
+    LibradBootstrap(#[from] librad::net::peer::BootstrapError),
+
     /// Originated from `librad`.
-    Librad(librad::git::Error),
-    /// Parse error for `librad::project::ProjectId`.
-    LibradParse(librad::project::projectid::ParseError),
+    #[error(transparent)]
+    LibradRepo(#[from] librad::git::repo::Error),
+
+    /// Originated from `librad::Storage`.
+    #[error(transparent)]
+    LibradStorage(#[from] librad::git::storage::Error),
+
+    /// Parse error for `librad::uri::path::Path`.
+    #[error(transparent)]
+    LibradParse(#[from] librad::uri::path::ParseError),
+
+    /// Parse error for `RadUrn`
+    #[error(transparent)]
+    LibradParseUrn(#[from] librad::uri::rad_urn::ParseError),
+
     /// Project error from `librad`.
-    LibradProject(librad::project::Error),
+    #[error(transparent)]
+    LibradProject(#[from] entity::Error),
+
+    /// Failure to acquire [`std::sync::Mutex`] lock for the peer.
+    #[error("failed to acquire lock for peer")]
+    LibradLock,
+
     /// Common I/O errors.
-    Io(std::io::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
     /// Url parse error.
-    Url(url::ParseError),
+    #[error(transparent)]
+    Url(#[from] url::ParseError),
+
     /// Project name validation.
-    ProjectValidation(ProjectValidation),
+    #[error(transparent)]
+    ProjectValidation(#[from] ProjectValidation),
+
     /// User registration validation errors.
-    UserValidation(UserValidation),
+    #[error(transparent)]
+    UserValidation(#[from] UserValidation),
+
     /// Issues with the Radicle protocol.
-    Protocol(registry::Error),
+    #[error(transparent)]
+    Protocol(#[from] registry::Error),
+
     /// Issues with the Radicle runtime.
+    #[error("runtime error in registry: {0:?}")]
     Runtime(registry::DispatchError),
+
     /// Issues when access persistent storage.
-    Store(kv::Error),
+    #[error(transparent)]
+    Store(#[from] kv::Error),
+
     /// Errors from handling time.
-    Time(SystemTimeError),
+    #[error(transparent)]
+    Time(#[from] SystemTimeError),
+
     /// Errors from transactions.
-    Transaction(registry::TransactionError),
-}
+    #[error(transparent)]
+    Transaction(#[from] registry::TransactionError),
 
-impl From<surf::file_system::error::Error> for Error {
-    fn from(fs_error: surf::file_system::error::Error) -> Self {
-        Self::FS(fs_error)
-    }
-}
-
-impl From<surf::git::error::Error> for Error {
-    fn from(surf_error: surf::git::error::Error) -> Self {
-        Self::Git(surf_error)
-    }
-}
-
-impl From<git2::Error> for Error {
-    fn from(git2_error: git2::Error) -> Self {
-        Self::Git2(git2_error)
-    }
-}
-
-impl From<kv::Error> for Error {
-    fn from(kv_error: kv::Error) -> Self {
-        Self::Store(kv_error)
-    }
-}
-
-impl From<librad::git::Error> for Error {
-    fn from(librad_error: librad::git::Error) -> Self {
-        Self::Librad(librad_error)
-    }
-}
-
-impl From<librad::project::Error> for Error {
-    fn from(project_error: librad::project::Error) -> Self {
-        Self::LibradProject(project_error)
-    }
-}
-
-impl From<librad::project::projectid::ParseError> for Error {
-    fn from(parse_error: librad::project::projectid::ParseError) -> Self {
-        Self::LibradParse(parse_error)
-    }
-}
-
-impl From<std::num::TryFromIntError> for Error {
-    fn from(int_error: std::num::TryFromIntError) -> Self {
-        Self::IntConversion(int_error)
-    }
-}
-
-impl From<std::io::Error> for Error {
-    fn from(io_error: std::io::Error) -> Self {
-        Self::Io(io_error)
-    }
-}
-
-impl From<url::ParseError> for Error {
-    fn from(url_error: url::ParseError) -> Self {
-        Self::Url(url_error)
-    }
+    /// Overflow while incrementing confirmed transaction.
+    #[error("while calculating the number of confirmed transactions, we encountered an overflow")]
+    TransactionConfirmationOverflow,
 }
 
 impl From<registry::DispatchError> for Error {
-    fn from(error: registry::DispatchError) -> Self {
-        Self::Runtime(error)
-    }
-}
-
-impl From<registry::Error> for Error {
-    fn from(error: registry::Error) -> Self {
-        Self::Protocol(error)
+    fn from(dispactch: registry::DispatchError) -> Self {
+        Self::Runtime(dispactch)
     }
 }
 
@@ -150,29 +165,5 @@ impl From<registry::InvalidIdError> for Error {
 impl From<registry::InvalidProjectNameError> for Error {
     fn from(invalid_project_name: registry::InvalidProjectNameError) -> Self {
         Self::InvalidProjectName(invalid_project_name.to_string())
-    }
-}
-
-impl From<registry::TransactionError> for Error {
-    fn from(tx_err: registry::TransactionError) -> Self {
-        Self::Transaction(tx_err)
-    }
-}
-
-impl From<ProjectValidation> for Error {
-    fn from(error: ProjectValidation) -> Self {
-        Self::ProjectValidation(error)
-    }
-}
-
-impl From<UserValidation> for Error {
-    fn from(error: UserValidation) -> Self {
-        Self::UserValidation(error)
-    }
-}
-
-impl From<SystemTimeError> for Error {
-    fn from(error: SystemTimeError) -> Self {
-        Self::Time(error)
     }
 }

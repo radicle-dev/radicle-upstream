@@ -25,6 +25,7 @@ serde = { version = "1.0", features = [ "derive" ] }
 serde_cbor = "0.11.1"
 serde_json = "1.0"
 tempfile = "3.1"
+thiserror = "1.0"
 tokio = { version = "0.2", features = [ "macros", "time" ] }
 url17 = { package = "url", version = "1.7" }
 url = "2.1"
@@ -32,11 +33,22 @@ warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", featur
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "4cedafaeb46deee4ec11d0e4b779a1a0d124d599"
+rev = "d2c75eab89e831f639a3618d081c9ce29c7f59a6"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "ff04d829a5e6e3746a4147605a4639db0d390e2c"
 
 [dev-dependencies]
+bytes = "0.5"
+http = "0.2"
 pretty_assertions = "0.6"
+
+[patch.crates-io]
+# Ed25519 support for rustls
+#
+# This needs to be a "patch" so dependencies transitively using rustls also use
+# our version.
+#
+# See https://github.com/ctz/rustls/pull/340
+rustls = { git = "https://github.com/kim/rustls", rev = "558405ac3c229947ca17b9285d60368ce67835ce" }

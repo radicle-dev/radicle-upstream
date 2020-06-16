@@ -1,9 +1,8 @@
 context("identity creation", () => {
   const validUser = {
     handle: "rafalca",
-    displayName: "Rafalca Romney",
     shareableEntityIdentifier: "rafalca@123abcd.git",
-    fallbackAvatar: "🥌",
+    fallbackAvatar: "🎀",
   };
 
   beforeEach(() => {
@@ -27,14 +26,12 @@ context("identity creation", () => {
 
       // Enter details screen
       cy.pick("form", "handle").type(validUser.handle);
-      cy.pick("form", "display-name").type(validUser.displayName);
       cy.pick("create-id-button").click();
 
       // Confirmation screen
       cy.get(
         `[data-cy="identity-card"] img[alt=${validUser.fallbackAvatar}]`
       ).should("exist");
-      cy.pick("identity-card").contains(validUser.displayName).should("exist");
       cy.pick("identity-card")
         .contains(validUser.shareableEntityIdentifier)
         .should("exist");
@@ -129,10 +126,6 @@ context("identity creation", () => {
     beforeEach(() => {
       cy.pick("get-started-button").click();
       cy.pick("form", "handle").type("_rafalca");
-      cy.pick("form", "display-name").type(validUser.displayName);
-      cy.pick("form", "avatar-url").type(
-        "https://www.motherjones.com/wp-content/uploads/images/horsehop.jpg"
-      );
       cy.pick("create-id-button").click();
     });
 
@@ -167,22 +160,6 @@ context("identity creation", () => {
         cy.pick("form", "handle").clear();
         cy.pick("form", "handle").type("x");
         cy.pick("form").contains(validationError);
-      });
-    });
-
-    context("display name", () => {
-      it("prevents the user from submitting an invalid display name", () => {
-        cy.pick("form", "display-name").clear();
-        cy.pick("form", "display-name").type("_not good");
-        cy.pick("form").contains("Display name should match ^[a-z0-9 ]+$");
-      });
-    });
-
-    context("avatar URL", () => {
-      it("prevents the user from submitting an invalid avatar URL", () => {
-        cy.pick("form", "avatar-url").clear();
-        cy.pick("form", "avatar-url").type("randomwords");
-        cy.pick("form").contains("Not a valid image URL");
       });
     });
   });

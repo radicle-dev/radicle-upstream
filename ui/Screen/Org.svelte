@@ -77,7 +77,7 @@
     },
   ];
 
-  fetch({ id: params.id });
+  $: fetch({ id: params.id });
 </script>
 
 <SidebarLayout

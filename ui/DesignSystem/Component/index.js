@@ -22,6 +22,7 @@ import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
 import StepCounter from "./StepCounter.svelte";
 import Timeline from "./Timeline.svelte";
+import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
 import TrackToggle from "./TrackToggle.svelte";
 import Transaction from "./Transaction.svelte";
@@ -56,6 +57,7 @@ export {
   SupportButton,
   StepCounter,
   Timeline,
+  Tooltip,
   Topbar,
   TrackToggle,
   Transaction,

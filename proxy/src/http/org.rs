@@ -1,29 +1,32 @@
 //! Endpoints for Org.
 
-use librad::paths::Paths;
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::coco;
 use crate::http;
 use crate::notification;
 use crate::project;
 use crate::registry;
 
 /// Prefixed filters.
-pub fn routes<R: registry::Client>(
-    paths: Arc<RwLock<Paths>>,
+pub fn routes<R>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
     path("orgs").and(
         get_filter(Arc::clone(&registry))
             .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(paths, Arc::clone(&registry)))
+            .or(get_projects_filter(peer, Arc::clone(&registry)))
             .or(register_filter(
                 Arc::clone(&registry),
                 subscriptions.clone(),
@@ -34,14 +37,17 @@ pub fn routes<R: registry::Client>(
 
 /// Combination of all org routes.
 #[cfg(test)]
-fn filters<R: registry::Client>(
-    paths: Arc<RwLock<Paths>>,
+fn filters<R>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
     get_filter(Arc::clone(&registry))
         .or(get_project_filter(Arc::clone(&registry)))
-        .or(get_projects_filter(paths, Arc::clone(&registry)))
+        .or(get_projects_filter(peer, Arc::clone(&registry)))
         .or(register_filter(
             Arc::clone(&registry),
             subscriptions.clone(),
@@ -52,7 +58,10 @@ fn filters<R: registry::Client>(
 /// `GET /<id>`
 fn get_filter<R: registry::Client>(
     registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
     http::with_shared(registry)
         .and(warp::get())
         .and(document::param::<String>("id", "Unique ID of the Org"))
@@ -111,12 +120,15 @@ fn get_project_filter<R: registry::Client>(
 }
 
 /// `GET /<id>/projects`
-fn get_projects_filter<R: registry::Client>(
-    paths: Arc<RwLock<Paths>>,
+fn get_projects_filter<R>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_paths(paths)
-        .and(http::with_shared(registry))
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
+    http::with_shared(registry)
+        .and(http::with_peer(peer))
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -193,13 +205,13 @@ fn register_member_filter<R: registry::Client>(
 
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use librad::paths::Paths;
     use std::convert::TryFrom;
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::Mutex;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::coco;
     use crate::http;
     use crate::notification;
     use crate::project;
@@ -233,19 +245,22 @@ mod handler {
     }
 
     /// Get all projects under the given org id.
-    pub async fn get_projects<R: registry::Client>(
-        paths: Arc<RwLock<Paths>>,
+    pub async fn get_projects<R>(
         registry: http::Shared<R>,
+        peer: Arc<Mutex<coco::Peer>>,
         org_id: String,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(org_id)?;
         let projects = reg.list_org_projects(org_id).await?;
+        let peer = peer.lock().await;
         let mut mapped_projects = Vec::new();
         for p in &projects {
-            let maybe_project = if let Some(id) = &p.maybe_project_id {
-                let paths = paths.read().await;
-                Some(project::get(&paths, id).await.expect("Project not found"))
+            let maybe_project = if let Some(urn) = &p.maybe_project_id {
+                Some(project::get(&peer, urn).await.expect("Project not found"))
             } else {
                 None
             };
@@ -447,43 +462,40 @@ impl ToDocumentedType for RegisterMemberInput {
     }
 }
 
-#[allow(
-    clippy::option_unwrap_used,
-    clippy::result_unwrap_used,
-    clippy::indexing_slicing,
-    clippy::panic
-)]
+#[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
 #[cfg(test)]
 mod test {
-    use librad::paths::Paths;
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
-    use std::str::FromStr;
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
     use radicle_registry_client as protocol;
 
     use crate::avatar;
     use crate::coco;
     use crate::error;
+    use crate::http;
     use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::new(Mutex::new(peer)),
             Arc::clone(&registry),
             subscriptions,
         );
@@ -514,18 +526,17 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!(registry::Org {
-                id: org_id.clone(),
-                shareable_entity_identifier: format!("%{}", org_id.to_string()),
-                avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
-                members: vec![user]
-            })
-        );
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(
+                have,
+                json!(registry::Org {
+                    id: org_id.clone(),
+                    shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                    avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
+                    members: vec![user]
+                })
+            );
+        });
 
         Ok(())
     }
@@ -533,14 +544,16 @@ mod test {
     #[tokio::test]
     async fn get_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::new(Mutex::new(peer)),
             Arc::clone(&registry),
             subscriptions,
         );
@@ -583,17 +596,16 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!(registry::Project {
-                name: project_name,
-                domain: project_domain,
-                maybe_project_id: None,
-            })
-        );
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(
+                have,
+                json!(registry::Project {
+                    name: project_name,
+                    domain: project_domain,
+                    maybe_project_id: None,
+                })
+            );
+        });
 
         Ok(())
     }
@@ -601,33 +613,30 @@ mod test {
     #[tokio::test]
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let mut peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
-            Arc::clone(&registry),
-            subscriptions,
-        );
-
-        let repo_dir = tempfile::tempdir_in(tmp_dir.path())?;
-        let path = repo_dir.path().to_str().unwrap().to_string();
-        coco::init_repo(path.clone())?;
 
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
-        let (project_id, _meta) = coco::init_project(
-            &librad_paths,
-            &path,
-            project_name,
-            project_description,
-            default_branch,
-        )?;
+        let platinum_project = peer
+            .replicate_platinum(&owner, project_name, project_description, default_branch)
+            .await?;
+        let urn = platinum_project.urn();
+
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::clone(&registry),
+            subscriptions,
+        );
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -657,10 +666,7 @@ mod test {
                 &author,
                 project_domain,
                 project_name.clone(),
-                Some(
-                    librad::project::ProjectId::from_str(&project_id.to_string())
-                        .expect("Project id"),
-                ),
+                Some(urn.clone()),
                 10,
             )
             .await?;
@@ -671,21 +677,19 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-
         let want = json!([{
             "name": project_name.to_string(),
             "orgId": org_id.to_string(),
             "shareableEntityIdentifier": format!("%{}/{}", org_id.to_string(), project_name.to_string()),
             "maybeProject": {
-                "id": project_id.to_string(),
+                "id": urn.to_string(),
                 "metadata": {
                     "defaultBranch": default_branch.to_string(),
                     "description": project_description.to_string(),
                     "name": project_name.to_string(),
                 },
                 "registration": Value::Null,
-                "shareableEntityIdentifier": format!("%{}", project_id.to_string()),
+                "shareableEntityIdentifier": urn.to_string(),
                 "stats": {
                     "branches": 11,
                     "commits": 267,
@@ -694,8 +698,9 @@ mod test {
             }
         }]);
 
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, want);
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, want);
+        });
 
         Ok(())
     }
@@ -703,7 +708,9 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -713,7 +720,7 @@ mod test {
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::new(Mutex::new(peer)),
             Arc::clone(&cache),
             subscriptions,
         );
@@ -753,7 +760,9 @@ mod test {
     #[tokio::test]
     async fn register_member() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let librad_paths = Paths::from_root(tmp_dir.path())?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -763,7 +772,7 @@ mod test {
         let subscriptions = notification::Subscriptions::default();
 
         let api = super::filters(
-            Arc::new(RwLock::new(librad_paths.clone())),
+            Arc::new(Mutex::new(peer)),
             Arc::clone(&cache),
             subscriptions,
         );

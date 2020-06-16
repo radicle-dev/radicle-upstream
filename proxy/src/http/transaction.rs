@@ -207,7 +207,7 @@ impl ToDocumentedType for ListInput {
     }
 }
 
-#[allow(clippy::result_unwrap_used)]
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use std::convert::TryFrom;
@@ -234,13 +234,13 @@ mod test {
         let fee = registry::MINIMUM_FEE;
 
         let org_id = registry::Id::try_from("radicle").unwrap();
-        let project_domain = registry::ProjectDomain::Org(org_id);
 
         let tx = registry::Transaction {
             id: registry::Hash(radicle_registry_client::TxHash::random()),
             messages: vec![registry::Message::ProjectRegistration {
                 project_name: registry::ProjectName::try_from("upstream").unwrap(),
-                project_domain,
+                domain_type: registry::DomainType::Org,
+                domain_id: org_id,
             }],
             state: registry::State::Confirmed {
                 block: 1,
