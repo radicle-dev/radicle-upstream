@@ -115,10 +115,10 @@ Part of #277
 
 <style>
   .container {
-    max-width: 71.25rem;
+    max-width: var(--content-max-width);
     margin: 0 auto;
-    padding: 2rem;
-    min-width: 30rem;
+    padding: var(--content-padding);
+    min-width: var(--content-min-width);
   }
   header {
     padding: 0 16px 24px 16px;

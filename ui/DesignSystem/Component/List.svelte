@@ -12,7 +12,7 @@
   .list-container {
     min-width: var(--content-min-width);
     max-width: var(--content-max-width);
-    padding: 0 16px;
+    padding: 0 var(--content-padding);
   }
   ul {
     width: 100%;
