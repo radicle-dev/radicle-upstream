@@ -1,8 +1,7 @@
-use secstr::SecUtf8;
 use std::convert::TryFrom;
 
 use librad::paths;
-use radicle_keystore::pinentry::{self, Pinentry as _};
+use radicle_keystore::pinentry::SecUtf8;
 
 use proxy::coco;
 use proxy::env;
@@ -55,19 +54,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
 
-    let (pw, paths_config) = if args.test {
-        let pw = SecUtf8::from("asdf");
-        (
-            pw,
-            coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()),
-        )
+    let paths_config = if args.test {
+        coco::config::Paths::FromRoot(temp_dir.path().to_path_buf())
     } else {
-        let pw = pinentry::Prompt::new("please provide your Radicle passphrase: ")
-            .get_passphrase()
-            .expect("failed to get the passphrase");
-
-        (pw, coco::config::Paths::default())
+        coco::config::Paths::default()
     };
+    let pw = SecUtf8::from("radicle-upstream");
 
     let paths = paths::Paths::try_from(paths_config)?;
 

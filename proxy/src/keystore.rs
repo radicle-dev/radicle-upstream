@@ -3,13 +3,15 @@
 use std::convert::Infallible;
 use std::fmt;
 
-use secstr::{SecStr, SecUtf8};
+use secstr::SecStr;
 
 use librad::keys;
 use librad::paths;
 use radicle_keystore::{
     crypto::{Pwhash, SecretBoxError},
-    file, FileStorage, Keystore, SecretKeyExt,
+    file,
+    pinentry::SecUtf8,
+    FileStorage, Keystore, SecretKeyExt,
 };
 use radicle_registry_client::{ed25519, CryptoError, CryptoPair};
 
