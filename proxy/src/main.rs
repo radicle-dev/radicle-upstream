@@ -57,7 +57,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (pw, paths_config) = if args.test {
         let pw = SecUtf8::from("asdf");
-        (pw, coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()))
+        (
+            pw,
+            coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()),
+        )
     } else {
         let pw = pinentry::Prompt::new("please provide your Radicle passphrase: ")
             .get_passphrase()
@@ -68,11 +71,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let paths = paths::Paths::try_from(paths_config)?;
 
-    let mut store = keystore::Keystorage::new(&paths, pw)?;
+    let mut store = keystore::Keystorage::new(&paths, pw);
     let key = store.init_librad_key()?;
 
-    let config = coco::config::configure(paths, key).expect("failed to configure the PeerConfig");
-    let mut peer = coco::Peer::new(config).await.expect("failed to create Peer");
+    let config = coco::config::configure(paths, key);
+    let mut peer = coco::Peer::new(config)
+        .await
+        .expect("failed to create Peer");
 
     let owner = coco::fake_owner(&peer).await;
 

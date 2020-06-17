@@ -13,26 +13,30 @@ use radicle_keystore::{
 };
 use radicle_registry_client::{ed25519, CryptoError, CryptoPair};
 
+/// File path to librad key
 const LIBRAD_KEY: &str = "librad.key";
+/// File path to registry key
 const REGISTRY_KEY: &str = "registry.key";
 
 /// Storage for putting and getting the necessary cryptographic keys.
 pub struct Keystorage {
+    /// Store for `librad`.
     librad_store: LibradStore,
+    /// Store for `registry`.
     registry_store: RegistryStore,
 }
 
 impl Keystorage {
-    /// Create a new `CocoStore` for storing your [`keys::SecretKey`].
+    /// Create a new `Keystorage`.
     #[must_use = "must use CocoStore to put/get a key"]
-    pub fn new(paths: &paths::Paths, pw: SecUtf8) -> Result<Keystorage, Error> {
+    pub fn new(paths: &paths::Paths, pw: SecUtf8) -> Self {
         let path = paths.keys_dir();
         let librad_path = path.join(LIBRAD_KEY);
         let registry_path = path.join(REGISTRY_KEY);
-        Ok(Keystorage {
+        Self {
             librad_store: FileStorage::new(&librad_path, Pwhash::new(pw.clone())),
             registry_store: FileStorage::new(&registry_path, Pwhash::new(pw)),
-        })
+        }
     }
 
     /// Fetch the [`keys::SecretKey`]
@@ -68,7 +72,7 @@ impl Keystorage {
                 let key = keys::SecretKey::new();
                 self.librad_store.put_key(key.clone())?;
                 Ok(key)
-            },
+            }
             Err(err) => Err(err.into()),
         }
     }
@@ -85,13 +89,15 @@ impl Keystorage {
                 let (key, _): (ed25519::Pair, _) = CryptoPair::generate();
                 self.registry_store.put_key(Pair(key.clone()))?;
                 Ok(key)
-            },
+            }
             Err(err) => Err(err.into()),
         }
     }
 }
 
+/// Synonym for an error when interacting with a store for [`librad::keys`].
 type LibradError = file::Error<SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
+/// Synonym for storing keys related to `librad`.
 type LibradStore = FileStorage<
     Pwhash<SecUtf8>,
     keys::PublicKey,
@@ -99,9 +105,11 @@ type LibradStore = FileStorage<
     <keys::SecretKey as SecretKeyExt>::Metadata,
 >;
 
+/// Synonym for an error when interacting with a store for [`radicle_registry_client::ed25519`].
+type RegistryError = file::Error<SecretBoxError<Infallible>, PairError>;
+/// Synonym for storing keys related to `radicle_registry_client`.
 type RegistryStore =
     FileStorage<Pwhash<SecUtf8>, ed25519::Public, Pair, <Pair as SecretKeyExt>::Metadata>;
-type RegistryError = file::Error<SecretBoxError<Infallible>, PairError>;
 
 /// The [`Keystorage`] can result in two kinds of errors depending on what storage you're using.
 #[derive(Debug, thiserror::Error)]
@@ -121,7 +129,7 @@ pub struct PairError(CryptoError);
 
 impl From<CryptoError> for PairError {
     fn from(err: CryptoError) -> Self {
-        PairError(err)
+        Self(err)
     }
 }
 
@@ -149,7 +157,7 @@ impl AsRef<[u8]> for Pair {
 }
 
 impl From<Pair> for ed25519::Public {
-    fn from(pair: Pair) -> ed25519::Public {
+    fn from(pair: Pair) -> Self {
         pair.0.into()
     }
 }
@@ -159,7 +167,7 @@ impl SecretKeyExt for Pair {
     type Error = PairError;
 
     fn from_bytes_and_meta(bytes: SecStr, _metadata: &Self::Metadata) -> Result<Self, Self::Error> {
-        Ok(Pair(CryptoPair::from_seed_slice(bytes.unsecure())?))
+        Ok(Self(CryptoPair::from_seed_slice(bytes.unsecure())?))
     }
 
     fn metadata(&self) -> Self::Metadata {}
@@ -171,17 +179,15 @@ mod tests {
     use librad::paths;
     use secstr::SecUtf8;
 
+    #[allow(clippy::panic)]
     #[test]
     fn can_create_librad_key() -> Result<(), Box<dyn std::error::Error>> {
         let temp_dir = tempfile::tempdir()?;
         let paths = paths::Paths::from_root(temp_dir.path())?;
         let pw = SecUtf8::from("asdf");
-        let mut store = Keystorage::new(&paths, pw)?;
+        let mut store = Keystorage::new(&paths, pw);
 
-        let key = match store.init_librad_key() {
-            Ok(key) => key,
-            Err(err) => panic!("could not get or create a key: {:?}", err),
-        };
+        let key = store.init_librad_key().expect("could not create key:");
 
         assert!(
             key == store.get_librad_key()?,
@@ -196,12 +202,11 @@ mod tests {
         let temp_dir = tempfile::tempdir()?;
         let paths = paths::Paths::from_root(temp_dir.path())?;
         let pw = SecUtf8::from("asdf");
-        let mut store = Keystorage::new(&paths, pw)?;
+        let mut store = Keystorage::new(&paths, pw);
 
-        match store.init_registry_key() {
-            Ok(_) => {},
-            Err(err) => panic!("could not get or create a key: {:?}", err),
-        };
+        let _key = store
+            .init_registry_key()
+            .expect("could not get or create a key:");
 
         // N.B. We'd like to test that the get does actually get the right key back, buuut we can't
         // compare them OH WELL.
