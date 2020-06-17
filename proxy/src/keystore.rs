@@ -150,6 +150,8 @@ impl fmt::Display for PairError {
     }
 }
 
+/// Wrapper around [`ed25519::Pair`] so that we can define the [`SecretKeyExt`] trait required for
+/// [`FileStorage`].
 struct Pair(ed25519::Pair);
 
 impl AsRef<[u8]> for Pair {
