@@ -1,4 +1,4 @@
-//! Configuration for [`proxy::coco`].
+//! Configuration for [`crate::coco`].
 
 use std::convert::TryFrom;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -40,7 +40,7 @@ impl TryFrom<Paths> for paths::Paths {
 /// [`SocketAddr`].
 pub type Disco = discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>;
 
-/// Configure a [`net::peer:PeerConfig`].
+/// Configure a [`net::peer::PeerConfig`].
 #[must_use]
 pub fn configure(paths: paths::Paths, key: keys::SecretKey) -> net::peer::PeerConfig<Disco> {
     // TODO(finto): There should be a coco::config module that knows how to parse the
