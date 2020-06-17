@@ -3,15 +3,13 @@
 use std::convert::Infallible;
 use std::fmt;
 
-use secstr::SecStr;
-
 use librad::keys;
 use librad::paths;
 use radicle_keystore::{
     crypto::{Pwhash, SecretBoxError},
     file,
     pinentry::SecUtf8,
-    FileStorage, Keystore, SecretKeyExt,
+    FileStorage, Keystore, SecStr, SecretKeyExt,
 };
 use radicle_registry_client::{ed25519, CryptoError, CryptoPair};
 
@@ -181,7 +179,7 @@ impl SecretKeyExt for Pair {
 mod tests {
     use super::Keystorage;
     use librad::paths;
-    use secstr::SecUtf8;
+    use radicle_keystore::pinentry::SecUtf8;
 
     #[allow(clippy::panic)]
     #[test]
