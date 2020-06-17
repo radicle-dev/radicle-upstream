@@ -58,18 +58,13 @@ mod handler {
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Don't panic when trying to convert ids.
-        println!("handler::list input.ids {:?}", input.ids.clone());
         let tx_ids = input
             .ids
             .iter()
             .map(|id| {
-                println!("handler::list will try to convert id {}", id);
                 let string = format!("\"{}\"", id);
-                println!("handler::list wrapped id with quotes: {}", string);
-                let deserialized = serde_json::from_str::<registry::Hash>(&string)
-                    .expect("unable to get hash from string");
-                println!("handler::list id now deserialized {:?}", deserialized);
-                deserialized
+                serde_json::from_str::<registry::Hash>(&string)
+                    .expect("unable to get hash from string")
             })
             .collect();
         let txs = cache.read().await.list_transactions(tx_ids)?;
@@ -259,10 +254,10 @@ mod test {
 
         cache.cache_transaction(tx.clone()).unwrap();
 
-        let input_ids = vec![tx.id.clone()];
+        let input_ids = vec![tx.id];
         let serialized_ids = input_ids
             .iter()
-            .map(|h| serde_json::to_string(h).expect("Fail 1"))
+            .map(|h| serde_json::to_string(h).expect("Failed to serialize ids"))
             .collect();
 
         let transactions = cache.list_transactions(input_ids).unwrap();
@@ -281,6 +276,5 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(transactions));
-        assert_eq!(transactions.first().unwrap().id, tx.id);
     }
 }

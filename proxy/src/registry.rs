@@ -1099,12 +1099,12 @@ mod test {
     #[tokio::test]
     async fn deserialize_failing_str() -> Result<(), error::Error> {
         let deserialized = serde_json::from_str::<protocol::Hash>(
-            &"0x6d8ccfd2b4fcf295af8cc51b3491f49893e4e55af0cf975bccbe264b080b2adf",
+            "0x6d8ccfd2b4fcf295af8cc51b3491f49893e4e55af0cf975bccbe264b080b2adf",
         );
         assert!(deserialized.is_err());
 
         let deserialized_2 = serde_json::from_str::<protocol::Hash>(
-            &"\"0x88788f187f40a12f88aad8e3dd6ba494452305ed0ced83367c9dcd997dd026c2\"",
+            "\"0x88788f187f40a12f88aad8e3dd6ba494452305ed0ced83367c9dcd997dd026c2\"",
         ); //.expect("failed");
         assert!(deserialized_2.is_ok());
 

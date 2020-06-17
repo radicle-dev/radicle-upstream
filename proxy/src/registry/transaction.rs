@@ -329,9 +329,7 @@ where
 
     /// Caches a transaction locally in the Registry.
     fn cache_transaction(&self, tx: Transaction) -> Result<(), error::Error> {
-        println!("cache_transaction tx.id {:?}", tx.id);
         let key = serde_json::to_string(&tx.id).expect("Couldn't serialize registry Hash");
-        println!("cache_transaction tx.id serialized {:?}", key);
 
         self.transactions.set(key.as_str(), kv::Json(tx))?;
 
