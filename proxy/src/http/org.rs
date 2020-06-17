@@ -238,9 +238,9 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
-        let project_domain = registry::ProjectDomain::Org(org_id);
+        let project_registrant = registry::ProjectRegistrant::Org(org_id);
         let project_name = registry::ProjectName::try_from(project_name).map_err(Error::from)?;
-        let project = reg.get_project(project_domain, project_name).await?;
+        let project = reg.get_project(project_registrant, project_name).await?;
 
         Ok(reply::json(&project))
     }
@@ -268,10 +268,10 @@ mod handler {
 
             let org_project = super::Project {
                 name: p.name.to_string(),
-                org_id: p.domain.id().to_string(),
+                org_id: p.registrant.id().to_string(),
                 shareable_entity_identifier: format!(
                     "%{}/{}",
-                    p.domain.id().to_string(),
+                    p.registrant.id().to_string(),
                     p.name.to_string()
                 ),
                 maybe_project,
@@ -361,7 +361,7 @@ impl Serialize for registry::Project {
     {
         let mut state = serializer.serialize_struct("Project", 3)?;
         state.serialize_field("name", &self.name.to_string())?;
-        state.serialize_field("orgId", &self.domain.id().to_string())?;
+        state.serialize_field("orgId", &self.registrantid().to_string())?;
         state.serialize_field("maybeProjectId", &self.maybe_project_id)?;
 
         state.end()
@@ -562,7 +562,7 @@ mod test {
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
         let project_name = registry::ProjectName::try_from("upstream")?;
-        let project_domain = registry::ProjectDomain::Org(org_id.clone());
+        let project_registrant = registry::ProjectRegistrant::Org(org_id.clone());
 
         // Register the user
         registry
@@ -584,7 +584,7 @@ mod test {
             .await
             .register_project(
                 &author,
-                project_domain.clone(),
+                project_registrant.clone(),
                 project_name.clone(),
                 None,
                 10,
@@ -602,7 +602,7 @@ mod test {
                 have,
                 json!(registry::Project {
                     name: project_name,
-                    domain: project_domain,
+                    registrant: project_registrant,
                     maybe_project_id: None,
                 })
             );
@@ -644,7 +644,7 @@ mod test {
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
         let project_name = registry::ProjectName::try_from(project_name)?;
-        let project_domain = registry::ProjectDomain::Org(org_id.clone());
+        let project_registrant = registry::ProjectRegistrant::Org(org_id.clone());
 
         registry
             .write()
@@ -665,7 +665,7 @@ mod test {
             .await
             .register_project(
                 &author,
-                project_domain,
+                project_registrant,
                 project_name.clone(),
                 Some(urn.clone()),
                 10,

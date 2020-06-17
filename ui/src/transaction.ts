@@ -6,7 +6,7 @@ import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar";
 import * as currency from "./currency";
 import * as event from "./event";
 import { Identity } from "./identity";
-import { Domain } from "./project";
+import { Registrant } from "./project";
 import * as remote from "./remote";
 
 const POLL_INTERVAL = 10000;
@@ -62,8 +62,8 @@ interface MemberUnregistration {
 // TODO(sos): coordinate message format for project registration with proxy
 interface ProjectRegistration {
   type: MessageType.ProjectRegistration;
-  domainType: Domain;
-  domainId: string;
+  registrantType: Registrant;
+  registrantId: string;
   projectName: string;
   cocoId: string;
 }
@@ -356,11 +356,11 @@ export const formatSubject = (msg: Message): Subject => {
     // TODO(sos): replace with associated identity handle for user, should it exist
     // TODO(sos): once we can register projects to users, accommodate circle avatars
     case MessageType.ProjectRegistration:
-      name = `${msg.domainId} / ${msg.projectName}`;
+      name = `${msg.registrantId} / ${msg.projectName}`;
       type = SubjectType.OrgProject;
       avatarSource = getAvatar(
-        msg.domainType === Domain.User ? Usage.Identity : Usage.Org,
-        msg.domainId
+        msg.registrantType === Registrant.User ? Usage.Identity : Usage.Org,
+        msg.registrantId
       );
       break;
   }

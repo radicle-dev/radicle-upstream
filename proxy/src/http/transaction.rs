@@ -239,8 +239,8 @@ mod test {
             id: registry::Hash(radicle_registry_client::TxHash::random()),
             messages: vec![registry::Message::ProjectRegistration {
                 project_name: registry::ProjectName::try_from("upstream").unwrap(),
-                domain_type: registry::DomainType::Org,
-                domain_id: org_id,
+                registrant_type: registry::RegistrantType::Org,
+                registrant_id: org_id,
             }],
             state: registry::State::Confirmed {
                 block: 1,

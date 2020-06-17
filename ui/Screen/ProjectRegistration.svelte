@@ -25,9 +25,9 @@
   let projectId = params.projectId || null;
   let projectName = null;
 
-  let domainId = params.domainId || null;
-  let domainType = null;
-  let domainAvatar = null;
+  let registrantId = params.registrantId || null;
+  let registrantType = null;
+  let registrantAvatar = null;
 
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
@@ -37,8 +37,8 @@
   const registerProject = async () => {
     try {
       await register(
-        domainType,
-        domainId,
+        registrantType,
+        registrantId,
         projectName,
         transactionFee,
         projectId
@@ -60,8 +60,8 @@
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
-        domainType: domainType,
-        domainId: domainId,
+        registrantType: registrantType,
+        registrantId: registrantId,
         projectName: projectName,
       },
     ],
@@ -100,13 +100,13 @@
             {skipNamePreselection}
             orgs={session.orgs}
             bind:projectId
-            bind:domainId
+            bind:registrantId
             bind:projectName
             on:next={(event) => {
-              domainId = event.detail.domainId;
-              domainType = event.detail.domainType;
+              registrantId = event.detail.registrantId;
+              registrantType = event.detail.registrantType;
               showRegistrationDetails = false;
-              domainAvatar = event.detail.domainAvatar;
+              registrantAvatar = event.detail.registrantAvatar;
             }} />
         {:else}
           <Transaction

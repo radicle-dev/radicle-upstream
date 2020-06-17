@@ -4,7 +4,7 @@
   import validatejs from "validate.js";
 
   import * as notification from "../../src/notification.ts";
-  import { getOrgProject, Domain } from "../../src/project.ts";
+  import { getOrgProject, Registrant } from "../../src/project.ts";
 
   import { Text, Title, Input } from "../../DesignSystem/Primitive";
   import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
@@ -12,7 +12,7 @@
   const dispatch = createEventDispatcher();
 
   export let projectId = null;
-  export let domainId = null;
+  export let registrantId = null;
   export let projectName = null;
 
   export let identity = null;
@@ -24,22 +24,22 @@
 
   const next = () => {
     dispatch("next", {
-      domainId: selectedDomain().value,
-      domainType: selectedDomain().type,
-      domainAvatar: selectedDomain().avatarProps.avatarFallback,
+      registrantId: selectedRegistrant().value,
+      registrantType: selectedRegistrant().type,
+      registrantAvatar: selectedRegistrant().avatarProps.avatarFallback,
     });
   };
 
-  const selectedDomain = () => {
-    return domainDropdownOptions.find((option) => {
-      return option.value === domainId;
+  const selectedRegistrant = () => {
+    return registrantDropdownOptions.find((option) => {
+      return option.value === registrantId;
     });
   };
 
   const identityOption = {
     variant: "avatar",
     value: identity.registered,
-    type: Domain.User,
+    type: Registrant.User,
     avatarProps: {
       variant: "circle",
       title: identity.registered,
@@ -51,7 +51,7 @@
     return {
       variant: "avatar",
       value: org.id,
-      type: Domain.Org,
+      type: Registrant.Org,
       avatarProps: {
         variant: "square",
         title: org.id,
@@ -60,7 +60,7 @@
     };
   });
 
-  const domainDropdownOptions = [identityOption, ...orgOptions];
+  const registrantDropdownOptions = [identityOption, ...orgOptions];
 
   const projectDropdownOptions = projects.map((project) => {
     return {
@@ -95,7 +95,7 @@
   const validateProjectNameAvailability = async () => {
     try {
       const present = await getOrgProject(
-        selectedDomain().avatarProps.title,
+        selectedRegistrant().avatarProps.title,
         projectName
       );
 
@@ -170,9 +170,9 @@
 
 <div class="name">
   <Dropdown
-    dataCy="domain-dropdown"
-    bind:value={domainId}
-    options={domainDropdownOptions} />
+    dataCy="registrant-dropdown"
+    bind:value={registrantId}
+    options={registrantDropdownOptions} />
   <Title
     style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);"
     variant="regular">

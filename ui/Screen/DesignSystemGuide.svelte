@@ -206,8 +206,8 @@
       messages: [
         {
           type: transaction.MessageType.ProjectRegistration,
-          domainType: "org",
-          domainId: "monadic",
+          registrantType: "org",
+          registrantId: "monadic",
           projectName: "upstream",
           cocId: "upstream@123abcd.git",
         },
@@ -740,7 +740,7 @@
 
       <Swatch>
         <Dropdown
-          placeholder="Select domain..."
+          placeholder="Select registrant..."
           value="2"
           options={dropdownOptions2} />
       </Swatch>

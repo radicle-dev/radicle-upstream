@@ -237,10 +237,10 @@ mod handler {
         let maybe_coco_id = input
             .maybe_coco_id
             .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project RadUrn"));
-        let domain_id = registry::Id::try_from(input.domain_id).map_err(Error::from)?;
-        let domain: registry::ProjectDomain = match input.domain_type.clone() {
-            registry::DomainType::Org => registry::ProjectDomain::Org(domain_id.clone()),
-            registry::DomainType::User => registry::ProjectDomain::User(domain_id.clone()),
+        let registrant_id = registry::Id::try_from(input.registrant_id).map_err(Error::from)?;
+        let registrant: registry::ProjectRegistrant = match input.registrant_type.clone() {
+            registry::RegistrantType::Org => registry::ProjectRegistrant::Org(registrant_id.clone()),
+            registry::RegistrantType::User => registry::ProjectRegistrant::User(registrant_id.clone()),
         };
         let project_name =
             registry::ProjectName::try_from(input.project_name).map_err(Error::from)?;
@@ -248,7 +248,7 @@ mod handler {
         let tx = reg
             .register_project(
                 &fake_pair,
-                domain,
+                registrant,
                 project_name,
                 maybe_coco_id,
                 input.transaction_fee,
@@ -485,10 +485,10 @@ impl ToDocumentedType for MetadataInput {
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RegisterInput {
-    /// The type of domain the project will be registered under.
-    domain_type: registry::DomainType,
-    /// Id of the domain the project will be registered under.
-    domain_id: String,
+    /// The type of registrant the project will be registered under.
+    registrant_type: registry::RegistrantType,
+    /// Id of the registrant the project will be registered under.
+    registrant_id: String,
     /// Unique name under Org of the project.
     project_name: String,
     /// User specified transaction fee.
@@ -501,15 +501,15 @@ impl ToDocumentedType for RegisterInput {
     fn document() -> document::DocumentedType {
         let mut properties = HashMap::with_capacity(3);
         properties.insert(
-            "domainType".into(),
+            "registrantType".into(),
             document::enum_string(vec!["org".into(), "user".into()])
-                .description("The type of domain the project will be registered under")
+                .description("The type of registrant the project will be registered under")
                 .example("org"),
         );
         properties.insert(
-            "domainId".into(),
+            "registrantId".into(),
             document::string()
-                .description("ID of the domain the project will be registered under")
+                .description("ID of the registrant the project will be registered under")
                 .example("monadic"),
         );
         properties.insert(
@@ -747,8 +747,8 @@ mod test {
             .method("POST")
             .path("/projects/register")
             .json(&super::RegisterInput {
-                domain_type: registry::DomainType::Org,
-                domain_id: org_id.to_string(),
+                registrant_type: registry::RegistrantType::Org,
+                registrant_id: org_id.to_string(),
                 project_name: "upstream".into(),
                 maybe_coco_id: Some(urn.to_string()),
                 transaction_fee: registry::MINIMUM_FEE,
@@ -768,15 +768,15 @@ mod test {
         match tx_msg {
             registry::Message::ProjectRegistration {
                 project_name,
-                domain_type,
-                domain_id,
+                registrant_type,
+                registrant_id,
             } => {
                 assert_eq!(
                     project_name.clone(),
                     registry::ProjectName::try_from("upstream").unwrap()
                 );
-                assert_eq!(domain_type.clone(), registry::DomainType::Org);
-                assert_eq!(domain_id.clone(), org_id);
+                assert_eq!(registrant_type.clone(), registry::RegistrantType::Org);
+                assert_eq!(registrant_id.clone(), org_id);
             },
             _ => panic!("The tx message is an unexpected variant."),
         }
@@ -824,8 +824,8 @@ mod test {
             .method("POST")
             .path("/projects/register")
             .json(&super::RegisterInput {
-                domain_type: registry::DomainType::User,
-                domain_id: handle.to_string(),
+                registrant_type: registry::RegistrantType::User,
+                registrant_id: handle.to_string(),
                 project_name: "upstream".into(),
                 maybe_coco_id: Some(urn.to_string()),
                 transaction_fee: registry::MINIMUM_FEE,
@@ -845,15 +845,15 @@ mod test {
         match tx_msg {
             registry::Message::ProjectRegistration {
                 project_name,
-                domain_type,
-                domain_id,
+                registrant_type,
+                registrant_id,
             } => {
                 assert_eq!(
                     project_name.clone(),
                     registry::ProjectName::try_from("upstream").unwrap()
                 );
-                assert_eq!(domain_type.clone(), registry::DomainType::User);
-                assert_eq!(domain_id.clone(), handle);
+                assert_eq!(registrant_type.clone(), registry::RegistrantType::User);
+                assert_eq!(registrant_id.clone(), handle);
             },
             _ => panic!("The tx message is an unexpected variant."),
         }

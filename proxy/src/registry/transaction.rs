@@ -135,12 +135,12 @@ pub enum Message {
     /// Issue a new project registration with a given name under a given org.
     #[serde(rename_all = "camelCase")]
     ProjectRegistration {
-        /// Actual project name, unique under its domain.
+        /// Actual project name, unique for each registrant.
         project_name: registry::ProjectName,
-        /// The type of domain in which to register the project.
-        domain_type: registry::DomainType,
-        /// The id of the domain in which to register the project
-        domain_id: registry::Id,
+        /// The type of registrant in which to register the project.
+        registrant_type: registry::RegistrantType,
+        /// The id of the registrant in which to register the project
+        registrant_id: registry::Id,
     },
 
     /// Issue a user registration for a given handle storing the corresponding identity id.
@@ -426,10 +426,10 @@ where
 
     async fn get_project(
         &self,
-        project_domain: registry::ProjectDomain,
+        project_registrant: registry::ProjectRegistrant,
         project_name: registry::ProjectName,
     ) -> Result<Option<registry::Project>, error::Error> {
-        self.client.get_project(project_domain, project_name).await
+        self.client.get_project(project_registrant, project_name).await
     }
 
     async fn list_org_projects(
@@ -446,14 +446,14 @@ where
     async fn register_project(
         &self,
         author: &protocol::ed25519::Pair,
-        project_domain: registry::ProjectDomain,
+        project_registrant: registry::ProjectRegistrant,
         project_name: registry::ProjectName,
         maybe_project_id: Option<librad::uri::RadUrn>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self
             .client
-            .register_project(author, project_domain, project_name, maybe_project_id, fee)
+            .register_project(author, project_registrant, project_name, maybe_project_id, fee)
             .await?;
 
         self.cache_transaction(tx.clone())?;

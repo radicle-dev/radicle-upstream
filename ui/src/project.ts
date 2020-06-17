@@ -29,15 +29,15 @@ export interface Project {
 
 type Projects = Project[];
 
-// The domain under which a registered project falls
-export enum Domain {
+// The registrant under which a registered project falls
+export enum Registrant {
   User = "user",
   Org = "org",
 }
 
 export interface Registered {
-  domainType: Domain;
-  domainId: string;
+  registrantType: Registrant;
+  registrantId: string;
   name: string;
   maybeProjectId?: string;
 }
@@ -84,8 +84,8 @@ interface CreateInput {
 }
 
 interface RegisterInput {
-  domainType: Domain;
-  domainId: string;
+  registrantType: Registrant;
+  registrantId: string;
   projectName: string;
   transactionFee: currency.MicroRad;
   maybeCocoId?: string;
@@ -139,15 +139,15 @@ export const getOrgProject = (
 };
 
 export const register = (
-  domainType: Domain,
-  domainId: string,
+  registrantType: Registrant,
+  registrantId: string,
   projectName: string,
   transactionFee: currency.MicroRad,
   maybeCocoId?: string
 ): Promise<transaction.Transaction> => {
   return api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
-    domainType,
-    domainId,
+    registrantType,
+    registrantId,
     projectName,
     transactionFee,
     maybeCocoId,

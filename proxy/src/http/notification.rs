@@ -156,8 +156,8 @@ const registerButtonEl = document.getElementById("send");
 
 registerButtonEl.onclick = function() {
   post("/v1/projects/register", {
-    domain_type: "org",
-    domain_id: "radicle",
+    registrant_type: "org",
+    registrant_id: "radicle",
     project_name: "upstream"
   }).then(data => console.log(data));
 };
