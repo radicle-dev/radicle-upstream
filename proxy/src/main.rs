@@ -15,8 +15,6 @@ struct Args {
     /// Host name or IP for the registry node to connect to. If the special value "emulator" is
     /// provided the proxy will not connect to a node but emulate the chain in memory.
     registry: String,
-    /// Choosing a base path for Peer configuration. Uses a default location if not provided.
-    path: Option<std::path::PathBuf>,
     /// Put proxy in test mode to use certain fixtures to serve.
     test: bool,
 }
@@ -30,7 +28,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = pico_args::Arguments::from_env();
     let args = Args {
         registry: args.value_from_str("--registry")?,
-        path: args.opt_value_from_str("--path")?,
         test: args.contains("--test"),
     };
 
@@ -58,20 +55,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
 
-    let (pw, path) = if args.test {
+    let (pw, paths_config) = if args.test {
         let pw = SecUtf8::from("asdf");
-        (pw, Some(temp_dir.path().to_path_buf()))
+        (pw, coco::config::Paths::FromRoot(temp_dir.path().to_path_buf()))
     } else {
         let pw = pinentry::Prompt::new("please provide your Radicle passphrase: ")
             .get_passphrase()
             .expect("failed to get the passphrase");
 
-        (pw, args.path)
+        (pw, coco::config::Paths::default())
     };
 
-    let paths_config = path
-        .map(coco::config::Paths::FromRoot)
-        .unwrap_or_default();
     let paths = paths::Paths::try_from(paths_config)?;
 
     let mut store = keystore::Keystorage::new(&paths, pw)?;
