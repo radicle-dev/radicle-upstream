@@ -70,8 +70,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let paths_config = path
-        .map(coco::config::PathsConfiguration::FromRoot)
-        .unwrap_or(coco::config::PathsConfiguration::Default);
+        .map(coco::config::Paths::FromRoot)
+        .unwrap_or_default();
     let paths = paths::Paths::try_from(paths_config)?;
 
     let mut store = keystore::Keystorage::new(&paths, pw)?;
