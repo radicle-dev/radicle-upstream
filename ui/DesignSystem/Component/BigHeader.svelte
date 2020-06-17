@@ -25,7 +25,7 @@
     max-width: var(--content-max-width);
     width: 100%;
     margin: 0 auto;
-    padding: 40px 16px;
+    padding: 40px var(--content-padding);
   }
 
   .metadata {
@@ -48,10 +48,10 @@
   .action-bar {
     display: flex;
     justify-content: space-between;
-    height: 61px;
+    height: var(--topbar-height);
     width: 100%;
     max-width: var(--content-max-width);
-    padding: 0 16px;
+    padding: 0 var(--content-padding);
     margin: 0 auto;
     align-items: center;
     background-color: var(--color-background);
