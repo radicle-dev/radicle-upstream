@@ -58,11 +58,18 @@ mod handler {
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Don't panic when trying to convert ids.
+        println!("handler::list input.ids {:?}", input.ids.clone());
         let tx_ids = input
             .ids
             .iter()
             .map(|id| {
-                serde_json::from_str::<registry::Hash>(id).expect("unable to get hash from string")
+                println!("handler::list will try to convert id {}", id);
+                let string = format!("\"{}\"", id);
+                println!("handler::list wrapped id with quotes: {}", string);
+                let deserialized = serde_json::from_str::<registry::Hash>(&string)
+                    .expect("unable to get hash from string");
+                println!("handler::list id now deserialized {:?}", deserialized);
+                deserialized
             })
             .collect();
         let txs = cache.read().await.list_transactions(tx_ids)?;
@@ -252,13 +259,21 @@ mod test {
 
         cache.cache_transaction(tx.clone()).unwrap();
 
-        let transactions = cache.list_transactions(vec![tx.id.clone()]).unwrap();
+        let input_ids = vec![tx.id.clone()];
+        let serialized_ids = input_ids
+            .iter()
+            .map(|h| serde_json::to_string(h).expect("Fail 1"))
+            .collect();
+
+        let transactions = cache.list_transactions(input_ids).unwrap();
 
         let api = super::filters(Arc::new(RwLock::new(cache)));
         let res = request()
             .method("POST")
             .path("/transactions")
-            .json(&super::ListInput { ids: vec![] })
+            .json(&super::ListInput {
+                ids: serialized_ids,
+            })
             .reply(&api)
             .await;
 
