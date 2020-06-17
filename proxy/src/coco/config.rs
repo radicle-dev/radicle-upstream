@@ -20,16 +20,6 @@ pub enum Paths {
     FromRoot(std::path::PathBuf),
 }
 
-impl Paths {
-    /// Get the [`paths::Paths`] for this configuration.
-    pub fn to_paths(&self) -> Result<paths::Paths, error::Error> {
-        match self {
-            Self::Default => Ok(paths::Paths::new()?),
-            Self::FromRoot(path) => Ok(paths::Paths::from_root(path)?),
-        }
-    }
-}
-
 impl Default for Paths {
     fn default() -> Self {
         Self::Default
@@ -40,7 +30,10 @@ impl TryFrom<Paths> for paths::Paths {
     type Error = error::Error;
 
     fn try_from(config: Paths) -> Result<Self, Self::Error> {
-        config.to_paths()
+        match config {
+            Paths::Default => Ok(paths::Paths::new()?),
+            Paths::FromRoot(path) => Ok(paths::Paths::from_root(path)?),
+        }
     }
 }
 
