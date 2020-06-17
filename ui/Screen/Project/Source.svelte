@@ -81,20 +81,21 @@
   .container {
     display: flex;
     width: inherit;
-    margin-bottom: 64px;
+    margin-bottom: 4rem;
+    padding: 0 1.5rem;
   }
 
   .column-left {
     display: flex;
     flex-direction: column;
-    width: 286px;
-    padding: 0 0.75rem;
+    width: 18rem;
+    padding-right: 0.75rem;
   }
 
   .column-right {
     display: flex;
     flex-direction: column;
-    padding: 0 1.5rem 0 0.75rem;
+    padding-left: 0.75rem;
     min-width: var(--content-min-width);
     width: 100%;
   }
@@ -109,7 +110,7 @@
   }
 
   .revision-selector-wrapper {
-    margin: 0.75rem 0;
+    margin: 1.5rem 0 1rem 0;
     position: relative;
     width: 100%;
   }
@@ -121,7 +122,7 @@
   }
   .repo-stats {
     height: 2.5rem;
-    margin: 0.75rem 0 1rem;
+    margin: 1.5rem 0;
     display: flex;
     justify-content: space-evenly;
   }
