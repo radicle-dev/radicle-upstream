@@ -8,6 +8,8 @@ use librad::surf;
 use librad::surf::git::git2;
 use radicle_registry_client as registry;
 
+use crate::keystore;
+
 /// Project problems.
 #[derive(Debug, thiserror::Error)]
 pub enum ProjectValidation {
@@ -108,6 +110,10 @@ pub enum Error {
     /// Failure to acquire [`std::sync::Mutex`] lock for the peer.
     #[error("failed to acquire lock for peer")]
     LibradLock,
+
+    /// Failure when interacting with [`crate::keystore`].
+    #[error(transparent)]
+    Keystorage(#[from] keystore::Error),
 
     /// Common I/O errors.
     #[error(transparent)]

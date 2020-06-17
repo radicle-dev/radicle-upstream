@@ -373,9 +373,9 @@ dependencies = [
 
 [[package]]
 name = "clear_on_drop"
-version = "0.2.4"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9cc5db465b294c3fa986d5bbb0f3017cd850bff6dd6c52f9ccff8b4d21b7b08"
+checksum = "97276801e127ffb46b66ce23f35cc96bd454fa311294bced4bbace7baa8b1d17"
 dependencies = [
  "cc",
 ]
@@ -1575,7 +1575,7 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d2c75eab89e831f639a3618d081c9ce29c7f59a6#d2c75eab89e831f639a3618d081c9ce29c7f59a6"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=35f6e5e8bbe91012dae180f4a41ae582b3b1d2c2#35f6e5e8bbe91012dae180f4a41ae582b3b1d2c2"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1591,6 +1591,7 @@ dependencies = [
  "lazy_static",
  "libgit2-sys",
  "log 0.4.8",
+ "minicbor",
  "multibase",
  "multihash",
  "nonempty 0.2.0",
@@ -1606,9 +1607,7 @@ dependencies = [
  "rustls",
  "secstr",
  "serde",
- "serde_cbor 0.10.2",
  "serde_json",
- "serde_repr",
  "sha2",
  "sodiumoxide",
  "tempfile",
@@ -1809,6 +1808,26 @@ checksum = "2684d4c2e97d99848d30b324b00c8fcc7e5c897b7cbb5819b09e7c90e8baf212"
 dependencies = [
  "mime 0.3.16",
  "unicase 2.6.0",
+]
+
+[[package]]
+name = "minicbor"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ba51ba9e365147a1bfb1442afbb5d887530eee5ed7dca410c2ba365ad617083"
+dependencies = [
+ "minicbor-derive",
+]
+
+[[package]]
+name = "minicbor-derive"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3436a67b46fbf4b5cc25a37341b3daf0371496dac1161422b96225dde8f603ee"
+dependencies = [
+ "proc-macro2 1.0.18",
+ "quote 1.0.7",
+ "syn 1.0.31",
 ]
 
 [[package]]
@@ -2594,6 +2613,7 @@ dependencies = [
  "pico-args",
  "pretty_assertions",
  "pretty_env_logger",
+ "radicle-keystore",
  "radicle-registry-client",
  "rand 0.7.3",
  "serde",
@@ -2678,7 +2698,7 @@ dependencies = [
 [[package]]
 name = "radicle-keystore"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=d2c75eab89e831f639a3618d081c9ce29c7f59a6#d2c75eab89e831f639a3618d081c9ce29c7f59a6"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=35f6e5e8bbe91012dae180f4a41ae582b3b1d2c2#35f6e5e8bbe91012dae180f4a41ae582b3b1d2c2"
 dependencies = [
  "lazy_static",
  "rpassword",
@@ -2692,7 +2712,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-client"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=353d5707bf3bcb725556039e144dde48a0703e4f#353d5707bf3bcb725556039e144dde48a0703e4f"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=d7f0f3c955e29eac19da94dc76dcf304866310a7#d7f0f3c955e29eac19da94dc76dcf304866310a7"
 dependencies = [
  "async-trait",
  "derive_more 0.15.0",
@@ -2727,7 +2747,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-core"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=353d5707bf3bcb725556039e144dde48a0703e4f#353d5707bf3bcb725556039e144dde48a0703e4f"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=d7f0f3c955e29eac19da94dc76dcf304866310a7#d7f0f3c955e29eac19da94dc76dcf304866310a7"
 dependencies = [
  "derive-try-from-primitive",
  "parity-scale-codec",
@@ -2741,7 +2761,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-runtime"
 version = "0.8.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=353d5707bf3bcb725556039e144dde48a0703e4f#353d5707bf3bcb725556039e144dde48a0703e4f"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=d7f0f3c955e29eac19da94dc76dcf304866310a7#d7f0f3c955e29eac19da94dc76dcf304866310a7"
 dependencies = [
  "frame-executive",
  "frame-support",
@@ -2771,7 +2791,7 @@ dependencies = [
 [[package]]
 name = "radicle-surf"
 version = "0.2.1"
-source = "git+https://github.com/radicle-dev/radicle-surf?rev=c8d72ffcdce071c7c0f5c9f6028207eb89d9fd30#c8d72ffcdce071c7c0f5c9f6028207eb89d9fd30"
+source = "git+https://github.com/radicle-dev/radicle-surf?rev=fc11489494fb76a2a6e1c7b425b164602f89ba23#fc11489494fb76a2a6e1c7b425b164602f89ba23"
 dependencies = [
  "git2",
  "lazy_static",
@@ -3317,17 +3337,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "serde_repr"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd02c7587ec314570041b2754829f84d873ced14a96d1fd1823531e11db40573"
-dependencies = [
- "proc-macro2 1.0.18",
- "quote 1.0.7",
- "syn 1.0.31",
 ]
 
 [[package]]
