@@ -252,7 +252,7 @@ mod test {
 
         cache.cache_transaction(tx.clone()).unwrap();
 
-        let transactions = cache.list_transactions(vec![]).unwrap();
+        let transactions = cache.list_transactions(vec![tx.id.clone()]).unwrap();
 
         let api = super::filters(Arc::new(RwLock::new(cache)));
         let res = request()
@@ -266,5 +266,6 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(transactions));
+        assert_eq!(transactions.first().unwrap().id, tx.id);
     }
 }
