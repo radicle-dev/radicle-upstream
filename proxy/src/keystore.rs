@@ -72,7 +72,7 @@ impl Keystorage {
                 let key = keys::SecretKey::new();
                 self.librad_store.put_key(key.clone())?;
                 Ok(key)
-            }
+            },
             Err(err) => Err(err.into()),
         }
     }
@@ -89,7 +89,7 @@ impl Keystorage {
                 let (key, _): (ed25519::Pair, _) = CryptoPair::generate();
                 self.registry_store.put_key(Pair(key.clone()))?;
                 Ok(key)
-            }
+            },
             Err(err) => Err(err.into()),
         }
     }
