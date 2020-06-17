@@ -87,7 +87,7 @@
 
   let registerProjectMenuItem;
 
-  if (session.identity.registered) {
+  if (session.permissions.registerProject && session.identity.registered) {
     registerProjectMenuItem = {
       dataCy: "register-project",
       title: "Register project",
