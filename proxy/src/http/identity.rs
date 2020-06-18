@@ -2,30 +2,34 @@
 
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::coco;
 use crate::http;
 use crate::identity;
 use crate::registry;
 
 /// Combination of all identity routes.
 pub fn filters<R: registry::Client>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter().or(create_filter(registry, store))
+    get_filter().or(create_filter(peer, registry, store))
 }
 
 /// `POST /identities`
 fn create_filter<R: registry::Client>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("identities")
         .and(warp::post())
+        .and(http::with_peer(peer))
         .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(warp::body::json())
@@ -75,11 +79,12 @@ fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
     use crate::avatar;
+    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -88,6 +93,7 @@ mod handler {
 
     /// Create a new [`identity::Identity`].
     pub async fn create<R: registry::Client>(
+        peer: Arc<Mutex<coco::Peer>>,
         registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
@@ -95,7 +101,10 @@ mod handler {
         let reg = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::current(&store, (*reg).clone()).await?.identity {
+        if let Some(identity) = session::current(peer, &store, (*reg).clone())
+            .await?
+            .identity
+        {
             return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
         }
 
@@ -234,23 +243,31 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
+
     use crate::avatar;
+    use crate::coco;
+    use crate::error;
     use crate::identity;
     use crate::registry;
 
     #[tokio::test]
-    async fn create() {
+    async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let api = super::filters(
+            Arc::clone(&peer),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
@@ -284,17 +301,23 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, want);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn get() {
+    async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let api = super::filters(
+            Arc::clone(&peer),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
@@ -322,5 +345,7 @@ mod test {
                 avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
             })
         );
+
+        Ok(())
     }
 }

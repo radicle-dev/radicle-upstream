@@ -24,7 +24,7 @@
   };
 
   const contextMenuItems = (projectId, session) => {
-    if (session.identity.registered) {
+    if (session.permissions.registerProject) {
       return [
         {
           title: "Register project",
