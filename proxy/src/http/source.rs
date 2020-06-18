@@ -1061,7 +1061,10 @@ mod test {
                         },
                         avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                         registered: None,
-                        shareable_entity_identifier: format!("{}@123abcd.git", handle),
+                        shareable_entity_identifier: identity::SharedIdentifier {
+                            handle: handle.to_string(),
+                            urn: fake_user_urn.clone(),
+                        },
                     },
                 })
                 .collect::<Vec<super::Revision>>()

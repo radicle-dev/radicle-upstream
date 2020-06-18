@@ -46,7 +46,11 @@ where
                 Arc::clone(&owner),
                 Arc::clone(&registry),
             ))
-            .or(identity::filters(Arc::clone(&registry), Arc::clone(&store)))
+            .or(identity::filters(
+                Arc::clone(&peer),
+                Arc::clone(&registry),
+                Arc::clone(&store),
+            ))
             .or(notification::filters(subscriptions.clone()))
             .or(org::routes(
                 Arc::clone(&peer),

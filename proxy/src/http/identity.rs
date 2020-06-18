@@ -2,30 +2,34 @@
 
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::coco;
 use crate::http;
 use crate::identity;
 use crate::registry;
 
 /// Combination of all identity routes.
 pub fn filters<R: registry::Client>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter().or(create_filter(registry, store))
+    get_filter(Arc::clone(&peer)).or(create_filter(peer, registry, store))
 }
 
 /// `POST /identities`
 fn create_filter<R: registry::Client>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("identities")
         .and(warp::post())
+        .and(http::with_peer(peer))
         .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(warp::body::json())
@@ -47,8 +51,11 @@ fn create_filter<R: registry::Client>(
 }
 
 /// `GET /identities/<id>`
-fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(
+    peer: Arc<Mutex<coco::Peer>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("identities")
+        .and(http::with_peer(peer))
         .and(document::param::<String>("id", "Unique ID of the Identity"))
         .and(warp::get())
         .and(document::document(document::description(
@@ -75,11 +82,11 @@ fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::avatar;
+    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -88,6 +95,7 @@ mod handler {
 
     /// Create a new [`identity::Identity`].
     pub async fn create<R: registry::Client>(
+        peer: Arc<Mutex<coco::Peer>>,
         registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
@@ -95,11 +103,12 @@ mod handler {
         let reg = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::current(&store, (*reg).clone()).await?.identity {
+        if let Some(identity) = session::current(&store, &*reg).await?.identity {
             return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
         }
 
-        let id = identity::create(input.handle)?;
+        let peer = peer.lock().await;
+        let id = identity::create(&peer, input.handle.parse()?).await?;
 
         session::set_identity(&store, id.clone())?;
 
@@ -107,17 +116,9 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(id: String) -> Result<impl Reply, Rejection> {
-        let id = identity::Identity {
-            id: id.to_string(),
-            shareable_entity_identifier: format!("cloudhead@{}", id),
-            metadata: identity::Metadata {
-                handle: "cloudhead".into(),
-            },
-            registered: None,
-            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
-        };
-
+    pub async fn get(peer: Arc<Mutex<coco::Peer>>, id: String) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
+        let id = identity::get(&peer, &id.parse().expect("could not parse id"))?;
         Ok(reply::json(&id))
     }
 }
@@ -234,25 +235,35 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
+
     use crate::avatar;
+    use crate::coco;
+    use crate::error;
+    use crate::http;
     use crate::identity;
     use crate::registry;
+    use crate::session;
 
     #[tokio::test]
-    async fn create() {
+    async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
+            Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+        let store = Arc::new(RwLock::new(kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap()));
         let api = super::filters(
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
+            Arc::clone(&peer),
+            Arc::clone(&registry),
+            Arc::clone(&store),
         );
 
         let res = request()
@@ -264,63 +275,70 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = json!({
-            "avatarFallback": {
-                "background": {
-                    "r": 52,
-                    "g": 124,
-                    "b": 239,
+        let store = &*store.read().await;
+        let registry = &*registry.read().await;
+        let session = session::current(&store, registry).await?;
+        let urn = session.identity.expect("failed to set identity").id;
+
+        http::test::assert_response(&res, StatusCode::CREATED, |have| {
+            let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
+            let shareable_entity_identifier = format!("cloudhead@{}", urn);
+            assert_eq!(have, json!({
+                "avatarFallback": avatar,
+                "id": urn,
+                "metadata": {
+                    "handle": "cloudhead",
                 },
-                "emoji": "🥐",
-            },
-            "id": "cloudhead@123abcd.git",
-            "metadata": {
-                "handle": "cloudhead",
-            },
-            "registered": Value::Null,
-            "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                "registered": Value::Null,
+                "shareableEntityIdentifier": &shareable_entity_identifier
+            }));
         });
 
-        assert_eq!(res.status(), StatusCode::CREATED);
-        assert_eq!(have, want);
+        Ok(())
     }
 
     #[tokio::test]
-    async fn get() {
+    async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+
+        let user = peer.init_user("cloudhead").await?;
+        let urn = user.urn();
+        let handle = user.name().to_string();
+        let shareable_entity_identifier = user.into();
+
         let api = super::filters(
+            Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
 
-        let id = "123abcd.git";
-
         let res = request()
             .method("GET")
-            .path(&format!("/identities/{}", id))
+            .path(&format!("/identities/{}", urn))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(
             have,
             json!(identity::Identity {
-                id: id.to_string(),
-                shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
-                metadata: identity::Metadata {
-                    handle: "cloudhead".into(),
-                },
+                id: urn.clone(),
+                shareable_entity_identifier,
+                metadata: identity::Metadata { handle },
                 registered: None,
-                avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
+                avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
             })
         );
+
+        Ok(())
     }
 }
