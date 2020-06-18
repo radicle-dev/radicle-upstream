@@ -50,8 +50,14 @@
     visibility: hidden;
   }
   .selector-avatar {
-    flex: 1;
+    flex: 2.8;
+    overflow: hidden;
+    text-overflow: ellipsis;
     margin-right: 0.5rem;
+  }
+  .selector-avatar :global(h3) {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .selector-branch {
     flex: 1;
@@ -81,8 +87,11 @@
   .user {
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
-    display: inline-block;
     user-select: none;
+  }
+  .user :global(h3) {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .branch,
   .tag {

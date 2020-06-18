@@ -108,6 +108,7 @@
     justify-content: center;
     align-items: center;
     user-select: none;
+    flex-shrink: 0;
   }
 
   .image {
