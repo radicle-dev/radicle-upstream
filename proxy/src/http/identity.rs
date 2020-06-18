@@ -262,12 +262,10 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let store = Arc::new(RwLock::new(kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap()));
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::clone(&registry),
-            Arc::clone(&store),
-        );
+        let store = Arc::new(RwLock::new(
+            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
+        ));
+        let api = super::filters(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
 
         let res = request()
             .method("POST")
@@ -286,15 +284,18 @@ mod test {
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
             let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
             let shareable_entity_identifier = format!("cloudhead@{}", urn);
-            assert_eq!(have, json!({
-                "avatarFallback": avatar,
-                "id": urn,
-                "metadata": {
-                    "handle": "cloudhead",
-                },
-                "registered": Value::Null,
-                "shareableEntityIdentifier": &shareable_entity_identifier
-            }));
+            assert_eq!(
+                have,
+                json!({
+                    "avatarFallback": avatar,
+                    "id": urn,
+                    "metadata": {
+                        "handle": "cloudhead",
+                    },
+                    "registered": Value::Null,
+                    "shareableEntityIdentifier": &shareable_entity_identifier
+                })
+            );
         });
 
         Ok(())

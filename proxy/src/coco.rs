@@ -150,11 +150,7 @@ impl Peer {
     ///
     /// The function will result in an error if the mutex guard was poisoned. See
     /// [`std::sync::Mutex::lock`] for further details.
-    pub fn with_browser<F, T>(
-        &self,
-        project_urn: &RadUrn,
-        callback: F,
-    ) -> Result<T, error::Error>
+    pub fn with_browser<F, T>(&self, project_urn: &RadUrn, callback: F) -> Result<T, error::Error>
     where
         F: Send + FnOnce(&mut surf::vcs::git::Browser) -> Result<T, error::Error>,
     {
@@ -235,21 +231,24 @@ impl Peer {
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
     pub async fn init_user(&self, name: &str) -> Result<User, error::Error> {
-        let user = self.with_api(|api| {
-            let key = api.key();
+        let user = self
+            .with_api(|api| {
+                let key = api.key();
 
-            // Create the project meta
-            let mut user = user::User::<entity::Draft>::create(name.to_string(), key.public())?;
-            user.sign_owned(key)?;
+                // Create the project meta
+                let mut user = user::User::<entity::Draft>::create(name.to_string(), key.public())?;
+                user.sign_owned(key)?;
 
-            let storage = api.storage().reopen()?;
-            let _repo = storage.create_repo(&user)?;
-            Ok(user)
-        })
-        .flatten()?;
+                let storage = api.storage().reopen()?;
+                let _repo = storage.create_repo(&user)?;
+                Ok(user)
+            })
+            .flatten()?;
 
         let fake_resolver = FakeUserResolver(user.clone());
-        let verified_user = user.check_history_status(&fake_resolver, &fake_resolver).await?;
+        let verified_user = user
+            .check_history_status(&fake_resolver, &fake_resolver)
+            .await?;
         Ok(verified_user)
     }
 
