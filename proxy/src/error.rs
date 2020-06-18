@@ -112,6 +112,10 @@ pub enum Error {
     #[error("failed to acquire lock for peer")]
     LibradLock,
 
+    /// Failure during the verification of a `librad` entity.
+    #[error(transparent)]
+    LibradVerification(#[from] entity::HistoryVerificationError),
+
     /// Failure when interacting with [`crate::keystore`].
     #[error(transparent)]
     Keystorage(#[from] keystore::Error),
