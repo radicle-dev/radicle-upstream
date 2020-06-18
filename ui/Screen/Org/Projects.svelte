@@ -1,4 +1,5 @@
 <script>
+  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import { projects as store, fetchProjectList } from "../../src/org.ts";
@@ -16,6 +17,7 @@
   import Onboard from "./Onboard.svelte";
 
   export let params = null;
+  const session = getContext("session");
 
   const select = (event) => {
     const orgProject = event.detail;
@@ -78,7 +80,9 @@
       </Flex>
     </List>
   {:else}
-    <Onboard orgId={params.id} />
+    <Onboard
+      orgId={params.id}
+      registerProjectPermission={session.permissions.registerProject} />
   {/if}
 
   <div slot="error" let:error>

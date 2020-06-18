@@ -63,7 +63,11 @@ where
                 Arc::clone(&registry),
                 subscriptions.clone(),
             ))
-            .or(session::routes(Arc::clone(&registry), Arc::clone(&store)))
+            .or(session::routes(
+                Arc::clone(&peer),
+                Arc::clone(&registry),
+                Arc::clone(&store),
+            ))
             .or(source::routes(peer))
             .or(transaction::filters(Arc::clone(&registry)))
             .or(user::routes(registry, store, subscriptions)),

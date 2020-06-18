@@ -1,4 +1,5 @@
 <script>
+  import { getContext } from "svelte";
   import Router, { push } from "svelte-spa-router";
 
   import { fetch, org as store } from "../src/org.ts";
@@ -18,6 +19,7 @@
   import Projects from "./Org/Projects.svelte";
 
   export let params = null;
+  const session = getContext("session");
 
   const routes = {
     "/orgs/:id": Projects,
@@ -58,13 +60,10 @@
     },
   ];
 
-  const dropdownMenuItems = [
-    {
-      dataCy: "add-project",
-      title: "Add project",
-      icon: Icon.Plus,
-      event: () => push(path.registerProject(params.id)),
-    },
+  let registerProjectMenuItem;
+
+  $: dropdownMenuItems = [
+    registerProjectMenuItem,
     {
       title: "Add member",
       icon: Icon.Plus,
@@ -76,6 +75,23 @@
       event: () => console.log("event(send-funds-to-org)"),
     },
   ];
+
+  if (session.permissions.registerProject) {
+    registerProjectMenuItem = {
+      dataCy: "add-project",
+      title: "Add project",
+      icon: Icon.Plus,
+      event: () => push(path.registerProject(params.id)),
+    };
+  } else {
+    registerProjectMenuItem = {
+      dataCy: "add-project",
+      title: "Add project",
+      icon: Icon.Plus,
+      disabled: true,
+      tooltip: "To unlock project registration, create a local project first.",
+    };
+  }
 
   $: fetch({ id: params.id });
 </script>

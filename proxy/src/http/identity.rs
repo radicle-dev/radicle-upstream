@@ -103,7 +103,10 @@ mod handler {
         let reg = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::current(&store, &*reg).await?.identity {
+        if let Some(identity) = session::current(Arc::clone(&peer), &store, &*reg)
+            .await?
+            .identity
+        {
             return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
         }
 
@@ -252,13 +255,13 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
         let store = Arc::new(RwLock::new(kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap()));
         let api = super::filters(
             Arc::clone(&peer),
@@ -277,7 +280,7 @@ mod test {
 
         let store = &*store.read().await;
         let registry = &*registry.read().await;
-        let session = session::current(&store, registry).await?;
+        let session = session::current(peer, &store, registry).await?;
         let urn = session.identity.expect("failed to set identity").id;
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
@@ -300,13 +303,13 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
 
         let user = peer.init_user("cloudhead").await?;

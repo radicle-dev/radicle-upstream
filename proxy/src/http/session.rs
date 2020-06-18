@@ -2,10 +2,11 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::identity;
 use crate::registry;
@@ -13,6 +14,7 @@ use crate::session;
 
 /// Prefixed fitlers.
 pub fn routes<R>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -22,7 +24,7 @@ where
     path("session").and(
         clear_cache_filter(Arc::clone(&registry))
             .or(delete_filter(Arc::clone(&store)))
-            .or(get_filter(registry, Arc::clone(&store)))
+            .or(get_filter(peer, registry, Arc::clone(&store)))
             .or(update_settings_filter(store)),
     )
 }
@@ -30,6 +32,7 @@ where
 /// Combination of all session filters.
 #[cfg(test)]
 pub fn filters<R>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -38,7 +41,7 @@ where
 {
     clear_cache_filter(Arc::clone(&registry))
         .or(delete_filter(Arc::clone(&store)))
-        .or(get_filter(registry, Arc::clone(&store)))
+        .or(get_filter(peer, registry, Arc::clone(&store)))
         .or(update_settings_filter(store))
 }
 
@@ -79,11 +82,13 @@ fn delete_filter(
 
 /// `GET /`
 fn get_filter<R: registry::Client>(
+    peer: Arc<Mutex<coco::Peer>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(path::end())
+        .and(http::with_peer(peer))
         .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(document::document(document::description(
@@ -120,10 +125,11 @@ fn update_settings_filter(
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
 mod handler {
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::coco;
     use crate::http;
     use crate::registry;
     use crate::session;
@@ -148,12 +154,14 @@ mod handler {
 
     /// Fetch the [`session::Session`].
     pub async fn get<R: registry::Client>(
+        peer: Arc<Mutex<coco::Peer>>,
         registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
     ) -> Result<impl Reply, Rejection> {
         let store = store.read().await;
         let reg = registry.read().await;
-        let sess = session::current(&store, &*reg).await?;
+
+        let sess = session::current(peer, &store, &*reg).await?;
 
         Ok(reply::json(&sess))
     }
@@ -237,16 +245,23 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
-    use tokio::sync::RwLock;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
+
+    use crate::coco;
+    use crate::error;
     use crate::registry;
     use crate::session;
 
     #[tokio::test]
-    async fn delete() {
+    async fn delete() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
         let store = Arc::new(RwLock::new(
             kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
         ));
@@ -258,7 +273,7 @@ mod test {
             registry,
             &*store.read().await,
         )));
-        let api = super::filters(Arc::clone(&cache), Arc::clone(&store));
+        let api = super::filters(Arc::clone(&peer), Arc::clone(&cache), Arc::clone(&store));
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
@@ -269,25 +284,34 @@ mod test {
 
         // Test that we reset the session to default.
         let store = store.read().await;
-        let have = session::current(&*store, &*cache.read().await)
+        let have = session::current(peer, &*store, &*cache.read().await)
             .await
             .unwrap()
             .settings;
         let want = session::settings::Settings::default();
 
         assert_eq!(have, want);
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn get() {
+    async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::clone(&peer),
+            Arc::clone(&cache),
+            Arc::new(RwLock::new(store)),
+        );
 
         let res = request().method("GET").path("/").reply(&api).await;
 
@@ -321,18 +345,27 @@ mod test {
                 },
             }),
         );
+
+        Ok(())
     }
 
     #[tokio::test]
-    async fn update_settings() {
+    async fn update_settings() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let api = super::filters(Arc::clone(&cache), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::clone(&peer),
+            Arc::clone(&cache),
+            Arc::new(RwLock::new(store)),
+        );
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
@@ -375,5 +408,7 @@ mod test {
                 },
             }),
         );
+
+        Ok(())
     }
 }

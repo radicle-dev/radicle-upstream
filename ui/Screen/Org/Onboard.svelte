@@ -7,6 +7,7 @@
   import { Placeholder } from "../../DesignSystem/Component";
 
   export let orgId = null;
+  export let registerProjectPermission = null;
 
   const create = () => push(path.registerProject(orgId));
   const register = () => push(path.memberRegistration(orgId));
@@ -35,6 +36,7 @@
     <Flex align="center" style="flex-direction: row">
       <Button
         dataCy="add-project"
+        disabled={!registerProjectPermission}
         style="margin-right: 26px"
         variant="vanilla"
         on:click={create}>
