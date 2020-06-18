@@ -6,6 +6,8 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
+use futures::future::FutureExt;
+use futures::stream::StreamExt;
 
 use librad::keys;
 use librad::meta::entity::{self, Resolver as _};
@@ -78,9 +80,28 @@ impl Peer {
         I: Iterator<Item = (peer::PeerId, SocketAddr)> + Send + 'static,
     {
         let peer = config.try_into_peer().await?;
-        // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
-        // publish events.
-        let (api, _futures) = peer.accept()?;
+
+        let (api, run_loop) = peer.accept()?;
+
+        let protocol = api.protocol();
+        let protocol_subscriber = protocol.subscribe().await;
+        let protocol_notifications = protocol_subscriber.for_each(|notification| {
+            println!("PROTOCOL: {:?}", notification);
+
+            futures::future::ready(())
+        });
+        tokio::spawn(protocol_notifications);
+
+        let subscriber = api.subscribe().await;
+        let api_notifications = subscriber.for_each(|notification| {
+            println!("API: {:?}", notification);
+
+            futures::future::ready(())
+        });
+        tokio::spawn(api_notifications);
+
+        tokio::spawn(run_loop.map(|_| ()));
+
         Ok(Self {
             api: Arc::new(Mutex::new(api)),
             projects: Arc::new(Mutex::new(HashMap::new())),

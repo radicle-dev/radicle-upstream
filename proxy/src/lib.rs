@@ -23,6 +23,7 @@
     clippy::unseparated_literal_suffix,
     clippy::used_underscore_binding
 )]
+#![feature(async_closure)]
 #![feature(result_flattening)]
 
 pub mod avatar;
