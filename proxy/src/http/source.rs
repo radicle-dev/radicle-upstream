@@ -266,6 +266,7 @@ mod handler {
 
     use crate::avatar;
     use crate::coco;
+    use crate::error::Error;
     use crate::identity;
 
     /// Fetch a [`coco::Blob`].
@@ -275,13 +276,13 @@ mod handler {
         super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let project = peer.get_project(&project_urn).await?;
+        let urn = project_urn.parse().map_err(Error::from)?;
+        let project = peer.get_project(&urn)?;
         let default_branch = project.default_branch();
         let blob = peer
-            .with_browser(&project_urn, |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::blob(&mut browser, default_branch, revision, &path)
-            })
-            .await?;
+            })?;
 
         Ok(reply::json(&blob))
     }
@@ -291,10 +292,10 @@ mod handler {
         peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
+        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
         let branches = peer
-            .with_browser(&project_urn, |browser| coco::branches(browser))
-            .await?;
+            .with_browser(&urn, |browser| coco::branches(browser))?;
 
         Ok(reply::json(&branches))
     }
@@ -305,12 +306,12 @@ mod handler {
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
+        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
         let commit = peer
-            .with_browser(&project_urn, |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::commit(&mut browser, &sha1)
-            })
-            .await?;
+            })?;
 
         Ok(reply::json(&commit))
     }
@@ -321,12 +322,12 @@ mod handler {
         project_urn: String,
         branch: String,
     ) -> Result<impl Reply, Rejection> {
+        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
         let commits = peer
-            .with_browser(&project_urn, |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::commits(&mut browser, &branch)
-            })
-            .await?;
+            })?;
 
         Ok(reply::json(&commits))
     }
@@ -343,12 +344,12 @@ mod handler {
         peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
+        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
         let (branches, tags) = peer
-            .with_browser(&project_urn, |browser| {
+            .with_browser(&urn, |browser| {
                 Ok((coco::branches(browser)?, coco::tags(browser)?))
-            })
-            .await?;
+            })?;
 
         let revs = ["cloudhead", "rudolfs", "xla"]
             .iter()
@@ -356,13 +357,21 @@ mod handler {
                 branches: branches.clone(),
                 tags: tags.clone(),
                 identity: identity::Identity {
-                    id: format!("{}@123abcd.git", handle),
+                    // TODO(finto): Get the right URN
+                    id: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
+                        .parse()
+                        .expect("failed to parse hardcoded URN"),
                     metadata: identity::Metadata {
-                        handle: (*handle).to_string(),
+                        handle: handle.to_string(),
                     },
                     avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                     registered: None,
-                    shareable_entity_identifier: format!("{}@123abcd.git", handle),
+                    shareable_entity_identifier: identity::SharedIdentifier {
+                        handle: handle.to_string(),
+                        urn: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
+                            .parse()
+                            .expect("failed to parse hardcoded URN"),
+                    },
                 },
             })
             .collect::<Vec<super::Revision>>();
@@ -375,10 +384,10 @@ mod handler {
         peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
+        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
         let tags = peer
-            .with_browser(&project_urn, |browser| coco::tags(browser))
-            .await?;
+            .with_browser(&urn, |browser| coco::tags(browser))?;
 
         Ok(reply::json(&tags))
     }
@@ -389,14 +398,14 @@ mod handler {
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
+        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
-        let project = peer.get_project(&project_urn).await?;
+        let project = peer.get_project(&urn)?;
         let default_branch = project.default_branch();
         let tree = peer
-            .with_browser(&project_urn, |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::tree(&mut browser, default_branch, revision, prefix)
-            })
-            .await?;
+            })?;
 
         Ok(reply::json(&tree))
     }
@@ -723,6 +732,7 @@ mod test {
     use warp::test::request;
 
     use librad::keys::SecretKey;
+    use librad::uri::RadUrn;
 
     use crate::avatar;
     use crate::coco;
@@ -746,15 +756,14 @@ mod test {
         let default_branch = "master".to_string(); // TODO(finto): need to change this
         let path = "text/arrows.txt";
         let want = peer
-            .with_browser(&urn.to_string(), |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::blob(
                     &mut browser,
                     &default_branch.clone(),
                     Some(revision.to_string()),
                     path,
                 )
-            })
-            .await?;
+            })?;
 
         let api = super::filters(Arc::new(Mutex::new(peer.clone())));
 
@@ -821,10 +830,9 @@ mod test {
             .await;
 
         let want = peer
-            .with_browser(&urn.to_string(), |browser| {
+            .with_browser(&urn, |browser| {
                 coco::blob(browser, &default_branch, Some(revision.to_string()), path)
-            })
-            .await?;
+            })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -873,8 +881,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let want = peer
-            .with_browser(&urn.to_string(), |browser| coco::branches(browser))
-            .await?;
+            .with_browser(&urn, |browser| coco::branches(browser))?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -905,10 +912,9 @@ mod test {
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
         let want = peer
-            .with_browser(&urn.to_string(), |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::commit(&mut browser, sha1)
-            })
-            .await?;
+            })?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -958,15 +964,13 @@ mod test {
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
         let want = peer
-            .with_browser(&urn.to_string(), |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::commits(&mut browser, branch)
-            })
-            .await?;
+            })?;
         let head_commit = peer
-            .with_browser(&urn.to_string(), |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::commit(&mut browser, head)
-            })
-            .await?;
+            })?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -1035,12 +1039,15 @@ mod test {
             .unwrap();
         let urn = platinum_project.urn();
 
+        // TODO(finto): Get the right URN
+        let fake_user_urn: RadUrn =
+            "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try".parse()?;
+
         let want = {
             let (branches, tags) = peer
-                .with_browser(&urn.to_string(), |browser| {
+                .with_browser(&urn, |browser| {
                     Ok((coco::branches(browser)?, coco::tags(browser)?))
-                })
-                .await?;
+                })?;
 
             ["cloudhead", "rudolfs", "xla"]
                 .iter()
@@ -1048,9 +1055,9 @@ mod test {
                     branches: branches.clone(),
                     tags: tags.clone(),
                     identity: identity::Identity {
-                        id: format!("{}@123abcd.git", handle),
+                        id: fake_user_urn.clone(),
                         metadata: identity::Metadata {
-                            handle: (*handle).to_string(),
+                            handle: handle.to_string(),
                         },
                         avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                         registered: None,
@@ -1063,7 +1070,7 @@ mod test {
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/revisions/{}", urn.to_string()))
+            .path(&format!("/revisions/{}", urn))
             .reply(&api)
             .await;
 
@@ -1074,12 +1081,12 @@ mod test {
                 json!([
                     {
                         "identity": {
-                            "id": "cloudhead@123abcd.git",
+                            "id": fake_user_urn,
                             "metadata": {
                                 "handle": "cloudhead",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": "cloudhead@123abcd.git",
+                            "shareableEntityIdentifier": format!("cloudhead@{}", fake_user_urn),
                             "avatarFallback": {
                                 "background": {
                                     "r": 24,
@@ -1094,12 +1101,12 @@ mod test {
                     },
                     {
                         "identity": {
-                            "id": "rudolfs@123abcd.git",
+                            "id": fake_user_urn,
                             "metadata": {
                                 "handle": "rudolfs",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": "rudolfs@123abcd.git",
+                            "shareableEntityIdentifier": format!("rudolfs@{}", fake_user_urn),
                             "avatarFallback": {
                                 "background": {
                                     "r": 24,
@@ -1114,12 +1121,12 @@ mod test {
                     },
                     {
                         "identity": {
-                            "id": "xla@123abcd.git",
+                            "id": fake_user_urn,
                             "metadata": {
                                 "handle": "xla",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": "xla@123abcd.git",
+                            "shareableEntityIdentifier": format!("xla@{}", fake_user_urn),
                             "avatarFallback": {
                                 "background": {
                                     "r": 155,
@@ -1153,8 +1160,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let want = peer
-            .with_browser(&urn.to_string(), |browser| coco::tags(browser))
-            .await?;
+            .with_browser(&urn, |browser| coco::tags(browser))?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -1191,15 +1197,14 @@ mod test {
 
         let default_branch = "master".to_string(); // TODO(finto): need to change this
         let want = peer
-            .with_browser(&urn.to_string(), |mut browser| {
+            .with_browser(&urn, |mut browser| {
                 coco::tree(
                     &mut browser,
                     &default_branch,
                     Some(revision.to_string()),
                     Some(prefix.to_string()),
                 )
-            })
-            .await?;
+            })?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
