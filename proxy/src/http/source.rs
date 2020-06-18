@@ -354,12 +354,12 @@ mod handler {
                         .parse()
                         .expect("failed to parse hardcoded URN"),
                     metadata: identity::Metadata {
-                        handle: handle.to_string(),
+                        handle: (*handle).to_string(),
                     },
                     avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                     registered: None,
                     shareable_entity_identifier: identity::SharedIdentifier {
-                        handle: handle.to_string(),
+                        handle: (*handle).to_string(),
                         urn: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
                             .parse()
                             .expect("failed to parse hardcoded URN"),
@@ -1035,12 +1035,12 @@ mod test {
                     identity: identity::Identity {
                         id: fake_user_urn.clone(),
                         metadata: identity::Metadata {
-                            handle: handle.to_string(),
+                            handle: (*handle).to_string(),
                         },
                         avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
                         registered: None,
                         shareable_entity_identifier: identity::SharedIdentifier {
-                            handle: handle.to_string(),
+                            handle: (*handle).to_string(),
                             urn: fake_user_urn.clone(),
                         },
                     },

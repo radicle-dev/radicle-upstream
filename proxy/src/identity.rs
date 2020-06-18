@@ -111,9 +111,9 @@ pub mod shared_identifier {
 
     impl<ST> From<user::User<ST>> for SharedIdentifier {
         fn from(user: user::User<ST>) -> Self {
-            SharedIdentifier {
+            Self {
                 handle: user.name().to_string(),
-                urn: user.urn().clone(),
+                urn: user.urn(),
             }
         }
     }

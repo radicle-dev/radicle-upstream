@@ -278,7 +278,7 @@ mod test {
 
         let store = &*store.read().await;
         let registry = &*registry.read().await;
-        let session = session::current(peer, &store, registry).await?;
+        let session = session::current(peer, store, registry).await?;
         let urn = session.identity.expect("failed to set identity").id;
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
