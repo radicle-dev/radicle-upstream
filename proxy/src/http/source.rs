@@ -293,7 +293,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
         let branches = peer
-            .with_browser(&project_urn, |browser| coco::branches(browser))
+            .with_browser(&project_urn, |browser| coco::branches(browser, None))
             .await?;
 
         Ok(reply::json(&branches))
@@ -344,26 +344,40 @@ mod handler {
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let (branches, tags) = peer
-            .with_browser(&project_urn, |browser| {
-                Ok((coco::branches(browser)?, coco::tags(browser)?))
-            })
-            .await?;
 
-        let revs = ["cloudhead", "rudolfs", "xla"]
-            .iter()
-            .map(|handle| super::Revision {
-                branches: branches.clone(),
-                tags: tags.clone(),
-                identity: identity::Identity {
-                    id: format!("{}@123abcd.git", handle),
-                    metadata: identity::Metadata {
-                        handle: (*handle).to_string(),
+        let project = peer.get_project(&project_urn).await?;
+        let api = peer.api.lock().unwrap();
+        let peer_id = api.peer_id();
+        let storage = api.storage();
+        let repo = storage.open_repo(project.urn()).unwrap();
+        let refs = repo.rad_refs().unwrap();
+
+        let remotes = refs.remotes.flatten().map(|remote| {
+            let refs = if remote == &peer_id {
+                let browser = repo.browser(project.default_branch()).unwrap();
+                coco::local_branches(&browser).unwrap()
+            } else {
+                let refs = storage.rad_refs_of(&project.urn(), remote.clone()).unwrap();
+                refs.heads.keys().cloned().map(coco::Branch).collect()
+            };
+
+            (remote, refs)
+        });
+
+        let revs = remotes
+            .map(|(remote, refs)| {
+                let id = remote.default_encoding();
+                super::Revision {
+                    branches: refs,
+                    tags: Vec::new(),
+                    identity: identity::Identity {
+                        id: id.clone(),
+                        metadata: identity::Metadata { handle: id.clone() },
+                        avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
+                        registered: None,
+                        shareable_entity_identifier: id.clone(),
                     },
-                    avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
-                    registered: None,
-                    shareable_entity_identifier: format!("{}@123abcd.git", handle),
-                },
+                }
             })
             .collect::<Vec<super::Revision>>();
 
@@ -873,7 +887,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let want = peer
-            .with_browser(&urn.to_string(), |browser| coco::branches(browser))
+            .with_browser(&urn.to_string(), |browser| coco::branches(browser, None))
             .await?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
@@ -1038,7 +1052,7 @@ mod test {
         let want = {
             let (branches, tags) = peer
                 .with_browser(&urn.to_string(), |browser| {
-                    Ok((coco::branches(browser)?, coco::tags(browser)?))
+                    Ok((coco::branches(browser, None)?, coco::tags(browser)?))
                 })
                 .await?;
 

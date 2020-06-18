@@ -5,13 +5,13 @@ use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 use librad::surf;
-use librad::surf::git::{git2, BranchName, Browser};
+use librad::surf::git::{git2, BranchName, BranchType, Browser};
 
 use crate::error;
 
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
-pub struct Branch(pub(super) String);
+pub struct Branch(pub(crate) String);
 
 impl fmt::Display for Branch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -215,9 +215,29 @@ pub fn blob(
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
+pub fn branches<'repo>(
+    browser: &Browser<'repo>,
+    branch_type: Option<BranchType>,
+) -> Result<Vec<Branch>, error::Error> {
     let mut branches = browser
-        .list_branches(None)?
+        .list_branches(branch_type)?
+        .into_iter()
+        .map(|b| Branch(b.name.name().to_string()))
+        .collect::<Vec<Branch>>();
+
+    branches.sort();
+
+    Ok(branches)
+}
+
+/// Given a project id to a repo returns the list of local branches.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+pub fn local_branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
+    let mut branches = browser
+        .list_branches(Some(surf::git::BranchType::Local))?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
