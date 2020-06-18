@@ -176,7 +176,7 @@ mod handler {
             SecretKey::new(),
             tmp_path.to_str().expect("path extraction failed"),
         )?;
-        let new_peer = coco::Peer::new(config).await?;
+        let new_peer = coco::peer(config).await?;
 
         let mut peer = peer.lock().await;
         *peer = new_peer;
