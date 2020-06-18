@@ -153,7 +153,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let store = store.read().await;
         let reg = registry.read().await;
-        let sess = session::current(&store, (*reg).clone()).await?;
+        let sess = session::current(&store, &*reg).await?;
 
         Ok(reply::json(&sess))
     }
@@ -269,7 +269,7 @@ mod test {
 
         // Test that we reset the session to default.
         let store = store.read().await;
-        let have = session::current(&*store, cache.read().await.clone())
+        let have = session::current(&*store, &*cache.read().await)
             .await
             .unwrap()
             .settings;
