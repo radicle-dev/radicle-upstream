@@ -65,17 +65,6 @@ impl entity::Resolver<project::Project<entity::Draft>> for Peer {
     }
 }
 
-pub async fn peer(config: PeerConfig) -> Result<Peer, error::Error> {
-    let peer1 = config.try_into_peer().await?;
-    let (api, run_loop) = peer1.accept()?;
-
-    let peer = Peer::new(api).await.expect("failed to create Peer");
-
-    peer.run(run_loop);
-
-    Ok(peer)
-}
-
 impl Peer {
     /// We create a default `Peer` using the `config` we provide.
     ///
@@ -84,7 +73,16 @@ impl Peer {
     /// `new` fails when:
     ///     * Initialising [`librad::git::storage::Storage`] fails.
     ///     * Initialising [`net::peer::Peer`] fails.
-    pub async fn new(api: librad::net::peer::PeerApi) -> Result<Self, error::Error> {
+    pub async fn new<I>(
+        config: net::peer::PeerConfig<discovery::Static<I, SocketAddr>>,
+    ) -> Result<Self, error::Error>
+    where
+        I: Iterator<Item = (peer::PeerId, SocketAddr)> + Send + 'static,
+    {
+        let peer = config.try_into_peer().await?;
+
+        let (api, run_loop) = peer.accept()?;
+
         let protocol = api.protocol();
         let protocol_subscriber = protocol.subscribe().await;
         let protocol_notifications = protocol_subscriber.for_each(|notification| {
@@ -94,22 +92,20 @@ impl Peer {
         });
         tokio::spawn(protocol_notifications);
 
-        Ok(Self {
-            api: Arc::new(Mutex::new(api)),
-            projects: Arc::new(Mutex::new(HashMap::new())),
-        })
-    }
-
-    pub async fn run(&self, run_loop: impl futures::future::Future + Send + 'static) {
-        let api = &self.api;
-        let subscriber = api.lock().unwrap().subscribe().await;
+        let subscriber = api.subscribe().await;
         let api_notifications = subscriber.for_each(|notification| {
             println!("API: {:?}", notification);
 
             futures::future::ready(())
         });
         tokio::spawn(api_notifications);
+
         tokio::spawn(run_loop.map(|_| ()));
+
+        Ok(Self {
+            api: Arc::new(Mutex::new(api)),
+            projects: Arc::new(Mutex::new(HashMap::new())),
+        })
     }
 
     /// Acquire a lock to the [`net::peer::PeerApi`] and apply a function over it.

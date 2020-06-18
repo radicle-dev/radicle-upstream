@@ -67,7 +67,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let key = store.init_librad_key()?;
 
     let config = coco::config::configure(paths, key);
-    let mut peer = coco::peer(config).await?;
+    let mut peer = coco::Peer::new(config)
+        .await
+        .expect("failed to create Peer");
 
     let owner = coco::fake_owner(&peer).await;
 
