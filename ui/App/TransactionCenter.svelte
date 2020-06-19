@@ -10,8 +10,6 @@
   import Center from "../DesignSystem/Component/Transaction/Center.svelte";
 
   const select = event => push(path.transactions(event.detail));
-
-  $: centerIn = { delay: 240, duration: 320, x: 500 };
 </script>
 
 <style>
@@ -25,7 +23,7 @@
 
 <Remote {store} let:data={transactions}>
   {#if transactions.length > 0}
-    <div class="center" in:fly={centerIn}>
+    <div class="center" in:fly={{ delay: 240, duration: 320, x: 500 }}>
       <Center on:select={select} summary={$summary} {transactions} />
     </div>
   {/if}

@@ -23,8 +23,6 @@
     }
   };
 
-  $: listIn = { duration: 360 };
-  $: listOut = { duration: 240 };
   $: negative = summaryIconState(summary.counts) === IconState.Negative;
 </script>
 
@@ -69,8 +67,8 @@
     <div
       class="list-wrapper"
       class:hidden
-      in:slide={listIn}
-      out:slide={listOut}>
+      in:slide={{ duration: 360 }}
+      out:slide={{ duration: 240 }}>
       <List on:select {transactions} />
     </div>
   {/if}
