@@ -202,9 +202,15 @@ impl Peer {
                         .add_key(key.public())
                         .build()?;
                 meta.sign_owned(key)?;
+                let urn = meta.urn();
 
                 let storage = api.storage().reopen()?;
-                let _repo = storage.create_repo(&meta)?;
+
+                if storage.has_urn(&urn)? {
+                    return Err(error::Error::EntityExists(urn));
+                } else {
+                    let _repo = storage.create_repo(&meta)?;
+                }
                 Ok(meta)
             })
             .flatten();
@@ -239,9 +245,16 @@ impl Peer {
                 let mut user =
                     user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
                 user.sign_owned(key)?;
+                let urn = user.urn();
 
                 let storage = api.storage().reopen()?;
-                let _repo = storage.create_repo(&user)?;
+
+                if storage.has_urn(&urn)? {
+                    return Err(error::Error::EntityExists(urn));
+                } else {
+                    let _repo = storage.create_repo(&user)?;
+                }
+
                 Ok(user)
             })
             .flatten()?;
@@ -534,4 +547,99 @@ pub fn default_config(
         gossip_params,
         disco,
     })
+}
+
+#[cfg(test)]
+mod test {
+    use librad::keys::SecretKey;
+
+    use crate::error::Error;
+
+    #[tokio::test]
+    async fn test_can_create_user() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let peer = super::Peer::new(config).await?;
+
+        let annie = peer.init_user("annie_are_you_ok?").await;
+        assert!(annie.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_can_create_project() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let mut peer = super::Peer::new(config).await?;
+
+        let user = peer.init_user("cloudhead").await?;
+        let project = peer.init_project(
+            &user,
+            &repo_path,
+            "radicalise",
+            "the people",
+            "power",
+        ).await;
+
+        assert!(project.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_cannot_create_user_twice() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let peer = super::Peer::new(config).await?;
+
+        let user = peer.init_user("cloudhead").await?;
+        let err = peer.init_user("cloudhead").await;
+
+        if let Err(Error::EntityExists(urn)) = err {
+            assert_eq!(urn, user.urn())
+        } else {
+            panic!("unexpected error when creating the user a second time: {:?}", err);
+        }
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_cannot_create_project_twice() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let mut peer = super::Peer::new(config).await?;
+
+        let user = peer.init_user("cloudhead").await?;
+        let _project = peer.init_project(
+            &user,
+            &repo_path,
+            "radicalise",
+            "the people",
+            "power",
+        ).await?;
+
+        let err = peer.init_project(
+            &user,
+            &repo_path,
+            "radicalise",
+            "the people",
+            "power",
+        ).await;
+
+        if let Err(Error::RadRemoteExists(path)) = err {
+            assert_eq!(path, format!("{}", repo_path.display()))
+        } else {
+            panic!("unexpected error when creating the project a second time: {:?}", err);
+        }
+
+        Ok(())
+    }
 }
