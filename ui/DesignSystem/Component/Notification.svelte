@@ -1,5 +1,4 @@
 <script>
-  import { blur } from "svelte/transition";
   import { Level } from "../../src/notification.ts";
 
   import { Icon, Text, Title } from "../Primitive";
@@ -19,6 +18,7 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 8px;
+    user-select: none;
   }
 
   .info {
@@ -57,11 +57,7 @@
   }
 </style>
 
-<div
-  data-cy={dataCy}
-  class={`notification ${level.toLowerCase()}`}
-  {style}
-  transition:blur={{ duration: 300 }}>
+<div class={`notification ${level.toLowerCase()}`} {style}>
   {#if showIcon}
     {#if level === Level.Info}
       <Icon.Info style="margin-left: 8px; height: 24px" />
