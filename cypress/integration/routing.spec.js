@@ -17,7 +17,7 @@ context("routing", () => {
             cy.createIdentity();
             cy.visit("./public/index.html");
 
-            cy.location().should((loc) => {
+            cy.location().should(loc => {
               expect(loc.hash).to.eq("#/profile");
             });
           });
@@ -33,13 +33,13 @@ context("routing", () => {
 
             cy.pick("sidebar", "settings").click();
 
-            cy.location().should((loc) => {
+            cy.location().should(loc => {
               expect(loc.hash).to.eq("#/settings");
             });
 
             cy.reload();
 
-            cy.location().should((loc) => {
+            cy.location().should(loc => {
               expect(loc.hash).to.eq("#/settings");
             });
           });

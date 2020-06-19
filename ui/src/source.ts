@@ -10,7 +10,7 @@ import { mockChangeset } from "./commitMocks";
 
 // TOOLING
 const filterBranches = (branches: string[]): string[] =>
-  branches.filter((branch) => !config.HIDDEN_BRANCHES.includes(branch));
+  branches.filter(branch => !config.HIDDEN_BRANCHES.includes(branch));
 
 // TYPES
 interface Person {
@@ -104,13 +104,10 @@ const commitsStore = remote.createStore<CommitHistory>();
 export const commits = commitsStore.readable;
 
 const currentPathStore = writable("");
-export const currentPath = derived(currentPathStore, ($store) => $store);
+export const currentPath = derived(currentPathStore, $store => $store);
 
 const currentRevisionStore = writable("");
-export const currentRevision = derived(
-  currentRevisionStore,
-  ($store) => $store
-);
+export const currentRevision = derived(currentRevisionStore, $store => $store);
 
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
@@ -186,7 +183,7 @@ const update = (msg: Msg): void => {
 
       api
         .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
-        .then((commit) => {
+        .then(commit => {
           commitStore.success({
             // TODO(cloudhead): Fetch branch from backend.
             branch: "master",
@@ -202,7 +199,7 @@ const update = (msg: Msg): void => {
 
       api
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/${msg.branch}`)
-        .then((history) => {
+        .then(history => {
           commitsStore.success(groupCommits(history));
         })
         .catch(commitsStore.error);
@@ -211,9 +208,9 @@ const update = (msg: Msg): void => {
     case Kind.FetchRevisions:
       api
         .get<Revisions>(`source/revisions/${msg.projectId}`)
-        .then((revisions) =>
+        .then(revisions =>
           revisionsStore.success(
-            revisions.map((rev) => {
+            revisions.map(rev => {
               return { ...rev, branches: filterBranches(rev.branches) };
             })
           )
@@ -327,7 +324,7 @@ export const readme = (
 
       return null;
     })
-    .then((blob) => (blob && !blob.binary ? blob : null))
+    .then(blob => (blob && !blob.binary ? blob : null))
     .then(readme.success)
     .catch(readme.error);
 

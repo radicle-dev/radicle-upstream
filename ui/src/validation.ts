@@ -89,7 +89,7 @@ export const createValidationStore = (
           const valid = await remoteValidation.promise(input);
 
           if (!valid) {
-            update((store) => {
+            update(store => {
               // If the input has changed since this request was fired off, don't update
               if (get(inputStore) !== input) return store;
               return {

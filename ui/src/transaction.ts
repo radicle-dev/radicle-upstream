@@ -173,7 +173,7 @@ const transactionsStore = remote.createStore<Transactions>();
 export const transactions = transactionsStore.readable;
 
 const summaryStore: Writable<Summary | null> = writable(null);
-export const summary = derived(transactionsStore, (store) => {
+export const summary = derived(transactionsStore, store => {
   if (store.status === remote.Status.Success) {
     const updated = summarizeTransactions(store.data);
 
@@ -237,7 +237,7 @@ export const fetch = (
 
   api
     .post<ListInput, Transactions>("transactions", { ids: [id] })
-    .then((txs) => store.success(txs.length === 1 ? txs[0] : null))
+    .then(txs => store.success(txs.length === 1 ? txs[0] : null))
     .catch(store.error);
 
   return store;

@@ -48,7 +48,7 @@
 
   export let params = null;
 
-  const topbarMenuItems = (projectId) => [
+  const topbarMenuItems = projectId => [
     {
       icon: Icon.Home,
       title: "Source",

@@ -26,7 +26,7 @@ describe("fetching an org", () => {
 describe("validation", () => {
   it("properly initializes a store", () => {
     const validation = orgIdValidationStore();
-    validation.subscribe((state) =>
+    validation.subscribe(state =>
       expect(state).toEqual({ status: ValidationStatus.NotStarted })
     );
   });

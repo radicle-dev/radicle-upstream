@@ -6,7 +6,7 @@
   export let transactions = null;
 
   const dispatch = createEventDispatcher();
-  const select = (id) => dispatch("select", id);
+  const select = id => dispatch("select", id);
 </script>
 
 <style>

@@ -7,7 +7,7 @@
   // The available options.
   export let options = null;
 
-  const onClick = (option) => {
+  const onClick = option => {
     dispatch("select", option.value);
     currentlyActive = option.value;
   };

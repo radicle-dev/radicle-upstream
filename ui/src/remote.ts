@@ -78,7 +78,7 @@ export const createStore = <T>(): Store<T> => {
       updateInternalStore(Status.Success, response),
     loading: (): void => updateInternalStore(Status.Loading),
     error: (error: Error): void => updateInternalStore(Status.Error, error),
-    readable: derived(internalStore, ($store) => $store),
+    readable: derived(internalStore, $store => $store),
     start: (start: Starter): void => {
       starter = start;
     },
@@ -90,7 +90,7 @@ export const chain = <I, O>(
   output: Store<O>
 ): Promise<I> => {
   const promise = new Promise<I>((resolve, reject) => {
-    input.subscribe((state) => {
+    input.subscribe(state => {
       if (state.status === Status.Loading) {
         output.loading();
       }

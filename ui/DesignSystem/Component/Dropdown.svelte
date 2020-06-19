@@ -29,7 +29,7 @@
     expanded = false;
   };
 
-  const optionSelectedHandler = (event) => {
+  const optionSelectedHandler = event => {
     value = event.detail.value;
     toggleMenu();
   };
@@ -40,7 +40,7 @@
       : "var(--color-foreground-level-6)";
   };
 
-  $: optionByValue = options.find((option) => option.value === value);
+  $: optionByValue = options.find(option => option.value === value);
 </script>
 
 <style>
