@@ -9,7 +9,7 @@
   } from "../../DesignSystem/Component";
 
   // TODO(sos): replace console.log's with actual navigation
-  const menuItems = (member) => [
+  const menuItems = member => [
     {
       icon: Icon.Member,
       title: "Go to member profile",
@@ -22,8 +22,7 @@
     },
   ];
 
-  const select = (event) =>
-    console.log(`go to ${event.detail.handle}'s profile`);
+  const select = event => console.log(`go to ${event.detail.handle}'s profile`);
 </script>
 
 <style>

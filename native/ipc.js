@@ -11,5 +11,5 @@ export const CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT";
 export const getDirectoryPath = () =>
   window.electron.ipcRenderer.invoke(DIALOG_SHOWOPENDIALOG);
 
-export const copyToClipboard = (text) =>
+export const copyToClipboard = text =>
   window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);

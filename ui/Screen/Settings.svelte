@@ -11,10 +11,10 @@
   import { Title, Text, Button } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
-  const updateNetwork = (event) =>
+  const updateNetwork = event =>
     updateRegistry({ ...$settings.registry, network: event.detail });
 
-  const updateTheme = (event) =>
+  const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
 </script>
 
