@@ -155,29 +155,27 @@ impl Peer {
         project_urn: &str,
     ) -> Result<Vec<(String, Vec<Branch>)>, error::Error> {
         let project = self.get_project(&project_urn).await?;
-        let api = self.api.lock().unwrap();
+        let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
         let peer_id = api.peer_id();
         let storage = api.storage();
-        let repo = storage.open_repo(project.urn()).unwrap();
-        let refs = repo.rad_refs().unwrap();
+        let repo = storage.open_repo(project.urn())?;
+        let refs = repo.rad_refs()?;
 
-        let result = refs
-            .remotes
-            .flatten()
-            .map(|remote| {
-                let refs = if remote == &peer_id {
-                    let browser = repo.browser(project.default_branch()).unwrap();
-                    local_branches(&browser).unwrap()
-                } else {
-                    let refs = storage.rad_refs_of(&project.urn(), remote.clone()).unwrap();
-                    refs.heads.keys().cloned().map(Branch).collect()
-                };
+        let mut remotes = vec![];
 
-                (remote.default_encoding(), refs)
-            })
-            .collect();
+        for remote in refs.remotes.flatten() {
+            let refs = if remote == &peer_id {
+                let browser = repo.browser(project.default_branch())?;
+                local_branches(&browser)?
+            } else {
+                let remote_branches = storage.rad_refs_of(&project.urn(), remote.clone())?;
+                remote_branches.heads.keys().cloned().map(Branch).collect()
+            };
 
-        Ok(result)
+            remotes.push((remote.default_encoding(), refs));
+        }
+
+        Ok(remotes)
     }
 
     /// Initialize a [`project::Project`] that is owned by the `owner`.
