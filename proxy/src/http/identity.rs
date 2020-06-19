@@ -18,7 +18,7 @@ pub fn filters<R: registry::Client>(
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter().or(create_filter(peer, registry, store))
+    get_filter(Arc::clone(&peer)).or(create_filter(peer, registry, store))
 }
 
 /// `POST /identities`
@@ -51,8 +51,11 @@ fn create_filter<R: registry::Client>(
 }
 
 /// `GET /identities/<id>`
-fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter(
+    peer: Arc<Mutex<coco::Peer>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("identities")
+        .and(http::with_peer(peer))
         .and(document::param::<String>("id", "Unique ID of the Identity"))
         .and(warp::get())
         .and(document::document(document::description(
@@ -83,7 +86,6 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::avatar;
     use crate::coco;
     use crate::error;
     use crate::http;
@@ -101,14 +103,15 @@ mod handler {
         let reg = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::current(peer, &store, (*reg).clone())
+        if let Some(identity) = session::current(Arc::clone(&peer), &store, &*reg)
             .await?
             .identity
         {
-            return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
+            return Err(Rejection::from(error::Error::EntityExists(identity.id)));
         }
 
-        let id = identity::create(input.handle)?;
+        let peer = peer.lock().await;
+        let id = identity::create(&peer, input.handle.parse()?).await?;
 
         session::set_identity(&store, id.clone())?;
 
@@ -116,17 +119,9 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(id: String) -> Result<impl Reply, Rejection> {
-        let id = identity::Identity {
-            id: id.to_string(),
-            shareable_entity_identifier: format!("cloudhead@{}", id),
-            metadata: identity::Metadata {
-                handle: "cloudhead".into(),
-            },
-            registered: None,
-            avatar_fallback: avatar::Avatar::from(&id, avatar::Usage::Identity),
-        };
-
+    pub async fn get(peer: Arc<Mutex<coco::Peer>>, id: String) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
+        let id = identity::get(&peer, &id.parse().expect("could not parse id"))?;
         Ok(reply::json(&id))
     }
 }
@@ -252,8 +247,10 @@ mod test {
     use crate::avatar;
     use crate::coco;
     use crate::error;
+    use crate::http;
     use crate::identity;
     use crate::registry;
+    use crate::session;
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
@@ -263,14 +260,12 @@ mod test {
         let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
+            Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
+        let store = Arc::new(RwLock::new(
+            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
+        ));
+        let api = super::filters(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
 
         let res = request()
             .method("POST")
@@ -281,26 +276,27 @@ mod test {
             .reply(&api)
             .await;
 
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        let want = json!({
-            "avatarFallback": {
-                "background": {
-                    "r": 52,
-                    "g": 124,
-                    "b": 239,
-                },
-                "emoji": "🥐",
-            },
-            "id": "cloudhead@123abcd.git",
-            "metadata": {
-                "handle": "cloudhead",
-            },
-            "registered": Value::Null,
-            "shareableEntityIdentifier": "cloudhead@123abcd.git",
-        });
+        let store = &*store.read().await;
+        let registry = &*registry.read().await;
+        let session = session::current(peer, store, registry).await?;
+        let urn = session.identity.expect("failed to set identity").id;
 
-        assert_eq!(res.status(), StatusCode::CREATED);
-        assert_eq!(have, want);
+        http::test::assert_response(&res, StatusCode::CREATED, |have| {
+            let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
+            let shareable_entity_identifier = format!("cloudhead@{}", urn);
+            assert_eq!(
+                have,
+                json!({
+                    "avatarFallback": avatar,
+                    "id": urn,
+                    "metadata": {
+                        "handle": "cloudhead",
+                    },
+                    "registered": Value::Null,
+                    "shareableEntityIdentifier": &shareable_entity_identifier
+                })
+            );
+        });
 
         Ok(())
     }
@@ -310,39 +306,40 @@ mod test {
         let tmp_dir = tempfile::tempdir().unwrap();
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+        let peer = coco::Peer::new(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+
+        let user = peer.init_user("cloudhead").await?;
+        let urn = user.urn();
+        let handle = user.name().to_string();
+        let shareable_entity_identifier = user.into();
+
         let api = super::filters(
-            Arc::clone(&peer),
+            Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
 
-        let id = "123abcd.git";
-
         let res = request()
             .method("GET")
-            .path(&format!("/identities/{}", id))
+            .path(&format!("/identities/{}", urn))
             .reply(&api)
             .await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
-
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(
             have,
             json!(identity::Identity {
-                id: id.to_string(),
-                shareable_entity_identifier: format!("cloudhead@{}", id.to_string()),
-                metadata: identity::Metadata {
-                    handle: "cloudhead".into(),
-                },
+                id: urn.clone(),
+                shareable_entity_identifier,
+                metadata: identity::Metadata { handle },
                 registered: None,
-                avatar_fallback: avatar::Avatar::from(id, avatar::Usage::Identity),
+                avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
             })
         );
 

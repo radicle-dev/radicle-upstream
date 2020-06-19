@@ -8,6 +8,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_cbor::from_reader;
 use std::str::FromStr;
 
+use librad::uri::RadUrn;
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{Balance, Id, ProjectDomain, ProjectName, MINIMUM_FEE};
 
@@ -63,7 +64,7 @@ impl Serialize for Hash {
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Librad project ID.
-    pub id: String,
+    pub id: RadUrn,
     /// Metadata version.
     pub version: u8,
 }
@@ -97,7 +98,7 @@ pub struct Project {
     /// The domain of the project.
     pub domain: ProjectDomain,
     /// Optionally associated project id for attestation in other systems.
-    pub maybe_project_id: Option<String>,
+    pub maybe_project_id: Option<RadUrn>,
 }
 
 /// The registered user with associated coco id.
@@ -230,7 +231,7 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         project_domain: ProjectDomain,
         project_name: ProjectName,
-        maybe_project_id: Option<librad::uri::RadUrn>,
+        maybe_project_id: Option<RadUrn>,
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -490,7 +491,7 @@ impl Client for Registry {
         author: &protocol::ed25519::Pair,
         project_domain: ProjectDomain,
         project_name: ProjectName,
-        maybe_project_id: Option<librad::uri::RadUrn>,
+        maybe_project_id: Option<RadUrn>,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit checkpoint transaction.
@@ -516,7 +517,7 @@ impl Client for Registry {
 
         let register_metadata_vec = if let Some(pid_string) = maybe_project_id {
             let pid_cbor = Metadata {
-                id: pid_string.to_string(),
+                id: pid_string,
                 version: 1,
             };
             // TODO(garbados): unpanic
@@ -843,7 +844,7 @@ mod test {
         assert_eq!(projects[0].name, project_name);
         assert_eq!(
             projects[0].maybe_project_id,
-            Some("rad:git:hwd1yrerjqujexs8p9barieeoo3q6nwczgdn48g9zf8msw5bn9dnsy5eqph".to_string())
+            Some("rad:git:hwd1yrerjqujexs8p9barieeoo3q6nwczgdn48g9zf8msw5bn9dnsy5eqph".parse()?)
         );
 
         Ok(())
