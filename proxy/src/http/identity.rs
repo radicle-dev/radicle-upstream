@@ -107,7 +107,7 @@ mod handler {
             .await?
             .identity
         {
-            return Err(Rejection::from(error::Error::IdentityExists(identity.id)));
+            return Err(Rejection::from(error::Error::EntityExists(identity.id)));
         }
 
         let peer = peer.lock().await;
