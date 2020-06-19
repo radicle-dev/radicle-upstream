@@ -50,7 +50,7 @@ function update(msg: Msg): void {
         .post<CreateInput, Identity>("identities", {
           handle: msg.handle,
         })
-        .then((id) => {
+        .then(id => {
           creationStore.success(id);
         })
         .catch(creationStore.error);

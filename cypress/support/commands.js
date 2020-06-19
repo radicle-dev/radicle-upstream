@@ -27,7 +27,7 @@ Cypress.Commands.add("nukeAllState", async () => {
 });
 
 Cypress.Commands.add("pick", (...ids) => {
-  const selectorString = ids.map((id) => `[data-cy="${id}"]`).join(" ");
+  const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
   cy.get(selectorString);
 });
 

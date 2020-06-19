@@ -6,6 +6,7 @@ use librad::meta::common::url;
 use librad::meta::entity;
 use librad::surf;
 use librad::surf::git::git2;
+use librad::uri::RadUrn;
 use radicle_registry_client as registry;
 
 use crate::keystore;
@@ -37,7 +38,7 @@ pub enum UserValidation {
 pub enum Error {
     /// Returned when an attempt to create an identity was made and there is one present.
     #[error("the identity '{0}' already exits")]
-    IdentityExists(String),
+    EntityExists(RadUrn),
 
     /// Configured default branch for the project is missing.
     #[error("repository '{0}' doesn't have the configured default branch '{1}'")]
@@ -110,6 +111,10 @@ pub enum Error {
     /// Failure to acquire [`std::sync::Mutex`] lock for the peer.
     #[error("failed to acquire lock for peer")]
     LibradLock,
+
+    /// Failure during the verification of a `librad` entity.
+    #[error(transparent)]
+    LibradVerification(#[from] entity::HistoryVerificationError),
 
     /// Failure when interacting with [`crate::keystore`].
     #[error(transparent)]

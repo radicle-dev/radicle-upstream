@@ -8,7 +8,7 @@
   export let escapable = true;
   export let onClose = pop;
 
-  const onKeydown = (event) => {
+  const onKeydown = event => {
     if (
       escapable &&
       event.target === document.body &&

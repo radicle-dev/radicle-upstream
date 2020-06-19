@@ -7,10 +7,19 @@
   export let summary = null;
   export let transactions = null;
 
+  // Transaction center element. Set by the view.
+  let txList = null;
   let hidden = true;
 
   const toggleList = () => {
     hidden = !hidden;
+  };
+
+  const handleClick = ev => {
+    // Any click *outside* the elem should hide the elem.
+    if (txList !== ev.target && !txList.contains(ev.target) && !hidden) {
+      hidden = true;
+    }
   };
 
   $: negative = summaryIconState(summary.counts) === IconState.Negative;
@@ -47,7 +56,12 @@
   }
 </style>
 
-<div class="center" class:negative data-cy="transaction-center">
+<svelte:window on:click={handleClick} />
+<div
+  bind:this={txList}
+  class="center"
+  class:negative
+  data-cy="transaction-center">
   <div class="list-wrapper" class:hidden>
     <List on:select {transactions} />
   </div>

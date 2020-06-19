@@ -49,7 +49,7 @@
 
   const { id, metadata } = getContext("project");
 
-  const getRevision = (current) => {
+  const getRevision = current => {
     return current !== "" ? current : metadata.defaultBranch;
   };
 
@@ -166,7 +166,7 @@
             style="height: 100%;"
             currentRevision={getRevision($currentRevision)}
             {revisions}
-            on:select={(event) => updateRevision(project.id, event.detail)} />
+            on:select={event => updateRevision(project.id, event.detail)} />
         </div>
       </Remote>
 
