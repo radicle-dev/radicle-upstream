@@ -221,7 +221,7 @@ impl Peer {
         Ok(meta)
     }
 
-    /// Create a [`user::User`] with the provided `name`. This assumes that you are creating a user
+    /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a user
     /// that uses the secret key the `PeerApi` was configured with.
     ///
     /// # Errors
