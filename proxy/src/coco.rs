@@ -77,7 +77,7 @@ impl Peer {
         Ok(f(&api))
     }
 
-    /// Returns the list of [`project::Project`] known for the configured [`paths::Paths`].
+    /// Returns the list of [`project::Project`]s known for the configured [`paths::Paths`].
     ///
     /// # Errors
     ///
@@ -101,7 +101,7 @@ impl Peer {
         .flatten()
     }
 
-    /// Returns the list of [`project::Project`] known for the configured [`paths::Paths`].
+    /// Returns the list of [`user::User`]s known for the configured [`paths::Paths`].
     ///
     /// # Errors
     ///
