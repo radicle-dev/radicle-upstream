@@ -53,8 +53,8 @@
     left: 0;
     background: linear-gradient(
       0deg,
-      rgba(235, 239, 243, 1) 0%,
-      rgba(235, 239, 243, 0) 100%
+      rgba(var(--color-sidebar-gradient), 1) 0%,
+      rgba(var(--color-sidebar-gradient), 0) 100%
     );
   }
 
