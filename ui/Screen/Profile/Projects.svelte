@@ -81,13 +81,6 @@
 </script>
 
 <Remote store={projectStore} let:data={projects}>
-
-  <!-- @Sarah This is just an array with one replicated and one unreplicated project. Please remove this when done -->
-  <div style="display: none;">
-    {(projects = [{ id: 'rad:git:hwd1yreffpbegx93ezuse6tbffbqxh9dr7jrtrsa33mqkhxu5w78gqnabcy', shareableEntityIdentifier: '%rad:git:hwd1yreffpbegx93ezuse6tbffbqxh9dr7jrtrsa33mqkhxu5w78gqnabcy', metadata: { name: 'sfdfdssd', description: '', defaultBranch: 'master' }, registration: null, stats: { branches: 11, commits: 267, contributors: 8 } }, { id: 'rad:git:hwd1yreffpbegx93ezuse6tbffbqxh9dr7jrtrsa33mqkhxu5w78gqnabcy', shareableEntityIdentifier: '%rad:git:hwd1yreffpbegx93ezuse6tbffbqxh9dr7jrtrsa33mqkhxu5w78gqnabcy', metadata: null, registration: null, stats: null }])}
-  </div>
-  <!-- Remove until here -->
-
   {#if projects.length > 0}
     <List
       dataCy="project-list"
