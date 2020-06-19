@@ -230,13 +230,14 @@ impl Peer {
     ///     * [`Self::with_api`] fails with a poisoned lock.
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    pub async fn init_user(&self, name: &str) -> Result<User, error::Error> {
+    pub async fn init_user(&self, handle: &str) -> Result<User, error::Error> {
         let user = self
             .with_api(|api| {
                 let key = api.key();
 
                 // Create the project meta
-                let mut user = user::User::<entity::Draft>::create(name.to_string(), key.public())?;
+                let mut user =
+                    user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
                 user.sign_owned(key)?;
 
                 let storage = api.storage().reopen()?;
