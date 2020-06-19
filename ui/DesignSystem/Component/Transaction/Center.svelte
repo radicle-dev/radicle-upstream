@@ -58,8 +58,8 @@
 
 <svelte:window on:click={handleClick} />
 <div
-  class="center"
   bind:this={txList}
+  class="center"
   class:negative
   data-cy="transaction-center">
   <div class="list-wrapper" class:hidden>
