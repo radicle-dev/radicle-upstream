@@ -40,7 +40,7 @@
 
   const colors = Array.from(document.styleSheets)
     .filter(
-      (sheet) =>
+      sheet =>
         sheet.href === null || sheet.href.startsWith(window.location.origin)
     )
     .reduce(
@@ -53,7 +53,7 @@
                 rule.selectorText === ":root"
                   ? [
                       ...def,
-                      ...Array.from(rule.style).filter((name) =>
+                      ...Array.from(rule.style).filter(name =>
                         name.startsWith("--color")
                       ),
                     ]

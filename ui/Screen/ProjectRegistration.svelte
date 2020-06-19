@@ -102,7 +102,7 @@
             bind:projectId
             bind:domainId
             bind:projectName
-            on:next={(event) => {
+            on:next={event => {
               domainId = event.detail.domainId;
               domainType = event.detail.domainType;
               showRegistrationDetails = false;

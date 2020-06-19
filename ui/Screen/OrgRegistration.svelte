@@ -71,7 +71,7 @@
     }
   };
 
-  const updateAvatar = async (id) => {
+  const updateAvatar = async id => {
     if (!id || id.length < 1) {
       showAvatar = false;
       return;

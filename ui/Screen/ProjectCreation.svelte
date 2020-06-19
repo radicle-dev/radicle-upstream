@@ -177,7 +177,7 @@
   let localState;
   let localStateError;
 
-  const fetchBranches = async (path) => {
+  const fetchBranches = async path => {
     // Revert to defaults whenever the path changes in case this query fails
     // or the user clicks cancel in the directory selection dialog.
     localState = "";
@@ -316,7 +316,7 @@
               {#if localState.branches && localState.branches.length > 0}
                 <Dropdown
                   style="max-width: 22.9rem;"
-                  options={localState.branches.map((branch) => {
+                  options={localState.branches.map(branch => {
                     return { variant: 'text', value: branch, textProps: { title: branch } };
                   })}
                   bind:value={defaultBranch} />

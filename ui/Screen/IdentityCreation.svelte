@@ -16,12 +16,12 @@
     store.set(State.Welcome);
   };
 
-  const onError = (error) => {
+  const onError = error => {
     pop();
     notification.error(`Could not create identity: ${error}`);
   };
 
-  const complete = (redirectPath) => {
+  const complete = redirectPath => {
     session.fetch();
     store.set(State.Complete);
     replace(redirectPath);

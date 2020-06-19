@@ -4,7 +4,7 @@
 
   export let item = null;
 
-  const icon = (variant) => {
+  const icon = variant => {
     return {
       "open-issue": Icon.Issue,
       "reopen-issue": Icon.Issue,
@@ -14,7 +14,7 @@
     }[variant];
   };
 
-  const action = (variant) => {
+  const action = variant => {
     return {
       "open-issue": "opened the issue",
       "reopen-issue": "closed the issue",
