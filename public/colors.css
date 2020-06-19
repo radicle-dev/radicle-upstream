@@ -31,7 +31,6 @@
   --color-foreground-level-4: #a9b9c7;
   --color-foreground-level-5: #90a0af;
   --color-foreground-level-6: #546474;
-  --color-sidebar-gradient: 235, 239, 243;
 }
 
 [data-theme="dark"] {
@@ -67,5 +66,4 @@
   --color-foreground-level-4: #5e6d7a;
   --color-foreground-level-5: #8594a1;
   --color-foreground-level-6: #d3dee8;
-  --color-sidebar-gradient: 41, 52, 61;
 }
