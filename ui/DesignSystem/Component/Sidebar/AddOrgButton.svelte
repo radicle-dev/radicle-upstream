@@ -17,6 +17,7 @@
 
   .button.disabled:hover {
     fill: var(--color-foreground-level-3);
+    cursor: not-allowed;
   }
 
   .button.disabled :global(svg) {
