@@ -519,6 +519,12 @@ impl ToDocumentedType for RegisterInput {
                 .example("upstream"),
         );
         properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+        properties.insert(
             "maybeCocoId".into(),
             document::string()
                 .description("Optionally passed coco id to store for attestion")
