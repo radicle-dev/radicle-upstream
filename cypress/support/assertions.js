@@ -9,7 +9,7 @@ const isInViewport = (chai, _utils) => {
       rect.top < bottom && rect.bottom < bottom && rect.bottom > 0,
       "expected #{this} to be in viewport",
       "expected #{this} to not be in viewport",
-      this._obj
+      this._obj,
     );
   }
 

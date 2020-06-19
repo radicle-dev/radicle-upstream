@@ -21,7 +21,7 @@ context("routing", () => {
               expect(loc.hash).to.eq("#/profile");
             });
           });
-        }
+        },
       );
 
       context(
@@ -44,7 +44,7 @@ context("routing", () => {
               expect(loc.hash).to.eq("#/settings");
             });
           });
-        }
+        },
       );
     });
   });

@@ -41,7 +41,7 @@
   const colors = Array.from(document.styleSheets)
     .filter(
       sheet =>
-        sheet.href === null || sheet.href.startsWith(window.location.origin)
+        sheet.href === null || sheet.href.startsWith(window.location.origin),
     )
     .reduce(
       (acc, sheet) =>
@@ -54,14 +54,14 @@
                   ? [
                       ...def,
                       ...Array.from(rule.style).filter(name =>
-                        name.startsWith("--color")
+                        name.startsWith("--color"),
                       ),
                     ]
                   : def),
-            []
+            [],
           ),
         ]),
-      []
+      [],
     );
 
   const user = {

@@ -69,14 +69,14 @@ context("source code browsing", () => {
     it("shows readme file for the latest revision", () => {
       // the default revision is selected
       cy.get('[data-cy=revision-selector][data-revision="master"]').should(
-        "exist"
+        "exist",
       );
 
       // there is a commit teaser
       cy.pick("commit-teaser").contains("Alexander Simmerl").should("exist");
       cy.pick("commit-teaser")
         .contains(
-          "Merge pull request #4 from FintanH/fintan/update-readme-no-sig"
+          "Merge pull request #4 from FintanH/fintan/update-readme-no-sig",
         )
         .should("exist");
       cy.pick("commit-teaser").contains("223aaf8").should("exist");
@@ -93,13 +93,13 @@ context("source code browsing", () => {
       it("allows switching to a different branch", () => {
         cy.pick("revision-selector").click();
         cy.get(
-          '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]'
+          '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]',
         ).click();
         cy.contains("here-we-are-on-a-dev-branch.lol").should("exist");
 
         cy.pick("revision-selector").click();
         cy.get(
-          '.revision-dropdown [data-branch="master"][data-repo-handle="cloudhead"]'
+          '.revision-dropdown [data-branch="master"][data-repo-handle="cloudhead"]',
         ).click();
         cy.contains("here-we-are-on-a-dev-branch.lol").should("not.exist");
       });
@@ -107,13 +107,13 @@ context("source code browsing", () => {
       it("allows switching to a different tag", () => {
         cy.pick("revision-selector").click();
         cy.get(
-          '.revision-dropdown [data-tag="v0.4.0"][data-repo-handle="cloudhead"]'
+          '.revision-dropdown [data-tag="v0.4.0"][data-repo-handle="cloudhead"]',
         ).click();
         cy.contains("test-file-deletion.txt").should("exist");
 
         cy.pick("revision-selector").click();
         cy.get(
-          '.revision-dropdown [data-tag="v0.5.0"][data-repo-handle="cloudhead"]'
+          '.revision-dropdown [data-tag="v0.5.0"][data-repo-handle="cloudhead"]',
         ).click();
         cy.contains("test-file-deletion.txt").should("not.exist");
       });

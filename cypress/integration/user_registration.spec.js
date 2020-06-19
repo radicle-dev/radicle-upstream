@@ -105,7 +105,7 @@ context("user registration", () => {
       cy.pick("subject", "emoji").should(
         "have.css",
         "background-color",
-        "rgb(185, 118, 211)"
+        "rgb(185, 118, 211)",
       );
 
       cy.pick("deposit", "rad-amount").contains("0.00001");
@@ -131,13 +131,13 @@ context("user registration", () => {
 
       cy.pick("summary", "subject-avatar", "emoji").should(
         "have.class",
-        "circle"
+        "circle",
       );
       cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🏯");
       cy.pick("subject", "emoji").should(
         "have.css",
         "background-color",
-        "rgb(185, 118, 211)"
+        "rgb(185, 118, 211)",
       );
 
       cy.pick("deposit", "rad-amount").contains("0.00001");

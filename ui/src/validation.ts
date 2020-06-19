@@ -22,7 +22,7 @@ export interface ValidationStore extends Readable<ValidationState> {
 // it easier to derive a ValidationState from an existing validatejs response
 export const getValidationState = (
   entity: string,
-  validationErrors: { [key: string]: string[] }
+  validationErrors: { [key: string]: string[] },
 ): ValidationState => {
   if (validationErrors && validationErrors[entity]) {
     return {
@@ -52,7 +52,7 @@ interface FormatConstraints {
 
 export const createValidationStore = (
   constraints: FormatConstraints,
-  remoteValidations: RemoteValidation[]
+  remoteValidations: RemoteValidation[],
 ): ValidationStore => {
   const initialState = {
     status: ValidationStatus.NotStarted,
@@ -71,7 +71,7 @@ export const createValidationStore = (
     const errors = validatejs(
       { input: input },
       { input: constraints },
-      { fullMessages: false }
+      { fullMessages: false },
     );
 
     if (errors) {

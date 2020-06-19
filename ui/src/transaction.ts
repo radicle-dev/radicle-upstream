@@ -166,7 +166,7 @@ export const summarizeTransactions = (txs: Transactions): Summary =>
         settled: 0,
         sum: 0,
       },
-    }
+    },
   );
 
 const transactionsStore = remote.createStore<Transactions>();
@@ -231,7 +231,7 @@ export const fetchList = (ids?: Array<string>): void =>
   event.create<Kind, Msg>(Kind.FetchList, update)({ ids: ids || [] });
 
 export const fetch = (
-  id: string
+  id: string,
 ): Readable<remote.Data<Transaction | null>> => {
   const store = remote.createStore<Transaction | null>();
 
@@ -360,7 +360,7 @@ export const formatSubject = (msg: Message): Subject => {
       type = SubjectType.OrgProject;
       avatarSource = getAvatar(
         msg.domainType === Domain.User ? Usage.Identity : Usage.Org,
-        msg.domainId
+        msg.domainId,
       );
       break;
   }
@@ -484,7 +484,7 @@ interface CostSummary {
 export const costSummary = (
   messageType: MessageType,
   fee: currency.MicroRad,
-  deposits: Deposits
+  deposits: Deposits,
 ): CostSummary => {
   let deposit = 0;
 

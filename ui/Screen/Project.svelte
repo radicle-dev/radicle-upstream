@@ -94,7 +94,7 @@
       icon: Icon.Register,
       event: () =>
         push(
-          path.registerExistingProject(params.id, session.identity.registered)
+          path.registerExistingProject(params.id, session.identity.registered),
         ),
     };
   } else {

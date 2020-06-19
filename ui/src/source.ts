@@ -212,8 +212,8 @@ const update = (msg: Msg): void => {
           revisionsStore.success(
             revisions.map(rev => {
               return { ...rev, branches: filterBranches(rev.branches) };
-            })
-          )
+            }),
+          ),
         )
         .catch(revisionsStore.error);
       break;
@@ -250,7 +250,7 @@ export const fetchCommit = event.create<Kind, Msg>(Kind.FetchCommit, update);
 export const fetchCommits = event.create<Kind, Msg>(Kind.FetchCommits, update);
 export const fetchRevisions = event.create<Kind, Msg>(
   Kind.FetchRevisions,
-  update
+  update,
 );
 export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 
@@ -261,7 +261,7 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 export const tree = (
   projectId: string,
   revision: string,
-  prefix: string
+  prefix: string,
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
 
@@ -276,7 +276,7 @@ export const tree = (
 const blob = (
   projectId: string,
   revision: string,
-  path: string
+  path: string,
 ): Promise<Blob> =>
   api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
 
@@ -307,7 +307,7 @@ export const formatTime = (t: number): string => {
 
 export const readme = (
   projectId: string,
-  revision: string
+  revision: string,
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
 

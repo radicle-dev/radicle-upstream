@@ -41,7 +41,7 @@
   const summary = costSummary(
     transaction.messages[0].type,
     parseInt(transaction.fee),
-    transactionDeposits
+    transactionDeposits,
   );
 
   $: updateAvatar();

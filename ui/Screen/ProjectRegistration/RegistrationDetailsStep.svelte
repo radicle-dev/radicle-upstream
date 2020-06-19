@@ -96,7 +96,7 @@
     try {
       const present = await getOrgProject(
         selectedDomain().avatarProps.title,
-        projectName
+        projectName,
       );
 
       if (present) {
@@ -131,7 +131,7 @@
     validating = true;
     validations = validatejs(
       { projectId: projectId, projectName: projectName },
-      constraints
+      constraints,
     );
 
     if (!validatejs.isEmpty(validations)) {

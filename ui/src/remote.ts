@@ -52,7 +52,7 @@ export const createStore = <T>(): Store<T> => {
 
   const updateInternalStore: Update<T> = (
     status: UpdateableStatus,
-    payload?: T | Error
+    payload?: T | Error,
   ) => {
     let val: Data<T>;
     switch (status) {
@@ -87,7 +87,7 @@ export const createStore = <T>(): Store<T> => {
 
 export const chain = <I, O>(
   input: Readable<Data<I>>,
-  output: Store<O>
+  output: Store<O>,
 ): Promise<I> => {
   const promise = new Promise<I>((resolve, reject) => {
     input.subscribe(state => {
