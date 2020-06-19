@@ -159,6 +159,7 @@ pub mod shared_identifier {
         where
             D: Deserializer<'de>,
         {
+            /// A phantom Visitor for serde to deserialize.
             struct IdVisitor;
 
             impl<'de> Visitor<'de> for IdVisitor {
