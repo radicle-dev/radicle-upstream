@@ -16,9 +16,9 @@
     store.set(State.Welcome);
   };
 
-  const onError = (error) => {
+  const onError = (event) => {
+    notification.error(`Could not create identity: ${event.detail}`);
     pop();
-    notification.error(`Could not create identity: ${error}`);
   };
 
   const complete = (redirectPath) => {
