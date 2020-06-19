@@ -54,7 +54,7 @@
     background: linear-gradient(
       0deg,
       var(--color-foreground-level-2) 0%,
-      + rgba(0, 0, 0, 0) 100%
+      rgba(0, 0, 0, 0) 100%
     );
   }
 
