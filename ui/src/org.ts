@@ -40,14 +40,14 @@ export const projects = projectsStore.readable;
 // Api
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`);
 export const getIdAvailability = (id: string): Promise<boolean> =>
-  getOrg(id).then((org) => !org);
+  getOrg(id).then(org => !org);
 const validateUserExistence = (handle: string): Promise<boolean> =>
-  user.get(handle).then((user) => !!user);
+  user.get(handle).then(user => !!user);
 const validateNewMember = (orgId: string) => (
   handle: string
 ): Promise<boolean> =>
   getOrg(orgId).then(
-    (org) => !org.members.find((member) => member.handle == handle)
+    org => !org.members.find(member => member.handle == handle)
   );
 
 // Events

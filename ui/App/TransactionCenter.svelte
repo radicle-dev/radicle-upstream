@@ -8,7 +8,7 @@
 
   import Center from "../DesignSystem/Component/Transaction/Center.svelte";
 
-  const select = (event) => push(path.transactions(event.detail));
+  const select = event => push(path.transactions(event.detail));
 </script>
 
 <Remote {store} let:data={transactions}>

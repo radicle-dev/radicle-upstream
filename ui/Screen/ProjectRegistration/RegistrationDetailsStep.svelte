@@ -31,7 +31,7 @@
   };
 
   const selectedDomain = () => {
-    return domainDropdownOptions.find((option) => {
+    return domainDropdownOptions.find(option => {
       return option.value === domainId;
     });
   };
@@ -47,7 +47,7 @@
     },
   };
 
-  const orgOptions = orgs.map((org) => {
+  const orgOptions = orgs.map(org => {
     return {
       variant: "avatar",
       value: org.id,
@@ -62,7 +62,7 @@
 
   const domainDropdownOptions = [identityOption, ...orgOptions];
 
-  const projectDropdownOptions = projects.map((project) => {
+  const projectDropdownOptions = projects.map(project => {
     return {
       variant: "text",
       value: project.id,
@@ -71,7 +71,7 @@
   });
 
   const selectedProject = () => {
-    return projectDropdownOptions.find((option) => {
+    return projectDropdownOptions.find(option => {
       return option.value === projectId;
     });
   };

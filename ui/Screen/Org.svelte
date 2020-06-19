@@ -39,7 +39,7 @@
     "/orgs/:id/members": MembersMenu,
   };
 
-  const topbarMenuItems = (orgId) => [
+  const topbarMenuItems = orgId => [
     {
       icon: Icon.Source,
       title: "Projects",

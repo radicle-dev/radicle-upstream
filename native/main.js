@@ -57,7 +57,7 @@ const createWindow = () => {
       ignoreInitial: true,
     });
 
-    watcher.on("change", (_p) => {
+    watcher.on("change", _p => {
       mainWindow.reload();
     });
   }

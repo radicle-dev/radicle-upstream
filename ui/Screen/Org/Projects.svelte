@@ -19,14 +19,14 @@
   export let params = null;
   const session = getContext("session");
 
-  const select = (event) => {
+  const select = event => {
     const orgProject = event.detail;
     if (orgProject.maybeProject) {
       push(path.projectSource(orgProject.maybeProject.id));
     }
   };
 
-  const statsProps = (stats) => {
+  const statsProps = stats => {
     return [
       { icon: Icon.Commit, count: stats.commits },
       { icon: Icon.Branch, count: stats.branches },
@@ -34,7 +34,7 @@
     ];
   };
 
-  const projectCardProps = (orgProject) => {
+  const projectCardProps = orgProject => {
     if (orgProject.maybeProject) {
       return {
         title: orgProject.name,

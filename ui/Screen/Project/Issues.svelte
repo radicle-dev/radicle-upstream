@@ -60,8 +60,8 @@
     currentFilter === "All"
       ? issues
       : currentFilter === "Open"
-      ? issues.filter((issue) => issue.open)
-      : issues.filter((issue) => !issue.open);
+      ? issues.filter(issue => issue.open)
+      : issues.filter(issue => !issue.open);
 </script>
 
 <style>
@@ -82,7 +82,7 @@
     <SegmentedControl
       active={'Open'}
       options={filterOptions}
-      on:select={(option) => updateFilter(option.detail)} />
+      on:select={option => updateFilter(option.detail)} />
   </div>
   <List
     dataCy="issue-list"
