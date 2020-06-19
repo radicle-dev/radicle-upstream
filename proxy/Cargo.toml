@@ -33,11 +33,12 @@ warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", featur
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "11daae382a812d4f152cdf5cdc70572360a65228"
+rev = "d5e06abd9e8f5361cb6b4f693561007036b6d263"
 
+# TODO: Point to new repo
 [dependencies.radicle-keystore]
-git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "11daae382a812d4f152cdf5cdc70572360a65228"
+git = "https://github.com/radicle-dev/radicle-keystore.git"
+rev = "a04f4dbaec4d05be2c7a516a36b5bbec02ee32aa"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
