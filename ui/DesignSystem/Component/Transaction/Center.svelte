@@ -23,7 +23,7 @@
     }
   };
 
-  $: listIn = { duration: 240 };
+  $: listIn = { duration: 360 };
   $: listOut = { duration: 240 };
   $: negative = summaryIconState(summary.counts) === IconState.Negative;
 </script>
