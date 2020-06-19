@@ -8,7 +8,7 @@
   export let transactions = null;
 
   // Transaction center element. Set by the view.
-  let elem = null;
+  let txList = null;
   let hidden = true;
 
   const toggleList = () => {
@@ -17,7 +17,7 @@
 
   const handleClick = ev => {
     // Any click *outside* the elem should hide the elem.
-    if (elem !== ev.target && !elem.contains(ev.target) && !hidden) {
+    if (txList !== ev.target && !txList.contains(ev.target) && !hidden) {
       hidden = true;
     }
   };
@@ -59,7 +59,7 @@
 <svelte:window on:click={handleClick} />
 <div
   class="center"
-  bind:this={elem}
+  bind:this={txList}
   class:negative
   data-cy="transaction-center">
   <div class="list-wrapper" class:hidden>
