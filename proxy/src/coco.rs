@@ -149,6 +149,37 @@ impl Peer {
         callback(&mut browser)
     }
 
+    /// Get all peer IDs and their branches.
+    pub async fn remotes(
+        &self,
+        project_urn: &str,
+    ) -> Result<Vec<(String, Vec<Branch>)>, error::Error> {
+        let project = self.get_project(&project_urn).await?;
+        let api = self.api.lock().unwrap();
+        let peer_id = api.peer_id();
+        let storage = api.storage();
+        let repo = storage.open_repo(project.urn()).unwrap();
+        let refs = repo.rad_refs().unwrap();
+
+        let result = refs
+            .remotes
+            .flatten()
+            .map(|remote| {
+                let refs = if remote == &peer_id {
+                    let browser = repo.browser(project.default_branch()).unwrap();
+                    local_branches(&browser).unwrap()
+                } else {
+                    let refs = storage.rad_refs_of(&project.urn(), remote.clone()).unwrap();
+                    refs.heads.keys().cloned().map(Branch).collect()
+                };
+
+                (remote.default_encoding(), refs)
+            })
+            .collect();
+
+        Ok(result)
+    }
+
     /// Initialize a [`project::Project`] that is owned by the `owner`.
     /// This kicks off the history of the project, tracked by `librad`'s mono-repo.
     ///

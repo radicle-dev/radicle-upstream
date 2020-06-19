@@ -345,28 +345,12 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
 
-        let project = peer.get_project(&project_urn).await?;
-        let api = peer.api.lock().unwrap();
-        let peer_id = api.peer_id();
-        let storage = api.storage();
-        let repo = storage.open_repo(project.urn()).unwrap();
-        let refs = repo.rad_refs().unwrap();
-
-        let remotes = refs.remotes.flatten().map(|remote| {
-            let refs = if remote == &peer_id {
-                let browser = repo.browser(project.default_branch()).unwrap();
-                coco::local_branches(&browser).unwrap()
-            } else {
-                let refs = storage.rad_refs_of(&project.urn(), remote.clone()).unwrap();
-                refs.heads.keys().cloned().map(coco::Branch).collect()
-            };
-
-            (remote, refs)
-        });
+        let remotes = peer.remotes(&project_urn).await?;
 
         let revs = remotes
+            .into_iter()
             .map(|(remote, refs)| {
-                let id = remote.default_encoding();
+                let id = remote;
                 super::Revision {
                     branches: refs,
                     tags: Vec::new(),
