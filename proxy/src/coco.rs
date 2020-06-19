@@ -577,13 +577,9 @@ mod test {
         let mut peer = super::Peer::new(config).await?;
 
         let user = peer.init_user("cloudhead").await?;
-        let project = peer.init_project(
-            &user,
-            &repo_path,
-            "radicalise",
-            "the people",
-            "power",
-        ).await;
+        let project = peer
+            .init_project(&user, &repo_path, "radicalise", "the people", "power")
+            .await;
 
         assert!(project.is_ok());
 
@@ -603,7 +599,10 @@ mod test {
         if let Err(Error::EntityExists(urn)) = err {
             assert_eq!(urn, user.urn())
         } else {
-            panic!("unexpected error when creating the user a second time: {:?}", err);
+            panic!(
+                "unexpected error when creating the user a second time: {:?}",
+                err
+            );
         }
 
         Ok(())
@@ -618,26 +617,21 @@ mod test {
         let mut peer = super::Peer::new(config).await?;
 
         let user = peer.init_user("cloudhead").await?;
-        let _project = peer.init_project(
-            &user,
-            &repo_path,
-            "radicalise",
-            "the people",
-            "power",
-        ).await?;
+        let _project = peer
+            .init_project(&user, &repo_path, "radicalise", "the people", "power")
+            .await?;
 
-        let err = peer.init_project(
-            &user,
-            &repo_path,
-            "radicalise",
-            "the people",
-            "power",
-        ).await;
+        let err = peer
+            .init_project(&user, &repo_path, "radicalise", "the people", "power")
+            .await;
 
         if let Err(Error::RadRemoteExists(path)) = err {
             assert_eq!(path, format!("{}", repo_path.display()))
         } else {
-            panic!("unexpected error when creating the project a second time: {:?}", err);
+            panic!(
+                "unexpected error when creating the project a second time: {:?}",
+                err
+            );
         }
 
         Ok(())
