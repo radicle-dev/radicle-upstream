@@ -3,8 +3,7 @@
   import validatejs from "validate.js";
 
   import * as notification from "../../src/notification.ts";
-  import * as user from "../../src/user.ts";
-  import * as org from "../../src/org.ts";
+  import * as id from "../../src/id.ts";
 
   import {
     getValidationState,
@@ -30,9 +29,7 @@
 
   const validateHandleAvailability = async () => {
     try {
-      const alreadyTaken = await user
-        .get(handle)
-        .then(user => !!user || org.getOrg(handle).then(org => !!org));
+      const alreadyTaken = await id.isTaken(handle);
 
       if (alreadyTaken) {
         validations = { handle: ["Handle already taken"] };

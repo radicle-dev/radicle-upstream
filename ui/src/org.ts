@@ -6,6 +6,7 @@ import * as project from "./project";
 import * as remote from "./remote";
 import * as validation from "./validation";
 import * as transaction from "./transaction";
+import * as id from "./id";
 import * as user from "./user";
 
 // Types
@@ -39,14 +40,6 @@ export const projects = projectsStore.readable;
 
 // Api
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`);
-
-// Check if the given id is already taken
-export const isIdTaken = (id: string): Promise<boolean> =>
-  getOrg(id).then(org => !!org || user.get(id).then(user => !!user));
-
-// Check if the given id is available
-const isIdAvailable = (id: string): Promise<boolean> =>
-  isIdTaken(id).then(taken => !taken);
 
 const validateUserExistence = (handle: string): Promise<boolean> =>
   user.get(handle).then(user => !!user);
@@ -176,7 +169,7 @@ export const idConstraints = {
 export const orgIdValidationStore = (): validation.ValidationStore =>
   validation.createValidationStore(idConstraints, [
     {
-      promise: isIdAvailable,
+      promise: id.isAvailable,
       validationMessage: "Sorry, this id is already taken",
     },
   ]);
