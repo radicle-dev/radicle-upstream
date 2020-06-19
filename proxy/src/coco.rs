@@ -550,6 +550,7 @@ pub fn default_config(
 }
 
 #[cfg(test)]
+#[allow(clippy::panic)]
 mod test {
     use librad::keys::SecretKey;
 
@@ -557,7 +558,7 @@ mod test {
 
     #[tokio::test]
     async fn test_can_create_user() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = super::default_config(key, tmp_dir.path())?;
         let peer = super::Peer::new(config).await?;
@@ -570,7 +571,7 @@ mod test {
 
     #[tokio::test]
     async fn test_can_create_project() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
         let config = super::default_config(key, tmp_dir.path())?;
@@ -588,7 +589,7 @@ mod test {
 
     #[tokio::test]
     async fn test_cannot_create_user_twice() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = super::default_config(key, tmp_dir.path())?;
         let peer = super::Peer::new(config).await?;
@@ -610,7 +611,7 @@ mod test {
 
     #[tokio::test]
     async fn test_cannot_create_project_twice() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
         let config = super::default_config(key, tmp_dir.path())?;
