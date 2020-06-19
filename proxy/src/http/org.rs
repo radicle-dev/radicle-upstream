@@ -261,7 +261,7 @@ mod handler {
         let mut mapped_projects = Vec::new();
         for p in &projects {
             let maybe_project = if let Some(urn) = &p.maybe_project_id {
-                Some(project::get(&peer, urn).await.expect("Project not found"))
+                Some(project::get(&peer, urn).expect("Project not found"))
             } else {
                 None
             };
