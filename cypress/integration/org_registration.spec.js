@@ -71,7 +71,7 @@ context("org registration", () => {
       // no spaces
       cy.pick("input").type("no spaces");
       cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+",
+        "Org id should match [a-z0-9][a-z0-9_-]+"
       );
       cy.pick("submit-button").should("be.disabled");
 
@@ -79,7 +79,7 @@ context("org registration", () => {
       cy.pick("input").clear();
       cy.pick("input").type("^^^inVaLiD***");
       cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+",
+        "Org id should match [a-z0-9][a-z0-9_-]+"
       );
       cy.pick("submit-button").should("be.disabled");
 
@@ -87,14 +87,14 @@ context("org registration", () => {
       cy.pick("input").clear();
       cy.pick("input").type("_nVaLiD");
       cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+",
+        "Org id should match [a-z0-9][a-z0-9_-]+"
       );
       cy.pick("submit-button").should("be.disabled");
 
       cy.pick("input").clear();
       cy.pick("input").type("-alsoInVaLiD");
       cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+",
+        "Org id should match [a-z0-9][a-z0-9_-]+"
       );
       cy.pick("submit-button").should("be.disabled");
 
@@ -102,7 +102,7 @@ context("org registration", () => {
       cy.pick("input").clear();
       cy.pick("input").type("x");
       cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+",
+        "Org id should match [a-z0-9][a-z0-9_-]+"
       );
       cy.pick("submit-button").should("be.disabled");
     });
@@ -162,13 +162,13 @@ context("org registration", () => {
       cy.pick("summary", "subject").contains("mariposa");
       cy.pick("summary", "subject-avatar", "emoji").should(
         "have.class",
-        "square",
+        "square"
       );
       cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🐲");
       cy.pick("subject", "emoji").should(
         "have.css",
         "background-color",
-        "rgb(186, 38, 114)",
+        "rgb(186, 38, 114)"
       );
 
       cy.pick("deposit", "rad-amount").contains("0.00001");

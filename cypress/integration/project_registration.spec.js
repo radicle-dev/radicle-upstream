@@ -21,7 +21,7 @@ context("project registration permission", () => {
     cy.createProjectWithFixture(
       project1.name,
       project1.description,
-      project1.defaultBranch,
+      project1.defaultBranch
     );
     cy.visit("public/index.html");
 
@@ -30,7 +30,7 @@ context("project registration permission", () => {
     cy.pick(
       `project-list-entry-${project1.name}`,
       "dropdown-menu",
-      "register-project",
+      "register-project"
     ).should("have.class", "disabled");
 
     // via the project page
@@ -39,7 +39,7 @@ context("project registration permission", () => {
     cy.pick("project-screen", "context-menu").click();
     cy.pick("dropdown-menu", "register-project").should(
       "have.class",
-      "disabled",
+      "disabled"
     );
   });
 
@@ -76,12 +76,12 @@ context("project registration", () => {
     cy.createProjectWithFixture(
       project1.name,
       project1.description,
-      project1.defaultBranch,
+      project1.defaultBranch
     );
     cy.createProjectWithFixture(
       project2.name,
       project2.description,
-      project2.defaultBranch,
+      project2.defaultBranch
     );
 
     // The transaction center is populated with transactions that come from this
@@ -97,7 +97,7 @@ context("project registration", () => {
       cy.pick(
         `project-list-entry-${project2.name}`,
         "dropdown-menu",
-        "register-project",
+        "register-project"
       ).click();
 
       cy.pick("project-registration-screen").should("exist");
@@ -161,7 +161,7 @@ context("project registration", () => {
       cy.pick(
         `project-list-entry-${project2.name}`,
         "dropdown-menu",
-        "register-project",
+        "register-project"
       ).click();
 
       cy.pick("project-registration-screen").should("exist");
@@ -174,7 +174,7 @@ context("project registration", () => {
       cy.pick(
         `project-list-entry-${project2.name}`,
         "dropdown-menu",
-        "register-project",
+        "register-project"
       ).click();
 
       cy.pick("project-registration-screen").should("exist");
@@ -249,15 +249,15 @@ context("project registration", () => {
         cy.pick("submit-button").click();
 
         cy.pick("project-list", `project-${project1.name}`).contains(
-          project1.name,
+          project1.name
         );
         cy.pick("project-list", `project-${project1.name}`).contains(
-          project1.description,
+          project1.description
         );
         cy.pick(
           "project-list",
           `project-${project1.name}`,
-          "registered",
+          "registered"
         ).should("exist");
 
         // Make sure the transaction that the proxy returns contains the same

@@ -86,7 +86,7 @@ const startProxy = () => {
       if (error) {
         console.log(error);
       }
-    },
+    }
   );
 };
 

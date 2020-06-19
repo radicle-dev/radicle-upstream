@@ -44,10 +44,10 @@ export const getIdAvailability = (id: string): Promise<boolean> =>
 const validateUserExistence = (handle: string): Promise<boolean> =>
   user.get(handle).then(user => !!user);
 const validateNewMember = (orgId: string) => (
-  handle: string,
+  handle: string
 ): Promise<boolean> =>
   getOrg(orgId).then(
-    org => !org.members.find(member => member.handle == handle),
+    org => !org.members.find(member => member.handle == handle)
   );
 
 // Events
@@ -102,7 +102,7 @@ const update = (msg: Msg): void => {
 export const registerMemberTransaction = (
   orgId: string,
   handle: string,
-  fee: currency.MicroRad,
+  fee: currency.MicroRad
 ) => ({
   fee,
   messages: [
@@ -131,11 +131,11 @@ export const registerMemberTransaction = (
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const fetchProjectList = event.create<Kind, Msg>(
   Kind.FetchProjectList,
-  update,
+  update
 );
 export const register = (
   id: string,
-  transactionFee: currency.MicroRad,
+  transactionFee: currency.MicroRad
 ): Promise<transaction.Transaction> =>
   api.post<RegisterInput, transaction.Transaction>(`orgs`, {
     id,
@@ -144,11 +144,11 @@ export const register = (
 export const registerMember = (
   orgId: string,
   handle: string,
-  transactionFee: currency.MicroRad,
+  transactionFee: currency.MicroRad
 ): Promise<transaction.Transaction> =>
   api.post<RegisterMemberInput, transaction.Transaction>(
     `orgs/${orgId}/members`,
-    { handle, transactionFee },
+    { handle, transactionFee }
   );
 
 // ID validation
@@ -181,7 +181,7 @@ const memberHandleConstraints = {
 };
 
 export const memberHandleValidationStore = (
-  orgId: string,
+  orgId: string
 ): validation.ValidationStore => {
   return validation.createValidationStore(memberHandleConstraints, [
     {

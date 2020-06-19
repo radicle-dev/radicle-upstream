@@ -56,25 +56,25 @@ export const get = async <T>(endpoint: string, options?: Options): Promise<T> =>
 export const post = async <I, D>(
   endpoint: string,
   body: I,
-  options?: Options,
+  options?: Options
 ): Promise<D> =>
   http<D>(
     request(endpoint, {
       method: "POST",
       body: JSON.stringify(body),
       ...options,
-    }),
+    })
   );
 
 export const set = async <T>(
   endpoint: string,
   body: T,
-  options?: Options,
+  options?: Options
 ): Promise<null> =>
   noContent(
     request(endpoint, {
       method: "POST",
       body: JSON.stringify(body),
       ...options,
-    }),
+    })
   );

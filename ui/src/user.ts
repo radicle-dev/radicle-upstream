@@ -23,7 +23,7 @@ export const get = (handle: string): Promise<User | null> => {
 export const register = (
   handle: string,
   transactionFee: currency.MicroRad,
-  maybeEntityId?: string,
+  maybeEntityId?: string
 ): Promise<transaction.Transaction> => {
   return api.post<RegisterInput, transaction.Transaction>(`users`, {
     handle,

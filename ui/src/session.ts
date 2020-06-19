@@ -37,7 +37,7 @@ export const settings: Readable<Settings | null> = derived(
       return sess.data.settings;
     }
     return null;
-  },
+  }
 );
 
 export const permissions: Readable<Permissions | null> = derived(
@@ -47,7 +47,7 @@ export const permissions: Readable<Permissions | null> = derived(
       return sess.data.permissions;
     }
     return null;
-  },
+  }
 );
 
 // EVENTS
@@ -123,14 +123,14 @@ export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 export const updateAppearance = (appearance: Appearance): void =>
   event.create<Kind, Msg>(
     Kind.UpdateSettings,
-    update,
+    update
   )({
     settings: { ...get(settings), appearance },
   });
 export const updateRegistry = (registry: Registry): void =>
   event.create<Kind, Msg>(
     Kind.UpdateSettings,
-    update,
+    update
   )({
     settings: { ...get(settings), registry },
   });

@@ -38,7 +38,7 @@
           transaction = registerMemberTransaction(
             orgId,
             userHandle,
-            transactionFee,
+            transactionFee
           );
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.Confirmation;

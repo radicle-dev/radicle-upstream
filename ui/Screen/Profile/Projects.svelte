@@ -34,8 +34,8 @@
             push(
               path.registerExistingProject(
                 projectId,
-                session.identity.registered,
-              ),
+                session.identity.registered
+              )
             ),
         },
       ];

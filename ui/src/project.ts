@@ -133,7 +133,7 @@ export const create = (metadata: Metadata, path: string): Promise<Project> => {
 
 export const getOrgProject = (
   orgId: string,
-  projectName: string,
+  projectName: string
 ): Promise<Registered> => {
   return api.get<Registered>(`orgs/${orgId}/projects/${projectName}`);
 };
@@ -143,7 +143,7 @@ export const register = (
   domainId: string,
   projectName: string,
   transactionFee: currency.MicroRad,
-  maybeCocoId?: string,
+  maybeCocoId?: string
 ): Promise<transaction.Transaction> => {
   return api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
     domainType,

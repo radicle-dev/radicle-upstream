@@ -36,7 +36,7 @@ Cypress.Commands.add(
   async (
     name = "Monadic",
     description = "Monadic is currently supporting radicle.",
-    defaultBranch = "master",
+    defaultBranch = "master"
   ) =>
     await fetch("http://localhost:8080/v1/control/create-project", {
       method: "POST",
@@ -48,7 +48,7 @@ Cypress.Commands.add(
         description,
         defaultBranch,
       }),
-    }),
+    })
 );
 
 Cypress.Commands.add(
@@ -63,7 +63,7 @@ Cypress.Commands.add(
         id,
         transactionFee,
       }),
-    }),
+    })
 );
 
 Cypress.Commands.add(
@@ -79,7 +79,7 @@ Cypress.Commands.add(
         id,
         transactionFee,
       }),
-    }),
+    })
 );
 
 Cypress.Commands.add(
@@ -94,7 +94,7 @@ Cypress.Commands.add(
         handle,
         transactionFee,
       }),
-    }),
+    })
 );
 
 Cypress.Commands.add(
@@ -108,5 +108,5 @@ Cypress.Commands.add(
       body: JSON.stringify({
         handle,
       }),
-    }),
+    })
 );

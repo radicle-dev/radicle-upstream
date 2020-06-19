@@ -30,7 +30,7 @@ context("identity creation", () => {
 
       // Confirmation screen
       cy.get(
-        `[data-cy="identity-card"] img[alt=${validUser.fallbackAvatar}]`,
+        `[data-cy="identity-card"] img[alt=${validUser.fallbackAvatar}]`
       ).should("exist");
       cy.pick("identity-card")
         .contains(validUser.shareableEntityIdentifier)
@@ -77,7 +77,7 @@ context("identity creation", () => {
           // We should land back on the intro screen
           cy.pick("get-started-button").should("exist");
         });
-      },
+      }
     );
 
     context(
@@ -97,7 +97,7 @@ context("identity creation", () => {
           cy.pick("modal-close-button").click();
           cy.pick("entity-name").contains(validUser.handle);
         });
-      },
+      }
     );
 
     context("when pressing escape on the success screen", () => {

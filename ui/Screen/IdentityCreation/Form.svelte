@@ -52,7 +52,7 @@
       {
         handle: handle,
       },
-      constraints,
+      constraints
     );
 
     handleValidation = getValidationState("handle", validations);

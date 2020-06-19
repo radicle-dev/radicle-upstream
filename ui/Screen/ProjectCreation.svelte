@@ -56,7 +56,7 @@
     value,
     _options,
     _key,
-    _attributes,
+    _attributes
   ) => {
     if (isExisting) {
       return;
@@ -75,7 +75,7 @@
     value,
     _options,
     _key,
-    _attributes,
+    _attributes
   ) => {
     if (isNew) {
       return;
@@ -131,7 +131,7 @@
         newRepositoryPath: newRepositoryPath,
         existingRepositoryPath: existingRepositoryPath,
       },
-      constraints,
+      constraints
     );
   };
 
@@ -141,7 +141,7 @@
     name,
     currentSelection,
     newRepositoryPath,
-    existingRepositoryPath,
+    existingRepositoryPath
   );
 
   const createProject = async () => {
@@ -161,12 +161,12 @@
           description,
           defaultBranch,
         },
-        isNew ? newRepositoryPath : existingRepositoryPath,
+        isNew ? newRepositoryPath : existingRepositoryPath
       );
 
       push(path.projectSource(response.id));
       notification.info(
-        `Project ${response.metadata.name} successfully created`,
+        `Project ${response.metadata.name} successfully created`
       );
     } catch (error) {
       push(path.profile());
@@ -211,11 +211,11 @@
   $: nameValidation = getValidationState("name", validations);
   $: newRepositoryPathValidation = getValidationState(
     "newRepositoryPath",
-    validations,
+    validations
   );
   $: existingRepositoryPathValidation = getValidationState(
     "existingRepositoryPath",
-    validations,
+    validations
   );
 </script>
 

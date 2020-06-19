@@ -41,7 +41,7 @@
         domainId,
         projectName,
         transactionFee,
-        projectId,
+        projectId
       );
       await fetchSession();
     } catch (error) {

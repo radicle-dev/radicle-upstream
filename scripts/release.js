@@ -31,10 +31,10 @@ async function main() {
     console.log("  ✔ git checkout master");
 
     await exec(
-      `git branch release-${toVersion} && git checkout release-${toVersion}`,
+      `git branch release-${toVersion} && git checkout release-${toVersion}`
     );
     console.log(
-      `  ✔ git branch release-${toVersion} && git checkout release-${toVersion}`,
+      `  ✔ git branch release-${toVersion} && git checkout release-${toVersion}`
     );
 
     await exec(SV_COMMAND);
@@ -73,10 +73,10 @@ async function main() {
     console.log();
 
     const mergeResult = await exec(
-      `hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge" --raw-field 'merge_method=squash'`,
+      `hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge" --raw-field 'merge_method=squash'`
     );
     console.log(
-      `  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge"`,
+      `  ✔ hub api -XPUT "repos/radicle-dev/radicle-upstream/pulls/${pullRequestId}/merge"`
     );
     const releaseCommitSHA = JSON.parse(mergeResult.stdout).sha;
 

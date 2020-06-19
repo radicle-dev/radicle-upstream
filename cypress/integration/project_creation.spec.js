@@ -35,7 +35,7 @@ const withPlatinumStub = callback => {
 
     cy.exec(`rm -rf ${platinumPath}`);
     cy.exec(
-      `git clone ${pwd}/.git/modules/fixtures/git-platinum ${platinumPath}`,
+      `git clone ${pwd}/.git/modules/fixtures/git-platinum ${platinumPath}`
     );
 
     // stub native call and return the directory path to the UI
@@ -110,35 +110,35 @@ context("project creation", () => {
         // spaces are not allowed
         cy.pick("page", "name").type("no spaces");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$",
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // special characters are disallowed
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("$bad");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$",
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // can't start with an underscore
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("_nein");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$",
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // can't start with a dash
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("-nope");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$",
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
 
         // has to be at least two characters long
         cy.pick("page", "name").clear();
         cy.pick("page", "name").type("x");
         cy.pick("page").contains(
-          "Project name should match ^[a-z0-9][a-z0-9_-]+$",
+          "Project name should match ^[a-z0-9][a-z0-9_-]+$"
         );
       });
     });
@@ -231,17 +231,17 @@ context("project creation", () => {
         cy.pick("create-project-button").click();
 
         cy.pick("project-screen", "topbar", "project-avatar").contains(
-          "new-fancy-project",
+          "new-fancy-project"
         );
 
         cy.pick("notification").contains(
-          "Project new-fancy-project successfully created",
+          "Project new-fancy-project successfully created"
         );
 
         cy.pick("profile").click();
         cy.pick("profile-screen", "project-list").contains("new-fancy-project");
         cy.pick("profile-screen", "project-list").contains(
-          "My new fancy project",
+          "My new fancy project"
         );
       });
     });
@@ -262,13 +262,13 @@ context("project creation", () => {
 
         cy.pick("create-project-button").click();
         cy.pick("project-screen", "topbar", "project-avatar").contains(
-          "git-platinum-copy",
+          "git-platinum-copy"
         );
 
         cy.pick("project-screen").contains("Best project");
 
         cy.pick("notification").contains(
-          "Project git-platinum-copy successfully created",
+          "Project git-platinum-copy successfully created"
         );
 
         cy.pick("profile").click();
