@@ -35,7 +35,13 @@
     <slot />
   </div>
 {:else}
-  <div data-cy={dataCy} class="row" on:click {style}>
+  <div
+    data-cy={dataCy}
+    class="row"
+    on:click
+    on:mouseenter
+    on:mouseleave
+    {style}>
     <div class="align-left">
       <slot name="left" />
     </div>

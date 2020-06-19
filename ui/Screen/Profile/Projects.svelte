@@ -5,7 +5,7 @@
   import * as path from "../../src/path.ts";
   import { projects as projectStore } from "../../src/project.ts";
 
-  import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
+  import { Button, Flex, Icon, Text } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     List,
@@ -15,6 +15,16 @@
   } from "../../DesignSystem/Component";
 
   import Onboard from "./Onboard.svelte";
+
+  let hover = false;
+
+  const handleMouseenter = () => {
+    hover = true;
+  };
+
+  const handleMouseleave = () => {
+    hover = false;
+  };
 
   const session = getContext("session");
 
@@ -71,6 +81,13 @@
 </script>
 
 <Remote store={projectStore} let:data={projects}>
+
+  <!-- @Sarah This is just an array with one replicated and one unreplicated project. Please remove this when done -->
+  <div style="display: none;">
+    {(projects = [{ id: 'rad:git:hwd1yreffpbegx93ezuse6tbffbqxh9dr7jrtrsa33mqkhxu5w78gqnabcy', shareableEntityIdentifier: '%rad:git:hwd1yreffpbegx93ezuse6tbffbqxh9dr7jrtrsa33mqkhxu5w78gqnabcy', metadata: { name: 'sfdfdssd', description: '', defaultBranch: 'master' }, registration: null, stats: { branches: 11, commits: 267, contributors: 8 } }, { id: 'rad:git:hwd1yreffpbegx93ezuse6tbffbqxh9dr7jrtrsa33mqkhxu5w78gqnabcy', shareableEntityIdentifier: '%rad:git:hwd1yreffpbegx93ezuse6tbffbqxh9dr7jrtrsa33mqkhxu5w78gqnabcy', metadata: null, registration: null, stats: null }])}
+  </div>
+  <!-- Remove until here -->
+
   {#if projects.length > 0}
     <List
       dataCy="project-list"
@@ -80,13 +97,30 @@
       style="margin: 0 auto;">
       <Flex
         style="flex: 1; padding: 24px 16px 24px 24px;"
-        dataCy={`project-list-entry-${project.metadata.name}`}>
+        dataCy={`project-list-entry-${project.id}`}
+        on:mouseenter={project.stats ? null : handleMouseenter}
+        on:mouseleave={project.stats ? null : handleMouseleave}>
         <div slot="left">
-          <ProjectCard {...projectCardProps(project)} />
+          {#if project.metadata}
+            <ProjectCard {...projectCardProps(project)} />
+          {:else}
+            <ProjectCard
+              title="Unreplicated project"
+              description={project.id} />
+          {/if}
         </div>
 
         <div slot="right" style="display: flex; align-items: center;">
-          <Stats stats={statsProps(project.stats)} />
+          {#if project.stats}
+            <Stats stats={statsProps(project.stats)} />
+          {:else if hover === true}
+            <Button
+              variant="secondary"
+              icon={Icon.Peer}
+              style="margin-right: 16px;">
+              Track
+            </Button>
+          {/if}
           <AdditionalActionsDropdown
             dataCy="context-menu"
             headerTitle={project.shareableEntityIdentifier}
