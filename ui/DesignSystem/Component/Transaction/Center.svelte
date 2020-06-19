@@ -1,4 +1,5 @@
 <script>
+  import { slide } from "svelte/transition";
   import { IconState, summaryIconState } from "../../../src/transaction.ts";
 
   import List from "./List.svelte";
@@ -22,19 +23,21 @@
     }
   };
 
+  $: listIn = { duration: 240 };
+  $: listOut = { duration: 240 };
   $: negative = summaryIconState(summary.counts) === IconState.Negative;
 </script>
 
 <style>
   .center {
-    bottom: 32px;
+    bottom: 0;
+    right: 0;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     box-shadow: var(--elevation-low);
     cursor: pointer;
     min-width: 275px;
     position: absolute;
-    right: 32px;
     user-select: none;
     z-index: 900;
   }
@@ -62,8 +65,14 @@
   class="center"
   class:negative
   data-cy="transaction-center">
-  <div class="list-wrapper" class:hidden>
-    <List on:select {transactions} />
-  </div>
+  {#if !hidden}
+    <div
+      class="list-wrapper"
+      class:hidden
+      in:slide={listIn}
+      out:slide={listOut}>
+      <List on:select {transactions} />
+    </div>
+  {/if}
   <Summary on:click={toggleList} {summary} />
 </div>
