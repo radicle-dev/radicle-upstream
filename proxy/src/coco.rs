@@ -6,7 +6,6 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::{Arc, Mutex};
 
 use async_trait::async_trait;
-use futures::future::FutureExt;
 use futures::stream::StreamExt;
 
 use librad::keys;
@@ -65,6 +64,41 @@ impl entity::Resolver<project::Project<entity::Draft>> for Peer {
     }
 }
 
+#[tokio::test]
+async fn peer_run() -> Result<(), error::Error> {
+    let _ = pretty_env_logger::try_init();
+    let tmp_dir = tempfile::tempdir()?;
+    let key = librad::keys::SecretKey::new();
+    let config = default_config(key, tmp_dir.path())?;
+    let peer = config.try_into_peer().await?;
+
+    let (api, run_loop) = peer.accept()?;
+
+    let protocol = api.protocol();
+    let protocol_subscriber = protocol.subscribe().await;
+    let protocol_notifications = protocol_subscriber.for_each(|notification| {
+        println!("PROTOCOL: {:?}", notification);
+
+        futures::future::ready(())
+    });
+    tokio::spawn(protocol_notifications);
+
+    let subscriber = api.subscribe();
+    let api_notifications = subscriber.await.for_each(|notification| {
+        println!("API: {:?}", notification);
+
+        futures::future::ready(())
+    });
+    tokio::spawn(api_notifications);
+
+    run_loop.await;
+    // tokio::spawn(async move {
+    //     println!("spawn run loop");
+    // });
+
+    Ok(())
+}
+
 impl Peer {
     /// We create a default `Peer` using the `config` we provide.
     ///
@@ -92,15 +126,18 @@ impl Peer {
         });
         tokio::spawn(protocol_notifications);
 
-        let subscriber = api.subscribe().await;
-        let api_notifications = subscriber.for_each(|notification| {
+        let subscriber = api.subscribe();
+        let api_notifications = subscriber.await.for_each(|notification| {
             println!("API: {:?}", notification);
 
             futures::future::ready(())
         });
         tokio::spawn(api_notifications);
 
-        tokio::spawn(run_loop.map(|_| ()));
+        tokio::spawn(async move {
+            println!("spawn run loop");
+            run_loop.await;
+        });
 
         Ok(Self {
             api: Arc::new(Mutex::new(api)),
