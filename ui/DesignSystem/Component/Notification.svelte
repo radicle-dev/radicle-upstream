@@ -4,7 +4,6 @@
   import { Icon, Text, Title } from "../Primitive";
 
   export let style = null;
-  export let dataCy = null;
   export let level = Level.Info;
   export let showIcon = false;
   export let message = null;
