@@ -39,10 +39,18 @@ export const projects = projectsStore.readable;
 
 // Api
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`);
-export const getIdAvailability = (id: string): Promise<boolean> =>
-  getOrg(id).then(org => !org);
+
+// Check if the given id is already taken
+export const isIdTaken = (id: string): Promise<boolean> =>
+  getOrg(id).then(org => !!org || user.get(id).then(user => !!user));
+
+// Check if the given id is available
+const isIdAvailable = (id: string): Promise<boolean> =>
+  isIdTaken(id).then(taken => !taken);
+
 const validateUserExistence = (handle: string): Promise<boolean> =>
   user.get(handle).then(user => !!user);
+
 const validateNewMember = (orgId: string) => (
   handle: string
 ): Promise<boolean> =>
@@ -168,7 +176,7 @@ export const idConstraints = {
 export const orgIdValidationStore = (): validation.ValidationStore =>
   validation.createValidationStore(idConstraints, [
     {
-      promise: getIdAvailability,
+      promise: isIdAvailable,
       validationMessage: "Sorry, this id is already taken",
     },
   ]);
