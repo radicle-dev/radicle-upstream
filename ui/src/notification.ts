@@ -48,7 +48,7 @@ interface ShowInfo extends event.Event<Kind> {
 type Msg = Remove | ShowError | ShowInfo;
 
 const filter = (id: ID): void => {
-  notifications = notifications.filter((n) => n.id !== id);
+  notifications = notifications.filter(n => n.id !== id);
   store.set(notifications);
 };
 

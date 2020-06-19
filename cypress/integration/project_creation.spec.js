@@ -1,7 +1,7 @@
 import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
 
-const withEmptyRepositoryStub = (callback) => {
-  cy.exec("pwd").then((result) => {
+const withEmptyRepositoryStub = callback => {
+  cy.exec("pwd").then(result => {
     const pwd = result.stdout;
     const emptyDirectoryPath = `${pwd}/fixtures/empty-repo`;
 
@@ -9,10 +9,10 @@ const withEmptyRepositoryStub = (callback) => {
     cy.exec(`mkdir ${emptyDirectoryPath}`);
 
     // stub native call and return the directory path to the UI
-    cy.window().then((appWindow) => {
+    cy.window().then(appWindow => {
       appWindow.electron = {
         ipcRenderer: {
-          invoke: (msg) => {
+          invoke: msg => {
             if (msg === DIALOG_SHOWOPENDIALOG) {
               return emptyDirectoryPath;
             }
@@ -28,8 +28,8 @@ const withEmptyRepositoryStub = (callback) => {
   });
 };
 
-const withPlatinumStub = (callback) => {
-  cy.exec("pwd").then((result) => {
+const withPlatinumStub = callback => {
+  cy.exec("pwd").then(result => {
     const pwd = result.stdout;
     const platinumPath = `${pwd}/fixtures/git-platinum-copy`;
 
@@ -39,10 +39,10 @@ const withPlatinumStub = (callback) => {
     );
 
     // stub native call and return the directory path to the UI
-    cy.window().then((appWindow) => {
+    cy.window().then(appWindow => {
       appWindow.electron = {
         ipcRenderer: {
-          invoke: (msg) => {
+          invoke: msg => {
             if (msg === DIALOG_SHOWOPENDIALOG) {
               return platinumPath;
             }

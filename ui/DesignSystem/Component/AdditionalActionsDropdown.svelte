@@ -25,7 +25,7 @@
     }, 250);
   };
 
-  const handleItemSelection = (item) => {
+  const handleItemSelection = item => {
     hideModal();
     item.event();
   };
