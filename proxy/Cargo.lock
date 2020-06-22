@@ -1592,7 +1592,7 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=a5b1d53cfe01e929dc8290c1037797a25a56335e#a5b1d53cfe01e929dc8290c1037797a25a56335e"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=2f1ba1b00d86134003852571fb859ff5629d4456#2f1ba1b00d86134003852571fb859ff5629d4456"
 dependencies = [
  "async-trait",
  "bit-vec",

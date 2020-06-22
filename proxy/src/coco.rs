@@ -91,10 +91,9 @@ impl Peer {
         self.with_api(|api| {
             let storage = api.storage();
             Ok(storage
-                .entities()?
-                .into_iter()
+                .all_metadata()?
                 .flat_map(|entity| {
-                    entity.try_map(|info| match info {
+                    entity.ok()?.try_map(|info| match info {
                         entity::data::EntityInfo::Project(info) => Some(info),
                         _ => None,
                     })
@@ -118,10 +117,9 @@ impl Peer {
         self.with_api(|api| {
             let storage = api.storage();
             Ok(storage
-                .entities()?
-                .into_iter()
+                .all_metadata()?
                 .flat_map(|entity| {
-                    entity.try_map(|info| match info {
+                    entity.ok()?.try_map(|info| match info {
                         entity::data::EntityInfo::User(info) => Some(info),
                         _ => None,
                     })
@@ -144,7 +142,7 @@ impl Peer {
     ) -> Result<project::Project<entity::Draft>, error::Error> {
         self.with_api(|api| {
             let storage = api.storage().reopen()?;
-            Ok(storage.entity(urn)?)
+            Ok(storage.metadata(urn)?)
         })
         .flatten()
     }
@@ -158,7 +156,7 @@ impl Peer {
     pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, error::Error> {
         self.with_api(|api| {
             let storage = api.storage().reopen()?;
-            Ok(storage.entity(urn)?)
+            Ok(storage.metadata(urn)?)
         })
         .flatten()
     }
