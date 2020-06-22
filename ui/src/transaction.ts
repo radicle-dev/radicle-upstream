@@ -466,10 +466,10 @@ export const summaryText = (counts: SummaryCounts): string => {
   }
 
   if (sum > 1) {
-    return `${sum} transactions ${state}`;
+    return `${sum} Transactions ${state}`;
   }
 
-  return `transaction ${state}`;
+  return `Transaction ${state}`;
 };
 
 interface CostSummary {
