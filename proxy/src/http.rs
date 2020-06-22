@@ -21,6 +21,34 @@ mod source;
 mod transaction;
 mod user;
 
+/// Helper to combine the multiple filters together with Filter::or, possibly boxing the types in
+/// the process. This greatly helps the build times for `ipfs-http`.
+macro_rules! combine {
+    ($x:expr, $($y:expr),+) => {
+        {
+            let filter = boxed_on_debug!($x);
+            $(
+                let filter = boxed_on_debug!(filter.or($y));
+            )+
+            filter
+        }
+    }
+}
+
+#[cfg(debug_assertions)]
+macro_rules! boxed_on_debug {
+    ($x:expr) => {
+        $x.boxed()
+    };
+}
+
+#[cfg(not(debug_assertions))]
+macro_rules! boxed_on_debug {
+    ($x:expr) => {
+        $x
+    };
+}
+
 /// Main entry point for HTTP API.
 pub fn api<R>(
     peer: coco::Peer,
@@ -38,40 +66,46 @@ where
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
 
-    let api = path("v1").and(
-        avatar::get_filter()
-            .or(control::routes(
-                enable_control,
-                Arc::clone(&peer),
-                Arc::clone(&owner),
-                Arc::clone(&registry),
-            ))
-            .or(identity::filters(
-                Arc::clone(&peer),
-                Arc::clone(&registry),
-                Arc::clone(&store),
-            ))
-            .or(notification::filters(subscriptions.clone()))
-            .or(org::routes(
-                Arc::clone(&peer),
-                Arc::clone(&registry),
-                subscriptions.clone(),
-            ))
-            .or(project::filters(
-                Arc::clone(&peer),
-                Arc::clone(&owner),
-                Arc::clone(&registry),
-                subscriptions.clone(),
-            ))
-            .or(session::routes(
-                Arc::clone(&peer),
-                Arc::clone(&registry),
-                Arc::clone(&store),
-            ))
-            .or(source::routes(peer))
-            .or(transaction::filters(Arc::clone(&registry)))
-            .or(user::routes(registry, store, subscriptions)),
+    let avatar_filter = avatar::get_filter();
+    let control_filter = control::routes(
+        enable_control,
+        Arc::clone(&peer),
+        Arc::clone(&owner),
+        Arc::clone(&registry),
     );
+    let identity_filter =
+        identity::filters(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
+    let notification_filter = notification::filters(subscriptions.clone());
+    let org_filter = org::routes(
+        Arc::clone(&peer),
+        Arc::clone(&registry),
+        subscriptions.clone(),
+    );
+    let project_filter = project::filters(
+        Arc::clone(&peer),
+        Arc::clone(&owner),
+        Arc::clone(&registry),
+        subscriptions.clone(),
+    );
+    let session_filter =
+        session::routes(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
+    let source_filter = source::routes(peer);
+    let transaction_filter = transaction::filters(Arc::clone(&registry));
+    let user_filter = user::routes(registry, store, subscriptions);
+
+    let api = path("v1").and(combine!(
+        avatar_filter,
+        control_filter,
+        identity_filter,
+        notification_filter,
+        org_filter,
+        project_filter,
+        session_filter,
+        source_filter,
+        transaction_filter,
+        user_filter
+    ));
+
     // let docs = path("docs").and(doc::filters(&api));
     let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));
     let cors = warp::cors()
@@ -95,7 +129,7 @@ where
         );
     });
 
-    let recovered = api.or(docs).recover(error::recover);
+    let recovered = combine!(api, docs).recover(error::recover);
 
     recovered.with(cors).with(log)
 }

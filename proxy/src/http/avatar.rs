@@ -7,7 +7,7 @@ use warp::{path, Filter, Rejection, Reply};
 use crate::avatar;
 
 /// `GET /avatars/<id>?usage=<usage>`
-pub fn get_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+pub fn get_filter() -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
     path("avatars")
         .and(document::param::<String>(
             "id",
