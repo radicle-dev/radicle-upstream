@@ -38,15 +38,16 @@
   .tooltip:before {
     content: "";
     display: block;
-    width: 0;
-    height: 0;
+    height: 8px;
+    width: 8px;
+    background-color: inherit;
+    border: inherit;
     position: absolute;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-right: 6px solid var(--color-foreground);
-    left: -6px;
-    border-top-left-radius: 30%;
-    top: 10px;
+    bottom: calc(50% - 4px);
+    left: -4px;
+    clip-path: polygon(0% 0%, 100% 100%, 0% 100%);
+    transform: rotate(45deg);
+    border-radius: 0 0 0 0.1875rem;
   }
 </style>
 
@@ -61,4 +62,5 @@
     class={`tooltip ${tooltip.className}`}>
     <Text>{value}</Text>
   </div>
+  <span class="triangle" />
 </div>
