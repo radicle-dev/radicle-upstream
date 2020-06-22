@@ -17,7 +17,7 @@ use librad::paths;
 use librad::peer;
 use librad::surf;
 use librad::surf::vcs::git::git2;
-use librad::uri::RadUrn;
+use librad::uri::{Path, Protocol, RadUrn};
 
 use crate::error;
 
@@ -163,31 +163,47 @@ impl Peer {
     }
 
     /// Get all peer IDs and their branches.
+    ///
+    /// # Errors
+    ///
+    ///   * [`error::Error::LibradLock`]
+    ///   * [`error::Error::Git`]
     pub async fn remotes(
         &self,
+        owner: &User,
         project_urn: &RadUrn,
-    ) -> Result<Vec<(peer::PeerId, Vec<Branch>)>, error::Error> {
+    ) -> Result<Vec<(user::User<entity::Draft>, Vec<Branch>)>, error::Error> {
         let project = self.get_project(&project_urn)?;
         let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
         let peer_id = api.peer_id();
-        println!("MY PEER ID: {}", peer_id);
         let storage = api.storage();
         let repo = storage.open_repo(project.urn())?;
         let refs = repo.rad_refs()?;
 
-        let mut remotes = vec![];
+        let browser = repo.browser(project.default_branch())?;
+        let local_branches = local_branches(&browser)?;
+
+        let owner = owner.to_data().build()?; // TODO(finto): Dirty hack to make our Verified User into a Draft one
+        let mut remotes = vec![(owner.clone(), local_branches)];
 
         for remote in refs.remotes.flatten() {
             let refs = if remote == &peer_id {
-                let browser = repo.browser(project.default_branch())?;
-                local_branches(&browser)?
+                // TODO(finto): Bug in librad
+                continue;
             } else {
                 let remote_branches = storage.rad_refs_of(&project.urn(), remote.clone())?;
                 remote_branches.heads.keys().cloned().map(Branch).collect()
             };
 
-            println!("PEER ID: {}", remote);
-            remotes.push((remote.clone(), refs));
+            // TODO(finto): Can we do this by not going through string?
+            let hash = librad::hash::Hash::hash(remote.to_string().as_bytes());
+            // TODO(finto): This doesn't actually get the user. The peer id is their peer
+            // device rather than the Hash of their user profile.
+            let id = RadUrn::new(hash, Protocol::Git, Path::new());
+            let user = self
+                .get_user(&id)?;
+
+            remotes.push((user, refs));
         }
 
         Ok(remotes)
@@ -229,9 +245,13 @@ impl Peer {
                     project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
                         .to_builder()
                         .set_description(description.to_string())
-                        .set_default_branch(default_branch.to_string())
-                        .add_key(key.public())
-                        .build()?;
+                        .set_default_branch(default_branch.to_string());
+
+                for pk in owner.keys() {
+                    meta = meta.add_key(pk.clone());
+                }
+
+                let mut meta = meta.build()?;
                 meta.sign_owned(key)?;
                 let urn = meta.urn();
 

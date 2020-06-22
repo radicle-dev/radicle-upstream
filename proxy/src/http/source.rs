@@ -3,7 +3,7 @@
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -14,6 +14,7 @@ use crate::identity;
 /// Prefixed filters.
 pub fn routes(
     peer: Arc<Mutex<coco::Peer>>,
+    current_user: Arc<RwLock<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("source").and(
         blob_filter(Arc::clone(&peer))
@@ -21,7 +22,7 @@ pub fn routes(
             .or(commit_filter(Arc::clone(&peer)))
             .or(commits_filter(Arc::clone(&peer)))
             .or(local_state_filter())
-            .or(revisions_filter(Arc::clone(&peer)))
+            .or(revisions_filter(Arc::clone(&peer), current_user))
             .or(tags_filter(Arc::clone(&peer)))
             .or(tree_filter(peer)),
     )
@@ -31,13 +32,14 @@ pub fn routes(
 #[cfg(test)]
 fn filters(
     peer: Arc<Mutex<coco::Peer>>,
+    current_user: Arc<RwLock<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     blob_filter(Arc::clone(&peer))
         .or(branches_filter(Arc::clone(&peer)))
         .or(commit_filter(Arc::clone(&peer)))
         .or(commits_filter(Arc::clone(&peer)))
         .or(local_state_filter())
-        .or(revisions_filter(Arc::clone(&peer)))
+        .or(revisions_filter(Arc::clone(&peer), current_user))
         .or(tags_filter(Arc::clone(&peer)))
         .or(tree_filter(peer))
 }
@@ -177,10 +179,12 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 /// `GET /revisions/<project_id>`
 fn revisions_filter(
     peer: Arc<Mutex<coco::Peer>>,
+    current_user: Arc<RwLock<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
         .and(super::with_peer(peer))
+        .and(super::with_shared(current_user))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -260,12 +264,9 @@ fn tree_filter(
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use tokio::sync::{Mutex, RwLock};
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
-
-    use librad::hash::Hash;
-    use librad::uri::{RadUrn, Path, Protocol};
 
     use crate::avatar;
     use crate::coco;
@@ -338,34 +339,33 @@ mod handler {
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
         peer: Arc<Mutex<coco::Peer>>,
+        current_user: Arc<RwLock<coco::User>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
-
-        let remotes = peer.remotes(&urn).await?;
+        let current_user = &*current_user.read().await;
+        let remotes = peer.remotes(&current_user, &urn).await?;
 
         let revs = remotes
             .into_iter()
-            .map(|(remote, refs)| {
-                // TODO(finto): Can we do this by not going through string?
-                let hash = Hash::hash(remote.to_string().as_bytes());
-                let id = RadUrn::new(hash, Protocol::Git, Path::new());
-                let user = peer.get_user(&id).expect("TODO:(finto): error handling sucks");
+            .map(|(user, refs)| {
+                let urn = user.urn();
                 let handle = user.name().to_string();
-
                 super::Revision {
                     branches: refs,
                     tags: Vec::new(),
                     identity: identity::Identity {
-                        id: id.clone(),
-                        metadata: identity::Metadata { handle: handle.clone() },
-                        avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
-                        registered: None,
-                        shareable_entity_identifier: identity::SharedIdentifier {
-                            handle,
-                            urn: id
+                        id: urn.clone(),
+                        metadata: identity::Metadata {
+                            handle: handle.clone(),
                         },
+                        avatar_fallback: avatar::Avatar::from(
+                            &urn.to_string(),
+                            avatar::Usage::Identity,
+                        ),
+                        registered: None,
+                        shareable_entity_identifier: identity::SharedIdentifier { handle, urn },
                     },
                 }
             })
@@ -720,12 +720,13 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
     use librad::keys::SecretKey;
 
+    use crate::avatar;
     use crate::coco;
     use crate::error;
     use crate::http;
@@ -754,7 +755,7 @@ mod test {
             )
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer.clone())));
+        let api = super::filters(Arc::new(Mutex::new(peer.clone())), Arc::new(RwLock::new(owner)));
 
         // Get ASCII blob.
         let res = request()
@@ -870,7 +871,7 @@ mod test {
 
         let want = peer.with_browser(&urn, |browser| coco::branches(browser, None))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner)));
         let res = request()
             .method("GET")
             .path(&format!("/branches/{}", urn.to_string()))
@@ -900,7 +901,7 @@ mod test {
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
         let want = peer.with_browser(&urn, |mut browser| coco::commit(&mut browser, sha1))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner)));
         let res = request()
             .method("GET")
             .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
@@ -951,7 +952,7 @@ mod test {
         let head_commit =
             peer.with_browser(&urn, |mut browser| coco::commit(&mut browser, head))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner)));
         let res = request()
             .method("GET")
             .path(&format!("/commits/{}/{}", urn.to_string(), branch))
@@ -977,9 +978,10 @@ mod test {
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir)?;
         let peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
 
         let path = "../fixtures/git-platinum";
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner)));
         let res = request()
             .method("GET")
             .path(&format!("/local-state/{}", path))
@@ -1009,7 +1011,6 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        println!("TMP PATH: {:?}", tmp_dir.path());
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir)?;
         let mut peer = coco::Peer::new(config).await?;
@@ -1020,15 +1021,16 @@ mod test {
             .unwrap();
         let urn = platinum_project.urn();
 
-        // TODO(finto): Get the right URN
         let owner_urn = owner.urn();
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner.clone())));
         let res = request()
             .method("GET")
             .path(&format!("/revisions/{}", urn))
             .reply(&api)
             .await;
+
+        let avatar = avatar::Avatar::from(&owner_urn.to_string(), avatar::Usage::Identity);
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
@@ -1038,18 +1040,11 @@ mod test {
                         "identity": {
                             "id": owner_urn,
                             "metadata": {
-                                "handle": urn.id.to_string(),
+                                "handle": owner.name().to_string(),
                             },
                             "registered": Value::Null,
                             "shareableEntityIdentifier": format!("cloudhead@{}", owner_urn),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 105,
-                                    "b": 216,
-                                },
-                                "emoji": "🌻",
-                            },
+                            "avatarFallback": avatar,
                         },
                         "branches": [ "dev", "master" ],
                         "tags": []
@@ -1076,7 +1071,7 @@ mod test {
 
         let want = peer.with_browser(&urn, |browser| coco::tags(browser))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner)));
         let res = request()
             .method("GET")
             .path(&format!("/tags/{}", urn.to_string()))
@@ -1119,7 +1114,7 @@ mod test {
             )
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner)));
         let res = request()
             .method("GET")
             .path(&format!(

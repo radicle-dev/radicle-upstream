@@ -68,7 +68,7 @@ where
                 Arc::clone(&registry),
                 Arc::clone(&store),
             ))
-            .or(source::routes(peer))
+            .or(source::routes(peer, owner))
             .or(transaction::filters(Arc::clone(&registry)))
             .or(user::routes(registry, store, subscriptions)),
     );
