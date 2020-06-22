@@ -13,6 +13,7 @@ import Placeholder from "./Placeholder.svelte";
 import BigHeader from "./BigHeader.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import Rad from "./Rad.svelte";
+import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import StepModalLayout from "./Registration/StepModalLayout.svelte";
 import Remote from "./Remote.svelte";
@@ -48,6 +49,7 @@ export {
   BigHeader,
   ProjectCard,
   Rad,
+  RadicleLogo,
   RadioOption,
   Stats,
   StepModalLayout,
