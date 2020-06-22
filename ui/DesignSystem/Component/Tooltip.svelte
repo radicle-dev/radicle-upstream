@@ -20,7 +20,7 @@
     background-color: var(--color-foreground);
     color: var(--color-background);
     text-align: center;
-    border-radius: 6px;
+    border-radius: 4px;
     padding: 4px 8px;
     position: fixed;
 
