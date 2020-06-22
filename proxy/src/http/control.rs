@@ -30,8 +30,8 @@ where
         })
         .untuple_one()
         .and(
-            create_project_filter(Arc::clone(&peer), owner)
-                .or(nuke_coco_filter(peer))
+            create_project_filter(Arc::clone(&peer), Arc::clone(&owner))
+                .or(nuke_coco_filter(peer, owner))
                 .or(nuke_registry_filter(Arc::clone(&registry)))
                 .or(register_user_filter(registry)),
         )
@@ -47,8 +47,8 @@ fn filters<R>(
 where
     R: registry::Client,
 {
-    create_project_filter(Arc::clone(&peer), owner)
-        .or(nuke_coco_filter(peer))
+    create_project_filter(Arc::clone(&peer), Arc::clone(&owner))
+        .or(nuke_coco_filter(peer, owner))
         .or(nuke_registry_filter(Arc::clone(&registry)))
         .or(register_user_filter(registry))
 }
@@ -78,9 +78,11 @@ fn register_user_filter<R: registry::Client>(
 /// GET /nuke/coco
 fn nuke_coco_filter(
     peer: Arc<Mutex<coco::Peer>>,
+    owner: http::Shared<coco::User>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_peer(peer))
+        .and(super::with_shared(owner))
         .and_then(handler::nuke_coco)
 }
 
@@ -161,7 +163,7 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
+    pub async fn nuke_coco(peer: Arc<Mutex<coco::Peer>>, owner: http::Shared<coco::User>) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
@@ -181,6 +183,9 @@ mod handler {
         let mut peer = peer.lock().await;
         *peer = new_peer;
 
+        let mut owner = owner.write().await;
+        *owner = coco::fake_owner(&peer).await;
+
         Ok(reply::json(&true))
     }
 
@@ -199,7 +204,7 @@ mod handler {
     mod test {
         use pretty_assertions::assert_ne;
         use std::sync::Arc;
-        use tokio::sync::Mutex;
+        use tokio::sync::{Mutex, RwLock};
 
         use crate::coco;
         use crate::error;
@@ -209,14 +214,16 @@ mod handler {
             let tmp_dir = tempfile::tempdir()?;
             let key = librad::keys::SecretKey::new();
             let config = coco::default_config(key, tmp_dir)?;
-            let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+            let peer = coco::Peer::new(config).await?;
+            let owner = coco::fake_owner(&peer).await;
+            let peer = Arc::new(Mutex::new(peer));
 
             let (old_paths, old_key, old_peer_id) = {
                 let p = peer.lock().await;
                 p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
             };
 
-            super::nuke_coco(Arc::clone(&peer)).await.unwrap();
+            super::nuke_coco(Arc::clone(&peer), Arc::new(RwLock::new(owner))).await.unwrap();
 
             let (new_paths, new_key, new_peer_id) = {
                 let p = peer.lock().await;
