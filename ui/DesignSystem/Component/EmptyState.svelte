@@ -7,7 +7,7 @@
   export let mainCtaText = "Go back";
   export let mainDataCy = null;
   export let mainCtaAction = null;
-  export let secondaryCtaText = "Go back again";
+  export let secondaryCtaText = null;
   export let secondaryCtaAction = null;
   export let secondaryDataCy = null;
 </script>
@@ -26,6 +26,7 @@
   button {
     color: var(--color-foreground-level-5);
     text-decoration: underline;
+    cursor: pointer;
   }
   button:hover {
     color: var(--color-secondary);
@@ -51,7 +52,7 @@
     style="margin-bottom: 0.75rem;">
     {mainCtaText}
   </Button>
-  {#if secondaryCtaText !== ''}
+  {#if secondaryCtaText !== null}
     <button data-cy={secondaryDataCy} on:click={secondaryCtaAction}>
       <Text>{secondaryCtaText}</Text>
     </button>

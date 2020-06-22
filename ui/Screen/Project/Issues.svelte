@@ -2,7 +2,11 @@
   import * as path from "../../src/path.ts";
   import { push } from "svelte-spa-router";
   import IssueCard from "./Issues/IssueCard.svelte";
-  import { List, SegmentedControl } from "../../DesignSystem/Component";
+  import {
+    EmptyState,
+    List,
+    SegmentedControl,
+  } from "../../DesignSystem/Component";
 
   const filterOptions = [
     {
@@ -84,13 +88,21 @@
       options={filterOptions}
       on:select={option => updateFilter(option.detail)} />
   </div>
-  <List
-    dataCy="issue-list"
-    items={filteredIssues}
-    on:select={() => {
-      push(path.projectIssue(params.id));
-    }}
-    let:item={issue}>
-    <IssueCard {issue} />
-  </List>
+  {#if issues.length > 0}
+    <List
+      dataCy="issue-list"
+      items={filteredIssues}
+      on:select={() => {
+        push(path.projectIssue(params.id));
+      }}
+      let:item={issue}>
+      <IssueCard {issue} />
+    </List>
+  {:else}
+    <EmptyState
+      icon="sight"
+      text="There’s nothing here yet, get started by creating your first issue."
+      mainCtaText="Open a new issue"
+      mainDataCy="open-issue-button" />
+  {/if}
 </div>
