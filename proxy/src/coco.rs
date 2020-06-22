@@ -166,10 +166,11 @@ impl Peer {
     pub async fn remotes(
         &self,
         project_urn: &RadUrn,
-    ) -> Result<Vec<(String, Vec<Branch>)>, error::Error> {
+    ) -> Result<Vec<(peer::PeerId, Vec<Branch>)>, error::Error> {
         let project = self.get_project(&project_urn)?;
         let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
         let peer_id = api.peer_id();
+        println!("MY PEER ID: {}", peer_id);
         let storage = api.storage();
         let repo = storage.open_repo(project.urn())?;
         let refs = repo.rad_refs()?;
@@ -185,7 +186,8 @@ impl Peer {
                 remote_branches.heads.keys().cloned().map(Branch).collect()
             };
 
-            remotes.push((remote.default_encoding(), refs));
+            println!("PEER ID: {}", remote);
+            remotes.push((remote.clone(), refs));
         }
 
         Ok(remotes)

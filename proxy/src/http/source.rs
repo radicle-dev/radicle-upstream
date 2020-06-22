@@ -348,19 +348,22 @@ mod handler {
         let revs = remotes
             .into_iter()
             .map(|(remote, refs)| {
-                let hash = Hash::hash(remote.as_bytes());
+                // TODO(finto): Can we do this by not going through string?
+                let hash = Hash::hash(remote.to_string().as_bytes());
                 let id = RadUrn::new(hash, Protocol::Git, Path::new());
+                let user = peer.get_user(&id).expect("TODO:(finto): error handling sucks");
+                let handle = user.name().to_string();
 
                 super::Revision {
                     branches: refs,
                     tags: Vec::new(),
                     identity: identity::Identity {
                         id: id.clone(),
-                        metadata: identity::Metadata { handle: id.clone().to_string() },
+                        metadata: identity::Metadata { handle: handle.clone() },
                         avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
                         registered: None,
                         shareable_entity_identifier: identity::SharedIdentifier {
-                            handle: id.clone().to_string(), // TODO: actually get the name
+                            handle,
                             urn: id
                         },
                     },
@@ -722,7 +725,6 @@ mod test {
     use warp::test::request;
 
     use librad::keys::SecretKey;
-    use librad::uri::RadUrn;
 
     use crate::coco;
     use crate::error;
@@ -1005,13 +1007,13 @@ mod test {
 
     // We need deterministic peer ids to fix this test.
     #[tokio::test]
-    #[ignore]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
+        println!("TMP PATH: {:?}", tmp_dir.path());
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir)?;
         let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
+        let owner = peer.init_user("cloudhead").await?;
         let platinum_project = peer
             .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
             .await
@@ -1019,8 +1021,7 @@ mod test {
         let urn = platinum_project.urn();
 
         // TODO(finto): Get the right URN
-        let fake_user_urn: RadUrn =
-            "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try".parse()?;
+        let owner_urn = owner.urn();
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -1035,12 +1036,12 @@ mod test {
                 json!([
                     {
                         "identity": {
-                            "id": fake_user_urn,
+                            "id": owner_urn,
                             "metadata": {
-                                "handle": "hydse68n5n4bkc5azay8pe5p3gb896nash3mri917pt1fxkxrtb1xc",
+                                "handle": urn.id.to_string(),
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("cloudhead@{}", fake_user_urn),
+                            "shareableEntityIdentifier": format!("cloudhead@{}", owner_urn),
                             "avatarFallback": {
                                 "background": {
                                     "r": 24,
