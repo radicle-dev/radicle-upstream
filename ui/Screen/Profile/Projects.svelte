@@ -96,7 +96,7 @@
         </div>
       </Flex>
     </List>
-  {:else}
+  {:else if session.permissions.registerHandle}
     <EmptyState
       text="There’s nothing here yet, get started by starting your first
       project."
@@ -106,6 +106,13 @@
       secondaryCtaText="Or register your handle"
       secondaryCtaAction={register}
       secondaryDataCy="register-handle-button" />
+  {:else}
+    <EmptyState
+      text="There’s nothing here yet, get started by starting your first
+      project."
+      mainCtaText="Start your first project"
+      mainDataCy="add-project-button"
+      mainCtaAction={create} />
   {/if}
 
   <div slot="error" let:error>
