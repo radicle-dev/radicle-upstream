@@ -466,7 +466,7 @@ export const summaryText = (counts: SummaryCounts): string => {
   }
 
   if (sum > 1) {
-    return `${sum} Transactions ${state}`;
+    return `${sum} transactions ${state}`;
   }
 
   return `Transaction ${state}`;
