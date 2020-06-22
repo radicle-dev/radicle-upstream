@@ -47,7 +47,7 @@
     {text}
   </Text>
   <Button
-    DataCy={mainDataCy}
+    dataCy={mainDataCy}
     on:click={mainCtaAction}
     style="margin-bottom: 0.75rem;">
     {mainCtaText}

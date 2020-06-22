@@ -51,9 +51,6 @@ context("project registration permission", () => {
     cy.visit("public/index.html");
 
     cy.pick("sidebar", `org-${org1}`).click();
-    // via org onboarding page register button
-    cy.pick("add-project").should("have.class", "disabled");
-
     // via org onboarding page context menu
     cy.pick("context-menu").click();
     cy.pick("dropdown-menu", "add-project").should("have.class", "disabled");
