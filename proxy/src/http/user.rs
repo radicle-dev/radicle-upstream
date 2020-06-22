@@ -223,6 +223,12 @@ impl ToDocumentedType for RegisterInput {
                 .example("cloudhead"),
         );
         props.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+        props.insert(
             "maybeEntityId".into(),
             document::string()
                 .description("Exisiting project id for attestion")

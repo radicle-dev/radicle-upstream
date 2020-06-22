@@ -109,6 +109,7 @@
 
   .menu-item.disabled {
     color: var(--color-foreground-level-4);
+    cursor: not-allowed;
   }
 
   .menu-item.disabled :global(svg) {

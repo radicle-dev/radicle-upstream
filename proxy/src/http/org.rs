@@ -434,6 +434,12 @@ impl ToDocumentedType for RegisterInput {
                 .description("ID of the org")
                 .example("monadic"),
         );
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
 
         document::DocumentedType::from(properties).description("Input for org registration")
     }
@@ -457,6 +463,12 @@ impl ToDocumentedType for RegisterMemberInput {
             document::string()
                 .description("Handle of the user")
                 .example("cloudhead"),
+        );
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
         );
 
         document::DocumentedType::from(properties).description("Input for member registration")
