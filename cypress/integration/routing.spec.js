@@ -18,7 +18,7 @@ context("routing", () => {
             cy.visit("./public/index.html");
 
             cy.location().should(loc => {
-              expect(loc.hash).to.eq("#/profile");
+              expect(loc.hash).to.eq("#/profile/projects");
             });
           });
         }
