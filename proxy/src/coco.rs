@@ -83,7 +83,10 @@ impl Peer {
     ///
     /// The function will error if:
     ///   * A lock was poisioned. See [`Self::with_api`].
-    #[allow(clippy::wildcard_enum_match_arm, clippy::match_wildcard_for_single_variants)]
+    #[allow(
+        clippy::wildcard_enum_match_arm,
+        clippy::match_wildcard_for_single_variants
+    )]
     pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
         self.with_api(|api| {
             let storage = api.storage();
@@ -107,7 +110,10 @@ impl Peer {
     ///
     /// The function will error if:
     ///   * A lock was poisioned. See [`Self::with_api`].
-    #[allow(clippy::wildcard_enum_match_arm, clippy::match_wildcard_for_single_variants)]
+    #[allow(
+        clippy::wildcard_enum_match_arm,
+        clippy::match_wildcard_for_single_variants
+    )]
     pub fn list_users(&self) -> Result<Vec<user::User<entity::Draft>>, error::Error> {
         self.with_api(|api| {
             let storage = api.storage();
