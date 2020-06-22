@@ -101,9 +101,11 @@
       text="There’s nothing here yet, get started by starting your first
       project."
       mainCtaText="Start your first project"
+      mainDataCy="add-project-button"
       mainCtaAction={create}
       secondaryCtaText="Or register your handle"
-      secondaryCtaAction={register} />
+      secondaryCtaAction={register}
+      secondaryDataCy="register-handle-button" />
   {/if}
 
   <div slot="error" let:error>

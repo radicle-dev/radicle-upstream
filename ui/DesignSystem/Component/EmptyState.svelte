@@ -5,9 +5,11 @@
   export let icon = "tent";
   export let text = "Nothing to see here";
   export let mainCtaText = "Go back";
+  export let mainDataCy = null;
   export let mainCtaAction = null;
   export let secondaryCtaText = "Go back again";
   export let secondaryCtaAction = null;
+  export let secondaryDataCy = null;
 </script>
 
 <style>
@@ -43,10 +45,15 @@
   <Text style="margin: 1.5rem 0; color: var(--color-foreground-level-6);">
     {text}
   </Text>
-  <Button on:click={mainCtaAction} style="margin-bottom: 0.75rem;">
+  <Button
+    DataCy={mainDataCy}
+    on:click={mainCtaAction}
+    style="margin-bottom: 0.75rem;">
     {mainCtaText}
   </Button>
-  <button on:click={secondaryCtaAction}>
-    <Text>{secondaryCtaText}</Text>
-  </button>
+  {#if secondaryCtaText !== ''}
+    <button data-cy={secondaryDataCy} on:click={secondaryCtaAction}>
+      <Text>{secondaryCtaText}</Text>
+    </button>
+  {/if}
 </div>
