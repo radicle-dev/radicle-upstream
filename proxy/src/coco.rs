@@ -675,4 +675,26 @@ mod test {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn test_list_users() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let peer = super::Peer::new(config).await?;
+
+        let _cloudhead = peer.init_user("cloudhead").await?;
+        let _kalt = peer.init_user("kalt").await?;
+
+        let users = peer.list_users()?;
+        let mut user_handles = users
+            .into_iter()
+            .map(|user| user.name().to_string())
+            .collect::<Vec<_>>();
+        user_handles.sort();
+
+        assert_eq!(user_handles, vec!["cloudhead", "kalt"],);
+
+        Ok(())
+    }
 }
