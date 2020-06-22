@@ -1,5 +1,4 @@
 <script>
-  import { fly } from "svelte/transition";
   import { push } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
@@ -23,7 +22,7 @@
 
 <Remote {store} let:data={transactions}>
   {#if transactions.length > 0}
-    <div class="center" in:fly={{ delay: 240, duration: 320, x: 500 }}>
+    <div class="center">
       <Center on:select={select} summary={$summary} {transactions} />
     </div>
   {/if}
