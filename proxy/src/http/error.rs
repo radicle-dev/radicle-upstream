@@ -59,6 +59,9 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             )
         } else if let Some(err) = err.find::<error::Error>() {
             match err {
+                error::Error::EntityExists(_) => {
+                    (StatusCode::CONFLICT, "ENTITY_EXISTS", err.to_string())
+                },
                 error::Error::Git(git_error) => match git_error {
                     surf::git::error::Error::Git(error) => (
                         StatusCode::BAD_REQUEST,

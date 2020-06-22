@@ -1,13 +1,12 @@
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::convert::TryFrom;
 
-use librad::keys;
-use librad::net::{self, discovery};
 use librad::paths;
-use librad::peer;
+use radicle_keystore::pinentry::SecUtf8;
 
 use proxy::coco;
 use proxy::env;
 use proxy::http;
+use proxy::keystore;
 use proxy::registry;
 
 /// Flags accepted by the proxy binary.
@@ -54,41 +53,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-    let tmp_path = temp_dir.path().to_str().expect("path extraction failed");
 
-    let mut peer = if args.test {
-        let key = keys::SecretKey::new();
-        let config = coco::default_config(key, tmp_path).expect("failed to get config");
-        coco::Peer::new(config)
-            .await
-            .expect("failed to create /tmp user peer")
+    let paths_config = if args.test {
+        coco::config::Paths::FromRoot(temp_dir.path().to_path_buf())
     } else {
-        // TODO(finto): There should be a coco::config module that knows how to parse the
-        // configs/parameters to give us back a `PeerConfig`
-
-        // TODO(finto): Should be fetched from key storage
-        let key = keys::SecretKey::new();
-        // TODO(finto): Should be read from config file
-        let gossip_params = Default::default();
-        // TODO(finto): Read from config or passed as param
-        let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
-        // TODO(finto): could we initialise with known seeds from a cache?
-        let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
-        let disco = discovery::Static::new(seeds);
-        // TODO(finto): read in from config or passed as param
-        let paths = paths::Paths::new()?;
-        let config = net::peer::PeerConfig {
-            key,
-            paths,
-            listen_addr,
-            gossip_params,
-            disco,
-        };
-
-        coco::Peer::new(config)
-            .await
-            .expect("failed to create /tmp user peer")
+        coco::config::Paths::default()
     };
+    let pw = SecUtf8::from("radicle-upstream");
+
+    let paths = paths::Paths::try_from(paths_config)?;
+
+    let mut store = keystore::Keystorage::new(&paths, pw);
+    let key = store.init_librad_key()?;
+
+    let config = coco::config::configure(paths, key);
+    let mut peer = coco::Peer::new(config)
+        .await
+        .expect("failed to create Peer");
 
     let owner = coco::fake_owner(&peer).await;
 

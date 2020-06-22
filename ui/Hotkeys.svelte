@@ -3,14 +3,14 @@
 
   import * as path from "./src/path.ts";
 
-  const toggle = (destination) => {
+  const toggle = destination => {
     if (path.active(destination, $location)) {
       pop();
     }
     push(destination);
   };
 
-  const onKeydown = (event) => {
+  const onKeydown = event => {
     if (event.target !== document.body) {
       return false;
     }

@@ -2,7 +2,10 @@
 //! configuration of all sorts.
 
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
+use crate::coco;
 use crate::error;
 use crate::identity;
 use crate::registry;
@@ -60,8 +63,9 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
 pub async fn current<R: registry::Client>(
+    peer: Arc<Mutex<coco::Peer>>,
     store: &kv::Store,
-    registry: R,
+    registry: &R,
 ) -> Result<Session, error::Error> {
     let mut session = get(store, KEY_CURRENT)?;
     session.transaction_deposits = registry::get_deposits();
@@ -75,7 +79,9 @@ pub async fn current<R: registry::Client>(
             if registry.get_user(handle.clone()).await?.is_some() {
                 session.orgs = registry.list_orgs(handle).await?;
                 session.permissions.register_org = true;
-                session.permissions.register_project = true;
+                if !peer.lock().await.list_projects()?.is_empty() {
+                    session.permissions.register_project = true;
+                }
             } else {
                 id.registered = None;
                 session.identity = Some(id);

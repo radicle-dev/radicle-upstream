@@ -18,13 +18,13 @@
 
   const session = getContext("session");
 
-  const select = (event) => {
+  const select = event => {
     const project = event.detail;
     push(path.projectSource(project.id));
   };
 
   const contextMenuItems = (projectId, session) => {
-    if (session.identity.registered) {
+    if (session.permissions.registerProject) {
       return [
         {
           title: "Register project",
@@ -53,7 +53,7 @@
     }
   };
 
-  const statsProps = (stats) => {
+  const statsProps = stats => {
     return [
       { icon: Icon.Commit, count: stats.commits },
       { icon: Icon.Branch, count: stats.branches },
@@ -61,7 +61,7 @@
     ];
   };
 
-  const projectCardProps = (project) => {
+  const projectCardProps = project => {
     return {
       title: project.metadata.name,
       description: project.metadata.description,

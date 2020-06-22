@@ -25,7 +25,7 @@
     }, 250);
   };
 
-  const handleItemSelection = (item) => {
+  const handleItemSelection = item => {
     hideModal();
     item.event();
   };
@@ -109,6 +109,7 @@
 
   .menu-item.disabled {
     color: var(--color-foreground-level-4);
+    cursor: not-allowed;
   }
 
   .menu-item.disabled :global(svg) {

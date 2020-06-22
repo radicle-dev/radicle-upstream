@@ -15,6 +15,9 @@
     border-radius: 4px;
     height: 32px;
     align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    user-select: none;
   }
 
   .info {

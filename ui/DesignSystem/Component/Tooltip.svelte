@@ -7,7 +7,7 @@
   const hideTooltip = () => {
     tooltip.className = "hidden";
   };
-  const showTooltip = (e) => {
+  const showTooltip = e => {
     const rect = e.target.closest("[data-tooltip]").getBoundingClientRect();
     tooltip = { positionY: rect.top, className: "visible" };
   };
@@ -53,7 +53,7 @@
 <div
   style="height: 100%;"
   data-tooltip
-  on:mouseover={(event) => showTooltip(event)}
+  on:mouseover={event => showTooltip(event)}
   on:mouseout={hideTooltip}>
   <slot />
   <div

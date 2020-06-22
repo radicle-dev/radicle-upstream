@@ -53,8 +53,8 @@
     left: 0;
     background: linear-gradient(
       0deg,
-      rgba(235, 239, 243, 1) 0%,
-      rgba(235, 239, 243, 0) 100%
+      var(--color-foreground-level-2) 0%,
+      rgba(0, 0, 0, 0) 100%
     );
   }
 

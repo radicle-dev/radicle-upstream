@@ -32,7 +32,7 @@ export const session = sessionStore.readable;
 
 export const settings: Readable<Settings | null> = derived(
   sessionStore,
-  (sess) => {
+  sess => {
     if (sess.status === remote.Status.Success) {
       return sess.data.settings;
     }
@@ -42,7 +42,7 @@ export const settings: Readable<Settings | null> = derived(
 
 export const permissions: Readable<Permissions | null> = derived(
   sessionStore,
-  (sess) => {
+  sess => {
     if (sess.status === remote.Status.Success) {
       return sess.data.permissions;
     }

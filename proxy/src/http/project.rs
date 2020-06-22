@@ -196,9 +196,10 @@ mod handler {
 
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(peer: Arc<Mutex<coco::Peer>>, urn: String) -> Result<impl Reply, Rejection> {
+        let urn = urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
 
-        Ok(reply::json(&project::get(&peer, &urn).await?))
+        Ok(reply::json(&project::get(&peer, &urn)?))
     }
 
     /// List all known projects.
@@ -519,6 +520,12 @@ impl ToDocumentedType for RegisterInput {
                 .example("upstream"),
         );
         properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+        properties.insert(
             "maybeCocoId".into(),
             document::string()
                 .description("Optionally passed coco id to store for attestion")
@@ -632,7 +639,7 @@ mod test {
             .await?;
         let urn = platinum_project.urn();
 
-        let project = project::get(&peer, &urn.to_string()).await?;
+        let project = project::get(&peer, &urn)?;
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),

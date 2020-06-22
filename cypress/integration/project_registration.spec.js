@@ -14,34 +14,83 @@ const project2 = {
 const org1 = "monadic";
 const org2 = "github";
 
-beforeEach(() => {
-  cy.nukeAllState();
+context("project registration permission", () => {
+  it("disables project registration without a registered user", () => {
+    cy.nukeAllState();
+    cy.createIdentity(user);
+    cy.createProjectWithFixture(
+      project1.name,
+      project1.description,
+      project1.defaultBranch
+    );
+    cy.visit("public/index.html");
 
-  cy.createIdentity(user);
-  cy.registerUser(user);
+    // via the project list
+    cy.pick(`project-list-entry-${project1.name}`, "context-menu").click();
+    cy.pick(
+      `project-list-entry-${project1.name}`,
+      "dropdown-menu",
+      "register-project"
+    ).should("have.class", "disabled");
 
-  cy.registerOrg(org1);
-  cy.registerOrg(org2);
+    // via the project page
+    cy.pick(`project-list-entry-${project1.name}`).click();
 
-  cy.createProjectWithFixture(
-    project1.name,
-    project1.description,
-    project1.defaultBranch
-  );
-  cy.createProjectWithFixture(
-    project2.name,
-    project2.description,
-    project2.defaultBranch
-  );
+    cy.pick("project-screen", "context-menu").click();
+    cy.pick("dropdown-menu", "register-project").should(
+      "have.class",
+      "disabled"
+    );
+  });
 
-  // The transaction center is populated with transactions that come from this
-  // before block and it covers the dropdown menu that is needed in the tests.
-  cy.nukeCache();
+  it("disables project registration under an org without a local project", () => {
+    cy.nukeAllState();
+    cy.createIdentity(user);
+    cy.registerUser(user);
+    cy.registerOrg(org1);
+    cy.visit("public/index.html");
 
-  cy.visit("public/index.html");
+    cy.pick("sidebar", `org-${org1}`).click();
+    // via org onboarding page register button
+    cy.pick("add-project").should("have.class", "disabled");
+
+    // via org onboarding page context menu
+    cy.pick("context-menu").click();
+    cy.pick("dropdown-menu", "add-project").should("have.class", "disabled");
+
+    // via org onboarding page menu button
+    cy.pick("projects-menu-button").should("have.class", "disabled");
+  });
 });
 
 context("project registration", () => {
+  beforeEach(() => {
+    cy.nukeAllState();
+
+    cy.createIdentity(user);
+    cy.registerUser(user);
+
+    cy.registerOrg(org1);
+    cy.registerOrg(org2);
+
+    cy.createProjectWithFixture(
+      project1.name,
+      project1.description,
+      project1.defaultBranch
+    );
+    cy.createProjectWithFixture(
+      project2.name,
+      project2.description,
+      project2.defaultBranch
+    );
+
+    // The transaction center is populated with transactions that come from this
+    // before block and it covers the dropdown menu that is needed in the tests.
+    cy.nukeCache();
+
+    cy.visit("public/index.html");
+  });
+
   context("navigation", () => {
     it("can be accessed via profile project list project context menu", () => {
       cy.pick(`project-list-entry-${project2.name}`, "context-menu").click();

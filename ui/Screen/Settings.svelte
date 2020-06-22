@@ -11,10 +11,10 @@
   import { Title, Text, Button } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
-  const updateNetwork = (event) =>
+  const updateNetwork = event =>
     updateRegistry({ ...$settings.registry, network: event.detail });
 
-  const updateTheme = (event) =>
+  const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
 </script>
 
@@ -23,7 +23,7 @@
     max-width: var(--content-max-width);
     margin: 0 auto;
     min-width: var(--content-min-width);
-    padding: 0 32px;
+    padding: 0 var(--content-padding);
   }
   section header {
     margin: 16px 0 24px 0;

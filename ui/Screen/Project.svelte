@@ -48,7 +48,7 @@
 
   export let params = null;
 
-  const topbarMenuItems = (projectId) => [
+  const topbarMenuItems = projectId => [
     {
       icon: Icon.Home,
       title: "Source",
@@ -87,7 +87,7 @@
 
   let registerProjectMenuItem;
 
-  if (session.identity.registered) {
+  if (session.permissions.registerProject) {
     registerProjectMenuItem = {
       dataCy: "register-project",
       title: "Register project",

@@ -3,7 +3,7 @@
 
   export let issue = null;
 
-  const issueCaption = (issue) => {
+  const issueCaption = issue => {
     if (issue.open) {
       return `Opened ${issue.created_at} ago by ${issue.author}`;
     } else {
@@ -11,7 +11,7 @@
     }
   };
 
-  const issueIconColor = (issueOpen) => {
+  const issueIconColor = issueOpen => {
     return issueOpen ? "--color-positive" : "--color-negative";
   };
 </script>
