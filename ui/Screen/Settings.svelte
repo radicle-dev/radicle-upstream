@@ -157,5 +157,29 @@
       </div>
     </section>
 
+    <section>
+      <header>
+        <Title variant="large">Legal</Title>
+      </header>
+      <div class="section-item">
+        <div class="info">
+          <Text variant="medium">Twemoji</Text>
+          <Text>
+            Copyright 2020 Twitter, Inc and other contributors. Licensed under
+            CC-BY 4.0
+          </Text>
+        </div>
+      </div>
+      <div class="section-item">
+        <div class="info">
+          <Text variant="medium">Inter</Text>
+          <Text>
+            Inter font by Rasmus Andersson licensed under the SIL Open Font
+            License 1.1
+          </Text>
+        </div>
+      </div>
+    </section>
+
   </div>
 </SidebarLayout>
