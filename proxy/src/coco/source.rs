@@ -42,8 +42,27 @@ pub struct Person {
     pub avatar: String,
 }
 
-/// Representation of a code commit.
+/// Commit statistics.
+#[derive(Serialize)]
+pub struct CommitStats {
+    /// Additions.
+    pub additions: u64,
+    /// Deletions.
+    pub deletions: u64,
+}
+
+/// Representation of a changeset between two revs.
 pub struct Commit {
+    /// The commit header.
+    pub header: CommitHeader,
+    /// The change statistics for this commit.
+    pub stats: CommitStats,
+    /// The changeset introduced by this commit.
+    pub diff: surf::diff::Diff,
+}
+
+/// Representation of a code commit.
+pub struct CommitHeader {
     /// Identifier of the commit in the form of a sha1 hash. Often referred to as oid or object
     /// id.
     pub sha1: git2::Oid,
@@ -60,7 +79,7 @@ pub struct Commit {
     pub committer_time: git2::Time,
 }
 
-impl Commit {
+impl CommitHeader {
     /// Returns the commit description text. This is the text after the one-line summary.
     #[must_use]
     pub fn description(&self) -> &str {
@@ -71,7 +90,7 @@ impl Commit {
     }
 }
 
-impl From<&surf::vcs::git::Commit> for Commit {
+impl From<&surf::vcs::git::Commit> for CommitHeader {
     fn from(commit: &surf::vcs::git::Commit) -> Self {
         let avatar = |input: &String| {
             let mut s = DefaultHasher::new();
@@ -120,7 +139,7 @@ pub struct Info {
     /// The type of the object.
     pub object_type: ObjectType,
     /// The last commmit that touched this object.
-    pub last_commit: Option<Commit>,
+    pub last_commit: Option<CommitHeader>,
 }
 
 /// File data abstraction.
@@ -192,7 +211,9 @@ pub fn blob(
     let mut commit_path = surf::file_system::Path::root();
     commit_path.append(p.clone());
 
-    let last_commit = browser.last_commit(commit_path)?.map(|c| Commit::from(&c));
+    let last_commit = browser
+        .last_commit(commit_path)?
+        .map(|c| CommitHeader::from(&c));
     let (_rest, last) = p.split_last();
     let content = match std::str::from_utf8(&file.contents) {
         Ok(content) => BlobContent::Ascii(content.to_string()),
@@ -260,18 +281,66 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
     Ok(LocalState { branches, managed })
 }
 
-/// Retrieves the [`Commit`] for the given `sha1`.
+/// Retrieves the [`CommitHeader`] for the given `sha1`.
 ///
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit, error::Error> {
+pub fn commit_header<'repo>(
+    browser: &mut Browser<'repo>,
+    sha1: &str,
+) -> Result<CommitHeader, error::Error> {
     browser.commit(surf::vcs::git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
     let commit = history.first();
 
-    Ok(Commit::from(commit))
+    Ok(CommitHeader::from(commit))
+}
+
+/// Retrieves a [`Commit`].
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit, error::Error> {
+    let oid = surf::vcs::git::Oid::from_str(sha1)?;
+    browser.commit(oid)?;
+
+    let history = browser.get();
+    let commit = history.first();
+
+    let diff = if let Some(parent) = commit.parents.first() {
+        browser.diff(*parent, oid)?
+    } else {
+        browser.initial_diff(oid)?
+    };
+
+    let mut deletions = 0;
+    let mut additions = 0;
+
+    for file in &diff.modified {
+        if let surf::diff::FileDiff::Plain { ref hunks } = file.diff {
+            for hunk in hunks.iter() {
+                for line in &hunk.lines {
+                    match line {
+                        surf::diff::LineDiff::Addition { .. } => additions += 1,
+                        surf::diff::LineDiff::Deletion { .. } => deletions += 1,
+                        _ => {},
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(Commit {
+        header: commit.into(),
+        stats: CommitStats {
+            additions,
+            deletions,
+        },
+        diff,
+    })
 }
 
 /// Retrieves the [`Commit`] history for the given `branch`.
@@ -282,10 +351,10 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
 pub fn commits<'repo>(
     browser: &mut Browser<'repo>,
     branch: &str,
-) -> Result<Vec<Commit>, error::Error> {
+) -> Result<Vec<CommitHeader>, error::Error> {
     browser.branch(BranchName::new(branch))?;
 
-    let commits = browser.get().iter().map(Commit::from).collect();
+    let commits = browser.get().iter().map(CommitHeader::from).collect();
 
     Ok(commits)
 }
@@ -379,7 +448,7 @@ pub fn tree<'repo>(
     entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
 
     let last_commit = if path.is_root() {
-        Some(Commit::from(browser.get().first()))
+        Some(CommitHeader::from(browser.get().first()))
     } else {
         None
     };

@@ -78,6 +78,27 @@
     font-family: var(--typeface-medium);
   }
 
+  .file-header {
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    background: none;
+    border-bottom: 1px solid var(--color-foreground-level-3);
+    border-radius: 0;
+    padding: 0.75rem;
+  }
+  .file-header:last-child {
+    border-bottom: none;
+    margin-bottom: 1rem;
+  }
+  .file-header .diff-type.created {
+    margin-left: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--color-positive);
+    background-color: var(--color-positive-level-1);
+  }
+
   /* TODO(cloudhead): These should be global */
   hr {
     border: 0;
@@ -92,7 +113,7 @@
       <Flex style="align-items: flex-start">
         <div slot="left">
           <Title variant="large" style="margin-bottom: 1rem">
-            {commit.summary}
+            {commit.header.summary}
           </Title>
         </div>
         <div slot="right">
@@ -108,27 +129,27 @@
               <span style="margin-left: -0.5ch">{commit.branch}</span>
             </span>
             <span style="margin-left: -0.5ch">
-              {format(commit.committerTime * 1000)}
+              {format(commit.header.committerTime * 1000)}
             </span>
           </span>
         </div>
       </Flex>
       <pre class="description" style="margin-bottom: 1rem">
-        {commit.description}
+        {commit.header.description}
       </pre>
       <hr />
       <Flex style="align-items: flex-end">
         <div slot="left">
           <p class="field">
             Authored by
-            <span class="author">{commit.author.name}</span>
-            <span class="email">&lt;{commit.author.email}&gt;</span>
+            <span class="author">{commit.header.author.name}</span>
+            <span class="email">&lt;{commit.header.author.email}&gt;</span>
           </p>
-          {#if commit.committer.email != commit.author.email}
+          {#if commit.header.committer.email != commit.header.author.email}
             <p class="field">
               Committed by
-              <span class="author">{commit.committer.name}</span>
-              <span class="email">&lt;{commit.committer.email}&gt;</span>
+              <span class="author">{commit.header.committer.name}</span>
+              <span class="email">&lt;{commit.header.committer.email}&gt;</span>
             </p>
           {/if}
         </div>
@@ -136,26 +157,33 @@
           <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
           <p class="field">
             Commit
-            <span class="hash">{commit.sha1}</span>
+            <span class="hash">{commit.header.sha1}</span>
           </p>
         </div>
       </Flex>
     </header>
     <main>
       <div class="changeset-summary">
-        <span class="amount">
-          {commit.changeset.files.length} file(s) changed
-        </span>
-        with
-        <span class="additions">
-          {commit.changeset.summary.additions} addition(s)
-        </span>
-        and
-        <span class="deletions">
-          {commit.changeset.summary.deletions} deletion(s)
-        </span>
+        {#if commit.diff.modified.length > 0}
+          <span class="amount">
+            {commit.diff.modified.length} file(s) changed
+          </span>
+          with
+          <span class="additions">{commit.stats.additions} additions</span>
+          and
+          <span class="deletions">{commit.stats.deletions} deletions</span>
+        {/if}
       </div>
-      {#each commit.changeset.files as file}
+      <div>
+        {#each commit.diff.created as path}
+          <header class="file-header">
+            <Icon.File style="margin-right: 8px;" />
+            <Title>{path}</Title>
+            <span class="diff-type created">created</span>
+          </header>
+        {/each}
+      </div>
+      {#each commit.diff.modified as file}
         <FileDiff {file} />
       {/each}
     </main>
