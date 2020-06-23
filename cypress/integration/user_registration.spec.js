@@ -82,7 +82,7 @@ context("user registration", () => {
     it("prevents the user from registering an unavailable handle", () => {
       cy.pick("handle").clear();
       cy.pick("handle").type("nope");
-      cy.pick("page").contains("Id already taken");
+      cy.pick("page").contains("Sorry, this id is already taken");
     });
   });
 
