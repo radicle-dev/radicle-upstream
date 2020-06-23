@@ -51,7 +51,7 @@ context("user registration", () => {
     it("prevents the user from registering an invalid handle", () => {
       // shows a validation message when handle is not present
       cy.pick("handle").clear();
-      cy.pick("page").contains("Handle is required");
+      cy.pick("page").contains("Id is required");
 
       // shows a validation message when handle contains invalid characters
       // spaces are not allowed
