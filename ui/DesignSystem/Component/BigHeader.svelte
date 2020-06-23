@@ -1,9 +1,16 @@
 <script>
-  import { Avatar, Icon, Title, Text, Numeric } from "../Primitive";
+  import { createEventDispatcher } from "svelte";
+  import { Avatar, Button, Icon, Title, Text, Numeric } from "../Primitive";
+
+  const dispatch = createEventDispatcher();
 
   export let style = null;
   export let entity = null;
   export let variant = null; // profile | org
+
+  const onRegisterAction = () => {
+    dispatch("registerAction");
+  };
 </script>
 
 <style>
@@ -69,9 +76,17 @@
 
       <div class="metadata">
         <div class="user">
-          <Title dataCy="entity-name" variant="huge">
-            {#if variant === 'profile'}
-              {entity.registered ? entity.registered : entity.metadata.handle}
+          <Title dataCy="entity-name" variant="huge" style="display: flex;">
+            {#if variant === 'profile' && entity.registered}
+              @{entity.registered}
+            {:else if variant === 'profile' && !entity.registered}
+              {entity.metadata.handle}
+              <Button
+                variant="outline"
+                style="margin-left: 12px;"
+                on:click={() => onRegisterAction()}>
+                Register handle
+              </Button>
             {:else if variant === 'org'}{entity.id}{/if}
           </Title>
           {#if variant === 'org' || entity.registered}
