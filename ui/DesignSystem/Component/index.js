@@ -2,6 +2,7 @@ import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import Dropdown from "./Dropdown.svelte";
+import EmptyState from "./EmptyState.svelte";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
@@ -38,6 +39,7 @@ export {
   Comment,
   Copyable,
   Dropdown,
+  EmptyState,
   HorizontalMenu,
   Label,
   List,

@@ -8,13 +8,12 @@
   import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    EmptyState,
     List,
     ProjectCard,
     Remote,
     Stats,
   } from "../../DesignSystem/Component";
-
-  import Onboard from "./Onboard.svelte";
 
   export let params = null;
   const session = getContext("session");
@@ -49,6 +48,9 @@
     }
   };
 
+  const create = () => push(path.registerProject(params.id));
+  const register = () => push(path.memberRegistration(params.id));
+
   $: fetchProjectList({ id: params.id });
 </script>
 
@@ -79,10 +81,20 @@
         </div>
       </Flex>
     </List>
+  {:else if session.permissions.registerProject}
+    <EmptyState
+      icon="tent"
+      text="There's nothing here yet, get started by creating your first project
+      or adding a member to your org."
+      primaryActionText="Register a project"
+      secondaryActionText="Or add a member"
+      on:primaryAction={create}
+      on:secondaryAction={register} />
   {:else}
-    <Onboard
-      orgId={params.id}
-      registerProjectPermission={session.permissions.registerProject} />
+    <EmptyState
+      text="Add a member to your org."
+      primaryActionText="Add a member"
+      on:primaryAction={register} />
   {/if}
 
   <div slot="error" let:error>

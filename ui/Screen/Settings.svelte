@@ -21,7 +21,7 @@
 <style>
   .container {
     max-width: var(--content-max-width);
-    margin: 0 auto;
+    margin: 64px auto;
     min-width: var(--content-min-width);
     padding: 0 var(--content-padding);
   }
