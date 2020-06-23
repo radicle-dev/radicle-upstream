@@ -23,9 +23,10 @@ use crate::error;
 /// Module that captures all types and functions for source code.
 mod source;
 pub use source::{
-    blob, branches, commit, commits, local_state, tags, tree, Blob, BlobContent, Branch, Commit,
-    Info, ObjectType, Person, Tag, Tree, TreeEntry,
+    blob, branches, commit, commit_header, commits, local_state, tags, tree, Blob, BlobContent,
+    Branch, Commit, CommitHeader, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
+pub use surf::diff::{Diff, FileDiff};
 
 pub mod config;
 

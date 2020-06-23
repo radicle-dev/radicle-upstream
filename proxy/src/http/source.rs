@@ -504,7 +504,20 @@ impl Serialize for coco::Commit {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Commit", 6)?;
+        let mut changeset = serializer.serialize_struct("Commit", 3)?;
+        changeset.serialize_field("header", &self.header)?;
+        changeset.serialize_field("stats", &self.stats)?;
+        changeset.serialize_field("diff", &self.diff)?;
+        changeset.end()
+    }
+}
+
+impl Serialize for coco::CommitHeader {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("CommitHeader", 6)?;
         state.serialize_field("sha1", &self.sha1.to_string())?;
         state.serialize_field("author", &self.author)?;
         state.serialize_field("summary", &self.summary)?;
@@ -515,7 +528,7 @@ impl Serialize for coco::Commit {
     }
 }
 
-impl ToDocumentedType for coco::Commit {
+impl ToDocumentedType for coco::CommitHeader {
     fn document() -> document::DocumentedType {
         let mut properties = std::collections::HashMap::with_capacity(6);
         properties.insert(
@@ -543,6 +556,22 @@ impl ToDocumentedType for coco::Commit {
             document::string()
                 .description("Time of the commit")
                 .example("1575283425"),
+        );
+        document::DocumentedType::from(properties).description("CommitHeader")
+    }
+}
+
+impl ToDocumentedType for coco::Commit {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert("header".into(), coco::CommitHeader::document());
+        properties.insert(
+            "stats".into(),
+            document::string().description("Commit stats"),
+        );
+        properties.insert(
+            "diff".into(),
+            document::string().description("Commit changeset"),
         );
         document::DocumentedType::from(properties).description("Commit")
     }
