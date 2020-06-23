@@ -7,10 +7,11 @@
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
-    SidebarLayout,
     BigHeader,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
+
+  import Screen from "../Layout/Screen.svelte";
 
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
@@ -65,8 +66,7 @@
   }
 </script>
 
-<SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-
+<Screen dataCy="profile-screen">
   <BigHeader
     variant="profile"
     entity={session.identity}
@@ -85,4 +85,4 @@
   </BigHeader>
 
   <Router routes={screenRoutes} />
-</SidebarLayout>
+</Screen>

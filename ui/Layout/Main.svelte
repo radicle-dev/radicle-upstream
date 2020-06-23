@@ -1,19 +1,17 @@
 <script>
-  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import * as path from "../../src/path.ts";
+  import * as path from "../src/path.ts";
 
-  import Sidebar from "./Sidebar.svelte";
+  import Sidebar from "../DesignSystem/Component/Sidebar.svelte";
 
   export let dataCy = null;
   export let style = null;
-
-  const session = getContext("session");
+  export let session = null;
 </script>
 
 <style>
-  .container {
+  .layout {
     position: relative;
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));
@@ -29,7 +27,7 @@
     orgs={session.orgs}
     registerOrgPermission={session.permissions.registerOrg} />
 
-  <div class="container" data-cy="scrollable-content">
+  <div class="layout" data-cy="scrollable-content">
     <div class="content" {style}>
       <slot />
     </div>

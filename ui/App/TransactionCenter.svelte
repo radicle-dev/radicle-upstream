@@ -5,7 +5,6 @@
   import { summary, transactions as store } from "../src/transaction.ts";
 
   import Remote from "../DesignSystem/Component/Remote.svelte";
-
   import Center from "../DesignSystem/Component/Transaction/Center.svelte";
 
   const select = event => push(path.transactions(event.detail));

@@ -10,9 +10,10 @@
     AdditionalActionsDropdown,
     HorizontalMenu,
     Remote,
-    SidebarLayout,
     BigHeader,
   } from "../DesignSystem/Component";
+
+  import Screen from "../Layout/Screen.svelte";
 
   import Fund from "./Org/Fund.svelte";
   import Members from "./Org/Members.svelte";
@@ -96,7 +97,7 @@
   $: fetch({ id: params.id });
 </script>
 
-<SidebarLayout dataCy="org-screen" style="margin-top: 0;">
+<Screen dataCy="org-screen">
   <Remote {store} let:data={org}>
     <BigHeader variant="org" entity={org}>
       <div slot="left">
@@ -113,4 +114,4 @@
     </BigHeader>
     <Router {routes} />
   </Remote>
-</SidebarLayout>
+</Screen>
