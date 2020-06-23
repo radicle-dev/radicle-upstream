@@ -319,10 +319,10 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
     let mut deletions = 0;
     let mut additions = 0;
 
-    for file in diff.modified.iter() {
+    for file in &diff.modified {
         if let surf::diff::FileDiff::Plain { ref hunks } = file.diff {
             for hunk in hunks.iter() {
-                for line in hunk.lines.iter() {
+                for line in &hunk.lines {
                     match line {
                         surf::diff::LineDiff::Addition { .. } => additions += 1,
                         surf::diff::LineDiff::Deletion { .. } => deletions += 1,

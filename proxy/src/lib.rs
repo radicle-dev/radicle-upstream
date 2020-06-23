@@ -21,7 +21,8 @@
     clippy::or_fun_call,
     clippy::shadow_reuse,
     clippy::unseparated_literal_suffix,
-    clippy::used_underscore_binding
+    clippy::used_underscore_binding,
+    clippy::integer_arithmetic
 )]
 #![feature(result_flattening)]
 
