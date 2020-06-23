@@ -128,7 +128,7 @@ context("identity creation", () => {
     });
 
     context("handle", () => {
-      const validationError = "Handle should match ^[a-z0-9][a-z0-9_-]+$";
+      const validationError = "Id should match ^[a-z0-9][a-z0-9]+$";
 
       it("prevents the user from submitting an invalid handle", () => {
         // handle is required

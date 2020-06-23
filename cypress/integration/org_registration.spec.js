@@ -65,45 +65,35 @@ context("org registration", () => {
       // no empty input
       cy.pick("input").type("a_name");
       cy.pick("input").clear();
-      cy.pick("org-reg-modal").contains("Org id is required");
+      cy.pick("org-reg-modal").contains("Id is required");
       cy.pick("submit-button").should("be.disabled");
 
       // no spaces
       cy.pick("input").type("no spaces");
-      cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+"
-      );
+      cy.pick("org-reg-modal").contains("Id should match ^[a-z0-9][a-z0-9]+$");
       cy.pick("submit-button").should("be.disabled");
 
       // no special characters
       cy.pick("input").clear();
       cy.pick("input").type("^^^inVaLiD***");
-      cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+"
-      );
+      cy.pick("org-reg-modal").contains("Id should match ^[a-z0-9][a-z0-9]+$");
       cy.pick("submit-button").should("be.disabled");
 
       // no starting with an underscore or dash
       cy.pick("input").clear();
       cy.pick("input").type("_nVaLiD");
-      cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+"
-      );
+      cy.pick("org-reg-modal").contains("Id should match ^[a-z0-9][a-z0-9]+$");
       cy.pick("submit-button").should("be.disabled");
 
       cy.pick("input").clear();
       cy.pick("input").type("-alsoInVaLiD");
-      cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+"
-      );
+      cy.pick("org-reg-modal").contains("Id should match ^[a-z0-9][a-z0-9]+$");
       cy.pick("submit-button").should("be.disabled");
 
       // must meet minimum length
       cy.pick("input").clear();
       cy.pick("input").type("x");
-      cy.pick("org-reg-modal").contains(
-        "Org id should match [a-z0-9][a-z0-9_-]+"
-      );
+      cy.pick("org-reg-modal").contains("Id should match ^[a-z0-9][a-z0-9]+$");
       cy.pick("submit-button").should("be.disabled");
     });
 

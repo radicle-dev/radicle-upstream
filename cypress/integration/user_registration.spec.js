@@ -56,33 +56,33 @@ context("user registration", () => {
       // shows a validation message when handle contains invalid characters
       // spaces are not allowed
       cy.pick("handle").type("no spaces");
-      cy.pick("page").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+      cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
 
       // special characters are disallowed
       cy.pick("handle").clear();
       cy.pick("handle").type("$bad");
-      cy.pick("page").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+      cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
 
       // can't start with an underscore
       cy.pick("handle").clear();
       cy.pick("handle").type("_nein");
-      cy.pick("page").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+      cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
 
       // can't start with a dash
       cy.pick("handle").clear();
       cy.pick("handle").type("-nope");
-      cy.pick("page").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+      cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
 
       // has to be at least two characters long
       cy.pick("handle").clear();
       cy.pick("handle").type("x");
-      cy.pick("page").contains("Handle should match ^[a-z0-9][a-z0-9_-]+$");
+      cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
     });
 
     it("prevents the user from registering an unavailable handle", () => {
       cy.pick("handle").clear();
       cy.pick("handle").type("nope");
-      cy.pick("page").contains("Handle already taken");
+      cy.pick("page").contains("Id already taken");
     });
   });
 
