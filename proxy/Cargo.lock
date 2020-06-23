@@ -2829,6 +2829,7 @@ dependencies = [
  "lazy_static",
  "nonempty 0.5.0",
  "regex",
+ "serde",
  "thiserror",
 ]
 

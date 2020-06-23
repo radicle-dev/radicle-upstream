@@ -22,6 +22,7 @@ pub fn routes(
       .or(commits_filter(Arc::clone(&peer)))
       .or(local_state_filter())
       .or(revisions_filter(Arc::clone(&peer)))
+      .or(stats_filter(Arc::clone(&peer)))
       .or(tags_filter(Arc::clone(&peer)))
       .or(tree_filter(peer)),
   )
@@ -38,6 +39,7 @@ fn filters(
     .or(commits_filter(Arc::clone(&peer)))
     .or(local_state_filter())
     .or(revisions_filter(Arc::clone(&peer)))
+    .or(stats_filter(Arc::clone(&peer)))
     .or(tags_filter(Arc::clone(&peer)))
     .or(tree_filter(peer))
 }
@@ -198,6 +200,31 @@ fn revisions_filter(
     .and_then(handler::revisions)
 }
 
+/// `GET /stats/<project_id>`
+fn stats_filter(
+  peer: Arc<Mutex<coco::Peer>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+  path("stats")
+    .and(warp::get())
+    .and(http::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project you would like stats for",
+    ))
+    .and(document::document(document::description(
+      "Get project stats",
+    )))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(coco::Stats::document()).mime("application/json"),
+      )
+      .description("Project stats"),
+    ))
+    .and_then(handler::stats)
+}
+
 /// `GET /tags/<project_id>`
 fn tags_filter(
   peer: Arc<Mutex<coco::Peer>>,
@@ -220,30 +247,6 @@ fn tags_filter(
       .description("List of tags"),
     ))
     .and_then(handler::tags)
-}
-
-/// `GET /stats/<project_id>`
-fn stats_filter(
-  peer: Arc<Mutex<coco::Peer>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-  path("stats")
-    .and(warp::get())
-    .and(http::with_peer(peer))
-    .and(document::param::<String>(
-      "project_id",
-      "ID of the project you would like stats for",
-    ))
-    .and(document::document(document::description("Get project stats")))
-    .and(document::document(document::tag("Source")))
-    .and(document::document(
-      document::response(
-        200,
-        document::body(document::body(coco::Stats::document()).description("Project stats"))
-          .mime("application/json"),
-      )
-      .description("Project stats"),
-    ))
-    .and_then(handler::stats)
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
@@ -279,158 +282,157 @@ fn tree_filter(
 
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
-    use warp::path::Tail;
-    use warp::{reply, Rejection, Reply};
+  use std::sync::Arc;
+  use tokio::sync::Mutex;
+  use warp::path::Tail;
+  use warp::{reply, Rejection, Reply};
 
-    use crate::avatar;
-    use crate::coco;
-    use crate::error::Error;
-    use crate::identity;
+  use crate::avatar;
+  use crate::coco;
+  use crate::error::Error;
+  use crate::identity;
 
-    /// Fetch a [`coco::Blob`].
-    pub async fn blob(
-        peer: Arc<Mutex<coco::Peer>>,
-        project_urn: String,
-        super::BlobQuery { path, revision }: super::BlobQuery,
-    ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let project = peer.get_project(&urn)?;
-        let default_branch = project.default_branch();
-        let blob = peer.with_browser(&urn, |mut browser| {
-            coco::blob(&mut browser, default_branch, revision, &path)
-        })?;
-
-        Ok(reply::json(&blob))
-    }
-
-    /// Fetch the list [`coco::Branch`].
-    pub async fn branches(
-        peer: Arc<Mutex<coco::Peer>>,
-        project_urn: String,
-    ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let peer = peer.lock().await;
-        let branches = peer.with_browser(&urn, |browser| coco::branches(browser))?;
-
-        Ok(reply::json(&branches))
-    }
-
-    /// Fetch a [`coco::Commit`].
-    pub async fn commit(
-        peer: Arc<Mutex<coco::Peer>>,
-        project_urn: String,
-        sha1: String,
-    ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let peer = peer.lock().await;
-        let commit = peer.with_browser(&urn, |mut browser| coco::commit(&mut browser, &sha1))?;
-
-        Ok(reply::json(&commit))
-    }
-
-    /// Fetch the list of [`coco::Commit`] from a branch.
-    pub async fn commits(
-        peer: Arc<Mutex<coco::Peer>>,
-        project_urn: String,
-        branch: String,
-    ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let peer = peer.lock().await;
-        let commits =
-            peer.with_browser(&urn, |mut browser| coco::commits(&mut browser, &branch))?;
-
-        Ok(reply::json(&commits))
-    }
-
-    /// Fetch the list [`coco::Branch`] for a local repository.
-    pub async fn local_state(path: Tail) -> Result<impl Reply, Rejection> {
-        let state = coco::local_state(path.as_str())?;
-
-        Ok(reply::json(&state))
-    }
-
-    /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions(
-        peer: Arc<Mutex<coco::Peer>>,
-        project_urn: String,
-    ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let peer = peer.lock().await;
-        let (branches, tags) = peer.with_browser(&urn, |browser| {
-            Ok((coco::branches(browser)?, coco::tags(browser)?))
-        })?;
-
-        let revs = ["cloudhead", "rudolfs", "xla"]
-            .iter()
-            .map(|handle| super::Revision {
-                branches: branches.clone(),
-                tags: tags.clone(),
-                identity: identity::Identity {
-                    // TODO(finto): Get the right URN
-                    id: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
-                        .parse()
-                        .expect("failed to parse hardcoded URN"),
-                    metadata: identity::Metadata {
-                        handle: (*handle).to_string(),
-                    },
-                    avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
-                    registered: None,
-                    shareable_entity_identifier: identity::SharedIdentifier {
-                        handle: (*handle).to_string(),
-                        urn: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
-                            .parse()
-                            .expect("failed to parse hardcoded URN"),
-                    },
-                },
-            })
-            .collect::<Vec<super::Revision>>();
-
-        Ok(reply::json(&revs))
-    }
-
-    /// Fetch the [`coco::Stats`].
-    pub async fn stats(
-      peer: Arc<Mutex<coco::Peer>>,
-      project_urn: String,
+  /// Fetch a [`coco::Blob`].
+  pub async fn blob(
+    peer: Arc<Mutex<coco::Peer>>,
+    project_urn: String,
+    super::BlobQuery { path, revision }: super::BlobQuery,
   ) -> Result<impl Reply, Rejection> {
-      let urn = project_urn.parse().map_err(Error::from)?;
-      let peer = peer.lock().await;
-      let stats = peer.with_browser(&urn, |browser| coco::stats(browser))?;
+    let peer = peer.lock().await;
+    let urn = project_urn.parse().map_err(Error::from)?;
+    let project = peer.get_project(&urn)?;
+    let default_branch = project.default_branch();
+    let blob = peer.with_browser(&urn, |mut browser| {
+      coco::blob(&mut browser, default_branch, revision, &path)
+    })?;
 
-      Ok(reply::json(&stats))
+    Ok(reply::json(&blob))
   }
 
-    /// Fetch the list [`coco::Tag`].
-    pub async fn tags(
-        peer: Arc<Mutex<coco::Peer>>,
-        project_urn: String,
-    ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let peer = peer.lock().await;
-        let tags = peer.with_browser(&urn, |browser| coco::tags(browser))?;
+  /// Fetch the list [`coco::Branch`].
+  pub async fn branches(
+    peer: Arc<Mutex<coco::Peer>>,
+    project_urn: String,
+  ) -> Result<impl Reply, Rejection> {
+    let urn = project_urn.parse().map_err(Error::from)?;
+    let peer = peer.lock().await;
+    let branches = peer.with_browser(&urn, |browser| coco::branches(browser))?;
 
-        Ok(reply::json(&tags))
-    }
+    Ok(reply::json(&branches))
+  }
 
-    /// Fetch a [`coco::Tree`].
-    pub async fn tree(
-        peer: Arc<Mutex<coco::Peer>>,
-        project_urn: String,
-        super::TreeQuery { prefix, revision }: super::TreeQuery,
-    ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let peer = peer.lock().await;
-        let project = peer.get_project(&urn)?;
-        let default_branch = project.default_branch();
-        let tree = peer.with_browser(&urn, |mut browser| {
-            coco::tree(&mut browser, default_branch, revision, prefix)
-        })?;
+  /// Fetch a [`coco::Commit`].
+  pub async fn commit(
+    peer: Arc<Mutex<coco::Peer>>,
+    project_urn: String,
+    sha1: String,
+  ) -> Result<impl Reply, Rejection> {
+    let urn = project_urn.parse().map_err(Error::from)?;
+    let peer = peer.lock().await;
+    let commit = peer.with_browser(&urn, |mut browser| coco::commit(&mut browser, &sha1))?;
 
-        Ok(reply::json(&tree))
-    }
+    Ok(reply::json(&commit))
+  }
+
+  /// Fetch the list of [`coco::Commit`] from a branch.
+  pub async fn commits(
+    peer: Arc<Mutex<coco::Peer>>,
+    project_urn: String,
+    branch: String,
+  ) -> Result<impl Reply, Rejection> {
+    let urn = project_urn.parse().map_err(Error::from)?;
+    let peer = peer.lock().await;
+    let commits = peer.with_browser(&urn, |mut browser| coco::commits(&mut browser, &branch))?;
+
+    Ok(reply::json(&commits))
+  }
+
+  /// Fetch the list [`coco::Branch`] for a local repository.
+  pub async fn local_state(path: Tail) -> Result<impl Reply, Rejection> {
+    let state = coco::local_state(path.as_str())?;
+
+    Ok(reply::json(&state))
+  }
+
+  /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
+  pub async fn revisions(
+    peer: Arc<Mutex<coco::Peer>>,
+    project_urn: String,
+  ) -> Result<impl Reply, Rejection> {
+    let urn = project_urn.parse().map_err(Error::from)?;
+    let peer = peer.lock().await;
+    let (branches, tags) = peer.with_browser(&urn, |browser| {
+      Ok((coco::branches(browser)?, coco::tags(browser)?))
+    })?;
+
+    let revs = ["cloudhead", "rudolfs", "xla"]
+      .iter()
+      .map(|handle| super::Revision {
+        branches: branches.clone(),
+        tags: tags.clone(),
+        identity: identity::Identity {
+          // TODO(finto): Get the right URN
+          id: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
+            .parse()
+            .expect("failed to parse hardcoded URN"),
+          metadata: identity::Metadata {
+            handle: (*handle).to_string(),
+          },
+          avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
+          registered: None,
+          shareable_entity_identifier: identity::SharedIdentifier {
+            handle: (*handle).to_string(),
+            urn: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
+              .parse()
+              .expect("failed to parse hardcoded URN"),
+          },
+        },
+      })
+      .collect::<Vec<super::Revision>>();
+
+    Ok(reply::json(&revs))
+  }
+
+  /// Fetch the [`coco::Stats`].
+  pub async fn stats(
+    peer: Arc<Mutex<coco::Peer>>,
+    project_urn: String,
+  ) -> Result<impl Reply, Rejection> {
+    let urn = project_urn.parse().map_err(Error::from)?;
+    let peer = peer.lock().await;
+    let stats = peer.with_browser(&urn, |browser| Ok(browser.get_stats()?))?;
+
+    Ok(reply::json(&stats))
+  }
+
+  /// Fetch the list [`coco::Tag`].
+  pub async fn tags(
+    peer: Arc<Mutex<coco::Peer>>,
+    project_urn: String,
+  ) -> Result<impl Reply, Rejection> {
+    let urn = project_urn.parse().map_err(Error::from)?;
+    let peer = peer.lock().await;
+    let tags = peer.with_browser(&urn, |browser| coco::tags(browser))?;
+
+    Ok(reply::json(&tags))
+  }
+
+  /// Fetch a [`coco::Tree`].
+  pub async fn tree(
+    peer: Arc<Mutex<coco::Peer>>,
+    project_urn: String,
+    super::TreeQuery { prefix, revision }: super::TreeQuery,
+  ) -> Result<impl Reply, Rejection> {
+    let urn = project_urn.parse().map_err(Error::from)?;
+    let peer = peer.lock().await;
+    let project = peer.get_project(&urn)?;
+    let default_branch = project.default_branch();
+    let tree = peer.with_browser(&urn, |mut browser| {
+      coco::tree(&mut browser, default_branch, revision, prefix)
+    })?;
+
+    Ok(reply::json(&tree))
+  }
 }
 
 /// Bundled query params to pass to the blob handler.
@@ -532,81 +534,81 @@ impl ToDocumentedType for coco::Branch {
 }
 
 impl Serialize for coco::Commit {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut changeset = serializer.serialize_struct("Commit", 3)?;
-        changeset.serialize_field("header", &self.header)?;
-        changeset.serialize_field("stats", &self.stats)?;
-        changeset.serialize_field("diff", &self.diff)?;
-        changeset.end()
-    }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut changeset = serializer.serialize_struct("Commit", 3)?;
+    changeset.serialize_field("header", &self.header)?;
+    changeset.serialize_field("stats", &self.stats)?;
+    changeset.serialize_field("diff", &self.diff)?;
+    changeset.end()
+  }
 }
 
 impl Serialize for coco::CommitHeader {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("CommitHeader", 6)?;
-        state.serialize_field("sha1", &self.sha1.to_string())?;
-        state.serialize_field("author", &self.author)?;
-        state.serialize_field("summary", &self.summary)?;
-        state.serialize_field("description", &self.description())?;
-        state.serialize_field("committer", &self.committer)?;
-        state.serialize_field("committerTime", &self.committer_time.seconds())?;
-        state.end()
-    }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("CommitHeader", 6)?;
+    state.serialize_field("sha1", &self.sha1.to_string())?;
+    state.serialize_field("author", &self.author)?;
+    state.serialize_field("summary", &self.summary)?;
+    state.serialize_field("description", &self.description())?;
+    state.serialize_field("committer", &self.committer)?;
+    state.serialize_field("committerTime", &self.committer_time.seconds())?;
+    state.end()
+  }
 }
 
 impl ToDocumentedType for coco::CommitHeader {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(6);
-        properties.insert(
-            "sha1".into(),
-            document::string()
-                .description("SHA1 of the Commit")
-                .example("1e0206da8571ca71c51c91154e2fee376e09b4e7"),
-        );
-        properties.insert("author".into(), coco::Person::document());
-        properties.insert(
-            "summary".into(),
-            document::string()
-                .description("Commit message summary")
-                .example("Add text files"),
-        );
-        properties.insert(
-            "description".into(),
-            document::string()
-                .description("Commit description text")
-                .example("Longer desription of the Commit changes."),
-        );
-        properties.insert("committer".into(), coco::Person::document());
-        properties.insert(
-            "committerTime".into(),
-            document::string()
-                .description("Time of the commit")
-                .example("1575283425"),
-        );
-        document::DocumentedType::from(properties).description("CommitHeader")
-    }
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(6);
+    properties.insert(
+      "sha1".into(),
+      document::string()
+        .description("SHA1 of the Commit")
+        .example("1e0206da8571ca71c51c91154e2fee376e09b4e7"),
+    );
+    properties.insert("author".into(), coco::Person::document());
+    properties.insert(
+      "summary".into(),
+      document::string()
+        .description("Commit message summary")
+        .example("Add text files"),
+    );
+    properties.insert(
+      "description".into(),
+      document::string()
+        .description("Commit description text")
+        .example("Longer desription of the Commit changes."),
+    );
+    properties.insert("committer".into(), coco::Person::document());
+    properties.insert(
+      "committerTime".into(),
+      document::string()
+        .description("Time of the commit")
+        .example("1575283425"),
+    );
+    document::DocumentedType::from(properties).description("CommitHeader")
+  }
 }
 
 impl ToDocumentedType for coco::Commit {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert("header".into(), coco::CommitHeader::document());
-        properties.insert(
-            "stats".into(),
-            document::string().description("Commit stats"),
-        );
-        properties.insert(
-            "diff".into(),
-            document::string().description("Commit changeset"),
-        );
-        document::DocumentedType::from(properties).description("Commit")
-    }
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(3);
+    properties.insert("header".into(), coco::CommitHeader::document());
+    properties.insert(
+      "stats".into(),
+      document::string().description("Commit stats"),
+    );
+    properties.insert(
+      "diff".into(),
+      document::string().description("Commit changeset"),
+    );
+    document::DocumentedType::from(properties).description("Commit")
+  }
 }
 
 impl Serialize for coco::Info {
@@ -697,6 +699,33 @@ impl ToDocumentedType for coco::Person {
   }
 }
 
+impl ToDocumentedType for coco::Stats {
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(3);
+
+    properties.insert(
+      "branchCount".into(),
+      document::integer()
+        .description("Number of branches in project.")
+        .example(2),
+    );
+    properties.insert(
+      "commitCount".into(),
+      document::integer()
+        .description("Number of commits in project.")
+        .example(14),
+    );
+    properties.insert(
+      "contributorCount".into(),
+      document::integer()
+        .description("Number of contributors to a project.")
+        .example(4),
+    );
+
+    document::DocumentedType::from(properties).description("Project Stats")
+  }
+}
+
 impl Serialize for coco::Tag {
   fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
   where
@@ -775,65 +804,65 @@ impl ToDocumentedType for coco::TreeEntry {
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use pretty_assertions::assert_eq;
-    use serde_json::{json, Value};
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
-    use warp::http::StatusCode;
-    use warp::test::request;
+  use pretty_assertions::assert_eq;
+  use serde_json::{json, Value};
+  use std::sync::Arc;
+  use tokio::sync::Mutex;
+  use warp::http::StatusCode;
+  use warp::test::request;
 
-    use librad::keys::SecretKey;
-    use librad::uri::RadUrn;
+  use librad::keys::SecretKey;
+  use librad::uri::RadUrn;
 
-    use crate::avatar;
-    use crate::coco;
-    use crate::error;
-    use crate::http;
-    use crate::identity;
+  use crate::avatar;
+  use crate::coco;
+  use crate::error;
+  use crate::http;
+  use crate::identity;
 
-    #[tokio::test]
-    async fn blob() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
-        let urn = platinum_project.urn();
+  #[tokio::test]
+  async fn blob() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let mut peer = coco::Peer::new(config).await?;
+    let owner = coco::fake_owner(&peer).await;
+    let platinum_project = peer
+      .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+      .await?;
+    let urn = platinum_project.urn();
 
-        let revision = "master";
-        let default_branch = "master".to_string(); // TODO(finto): need to change this
-        let path = "text/arrows.txt";
-        let want = peer.with_browser(&urn, |mut browser| {
-            coco::blob(
-                &mut browser,
-                &default_branch.clone(),
-                Some(revision.to_string()),
-                path,
-            )
-        })?;
+    let revision = "master";
+    let default_branch = "master".to_string(); // TODO(finto): need to change this
+    let path = "text/arrows.txt";
+    let want = peer.with_browser(&urn, |mut browser| {
+      coco::blob(
+        &mut browser,
+        &default_branch.clone(),
+        Some(revision.to_string()),
+        path,
+      )
+    })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer.clone())));
+    let api = super::filters(Arc::new(Mutex::new(peer.clone())));
 
-        // Get ASCII blob.
-        let res = request()
-            .method("GET")
-            .path(&format!(
-                "/blob/{}?revision={}&path={}",
-                urn, revision, path
-            ))
-            .reply(&api)
-            .await;
+    // Get ASCII blob.
+    let res = request()
+      .method("GET")
+      .path(&format!(
+        "/blob/{}?revision={}&path={}",
+        urn, revision, path
+      ))
+      .reply(&api)
+      .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!({
-                    "binary": false,
-                    "content": "  ;;;;;        ;;;;;        ;;;;;
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(
+        have,
+        json!({
+            "binary": false,
+            "content": "  ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
@@ -851,121 +880,50 @@ mod test {
                         "name": "Rūdolfs Ošiņš",
                         "email": "rudolfs@osins.org",
                     },
-                    "path": "text/arrows.txt",
-                })
-            );
-        });
-
-        // Get binary blob.
-        let path = "bin/ls";
-        let res = request()
-            .method("GET")
-            .path(&format!(
-                "/blob/{}?revision={}&path={}",
-                urn.to_string(),
-                revision,
-                path
-            ))
-            .reply(&api)
-            .await;
-
-        let want = peer.with_browser(&urn, |browser| {
-            coco::blob(browser, &default_branch, Some(revision.to_string()), path)
-        })?;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!({
-                    "binary": true,
-                    "content": Value::Null,
-                    "info": {
-                        "name": "ls",
-                        "objectType": "BLOB",
-                        "lastCommit": {
-                            "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
-                            "author": {
-                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                                "name": "Rūdolfs Ošiņš",
-                                "email": "rudolfs@osins.org",
-                            },
-                            "committer": {
-                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                                "name": "Rūdolfs Ošiņš",
-                                "email": "rudolfs@osins.org",
-                            },
-                            "summary": "Add some binary files",
-                            "description": "",
-                            "committerTime": 1_575_282_964, },
+                    "committer": {
+                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                        "name": "Rūdolfs Ošiņš",
+                        "email": "rudolfs@osins.org",
                     },
-                    "path": "bin/ls",
-                })
-            );
-        });
+                    "summary": "Add text files",
+                    "description": "",
+                    "committerTime": 1_575_283_425,
+                },
+            },
+            "path": "text/arrows.txt",
+        })
+      );
+    });
 
-        Ok(())
-    }
+    // Get binary blob.
+    let path = "bin/ls";
+    let res = request()
+      .method("GET")
+      .path(&format!(
+        "/blob/{}?revision={}&path={}",
+        urn.to_string(),
+        revision,
+        path
+      ))
+      .reply(&api)
+      .await;
 
-    #[tokio::test]
-    async fn branches() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
-        let urn = platinum_project.urn();
+    let want = peer.with_browser(&urn, |browser| {
+      coco::blob(browser, &default_branch, Some(revision.to_string()), path)
+    })?;
 
-        let want = peer.with_browser(&urn, |browser| coco::branches(browser))?;
-
-        let api = super::filters(Arc::new(Mutex::new(peer)));
-        let res = request()
-            .method("GET")
-            .path(&format!("/branches/{}", urn.to_string()))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(have, json!(["dev", "master"]));
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    #[allow(clippy::indexing_slicing)]
-    async fn commit() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
-        let urn = platinum_project.urn();
-
-        let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
-        let want =
-            peer.with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
-
-        let api = super::filters(Arc::new(Mutex::new(peer)));
-        let res = request()
-            .method("GET")
-            .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have["header"], json!(want));
-            assert_eq!(
-                have["header"],
-                json!({
-                    "sha1": sha1,
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(
+        have,
+        json!({
+            "binary": true,
+            "content": Value::Null,
+            "info": {
+                "name": "ls",
+                "objectType": "BLOB",
+                "lastCommit": {
+                    "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
                     "author": {
                         "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
                         "name": "Rūdolfs Ošiņš",
@@ -976,178 +934,256 @@ mod test {
                         "name": "Rūdolfs Ošiņš",
                         "email": "rudolfs@osins.org",
                     },
-                    "summary": "Extend the docs (#2)",
-                    "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
-                    "committerTime": 1_578_309_972,
-                }),
-            );
-        });
+                    "summary": "Add some binary files",
+                    "description": "",
+                    "committerTime": 1_575_282_964, },
+            },
+            "path": "bin/ls",
+        })
+      );
+    });
 
-        Ok(())
-    }
+    Ok(())
+  }
 
-    #[tokio::test]
-    async fn commits() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
-        let urn = platinum_project.urn();
+  #[tokio::test]
+  async fn branches() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let mut peer = coco::Peer::new(config).await?;
+    let owner = coco::fake_owner(&peer).await;
+    let platinum_project = peer
+      .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+      .await?;
+    let urn = platinum_project.urn();
 
-        let branch = "master";
-        let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
-        let want = peer.with_browser(&urn, |mut browser| coco::commits(&mut browser, branch))?;
-        let head_commit =
-            peer.with_browser(&urn, |mut browser| coco::commit_header(&mut browser, head))?;
+    let want = peer.with_browser(&urn, |browser| coco::branches(browser))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
-        let res = request()
-            .method("GET")
-            .path(&format!("/commits/{}/{}", urn.to_string(), branch))
-            .reply(&api)
-            .await;
+    let api = super::filters(Arc::new(Mutex::new(peer)));
+    let res = request()
+      .method("GET")
+      .path(&format!("/branches/{}", urn.to_string()))
+      .reply(&api)
+      .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(have.as_array().unwrap().len(), 14);
-            assert_eq!(
-                have.as_array().unwrap().first().unwrap(),
-                &serde_json::to_value(&head_commit).unwrap(),
-                "the first commit is the head of the branch"
-            );
-        });
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(have, json!(["dev", "master"]));
+    });
 
-        Ok(())
-    }
+    Ok(())
+  }
 
-    #[tokio::test]
-    async fn local_state() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let peer = coco::Peer::new(config).await?;
+  #[tokio::test]
+  #[allow(clippy::indexing_slicing)]
+  async fn commit() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let mut peer = coco::Peer::new(config).await?;
+    let owner = coco::fake_owner(&peer).await;
+    let platinum_project = peer
+      .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+      .await?;
+    let urn = platinum_project.urn();
 
-        let path = "../fixtures/git-platinum";
-        let api = super::filters(Arc::new(Mutex::new(peer)));
-        let res = request()
-            .method("GET")
-            .path(&format!("/local-state/{}", path))
-            .reply(&api)
-            .await;
+    let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
+    let want = peer.with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
 
-        let want = coco::local_state(path).unwrap();
+    let api = super::filters(Arc::new(Mutex::new(peer)));
+    let res = request()
+      .method("GET")
+      .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
+      .reply(&api)
+      .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!({
-                    "branches": [
-                        "dev",
-                        "master",
-                    ],
-                    "managed": false,
-                }),
-            );
-        });
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have["header"], json!(want));
+      assert_eq!(
+        have["header"],
+        json!({
+            "sha1": sha1,
+            "author": {
+                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6367167426181048581.svg",
+                "name": "Fintan Halpenny",
+                "email": "fintan.halpenny@gmail.com",
+            },
+            "committer": {
+                "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
+                "email": "noreply@github.com",
+                "name": "GitHub",
+            },
+            "summary": "Extend the docs (#2)",
+            "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
+            "committerTime": 1_578_309_972,
+        }),
+      );
+    });
 
-        Ok(())
-    }
+    Ok(())
+  }
 
-    #[tokio::test]
-    async fn revisions() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await
-            .unwrap();
-        let urn = platinum_project.urn();
+  #[tokio::test]
+  async fn commits() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let mut peer = coco::Peer::new(config).await?;
+    let owner = coco::fake_owner(&peer).await;
+    let platinum_project = peer
+      .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+      .await?;
+    let urn = platinum_project.urn();
 
-        // TODO(finto): Get the right URN
-        let fake_user_urn: RadUrn =
-            "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try".parse()?;
+    let branch = "master";
+    let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
+    let want = peer.with_browser(&urn, |mut browser| coco::commits(&mut browser, branch))?;
+    let head_commit =
+      peer.with_browser(&urn, |mut browser| coco::commit_header(&mut browser, head))?;
 
-        let want = {
-            let (branches, tags) = peer.with_browser(&urn, |browser| {
-                Ok((coco::branches(browser)?, coco::tags(browser)?))
-            })?;
+    let api = super::filters(Arc::new(Mutex::new(peer)));
+    let res = request()
+      .method("GET")
+      .path(&format!("/commits/{}/{}", urn.to_string(), branch))
+      .reply(&api)
+      .await;
 
-            ["cloudhead", "rudolfs", "xla"]
-                .iter()
-                .map(|handle| super::Revision {
-                    branches: branches.clone(),
-                    tags: tags.clone(),
-                    identity: identity::Identity {
-                        id: fake_user_urn.clone(),
-                        metadata: identity::Metadata {
-                            handle: (*handle).to_string(),
-                        },
-                        avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
-                        registered: None,
-                        shareable_entity_identifier: identity::SharedIdentifier {
-                            handle: (*handle).to_string(),
-                            urn: fake_user_urn.clone(),
-                        },
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(have.as_array().unwrap().len(), 14);
+      assert_eq!(
+        have.as_array().unwrap().first().unwrap(),
+        &serde_json::to_value(&head_commit).unwrap(),
+        "the first commit is the head of the branch"
+      );
+    });
+
+    Ok(())
+  }
+
+  #[tokio::test]
+  async fn local_state() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let peer = coco::Peer::new(config).await?;
+
+    let path = "../fixtures/git-platinum";
+    let api = super::filters(Arc::new(Mutex::new(peer)));
+    let res = request()
+      .method("GET")
+      .path(&format!("/local-state/{}", path))
+      .reply(&api)
+      .await;
+
+    let want = coco::local_state(path).unwrap();
+
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(
+        have,
+        json!({
+            "branches": [
+                "dev",
+                "master",
+            ],
+            "managed": false,
+        }),
+      );
+    });
+
+    Ok(())
+  }
+
+  #[tokio::test]
+  async fn revisions() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let mut peer = coco::Peer::new(config).await?;
+    let owner = coco::fake_owner(&peer).await;
+    let platinum_project = peer
+      .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+      .await
+      .unwrap();
+    let urn = platinum_project.urn();
+
+    // TODO(finto): Get the right URN
+    let fake_user_urn: RadUrn =
+      "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try".parse()?;
+
+    let want = {
+      let (branches, tags) = peer.with_browser(&urn, |browser| {
+        Ok((coco::branches(browser)?, coco::tags(browser)?))
+      })?;
+
+      ["cloudhead", "rudolfs", "xla"]
+        .iter()
+        .map(|handle| super::Revision {
+          branches: branches.clone(),
+          tags: tags.clone(),
+          identity: identity::Identity {
+            id: fake_user_urn.clone(),
+            metadata: identity::Metadata {
+              handle: (*handle).to_string(),
+            },
+            avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
+            registered: None,
+            shareable_entity_identifier: identity::SharedIdentifier {
+              handle: (*handle).to_string(),
+              urn: fake_user_urn.clone(),
+            },
+          },
+        })
+        .collect::<Vec<super::Revision>>()
+    };
+
+    let api = super::filters(Arc::new(Mutex::new(peer)));
+    let res = request()
+      .method("GET")
+      .path(&format!("/revisions/{}", urn))
+      .reply(&api)
+      .await;
+
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(
+        have,
+        json!([
+            {
+                "identity": {
+                    "id": fake_user_urn,
+                    "metadata": {
+                        "handle": "cloudhead",
                     },
-                })
-                .collect::<Vec<super::Revision>>()
-        };
-
-        let api = super::filters(Arc::new(Mutex::new(peer)));
-        let res = request()
-            .method("GET")
-            .path(&format!("/revisions/{}", urn))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!([
-                    {
-                        "identity": {
-                            "id": fake_user_urn,
-                            "metadata": {
-                                "handle": "cloudhead",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("cloudhead@{}", fake_user_urn),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 105,
-                                    "b": 216,
-                                },
-                                "emoji": "🌻",
-                            },
+                    "registered": Value::Null,
+                    "shareableEntityIdentifier": format!("cloudhead@{}", fake_user_urn),
+                    "avatarFallback": {
+                        "background": {
+                            "r": 24,
+                            "g": 105,
+                            "b": 216,
                         },
                         "emoji": "🌻",
                     },
-                    {
-                        "identity": {
-                            "id": fake_user_urn,
-                            "metadata": {
-                                "handle": "rudolfs",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("rudolfs@{}", fake_user_urn),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 186,
-                                    "b": 214,
-                                },
-                            "emoji": "🧿",
-                            },
+                },
+                "branches": [ "dev", "master" ],
+                "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+            },
+            {
+                "identity": {
+                    "id": fake_user_urn,
+                    "metadata": {
+                        "handle": "rudolfs",
+                    },
+                    "registered": Value::Null,
+                    "shareableEntityIdentifier": format!("rudolfs@{}", fake_user_urn),
+                    "avatarFallback": {
+                        "background": {
+                            "r": 24,
+                            "g": 186,
+                            "b": 214,
                         },
                     "emoji": "🧿",
                     },
@@ -1157,129 +1193,26 @@ mod test {
             },
             {
                 "identity": {
-                    "id": "xla@123abcd.git",
+                    "id": fake_user_urn,
                     "metadata": {
                         "handle": "xla",
                     },
-                    {
-                        "identity": {
-                            "id": fake_user_urn,
-                            "metadata": {
-                                "handle": "xla",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("xla@{}", fake_user_urn),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 155,
-                                    "g": 157,
-                                    "b": 169,
-                                },
-                            "emoji": "🗺",
-                            },
+                    "registered": Value::Null,
+                    "shareableEntityIdentifier": format!("xla@{}", fake_user_urn),
+                    "avatarFallback": {
+                        "background": {
+                            "r": 155,
+                            "g": 157,
+                            "b": 169,
                         },
                     "emoji": "🗺",
                     },
-                ]),
-            )
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn tags() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await
-            .unwrap();
-        let urn = platinum_project.urn();
-
-        let want = peer.with_browser(&urn, |browser| coco::tags(browser))?;
-
-        let api = super::filters(Arc::new(Mutex::new(peer)));
-        let res = request()
-            .method("GET")
-            .path(&format!("/tags/{}", urn.to_string()))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!(["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]),
-            );
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn tree() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
-        let urn = platinum_project.urn();
-
-        let revision = "master";
-        let prefix = "src";
-
-        let default_branch = "master".to_string(); // TODO(finto): need to change this
-        let want = peer.with_browser(&urn, |mut browser| {
-            coco::tree(
-                &mut browser,
-                &default_branch,
-                Some(revision.to_string()),
-                Some(prefix.to_string()),
-            )
-        })?;
-
-        let api = super::filters(Arc::new(Mutex::new(peer)));
-        let res = request()
-            .method("GET")
-            .path(&format!(
-                "/tree/{}?revision={}&prefix={}",
-                urn.to_string(),
-                revision,
-                prefix
-            ))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!({
-                    "path": "src",
-                    "info": {
-                        "name": "Eval.hs",
-                        "objectType": "BLOB",
-                        "lastCommit": null,
-                    },
                 },
-                {
-                    "path": "src/memory.rs",
-                    "info": {
-                        "name": "memory.rs",
-                        "objectType": "BLOB",
-                        "lastCommit": null,
-                    },
-                },
-            ],
-        }),
-      );
+                "branches": [ "dev", "master" ],
+                "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+            },
+        ]),
+      )
     });
 
     Ok(())
@@ -1298,32 +1231,131 @@ mod test {
       .unwrap();
     let urn = platinum_project.urn();
 
-    let want = peer
-      .with_browser(&urn.to_string(), |browser| coco::get_stats(browser))
+    let want = peer.with_browser(&urn, |browser| Ok(browser.get_stats()?))?;
+
+    let api = super::filters(Arc::new(Mutex::new(peer)));
+    let res = request()
+      .method("GET")
+      .path(&format!("/stats/{}", urn.to_string()))
+      .reply(&api)
+      .await;
+
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(
+        have,
+        json!({
+          "commitCount": 14,
+          "contributorCount": 4,
+          "branchCount": 2
+        }),
+      );
+    });
+
+    Ok(())
+  }
+
+  #[tokio::test]
+  async fn tags() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let mut peer = coco::Peer::new(config).await?;
+    let owner = coco::fake_owner(&peer).await;
+    let platinum_project = peer
+      .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+      .await
+      .unwrap();
+    let urn = platinum_project.urn();
+
+    let want = peer.with_browser(&urn, |browser| coco::tags(browser))?;
+
+    let api = super::filters(Arc::new(Mutex::new(peer)));
+    let res = request()
+      .method("GET")
+      .path(&format!("/tags/{}", urn.to_string()))
+      .reply(&api)
+      .await;
+
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(
+        have,
+        json!(["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]),
+      );
+    });
+
+    Ok(())
+  }
+
+  #[tokio::test]
+  async fn tree() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let mut peer = coco::Peer::new(config).await?;
+    let owner = coco::fake_owner(&peer).await;
+    let platinum_project = peer
+      .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
       .await?;
+    let urn = platinum_project.urn();
 
-    // let api = super::filters(Arc::new(Mutex::new(peer)));
-    // let res = request()
-    //   .method("GET")
-    //   .path(&format!("/stats/{}", urn.to_string()))
-    //   .reply(&api)
-    //   .await;
-    // http::test::assert_response(&res, StatusCode:OK, |have| {
-    //   assert_eq!(have, json!(want));
-    //   assert_eq!(
-    //     have,
-    //     json!(["commitCount: 2"]),
-    //   );
-    // });
+    let revision = "master";
+    let prefix = "src";
 
-    assert_eq!(
-      want,
-      coco::Stats {
-        commit_count: 14,
-        branch_count: 2,
-        contributor_count: 4
-      }
-    );
+    let default_branch = "master".to_string(); // TODO(finto): need to change this
+    let want = peer.with_browser(&urn, |mut browser| {
+      coco::tree(
+        &mut browser,
+        &default_branch,
+        Some(revision.to_string()),
+        Some(prefix.to_string()),
+      )
+    })?;
+
+    let api = super::filters(Arc::new(Mutex::new(peer)));
+    let res = request()
+      .method("GET")
+      .path(&format!(
+        "/tree/{}?revision={}&prefix={}",
+        urn.to_string(),
+        revision,
+        prefix
+      ))
+      .reply(&api)
+      .await;
+
+    http::test::assert_response(&res, StatusCode::OK, |have| {
+      assert_eq!(have, json!(want));
+      assert_eq!(
+        have,
+        json!({
+            "path": "src",
+            "info": {
+                "name": "src",
+                "objectType": "TREE",
+                "lastCommit": null,                },
+                "entries": [
+                {
+                    "path": "src/Eval.hs",
+                    "info": {
+                        "name": "Eval.hs",
+                        "objectType": "BLOB",
+                        "lastCommit": null,
+                    },
+                },
+                {
+                    "path": "src/memory.rs",
+                    "info": {
+                        "name": "memory.rs",
+                        "objectType": "BLOB",
+                        "lastCommit": null,
+                    },
+                },
+            ],
+        }),
+      );
+    });
 
     Ok(())
   }
