@@ -108,7 +108,7 @@
     <EmptyState
       text="There’s nothing here yet, get started by starting your first
       project."
-      primaryActionText="Or register your handle"
+      primaryActionText="Create a new project"
       on:primaryAction={create} />
   {/if}
 
