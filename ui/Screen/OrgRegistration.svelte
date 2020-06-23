@@ -86,10 +86,7 @@
       : "Next";
 
   $: {
-    // Start validating once the user enters something for the first time
-    if (orgId && orgId.length > 0) {
-      validation.validate(orgId);
-    }
+    validation.validate(orgId);
   }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;

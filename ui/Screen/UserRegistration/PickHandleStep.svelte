@@ -28,10 +28,7 @@
   };
 
   $: {
-    // Start validating once the user enters something for the first time
-    if (handle && handle.length > 0) {
-      validation.validate(handle);
-    }
+    validation.validate(handle);
   }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
