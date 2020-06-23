@@ -9,7 +9,7 @@
 </script>
 
 <style>
-  .wrapper {
+  .faucet {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -21,7 +21,7 @@
   }
 </style>
 
-<div class="wrapper" {style}>
+<div class="faucet" {style}>
   {#each $store as notification (notification.id)}
     <div
       data-cy="notification"
