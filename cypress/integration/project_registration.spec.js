@@ -126,7 +126,7 @@ context("project registration", () => {
 
     it("can be accessed via org onboarding page register button", () => {
       cy.pick("sidebar", `org-${org2}`).click();
-      cy.pick("add-project").click();
+      cy.pick("empty-state", "primary-action").click();
 
       cy.pick("project-registration-screen").should("exist");
 
