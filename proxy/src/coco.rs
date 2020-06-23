@@ -1,6 +1,5 @@
 //! Abstractions and utilities for git interactions through the API.
 
-use std::collections::HashMap;
 use std::env;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::{Arc, Mutex};
@@ -39,28 +38,6 @@ pub type User = user::User<entity::Verified>;
 pub struct Peer {
     /// The protocol API for shelling out commands.
     pub api: Arc<Mutex<net::peer::PeerApi>>,
-    /// Mocking a way to look up and store projects
-    pub(crate) projects: Arc<Mutex<HashMap<RadUrn, project::Project<entity::Draft>>>>,
-}
-
-#[async_trait]
-impl entity::Resolver<project::Project<entity::Draft>> for Peer {
-    async fn resolve(
-        &self,
-        uri: &RadUrn,
-    ) -> Result<project::Project<entity::Draft>, entity::Error> {
-        let projects = self.projects.lock().expect("failed to acquire lock");
-        Ok(projects.get(uri).expect("project was missing").clone())
-    }
-
-    async fn resolve_revision(
-        &self,
-        uri: &RadUrn,
-        _revision: u64,
-    ) -> Result<project::Project<entity::Draft>, entity::Error> {
-        let projects = self.projects.lock().expect("failed to acquire lock");
-        Ok(projects.get(uri).expect("project was missing").clone())
-    }
 }
 
 impl Peer {
@@ -83,7 +60,6 @@ impl Peer {
         let (api, _futures) = peer.accept()?;
         Ok(Self {
             api: Arc::new(Mutex::new(api)),
-            projects: Arc::new(Mutex::new(HashMap::new())),
         })
     }
 
@@ -101,15 +77,56 @@ impl Peer {
         Ok(f(&api))
     }
 
-    /// Returns the list of [`project::Project`] known for the configured [`paths::Paths`].
+    /// Returns the list of [`project::Project`]s known for the configured [`paths::Paths`].
     ///
     /// # Errors
     ///
     /// The function will error if:
     ///   * A lock was poisioned. See [`Self::with_api`].
+    #[allow(
+        clippy::wildcard_enum_match_arm,
+        clippy::match_wildcard_for_single_variants
+    )]
     pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
-        let projects = self.projects.lock().map_err(|_| error::Error::LibradLock)?;
-        Ok(projects.values().cloned().collect())
+        self.with_api(|api| {
+            let storage = api.storage();
+            Ok(storage
+                .all_metadata()?
+                .flat_map(|entity| {
+                    entity.ok()?.try_map(|info| match info {
+                        entity::data::EntityInfo::Project(info) => Some(info),
+                        _ => None,
+                    })
+                })
+                .collect())
+        })
+        .flatten()
+    }
+
+    /// Returns the list of [`user::User`]s known for the configured [`paths::Paths`].
+    ///
+    /// # Errors
+    ///
+    /// The function will error if:
+    ///   * A lock was poisioned. See [`Self::with_api`].
+    #[allow(
+        clippy::wildcard_enum_match_arm,
+        clippy::match_wildcard_for_single_variants
+    )]
+    pub fn list_users(&self) -> Result<Vec<user::User<entity::Draft>>, error::Error> {
+        self.with_api(|api| {
+            let storage = api.storage();
+            Ok(storage
+                .all_metadata()?
+                .flat_map(|entity| {
+                    entity.ok()?.try_map(|info| match info {
+                        entity::data::EntityInfo::User(info) => Some(info),
+                        _ => None,
+                    })
+                })
+                .collect())
+        })
+        .flatten()
     }
 
     /// Get the project found at `project_urn`.
@@ -125,7 +142,7 @@ impl Peer {
     ) -> Result<project::Project<entity::Draft>, error::Error> {
         self.with_api(|api| {
             let storage = api.storage().reopen()?;
-            Ok(storage.entity(urn)?)
+            Ok(storage.metadata(urn)?)
         })
         .flatten()
     }
@@ -139,7 +156,7 @@ impl Peer {
     pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, error::Error> {
         self.with_api(|api| {
             let storage = api.storage().reopen()?;
-            Ok(storage.entity(urn)?)
+            Ok(storage.metadata(urn)?)
         })
         .flatten()
     }
@@ -219,10 +236,6 @@ impl Peer {
         let meta = meta?;
 
         self.setup_remote(path, &meta.urn().id, default_branch)?;
-
-        // TODO(finto): mocking
-        let mut projects = self.projects.lock().map_err(|_| error::Error::LibradLock)?;
-        projects.insert(meta.urn(), meta.clone());
 
         Ok(meta)
     }
@@ -634,6 +647,53 @@ mod test {
                 err
             );
         }
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_list_projects() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let mut peer = super::Peer::new(config).await?;
+
+        let user = peer.init_user("cloudhead").await?;
+        peer.setup_fixtures(&user).await?;
+
+        let projects = peer.list_projects()?;
+        let mut project_names = projects
+            .into_iter()
+            .map(|project| project.name().to_string())
+            .collect::<Vec<_>>();
+        project_names.sort();
+
+        assert_eq!(
+            project_names,
+            vec!["Monadic", "monokel", "open source coin", "radicle"]
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_list_users() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let peer = super::Peer::new(config).await?;
+
+        let _cloudhead = peer.init_user("cloudhead").await?;
+        let _kalt = peer.init_user("kalt").await?;
+
+        let users = peer.list_users()?;
+        let mut user_handles = users
+            .into_iter()
+            .map(|user| user.name().to_string())
+            .collect::<Vec<_>>();
+        user_handles.sort();
+
+        assert_eq!(user_handles, vec!["cloudhead", "kalt"],);
 
         Ok(())
     }
