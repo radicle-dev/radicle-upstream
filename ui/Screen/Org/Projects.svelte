@@ -92,6 +92,7 @@
       on:secondaryAction={register} />
   {:else}
     <EmptyState
+      icon="tent"
       text="Add a member to your org."
       primaryActionText="Add a member"
       on:primaryAction={register} />
