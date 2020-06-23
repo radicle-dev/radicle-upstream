@@ -6,7 +6,6 @@ import * as project from "./project";
 import * as remote from "./remote";
 import * as validation from "./validation";
 import * as transaction from "./transaction";
-import * as id from "./id";
 import * as user from "./user";
 
 // Types
@@ -151,28 +150,6 @@ export const registerMember = (
     `orgs/${orgId}/members`,
     { handle, transactionFee }
   );
-
-// ID validation
-const VALID_ID_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
-export const idConstraints = {
-  presence: {
-    message: `Org id is required`,
-    allowEmpty: false,
-  },
-  format: {
-    pattern: VALID_ID_MATCH,
-    message: `Org id should match [a-z0-9][a-z0-9_-]+`,
-  },
-};
-
-// Make sure we make a new one every time
-export const orgIdValidationStore = (): validation.ValidationStore =>
-  validation.createValidationStore(idConstraints, [
-    {
-      promise: id.isAvailable,
-      validationMessage: "Sorry, this id is already taken",
-    },
-  ]);
 
 const memberHandleConstraints = {
   presence: {

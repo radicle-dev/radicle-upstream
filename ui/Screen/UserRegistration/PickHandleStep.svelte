@@ -2,13 +2,9 @@
   import { pop } from "svelte-spa-router";
   import validatejs from "validate.js";
 
-  import * as notification from "../../src/notification.ts";
-  import * as id from "../../src/id.ts";
+  import { idValidationStore } from "../../src/id.ts";
 
-  import {
-    getValidationState,
-    ValidationStatus,
-  } from "../../src/validation.ts";
+  import { ValidationStatus } from "../../src/validation.ts";
 
   import { Avatar, Button, Flex, Input } from "../../DesignSystem/Primitive";
 
@@ -16,7 +12,7 @@
   export let onNextStep = null;
 
   const nextStep = () => {
-    if (!validatejs.isEmpty(validations)) {
+    if (disableSubmit) {
       return;
     }
     onNextStep();
@@ -24,54 +20,21 @@
 
   export let handle = "";
 
-  let validating = false;
-  let validations = false;
-
-  const validateHandleAvailability = async () => {
-    try {
-      const alreadyTaken = await id.isTaken(handle);
-
-      if (alreadyTaken) {
-        validations = { handle: ["Handle already taken"] };
-      }
-    } catch (error) {
-      notification.error(`Proxy: ${JSON.stringify(error)}`);
-    }
-  };
+  // Create a new validation store
+  const validation = idValidationStore();
 
   validatejs.options = {
     fullMessages: false,
   };
 
-  const HANDLE_MATCH = "^[a-z0-9][a-z0-9_-]+$";
-
-  const constraints = {
-    handle: {
-      presence: {
-        message: "Handle is required",
-        allowEmpty: false,
-      },
-      format: {
-        pattern: new RegExp(HANDLE_MATCH),
-        message: `Handle should match ${HANDLE_MATCH}`,
-      },
-    },
-  };
-
-  let handleValidation = { status: ValidationStatus.NotStarted };
-  const validate = async () => {
-    handleValidation = { status: ValidationStatus.Loading };
-    validations = validatejs({ handle: handle }, constraints);
-    if (!validatejs.isEmpty(validations)) {
-      handleValidation = getValidationState("handle", validations);
-    } else {
-      await validateHandleAvailability();
-      validating = false;
-      handleValidation = getValidationState("handle", validations);
+  $: {
+    // Start validating once the user enters something for the first time
+    if (handle && handle.length > 0) {
+      validation.validate(handle);
     }
-  };
+  }
 
-  $: validate(handle);
+  $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
 <Input.Text
@@ -80,7 +43,7 @@
   placeholder="User handle"
   bind:value={handle}
   showSuccessCheck
-  validation={handleValidation}>
+  validation={$validation}>
   <div slot="avatar">
     <Avatar
       avatarFallback={identity.avatarFallback}
@@ -99,7 +62,7 @@
   </Button>
   <Button
     dataCy="next-button"
-    disabled={!handle || validating || validations}
+    disabled={disableSubmit}
     on:click={nextStep}
     variant="primary">
     Next

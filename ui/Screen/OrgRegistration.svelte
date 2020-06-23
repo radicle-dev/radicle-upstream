@@ -2,12 +2,9 @@
   import { pop } from "svelte-spa-router";
 
   import { getAvatar, Usage } from "../src/avatar.ts";
+  import { idValidationStore } from "../src/id.ts";
   import * as notification from "../src/notification.ts";
-  import {
-    RegistrationFlowState,
-    orgIdValidationStore,
-    register,
-  } from "../src/org.ts";
+  import { RegistrationFlowState, register } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
   import { formatPayer, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
@@ -23,8 +20,7 @@
   let state = RegistrationFlowState.Preparation;
 
   // Create a new validation store
-  let validating = false;
-  const validation = orgIdValidationStore();
+  const validation = idValidationStore();
 
   const transactionFee = $session.data.minimumTransactionFee;
 
@@ -91,8 +87,9 @@
 
   $: {
     // Start validating once the user enters something for the first time
-    if (orgId && orgId.length > 0) validating = true;
-    if (validating) validation.validate(orgId);
+    if (orgId && orgId.length > 0) {
+      validation.validate(orgId);
+    }
   }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
