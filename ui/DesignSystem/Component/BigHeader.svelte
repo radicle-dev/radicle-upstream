@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { Avatar, Button, Icon, Title, Text, Numeric } from "../Primitive";
-  import { Copyable } from "../../DesignSystem/Component";
+  import Copyable from "../../DesignSystem/Component/Copyable.svelte";
 
   const dispatch = createEventDispatcher();
 
