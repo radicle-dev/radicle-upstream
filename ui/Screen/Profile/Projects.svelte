@@ -100,19 +100,16 @@
     <EmptyState
       text="There’s nothing here yet, get started by starting your first
       project."
-      mainCtaText="Start your first project"
-      mainDataCy="add-project-button"
-      mainCtaAction={create}
-      secondaryCtaText="Or register your handle"
-      secondaryCtaAction={register}
-      secondaryDataCy="register-handle-button" />
+      primaryActionText="Start your first project"
+      secondaryActionText="Or register your handle"
+      on:primaryAction={create}
+      on:secondaryAction={register} />
   {:else}
     <EmptyState
       text="There’s nothing here yet, get started by starting your first
       project."
-      mainCtaText="Start your first project"
-      mainDataCy="add-project-button"
-      mainCtaAction={create} />
+      primaryActionText="Or register your handle"
+      on:primaryAction={create} />
   {/if}
 
   <div slot="error" let:error>

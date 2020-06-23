@@ -102,7 +102,6 @@
     <EmptyState
       icon="sight"
       text="There’s nothing here yet, get started by creating your first issue."
-      mainCtaText="Open a new issue"
-      mainDataCy="open-issue-button" />
+      primaryActionText="Open a new issue" />
   {/if}
 </div>

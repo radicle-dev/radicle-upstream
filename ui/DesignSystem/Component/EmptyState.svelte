@@ -1,15 +1,20 @@
 <script>
-  import Icon from "./EmptyState/Icon.svelte";
-  import { Button, Text } from "../Primitive";
+  import { createEventDispatcher } from "svelte";
+  import { Button, Icon, Text } from "../Primitive";
+
+  const dispatch = createEventDispatcher();
 
   export let icon = "tent";
   export let text = "Nothing to see here";
-  export let mainCtaText = "Go back";
-  export let mainDataCy = null;
-  export let mainCtaAction = null;
-  export let secondaryCtaText = null;
-  export let secondaryCtaAction = null;
-  export let secondaryDataCy = null;
+  export let primaryActionText = "Go back";
+  export let secondaryActionText = null;
+
+  const onPrimaryAction = () => {
+    dispatch("primaryAction");
+  };
+  const onSecondaryAction = () => {
+    dispatch("secondaryAction");
+  };
 </script>
 
 <style>
@@ -41,20 +46,20 @@
   }
 </style>
 
-<div class="empty-state">
-  <Icon variant={icon} />
+<div class="empty-state" data-cy="empty-state">
+  <Icon.EmptyState variant={icon} />
   <Text style="margin: 1.5rem 0; color: var(--color-foreground-level-6);">
     {text}
   </Text>
   <Button
-    dataCy={mainDataCy}
-    on:click={mainCtaAction}
+    dataCy="primary-action"
+    on:click={() => onPrimaryAction()}
     style="margin-bottom: 0.75rem;">
-    {mainCtaText}
+    {primaryActionText}
   </Button>
-  {#if secondaryCtaText !== null}
-    <button data-cy={secondaryDataCy} on:click={secondaryCtaAction}>
-      <Text>{secondaryCtaText}</Text>
+  {#if secondaryActionText !== null}
+    <button data-cy="secondary-action" on:click={() => onSecondaryAction()}>
+      <Text>{secondaryActionText}</Text>
     </button>
   {/if}
 </div>

@@ -85,19 +85,16 @@
     <EmptyState
       icon="tent"
       text="There's nothing here yet, get started by creating your first project
-      or adding a member to your organism."
-      mainCtaText="Register a project"
-      mainCtaAction={create}
-      mainDataCy="add-project"
-      secondaryCtaText="Add a member"
-      secondaryCtaAction={register}
-      secondaryDataCy="add-member-button" />
+      or adding a member to your org."
+      primaryActionText="Register a project"
+      secondaryActionText="Or add a member"
+      on:primaryAction={create}
+      on:secondaryAction={register} />
   {:else}
     <EmptyState
       text="Add a member to your org."
-      mainCtaText="Add a member"
-      mainCtaAction={register}
-      mainDataCy="add-member-button" />
+      primaryActionText="Add a member"
+      on:primaryAction={register} />
   {/if}
 
   <div slot="error" let:error>
