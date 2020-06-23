@@ -85,9 +85,7 @@
       ? "Submit transaction"
       : "Next";
 
-  $: {
-    validation.validate(orgId);
-  }
+  $: validation.validate(orgId);
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>

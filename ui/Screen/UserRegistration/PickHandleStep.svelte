@@ -3,7 +3,6 @@
   import validatejs from "validate.js";
 
   import { idValidationStore } from "../../src/id.ts";
-
   import { ValidationStatus } from "../../src/validation.ts";
 
   import { Avatar, Button, Flex, Input } from "../../DesignSystem/Primitive";
@@ -27,9 +26,7 @@
     fullMessages: false,
   };
 
-  $: {
-    validation.validate(handle);
-  }
+  $: validation.validate(handle);
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
