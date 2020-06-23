@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { Avatar, Button, Icon, Title, Text, Numeric } from "../Primitive";
+  import { Copyable } from "../../DesignSystem/Component";
 
   const dispatch = createEventDispatcher();
 
@@ -10,6 +11,15 @@
 
   const onRegisterAction = () => {
     dispatch("registerAction");
+  };
+
+  let copyIcon = Icon.Copy;
+
+  const afterCopy = () => {
+    copyIcon = Icon.Check;
+    setTimeout(() => {
+      copyIcon = Icon.Copy;
+    }, 1000);
   };
 </script>
 
@@ -97,8 +107,22 @@
           {/if}
         </div>
         <div class="shareable-entity-identifier">
-          <Text variant="tiny" style="margin-right: 4px;">Radicle ID</Text>
-          <Numeric variant="small">{entity.shareableEntityIdentifier}</Numeric>
+          <Text variant="tiny" style="margin-right: 4px; white-space: nowrap;">
+            Radicle ID
+          </Text>
+          <Copyable {afterCopy} style="display: flex;">
+            <Numeric
+              variant="small"
+              style="max-width: 20rem; white-space: nowrap; overflow: hidden;
+              text-overflow: ellipsis;">
+              {entity.shareableEntityIdentifier}
+            </Numeric>
+            <svelte:component
+              this={copyIcon}
+              size="small"
+              style="margin-left: 8px; vertical-align: bottom;" />
+          </Copyable>
+
         </div>
       </div>
     </div>
