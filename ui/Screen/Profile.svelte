@@ -70,7 +70,7 @@
   <BigHeader
     variant="profile"
     entity={session.identity}
-    on:registerAction={() => push(path.registerUser())}>
+    on:registerHandle={() => push(path.registerUser())}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

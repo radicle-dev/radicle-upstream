@@ -9,8 +9,8 @@
   export let entity = null;
   export let variant = null; // profile | org
 
-  const onRegisterAction = () => {
-    dispatch("registerAction");
+  const onRegisterHandle = () => {
+    dispatch("registerHandle");
   };
 
   let copyIcon = Icon.Copy;
@@ -86,7 +86,10 @@
 
       <div class="metadata">
         <div class="user">
-          <Title dataCy="entity-name" variant="huge" style="display: flex;">
+          <Title
+            dataCy="entity-name"
+            variant="huge"
+            style="display: flex; align-items: center;">
             {#if variant === 'profile' && entity.registered}
               @{entity.registered}
             {:else if variant === 'profile' && !entity.registered}
@@ -94,7 +97,7 @@
               <Button
                 variant="outline"
                 style="margin-left: 12px;"
-                on:click={() => onRegisterAction()}>
+                on:click={() => onRegisterHandle()}>
                 Register handle
               </Button>
             {:else if variant === 'org'}{entity.id}{/if}
