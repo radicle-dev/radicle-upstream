@@ -915,6 +915,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[allow(clippy::indexing_slicing)]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
