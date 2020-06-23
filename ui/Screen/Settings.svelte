@@ -179,6 +179,15 @@
           </Text>
         </div>
       </div>
+      <div class="section-item">
+        <div class="info">
+          <Text variant="medium">Source Code Pro</Text>
+          <Text>
+            Source Code Pro font by Adobe Fonts distributed under the SIL Open
+            Font License.
+          </Text>
+        </div>
+      </div>
     </section>
 
   </div>
