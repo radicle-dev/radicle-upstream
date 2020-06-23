@@ -17,7 +17,6 @@
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
-    "/profile/": Projects,
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
     "*": NotFound,

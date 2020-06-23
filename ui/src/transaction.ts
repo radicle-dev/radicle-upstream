@@ -469,7 +469,7 @@ export const summaryText = (counts: SummaryCounts): string => {
     return `${sum} transactions ${state}`;
   }
 
-  return `transaction ${state}`;
+  return `Transaction ${state}`;
 };
 
 interface CostSummary {

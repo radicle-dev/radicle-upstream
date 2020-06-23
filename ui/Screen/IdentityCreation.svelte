@@ -6,8 +6,8 @@
   import * as path from "../src/path.ts";
   import * as session from "../src/session.ts";
 
-  import { ModalLayout, Placeholder } from "../DesignSystem/Component";
-  import { Button } from "../DesignSystem/Primitive";
+  import { ModalLayout, RadicleLogo } from "../DesignSystem/Component";
+  import { Button, Text } from "../DesignSystem/Primitive";
 
   import Form from "./IdentityCreation/Form.svelte";
   import Success from "./IdentityCreation/Success.svelte";
@@ -59,8 +59,12 @@
 <ModalLayout escapable={$store !== State.Welcome} {onClose}>
   {#if $store === State.Welcome}
     <div class="container">
-      <Placeholder
-        style="flex-shrink: 0; width: 800px; height: 400px; margin-bottom: 20px;" />
+      <RadicleLogo />
+      <Text
+        style="text-align: center; color: var(--color-foreground-level-5);
+        margin: 2.5rem 0; max-width: 20rem;">
+        A free and open-source way to host, share, and build software together.
+      </Text>
       <Button
         style="flex-shrink: 0; margin-bottom: 24px;"
         on:click={() => store.set(State.Form)}

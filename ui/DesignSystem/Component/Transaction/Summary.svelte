@@ -31,10 +31,7 @@
         {rotate}
         {state}
         style="margin: 12px 12px 12px 18px;" />
-      <Text
-        style="align-self: center; text-transform: capitalize; width:
-        max-content;"
-        variant="small">
+      <Text style="align-self: center; width: max-content;" variant="small">
         {text}
       </Text>
     </div>
