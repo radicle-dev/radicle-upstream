@@ -8,8 +8,8 @@
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
 
-  import Hotkeys from "./Hotkeys.svelte";
-  import Theme from "./Theme.svelte";
+  import Hotkeys from "./App/Hotkeys.svelte";
+  import Theme from "./App/Theme.svelte";
   import TransactionCenter from "./App/TransactionCenter.svelte";
 
   import Blank from "./Screen/Blank.svelte";
