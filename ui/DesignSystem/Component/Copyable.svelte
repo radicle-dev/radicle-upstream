@@ -1,6 +1,7 @@
 <script>
   // TODO(sarah): write tests for this once it's implemented in the ui somewhere
   import { copyToClipboard } from "../../../native/ipc.js";
+  export let style = null;
 
   let slotContent;
 
@@ -19,7 +20,7 @@
 </style>
 
 <div class="container" on:click|stopPropagation={copy}>
-  <span bind:this={slotContent}>
+  <span bind:this={slotContent} {style}>
     <slot />
   </span>
 </div>
