@@ -64,7 +64,7 @@
     background-color: var(--color-foreground-level-1);
     border-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-3);
-    cursor: default;
+    cursor: not-allowed;
   }
 
   .vanilla.disabled:hover {
@@ -110,7 +110,7 @@
     background-color: var(--color-primary-level-1);
     border-color: var(--color-primary-level-1);
     color: var(--color-background);
-    cursor: default;
+    cursor: not-allowed;
   }
 
   .primary.disabled:hover {
@@ -156,7 +156,7 @@
     background-color: var(--color-secondary-level-1);
     border-color: var(--color-secondary-level-1);
     color: var(--color-background);
-    cursor: default;
+    cursor: not-allowed;
   }
 
   .secondary.disabled:hover {
@@ -177,7 +177,7 @@
   }
 
   .transparent {
-    background-color: var(--color-background);
+    background-color: rgba(var(--color-background), 0);
     border-color: var(--color-background);
     color: var(--color-foreground-level-6);
   }
@@ -199,21 +199,21 @@
   }
 
   .transparent.disabled {
-    background-color: var(--color-background);
+    background-color: rgba(var(--color-background), 0);
     border-color: var(--color-background);
     color: var(--color-foreground-level-3);
-    cursor: default;
+    cursor: not-allowed;
   }
 
   .transparent.disabled:hover {
-    background-color: var(--color-background);
+    background-color: rgba(var(--color-background), 0);
     box-shadow: 0 0 0 0;
     border-color: var(--color-background);
     color: var(--color-foreground-level-3);
   }
 
   .transparent.disabled:active {
-    background-color: var(--color-background);
+    background-color: rgba(var(--color-background), 0);
     border-color: var(--color-background);
     color: var(--color-foreground-level-3);
   }
@@ -223,7 +223,7 @@
   }
 
   .outline {
-    background-color: var(--color-background);
+    background-color: rgba(var(--color-background), 0);
     border-color: var(--color-foreground-level-3);
     color: var(--color-foreground-level-6);
   }
@@ -253,21 +253,21 @@
   }
 
   .outline.disabled {
-    background-color: var(--color-background);
+    background-color: rgba(var(--color-background), 0);
     border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-3);
-    cursor: default;
+    cursor: not-allowed;
   }
 
   .outline.disabled:hover {
-    background-color: var(--color-background);
+    background-color: rgba(var(--color-background), 0);
     box-shadow: 0 0 0 0;
     border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-3);
   }
 
   .outline.disabled:active {
-    background-color: var(--color-background);
+    background-color: rgba(var(--color-background), 0);
     border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-3);
   }
@@ -302,7 +302,7 @@
     background-color: var(--color-negative-level-1);
     border-color: var(--color-negative-level-1);
     color: var(--color-background);
-    cursor: default;
+    cursor: not-allowed;
   }
 
   .destructive.disabled:hover {
