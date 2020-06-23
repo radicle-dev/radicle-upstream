@@ -12,6 +12,7 @@ import Copy from "./Copy.svelte";
 import Cross from "./Cross.svelte";
 import Edit from "./Edit.svelte";
 import Ellipses from "./Ellipses.svelte";
+import EmptyState from "./EmptyState.svelte";
 import Expand from "./Expand.svelte";
 import Eye from "./Eye.svelte";
 import Feed from "./Feed.svelte";
@@ -58,6 +59,7 @@ export default {
   Cross,
   Edit,
   Ellipses,
+  EmptyState,
   Expand,
   Eye,
   Feed,
