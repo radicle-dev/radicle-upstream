@@ -13,248 +13,268 @@ use crate::identity;
 
 /// Prefixed filters.
 pub fn routes(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("source").and(
-        blob_filter(Arc::clone(&peer))
-            .or(branches_filter(Arc::clone(&peer)))
-            .or(commit_filter(Arc::clone(&peer)))
-            .or(commits_filter(Arc::clone(&peer)))
-            .or(local_state_filter())
-            .or(revisions_filter(Arc::clone(&peer)))
-            .or(tags_filter(Arc::clone(&peer)))
-            .or(tree_filter(peer)),
-    )
+  path("source").and(
+    blob_filter(Arc::clone(&peer))
+      .or(branches_filter(Arc::clone(&peer)))
+      .or(commit_filter(Arc::clone(&peer)))
+      .or(commits_filter(Arc::clone(&peer)))
+      .or(local_state_filter())
+      .or(revisions_filter(Arc::clone(&peer)))
+      .or(tags_filter(Arc::clone(&peer)))
+      .or(tree_filter(peer)),
+  )
 }
 
 /// Combination of all source filters.
 #[cfg(test)]
 fn filters(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    blob_filter(Arc::clone(&peer))
-        .or(branches_filter(Arc::clone(&peer)))
-        .or(commit_filter(Arc::clone(&peer)))
-        .or(commits_filter(Arc::clone(&peer)))
-        .or(local_state_filter())
-        .or(revisions_filter(Arc::clone(&peer)))
-        .or(tags_filter(Arc::clone(&peer)))
-        .or(tree_filter(peer))
+  blob_filter(Arc::clone(&peer))
+    .or(branches_filter(Arc::clone(&peer)))
+    .or(commit_filter(Arc::clone(&peer)))
+    .or(commits_filter(Arc::clone(&peer)))
+    .or(local_state_filter())
+    .or(revisions_filter(Arc::clone(&peer)))
+    .or(tags_filter(Arc::clone(&peer)))
+    .or(tree_filter(peer))
 }
 
 /// `GET /blob/<project_id>/<revision>/<path...>`
 fn blob_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("blob")
-        .and(warp::get())
-        .and(super::with_peer(peer))
-        .and(document::param::<String>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(warp::filters::query::query::<BlobQuery>())
-        .and(document::document(
-            document::query("revision", document::string()).description("Git revision"),
-        ))
-        .and(document::document(
-            document::query("path", document::string())
-                .description("Location of the file in the repo tree"),
-        ))
-        .and(document::document(document::description("Fetch a Blob")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(coco::Blob::document()).mime("application/json"),
-            )
-            .description("Blob for path found"),
-        ))
-        .and_then(handler::blob)
+  path("blob")
+    .and(warp::get())
+    .and(super::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project the blob is part of",
+    ))
+    .and(warp::filters::query::query::<BlobQuery>())
+    .and(document::document(
+      document::query("revision", document::string()).description("Git revision"),
+    ))
+    .and(document::document(
+      document::query("path", document::string())
+        .description("Location of the file in the repo tree"),
+    ))
+    .and(document::document(document::description("Fetch a Blob")))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(coco::Blob::document()).mime("application/json"),
+      )
+      .description("Blob for path found"),
+    ))
+    .and_then(handler::blob)
 }
 
 /// `GET /branches/<project_id>`
 fn branches_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("branches")
-        .and(warp::get())
-        .and(super::with_peer(peer))
-        .and(document::param::<String>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(document::document(document::description("List Branches")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(
-                    document::array(coco::Branch::document()).description("List of branches"),
-                )
-                .mime("application/json"),
-            )
-            .description("List of branches"),
-        ))
-        .and_then(handler::branches)
+  path("branches")
+    .and(warp::get())
+    .and(super::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project the blob is part of",
+    ))
+    .and(document::document(document::description("List Branches")))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(document::array(coco::Branch::document()).description("List of branches"))
+          .mime("application/json"),
+      )
+      .description("List of branches"),
+    ))
+    .and_then(handler::branches)
 }
 
 /// `GET /commit/<project_id>/<sha1>`
 fn commit_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("commit")
-        .and(warp::get())
-        .and(super::with_peer(peer))
-        .and(document::param::<String>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(document::param::<String>("sha1", "Git object id"))
-        .and(document::document(document::description("Fetch a Commit")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(coco::Commit::document()).mime("application/json"),
-            )
-            .description("Commit for SHA1 found"),
-        ))
-        .and_then(handler::commit)
+  path("commit")
+    .and(warp::get())
+    .and(super::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project the blob is part of",
+    ))
+    .and(document::param::<String>("sha1", "Git object id"))
+    .and(document::document(document::description("Fetch a Commit")))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(coco::Commit::document()).mime("application/json"),
+      )
+      .description("Commit for SHA1 found"),
+    ))
+    .and_then(handler::commit)
 }
 
 /// `GET /commits/<project_id>/<branch>`
 fn commits_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("commits")
-        .and(warp::get())
-        .and(super::with_peer(peer))
-        .and(document::param::<String>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(document::param::<String>("branch", "Branch name"))
-        .and(document::document(document::description(
-            "Fetch Commits from a Branch",
-        )))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(document::array(coco::Commit::document())).mime("application/json"),
-            )
-            .description("Branch found"),
-        ))
-        .and_then(handler::commits)
+  path("commits")
+    .and(warp::get())
+    .and(super::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project the blob is part of",
+    ))
+    .and(document::param::<String>("branch", "Branch name"))
+    .and(document::document(document::description(
+      "Fetch Commits from a Branch",
+    )))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(document::array(coco::Commit::document())).mime("application/json"),
+      )
+      .description("Branch found"),
+    ))
+    .and_then(handler::commits)
 }
 
 /// `GET /branches/<project_id>`
 fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("local-state")
-        .and(warp::get())
-        .and(document::tail(
-            "path",
-            "Location of the repository on the filesystem",
-        ))
-        .and(document::document(document::description(
-            "List Branches, Remotes and if it is managed by coco for a local Repository",
-        )))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(
-                    document::array(coco::Branch::document()).description("List of branches"),
-                )
-                .mime("application/json"),
-            )
-            .description("List of branches"),
-        ))
-        .and_then(handler::local_state)
+  path("local-state")
+    .and(warp::get())
+    .and(document::tail(
+      "path",
+      "Location of the repository on the filesystem",
+    ))
+    .and(document::document(document::description(
+      "List Branches, Remotes and if it is managed by coco for a local Repository",
+    )))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(document::array(coco::Branch::document()).description("List of branches"))
+          .mime("application/json"),
+      )
+      .description("List of branches"),
+    ))
+    .and_then(handler::local_state)
 }
 
 /// `GET /revisions/<project_id>`
 fn revisions_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("revisions")
-        .and(warp::get())
-        .and(super::with_peer(peer))
-        .and(document::param::<String>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(document::document(document::description(
-            "List both branches and tags",
-        )))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(
-                    document::array(Revision::document()).description("List of revisions per repo"),
-                )
-                .mime("application/json"),
-            )
-            .description("List of branches and tags"),
-        ))
-        .and_then(handler::revisions)
+  path("revisions")
+    .and(warp::get())
+    .and(super::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project the blob is part of",
+    ))
+    .and(document::document(document::description(
+      "List both branches and tags",
+    )))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(
+          document::array(Revision::document()).description("List of revisions per repo"),
+        )
+        .mime("application/json"),
+      )
+      .description("List of branches and tags"),
+    ))
+    .and_then(handler::revisions)
 }
 
 /// `GET /tags/<project_id>`
 fn tags_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("tags")
-        .and(warp::get())
-        .and(http::with_peer(peer))
-        .and(document::param::<String>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(document::document(document::description("List Tags")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(document::array(coco::Tag::document()).description("List of tags"))
-                    .mime("application/json"),
-            )
-            .description("List of tags"),
-        ))
-        .and_then(handler::tags)
+  path("tags")
+    .and(warp::get())
+    .and(http::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project the blob is part of",
+    ))
+    .and(document::document(document::description("List Tags")))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(document::array(coco::Tag::document()).description("List of tags"))
+          .mime("application/json"),
+      )
+      .description("List of tags"),
+    ))
+    .and_then(handler::tags)
+}
+
+/// `GET /stats/<project_id>`
+fn stats_filter(
+  peer: Arc<Mutex<coco::Peer>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+  path("stats")
+    .and(warp::get())
+    .and(http::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project you would like stats for",
+    ))
+    .and(document::document(document::description("Get project stats")))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(document::body(coco::Stats::document()).description("Project stats"))
+          .mime("application/json"),
+      )
+      .description("Project stats"),
+    ))
+    .and_then(handler::stats)
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
 fn tree_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+  peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("tree")
-        .and(warp::get())
-        .and(http::with_peer(peer))
-        .and(document::param::<String>(
-            "project_id",
-            "ID of the project the blob is part of",
-        ))
-        .and(warp::filters::query::query::<TreeQuery>())
-        .and(document::document(
-            document::query("revision", document::string()).description("Git revision"),
-        ))
-        .and(document::document(
-            document::query("prefix", document::string())
-                .description("Prefix to filter files and folders by"),
-        ))
-        .and(document::document(document::description("Fetch a Tree")))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(coco::Tree::document()).mime("application/json"),
-            )
-            .description("Tree for path found"),
-        ))
-        .and_then(handler::tree)
+  path("tree")
+    .and(warp::get())
+    .and(http::with_peer(peer))
+    .and(document::param::<String>(
+      "project_id",
+      "ID of the project the blob is part of",
+    ))
+    .and(warp::filters::query::query::<TreeQuery>())
+    .and(document::document(
+      document::query("revision", document::string()).description("Git revision"),
+    ))
+    .and(document::document(
+      document::query("prefix", document::string())
+        .description("Prefix to filter files and folders by"),
+    ))
+    .and(document::document(document::description("Fetch a Tree")))
+    .and(document::document(document::tag("Source")))
+    .and(document::document(
+      document::response(
+        200,
+        document::body(coco::Tree::document()).mime("application/json"),
+      )
+      .description("Tree for path found"),
+    ))
+    .and_then(handler::tree)
 }
 
 /// Source handlers for conversion between core domain and http request fullfilment.
@@ -371,6 +391,18 @@ mod handler {
         Ok(reply::json(&revs))
     }
 
+    /// Fetch the [`coco::Stats`].
+    pub async fn stats(
+      peer: Arc<Mutex<coco::Peer>>,
+      project_urn: String,
+  ) -> Result<impl Reply, Rejection> {
+      let urn = project_urn.parse().map_err(Error::from)?;
+      let peer = peer.lock().await;
+      let stats = peer.with_browser(&urn, |browser| coco::stats(browser))?;
+
+      Ok(reply::json(&stats))
+  }
+
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
         peer: Arc<Mutex<coco::Peer>>,
@@ -404,99 +436,99 @@ mod handler {
 /// Bundled query params to pass to the blob handler.
 #[derive(Debug, Deserialize)]
 pub struct BlobQuery {
-    /// Location of the blob in tree.
-    path: String,
-    /// Revision to use for the history of the repo.
-    revision: Option<String>,
+  /// Location of the blob in tree.
+  path: String,
+  /// Revision to use for the history of the repo.
+  revision: Option<String>,
 }
 
 /// Bundled query params to pass to the tree handler.
 #[derive(Debug, Deserialize)]
 pub struct TreeQuery {
-    /// Path prefix to query the tree.
-    prefix: Option<String>,
-    /// Revision to query at.
-    revision: Option<String>,
+  /// Path prefix to query the tree.
+  prefix: Option<String>,
+  /// Revision to query at.
+  revision: Option<String>,
 }
 
 /// Bundled response to retrieve both branches and tags for a user repo.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Revision {
-    /// Owner of the repo.
-    identity: identity::Identity,
-    /// List of [`coco::Branch`].
-    branches: Vec<coco::Branch>,
-    /// List of [`coco::Tag`].
-    tags: Vec<coco::Tag>,
+  /// Owner of the repo.
+  identity: identity::Identity,
+  /// List of [`coco::Branch`].
+  branches: Vec<coco::Branch>,
+  /// List of [`coco::Tag`].
+  tags: Vec<coco::Tag>,
 }
 
 impl ToDocumentedType for Revision {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
-        properties.insert("identity".into(), identity::Identity::document());
-        properties.insert("branches".into(), document::array(coco::Branch::document()));
-        properties.insert("tags".into(), document::array(coco::Tag::document()));
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(2);
+    properties.insert("identity".into(), identity::Identity::document());
+    properties.insert("branches".into(), document::array(coco::Branch::document()));
+    properties.insert("tags".into(), document::array(coco::Tag::document()));
 
-        document::DocumentedType::from(properties).description("Revision")
-    }
+    document::DocumentedType::from(properties).description("Revision")
+  }
 }
 
 impl Serialize for coco::Blob {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Blob", 3)?;
-        state.serialize_field("binary", &self.is_binary())?;
-        state.serialize_field("content", &self.content)?;
-        state.serialize_field("info", &self.info)?;
-        state.serialize_field("path", &self.path)?;
-        state.end()
-    }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("Blob", 3)?;
+    state.serialize_field("binary", &self.is_binary())?;
+    state.serialize_field("content", &self.content)?;
+    state.serialize_field("info", &self.info)?;
+    state.serialize_field("path", &self.path)?;
+    state.end()
+  }
 }
 
 impl ToDocumentedType for coco::Blob {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "binary".into(),
-            document::boolean()
-                .description("Flag to indicate if the content of the Blob is binary")
-                .example(true),
-        );
-        properties.insert("content".into(), coco::BlobContent::document());
-        properties.insert("info".into(), coco::Info::document());
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(3);
+    properties.insert(
+      "binary".into(),
+      document::boolean()
+        .description("Flag to indicate if the content of the Blob is binary")
+        .example(true),
+    );
+    properties.insert("content".into(), coco::BlobContent::document());
+    properties.insert("info".into(), coco::Info::document());
 
-        document::DocumentedType::from(properties).description("Blob")
-    }
+    document::DocumentedType::from(properties).description("Blob")
+  }
 }
 
 impl Serialize for coco::BlobContent {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Ascii(content) => serializer.serialize_str(content),
-            Self::Binary => serializer.serialize_none(),
-        }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    match self {
+      Self::Ascii(content) => serializer.serialize_str(content),
+      Self::Binary => serializer.serialize_none(),
     }
+  }
 }
 
 impl ToDocumentedType for coco::BlobContent {
-    fn document() -> document::DocumentedType {
-        document::string()
-            .description("BlobContent")
-            .example("print 'hello world'")
-            .nullable(true)
-    }
+  fn document() -> document::DocumentedType {
+    document::string()
+      .description("BlobContent")
+      .example("print 'hello world'")
+      .nullable(true)
+  }
 }
 
 impl ToDocumentedType for coco::Branch {
-    fn document() -> document::DocumentedType {
-        document::string().description("Branch").example("master")
-    }
+  fn document() -> document::DocumentedType {
+    document::string().description("Branch").example("master")
+  }
 }
 
 impl Serialize for coco::Commit {
@@ -578,166 +610,166 @@ impl ToDocumentedType for coco::Commit {
 }
 
 impl Serialize for coco::Info {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Info", 3)?;
-        state.serialize_field("name", &self.name)?;
-        state.serialize_field("objectType", &self.object_type)?;
-        state.serialize_field("lastCommit", &self.last_commit)?;
-        state.end()
-    }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("Info", 3)?;
+    state.serialize_field("name", &self.name)?;
+    state.serialize_field("objectType", &self.object_type)?;
+    state.serialize_field("lastCommit", &self.last_commit)?;
+    state.end()
+  }
 }
 
 impl ToDocumentedType for coco::Info {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Name of the file")
-                .example("arrows.txt"),
-        );
-        properties.insert("objectType".into(), coco::ObjectType::document());
-        properties.insert("lastCommit".into(), coco::Commit::document());
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(3);
+    properties.insert(
+      "name".into(),
+      document::string()
+        .description("Name of the file")
+        .example("arrows.txt"),
+    );
+    properties.insert("objectType".into(), coco::ObjectType::document());
+    properties.insert("lastCommit".into(), coco::Commit::document());
 
-        document::DocumentedType::from(properties).description("Info")
-    }
+    document::DocumentedType::from(properties).description("Info")
+  }
 }
 
 impl Serialize for coco::ObjectType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            Self::Blob => serializer.serialize_unit_variant("ObjectType", 0, "BLOB"),
-            Self::Tree => serializer.serialize_unit_variant("ObjectType", 1, "TREE"),
-        }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    match self {
+      Self::Blob => serializer.serialize_unit_variant("ObjectType", 0, "BLOB"),
+      Self::Tree => serializer.serialize_unit_variant("ObjectType", 1, "TREE"),
     }
+  }
 }
 
 impl ToDocumentedType for coco::ObjectType {
-    fn document() -> document::DocumentedType {
-        document::enum_string(vec!["BLOB".to_string(), "TREE".to_string()])
-            .description("Object type variants")
-            .example(Self::Blob)
-    }
+  fn document() -> document::DocumentedType {
+    document::enum_string(vec!["BLOB".to_string(), "TREE".to_string()])
+      .description("Object type variants")
+      .example(Self::Blob)
+  }
 }
 
 impl Serialize for coco::Person {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Person", 3)?;
-        state.serialize_field("name", &self.name)?;
-        state.serialize_field("email", &self.email)?;
-        state.serialize_field("avatar", &self.avatar)?;
-        state.end()
-    }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("Person", 3)?;
+    state.serialize_field("name", &self.name)?;
+    state.serialize_field("email", &self.email)?;
+    state.serialize_field("avatar", &self.avatar)?;
+    state.end()
+  }
 }
 
 impl ToDocumentedType for coco::Person {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "name".into(),
-            document::string()
-                .description("Name part of the commit signature.")
-                .example("Alexis Sellier"),
-        );
-        properties.insert(
-            "email".into(),
-            document::string()
-                .description("Email part of the commit signature.")
-                .example("self@cloudhead.io"),
-        );
-        properties.insert(
-            "avatar".into(),
-            document::string()
-                .description("Reference (url/uri) to a persons avatar image.")
-                .example("https://avatars1.githubusercontent.com/u/40774"),
-        );
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(3);
+    properties.insert(
+      "name".into(),
+      document::string()
+        .description("Name part of the commit signature.")
+        .example("Alexis Sellier"),
+    );
+    properties.insert(
+      "email".into(),
+      document::string()
+        .description("Email part of the commit signature.")
+        .example("self@cloudhead.io"),
+    );
+    properties.insert(
+      "avatar".into(),
+      document::string()
+        .description("Reference (url/uri) to a persons avatar image.")
+        .example("https://avatars1.githubusercontent.com/u/40774"),
+    );
 
-        document::DocumentedType::from(properties).description("Person")
-    }
+    document::DocumentedType::from(properties).description("Person")
+  }
 }
 
 impl Serialize for coco::Tag {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    serializer.serialize_str(&self.to_string())
+  }
 }
 
 impl ToDocumentedType for coco::Tag {
-    fn document() -> document::DocumentedType {
-        document::string().description("Tag").example("v0.1.0")
-    }
+  fn document() -> document::DocumentedType {
+    document::string().description("Tag").example("v0.1.0")
+  }
 }
 
 impl Serialize for coco::Tree {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Tree", 3)?;
-        state.serialize_field("path", &self.path)?;
-        state.serialize_field("entries", &self.entries)?;
-        state.serialize_field("info", &self.info)?;
-        state.end()
-    }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("Tree", 3)?;
+    state.serialize_field("path", &self.path)?;
+    state.serialize_field("entries", &self.entries)?;
+    state.serialize_field("info", &self.info)?;
+    state.end()
+  }
 }
 
 impl ToDocumentedType for coco::Tree {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert(
-            "path".into(),
-            document::string()
-                .description("Absolute path to the tree object from the repo root.")
-                .example("ui/src"),
-        );
-        properties.insert(
-            "entries".into(),
-            document::array(coco::TreeEntry::document())
-                .description("Entries listed in that tree result."),
-        );
-        properties.insert("info".into(), coco::Info::document());
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(3);
+    properties.insert(
+      "path".into(),
+      document::string()
+        .description("Absolute path to the tree object from the repo root.")
+        .example("ui/src"),
+    );
+    properties.insert(
+      "entries".into(),
+      document::array(coco::TreeEntry::document())
+        .description("Entries listed in that tree result."),
+    );
+    properties.insert("info".into(), coco::Info::document());
 
-        document::DocumentedType::from(properties).description("Tree")
-    }
+    document::DocumentedType::from(properties).description("Tree")
+  }
 }
 
 impl Serialize for coco::TreeEntry {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Tree", 2)?;
-        state.serialize_field("path", &self.path)?;
-        state.serialize_field("info", &self.info)?;
-        state.end()
-    }
+  fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+  where
+    S: Serializer,
+  {
+    let mut state = serializer.serialize_struct("Tree", 2)?;
+    state.serialize_field("path", &self.path)?;
+    state.serialize_field("info", &self.info)?;
+    state.end()
+  }
 }
 
 impl ToDocumentedType for coco::TreeEntry {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
-        properties.insert(
-            "path".into(),
-            document::string()
-                .description("Absolute path to the object from the root of the repo.")
-                .example("ui/src/main.ts"),
-        );
-        properties.insert("info".into(), coco::Info::document());
+  fn document() -> document::DocumentedType {
+    let mut properties = std::collections::HashMap::with_capacity(2);
+    properties.insert(
+      "path".into(),
+      document::string()
+        .description("Absolute path to the object from the root of the repo.")
+        .example("ui/src/main.ts"),
+    );
+    properties.insert("info".into(), coco::Info::document());
 
-        document::DocumentedType::from(properties).description("TreeEntry")
-    }
+    document::DocumentedType::from(properties).description("TreeEntry")
+  }
 }
 
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
@@ -809,25 +841,15 @@ mod test {
  ':::::'      ':::::'      ':::::'
    ':`          ':`          ':`
 ",
-                    "info": {
-                        "name": "arrows.txt",
-                        "objectType": "BLOB",
-                        "lastCommit": {
-                            "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
-                            "author": {
-                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                                "name": "Rūdolfs Ošiņš",
-                                "email": "rudolfs@osins.org",
-                            },
-                            "committer": {
-                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
-                                "name": "Rūdolfs Ošiņš",
-                                "email": "rudolfs@osins.org",
-                            },
-                            "summary": "Add text files",
-                            "description": "",
-                            "committerTime": 1_575_283_425,
-                        },
+            "info": {
+                "name": "arrows.txt",
+                "objectType": "BLOB",
+                "lastCommit": {
+                    "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
+                    "author": {
+                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                        "name": "Rūdolfs Ošiņš",
+                        "email": "rudolfs@osins.org",
                     },
                     "path": "text/arrows.txt",
                 })
@@ -945,14 +967,14 @@ mod test {
                 json!({
                     "sha1": sha1,
                     "author": {
-                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/6367167426181048581.svg",
-                        "name": "Fintan Halpenny",
-                        "email": "fintan.halpenny@gmail.com",
+                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                        "name": "Rūdolfs Ošiņš",
+                        "email": "rudolfs@osins.org",
                     },
                     "committer": {
-                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
-                        "email": "noreply@github.com",
-                        "name": "GitHub",
+                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
+                        "name": "Rūdolfs Ošiņš",
+                        "email": "rudolfs@osins.org",
                     },
                     "summary": "Extend the docs (#2)",
                     "description": "I want to have files under src that have separate commits.\r\nThat way src\'s latest commit isn\'t the same as all its files, instead it\'s the file that was touched last.",
@@ -1108,8 +1130,7 @@ mod test {
                                 "emoji": "🌻",
                             },
                         },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                        "emoji": "🌻",
                     },
                     {
                         "identity": {
@@ -1128,8 +1149,17 @@ mod test {
                             "emoji": "🧿",
                             },
                         },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                    "emoji": "🧿",
+                    },
+                },
+                "branches": [ "dev", "master" ],
+                "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+            },
+            {
+                "identity": {
+                    "id": "xla@123abcd.git",
+                    "metadata": {
+                        "handle": "xla",
                     },
                     {
                         "identity": {
@@ -1148,8 +1178,7 @@ mod test {
                             "emoji": "🗺",
                             },
                         },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                    "emoji": "🗺",
                     },
                 ]),
             )
@@ -1235,31 +1264,67 @@ mod test {
                 json!({
                     "path": "src",
                     "info": {
-                        "name": "src",
-                        "objectType": "TREE",
-                        "lastCommit": null,                },
-                        "entries": [
-                        {
-                            "path": "src/Eval.hs",
-                            "info": {
-                                "name": "Eval.hs",
-                                "objectType": "BLOB",
-                                "lastCommit": null,
-                            },
-                        },
-                        {
-                            "path": "src/memory.rs",
-                            "info": {
-                                "name": "memory.rs",
-                                "objectType": "BLOB",
-                                "lastCommit": null,
-                            },
-                        },
-                    ],
-                }),
-            );
-        });
+                        "name": "Eval.hs",
+                        "objectType": "BLOB",
+                        "lastCommit": null,
+                    },
+                },
+                {
+                    "path": "src/memory.rs",
+                    "info": {
+                        "name": "memory.rs",
+                        "objectType": "BLOB",
+                        "lastCommit": null,
+                    },
+                },
+            ],
+        }),
+      );
+    });
 
-        Ok(())
-    }
+    Ok(())
+  }
+
+  #[tokio::test]
+  async fn stats() -> Result<(), error::Error> {
+    let tmp_dir = tempfile::tempdir()?;
+    let key = SecretKey::new();
+    let config = coco::default_config(key, tmp_dir)?;
+    let mut peer = coco::Peer::new(config).await?;
+    let owner = coco::fake_owner(&peer).await;
+    let platinum_project = peer
+      .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
+      .await
+      .unwrap();
+    let urn = platinum_project.urn();
+
+    let want = peer
+      .with_browser(&urn.to_string(), |browser| coco::get_stats(browser))
+      .await?;
+
+    // let api = super::filters(Arc::new(Mutex::new(peer)));
+    // let res = request()
+    //   .method("GET")
+    //   .path(&format!("/stats/{}", urn.to_string()))
+    //   .reply(&api)
+    //   .await;
+    // http::test::assert_response(&res, StatusCode:OK, |have| {
+    //   assert_eq!(have, json!(want));
+    //   assert_eq!(
+    //     have,
+    //     json!(["commitCount: 2"]),
+    //   );
+    // });
+
+    assert_eq!(
+      want,
+      coco::Stats {
+        commit_count: 14,
+        branch_count: 2,
+        contributor_count: 4
+      }
+    );
+
+    Ok(())
+  }
 }

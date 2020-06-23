@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 use librad::surf;
-use librad::surf::git::{git2, BranchName, Browser};
+use librad::surf::git::{git2, BranchName, Browser, Stats};
 
 use crate::error;
 
@@ -14,9 +14,9 @@ use crate::error;
 pub struct Branch(pub(super) String);
 
 impl fmt::Display for Branch {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.0)
+  }
 }
 
 /// Tag name representation.
@@ -26,20 +26,20 @@ impl fmt::Display for Branch {
 pub struct Tag(pub(super) String);
 
 impl fmt::Display for Tag {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.0)
+  }
 }
 
 /// Representation of a person (e.g. committer, author, signer) from a repository. Usually
 /// extracted from a signature.
 pub struct Person {
-    /// Name part of the commit signature.
-    pub name: String,
-    /// Email part of the commit signature.
-    pub email: String,
-    /// Reference (url/uri) to a persons avatar image.
-    pub avatar: String,
+  /// Name part of the commit signature.
+  pub name: String,
+  /// Email part of the commit signature.
+  pub email: String,
+  /// Reference (url/uri) to a persons avatar image.
+  pub avatar: String,
 }
 
 /// Commit statistics.
@@ -119,6 +119,7 @@ impl From<&surf::vcs::git::Commit> for CommitHeader {
             committer_time: commit.author.time,
         }
     }
+  }
 }
 
 /// Git object types.
@@ -126,10 +127,10 @@ impl From<&surf::vcs::git::Commit> for CommitHeader {
 /// `shafiul.github.io/gitbook/1_the_git_object_model.html`
 #[derive(Debug, Eq, Ord, PartialOrd, PartialEq)]
 pub enum ObjectType {
-    /// References a list of other trees and blobs.
-    Tree,
-    /// Used to store file data.
-    Blob,
+  /// References a list of other trees and blobs.
+  Tree,
+  /// Used to store file data.
+  Blob,
 }
 
 /// Set of extra information we carry for blob and tree objects returned from the API.
@@ -144,48 +145,48 @@ pub struct Info {
 
 /// File data abstraction.
 pub struct Blob {
-    /// Actual content of the file, if the content is ASCII.
-    pub content: BlobContent,
-    /// Extra info for the file.
-    pub info: Info,
-    /// Absolute path to the object from the root of the repo.
-    pub path: String,
+  /// Actual content of the file, if the content is ASCII.
+  pub content: BlobContent,
+  /// Extra info for the file.
+  pub info: Info,
+  /// Absolute path to the object from the root of the repo.
+  pub path: String,
 }
 
 impl Blob {
-    /// Indicates if the content of the [`Blob`] is binary.
-    #[must_use]
-    pub fn is_binary(&self) -> bool {
-        self.content == BlobContent::Binary
-    }
+  /// Indicates if the content of the [`Blob`] is binary.
+  #[must_use]
+  pub fn is_binary(&self) -> bool {
+    self.content == BlobContent::Binary
+  }
 }
 
 /// Variants of blob content.
 #[derive(PartialEq)]
 pub enum BlobContent {
-    /// Content is ASCII and can be passed as a string.
-    Ascii(String),
-    /// Content is binary and needs special treatment.
-    Binary,
+  /// Content is ASCII and can be passed as a string.
+  Ascii(String),
+  /// Content is binary and needs special treatment.
+  Binary,
 }
 
 /// Result of a directory listing, carries other trees and blobs.
 pub struct Tree {
-    /// Absolute path to the tree object from the repo root.
-    pub path: String,
-    /// Entries listed in that tree result.
-    pub entries: Vec<TreeEntry>,
-    /// Extra info for the tree object.
-    pub info: Info,
+  /// Absolute path to the tree object from the repo root.
+  pub path: String,
+  /// Entries listed in that tree result.
+  pub entries: Vec<TreeEntry>,
+  /// Extra info for the tree object.
+  pub info: Info,
 }
 
 // TODO(xla): Ensure correct by construction.
 /// Entry in a Tree result.
 pub struct TreeEntry {
-    /// Extra info for the entry.
-    pub info: Info,
-    /// Absolute path to the object from the root of the repo.
-    pub path: String,
+  /// Extra info for the entry.
+  pub info: Info,
+  /// Absolute path to the object from the root of the repo.
+  pub path: String,
 }
 
 /// Returns the [`Blob`] for a file at `revision` under `path`.
@@ -194,10 +195,10 @@ pub struct TreeEntry {
 ///
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob(
-    browser: &mut Browser,
-    default_branch: &str,
-    maybe_revision: Option<String>,
-    path: &str,
+  browser: &mut Browser,
+  default_branch: &str,
+  maybe_revision: Option<String>,
+  path: &str,
 ) -> Result<Blob, error::Error> {
     browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
 
@@ -237,24 +238,24 @@ pub fn blob(
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
-    let mut branches = browser
-        .list_branches(None)?
-        .into_iter()
-        .map(|b| Branch(b.name.name().to_string()))
-        .collect::<Vec<Branch>>();
+  let mut branches = browser
+    .list_branches(None)?
+    .into_iter()
+    .map(|b| Branch(b.name.name().to_string()))
+    .collect::<Vec<Branch>>();
 
-    branches.sort();
+  branches.sort();
 
-    Ok(branches)
+  Ok(branches)
 }
 
 /// Information about a locally checked out repository.
 #[derive(Deserialize, Serialize)]
 pub struct LocalState {
-    /// List of branches.
-    branches: Vec<Branch>,
-    /// Indicator if the repository is associated to coco project.
-    managed: bool,
+  /// List of branches.
+  branches: Vec<Branch>,
+  /// Indicator if the repository is associated to coco project.
+  managed: bool,
 }
 
 /// Given a path to a repo returns the list of branches and if it is managed by coco.
@@ -263,22 +264,22 @@ pub struct LocalState {
 ///
 /// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
-    let repo = surf::vcs::git::Repository::new(repo_path)?;
-    let browser = Browser::new(&repo, "master")?;
-    let mut branches = browser
-        .list_branches(Some(surf::vcs::git::BranchType::Local))?
-        .into_iter()
-        .map(|b| Branch(b.name.name().to_string()))
-        .collect::<Vec<Branch>>();
+  let repo = surf::vcs::git::Repository::new(repo_path)?;
+  let browser = Browser::new(&repo, "master")?;
+  let mut branches = browser
+    .list_branches(Some(surf::vcs::git::BranchType::Local))?
+    .into_iter()
+    .map(|b| Branch(b.name.name().to_string()))
+    .collect::<Vec<Branch>>();
 
-    branches.sort();
+  branches.sort();
 
-    let managed = {
-        let repo = git2::Repository::open(repo_path)?;
-        repo.remotes()?.into_iter().flatten().any(|r| r == "rad")
-    };
+  let managed = {
+    let repo = git2::Repository::open(repo_path)?;
+    repo.remotes()?.into_iter().flatten().any(|r| r == "rad")
+  };
 
-    Ok(LocalState { branches, managed })
+  Ok(LocalState { branches, managed })
 }
 
 /// Retrieves the [`CommitHeader`] for the given `sha1`.
@@ -292,8 +293,8 @@ pub fn commit_header<'repo>(
 ) -> Result<CommitHeader, error::Error> {
     browser.commit(surf::vcs::git::Oid::from_str(sha1)?)?;
 
-    let history = browser.get();
-    let commit = history.first();
+  let history = browser.get();
+  let commit = history.first();
 
     Ok(CommitHeader::from(commit))
 }
@@ -356,7 +357,7 @@ pub fn commits<'repo>(
 
     let commits = browser.get().iter().map(CommitHeader::from).collect();
 
-    Ok(commits)
+  Ok(commits)
 }
 
 /// Retrieves the list of [`Tag`] for the given project `id`.
@@ -365,15 +366,15 @@ pub fn commits<'repo>(
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
-    let tag_names = browser.list_tags()?;
-    let mut tags: Vec<Tag> = tag_names
-        .into_iter()
-        .map(|tag_name| Tag(tag_name.name().to_string()))
-        .collect();
+  let tag_names = browser.list_tags()?;
+  let mut tags: Vec<Tag> = tag_names
+    .into_iter()
+    .map(|tag_name| Tag(tag_name.name().to_string()))
+    .collect();
 
-    tags.sort();
+  tags.sort();
 
-    Ok(tags)
+  Ok(tags)
 }
 
 /// Retrieve the [`Tree`] for the given `revision` and directory `prefix`.
@@ -383,10 +384,10 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
 /// Will return [`error::Error`] if any of the surf interactions fail.
 /// TODO(fintohaps): default branch fall back from Browser
 pub fn tree<'repo>(
-    browser: &mut Browser<'repo>,
-    default_branch: &str, // TODO(finto): This should be handled by the broweser surf#115
-    maybe_revision: Option<String>,
-    maybe_prefix: Option<String>,
+  browser: &mut Browser<'repo>,
+  default_branch: &str, // TODO(finto): This should be handled by the broweser surf#115
+  maybe_revision: Option<String>,
+  maybe_prefix: Option<String>,
 ) -> Result<Tree, error::Error> {
     let revision = maybe_revision.unwrap_or_else(|| default_branch.to_string());
     let prefix = maybe_prefix.unwrap_or_default();
@@ -464,9 +465,50 @@ pub fn tree<'repo>(
         last_commit,
     };
 
-    Ok(Tree {
-        path: prefix,
-        entries,
+      Ok(TreeEntry {
         info,
+        path: entry_path.to_string(),
+      })
     })
+    .collect();
+
+  let mut entries = entries_results?;
+
+  // We want to ensure that in the response Tree entries come first. `Ord` being derived on
+  // the enum ensures Variant declaration order.
+  //
+  // https://doc.rust-lang.org/std/cmp/trait.Ord.html#derivable
+  entries.sort_by(|a, b| a.info.object_type.cmp(&b.info.object_type));
+
+  let last_commit = if path.is_root() {
+    Some(Commit::from(browser.get().first()))
+  } else {
+    None
+  };
+  let name = if path.is_root() {
+    "".into()
+  } else {
+    let (_first, last) = path.split_last();
+    last.to_string()
+  };
+  let info = Info {
+    name,
+    object_type: ObjectType::Tree,
+    last_commit,
+  };
+
+  Ok(Tree {
+    path: prefix,
+    entries,
+    info,
+  })
+}
+
+/// Retrieve the [`Stats`] for the given `repo`
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+pub fn get_stats<'repo>(browser: &Browser<'repo>) -> Result<Stats, error::Error> {
+  Ok(browser.get_stats()?)
 }
