@@ -1,6 +1,7 @@
 context("settings", () => {
   beforeEach(() => {
     cy.nukeCache();
+    cy.nukeCocoState();
     cy.nukeSessionState();
     cy.nukeRegistryState();
     cy.createIdentity();

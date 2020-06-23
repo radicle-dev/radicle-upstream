@@ -65,7 +65,7 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 pub async fn current<R: registry::Client>(
     peer: Arc<Mutex<coco::Peer>>,
     store: &kv::Store,
-    registry: R,
+    registry: &R,
 ) -> Result<Session, error::Error> {
     let mut session = get(store, KEY_CURRENT)?;
     session.transaction_deposits = registry::get_deposits();

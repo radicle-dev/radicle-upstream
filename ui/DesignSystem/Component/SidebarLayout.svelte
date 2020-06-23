@@ -22,10 +22,6 @@
     overflow-x: hidden;
     height: 100%;
   }
-
-  .content {
-    margin: 64px 0;
-  }
 </style>
 
 <div data-cy={dataCy}>

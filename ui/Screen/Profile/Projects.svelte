@@ -8,13 +8,12 @@
   import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    EmptyState,
     List,
     ProjectCard,
     Remote,
     Stats,
   } from "../../DesignSystem/Component";
-
-  import Onboard from "./Onboard.svelte";
 
   const session = getContext("session");
 
@@ -68,6 +67,9 @@
       showRegisteredBadge: project.registration,
     };
   };
+
+  const create = () => push(path.createProject());
+  const register = () => push(path.registerUser());
 </script>
 
 <Remote store={projectStore} let:data={projects}>
@@ -94,8 +96,20 @@
         </div>
       </Flex>
     </List>
+  {:else if session.permissions.registerHandle}
+    <EmptyState
+      text="There’s nothing here yet, get started by starting your first
+      project."
+      primaryActionText="Start your first project"
+      secondaryActionText="Or register your handle"
+      on:primaryAction={create}
+      on:secondaryAction={register} />
   {:else}
-    <Onboard />
+    <EmptyState
+      text="There’s nothing here yet, get started by starting your first
+      project."
+      primaryActionText="Create a new project"
+      on:primaryAction={create} />
   {/if}
 
   <div slot="error" let:error>

@@ -261,7 +261,7 @@ mod handler {
         let mut mapped_projects = Vec::new();
         for p in &projects {
             let maybe_project = if let Some(urn) = &p.maybe_project_id {
-                Some(project::get(&peer, urn).await.expect("Project not found"))
+                Some(project::get(&peer, urn).expect("Project not found"))
             } else {
                 None
             };
@@ -434,6 +434,12 @@ impl ToDocumentedType for RegisterInput {
                 .description("ID of the org")
                 .example("monadic"),
         );
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
 
         document::DocumentedType::from(properties).description("Input for org registration")
     }
@@ -457,6 +463,12 @@ impl ToDocumentedType for RegisterMemberInput {
             document::string()
                 .description("Handle of the user")
                 .example("cloudhead"),
+        );
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
         );
 
         document::DocumentedType::from(properties).description("Input for member registration")
