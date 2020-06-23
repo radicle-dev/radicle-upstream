@@ -3,7 +3,7 @@
 
   export let file = null;
 
-  const lineNumL = line => {
+  const lineNumberL = line => {
     switch (line.type) {
       case "addition":
         return " ";
@@ -14,7 +14,7 @@
     }
   };
 
-  const lineNumR = line => {
+  const lineNumberR = line => {
     switch (line.type) {
       case "addition":
         return line.lineNum;
@@ -149,10 +149,10 @@
           {#each hunk.lines as line}
             <tr class="diff-line" data-expanded data-type={lineType(line)}>
               <td class="diff-line-number left" data-type={lineType(line)}>
-                {lineNumL(line)}
+                {lineNumberL(line)}
               </td>
               <td class="diff-line-number right" data-type={lineType(line)}>
-                {lineNumR(line)}
+                {lineNumberR(line)}
               </td>
               <td class="diff-line-type" data-type={line.type}>
                 {lineType(line)}
