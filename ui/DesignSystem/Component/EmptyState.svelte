@@ -4,7 +4,7 @@
 
   const dispatch = createEventDispatcher();
 
-  export let icon = "tent";
+  export let icon = "plant";
   export let text = "Nothing to see here";
   export let primaryActionText = "Go back";
   export let secondaryActionText = null;
