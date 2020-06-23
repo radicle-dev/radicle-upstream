@@ -106,6 +106,12 @@ export const commits = commitsStore.readable;
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
+const currentObjectTypeStore = writable("");
+export const currentObjectType = derived(
+  currentObjectTypeStore,
+  $store => $store
+);
+
 const currentRevisionStore = writable("");
 export const currentRevision = derived(currentRevisionStore, $store => $store);
 
@@ -220,6 +226,7 @@ const update = (msg: Msg): void => {
 
     case Kind.Update:
       currentPathStore.update(() => msg.path);
+      currentObjectTypeStore.update(() => msg.type);
       currentRevisionStore.update(() => msg.revision);
       objectStore.loading();
 

@@ -3,6 +3,7 @@
     currentPath,
     currentRevision,
     tree,
+    updateParams,
     ObjectType,
   } from "../../../src/source.ts";
 
@@ -18,12 +19,20 @@
   export let expanded = false;
   export let toplevel = false;
 
-  const toggle = () => {
+  const toggleFolder = () => {
     expanded = !expanded;
   };
 
+  const onFileClick = filePath => {
+    updateParams({
+      path: filePath,
+      projectId: projectId,
+      revision: $currentRevision,
+      type: ObjectType.Blob,
+    });
+  };
+
   $: store = tree(projectId, $currentRevision, prefix);
-  $: active = prefix === $currentPath;
 </script>
 
 <style>
@@ -60,8 +69,8 @@
 
 <Remote {store} let:data={tree}>
   {#if !toplevel}
-    <div class="folder" on:click={toggle}>
-      <span class:expanded class:active style="height: 24px">
+    <div class="folder" on:click={toggleFolder}>
+      <span class:expanded style="height: 24px">
         <Icon.Chevron dataCy={`expand-${name}`} />
       </span>
       <span class="folder-name">{name}</span>
@@ -77,7 +86,12 @@
             name={entry.info.name}
             prefix={`${entry.path}/`} />
         {:else}
-          <File {projectId} filePath={entry.path} name={entry.info.name} />
+          <File
+            name={entry.info.name}
+            active={entry.path === $currentPath}
+            on:click={() => {
+              onFileClick(entry.path);
+            }} />
         {/if}
       {/each}
     {/if}
