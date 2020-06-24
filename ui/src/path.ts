@@ -1,6 +1,5 @@
 import regexparam from "regexparam";
 
-export const search = (): string => "/search";
 export const settings = (): string => "/settings";
 
 export const profile = (): string => "/profile";
