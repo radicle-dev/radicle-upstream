@@ -41,7 +41,7 @@ rev = "a04f4dbaec4d05be2c7a516a36b5bbec02ee32aa"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "d7f0f3c955e29eac19da94dc76dcf304866310a7"
+rev = "7600bd1de70c1a0af1db75e0e311ec473dd94b58"
 
 [dev-dependencies]
 bytes = "0.5"
