@@ -56,6 +56,7 @@ context("user registration", () => {
 
       // shows a validation message when handle contains invalid characters
       // spaces are not allowed
+      cy.pick("handle").clear();
       cy.pick("handle").type("no spaces");
       cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
 
