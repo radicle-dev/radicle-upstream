@@ -102,7 +102,7 @@
     </Text>
     <Input.Text
       dataCy="input"
-      placeholder="Org name (e.g. Flowerpot)"
+      placeholder="Org name (e.g. flowerpot)"
       bind:value={orgId}
       style="width: 100%;"
       showSuccessCheck

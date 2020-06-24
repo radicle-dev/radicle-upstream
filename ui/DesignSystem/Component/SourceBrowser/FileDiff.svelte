@@ -2,6 +2,39 @@
   import { Title, Icon } from "../../Primitive";
 
   export let file = null;
+
+  const lineNumberL = line => {
+    switch (line.type) {
+      case "addition":
+        return " ";
+      case "deletion":
+        return line.lineNum;
+      case "context":
+        return line.lineNumOld;
+    }
+  };
+
+  const lineNumberR = line => {
+    switch (line.type) {
+      case "addition":
+        return line.lineNum;
+      case "deletion":
+        return " ";
+      case "context":
+        return line.lineNumNew;
+    }
+  };
+
+  const lineType = line => {
+    switch (line.type) {
+      case "addition":
+        return "+";
+      case "deletion":
+        return "-";
+      case "context":
+        return " ";
+    }
+  };
 </script>
 
 <style>
@@ -24,6 +57,13 @@
 
   .changeset-file main {
     overflow-x: auto;
+  }
+
+  .binary {
+    padding: 1rem;
+    color: var(--color-foreground-level-4);
+    text-align: center;
+    background-color: var(--color-foreground-level-1);
   }
 
   table.diff {
@@ -99,28 +139,31 @@
     <Title>{file.path}</Title>
   </header>
   <main>
-    <table class="diff">
-      {#each file.hunks as hunk}
-        {#if hunk.expanded}
-          {#each hunk.lines as line}
-            <tr class="diff-line" data-expanded data-type={line.type}>
-              <td class="diff-line-number left" data-type={line.type}>
-                {line.num[0] || ''}
-              </td>
-              <td class="diff-line-number right" data-type={line.type}>
-                {line.num[1] || ''}
-              </td>
-              <td class="diff-line-type" data-type={line.type}>{line.type}</td>
-              <td class="diff-line-content">{line.content}</td>
-            </tr>
-          {/each}
-        {:else}
+    {#if file.diff.type == 'plain' && file.diff.hunks.length > 0}
+      <table class="diff">
+        {#each file.diff.hunks as hunk}
           <tr class="diff-line">
             <td colspan="2" class="diff-expand-action" />
             <td colspan="2" class="diff-expand-header">{hunk.header}</td>
           </tr>
-        {/if}
-      {/each}
-    </table>
+          {#each hunk.lines as line}
+            <tr class="diff-line" data-expanded data-type={lineType(line)}>
+              <td class="diff-line-number left" data-type={lineType(line)}>
+                {lineNumberL(line)}
+              </td>
+              <td class="diff-line-number right" data-type={lineType(line)}>
+                {lineNumberR(line)}
+              </td>
+              <td class="diff-line-type" data-type={line.type}>
+                {lineType(line)}
+              </td>
+              <td class="diff-line-content">{line.line}</td>
+            </tr>
+          {/each}
+        {/each}
+      </table>
+    {:else}
+      <div class="binary">Binary file</div>
+    {/if}
   </main>
 </article>

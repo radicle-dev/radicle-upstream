@@ -17,7 +17,6 @@
   import NotFound from "./NotFound.svelte";
 
   const screenRoutes = {
-    "/profile/": Projects,
     "/profile/projects": Projects,
     "/profile/wallet": Wallet,
     "*": NotFound,
@@ -68,7 +67,10 @@
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
 
-  <BigHeader variant="profile" entity={session.identity}>
+  <BigHeader
+    variant="profile"
+    entity={session.identity}
+    on:registerHandle={() => push(path.registerUser())}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} />
     </div>

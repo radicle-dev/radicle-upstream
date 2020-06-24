@@ -1,11 +1,10 @@
 context("identity creation", () => {
   const validUser = {
     handle: "rafalca",
-    shareableEntityIdentifier: "rafalca@123abcd.git",
-    fallbackAvatar: "🎀",
   };
 
   beforeEach(() => {
+    cy.nukeCocoState();
     cy.nukeSessionState();
     cy.nukeRegistryState();
     cy.visit("./public/index.html");
@@ -29,12 +28,8 @@ context("identity creation", () => {
       cy.pick("create-id-button").click();
 
       // Confirmation screen
-      cy.get(
-        `[data-cy="identity-card"] img[alt=${validUser.fallbackAvatar}]`
-      ).should("exist");
-      cy.pick("identity-card")
-        .contains(validUser.shareableEntityIdentifier)
-        .should("exist");
+      cy.get(`[data-cy="identity-card"]`).should("exist");
+      cy.pick("identity-card").contains(validUser.handle).should("exist");
 
       // Land on profile screen
       cy.pick("go-to-profile-button").click();
@@ -89,9 +84,7 @@ context("identity creation", () => {
           cy.pick("form", "handle").type(validUser.handle);
           cy.pick("create-id-button").click();
 
-          cy.pick("identity-card")
-            .contains(validUser.shareableEntityIdentifier)
-            .should("exist");
+          cy.pick("identity-card").contains(validUser.handle).should("exist");
 
           // Land on profile screen
           cy.pick("modal-close-button").click();
@@ -107,9 +100,7 @@ context("identity creation", () => {
         cy.pick("form", "handle").type(validUser.handle);
         cy.pick("create-id-button").click();
 
-        cy.pick("identity-card")
-          .contains(validUser.shareableEntityIdentifier)
-          .should("exist");
+        cy.pick("identity-card").contains(validUser.handle).should("exist");
 
         // Now try the escape key
         cy.get("body").type("{esc}");

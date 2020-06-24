@@ -72,8 +72,8 @@ pub struct Stats {
 }
 
 /// TODO(xla): Add documentation.
-pub async fn get(peer: &coco::Peer, project_urn: &str) -> Result<Project, error::Error> {
-    let meta = peer.get_project(project_urn).await?;
+pub fn get(peer: &coco::Peer, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
+    let meta = peer.get_project(project_urn)?;
     let id = meta.urn();
     let metadata = meta.into();
 

@@ -1,6 +1,5 @@
 //! Abstractions and utilities for git interactions through the API.
 
-use std::collections::HashMap;
 use std::env;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::{Arc, Mutex};
@@ -8,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use async_trait::async_trait;
 
 use librad::keys;
-use librad::meta::entity::{self, Resolver as _};
+use librad::meta::entity;
 use librad::meta::project;
 use librad::meta::user;
 use librad::net;
@@ -24,9 +23,10 @@ use crate::error;
 /// Module that captures all types and functions for source code.
 mod source;
 pub use source::{
-    blob, branches, commit, commits, local_state, tags, tree, Blob, BlobContent, Branch, Commit,
-    Info, ObjectType, Person, Tag, Tree, TreeEntry,
+    blob, branches, commit, commit_header, commits, local_state, tags, tree, Blob, BlobContent,
+    Branch, Commit, CommitHeader, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
+pub use surf::diff::{Diff, FileDiff};
 
 pub mod config;
 
@@ -39,28 +39,6 @@ pub type User = user::User<entity::Verified>;
 pub struct Peer {
     /// The protocol API for shelling out commands.
     pub api: Arc<Mutex<net::peer::PeerApi>>,
-    /// Mocking a way to look up and store projects
-    pub(crate) projects: Arc<Mutex<HashMap<RadUrn, project::Project<entity::Draft>>>>,
-}
-
-#[async_trait]
-impl entity::Resolver<project::Project<entity::Draft>> for Peer {
-    async fn resolve(
-        &self,
-        uri: &RadUrn,
-    ) -> Result<project::Project<entity::Draft>, entity::Error> {
-        let projects = self.projects.lock().expect("failed to acquire lock");
-        Ok(projects.get(uri).expect("project was missing").clone())
-    }
-
-    async fn resolve_revision(
-        &self,
-        uri: &RadUrn,
-        _revision: u64,
-    ) -> Result<project::Project<entity::Draft>, entity::Error> {
-        let projects = self.projects.lock().expect("failed to acquire lock");
-        Ok(projects.get(uri).expect("project was missing").clone())
-    }
 }
 
 impl Peer {
@@ -83,7 +61,6 @@ impl Peer {
         let (api, _futures) = peer.accept()?;
         Ok(Self {
             api: Arc::new(Mutex::new(api)),
-            projects: Arc::new(Mutex::new(HashMap::new())),
         })
     }
 
@@ -101,15 +78,56 @@ impl Peer {
         Ok(f(&api))
     }
 
-    /// Returns the list of [`project::Project`] known for the configured [`paths::Paths`].
+    /// Returns the list of [`project::Project`]s known for the configured [`paths::Paths`].
     ///
     /// # Errors
     ///
     /// The function will error if:
     ///   * A lock was poisioned. See [`Self::with_api`].
+    #[allow(
+        clippy::wildcard_enum_match_arm,
+        clippy::match_wildcard_for_single_variants
+    )]
     pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
-        let projects = self.projects.lock().map_err(|_| error::Error::LibradLock)?;
-        Ok(projects.values().cloned().collect())
+        self.with_api(|api| {
+            let storage = api.storage();
+            Ok(storage
+                .all_metadata()?
+                .flat_map(|entity| {
+                    entity.ok()?.try_map(|info| match info {
+                        entity::data::EntityInfo::Project(info) => Some(info),
+                        _ => None,
+                    })
+                })
+                .collect())
+        })
+        .flatten()
+    }
+
+    /// Returns the list of [`user::User`]s known for the configured [`paths::Paths`].
+    ///
+    /// # Errors
+    ///
+    /// The function will error if:
+    ///   * A lock was poisioned. See [`Self::with_api`].
+    #[allow(
+        clippy::wildcard_enum_match_arm,
+        clippy::match_wildcard_for_single_variants
+    )]
+    pub fn list_users(&self) -> Result<Vec<user::User<entity::Draft>>, error::Error> {
+        self.with_api(|api| {
+            let storage = api.storage();
+            Ok(storage
+                .all_metadata()?
+                .flat_map(|entity| {
+                    entity.ok()?.try_map(|info| match info {
+                        entity::data::EntityInfo::User(info) => Some(info),
+                        _ => None,
+                    })
+                })
+                .collect())
+        })
+        .flatten()
     }
 
     /// Get the project found at `project_urn`.
@@ -119,14 +137,29 @@ impl Peer {
     /// `get_project` fails if:
     ///     * Parsing the `project_urn` fails.
     ///     * Resolving the project fails.
-    pub async fn get_project(
+    pub fn get_project(
         &self,
-        project_urn: &str,
+        urn: &RadUrn,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
-        // TODO(finto): we need the storage to be a resolver
-        let urn = project_urn.parse()?;
-        let project = self.resolve(&urn).await?;
-        Ok(project)
+        self.with_api(|api| {
+            let storage = api.storage().reopen()?;
+            Ok(storage.metadata(urn)?)
+        })
+        .flatten()
+    }
+
+    /// Get the user found at `urn`.
+    ///
+    /// # Errors
+    ///
+    ///   * Resolving the project fails.
+    ///   * Could not successfully acquire a lock to the API.
+    pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, error::Error> {
+        self.with_api(|api| {
+            let storage = api.storage().reopen()?;
+            Ok(storage.metadata(urn)?)
+        })
+        .flatten()
     }
 
     /// Get a repo browser for a project.
@@ -135,15 +168,11 @@ impl Peer {
     ///
     /// The function will result in an error if the mutex guard was poisoned. See
     /// [`std::sync::Mutex::lock`] for further details.
-    pub async fn with_browser<F, T>(
-        &self,
-        project_urn: &str,
-        callback: F,
-    ) -> Result<T, error::Error>
+    pub fn with_browser<F, T>(&self, project_urn: &RadUrn, callback: F) -> Result<T, error::Error>
     where
         F: Send + FnOnce(&mut surf::vcs::git::Browser) -> Result<T, error::Error>,
     {
-        let project = self.get_project(project_urn).await?;
+        let project = self.get_project(project_urn)?;
         let default_branch = project.default_branch();
         let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
         let repo = api.storage().open_repo(project.urn())?;
@@ -191,9 +220,15 @@ impl Peer {
                         .add_key(key.public())
                         .build()?;
                 meta.sign_owned(key)?;
+                let urn = meta.urn();
 
                 let storage = api.storage().reopen()?;
-                let _repo = storage.create_repo(&meta)?;
+
+                if storage.has_urn(&urn)? {
+                    return Err(error::Error::EntityExists(urn));
+                } else {
+                    let _repo = storage.create_repo(&meta)?;
+                }
                 Ok(meta)
             })
             .flatten();
@@ -203,11 +238,46 @@ impl Peer {
 
         self.setup_remote(path, &meta.urn().id, default_branch)?;
 
-        // TODO(finto): mocking
-        let mut projects = self.projects.lock().map_err(|_| error::Error::LibradLock)?;
-        projects.insert(meta.urn(), meta.clone());
-
         Ok(meta)
+    }
+
+    /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a
+    /// user that uses the secret key the `PeerApi` was configured with.
+    ///
+    /// # Errors
+    ///
+    /// Will error if:
+    ///     * [`Self::with_api`] fails with a poisoned lock.
+    ///     * The signing of the user metadata fails.
+    ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
+    pub async fn init_user(&self, handle: &str) -> Result<User, error::Error> {
+        let user = self
+            .with_api(|api| {
+                let key = api.key();
+
+                // Create the project meta
+                let mut user =
+                    user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
+                user.sign_owned(key)?;
+                let urn = user.urn();
+
+                let storage = api.storage().reopen()?;
+
+                if storage.has_urn(&urn)? {
+                    return Err(error::Error::EntityExists(urn));
+                } else {
+                    let _repo = storage.create_repo(&user)?;
+                }
+
+                Ok(user)
+            })
+            .flatten()?;
+
+        let fake_resolver = FakeUserResolver(user.clone());
+        let verified_user = user
+            .check_history_status(&fake_resolver, &fake_resolver)
+            .await?;
+        Ok(verified_user)
     }
 
     /// Equips a repository with a rad remote for the given id. If the directory at the given path
@@ -491,4 +561,141 @@ pub fn default_config(
         gossip_params,
         disco,
     })
+}
+
+#[cfg(test)]
+#[allow(clippy::panic)]
+mod test {
+    use librad::keys::SecretKey;
+
+    use crate::error::Error;
+
+    #[tokio::test]
+    async fn test_can_create_user() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let peer = super::Peer::new(config).await?;
+
+        let annie = peer.init_user("annie_are_you_ok?").await;
+        assert!(annie.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_can_create_project() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let mut peer = super::Peer::new(config).await?;
+
+        let user = peer.init_user("cloudhead").await?;
+        let project = peer
+            .init_project(&user, &repo_path, "radicalise", "the people", "power")
+            .await;
+
+        assert!(project.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_cannot_create_user_twice() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let peer = super::Peer::new(config).await?;
+
+        let user = peer.init_user("cloudhead").await?;
+        let err = peer.init_user("cloudhead").await;
+
+        if let Err(Error::EntityExists(urn)) = err {
+            assert_eq!(urn, user.urn())
+        } else {
+            panic!(
+                "unexpected error when creating the user a second time: {:?}",
+                err
+            );
+        }
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_cannot_create_project_twice() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let mut peer = super::Peer::new(config).await?;
+
+        let user = peer.init_user("cloudhead").await?;
+        let _project = peer
+            .init_project(&user, &repo_path, "radicalise", "the people", "power")
+            .await?;
+
+        let err = peer
+            .init_project(&user, &repo_path, "radicalise", "the people", "power")
+            .await;
+
+        if let Err(Error::RadRemoteExists(path)) = err {
+            assert_eq!(path, format!("{}", repo_path.display()))
+        } else {
+            panic!(
+                "unexpected error when creating the project a second time: {:?}",
+                err
+            );
+        }
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_list_projects() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let mut peer = super::Peer::new(config).await?;
+
+        let user = peer.init_user("cloudhead").await?;
+        peer.setup_fixtures(&user).await?;
+
+        let projects = peer.list_projects()?;
+        let mut project_names = projects
+            .into_iter()
+            .map(|project| project.name().to_string())
+            .collect::<Vec<_>>();
+        project_names.sort();
+
+        assert_eq!(
+            project_names,
+            vec!["Monadic", "monokel", "open source coin", "radicle"]
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_list_users() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let key = SecretKey::new();
+        let config = super::default_config(key, tmp_dir.path())?;
+        let peer = super::Peer::new(config).await?;
+
+        let _cloudhead = peer.init_user("cloudhead").await?;
+        let _kalt = peer.init_user("kalt").await?;
+
+        let users = peer.list_users()?;
+        let mut user_handles = users
+            .into_iter()
+            .map(|user| user.name().to_string())
+            .collect::<Vec<_>>();
+        user_handles.sort();
+
+        assert_eq!(user_handles, vec!["cloudhead", "kalt"],);
+
+        Ok(())
+    }
 }

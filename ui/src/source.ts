@@ -6,8 +6,6 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
 
-import { mockChangeset } from "./commitMocks";
-
 // TOOLING
 const filterBranches = (branches: string[]): string[] =>
   branches.filter(branch => !config.HIDDEN_BRANCHES.includes(branch));
@@ -187,7 +185,6 @@ const update = (msg: Msg): void => {
           commitStore.success({
             // TODO(cloudhead): Fetch branch from backend.
             branch: "master",
-            changeset: mockChangeset,
             ...commit,
           });
         })

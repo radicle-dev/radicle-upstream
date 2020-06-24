@@ -33,7 +33,6 @@
     "/identity/new": IdentityCreation,
     "/search": Search,
     "/settings": Settings,
-    "/profile": Profile,
     "/profile/*": Profile,
     "/orgs/register": OrgRegistration,
     "/orgs/:id/members/register": MemberRegistration,
@@ -60,7 +59,7 @@
         push(path.createIdentity());
       } else {
         if ($location === "/" || $location === "/identity/new") {
-          push(path.profile());
+          push(path.profileProjects());
         }
       }
       break;

@@ -12,7 +12,7 @@ context("add member to org", () => {
   beforeEach(() => {
     cy.visit("public/index.html");
     cy.pick("sidebar", "org-coolorg").click();
-    cy.pick("org-screen", "add-member-button").click();
+    cy.pick("org-screen", "empty-state", "primary-action").click();
   });
 
   context("validations", () => {
