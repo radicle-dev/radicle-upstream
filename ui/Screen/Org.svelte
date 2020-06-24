@@ -13,6 +13,7 @@
     BigHeader,
   } from "../DesignSystem/Component";
 
+  import Sidebar from "../Layout/Sidebar.svelte";
   import Screen from "../Layout/Screen.svelte";
 
   import Fund from "./Org/Fund.svelte";
@@ -97,21 +98,23 @@
   $: fetch({ id: params.id });
 </script>
 
-<Screen dataCy="org-screen">
-  <Remote {store} let:data={org}>
-    <BigHeader variant="org" entity={org}>
-      <div slot="left">
-        <HorizontalMenu items={topbarMenuItems(params.id)} />
-      </div>
-      <div slot="right" style="display: flex">
-        <Router routes={menuRoutes} />
-        <AdditionalActionsDropdown
-          dataCy="context-menu"
-          style="margin: 0 16px"
-          headerTitle={org.shareableEntityIdentifier}
-          menuItems={dropdownMenuItems} />
-      </div>
-    </BigHeader>
-    <Router {routes} />
-  </Remote>
-</Screen>
+<Sidebar>
+  <Screen dataCy="org-screen">
+    <Remote {store} let:data={org}>
+      <BigHeader variant="org" entity={org}>
+        <div slot="left">
+          <HorizontalMenu items={topbarMenuItems(params.id)} />
+        </div>
+        <div slot="right" style="display: flex">
+          <Router routes={menuRoutes} />
+          <AdditionalActionsDropdown
+            dataCy="context-menu"
+            style="margin: 0 16px"
+            headerTitle={org.shareableEntityIdentifier}
+            menuItems={dropdownMenuItems} />
+        </div>
+      </BigHeader>
+      <Router {routes} />
+    </Remote>
+  </Screen>
+</Sidebar>

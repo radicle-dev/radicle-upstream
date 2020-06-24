@@ -1,4 +1,5 @@
 <script>
+  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
@@ -7,7 +8,8 @@
 
   export let dataCy = null;
   export let style = null;
-  export let session = null;
+
+  const session = getContext("session");
 </script>
 
 <style>

@@ -12,8 +12,6 @@
   import Theme from "./App/Theme.svelte";
   import TransactionCenter from "./App/TransactionCenter.svelte";
 
-  import Layout from "./Layout/Main.svelte";
-
   import Blank from "./Screen/Blank.svelte";
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
@@ -76,8 +74,6 @@
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Theme />
 <Remote {store} let:data={session} context="session">
-  <Layout {session}>
-    <Router {routes} />
-  </Layout>
+  <Router {routes} />
   <TransactionCenter />
 </Remote>

@@ -11,6 +11,7 @@
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
+  import Sidebar from "../Layout/Sidebar.svelte";
   import Screen from "../Layout/Screen.svelte";
 
   import Projects from "./Profile/Projects.svelte";
@@ -66,23 +67,25 @@
   }
 </script>
 
-<Screen dataCy="profile-screen">
-  <BigHeader
-    variant="profile"
-    entity={session.identity}
-    on:registerHandle={() => push(path.registerUser())}>
-    <div slot="left">
-      <HorizontalMenu items={topbarMenuItems} />
-    </div>
-    <div slot="right" style="display: flex">
-      <Router routes={menuRoutes} />
-      <AdditionalActionsDropdown
-        dataCy="profile-context-menu"
-        style="margin: 0 16px"
-        headerTitle={session.identity.shareableEntityIdentifier}
-        menuItems={dropdownMenuItems} />
-    </div>
-  </BigHeader>
+<Sidebar>
+  <Screen dataCy="profile-screen">
+    <BigHeader
+      variant="profile"
+      entity={session.identity}
+      on:registerHandle={() => push(path.registerUser())}>
+      <div slot="left">
+        <HorizontalMenu items={topbarMenuItems} />
+      </div>
+      <div slot="right" style="display: flex">
+        <Router routes={menuRoutes} />
+        <AdditionalActionsDropdown
+          dataCy="profile-context-menu"
+          style="margin: 0 16px"
+          headerTitle={session.identity.shareableEntityIdentifier}
+          menuItems={dropdownMenuItems} />
+      </div>
+    </BigHeader>
 
-  <Router routes={screenRoutes} />
-</Screen>
+    <Router routes={screenRoutes} />
+  </Screen>
+</Sidebar>
