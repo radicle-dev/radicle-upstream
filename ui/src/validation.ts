@@ -60,11 +60,8 @@ export const createValidationStore = (
   const internalStore = writable(initialState);
   const { subscribe, update } = internalStore;
   let inputStore: Writable<string> | undefined = undefined;
-  let lock: Promise<null> | null = null;
 
   const runValidations = async (input: string): Promise<void> => {
-    if (lock) await lock;
-
     // Always start with Loading
     update(() => {
       return { status: ValidationStatus.Loading, input: input };
@@ -82,10 +79,6 @@ export const createValidationStore = (
         return { status: ValidationStatus.Error, message: errors.input[0] };
       });
       return;
-    }
-
-    if (remoteValidations.length > 0) {
-      lock = Promise.resolve(null);
     }
 
     let remoteSuccess = true;
@@ -111,7 +104,9 @@ export const createValidationStore = (
       } catch (error) {
         remoteSuccess = false;
 
-        update(() => {
+        update(store => {
+          // If the input has changed since this request was fired off, don't update
+          if (get(inputStore) !== input) return store;
           return {
             status: ValidationStatus.Error,
             message: `Cannot validate "${input}": ${error.message}`,
@@ -122,14 +117,14 @@ export const createValidationStore = (
       }
     }
 
-    if (lock) await lock;
-
     if (!remoteSuccess) {
       return;
     }
 
     // If we made it here, it's valid
-    update(() => {
+    update(store => {
+      // If the input has changed since this request was fired off, don't update
+      if (get(inputStore) !== input) return store;
       return { status: ValidationStatus.Success };
     });
   };

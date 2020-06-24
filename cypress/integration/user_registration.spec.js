@@ -51,7 +51,7 @@ context("user registration", () => {
     it("prevents the user from registering an invalid handle", () => {
       // shows a validation message when handle is not present
       cy.pick("handle").clear();
-      cy.pick("page").contains("Id is required");
+      cy.pick("page").contains("This field is required");
 
       // shows a validation message when handle contains invalid characters
       // spaces are not allowed
@@ -62,17 +62,17 @@ context("user registration", () => {
       // special characters are disallowed
       cy.pick("handle").clear();
       cy.pick("handle").type("bad$");
-      cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
+      cy.pick("page").contains("It should match ^[a-z0-9][a-z0-9]+$");
 
       // can't start with an underscore
       cy.pick("handle").clear();
       cy.pick("handle").type("nei_n");
-      cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
+      cy.pick("page").contains("It should match ^[a-z0-9][a-z0-9]+$");
 
       // can't start with a dash
       cy.pick("handle").clear();
       cy.pick("handle").type("no-pe-");
-      cy.pick("page").contains("Id should match ^[a-z0-9][a-z0-9]+$");
+      cy.pick("page").contains("It should match ^[a-z0-9][a-z0-9]+$");
 
       // has to be at least two characters long
       cy.pick("handle").clear();
