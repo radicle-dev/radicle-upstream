@@ -1,4 +1,5 @@
 <script>
+  import { pop } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as notification from "../../src/notification.ts";
@@ -24,13 +25,16 @@
 
 <style>
   .commit-page {
-    padding-top: 32px;
-    margin-bottom: 64px;
-    margin-left: 96px;
-    margin-right: 96px;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding: var(--content-padding);
+    min-width: var(--content-min-width);
   }
 
   header {
+    padding: 1rem;
+  }
+  .content {
     background: var(--color-foreground-level-1);
     border-radius: 4px;
     padding: 1.5rem;
@@ -109,31 +113,36 @@
 
 <div class="commit-page">
   <Remote {store} let:data={commit}>
+    <button on:click={() => pop()}>back</button>
     <header>
-      <Flex style="align-items: flex-start">
-        <div slot="left">
-          <Title variant="large" style="margin-bottom: 1rem">
-            {commit.header.summary}
-          </Title>
-        </div>
-        <div slot="right">
-          <span class="field">
-            <!-- NOTE(cloudhead): These awful margin hacks are here because
+      <Title variant="large" style="margin-bottom: .75rem">
+        {commit.header.summary}
+      </Title>
+      <div class="metadata">
+        <span class="field">
+          <!-- NOTE(cloudhead): These awful margin hacks are here because
             there is a bug in prettier that breaks our HTML if we try to format
             it differently. -->
-            <span style="margin-right: -1ch">Committed to</span>
-            <span class="branch">
-              <Icon.Branch
-                style="vertical-align: bottom; fill:
-                var(--color-foreground-level-6)" />
-              <span style="margin-left: -0.5ch">{commit.branch}</span>
-            </span>
-            <span style="margin-left: -0.5ch">
-              {format(commit.header.committerTime * 1000)}
-            </span>
+          <span>{commit.header.author.name}</span>
+          <span>committed</span>
+          <span class="hash">{commit.header.sha1.substring(0, 7)}</span>
+          <span style="margin-right: -1ch">to</span>
+          <span class="branch">
+            <Icon.Branch
+              style="vertical-align: bottom; fill:
+              var(--color-foreground-level-6)" />
+            <span style="margin-left: -0.5ch">{commit.branch}</span>
           </span>
-        </div>
-      </Flex>
+          <span style="margin-left: -0.5ch">
+            {format(commit.header.committerTime * 1000)}
+          </span>
+        </span>
+      </div>
+    </header>
+    <div class="content">
+      <pre class="description" style="margin-bottom: 1rem">
+        {commit.header.summary}
+      </pre>
       <pre class="description" style="margin-bottom: 1rem">
         {commit.header.description}
       </pre>
@@ -161,7 +170,8 @@
           </p>
         </div>
       </Flex>
-    </header>
+    </div>
+
     <main>
       <div class="changeset-summary">
         {#if commit.diff.modified.length > 0}
