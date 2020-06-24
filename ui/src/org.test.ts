@@ -54,35 +54,35 @@ describe("validation", () => {
     validation.validate("");
     expect(get(validation)).toEqual({
       status: ValidationStatus.Error,
-      message: "Id is required",
+      message: "This field is required",
     });
 
     // no spaces
     validation.validate("no spaces");
     expect(get(validation)).toEqual({
       status: ValidationStatus.Error,
-      message: "Id should match ^[a-z0-9][a-z0-9]+$",
+      message: "It should match ^[a-z0-9][a-z0-9]+$",
     });
 
     // no special characters
     validation.validate("^^^inVaLiD***");
     expect(get(validation)).toEqual({
       status: ValidationStatus.Error,
-      message: "Id should match ^[a-z0-9][a-z0-9]+$",
+      message: "It should match ^[a-z0-9][a-z0-9]+$",
     });
 
     // no starting with an underscore or dash
     validation.validate("_nVaLiD");
     expect(get(validation)).toEqual({
       status: ValidationStatus.Error,
-      message: "Id should match ^[a-z0-9][a-z0-9]+$",
+      message: "It should match ^[a-z0-9][a-z0-9]+$",
     });
 
     // must meet minimum length
     validation.validate("x");
     expect(get(validation)).toEqual({
       status: ValidationStatus.Error,
-      message: "Id should match ^[a-z0-9][a-z0-9]+$",
+      message: "It should match ^[a-z0-9][a-z0-9]+$",
     });
   });
 
@@ -93,7 +93,7 @@ describe("validation", () => {
     process.nextTick(() => {
       expect(get(validation)).toEqual({
         status: ValidationStatus.Error,
-        message: "Sorry, this id is already taken",
+        message: "Sorry, this one is already taken",
       });
     });
   });

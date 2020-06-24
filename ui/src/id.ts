@@ -11,20 +11,20 @@ const VALID_ID_MATCH_STR = "^[a-z0-9][a-z0-9]+$";
 const VALID_ID_MATCH = new RegExp(VALID_ID_MATCH_STR);
 const idConstraints = {
   presence: {
-    message: `Id is required`,
+    message: `This field is required`,
     allowEmpty: false,
   },
   format: {
     pattern: VALID_ID_MATCH,
-    message: `Id should match ${VALID_ID_MATCH_STR}`,
+    message: `It should match ${VALID_ID_MATCH_STR}`,
   },
 };
 
-// Id availability validation store.
+// Id validation store.
 export const idValidationStore = (): validation.ValidationStore =>
   validation.createValidationStore(idConstraints, [
     {
       promise: isAvailable,
-      validationMessage: "Sorry, this id is already taken",
+      validationMessage: "Sorry, this one is already taken",
     },
   ]);
