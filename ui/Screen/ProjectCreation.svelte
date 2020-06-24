@@ -42,6 +42,8 @@
   let validations = false;
   let beginValidation = false;
 
+  let loading = false;
+
   validatejs.options = {
     fullMessages: false,
   };
@@ -155,6 +157,7 @@
     let response;
 
     try {
+      loading = true;
       response = await create(
         {
           name,
@@ -164,6 +167,7 @@
         isNew ? newRepositoryPath : existingRepositoryPath
       );
 
+      loading = false;
       push(path.projectSource(response.id));
       notification.info(
         `Project ${response.metadata.name} successfully created`
@@ -357,9 +361,10 @@
             </Button>
             <Button
               dataCy="create-project-button"
-              disabled={!(name && currentSelection)}
+              disabled={!(name && currentSelection) || loading}
               variant="primary"
-              on:click={createProject}>
+              on:click={createProject}
+              {loading}>
               Create project
             </Button>
           </div>

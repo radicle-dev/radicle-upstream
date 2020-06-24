@@ -1,4 +1,5 @@
 <script>
+  import Icon from "./Icon";
   import Title from "./Title.svelte";
 
   // vanilla | primary | secondary | transparent | outline | destructive
@@ -8,6 +9,7 @@
   export let icon = null;
   export let style = null;
   export let dataCy = null;
+  export let loading = null;
 
   const iconClass = icon ? "icon" : null;
 
@@ -329,8 +331,12 @@
   {disabled}
   on:click
   {style}>
-  <svelte:component this={icon} />
-  <Title>
-    <slot />
-  </Title>
+  {#if loading}
+    <Icon.Spinner style="margin: 0;" />
+  {:else}
+    <svelte:component this={icon} />
+    <Title>
+      <slot />
+    </Title>
+  {/if}
 </button>
