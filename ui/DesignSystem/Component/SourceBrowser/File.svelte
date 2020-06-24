@@ -1,20 +1,8 @@
 <script>
-  import { link } from "svelte-spa-router";
-
-  import * as path from "../../../src/path.ts";
-  import {
-    currentPath,
-    currentRevision,
-    ObjectType,
-  } from "../../../src/source.ts";
-
   import { Icon } from "../../Primitive";
 
-  export let projectId = null;
-  export let filePath = null;
   export let name = null;
-
-  $: active = filePath === $currentPath;
+  export let active = false;
 </script>
 
 <style>
@@ -27,6 +15,14 @@
     line-height: 1.5em;
     flex: 1;
     width: 100%;
+    display: flex;
+    border-radius: 4px;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .file:hover {
+    background-color: var(--color-foreground-level-1);
   }
 
   /* prevent icon from shrinking when the filename is long */
@@ -36,15 +32,6 @@
 
   .file-name {
     margin-left: 0.25rem;
-  }
-
-  a {
-    display: flex;
-    border-radius: 4px;
-  }
-
-  a:hover {
-    background-color: var(--color-foreground-level-1);
   }
 
   .active {
@@ -58,11 +45,7 @@
   }
 </style>
 
-<a
-  class="file"
-  class:active
-  href={path.projectSource(projectId, $currentRevision, ObjectType.Blob, filePath)}
-  use:link>
+<div class="file" class:active on:click>
   <Icon.File />
   <span class="file-name">{name}</span>
-</a>
+</div>
