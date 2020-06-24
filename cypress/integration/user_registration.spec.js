@@ -50,6 +50,7 @@ context("user registration", () => {
   context("validations", () => {
     it("prevents the user from registering an invalid handle", () => {
       // shows a validation message when handle is not present
+      cy.pick("handle").type("xyz");
       cy.pick("handle").clear();
       cy.pick("page").contains("Id is required");
 
