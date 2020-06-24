@@ -7,6 +7,7 @@
 
   import { Avatar, Button, Flex, Input } from "../../DesignSystem/Primitive";
 
+  export let handle = "";
   export let identity = null;
   export let onNextStep = null;
 
@@ -16,22 +17,12 @@
     }
     onNextStep();
   };
-
-  export let handle = "";
-
+  const validation = idValidationStore();
   validatejs.options = {
     fullMessages: false,
   };
 
-  // Create a new validation store
-  const validation = idValidationStore();
-  let userStartedInputting = false;
-  $: {
-    // Start validating once the user enters something for the first time
-    if (handle && handle.length > 0) userStartedInputting = true;
-    if (userStartedInputting) validation.validate(handle);
-  }
-
+  $: validation.validate(handle);
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 

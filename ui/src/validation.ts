@@ -60,8 +60,11 @@ export const createValidationStore = (
   const internalStore = writable(initialState);
   const { subscribe, update } = internalStore;
   let inputStore: Writable<string> | undefined = undefined;
+  let lock: Promise<null> | null = null;
 
   const runValidations = async (input: string): Promise<void> => {
+    if (lock) await lock;
+
     // Always start with Loading
     update(() => {
       return { status: ValidationStatus.Loading, input: input };
@@ -81,40 +84,47 @@ export const createValidationStore = (
       return;
     }
 
-    // Check remote validation
-    let invalidRemoteValidation = false;
     if (remoteValidations.length > 0) {
-      for (const remoteValidation of remoteValidations) {
-        try {
-          const valid = await remoteValidation.promise(input);
+      lock = Promise.resolve(null);
+    }
 
-          if (!valid) {
-            update(store => {
-              // If the input has changed since this request was fired off, don't update
-              if (get(inputStore) !== input) return store;
-              return {
-                status: ValidationStatus.Error,
-                message: remoteValidation.validationMessage,
-              };
-            });
-            invalidRemoteValidation = true;
-            break;
-          }
-        } catch (error) {
-          update(() => {
+    let remoteSuccess = true;
+
+    for (const remoteValidation of remoteValidations) {
+      try {
+        const valid = await remoteValidation.promise(input);
+
+        if (!valid) {
+          remoteSuccess = false;
+
+          update(store => {
+            // If the input has changed since this request was fired off, don't update
+            if (get(inputStore) !== input) return store;
             return {
               status: ValidationStatus.Error,
-              message: `Cannot validate "${input}": ${error.message}`,
+              message: remoteValidation.validationMessage,
             };
           });
-          invalidRemoteValidation = true;
+
           break;
         }
-      }
-      if (!invalidRemoteValidation)
+      } catch (error) {
+        remoteSuccess = false;
+
         update(() => {
-          return { status: ValidationStatus.Success };
+          return {
+            status: ValidationStatus.Error,
+            message: `Cannot validate "${input}": ${error.message}`,
+          };
         });
+
+        break;
+      }
+    }
+
+    if (lock) await lock;
+
+    if (!remoteSuccess) {
       return;
     }
 
@@ -132,6 +142,7 @@ export const createValidationStore = (
       });
       return;
     }
+
     inputStore.set(input);
   };
 
