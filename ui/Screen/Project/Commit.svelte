@@ -1,4 +1,5 @@
 <script>
+  import { pop } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as notification from "../../src/notification.ts";
@@ -24,39 +25,75 @@
 
 <style>
   .commit-page {
-    padding-top: 32px;
-    margin-bottom: 64px;
-    margin-left: 96px;
-    margin-right: 96px;
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding: var(--content-padding);
+    min-width: var(--content-min-width);
   }
 
   header {
+    padding: 1rem;
+    position: relative;
+  }
+
+  header:hover .back-button {
+    left: -24px;
+  }
+
+  header:hover :global(svg) {
+    fill: var(--color-foreground-level-4);
+  }
+
+  .back-button {
+    position: absolute;
+    left: -16px;
+    cursor: pointer;
+    transition: left 0.25s ease;
+  }
+
+  .back-button :global(svg) {
+    fill: var(--color-foreground-level-2);
+    transition: fill 0.25s ease;
+  }
+
+  .back-button:hover :global(svg) {
+    fill: var(--color-foreground-level-6);
+  }
+
+  .content {
     background: var(--color-foreground-level-1);
     border-radius: 4px;
     padding: 1.5rem;
   }
+
   .description {
     font-family: var(--typeface-mono-regular);
   }
+
   .field {
     color: var(--color-foreground-level-6);
     margin-bottom: 0.5rem;
   }
+
   .field:last-child {
     margin-bottom: 0;
   }
+
   .email {
     font-family: var(--typeface-mono-regular);
   }
+
   .branch {
     margin: 0 0.5rem;
     font-family: var(--typeface-medium);
     color: var(--color-foreground-level-6);
   }
+
   .author {
     font-family: var(--typeface-medium);
     color: var(--color-foreground);
   }
+
   .hash {
     font-family: var(--typeface-mono-regular);
   }
@@ -66,16 +103,42 @@
     margin-bottom: 1.5rem;
     margin-left: 1.5rem;
   }
+
   .changeset-summary .amount {
     font-family: var(--typeface-medium);
   }
+
   .changeset-summary .additions {
     color: var(--color-positive);
     font-family: var(--typeface-medium);
   }
+
   .changeset-summary .deletions {
     color: var(--color-negative);
     font-family: var(--typeface-medium);
+  }
+
+  .file-header {
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    background: none;
+    border-bottom: 1px solid var(--color-foreground-level-3);
+    border-radius: 0;
+    padding: 0.75rem;
+  }
+
+  .file-header:last-child {
+    border-bottom: none;
+    margin-bottom: 1rem;
+  }
+
+  .file-header .diff-type.created {
+    margin-left: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    color: var(--color-positive);
+    background-color: var(--color-positive-level-1);
   }
 
   /* TODO(cloudhead): These should be global */
@@ -89,46 +152,53 @@
 <div class="commit-page">
   <Remote {store} let:data={commit}>
     <header>
-      <Flex style="align-items: flex-start">
-        <div slot="left">
-          <Title variant="large" style="margin-bottom: 1rem">
-            {commit.summary}
-          </Title>
-        </div>
-        <div slot="right">
-          <span class="field">
-            <!-- NOTE(cloudhead): These awful margin hacks are here because
+      <div class="back-button" on:click={() => pop()}>
+        <Icon.ArrowLeft />
+      </div>
+      <Title variant="large" style="margin-bottom: .75rem">
+        {commit.header.summary}
+      </Title>
+      <div class="metadata">
+        <span class="field">
+          <!-- NOTE(cloudhead): These awful margin hacks are here because
             there is a bug in prettier that breaks our HTML if we try to format
             it differently. -->
-            <span style="margin-right: -1ch">Committed to</span>
-            <span class="branch">
-              <Icon.Branch
-                style="vertical-align: bottom; fill:
-                var(--color-foreground-level-6)" />
-              <span style="margin-left: -0.5ch">{commit.branch}</span>
-            </span>
-            <span style="margin-left: -0.5ch">
-              {format(commit.committerTime * 1000)}
-            </span>
+          <span>{commit.header.author.name}</span>
+          <span>committed</span>
+          <span class="hash">{commit.header.sha1.substring(0, 7)}</span>
+          <span style="margin-right: -1ch">to</span>
+          <span class="branch">
+            <Icon.Branch
+              style="vertical-align: bottom; fill:
+              var(--color-foreground-level-6)" />
+            <span style="margin-left: -0.5ch">{commit.branch}</span>
           </span>
-        </div>
-      </Flex>
+          <span style="margin-left: -0.5ch">
+            {format(commit.header.committerTime * 1000)}
+          </span>
+        </span>
+      </div>
+    </header>
+    <div class="content">
       <pre class="description" style="margin-bottom: 1rem">
-        {commit.description}
+        {commit.header.summary}
+      </pre>
+      <pre class="description" style="margin-bottom: 1rem">
+        {commit.header.description}
       </pre>
       <hr />
       <Flex style="align-items: flex-end">
         <div slot="left">
           <p class="field">
             Authored by
-            <span class="author">{commit.author.name}</span>
-            <span class="email">&lt;{commit.author.email}&gt;</span>
+            <span class="author">{commit.header.author.name}</span>
+            <span class="email">&lt;{commit.header.author.email}&gt;</span>
           </p>
-          {#if commit.committer.email != commit.author.email}
+          {#if commit.header.committer.email != commit.header.author.email}
             <p class="field">
               Committed by
-              <span class="author">{commit.committer.name}</span>
-              <span class="email">&lt;{commit.committer.email}&gt;</span>
+              <span class="author">{commit.header.committer.name}</span>
+              <span class="email">&lt;{commit.header.committer.email}&gt;</span>
             </p>
           {/if}
         </div>
@@ -136,26 +206,34 @@
           <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
           <p class="field">
             Commit
-            <span class="hash">{commit.sha1}</span>
+            <span class="hash">{commit.header.sha1}</span>
           </p>
         </div>
       </Flex>
-    </header>
+    </div>
+
     <main>
       <div class="changeset-summary">
-        <span class="amount">
-          {commit.changeset.files.length} file(s) changed
-        </span>
-        with
-        <span class="additions">
-          {commit.changeset.summary.additions} addition(s)
-        </span>
-        and
-        <span class="deletions">
-          {commit.changeset.summary.deletions} deletion(s)
-        </span>
+        {#if commit.diff.modified.length > 0}
+          <span class="amount">
+            {commit.diff.modified.length} file(s) changed
+          </span>
+          with
+          <span class="additions">{commit.stats.additions} additions</span>
+          and
+          <span class="deletions">{commit.stats.deletions} deletions</span>
+        {/if}
       </div>
-      {#each commit.changeset.files as file}
+      <div>
+        {#each commit.diff.created as path}
+          <header class="file-header">
+            <Icon.File style="margin-right: 8px;" />
+            <Title>{path}</Title>
+            <span class="diff-type created">created</span>
+          </header>
+        {/each}
+      </div>
+      {#each commit.diff.modified as file}
         <FileDiff {file} />
       {/each}
     </main>

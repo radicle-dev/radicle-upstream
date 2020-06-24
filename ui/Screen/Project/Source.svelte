@@ -1,6 +1,5 @@
 <script>
   import { getContext } from "svelte";
-  import { location, link } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
@@ -8,6 +7,7 @@
   import {
     currentPath,
     currentRevision,
+    currentObjectType,
     fetchRevisions,
     object as objectStore,
     ObjectType,
@@ -31,10 +31,10 @@
 
   const updateRevision = (projectId, revision) => {
     updateParams({
-      path: path.extractProjectSourceObjectPath($location),
+      path: getPath($currentPath),
       projectId: projectId,
       revision: revision,
-      type: path.extractProjectSourceObjectType($location),
+      type: getObjectType($currentObjectType),
     });
   };
 
@@ -53,15 +53,21 @@
     return current !== "" ? current : metadata.defaultBranch;
   };
 
-  $: readmeStore = readme(id, getRevision($currentRevision));
-  $: updateParams({
-    path: path.extractProjectSourceObjectPath($location),
-    projectId: id,
-    revision: getRevision($currentRevision),
-    type: path.extractProjectSourceObjectType($location),
-  });
+  const getPath = current => {
+    return current !== "" ? current : "";
+  };
 
+  const getObjectType = current => {
+    return current !== "" ? current : ObjectType.Tree;
+  };
+
+  $: readmeStore = readme(id, getRevision($currentRevision));
+
+  // Fetch users and revisions for repository selector
   fetchRevisions({ projectId: id });
+
+  // Set the initial routing information on page load
+  updateRevision(id, getRevision($currentRevision));
 </script>
 
 <style>
@@ -182,9 +188,11 @@
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
+              <!-- Nb. We don't `use:link` here because it doesn't work due to
+              some reactivity bug. -->
               <a
-                href={path.projectCommits(project.id, $currentRevision)}
-                use:link>
+                href={`#${path.projectCommits(project.id, $currentRevision)}`}
+                data-cy="commits-button">
                 Commits
               </a>
             </Text>

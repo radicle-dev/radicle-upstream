@@ -6,8 +6,6 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
 
-import { mockChangeset } from "./commitMocks";
-
 // TOOLING
 const filterBranches = (branches: string[]): string[] =>
   branches.filter(branch => !config.HIDDEN_BRANCHES.includes(branch));
@@ -106,6 +104,12 @@ export const commits = commitsStore.readable;
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
+const currentObjectTypeStore = writable("");
+export const currentObjectType = derived(
+  currentObjectTypeStore,
+  $store => $store
+);
+
 const currentRevisionStore = writable("");
 export const currentRevision = derived(currentRevisionStore, $store => $store);
 
@@ -187,7 +191,6 @@ const update = (msg: Msg): void => {
           commitStore.success({
             // TODO(cloudhead): Fetch branch from backend.
             branch: "master",
-            changeset: mockChangeset,
             ...commit,
           });
         })
@@ -198,7 +201,9 @@ const update = (msg: Msg): void => {
       commitsStore.loading();
 
       api
-        .get<CommitSummary[]>(`source/commits/${msg.projectId}/${msg.branch}`)
+        .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
+          query: { branch: msg.branch },
+        })
         .then(history => {
           commitsStore.success(groupCommits(history));
         })
@@ -220,6 +225,7 @@ const update = (msg: Msg): void => {
 
     case Kind.Update:
       currentPathStore.update(() => msg.path);
+      currentObjectTypeStore.update(() => msg.type);
       currentRevisionStore.update(() => msg.revision);
       objectStore.loading();
 

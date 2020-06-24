@@ -16,7 +16,7 @@
   export let params = null;
 
   const projectId = params.id;
-  const branch = params.branch;
+  const branch = decodeURIComponent(params.branch);
 
   fetchCommits({ projectId, branch });
 </script>

@@ -1592,7 +1592,7 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=2f1ba1b00d86134003852571fb859ff5629d4456#2f1ba1b00d86134003852571fb859ff5629d4456"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=e2e5b1ed4b1aa03f718da0c3b8c5cb414df1c328#e2e5b1ed4b1aa03f718da0c3b8c5cb414df1c328"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -2746,7 +2746,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-client"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=d7f0f3c955e29eac19da94dc76dcf304866310a7#d7f0f3c955e29eac19da94dc76dcf304866310a7"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=114f78b357aa4615bc0e389ab62ad0029243583c#114f78b357aa4615bc0e389ab62ad0029243583c"
 dependencies = [
  "async-trait",
  "derive_more 0.15.0",
@@ -2781,7 +2781,7 @@ dependencies = [
 [[package]]
 name = "radicle-registry-core"
 version = "0.0.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=d7f0f3c955e29eac19da94dc76dcf304866310a7#d7f0f3c955e29eac19da94dc76dcf304866310a7"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=114f78b357aa4615bc0e389ab62ad0029243583c#114f78b357aa4615bc0e389ab62ad0029243583c"
 dependencies = [
  "derive-try-from-primitive",
  "parity-scale-codec",
@@ -2794,8 +2794,8 @@ dependencies = [
 
 [[package]]
 name = "radicle-registry-runtime"
-version = "0.8.0"
-source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=d7f0f3c955e29eac19da94dc76dcf304866310a7#d7f0f3c955e29eac19da94dc76dcf304866310a7"
+version = "0.11.0"
+source = "git+https://github.com/radicle-dev/radicle-registry.git?rev=114f78b357aa4615bc0e389ab62ad0029243583c#114f78b357aa4615bc0e389ab62ad0029243583c"
 dependencies = [
  "frame-executive",
  "frame-support",
@@ -2825,12 +2825,13 @@ dependencies = [
 [[package]]
 name = "radicle-surf"
 version = "0.2.1"
-source = "git+https://github.com/radicle-dev/radicle-surf?rev=a23f9406f00c3230a24b6ddd9b612a9b1d5accf1#a23f9406f00c3230a24b6ddd9b612a9b1d5accf1"
+source = "git+https://github.com/radicle-dev/radicle-surf?rev=5728b74e77d12769ac917d04c4901994f30092ae#5728b74e77d12769ac917d04c4901994f30092ae"
 dependencies = [
  "git2",
  "lazy_static",
  "nonempty 0.5.0",
  "regex",
+ "serde",
  "thiserror",
 ]
 

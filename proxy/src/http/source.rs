@@ -42,7 +42,7 @@ fn filters(
         .or(tree_filter(peer))
 }
 
-/// `GET /blob/<project_id>/<revision>/<path...>`
+/// `GET /blob/<project_id>?revision=<revision>&path=<path>`
 fn blob_filter(
     peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -123,7 +123,7 @@ fn commit_filter(
         .and_then(handler::commit)
 }
 
-/// `GET /commits/<project_id>/<branch>`
+/// `GET /commits/<project_id>?branch=<branch>`
 fn commits_filter(
     peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -134,7 +134,10 @@ fn commits_filter(
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(document::param::<String>("branch", "Branch name"))
+        .and(warp::filters::query::query::<CommitsQuery>())
+        .and(document::document(
+            document::query("branch", document::string()).description("Git branch"),
+        ))
         .and(document::document(document::description(
             "Fetch Commits from a Branch",
         )))
@@ -315,7 +318,7 @@ mod handler {
     pub async fn commits(
         peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
-        branch: String,
+        super::CommitsQuery { branch }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
         let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
@@ -399,6 +402,13 @@ mod handler {
 
         Ok(reply::json(&tree))
     }
+}
+
+/// Bundled query params to pass to the commits handler.
+#[derive(Debug, Deserialize)]
+pub struct CommitsQuery {
+    /// Branch to get the commit history for.
+    branch: String,
 }
 
 /// Bundled query params to pass to the blob handler.
@@ -504,7 +514,20 @@ impl Serialize for coco::Commit {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Commit", 6)?;
+        let mut changeset = serializer.serialize_struct("Commit", 3)?;
+        changeset.serialize_field("header", &self.header)?;
+        changeset.serialize_field("stats", &self.stats)?;
+        changeset.serialize_field("diff", &self.diff)?;
+        changeset.end()
+    }
+}
+
+impl Serialize for coco::CommitHeader {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("CommitHeader", 6)?;
         state.serialize_field("sha1", &self.sha1.to_string())?;
         state.serialize_field("author", &self.author)?;
         state.serialize_field("summary", &self.summary)?;
@@ -515,7 +538,7 @@ impl Serialize for coco::Commit {
     }
 }
 
-impl ToDocumentedType for coco::Commit {
+impl ToDocumentedType for coco::CommitHeader {
     fn document() -> document::DocumentedType {
         let mut properties = std::collections::HashMap::with_capacity(6);
         properties.insert(
@@ -543,6 +566,22 @@ impl ToDocumentedType for coco::Commit {
             document::string()
                 .description("Time of the commit")
                 .example("1575283425"),
+        );
+        document::DocumentedType::from(properties).description("CommitHeader")
+    }
+}
+
+impl ToDocumentedType for coco::Commit {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert("header".into(), coco::CommitHeader::document());
+        properties.insert(
+            "stats".into(),
+            document::string().description("Commit stats"),
+        );
+        properties.insert(
+            "diff".into(),
+            document::string().description("Commit changeset"),
         );
         document::DocumentedType::from(properties).description("Commit")
     }
@@ -886,6 +925,7 @@ mod test {
     }
 
     #[tokio::test]
+    #[allow(clippy::indexing_slicing)]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
@@ -898,7 +938,8 @@ mod test {
         let urn = platinum_project.urn();
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
-        let want = peer.with_browser(&urn, |mut browser| coco::commit(&mut browser, sha1))?;
+        let want =
+            peer.with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -908,9 +949,9 @@ mod test {
             .await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
+            assert_eq!(have["header"], json!(want));
             assert_eq!(
-                have,
+                have["header"],
                 json!({
                     "sha1": sha1,
                     "author": {
@@ -949,12 +990,12 @@ mod test {
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
         let want = peer.with_browser(&urn, |mut browser| coco::commits(&mut browser, branch))?;
         let head_commit =
-            peer.with_browser(&urn, |mut browser| coco::commit(&mut browser, head))?;
+            peer.with_browser(&urn, |mut browser| coco::commit_header(&mut browser, head))?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/commits/{}/{}", urn.to_string(), branch))
+            .path(&format!("/commits/{}?branch={}", urn.to_string(), branch))
             .reply(&api)
             .await;
 
