@@ -188,6 +188,8 @@
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
+              <!-- Nb. We don't `use:link` here because it doesn't work due to
+              some reactivity bug. -->
               <a href={`#${path.projectCommits(project.id, $currentRevision)}`}>
                 Commits
               </a>
