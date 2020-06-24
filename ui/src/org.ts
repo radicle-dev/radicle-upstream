@@ -39,10 +39,10 @@ export const projects = projectsStore.readable;
 
 // Api
 export const getOrg = (id: string): Promise<Org> => api.get<Org>(`orgs/${id}`);
-export const getIdAvailability = (id: string): Promise<boolean> =>
-  getOrg(id).then(org => !org);
+
 const validateUserExistence = (handle: string): Promise<boolean> =>
   user.get(handle).then(user => !!user);
+
 const validateNewMember = (orgId: string) => (
   handle: string
 ): Promise<boolean> =>
@@ -150,28 +150,6 @@ export const registerMember = (
     `orgs/${orgId}/members`,
     { handle, transactionFee }
   );
-
-// ID validation
-const VALID_ID_MATCH = new RegExp("^[a-z0-9][a-z0-9]+$");
-export const idConstraints = {
-  presence: {
-    message: `Org id is required`,
-    allowEmpty: false,
-  },
-  format: {
-    pattern: VALID_ID_MATCH,
-    message: `Org id should match [a-z0-9][a-z0-9_-]+`,
-  },
-};
-
-// Make sure we make a new one every time
-export const orgIdValidationStore = (): validation.ValidationStore =>
-  validation.createValidationStore(idConstraints, [
-    {
-      promise: getIdAvailability,
-      validationMessage: "Sorry, this id is already taken",
-    },
-  ]);
 
 const memberHandleConstraints = {
   presence: {
