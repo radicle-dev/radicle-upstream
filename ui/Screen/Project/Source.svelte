@@ -190,7 +190,9 @@
             <Text style="margin: 0 8px;">
               <!-- Nb. We don't `use:link` here because it doesn't work due to
               some reactivity bug. -->
-              <a href={`#${path.projectCommits(project.id, $currentRevision)}`}>
+              <a
+                href={`#${path.projectCommits(project.id, $currentRevision)}`}
+                data-cy="commits-button">
                 Commits
               </a>
             </Text>
