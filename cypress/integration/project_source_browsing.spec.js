@@ -10,6 +10,25 @@ beforeEach(() => {
   cy.contains("Source").click();
 });
 
+context("commit browsing", () => {
+  context("commit history", () => {
+    it("shows the commit history for the default branch", () => {
+      cy.pick("commits-button").click();
+      cy.contains("27acd68").should("not.exist");
+      cy.contains("91b69e0").click();
+      cy.contains("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1").should("exist");
+    });
+    it("shows the commit history for another branch", () => {
+      cy.pick("revision-selector").click();
+      cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
+      cy.pick("commits-button").click();
+      cy.contains("91b69e0").should("not.exist");
+      cy.contains("27acd68").click();
+      cy.contains("27acd68c7504755aa11023300890bb85bbd69d45").should("exist");
+    });
+  });
+});
+
 context("source code browsing", () => {
   context("relative timestamps", () => {
     context("when the timeframe is less than a day", () => {

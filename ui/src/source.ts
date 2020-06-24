@@ -201,7 +201,9 @@ const update = (msg: Msg): void => {
       commitsStore.loading();
 
       api
-        .get<CommitSummary[]>(`source/commits/${msg.projectId}/${msg.branch}`)
+        .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
+          query: { branch: msg.branch },
+        })
         .then(history => {
           commitsStore.success(groupCommits(history));
         })
