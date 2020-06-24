@@ -84,6 +84,15 @@ context("user registration", () => {
       cy.pick("handle").type("nope");
       cy.pick("page").contains("Sorry, this id is already taken");
     });
+
+    // TODO: Fix validation bug in https://github.com/radicle-dev/radicle-upstream/issues/492
+    it.skip("prevents the user from registering an id already taken by an org", () => {
+      cy.registerOrg("neoxyz");
+
+      cy.pick("org-reg-modal", "input").type("neoxyz");
+      cy.pick("org-reg-modal").contains("Sorry, this id is already taken");
+      cy.pick("submit-button").should("be.disabled");
+    });
   });
 
   context("transaction", () => {

@@ -98,10 +98,18 @@ context("org registration", () => {
     });
 
     // TODO: Fix validation bug in https://github.com/radicle-dev/radicle-upstream/issues/492
-    it.skip("prevents the user from registering an unavailable org id", () => {
+    it.skip("prevents the user from registering an id already taken by another org", () => {
       cy.registerOrg("coolname");
 
       cy.pick("org-reg-modal", "input").type("coolname");
+      cy.pick("org-reg-modal").contains("Sorry, this id is already taken");
+      cy.pick("submit-button").should("be.disabled");
+    });
+
+    it.skip("prevents the user from registering an id already taken by a user", () => {
+      cy.registerUser("userxyz");
+
+      cy.pick("org-reg-modal", "input").type("userxyz");
       cy.pick("org-reg-modal").contains("Sorry, this id is already taken");
       cy.pick("submit-button").should("be.disabled");
     });
