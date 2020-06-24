@@ -294,6 +294,26 @@ impl Registry {
             settlement: 9,
         }
     }
+
+    /// Create a new signed [`protocol::Transaction`].
+    ///
+    /// Fetches the author account nonce and runtime version from the chain.
+    async fn new_signed_transaction<M: protocol::Message>(
+        &self,
+        author: &protocol::ed25519::Pair,
+        message: M,
+        fee: Balance,
+    ) -> Result<protocol::Transaction<M>, error::Error> {
+        let nonce = self.client.account_nonce(&author.public()).await?;
+        let runtime_spec_version = self.client.runtime_version().await?.spec_version;
+        let extra = protocol::TransactionExtra {
+            genesis_hash: self.client.genesis_hash(),
+            nonce,
+            runtime_spec_version,
+            fee,
+        };
+        Ok(protocol::Transaction::new_signed(author, message, extra))
+    }
 }
 
 #[async_trait]
@@ -347,15 +367,9 @@ impl Client for Registry {
         let register_message = protocol::message::RegisterOrg {
             org_id: org_id.clone(),
         };
-        let register_tx = protocol::Transaction::new_signed(
-            author,
-            register_message,
-            protocol::TransactionExtra {
-                genesis_hash: self.client.genesis_hash(),
-                nonce: self.client.account_nonce(&author.public()).await?,
-                fee,
-            },
-        );
+        let register_tx = self
+            .new_signed_transaction(author, register_message, fee)
+            .await?;
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
         let block = self.client.block_header(applied.block).await?;
@@ -383,17 +397,10 @@ impl Client for Registry {
         let unregister_message = protocol::message::UnregisterOrg {
             org_id: org_id.clone(),
         };
-        let register_tx = protocol::Transaction::new_signed(
-            author,
-            unregister_message,
-            protocol::TransactionExtra {
-                genesis_hash: self.client.genesis_hash(),
-                nonce: self.client.account_nonce(&author.public()).await?,
-                fee,
-            },
-        );
-
-        let applied = self.client.submit_transaction(register_tx).await?.await?;
+        let tx = self
+            .new_signed_transaction(author, unregister_message, fee)
+            .await?;
+        let applied = self.client.submit_transaction(tx).await?.await?;
         applied.result?;
         let block = self.client.block_header(applied.block).await?;
 
@@ -417,16 +424,10 @@ impl Client for Registry {
             org_id: org_id.clone(),
             user_id: user_id.clone(),
         };
-        let register_tx = protocol::Transaction::new_signed(
-            author,
-            register_message,
-            protocol::TransactionExtra {
-                genesis_hash: self.client.genesis_hash(),
-                nonce: self.client.account_nonce(&author.public()).await?,
-                fee,
-            },
-        );
-        let applied = self.client.submit_transaction(register_tx).await?.await?;
+        let tx = self
+            .new_signed_transaction(author, register_message, fee)
+            .await?;
+        let applied = self.client.submit_transaction(tx).await?.await?;
         applied.result?;
         let block = self.client.block_header(applied.block).await?;
         let tx = Transaction::confirmed(
@@ -499,15 +500,9 @@ impl Client for Registry {
             project_hash: protocol::H256::random(),
             previous_checkpoint_id: None,
         };
-        let checkpoint_tx = protocol::Transaction::new_signed(
-            author,
-            checkpoint_message,
-            protocol::TransactionExtra {
-                genesis_hash: self.client.genesis_hash(),
-                nonce: self.client.account_nonce(&author.public()).await?,
-                fee,
-            },
-        );
+        let checkpoint_tx = self
+            .new_signed_transaction(author, checkpoint_message, fee)
+            .await?;
         let checkpoint_id = self
             .client
             .submit_transaction(checkpoint_tx)
@@ -537,15 +532,9 @@ impl Client for Registry {
             checkpoint_id,
             metadata: register_metadata,
         };
-        let register_tx = protocol::Transaction::new_signed(
-            author,
-            register_message,
-            protocol::TransactionExtra {
-                genesis_hash: self.client.genesis_hash(),
-                nonce: self.client.account_nonce(&author.public()).await?,
-                fee,
-            },
-        );
+        let register_tx = self
+            .new_signed_transaction(author, register_message, fee)
+            .await?;
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
         let block = self.client.block_header(applied.block).await?;
@@ -591,15 +580,9 @@ impl Client for Registry {
         let register_message = protocol::message::RegisterUser {
             user_id: handle.clone(),
         };
-        let register_tx = protocol::Transaction::new_signed(
-            author,
-            register_message,
-            protocol::TransactionExtra {
-                genesis_hash: self.client.genesis_hash(),
-                nonce: self.client.account_nonce(&author.public()).await?,
-                fee,
-            },
-        );
+        let register_tx = self
+            .new_signed_transaction(author, register_message, fee)
+            .await?;
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
         let block = self.client.block_header(applied.block).await?;

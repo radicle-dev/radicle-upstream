@@ -81,45 +81,50 @@ export const createValidationStore = (
       return;
     }
 
-    // Check remote validation
-    let invalidRemoteValidation = false;
-    if (remoteValidations.length > 0) {
-      for (const remoteValidation of remoteValidations) {
-        try {
-          const valid = await remoteValidation.promise(input);
+    let remoteSuccess = true;
 
-          if (!valid) {
-            update(store => {
-              // If the input has changed since this request was fired off, don't update
-              if (get(inputStore) !== input) return store;
-              return {
-                status: ValidationStatus.Error,
-                message: remoteValidation.validationMessage,
-              };
-            });
-            invalidRemoteValidation = true;
-            break;
-          }
-        } catch (error) {
-          update(() => {
+    for (const remoteValidation of remoteValidations) {
+      try {
+        const valid = await remoteValidation.promise(input);
+
+        if (!valid) {
+          remoteSuccess = false;
+
+          update(store => {
+            // If the input has changed since this request was fired off, don't update
+            if (get(inputStore) !== input) return store;
             return {
               status: ValidationStatus.Error,
-              message: `Cannot validate "${input}": ${error.message}`,
+              message: remoteValidation.validationMessage,
             };
           });
-          invalidRemoteValidation = true;
+
           break;
         }
-      }
-      if (!invalidRemoteValidation)
-        update(() => {
-          return { status: ValidationStatus.Success };
+      } catch (error) {
+        remoteSuccess = false;
+
+        update(store => {
+          // If the input has changed since this request was fired off, don't update
+          if (get(inputStore) !== input) return store;
+          return {
+            status: ValidationStatus.Error,
+            message: `Cannot validate "${input}": ${error.message}`,
+          };
         });
+
+        break;
+      }
+    }
+
+    if (!remoteSuccess) {
       return;
     }
 
     // If we made it here, it's valid
-    update(() => {
+    update(store => {
+      // If the input has changed since this request was fired off, don't update
+      if (get(inputStore) !== input) return store;
       return { status: ValidationStatus.Success };
     });
   };
@@ -132,6 +137,7 @@ export const createValidationStore = (
       });
       return;
     }
+
     inputStore.set(input);
   };
 

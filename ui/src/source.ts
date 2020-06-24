@@ -104,6 +104,12 @@ export const commits = commitsStore.readable;
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
+const currentObjectTypeStore = writable("");
+export const currentObjectType = derived(
+  currentObjectTypeStore,
+  $store => $store
+);
+
 const currentRevisionStore = writable("");
 export const currentRevision = derived(currentRevisionStore, $store => $store);
 
@@ -195,7 +201,9 @@ const update = (msg: Msg): void => {
       commitsStore.loading();
 
       api
-        .get<CommitSummary[]>(`source/commits/${msg.projectId}/${msg.branch}`)
+        .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
+          query: { branch: msg.branch },
+        })
         .then(history => {
           commitsStore.success(groupCommits(history));
         })
@@ -217,6 +225,7 @@ const update = (msg: Msg): void => {
 
     case Kind.Update:
       currentPathStore.update(() => msg.path);
+      currentObjectTypeStore.update(() => msg.type);
       currentRevisionStore.update(() => msg.revision);
       objectStore.loading();
 

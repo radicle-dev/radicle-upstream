@@ -715,7 +715,7 @@
           placeholder="Enter user name."
           style="width: 100%"
           valid={false}
-          validation={{ status: ValidationStatus.Error, message: 'Handle already taken' }}
+          validation={{ status: ValidationStatus.Error, message: 'Id already taken' }}
           value="myUser">
           <div slot="avatar">
             <Avatar size="small" avatarFallback={avatarFallback2} />
