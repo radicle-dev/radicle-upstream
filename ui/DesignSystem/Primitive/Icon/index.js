@@ -1,4 +1,5 @@
 import ArrowDown from "./ArrowDown.svelte";
+import ArrowLeft from "./ArrowLeft.svelte";
 import ArrowUp from "./ArrowUp.svelte";
 import At from "./At.svelte";
 import Verified from "./Verified.svelte";
@@ -46,6 +47,7 @@ import Trash from "./Trash.svelte";
 
 export default {
   ArrowDown,
+  ArrowLeft,
   ArrowUp,
   At,
   Verified,
