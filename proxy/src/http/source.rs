@@ -995,7 +995,7 @@ mod test {
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/commits/{}/{}", urn.to_string(), branch))
+            .path(&format!("/commits/{}?branch={}", urn.to_string(), branch))
             .reply(&api)
             .await;
 
