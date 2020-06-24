@@ -19,9 +19,6 @@
   let avatarFallback, orgId, payer, showAvatar, subject, transaction;
   let state = RegistrationFlowState.Preparation;
 
-  // Create a new validation store
-  const validation = idValidationStore();
-
   const transactionFee = $session.data.minimumTransactionFee;
 
   const next = () => {
@@ -85,7 +82,14 @@
       ? "Submit transaction"
       : "Next";
 
-  $: validation.validate(orgId);
+  // Create a new validation store
+  const validation = idValidationStore();
+  let userStartedInputting = false;
+  $: {
+    // Start validating once the user enters something for the first time
+    if (orgId && orgId.length > 0) userStartedInputting = true;
+    if (userStartedInputting) validation.validate(orgId);
+  }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>

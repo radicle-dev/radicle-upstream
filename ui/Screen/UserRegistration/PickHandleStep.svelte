@@ -19,14 +19,18 @@
 
   export let handle = "";
 
-  // Create a new validation store
-  const validation = idValidationStore();
-
   validatejs.options = {
     fullMessages: false,
   };
 
-  $: validation.validate(handle);
+  // Create a new validation store
+  const validation = idValidationStore();
+  let userStartedInputting = false;
+  $: {
+    // Start validating once the user enters something for the first time
+    if (handle && handle.length > 0) userStartedInputting = true;
+    if (userStartedInputting) validation.validate(handle);
+  }
 
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
