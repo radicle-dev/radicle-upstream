@@ -1,15 +1,14 @@
 <script>
-  import Icon from "./Icon";
   import Title from "./Title.svelte";
 
   // vanilla | primary | secondary | transparent | outline | destructive
   export let variant = "primary";
 
+  export let dataCy = null;
   export let disabled = null;
   export let icon = null;
-  export let style = null;
-  export let dataCy = null;
   export let loading = null;
+  export let style = null;
 
   const iconClass = icon ? "icon" : null;
 
@@ -323,20 +322,21 @@
     border-color: var(--color-negative-level-1);
     color: var(--color-background);
   }
+
+  .disabled.loading {
+    cursor: wait;
+  }
 </style>
 
 <button
   data-cy={dataCy}
   class="button {buttonClass}"
+  class:loading
   {disabled}
   on:click
   {style}>
-  {#if loading}
-    <Icon.Spinner style="margin: 0;" />
-  {:else}
-    <svelte:component this={icon} />
-    <Title>
-      <slot />
-    </Title>
-  {/if}
+  <svelte:component this={icon} />
+  <Title>
+    <slot />
+  </Title>
 </button>
