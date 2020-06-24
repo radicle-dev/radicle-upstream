@@ -92,7 +92,14 @@ const update = (msg: Msg): void => {
       projectsStore.loading();
       api
         .get<Projects>(`orgs/${msg.id}/projects`)
-        .then(projectsStore.success)
+        .then(response => {
+          const projectList = response.map(registeredProject => ({
+            ...registeredProject,
+            stats: project.statsStore(registeredProject.maybeProject.id),
+          }));
+
+          projectsStore.success(projectList);
+        })
         .catch(projectsStore.error);
 
       break;

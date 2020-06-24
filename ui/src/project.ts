@@ -1,9 +1,8 @@
-import { writable } from "svelte/store";
-
 import * as api from "./api";
 import * as currency from "./currency";
 import * as event from "./event";
 import * as remote from "./remote";
+import * as source from "./source";
 import * as transaction from "./transaction";
 
 // TYPES.
@@ -13,18 +12,12 @@ export interface Metadata {
   description?: string;
 }
 
-interface Stats {
-  branches: number;
-  commits: number;
-  contributors: number;
-}
-
 export interface Project {
   id: string;
   shareableEntityIdentifier: string;
   metadata: Metadata;
   registration: string; // TODO(rudolfs): what will this type be?
-  stats: Stats;
+  stats: remote.Store<source.Stats>;
 }
 
 type Projects = Project[];
@@ -52,13 +45,12 @@ export const project = projectStore.readable;
 const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
 
-export const projectNameStore = writable(null);
-
 // EVENTS
 enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
+  FetchStats = "FETCH_STATS",
 }
 
 interface Create extends event.Event<Kind> {
@@ -91,6 +83,14 @@ interface RegisterInput {
   maybeCocoId?: string;
 }
 
+// TODO(sos): use Store's loading state capability for partial replication of
+// Stats once replication is a thing
+export const statsStore = (id: string): remote.Store<source.Stats> => {
+  const store = remote.createStore<source.Stats>();
+  source.fetchProjectStats(id).then(store.success).catch(store.error);
+  return store;
+};
+
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Create:
@@ -117,7 +117,14 @@ const update = (msg: Msg): void => {
       projectsStore.loading();
       api
         .get<Projects>("projects")
-        .then(projectsStore.success)
+        .then(response => {
+          const projectList = response.map(project => ({
+            ...project,
+            stats: statsStore(project.id),
+          }));
+
+          projectsStore.success(projectList);
+        })
         .catch(projectsStore.error);
 
       break;

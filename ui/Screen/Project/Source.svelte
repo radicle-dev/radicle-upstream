@@ -9,10 +9,12 @@
     currentPath,
     currentRevision,
     fetchRevisions,
+    fetchStats,
     object as objectStore,
     ObjectType,
     readme,
     revisions as revisionsStore,
+    stats as statsStore,
     updateParams,
   } from "../../src/source.ts";
 
@@ -49,9 +51,8 @@
 
   const { id, metadata } = getContext("project");
 
-  const getRevision = current => {
-    return current !== "" ? current : metadata.defaultBranch;
-  };
+  const getRevision = current =>
+    current !== "" ? current : metadata.defaultBranch;
 
   $: readmeStore = readme(id, getRevision($currentRevision));
   $: updateParams({
@@ -62,6 +63,7 @@
   });
 
   fetchRevisions({ projectId: id });
+  fetchStats({ projectId: id });
 </script>
 
 <style>
@@ -178,29 +180,31 @@
 
     <div class="column-right">
       <div class="repo-header">
-        <div class="repo-stats">
-          <div class="repo-stat-item">
-            <Icon.Commit />
-            <Text style="margin: 0 8px;">
-              <a
-                href={path.projectCommits(project.id, $currentRevision)}
-                use:link>
-                Commits
-              </a>
-            </Text>
-            <span class="stat">{project.stats.commits}</span>
+        <Remote store={statsStore} let:data={stats}>
+          <div class="repo-stats">
+            <div class="repo-stat-item">
+              <Icon.Commit />
+              <Text style="margin: 0 8px;">
+                <a
+                  href={path.projectCommits(project.id, $currentRevision)}
+                  use:link>
+                  Commits
+                </a>
+              </Text>
+              <span class="stat">{stats.commitCount}</span>
+            </div>
+            <div class="repo-stat-item">
+              <Icon.Branch />
+              <Text style="margin: 0 8px;">Branches</Text>
+              <span class="stat">{stats.branchCount}</span>
+            </div>
+            <div class="repo-stat-item">
+              <Icon.Member />
+              <Text style="margin: 0 8px;">Contributors</Text>
+              <span class="stat">{stats.contributorCount}</span>
+            </div>
           </div>
-          <div class="repo-stat-item">
-            <Icon.Branch />
-            <Text style="margin: 0 8px;">Branches</Text>
-            <span class="stat">{project.stats.branches}</span>
-          </div>
-          <div class="repo-stat-item">
-            <Icon.Member />
-            <Text style="margin: 0 8px;">Contributors</Text>
-            <span class="stat">{project.stats.contributors}</span>
-          </div>
-        </div>
+        </Remote>
         <CloneButton projectId={project.id} />
       </div>
 

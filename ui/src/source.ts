@@ -94,6 +94,12 @@ interface Readme {
   path?: string;
 }
 
+export interface Stats {
+  branchCount: number;
+  commitCount: number;
+  contributorCount: number;
+}
+
 // STATE
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
@@ -113,11 +119,15 @@ export const object = objectStore.readable;
 const revisionsStore = remote.createStore<Revisions>();
 export const revisions = revisionsStore.readable;
 
+const statsStore = remote.createStore<Stats>();
+export const stats = statsStore.readable;
+
 // EVENTS
 enum Kind {
   FetchCommit = "FETCH_COMMIT",
   FetchCommits = "FETCH_COMMITS",
   FetchRevisions = "FETCH_REVISIONS",
+  FetchStats = "FETCH_STATS",
   Update = "UPDATE",
 }
 
@@ -135,6 +145,11 @@ interface FetchCommits extends event.Event<Kind> {
 
 interface FetchRevisions extends event.Event<Kind> {
   kind: Kind.FetchRevisions;
+  projectId: string;
+}
+
+interface FetchStats extends event.Event<Kind> {
+  kind: Kind.FetchStats;
   projectId: string;
 }
 
@@ -172,7 +187,7 @@ const groupCommits = (history: CommitSummary[]): CommitHistory => {
   return days;
 };
 
-type Msg = FetchCommit | FetchCommits | FetchRevisions | Update;
+type Msg = FetchCommit | FetchCommits | FetchRevisions | FetchStats | Update;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -207,12 +222,20 @@ const update = (msg: Msg): void => {
         .get<Revisions>(`source/revisions/${msg.projectId}`)
         .then(revisions =>
           revisionsStore.success(
-            revisions.map(rev => {
-              return { ...rev, branches: filterBranches(rev.branches) };
-            })
+            revisions.map(rev => ({
+              ...rev,
+              branches: filterBranches(rev.branches),
+            }))
           )
         )
         .catch(revisionsStore.error);
+      break;
+
+    case Kind.FetchStats:
+      api
+        .get<Stats>(`source/stats/${msg.projectId}`)
+        .then(stats => statsStore.success(stats))
+        .catch(statsStore.error);
       break;
 
     case Kind.Update:
@@ -249,6 +272,7 @@ export const fetchRevisions = event.create<Kind, Msg>(
   Kind.FetchRevisions,
   update
 );
+export const fetchStats = event.create<Kind, Msg>(Kind.FetchStats, update);
 export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
 
 export const getLocalState = (path: string): Promise<LocalState> => {
@@ -327,3 +351,6 @@ export const readme = (
 
   return readme.readable;
 };
+
+export const fetchProjectStats = (projectId: string) =>
+  api.get<Stats>(`source/stats/${projectId}`);

@@ -189,8 +189,8 @@ pub struct TreeEntry {
   pub path: String,
 }
 
-/// Representation of high-level project [`Stats`] - its known number of branches and
-/// number of commits and committers on the current branch
+/// Representation of high-level project [`Stats`] - its known number of branches,
+/// commits, and contributors on the default branch
 pub struct Stats(pub surf::vcs::git::Stats);
 
 /// Returns the [`Blob`] for a file at `revision` under `path`.
@@ -363,17 +363,6 @@ pub fn commits<'repo>(
 
   Ok(commits)
 }
-
-/// Retrieves [`Stats`] for a given project `id`.
-///
-/// # Errors
-///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails
-// pub fn stats<'repo>(browser: &Browser<'repo>) -> Result<Stats, error::Error> {
-//   let stats = browser.get_stats()?;
-
-//   Ok(stats)
-// }
 
 /// Retrieves the list of [`Tag`] for the given project `id`.
 ///
