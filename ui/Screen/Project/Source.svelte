@@ -1,6 +1,5 @@
 <script>
   import { getContext } from "svelte";
-  import { link } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
@@ -189,9 +188,7 @@
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
-              <a
-                href={path.projectCommits(project.id, $currentRevision)}
-                use:link>
+              <a href={`#${path.projectCommits(project.id, $currentRevision)}`}>
                 Commits
               </a>
             </Text>

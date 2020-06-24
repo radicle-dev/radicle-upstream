@@ -36,7 +36,7 @@ export const projectSource = (id: string): string => {
 export const projectCommit = (id: string, hash: string): string =>
   `/projects/${id}/commit/${hash}`;
 export const projectCommits = (id: string, branch: string): string =>
-  `/projects/${id}/commits/${branch}`;
+  `/projects/${id}/commits/${encodeURIComponent(branch)}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 
