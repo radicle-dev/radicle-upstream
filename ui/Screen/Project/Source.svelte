@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import { location } from "svelte-spa-router";
+  import { link, location } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
@@ -182,11 +182,9 @@
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
-              <!-- Nb. We don't `use:link` here because it doesn't work due to
-              some reactivity bug. -->
               <a
-                href={`#${path.projectCommits(project.id, $currentRevision)}`}
-                data-cy="commits-button">
+                data-cy="commits-button"
+                use:link={path.projectCommits(project.id, $currentRevision)}>
                 Commits
               </a>
             </Text>
