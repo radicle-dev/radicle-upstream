@@ -14,8 +14,6 @@
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
-  import Sidebar from "../Layout/Sidebar.svelte";
-
   import Breadcrumb from "./Project/Breadcrumb.svelte";
   import Source from "./Project/Source.svelte";
   import Issues from "./Project/Issues.svelte";
@@ -113,32 +111,30 @@
   fetch({ id: params.id });
 </script>
 
-<Sidebar dataCy="project-screen">
-  <Remote {store} let:data={project} context="project">
-    <Topbar style="position: fixed; top: 0;">
-      <a slot="left" href={path.projectSource(params.id)} use:link>
-        <!-- TODO(rudolfs): show whether the project is registered under user or org -->
-        <Breadcrumb
-          title={project.metadata.name}
-          user={project.registered}
-          org={project.registered} />
-      </a>
+<Remote {store} let:data={project} context="project">
+  <Topbar style="position: fixed; top: 0;">
+    <a slot="left" href={path.projectSource(params.id)} use:link>
+      <!-- TODO(rudolfs): show whether the project is registered under user or org -->
+      <Breadcrumb
+        title={project.metadata.name}
+        user={project.registered}
+        org={project.registered} />
+    </a>
 
-      <div slot="middle">
-        <HorizontalMenu items={topbarMenuItems(params.id)} />
-      </div>
+    <div slot="middle">
+      <HorizontalMenu items={topbarMenuItems(params.id)} />
+    </div>
 
-      <div slot="right" style="display: flex">
-        <Router prefix={routePrefix} routes={menuRoutes} />
-        <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
-        <AdditionalActionsDropdown
-          dataCy="context-menu"
-          style="margin: 0 24px 0 16px"
-          headerTitle={project.shareableEntityIdentifier}
-          menuItems={dropdownMenuItems} />
-      </div>
-    </Topbar>
+    <div slot="right" style="display: flex">
+      <Router prefix={routePrefix} routes={menuRoutes} />
+      <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
+      <AdditionalActionsDropdown
+        dataCy="context-menu"
+        style="margin: 0 24px 0 16px"
+        headerTitle={project.shareableEntityIdentifier}
+        menuItems={dropdownMenuItems} />
+    </div>
+  </Topbar>
 
-    <Router prefix={routePrefix} {routes} />
-  </Remote>
-</Sidebar>
+  <Router prefix={routePrefix} {routes} />
+</Remote>

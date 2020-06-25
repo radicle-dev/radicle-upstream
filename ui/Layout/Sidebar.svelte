@@ -1,5 +1,4 @@
 <script>
-  import { getContext } from "svelte";
   import { push } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
@@ -7,9 +6,8 @@
   import Sidebar from "../DesignSystem/Component/Sidebar.svelte";
 
   export let dataCy = null;
+  export let session = null;
   export let style = null;
-
-  const session = getContext("session");
 </script>
 
 <style>
@@ -23,11 +21,13 @@
 </style>
 
 <div data-cy={dataCy}>
-  <Sidebar
-    on:createorg={() => push(path.orgRegistration())}
-    identity={session.identity}
-    orgs={session.orgs}
-    registerOrgPermission={session.permissions.registerOrg} />
+  {#if session.identity !== null}
+    <Sidebar
+      on:createorg={() => push(path.orgRegistration())}
+      identity={session.identity}
+      orgs={session.orgs}
+      registerOrgPermission={session.permissions.registerOrg} />
+  {/if}
 
   <div class="layout" data-cy="scrollable-content">
     <div class="content" {style}>

@@ -8,8 +8,6 @@
 
   import Title from "../DesignSystem/Primitive/Title.svelte";
 
-  import Sidebar from "../Layout/Sidebar.svelte";
-
   import Appearance from "./Settings/Appearance.svelte";
   import Developer from "./Settings/Developer.svelte";
   import Legal from "./Settings/Legal.svelte";
@@ -52,21 +50,19 @@
   }
 </style>
 
-<Sidebar>
-  <main>
-    <Title variant="big">Settings</Title>
+<main>
+  <Title variant="big">Settings</Title>
 
-    <Version />
-    <Appearance
-      appearance={$settings.appearance}
-      options={themeOptions}
-      on:update={updateTheme} />
-    <Registry
-      network={$settings.registry.network}
-      options={networkOptions}
-      on:update={updateNetwork} />
-    <Session />
-    <Developer />
-    <Legal />
-  </main>
-</Sidebar>
+  <Version />
+  <Appearance
+    appearance={$settings.appearance}
+    options={themeOptions}
+    on:update={updateTheme} />
+  <Registry
+    network={$settings.registry.network}
+    options={networkOptions}
+    on:update={updateNetwork} />
+  <Session />
+  <Developer />
+  <Legal />
+</main>
