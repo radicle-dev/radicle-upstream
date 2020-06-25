@@ -1,6 +1,7 @@
 <script>
   import { getContext } from "svelte";
   import { link, location } from "svelte-spa-router";
+  import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
@@ -19,6 +20,7 @@
   import { Copyable, Placeholder, Remote } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
+  import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
@@ -95,6 +97,11 @@
     padding-left: 0.75rem;
     min-width: var(--content-min-width);
     width: 100%;
+  }
+
+  .commit-header {
+    height: 2.5rem;
+    margin-bottom: 1rem;
   }
 
   .source-tree {
@@ -207,6 +214,17 @@
             projectName={project.metadata.name}
             projectId={project.id} />
         {:else if object.path === ''}
+          <!-- Repository root -->
+          <div class="commit-header">
+            <CommitTeaser
+              projectId={project.id}
+              user={{ username: object.info.lastCommit.author.name, avatar: object.info.lastCommit.author.avatar }}
+              commitMessage={object.info.lastCommit.summary}
+              commitSha={object.info.lastCommit.sha1}
+              timestamp={format(object.info.lastCommit.committerTime * 1000)}
+              style="height: 100%" />
+          </div>
+
           <!-- Readme -->
           <Remote
             store={readme(id, getRevision($currentRevision))}
