@@ -1,5 +1,6 @@
 <script>
   import { getContext } from "svelte";
+  import { location } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
@@ -7,7 +8,6 @@
   import {
     currentPath,
     currentRevision,
-    currentObjectType,
     fetchRevisions,
     object as objectStore,
     ObjectType,
@@ -31,10 +31,10 @@
 
   const updateRevision = (projectId, revision) => {
     updateParams({
-      path: getPath($currentPath),
+      path: path.extractProjectSourceObjectPath($location),
       projectId: projectId,
       revision: revision,
-      type: getObjectType($currentObjectType),
+      type: path.extractProjectSourceObjectType($location),
     });
   };
 
@@ -53,21 +53,15 @@
     return current !== "" ? current : metadata.defaultBranch;
   };
 
-  const getPath = current => {
-    return current !== "" ? current : "";
-  };
-
-  const getObjectType = current => {
-    return current !== "" ? current : ObjectType.Tree;
-  };
-
   $: readmeStore = readme(id, getRevision($currentRevision));
+  $: updateParams({
+    path: path.extractProjectSourceObjectPath($location),
+    projectId: id,
+    revision: getRevision($currentRevision),
+    type: path.extractProjectSourceObjectType($location),
+  });
 
-  // Fetch users and revisions for repository selector
   fetchRevisions({ projectId: id });
-
-  // Set the initial routing information on page load
-  updateRevision(id, getRevision($currentRevision));
 </script>
 
 <style>
