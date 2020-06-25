@@ -1,7 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import Icon from "../Icon";
+  import { Icon } from "../../Primitive";
 
   export let style = null;
 </script>

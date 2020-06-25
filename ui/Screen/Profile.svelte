@@ -6,10 +6,11 @@
 
   import {
     AdditionalActionsDropdown,
+    Header,
     HorizontalMenu,
     SidebarLayout,
   } from "../DesignSystem/Component";
-  import { Icon, Header } from "../DesignSystem/Primitive";
+  import { Icon } from "../DesignSystem/Primitive";
 
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";

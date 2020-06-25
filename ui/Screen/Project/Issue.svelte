@@ -1,6 +1,6 @@
 <script>
-  import { Header, Title, Text, Markdown } from "../../DesignSystem/Primitive";
-  import { Comment, Timeline } from "../../DesignSystem/Component";
+  import { Title, Text, Markdown } from "../../DesignSystem/Primitive";
+  import { Comment, Header, Timeline } from "../../DesignSystem/Component";
 
   $: openClass = issue.open ? "open" : "closed";
 

@@ -5,9 +5,10 @@
   import { fetch, org as store } from "../src/org.ts";
   import * as path from "../src/path.ts";
 
-  import { Header, Icon } from "../DesignSystem/Primitive";
+  import { Icon } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    Header,
     HorizontalMenu,
     Remote,
     SidebarLayout,

@@ -5,8 +5,8 @@
   import { commit as store, fetchCommit } from "../../src/source.ts";
   import * as remote from "../../src/remote.ts";
 
-  import { Header, Title, Flex, Icon } from "../../DesignSystem/Primitive";
-  import { Remote } from "../../DesignSystem/Component";
+  import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
+  import { Header, Remote } from "../../DesignSystem/Component";
 
   import FileDiff from "../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
 
