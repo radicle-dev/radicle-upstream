@@ -77,7 +77,12 @@
             name={entry.info.name}
             prefix={`${entry.path}/`} />
         {:else}
-          <File {projectId} filePath={entry.path} name={entry.info.name} />
+          <File
+            active={entry.path === $currentPath}
+            {projectId}
+            filePath={entry.path}
+            name={entry.info.name}
+            currentRevision={$currentRevision} />
         {/if}
       {/each}
     {/if}
