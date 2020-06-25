@@ -55,10 +55,14 @@
       </header>
       <div class="section-item">
         <div class="info">
-          <Text>Version 01.45.02</Text>
+          <Text style="color: var(--color-foreground-level-6);">
+            Version 01.45.02
+          </Text>
         </div>
         <div class="action">
-          <Text>There’s a new version of Radicle Upstream</Text>
+          <Text style="color: var(--color-foreground-level-6);">
+            There’s a new version of Radicle Upstream
+          </Text>
           <Button style="margin-left: 16px;">Update to Version 01.45.03</Button>
         </div>
       </div>
@@ -105,7 +109,7 @@
       <div class="section-item">
         <div class="info">
           <Text variant="medium">Clear local cache</Text>
-          <Text>
+          <Text style="color: var(--color-foreground-level-6);">
             Removes all locally-stored temporary data from your device.
           </Text>
         </div>
@@ -121,7 +125,7 @@
       <div class="section-item">
         <div class="info">
           <Text variant="medium">Clears all authentication data</Text>
-          <Text>
+          <Text style="color: var(--color-foreground-level-6);">
             This is similar to how logout works. You will have to create a new
             identity or restore your existing identity.
           </Text>
@@ -146,7 +150,7 @@
           <Text variant="medium">
             Unlink all unregistered projects from my profile
           </Text>
-          <Text>
+          <Text style="color: var(--color-foreground-level-6);">
             This unlinks your local repositories from Upstream. The local data
             will remain on your computer.
           </Text>
@@ -164,25 +168,25 @@
       <div class="section-item">
         <div class="info">
           <Text variant="medium">Twemoji</Text>
-          <Text>
+          <Text style="color: var(--color-foreground-level-6);">
             Copyright 2020 Twitter, Inc and other contributors. Licensed under
-            CC-BY 4.0
+            CC-BY 4.0.
           </Text>
         </div>
       </div>
       <div class="section-item">
         <div class="info">
           <Text variant="medium">Inter</Text>
-          <Text>
+          <Text style="color: var(--color-foreground-level-6);">
             Inter font by Rasmus Andersson licensed under the SIL Open Font
-            License 1.1
+            License 1.1.
           </Text>
         </div>
       </div>
       <div class="section-item">
         <div class="info">
           <Text variant="medium">Source Code Pro</Text>
-          <Text>
+          <Text style="color: var(--color-foreground-level-6);">
             Source Code Pro font by Adobe Fonts distributed under the SIL Open
             Font License.
           </Text>
