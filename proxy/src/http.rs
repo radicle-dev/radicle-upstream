@@ -1,9 +1,17 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::convert::Infallible;
+use std::convert::TryFrom;
+use std::str::FromStr;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
-use warp::{path, Filter, Rejection, Reply};
+use warp::http::StatusCode;
+use warp::{
+    document::{self, ToDocumentedType},
+    path, reply, Filter, Rejection, Reply,
+};
 
 use crate::coco;
 use crate::registry;
@@ -19,6 +27,7 @@ mod project;
 mod session;
 mod source;
 mod transaction;
+
 mod user;
 
 /// Helper to combine the multiple filters together with Filter::or, possibly boxing the types in
@@ -154,6 +163,82 @@ pub fn with_subscriptions(
     subscriptions: crate::notification::Subscriptions,
 ) -> impl Filter<Extract = (crate::notification::Subscriptions,), Error = Infallible> + Clone {
     warp::any().map(move || crate::notification::Subscriptions::clone(&subscriptions))
+}
+
+/// Bundled input data for project registration, shared
+/// between users and orgs.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RegisterProjectInput {
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
+    /// Optionally passed coco id to store for attestion.
+    maybe_coco_id: Option<String>,
+}
+
+impl ToDocumentedType for RegisterProjectInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(2);
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+        properties.insert(
+            "maybeCocoId".into(),
+            document::string()
+                .description("Optionally passed coco id to store for attestion")
+                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for Project registration")
+    }
+}
+
+/// Register a project in the registry under the given domain.
+///
+/// # Errors
+///
+/// Might return an http error
+pub async fn register_project<R: registry::Client>(
+    registry: Shared<R>,
+    subscriptions: crate::notification::Subscriptions,
+    domain_type: registry::DomainType,
+    domain_id_str: String,
+    project_name: String,
+    input: RegisterProjectInput,
+) -> Result<impl Reply, Rejection> {
+    // TODO(xla): Get keypair from persistent storage.
+    let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+
+    let reg = registry.read().await;
+    let maybe_coco_id = input
+        .maybe_coco_id
+        .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project RadUrn"));
+    let domain_id = registry::Id::try_from(domain_id_str).map_err(crate::error::Error::from)?;
+    let domain = match domain_type {
+        registry::DomainType::Org => registry::ProjectDomain::Org(domain_id),
+        registry::DomainType::User => registry::ProjectDomain::User(domain_id),
+    };
+    let project_name =
+        registry::ProjectName::try_from(project_name).map_err(crate::error::Error::from)?;
+
+    let tx = reg
+        .register_project(
+            &fake_pair,
+            domain,
+            project_name,
+            maybe_coco_id,
+            input.transaction_fee,
+        )
+        .await?;
+
+    subscriptions
+        .broadcast(crate::notification::Notification::Transaction(tx.clone()))
+        .await;
+
+    Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
 }
 
 #[cfg(test)]

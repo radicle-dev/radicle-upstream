@@ -2,7 +2,6 @@
 
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
@@ -10,7 +9,7 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::coco;
-use crate::http;
+use crate::http::{self, RegisterProjectInput};
 use crate::notification;
 use crate::project;
 use crate::registry;
@@ -248,7 +247,6 @@ fn register_member_filter<R: registry::Client>(
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::convert::TryFrom;
-    use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::Mutex;
     use warp::http::StatusCode;
@@ -281,32 +279,15 @@ mod handler {
         project_name: String,
         input: super::RegisterProjectInput,
     ) -> Result<impl Reply, Rejection> {
-        // TODO(xla): Get keypair from persistent storage.
-        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-
-        let reg = registry.read().await;
-        let maybe_coco_id = input
-            .maybe_coco_id
-            .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project RadUrn"));
-        let domain_id = registry::Id::try_from(org_id).map_err(Error::from)?;
-        let domain = registry::ProjectDomain::Org(domain_id);
-        let project_name = registry::ProjectName::try_from(project_name).map_err(Error::from)?;
-
-        let tx = reg
-            .register_project(
-                &fake_pair,
-                domain,
-                project_name,
-                maybe_coco_id,
-                input.transaction_fee,
-            )
-            .await?;
-
-        subscriptions
-            .broadcast(notification::Notification::Transaction(tx.clone()))
-            .await;
-
-        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+        http::register_project(
+            registry,
+            subscriptions,
+            registry::DomainType::Org,
+            org_id,
+            project_name,
+            input,
+        )
+        .await
     }
 
     /// Get the [`registry::Project`] under the given org id.
@@ -521,36 +502,6 @@ impl ToDocumentedType for RegisterInput {
         );
 
         document::DocumentedType::from(properties).description("Input for org registration")
-    }
-}
-
-/// Bundled input data for project registration.
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RegisterProjectInput {
-    /// User specified transaction fee.
-    transaction_fee: registry::Balance,
-    /// Optionally passed coco id to store for attestion.
-    maybe_coco_id: Option<String>,
-}
-
-impl ToDocumentedType for RegisterProjectInput {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(2);
-        properties.insert(
-            "transactionFee".into(),
-            document::string()
-                .description("User specified transaction fee")
-                .example(100),
-        );
-        properties.insert(
-            "maybeCocoId".into(),
-            document::string()
-                .description("Optionally passed coco id to store for attestion")
-                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
-        );
-
-        document::DocumentedType::from(properties).description("Input for Project registration")
     }
 }
 
