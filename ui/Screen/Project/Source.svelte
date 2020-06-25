@@ -1,7 +1,6 @@
 <script>
   import { getContext } from "svelte";
   import { link, location } from "svelte-spa-router";
-  import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
@@ -16,12 +15,11 @@
     updateParams,
   } from "../../src/source.ts";
 
-  import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
-  import { Remote, Copyable } from "../../DesignSystem/Component";
+  import { Code, Flex, Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { Copyable, Placeholder, Remote } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
   import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
-  import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
@@ -53,7 +51,6 @@
     return current !== "" ? current : metadata.defaultBranch;
   };
 
-  $: readmeStore = readme(id, getRevision($currentRevision));
   $: updateParams({
     path: path.extractProjectSourceObjectPath($location),
     projectId: id,
@@ -98,11 +95,6 @@
     padding-left: 0.75rem;
     min-width: var(--content-min-width);
     width: 100%;
-  }
-
-  .commit-header {
-    height: 2.5rem;
-    margin-bottom: 1rem;
   }
 
   .source-tree {
@@ -213,26 +205,20 @@
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.info.objectType === ObjectType.Tree}
-          <!-- Repository root -->
-          <div class="commit-header">
-            <CommitTeaser
-              projectId={project.id}
-              user={{ username: object.info.lastCommit.author.name, avatar: object.info.lastCommit.author.avatar }}
-              commitMessage={object.info.lastCommit.summary}
-              commitSha={object.info.lastCommit.sha1}
-              timestamp={format(object.info.lastCommit.committerTime * 1000)}
-              style="height: 100%" />
-          </div>
-        {/if}
-      </Remote>
-
-      <!-- Readme -->
-      <Remote store={readmeStore} let:data={readme}>
-        {#if readme}
-          <Readme content={readme.content} path={readme.path} />
-        {:else}
-          <!-- TODO: Placeholder for when projects don't have a README -->
+        {:else if object.path === ''}
+          <!-- Readme -->
+          <Remote
+            store={readme(id, getRevision($currentRevision))}
+            let:data={readme}>
+            {#if readme}
+              <Readme content={readme.content} path={readme.path} />
+            {:else}
+              <Flex align="center">
+                <Placeholder style="width: 300px; height: 100px" />
+                <Text>No readme found placeholder.</Text>
+              </Flex>
+            {/if}
+          </Remote>
         {/if}
       </Remote>
     </div>
