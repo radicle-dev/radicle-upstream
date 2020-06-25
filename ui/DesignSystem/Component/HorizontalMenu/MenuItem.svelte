@@ -41,6 +41,7 @@
   }
 </style>
 
+<!-- svelte-ignore a11y-missing-attribute -->
 <a data-cy={title} use:link={href}>
   {#if active}
     <div class="icon">
