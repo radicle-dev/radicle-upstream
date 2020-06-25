@@ -702,7 +702,7 @@ mod test {
                     "name": project_name.to_string(),
                 },
                 "registration": Value::Null,
-                "shareableEntityIdentifier": urn.to_string(),
+                "shareableEntityIdentifier": format!("%{}", urn),
             }
         }]);
 

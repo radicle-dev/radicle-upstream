@@ -126,15 +126,10 @@ mod handler {
                 &input.default_branch,
             )
             .await?;
+        let stats = peer.with_browser(&meta.urn(), |browser| Ok(browser.get_stats()?))?;
 
         Ok(reply::with_status(
-            reply::json(&project::Project {
-                id: meta.urn(),
-                shareable_entity_identifier: format!("%{}", meta.urn()),
-                metadata: meta.into(),
-                registration: None,
-                stats: None,
-            }),
+            reply::json(&project::Project::from_project_stats(meta, stats)),
             StatusCode::CREATED,
         ))
     }
