@@ -213,7 +213,7 @@
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.path === ''}
+        {:else if object.path === ""}
           <!-- Repository root -->
           <div class="commit-header">
             <CommitTeaser
