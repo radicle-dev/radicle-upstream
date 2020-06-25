@@ -51,8 +51,8 @@ where
     R: registry::Cache + registry::Client + 'static,
 {
     let peer = Arc::new(Mutex::new(peer));
-    let maybe_owner = Arc::new(RwLock::new(Some(owner.clone())));
-    let owner = Arc::new(RwLock::new(owner));
+    // TODO(finto): The user should be read from rad/self
+    let owner = Arc::new(RwLock::new(Some(owner)));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
@@ -74,7 +74,7 @@ where
     );
     let project_filter = project::filters(
         Arc::clone(&peer),
-        Arc::clone(&maybe_owner),
+        Arc::clone(&owner),
         Arc::clone(&registry),
         subscriptions.clone(),
     );
