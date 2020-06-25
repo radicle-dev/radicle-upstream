@@ -86,7 +86,7 @@
     "sirv-cli": "^0.4.5",
     "standard-version": "^7.1.0",
     "svelte": "^3.22.2",
-    "svelte-spa-router": "^2.1.0",
+    "svelte-spa-router": "^2.2.0",
     "ts-jest": "^26.0.0",
     "ts-node": "^8.10.1",
     "typescript": "3.8.3",
