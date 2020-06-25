@@ -28,23 +28,24 @@
   import IssuesMenu from "./Project/IssuesMenu.svelte";
   import RevisionsMenu from "./Project/RevisionsMenu.svelte";
 
+  const routePrefix = "/projects";
   const routes = {
-    "/projects/:id/": Source,
-    "/projects/:id/source": Source,
-    "/projects/:id/source/*": Source,
-    "/projects/:id/issues": Issues,
-    "/projects/:id/issue": Issue,
-    "/projects/:id/commit/:hash": Commit,
-    "/projects/:id/commits/:branch": Commits,
-    "/projects/:id/revisions": Revisions,
+    "/:id/": Source,
+    "/:id/source": Source,
+    "/:id/source/*": Source,
+    "/:id/issues": Issues,
+    "/:id/issue": Issue,
+    "/:id/commit/:hash": Commit,
+    "/:id/commits/:branch": Commits,
+    "/:id/revisions": Revisions,
   };
 
   const menuRoutes = {
-    "/projects/:id/": SourceMenu,
-    "/projects/:id/source": SourceMenu,
-    "/projects/:id/source/*": SourceMenu,
-    "/projects/:id/issues": IssuesMenu,
-    "/projects/:id/revisions": RevisionsMenu,
+    "/:id/": SourceMenu,
+    "/:id/source": SourceMenu,
+    "/:id/source/*": SourceMenu,
+    "/:id/issues": IssuesMenu,
+    "/:id/revisions": RevisionsMenu,
   };
 
   export let params = null;
@@ -112,7 +113,7 @@
   fetch({ id: params.id });
 </script>
 
-<Sidebar>
+<Sidebar dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
       <a slot="left" href={path.projectSource(params.id)} use:link>
@@ -128,7 +129,7 @@
       </div>
 
       <div slot="right" style="display: flex">
-        <Router routes={menuRoutes} />
+        <Router prefix={routePrefix} routes={menuRoutes} />
         <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
         <AdditionalActionsDropdown
           dataCy="context-menu"
@@ -138,6 +139,6 @@
       </div>
     </Topbar>
 
-    <Router {routes} />
+    <Router prefix={routePrefix} {routes} />
   </Remote>
 </Sidebar>

@@ -20,25 +20,26 @@
   import Members from "./Org/Members.svelte";
   import Projects from "./Org/Projects.svelte";
 
-  export let params = null;
-  const session = getContext("session");
-
-  const routes = {
-    "/orgs/:id": Projects,
-    "/orgs/:id/fund": Fund,
-    "/orgs/:id/members": Members,
-    "/orgs/:id/projects": Projects,
-  };
-
   import ProjectsMenu from "./Org/ProjectsMenu.svelte";
   import FundMenu from "./Org/FundMenu.svelte";
   import MembersMenu from "./Org/MembersMenu.svelte";
 
+  export let params = null;
+
+  const session = getContext("session");
+
+  const routePrefix = "/orgs";
+  const routes = {
+    "/:id": Projects,
+    "/:id/fund": Fund,
+    "/:id/members": Members,
+    "/:id/projects": Projects,
+  };
   const menuRoutes = {
-    "/orgs/:id/": ProjectsMenu,
-    "/orgs/:id/projects": ProjectsMenu,
-    "/orgs/:id/fund": FundMenu,
-    "/orgs/:id/members": MembersMenu,
+    "/:id/": ProjectsMenu,
+    "/:id/projects": ProjectsMenu,
+    "/:id/fund": FundMenu,
+    "/:id/members": MembersMenu,
   };
 
   const topbarMenuItems = orgId => [
@@ -106,7 +107,7 @@
           <HorizontalMenu items={topbarMenuItems(params.id)} />
         </div>
         <div slot="right" style="display: flex">
-          <Router routes={menuRoutes} />
+          <Router prefix={routePrefix} routes={menuRoutes} />
           <AdditionalActionsDropdown
             dataCy="context-menu"
             style="margin: 0 16px"
@@ -114,7 +115,7 @@
             menuItems={dropdownMenuItems} />
         </div>
       </BigHeader>
-      <Router {routes} />
+      <Router prefix={routePrefix} {routes} />
     </Remote>
   </Screen>
 </Sidebar>

@@ -16,20 +16,18 @@
 
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
-  import NotFound from "./NotFound.svelte";
-
-  const screenRoutes = {
-    "/profile/projects": Projects,
-    "/profile/wallet": Wallet,
-    "*": NotFound,
-  };
 
   import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
   import WalletMenu from "./Profile/WalletMenu.svelte";
 
+  const routePrefix = "/profile";
+  const screenRoutes = {
+    "/projects": Projects,
+    "/wallet": Wallet,
+  };
   const menuRoutes = {
-    "/profile/projects": ProjectsMenu,
-    "/profile/wallet": WalletMenu,
+    "/projects": ProjectsMenu,
+    "/wallet": WalletMenu,
   };
 
   const topbarMenuItems = [
@@ -77,7 +75,7 @@
         <HorizontalMenu items={topbarMenuItems} />
       </div>
       <div slot="right" style="display: flex">
-        <Router routes={menuRoutes} />
+        <Router prefix={routePrefix} routes={menuRoutes} />
         <AdditionalActionsDropdown
           dataCy="profile-context-menu"
           style="margin: 0 16px"
@@ -86,6 +84,6 @@
       </div>
     </BigHeader>
 
-    <Router routes={screenRoutes} />
+    <Router prefix={routePrefix} routes={screenRoutes} />
   </Screen>
 </Sidebar>
