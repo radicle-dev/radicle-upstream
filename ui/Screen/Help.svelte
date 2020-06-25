@@ -1,5 +1,5 @@
 <script>
-  import ModalLayout from "../DesignSystem/Component/ModalLayout.svelte";
+  import Modal from "../Layout/Modal.svelte";
 </script>
 
 <style>
@@ -14,7 +14,7 @@
   }
 </style>
 
-<ModalLayout>
+<Modal>
   <div class="shortcut">
     <kbd>SHIFT</kbd>
     +
@@ -37,4 +37,4 @@
     <kbd>ESC</kbd>
     - close modal
   </div>
-</ModalLayout>
+</Modal>

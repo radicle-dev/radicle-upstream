@@ -10,11 +10,12 @@
   import { Flex, Title } from "../DesignSystem/Primitive";
   import {
     NavigationButtons,
-    ModalLayout,
     Remote,
     StepCounter,
     Transaction,
   } from "../DesignSystem/Component";
+
+  import Modal from "../Layout/Modal.svelte";
 
   import RegistrationDetailsStep from "./ProjectRegistration/RegistrationDetailsStep.svelte";
 
@@ -81,7 +82,7 @@
 </style>
 
 <Remote store={projectStore} let:data={projects}>
-  <ModalLayout dataCy="project-registration-screen">
+  <Modal dataCy="project-registration-screen">
     <div class="wrapper">
       <div class="project-registration">
         <Flex align="center" style="margin-bottom: 40px;">
@@ -126,5 +127,5 @@
         {/if}
       </div>
     </div>
-  </ModalLayout>
+  </Modal>
 </Remote>

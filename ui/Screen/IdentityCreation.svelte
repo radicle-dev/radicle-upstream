@@ -6,8 +6,11 @@
   import * as path from "../src/path.ts";
   import * as session from "../src/session.ts";
 
-  import { ModalLayout, RadicleLogo } from "../DesignSystem/Component";
-  import { Button, Text } from "../DesignSystem/Primitive";
+  import Button from "../DesignSystem/Primitive/Button.svelte";
+  import Text from "../DesignSystem/Primitive/Text.svelte";
+  import RadicleLogo from "../DesignSystem/Component/RadicleLogo.svelte";
+
+  import Modal from "../Layout/Modal.svelte";
 
   import Form from "./IdentityCreation/Form.svelte";
   import Success from "./IdentityCreation/Success.svelte";
@@ -56,7 +59,7 @@
   }
 </style>
 
-<ModalLayout escapable={$store !== State.Welcome} {onClose}>
+<Modal escapable={$store !== State.Welcome} {onClose}>
   {#if $store === State.Welcome}
     <div class="container">
       <RadicleLogo />
@@ -80,4 +83,4 @@
   {:else if $store === State.SuccessView}
     <Success on:close={onClose} on:register={onRegister} />
   {/if}
-</ModalLayout>
+</Modal>

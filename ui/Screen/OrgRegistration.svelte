@@ -9,12 +9,10 @@
   import { formatPayer, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
-  import {
-    NavigationButtons,
-    StepModalLayout,
-    Transaction,
-  } from "../DesignSystem/Component";
+  import { NavigationButtons, Transaction } from "../DesignSystem/Component";
   import { Avatar, Input, Text } from "../DesignSystem/Primitive";
+
+  import StepModal from "../Layout/StepModal.svelte";
 
   let avatarFallback, orgId, payer, showAvatar, subject, transaction;
   let state = RegistrationFlowState.Preparation;
@@ -94,7 +92,7 @@
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
-<StepModalLayout
+<StepModal
   dataCy="org-reg-modal"
   selectedStep={state + 1}
   steps={['Preparation', 'Submit']}>
@@ -135,4 +133,4 @@
     {disableSubmit}
     on:cancel={cancel}
     on:submit={next} />
-</StepModalLayout>
+</StepModal>

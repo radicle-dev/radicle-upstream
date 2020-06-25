@@ -9,14 +9,12 @@ import List from "./List.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
-import ModalLayout from "./ModalLayout.svelte";
 import Placeholder from "./Placeholder.svelte";
 import BigHeader from "./BigHeader.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import Rad from "./Rad.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
-import StepModalLayout from "./Registration/StepModalLayout.svelte";
 import Remote from "./Remote.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
@@ -45,7 +43,6 @@ export {
   NavigationButtons,
   Notification,
   NotificationFaucet,
-  ModalLayout,
   Placeholder,
   BigHeader,
   ProjectCard,
@@ -53,7 +50,6 @@ export {
   RadicleLogo,
   RadioOption,
   Stats,
-  StepModalLayout,
   Remote,
   Row,
   SegmentedControl,

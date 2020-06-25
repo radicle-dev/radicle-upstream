@@ -6,12 +6,13 @@
   import * as transaction from "../src/transaction.ts";
 
   import {
-    ModalLayout,
     Remote,
     Transaction,
     TransactionStatusbar,
   } from "../DesignSystem/Component";
   import { Button } from "../DesignSystem/Primitive";
+
+  import Modal from "../Layout/Modal.svelte";
 
   export let params = null;
 
@@ -40,7 +41,7 @@
   }
 </style>
 
-<ModalLayout dataCy="page">
+<Modal dataCy="page">
   <div class="transaction" data-cy="transaction">
     <Remote {store} let:data={tx}>
       <TransactionStatusbar
@@ -64,4 +65,4 @@
       </Button>
     </div>
   </div>
-</ModalLayout>
+</Modal>

@@ -1,7 +1,8 @@
 <script>
-  import { Title } from "../../Primitive";
-  import ModalLayout from "../ModalLayout.svelte";
-  import StepCounter from "../StepCounter.svelte";
+  import Title from "../DesignSystem/Primitive/Title.svelte";
+  import StepCounter from "../DesignSystem/Component/StepCounter.svelte";
+
+  import Modal from "./Modal.svelte";
 
   export let dataCy = null;
   export let selectedStep = null;
@@ -18,7 +19,7 @@
   }
 </style>
 
-<ModalLayout {dataCy}>
+<Modal {dataCy}>
   <div class="container">
     <StepCounter {selectedStep} {steps} style="margin-bottom: 50px;" />
     <Title variant="big" style="margin-bottom: 16px;">
@@ -26,4 +27,4 @@
     </Title>
     <slot />
   </div>
-</ModalLayout>
+</Modal>

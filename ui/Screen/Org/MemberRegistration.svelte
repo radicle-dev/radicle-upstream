@@ -12,11 +12,9 @@
   import { ValidationStatus } from "../../src/validation.ts";
 
   import { Input, Text } from "../../DesignSystem/Primitive";
-  import {
-    NavigationButtons,
-    StepModalLayout,
-    Transaction,
-  } from "../../DesignSystem/Component";
+  import { NavigationButtons, Transaction } from "../../DesignSystem/Component";
+
+  import StepModal from "../../Layout/StepModal.svelte";
 
   export let params = null;
   const orgId = params.id;
@@ -69,7 +67,7 @@
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
-<StepModalLayout
+<StepModal
   steps={['Prepare', 'Submit']}
   selectedStep={state + 1}
   dataCy="add-member-modal">
@@ -100,4 +98,4 @@
     {disableSubmit}
     on:submit={next}
     on:cancel={cancel} />
-</StepModalLayout>
+</StepModal>

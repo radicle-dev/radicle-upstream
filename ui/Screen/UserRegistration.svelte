@@ -7,8 +7,10 @@
   import * as session from "../src/session.ts";
   import * as user from "../src/user.ts";
 
-  import { ModalLayout, StepCounter } from "../DesignSystem/Component";
   import { Text, Title } from "../DesignSystem/Primitive";
+  import StepCounter from "../DesignSystem/Component/StepCounter.svelte";
+
+  import Modal from "../Layout/Modal.svelte";
 
   import PickHandleStep from "./UserRegistration/PickHandleStep.svelte";
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
@@ -57,7 +59,7 @@
   }
 </style>
 
-<ModalLayout dataCy="page">
+<Modal dataCy="page">
   <div class="wrapper">
     <div class="register-user" data-cy="register-user">
       <div style="display: flex; justify-content: center">
@@ -90,4 +92,4 @@
       {/if}
     </div>
   </div>
-</ModalLayout>
+</Modal>

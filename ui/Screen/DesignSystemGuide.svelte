@@ -1,6 +1,7 @@
 <script>
   import * as notification from "../src/notification.ts";
   import * as transaction from "../src/transaction.ts";
+  import { ValidationStatus } from "../src/validation.ts";
 
   import {
     Avatar,
@@ -16,7 +17,6 @@
   import {
     AdditionalActionsDropdown,
     Dropdown,
-    ModalLayout,
     Notification,
     Placeholder,
     ProjectCard,
@@ -32,11 +32,12 @@
     UserCard,
   } from "../DesignSystem/Component";
 
+  import Modal from "../Layout/Modal.svelte";
+
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
   import TypographySwatch from "./DesignSystemGuide/TypographySwatch.svelte";
   import IconSwatch from "./DesignSystemGuide/IconSwatch.svelte";
-  import { ValidationStatus } from "../src/validation.ts";
 
   const colors = Array.from(document.styleSheets)
     .filter(
@@ -362,7 +363,7 @@
   }
 </style>
 
-<ModalLayout full>
+<Modal full>
   <div class="layout">
     <Title variant="huge" style="margin-bottom: 92px">Primitives</Title>
 
@@ -1080,4 +1081,4 @@
       </Swatch>
     </Section>
   </div>
-</ModalLayout>
+</Modal>

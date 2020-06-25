@@ -17,11 +17,9 @@
     Text,
     Title,
   } from "../DesignSystem/Primitive";
-  import {
-    Dropdown,
-    ModalLayout,
-    RadioOption,
-  } from "../DesignSystem/Component";
+  import { Dropdown, RadioOption } from "../DesignSystem/Component";
+
+  import Modal from "../Layout/Modal.svelte";
 
   let currentSelection;
 
@@ -250,7 +248,7 @@
   }
 </style>
 
-<ModalLayout dataCy="page">
+<Modal dataCy="page">
   <div class="wrapper" data-cy="create-project">
     <div class="create-project">
       <Title variant="big" style="margin-bottom: 32px;">
@@ -367,4 +365,4 @@
       </Flex>
     </div>
   </div>
-</ModalLayout>
+</Modal>
