@@ -18,7 +18,11 @@ pub fn routes<R: registry::Client>(
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("users").and(
-        register_filter(Arc::clone(&registry), store, subscriptions)
+        register_filter(Arc::clone(&registry), store, subscriptions.clone())
+            .or(register_project_filter(
+                Arc::clone(&registry),
+                subscriptions,
+            ))
             .or(list_orgs_filter(Arc::clone(&registry)))
             .or(get_filter(registry)),
     )
@@ -32,6 +36,10 @@ fn filters<R: registry::Client>(
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_orgs_filter(Arc::clone(&registry))
+        .or(register_project_filter(
+            Arc::clone(&registry),
+            subscriptions.clone(),
+        ))
         .or(get_filter(Arc::clone(&registry)))
         .or(register_filter(registry, store, subscriptions))
 }
@@ -108,9 +116,46 @@ fn list_orgs_filter<R: registry::Client>(
         .and_then(handler::list_orgs)
 }
 
+/// `POST /<id>/projects/<name>`
+fn register_project_filter<R: registry::Client>(
+    registry: http::Shared<R>,
+    subscriptions: notification::Subscriptions,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_shared(registry)
+        .and(http::with_subscriptions(subscriptions))
+        .and(warp::post())
+        .and(document::param::<String>(
+            "handle",
+            "ID of the user under which to register the project",
+        ))
+        .and(path("projects"))
+        .and(document::param::<String>(
+            "project_name",
+            "Name of the project",
+        ))
+        .and(path::end())
+        .and(warp::body::json())
+        .and(document::document(document::description(
+            "Register a new project under the user",
+        )))
+        .and(document::document(document::tag("User")))
+        .and(document::document(
+            document::body(RegisterProjectInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(registry::User::document()).mime("application/json"),
+            )
+            .description("Registration succeeded"),
+        ))
+        .and_then(handler::register_project)
+}
+
 /// User handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::convert::TryFrom;
+    use std::str::FromStr;
     use std::sync::Arc;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
@@ -169,6 +214,42 @@ mod handler {
         // Store registered user in session.
         let store = store.read().await;
         session::set_handle(&store, handle)?;
+
+        subscriptions
+            .broadcast(notification::Notification::Transaction(tx.clone()))
+            .await;
+
+        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+    }
+
+    /// Register a project in the Registry.
+    pub async fn register_project<R: registry::Client>(
+        registry: http::Shared<R>,
+        subscriptions: notification::Subscriptions,
+        handle: String,
+        project_name: String,
+        input: super::RegisterProjectInput,
+    ) -> Result<impl Reply, Rejection> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let reg = registry.read().await;
+        let domain_id = registry::Id::try_from(handle).map_err(Error::from)?;
+        let domain = registry::ProjectDomain::User(domain_id);
+        let project_name = registry::ProjectName::try_from(project_name).map_err(Error::from)?;
+        let maybe_coco_id = input
+            .maybe_coco_id
+            .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project RadUrn"));
+
+        let tx = reg
+            .register_project(
+                &fake_pair,
+                domain,
+                project_name,
+                maybe_coco_id,
+                input.transaction_fee,
+            )
+            .await?;
 
         subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
@@ -240,6 +321,36 @@ impl ToDocumentedType for RegisterInput {
     }
 }
 
+/// Bundled input data for project registration.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RegisterProjectInput {
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
+    /// Optionally passed coco id to store for attestion.
+    maybe_coco_id: Option<String>,
+}
+
+impl ToDocumentedType for RegisterProjectInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(2);
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+        properties.insert(
+            "maybeCocoId".into(),
+            document::string()
+                .description("Optionally passed coco id to store for attestion")
+                .example("ac1cac587b49612fbac39775a07fb05c6e5de08d.git"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for Project registration")
+    }
+}
+
 #[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
@@ -251,9 +362,11 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::keys::SecretKey;
     use radicle_registry_client as protocol;
 
     use crate::avatar;
+    use crate::coco;
     use crate::error::Error;
     use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
@@ -394,5 +507,82 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, json!(tx));
+    }
+
+    #[allow(clippy::panic)]
+    #[tokio::test]
+    async fn register_project() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let subscriptions = notification::Subscriptions::default();
+
+        let api = super::filters(
+            Arc::clone(&cache),
+            Arc::new(RwLock::new(store)),
+            subscriptions,
+        );
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        let urn = librad::uri::RadUrn::new(
+            owner.root_hash().clone(),
+            librad::uri::Protocol::Git,
+            librad::uri::Path::new(),
+        );
+
+        // Register user
+        cache
+            .read()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register project
+        let project_name = "upstream";
+
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/projects/{}", handle, project_name))
+            .json(&super::RegisterProjectInput {
+                maybe_coco_id: Some(urn.to_string()),
+                transaction_fee: registry::MINIMUM_FEE,
+            })
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::CREATED);
+
+        let txs = cache.read().await.list_transactions(vec![])?;
+        let tx = txs.first().unwrap();
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        assert_eq!(have, json!(tx));
+
+        let tx_msg = tx.messages.first().unwrap();
+        match tx_msg {
+            registry::Message::ProjectRegistration {
+                project_name,
+                domain_type,
+                domain_id,
+            } => {
+                assert_eq!(
+                    project_name.clone(),
+                    registry::ProjectName::try_from("upstream").unwrap()
+                );
+                assert_eq!(domain_type.clone(), registry::DomainType::User);
+                assert_eq!(domain_id.clone(), handle);
+            },
+            _ => panic!("The tx message is an unexpected variant."),
+        }
+
+        Ok(())
     }
 }
