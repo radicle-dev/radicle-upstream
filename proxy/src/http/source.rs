@@ -44,7 +44,7 @@ fn filters(
         .or(tree_filter(peer))
 }
 
-/// `GET /blob/<project_id>/<revision>/<path...>`
+/// `GET /blob/<project_id>?revision=<revision>&path=<path>`
 fn blob_filter(
     peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -125,7 +125,7 @@ fn commit_filter(
         .and_then(handler::commit)
 }
 
-/// `GET /commits/<project_id>/<branch>`
+/// `GET /commits/<project_id>?branch=<branch>`
 fn commits_filter(
     peer: Arc<Mutex<coco::Peer>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -136,7 +136,10 @@ fn commits_filter(
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(document::param::<String>("branch", "Branch name"))
+        .and(warp::filters::query::query::<CommitsQuery>())
+        .and(document::document(
+            document::query("branch", document::string()).description("Git branch"),
+        ))
         .and(document::document(document::description(
             "Fetch Commits from a Branch",
         )))
@@ -342,7 +345,7 @@ mod handler {
     pub async fn commits(
         peer: Arc<Mutex<coco::Peer>>,
         project_urn: String,
-        branch: String,
+        super::CommitsQuery { branch }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
         let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
@@ -438,6 +441,13 @@ mod handler {
 
         Ok(reply::json(&tree))
     }
+}
+
+/// Bundled query params to pass to the commits handler.
+#[derive(Debug, Deserialize)]
+pub struct CommitsQuery {
+    /// Branch to get the commit history for.
+    branch: String,
 }
 
 /// Bundled query params to pass to the blob handler.
@@ -1051,7 +1061,7 @@ mod test {
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
-            .path(&format!("/commits/{}/{}", urn.to_string(), branch))
+            .path(&format!("/commits/{}?branch={}", urn.to_string(), branch))
             .reply(&api)
             .await;
 
