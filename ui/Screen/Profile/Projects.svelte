@@ -52,13 +52,11 @@
     }
   };
 
-  const projectCardProps = project => {
-    return {
-      title: project.metadata.name,
-      description: project.metadata.description,
-      showRegisteredBadge: project.registration,
-    };
-  };
+  const projectCardProps = project => ({
+    title: project.metadata.name,
+    description: project.metadata.description,
+    showRegisteredBadge: project.registration,
+  });
 
   const create = () => push(path.createProject());
   const register = () => push(path.registerUser());
@@ -79,9 +77,7 @@
           <ProjectCard {...projectCardProps(project)} />
         </div>
         <div slot="right" style="display: flex; align-items: center;">
-          <Remote store={project.stats} let:data={stats}>
-            <Stats {stats} />
-          </Remote>
+          <Stats stats={project.stats} />
           <AdditionalActionsDropdown
             dataCy="context-menu"
             headerTitle={project.shareableEntityIdentifier}

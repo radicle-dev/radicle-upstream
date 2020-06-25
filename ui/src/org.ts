@@ -92,16 +92,8 @@ const update = (msg: Msg): void => {
       projectsStore.loading();
       api
         .get<Projects>(`orgs/${msg.id}/projects`)
-        .then(response => {
-          const projectList = response.map(registeredProject => ({
-            ...registeredProject,
-            stats: project.statsStore(registeredProject.maybeProject.id),
-          }));
-
-          projectsStore.success(projectList);
-        })
+        .then(projectsStore.success)
         .catch(projectsStore.error);
-
       break;
   }
 };

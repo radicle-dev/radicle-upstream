@@ -1,9 +1,11 @@
 import * as api from "./api";
 import * as currency from "./currency";
 import * as event from "./event";
+import * as org from "./org";
 import * as remote from "./remote";
 import * as source from "./source";
 import * as transaction from "./transaction";
+import * as user from "./user";
 
 // TYPES.
 export interface Metadata {
@@ -12,12 +14,18 @@ export interface Metadata {
   description?: string;
 }
 
+export interface Stats {
+  branches: number;
+  commits: number;
+  contributors: number;
+}
+
 export interface Project {
   id: string;
   shareableEntityIdentifier: string;
   metadata: Metadata;
-  registration: string; // TODO(rudolfs): what will this type be?
-  stats: remote.Store<source.Stats>;
+  stats: Stats;
+  registration?: org.Org | user.User; // TODO(rudolfs): what will this type be?
 }
 
 type Projects = Project[];
@@ -50,7 +58,6 @@ enum Kind {
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
-  FetchStats = "FETCH_STATS",
 }
 
 interface Create extends event.Event<Kind> {
@@ -83,14 +90,6 @@ interface RegisterInput {
   maybeCocoId?: string;
 }
 
-// TODO(sos): use Store's loading state capability for partial replication of
-// Stats once replication is a thing
-export const statsStore = (id: string): remote.Store<source.Stats> => {
-  const store = remote.createStore<source.Stats>();
-  source.fetchProjectStats(id).then(store.success).catch(store.error);
-  return store;
-};
-
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.Create:
@@ -117,14 +116,7 @@ const update = (msg: Msg): void => {
       projectsStore.loading();
       api
         .get<Projects>("projects")
-        .then(response => {
-          const projectList = response.map(project => ({
-            ...project,
-            stats: statsStore(project.id),
-          }));
-
-          projectsStore.success(projectList);
-        })
+        .then(projectsStore.success)
         .catch(projectsStore.error);
 
       break;

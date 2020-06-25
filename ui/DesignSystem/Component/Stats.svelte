@@ -2,17 +2,17 @@
   import { Icon, Numeric } from "../Primitive";
 
   export let stats = {
-    contributorCount: -1,
-    branchCount: -1,
-    commitCount: -1,
+    contributors: -1,
+    branches: -1,
+    commits: -1,
   };
 
   export let style = null;
 
   const formattedStats = [
-    { icon: Icon.Branch, count: stats.branchCount },
-    { icon: Icon.Commit, count: stats.commitCount },
-    { icon: Icon.Member, count: stats.contributorCount },
+    { icon: Icon.Branch, count: stats.branches },
+    { icon: Icon.Commit, count: stats.commits },
+    { icon: Icon.Member, count: stats.contributors },
   ];
 </script>
 

@@ -65,9 +65,7 @@
 
         <div slot="right" style="display: flex; align-items: center;">
           {#if orgProject.maybeProject}
-            <Remote store={orgProject.stats} let:data={stats}>
-              <Stats {stats} />
-            </Remote>
+            <Stats stats={orgProject.maybeProject.stats} />
           {/if}
 
           <AdditionalActionsDropdown
