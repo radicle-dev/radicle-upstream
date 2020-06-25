@@ -3,6 +3,7 @@
 use std::convert::Infallible;
 use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
@@ -50,6 +51,7 @@ where
     R: registry::Cache + registry::Client + 'static,
 {
     let peer = Arc::new(Mutex::new(peer));
+    let maybe_owner = Arc::new(RwLock::new(Some(owner.clone())));
     let owner = Arc::new(RwLock::new(owner));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
@@ -72,7 +74,7 @@ where
     );
     let project_filter = project::filters(
         Arc::clone(&peer),
-        Arc::clone(&owner),
+        Arc::clone(&maybe_owner),
         Arc::clone(&registry),
         subscriptions.clone(),
     );
@@ -123,6 +125,23 @@ where
     recovered.with(cors).with(log)
 }
 
+/// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
+/// passes down.
+#[must_use]
+pub fn with_owner_guard(maybe_owner: Shared<Option<coco::User>>) -> BoxedFilter<(coco::User,)> {
+    warp::any()
+        .map(move || Arc::clone(&maybe_owner))
+        .and_then(|maybe_owner: Shared<Option<coco::User>>| async move {
+            let maybe_owner = maybe_owner.read().await;
+
+            match &*maybe_owner {
+                Some(owner) => Ok(owner.clone()),
+                None => Err(Rejection::from(error::Routing::MissingOwner)),
+            }
+        })
+        .boxed()
+}
+
 /// Thread-safe container for threadsafe pass-through to filters and handlers.
 pub type Shared<T> = Arc<RwLock<T>>;
 
@@ -167,7 +186,11 @@ mod test {
     use http::response::Response;
     use pretty_assertions::assert_eq;
     use serde_json::Value;
+    use std::sync::Arc;
+    use tokio::sync::RwLock;
     use warp::http::StatusCode;
+    use warp::test::request;
+    use warp::Filter as _;
 
     pub fn assert_response<F>(res: &Response<Bytes>, code: StatusCode, checks: F)
     where
@@ -183,5 +206,17 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).expect("failed to deserialise body");
         checks(have);
+    }
+
+    #[tokio::test]
+    async fn with_user_guard() {
+        let filter = warp::any()
+            .and(super::with_owner_guard(Arc::new(RwLock::new(None))))
+            .map(move |_owner| warp::reply())
+            .recover(super::error::recover);
+
+        let res = request().method("GET").path("/").reply(&filter).await;
+
+        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
     }
 }
