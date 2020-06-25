@@ -18,13 +18,13 @@ pub fn routes<R: registry::Client>(
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("users").and(
-        register_filter(Arc::clone(&registry), store, subscriptions.clone())
+        list_orgs_filter(Arc::clone(&registry))
             .or(register_project_filter(
                 Arc::clone(&registry),
-                subscriptions,
+                subscriptions.clone(),
             ))
-            .or(list_orgs_filter(Arc::clone(&registry)))
-            .or(get_filter(registry)),
+            .or(get_filter(Arc::clone(&registry)))
+            .or(register_filter(registry, store, subscriptions)),
     )
 }
 

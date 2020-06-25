@@ -70,12 +70,7 @@ where
         Arc::clone(&registry),
         subscriptions.clone(),
     );
-    let project_filter = project::filters(
-        Arc::clone(&peer),
-        Arc::clone(&owner),
-        Arc::clone(&registry),
-        subscriptions.clone(),
-    );
+    let project_filter = project::filters(Arc::clone(&peer), Arc::clone(&owner));
     let session_filter =
         session::routes(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
     let source_filter = source::routes(peer);
