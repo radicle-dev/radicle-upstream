@@ -184,6 +184,7 @@ mod handler {
                 shareable_entity_identifier,
                 metadata: meta.into(),
                 registration: None,
+                stats: None,
             }),
             StatusCode::CREATED,
         ))
@@ -199,7 +200,9 @@ mod handler {
 
     /// List all known projects.
     pub async fn list(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
-        let projects = peer
+        // TODO(sos): Is there a better way to do this? Slicker use of move? Not locking the peer
+        // more than I need to?
+        let mut projects = peer
             .lock()
             .await
             .list_projects()?
@@ -209,8 +212,17 @@ mod handler {
                 shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,
+                stats: None,
             })
             .collect::<Vec<project::Project>>();
+
+        for mut project in &mut projects {
+            let stats = peer
+                .lock()
+                .await
+                .with_browser(&project.id, |browser| Ok(browser.get_stats()?))?;
+            project.stats = Some(coco::Stats(stats));
+        }
 
         Ok(reply::json(&projects))
     }
@@ -626,6 +638,7 @@ mod test {
                 shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,
+                stats: None,
             })
             .collect::<Vec<project::Project>>();
 

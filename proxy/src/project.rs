@@ -48,6 +48,8 @@ pub struct Project {
     /// Informs if the project is present in the Registry and under what top-level entity it can be
     /// found.
     pub registration: Option<Registration>,
+    /// High-level stats
+    pub stats: Option<coco::Stats>,
 }
 
 /// Variants for possible registration states of a project.
@@ -65,10 +67,14 @@ pub fn get(peer: &coco::Peer, project_urn: &uri::RadUrn) -> Result<Project, erro
     let id = meta.urn();
     let metadata = meta.into();
 
+    // TODO(sos): can the `()?))?);` syntax be improved?
+    let stats = coco::Stats(peer.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?);
+
     Ok(Project {
         id,
         shareable_entity_identifier: project_urn.to_string(),
         metadata,
         registration: None,
+        stats: Some(stats),
     })
 }

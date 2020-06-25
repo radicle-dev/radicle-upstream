@@ -133,6 +133,7 @@ mod handler {
                 shareable_entity_identifier: format!("%{}", meta.urn()),
                 metadata: meta.into(),
                 registration: None,
+                stats: None,
             }),
             StatusCode::CREATED,
         ))

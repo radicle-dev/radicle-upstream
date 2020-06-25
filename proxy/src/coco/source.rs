@@ -190,6 +190,7 @@ pub struct TreeEntry {
 
 /// Representation of high-level project [`Stats`] - its known number of branches,
 /// commits, and contributors on the default branch
+/// TODO(sos): should this be moved back to the Project file?
 pub struct Stats(pub surf::vcs::git::Stats);
 
 /// Returns the [`Blob`] for a file at `revision` under `path`.

@@ -134,6 +134,7 @@
     margin: 1.5rem 0;
     display: flex;
     justify-content: space-evenly;
+    cursor: pointer;
   }
   .repo-stat-item {
     display: flex;
