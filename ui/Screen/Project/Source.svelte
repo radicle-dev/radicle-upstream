@@ -72,7 +72,7 @@
 
 <style>
   .header {
-    padding: 1.5rem;
+    padding: var(--content-padding);
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
   .project-id {
@@ -88,7 +88,7 @@
     display: flex;
     width: inherit;
     margin-bottom: 4rem;
-    padding: 0 1.5rem;
+    padding: 0 var(--content-padding);
   }
 
   .column-left {
@@ -116,7 +116,7 @@
   }
 
   .revision-selector-wrapper {
-    margin: 1.5rem 0 1rem 0;
+    margin: var(--content-padding) 0 var(--content-padding);
     position: relative;
     width: 100%;
   }

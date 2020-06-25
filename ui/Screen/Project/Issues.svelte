@@ -77,7 +77,6 @@
   }
   .filters {
     margin-bottom: 1.5rem;
-    padding: 0 16px;
   }
 </style>
 
