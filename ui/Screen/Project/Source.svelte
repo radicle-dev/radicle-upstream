@@ -116,7 +116,7 @@
   }
 
   .revision-selector-wrapper {
-    margin: var(--content-padding) 0 var(--content-padding);
+    margin: var(--content-padding) 0;
     position: relative;
     width: 100%;
   }
