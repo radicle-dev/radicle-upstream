@@ -10,10 +10,14 @@
   </header>
   <div class="item">
     <div class="info">
-      <Text>Version 01.45.02</Text>
+      <Text style="color: var(--color-foreground-level-6);">
+        Version 01.45.02
+      </Text>
     </div>
     <div class="action">
-      <Text>There’s a new version of Radicle Upstream</Text>
+      <Text style="color: var(--color-foreground-level-6);">
+        There’s a new version of Radicle Upstream
+      </Text>
       <Button style="margin-left: 16px;">Update to Version 01.45.03</Button>
     </div>
   </div>

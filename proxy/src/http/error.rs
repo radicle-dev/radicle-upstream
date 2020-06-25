@@ -4,11 +4,35 @@
 use librad::surf;
 use serde::Serialize;
 use std::convert::Infallible;
+use std::fmt;
 use warp::document::{self, ToDocumentedType};
 use warp::http::StatusCode;
 use warp::{reject, reply, Rejection, Reply};
 
 use crate::error;
+
+/// HTTP layer specific rejections.
+#[derive(Debug)]
+pub enum Routing {
+    /// The currently active [`coco::User`] is missing.
+    MissingOwner,
+}
+
+impl reject::Reject for Routing {}
+
+impl From<Routing> for Rejection {
+    fn from(err: Routing) -> Self {
+        reject::custom(err)
+    }
+}
+
+impl fmt::Display for Routing {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingOwner => write!(f, "Owner is missing"),
+        }
+    }
+}
 
 impl reject::Reject for error::Error {}
 
@@ -57,6 +81,12 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                 "NOT_FOUND",
                 "Resource not found".to_string(),
             )
+        } else if let Some(err) = err.find::<Routing>() {
+            match err {
+                Routing::MissingOwner => {
+                    (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
+                },
+            }
         } else if let Some(err) = err.find::<error::Error>() {
             match err {
                 error::Error::EntityExists(_) => {

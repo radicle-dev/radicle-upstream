@@ -13,7 +13,7 @@
       <Text variant="medium">
         Unlink all unregistered projects from my profile
       </Text>
-      <Text>
+      <Text style="color: var(--color-foreground-level-6);">
         This unlinks your local repositories from Upstream. The local data will
         remain on your computer.
       </Text>

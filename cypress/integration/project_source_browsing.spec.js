@@ -18,6 +18,7 @@ context("commit browsing", () => {
       cy.contains("91b69e0").click();
       cy.contains("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1").should("exist");
     });
+
     it("shows the commit history for another branch", () => {
       cy.pick("revision-selector").click();
       cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
@@ -108,6 +109,56 @@ context("source code browsing", () => {
   });
 
   context("page view", () => {
+    context("when we're looking at the project root", () => {
+      context("when there is a README file", () => {
+        it("shows the README file", () => {
+          // It contains the commit teaser for the latest commit.
+          cy.pick("project-screen", "commit-teaser").contains("223aaf8");
+          cy.pick("project-screen", "commit-teaser").contains(
+            "Merge pull request #4"
+          );
+          cy.pick("project-screen", "commit-teaser").contains(
+            "Alexander Simmerl"
+          );
+
+          cy.pick("project-screen", "file-source").contains("README.md");
+          cy.pick("project-screen", "file-source").contains(
+            "This repository is a data source for the Upstream front-end tests and the radicle-surf unit tests."
+          );
+
+          // Going to a different path and then switching back to the root path
+          // shows the README again.
+          cy.pick("source-tree").within(() => {
+            cy.contains(".i-am-well-hidden").click();
+          });
+          cy.pick("project-screen", "file-source").contains(
+            "Monadic / .i-am-well-hidden"
+          );
+          cy.pick("project-screen", "file-source").contains("Monadic").click();
+          cy.pick("project-screen", "file-source").contains("README.md");
+
+          cy.pick("source-tree").within(() => {
+            cy.contains(".i-too-am-hidden").click();
+          });
+          cy.pick("project-screen", "file-source").contains(
+            "Monadic / .i-too-am-hidden"
+          );
+          cy.pick("topbar", "project-avatar").contains("Monadic").click();
+          cy.pick("project-screen", "file-source").contains("README.md");
+
+          // Switching between different revisions shows the correct README
+          cy.pick("revision-selector").click();
+          cy.get(
+            '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]'
+          ).click();
+          cy.pick("project-screen", "file-source").contains("README.md");
+          cy.pick("project-screen", "file-source").contains(
+            "This repository is a data source for the Upstream front-end tests."
+          );
+        });
+      });
+    });
+
     context("revision selector", () => {
       it("allows switching to a different branch", () => {
         cy.pick("revision-selector").click();

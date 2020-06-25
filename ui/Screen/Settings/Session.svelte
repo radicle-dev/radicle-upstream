@@ -13,7 +13,9 @@
   <div class="item">
     <div class="info">
       <Text variant="medium">Clear local cache</Text>
-      <Text>Removes all locally-stored temporary data from your device.</Text>
+      <Text style="color: var(--color-foreground-level-6);">
+        Removes all locally-stored temporary data from your device.
+      </Text>
     </div>
     <div class="action">
       <Button
@@ -27,7 +29,7 @@
   <div class="item">
     <div class="info">
       <Text variant="medium">Clears all authentication data</Text>
-      <Text>
+      <Text style="color: var(--color-foreground-level-6);">
         This is similar to how logout works. You will have to create a new
         identity or restore your existing identity.
       </Text>
