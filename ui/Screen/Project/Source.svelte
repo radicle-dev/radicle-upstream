@@ -174,6 +174,7 @@
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
+              <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
                 use:link={path.projectCommits(project.id, $currentRevision)}>
