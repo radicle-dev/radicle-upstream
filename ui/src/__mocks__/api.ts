@@ -9,7 +9,7 @@ const userMock: User = {
   handle: "rafalca",
 };
 
-const radicleMock: Org = {
+export const radicleMock: Org = {
   id: "radicle",
   shareableEntityIdentifier: "radicle@123abcd.git",
   avatarFallback: {
@@ -23,7 +23,7 @@ const radicleMock: Org = {
   members: [userMock],
 };
 
-const projectMock: Project = {
+export const projectMock: Project = {
   id: "%rad:git:hwd1yregn1xe4krjs5h7ag5ceut9rwmjssr8e8t4pw6nrwdxgc761o3x4sa",
   shareableEntityIdentifier: "sos@{}",
   metadata: {

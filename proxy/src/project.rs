@@ -48,10 +48,11 @@ pub struct Project {
   /// Informs if the project is present in the Registry and under what top-level entity it can be
   /// found.
   pub registration: Option<Registration>,
-  /// High-level stats
+  /// High-level statistics about the project
   pub stats: coco::Stats,
 }
 
+/// Construct a Project from its metadata and stats
 impl Project {
   pub fn from_project_stats<ST>(project: project::Project<ST>, stats: coco::Stats) -> Self
   where
@@ -78,7 +79,7 @@ pub enum Registration {
   User(registry::Id),
 }
 
-/// Fetch the [`Project`] of a given urn from a [`Peer`]
+/// Fetch the project with a given urn from a peer
 pub fn get(peer: &coco::Peer, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
   let meta = peer.get_project(project_urn)?;
   let id = meta.urn();
