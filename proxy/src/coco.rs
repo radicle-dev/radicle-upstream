@@ -19,14 +19,16 @@ use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
 
 use crate::error;
+use crate::project::Project;
 
 /// Module that captures all types and functions for source code.
 mod source;
 pub use source::{
     blob, branches, commit, commit_header, commits, local_state, tags, tree, Blob, BlobContent,
-    Branch, Commit, CommitHeader, Info, ObjectType, Person, Stats, Tag, Tree, TreeEntry,
+    Branch, Commit, CommitHeader, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
 pub use surf::diff::{Diff, FileDiff};
+pub use surf::vcs::git::Stats;
 
 pub mod config;
 
@@ -88,20 +90,32 @@ impl Peer {
         clippy::wildcard_enum_match_arm,
         clippy::match_wildcard_for_single_variants
     )]
-    pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
-        self.with_api(|api| {
-            let storage = api.storage();
-            Ok(storage
-                .all_metadata()?
-                .flat_map(|entity| {
-                    entity.ok()?.try_map(|info| match info {
-                        entity::data::EntityInfo::Project(info) => Some(info),
-                        _ => None,
+    pub fn list_projects(&self) -> Result<Vec<Project>, error::Error> {
+        let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
+        let storage = api.storage();
+        let project_meta = storage.all_metadata()?.flat_map(|entity| {
+            entity.ok()?.try_map(|info| match info {
+                entity::data::EntityInfo::Project(info) => Some(info),
+                _ => None,
+            })
+        });
+        project_meta
+            .map(|project| {
+                api.storage()
+                    .open_repo(project.urn())
+                    .map_err(error::Error::from)
+                    .and_then(|repo| {
+                        repo.browser(project.default_branch())
+                            .map_err(error::Error::from)
+                            .and_then(|browser| {
+                                browser
+                                    .get_stats()
+                                    .map_err(error::Error::from)
+                                    .map(|stats| Project::from_project_stats(project, stats))
+                            })
                     })
-                })
-                .collect())
-        })
-        .flatten()
+            })
+            .collect::<Result<Vec<Project>, error::Error>>()
     }
 
     /// Returns the list of [`user::User`]s known for the configured [`paths::Paths`].
@@ -665,7 +679,7 @@ mod test {
         let projects = peer.list_projects()?;
         let mut project_names = projects
             .into_iter()
-            .map(|project| project.name().to_string())
+            .map(|project| project.metadata.name)
             .collect::<Vec<_>>();
         project_names.sort();
 

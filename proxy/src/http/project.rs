@@ -176,16 +176,9 @@ mod handler {
             )
             .await?;
         let urn = meta.urn();
-
-        let shareable_entity_identifier = format!("%{}", urn);
+        let stats = peer.with_browser(&urn, |browser| Ok(browser.get_stats()?))?;
         Ok(reply::with_status(
-            reply::json(&project::Project {
-                id: urn,
-                shareable_entity_identifier,
-                metadata: meta.into(),
-                registration: None,
-                stats: None,
-            }),
+            reply::json(&project::Project::from_project_stats(meta, stats)),
             StatusCode::CREATED,
         ))
     }
@@ -200,29 +193,10 @@ mod handler {
 
     /// List all known projects.
     pub async fn list(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
+        let peer = peer.lock().await;
         // TODO(sos): Is there a better way to do this? Slicker use of move? Not locking the peer
         // more than I need to?
-        let mut projects = peer
-            .lock()
-            .await
-            .list_projects()?
-            .into_iter()
-            .map(|meta| project::Project {
-                id: meta.urn(),
-                shareable_entity_identifier: format!("%{}", meta.urn()),
-                metadata: meta.into(),
-                registration: None,
-                stats: None,
-            })
-            .collect::<Vec<project::Project>>();
-
-        for mut project in &mut projects {
-            let stats = peer
-                .lock()
-                .await
-                .with_browser(&project.id, |browser| Ok(browser.get_stats()?))?;
-            project.stats = Some(coco::Stats(stats));
-        }
+        let projects = peer.list_projects()?;
 
         Ok(reply::json(&projects))
     }
@@ -560,14 +534,14 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "id": meta.urn().to_string(),
+            "id": meta.id,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
             },
             "registration": Value::Null,
-            "shareableEntityIdentifier": format!("%{}", meta.urn().to_string()),
+            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
         });
 
         assert_eq!(res.status(), StatusCode::CREATED);
@@ -627,20 +601,9 @@ mod test {
             registry::Registry::new(client)
         };
         let subscriptions = notification::Subscriptions::default();
-
         peer.setup_fixtures(&owner).await?;
 
-        let projects = peer
-            .list_projects()?
-            .into_iter()
-            .map(|meta| project::Project {
-                id: meta.urn(),
-                shareable_entity_identifier: format!("%{}", meta.urn()),
-                metadata: meta.into(),
-                registration: None,
-                stats: None,
-            })
-            .collect::<Vec<project::Project>>();
+        let projects = peer.list_projects()?;
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),

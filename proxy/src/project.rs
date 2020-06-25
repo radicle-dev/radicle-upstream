@@ -49,7 +49,24 @@ pub struct Project {
     /// found.
     pub registration: Option<Registration>,
     /// High-level stats
-    pub stats: Option<coco::Stats>,
+    pub stats: coco::Stats,
+}
+
+impl Project {
+    pub fn from_project_stats<ST>(project: project::Project<ST>, stats: coco::Stats) -> Self
+    where
+        ST: Clone,
+    {
+        let id = project.urn();
+        let metadata = project.into();
+        Project {
+            id: id.clone(),
+            shareable_entity_identifier: format!("%{}", id),
+            metadata,
+            registration: None,
+            stats: stats,
+        }
+    }
 }
 
 /// Variants for possible registration states of a project.
@@ -68,13 +85,13 @@ pub fn get(peer: &coco::Peer, project_urn: &uri::RadUrn) -> Result<Project, erro
     let metadata = meta.into();
 
     // TODO(sos): can the `()?))?);` syntax be improved?
-    let stats = coco::Stats(peer.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?);
+    let stats = peer.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
     Ok(Project {
         id,
-        shareable_entity_identifier: project_urn.to_string(),
+        shareable_entity_identifier: format!("%{}", project_urn),
         metadata,
         registration: None,
-        stats: Some(stats),
+        stats: stats,
     })
 }

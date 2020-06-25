@@ -22,7 +22,6 @@ pub fn routes(
             .or(commits_filter(Arc::clone(&peer)))
             .or(local_state_filter())
             .or(revisions_filter(Arc::clone(&peer)))
-            .or(stats_filter(Arc::clone(&peer)))
             .or(tags_filter(Arc::clone(&peer)))
             .or(tree_filter(peer)),
     )
@@ -39,7 +38,6 @@ fn filters(
         .or(commits_filter(Arc::clone(&peer)))
         .or(local_state_filter())
         .or(revisions_filter(Arc::clone(&peer)))
-        .or(stats_filter(Arc::clone(&peer)))
         .or(tags_filter(Arc::clone(&peer)))
         .or(tree_filter(peer))
 }
@@ -205,31 +203,6 @@ fn revisions_filter(
             .description("List of branches and tags"),
         ))
         .and_then(handler::revisions)
-}
-
-/// `GET /stats/<project_id>`
-fn stats_filter(
-    peer: Arc<Mutex<coco::Peer>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("stats")
-        .and(warp::get())
-        .and(http::with_peer(peer))
-        .and(document::param::<String>(
-            "project_id",
-            "ID of the project you would like stats for",
-        ))
-        .and(document::document(document::description(
-            "Get project stats",
-        )))
-        .and(document::document(document::tag("Source")))
-        .and(document::document(
-            document::response(
-                200,
-                document::body(coco::Stats::document()).mime("application/json"),
-            )
-            .description("Project stats"),
-        ))
-        .and_then(handler::stats)
 }
 
 /// `GET /tags/<project_id>`
@@ -399,18 +372,6 @@ mod handler {
             .collect::<Vec<super::Revision>>();
 
         Ok(reply::json(&revs))
-    }
-
-    /// Fetch the [`coco::Stats`].
-    pub async fn stats(
-        peer: Arc<Mutex<coco::Peer>>,
-        project_urn: String,
-    ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let peer = peer.lock().await;
-        let stats = peer.with_browser(&urn, |browser| Ok(browser.get_stats()?))?;
-
-        Ok(reply::json(&stats))
     }
 
     /// Fetch the list [`coco::Tag`].
@@ -711,33 +672,6 @@ impl ToDocumentedType for coco::Person {
         );
 
         document::DocumentedType::from(properties).description("Person")
-    }
-}
-
-impl ToDocumentedType for coco::Stats {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-
-        properties.insert(
-            "branchCount".into(),
-            document::integer()
-                .description("Number of branches in project.")
-                .example(2),
-        );
-        properties.insert(
-            "commitCount".into(),
-            document::integer()
-                .description("Number of commits in project.")
-                .example(14),
-        );
-        properties.insert(
-            "contributorCount".into(),
-            document::integer()
-                .description("Number of contributors to a project.")
-                .example(4),
-        );
-
-        document::DocumentedType::from(properties).description("Project Stats")
     }
 }
 
@@ -1229,43 +1163,6 @@ mod test {
                     },
                 ]),
             )
-        });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn stats() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await
-            .unwrap();
-        let urn = platinum_project.urn();
-
-        let want = peer.with_browser(&urn, |browser| Ok(browser.get_stats()?))?;
-
-        let api = super::filters(Arc::new(Mutex::new(peer)));
-        let res = request()
-            .method("GET")
-            .path(&format!("/stats/{}", urn.to_string()))
-            .reply(&api)
-            .await;
-
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!({
-                  "commitCount": 14,
-                  "contributorCount": 4,
-                  "branchCount": 2
-                }),
-            );
         });
 
         Ok(())
