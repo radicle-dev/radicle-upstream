@@ -227,7 +227,7 @@ mod handler {
         subscriptions: notification::Subscriptions,
         handle: String,
         project_name: String,
-        input: super::RegisterProjectInput,
+        input: http::RegisterProjectInput,
     ) -> Result<impl Reply, Rejection> {
         http::register_project(
             registry,
