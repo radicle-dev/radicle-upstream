@@ -113,7 +113,6 @@
 
 <SidebarLayout
   style="margin: calc(var(--topbar-height)) auto 0; max-width:var(--content-max-width); min-width: 60em;"
-  max-width:var(--content-max-width); min-width: 60em;"
   dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
