@@ -29,7 +29,7 @@ thiserror = "1.0"
 tokio = { version = "0.2", features = [ "macros", "time" ] }
 url17 = { package = "url", version = "1.7" }
 url = "2.1"
-warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ] }
+warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ], default-features = false }
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
