@@ -9,7 +9,7 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::coco;
-use crate::http::{self, RegisterProjectInput};
+use crate::http;
 use crate::notification;
 use crate::project;
 use crate::registry;
