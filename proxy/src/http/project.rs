@@ -1,4 +1,5 @@
 //! Endpoints and serialisation for [`project::Project`] related types.
+
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
