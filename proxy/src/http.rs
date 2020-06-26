@@ -27,7 +27,6 @@ mod project;
 mod session;
 mod source;
 mod transaction;
-
 mod user;
 
 /// Helper to combine the multiple filters together with Filter::or, possibly boxing the types in
