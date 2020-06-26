@@ -68,7 +68,7 @@
     height: var(--topbar-height);
     width: 100%;
     max-width: var(--content-max-width);
-    padding: 0 var(--content-padding) 0 var(--content-padding);
+    padding: 0 var(--content-padding);
     margin: 0 auto;
     align-items: center;
     background-color: var(--color-background);
