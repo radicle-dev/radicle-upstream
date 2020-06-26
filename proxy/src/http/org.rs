@@ -663,7 +663,7 @@ mod test {
         let res = request()
             .method("POST")
             .path(&format!("/{}/projects/{}", org_id, project_name))
-            .json(&super::RegisterProjectInput {
+            .json(&http::RegisterProjectInput {
                 maybe_coco_id: Some(urn.to_string()),
                 transaction_fee: registry::MINIMUM_FEE,
             })

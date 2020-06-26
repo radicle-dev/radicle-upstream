@@ -17,10 +17,8 @@ use crate::registry;
 /// Combination of all routes.
 pub fn filters(
     peer: Arc<Mutex<coco::Peer>>,
-    owner: http::Shared<coco::User>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-{
+    owner: http::Shared<Option<coco::User>>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(Arc::clone(&peer))
         .or(create_filter(Arc::clone(&peer), owner))
         .or(get_filter(peer))
@@ -29,12 +27,12 @@ where
 /// `POST /projects`
 fn create_filter(
     peer: Arc<Mutex<coco::Peer>>,
-    owner: http::Shared<coco::User>,
+    owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
         .and(http::with_peer(peer))
-        .and(http::with_shared(owner))
+        .and(http::with_owner_guard(owner))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -114,21 +112,19 @@ mod handler {
 
     use crate::coco;
     use crate::error::Error;
-    use crate::http;
     use crate::project;
 
     /// Create a new [`project::Project`].
     pub async fn create(
         peer: Arc<Mutex<coco::Peer>>,
-        owner: http::Shared<coco::User>,
+        owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let owner = &*owner.read().await;
         let mut peer = peer.lock().await;
 
         let meta = peer
             .init_project(
-                owner,
+                &owner,
                 &input.path,
                 &input.metadata.name,
                 &input.metadata.description,
@@ -427,13 +423,12 @@ mod test {
         let key = SecretKey::new();
         let config = coco::default_config(key, tmp_dir.path())?;
         let peer = coco::Peer::new(config).await?;
-        let owner = Arc::new(RwLock::new(coco::fake_owner(&peer).await));
+        let owner = Arc::new(RwLock::new(Some(coco::fake_owner(&peer).await)));
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
 
         let peer = Arc::new(Mutex::new(peer));
-
         let api = super::filters(Arc::clone(&peer), Arc::clone(&owner));
         let res = request()
             .method("POST")
@@ -489,7 +484,11 @@ mod test {
 
         let project = project::get(&peer, &urn)?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(Some(owner))),
+        );
+
         let res = request()
             .method("GET")
             .path(&format!("/projects/{}", urn))
@@ -529,7 +528,10 @@ mod test {
             })
             .collect::<Vec<project::Project>>();
 
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(owner)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(Some(owner))),
+        );
         let res = request().method("GET").path("/projects").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {

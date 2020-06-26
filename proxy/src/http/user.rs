@@ -320,6 +320,7 @@ mod test {
     use crate::avatar;
     use crate::coco;
     use crate::error::Error;
+    use crate::http;
     use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
 
@@ -503,7 +504,7 @@ mod test {
         let res = request()
             .method("POST")
             .path(&format!("/{}/projects/{}", handle, project_name))
-            .json(&super::RegisterProjectInput {
+            .json(&http::RegisterProjectInput {
                 maybe_coco_id: Some(urn.to_string()),
                 transaction_fee: registry::MINIMUM_FEE,
             })
