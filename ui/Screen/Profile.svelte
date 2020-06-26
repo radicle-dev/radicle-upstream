@@ -6,9 +6,9 @@
 
   import {
     AdditionalActionsDropdown,
+    Header,
     HorizontalMenu,
     SidebarLayout,
-    BigHeader,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -67,7 +67,7 @@
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
 
-  <BigHeader
+  <Header.Large
     variant="profile"
     entity={session.identity}
     on:registerHandle={() => push(path.registerUser())}>
@@ -82,7 +82,7 @@
         headerTitle={session.identity.shareableEntityIdentifier}
         menuItems={dropdownMenuItems} />
     </div>
-  </BigHeader>
+  </Header.Large>
 
   <Router routes={screenRoutes} />
 </SidebarLayout>

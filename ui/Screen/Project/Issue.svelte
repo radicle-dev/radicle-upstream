@@ -1,6 +1,8 @@
 <script>
+  import { pop } from "svelte-spa-router";
+
   import { Title, Text, Markdown } from "../../DesignSystem/Primitive";
-  import { Comment, Timeline } from "../../DesignSystem/Component";
+  import { Comment, Header, Timeline } from "../../DesignSystem/Component";
 
   $: openClass = issue.open ? "open" : "closed";
 
@@ -120,10 +122,7 @@ Part of #277
     padding: var(--content-padding);
     min-width: var(--content-min-width);
   }
-  header {
-    padding: 0 16px 24px 16px;
-    border-bottom: 1px solid var(--color-foreground-level-3);
-  }
+
   .metadata {
     display: flex;
     flex-direction: row;
@@ -150,7 +149,10 @@ Part of #277
 </style>
 
 <div class="container">
-  <header>
+  <Header.Back
+    on:arrowClick={() => pop()}
+    style="padding: 0 16px 24px 16px; border-bottom: 1px solid
+    var(--color-foreground-level-3);">
     <Title variant="large">{issue.title}</Title>
     <div class="metadata">
       <div class="state-badge {openClass}">
@@ -165,7 +167,7 @@ Part of #277
         </span>
       </Text>
     </div>
-  </header>
+  </Header.Back>
   <article>
     <Markdown content={issue.description} />
   </article>
