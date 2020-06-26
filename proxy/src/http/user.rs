@@ -7,7 +7,7 @@ use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::http::{self, RegisterProjectInput};
+use crate::http;
 use crate::notification;
 use crate::registry;
 
