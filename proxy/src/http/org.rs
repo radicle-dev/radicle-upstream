@@ -114,7 +114,7 @@ fn register_project_filter<R: registry::Client>(
         )))
         .and(document::document(document::tag("Org")))
         .and(document::document(
-            document::body(RegisterProjectInput::document()).mime("application/json"),
+            document::body(http::RegisterProjectInput::document()).mime("application/json"),
         ))
         .and(document::document(
             document::response(
