@@ -57,7 +57,7 @@ pub async fn create(peer: &coco::Peer, handle: String) -> Result<Identity, error
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub fn get(peer: &coco::Peer, id: &RadUrn) -> Result<Identity, error::Error> {
-    let user = peer.get_user(id)?;
+    let user = peer.with_api(|api| coco::Peer::get_user(api, id))?;
     Ok(Identity {
         id: id.clone(),
         shareable_entity_identifier: SharedIdentifier {

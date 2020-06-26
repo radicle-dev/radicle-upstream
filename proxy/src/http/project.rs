@@ -176,7 +176,9 @@ mod handler {
             )
             .await?;
         let urn = meta.urn();
-        let stats = peer.with_browser(&urn, |browser| Ok(browser.get_stats()?))?;
+        let stats = peer.with_api(|api| {
+            coco::Peer::with_browser(api, &urn, |browser| Ok(browser.get_stats()?))
+        })?;
         Ok(reply::with_status(
             reply::json(&project::Project::from_project_stats(meta, stats)),
             StatusCode::CREATED,

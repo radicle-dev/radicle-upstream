@@ -74,10 +74,10 @@ impl Peer {
     /// [`std::sync::Mutex::lock`] for further details.
     pub fn with_api<F, T>(&self, f: F) -> Result<T, error::Error>
     where
-        F: FnOnce(&net::peer::PeerApi) -> T,
+        F: FnOnce(&net::peer::PeerApi) -> Result<T, error::Error>,
     {
         let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
-        Ok(f(&api))
+        Ok(f(&api)?)
     }
 
     /// Returns the list of [`project::Project`]s known for the configured [`paths::Paths`].
@@ -91,31 +91,23 @@ impl Peer {
         clippy::match_wildcard_for_single_variants
     )]
     pub fn list_projects(&self) -> Result<Vec<Project>, error::Error> {
-        let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
-        let storage = api.storage();
-        let project_meta = storage.all_metadata()?.flat_map(|entity| {
-            entity.ok()?.try_map(|info| match info {
-                entity::data::EntityInfo::Project(info) => Some(info),
-                _ => None,
-            })
-        });
-        project_meta
-            .map(|project| {
-                api.storage()
-                    .open_repo(project.urn())
-                    .map_err(error::Error::from)
-                    .and_then(|repo| {
-                        repo.browser(project.default_branch())
-                            .map_err(error::Error::from)
-                            .and_then(|browser| {
-                                browser
-                                    .get_stats()
-                                    .map_err(error::Error::from)
-                                    .map(|stats| Project::from_project_stats(project, stats))
-                            })
+        self.with_api(|api| {
+            let storage = api.storage();
+            let project_meta = storage.all_metadata()?.flat_map(|entity| {
+                entity.ok()?.try_map(|info| match info {
+                    entity::data::EntityInfo::Project(info) => Some(info),
+                    _ => None,
+                })
+            });
+            project_meta
+                .map(|project| {
+                    Self::with_browser(api, &project.urn(), |browser| {
+                        let stats = browser.get_stats()?;
+                        Ok(Project::from_project_stats(project, stats))
                     })
-            })
-            .collect::<Result<Vec<Project>, error::Error>>()
+                })
+                .collect::<Result<Vec<Project>, error::Error>>()
+        })
     }
 
     /// Returns the list of [`user::User`]s known for the configured [`paths::Paths`].
@@ -141,7 +133,6 @@ impl Peer {
                 })
                 .collect())
         })
-        .flatten()
     }
 
     /// Get the project found at `project_urn`.
@@ -152,14 +143,11 @@ impl Peer {
     ///     * Parsing the `project_urn` fails.
     ///     * Resolving the project fails.
     pub fn get_project(
-        &self,
+        api: &net::peer::PeerApi,
         urn: &RadUrn,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
-        self.with_api(|api| {
-            let storage = api.storage().reopen()?;
-            Ok(storage.metadata(urn)?)
-        })
-        .flatten()
+        let storage = api.storage().reopen()?;
+        Ok(storage.metadata(urn)?)
     }
 
     /// Get the user found at `urn`.
@@ -168,12 +156,12 @@ impl Peer {
     ///
     ///   * Resolving the project fails.
     ///   * Could not successfully acquire a lock to the API.
-    pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, error::Error> {
-        self.with_api(|api| {
-            let storage = api.storage().reopen()?;
-            Ok(storage.metadata(urn)?)
-        })
-        .flatten()
+    pub fn get_user(
+        api: &net::peer::PeerApi,
+        urn: &RadUrn,
+    ) -> Result<user::User<entity::Draft>, error::Error> {
+        let storage = api.storage().reopen()?;
+        Ok(storage.metadata(urn)?)
     }
 
     /// Get a repo browser for a project.
@@ -182,13 +170,16 @@ impl Peer {
     ///
     /// The function will result in an error if the mutex guard was poisoned. See
     /// [`std::sync::Mutex::lock`] for further details.
-    pub fn with_browser<F, T>(&self, project_urn: &RadUrn, callback: F) -> Result<T, error::Error>
+    pub fn with_browser<F, T>(
+        api: &net::peer::PeerApi,
+        project_urn: &RadUrn,
+        callback: F,
+    ) -> Result<T, error::Error>
     where
         F: Send + FnOnce(&mut surf::vcs::git::Browser) -> Result<T, error::Error>,
     {
-        let project = self.get_project(project_urn)?;
+        let project = Self::get_project(api, project_urn)?;
         let default_branch = project.default_branch();
-        let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
         let repo = api.storage().open_repo(project.urn())?;
         let mut browser = repo.browser(default_branch)?;
         callback(&mut browser)
@@ -221,34 +212,29 @@ impl Peer {
             }
         }
 
-        let meta: Result<project::Project<entity::Draft>, error::Error> = self
-            .with_api(|api| {
-                let key = api.key();
+        let meta = self.with_api(|api| {
+            let key = api.key();
 
-                // Create the project meta
-                let mut meta =
-                    project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
-                        .to_builder()
-                        .set_description(description.to_string())
-                        .set_default_branch(default_branch.to_string())
-                        .add_key(key.public())
-                        .build()?;
-                meta.sign_owned(key)?;
-                let urn = meta.urn();
+            // Create the project meta
+            let mut meta =
+                project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
+                    .to_builder()
+                    .set_description(description.to_string())
+                    .set_default_branch(default_branch.to_string())
+                    .add_key(key.public())
+                    .build()?;
+            meta.sign_owned(key)?;
+            let urn = meta.urn();
 
-                let storage = api.storage().reopen()?;
+            let storage = api.storage().reopen()?;
 
-                if storage.has_urn(&urn)? {
-                    return Err(error::Error::EntityExists(urn));
-                } else {
-                    let _repo = storage.create_repo(&meta)?;
-                }
-                Ok(meta)
-            })
-            .flatten();
-
-        // Doing ? above breaks inference. Gaaaawwwwwd Rust!
-        let meta = meta?;
+            if storage.has_urn(&urn)? {
+                return Err(error::Error::EntityExists(urn));
+            } else {
+                let _repo = storage.create_repo(&meta)?;
+            }
+            Ok(meta)
+        })?;
 
         self.setup_remote(path, &meta.urn().id, default_branch)?;
 
@@ -265,27 +251,24 @@ impl Peer {
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
     pub async fn init_user(&self, handle: &str) -> Result<User, error::Error> {
-        let user = self
-            .with_api(|api| {
-                let key = api.key();
+        let user = self.with_api(|api| {
+            let key = api.key();
 
-                // Create the project meta
-                let mut user =
-                    user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
-                user.sign_owned(key)?;
-                let urn = user.urn();
+            // Create the project meta
+            let mut user = user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
+            user.sign_owned(key)?;
+            let urn = user.urn();
 
-                let storage = api.storage().reopen()?;
+            let storage = api.storage().reopen()?;
 
-                if storage.has_urn(&urn)? {
-                    return Err(error::Error::EntityExists(urn));
-                } else {
-                    let _repo = storage.create_repo(&user)?;
-                }
+            if storage.has_urn(&urn)? {
+                return Err(error::Error::EntityExists(urn));
+            } else {
+                let _repo = storage.create_repo(&user)?;
+            }
 
-                Ok(user)
-            })
-            .flatten()?;
+            Ok(user)
+        })?;
 
         let fake_resolver = FakeUserResolver(user.clone());
         let verified_user = user
@@ -338,7 +321,7 @@ impl Peer {
             ));
         }
 
-        let monorepo = self.with_api(|api| api.paths().git_dir().join(""))?;
+        let monorepo = self.with_api(|api| Ok(api.paths().git_dir().join("")))?;
         let namespace_prefix = format!("refs/namespaces/{}/refs", id);
         let mut remote = repo.remote_with_fetch(
             "rad",
@@ -425,7 +408,7 @@ impl Peer {
         platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
 
         // Construct path for fixtures to clone into.
-        let monorepo = self.with_api(|api| api.paths().git_dir().join(""))?;
+        let monorepo = self.with_api(|api| Ok(api.paths().git_dir().join("")))?;
         let workspace = monorepo.join("../workspace");
         let platinum_into = workspace.join(name);
 
@@ -533,7 +516,7 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 /// user management.
 pub async fn fake_owner(peer: &Peer) -> User {
     let key = peer
-        .with_api(|api| api.key().clone())
+        .with_api(|api| Ok(api.key().clone()))
         .expect("failed to get key");
     let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public())
         .expect("unable to create user");

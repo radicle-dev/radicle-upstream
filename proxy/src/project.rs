@@ -60,7 +60,7 @@ impl Project {
     {
         let id = project.urn();
         let metadata = project.into();
-        Project {
+        Self {
             id: id.clone(),
             shareable_entity_identifier: format!("%{}", id),
             metadata,
@@ -81,17 +81,9 @@ pub enum Registration {
 
 /// Fetch the project with a given urn from a peer
 pub fn get(peer: &coco::Peer, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
-    let meta = peer.get_project(project_urn)?;
-    let id = meta.urn();
-    let metadata = meta.into();
-
-    let stats = peer.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
-
-    Ok(Project {
-        id,
-        shareable_entity_identifier: format!("%{}", project_urn),
-        metadata,
-        registration: None,
-        stats,
+    peer.with_api(|api| {
+        let project = coco::Peer::get_project(api, project_urn)?;
+        let stats = coco::Peer::with_browser(api, project_urn, |browser| Ok(browser.get_stats()?))?;
+        Ok(Project::from_project_stats(project, stats))
     })
 }
