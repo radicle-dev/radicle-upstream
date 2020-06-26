@@ -76,7 +76,8 @@
     min-width: var(--content-min-width);
   }
   .filters {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--content-padding);
+    padding: 0 var(--content-padding);
   }
 </style>
 

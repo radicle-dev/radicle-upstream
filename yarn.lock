@@ -7790,7 +7790,7 @@ supports-hyperlinks@^2.0.0:
     has-flag "^4.0.0"
     supports-color "^7.0.0"
 
-svelte-spa-router@^2.1.0:
+svelte-spa-router@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/svelte-spa-router/-/svelte-spa-router-2.2.0.tgz#ff56ca24890fccb0e6e58e729485a39ae92181ac"
   integrity sha512-S3KpmiBszjdjkU1QA9FyNgrSdQORbXWp4wl8R147Gl7KoNof/0SfFJ23+9E47jLiNz+lCw1uaCfeHJi2I60bVg==

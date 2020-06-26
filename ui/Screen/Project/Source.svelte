@@ -1,5 +1,6 @@
 <script>
   import { getContext } from "svelte";
+  import { link, location } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
@@ -7,7 +8,6 @@
   import {
     currentPath,
     currentRevision,
-    currentObjectType,
     fetchRevisions,
     object as objectStore,
     ObjectType,
@@ -16,12 +16,12 @@
     updateParams,
   } from "../../src/source.ts";
 
-  import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
-  import { Remote, Copyable } from "../../DesignSystem/Component";
+  import { Code, Flex, Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { Copyable, Placeholder, Remote } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
-  import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
+  import Readme from "../../DesignSystem/Component/SourceBrowser/Readme.svelte";
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
@@ -31,10 +31,10 @@
 
   const updateRevision = (projectId, revision) => {
     updateParams({
-      path: getPath($currentPath),
+      path: path.extractProjectSourceObjectPath($location),
       projectId: projectId,
       revision: revision,
-      type: getObjectType($currentObjectType),
+      type: path.extractProjectSourceObjectType($location),
     });
   };
 
@@ -53,21 +53,14 @@
     return current !== "" ? current : metadata.defaultBranch;
   };
 
-  const getPath = current => {
-    return current !== "" ? current : "";
-  };
+  $: updateParams({
+    path: path.extractProjectSourceObjectPath($location),
+    projectId: id,
+    revision: getRevision($currentRevision),
+    type: path.extractProjectSourceObjectType($location),
+  });
 
-  const getObjectType = current => {
-    return current !== "" ? current : ObjectType.Tree;
-  };
-
-  $: readmeStore = readme(id, getRevision($currentRevision));
-
-  // Fetch users and revisions for repository selector
   fetchRevisions({ projectId: id });
-
-  // Set the initial routing information on page load
-  updateRevision(id, getRevision($currentRevision));
 </script>
 
 <style>
@@ -188,11 +181,10 @@
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
-              <!-- Nb. We don't `use:link` here because it doesn't work due to
-              some reactivity bug. -->
+              <!-- svelte-ignore a11y-missing-attribute -->
               <a
-                href={`#${path.projectCommits(project.id, $currentRevision)}`}
-                data-cy="commits-button">
+                data-cy="commits-button"
+                use:link={path.projectCommits(project.id, $currentRevision)}>
                 Commits
               </a>
             </Text>
@@ -221,7 +213,7 @@
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
-        {:else if object.info.objectType === ObjectType.Tree}
+        {:else if object.path === ''}
           <!-- Repository root -->
           <div class="commit-header">
             <CommitTeaser
@@ -232,15 +224,20 @@
               timestamp={format(object.info.lastCommit.committerTime * 1000)}
               style="height: 100%" />
           </div>
-        {/if}
-      </Remote>
 
-      <!-- Readme -->
-      <Remote store={readmeStore} let:data={readme}>
-        {#if readme}
-          <Readme content={readme.content} path={readme.path} />
-        {:else}
-          <!-- TODO: Placeholder for when projects don't have a README -->
+          <!-- Readme -->
+          <Remote
+            store={readme(id, getRevision($currentRevision))}
+            let:data={readme}>
+            {#if readme}
+              <Readme content={readme.content} path={readme.path} />
+            {:else}
+              <Flex align="center">
+                <Placeholder style="width: 300px; height: 100px" />
+                <Text>No readme found placeholder.</Text>
+              </Flex>
+            {/if}
+          </Remote>
         {/if}
       </Remote>
     </div>

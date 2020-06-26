@@ -13,7 +13,7 @@ use crate::registry;
 pub fn routes<R>(
     enable: bool,
     peer: Arc<Mutex<coco::Peer>>,
-    owner: http::Shared<coco::User>,
+    owner: http::Shared<Option<coco::User>>,
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
@@ -41,7 +41,7 @@ where
 #[allow(dead_code)]
 fn filters<R>(
     peer: Arc<Mutex<coco::Peer>>,
-    owner: http::Shared<coco::User>,
+    owner: http::Shared<Option<coco::User>>,
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
@@ -56,11 +56,11 @@ where
 /// POST /create-project
 fn create_project_filter(
     peer: Arc<Mutex<coco::Peer>>,
-    owner: http::Shared<coco::User>,
+    owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
         .and(super::with_peer(peer))
-        .and(super::with_shared(owner))
+        .and(super::with_owner_guard(owner))
         .and(warp::body::json())
         .and_then(handler::create_project)
 }
@@ -112,15 +112,14 @@ mod handler {
     /// Create a project from the fixture repo.
     pub async fn create_project(
         peer: Arc<Mutex<coco::Peer>>,
-        owner: http::Shared<coco::User>,
+        owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let owner = &*owner.read().await;
         let mut peer = peer.lock().await;
 
         let meta = peer
             .replicate_platinum(
-                owner,
+                &owner,
                 &input.name,
                 &input.description,
                 &input.default_branch,
@@ -289,7 +288,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(owner)),
+            Arc::new(RwLock::new(Some(owner))),
             Arc::new(RwLock::new(registry)),
         );
 
