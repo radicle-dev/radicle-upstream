@@ -283,9 +283,9 @@ mod handler {
             let urn = project_urn.parse()?;
             let project = coco::Peer::get_project(api, &urn)?;
             let default_branch = project.default_branch();
-            Ok(coco::Peer::with_browser(api, &urn, |mut browser| {
+            coco::Peer::with_browser(api, &urn, |mut browser| {
                 coco::blob(&mut browser, default_branch, revision, &path)
-            })?)
+            })
         })?;
 
         Ok(reply::json(&blob))
@@ -299,7 +299,7 @@ mod handler {
         let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
         let branches = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |browser| Ok(coco::branches(browser)?))
+            coco::Peer::with_browser(api, &urn, |browser| coco::branches(browser))
         })?;
 
         Ok(reply::json(&branches))
@@ -314,9 +314,7 @@ mod handler {
         let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
         let commit = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |mut browser| {
-                Ok(coco::commit(&mut browser, &sha1)?)
-            })
+            coco::Peer::with_browser(api, &urn, |mut browser| coco::commit(&mut browser, &sha1))
         })?;
 
         Ok(reply::json(&commit))
@@ -332,7 +330,7 @@ mod handler {
         let peer = peer.lock().await;
         let commits = peer.with_api(|api| {
             coco::Peer::with_browser(api, &urn, |mut browser| {
-                Ok(coco::commits(&mut browser, &branch)?)
+                coco::commits(&mut browser, &branch)
             })
         })?;
 
@@ -394,9 +392,8 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
-        let tags = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |browser| Ok(coco::tags(browser)?))
-        })?;
+        let tags = peer
+            .with_api(|api| coco::Peer::with_browser(api, &urn, |browser| coco::tags(browser)))?;
 
         Ok(reply::json(&tags))
     }
@@ -412,9 +409,9 @@ mod handler {
             let urn = project_urn.parse()?;
             let project = coco::Peer::get_project(api, &urn)?;
             let default_branch = project.default_branch();
-            Ok(coco::Peer::with_browser(api, &urn, |mut browser| {
+            coco::Peer::with_browser(api, &urn, |mut browser| {
                 coco::tree(&mut browser, default_branch, revision, prefix)
-            })?)
+            })
         })?;
 
         Ok(reply::json(&tree))
