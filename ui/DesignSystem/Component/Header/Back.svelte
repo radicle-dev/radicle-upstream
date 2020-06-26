@@ -1,5 +1,11 @@
 <script>
-  import { pop } from "svelte-spa-router";
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
+  const onArrowClick = () => {
+    dispatch("arrowClick");
+  };
 
   import { Icon } from "../../Primitive";
 
@@ -37,7 +43,7 @@
 </style>
 
 <header {style}>
-  <div class="back-button" on:click={() => pop()}>
+  <div class="back-button" on:click={() => onArrowClick()}>
     <Icon.ArrowLeft />
   </div>
   <slot />

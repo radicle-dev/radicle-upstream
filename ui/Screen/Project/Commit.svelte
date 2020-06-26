@@ -1,4 +1,5 @@
 <script>
+  import { pop } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as notification from "../../src/notification.ts";
@@ -121,7 +122,7 @@
 
 <div class="commit-page">
   <Remote {store} let:data={commit}>
-    <Header.Back style="padding: 1rem;">
+    <Header.Back style="padding: 1rem;" on:arrowClick={() => pop()}>
       <Title variant="large" style="margin-bottom: .75rem">
         {commit.header.summary}
       </Title>

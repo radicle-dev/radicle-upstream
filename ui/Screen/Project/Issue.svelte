@@ -1,4 +1,6 @@
 <script>
+  import { pop } from "svelte-spa-router";
+
   import { Title, Text, Markdown } from "../../DesignSystem/Primitive";
   import { Comment, Header, Timeline } from "../../DesignSystem/Component";
 
@@ -148,6 +150,7 @@ Part of #277
 
 <div class="container">
   <Header.Back
+    on:arrowClick={() => pop()}
     style="padding: 0 16px 24px 16px; border-bottom: 1px solid
     var(--color-foreground-level-3);">
     <Title variant="large">{issue.title}</Title>
