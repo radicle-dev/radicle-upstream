@@ -25,6 +25,10 @@ where
 {
     path("orgs").and(
         get_filter(Arc::clone(&registry))
+            .or(register_project_filter(
+                Arc::clone(&registry),
+                subscriptions.clone(),
+            ))
             .or(get_project_filter(Arc::clone(&registry)))
             .or(get_projects_filter(peer, Arc::clone(&registry)))
             .or(register_filter(
@@ -46,6 +50,10 @@ where
     R: registry::Client,
 {
     get_filter(Arc::clone(&registry))
+        .or(register_project_filter(
+            Arc::clone(&registry),
+            subscriptions.clone(),
+        ))
         .or(get_project_filter(Arc::clone(&registry)))
         .or(get_projects_filter(peer, Arc::clone(&registry)))
         .or(register_filter(
@@ -83,6 +91,39 @@ where
             .description("Org not found"),
         ))
         .and_then(handler::get)
+}
+
+/// `POST /<id>/projects/<name>`
+fn register_project_filter<R: registry::Client>(
+    registry: http::Shared<R>,
+    subscriptions: notification::Subscriptions,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    http::with_shared(registry)
+        .and(http::with_subscriptions(subscriptions))
+        .and(warp::post())
+        .and(document::param::<String>("org_id", "Unique ID of the Org"))
+        .and(path("projects"))
+        .and(document::param::<String>(
+            "project_name",
+            "Name of the project",
+        ))
+        .and(path::end())
+        .and(warp::body::json())
+        .and(document::document(document::description(
+            "Register a new project under the org",
+        )))
+        .and(document::document(document::tag("Org")))
+        .and(document::document(
+            document::body(http::RegisterProjectInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(registry::Org::document()).mime("application/json"),
+            )
+            .description("Registration succeeded"),
+        ))
+        .and_then(handler::register_project)
 }
 
 /// `GET /<id>/projects/<project_name>`
@@ -228,6 +269,25 @@ mod handler {
         let org = reg.get_org(org_id).await?;
 
         Ok(reply::json(&org))
+    }
+
+    /// Register a project in the Registry.
+    pub async fn register_project<R: registry::Client>(
+        registry: http::Shared<R>,
+        subscriptions: notification::Subscriptions,
+        org_id: String,
+        project_name: String,
+        input: http::RegisterProjectInput,
+    ) -> Result<impl Reply, Rejection> {
+        http::register_project(
+            registry,
+            subscriptions,
+            registry::DomainType::Org,
+            org_id,
+            project_name,
+            input,
+        )
+        .await
     }
 
     /// Get the [`registry::Project`] under the given org id.
@@ -550,6 +610,90 @@ mod test {
                 })
             );
         });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn register_project() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::default_config(key, tmp_dir.path())?;
+        let peer = coco::Peer::new(config).await?;
+        let owner = coco::fake_owner(&peer).await;
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let subscriptions = notification::Subscriptions::default();
+
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::clone(&cache),
+            subscriptions,
+        );
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
+        let urn = librad::uri::RadUrn::new(
+            owner.root_hash().clone(),
+            librad::uri::Protocol::Git,
+            librad::uri::Path::new(),
+        );
+
+        // Register user.
+        cache
+            .read()
+            .await
+            .register_user(&author, handle, None, 10)
+            .await?;
+
+        // Register org.
+        cache
+            .read()
+            .await
+            .register_org(&author, org_id.clone(), 10)
+            .await?;
+
+        // Register project
+        let project_name = "upstream";
+
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/projects/{}", org_id, project_name))
+            .json(&http::RegisterProjectInput {
+                maybe_coco_id: Some(urn.to_string()),
+                transaction_fee: registry::MINIMUM_FEE,
+            })
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::CREATED);
+
+        let txs = cache.read().await.list_transactions(vec![])?;
+        let tx = txs.first().unwrap();
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        assert_eq!(have, json!(tx));
+
+        let tx_msg = tx.messages.first().unwrap();
+        match tx_msg {
+            registry::Message::ProjectRegistration {
+                project_name,
+                domain_type,
+                domain_id,
+            } => {
+                assert_eq!(
+                    project_name.clone(),
+                    registry::ProjectName::try_from("upstream").unwrap()
+                );
+                assert_eq!(domain_type.clone(), registry::DomainType::Org);
+                assert_eq!(domain_id.clone(), org_id);
+            },
+            _ => panic!("The tx message is an unexpected variant."),
+        }
 
         Ok(())
     }

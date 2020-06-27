@@ -5,6 +5,8 @@
   import * as path from "../src/path.ts";
   import { fetch, project as store } from "../src/project.ts";
 
+  import { updateParams } from "../src/source.ts";
+
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
@@ -109,10 +111,14 @@
   }
 
   fetch({ id: params.id });
+
+  // Unset the current selected revision when navigating to a new repository.
+  updateParams({ revision: "" });
 </script>
 
 <SidebarLayout
-  style="margin: calc(var(--topbar-height)) 0 0 0; min-width: 60em;"
+  style="margin: calc(var(--topbar-height)) auto 0;
+  max-width:var(--content-max-width); min-width: 60em;"
   dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
