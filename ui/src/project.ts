@@ -25,7 +25,7 @@ export interface Project {
   shareableEntityIdentifier: string;
   metadata: Metadata;
   stats: Stats;
-  registration?: org.Org | user.User; // TODO(rudolfs): what will this type be?
+  registration?: org.Org | user.User;
 }
 
 type Projects = Project[];

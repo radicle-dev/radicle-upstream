@@ -32,8 +32,9 @@ url = "2.1"
 warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ] }
 
 [dependencies.librad]
-git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "e2e5b1ed4b1aa03f718da0c3b8c5cb414df1c328"
+# git = "https://github.com/radicle-dev/radicle-link.git"
+# rev = "e2e5b1ed4b1aa03f718da0c3b8c5cb414df1c328"
+path = "../../radicle-link/librad"
 
 [dependencies.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore.git"

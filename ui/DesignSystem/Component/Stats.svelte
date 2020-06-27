@@ -2,9 +2,9 @@
   import { Icon, Numeric } from "../Primitive";
 
   export let stats = {
-    contributors: -1,
-    branches: -1,
-    commits: -1,
+    contributors: null,
+    branches: null,
+    commits: null,
   };
 
   export let style = null;
