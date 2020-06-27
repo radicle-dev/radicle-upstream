@@ -49,7 +49,7 @@ macro_rules! combine {
 
 /// Main entry point for HTTP API.
 pub fn api<R>(
-    peer: coco::Peer,
+    peer: coco::PeerApi,
     owner: coco::User,
     registry: R,
     store: kv::Store,
@@ -162,8 +162,8 @@ where
 /// State filter to expose a [`coco::Peer`].
 #[must_use]
 pub fn with_peer(
-    peer: Arc<Mutex<coco::Peer>>,
-) -> impl Filter<Extract = (Arc<Mutex<coco::Peer>>,), Error = Infallible> + Clone {
+    peer: Arc<Mutex<coco::PeerApi>>,
+) -> impl Filter<Extract = (Arc<Mutex<coco::PeerApi>>,), Error = Infallible> + Clone {
     warp::any().map(move || Arc::clone(&peer))
 }
 

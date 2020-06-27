@@ -467,9 +467,9 @@ mod test {
     async fn register_project() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::fake_owner(peer.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
