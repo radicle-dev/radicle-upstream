@@ -1573,6 +1573,7 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 [[package]]
 name = "librad"
 version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=a4973ade581834f0ca6549a717eb28b82c0d924a#a4973ade581834f0ca6549a717eb28b82c0d924a"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -2736,6 +2737,7 @@ dependencies = [
 [[package]]
 name = "radicle-surf"
 version = "0.2.1"
+source = "git+https://github.com/radicle-dev/radicle-surf?rev=7243561c7a8f17b6b35c898d87d1445a93e96e7a#7243561c7a8f17b6b35c898d87d1445a93e96e7a"
 dependencies = [
  "git2",
  "lazy_static",
