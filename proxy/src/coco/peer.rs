@@ -36,12 +36,12 @@ where
     Ok(api)
 }
 
-/// Returns the list of [`project::Project`]s known for the configured [`paths::Paths`].
+/// Returns the list of [`project::Project`]s for your peer.
 ///
 /// # Errors
 ///
 /// The function will error if:
-///   * A lock was poisioned. See [`Self::with_api`].
+///   * The retrieving the project entities from the store fails.
 #[allow(
     clippy::wildcard_enum_match_arm,
     clippy::match_wildcard_for_single_variants
@@ -59,12 +59,12 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<project::Project<entity::Draf
         .collect())
 }
 
-/// Returns the list of [`user::User`]s known for the configured [`paths::Paths`].
+/// Returns the list of [`user::User`]s known for your peer.
 ///
 /// # Errors
 ///
 /// The function will error if:
-///   * A lock was poisioned. See [`Self::with_api`].
+///   * The retrieving the project entities from the store fails.
 #[allow(
     clippy::wildcard_enum_match_arm,
     clippy::match_wildcard_for_single_variants
@@ -135,7 +135,6 @@ where
 /// # Errors
 ///
 /// Will error if:
-///     * [`Self::with_api`] fails with a poisoned lock.
 ///     * The signing of the project metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
 pub fn init_project(
@@ -193,7 +192,6 @@ pub fn init_project(
 /// # Errors
 ///
 /// Will error if:
-///     * [`Self::with_api`] fails with a poisoned lock.
 ///     * The signing of the user metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
 pub fn init_user(peer: &PeerApi, handle: &str) -> Result<user::User<entity::Draft>, error::Error> {
@@ -404,7 +402,7 @@ pub fn replicate_platinum(
 }
 
 // TODO(xla): Move into control module.
-/// Creates a small set of projects in [`paths::Paths`].
+/// Creates a small set of projects in your peer.
 ///
 /// # Errors
 ///
