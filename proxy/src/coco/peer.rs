@@ -8,9 +8,8 @@ use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
-use librad::surf;
-use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
+use radicle_surf::vcs::git::{self, git2};
 
 use crate::error;
 
@@ -43,8 +42,8 @@ where
 /// The function will error if:
 ///   * The retrieving the project entities from the store fails.
 #[allow(
-    clippy::match_wildcard_for_single_variants,
-    clippy::wildcard_enum_match_arm
+    clippy::wildcard_enum_match_arm,
+    clippy::match_wildcard_for_single_variants
 )]
 pub fn list_projects(peer: &PeerApi) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
     let storage = peer.storage();
@@ -66,8 +65,8 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<project::Project<entity::Draf
 /// The function will error if:
 ///   * The retrieving the project entities from the store fails.
 #[allow(
-    clippy::match_wildcard_for_single_variants,
-    clippy::wildcard_enum_match_arm
+    clippy::wildcard_enum_match_arm,
+    clippy::match_wildcard_for_single_variants
 )]
 pub fn list_users(peer: &PeerApi) -> Result<Vec<user::User<entity::Draft>>, error::Error> {
     let storage = peer.storage();
@@ -120,12 +119,15 @@ pub fn with_browser<F, T>(
     callback: F,
 ) -> Result<T, error::Error>
 where
-    F: Send + FnOnce(&mut surf::vcs::git::Browser) -> Result<T, error::Error>,
+    F: Send + FnOnce(&mut git::Browser) -> Result<T, error::Error>,
 {
     let project = get_project(peer, project_urn)?;
     let default_branch = project.default_branch();
-    let repo = peer.storage().open_repo(project.urn())?;
-    let mut browser = repo.browser(default_branch)?;
+    let git_dir = peer.paths().git_dir();
+    let repo = git::Repository::new(git_dir)?;
+    let namespace = git::Namespace::from(project.urn().id.to_string().as_str());
+    let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
+
     callback(&mut browser)
 }
 

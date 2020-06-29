@@ -5,8 +5,8 @@ use async_trait::async_trait;
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::user;
-use librad::surf;
 use librad::uri::RadUrn;
+use radicle_surf::diff;
 
 /// Module that captures all the functions for working with `librad`'s [`PeerApi`].
 mod peer;
@@ -17,11 +17,11 @@ pub use peer::{
 
 /// Module that captures all types and functions for source code.
 mod source;
+pub use diff::{Diff, FileDiff};
 pub use source::{
     blob, branches, commit, commit_header, commits, local_state, tags, tree, Blob, BlobContent,
     Branch, Commit, CommitHeader, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
-pub use surf::diff::{Diff, FileDiff};
 
 pub mod config;
 
