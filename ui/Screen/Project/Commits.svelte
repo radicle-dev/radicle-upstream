@@ -16,9 +16,10 @@
   export let params = null;
 
   const projectId = params.id;
+  const userId = params.userId;
   const branch = decodeURIComponent(params.branch);
 
-  fetchCommits({ projectId, branch });
+  fetchCommits({ projectId, userId, branch });
 </script>
 
 <style>
@@ -70,9 +71,12 @@
         <ul>
           {#each history.commits as commit}
             <li class="commit">
-              <a href={path.projectCommit(projectId, commit.sha1)} use:link>
+              <a
+                href={path.projectCommit(projectId, userId, commit.sha1)}
+                use:link>
                 <CommitTeaser
                   {projectId}
+                  {userId}
                   user={{ username: commit.author.name, avatar: commit.author.avatar }}
                   commitMessage={commit.summary}
                   commitSha={commit.sha1}

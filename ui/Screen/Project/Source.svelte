@@ -33,13 +33,18 @@
     metadata.defaultBranch
   );
   $: currentObjectType = path.extractProjectSourceObjectType($location);
-  $: currentUser =
-    "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe";
 
-  const updateRevision = (projectId, revision, _user) => {
+  // TODO(rudolfs): get user pre-selection value from backend
+  $: currentUser = path.extractProjectSourceUser(
+    $location,
+    "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
+  );
+
+  const updateRevision = (projectId, revision, user) => {
     push(
       path.projectSource(
         projectId,
+        user,
         revision,
         path.extractProjectSourceObjectType($location),
         path.extractProjectSourceObjectPath($location)
@@ -180,6 +185,7 @@
         <Folder
           {currentRevision}
           {currentPath}
+          {currentUser}
           projectId={project.id}
           toplevel
           name={project.metadata.name} />
@@ -195,7 +201,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                use:link={path.projectCommits(project.id, currentRevision)}>
+                use:link={path.projectCommits(project.id, currentUser, currentRevision)}>
                 Commits
               </a>
             </Text>

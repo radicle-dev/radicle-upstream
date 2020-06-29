@@ -3,7 +3,7 @@ import regexparam from "regexparam";
 import { ObjectType } from "./source";
 
 const PROJECT_SOURCE_PATH_MATCH = new RegExp(
-  `/source/(.*)/(${ObjectType.Blob}|${ObjectType.Tree})/(.*)`
+  `/source/(.*)/(.*)/(${ObjectType.Blob}|${ObjectType.Tree})/(.*)`
 );
 
 export const search = (): string => "/search";
@@ -38,22 +38,28 @@ export const projectRevisions = (id: string): string =>
   `/projects/${id}/revisions`;
 export const projectSource = (
   id: string,
+  user: string,
   revision: string,
   objectType: string,
   path: string
 ): string => {
-  if (revision && path) {
-    return `/projects/${id}/source/${revision}/${objectType}/${
+  // TODO(rudolfs): move the conditional to call-site, paths should not contain
+  // logic
+  if (user && revision && path) {
+    return `/projects/${id}/source/${user}/${revision}/${objectType}/${
       objectType === ObjectType.Tree ? `${path}/` : path
     }`;
   } else {
     return `/projects/${id}/source`;
   }
 };
-export const projectCommit = (id: string, hash: string): string =>
-  `/projects/${id}/commit/${hash}`;
-export const projectCommits = (id: string, branch: string): string =>
-  `/projects/${id}/commits/${encodeURIComponent(branch)}`;
+export const projectCommit = (id: string, user: string, hash: string): string =>
+  `/projects/${id}/${user}/commit/${hash}`;
+export const projectCommits = (
+  id: string,
+  user: string,
+  revision: string
+): string => `/projects/${id}/${user}/commits/${encodeURIComponent(revision)}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 
@@ -68,12 +74,20 @@ export const active = (
   return regexparam(path, loose).pattern.test(location);
 };
 
+export const extractProjectSourceUser = (
+  location: string,
+  fallback = ""
+): string => {
+  const user = PROJECT_SOURCE_PATH_MATCH.exec(location);
+  return user === null ? fallback : user[1];
+};
+
 export const extractProjectSourceRevision = (
   location: string,
   fallback = ""
 ): string => {
   const rev = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return rev === null ? fallback : rev[1];
+  return rev === null ? fallback : rev[2];
 };
 
 export const extractProjectSourceObjectPath = (
@@ -81,7 +95,7 @@ export const extractProjectSourceObjectPath = (
   fallback = ""
 ): string => {
   const path = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return path === null ? fallback : path[3];
+  return path === null ? fallback : path[4];
 };
 
 export const extractProjectSourceObjectType = (
@@ -89,5 +103,5 @@ export const extractProjectSourceObjectType = (
   fallback: ObjectType = ObjectType.Tree
 ): string => {
   const type = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return type === null ? fallback : type[2];
+  return type === null ? fallback : type[3];
 };

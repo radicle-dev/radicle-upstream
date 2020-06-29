@@ -12,6 +12,7 @@
 
   export let currentRevision = null;
   export let currentPath = null;
+  export let currentUser = null;
 
   export let expanded = false;
   export let toplevel = false;
@@ -79,12 +80,13 @@
             {projectId}
             {currentPath}
             {currentRevision}
+            {currentUser}
             name={entry.info.name}
             prefix={`${entry.path}/`} />
         {:else}
           <File
             active={entry.path === currentPath}
-            href={path.projectSource(projectId, currentRevision, ObjectType.Blob, entry.path)}
+            href={path.projectSource(projectId, currentUser, currentRevision, ObjectType.Blob, entry.path)}
             name={entry.info.name} />
         {/if}
       {/each}

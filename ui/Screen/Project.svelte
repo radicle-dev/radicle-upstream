@@ -33,8 +33,8 @@
     "/projects/:id/source/*": Source,
     "/projects/:id/issues": Issues,
     "/projects/:id/issue": Issue,
-    "/projects/:id/commit/:hash": Commit,
-    "/projects/:id/commits/:branch": Commits,
+    "/projects/:id/:userId/commit/:hash": Commit,
+    "/projects/:id/:userId/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions,
   };
 

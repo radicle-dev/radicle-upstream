@@ -49,7 +49,7 @@
   }
 </style>
 
-<a class="file" class:active {href} use:link>
+<a class="file" class:active {href} use:link={href}>
   <Icon.File />
   <span class="file-name">{name}</span>
 </a>
