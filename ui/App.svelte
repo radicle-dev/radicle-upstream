@@ -1,5 +1,5 @@
 <script>
-  import Router, { push, location } from "svelte-spa-router";
+  import Router, { push, location, loc } from "svelte-spa-router";
 
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
@@ -18,6 +18,7 @@
   import Blank from "./Screen/Blank.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import NotFound from "./Screen/NotFound.svelte";
+  import Onboarding from "./Screen/Onboarding.svelte";
   import Org from "./Screen/Org.svelte";
   import Profile from "./Screen/Profile.svelte";
   import Project from "./Screen/Project.svelte";
@@ -26,6 +27,7 @@
   const routes = {
     "/": Blank,
     "/design-system-guide": DesignSystemGuide,
+    "/onboarding": Onboarding,
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
     "/profile/*": Profile,
@@ -41,7 +43,7 @@
 
     case remote.Status.Success:
       if ($store.data.identity === null) {
-        push(path.createIdentity());
+        push(path.onboarding());
       } else {
         if ($location === "/" || $location === "/identity/new") {
           push(path.profileProjects());
@@ -54,7 +56,7 @@
       notification.error("Session could not be fetched");
       break;
   }
-  $: console.log($location);
+  $: console.log($loc);
 </script>
 
 <Hotkeys />
