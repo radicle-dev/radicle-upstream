@@ -3,11 +3,7 @@
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
-  import {
-    commits as store,
-    fetchCommits,
-    formatTime,
-  } from "../../src/source.ts";
+  import { commits as store, formatTime } from "../../src/source.ts";
 
   import { Remote } from "../../DesignSystem/Component";
   import { Text } from "../../DesignSystem/Primitive";
@@ -16,9 +12,6 @@
   export let params = null;
 
   const projectId = params.id;
-  const branch = decodeURIComponent(params.branch);
-
-  fetchCommits({ projectId, branch });
 </script>
 
 <style>
