@@ -3,6 +3,7 @@ import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
+import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
@@ -10,7 +11,6 @@ import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import Placeholder from "./Placeholder.svelte";
-import BigHeader from "./BigHeader.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import Rad from "./Rad.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
@@ -37,6 +37,7 @@ export {
   Copyable,
   Dropdown,
   EmptyState,
+  Header,
   HorizontalMenu,
   Label,
   List,
@@ -44,7 +45,6 @@ export {
   Notification,
   NotificationFaucet,
   Placeholder,
-  BigHeader,
   ProjectCard,
   Rad,
   RadicleLogo,

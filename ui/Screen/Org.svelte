@@ -8,9 +8,9 @@
   import { Icon } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
+    Header,
     HorizontalMenu,
     Remote,
-    BigHeader,
   } from "../DesignSystem/Component";
 
   import Screen from "../Layout/Screen.svelte";
@@ -100,7 +100,7 @@
 
 <Screen dataCy="org-screen">
   <Remote {store} let:data={org}>
-    <BigHeader variant="org" entity={org}>
+    <Header.Large variant="org" entity={org}>
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems(params.id)} />
       </div>
@@ -112,7 +112,7 @@
           headerTitle={org.shareableEntityIdentifier}
           menuItems={dropdownMenuItems} />
       </div>
-    </BigHeader>
+    </Header.Large>
     <Router prefix={routePrefix} {routes} />
   </Remote>
 </Screen>

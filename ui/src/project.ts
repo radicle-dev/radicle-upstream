@@ -84,9 +84,6 @@ interface CreateInput {
 }
 
 interface RegisterInput {
-  domainType: Domain;
-  domainId: string;
-  projectName: string;
   transactionFee: currency.MicroRad;
   maybeCocoId?: string;
 }
@@ -138,6 +135,16 @@ export const getOrgProject = (
   return api.get<Registered>(`orgs/${orgId}/projects/${projectName}`);
 };
 
+// Resolve the api base for the given project domain
+const apiBase = (domain: Domain): string => {
+  switch (domain) {
+    case Domain.Org:
+      return "orgs";
+    case Domain.User:
+      return "users";
+  }
+};
+
 export const register = (
   domainType: Domain,
   domainId: string,
@@ -145,13 +152,14 @@ export const register = (
   transactionFee: currency.MicroRad,
   maybeCocoId?: string
 ): Promise<transaction.Transaction> => {
-  return api.post<RegisterInput, transaction.Transaction>(`projects/register`, {
-    domainType,
-    domainId,
-    projectName,
-    transactionFee,
-    maybeCocoId,
-  });
+  const base = apiBase(domainType);
+  return api.post<RegisterInput, transaction.Transaction>(
+    `${base}/${domainId}/projects/${projectName}`,
+    {
+      transactionFee,
+      maybeCocoId,
+    }
+  );
 };
 
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);

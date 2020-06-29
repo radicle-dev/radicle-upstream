@@ -7,7 +7,7 @@
   import * as remote from "../../src/remote.ts";
 
   import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
-  import { Remote } from "../../DesignSystem/Component";
+  import { Header, Remote } from "../../DesignSystem/Component";
 
   import FileDiff from "../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
 
@@ -29,35 +29,6 @@
     margin: 0 auto;
     padding: var(--content-padding);
     min-width: var(--content-min-width);
-  }
-
-  header {
-    padding: 1rem;
-    position: relative;
-  }
-
-  header:hover .back-button {
-    left: -24px;
-  }
-
-  header:hover :global(svg) {
-    fill: var(--color-foreground-level-4);
-  }
-
-  .back-button {
-    position: absolute;
-    left: -16px;
-    cursor: pointer;
-    transition: left 0.25s ease;
-  }
-
-  .back-button :global(svg) {
-    fill: var(--color-foreground-level-2);
-    transition: fill 0.25s ease;
-  }
-
-  .back-button:hover :global(svg) {
-    fill: var(--color-foreground-level-6);
   }
 
   .content {
@@ -151,10 +122,7 @@
 
 <div class="commit-page">
   <Remote {store} let:data={commit}>
-    <header>
-      <div class="back-button" on:click={() => pop()}>
-        <Icon.ArrowLeft />
-      </div>
+    <Header.Back style="padding: 1rem;" on:arrowClick={() => pop()}>
       <Title variant="large" style="margin-bottom: .75rem">
         {commit.header.summary}
       </Title>
@@ -178,7 +146,7 @@
           </span>
         </span>
       </div>
-    </header>
+    </Header.Back>
     <div class="content">
       <pre class="description" style="margin-bottom: 1rem">
         {commit.header.summary}

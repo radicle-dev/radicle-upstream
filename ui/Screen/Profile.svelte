@@ -6,8 +6,8 @@
 
   import {
     AdditionalActionsDropdown,
+    Header,
     HorizontalMenu,
-    BigHeader,
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
@@ -65,7 +65,7 @@
 </script>
 
 <Screen dataCy="profile-screen">
-  <BigHeader
+  <Header.Large
     variant="profile"
     entity={session.identity}
     on:registerHandle={() => push(path.registerUser())}>
@@ -80,7 +80,7 @@
         headerTitle={session.identity.shareableEntityIdentifier}
         menuItems={dropdownMenuItems} />
     </div>
-  </BigHeader>
+  </Header.Large>
 
   <Router prefix={routePrefix} routes={screenRoutes} />
 </Screen>
