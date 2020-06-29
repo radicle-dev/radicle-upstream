@@ -846,12 +846,12 @@ mod test {
                     "name": project_name.to_string(),
                 },
                 "registration": Value::Null,
-                "shareableEntityIdentifier": urn.to_string(),
+                "shareableEntityIdentifier": format!("%{}", urn),
                 "stats": {
-                    "branches": 11,
-                    "commits": 267,
-                    "contributors": 8,
-                },
+                  "branches": 2,
+                  "commits": 14,
+                  "contributors": 4
+                }
             }
         }]);
 

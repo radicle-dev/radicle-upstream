@@ -48,8 +48,28 @@ pub struct Project {
     /// Informs if the project is present in the Registry and under what top-level entity it can be
     /// found.
     pub registration: Option<Registration>,
-    /// High-level statistics about the project.
-    pub stats: Stats,
+    /// High-level statistics about the project
+    pub stats: coco::Stats,
+}
+
+/// Construct a Project from its metadata and stats
+impl Project {
+    /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
+    /// for the repository.
+    pub fn from_project_stats<ST>(project: project::Project<ST>, stats: coco::Stats) -> Self
+    where
+        ST: Clone,
+    {
+        let id = project.urn();
+        let metadata = project.into();
+        Self {
+            id: id.clone(),
+            shareable_entity_identifier: format!("%{}", id),
+            metadata,
+            registration: None,
+            stats,
+        }
+    }
 }
 
 /// Variants for possible registration states of a project.
@@ -61,31 +81,11 @@ pub enum Registration {
     User(registry::Id),
 }
 
-/// Coarse statistics for the Project source code.
-pub struct Stats {
-    /// Amount of known branches.
-    pub branches: u32,
-    /// Number of commits on the default branch.
-    pub commits: u32,
-    /// Amount of unique commiters on the default branch.
-    pub contributors: u32,
-}
-
-/// TODO(xla): Add documentation.
+/// Fetch the project with a given urn from a peer
 pub fn get(peer: &coco::Peer, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
-    let meta = peer.get_project(project_urn)?;
-    let id = meta.urn();
-    let metadata = meta.into();
-
-    Ok(Project {
-        id,
-        shareable_entity_identifier: project_urn.to_string(),
-        metadata,
-        registration: None,
-        stats: Stats {
-            branches: 11,
-            commits: 267,
-            contributors: 8,
-        },
+    peer.with_api(|api| {
+        let project = coco::Peer::get_project(api, project_urn)?;
+        let stats = coco::Peer::with_browser(api, project_urn, |browser| Ok(browser.get_stats()?))?;
+        Ok(Project::from_project_stats(project, stats))
     })
 }

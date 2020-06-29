@@ -94,7 +94,6 @@ const update = (msg: Msg): void => {
         .get<Projects>(`orgs/${msg.id}/projects`)
         .then(projectsStore.success)
         .catch(projectsStore.error);
-
       break;
   }
 };

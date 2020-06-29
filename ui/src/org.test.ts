@@ -2,25 +2,14 @@ import { getOrg } from "./org";
 import { idValidationStore } from "./id";
 import { ValidationStatus } from "./validation";
 import { get } from "svelte/store";
+import { radicleMock } from "./__mocks__/api";
 
 jest.mock("./api");
 
 describe("fetching an org", () => {
   it("returns an org", async () => {
     const promise = await getOrg("radicle");
-    expect(promise).toEqual({
-      id: "radicle",
-      shareableEntityIdentifier: "radicle@123abcd.git",
-      avatarFallback: {
-        background: {
-          r: 255,
-          g: 67,
-          b: 34,
-        },
-        emoji: "🔥",
-      },
-      members: [{ handle: "rafalca" }],
-    });
+    expect(promise).toEqual(radicleMock);
   });
 });
 

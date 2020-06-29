@@ -49,9 +49,8 @@
 
   const { id, metadata } = getContext("project");
 
-  const getRevision = current => {
-    return current !== "" ? current : metadata.defaultBranch;
-  };
+  const getRevision = current =>
+    current !== "" ? current : metadata.defaultBranch;
 
   $: updateParams({
     path: path.extractProjectSourceObjectPath($location),
@@ -124,6 +123,7 @@
     margin: 1.5rem 0;
     display: flex;
     justify-content: space-evenly;
+    cursor: pointer;
   }
   .repo-stat-item {
     display: flex;

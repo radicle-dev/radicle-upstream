@@ -125,19 +125,12 @@ mod handler {
                 &input.default_branch,
             )
             .await?;
+        let stats = peer.with_api(|api| {
+            coco::Peer::with_browser(api, &meta.urn(), |browser| Ok(browser.get_stats()?))
+        })?;
 
         Ok(reply::with_status(
-            reply::json(&project::Project {
-                id: meta.urn(),
-                shareable_entity_identifier: format!("%{}", meta.urn()),
-                metadata: meta.into(),
-                registration: None,
-                stats: project::Stats {
-                    branches: 11,
-                    commits: 267,
-                    contributors: 8,
-                },
-            }),
+            reply::json(&project::Project::from_project_stats(meta, stats)),
             StatusCode::CREATED,
         ))
     }
@@ -212,14 +205,14 @@ mod handler {
 
             let (old_paths, old_key, old_peer_id) = {
                 let p = peer.lock().await;
-                p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
+                p.with_api(|api| Ok((api.paths().clone(), api.public_key(), api.peer_id())))?
             };
 
             super::nuke_coco(Arc::clone(&peer)).await.unwrap();
 
             let (new_paths, new_key, new_peer_id) = {
                 let p = peer.lock().await;
-                p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
+                p.with_api(|api| Ok((api.paths().clone(), api.public_key(), api.peer_id())))?
             };
 
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
@@ -230,7 +223,7 @@ mod handler {
                 let p = peer.lock().await;
                 p.with_api(|api| {
                     let _ = api.storage().reopen().expect("failed to reopen Storage");
-                    true
+                    Ok(true)
                 })?
             };
             assert!(can_open);
