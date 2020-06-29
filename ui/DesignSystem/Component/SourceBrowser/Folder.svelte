@@ -1,30 +1,32 @@
 <script>
   import * as path from "../../../src/path.ts";
-  import {
-    currentPath,
-    currentRevision,
-    tree,
-    ObjectType,
-  } from "../../../src/source.ts";
+  import { tree, ObjectType } from "../../../src/source.ts";
 
   import { Icon } from "../../Primitive";
   import { Remote } from "../../Component";
 
   import File from "./File.svelte";
 
-  export let prefix = ""; // start sidebar tree from repository root
   export let name = null;
   export let projectId = null;
 
+  export let currentRevision = null;
+  export let currentPath = null;
+
   export let expanded = false;
   export let toplevel = false;
+
+  // Base case of this recursive component, empty string means that it starts
+  // the sidebar tree from the repository root. This prop should not be used
+  // from outside of this component.
+  export let prefix = "";
 
   const toggle = () => {
     expanded = !expanded;
   };
 
-  $: store = tree(projectId, $currentRevision, prefix);
-  $: active = prefix === $currentPath;
+  $: store = tree(projectId, currentRevision, prefix);
+  $: active = prefix === currentPath;
 </script>
 
 <style>
@@ -75,12 +77,14 @@
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
             {projectId}
+            {currentPath}
+            {currentRevision}
             name={entry.info.name}
             prefix={`${entry.path}/`} />
         {:else}
           <File
-            active={entry.path === $currentPath}
-            href={path.projectSource(projectId, $currentRevision, ObjectType.Blob, entry.path)}
+            active={entry.path === currentPath}
+            href={path.projectSource(projectId, currentRevision, ObjectType.Blob, entry.path)}
             name={entry.info.name} />
         {/if}
       {/each}

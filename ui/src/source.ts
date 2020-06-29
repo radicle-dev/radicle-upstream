@@ -1,4 +1,4 @@
-import { derived, writable, Readable } from "svelte/store";
+import { Readable } from "svelte/store";
 
 import * as api from "./api";
 import * as config from "./config";
@@ -101,15 +101,6 @@ export const commit = commitStore.readable;
 const commitsStore = remote.createStore<CommitHistory>();
 export const commits = commitsStore.readable;
 
-const currentUserStore = writable("");
-export const currentUser = derived(currentUserStore, $store => $store);
-
-const currentPathStore = writable("");
-export const currentPath = derived(currentPathStore, $store => $store);
-
-const currentRevisionStore = writable("");
-export const currentRevision = derived(currentRevisionStore, $store => $store);
-
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
 
@@ -121,7 +112,7 @@ enum Kind {
   FetchCommit = "FETCH_COMMIT",
   FetchCommits = "FETCH_COMMITS",
   FetchRevisions = "FETCH_REVISIONS",
-  Update = "UPDATE",
+  FetchObject = "FETCH_OBJECT",
 }
 
 interface FetchCommit extends event.Event<Kind> {
@@ -141,8 +132,8 @@ interface FetchRevisions extends event.Event<Kind> {
   projectId: string;
 }
 
-interface Update extends event.Event<Kind> {
-  kind: Kind.Update;
+interface FetchObject extends event.Event<Kind> {
+  kind: Kind.FetchObject;
   path: string;
   user: string;
   projectId: string;
@@ -176,7 +167,7 @@ const groupCommits = (history: CommitSummary[]): CommitHistory => {
   return days;
 };
 
-type Msg = FetchCommit | FetchCommits | FetchRevisions | Update;
+type Msg = FetchCommit | FetchCommits | FetchRevisions | FetchObject;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -221,10 +212,7 @@ const update = (msg: Msg): void => {
         .catch(revisionsStore.error);
       break;
 
-    case Kind.Update:
-      currentPathStore.update(() => msg.path);
-      currentUserStore.update(() => msg.user);
-      currentRevisionStore.update(() => msg.revision);
+    case Kind.FetchObject:
       objectStore.loading();
 
       switch (msg.type) {
@@ -256,7 +244,7 @@ export const fetchRevisions = event.create<Kind, Msg>(
   Kind.FetchRevisions,
   update
 );
-export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
+export const fetchObject = event.create<Kind, Msg>(Kind.FetchObject, update);
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);

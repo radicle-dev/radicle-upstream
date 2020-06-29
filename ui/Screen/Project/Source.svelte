@@ -1,20 +1,17 @@
 <script>
   import { getContext } from "svelte";
-  import { link, location } from "svelte-spa-router";
+  import { link, location, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import {
-    currentPath,
-    currentRevision,
-    currentUser,
     fetchRevisions,
     object as objectStore,
     ObjectType,
     readme,
     revisions as revisionsStore,
-    updateParams,
+    fetchObject,
   } from "../../src/source.ts";
 
   import { Code, Flex, Icon, Text, Title } from "../../DesignSystem/Primitive";
@@ -30,14 +27,24 @@
 
   export const params = null;
 
-  const updateRevision = (projectId, revision, user) => {
-    updateParams({
-      path: path.extractProjectSourceObjectPath($location),
-      projectId: projectId,
-      revision: revision,
-      user: user,
-      type: path.extractProjectSourceObjectType($location),
-    });
+  $: currentPath = path.extractProjectSourceObjectPath($location);
+  $: currentRevision = path.extractProjectSourceRevision(
+    $location,
+    metadata.defaultBranch
+  );
+  $: currentObjectType = path.extractProjectSourceObjectType($location);
+  $: currentUser =
+    "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe";
+
+  const updateRevision = (projectId, revision, _user) => {
+    push(
+      path.projectSource(
+        projectId,
+        revision,
+        path.extractProjectSourceObjectType($location),
+        path.extractProjectSourceObjectPath($location)
+      )
+    );
   };
 
   let copyIcon = Icon.Copy;
@@ -51,27 +58,14 @@
 
   const { id, metadata } = getContext("project");
 
-  const getRevision = current => {
-    return current !== "" ? current : metadata.defaultBranch;
-  };
-
-  const getUser = current => {
-    // TODO(rudolfs): wire up defaultUser in the backend
-    /* return current !== "" ? current : metadata.defaultUser; */
-    return current === undefined
-      ? "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"
-      : current;
-  };
-
-  $: updateParams({
-    path: path.extractProjectSourceObjectPath($location),
-    projectId: id,
-    revision: getRevision($currentRevision),
-    user: getUser($currentUser),
-    type: path.extractProjectSourceObjectType($location),
-  });
-
   fetchRevisions({ projectId: id });
+  $: fetchObject({
+    path: currentPath,
+    user: currentUser,
+    projectId: id,
+    revision: currentRevision,
+    type: currentObjectType,
+  });
 </script>
 
 <style>
@@ -174,8 +168,8 @@
         <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
-            currentUser={getUser($currentUser)}
-            currentRevision={getRevision($currentRevision)}
+            {currentUser}
+            {currentRevision}
             {revisions}
             on:select={event => updateRevision(project.id, event.detail.revision, event.detail.user.id)} />
         </div>
@@ -183,7 +177,12 @@
 
       <!-- Tree -->
       <div class="source-tree" data-cy="source-tree">
-        <Folder projectId={project.id} toplevel name={project.metadata.name} />
+        <Folder
+          {currentRevision}
+          {currentPath}
+          projectId={project.id}
+          toplevel
+          name={project.metadata.name} />
       </div>
     </div>
 
@@ -196,7 +195,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                use:link={path.projectCommits(project.id, $currentRevision)}>
+                use:link={path.projectCommits(project.id, currentRevision)}>
                 Commits
               </a>
             </Text>
@@ -221,7 +220,7 @@
         {#if object.info.objectType === ObjectType.Blob}
           <FileSource
             blob={object}
-            path={$currentPath}
+            path={currentPath}
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
@@ -238,9 +237,7 @@
           </div>
 
           <!-- Readme -->
-          <Remote
-            store={readme(id, getRevision($currentRevision))}
-            let:data={readme}>
+          <Remote store={readme(id, currentRevision)} let:data={readme}>
             {#if readme}
               <Readme content={readme.content} path={readme.path} />
             {:else}

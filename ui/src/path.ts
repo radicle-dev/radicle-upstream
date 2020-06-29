@@ -1,6 +1,5 @@
 import regexparam from "regexparam";
 
-import * as config from "./config";
 import { ObjectType } from "./source";
 
 const PROJECT_SOURCE_PATH_MATCH = new RegExp(
@@ -69,17 +68,26 @@ export const active = (
   return regexparam(path, loose).pattern.test(location);
 };
 
-export const extractProjectSourceRevision = (location: string): string => {
+export const extractProjectSourceRevision = (
+  location: string,
+  fallback = ""
+): string => {
   const rev = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return rev === null ? config.DEFAULT_PROJECT_REVISION : rev[1];
+  return rev === null ? fallback : rev[1];
 };
 
-export const extractProjectSourceObjectPath = (location: string): string => {
+export const extractProjectSourceObjectPath = (
+  location: string,
+  fallback = ""
+): string => {
   const path = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return path === null ? "" : path[3];
+  return path === null ? fallback : path[3];
 };
 
-export const extractProjectSourceObjectType = (location: string): string => {
+export const extractProjectSourceObjectType = (
+  location: string,
+  fallback: ObjectType = ObjectType.Tree
+): string => {
   const type = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return type === null ? ObjectType.Tree : type[2];
+  return type === null ? fallback : type[2];
 };

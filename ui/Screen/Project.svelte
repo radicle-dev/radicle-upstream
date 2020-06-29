@@ -5,8 +5,6 @@
   import * as path from "../src/path.ts";
   import { fetch, project as store } from "../src/project.ts";
 
-  import { updateParams } from "../src/source.ts";
-
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
@@ -111,9 +109,6 @@
   }
 
   fetch({ id: params.id });
-
-  // Unset the current selected revision when navigating to a new repository.
-  updateParams({ revision: "" });
 </script>
 
 <SidebarLayout
