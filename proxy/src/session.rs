@@ -80,7 +80,7 @@ pub async fn current<R: registry::Client>(
                 session.orgs = registry.list_orgs(handle).await?;
                 session.permissions.register_org = true;
                 let projects = coco::list_projects(&*peer.lock().await)?;
-                if projects.is_empty() {
+                if !projects.is_empty() {
                     session.permissions.register_project = true;
                 }
             } else {
