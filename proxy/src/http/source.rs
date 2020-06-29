@@ -1251,7 +1251,7 @@ mod test {
             coco::Peer::with_browser(api, &urn, |mut browser| {
                 coco::tree(
                     &mut browser,
-                    &default_branch,
+                    default_branch,
                     Some(revision.to_string()),
                     Some(prefix.to_string()),
                 )
