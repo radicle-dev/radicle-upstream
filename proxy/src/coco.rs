@@ -14,18 +14,21 @@ use librad::net;
 use librad::net::discovery;
 use librad::paths;
 use librad::peer;
-use radicle_surf::{diff, vcs::git::{self, git2}};
 use librad::uri::RadUrn;
+use radicle_surf::{
+    diff,
+    vcs::git::{self, git2},
+};
 
 use crate::error;
 
 /// Module that captures all types and functions for source code.
 mod source;
+pub use diff::{Diff, FileDiff};
 pub use source::{
     blob, branches, commit, commit_header, commits, local_state, tags, tree, Blob, BlobContent,
     Branch, Commit, CommitHeader, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
-pub use diff::{Diff, FileDiff};
 
 pub mod config;
 
