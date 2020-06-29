@@ -117,7 +117,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer = &*peer.lock().await;
 
-        let meta = coco::replicate_platinum(
+        let meta = coco::control::replicate_platinum(
             peer,
             &owner,
             &input.name,

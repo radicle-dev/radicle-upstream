@@ -778,7 +778,7 @@ mod test {
         let config = coco::config::default(key, tmp_dir)?;
         let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
         let owner = coco::fake_owner(peer.lock().await.key().clone()).await;
-        let platinum_project = coco::replicate_platinum(
+        let platinum_project = coco::control::replicate_platinum(
             &*peer.lock().await,
             &owner,
             "git-platinum",
@@ -908,8 +908,13 @@ mod test {
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::fake_owner(peer.key().clone()).await;
-        let platinum_project =
-            coco::replicate_platinum(&peer, &owner, "git-platinum", "fixture data", "master")?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
@@ -937,8 +942,13 @@ mod test {
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::fake_owner(peer.key().clone()).await;
-        let platinum_project =
-            coco::replicate_platinum(&peer, &owner, "git-platinum", "fixture data", "master")?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
@@ -986,8 +996,13 @@ mod test {
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::fake_owner(peer.key().clone()).await;
-        let platinum_project =
-            coco::replicate_platinum(&peer, &owner, "git-platinum", "fixture data", "master")?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let branch = "master";
@@ -1060,8 +1075,13 @@ mod test {
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::fake_owner(peer.key().clone()).await;
-        let platinum_project =
-            coco::replicate_platinum(&peer, &owner, "git-platinum", "fixture data", "master")?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         // TODO(finto): Get the right URN
@@ -1180,8 +1200,13 @@ mod test {
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::fake_owner(peer.key().clone()).await;
-        let platinum_project =
-            coco::replicate_platinum(&peer, &owner, "git-platinum", "fixture data", "master")?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let want = coco::with_browser(&peer, &urn, |browser| coco::tags(browser))?;
@@ -1211,8 +1236,13 @@ mod test {
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::fake_owner(peer.key().clone()).await;
-        let platinum_project =
-            coco::replicate_platinum(&peer, &owner, "git-platinum", "fixture data", "master")?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let revision = "master";

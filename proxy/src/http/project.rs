@@ -479,8 +479,13 @@ mod test {
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::fake_owner(peer.key().clone()).await;
-        let platinum_project =
-            coco::replicate_platinum(&peer, &owner, "git-platinum", "fixture data", "master")?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let project = project::get(&peer, &urn)?;
@@ -511,7 +516,7 @@ mod test {
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::fake_owner(peer.key().clone()).await;
 
-        coco::setup_fixtures(&peer, &owner)?;
+        coco::control::setup_fixtures(&peer, &owner)?;
 
         let projects = coco::list_projects(&peer)?
             .into_iter()

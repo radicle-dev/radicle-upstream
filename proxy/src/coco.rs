@@ -12,7 +12,7 @@ use radicle_surf::diff;
 mod peer;
 pub use peer::{
     create_peer_api, get_project, get_user, init_project, init_user, list_projects, list_users,
-    replicate_platinum, setup_fixtures, verify_user, with_browser, PeerApi, User,
+    verify_user, with_browser, PeerApi, User,
 };
 
 /// Module that captures all types and functions for source code.
@@ -24,6 +24,9 @@ pub use source::{
 };
 
 pub mod config;
+
+/// Moule that captures fixture setup.
+pub mod control;
 
 /// Acting as a fake resolver where a User resolves to itself.
 /// This allows us to check the history status of a single User.

@@ -784,7 +784,7 @@ mod test {
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
-        let platinum_project = coco::replicate_platinum(
+        let platinum_project = coco::control::replicate_platinum(
             &peer,
             &owner,
             project_name,
