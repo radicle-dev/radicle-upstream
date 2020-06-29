@@ -59,18 +59,18 @@
   }
 </style>
 
-<Remote {store} let:data={tree}>
-  {#if !toplevel}
-    <div class="folder" on:click={toggle}>
-      <span class:expanded class:active style="height: 24px">
-        <Icon.Chevron dataCy={`expand-${name}`} />
-      </span>
-      <span class="folder-name">{name}</span>
-    </div>
-  {/if}
+{#if !toplevel}
+  <div class="folder" on:click={toggle}>
+    <span class:expanded class:active style="height: 24px">
+      <Icon.Chevron dataCy={`expand-${name}`} />
+    </span>
+    <span class="folder-name">{name}</span>
+  </div>
+{/if}
 
-  <div class="container" class:toplevel>
-    {#if expanded || toplevel}
+<div class="container" class:toplevel>
+  {#if expanded || toplevel}
+    <Remote {store} let:data={tree}>
       {#each tree.entries as entry}
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
@@ -84,6 +84,6 @@
             name={entry.info.name} />
         {/if}
       {/each}
-    {/if}
-  </div>
-</Remote>
+    </Remote>
+  {/if}
+</div>
