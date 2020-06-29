@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 
 use async_trait::async_trait;
 
+use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
 use librad::meta::user;
@@ -140,6 +141,7 @@ where
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
 pub fn init_project(
     peer: &PeerApi,
+    key: keys::SecretKey,
     owner: &User,
     path: impl AsRef<std::path::Path> + Send,
     name: &str,
@@ -157,16 +159,15 @@ pub fn init_project(
     }
 
     let meta: Result<project::Project<entity::Draft>, error::Error> = {
-        let key = peer.key();
-
         // Create the project meta
         let mut meta = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
             .to_builder()
             .set_description(description.to_string())
             .set_default_branch(default_branch.to_string())
             .add_key(key.public())
+            .add_certifier(owner.urn())
             .build()?;
-        meta.sign_owned(key)?;
+        meta.sign_owned(&key)?;
         let urn = meta.urn();
 
         let storage = peer.storage().reopen()?;
@@ -195,12 +196,14 @@ pub fn init_project(
 /// Will error if:
 ///     * The signing of the user metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-pub fn init_user(peer: &PeerApi, handle: &str) -> Result<user::User<entity::Draft>, error::Error> {
-    let key = peer.key();
-
+pub fn init_user(
+    peer: &PeerApi,
+    key: keys::SecretKey,
+    handle: &str,
+) -> Result<user::User<entity::Draft>, error::Error> {
     // Create the project meta
     let mut user = user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
-    user.sign_owned(key)?;
+    user.sign_owned(&key)?;
     let urn = user.urn();
 
     let storage = peer.storage().reopen()?;
@@ -331,10 +334,10 @@ mod test {
     async fn test_can_create_user() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let config = config::default(key, tmp_dir.path())?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let peer = super::create_peer_api(config).await?;
 
-        let annie = super::init_user(&peer, "annie_are_you_ok?");
+        let annie = super::init_user(&peer, key, "annie_are_you_ok?");
         assert!(annie.is_ok());
 
         Ok(())
@@ -345,13 +348,14 @@ mod test {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
-        let config = config::default(key, tmp_dir.path())?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let peer = super::create_peer_api(config).await?;
 
-        let user = super::init_user(&peer, "cloudhead")?;
+        let user = super::init_user(&peer, key.clone(), "cloudhead")?;
         let user = super::verify_user(user).await?;
         let project = super::init_project(
             &peer,
+            key,
             &user,
             &repo_path,
             "radicalise",
@@ -368,12 +372,12 @@ mod test {
     async fn test_cannot_create_user_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let config = config::default(key, tmp_dir.path())?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let peer = super::create_peer_api(config).await?;
 
-        let user = super::init_user(&peer, "cloudhead")?;
+        let user = super::init_user(&peer, key.clone(), "cloudhead")?;
         let user = super::verify_user(user).await?;
-        let err = super::init_user(&peer, "cloudhead");
+        let err = super::init_user(&peer, key, "cloudhead");
 
         if let Err(Error::EntityExists(urn)) = err {
             assert_eq!(urn, user.urn())
@@ -392,13 +396,14 @@ mod test {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
-        let config = config::default(key, tmp_dir.path())?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let peer = super::create_peer_api(config).await?;
 
-        let user = super::init_user(&peer, "cloudhead")?;
+        let user = super::init_user(&peer, key.clone(), "cloudhead")?;
         let user = super::verify_user(user).await?;
         let _project = super::init_project(
             &peer,
+            key.clone(),
             &user,
             &repo_path,
             "radicalise",
@@ -408,6 +413,7 @@ mod test {
 
         let err = super::init_project(
             &peer,
+            key,
             &user,
             &repo_path,
             "radicalise",
@@ -431,12 +437,12 @@ mod test {
     async fn test_list_projects() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let config = config::default(key, tmp_dir.path())?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let peer = super::create_peer_api(config).await?;
 
-        let user = super::init_user(&peer, "cloudhead")?;
+        let user = super::init_user(&peer, key.clone(), "cloudhead")?;
         let user = super::verify_user(user).await?;
-        control::setup_fixtures(&peer, &user)?;
+        control::setup_fixtures(&peer, key, &user)?;
 
         let projects = super::list_projects(&peer)?;
         let mut project_names = projects
@@ -457,12 +463,12 @@ mod test {
     async fn test_list_users() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
-        let config = config::default(key, tmp_dir.path())?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let peer = super::create_peer_api(config).await?;
 
-        let cloudhead = super::init_user(&peer, "cloudhead")?;
+        let cloudhead = super::init_user(&peer, key.clone(), "cloudhead")?;
         let _cloudhead = super::verify_user(cloudhead).await?;
-        let kalt = super::init_user(&peer, "kalt")?;
+        let kalt = super::init_user(&peer, key, "kalt")?;
         let _kalt = super::verify_user(kalt).await?;
 
         let users = super::list_users(&peer)?;

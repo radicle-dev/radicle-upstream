@@ -10,26 +10,30 @@ use crate::avatar;
 use crate::coco;
 use crate::http;
 use crate::identity;
+use crate::keystore;
 use crate::registry;
 
 /// Combination of all identity routes.
 pub fn filters<R: registry::Client>(
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter(Arc::clone(&peer)).or(create_filter(peer, registry, store))
+    get_filter(Arc::clone(&peer)).or(create_filter(peer, keystore, registry, store))
 }
 
 /// `POST /identities`
 fn create_filter<R: registry::Client>(
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("identities")
         .and(warp::post())
         .and(http::with_peer(peer))
+        .and(http::with_shared(keystore))
         .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(warp::body::json())
@@ -90,12 +94,14 @@ mod handler {
     use crate::error;
     use crate::http;
     use crate::identity;
+    use crate::keystore;
     use crate::registry;
     use crate::session;
 
     /// Create a new [`identity::Identity`].
     pub async fn create<R: registry::Client>(
         peer: Arc<Mutex<coco::PeerApi>>,
+        keystore: http::Shared<keystore::Keystorage>,
         registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
@@ -110,7 +116,9 @@ mod handler {
             return Err(Rejection::from(error::Error::EntityExists(identity.id)));
         }
 
-        let id = identity::create(peer, input.handle.parse()?).await?;
+        let keystore = keystore.read().await;
+        let key = keystore.get_librad_key().map_err(error::Error::from)?;
+        let id = identity::create(peer, key, input.handle.parse()?).await?;
 
         session::set_identity(&store, id.clone())?;
 
@@ -241,20 +249,26 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::keys::SecretKey;
+    use librad::paths;
 
     use crate::avatar;
     use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
+    use crate::keystore;
     use crate::registry;
     use crate::session;
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let key = SecretKey::new();
+        let tmp_dir = tempfile::tempdir()?;
+        let paths = paths::Paths::from_root(tmp_dir.path())?;
+
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
+
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
         let registry = {
@@ -264,7 +278,12 @@ mod test {
         let store = Arc::new(RwLock::new(
             kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
         ));
-        let api = super::filters(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
+        let api = super::filters(
+            Arc::clone(&peer),
+            Arc::new(RwLock::new(keystore)),
+            Arc::clone(&registry),
+            Arc::clone(&store),
+        );
 
         let res = request()
             .method("POST")
@@ -302,9 +321,14 @@ mod test {
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
+        let tmp_dir = tempfile::tempdir()?;
+        let paths = paths::Paths::from_root(tmp_dir.path())?;
+
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
+
+        let config = coco::config::default(key.clone(), tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
@@ -312,13 +336,14 @@ mod test {
         };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
 
-        let user = coco::init_user(&peer, "cloudhead")?;
+        let user = coco::init_user(&peer, key, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
         let shareable_entity_identifier = user.into();
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(keystore)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );

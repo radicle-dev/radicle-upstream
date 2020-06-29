@@ -26,7 +26,11 @@ pub async fn fake_owner(key: keys::SecretKey) -> User {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> {
+pub fn setup_fixtures(
+    peer: &PeerApi,
+    key: keys::SecretKey,
+    owner: &User,
+) -> Result<(), error::Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -49,7 +53,7 @@ pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> 
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(peer, owner, info.0, info.1, info.2)?;
+        replicate_platinum(peer, key.clone(), owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -64,6 +68,7 @@ pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> 
 /// the coco project.
 pub fn replicate_platinum(
     peer: &PeerApi,
+    key: keys::SecretKey,
     owner: &User,
     name: &str,
     description: &str,
@@ -84,6 +89,7 @@ pub fn replicate_platinum(
 
     let meta = init_project(
         peer,
+        key,
         owner,
         platinum_into.clone(),
         name,
