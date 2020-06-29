@@ -43,8 +43,8 @@ where
 /// The function will error if:
 ///   * The retrieving the project entities from the store fails.
 #[allow(
-    clippy::wildcard_enum_match_arm,
-    clippy::match_wildcard_for_single_variants
+    clippy::match_wildcard_for_single_variants,
+    clippy::wildcard_enum_match_arm
 )]
 pub fn list_projects(peer: &PeerApi) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
     let storage = peer.storage();
