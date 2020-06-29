@@ -16,7 +16,7 @@ use crate::registry;
 
 /// Prefixed filters.
 pub fn routes<R>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -42,7 +42,7 @@ where
 /// Combination of all org routes.
 #[cfg(test)]
 fn filters<R>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -162,7 +162,7 @@ fn get_project_filter<R: registry::Client>(
 
 /// `GET /<id>/projects`
 fn get_projects_filter<R>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
@@ -308,7 +308,7 @@ mod handler {
     /// Get all projects under the given org id.
     pub async fn get_projects<R>(
         registry: http::Shared<R>,
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         org_id: String,
     ) -> Result<impl Reply, Rejection>
     where
@@ -560,8 +560,8 @@ mod test {
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -618,9 +618,9 @@ mod test {
     async fn register_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -702,8 +702,8 @@ mod test {
     async fn get_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -771,9 +771,9 @@ mod test {
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -784,9 +784,13 @@ mod test {
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
-        let platinum_project = peer
-            .replicate_platinum(&owner, project_name, project_description, default_branch)
-            .await?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            project_name,
+            project_description,
+            default_branch,
+        )?;
         let urn = platinum_project.urn();
 
         let api = super::filters(
@@ -866,8 +870,8 @@ mod test {
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -918,8 +922,8 @@ mod test {
     async fn register_member() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
