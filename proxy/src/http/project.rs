@@ -424,7 +424,7 @@ mod test {
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
         let owner = Arc::new(RwLock::new(Some(
-            coco::fake_owner(peer.key().clone()).await,
+            coco::control::fake_owner(peer.key().clone()).await,
         )));
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
@@ -478,7 +478,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             &owner,
@@ -514,7 +514,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
 
         coco::control::setup_fixtures(&peer, &owner)?;
 

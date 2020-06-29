@@ -620,7 +620,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -773,7 +773,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))

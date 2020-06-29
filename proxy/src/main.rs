@@ -68,7 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let config = coco::config::configure(paths, key);
     let peer = coco::create_peer_api(config).await?;
-    let owner = coco::fake_owner(peer.key().clone()).await;
+    let owner = coco::control::fake_owner(peer.key().clone()).await;
 
     if args.test {
         coco::control::setup_fixtures(&peer, &owner).expect("fixture creation failed");

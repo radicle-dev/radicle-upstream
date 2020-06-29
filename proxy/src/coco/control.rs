@@ -1,47 +1,55 @@
 use std::env;
 
+use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
+use librad::meta::user;
 use librad::net::peer::PeerApi;
 use radicle_surf::vcs::git::git2;
 
-use crate::coco::peer::{init_project, User};
+use crate::coco::peer::{init_project, verify_user, User};
 use crate::error;
 
-/// This function exists as a standalone because the logic does not play well with async in
-/// `replicate_platinum`.
-fn clone_platinum(
-    platinum_from: &str,
-    platinum_into: &std::path::PathBuf,
-) -> Result<(), error::Error> {
-    let mut fetch_options = git2::FetchOptions::new();
-    fetch_options.download_tags(git2::AutotagOption::All);
+// TODO(finto): Should be fully removed where we use init_user instead.
+/// Constructs a fake user to be used as an owner of projects until we have more permanent key and
+/// user management.
+pub async fn fake_owner(key: keys::SecretKey) -> User {
+    let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public())
+        .expect("unable to create user");
+    user.sign_owned(&key).expect("unable to sign user");
+    verify_user(user).await.expect("failed to verify user")
+}
 
-    let platinum_repo = git2::build::RepoBuilder::new()
-        .branch("master")
-        .clone_local(git2::build::CloneLocal::Auto)
-        .fetch_options(fetch_options)
-        .clone(platinum_from, platinum_into.as_path())
-        .expect("unable to clone fixtures repo");
+/// Creates a small set of projects in your peer.
+///
+/// # Errors
+///
+/// Will error if filesystem access is not granted or broken for the configured
+/// [`librad::paths::Paths`].
+pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> {
+    let infos = vec![
+        ("monokel", "A looking glass into the future", "master"),
+        (
+            "Monadic",
+            "Open source organization of amazing things.",
+            "master",
+        ),
+        (
+            "open source coin",
+            "Research for the sustainability of the open source community.",
+            "master",
+        ),
+        (
+            "radicle",
+            "Decentralized open source collaboration",
+            "master",
+        ),
+    ];
 
-    {
-        let branches = platinum_repo.branches(Some(git2::BranchType::Remote))?;
-
-        for branch in branches {
-            let (branch, _branch_type) = branch?;
-            let name = &branch
-                .name()
-                .expect("unable to get branch name")
-                .expect("branch not present")
-                .get(7..)
-                .expect("unable to extract branch name");
-            let oid = branch.get().target().expect("can't find OID");
-            let commit = platinum_repo.find_commit(oid)?;
-
-            if *name != "master" {
-                platinum_repo.branch(name, &commit, false)?;
-            }
-        }
+    for info in infos {
+        // let path = format!("{}/{}/{}", root, "repos", info.0);
+        // std::fs::create_dir_all(path.clone())?;
+        replicate_platinum(peer, owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -112,36 +120,40 @@ pub fn replicate_platinum(
     Ok(meta)
 }
 
-/// Creates a small set of projects in your peer.
-///
-/// # Errors
-///
-/// Will error if filesystem access is not granted or broken for the configured
-/// [`librad::paths::Paths`].
-pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> {
-    let infos = vec![
-        ("monokel", "A looking glass into the future", "master"),
-        (
-            "Monadic",
-            "Open source organization of amazing things.",
-            "master",
-        ),
-        (
-            "open source coin",
-            "Research for the sustainability of the open source community.",
-            "master",
-        ),
-        (
-            "radicle",
-            "Decentralized open source collaboration",
-            "master",
-        ),
-    ];
+/// This function exists as a standalone because the logic does not play well with async in
+/// `replicate_platinum`.
+fn clone_platinum(
+    platinum_from: &str,
+    platinum_into: &std::path::PathBuf,
+) -> Result<(), error::Error> {
+    let mut fetch_options = git2::FetchOptions::new();
+    fetch_options.download_tags(git2::AutotagOption::All);
 
-    for info in infos {
-        // let path = format!("{}/{}/{}", root, "repos", info.0);
-        // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(peer, owner, info.0, info.1, info.2)?;
+    let platinum_repo = git2::build::RepoBuilder::new()
+        .branch("master")
+        .clone_local(git2::build::CloneLocal::Auto)
+        .fetch_options(fetch_options)
+        .clone(platinum_from, platinum_into.as_path())
+        .expect("unable to clone fixtures repo");
+
+    {
+        let branches = platinum_repo.branches(Some(git2::BranchType::Remote))?;
+
+        for branch in branches {
+            let (branch, _branch_type) = branch?;
+            let name = &branch
+                .name()
+                .expect("unable to get branch name")
+                .expect("branch not present")
+                .get(7..)
+                .expect("unable to extract branch name");
+            let oid = branch.get().target().expect("can't find OID");
+            let commit = platinum_repo.find_commit(oid)?;
+
+            if *name != "master" {
+                platinum_repo.branch(name, &commit, false)?;
+            }
+        }
     }
 
     Ok(())

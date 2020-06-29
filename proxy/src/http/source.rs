@@ -777,7 +777,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir)?;
         let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let owner = coco::fake_owner(peer.lock().await.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.lock().await.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &*peer.lock().await,
             &owner,
@@ -907,7 +907,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             &owner,
@@ -941,7 +941,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             &owner,
@@ -995,7 +995,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             &owner,
@@ -1074,7 +1074,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             &owner,
@@ -1199,7 +1199,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             &owner,
@@ -1235,7 +1235,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::fake_owner(peer.key().clone()).await;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             &owner,

@@ -216,6 +216,8 @@ pub fn init_user(peer: &PeerApi, handle: &str) -> Result<user::User<entity::Draf
 
 /// Verify a user using a fake resolver that resolves the user to itself.
 ///
+/// TODO(finto): Should not live here permanently, because resolvers should solve this verification.
+///
 /// # Errors
 ///
 /// If any of the verification steps fail
