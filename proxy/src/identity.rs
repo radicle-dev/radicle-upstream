@@ -1,6 +1,9 @@
 //! Container to bundle and associate information around an identity.
 
+use std::sync::Arc;
+
 use serde::{Deserialize, Serialize};
+use tokio::sync::Mutex;
 
 use librad::uri::RadUrn;
 
@@ -38,8 +41,12 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub async fn create(peer: &coco::Peer, handle: String) -> Result<Identity, error::Error> {
-    let user = peer.init_user(&handle).await?;
+pub async fn create(
+    peer: Arc<Mutex<coco::PeerApi>>,
+    handle: String,
+) -> Result<Identity, error::Error> {
+    let user = coco::init_user(&*peer.lock().await, &handle)?;
+    let user = coco::verify_user(user).await?;
     let id = user.urn();
     let shareable_entity_identifier = user.into();
     Ok(Identity {
@@ -56,8 +63,8 @@ pub async fn create(peer: &coco::Peer, handle: String) -> Result<Identity, error
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(peer: &coco::Peer, id: &RadUrn) -> Result<Identity, error::Error> {
-    let user = peer.with_api(|api| coco::Peer::get_user(api, id))?;
+pub fn get(peer: &coco::PeerApi, id: &RadUrn) -> Result<Identity, error::Error> {
+    let user = coco::get_user(peer, id)?;
     Ok(Identity {
         id: id.clone(),
         shareable_entity_identifier: SharedIdentifier {

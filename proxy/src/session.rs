@@ -63,7 +63,7 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
 pub async fn current<R: registry::Client>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     store: &kv::Store,
     registry: &R,
 ) -> Result<Session, error::Error> {
@@ -79,7 +79,8 @@ pub async fn current<R: registry::Client>(
             if registry.get_user(handle.clone()).await?.is_some() {
                 session.orgs = registry.list_orgs(handle).await?;
                 session.permissions.register_org = true;
-                if !peer.lock().await.list_projects()?.is_empty() {
+                let projects = coco::list_projects(&*peer.lock().await)?;
+                if !projects.is_empty() {
                     session.permissions.register_project = true;
                 }
             } else {

@@ -14,7 +14,7 @@ use crate::registry;
 
 /// Combination of all identity routes.
 pub fn filters<R: registry::Client>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -23,7 +23,7 @@ pub fn filters<R: registry::Client>(
 
 /// `POST /identities`
 fn create_filter<R: registry::Client>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -52,7 +52,7 @@ fn create_filter<R: registry::Client>(
 
 /// `GET /identities/<id>`
 fn get_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("identities")
         .and(http::with_peer(peer))
@@ -95,7 +95,7 @@ mod handler {
 
     /// Create a new [`identity::Identity`].
     pub async fn create<R: registry::Client>(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
@@ -110,8 +110,7 @@ mod handler {
             return Err(Rejection::from(error::Error::EntityExists(identity.id)));
         }
 
-        let peer = peer.lock().await;
-        let id = identity::create(&peer, input.handle.parse()?).await?;
+        let id = identity::create(peer, input.handle.parse()?).await?;
 
         session::set_identity(&store, id.clone())?;
 
@@ -119,7 +118,7 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(peer: Arc<Mutex<coco::Peer>>, id: String) -> Result<impl Reply, Rejection> {
+    pub async fn get(peer: Arc<Mutex<coco::PeerApi>>, id: String) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
         let id = identity::get(&peer, &id.parse().expect("could not parse id"))?;
         Ok(reply::json(&id))
@@ -256,8 +255,8 @@ mod test {
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -305,15 +304,15 @@ mod test {
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
         };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
 
-        let user = peer.init_user("cloudhead").await?;
+        let user = coco::init_user(&peer, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
         let shareable_entity_identifier = user.into();

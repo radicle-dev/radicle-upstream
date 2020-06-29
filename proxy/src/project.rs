@@ -82,10 +82,8 @@ pub enum Registration {
 }
 
 /// Fetch the project with a given urn from a peer
-pub fn get(peer: &coco::Peer, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
-    peer.with_api(|api| {
-        let project = coco::Peer::get_project(api, project_urn)?;
-        let stats = coco::Peer::with_browser(api, project_urn, |browser| Ok(browser.get_stats()?))?;
-        Ok(Project::from_project_stats(project, stats))
-    })
+pub fn get(peer: &coco::PeerApi, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
+    let project = coco::get_project(peer, project_urn)?;
+    let stats = coco::with_browser(peer, project_urn, |browser| Ok(browser.get_stats()?))?;
+    Ok(Project::from_project_stats(project, stats))
 }

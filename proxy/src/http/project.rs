@@ -16,7 +16,7 @@ use crate::registry;
 
 /// Combination of all routes.
 pub fn filters(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(Arc::clone(&peer))
@@ -26,7 +26,7 @@ pub fn filters(
 
 /// `POST /projects`
 fn create_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
@@ -53,7 +53,7 @@ fn create_filter(
 
 /// `GET /projects/<id>`
 fn get_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("projects")
         .and(warp::get())
@@ -82,7 +82,7 @@ fn get_filter(
 
 /// `GET /projects`
 fn list_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::get())
@@ -116,26 +116,23 @@ mod handler {
 
     /// Create a new [`project::Project`].
     pub async fn create(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let mut peer = peer.lock().await;
+        let peer = &*peer.lock().await;
 
-        let meta = peer
-            .init_project(
-                &owner,
-                &input.path,
-                &input.metadata.name,
-                &input.metadata.description,
-                &input.metadata.default_branch,
-            )
-            .await?;
+        let meta = coco::init_project(
+            peer,
+            &owner,
+            &input.path,
+            &input.metadata.name,
+            &input.metadata.description,
+            &input.metadata.default_branch,
+        )?;
         let urn = meta.urn();
 
-        let stats = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |browser| Ok(browser.get_stats()?))
-        })?;
+        let stats = coco::with_browser(peer, &urn, |browser| Ok(browser.get_stats()?))?;
         Ok(reply::with_status(
             reply::json(&project::Project::from_project_stats(meta, stats)),
             StatusCode::CREATED,
@@ -143,7 +140,10 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(peer: Arc<Mutex<coco::Peer>>, urn: String) -> Result<impl Reply, Rejection> {
+    pub async fn get(
+        peer: Arc<Mutex<coco::PeerApi>>,
+        urn: String,
+    ) -> Result<impl Reply, Rejection> {
         let urn = urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
 
@@ -151,9 +151,9 @@ mod handler {
     }
 
     /// List all known projects.
-    pub async fn list(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
-        let projects = peer.list_projects()?;
+    pub async fn list(peer: Arc<Mutex<coco::PeerApi>>) -> Result<impl Reply, Rejection> {
+        let peer = &*peer.lock().await;
+        let projects = coco::list_projects(peer)?;
 
         Ok(reply::json(&projects))
     }
@@ -388,9 +388,11 @@ mod test {
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
-        let owner = Arc::new(RwLock::new(Some(coco::fake_owner(&peer).await)));
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = Arc::new(RwLock::new(Some(
+            coco::control::fake_owner(peer.key().clone()).await,
+        )));
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
@@ -411,7 +413,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = peer.lock().await.list_projects()?;
+        let projects = coco::list_projects(&*peer.lock().await)?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -441,12 +443,16 @@ mod test {
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let project = project::get(&peer, &urn)?;
@@ -473,13 +479,13 @@ mod test {
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
 
-        peer.setup_fixtures(&owner).await?;
+        coco::control::setup_fixtures(&peer, &owner)?;
 
-        let projects = peer.list_projects()?;
+        let projects = coco::list_projects(&peer)?;
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),

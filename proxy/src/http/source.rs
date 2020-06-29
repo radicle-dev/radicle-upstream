@@ -13,7 +13,7 @@ use crate::identity;
 
 /// Prefixed filters.
 pub fn routes(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("source").and(
         blob_filter(Arc::clone(&peer))
@@ -30,7 +30,7 @@ pub fn routes(
 /// Combination of all source filters.
 #[cfg(test)]
 fn filters(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     blob_filter(Arc::clone(&peer))
         .or(branches_filter(Arc::clone(&peer)))
@@ -44,7 +44,7 @@ fn filters(
 
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`
 fn blob_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
@@ -75,7 +75,7 @@ fn blob_filter(
 
 /// `GET /branches/<project_id>`
 fn branches_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
         .and(warp::get())
@@ -101,7 +101,7 @@ fn branches_filter(
 
 /// `GET /commit/<project_id>/<sha1>`
 fn commit_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(warp::get())
@@ -125,7 +125,7 @@ fn commit_filter(
 
 /// `GET /commits/<project_id>?branch=<branch>`
 fn commits_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commits")
         .and(warp::get())
@@ -179,7 +179,7 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 
 /// `GET /revisions/<project_id>`
 fn revisions_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
@@ -207,7 +207,7 @@ fn revisions_filter(
 
 /// `GET /tags/<project_id>`
 fn tags_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tags")
         .and(warp::get())
@@ -231,7 +231,7 @@ fn tags_filter(
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
 fn tree_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("tree")
         .and(warp::get())
@@ -269,22 +269,21 @@ mod handler {
 
     use crate::avatar;
     use crate::coco;
+    use crate::error::Error;
     use crate::identity;
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
         super::BlobQuery { path, revision }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let blob = peer.with_api(|api| {
-            let urn = project_urn.parse()?;
-            let project = coco::Peer::get_project(api, &urn)?;
-            let default_branch = project.default_branch();
-            coco::Peer::with_browser(api, &urn, |mut browser| {
-                coco::blob(&mut browser, default_branch, revision, &path)
-            })
+        let urn = project_urn.parse().map_err(Error::from)?;
+        let project = coco::get_project(&peer, &urn)?;
+        let default_branch = project.default_branch();
+        let blob = coco::with_browser(&peer, &urn, |mut browser| {
+            coco::blob(&mut browser, default_branch, revision, &path)
         })?;
 
         Ok(reply::json(&blob))
@@ -292,45 +291,40 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`].
     pub async fn branches(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let branches = peer.with_api(|api| {
-            let urn = project_urn.parse()?;
-            coco::Peer::with_browser(api, &urn, |browser| coco::branches(browser))
-        })?;
+        let urn = project_urn.parse().map_err(Error::from)?;
+        let branches = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
 
         Ok(reply::json(&branches))
     }
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let commit = peer.with_api(|api| {
-            let urn = project_urn.parse()?;
-            coco::Peer::with_browser(api, &urn, |mut browser| coco::commit(&mut browser, &sha1))
-        })?;
+        let urn = project_urn.parse().map_err(Error::from)?;
+        let commit =
+            coco::with_browser(&peer, &urn, |mut browser| coco::commit(&mut browser, &sha1))?;
 
         Ok(reply::json(&commit))
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
         super::CommitsQuery { branch }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let commits = peer.with_api(|api| {
-            let urn = project_urn.parse()?;
-            coco::Peer::with_browser(api, &urn, |mut browser| {
-                coco::commits(&mut browser, &branch)
-            })
+        let urn = project_urn.parse().map_err(Error::from)?;
+        let commits = coco::with_browser(&peer, &urn, |mut browser| {
+            coco::commits(&mut browser, &branch)
         })?;
 
         Ok(reply::json(&commits))
@@ -345,15 +339,13 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let (branches, tags) = peer.with_api(|api| {
-            let urn = project_urn.parse()?;
-            coco::Peer::with_browser(api, &urn, |browser| {
-                Ok((coco::branches(browser)?, coco::tags(browser)?))
-            })
+        let urn = project_urn.parse().map_err(Error::from)?;
+        let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
+            Ok((coco::branches(browser)?, coco::tags(browser)?))
         })?;
 
         let revs = ["cloudhead", "rudolfs", "xla"]
@@ -386,32 +378,28 @@ mod handler {
 
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let tags = peer.with_api(|api| {
-            let urn = project_urn.parse()?;
-            coco::Peer::with_browser(api, &urn, |browser| coco::tags(browser))
-        })?;
+        let urn = project_urn.parse().map_err(Error::from)?;
+        let tags = coco::with_browser(&peer, &urn, |browser| coco::tags(browser))?;
 
         Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let tree = peer.with_api(|api| {
-            let urn = project_urn.parse()?;
-            let project = coco::Peer::get_project(api, &urn)?;
-            let default_branch = project.default_branch();
-            coco::Peer::with_browser(api, &urn, |mut browser| {
-                coco::tree(&mut browser, default_branch, revision, prefix)
-            })
+        let urn = project_urn.parse().map_err(Error::from)?;
+        let project = coco::get_project(&peer, &urn)?;
+        let default_branch = project.default_branch();
+        let tree = coco::with_browser(&peer, &urn, |mut browser| {
+            coco::tree(&mut browser, default_branch, revision, prefix)
         })?;
 
         Ok(reply::json(&tree))
@@ -787,29 +775,31 @@ mod test {
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
+        let config = coco::config::default(key, tmp_dir)?;
+        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
+        let owner = coco::control::fake_owner(peer.lock().await.key().clone()).await;
+        let platinum_project = coco::control::replicate_platinum(
+            &*peer.lock().await,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let revision = "master";
         let default_branch = platinum_project.default_branch();
         let path = "text/arrows.txt";
-        let want = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |mut browser| {
-                coco::blob(
-                    &mut browser,
-                    default_branch,
-                    Some(revision.to_string()),
-                    path,
-                )
-            })
+        let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
+            coco::blob(
+                &mut browser,
+                default_branch,
+                Some(revision.to_string()),
+                path,
+            )
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer.clone())));
+        let api = super::filters(Arc::clone(&peer));
 
         // Get ASCII blob.
         let res = request()
@@ -873,10 +863,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let want = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |browser| {
-                coco::blob(browser, default_branch, Some(revision.to_string()), path)
-            })
+        let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
+            coco::blob(browser, default_branch, Some(revision.to_string()), path)
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -917,17 +905,19 @@ mod test {
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
+        let config = coco::config::default(key, tmp_dir)?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
-        let want = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |browser| coco::branches(browser))
-        })?;
+        let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -949,19 +939,21 @@ mod test {
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
+        let config = coco::config::default(key, tmp_dir)?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
-        let want = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |mut browser| {
-                coco::commit_header(&mut browser, sha1)
-            })
+        let want = coco::with_browser(&peer, &urn, |mut browser| {
+            coco::commit_header(&mut browser, sha1)
         })?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
@@ -1001,22 +993,24 @@ mod test {
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
+        let config = coco::config::default(key, tmp_dir)?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
-        let (want, head_commit) = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |mut browser| {
-                let want = coco::commits(&mut browser, branch)?;
-                let head_commit = coco::commit_header(&mut browser, head)?;
-                Ok((want, head_commit))
-            })
+        let (want, head_commit) = coco::with_browser(&peer, &urn, |mut browser| {
+            let want = coco::commits(&mut browser, branch)?;
+            let head_commit = coco::commit_header(&mut browser, head)?;
+            Ok((want, head_commit))
         })?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
@@ -1043,8 +1037,8 @@ mod test {
     async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let peer = coco::Peer::new(config).await?;
+        let config = coco::config::default(key, tmp_dir)?;
+        let peer = coco::create_peer_api(config).await?;
 
         let path = "../fixtures/git-platinum";
         let api = super::filters(Arc::new(Mutex::new(peer)));
@@ -1077,13 +1071,16 @@ mod test {
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await
-            .unwrap();
+        let config = coco::config::default(key, tmp_dir)?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         // TODO(finto): Get the right URN
@@ -1091,10 +1088,8 @@ mod test {
             "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try".parse()?;
 
         let want = {
-            let (branches, tags) = peer.with_api(|api| {
-                coco::Peer::with_browser(api, &urn, |browser| {
-                    Ok((coco::branches(browser)?, coco::tags(browser)?))
-                })
+            let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
+                Ok((coco::branches(browser)?, coco::tags(browser)?))
             })?;
 
             ["cloudhead", "rudolfs", "xla"]
@@ -1201,17 +1196,19 @@ mod test {
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await
-            .unwrap();
+        let config = coco::config::default(key, tmp_dir)?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
-        let want = peer
-            .with_api(|api| coco::Peer::with_browser(api, &urn, |browser| coco::tags(browser)))?;
+        let want = coco::with_browser(&peer, &urn, |browser| coco::tags(browser))?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
@@ -1235,27 +1232,29 @@ mod test {
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir)?;
-        let mut peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
-        let platinum_project = peer
-            .replicate_platinum(&owner, "git-platinum", "fixture data", "master")
-            .await?;
+        let config = coco::config::default(key, tmp_dir)?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let revision = "master";
         let prefix = "src";
 
         let default_branch = platinum_project.default_branch();
-        let want = peer.with_api(|api| {
-            coco::Peer::with_browser(api, &urn, |mut browser| {
-                coco::tree(
-                    &mut browser,
-                    default_branch,
-                    Some(revision.to_string()),
-                    Some(prefix.to_string()),
-                )
-            })
+        let want = coco::with_browser(&peer, &urn, |mut browser| {
+            coco::tree(
+                &mut browser,
+                default_branch,
+                Some(revision.to_string()),
+                Some(prefix.to_string()),
+            )
         })?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));

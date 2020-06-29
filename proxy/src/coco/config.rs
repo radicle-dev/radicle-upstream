@@ -40,6 +40,23 @@ impl TryFrom<Paths> for paths::Paths {
 /// [`SocketAddr`].
 pub type Disco = discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)>, SocketAddr>;
 
+/// Provide the default config.
+///
+/// Address: 127.0.0.1:0
+/// No seeds.
+/// Default gossip parameters.
+///
+/// # Errors
+///
+/// Results in an error if the [`paths::Paths`] could not be created.
+pub fn default(
+    key: keys::SecretKey,
+    path: impl AsRef<std::path::Path>,
+) -> Result<net::peer::PeerConfig<Disco>, error::Error> {
+    let paths = paths::Paths::from_root(path)?;
+    Ok(configure(paths, key))
+}
+
 /// Configure a [`net::peer::PeerConfig`].
 #[must_use]
 pub fn configure(paths: paths::Paths, key: keys::SecretKey) -> net::peer::PeerConfig<Disco> {
