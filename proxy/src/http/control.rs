@@ -210,15 +210,15 @@ mod handler {
             let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
 
             let (old_paths, old_key, old_peer_id) = {
-                let api = peer.lock().await;
-                (api.paths().clone(), api.public_key(), api.peer_id())
+                let peer = peer.lock().await;
+                (peer.paths().clone(), peer.public_key(), peer.peer_id())
             };
 
             super::nuke_coco(Arc::clone(&peer)).await.unwrap();
 
             let (new_paths, new_key, new_peer_id) = {
-                let api = peer.lock().await;
-                (api.paths().clone(), api.public_key(), api.peer_id())
+                let peer = peer.lock().await;
+                (peer.paths().clone(), peer.public_key(), peer.peer_id())
             };
 
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
@@ -226,8 +226,8 @@ mod handler {
             assert_ne!(old_peer_id, new_peer_id);
 
             let can_open = {
-                let api = peer.lock().await;
-                let _ = api.storage().reopen().expect("failed to reopen Storage");
+                let peer = peer.lock().await;
+                let _ = peer.storage().reopen().expect("failed to reopen Storage");
                 true
             };
             assert!(can_open);

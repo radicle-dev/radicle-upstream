@@ -46,8 +46,8 @@ where
     clippy::wildcard_enum_match_arm,
     clippy::match_wildcard_for_single_variants
 )]
-pub fn list_projects(api: &PeerApi) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
-    let storage = api.storage();
+pub fn list_projects(peer: &PeerApi) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
+    let storage = peer.storage();
     Ok(storage
         .all_metadata()?
         .flat_map(|entity| {
@@ -69,8 +69,8 @@ pub fn list_projects(api: &PeerApi) -> Result<Vec<project::Project<entity::Draft
     clippy::wildcard_enum_match_arm,
     clippy::match_wildcard_for_single_variants
 )]
-pub fn list_users(api: &PeerApi) -> Result<Vec<user::User<entity::Draft>>, error::Error> {
-    let storage = api.storage();
+pub fn list_users(peer: &PeerApi) -> Result<Vec<user::User<entity::Draft>>, error::Error> {
+    let storage = peer.storage();
     Ok(storage
         .all_metadata()?
         .flat_map(|entity| {
@@ -90,10 +90,10 @@ pub fn list_users(api: &PeerApi) -> Result<Vec<user::User<entity::Draft>>, error
 ///     * Parsing the `project_urn` fails.
 ///     * Resolving the project fails.
 pub fn get_project(
-    api: &PeerApi,
+    peer: &PeerApi,
     urn: &RadUrn,
 ) -> Result<project::Project<entity::Draft>, error::Error> {
-    let storage = api.storage().reopen()?;
+    let storage = peer.storage().reopen()?;
     Ok(storage.metadata(urn)?)
 }
 
@@ -103,8 +103,8 @@ pub fn get_project(
 ///
 ///   * Resolving the project fails.
 ///   * Could not successfully acquire a lock to the API.
-pub fn get_user(api: &PeerApi, urn: &RadUrn) -> Result<user::User<entity::Draft>, error::Error> {
-    let storage = api.storage().reopen()?;
+pub fn get_user(peer: &PeerApi, urn: &RadUrn) -> Result<user::User<entity::Draft>, error::Error> {
+    let storage = peer.storage().reopen()?;
     Ok(storage.metadata(urn)?)
 }
 
@@ -115,16 +115,16 @@ pub fn get_user(api: &PeerApi, urn: &RadUrn) -> Result<user::User<entity::Draft>
 /// The function will result in an error if the mutex guard was poisoned. See
 /// [`std::sync::Mutex::lock`] for further details.
 pub fn with_browser<F, T>(
-    api: &PeerApi,
+    peer: &PeerApi,
     project_urn: &RadUrn,
     callback: F,
 ) -> Result<T, error::Error>
 where
     F: Send + FnOnce(&mut surf::vcs::git::Browser) -> Result<T, error::Error>,
 {
-    let project = get_project(api, project_urn)?;
+    let project = get_project(peer, project_urn)?;
     let default_branch = project.default_branch();
-    let repo = api.storage().open_repo(project.urn())?;
+    let repo = peer.storage().open_repo(project.urn())?;
     let mut browser = repo.browser(default_branch)?;
     callback(&mut browser)
 }
@@ -139,7 +139,7 @@ where
 ///     * The signing of the project metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
 pub fn init_project(
-    api: &PeerApi,
+    peer: &PeerApi,
     owner: &User,
     path: impl AsRef<std::path::Path> + Send,
     name: &str,
@@ -157,7 +157,7 @@ pub fn init_project(
     }
 
     let meta: Result<project::Project<entity::Draft>, error::Error> = {
-        let key = api.key();
+        let key = peer.key();
 
         // Create the project meta
         let mut meta = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
@@ -169,7 +169,7 @@ pub fn init_project(
         meta.sign_owned(key)?;
         let urn = meta.urn();
 
-        let storage = api.storage().reopen()?;
+        let storage = peer.storage().reopen()?;
 
         if storage.has_urn(&urn)? {
             return Err(error::Error::EntityExists(urn));
@@ -182,7 +182,7 @@ pub fn init_project(
     // Doing ? above breaks inference. Gaaaawwwwwd Rust!
     let meta = meta?;
 
-    setup_remote(api, path, &meta.urn().id, default_branch)?;
+    setup_remote(peer, path, &meta.urn().id, default_branch)?;
 
     Ok(meta)
 }
@@ -196,15 +196,15 @@ pub fn init_project(
 ///     * [`Self::with_api`] fails with a poisoned lock.
 ///     * The signing of the user metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-pub fn init_user(api: &PeerApi, handle: &str) -> Result<user::User<entity::Draft>, error::Error> {
-    let key = api.key();
+pub fn init_user(peer: &PeerApi, handle: &str) -> Result<user::User<entity::Draft>, error::Error> {
+    let key = peer.key();
 
     // Create the project meta
     let mut user = user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
     user.sign_owned(key)?;
     let urn = user.urn();
 
-    let storage = api.storage().reopen()?;
+    let storage = peer.storage().reopen()?;
 
     if storage.has_urn(&urn)? {
         return Err(error::Error::EntityExists(urn));
@@ -231,7 +231,7 @@ pub async fn verify_user(user: user::User<entity::Draft>) -> Result<User, error:
 /// Equips a repository with a rad remote for the given id. If the directory at the given path
 /// is not managed by git yet we initialise it first.
 fn setup_remote(
-    api: &PeerApi,
+    peer: &PeerApi,
     path: impl AsRef<std::path::Path>,
     id: &librad::hash::Hash,
     default_branch: &str,
@@ -272,7 +272,7 @@ fn setup_remote(
         ));
     }
 
-    let monorepo = api.paths().git_dir().join("");
+    let monorepo = peer.paths().git_dir().join("");
     let namespace_prefix = format!("refs/namespaces/{}/refs", id);
     let mut remote = repo.remote_with_fetch(
         "rad",
@@ -346,7 +346,7 @@ fn clone_platinum(
 /// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
 pub fn replicate_platinum(
-    api: &PeerApi,
+    peer: &PeerApi,
     owner: &User,
     name: &str,
     description: &str,
@@ -359,14 +359,14 @@ pub fn replicate_platinum(
     platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
 
     // Construct path for fixtures to clone into.
-    let monorepo = api.paths().git_dir().join("");
+    let monorepo = peer.paths().git_dir().join("");
     let workspace = monorepo.join("../workspace");
     let platinum_into = workspace.join(name);
 
     clone_platinum(&platinum_from, &platinum_into)?;
 
     let meta = init_project(
-        api,
+        peer,
         owner,
         platinum_into.clone(),
         name,
@@ -410,7 +410,7 @@ pub fn replicate_platinum(
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub fn setup_fixtures(api: &PeerApi, owner: &User) -> Result<(), error::Error> {
+pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -433,7 +433,7 @@ pub fn setup_fixtures(api: &PeerApi, owner: &User) -> Result<(), error::Error> {
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(api, owner, info.0, info.1, info.2)?;
+        replicate_platinum(peer, owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
