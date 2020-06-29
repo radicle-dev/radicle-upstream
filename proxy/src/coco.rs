@@ -8,6 +8,7 @@ use librad::meta::user;
 use librad::surf;
 use librad::uri::RadUrn;
 
+/// Module that captures all the functions for working with `librad`'s [`PeerApi`].
 mod peer;
 pub use peer::{
     create_peer_api, get_project, get_user, init_project, init_user, list_projects, list_users,
