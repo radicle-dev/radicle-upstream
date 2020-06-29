@@ -1,4 +1,5 @@
 <script>
+  import * as path from "../../../src/path.ts";
   import {
     currentPath,
     currentRevision,
@@ -79,10 +80,8 @@
         {:else}
           <File
             active={entry.path === $currentPath}
-            {projectId}
-            filePath={entry.path}
-            name={entry.info.name}
-            currentRevision={$currentRevision} />
+            href={path.projectSource(projectId, $currentRevision, ObjectType.Blob, entry.path)}
+            name={entry.info.name} />
         {/if}
       {/each}
     {/if}
