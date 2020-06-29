@@ -4,10 +4,10 @@ use std::time::SystemTimeError;
 
 use librad::meta::common::url;
 use librad::meta::entity;
-use librad::surf;
-use librad::surf::git::git2;
 use librad::uri::RadUrn;
 use radicle_registry_client as registry;
+use radicle_surf as surf;
+use radicle_surf::git::git2;
 
 use crate::keystore;
 

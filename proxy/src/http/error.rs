@@ -1,13 +1,14 @@
 //! Recovery and conversion of [`error::Error`] to proper JSON responses, which expose variants
 //! for API consumers to act on.
 
-use librad::surf;
 use serde::Serialize;
 use std::convert::Infallible;
 use std::fmt;
 use warp::document::{self, ToDocumentedType};
 use warp::http::StatusCode;
 use warp::{reject, reply, Rejection, Reply};
+
+use radicle_surf as surf;
 
 use crate::error;
 

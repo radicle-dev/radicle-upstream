@@ -14,19 +14,21 @@ use librad::net;
 use librad::net::discovery;
 use librad::paths;
 use librad::peer;
-use librad::surf;
-use librad::surf::vcs::git::git2;
 use librad::uri::RadUrn;
+use radicle_surf::{
+    diff,
+    vcs::git::{self, git2},
+};
 
 use crate::error;
 
 /// Module that captures all types and functions for source code.
 mod source;
+pub use diff::{Diff, FileDiff};
 pub use source::{
     blob, branches, commit, commit_header, commits, local_state, tags, tree, Blob, BlobContent,
     Branch, Commit, CommitHeader, Info, ObjectType, Person, Tag, Tree, TreeEntry,
 };
-pub use surf::diff::{Diff, FileDiff};
 
 pub mod config;
 
@@ -170,13 +172,15 @@ impl Peer {
     /// [`std::sync::Mutex::lock`] for further details.
     pub fn with_browser<F, T>(&self, project_urn: &RadUrn, callback: F) -> Result<T, error::Error>
     where
-        F: Send + FnOnce(&mut surf::vcs::git::Browser) -> Result<T, error::Error>,
+        F: Send + FnOnce(&mut git::Browser) -> Result<T, error::Error>,
     {
         let project = self.get_project(project_urn)?;
         let default_branch = project.default_branch();
         let api = self.api.lock().map_err(|_| error::Error::LibradLock)?;
-        let repo = api.storage().open_repo(project.urn())?;
-        let mut browser = repo.browser(default_branch)?;
+        let git_dir = api.paths().git_dir();
+        let repo = git::Repository::new(git_dir)?;
+        let namespace = git::Namespace::from(project.urn().id.to_string().as_str());
+        let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
         callback(&mut browser)
     }
 
