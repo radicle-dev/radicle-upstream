@@ -71,8 +71,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let owner = coco::fake_owner(peer.key().clone()).await;
 
     if args.test {
-        coco::setup_fixtures(&peer, &owner)
-            .expect("fixture creation failed");
+        coco::setup_fixtures(&peer, &owner).expect("fixture creation failed");
     }
 
     let store = {

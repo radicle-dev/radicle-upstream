@@ -423,7 +423,9 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = Arc::new(RwLock::new(Some(coco::fake_owner(peer.key().clone()).await)));
+        let owner = Arc::new(RwLock::new(Some(
+            coco::fake_owner(peer.key().clone()).await,
+        )));
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
