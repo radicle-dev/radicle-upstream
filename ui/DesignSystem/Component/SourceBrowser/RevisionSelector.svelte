@@ -64,6 +64,7 @@
     overflow-x: hidden;
     color: var(--color-foreground-level-6);
     margin-right: 0.5rem;
+    text-align: right;
   }
   .selector-expand {
     align-self: flex-end;
@@ -116,7 +117,8 @@
       title={currentSelectedUser.identity.metadata.handle}
       avatarFallback={currentSelectedUser.identity.avatarFallback}
       size="small"
-      style="--title-color: var(--color-foreground-level-6);"
+      style="--title-color: var(--color-foreground-level-6); justify-content:
+      flex-start;"
       variant="circle" />
   </div>
   <div class="selector-branch">{currentRevision}</div>
