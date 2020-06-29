@@ -176,12 +176,7 @@ mod handler {
         )?;
         let mut peer = peer.lock().await;
 
-        let (new_peer, _futures) = config
-            .try_into_peer()
-            .await
-            .map_err(Error::from)?
-            .accept()
-            .map_err(Error::from)?;
+        let new_peer = coco::create_peer_api(config).await?;
         *peer = new_peer;
 
         Ok(reply::json(&true))
