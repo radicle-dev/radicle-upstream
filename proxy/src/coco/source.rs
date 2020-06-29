@@ -4,8 +4,10 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
-use librad::surf;
-use librad::surf::git::{git2, BranchName, Browser};
+use radicle_surf::{
+    diff, file_system,
+    vcs::git::{self, git2, BranchName, Browser},
+};
 
 use crate::error;
 
@@ -58,7 +60,7 @@ pub struct Commit {
     /// The change statistics for this commit.
     pub stats: CommitStats,
     /// The changeset introduced by this commit.
-    pub diff: surf::diff::Diff,
+    pub diff: diff::Diff,
 }
 
 /// Representation of a code commit.
@@ -90,8 +92,8 @@ impl CommitHeader {
     }
 }
 
-impl From<&surf::vcs::git::Commit> for CommitHeader {
-    fn from(commit: &surf::vcs::git::Commit) -> Self {
+impl From<&git::Commit> for CommitHeader {
+    fn from(commit: &git::Commit) -> Self {
         let avatar = |input: &String| {
             let mut s = DefaultHasher::new();
             input.hash(&mut s);
@@ -202,13 +204,13 @@ pub fn blob(
     browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
 
     let root = browser.get_directory()?;
-    let p = surf::file_system::Path::from_str(path)?;
+    let p = file_system::Path::from_str(path)?;
 
     let file = root
         .find_file(p.clone())
         .ok_or_else(|| error::Error::PathNotFound(p.clone()))?;
 
-    let mut commit_path = surf::file_system::Path::root();
+    let mut commit_path = file_system::Path::root();
     commit_path.append(p.clone());
 
     let last_commit = browser
@@ -263,10 +265,10 @@ pub struct LocalState {
 ///
 /// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
-    let repo = surf::vcs::git::Repository::new(repo_path)?;
+    let repo = git::Repository::new(repo_path)?;
     let browser = Browser::new(&repo, "master")?;
     let mut branches = browser
-        .list_branches(Some(surf::vcs::git::BranchType::Local))?
+        .list_branches(Some(git::BranchType::Local))?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
@@ -290,7 +292,7 @@ pub fn commit_header<'repo>(
     browser: &mut Browser<'repo>,
     sha1: &str,
 ) -> Result<CommitHeader, error::Error> {
-    browser.commit(surf::vcs::git::Oid::from_str(sha1)?)?;
+    browser.commit(git::Oid::from_str(sha1)?)?;
 
     let history = browser.get();
     let commit = history.first();
@@ -304,7 +306,7 @@ pub fn commit_header<'repo>(
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit, error::Error> {
-    let oid = surf::vcs::git::Oid::from_str(sha1)?;
+    let oid = git::Oid::from_str(sha1)?;
     browser.commit(oid)?;
 
     let history = browser.get();
@@ -320,13 +322,13 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
     let mut additions = 0;
 
     for file in &diff.modified {
-        if let surf::diff::FileDiff::Plain { ref hunks } = file.diff {
+        if let diff::FileDiff::Plain { ref hunks } = file.diff {
             for hunk in hunks.iter() {
                 for line in &hunk.lines {
                     match line {
-                        surf::diff::LineDiff::Addition { .. } => additions += 1,
-                        surf::diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {},
+                        diff::LineDiff::Addition { .. } => additions += 1,
+                        diff::LineDiff::Deletion { .. } => deletions += 1,
+                        _ => {}
                     }
                 }
             }
@@ -394,9 +396,9 @@ pub fn tree<'repo>(
     browser.revspec(&revision)?;
 
     let path = if prefix == "/" || prefix == "" {
-        surf::file_system::Path::root()
+        file_system::Path::root()
     } else {
-        surf::file_system::Path::from_str(&prefix)?
+        file_system::Path::from_str(&prefix)?
     };
 
     let root_dir = browser.get_directory()?;
@@ -414,20 +416,20 @@ pub fn tree<'repo>(
         .iter()
         .map(|(label, system_type)| {
             let entry_path = if path.is_root() {
-                surf::file_system::Path::new(label.clone())
+                file_system::Path::new(label.clone())
             } else {
                 let mut p = path.clone();
                 p.push(label.clone());
                 p
             };
-            let mut commit_path = surf::file_system::Path::root();
+            let mut commit_path = file_system::Path::root();
             commit_path.append(entry_path.clone());
 
             let info = Info {
                 name: label.to_string(),
                 object_type: match system_type {
-                    surf::file_system::SystemType::Directory => ObjectType::Tree,
-                    surf::file_system::SystemType::File => ObjectType::Blob,
+                    file_system::SystemType::Directory => ObjectType::Tree,
+                    file_system::SystemType::File => ObjectType::Blob,
                 },
                 last_commit: None,
             };

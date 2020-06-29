@@ -43,6 +43,10 @@ rev = "a04f4dbaec4d05be2c7a516a36b5bbec02ee32aa"
 git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "114f78b357aa4615bc0e389ab62ad0029243583c"
 
+[dependencies.radicle-surf]
+version = "0.3.1"
+features = ["serialize"]
+
 [dev-dependencies]
 bytes = "0.5"
 http = "0.2"

@@ -1597,7 +1597,7 @@ dependencies = [
  "percent-encoding 2.1.0",
  "quinn",
  "radicle-keystore",
- "radicle-surf",
+ "radicle-surf 0.2.1",
  "rand 0.7.3",
  "rand_pcg 0.2.1",
  "rcgen",
@@ -2561,6 +2561,7 @@ dependencies = [
  "pretty_env_logger",
  "radicle-keystore",
  "radicle-registry-client",
+ "radicle-surf 0.3.1",
  "rand 0.7.3",
  "serde",
  "serde_cbor 0.11.1",
@@ -2738,6 +2739,20 @@ dependencies = [
 name = "radicle-surf"
 version = "0.2.1"
 source = "git+https://github.com/radicle-dev/radicle-surf?rev=5728b74e77d12769ac917d04c4901994f30092ae#5728b74e77d12769ac917d04c4901994f30092ae"
+dependencies = [
+ "git2",
+ "lazy_static",
+ "nonempty 0.5.0",
+ "regex",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "radicle-surf"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "610d2ee2cdebe9dc47a1f693770107c2bec667ce17433b7caf93f73f9bc6ad35"
 dependencies = [
  "git2",
  "lazy_static",
