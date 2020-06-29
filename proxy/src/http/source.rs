@@ -335,6 +335,15 @@ mod handler {
         Ok(reply::json(&state))
     }
 
+    fn fake_user_urn(user_handle: &str) -> &str {
+        match user_handle {
+            "cloudhead" => "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+            "rudolfs" => "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
+            "xla" => "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
+            _ => panic!("couldn't find matching URN"),
+        }
+    }
+
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
         peer: Arc<Mutex<coco::Peer>>,
@@ -353,7 +362,7 @@ mod handler {
                 tags: tags.clone(),
                 identity: identity::Identity {
                     // TODO(finto): Get the right URN
-                    id: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
+                    id: fake_user_urn(handle)
                         .parse()
                         .expect("failed to parse hardcoded URN"),
                     metadata: identity::Metadata {
@@ -363,7 +372,7 @@ mod handler {
                     registered: None,
                     shareable_entity_identifier: identity::SharedIdentifier {
                         handle: (*handle).to_string(),
-                        urn: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
+                        urn: fake_user_urn(handle)
                             .parse()
                             .expect("failed to parse hardcoded URN"),
                     },

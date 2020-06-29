@@ -8,6 +8,7 @@
   import {
     currentPath,
     currentRevision,
+    currentUser,
     fetchRevisions,
     object as objectStore,
     ObjectType,
@@ -29,11 +30,12 @@
 
   export const params = null;
 
-  const updateRevision = (projectId, revision) => {
+  const updateRevision = (projectId, revision, user) => {
     updateParams({
       path: path.extractProjectSourceObjectPath($location),
       projectId: projectId,
       revision: revision,
+      user: user,
       type: path.extractProjectSourceObjectType($location),
     });
   };
@@ -53,10 +55,19 @@
     return current !== "" ? current : metadata.defaultBranch;
   };
 
+  const getUser = current => {
+    // TODO(rudolfs): wire up defaultUser in the backend
+    /* return current !== "" ? current : metadata.defaultUser; */
+    return current === undefined
+      ? "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"
+      : current;
+  };
+
   $: updateParams({
     path: path.extractProjectSourceObjectPath($location),
     projectId: id,
     revision: getRevision($currentRevision),
+    user: getUser($currentUser),
     type: path.extractProjectSourceObjectType($location),
   });
 
@@ -163,9 +174,10 @@
         <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
+            currentUser={getUser($currentUser)}
             currentRevision={getRevision($currentRevision)}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail)} />
+            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.user.id)} />
         </div>
       </Remote>
 

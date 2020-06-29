@@ -4,9 +4,14 @@
   import { Avatar, Icon } from "../../Primitive";
 
   export let currentRevision = null;
+  export let currentUser = null;
   export let expanded = false;
   export let revisions = null;
   export let style = "";
+
+  $: currentSelectedUser = revisions.find(rev => {
+    return rev.identity.id === currentUser;
+  });
 
   // Dropdown element. Set by the view.
   let dropdown = null;
@@ -27,8 +32,8 @@
   };
 
   const dispatch = createEventDispatcher();
-  const selectRevision = (_repo, rev) => {
-    dispatch("select", rev);
+  const selectRevision = (user, revision) => {
+    dispatch("select", { revision, user });
     hideDropdown();
   };
 </script>
@@ -108,8 +113,8 @@
   hidden={expanded}>
   <div class="selector-avatar">
     <Avatar
-      title={revisions[0].identity.metadata.handle}
-      avatarFallback={revisions[0].identity.avatarFallback}
+      title={currentSelectedUser.identity.metadata.handle}
+      avatarFallback={currentSelectedUser.identity.avatarFallback}
       size="small"
       style="--title-color: var(--color-foreground-level-6);"
       variant="circle" />

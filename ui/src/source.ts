@@ -101,6 +101,9 @@ export const commit = commitStore.readable;
 const commitsStore = remote.createStore<CommitHistory>();
 export const commits = commitsStore.readable;
 
+const currentUserStore = writable("");
+export const currentUser = derived(currentUserStore, $store => $store);
+
 const currentPathStore = writable("");
 export const currentPath = derived(currentPathStore, $store => $store);
 
@@ -141,6 +144,7 @@ interface FetchRevisions extends event.Event<Kind> {
 interface Update extends event.Event<Kind> {
   kind: Kind.Update;
   path: string;
+  user: string;
   projectId: string;
   revision: string;
   type: ObjectType;
@@ -219,6 +223,7 @@ const update = (msg: Msg): void => {
 
     case Kind.Update:
       currentPathStore.update(() => msg.path);
+      currentUserStore.update(() => msg.user);
       currentRevisionStore.update(() => msg.revision);
       objectStore.loading();
 
