@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import { link, location } from "svelte-spa-router";
+  import { push, location } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
@@ -8,7 +8,9 @@
   import {
     currentPath,
     currentRevision,
+    fetchCommits,
     fetchRevisions,
+    commits as commitsStore,
     object as objectStore,
     ObjectType,
     readme,
@@ -28,6 +30,15 @@
   import CloneButton from "./CloneButton.svelte";
 
   export const params = null;
+
+  const navigateOnReady = (path, store) => {
+    const unsubscribe = store.subscribe(state => {
+      if (state.status === "SUCCESS") {
+        push(path);
+      }
+    });
+    unsubscribe();
+  };
 
   const updateRevision = (projectId, revision) => {
     updateParams({
@@ -59,6 +70,7 @@
     revision: getRevision($currentRevision),
     type: path.extractProjectSourceObjectType($location),
   });
+  $: fetchCommits({ projectId: id, branch: getRevision($currentRevision) });
 
   fetchRevisions({ projectId: id });
 </script>
@@ -184,7 +196,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                use:link={path.projectCommits(project.id, $currentRevision)}>
+                on:click={navigateOnReady(path.projectCommits(id, $currentRevision), commitsStore)}>
                 Commits
               </a>
             </Text>
