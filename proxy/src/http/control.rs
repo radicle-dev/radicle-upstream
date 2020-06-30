@@ -127,10 +127,11 @@ mod handler {
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let keystore = &*keystore.read().await;
+        let peer = &*peer.lock().await;
 
         let key = keystore.get_librad_key().map_err(Error::from)?;
         let meta = coco::control::replicate_platinum(
-            &*peer.lock().await,
+            peer,
             key,
             &owner,
             &input.name,
