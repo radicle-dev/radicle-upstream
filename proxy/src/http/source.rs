@@ -276,14 +276,18 @@ mod handler {
     pub async fn blob(
         peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::BlobQuery { path, revision }: super::BlobQuery,
+        super::BlobQuery {
+            path,
+            revision,
+            highlight,
+        }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&peer, &urn)?;
         let default_branch = project.default_branch();
         let blob = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::blob(&mut browser, default_branch, revision, &path)
+            coco::blob(&mut browser, default_branch, revision, &path, highlight)
         })?;
 
         Ok(reply::json(&blob))
@@ -420,6 +424,8 @@ pub struct BlobQuery {
     path: String,
     /// Revision to use for the history of the repo.
     revision: Option<String>,
+    /// Whether or not to syntax highlight the blob.
+    highlight: bool,
 }
 
 /// Bundled query params to pass to the tree handler.
@@ -445,7 +451,7 @@ pub struct Revision {
 
 impl ToDocumentedType for Revision {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(2);
+        let mut properties = std::collections::HashMap::with_capacity(3);
         properties.insert("identity".into(), identity::Identity::document());
         properties.insert("branches".into(), document::array(coco::Branch::document()));
         properties.insert("tags".into(), document::array(coco::Tag::document()));
@@ -459,8 +465,9 @@ impl Serialize for coco::Blob {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Blob", 3)?;
+        let mut state = serializer.serialize_struct("Blob", 5)?;
         state.serialize_field("binary", &self.is_binary())?;
+        state.serialize_field("html", &self.is_html())?;
         state.serialize_field("content", &self.content)?;
         state.serialize_field("info", &self.info)?;
         state.serialize_field("path", &self.path)?;
@@ -470,11 +477,17 @@ impl Serialize for coco::Blob {
 
 impl ToDocumentedType for coco::Blob {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
+        let mut properties = std::collections::HashMap::with_capacity(4);
         properties.insert(
             "binary".into(),
             document::boolean()
                 .description("Flag to indicate if the content of the Blob is binary")
+                .example(true),
+        );
+        properties.insert(
+            "html".into(),
+            document::boolean()
+                .description("Flag to indicate if the content of the Blob is HTML")
                 .example(true),
         );
         properties.insert("content".into(), coco::BlobContent::document());
@@ -817,6 +830,7 @@ mod test {
                 have,
                 json!({
                     "binary": false,
+                    "html": false,
                     "content": "  ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
   ;;;;;        ;;;;;        ;;;;;
@@ -873,6 +887,7 @@ mod test {
                 have,
                 json!({
                     "binary": true,
+                    "html": false,
                     "content": Value::Null,
                     "info": {
                         "name": "ls",

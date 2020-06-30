@@ -160,6 +160,11 @@ impl Blob {
     pub fn is_binary(&self) -> bool {
         self.content == BlobContent::Binary
     }
+
+    /// Indicates if the content of the [`Blob`] is HTML.
+    pub fn is_html(&self) -> bool {
+        matches!(self.content, BlobContent::Html(_))
+    }
 }
 
 /// Variants of blob content.
@@ -202,6 +207,7 @@ pub fn blob(
     default_branch: &str,
     maybe_revision: Option<String>,
     path: &str,
+    highlight: bool,
 ) -> Result<Blob, error::Error> {
     browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
 
@@ -220,6 +226,7 @@ pub fn blob(
         .map(|c| CommitHeader::from(&c));
     let (_rest, last) = p.split_last();
     let content = match std::str::from_utf8(&file.contents) {
+        Ok(content) if !highlight => BlobContent::Ascii(content.to_owned()),
         Ok(content) => {
             use syntect::easy::HighlightLines;
             use syntect::highlighting::ThemeSet;
@@ -235,7 +242,7 @@ pub fn blob(
             match syntax {
                 Some(syntax) => {
                     let mut ts = ThemeSet::load_defaults();
-                    let theme = ts.themes.get_mut("base16-eighties.light").unwrap();
+                    let theme = ts.themes.get_mut("base16-ocean.light").unwrap();
 
                     let mut highlighter = HighlightLines::new(syntax, theme);
                     let mut html = String::with_capacity(content.len());
