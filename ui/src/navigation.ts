@@ -1,40 +1,36 @@
-import { derived, writable } from "svelte/store";
+import { Readable, derived, get, writable } from "svelte/store";
 
-enum Modal {
-  IdentityCreation,
+interface Navigation<Item> {
+  current: Readable<Item>;
+  pop(): void;
+  push(item: Item): void;
+  reset(): void;
 }
 
-enum ScreenKind {
-  Blank,
-  Onboarding,
-}
+export const create = <Item>(initial: Item): Navigation<Item> => {
+  const store = writable<Item>(initial);
+  const current = derived(store, store => store);
+  let history: Item[] = [];
 
-interface Blank {
-  kind: ScreenKind.Blank;
-}
+  return {
+    current,
+    pop: (): void => {
+      const newItem = history.pop();
 
-export const screenBlank = (): Screen => ({
-  kind: ScreenKind.Blank,
-});
+      // TODO(xla): Figure out behaviour for empty history.
+      if (newItem) {
+        store.set(newItem);
+      }
+    },
+    push: (item: Item): void => {
+      const currentItem = get(store);
+      history.push(currentItem);
 
-interface Onboarding {
-  kind: ScreenKind.Onboarding;
-}
-
-export const screenOnboarding = (): Screen => ({
-  kind: ScreenKind.Onboarding,
-});
-
-type Screen = Blank | Onboarding;
-
-interface Item {
-  modal?: Modal;
-  screen: Screen;
-}
-
-const store = writable<Item>({ screen: { kind: ScreenKind.Blank } });
-export const current = derived(store, store => store);
-
-export const push = (screen: Screen, modal?: Modal): void => {
-  store.set({ screen, modal });
+      store.set(item);
+    },
+    reset: (): void => {
+      history = [];
+      store.set(initial);
+    },
+  };
 };
