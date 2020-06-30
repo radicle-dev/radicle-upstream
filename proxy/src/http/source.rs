@@ -337,12 +337,12 @@ mod handler {
         Ok(reply::json(&state))
     }
 
+    /// Mock helper to provide each fake user with a unique URN.
     fn fake_user_urn(user_handle: &str) -> &str {
         match user_handle {
             "cloudhead" => "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
             "rudolfs" => "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-            "xla" => "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-            _ => panic!("couldn't find matching URN"),
+            _ => "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
         }
     }
 

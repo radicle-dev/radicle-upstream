@@ -429,7 +429,7 @@ mod test {
                         "g": 186,
                         "r": 24,
                     },
-                    "emoji": "🧿",
+                    "emoji": "\u{1f9ff}",
                 },
                 "id": "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
                 "metadata": {
