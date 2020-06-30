@@ -27,6 +27,8 @@
 
   import CloneButton from "./CloneButton.svelte";
 
+  const { id, metadata, default_user } = getContext("project");
+
   export const params = null;
 
   $: currentPath = path.extractProjectSourceObjectPath($location);
@@ -36,11 +38,12 @@
   );
   $: currentObjectType = path.extractProjectSourceObjectType($location);
 
-  // TODO(rudolfs): get user pre-selection value from backend
-  $: currentUser = path.extractProjectSourceUser(
-    $location,
-    "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"
-  );
+  $: currentUser = path.extractProjectSourceUser($location, default_user.id);
+
+  $: console.log(`currentPath: ${  currentPath}`);
+  $: console.log(`currentRevision: ${  currentRevision}`);
+  $: console.log(`currentObjectType: ${  currentObjectType}`);
+  $: console.log(`currentUser: ${  currentUser}`);
 
   const updateRevision = (projectId, revision, user) => {
     push(
@@ -48,8 +51,8 @@
         projectId,
         user,
         revision,
-        path.extractProjectSourceObjectType($location),
-        path.extractProjectSourceObjectPath($location)
+        currentObjectType,
+        currentPath
       )
     );
   };
@@ -71,8 +74,6 @@
       copyIcon = Icon.Copy;
     }, 1000);
   };
-
-  const { id, metadata } = getContext("project");
 
   $: fetchObject({
     path: currentPath,
@@ -242,7 +243,7 @@
           <FileSource
             blob={object}
             path={currentPath}
-            rootPath={path.projectSource(project.id)}
+            rootPath={path.projectSource(project.id, project.default_user.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
         {:else if object.path === ''}

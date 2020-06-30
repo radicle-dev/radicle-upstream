@@ -3,7 +3,7 @@ import regexparam from "regexparam";
 import { ObjectType } from "./source";
 
 const PROJECT_SOURCE_PATH_MATCH = new RegExp(
-  `/source/(.*)/(.*)/(${ObjectType.Blob}|${ObjectType.Tree})/(.*)`
+  `/source/(.*)/(.*)/(${ObjectType.Blob}|${ObjectType.Tree})?/?(.*)?`
 );
 
 export const search = (): string => "/search";
@@ -38,19 +38,21 @@ export const projectRevisions = (id: string): string =>
   `/projects/${id}/revisions`;
 export const projectSource = (
   id: string,
-  user: string,
+  userId: string,
   revision: string,
   objectType: string,
-  path: string
+  objectPath: string
 ): string => {
-  // TODO(rudolfs): move the conditional to call-site, paths should not contain
-  // logic
-  if (user && revision && path) {
-    return `/projects/${id}/source/${user}/${revision}/${objectType}/${
-      objectType === ObjectType.Tree ? `${path}/` : path
+  if (revision && objectType && objectPath) {
+    return `/projects/${id}/source/${userId}/${revision}/${objectType}/${
+      objectType === ObjectType.Tree ? `${objectPath}/` : objectPath
     }`;
+  } else if (revision && objectType) {
+    return `/projects/${id}/source/${userId}/${revision}/${objectType}`;
+  } else if (revision) {
+    return `/projects/${id}/source/${userId}/${revision}`;
   } else {
-    return `/projects/${id}/source`;
+    return `/projects/${id}/source/${userId}`;
   }
 };
 export const projectCommit = (id: string, user: string, hash: string): string =>
@@ -87,6 +89,8 @@ export const extractProjectSourceRevision = (
   fallback = ""
 ): string => {
   const rev = PROJECT_SOURCE_PATH_MATCH.exec(location);
+  console.log("bla: ");
+  console.log(rev);
   return rev === null ? fallback : rev[2];
 };
 
