@@ -1,10 +1,6 @@
+import { parse } from "qs";
 import regexparam from "regexparam";
-
 import { ObjectType } from "./source";
-
-const PROJECT_SOURCE_PATH_MATCH = new RegExp(
-  `/source/(.*)/(.*)/(${ObjectType.Blob}|${ObjectType.Tree})?/?(.*)?`
-);
 
 export const search = (): string => "/search";
 export const settings = (): string => "/settings";
@@ -36,25 +32,34 @@ export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string =>
   `/projects/${id}/revisions`;
+
 export const projectSource = (
-  id: string,
+  projectId: string,
   userId: string,
-  revision: string,
-  objectType: string,
-  objectPath: string
+  revision = "",
+  objectType: string = ObjectType.Tree,
+  objectPath = ""
 ): string => {
-  if (revision && objectType && objectPath) {
-    return `/projects/${id}/source/${userId}/${revision}/${objectType}/${
-      objectType === ObjectType.Tree ? `${objectPath}/` : objectPath
-    }`;
-  } else if (revision && objectType) {
-    return `/projects/${id}/source/${userId}/${revision}/${objectType}`;
-  } else if (revision) {
-    return `/projects/${id}/source/${userId}/${revision}`;
-  } else {
-    return `/projects/${id}/source/${userId}`;
-  }
+  return (
+    `/projects/${projectId}/${userId}/source?` +
+    `revision=${revision}&` +
+    `objectType=${objectType}&` +
+    `objectPath=${objectPath}`
+  );
 };
+
+export const parseProjectSourceLocation = (
+  querystring: string,
+  defaultRevision: string
+): any => {
+  const parsed = parse(querystring);
+  return {
+    currentRevision: parsed.revision || defaultRevision,
+    currentObjectType: parsed.objectType,
+    currentObjectPath: parsed.objectPath,
+  };
+};
+
 export const projectCommit = (id: string, user: string, hash: string): string =>
   `/projects/${id}/${user}/commit/${hash}`;
 export const projectCommits = (
@@ -74,38 +79,4 @@ export const active = (
   loose = false
 ): boolean => {
   return regexparam(path, loose).pattern.test(location);
-};
-
-export const extractProjectSourceUser = (
-  location: string,
-  fallback = ""
-): string => {
-  const user = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return user === null ? fallback : user[1];
-};
-
-export const extractProjectSourceRevision = (
-  location: string,
-  fallback = ""
-): string => {
-  const rev = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  console.log("bla: ");
-  console.log(rev);
-  return rev === null ? fallback : rev[2];
-};
-
-export const extractProjectSourceObjectPath = (
-  location: string,
-  fallback = ""
-): string => {
-  const path = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return path === null ? fallback : path[4];
-};
-
-export const extractProjectSourceObjectType = (
-  location: string,
-  fallback: ObjectType = ObjectType.Tree
-): string => {
-  const type = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return type === null ? fallback : type[3];
 };

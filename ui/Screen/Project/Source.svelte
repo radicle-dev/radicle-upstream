@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import { location, push } from "svelte-spa-router";
+  import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
@@ -29,21 +29,17 @@
 
   const { id, metadata, default_user } = getContext("project");
 
-  export const params = null;
+  export let params = null;
 
-  $: currentPath = path.extractProjectSourceObjectPath($location);
-  $: currentRevision = path.extractProjectSourceRevision(
-    $location,
-    metadata.defaultBranch
-  );
-  $: currentObjectType = path.extractProjectSourceObjectType($location);
+  $: userId = params.userId;
 
-  $: currentUser = path.extractProjectSourceUser($location, default_user.id);
+  $: ({
+    currentRevision,
+    currentObjectType,
+    currentObjectPath,
+  } = path.parseProjectSourceLocation($querystring, metadata.defaultBranch));
 
-  $: console.log(`currentPath: ${  currentPath}`);
-  $: console.log(`currentRevision: ${  currentRevision}`);
-  $: console.log(`currentObjectType: ${  currentObjectType}`);
-  $: console.log(`currentUser: ${  currentUser}`);
+  $: currentUser = userId || default_user.id;
 
   const updateRevision = (projectId, revision, user) => {
     push(
@@ -52,7 +48,7 @@
         user,
         revision,
         currentObjectType,
-        currentPath
+        currentObjectPath
       )
     );
   };
@@ -76,7 +72,7 @@
   };
 
   $: fetchObject({
-    path: currentPath,
+    path: currentObjectPath,
     user: currentUser,
     projectId: id,
     revision: currentRevision,
@@ -200,7 +196,7 @@
       <div class="source-tree" data-cy="source-tree">
         <Folder
           {currentRevision}
-          {currentPath}
+          {currentObjectPath}
           {currentUser}
           projectId={project.id}
           toplevel
@@ -242,7 +238,7 @@
         {#if object.info.objectType === ObjectType.Blob}
           <FileSource
             blob={object}
-            path={currentPath}
+            path={currentObjectPath}
             rootPath={path.projectSource(project.id, project.default_user.id)}
             projectName={project.metadata.name}
             projectId={project.id} />

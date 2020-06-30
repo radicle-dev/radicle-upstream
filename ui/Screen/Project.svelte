@@ -29,8 +29,7 @@
 
   const routes = {
     "/projects/:id/": Source,
-    "/projects/:id/source": Source,
-    "/projects/:id/source/*": Source,
+    "/projects/:id/:userId/source": Source,
     "/projects/:id/issues": Issues,
     "/projects/:id/issue": Issue,
     "/projects/:id/:userId/commit/:hash": Commit,
