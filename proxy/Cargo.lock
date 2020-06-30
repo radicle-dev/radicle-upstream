@@ -2631,6 +2631,7 @@ dependencies = [
  "hex",
  "http",
  "kv",
+ "lazy_static",
  "librad",
  "log 0.4.8",
  "nonempty 0.2.0",

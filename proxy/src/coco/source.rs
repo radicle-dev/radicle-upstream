@@ -8,9 +8,17 @@ use radicle_surf::{
     diff, file_system,
     vcs::git::{self, git2, BranchName, Browser},
 };
+use syntect::parsing::SyntaxSet;
 
 use crate::error;
 use crate::session::settings::Theme;
+
+lazy_static::lazy_static! {
+    // The syntax set is slow to load (~30ms), so we make sure to only load it once.
+    // It _will_ affect the latency of the first request that uses syntax highlighting,
+    // but this is acceptable for now.
+    static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
+}
 
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
@@ -232,14 +240,12 @@ pub fn blob(
         Ok(content) => {
             use syntect::easy::HighlightLines;
             use syntect::highlighting::ThemeSet;
-            use syntect::parsing::SyntaxSet;
             use syntect::util::LinesWithEndings;
 
-            let syntax_set = SyntaxSet::load_defaults_newlines();
             let syntax = std::path::Path::new(path)
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
-                .and_then(|ext| syntax_set.find_syntax_by_extension(ext));
+                .and_then(|ext| SYNTAX_SET.find_syntax_by_extension(ext));
 
             match syntax {
                 Some(syntax) => {
@@ -253,7 +259,7 @@ pub fn blob(
                     let mut html = String::with_capacity(content.len());
 
                     for line in LinesWithEndings::from(content) {
-                        let regions = highlighter.highlight(line, &syntax_set);
+                        let regions = highlighter.highlight(line, &SYNTAX_SET);
                         syntect::html::append_highlighted_html_for_styled_line(
                             &regions[..],
                             syntect::html::IncludeBackground::No,
