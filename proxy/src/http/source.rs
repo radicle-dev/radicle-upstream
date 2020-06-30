@@ -3,7 +3,7 @@
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -14,9 +14,10 @@ use crate::identity;
 /// Prefixed filters.
 pub fn routes(
     peer: Arc<Mutex<coco::PeerApi>>,
+    store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("source").and(
-        blob_filter(Arc::clone(&peer))
+        blob_filter(Arc::clone(&peer), store)
             .or(branches_filter(Arc::clone(&peer)))
             .or(commit_filter(Arc::clone(&peer)))
             .or(commits_filter(Arc::clone(&peer)))
@@ -45,10 +46,12 @@ fn filters(
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`
 fn blob_filter(
     peer: Arc<Mutex<coco::PeerApi>>,
+    store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("blob")
         .and(warp::get())
         .and(super::with_peer(peer))
+        .and(http::with_store(store))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -263,7 +266,7 @@ fn tree_filter(
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use tokio::sync::{Mutex, RwLock};
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
@@ -271,10 +274,12 @@ mod handler {
     use crate::coco;
     use crate::error::Error;
     use crate::identity;
+    use crate::session;
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
         peer: Arc<Mutex<coco::PeerApi>>,
+        store: Arc<RwLock<kv::Store>>,
         project_urn: String,
         super::BlobQuery {
             path,
@@ -283,11 +288,20 @@ mod handler {
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
+        let store = store.read().await;
+        let settings = session::get_settings(&store)?;
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&peer, &urn)?;
         let default_branch = project.default_branch();
         let blob = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::blob(&mut browser, default_branch, revision, &path, highlight)
+            coco::blob(
+                &mut browser,
+                default_branch,
+                revision,
+                &path,
+                highlight,
+                settings.appearance.theme,
+            )
         })?;
 
         Ok(reply::json(&blob))

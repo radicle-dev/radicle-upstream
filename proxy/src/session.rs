@@ -140,6 +140,17 @@ pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(
     set(store, KEY_CURRENT, sess)
 }
 
+/// Gets the [`settings::Settings`] in the current session.
+///
+/// # Errors
+///
+/// Errors if access to the session state fails.
+pub fn get_settings(store: &kv::Store) -> Result<settings::Settings, error::Error> {
+    let sess = get(store, KEY_CURRENT)?;
+
+    Ok(sess.settings)
+}
+
 /// Fetches the session for the given item key.
 fn get(store: &kv::Store, key: &str) -> Result<Session, error::Error> {
     Ok(store

@@ -10,6 +10,7 @@ use radicle_surf::{
 };
 
 use crate::error;
+use crate::session::settings::Theme;
 
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
@@ -208,6 +209,7 @@ pub fn blob(
     maybe_revision: Option<String>,
     path: &str,
     highlight: bool,
+    theme: Theme,
 ) -> Result<Blob, error::Error> {
     browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
 
@@ -242,7 +244,10 @@ pub fn blob(
             match syntax {
                 Some(syntax) => {
                     let mut ts = ThemeSet::load_defaults();
-                    let theme = ts.themes.get_mut("base16-ocean.light").unwrap();
+                    let theme = match theme {
+                        Theme::Light => ts.themes.get_mut("base16-ocean.light").unwrap(),
+                        Theme::Dark => ts.themes.get_mut("base16-ocean.dark").unwrap(),
+                    };
 
                     let mut highlighter = HighlightLines::new(syntax, theme);
                     let mut html = String::with_capacity(content.len());
