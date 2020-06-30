@@ -49,7 +49,8 @@
   }
 </style>
 
-<a class="file" class:active {href} use:link={href}>
+<!-- svelte-ignore a11y-missing-attribute -->
+<a class="file" class:active use:link={href}>
   <Icon.File />
   <span class="file-name">{name}</span>
 </a>
