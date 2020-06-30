@@ -3,22 +3,11 @@ use std::env;
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
-use librad::meta::user;
 use librad::net::peer::PeerApi;
 use radicle_surf::vcs::git::git2;
 
-use crate::coco::peer::{init_project, verify_user, User};
+use crate::coco::peer::{init_project, User};
 use crate::error;
-
-// TODO(finto): Should be fully removed where we use init_user instead.
-/// Constructs a fake user to be used as an owner of projects until we have more permanent key and
-/// user management.
-pub async fn fake_owner(key: keys::SecretKey) -> User {
-    let mut user = user::User::<entity::Draft>::create("cloudhead".into(), key.public())
-        .expect("unable to create user");
-    user.sign_owned(&key).expect("unable to sign user");
-    verify_user(user).await.expect("failed to verify user")
-}
 
 /// Creates a small set of projects in your peer.
 ///
@@ -26,7 +15,12 @@ pub async fn fake_owner(key: keys::SecretKey) -> User {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> {
+#[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
+pub fn setup_fixtures(
+    peer: &PeerApi,
+    key: keys::SecretKey,
+    owner: &User,
+) -> Result<(), error::Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -49,7 +43,7 @@ pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> 
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(peer, owner, info.0, info.1, info.2)?;
+        replicate_platinum(peer, key.clone(), owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -64,6 +58,7 @@ pub fn setup_fixtures(peer: &PeerApi, owner: &User) -> Result<(), error::Error> 
 /// the coco project.
 pub fn replicate_platinum(
     peer: &PeerApi,
+    key: keys::SecretKey,
     owner: &User,
     name: &str,
     description: &str,
@@ -84,6 +79,7 @@ pub fn replicate_platinum(
 
     let meta = init_project(
         peer,
+        key,
         owner,
         platinum_into.clone(),
         name,

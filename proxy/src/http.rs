@@ -15,6 +15,7 @@ use warp::{
 };
 
 use crate::coco;
+use crate::keystore;
 use crate::registry;
 
 mod avatar;
@@ -51,6 +52,7 @@ macro_rules! combine {
 pub fn api<R>(
     peer: coco::PeerApi,
     owner: coco::User,
+    keystore: keystore::Keystorage,
     registry: R,
     store: kv::Store,
     enable_control: bool,
@@ -61,6 +63,7 @@ where
     let peer = Arc::new(Mutex::new(peer));
     // TODO(finto): The user should be read from rad/self
     let owner = Arc::new(RwLock::new(Some(owner)));
+    let keystore = Arc::new(RwLock::new(keystore));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
@@ -69,18 +72,23 @@ where
     let control_filter = control::routes(
         enable_control,
         Arc::clone(&peer),
+        Arc::clone(&keystore),
         Arc::clone(&owner),
         Arc::clone(&registry),
     );
-    let identity_filter =
-        identity::filters(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
+    let identity_filter = identity::filters(
+        Arc::clone(&peer),
+        Arc::clone(&keystore),
+        Arc::clone(&registry),
+        Arc::clone(&store),
+    );
     let notification_filter = notification::filters(subscriptions.clone());
     let org_filter = org::routes(
         Arc::clone(&peer),
         Arc::clone(&registry),
         subscriptions.clone(),
     );
-    let project_filter = project::filters(Arc::clone(&peer), Arc::clone(&owner));
+    let project_filter = project::filters(Arc::clone(&peer), keystore, Arc::clone(&owner));
     let session_filter =
         session::routes(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
     let source_filter = source::routes(peer, Arc::clone(&store));
