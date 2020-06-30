@@ -42,8 +42,8 @@ where
 /// The function will error if:
 ///   * The retrieving the project entities from the store fails.
 #[allow(
-    clippy::wildcard_enum_match_arm,
-    clippy::match_wildcard_for_single_variants
+    clippy::match_wildcard_for_single_variants,
+    clippy::wildcard_enum_match_arm
 )]
 pub fn list_projects(peer: &PeerApi) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
     let storage = peer.storage();
@@ -65,8 +65,8 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<project::Project<entity::Draf
 /// The function will error if:
 ///   * The retrieving the project entities from the store fails.
 #[allow(
-    clippy::wildcard_enum_match_arm,
-    clippy::match_wildcard_for_single_variants
+    clippy::match_wildcard_for_single_variants,
+    clippy::wildcard_enum_match_arm
 )]
 pub fn list_users(peer: &PeerApi) -> Result<Vec<user::User<entity::Draft>>, error::Error> {
     let storage = peer.storage();
@@ -139,6 +139,7 @@ where
 /// Will error if:
 ///     * The signing of the project metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
+#[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
 pub fn init_project(
     peer: &PeerApi,
     key: keys::SecretKey,
@@ -196,6 +197,7 @@ pub fn init_project(
 /// Will error if:
 ///     * The signing of the user metadata fails.
 ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
+#[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
 pub fn init_user(
     peer: &PeerApi,
     key: keys::SecretKey,

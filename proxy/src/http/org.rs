@@ -620,7 +620,7 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key.clone(), tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(key).await;
+        let owner = coco::init_user(&peer, key, "cloudhead")?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)

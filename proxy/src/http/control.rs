@@ -193,10 +193,7 @@ mod handler {
         let mut new_keystore = keystore::Keystorage::new(&paths, pw);
         let key = new_keystore.init_librad_key().map_err(Error::from)?;
 
-        let config = coco::config::configure(
-            paths,
-            key.clone(),
-        );
+        let config = coco::config::configure(paths, key.clone());
 
         let new_peer = coco::create_peer_api(config).await?;
 
@@ -238,8 +235,8 @@ mod handler {
         use librad::paths;
 
         use crate::coco;
-        use crate::keystore;
         use crate::error;
+        use crate::keystore;
 
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {
@@ -258,7 +255,13 @@ mod handler {
                 (peer.paths().clone(), peer.peer_id().clone())
             };
 
-            super::nuke_coco(Arc::clone(&peer), Arc::new(RwLock::new(keystore)), Arc::new(RwLock::new(None))).await.unwrap();
+            super::nuke_coco(
+                Arc::clone(&peer),
+                Arc::new(RwLock::new(keystore)),
+                Arc::new(RwLock::new(None)),
+            )
+            .await
+            .unwrap();
 
             let (new_paths, new_peer_id) = {
                 let peer = peer.lock().await;

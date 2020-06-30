@@ -507,8 +507,14 @@ mod test {
         let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner).await?;
 
-        let platinum_project =
-            coco::control::replicate_platinum(&peer, key, &owner, "git-platinum", "fixture data", "master")?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
         let urn = platinum_project.urn();
 
         let project = project::get(&peer, &urn)?;
