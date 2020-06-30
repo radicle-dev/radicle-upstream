@@ -654,8 +654,7 @@ mod test {
         let maybe_org = client.get_org(org_id.clone()).await?;
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
-        assert_eq!(org.id, org_id);
-        assert_eq!(org.members[0], protocol::Id::try_from("alice")?);
+        assert_eq!(org.members()[0], protocol::Id::try_from("alice")?);
 
         Ok(())
     }
@@ -720,9 +719,9 @@ mod test {
 
         let org_id = protocol::Id::try_from("monadic")?;
         let org = client.get_org(org_id).await?.unwrap();
-        assert_eq!(org.members.len(), 2);
-        assert!(org.members.contains(&protocol::Id::try_from("alice")?));
-        assert!(org.members.contains(&protocol::Id::try_from("bob")?));
+        assert_eq!(org.members().len(), 2);
+        assert!(org.members().contains(&protocol::Id::try_from("alice")?));
+        assert!(org.members().contains(&protocol::Id::try_from("bob")?));
 
         Ok(())
     }
@@ -880,9 +879,7 @@ mod test {
         assert!(maybe_project.is_some());
 
         let project = maybe_project.unwrap();
-        assert_eq!(project.name, project_name);
-        assert_eq!(project.domain, protocol::ProjectDomain::Org(org_id));
-        let metadata_vec: Vec<u8> = project.metadata.into();
+        let metadata_vec: Vec<u8> = project.metadata().clone().into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
 
@@ -931,9 +928,7 @@ mod test {
         assert!(maybe_project.is_some());
 
         let project = maybe_project.unwrap();
-        assert_eq!(project.name, project_name);
-        assert_eq!(project.domain, protocol::ProjectDomain::User(handle));
-        let metadata_vec: Vec<u8> = project.metadata.into();
+        let metadata_vec: Vec<u8> = project.metadata().clone().into();
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
 
