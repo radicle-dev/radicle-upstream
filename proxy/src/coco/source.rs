@@ -167,6 +167,8 @@ impl Blob {
 pub enum BlobContent {
     /// Content is ASCII and can be passed as a string.
     Ascii(String),
+    /// Content is syntax-highlighted HTML.
+    Html(String),
     /// Content is binary and needs special treatment.
     Binary,
 }
@@ -218,7 +220,39 @@ pub fn blob(
         .map(|c| CommitHeader::from(&c));
     let (_rest, last) = p.split_last();
     let content = match std::str::from_utf8(&file.contents) {
-        Ok(content) => BlobContent::Ascii(content.to_string()),
+        Ok(content) => {
+            use syntect::easy::HighlightLines;
+            use syntect::highlighting::ThemeSet;
+            use syntect::parsing::SyntaxSet;
+            use syntect::util::LinesWithEndings;
+
+            let syntax_set = SyntaxSet::load_defaults_newlines();
+            let syntax = std::path::Path::new(path)
+                .extension()
+                .and_then(std::ffi::OsStr::to_str)
+                .and_then(|ext| syntax_set.find_syntax_by_extension(ext));
+
+            match syntax {
+                Some(syntax) => {
+                    let mut ts = ThemeSet::load_defaults();
+                    let theme = ts.themes.get_mut("base16-eighties.light").unwrap();
+
+                    let mut highlighter = HighlightLines::new(syntax, theme);
+                    let mut html = String::with_capacity(content.len());
+
+                    for line in LinesWithEndings::from(content) {
+                        let regions = highlighter.highlight(line, &syntax_set);
+                        syntect::html::append_highlighted_html_for_styled_line(
+                            &regions[..],
+                            syntect::html::IncludeBackground::No,
+                            &mut html,
+                        );
+                    }
+                    BlobContent::Html(html)
+                },
+                None => BlobContent::Ascii(content.to_owned()),
+            }
+        },
         Err(_) => BlobContent::Binary,
     };
 

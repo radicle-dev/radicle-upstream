@@ -490,7 +490,7 @@ impl Serialize for coco::BlobContent {
         S: Serializer,
     {
         match self {
-            Self::Ascii(content) => serializer.serialize_str(content),
+            Self::Ascii(content) | Self::Html(content) => serializer.serialize_str(content),
             Self::Binary => serializer.serialize_none(),
         }
     }

@@ -104,7 +104,9 @@
           })
           .join('\n')}
       </pre>
-      <pre class="code">{blob.content}</pre>
+      <pre class="code">
+        {@html blob.content}
+      </pre>
     {/if}
   </div>
 </div>
