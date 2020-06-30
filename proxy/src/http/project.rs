@@ -11,27 +11,31 @@ use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
 use crate::http;
+use crate::keystore;
 use crate::project;
 use crate::registry;
 
 /// Combination of all routes.
 pub fn filters(
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
     owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(Arc::clone(&peer))
-        .or(create_filter(Arc::clone(&peer), owner))
+        .or(create_filter(Arc::clone(&peer), keystore, owner))
         .or(get_filter(peer))
 }
 
 /// `POST /projects`
 fn create_filter(
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
     owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("projects")
         .and(warp::post())
         .and(http::with_peer(peer))
+        .and(http::with_shared(keystore))
         .and(http::with_owner_guard(owner))
         .and(warp::body::json())
         .and(document::document(document::description(
@@ -112,18 +116,24 @@ mod handler {
 
     use crate::coco;
     use crate::error::Error;
+    use crate::http;
+    use crate::keystore;
     use crate::project;
 
     /// Create a new [`project::Project`].
     pub async fn create(
         peer: Arc<Mutex<coco::PeerApi>>,
+        keystore: http::Shared<keystore::Keystorage>,
         owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let peer = &*peer.lock().await;
+        let keystore = &*keystore.read().await;
+
+        let key = keystore.get_librad_key().map_err(Error::from)?;
 
         let meta = coco::init_project(
-            peer,
+            &*peer.lock().await,
+            key,
             &owner,
             &input.path,
             &input.metadata.name,
@@ -379,28 +389,39 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::keys::SecretKey;
+    use librad::paths;
 
     use crate::coco;
     use crate::error;
     use crate::http;
+    use crate::keystore;
     use crate::project;
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
+        let paths = paths::Paths::from_root(tmp_dir.path())?;
+
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
+
+        let config = coco::config::configure(paths, key.clone());
         let peer = coco::create_peer_api(config).await?;
-        let owner = Arc::new(RwLock::new(Some(
-            coco::control::fake_owner(peer.key().clone()).await,
-        )));
+        let owner = coco::init_user(&peer, key, "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
+        let owner = Arc::new(RwLock::new(Some(owner)));
+
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
 
         let peer = Arc::new(Mutex::new(peer));
-        let api = super::filters(Arc::clone(&peer), Arc::clone(&owner));
+        let api = super::filters(
+            Arc::clone(&peer),
+            Arc::new(RwLock::new(keystore)),
+            Arc::clone(&owner),
+        );
         let res = request()
             .method("POST")
             .path("/projects")
@@ -444,12 +465,20 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
+        let paths = paths::Paths::from_root(tmp_dir.path())?;
+
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
+
+        let config = coco::config::configure(paths, key.clone());
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
+
         let platinum_project = coco::control::replicate_platinum(
             &peer,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -461,6 +490,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(keystore)),
             Arc::new(RwLock::new(Some(owner))),
         );
 
@@ -480,17 +510,25 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let paths = paths::Paths::from_root(tmp_dir.path())?;
 
-        coco::control::setup_fixtures(&peer, &owner)?;
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
+
+        let config = coco::config::configure(paths, key.clone());
+        let peer = coco::create_peer_api(config).await?;
+
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
+
+        coco::control::setup_fixtures(&peer, key, &owner)?;
 
         let projects = coco::list_projects(&peer)?;
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(keystore)),
             Arc::new(RwLock::new(Some(owner))),
         );
         let res = request().method("GET").path("/projects").reply(&api).await;

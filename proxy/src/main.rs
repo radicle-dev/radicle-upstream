@@ -63,15 +63,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let paths = paths::Paths::try_from(paths_config)?;
 
-    let mut store = keystore::Keystorage::new(&paths, pw);
-    let key = store.init_librad_key()?;
+    let mut keystore = keystore::Keystorage::new(&paths, pw);
+    let key = keystore.init_librad_key()?;
 
-    let config = coco::config::configure(paths, key);
+    let config = coco::config::configure(paths, key.clone());
     let peer = coco::create_peer_api(config).await?;
-    let owner = coco::control::fake_owner(peer.key().clone()).await;
+    let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+    let owner = coco::verify_user(owner).await?;
 
     if args.test {
-        coco::control::setup_fixtures(&peer, &owner).expect("fixture creation failed");
+        coco::control::setup_fixtures(&peer, key, &owner).expect("fixture creation failed");
     }
 
     let store = {
@@ -89,7 +90,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(peer, owner, cache.clone(), store, args.test);
+    let api = http::api(peer, owner, keystore, cache.clone(), store, args.test);
 
     tokio::spawn(async move {
         cache.run().await.expect("cacher run failed");
