@@ -65,7 +65,10 @@
 
         <div slot="right" style="display: flex; align-items: center;">
           {#if orgProject.maybeProject}
-            <Stats stats={orgProject.maybeProject.stats} />
+            <Stats
+              branches={orgProject.maybeProject.stats.branches}
+              commits={orgProject.maybeProject.stats.commits}
+              contributors={orgProject.maybeProject.stats.contributors} />
           {/if}
 
           <AdditionalActionsDropdown

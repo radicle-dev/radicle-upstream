@@ -77,7 +77,10 @@
           <ProjectCard {...projectCardProps(project)} />
         </div>
         <div slot="right" style="display: flex; align-items: center;">
-          <Stats stats={project.stats} />
+          <Stats
+            branches={project.stats.branches}
+            commits={project.stats.commits}
+            contributors={project.stats.contributors} />
           <AdditionalActionsDropdown
             dataCy="context-menu"
             headerTitle={project.shareableEntityIdentifier}
