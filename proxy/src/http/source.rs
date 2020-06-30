@@ -300,7 +300,7 @@ mod handler {
                 revision,
                 &path,
                 highlight,
-                settings.appearance.theme,
+                &settings.appearance.theme,
             )
         })?;
 

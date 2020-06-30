@@ -171,6 +171,7 @@ impl Blob {
     }
 
     /// Indicates if the content of the [`Blob`] is HTML.
+    #[must_use]
     pub fn is_html(&self) -> bool {
         matches!(self.content, BlobContent::Html(_))
     }
@@ -217,7 +218,7 @@ pub fn blob(
     maybe_revision: Option<String>,
     path: &str,
     highlight: bool,
-    theme: Theme,
+    theme: &Theme,
 ) -> Result<Blob, error::Error> {
     browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
 
@@ -247,14 +248,14 @@ pub fn blob(
                 .and_then(std::ffi::OsStr::to_str)
                 .and_then(|ext| SYNTAX_SET.find_syntax_by_extension(ext));
 
-            match syntax {
-                Some(syntax) => {
-                    let mut ts = ThemeSet::load_defaults();
-                    let theme = match theme {
-                        Theme::Light => ts.themes.get_mut("base16-ocean.light").unwrap(),
-                        Theme::Dark => ts.themes.get_mut("base16-ocean.dark").unwrap(),
-                    };
+            let ts = ThemeSet::load_defaults();
+            let theme = match theme {
+                Theme::Light => ts.themes.get("base16-ocean.light"),
+                Theme::Dark => ts.themes.get("base16-ocean.dark"),
+            };
 
+            match (syntax, theme) {
+                (Some(syntax), Some(theme)) => {
                     let mut highlighter = HighlightLines::new(syntax, theme);
                     let mut html = String::with_capacity(content.len());
 
@@ -268,7 +269,7 @@ pub fn blob(
                     }
                     BlobContent::Html(html)
                 },
-                None => BlobContent::Ascii(content.to_owned()),
+                _ => BlobContent::Ascii(content.to_owned()),
             }
         },
         Err(_) => BlobContent::Binary,
