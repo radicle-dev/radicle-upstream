@@ -88,6 +88,7 @@ pub enum Registration {
     User(registry::Id),
 }
 
+// TODO(rudolfs): implement this for real.
 pub fn get_fake_default_user() -> identity::Identity {
     let fake_handle = "rudolfs";
     let fake_urn = "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro";
