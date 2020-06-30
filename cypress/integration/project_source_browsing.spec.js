@@ -10,6 +10,14 @@ beforeEach(() => {
   cy.contains("Source").click();
 });
 
+context("repository stats", () => {
+  it("shows the correct numbers", () => {
+    cy.pick("repo-stats").contains("Commits 14");
+    cy.pick("repo-stats").contains("Branches 2");
+    cy.pick("repo-stats").contains("Contributors 4");
+  });
+});
+
 context("commit browsing", () => {
   context("commit history", () => {
     it("shows the commit history for the default branch", () => {

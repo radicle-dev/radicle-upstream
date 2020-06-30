@@ -338,13 +338,6 @@
       value: 2,
     },
   ];
-
-  const stats = [
-    { icon: Icon.Commit, count: 12 },
-    { icon: Icon.Branch, count: 1 },
-    { icon: Icon.Member, count: 2 },
-    { icon: Icon.Graph, count: 32 },
-  ];
 </script>
 
 <style>
@@ -1076,7 +1069,7 @@
       </Swatch>
 
       <Swatch>
-        <Stats {stats} />
+        <Stats branches={2} commits={12} contributors={4} />
       </Swatch>
     </Section>
   </div>

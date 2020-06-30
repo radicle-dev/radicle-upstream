@@ -12,7 +12,7 @@ use crate::registry;
 /// Prefixed control filters.
 pub fn routes<R>(
     enable: bool,
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     owner: http::Shared<Option<coco::User>>,
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -40,7 +40,7 @@ where
 /// Combination of all control filters.
 #[allow(dead_code)]
 fn filters<R>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     owner: http::Shared<Option<coco::User>>,
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -55,7 +55,7 @@ where
 
 /// POST /create-project
 fn create_project_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
@@ -77,7 +77,7 @@ fn register_user_filter<R: registry::Client>(
 
 /// GET /nuke/coco
 fn nuke_coco_filter(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_peer(peer))
@@ -111,33 +111,24 @@ mod handler {
 
     /// Create a project from the fixture repo.
     pub async fn create_project(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let mut peer = peer.lock().await;
+        let peer = &*peer.lock().await;
 
-        let meta = peer
-            .replicate_platinum(
-                &owner,
-                &input.name,
-                &input.description,
-                &input.default_branch,
-            )
-            .await?;
+        let meta = coco::control::replicate_platinum(
+            peer,
+            &owner,
+            &input.name,
+            &input.description,
+            &input.default_branch,
+        )?;
+        let stats = coco::with_browser(peer, &meta.urn(), |browser| Ok(browser.get_stats()?))?;
+        let project: project::Project = (meta, stats).into();
 
         Ok(reply::with_status(
-            reply::json(&project::Project {
-                id: meta.urn(),
-                shareable_entity_identifier: format!("%{}", meta.urn()),
-                metadata: meta.into(),
-                registration: None,
-                stats: project::Stats {
-                    branches: 11,
-                    commits: 267,
-                    contributors: 8,
-                },
-            }),
+            reply::json(&project),
             StatusCode::CREATED,
         ))
     }
@@ -160,7 +151,7 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(peer: Arc<Mutex<coco::Peer>>) -> Result<impl Reply, Rejection> {
+    pub async fn nuke_coco(peer: Arc<Mutex<coco::PeerApi>>) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
@@ -171,13 +162,13 @@ mod handler {
             temp_dir.path().to_path_buf()
         };
 
-        let config = coco::default_config(
+        let config = coco::config::default(
             SecretKey::new(),
             tmp_path.to_str().expect("path extraction failed"),
         )?;
-        let new_peer = coco::Peer::new(config).await?;
-
         let mut peer = peer.lock().await;
+
+        let new_peer = coco::create_peer_api(config).await?;
         *peer = new_peer;
 
         Ok(reply::json(&true))
@@ -207,19 +198,19 @@ mod handler {
         async fn nuke_coco() -> Result<(), error::Error> {
             let tmp_dir = tempfile::tempdir()?;
             let key = librad::keys::SecretKey::new();
-            let config = coco::default_config(key, tmp_dir)?;
-            let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+            let config = coco::config::default(key, tmp_dir)?;
+            let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
 
             let (old_paths, old_key, old_peer_id) = {
-                let p = peer.lock().await;
-                p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
+                let peer = peer.lock().await;
+                (peer.paths().clone(), peer.public_key(), peer.peer_id())
             };
 
             super::nuke_coco(Arc::clone(&peer)).await.unwrap();
 
             let (new_paths, new_key, new_peer_id) = {
-                let p = peer.lock().await;
-                p.with_api(|api| (api.paths().clone(), api.public_key(), api.peer_id()))?
+                let peer = peer.lock().await;
+                (peer.paths().clone(), peer.public_key(), peer.peer_id())
             };
 
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
@@ -227,11 +218,9 @@ mod handler {
             assert_ne!(old_peer_id, new_peer_id);
 
             let can_open = {
-                let p = peer.lock().await;
-                p.with_api(|api| {
-                    let _ = api.storage().reopen().expect("failed to reopen Storage");
-                    true
-                })?
+                let peer = peer.lock().await;
+                let _ = peer.storage().reopen().expect("failed to reopen Storage");
+                true
             };
             assert!(can_open);
 
@@ -278,9 +267,9 @@ mod test {
     async fn create_project_after_nuke() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = librad::keys::SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = coco::Peer::new(config).await?;
-        let owner = coco::fake_owner(&peer).await;
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::control::fake_owner(peer.key().clone()).await;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)

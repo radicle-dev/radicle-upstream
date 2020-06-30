@@ -208,9 +208,10 @@ const update = (msg: Msg): void => {
         .get<Revisions>(`source/revisions/${msg.projectId}`)
         .then(revisions =>
           revisionsStore.success(
-            revisions.map(rev => {
-              return { ...rev, branches: filterBranches(rev.branches) };
-            })
+            revisions.map(rev => ({
+              ...rev,
+              branches: filterBranches(rev.branches),
+            }))
           )
         )
         .catch(revisionsStore.error);

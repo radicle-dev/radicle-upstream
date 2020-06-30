@@ -1,12 +1,14 @@
 <script>
   import { getContext } from "svelte";
-  import { link, location, push } from "svelte-spa-router";
+  import { location, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import {
+    fetchCommits,
     fetchRevisions,
+    commits as commitsStore,
     object as objectStore,
     ObjectType,
     readme,
@@ -52,6 +54,15 @@
     );
   };
 
+  const navigateOnReady = (path, store) => {
+    const unsubscribe = store.subscribe(state => {
+      if (state.status === "SUCCESS") {
+        push(path);
+      }
+    });
+    unsubscribe();
+  };
+
   let copyIcon = Icon.Copy;
 
   const afterCopy = () => {
@@ -63,7 +74,6 @@
 
   const { id, metadata } = getContext("project");
 
-  fetchRevisions({ projectId: id });
   $: fetchObject({
     path: currentPath,
     user: currentUser,
@@ -71,6 +81,10 @@
     revision: currentRevision,
     type: currentObjectType,
   });
+
+  $: fetchCommits({ projectId: id, branch: currentRevision });
+
+  fetchRevisions({ projectId: id });
 </script>
 
 <style>
@@ -134,6 +148,7 @@
     margin: 1.5rem 0;
     display: flex;
     justify-content: space-evenly;
+    cursor: pointer;
   }
   .repo-stat-item {
     display: flex;
@@ -194,14 +209,14 @@
 
     <div class="column-right">
       <div class="repo-header">
-        <div class="repo-stats">
+        <div class="repo-stats" data-cy="repo-stats">
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                use:link={path.projectCommits(project.id, currentUser, currentRevision)}>
+                on:click={navigateOnReady(path.projectCommits(project.id, currentUser, currentRevision), commitsStore)}>
                 Commits
               </a>
             </Text>

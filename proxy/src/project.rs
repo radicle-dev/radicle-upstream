@@ -48,8 +48,28 @@ pub struct Project {
     /// Informs if the project is present in the Registry and under what top-level entity it can be
     /// found.
     pub registration: Option<Registration>,
-    /// High-level statistics about the project.
-    pub stats: Stats,
+    /// High-level statistics about the project
+    pub stats: coco::Stats,
+}
+
+/// Construct a Project from its metadata and stats
+impl<ST> From<(project::Project<ST>, coco::Stats)> for Project
+where
+    ST: Clone,
+{
+    /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
+    /// for the repository.
+    fn from((project, stats): (project::Project<ST>, coco::Stats)) -> Self {
+        let id = project.urn();
+
+        Self {
+            id: id.clone(),
+            shareable_entity_identifier: format!("%{}", id),
+            metadata: project.into(),
+            registration: None,
+            stats,
+        }
+    }
 }
 
 /// Variants for possible registration states of a project.
@@ -61,31 +81,10 @@ pub enum Registration {
     User(registry::Id),
 }
 
-/// Coarse statistics for the Project source code.
-pub struct Stats {
-    /// Amount of known branches.
-    pub branches: u32,
-    /// Number of commits on the default branch.
-    pub commits: u32,
-    /// Amount of unique commiters on the default branch.
-    pub contributors: u32,
-}
+/// Fetch the project with a given urn from a peer
+pub fn get(peer: &coco::PeerApi, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
+    let project = coco::get_project(peer, project_urn)?;
+    let stats = coco::with_browser(peer, project_urn, |browser| Ok(browser.get_stats()?))?;
 
-/// TODO(xla): Add documentation.
-pub fn get(peer: &coco::Peer, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
-    let meta = peer.get_project(project_urn)?;
-    let id = meta.urn();
-    let metadata = meta.into();
-
-    Ok(Project {
-        id,
-        shareable_entity_identifier: project_urn.to_string(),
-        metadata,
-        registration: None,
-        stats: Stats {
-            branches: 11,
-            commits: 267,
-            contributors: 8,
-        },
-    })
+    Ok((project, stats).into())
 }

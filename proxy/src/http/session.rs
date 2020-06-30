@@ -14,7 +14,7 @@ use crate::session;
 
 /// Prefixed fitlers.
 pub fn routes<R>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -32,7 +32,7 @@ where
 /// Combination of all session filters.
 #[cfg(test)]
 pub fn filters<R>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -82,7 +82,7 @@ fn delete_filter(
 
 /// `GET /`
 fn get_filter<R: registry::Client>(
-    peer: Arc<Mutex<coco::Peer>>,
+    peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -154,7 +154,7 @@ mod handler {
 
     /// Fetch the [`session::Session`].
     pub async fn get<R: registry::Client>(
-        peer: Arc<Mutex<coco::Peer>>,
+        peer: Arc<Mutex<coco::PeerApi>>,
         registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
     ) -> Result<impl Reply, Rejection> {
@@ -260,8 +260,8 @@ mod test {
     async fn delete() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
         let store = Arc::new(RwLock::new(
             kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
         ));
@@ -299,8 +299,8 @@ mod test {
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
@@ -353,8 +353,8 @@ mod test {
     async fn update_settings() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
         let key = SecretKey::new();
-        let config = coco::default_config(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::Peer::new(config).await?));
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
