@@ -130,9 +130,10 @@ mod handler {
         let keystore = &*keystore.read().await;
 
         let key = keystore.get_librad_key().map_err(Error::from)?;
+        let peer = &*peer.lock().await;
 
         let meta = coco::init_project(
-            &*peer.lock().await,
+            peer,
             key,
             &owner,
             &input.path,
