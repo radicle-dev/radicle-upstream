@@ -62,12 +62,11 @@ where
     fn from(tup: (project::Project<ST>, coco::Stats)) -> Self {
         let (project, stats) = tup;
         let id = project.urn();
-        let metadata = project.into();
 
         Self {
             id: id.clone(),
             shareable_entity_identifier: format!("%{}", id),
-            metadata,
+            metadata: project.into(),
             registration: None,
             stats,
         }
