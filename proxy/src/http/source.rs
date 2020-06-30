@@ -294,8 +294,8 @@ mod handler {
         peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
+        let urn = project_urn.parse().map_err(Error::from)?;
         let branches = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
 
         Ok(reply::json(&branches))
@@ -307,8 +307,8 @@ mod handler {
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
+        let urn = project_urn.parse().map_err(Error::from)?;
         let commit =
             coco::with_browser(&peer, &urn, |mut browser| coco::commit(&mut browser, &sha1))?;
 
@@ -321,8 +321,8 @@ mod handler {
         project_urn: String,
         super::CommitsQuery { branch }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
+        let urn = project_urn.parse().map_err(Error::from)?;
         let commits = coco::with_browser(&peer, &urn, |mut browser| {
             coco::commits(&mut browser, &branch)
         })?;
@@ -342,8 +342,8 @@ mod handler {
         peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
+        let urn = project_urn.parse().map_err(Error::from)?;
         let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
             Ok((coco::branches(browser)?, coco::tags(browser)?))
         })?;
@@ -381,8 +381,8 @@ mod handler {
         peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
+        let urn = project_urn.parse().map_err(Error::from)?;
         let tags = coco::with_browser(&peer, &urn, |browser| coco::tags(browser))?;
 
         Ok(reply::json(&tags))
@@ -394,8 +394,8 @@ mod handler {
         project_urn: String,
         super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = peer.lock().await;
+        let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&peer, &urn)?;
         let default_branch = project.default_branch();
         let tree = coco::with_browser(&peer, &urn, |mut browser| {
@@ -788,12 +788,12 @@ mod test {
         let urn = platinum_project.urn();
 
         let revision = "master";
-        let default_branch = "master".to_string(); // TODO(finto): need to change this
+        let default_branch = platinum_project.default_branch();
         let path = "text/arrows.txt";
         let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
             coco::blob(
                 &mut browser,
-                &default_branch.clone(),
+                default_branch,
                 Some(revision.to_string()),
                 path,
             )
@@ -864,7 +864,7 @@ mod test {
             .await;
 
         let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
-            coco::blob(browser, &default_branch, Some(revision.to_string()), path)
+            coco::blob(browser, default_branch, Some(revision.to_string()), path)
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -1007,11 +1007,10 @@ mod test {
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
-        let want = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::commits(&mut browser, branch)
-        })?;
-        let head_commit = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::commit_header(&mut browser, head)
+        let (want, head_commit) = coco::with_browser(&peer, &urn, |mut browser| {
+            let want = coco::commits(&mut browser, branch)?;
+            let head_commit = coco::commit_header(&mut browser, head)?;
+            Ok((want, head_commit))
         })?;
 
         let api = super::filters(Arc::new(Mutex::new(peer)));
@@ -1248,11 +1247,11 @@ mod test {
         let revision = "master";
         let prefix = "src";
 
-        let default_branch = "master".to_string(); // TODO(finto): need to change this
+        let default_branch = platinum_project.default_branch();
         let want = coco::with_browser(&peer, &urn, |mut browser| {
             coco::tree(
                 &mut browser,
-                &default_branch,
+                default_branch,
                 Some(revision.to_string()),
                 Some(prefix.to_string()),
             )

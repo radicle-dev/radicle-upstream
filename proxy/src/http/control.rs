@@ -124,19 +124,11 @@ mod handler {
             &input.description,
             &input.default_branch,
         )?;
+        let stats = coco::with_browser(peer, &meta.urn(), |browser| Ok(browser.get_stats()?))?;
+        let project: project::Project = (meta, stats).into();
 
         Ok(reply::with_status(
-            reply::json(&project::Project {
-                id: meta.urn(),
-                shareable_entity_identifier: format!("%{}", meta.urn()),
-                metadata: meta.into(),
-                registration: None,
-                stats: project::Stats {
-                    branches: 11,
-                    commits: 267,
-                    contributors: 8,
-                },
-            }),
+            reply::json(&project),
             StatusCode::CREATED,
         ))
     }

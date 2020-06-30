@@ -11,6 +11,7 @@ use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
 
 use crate::error;
+use crate::project::Project;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -44,17 +45,22 @@ where
     clippy::wildcard_enum_match_arm,
     clippy::match_wildcard_for_single_variants
 )]
-pub fn list_projects(peer: &PeerApi) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
+pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
     let storage = peer.storage();
-    Ok(storage
-        .all_metadata()?
-        .flat_map(|entity| {
-            entity.ok()?.try_map(|info| match info {
-                entity::data::EntityInfo::Project(info) => Some(info),
-                _ => None,
+    let project_meta = storage.all_metadata()?.flat_map(|entity| {
+        entity.ok()?.try_map(|info| match info {
+            entity::data::EntityInfo::Project(info) => Some(info),
+            _ => None,
+        })
+    });
+    project_meta
+        .map(|project| {
+            with_browser(peer, &project.urn(), |browser| {
+                let stats = browser.get_stats()?;
+                Ok((project, stats).into())
             })
         })
-        .collect())
+        .collect()
 }
 
 /// Returns the list of [`user::User`]s known for your peer.
@@ -441,7 +447,7 @@ mod test {
         let projects = super::list_projects(&peer)?;
         let mut project_names = projects
             .into_iter()
-            .map(|project| project.name().to_string())
+            .map(|project| project.metadata.name)
             .collect::<Vec<_>>();
         project_names.sort();
 

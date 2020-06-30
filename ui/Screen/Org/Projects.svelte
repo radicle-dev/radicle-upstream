@@ -5,7 +5,7 @@
   import { projects as store, fetchProjectList } from "../../src/org.ts";
   import * as path from "../../src/path.ts";
 
-  import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
+  import { Flex, Text } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     EmptyState,
@@ -23,14 +23,6 @@
     if (orgProject.maybeProject) {
       push(path.projectSource(orgProject.maybeProject.id));
     }
-  };
-
-  const statsProps = stats => {
-    return [
-      { icon: Icon.Commit, count: stats.commits },
-      { icon: Icon.Branch, count: stats.branches },
-      { icon: Icon.Member, count: stats.contributors },
-    ];
   };
 
   const projectCardProps = orgProject => {
@@ -73,7 +65,10 @@
 
         <div slot="right" style="display: flex; align-items: center;">
           {#if orgProject.maybeProject}
-            <Stats stats={statsProps(orgProject.maybeProject.stats)} />
+            <Stats
+              branches={orgProject.maybeProject.stats.branches}
+              commits={orgProject.maybeProject.stats.commits}
+              contributors={orgProject.maybeProject.stats.contributors} />
           {/if}
 
           <AdditionalActionsDropdown
