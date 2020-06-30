@@ -5,11 +5,10 @@ use std::fmt;
 
 use librad::keys;
 use librad::paths;
+pub use radicle_keystore::pinentry::SecUtf8;
 use radicle_keystore::{
     crypto::{Pwhash, SecretBoxError},
-    file,
-    pinentry::SecUtf8,
-    FileStorage, Keystore, SecStr, SecretKeyExt,
+    file, FileStorage, Keystore, SecStr, SecretKeyExt,
 };
 use radicle_registry_client::{ed25519, CryptoError, CryptoPair};
 

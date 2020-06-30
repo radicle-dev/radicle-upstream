@@ -618,9 +618,9 @@ mod test {
     async fn register_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
+        let config = coco::config::default(key.clone(), tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key, "cloudhead")?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -771,9 +771,10 @@ mod test {
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
+        let config = coco::config::default(key.clone(), tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -786,6 +787,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &peer,
+            key,
             &owner,
             project_name,
             project_description,

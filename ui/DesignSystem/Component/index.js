@@ -3,6 +3,7 @@ import Comment from "./Comment.svelte";
 import Copyable from "./Copyable.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
+import Error from "./Error.svelte";
 import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Label from "./Label.svelte";
@@ -40,6 +41,7 @@ export {
   Copyable,
   Dropdown,
   EmptyState,
+  Error,
   Header,
   HorizontalMenu,
   Label,

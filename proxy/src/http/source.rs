@@ -781,11 +781,13 @@ mod test {
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let owner = coco::control::fake_owner(peer.lock().await.key().clone()).await;
+        let owner = coco::init_user(&*peer.lock().await, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let platinum_project = coco::control::replicate_platinum(
             &*peer.lock().await,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -911,11 +913,13 @@ mod test {
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -945,11 +949,14 @@ mod test {
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
+
         let platinum_project = coco::control::replicate_platinum(
             &peer,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -999,11 +1006,13 @@ mod test {
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1043,7 +1052,7 @@ mod test {
     async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
 
         let path = "../fixtures/git-platinum";
@@ -1077,11 +1086,13 @@ mod test {
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1171,11 +1182,13 @@ mod test {
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1207,11 +1220,13 @@ mod test {
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
+            key,
             &owner,
             "git-platinum",
             "fixture data",

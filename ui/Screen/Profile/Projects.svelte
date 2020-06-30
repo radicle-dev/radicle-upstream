@@ -5,10 +5,11 @@
   import * as path from "../../src/path.ts";
   import { projects as projectsStore } from "../../src/project.ts";
 
-  import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
+  import { Flex, Icon } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     EmptyState,
+    Error,
     List,
     ProjectCard,
     Remote,
@@ -105,6 +106,6 @@
   {/if}
 
   <div slot="error" let:error>
-    <Text>{error}</Text>
+    <Error message={error.message} />
   </div>
 </Remote>
