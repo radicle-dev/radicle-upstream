@@ -32,8 +32,9 @@ pub fn routes(
 #[cfg(test)]
 fn filters(
     peer: Arc<Mutex<coco::PeerApi>>,
+    store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    blob_filter(Arc::clone(&peer))
+    blob_filter(Arc::clone(&peer), store)
         .or(branches_filter(Arc::clone(&peer)))
         .or(commit_filter(Arc::clone(&peer)))
         .or(commits_filter(Arc::clone(&peer)))
@@ -293,15 +294,13 @@ mod handler {
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&peer, &urn)?;
         let default_branch = project.default_branch();
+        let theme = if let Some(true) = highlight {
+            Some(&settings.appearance.theme)
+        } else {
+            None
+        };
         let blob = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::blob(
-                &mut browser,
-                default_branch,
-                revision,
-                &path,
-                highlight,
-                &settings.appearance.theme,
-            )
+            coco::blob(&mut browser, default_branch, revision, &path, theme)
         })?;
 
         Ok(reply::json(&blob))
@@ -439,7 +438,7 @@ pub struct BlobQuery {
     /// Revision to use for the history of the repo.
     revision: Option<String>,
     /// Whether or not to syntax highlight the blob.
-    highlight: bool,
+    highlight: Option<bool>,
 }
 
 /// Bundled query params to pass to the tree handler.
@@ -785,7 +784,7 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::sync::Arc;
-    use tokio::sync::Mutex;
+    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
@@ -802,8 +801,9 @@ mod test {
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key, &tmp_dir)?;
         let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let owner = coco::control::fake_owner(peer.lock().await.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &*peer.lock().await,
@@ -823,10 +823,11 @@ mod test {
                 default_branch,
                 Some(revision.to_string()),
                 path,
+                None,
             )
         })?;
 
-        let api = super::filters(Arc::clone(&peer));
+        let api = super::filters(Arc::clone(&peer), Arc::new(RwLock::new(store)));
 
         // Get ASCII blob.
         let res = request()
@@ -892,7 +893,13 @@ mod test {
             .await;
 
         let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
-            coco::blob(browser, default_branch, Some(revision.to_string()), path)
+            coco::blob(
+                browser,
+                default_branch,
+                Some(revision.to_string()),
+                path,
+                None,
+            )
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -934,8 +941,9 @@ mod test {
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key, &tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
@@ -948,7 +956,7 @@ mod test {
 
         let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
         let res = request()
             .method("GET")
             .path(&format!("/branches/{}", urn.to_string()))
@@ -968,8 +976,9 @@ mod test {
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key, &tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
@@ -985,7 +994,7 @@ mod test {
             coco::commit_header(&mut browser, sha1)
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
         let res = request()
             .method("GET")
             .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
@@ -1022,8 +1031,9 @@ mod test {
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key, &tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
@@ -1042,7 +1052,7 @@ mod test {
             Ok((want, head_commit))
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
         let res = request()
             .method("GET")
             .path(&format!("/commits/{}?branch={}", urn.to_string(), branch))
@@ -1066,11 +1076,12 @@ mod test {
     async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key, &tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let path = "../fixtures/git-platinum";
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
         let res = request()
             .method("GET")
             .path(&format!("/local-state/{}", path))
@@ -1100,8 +1111,9 @@ mod test {
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key, &tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
@@ -1142,7 +1154,7 @@ mod test {
                 .collect::<Vec<super::Revision>>()
         };
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
         let res = request()
             .method("GET")
             .path(&format!("/revisions/{}", urn))
@@ -1225,8 +1237,9 @@ mod test {
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key, &tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
@@ -1239,7 +1252,7 @@ mod test {
 
         let want = coco::with_browser(&peer, &urn, |browser| coco::tags(browser))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
         let res = request()
             .method("GET")
             .path(&format!("/tags/{}", urn.to_string()))
@@ -1261,8 +1274,9 @@ mod test {
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir)?;
+        let config = coco::config::default(key, &tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let owner = coco::control::fake_owner(peer.key().clone()).await;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
@@ -1286,7 +1300,7 @@ mod test {
             )
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)));
+        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
         let res = request()
             .method("GET")
             .path(&format!(

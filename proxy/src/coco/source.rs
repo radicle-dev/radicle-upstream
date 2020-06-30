@@ -217,8 +217,7 @@ pub fn blob(
     default_branch: &str,
     maybe_revision: Option<String>,
     path: &str,
-    highlight: bool,
-    theme: &Theme,
+    theme: Option<&Theme>,
 ) -> Result<Blob, error::Error> {
     browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
 
@@ -236,9 +235,9 @@ pub fn blob(
         .last_commit(commit_path)?
         .map(|c| CommitHeader::from(&c));
     let (_rest, last) = p.split_last();
-    let content = match std::str::from_utf8(&file.contents) {
-        Ok(content) if !highlight => BlobContent::Ascii(content.to_owned()),
-        Ok(content) => {
+    let content = match (std::str::from_utf8(&file.contents), theme) {
+        (Ok(content), None) => BlobContent::Ascii(content.to_owned()),
+        (Ok(content), Some(theme)) => {
             use syntect::easy::HighlightLines;
             use syntect::highlighting::ThemeSet;
             use syntect::util::LinesWithEndings;
@@ -272,7 +271,7 @@ pub fn blob(
                 _ => BlobContent::Ascii(content.to_owned()),
             }
         },
-        Err(_) => BlobContent::Binary,
+        (Err(_), _) => BlobContent::Binary,
     };
 
     Ok(Blob {
