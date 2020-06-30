@@ -32,8 +32,8 @@ where
         })
         .untuple_one()
         .and(
-            create_project_filter(Arc::clone(&peer), keystore, Arc::clone(&owner))
-                .or(nuke_coco_filter(peer, owner))
+            create_project_filter(Arc::clone(&peer), Arc::clone(&keystore), Arc::clone(&owner))
+                .or(nuke_coco_filter(peer, keystore, owner))
                 .or(nuke_registry_filter(Arc::clone(&registry)))
                 .or(register_user_filter(registry)),
         )
@@ -50,8 +50,8 @@ fn filters<R>(
 where
     R: registry::Client,
 {
-    create_project_filter(Arc::clone(&peer), keystore, Arc::clone(&owner))
-        .or(nuke_coco_filter(peer, owner))
+    create_project_filter(Arc::clone(&peer), Arc::clone(&keystore), Arc::clone(&owner))
+        .or(nuke_coco_filter(peer, keystore, owner))
         .or(nuke_registry_filter(Arc::clone(&registry)))
         .or(register_user_filter(registry))
 }
@@ -83,10 +83,12 @@ fn register_user_filter<R: registry::Client>(
 /// GET /nuke/coco
 fn nuke_coco_filter(
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
     owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_peer(peer))
+        .and(super::with_shared(keystore))
         .and(super::with_shared(owner))
         .and_then(handler::nuke_coco)
 }
@@ -108,7 +110,7 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use librad::keys::SecretKey;
+    use librad::paths;
 
     use crate::coco;
     use crate::error::Error;
@@ -172,6 +174,7 @@ mod handler {
     /// Reset the coco state by creating a new temporary directory for the librad paths.
     pub async fn nuke_coco(
         peer: Arc<Mutex<coco::PeerApi>>,
+        keystore: http::Shared<keystore::Keystorage>,
         owner: http::Shared<Option<coco::User>>,
     ) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
@@ -184,13 +187,22 @@ mod handler {
             temp_dir.path().to_path_buf()
         };
 
-        let key = SecretKey::new();
+        let paths = paths::Paths::from_root(tmp_path).map_err(Error::from)?;
 
-        let config = coco::config::default(
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut new_keystore = keystore::Keystorage::new(&paths, pw);
+        let key = new_keystore.init_librad_key().map_err(Error::from)?;
+
+        let config = coco::config::configure(
+            paths,
             key.clone(),
-            tmp_path
-        )?;
+        );
+
         let new_peer = coco::create_peer_api(config).await?;
+
+        let mut peer = peer.lock().await;
+        let mut keystore = keystore.write().await;
+
         let mut owner = owner.write().await;
         let new_owner = if let Some(old_owner) = &*owner {
             let new_owner = coco::init_user(&new_peer, key, old_owner.name())?;
@@ -199,9 +211,9 @@ mod handler {
             None
         };
 
-        let mut peer = peer.lock().await;
         *owner = new_owner;
         *peer = new_peer;
+        *keystore = new_keystore;
 
         Ok(reply::json(&true))
     }
@@ -223,13 +235,21 @@ mod handler {
         use std::sync::Arc;
         use tokio::sync::{Mutex, RwLock};
 
+        use librad::paths;
+
         use crate::coco;
+        use crate::keystore;
         use crate::error;
 
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {
             let tmp_dir = tempfile::tempdir()?;
-            let key = librad::keys::SecretKey::new();
+            let paths = paths::Paths::from_root(tmp_dir.path())?;
+
+            let pw = keystore::SecUtf8::from("radicle-upstream");
+            let mut keystore = keystore::Keystorage::new(&paths, pw);
+            let key = keystore.init_librad_key()?;
+
             let config = coco::config::default(key, tmp_dir)?;
             let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
 
@@ -238,7 +258,7 @@ mod handler {
                 (peer.paths().clone(), peer.peer_id().clone())
             };
 
-            super::nuke_coco(Arc::clone(&peer), Arc::new(RwLock::new(None))).await.unwrap();
+            super::nuke_coco(Arc::clone(&peer), Arc::new(RwLock::new(keystore)), Arc::new(RwLock::new(None))).await.unwrap();
 
             let (new_paths, new_peer_id) = {
                 let peer = peer.lock().await;
