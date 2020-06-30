@@ -1,4 +1,4 @@
-import { derived, writable, Readable } from "svelte/store";
+import { Readable } from "svelte/store";
 
 import * as api from "./api";
 import * as config from "./config";
@@ -101,12 +101,6 @@ export const commit = commitStore.readable;
 const commitsStore = remote.createStore<CommitHistory>();
 export const commits = commitsStore.readable;
 
-const currentPathStore = writable("");
-export const currentPath = derived(currentPathStore, $store => $store);
-
-const currentRevisionStore = writable("");
-export const currentRevision = derived(currentRevisionStore, $store => $store);
-
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
 
@@ -118,18 +112,20 @@ enum Kind {
   FetchCommit = "FETCH_COMMIT",
   FetchCommits = "FETCH_COMMITS",
   FetchRevisions = "FETCH_REVISIONS",
-  Update = "UPDATE",
+  FetchObject = "FETCH_OBJECT",
 }
 
 interface FetchCommit extends event.Event<Kind> {
   kind: Kind.FetchCommit;
   projectId: string;
+  userId: string;
   sha1: string;
 }
 
 interface FetchCommits extends event.Event<Kind> {
   kind: Kind.FetchCommits;
   projectId: string;
+  userId: string;
   branch: string;
 }
 
@@ -138,9 +134,10 @@ interface FetchRevisions extends event.Event<Kind> {
   projectId: string;
 }
 
-interface Update extends event.Event<Kind> {
-  kind: Kind.Update;
+interface FetchObject extends event.Event<Kind> {
+  kind: Kind.FetchObject;
   path: string;
+  user: string;
   projectId: string;
   revision: string;
   type: ObjectType;
@@ -172,7 +169,7 @@ const groupCommits = (history: CommitSummary[]): CommitHistory => {
   return days;
 };
 
-type Msg = FetchCommit | FetchCommits | FetchRevisions | Update;
+type Msg = FetchCommit | FetchCommits | FetchRevisions | FetchObject;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -180,6 +177,7 @@ const update = (msg: Msg): void => {
       commitStore.loading();
 
       api
+        // TODO(rudolfs): adjust backend api to accept user msg.userId
         .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
         .then(commit => {
           commitStore.success({
@@ -195,6 +193,7 @@ const update = (msg: Msg): void => {
       commitsStore.loading();
 
       api
+        // TODO(rudolfs): adjust backend api to accept user msg.userId
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
           query: { branch: msg.branch },
         })
@@ -218,9 +217,7 @@ const update = (msg: Msg): void => {
         .catch(revisionsStore.error);
       break;
 
-    case Kind.Update:
-      currentPathStore.update(() => msg.path);
-      currentRevisionStore.update(() => msg.revision);
+    case Kind.FetchObject:
       objectStore.loading();
 
       switch (msg.type) {
@@ -252,7 +249,7 @@ export const fetchRevisions = event.create<Kind, Msg>(
   Kind.FetchRevisions,
   update
 );
-export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
+export const fetchObject = event.create<Kind, Msg>(Kind.FetchObject, update);
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);

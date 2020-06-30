@@ -6,7 +6,7 @@ before(() => {
 
 beforeEach(() => {
   cy.visit("./public/index.html#/profile/projects");
-  cy.contains("Monadic").click();
+  cy.contains("platinum").click();
   cy.contains("Source").click();
 });
 
@@ -140,18 +140,18 @@ context("source code browsing", () => {
             cy.contains(".i-am-well-hidden").click();
           });
           cy.pick("project-screen", "file-source").contains(
-            "Monadic / .i-am-well-hidden"
+            "platinum / .i-am-well-hidden"
           );
-          cy.pick("project-screen", "file-source").contains("Monadic").click();
+          cy.pick("project-screen", "file-source").contains("platinum").click();
           cy.pick("project-screen", "file-source").contains("README.md");
 
           cy.pick("source-tree").within(() => {
             cy.contains(".i-too-am-hidden").click();
           });
           cy.pick("project-screen", "file-source").contains(
-            "Monadic / .i-too-am-hidden"
+            "platinum / .i-too-am-hidden"
           );
-          cy.pick("topbar", "project-avatar").contains("Monadic").click();
+          cy.pick("topbar", "project-avatar").contains("platinum").click();
           cy.pick("project-screen", "file-source").contains("README.md");
 
           // Switching between different revisions shows the correct README
@@ -194,6 +194,17 @@ context("source code browsing", () => {
           '.revision-dropdown [data-tag="v0.5.0"][data-repo-handle="cloudhead"]'
         ).click();
         cy.contains("test-file-deletion.txt").should("not.exist");
+      });
+    });
+
+    context("when switching between projects", () => {
+      it("opens the selected project on the default branch", () => {
+        cy.createProjectWithFixture("gold");
+        cy.pick("revision-selector").click();
+        cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
+        cy.pick("sidebar", "profile").click();
+        cy.pick("project-list", "project-list-entry-gold").click();
+        cy.pick("revision-selector").contains("rudolfs master");
       });
     });
   });

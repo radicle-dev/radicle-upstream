@@ -5,8 +5,6 @@
   import * as path from "../src/path.ts";
   import { fetch, project as store } from "../src/project.ts";
 
-  import { updateParams } from "../src/source.ts";
-
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
@@ -31,12 +29,11 @@
 
   const routes = {
     "/projects/:id/": Source,
-    "/projects/:id/source": Source,
-    "/projects/:id/source/*": Source,
+    "/projects/:id/:userId/source": Source,
     "/projects/:id/issues": Issues,
     "/projects/:id/issue": Issue,
-    "/projects/:id/commit/:hash": Commit,
-    "/projects/:id/commits/:branch": Commits,
+    "/projects/:id/:userId/commit/:hash": Commit,
+    "/projects/:id/:userId/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions,
   };
 
@@ -49,24 +46,25 @@
   };
 
   export let params = null;
+  const projectId = params.id;
 
-  const topbarMenuItems = projectId => [
+  const topbarMenuItems = (projectId, defaultUserId) => [
     {
       icon: Icon.Home,
       title: "Source",
-      href: path.projectSource(projectId),
+      href: path.projectSource(projectId, defaultUserId),
       looseActiveStateMatching: true,
     },
     {
       icon: Icon.Issue,
       title: "Issues",
-      href: path.projectIssues(projectId),
+      href: path.projectIssues(projectId, defaultUserId),
       looseActiveStateMatching: false,
     },
     {
       icon: Icon.Revision,
       title: "Revisions",
-      href: path.projectRevisions(projectId),
+      href: path.projectRevisions(projectId, defaultUserId),
       looseActiveStateMatching: false,
     },
   ];
@@ -96,7 +94,7 @@
       icon: Icon.Register,
       event: () =>
         push(
-          path.registerExistingProject(params.id, session.identity.registered)
+          path.registerExistingProject(projectId, session.identity.registered)
         ),
     };
   } else {
@@ -110,10 +108,7 @@
     };
   }
 
-  fetch({ id: params.id });
-
-  // Unset the current selected revision when navigating to a new repository.
-  updateParams({ revision: "" });
+  fetch({ id: projectId });
 </script>
 
 <SidebarLayout
@@ -122,7 +117,10 @@
   dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
-      <a slot="left" href={path.projectSource(params.id)} use:link>
+      <a
+        slot="left"
+        href={path.projectSource(projectId, project.default_user.id)}
+        use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->
         <Breadcrumb
           title={project.metadata.name}
@@ -131,7 +129,8 @@
       </a>
 
       <div slot="middle">
-        <HorizontalMenu items={topbarMenuItems(params.id)} />
+        <HorizontalMenu
+          items={topbarMenuItems(project.id, project.default_user.id)} />
       </div>
 
       <div slot="right" style="display: flex">

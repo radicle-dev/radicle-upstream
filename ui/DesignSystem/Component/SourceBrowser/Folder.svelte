@@ -1,29 +1,33 @@
 <script>
-  import {
-    currentPath,
-    currentRevision,
-    tree,
-    ObjectType,
-  } from "../../../src/source.ts";
+  import * as path from "../../../src/path.ts";
+  import { tree, ObjectType } from "../../../src/source.ts";
 
   import { Icon } from "../../Primitive";
   import { Remote } from "../../Component";
 
   import File from "./File.svelte";
 
-  export let prefix = ""; // start sidebar tree from repository root
   export let name = null;
   export let projectId = null;
 
+  export let currentRevision = null;
+  export let currentPath = null;
+  export let currentUser = null;
+
   export let expanded = false;
   export let toplevel = false;
+
+  // Base case of this recursive component, empty string means that it starts
+  // the sidebar tree from the repository root. This prop should not be used
+  // from outside of this component.
+  export let prefix = "";
 
   const toggle = () => {
     expanded = !expanded;
   };
 
-  $: store = tree(projectId, $currentRevision, prefix);
-  $: active = prefix === $currentPath;
+  $: store = tree(projectId, currentRevision, prefix);
+  $: active = prefix === currentPath;
 </script>
 
 <style>
@@ -58,33 +62,34 @@
   }
 </style>
 
-<Remote {store} let:data={tree}>
-  {#if !toplevel}
-    <div class="folder" on:click={toggle}>
-      <span class:expanded class:active style="height: 24px">
-        <Icon.Chevron dataCy={`expand-${name}`} />
-      </span>
-      <span class="folder-name">{name}</span>
-    </div>
-  {/if}
+{#if !toplevel}
+  <div class="folder" on:click={toggle}>
+    <span class:expanded class:active style="height: 24px">
+      <Icon.Chevron dataCy={`expand-${name}`} />
+    </span>
+    <span class="folder-name">{name}</span>
+  </div>
+{/if}
 
-  <div class="container" class:toplevel>
-    {#if expanded || toplevel}
+<div class="container" class:toplevel>
+  {#if expanded || toplevel}
+    <Remote {store} let:data={tree}>
       {#each tree.entries as entry}
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
             {projectId}
+            {currentPath}
+            {currentRevision}
+            {currentUser}
             name={entry.info.name}
             prefix={`${entry.path}/`} />
         {:else}
           <File
-            active={entry.path === $currentPath}
-            {projectId}
-            filePath={entry.path}
-            name={entry.info.name}
-            currentRevision={$currentRevision} />
+            active={entry.path === currentPath}
+            href={path.projectSource(projectId, currentUser, currentRevision, ObjectType.Blob, entry.path)}
+            name={entry.info.name} />
         {/if}
       {/each}
-    {/if}
-  </div>
-</Remote>
+    </Remote>
+  {/if}
+</div>

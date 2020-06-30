@@ -164,7 +164,7 @@
         isNew ? newRepositoryPath : existingRepositoryPath
       );
 
-      push(path.projectSource(response.id));
+      push(path.projectSource(response.id, response.default_user.id));
       notification.info(
         `Project ${response.metadata.name} successfully created`
       );
