@@ -327,7 +327,7 @@ impl Client for Registry {
     async fn get_org(&self, org_id: Id) -> Result<Option<Org>, error::Error> {
         if let Some(org) = self.client.get_org(org_id.clone()).await? {
             let mut members = Vec::new();
-            for member in org.members.clone() {
+            for member in org.members().clone() {
                 members.push(
                     self.get_user(member)
                         .await?
@@ -382,7 +382,7 @@ impl Client for Registry {
 
         // TODO(xla): Remove automatic prepayment once we have proper balances.
         let org = self.client.get_org(org_id).await?.expect("org not present");
-        self.prepay_account(org.account_id, 1000).await?;
+        self.prepay_account(org.account_id(), 1000).await?;
 
         Ok(tx)
     }
@@ -453,7 +453,7 @@ impl Client for Registry {
             .get_project(project_name.clone(), project_domain.clone())
             .await?
             .map(|project| {
-                let metadata_vec: Vec<u8> = project.metadata.into();
+                let metadata_vec: Vec<u8> = project.metadata().clone().into();
                 Project {
                     name: project_name.clone(),
                     domain: project_domain,
