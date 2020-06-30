@@ -53,15 +53,17 @@ pub struct Project {
 }
 
 /// Construct a Project from its metadata and stats
-impl Project {
+impl<ST> From<(project::Project<ST>, coco::Stats)> for Project
+where
+    ST: Clone,
+{
     /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
     /// for the repository.
-    pub fn from_project_stats<ST>(project: project::Project<ST>, stats: coco::Stats) -> Self
-    where
-        ST: Clone,
-    {
+    fn from(tup: (project::Project<ST>, coco::Stats)) -> Self {
+        let (project, stats) = tup;
         let id = project.urn();
         let metadata = project.into();
+
         Self {
             id: id.clone(),
             shareable_entity_identifier: format!("%{}", id),
@@ -85,5 +87,6 @@ pub enum Registration {
 pub fn get(peer: &coco::PeerApi, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
     let project = coco::get_project(peer, project_urn)?;
     let stats = coco::with_browser(peer, project_urn, |browser| Ok(browser.get_stats()?))?;
-    Ok(Project::from_project_stats(project, stats))
+
+    Ok((project, stats).into())
 }

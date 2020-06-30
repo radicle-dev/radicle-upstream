@@ -133,8 +133,10 @@ mod handler {
         let urn = meta.urn();
 
         let stats = coco::with_browser(peer, &urn, |browser| Ok(browser.get_stats()?))?;
+        let project: project::Project = (meta, stats).into();
+
         Ok(reply::with_status(
-            reply::json(&project::Project::from_project_stats(meta, stats)),
+            reply::json(&project),
             StatusCode::CREATED,
         ))
     }

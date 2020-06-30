@@ -125,9 +125,10 @@ mod handler {
             &input.default_branch,
         )?;
         let stats = coco::with_browser(peer, &meta.urn(), |browser| Ok(browser.get_stats()?))?;
+        let project: project::Project = (meta, stats).into();
 
         Ok(reply::with_status(
-            reply::json(&project::Project::from_project_stats(meta, stats)),
+            reply::json(&project),
             StatusCode::CREATED,
         ))
     }
