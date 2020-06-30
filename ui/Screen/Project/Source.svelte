@@ -177,7 +177,7 @@
 
     <div class="column-right">
       <div class="repo-header">
-        <div class="repo-stats">
+        <div class="repo-stats" data-cy="repo-stats">
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">
