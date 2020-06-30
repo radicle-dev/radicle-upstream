@@ -3,7 +3,7 @@
   import { push } from "svelte-spa-router";
 
   import * as path from "../../src/path.ts";
-  import { projects as projectStore } from "../../src/project.ts";
+  import { projects as projectsStore } from "../../src/project.ts";
 
   import { Flex, Icon, Text } from "../../DesignSystem/Primitive";
   import {
@@ -52,27 +52,17 @@
     }
   };
 
-  const statsProps = stats => {
-    return [
-      { icon: Icon.Commit, count: stats.commits },
-      { icon: Icon.Branch, count: stats.branches },
-      { icon: Icon.Member, count: stats.contributors },
-    ];
-  };
-
-  const projectCardProps = project => {
-    return {
-      title: project.metadata.name,
-      description: project.metadata.description,
-      showRegisteredBadge: project.registration,
-    };
-  };
+  const projectCardProps = project => ({
+    title: project.metadata.name,
+    description: project.metadata.description,
+    showRegisteredBadge: project.registration,
+  });
 
   const create = () => push(path.createProject());
   const register = () => push(path.registerUser());
 </script>
 
-<Remote store={projectStore} let:data={projects}>
+<Remote store={projectsStore} let:data={projects}>
   {#if projects.length > 0}
     <List
       dataCy="project-list"
@@ -86,9 +76,11 @@
         <div slot="left">
           <ProjectCard {...projectCardProps(project)} />
         </div>
-
         <div slot="right" style="display: flex; align-items: center;">
-          <Stats stats={statsProps(project.stats)} />
+          <Stats
+            branches={project.stats.branches}
+            commits={project.stats.commits}
+            contributors={project.stats.contributors} />
           <AdditionalActionsDropdown
             dataCy="context-menu"
             headerTitle={project.shareableEntityIdentifier}

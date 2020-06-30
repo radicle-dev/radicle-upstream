@@ -1,10 +1,11 @@
-import { writable } from "svelte/store";
-
 import * as api from "./api";
 import * as currency from "./currency";
 import * as event from "./event";
+import * as org from "./org";
 import * as remote from "./remote";
+import * as source from "./source";
 import * as transaction from "./transaction";
+import * as user from "./user";
 
 // TYPES.
 export interface Metadata {
@@ -13,7 +14,7 @@ export interface Metadata {
   description?: string;
 }
 
-interface Stats {
+export interface Stats {
   branches: number;
   commits: number;
   contributors: number;
@@ -23,8 +24,8 @@ export interface Project {
   id: string;
   shareableEntityIdentifier: string;
   metadata: Metadata;
-  registration: string; // TODO(rudolfs): what will this type be?
   stats: Stats;
+  registration?: org.Org | user.User;
 }
 
 type Projects = Project[];
@@ -51,8 +52,6 @@ export const project = projectStore.readable;
 
 const projectsStore = remote.createStore<Projects>();
 export const projects = projectsStore.readable;
-
-export const projectNameStore = writable(null);
 
 // EVENTS
 enum Kind {

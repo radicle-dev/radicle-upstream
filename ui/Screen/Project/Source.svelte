@@ -60,9 +60,8 @@
 
   const { id, metadata } = getContext("project");
 
-  const getRevision = current => {
-    return current !== "" ? current : metadata.defaultBranch;
-  };
+  const getRevision = current =>
+    current !== "" ? current : metadata.defaultBranch;
 
   $: updateParams({
     path: path.extractProjectSourceObjectPath($location),
@@ -136,6 +135,7 @@
     margin: 1.5rem 0;
     display: flex;
     justify-content: space-evenly;
+    cursor: pointer;
   }
   .repo-stat-item {
     display: flex;
@@ -189,7 +189,7 @@
 
     <div class="column-right">
       <div class="repo-header">
-        <div class="repo-stats">
+        <div class="repo-stats" data-cy="repo-stats">
           <div class="repo-stat-item">
             <Icon.Commit />
             <Text style="margin: 0 8px;">

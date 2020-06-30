@@ -132,19 +132,11 @@ mod handler {
         )?;
         let urn = meta.urn();
 
-        let shareable_entity_identifier = format!("%{}", urn);
+        let stats = coco::with_browser(peer, &urn, |browser| Ok(browser.get_stats()?))?;
+        let project: project::Project = (meta, stats).into();
+
         Ok(reply::with_status(
-            reply::json(&project::Project {
-                id: urn,
-                shareable_entity_identifier,
-                metadata: meta.into(),
-                registration: None,
-                stats: project::Stats {
-                    branches: 11,
-                    commits: 267,
-                    contributors: 8,
-                },
-            }),
+            reply::json(&project),
             StatusCode::CREATED,
         ))
     }
@@ -163,20 +155,7 @@ mod handler {
     /// List all known projects.
     pub async fn list(peer: Arc<Mutex<coco::PeerApi>>) -> Result<impl Reply, Rejection> {
         let peer = &*peer.lock().await;
-        let projects = coco::list_projects(peer)?
-            .into_iter()
-            .map(|meta| project::Project {
-                id: meta.urn(),
-                shareable_entity_identifier: format!("%{}", meta.urn()),
-                metadata: meta.into(),
-                registration: None,
-                stats: project::Stats {
-                    branches: 11,
-                    commits: 267,
-                    contributors: 8,
-                },
-            })
-            .collect::<Vec<project::Project>>();
+        let projects = coco::list_projects(peer)?;
 
         Ok(reply::json(&projects))
     }
@@ -217,7 +196,7 @@ impl ToDocumentedType for project::Project {
         );
         properties.insert("metadata".into(), project::Metadata::document());
         properties.insert("registration".into(), project::Registration::document());
-        properties.insert("stats".into(), project::Stats::document());
+        properties.insert("stats".into(), DocumentStats::document());
 
         document::DocumentedType::from(properties)
             .description("Radicle project for sharing and collaborating")
@@ -240,6 +219,36 @@ impl Serialize for project::Registration {
                 &user_id.to_string(),
             ),
         }
+    }
+}
+
+/// Documentation of project stats
+struct DocumentStats;
+
+impl ToDocumentedType for DocumentStats {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(3);
+        properties.insert(
+            "branches".into(),
+            document::string()
+                .description("Amount of known branches")
+                .example(7),
+        );
+        properties.insert(
+            "commits".into(),
+            document::string()
+                .description("Number of commits in the default branch")
+                .example(420),
+        );
+        properties.insert(
+            "contributors".into(),
+            document::string()
+                .description("Number of unique contributors on the default branch")
+                .example(11),
+        );
+
+        document::DocumentedType::from(properties)
+            .description("Coarse statistics for the Project source code")
     }
 }
 
@@ -293,46 +302,6 @@ impl ToDocumentedType for project::Metadata {
         );
 
         document::DocumentedType::from(properties).description("Project metadata")
-    }
-}
-
-impl Serialize for project::Stats {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut state = serializer.serialize_struct("Stats", 3)?;
-        state.serialize_field("branches", &self.branches)?;
-        state.serialize_field("commits", &self.commits)?;
-        state.serialize_field("contributors", &self.contributors)?;
-        state.end()
-    }
-}
-
-impl ToDocumentedType for project::Stats {
-    fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(3);
-        properties.insert(
-            "branches".into(),
-            document::string()
-                .description("Amount of known branches")
-                .example(11),
-        );
-        properties.insert(
-            "commits".into(),
-            document::string()
-                .description("Numbner of commits in the default branch")
-                .example(267),
-        );
-        properties.insert(
-            "contributors".into(),
-            document::string()
-                .description("Amount of unique commiters on the default branch")
-                .example(8),
-        );
-
-        document::DocumentedType::from(properties)
-            .description("Coarse statistics for the Project source code")
     }
 }
 
@@ -451,18 +420,18 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "id": meta.urn().to_string(),
+            "id": meta.id,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
             },
             "registration": Value::Null,
-            "shareableEntityIdentifier": format!("%{}", meta.urn().to_string()),
+            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
             "stats": {
-                "branches": 11,
-                "commits": 267,
-                "contributors": 8,
+                "branches": 1,
+                "commits": 1,
+                "contributors": 1,
             },
         });
 
@@ -518,20 +487,7 @@ mod test {
 
         coco::control::setup_fixtures(&peer, &owner)?;
 
-        let projects = coco::list_projects(&peer)?
-            .into_iter()
-            .map(|meta| project::Project {
-                id: meta.urn(),
-                shareable_entity_identifier: format!("%{}", meta.urn()),
-                metadata: meta.into(),
-                registration: None,
-                stats: project::Stats {
-                    branches: 11,
-                    commits: 267,
-                    contributors: 8,
-                },
-            })
-            .collect::<Vec<project::Project>>();
+        let projects = coco::list_projects(&peer)?;
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
