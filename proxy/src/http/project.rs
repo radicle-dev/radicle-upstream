@@ -133,7 +133,7 @@ mod handler {
         let urn = meta.urn();
 
         let stats = coco::with_browser(peer, &urn, |browser| Ok(browser.get_stats()?))?;
-        let project: project::Project = (meta, stats).into();
+        let project: project::Project = (meta, stats, project::get_fake_default_user()).into();
 
         Ok(reply::with_status(
             reply::json(&project),
@@ -172,6 +172,7 @@ impl Serialize for project::Project {
             "shareableEntityIdentifier",
             &self.shareable_entity_identifier.to_string(),
         )?;
+        state.serialize_field("default_user", &self.default_user)?;
         state.serialize_field("metadata", &self.metadata)?;
         state.serialize_field("registration", &self.registration)?;
         state.serialize_field("stats", &self.stats)?;
@@ -421,6 +422,22 @@ mod test {
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
             "id": meta.id,
+            "default_user": {
+                "avatarFallback": {
+                    "background": {
+                        "b": 214,
+                        "g": 186,
+                        "r": 24,
+                    },
+                    "emoji": "🧿",
+                },
+                "id": "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
+                "metadata": {
+                    "handle": "rudolfs",
+                },
+                "registered": Value::Null,
+                "shareableEntityIdentifier": "rudolfs@rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
+            },
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",

@@ -57,7 +57,7 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
         .map(|project| {
             with_browser(peer, &project.urn(), |browser| {
                 let stats = browser.get_stats()?;
-                Ok((project, stats).into())
+                Ok((project, stats, crate::project::get_fake_default_user()).into())
             })
         })
         .collect()

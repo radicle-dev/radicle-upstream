@@ -772,13 +772,10 @@ mod test {
     use warp::test::request;
 
     use librad::keys::SecretKey;
-    use librad::uri::RadUrn;
 
-    use crate::avatar;
     use crate::coco;
     use crate::error;
     use crate::http;
-    use crate::identity;
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
@@ -1092,36 +1089,6 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        // TODO(finto): Get the right URN
-        let fake_user_urn: RadUrn =
-            "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try".parse()?;
-
-        let want = {
-            let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
-                Ok((coco::branches(browser)?, coco::tags(browser)?))
-            })?;
-
-            ["cloudhead", "rudolfs", "xla"]
-                .iter()
-                .map(|handle| super::Revision {
-                    branches: branches.clone(),
-                    tags: tags.clone(),
-                    identity: identity::Identity {
-                        id: fake_user_urn.clone(),
-                        metadata: identity::Metadata {
-                            handle: (*handle).to_string(),
-                        },
-                        avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
-                        registered: None,
-                        shareable_entity_identifier: identity::SharedIdentifier {
-                            handle: (*handle).to_string(),
-                            urn: fake_user_urn.clone(),
-                        },
-                    },
-                })
-                .collect::<Vec<super::Revision>>()
-        };
-
         let api = super::filters(Arc::new(Mutex::new(peer)));
         let res = request()
             .method("GET")
@@ -1130,18 +1097,17 @@ mod test {
             .await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
             assert_eq!(
                 have,
                 json!([
                     {
                         "identity": {
-                            "id": fake_user_urn,
+                            "id": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
                             "metadata": {
                                 "handle": "cloudhead",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("cloudhead@{}", fake_user_urn),
+                            "shareableEntityIdentifier": format!("cloudhead@{}", "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"),
                             "avatarFallback": {
                                 "background": {
                                     "r": 24,
@@ -1156,12 +1122,12 @@ mod test {
                     },
                     {
                         "identity": {
-                            "id": fake_user_urn,
+                            "id": "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
                             "metadata": {
                                 "handle": "rudolfs",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("rudolfs@{}", fake_user_urn),
+                            "shareableEntityIdentifier": format!("rudolfs@{}", "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro"),
                             "avatarFallback": {
                                 "background": {
                                     "r": 24,
@@ -1176,12 +1142,12 @@ mod test {
                     },
                     {
                         "identity": {
-                            "id": fake_user_urn,
+                            "id": "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
                             "metadata": {
                                 "handle": "xla",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("xla@{}", fake_user_urn),
+                            "shareableEntityIdentifier": format!("xla@{}", "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"),
                             "avatarFallback": {
                                 "background": {
                                     "r": 155,
