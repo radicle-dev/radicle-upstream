@@ -2,14 +2,14 @@ import { Org } from "../org";
 import { User } from "../user";
 import { Project } from "../project";
 
-type MockedResponse = Org | Project | User | null;
+type MockedResponse = Org | Project | Project[] | User | null;
 
 // just to give an idea of how we'd stub the api with other endpoints
 const userMock: User = {
   handle: "rafalca",
 };
 
-export const radicleMock: Org = {
+export const orgMock: Org = {
   id: "radicle",
   shareableEntityIdentifier: "radicle@123abcd.git",
   avatarFallback: {
@@ -23,7 +23,7 @@ export const radicleMock: Org = {
   members: [userMock],
 };
 
-export const projectMock: Project = {
+export const upstreamProjectMock: Project = {
   id: "%rad:git:hwd1yregn1xe4krjs5h7ag5ceut9rwmjssr8e8t4pw6nrwdxgc761o3x4sa",
   shareableEntityIdentifier: "sos@{}",
   metadata: {
@@ -40,6 +40,22 @@ export const projectMock: Project = {
   },
 };
 
+export const surfProjectMock: Project = {
+  id: "%rad:git:hwd1yref66p4r3z1prxwdjr7ig6ihhrfzsawnc6us4zxtapfukrf6r7mupw",
+  shareableEntityIdentifier: "sos@{}",
+  metadata: {
+    name: "radicle-surf",
+    defaultBranch: "schildkroete",
+    description: "A code browsing library for VCS file systems",
+  },
+  registration: undefined,
+  stats: {
+    branches: 3,
+    commits: 33,
+    contributors: 333,
+  },
+};
+
 export const get = async (endpoint: string): Promise<MockedResponse> => {
   const [prefix, param] = endpoint.split("/");
 
@@ -47,15 +63,23 @@ export const get = async (endpoint: string): Promise<MockedResponse> => {
 
   switch (prefix) {
     case "orgs":
-      response = param === "radicle" ? radicleMock : null;
+      response = param === "radicle" ? orgMock : null;
       break;
+    //
     case "user":
       response = userMock;
       break;
-    case "project":
-      response = projectMock;
+    case "projects":
+      response = param
+        ? upstreamProjectMock
+        : [upstreamProjectMock, surfProjectMock];
       break;
   }
 
   return new Promise(resolve => resolve(response));
 };
+
+// When we want to ensure a function is called with certain parameters, but we don't
+// care as much about response data (or if it doesn't have a response), we can use jest.fn()
+// to track it
+export const post = jest.fn();
