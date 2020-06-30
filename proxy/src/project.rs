@@ -59,8 +59,7 @@ where
 {
     /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
     /// for the repository.
-    fn from(tup: (project::Project<ST>, coco::Stats)) -> Self {
-        let (project, stats) = tup;
+    fn from((project, stats): (project::Project<ST>, coco::Stats)) -> Self {
         let id = project.urn();
 
         Self {
