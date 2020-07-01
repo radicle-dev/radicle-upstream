@@ -5,6 +5,7 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
+use librad::keys;
 use librad::uri::RadUrn;
 
 use crate::avatar;
@@ -43,9 +44,10 @@ pub struct Metadata {
 /// # Errors
 pub async fn create(
     peer: Arc<Mutex<coco::PeerApi>>,
+    key: keys::SecretKey,
     handle: String,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_user(&*peer.lock().await, &handle)?;
+    let user = coco::init_user(&*peer.lock().await, key, &handle)?;
     let user = coco::verify_user(user).await?;
     let id = user.urn();
     let shareable_entity_identifier = user.into();
