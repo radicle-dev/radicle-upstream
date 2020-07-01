@@ -35,14 +35,15 @@ export const projectRevisions = (id: string): string =>
 
 export const projectSource = (
   projectId: string,
-  peerId: string,
+  peerId: string | undefined,
   revision = "",
   objectType: string = ObjectType.Tree,
   objectPath = ""
 ): string => {
   return (
-    `/projects/${projectId}/${peerId}/source?` +
-    `revision=${revision}&` +
+    `/projects/${projectId}/source?${ 
+    peerId ? `peerId=${peerId}&` : "" 
+    }revision=${revision}&` +
     `objectType=${objectType}&` +
     `objectPath=${objectPath}`
   );
@@ -53,7 +54,9 @@ export const parseProjectSourceLocation = (
   defaultRevision: string
 ): any => {
   const parsed = parse(querystring);
+  console.log(parsed);
   return {
+    currentPeerId: parsed.peerId,
     currentRevision: parsed.revision || defaultRevision,
     currentObjectType: parsed.objectType,
     currentObjectPath: parsed.objectPath,
@@ -67,7 +70,7 @@ export const projectCommits = (
   peerId: string,
   revision: string
 ): string =>
-  `/projects/${id}/${peerId}/commits/${encodeURIComponent(revision)}`;
+  `/projects/${id}/commits/${encodeURIComponent(revision)}?peerId=${peerId}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 

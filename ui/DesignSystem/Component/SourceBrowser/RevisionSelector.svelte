@@ -9,9 +9,17 @@
   export let revisions = null;
   export let style = "";
 
-  $: currentSelectedPeer = revisions.find(rev => {
-    return rev.identity.id === currentPeerId;
-  });
+  let currentSelectedPeer;
+
+  $: if (currentPeerId) {
+    currentSelectedPeer = revisions.find(rev => {
+      return rev.identity.id === currentPeerId;
+    });
+  } else {
+    // The API returns a revision list where the first entry is the default
+    // peer.
+    currentSelectedPeer = revisions[0];
+  }
 
   // Dropdown element. Set by the view.
   let dropdown = null;
@@ -32,8 +40,8 @@
   };
 
   const dispatch = createEventDispatcher();
-  const selectRevision = (peer, revision) => {
-    dispatch("select", { revision, peer });
+  const selectRevision = (peerId, revision) => {
+    dispatch("select", { revision, peerId });
     hideDropdown();
   };
 </script>
@@ -144,7 +152,7 @@
             class="branch"
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
-            on:click|stopPropagation={() => selectRevision(repo.identity, branch)}>
+            on:click|stopPropagation={() => selectRevision(repo.identity.id, branch)}>
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
@@ -156,7 +164,7 @@
             class="tag"
             data-repo-handle={repo.identity.metadata.handle}
             data-tag={tag}
-            on:click|stopPropagation={() => selectRevision(repo.identity, tag)}>
+            on:click|stopPropagation={() => selectRevision(repo.identity.id, tag)}>
             <Icon.Commit
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />

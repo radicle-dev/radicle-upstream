@@ -29,11 +29,11 @@
 
   const routes = {
     "/projects/:id/": Source,
-    "/projects/:id/:peerId/source": Source,
+    "/projects/:id/source": Source,
     "/projects/:id/issues": Issues,
     "/projects/:id/issue": Issue,
     "/projects/:id/commit/:hash": Commit,
-    "/projects/:id/:peerId/commits/:branch": Commits,
+    "/projects/:id/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions,
   };
 
@@ -48,23 +48,23 @@
   export let params = null;
   const projectId = params.id;
 
-  const topbarMenuItems = (projectId, defaultPeerId) => [
+  const topbarMenuItems = projectId => [
     {
       icon: Icon.Home,
       title: "Source",
-      href: path.projectSource(projectId, defaultPeerId),
+      href: path.projectSource(projectId),
       looseActiveStateMatching: true,
     },
     {
       icon: Icon.Issue,
       title: "Issues",
-      href: path.projectIssues(projectId, defaultPeerId),
+      href: path.projectIssues(projectId),
       looseActiveStateMatching: false,
     },
     {
       icon: Icon.Revision,
       title: "Revisions",
-      href: path.projectRevisions(projectId, defaultPeerId),
+      href: path.projectRevisions(projectId),
       looseActiveStateMatching: false,
     },
   ];
@@ -117,10 +117,7 @@
   dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
-      <a
-        slot="left"
-        href={path.projectSource(projectId, project.defaultPeer.id)}
-        use:link>
+      <a slot="left" href={path.projectSource(projectId)} use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->
         <Breadcrumb
           title={project.metadata.name}
@@ -129,8 +126,7 @@
       </a>
 
       <div slot="middle">
-        <HorizontalMenu
-          items={topbarMenuItems(project.id, project.defaultPeer.id)} />
+        <HorizontalMenu items={topbarMenuItems(project.id)} />
       </div>
 
       <div slot="right" style="display: flex">

@@ -27,19 +27,14 @@
 
   import CloneButton from "./CloneButton.svelte";
 
-  const { id, metadata, defaultPeer } = getContext("project");
-
-  export let params = null;
-
-  $: peerId = params.peerId;
+  const { id, metadata } = getContext("project");
 
   $: ({
+    currentPeerId,
     currentRevision,
     currentObjectType,
     currentObjectPath,
   } = path.parseProjectSourceLocation($querystring, metadata.defaultBranch));
-
-  $: currentPeerId = peerId || defaultPeer.id;
 
   const updateRevision = (projectId, revision, peerId) => {
     push(
@@ -188,7 +183,7 @@
             {currentPeerId}
             {currentRevision}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.peer.id)} />
+            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.peerId)} />
         </div>
       </Remote>
 
@@ -239,7 +234,7 @@
           <FileSource
             blob={object}
             path={currentObjectPath}
-            rootPath={path.projectSource(project.id, project.defaultPeer.id)}
+            rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
         {:else if object.path === ''}

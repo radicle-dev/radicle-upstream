@@ -17,9 +17,9 @@
   export let expanded = false;
   export let toplevel = false;
 
-  // Base case of this recursive component, empty string means that it starts
-  // the sidebar tree from the repository root. This prop should not be used
-  // from outside of this component.
+  // Starting-point of this recursive component, empty string means that it
+  // starts the sidebar tree from the repository root. This prop should not be
+  // used from outside of the component.
   export let prefix = "";
 
   const toggle = () => {

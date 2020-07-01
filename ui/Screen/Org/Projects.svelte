@@ -22,12 +22,7 @@
   const select = event => {
     const orgProject = event.detail;
     if (orgProject.maybeProject) {
-      push(
-        path.projectSource(
-          orgProject.maybeProject.id,
-          orgProject.maybeProject.defaultPeer.id
-        )
-      );
+      push(path.projectSource(orgProject.maybeProject.id));
     }
   };
 

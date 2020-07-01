@@ -362,6 +362,9 @@ mod handler {
             Ok((coco::branches(browser)?, coco::tags(browser)?))
         })?;
 
+        // TODO(rudolfs): the order of the returned peers/revisions determines the default peer in
+        // the repository selector in the UI. Make sure the list always returns the default peer
+        // first.
         let revs = [
             (
                 "cloudhead",

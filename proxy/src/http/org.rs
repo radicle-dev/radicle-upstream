@@ -846,22 +846,6 @@ mod test {
             "shareableEntityIdentifier": format!("%{}/{}", org_id.to_string(), project_name.to_string()),
             "maybeProject": {
                 "id": urn.to_string(),
-                "defaultPeer": {
-                    "avatarFallback": {
-                        "background": {
-                            "b": 214,
-                            "g": 186,
-                            "r": 24,
-                        },
-                        "emoji": "\u{1f9ff}",
-                    },
-                    "id": "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-                    "metadata": {
-                        "handle": "rudolfs",
-                    },
-                    "registered": Value::Null,
-                    "shareableEntityIdentifier": "rudolfs@rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-                },
                 "metadata": {
                     "defaultBranch": default_branch.to_string(),
                     "description": project_description.to_string(),
