@@ -122,7 +122,6 @@ fn commit_filter(
             )
             .description("Commit for SHA1 found"),
         ))
-        .and(warp::filters::query::query::<CommitQuery>())
         .and_then(handler::commit)
 }
 
@@ -321,13 +320,11 @@ mod handler {
         api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
         sha1: String,
-        super::CommitQuery { peer_id }: super::CommitQuery,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let commit = coco::with_browser(&api, &urn, |mut browser| {
-            coco::commit(&mut browser, peer_id.as_ref(), &sha1)
-        })?;
+        let commit =
+            coco::with_browser(&api, &urn, |mut browser| coco::commit(&mut browser, &sha1))?;
 
         Ok(reply::json(&commit))
     }
@@ -444,13 +441,6 @@ mod handler {
 
         Ok(reply::json(&tree))
     }
-}
-
-/// Bundled query params to pass to the commits handler.
-#[derive(Debug, Deserialize)]
-pub struct CommitQuery {
-    /// PeerId to scope the query by.
-    peer_id: Option<peer::PeerId>,
 }
 
 /// Bundled query params to pass to the commits handler.

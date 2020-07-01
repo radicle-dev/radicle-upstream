@@ -309,7 +309,6 @@ pub fn commit_header<'repo>(
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commit<'repo>(
     browser: &mut Browser<'repo>,
-    _peer_id: Option<&peer::PeerId>,
     sha1: &str,
 ) -> Result<Commit, error::Error> {
     let oid = git::Oid::from_str(sha1)?;

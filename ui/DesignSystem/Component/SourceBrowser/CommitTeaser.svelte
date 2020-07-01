@@ -11,7 +11,6 @@
   export let commitMessage = null;
   export let timestamp = null;
   export let commitSha = null;
-  export let peerId = null;
   export let user = null;
 
   export let style = null;
@@ -60,7 +59,7 @@
     <Icon.Commit style="fill: var(--color-secondary)" />
     <a
       class="commit-sha"
-      href={path.projectCommit(projectId, peerId, commitSha)}
+      href={path.projectCommit(projectId, commitSha)}
       use:link>
       {commitSha.substring(0, 7)}
     </a>

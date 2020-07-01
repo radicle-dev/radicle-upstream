@@ -12,7 +12,6 @@
   export let params = null;
 
   const projectId = params.id;
-  const peerId = params.peerId;
 </script>
 
 <style>
@@ -64,12 +63,9 @@
         <ul>
           {#each history.commits as commit}
             <li class="commit">
-              <a
-                href={path.projectCommit(projectId, peerId, commit.sha1)}
-                use:link>
+              <a href={path.projectCommit(projectId, commit.sha1)} use:link>
                 <CommitTeaser
                   {projectId}
-                  {peerId}
                   user={{ username: commit.author.name, avatar: commit.author.avatar }}
                   commitMessage={commit.summary}
                   commitSha={commit.sha1}

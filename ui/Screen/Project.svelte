@@ -32,7 +32,7 @@
     "/projects/:id/:peerId/source": Source,
     "/projects/:id/issues": Issues,
     "/projects/:id/issue": Issue,
-    "/projects/:id/:peerId/commit/:hash": Commit,
+    "/projects/:id/commit/:hash": Commit,
     "/projects/:id/:peerId/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions,
   };

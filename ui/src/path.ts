@@ -60,11 +60,8 @@ export const parseProjectSourceLocation = (
   };
 };
 
-export const projectCommit = (
-  id: string,
-  peerId: string,
-  hash: string
-): string => `/projects/${id}/${peerId}/commit/${hash}`;
+export const projectCommit = (id: string, hash: string): string =>
+  `/projects/${id}/commit/${hash}`;
 export const projectCommits = (
   id: string,
   peerId: string,

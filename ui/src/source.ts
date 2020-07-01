@@ -177,11 +177,7 @@ const update = (msg: Msg): void => {
       commitStore.loading();
 
       api
-        .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`, {
-          query: {
-            peerId: msg.peerId,
-          },
-        })
+        .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
         .then(commit => {
           commitStore.success({
             // TODO(cloudhead): Fetch branch from backend.
