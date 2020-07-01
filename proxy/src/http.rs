@@ -51,7 +51,7 @@ macro_rules! combine {
 /// Main entry point for HTTP API.
 pub fn api<R>(
     peer: coco::PeerApi,
-    owner: coco::User,
+    owner: Option<coco::User>, // None if the default owner was not found
     keystore: keystore::Keystorage,
     registry: R,
     store: kv::Store,
@@ -62,7 +62,7 @@ where
 {
     let peer = Arc::new(Mutex::new(peer));
     // TODO(finto): The user should be read from rad/self
-    let owner = Arc::new(RwLock::new(Some(owner)));
+    let owner = Arc::new(RwLock::new(owner));
     let keystore = Arc::new(RwLock::new(keystore));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));

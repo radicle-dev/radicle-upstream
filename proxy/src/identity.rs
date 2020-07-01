@@ -50,6 +50,7 @@ pub async fn create(
     let user = coco::init_user(&*peer.lock().await, key, &handle)?;
     let user = coco::verify_user(user).await?;
     let id = user.urn();
+    coco::set_default_owner(&*peer.lock().await, user.clone())?;
     let shareable_entity_identifier = user.into();
     Ok(Identity {
         id: id.clone(),

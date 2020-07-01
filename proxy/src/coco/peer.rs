@@ -36,6 +36,25 @@ where
     Ok(api)
 }
 
+/// Get the default owner for this `PeerApi`.
+pub async fn default_owner(peer: &PeerApi) -> Option<User> {
+    match peer.storage().default_rad_self() {
+        Ok(user) => {
+            let user = verify_user(user).await.ok()?;
+            Some(user)
+        },
+        Err(err) => {
+            log::warn!("an error occurred while trying to get 'rad/self': {}", err);
+            None
+        }
+    }
+}
+
+/// Get the default owner for this `PeerApi`.
+pub fn set_default_owner(peer: &PeerApi, user: User) -> Result<(), error::Error> {
+    Ok(peer.storage().set_default_rad_self(user)?)
+}
+
 /// Returns the list of [`project::Project`]s for your peer.
 ///
 /// # Errors
