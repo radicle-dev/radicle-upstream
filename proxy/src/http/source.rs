@@ -7,6 +7,8 @@ use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use librad::peer;
+
 use crate::coco;
 use crate::http;
 use crate::identity;
@@ -274,16 +276,28 @@ mod handler {
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::BlobQuery { path, revision }: super::BlobQuery,
+        super::BlobQuery {
+            path,
+            peer_id,
+            revision,
+        }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
+        let api = api.lock().await;
+
         let urn = project_urn.parse().map_err(Error::from)?;
-        let project = coco::get_project(&peer, &urn)?;
+        let project = coco::get_project(&api, &urn)?;
         let default_branch = project.default_branch();
-        let blob = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::blob(&mut browser, default_branch, revision, &path)
+
+        let blob = coco::with_browser(&api, &urn, |mut browser| {
+            coco::blob(
+                &mut browser,
+                peer_id.as_ref(),
+                default_branch,
+                revision,
+                &path,
+            )
         })?;
 
         Ok(reply::json(&blob))
@@ -431,6 +445,8 @@ pub struct CommitsQuery {
 pub struct BlobQuery {
     /// Location of the blob in tree.
     path: String,
+    /// PeerId to scope the query by.
+    peer_id: Option<peer::PeerId>,
     /// Revision to use for the history of the repo.
     revision: Option<String>,
 }
@@ -805,6 +821,7 @@ mod test {
         let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
             coco::blob(
                 &mut browser,
+                None,
                 default_branch,
                 Some(revision.to_string()),
                 path,
@@ -876,7 +893,13 @@ mod test {
             .await;
 
         let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
-            coco::blob(browser, default_branch, Some(revision.to_string()), path)
+            coco::blob(
+                browser,
+                None,
+                default_branch,
+                Some(revision.to_string()),
+                path,
+            )
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
