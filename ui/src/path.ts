@@ -41,8 +41,8 @@ export const projectSource = (
   objectPath = ""
 ): string => {
   return (
-    `/projects/${projectId}/source?${ 
-    peerId ? `peerId=${peerId}&` : "" 
+    `/projects/${projectId}/source?${
+      peerId ? `peerId=${peerId}&` : ""
     }revision=${revision}&` +
     `objectType=${objectType}&` +
     `objectPath=${objectPath}`
@@ -54,7 +54,6 @@ export const parseProjectSourceLocation = (
   defaultRevision: string
 ): any => {
   const parsed = parse(querystring);
-  console.log(parsed);
   return {
     currentPeerId: parsed.peerId,
     currentRevision: parsed.revision || defaultRevision,
