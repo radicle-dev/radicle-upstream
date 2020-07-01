@@ -337,15 +337,6 @@ mod handler {
         Ok(reply::json(&state))
     }
 
-    /// Mock helper to provide each fake user with a unique URN.
-    fn fake_user_urn(user_handle: &str) -> &str {
-        match user_handle {
-            "cloudhead" => "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-            "rudolfs" => "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-            _ => "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-        }
-    }
-
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
         peer: Arc<Mutex<coco::PeerApi>>,
@@ -357,30 +348,43 @@ mod handler {
             Ok((coco::branches(browser)?, coco::tags(browser)?))
         })?;
 
-        let revs = ["cloudhead", "rudolfs", "xla"]
-            .iter()
-            .map(|handle| super::Revision {
-                branches: branches.clone(),
-                tags: tags.clone(),
-                identity: identity::Identity {
-                    // TODO(finto): Get the right URN
-                    id: fake_user_urn(handle)
+        let revs = [
+            (
+                "cloudhead",
+                "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+            ),
+            (
+                "rudolfs",
+                "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
+            ),
+            (
+                "xla",
+                "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
+            ),
+        ]
+        .iter()
+        .map(|(fake_handle, fake_peer_urn)| super::Revision {
+            branches: branches.clone(),
+            tags: tags.clone(),
+            identity: identity::Identity {
+                // TODO(finto): Get the right URN
+                id: fake_peer_urn
+                    .parse()
+                    .expect("failed to parse hardcoded URN"),
+                metadata: identity::Metadata {
+                    handle: (*fake_handle).to_string(),
+                },
+                avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
+                registered: None,
+                shareable_entity_identifier: identity::SharedIdentifier {
+                    handle: (*fake_handle).to_string(),
+                    urn: fake_peer_urn
                         .parse()
                         .expect("failed to parse hardcoded URN"),
-                    metadata: identity::Metadata {
-                        handle: (*handle).to_string(),
-                    },
-                    avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
-                    registered: None,
-                    shareable_entity_identifier: identity::SharedIdentifier {
-                        handle: (*handle).to_string(),
-                        urn: fake_user_urn(handle)
-                            .parse()
-                            .expect("failed to parse hardcoded URN"),
-                    },
                 },
-            })
-            .collect::<Vec<super::Revision>>();
+            },
+        })
+        .collect::<Vec<super::Revision>>();
 
         Ok(reply::json(&revs))
     }

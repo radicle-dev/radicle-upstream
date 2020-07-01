@@ -52,7 +52,7 @@ pub struct Project {
     pub registration: Option<Registration>,
     /// High-level statistics about the project
     pub stats: coco::Stats,
-    /// The user to which all source browsing queries are scoped to.
+    /// The peer to which all source browsing queries are scoped to.
     pub default_peer: identity::Identity,
 }
 
