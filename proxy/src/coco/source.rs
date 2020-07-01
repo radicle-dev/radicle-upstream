@@ -8,7 +8,11 @@ use radicle_surf::{
     diff, file_system,
     vcs::git::{self, git2, BranchName, Browser},
 };
+
+use syntect::easy::HighlightLines;
+use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
+use syntect::util::LinesWithEndings;
 
 use crate::error;
 use crate::session::settings::Theme;
@@ -235,13 +239,26 @@ pub fn blob(
         .last_commit(commit_path)?
         .map(|c| CommitHeader::from(&c));
     let (_rest, last) = p.split_last();
-    let content = match (std::str::from_utf8(&file.contents), theme) {
+
+    let content = blob_content(path, file.contents, theme);
+
+    Ok(Blob {
+        content,
+        info: Info {
+            name: last.to_string(),
+            object_type: ObjectType::Blob,
+            last_commit,
+        },
+        path: path.to_string(),
+    })
+}
+
+/// Return a [`BlobContent`] given a file path, content and theme. Attempts to perform syntax
+/// highlighting when the theme is `Some`.
+fn blob_content(path: &str, content: Vec<u8>, theme: Option<&Theme>) -> BlobContent {
+    match (std::str::from_utf8(&content), theme) {
         (Ok(content), None) => BlobContent::Ascii(content.to_owned()),
         (Ok(content), Some(theme)) => {
-            use syntect::easy::HighlightLines;
-            use syntect::highlighting::ThemeSet;
-            use syntect::util::LinesWithEndings;
-
             let syntax = std::path::Path::new(path)
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
@@ -272,17 +289,7 @@ pub fn blob(
             }
         },
         (Err(_), _) => BlobContent::Binary,
-    };
-
-    Ok(Blob {
-        content,
-        info: Info {
-            name: last.to_string(),
-            object_type: ObjectType::Blob,
-            last_commit,
-        },
-        path: path.to_string(),
-    })
+    }
 }
 
 /// Given a project id to a repo returns the list of branches.
