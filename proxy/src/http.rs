@@ -78,6 +78,7 @@ where
     );
     let identity_filter = identity::filters(
         Arc::clone(&peer),
+        Arc::clone(&owner),
         Arc::clone(&keystore),
         Arc::clone(&registry),
         Arc::clone(&store),

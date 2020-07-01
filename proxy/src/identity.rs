@@ -11,6 +11,7 @@ use librad::uri::RadUrn;
 use crate::avatar;
 use crate::coco;
 use crate::error;
+use crate::http;
 use crate::registry;
 
 pub use shared_identifier::SharedIdentifier;
@@ -44,11 +45,16 @@ pub struct Metadata {
 /// # Errors
 pub async fn create(
     peer: Arc<Mutex<coco::PeerApi>>,
+    owner: http::Shared<Option<coco::User>>,
     key: keys::SecretKey,
     handle: String,
 ) -> Result<Identity, error::Error> {
     let user = coco::init_user(&*peer.lock().await, key, &handle)?;
     let user = coco::verify_user(user).await?;
+    {
+        let mut owner = owner.write().await;
+        *owner = Some(user.clone());
+    }
     let id = user.urn();
     coco::set_default_owner(&*peer.lock().await, user.clone())?;
     let shareable_entity_identifier = user.into();

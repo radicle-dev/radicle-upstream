@@ -8,6 +8,7 @@ use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
+use librad::git::storage;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
 
@@ -202,6 +203,7 @@ pub fn init_project(
             return Err(error::Error::EntityExists(urn));
         } else {
             let _repo = storage.create_repo(&meta)?;
+            storage.set_rad_self(&owner.urn(), storage::RadSelfSpec::Default)?;
         }
         Ok(meta)
     };
