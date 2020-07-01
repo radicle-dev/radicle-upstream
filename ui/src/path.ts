@@ -1,4 +1,4 @@
-import { parse } from "qs";
+import { parse, stringify } from "qs";
 import regexparam from "regexparam";
 import { ObjectType } from "./source";
 
@@ -35,24 +35,23 @@ export const projectRevisions = (id: string): string =>
 
 export const projectSource = (
   projectId: string,
-  peerId: string | undefined,
-  revision = "",
+  peerId?: string,
+  revision?: string,
   objectType: string = ObjectType.Tree,
-  objectPath = ""
+  objectPath?: string
 ): string => {
-  return (
-    `/projects/${projectId}/source?${
-      peerId ? `peerId=${peerId}&` : ""
-    }revision=${revision}&` +
-    `objectType=${objectType}&` +
-    `objectPath=${objectPath}`
-  );
+  return `/projects/${projectId}/source?${stringify({
+    peerId,
+    revision,
+    objectType,
+    objectPath,
+  })}`;
 };
 
 export const parseProjectSourceLocation = (
   querystring: string,
   defaultRevision: string
-): any => {
+) => {
   const parsed = parse(querystring);
   return {
     currentPeerId: parsed.peerId,
