@@ -240,7 +240,7 @@ pub fn blob(
         .map(|c| CommitHeader::from(&c));
     let (_rest, last) = p.split_last();
 
-    let content = blob_content(path, file.contents, theme);
+    let content = blob_content(path, &file.contents, theme);
 
     Ok(Blob {
         content,
@@ -255,8 +255,8 @@ pub fn blob(
 
 /// Return a [`BlobContent`] given a file path, content and theme. Attempts to perform syntax
 /// highlighting when the theme is `Some`.
-fn blob_content(path: &str, content: Vec<u8>, theme: Option<&Theme>) -> BlobContent {
-    match (std::str::from_utf8(&content), theme) {
+fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobContent {
+    match (std::str::from_utf8(content), theme) {
         (Ok(content), None) => BlobContent::Ascii(content.to_owned()),
         (Ok(content), Some(theme)) => {
             let syntax = std::path::Path::new(path)
