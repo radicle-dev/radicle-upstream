@@ -118,14 +118,14 @@ enum Kind {
 interface FetchCommit extends event.Event<Kind> {
   kind: Kind.FetchCommit;
   projectId: string;
-  userId: string;
+  peerId: string;
   sha1: string;
 }
 
 interface FetchCommits extends event.Event<Kind> {
   kind: Kind.FetchCommits;
   projectId: string;
-  userId: string;
+  peerId: string;
   branch: string;
 }
 
@@ -137,7 +137,7 @@ interface FetchRevisions extends event.Event<Kind> {
 interface FetchObject extends event.Event<Kind> {
   kind: Kind.FetchObject;
   path: string;
-  user: string;
+  peerId: string;
   projectId: string;
   revision: string;
   type: ObjectType;
@@ -177,7 +177,7 @@ const update = (msg: Msg): void => {
       commitStore.loading();
 
       api
-        // TODO(rudolfs): adjust backend api to accept user msg.userId
+        // TODO(rudolfs): adjust backend api to accept peerId msg.peerIdId
         .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
         .then(commit => {
           commitStore.success({
@@ -193,7 +193,7 @@ const update = (msg: Msg): void => {
       commitsStore.loading();
 
       api
-        // TODO(rudolfs): adjust backend api to accept user msg.userId
+        // TODO(rudolfs): adjust backend api to accept peerId msg.peerIdId
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
           query: { branch: msg.branch },
         })

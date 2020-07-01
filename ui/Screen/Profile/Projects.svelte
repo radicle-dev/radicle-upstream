@@ -20,7 +20,7 @@
 
   const select = event => {
     const project = event.detail;
-    push(path.projectSource(project.id, project.default_user.id));
+    push(path.projectSource(project.id, project.defaultPeer.id));
   };
 
   const contextMenuItems = (projectId, session) => {

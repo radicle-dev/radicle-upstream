@@ -27,11 +27,11 @@
 
   import CloneButton from "./CloneButton.svelte";
 
-  const { id, metadata, default_user } = getContext("project");
+  const { id, metadata, defaultPeer } = getContext("project");
 
   export let params = null;
 
-  $: userId = params.userId;
+  $: peerId = params.peerId;
 
   $: ({
     currentRevision,
@@ -39,13 +39,13 @@
     currentObjectPath,
   } = path.parseProjectSourceLocation($querystring, metadata.defaultBranch));
 
-  $: currentUser = userId || default_user.id;
+  $: currentPeerId = peerId || defaultPeer.id;
 
-  const updateRevision = (projectId, revision, user) => {
+  const updateRevision = (projectId, revision, peerId) => {
     push(
       path.projectSource(
         projectId,
-        user,
+        peerId,
         revision,
         currentObjectType,
         currentObjectPath
@@ -73,7 +73,7 @@
 
   $: fetchObject({
     path: currentObjectPath,
-    user: currentUser,
+    peerId: currentPeerId,
     projectId: id,
     revision: currentRevision,
     type: currentObjectType,
@@ -185,10 +185,10 @@
         <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
-            {currentUser}
+            {currentPeerId}
             {currentRevision}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.user.id)} />
+            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.peer.id)} />
         </div>
       </Remote>
 
@@ -197,7 +197,7 @@
         <Folder
           {currentRevision}
           {currentObjectPath}
-          {currentUser}
+          {currentPeerId}
           projectId={project.id}
           toplevel
           name={project.metadata.name} />
@@ -213,7 +213,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                on:click={navigateOnReady(path.projectCommits(project.id, currentUser, currentRevision), commitsStore)}>
+                on:click={navigateOnReady(path.projectCommits(project.id, currentPeerId, currentRevision), commitsStore)}>
                 Commits
               </a>
             </Text>
@@ -239,7 +239,7 @@
           <FileSource
             blob={object}
             path={currentObjectPath}
-            rootPath={path.projectSource(project.id, project.default_user.id)}
+            rootPath={path.projectSource(project.id, project.defaultPeer.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
         {:else if object.path === ''}

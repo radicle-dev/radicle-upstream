@@ -53,7 +53,7 @@ pub struct Project {
     /// High-level statistics about the project
     pub stats: coco::Stats,
     /// The user to which all source browsing queries are scoped to.
-    pub default_user: identity::Identity,
+    pub default_peer: identity::Identity,
 }
 
 /// Construct a Project from its metadata and stats
@@ -64,14 +64,14 @@ where
     /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from(
-        (project, stats, default_user): (project::Project<ST>, coco::Stats, identity::Identity),
+        (project, stats, default_peer): (project::Project<ST>, coco::Stats, identity::Identity),
     ) -> Self {
         let id = project.urn();
 
         Self {
             id: id.clone(),
             shareable_entity_identifier: format!("%{}", id),
-            default_user,
+            default_peer,
             metadata: project.into(),
             registration: None,
             stats,
@@ -89,7 +89,7 @@ pub enum Registration {
 }
 
 /// TODO(rudolfs): implement this for real.
-pub fn get_fake_default_user() -> identity::Identity {
+pub fn get_fake_default_peer() -> identity::Identity {
     let fake_handle = "rudolfs";
     let fake_urn = "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro";
 
@@ -112,5 +112,5 @@ pub fn get(peer: &coco::PeerApi, project_urn: &uri::RadUrn) -> Result<Project, e
     let project = coco::get_project(peer, project_urn)?;
     let stats = coco::with_browser(peer, project_urn, |browser| Ok(browser.get_stats()?))?;
 
-    Ok((project, stats, get_fake_default_user()).into())
+    Ok((project, stats, get_fake_default_peer()).into())
 }

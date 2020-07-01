@@ -29,11 +29,11 @@
 
   const routes = {
     "/projects/:id/": Source,
-    "/projects/:id/:userId/source": Source,
+    "/projects/:id/:peerId/source": Source,
     "/projects/:id/issues": Issues,
     "/projects/:id/issue": Issue,
-    "/projects/:id/:userId/commit/:hash": Commit,
-    "/projects/:id/:userId/commits/:branch": Commits,
+    "/projects/:id/:peerId/commit/:hash": Commit,
+    "/projects/:id/:peerId/commits/:branch": Commits,
     "/projects/:id/revisions": Revisions,
   };
 
@@ -48,23 +48,23 @@
   export let params = null;
   const projectId = params.id;
 
-  const topbarMenuItems = (projectId, defaultUserId) => [
+  const topbarMenuItems = (projectId, defaultPeerId) => [
     {
       icon: Icon.Home,
       title: "Source",
-      href: path.projectSource(projectId, defaultUserId),
+      href: path.projectSource(projectId, defaultPeerId),
       looseActiveStateMatching: true,
     },
     {
       icon: Icon.Issue,
       title: "Issues",
-      href: path.projectIssues(projectId, defaultUserId),
+      href: path.projectIssues(projectId, defaultPeerId),
       looseActiveStateMatching: false,
     },
     {
       icon: Icon.Revision,
       title: "Revisions",
-      href: path.projectRevisions(projectId, defaultUserId),
+      href: path.projectRevisions(projectId, defaultPeerId),
       looseActiveStateMatching: false,
     },
   ];
@@ -119,7 +119,7 @@
     <Topbar style="position: fixed; top: 0;">
       <a
         slot="left"
-        href={path.projectSource(projectId, project.default_user.id)}
+        href={path.projectSource(projectId, project.defaultPeer.id)}
         use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->
         <Breadcrumb
@@ -130,7 +130,7 @@
 
       <div slot="middle">
         <HorizontalMenu
-          items={topbarMenuItems(project.id, project.default_user.id)} />
+          items={topbarMenuItems(project.id, project.defaultPeer.id)} />
       </div>
 
       <div slot="right" style="display: flex">

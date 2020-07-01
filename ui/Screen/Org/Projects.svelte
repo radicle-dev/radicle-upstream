@@ -25,7 +25,7 @@
       push(
         path.projectSource(
           orgProject.maybeProject.id,
-          orgProject.maybeProject.default_user.id
+          orgProject.maybeProject.defaultPeer.id
         )
       );
     }

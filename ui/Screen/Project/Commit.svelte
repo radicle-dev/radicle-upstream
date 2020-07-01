@@ -13,7 +13,7 @@
 
   export let params = null;
   const projectId = params.id;
-  const userId = params.userId;
+  const peerId = params.peerId;
   const commitHash = params.hash;
 
   $: if ($store.status === remote.Status.Error) {
@@ -21,7 +21,7 @@
     notification.error("Could not fetch commit");
   }
 
-  fetchCommit({ projectId, userId, sha1: commitHash });
+  fetchCommit({ projectId, peerId, sha1: commitHash });
 </script>
 
 <style>

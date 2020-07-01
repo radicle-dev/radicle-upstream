@@ -4,13 +4,13 @@
   import { Avatar, Icon } from "../../Primitive";
 
   export let currentRevision = null;
-  export let currentUser = null;
+  export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
   export let style = "";
 
-  $: currentSelectedUser = revisions.find(rev => {
-    return rev.identity.id === currentUser;
+  $: currentSelectedPeer = revisions.find(rev => {
+    return rev.identity.id === currentPeerId;
   });
 
   // Dropdown element. Set by the view.
@@ -32,8 +32,8 @@
   };
 
   const dispatch = createEventDispatcher();
-  const selectRevision = (user, revision) => {
-    dispatch("select", { revision, user });
+  const selectRevision = (peer, revision) => {
+    dispatch("select", { revision, peer });
     hideDropdown();
   };
 </script>
@@ -84,7 +84,7 @@
       0px 0px 0px 1px var(--color-foreground-level-3);
     z-index: 8;
   }
-  .user {
+  .peer {
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
     display: inline-block;
@@ -114,8 +114,8 @@
   hidden={expanded}>
   <div class="selector-avatar">
     <Avatar
-      title={currentSelectedUser.identity.metadata.handle}
-      avatarFallback={currentSelectedUser.identity.avatarFallback}
+      title={currentSelectedPeer.identity.metadata.handle}
+      avatarFallback={currentSelectedPeer.identity.avatarFallback}
       size="small"
       style="--title-color: var(--color-foreground-level-6); justify-content:
       flex-start;"
@@ -130,7 +130,7 @@
 <div class="revision-dropdown-container" bind:this={dropdown}>
   <div class="revision-dropdown" hidden={!expanded} {style}>
     {#each revisions as repo}
-      <div class="user">
+      <div class="peer">
         <Avatar
           title={repo.identity.metadata.handle}
           avatarFallback={repo.identity.avatarFallback}

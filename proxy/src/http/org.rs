@@ -846,7 +846,7 @@ mod test {
             "shareableEntityIdentifier": format!("%{}/{}", org_id.to_string(), project_name.to_string()),
             "maybeProject": {
                 "id": urn.to_string(),
-                "default_user": {
+                "defaultPeer": {
                     "avatarFallback": {
                         "background": {
                             "b": 214,

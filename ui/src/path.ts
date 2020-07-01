@@ -35,13 +35,13 @@ export const projectRevisions = (id: string): string =>
 
 export const projectSource = (
   projectId: string,
-  userId: string,
+  peerId: string,
   revision = "",
   objectType: string = ObjectType.Tree,
   objectPath = ""
 ): string => {
   return (
-    `/projects/${projectId}/${userId}/source?` +
+    `/projects/${projectId}/${peerId}/source?` +
     `revision=${revision}&` +
     `objectType=${objectType}&` +
     `objectPath=${objectPath}`
@@ -60,13 +60,17 @@ export const parseProjectSourceLocation = (
   };
 };
 
-export const projectCommit = (id: string, user: string, hash: string): string =>
-  `/projects/${id}/${user}/commit/${hash}`;
+export const projectCommit = (
+  id: string,
+  peerId: string,
+  hash: string
+): string => `/projects/${id}/${peerId}/commit/${hash}`;
 export const projectCommits = (
   id: string,
-  user: string,
+  peerId: string,
   revision: string
-): string => `/projects/${id}/${user}/commits/${encodeURIComponent(revision)}`;
+): string =>
+  `/projects/${id}/${peerId}/commits/${encodeURIComponent(revision)}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 
