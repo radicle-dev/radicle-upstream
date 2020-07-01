@@ -7,12 +7,14 @@ use warp::{path, reject, Filter, Rejection, Reply};
 
 use crate::coco;
 use crate::http;
+use crate::keystore;
 use crate::registry;
 
 /// Prefixed control filters.
 pub fn routes<R>(
     enable: bool,
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
     owner: http::Shared<Option<coco::User>>,
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -30,8 +32,8 @@ where
         })
         .untuple_one()
         .and(
-            create_project_filter(Arc::clone(&peer), owner)
-                .or(nuke_coco_filter(peer))
+            create_project_filter(Arc::clone(&peer), Arc::clone(&keystore), Arc::clone(&owner))
+                .or(nuke_coco_filter(peer, keystore, owner))
                 .or(nuke_registry_filter(Arc::clone(&registry)))
                 .or(register_user_filter(registry)),
         )
@@ -41,14 +43,15 @@ where
 #[allow(dead_code)]
 fn filters<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
     owner: http::Shared<Option<coco::User>>,
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
 {
-    create_project_filter(Arc::clone(&peer), owner)
-        .or(nuke_coco_filter(peer))
+    create_project_filter(Arc::clone(&peer), Arc::clone(&keystore), Arc::clone(&owner))
+        .or(nuke_coco_filter(peer, keystore, owner))
         .or(nuke_registry_filter(Arc::clone(&registry)))
         .or(register_user_filter(registry))
 }
@@ -56,10 +59,12 @@ where
 /// POST /create-project
 fn create_project_filter(
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
     owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("create-project")
         .and(super::with_peer(peer))
+        .and(super::with_shared(keystore))
         .and(super::with_owner_guard(owner))
         .and(warp::body::json())
         .and_then(handler::create_project)
@@ -78,9 +83,13 @@ fn register_user_filter<R: registry::Client>(
 /// GET /nuke/coco
 fn nuke_coco_filter(
     peer: Arc<Mutex<coco::PeerApi>>,
+    keystore: http::Shared<keystore::Keystorage>,
+    owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_peer(peer))
+        .and(super::with_shared(keystore))
+        .and(super::with_shared(owner))
         .and_then(handler::nuke_coco)
 }
 
@@ -101,24 +110,29 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use librad::keys::SecretKey;
+    use librad::paths;
 
     use crate::coco;
     use crate::error::Error;
     use crate::http;
+    use crate::keystore;
     use crate::project;
     use crate::registry;
 
     /// Create a project from the fixture repo.
     pub async fn create_project(
         peer: Arc<Mutex<coco::PeerApi>>,
+        keystore: http::Shared<keystore::Keystorage>,
         owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
+        let keystore = &*keystore.read().await;
         let peer = &*peer.lock().await;
 
+        let key = keystore.get_librad_key().map_err(Error::from)?;
         let meta = coco::control::replicate_platinum(
             peer,
+            key,
             &owner,
             &input.name,
             &input.description,
@@ -151,7 +165,11 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco(peer: Arc<Mutex<coco::PeerApi>>) -> Result<impl Reply, Rejection> {
+    pub async fn nuke_coco(
+        peer: Arc<Mutex<coco::PeerApi>>,
+        keystore: http::Shared<keystore::Keystorage>,
+        owner: http::Shared<Option<coco::User>>,
+    ) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
@@ -162,14 +180,30 @@ mod handler {
             temp_dir.path().to_path_buf()
         };
 
-        let config = coco::config::default(
-            SecretKey::new(),
-            tmp_path.to_str().expect("path extraction failed"),
-        )?;
-        let mut peer = peer.lock().await;
+        let paths = paths::Paths::from_root(tmp_path).map_err(Error::from)?;
+
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut new_keystore = keystore::Keystorage::new(&paths, pw);
+        let key = new_keystore.init_librad_key().map_err(Error::from)?;
+
+        let config = coco::config::configure(paths, key.clone());
 
         let new_peer = coco::create_peer_api(config).await?;
+
+        let mut peer = peer.lock().await;
+        let mut keystore = keystore.write().await;
+
+        let mut owner = owner.write().await;
+        let new_owner = if let Some(old_owner) = &*owner {
+            let new_owner = coco::init_user(&new_peer, key, old_owner.name())?;
+            Some(coco::verify_user(new_owner).await?)
+        } else {
+            None
+        };
+
+        *owner = new_owner;
         *peer = new_peer;
+        *keystore = new_keystore;
 
         Ok(reply::json(&true))
     }
@@ -189,32 +223,45 @@ mod handler {
     mod test {
         use pretty_assertions::assert_ne;
         use std::sync::Arc;
-        use tokio::sync::Mutex;
+        use tokio::sync::{Mutex, RwLock};
+
+        use librad::paths;
 
         use crate::coco;
         use crate::error;
+        use crate::keystore;
 
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {
             let tmp_dir = tempfile::tempdir()?;
-            let key = librad::keys::SecretKey::new();
+            let paths = paths::Paths::from_root(tmp_dir.path())?;
+
+            let pw = keystore::SecUtf8::from("radicle-upstream");
+            let mut keystore = keystore::Keystorage::new(&paths, pw);
+            let key = keystore.init_librad_key()?;
+
             let config = coco::config::default(key, tmp_dir)?;
             let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
 
-            let (old_paths, old_key, old_peer_id) = {
+            let (old_paths, old_peer_id) = {
                 let peer = peer.lock().await;
-                (peer.paths().clone(), peer.public_key(), peer.peer_id())
+                (peer.paths().clone(), peer.peer_id().clone())
             };
 
-            super::nuke_coco(Arc::clone(&peer)).await.unwrap();
+            super::nuke_coco(
+                Arc::clone(&peer),
+                Arc::new(RwLock::new(keystore)),
+                Arc::new(RwLock::new(None)),
+            )
+            .await
+            .unwrap();
 
-            let (new_paths, new_key, new_peer_id) = {
+            let (new_paths, new_peer_id) = {
                 let peer = peer.lock().await;
-                (peer.paths().clone(), peer.public_key(), peer.peer_id())
+                (peer.paths().clone(), peer.peer_id().clone())
             };
 
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
-            assert_ne!(old_key, new_key);
             assert_ne!(old_peer_id, new_peer_id);
 
             let can_open = {
@@ -258,18 +305,27 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::paths;
+
     use crate::coco;
     use crate::error;
     use crate::http;
+    use crate::keystore;
     use crate::registry;
 
     #[tokio::test]
     async fn create_project_after_nuke() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = librad::keys::SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
+        let paths = paths::Paths::from_root(tmp_dir.path())?;
+
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
+
+        let config = coco::config::default(key.clone(), tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::control::fake_owner(peer.key().clone()).await;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -277,6 +333,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(keystore)),
             Arc::new(RwLock::new(Some(owner))),
             Arc::new(RwLock::new(registry)),
         );
