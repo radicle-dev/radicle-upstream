@@ -106,10 +106,10 @@ mod handler {
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
+        let registry = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::current(Arc::clone(&peer), &store, &*reg)
+        if let Some(identity) = session::current(Arc::clone(&peer), &*registry, &store)
             .await?
             .identity
         {
@@ -296,7 +296,7 @@ mod test {
 
         let store = &*store.read().await;
         let registry = &*registry.read().await;
-        let session = session::current(peer, store, registry).await?;
+        let session = session::current(peer, registry, store).await?;
         let urn = session.identity.expect("failed to set identity").id;
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {

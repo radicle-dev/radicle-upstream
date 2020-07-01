@@ -161,7 +161,7 @@ mod handler {
         let store = store.read().await;
         let reg = registry.read().await;
 
-        let sess = session::current(peer, &store, &*reg).await?;
+        let sess = session::current(peer, &*reg, &store).await?;
 
         Ok(reply::json(&sess))
     }
@@ -284,7 +284,7 @@ mod test {
 
         // Test that we reset the session to default.
         let store = store.read().await;
-        let have = session::current(peer, &*store, &*cache.read().await)
+        let have = session::current(peer, &*cache.read().await, &*store)
             .await
             .unwrap()
             .settings;
