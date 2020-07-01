@@ -177,8 +177,11 @@ const update = (msg: Msg): void => {
       commitStore.loading();
 
       api
-        // TODO(rudolfs): adjust backend api to accept peerId msg.peerIdId
-        .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
+        .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`, {
+          query: {
+            peerId: msg.peerId,
+          },
+        })
         .then(commit => {
           commitStore.success({
             // TODO(cloudhead): Fetch branch from backend.
@@ -193,9 +196,11 @@ const update = (msg: Msg): void => {
       commitsStore.loading();
 
       api
-        // TODO(rudolfs): adjust backend api to accept peerId msg.peerIdId
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
-          query: { branch: msg.branch },
+          query: {
+            peerId: msg.peerId,
+            branch: msg.branch,
+          },
         })
         .then(history => {
           commitsStore.success(groupCommits(history));
@@ -224,7 +229,11 @@ const update = (msg: Msg): void => {
         case ObjectType.Blob:
           api
             .get<SourceObject>(`source/blob/${msg.projectId}`, {
-              query: { revision: msg.revision, path: msg.path },
+              query: {
+                peerId: msg.peerId,
+                revision: msg.revision,
+                path: msg.path,
+              },
             })
             .then(objectStore.success)
             .catch(objectStore.error);
@@ -233,7 +242,11 @@ const update = (msg: Msg): void => {
         case ObjectType.Tree:
           api
             .get<SourceObject>(`source/tree/${msg.projectId}`, {
-              query: { revision: msg.revision, prefix: msg.path },
+              query: {
+                peerId: msg.peerId,
+                revision: msg.revision,
+                prefix: msg.path,
+              },
             })
             .then(objectStore.success)
             .catch(objectStore.error);
@@ -257,13 +270,16 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 
 export const tree = (
   projectId: string,
+  peerId: string,
   revision: string,
   prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
 
   api
-    .get<Tree>(`source/tree/${projectId}`, { query: { revision, prefix } })
+    .get<Tree>(`source/tree/${projectId}`, {
+      query: { peerId: peerId, revision, prefix },
+    })
     .then(treeStore.success)
     .catch(treeStore.error);
 
@@ -272,10 +288,13 @@ export const tree = (
 
 const blob = (
   projectId: string,
+  peerId: string,
   revision: string,
   path: string
 ): Promise<Blob> =>
-  api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
+  api.get<Blob>(`source/blob/${projectId}`, {
+    query: { peerId: peerId, revision, path },
+  });
 
 const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
@@ -304,6 +323,7 @@ export const formatTime = (t: number): string => {
 
 export const readme = (
   projectId: string,
+  peerId: string,
   revision: string
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
@@ -315,7 +335,7 @@ export const readme = (
         const path = findReadme(object as Tree);
 
         if (path) {
-          return blob(projectId, revision, path);
+          return blob(projectId, peerId, revision, path);
         }
       }
 

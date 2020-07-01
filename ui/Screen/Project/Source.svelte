@@ -255,7 +255,9 @@
           </div>
 
           <!-- Readme -->
-          <Remote store={readme(id, currentRevision)} let:data={readme}>
+          <Remote
+            store={readme(id, currentPeerId, currentRevision)}
+            let:data={readme}>
             {#if readme}
               <Readme content={readme.content} path={readme.path} />
             {:else}

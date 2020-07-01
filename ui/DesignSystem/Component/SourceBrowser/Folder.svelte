@@ -26,7 +26,7 @@
     expanded = !expanded;
   };
 
-  $: store = tree(projectId, currentRevision, prefix);
+  $: store = tree(projectId, currentPeerId, currentRevision, prefix);
   $: active = prefix === currentPath;
 </script>
 
