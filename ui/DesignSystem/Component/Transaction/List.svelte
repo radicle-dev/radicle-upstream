@@ -12,7 +12,7 @@
 <style>
   .list {
     background-color: var(--color-foreground-level-1);
-    border-radius: 3px 3px 0 0;
+    border-radius: 7px 7px 0 0;
   }
 </style>
 

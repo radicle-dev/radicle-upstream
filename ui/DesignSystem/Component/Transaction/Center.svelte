@@ -28,6 +28,7 @@
 
 <style>
   .center {
+    background: var(--color-background);
     bottom: 0;
     right: 0;
     border: 1px solid var(--color-foreground-level-2);
@@ -35,9 +36,14 @@
     box-shadow: var(--elevation-medium);
     cursor: pointer;
     min-width: 275px;
+    overflow: hidden;
     position: absolute;
     user-select: none;
     z-index: 900;
+  }
+
+  .center:hover {
+    background: var(--color-foreground-level-1);
   }
 
   .negative {

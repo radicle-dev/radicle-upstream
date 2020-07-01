@@ -13,8 +13,6 @@
 
 <style>
   .summary {
-    background-color: var(--color-background);
-    border-radius: 3px;
     height: 56px;
   }
 
@@ -30,7 +28,7 @@
         {progress}
         {rotate}
         {state}
-        style="margin: 12px 12px 12px 18px;" />
+        style="margin: 12px;" />
       <Text style="align-self: center; width: max-content;" variant="small">
         {text}
       </Text>
