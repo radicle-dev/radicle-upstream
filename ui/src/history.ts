@@ -1,13 +1,13 @@
 import { Readable, derived, get, writable } from "svelte/store";
 
-interface Navigation<Item> {
+interface History<Item> {
   current: Readable<Item>;
   pop(): void;
   push(item: Item): void;
   reset(): void;
 }
 
-export const create = <Item>(initial: Item): Navigation<Item> => {
+export const create = <Item>(initial: Item): History<Item> => {
   const store = writable<Item>(initial);
   const current = derived(store, store => store);
   let history: Item[] = [];

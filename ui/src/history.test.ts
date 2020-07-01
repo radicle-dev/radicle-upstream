@@ -1,16 +1,16 @@
 import { get } from "svelte/store";
 
-import * as navigation from "./navigation";
+import * as history from "./history";
 
 interface Item {
   inner: number;
 }
 
-describe("navigation", () => {
+describe("history", () => {
   describe("initial state", () => {
     it("is the one passed to the constructor", () => {
       const initial = { inner: 12 };
-      const nav = navigation.create<Item>(initial);
+      const nav = history.create<Item>(initial);
 
       expect(get(nav.current)).toEqual(initial);
     });
@@ -20,7 +20,7 @@ describe("navigation", () => {
     it("sets the new state", () => {
       const initial = { inner: -1 };
       const next = { inner: 111 };
-      const nav = navigation.create<Item>(initial);
+      const nav = history.create<Item>(initial);
 
       nav.push(next);
 
@@ -33,7 +33,7 @@ describe("navigation", () => {
       const initial = { inner: -1 };
       const prev = { inner: 3 };
       const next = { inner: 5 };
-      const nav = navigation.create<Item>(initial);
+      const nav = history.create<Item>(initial);
 
       nav.push(prev);
       expect(get(nav.current)).toEqual(prev);
