@@ -72,6 +72,7 @@ interface SourceObject {
 
 interface Blob extends SourceObject {
   binary?: boolean;
+  html?: boolean;
   content: string;
 }
 
@@ -227,7 +228,11 @@ const update = (msg: Msg): void => {
         case ObjectType.Blob:
           api
             .get<SourceObject>(`source/blob/${msg.projectId}`, {
-              query: { revision: msg.revision, path: msg.path },
+              query: {
+                revision: msg.revision,
+                path: msg.path,
+                highlight: true,
+              },
             })
             .then(objectStore.success)
             .catch(objectStore.error);
@@ -276,9 +281,12 @@ export const tree = (
 const blob = (
   projectId: string,
   revision: string,
-  path: string
+  path: string,
+  highlight: boolean
 ): Promise<Blob> =>
-  api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
+  api.get<Blob>(`source/blob/${projectId}`, {
+    query: { revision, path, highlight },
+  });
 
 const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
@@ -318,7 +326,7 @@ export const readme = (
         const path = findReadme(object as Tree);
 
         if (path) {
-          return blob(projectId, revision, path);
+          return blob(projectId, revision, path, false);
         }
       }
 
