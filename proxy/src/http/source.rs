@@ -122,6 +122,7 @@ fn commit_filter(
             )
             .description("Commit for SHA1 found"),
         ))
+        .and(warp::filters::query::query::<CommitQuery>())
         .and_then(handler::commit)
 }
 
@@ -317,28 +318,30 @@ mod handler {
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
         sha1: String,
+        super::CommitQuery { peer_id }: super::CommitQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
+        let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let commit =
-            coco::with_browser(&peer, &urn, |mut browser| coco::commit(&mut browser, &sha1))?;
+        let commit = coco::with_browser(&api, &urn, |mut browser| {
+            coco::commit(&mut browser, peer_id.as_ref(), &sha1)
+        })?;
 
         Ok(reply::json(&commit))
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::CommitsQuery { branch }: super::CommitsQuery,
+        super::CommitsQuery { peer_id, branch }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
+        let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let commits = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::commits(&mut browser, &branch)
+        let commits = coco::with_browser(&api, &urn, |mut browser| {
+            coco::commits(&mut browser, peer_id.as_ref(), &branch)
         })?;
 
         Ok(reply::json(&commits))
@@ -445,7 +448,16 @@ mod handler {
 
 /// Bundled query params to pass to the commits handler.
 #[derive(Debug, Deserialize)]
+pub struct CommitQuery {
+    /// PeerId to scope the query by.
+    peer_id: Option<peer::PeerId>,
+}
+
+/// Bundled query params to pass to the commits handler.
+#[derive(Debug, Deserialize)]
 pub struct CommitsQuery {
+    /// PeerId to scope the query by.
+    peer_id: Option<peer::PeerId>,
     /// Branch to get the commit history for.
     branch: String,
 }
@@ -1062,7 +1074,7 @@ mod test {
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
         let (want, head_commit) = coco::with_browser(&peer, &urn, |mut browser| {
-            let want = coco::commits(&mut browser, branch)?;
+            let want = coco::commits(&mut browser, None, branch)?;
             let head_commit = coco::commit_header(&mut browser, head)?;
             Ok((want, head_commit))
         })?;
