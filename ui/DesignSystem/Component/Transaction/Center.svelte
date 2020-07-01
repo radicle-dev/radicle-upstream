@@ -31,7 +31,7 @@
     bottom: 0;
     right: 0;
     border: 1px solid var(--color-foreground-level-2);
-    border-radius: 4px;
+    border-radius: 8px;
     box-shadow: var(--elevation-medium);
     cursor: pointer;
     min-width: 275px;
