@@ -388,6 +388,7 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
 /// TODO(fintohaps): default branch fall back from Browser
 pub fn tree<'repo>(
     browser: &mut Browser<'repo>,
+    _peer_id: Option<&peer::PeerId>,
     default_branch: &str, // TODO(finto): This should be handled by the broweser surf#115
     maybe_revision: Option<String>,
     maybe_prefix: Option<String>,

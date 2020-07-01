@@ -417,16 +417,26 @@ mod handler {
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::TreeQuery { prefix, revision }: super::TreeQuery,
+        super::TreeQuery {
+            prefix,
+            peer_id,
+            revision,
+        }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
+        let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let project = coco::get_project(&peer, &urn)?;
+        let project = coco::get_project(&api, &urn)?;
         let default_branch = project.default_branch();
-        let tree = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::tree(&mut browser, default_branch, revision, prefix)
+        let tree = coco::with_browser(&api, &urn, |mut browser| {
+            coco::tree(
+                &mut browser,
+                peer_id.as_ref(),
+                default_branch,
+                revision,
+                prefix,
+            )
         })?;
 
         Ok(reply::json(&tree))
@@ -456,6 +466,8 @@ pub struct BlobQuery {
 pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
+    /// PeerId to scope the query by.
+    peer_id: Option<peer::PeerId>,
     /// Revision to query at.
     revision: Option<String>,
 }
@@ -1268,6 +1280,7 @@ mod test {
         let want = coco::with_browser(&peer, &urn, |mut browser| {
             coco::tree(
                 &mut browser,
+                None,
                 default_branch,
                 Some(revision.to_string()),
                 Some(prefix.to_string()),
