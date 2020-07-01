@@ -62,11 +62,14 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub async fn current<R: registry::Client>(
+pub async fn current<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
-    store: &kv::Store,
     registry: &R,
-) -> Result<Session, error::Error> {
+    store: &kv::Store,
+) -> Result<Session, error::Error>
+where
+    R: registry::Client,
+{
     let mut session = get(store, KEY_CURRENT)?;
     session.transaction_deposits = registry::get_deposits();
     session.minimum_transaction_fee = registry::MINIMUM_FEE;
@@ -138,17 +141,6 @@ pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(
     sess.settings = settings;
 
     set(store, KEY_CURRENT, sess)
-}
-
-/// Gets the [`settings::Settings`] in the current session.
-///
-/// # Errors
-///
-/// Errors if access to the session state fails.
-pub fn get_settings(store: &kv::Store) -> Result<settings::Settings, error::Error> {
-    let sess = get(store, KEY_CURRENT)?;
-
-    Ok(sess.settings)
 }
 
 /// Fetches the session for the given item key.

@@ -10,14 +10,19 @@ use warp::{path, Filter, Rejection, Reply};
 use crate::coco;
 use crate::http;
 use crate::identity;
+use crate::registry;
 
 /// Prefixed filters.
-pub fn routes(
+pub fn routes<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
     path("source").and(
-        blob_filter(Arc::clone(&peer), store)
+        blob_filter(Arc::clone(&peer), registry, store)
             .or(branches_filter(Arc::clone(&peer)))
             .or(commit_filter(Arc::clone(&peer)))
             .or(commits_filter(Arc::clone(&peer)))
@@ -30,11 +35,15 @@ pub fn routes(
 
 /// Combination of all source filters.
 #[cfg(test)]
-fn filters(
+fn filters<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    blob_filter(Arc::clone(&peer), store)
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
+    blob_filter(Arc::clone(&peer), registry, store)
         .or(branches_filter(Arc::clone(&peer)))
         .or(commit_filter(Arc::clone(&peer)))
         .or(commits_filter(Arc::clone(&peer)))
@@ -45,13 +54,18 @@ fn filters(
 }
 
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`
-fn blob_filter(
+fn blob_filter<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
+    registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
     path("blob")
         .and(warp::get())
-        .and(super::with_peer(peer))
+        .and(http::with_peer(peer))
+        .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(document::param::<String>(
             "project_id",
@@ -83,7 +97,7 @@ fn branches_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("branches")
         .and(warp::get())
-        .and(super::with_peer(peer))
+        .and(http::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -109,7 +123,7 @@ fn commit_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(warp::get())
-        .and(super::with_peer(peer))
+        .and(http::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -133,7 +147,7 @@ fn commits_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commits")
         .and(warp::get())
-        .and(super::with_peer(peer))
+        .and(http::with_peer(peer))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -267,39 +281,47 @@ fn tree_filter(
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
+    use tokio::sync::Mutex;
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
     use crate::avatar;
     use crate::coco;
     use crate::error::Error;
+    use crate::http;
     use crate::identity;
+    use crate::registry;
     use crate::session;
 
     /// Fetch a [`coco::Blob`].
-    pub async fn blob(
+    pub async fn blob<R>(
         peer: Arc<Mutex<coco::PeerApi>>,
-        store: Arc<RwLock<kv::Store>>,
+        registry: http::Shared<R>,
+        store: http::Shared<kv::Store>,
         project_urn: String,
         super::BlobQuery {
             path,
             revision,
             highlight,
         }: super::BlobQuery,
-    ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        let registry = registry.read().await;
         let store = store.read().await;
-        let settings = session::get_settings(&store)?;
+        let session = session::current(Arc::clone(&peer), &*registry, &store).await?;
+
+        let peer = peer.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let project = coco::get_project(&peer, &urn)?;
+        let project = coco::get_project(&*peer, &urn)?;
         let default_branch = project.default_branch();
         let theme = if let Some(true) = highlight {
-            Some(&settings.appearance.theme)
+            Some(&session.settings.appearance.theme)
         } else {
             None
         };
-        let blob = coco::with_browser(&peer, &urn, |mut browser| {
+        let blob = coco::with_browser(&*peer, &urn, |mut browser| {
             coco::blob(&mut browser, default_branch, revision, &path, theme)
         })?;
 
@@ -796,11 +818,16 @@ mod test {
     use crate::error;
     use crate::http;
     use crate::identity;
+    use crate::registry;
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
@@ -829,7 +856,11 @@ mod test {
             )
         })?;
 
-        let api = super::filters(Arc::clone(&peer), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::clone(&peer),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
 
         // Get ASCII blob.
         let res = request()
@@ -943,6 +974,10 @@ mod test {
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
@@ -960,7 +995,11 @@ mod test {
 
         let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
         let res = request()
             .method("GET")
             .path(&format!("/branches/{}", urn.to_string()))
@@ -980,6 +1019,10 @@ mod test {
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
@@ -1001,7 +1044,11 @@ mod test {
             coco::commit_header(&mut browser, sha1)
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
         let res = request()
             .method("GET")
             .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
@@ -1038,6 +1085,10 @@ mod test {
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
@@ -1061,7 +1112,11 @@ mod test {
             Ok((want, head_commit))
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
         let res = request()
             .method("GET")
             .path(&format!("/commits/{}?branch={}", urn.to_string(), branch))
@@ -1087,10 +1142,18 @@ mod test {
         let key = SecretKey::new();
         let config = coco::config::default(key.clone(), &tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let path = "../fixtures/git-platinum";
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
         let res = request()
             .method("GET")
             .path(&format!("/local-state/{}", path))
@@ -1120,6 +1183,10 @@ mod test {
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
@@ -1165,7 +1232,11 @@ mod test {
                 .collect::<Vec<super::Revision>>()
         };
 
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
         let res = request()
             .method("GET")
             .path(&format!("/revisions/{}", urn))
@@ -1248,6 +1319,10 @@ mod test {
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
@@ -1265,7 +1340,11 @@ mod test {
 
         let want = coco::with_browser(&peer, &urn, |browser| coco::tags(browser))?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
         let res = request()
             .method("GET")
             .path(&format!("/tags/{}", urn.to_string()))
@@ -1287,6 +1366,10 @@ mod test {
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
@@ -1315,7 +1398,11 @@ mod test {
             )
         })?;
 
-        let api = super::filters(Arc::new(Mutex::new(peer)), Arc::new(RwLock::new(store)));
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
         let res = request()
             .method("GET")
             .path(&format!(
