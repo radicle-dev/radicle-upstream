@@ -28,7 +28,7 @@
         {progress}
         {rotate}
         {state}
-        style="margin: 12px;" />
+        style="margin: 11px 12px;" />
       <Text style="align-self: center; width: max-content;" variant="small">
         {text}
       </Text>

@@ -31,7 +31,7 @@
   }
 
   .icon {
-    margin: 12px;
+    margin: 6px 12px 0;
   }
 
   .carret {
