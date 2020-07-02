@@ -63,7 +63,6 @@
     visibility: hidden;
   }
   .selector-avatar {
-    flex: 2.8;
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: 0.5rem;
@@ -73,7 +72,6 @@
     text-overflow: ellipsis;
   }
   .selector-branch {
-    flex: 1;
     text-overflow: ellipsis;
     overflow-x: hidden;
     color: var(--color-foreground-level-6);
