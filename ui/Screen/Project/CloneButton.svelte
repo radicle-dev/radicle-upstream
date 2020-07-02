@@ -62,7 +62,7 @@
   </Text>
   <Copyable {afterCopy}>
     <div class="code-block">
-      <Code style="padding-right: 0.5rem">rad:{projectId}</Code>
+      <Code style="padding-right: 0.5rem">{projectId}</Code>
       <svelte:component this={copyIcon} />
     </div>
   </Copyable>
