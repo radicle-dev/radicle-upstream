@@ -49,14 +49,15 @@ pub async fn create(
     key: keys::SecretKey,
     handle: String,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_user(&*peer.lock().await, key, &handle)?;
-    let user = coco::verify_user(user).await?;
+    let user = coco::init_owner(peer, key, &handle).await?;
+
+    // Set the shared owner
     {
         let mut owner = owner.write().await;
         *owner = Some(user.clone());
     }
+
     let id = user.urn();
-    coco::set_default_owner(&*peer.lock().await, user.clone())?;
     let shareable_entity_identifier = user.into();
     Ok(Identity {
         id: id.clone(),

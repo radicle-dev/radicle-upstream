@@ -1,6 +1,8 @@
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 use async_trait::async_trait;
+use tokio::sync::Mutex;
 
 use librad::keys;
 use librad::meta::entity;
@@ -38,22 +40,38 @@ where
 }
 
 /// Get the default owner for this `PeerApi`.
-pub async fn default_owner(peer: &PeerApi) -> Option<User> {
+#[must_use]
+pub fn default_owner(peer: &PeerApi) -> Option<user::User<entity::Draft>> {
     match peer.storage().default_rad_self() {
-        Ok(user) => {
-            let user = verify_user(user).await.ok()?;
-            Some(user)
-        },
+        Ok(user) => Some(user),
         Err(err) => {
             log::warn!("an error occurred while trying to get 'rad/self': {}", err);
             None
-        }
+        },
     }
 }
 
 /// Get the default owner for this `PeerApi`.
 pub fn set_default_owner(peer: &PeerApi, user: User) -> Result<(), error::Error> {
     Ok(peer.storage().set_default_rad_self(user)?)
+}
+
+/// Initialise a [`User`] and make them the default owner of this `PeerApi`.
+///
+/// # Errors
+///
+///   * Fails to initialise `User`.
+///   * Fails to verify `User`.
+///   * Fails to set the default `rad/self` for this `PeerApi`.
+pub async fn init_owner(
+    peer: Arc<Mutex<PeerApi>>,
+    key: keys::SecretKey,
+    handle: &str,
+) -> Result<User, error::Error> {
+    let user = init_user(&*peer.lock().await, key.clone(), handle)?;
+    let user = verify_user(user).await?;
+    set_default_owner(&*peer.lock().await, user.clone())?;
+    Ok(user)
 }
 
 /// Returns the list of [`project::Project`]s for your peer.
