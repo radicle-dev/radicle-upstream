@@ -5,8 +5,6 @@
   import * as path from "../src/path.ts";
   import { fetch, project as store } from "../src/project.ts";
 
-  import { updateParams } from "../src/source.ts";
-
   import {
     AdditionalActionsDropdown,
     HorizontalMenu,
@@ -32,7 +30,6 @@
   const routes = {
     "/projects/:id/": Source,
     "/projects/:id/source": Source,
-    "/projects/:id/source/*": Source,
     "/projects/:id/issues": Issues,
     "/projects/:id/issue": Issue,
     "/projects/:id/commit/:hash": Commit,
@@ -49,6 +46,7 @@
   };
 
   export let params = null;
+  const projectId = params.id;
 
   const topbarMenuItems = projectId => [
     {
@@ -96,7 +94,7 @@
       icon: Icon.Register,
       event: () =>
         push(
-          path.registerExistingProject(params.id, session.identity.registered)
+          path.registerExistingProject(projectId, session.identity.registered)
         ),
     };
   } else {
@@ -110,10 +108,7 @@
     };
   }
 
-  fetch({ id: params.id });
-
-  // Unset the current selected revision when navigating to a new repository.
-  updateParams({ revision: "" });
+  fetch({ id: projectId });
 </script>
 
 <SidebarLayout
@@ -122,7 +117,7 @@
   dataCy="project-screen">
   <Remote {store} let:data={project} context="project">
     <Topbar style="position: fixed; top: 0;">
-      <a slot="left" href={path.projectSource(params.id)} use:link>
+      <a slot="left" href={path.projectSource(projectId)} use:link>
         <!-- TODO(rudolfs): show whether the project is registered under user or org -->
         <Breadcrumb
           title={project.metadata.name}
@@ -131,7 +126,7 @@
       </a>
 
       <div slot="middle">
-        <HorizontalMenu items={topbarMenuItems(params.id)} />
+        <HorizontalMenu items={topbarMenuItems(project.id)} />
       </div>
 
       <div slot="right" style="display: flex">

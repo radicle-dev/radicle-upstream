@@ -4,9 +4,22 @@
   import { Avatar, Icon } from "../../Primitive";
 
   export let currentRevision = null;
+  export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
   export let style = "";
+
+  let currentSelectedPeer;
+
+  $: if (currentPeerId) {
+    currentSelectedPeer = revisions.find(rev => {
+      return rev.identity.id === currentPeerId;
+    });
+  } else {
+    // The API returns a revision list where the first entry is the default
+    // peer.
+    currentSelectedPeer = revisions[0];
+  }
 
   // Dropdown element. Set by the view.
   let dropdown = null;
@@ -27,8 +40,8 @@
   };
 
   const dispatch = createEventDispatcher();
-  const selectRevision = (_repo, rev) => {
-    dispatch("select", rev);
+  const selectRevision = (peerId, revision) => {
+    dispatch("select", { revision, peerId });
     hideDropdown();
   };
 </script>
@@ -40,6 +53,7 @@
     padding: 0.5rem;
     display: flex;
     cursor: pointer;
+    justify-content: space-between;
   }
   .revision-selector:hover {
     box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
@@ -50,15 +64,21 @@
     visibility: hidden;
   }
   .selector-avatar {
-    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
     margin-right: 0.5rem;
   }
+  .selector-avatar :global(h3) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   .selector-branch {
-    flex: 1;
     text-overflow: ellipsis;
     overflow-x: hidden;
     color: var(--color-foreground-level-6);
     margin-right: 0.5rem;
+    width: 16rem;
+    white-space: nowrap;
   }
   .selector-expand {
     align-self: flex-end;
@@ -78,11 +98,14 @@
       0px 0px 0px 1px var(--color-foreground-level-3);
     z-index: 8;
   }
-  .user {
+  .peer {
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
-    display: inline-block;
     user-select: none;
+  }
+  .peer :global(h3) {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .branch,
   .tag {
@@ -108,10 +131,11 @@
   hidden={expanded}>
   <div class="selector-avatar">
     <Avatar
-      title={revisions[0].identity.metadata.handle}
-      avatarFallback={revisions[0].identity.avatarFallback}
+      title={currentSelectedPeer && currentSelectedPeer.identity.shareableEntityIdentifier}
+      avatarFallback={currentSelectedPeer.identity.avatarFallback}
       size="small"
-      style="--title-color: var(--color-foreground-level-6);"
+      style="--title-color: var(--color-foreground-level-6); justify-content:
+      flex-start;"
       variant="circle" />
   </div>
   <div class="selector-branch">{currentRevision}</div>
@@ -123,12 +147,13 @@
 <div class="revision-dropdown-container" bind:this={dropdown}>
   <div class="revision-dropdown" hidden={!expanded} {style}>
     {#each revisions as repo}
-      <div class="user">
+      <div class="peer">
         <Avatar
-          title={repo.identity.metadata.handle}
+          title={repo.identity.shareableEntityIdentifier}
           avatarFallback={repo.identity.avatarFallback}
           size="small"
-          style="--title-color: var(--color-foreground-level-6);"
+          style="--title-color: var(--color-foreground-level-6);
+          justify-content: flex-start;"
           variant="circle" />
       </div>
       <ul>
@@ -137,7 +162,7 @@
             class="branch"
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
-            on:click|stopPropagation={() => selectRevision(repo.identity, branch)}>
+            on:click|stopPropagation={() => selectRevision(repo.identity.id, branch)}>
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
@@ -149,7 +174,7 @@
             class="tag"
             data-repo-handle={repo.identity.metadata.handle}
             data-tag={tag}
-            on:click|stopPropagation={() => selectRevision(repo.identity, tag)}>
+            on:click|stopPropagation={() => selectRevision(repo.identity.id, tag)}>
             <Icon.Commit
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
