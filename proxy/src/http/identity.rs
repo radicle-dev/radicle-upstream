@@ -284,6 +284,7 @@ mod test {
         ));
         let api = super::filters(
             Arc::clone(&peer),
+            Arc::new(RwLock::new(None)),
             Arc::new(RwLock::new(keystore)),
             Arc::clone(&registry),
             Arc::clone(&store),
@@ -300,8 +301,14 @@ mod test {
 
         let store = &*store.read().await;
         let registry = &*registry.read().await;
-        let session = session::current(peer, store, registry).await?;
+        let session = session::current(Arc::clone(&peer), store, registry).await?;
         let urn = session.identity.expect("failed to set identity").id;
+
+        // Assert that we set the default owner ans it's the same one as the session
+        {
+            let peer = &*peer.lock().await;
+            assert_eq!(coco::default_owner(peer), Some(coco::get_user(peer, &urn)?));
+        }
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
             let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
@@ -347,6 +354,7 @@ mod test {
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(None)),
             Arc::new(RwLock::new(keystore)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
