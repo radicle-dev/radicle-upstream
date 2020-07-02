@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::env;
 
 use librad::keys;
@@ -6,8 +7,20 @@ use librad::meta::project;
 use librad::net::peer::PeerApi;
 use radicle_surf::vcs::git::git2;
 
+use crate::coco::config;
 use crate::coco::peer::{init_project, User};
 use crate::error;
+
+/// Deletes the local git repsoitory coco uses to keep its state.
+///
+/// # Errors
+///
+/// Will error in case the call to the [`std::fs::remove_dir_all`] fails.
+pub fn nuke_monorepo() -> Result<(), std::io::Error> {
+    let paths =
+        librad::paths::Paths::try_from(config::Paths::default()).expect("unable to create paths");
+    std::fs::remove_dir_all(paths.git_dir())
+}
 
 /// Creates a small set of projects in your peer.
 ///
