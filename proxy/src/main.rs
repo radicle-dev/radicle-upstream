@@ -68,7 +68,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let config = coco::config::configure(paths, key.clone());
     let peer = coco::create_peer_api(config).await?;
-    let owner = coco::default_owner(&peer).await;
+    let owner = match coco::default_owner(&peer) {
+        Some(owner) => Some(coco::verify_user(owner).await?),
+        None => None,
+    };
 
     if args.test {
         // TODO(finto): Maybe we should set up the default owner here for the test case.
