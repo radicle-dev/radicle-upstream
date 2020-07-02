@@ -409,15 +409,15 @@ mod test {
 
         let config = coco::config::configure(paths, key.clone());
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let peer = Arc::new(Mutex::new(peer));
+
+        let owner = coco::init_owner(Arc::clone(&peer), key, "cloudhead").await?;
         let owner = Arc::new(RwLock::new(Some(owner)));
 
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
 
-        let peer = Arc::new(Mutex::new(peer));
         let api = super::filters(
             Arc::clone(&peer),
             Arc::new(RwLock::new(keystore)),
@@ -520,15 +520,15 @@ mod test {
         let config = coco::config::configure(paths, key.clone());
         let peer = coco::create_peer_api(config).await?;
 
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let peer = Arc::new(Mutex::new(peer));
+        let owner = coco::init_owner(Arc::clone(&peer), key.clone(), "cloudhead").await?;
 
-        coco::control::setup_fixtures(&peer, key, &owner)?;
+        coco::control::setup_fixtures(&*peer.lock().await, key, &owner)?;
 
-        let projects = coco::list_projects(&peer)?;
+        let projects = coco::list_projects(&*peer.lock().await)?;
 
         let api = super::filters(
-            Arc::new(Mutex::new(peer)),
+            Arc::clone(&peer),
             Arc::new(RwLock::new(keystore)),
             Arc::new(RwLock::new(Some(owner))),
         );

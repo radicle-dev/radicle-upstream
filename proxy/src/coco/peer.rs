@@ -10,7 +10,6 @@ use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
-use librad::git::storage;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
 
@@ -52,6 +51,10 @@ pub fn default_owner(peer: &PeerApi) -> Option<user::User<entity::Draft>> {
 }
 
 /// Get the default owner for this `PeerApi`.
+///
+/// # Errors
+///
+///   * Fails to set the default `rad/self` for this `PeerApi`.
 pub fn set_default_owner(peer: &PeerApi, user: User) -> Result<(), error::Error> {
     Ok(peer.storage().set_default_rad_self(user)?)
 }
@@ -78,16 +81,24 @@ pub async fn init_owner(
 ///
 /// # Errors
 ///
-/// The function will error if:
 ///   * The retrieving the project entities from the store fails.
 #[allow(
     clippy::match_wildcard_for_single_variants,
     clippy::wildcard_enum_match_arm
 )]
 pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
-    let storage = peer.storage();
+    let storage = peer.storage().reopen()?;
+    let owner = storage.default_rad_self()?;
     let project_meta = storage.all_metadata()?.flat_map(|entity| {
-        entity.ok()?.try_map(|info| match info {
+        let entity = entity.ok()?;
+        let rad_self = storage.get_rad_self(&entity.urn()).ok()?;
+
+        // We only list projects that are owned by the peer
+        if rad_self.urn() != owner.urn() {
+            return None;
+        }
+
+        entity.try_map(|info| match info {
             entity::data::EntityInfo::Project(info) => Some(info),
             _ => None,
         })
@@ -106,7 +117,6 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
 ///
 /// # Errors
 ///
-/// The function will error if:
 ///   * The retrieving the project entities from the store fails.
 #[allow(
     clippy::match_wildcard_for_single_variants,
@@ -129,9 +139,8 @@ pub fn list_users(peer: &PeerApi) -> Result<Vec<user::User<entity::Draft>>, erro
 ///
 /// # Errors
 ///
-/// `get_project` fails if:
-///     * Parsing the `project_urn` fails.
-///     * Resolving the project fails.
+///   * Parsing the `project_urn` fails.
+///   * Resolving the project fails.
 pub fn get_project(
     peer: &PeerApi,
     urn: &RadUrn,
@@ -220,8 +229,8 @@ pub fn init_project(
         if storage.has_urn(&urn)? {
             return Err(error::Error::EntityExists(urn));
         } else {
-            let _repo = storage.create_repo(&meta)?;
-            storage.set_rad_self(&owner.urn(), storage::RadSelfSpec::Default)?;
+            let repo = storage.create_repo(&meta)?;
+            repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
         }
         Ok(meta)
     };
@@ -371,6 +380,10 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
+    use std::sync::Arc;
+
+    use tokio::sync::Mutex;
+
     use librad::keys::SecretKey;
 
     use crate::coco::config;
@@ -483,15 +496,32 @@ mod test {
     #[tokio::test]
     async fn test_list_projects() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let repo_path = tmp_dir.path().join("radicle");
+
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
         let peer = super::create_peer_api(config).await?;
+        let peer = Arc::new(Mutex::new(peer));
 
-        let user = super::init_user(&peer, key.clone(), "cloudhead")?;
-        let user = super::verify_user(user).await?;
-        control::setup_fixtures(&peer, key, &user)?;
+        let user = super::init_owner(Arc::clone(&peer), key.clone(), "cloudhead").await?;
 
-        let projects = super::list_projects(&peer)?;
+        let peer = &*peer.lock().await;
+
+        control::setup_fixtures(peer, key.clone(), &user)?;
+
+        let kalt = super::init_user(peer, key.clone(), "kalt")?;
+        let kalt = super::verify_user(kalt).await?;
+        let fakie = super::init_project(
+            peer,
+            key,
+            &kalt,
+            &repo_path,
+            "fakie-nose-kickflip-backside-180-to-handplant",
+            "rad git tricks",
+            "dope",
+        )?;
+
+        let projects = super::list_projects(peer)?;
         let mut project_names = projects
             .into_iter()
             .map(|project| project.metadata.name)
@@ -502,6 +532,8 @@ mod test {
             project_names,
             vec!["Monadic", "monokel", "open source coin", "radicle"]
         );
+
+        assert!(!project_names.contains(&fakie.name().to_string()));
 
         Ok(())
     }
