@@ -887,10 +887,11 @@ mod test {
         let revision = "master";
         let default_branch = platinum_project.default_branch();
         let path = "text/arrows.txt";
+        let peer_id = (*peer.lock().await).peer_id().clone();
         let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
             coco::blob(
                 &mut browser,
-                None,
+                Some(&peer_id),
                 default_branch,
                 Some(revision.to_string()),
                 path,
