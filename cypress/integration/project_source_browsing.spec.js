@@ -198,7 +198,7 @@ context("source code browsing", () => {
     });
 
     context("when switching between projects", () => {
-      it("opens the selected project on the default branch", () => {
+      it("opens the selected project on the default repository and branch", () => {
         cy.createProjectWithFixture("gold");
         cy.pick("revision-selector").click();
         cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
