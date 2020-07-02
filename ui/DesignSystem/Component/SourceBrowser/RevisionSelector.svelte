@@ -152,7 +152,8 @@
           title={repo.identity.metadata.handle}
           avatarFallback={repo.identity.avatarFallback}
           size="small"
-          style="--title-color: var(--color-foreground-level-6);"
+          style="--title-color: var(--color-foreground-level-6);
+          justify-content: flex-start;"
           variant="circle" />
       </div>
       <ul>
