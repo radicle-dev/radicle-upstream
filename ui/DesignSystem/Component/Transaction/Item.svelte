@@ -15,14 +15,15 @@
 <style>
   .item {
     align-items: center;
-    border-bottom: 1px solid var(--color-foreground-level-3);
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-foreground-level-2);
     display: flex;
     justify-content: space-between;
-    height: 64px;
+    height: 56px;
   }
 
   .item:hover {
-    background-color: var(--color-foreground-level-2);
+    background-color: var(--color-foreground-level-1);
   }
 
   .info {
@@ -30,7 +31,7 @@
   }
 
   .icon {
-    margin: 14px 14px 14px 18px;
+    margin: 6px 12px 0;
   }
 
   .carret {

@@ -858,7 +858,7 @@ mod test {
                   "commits": 14,
                   "contributors": 4
                 }
-            }
+            },
         }]);
 
         http::test::assert_response(&res, StatusCode::OK, |have| {

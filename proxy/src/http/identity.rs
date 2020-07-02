@@ -110,10 +110,10 @@ mod handler {
         store: Arc<RwLock<kv::Store>>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
+        let registry = registry.read().await;
         let store = store.read().await;
 
-        if let Some(identity) = session::current(Arc::clone(&peer), &store, &*reg)
+        if let Some(identity) = session::current(Arc::clone(&peer), &*registry, &store)
             .await?
             .identity
         {
@@ -301,7 +301,7 @@ mod test {
 
         let store = &*store.read().await;
         let registry = &*registry.read().await;
-        let session = session::current(Arc::clone(&peer), store, registry).await?;
+        let session = session::current(Arc::clone(&peer), registry, store).await?;
         let urn = session.identity.expect("failed to set identity").id;
 
         // Assert that we set the default owner ans it's the same one as the session

@@ -121,7 +121,8 @@
     "prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "prettier:check": "yarn prettier --check",
     "prettier:write": "yarn prettier --write",
-    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts"
+    "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts",
+    "nuke": "cd proxy && cargo run --bin nuke"
   },
   "dependencies": {
     "@babel/runtime": "^7.9.6",

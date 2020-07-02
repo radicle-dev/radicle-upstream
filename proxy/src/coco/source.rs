@@ -4,12 +4,26 @@ use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
+use librad::peer;
 use radicle_surf::{
     diff, file_system,
     vcs::git::{self, git2, BranchName, Browser},
 };
 
+use syntect::easy::HighlightLines;
+use syntect::highlighting::ThemeSet;
+use syntect::parsing::SyntaxSet;
+use syntect::util::LinesWithEndings;
+
 use crate::error;
+use crate::session::settings::Theme;
+
+lazy_static::lazy_static! {
+    // The syntax set is slow to load (~30ms), so we make sure to only load it once.
+    // It _will_ affect the latency of the first request that uses syntax highlighting,
+    // but this is acceptable for now.
+    static ref SYNTAX_SET: SyntaxSet = SyntaxSet::load_defaults_newlines();
+}
 
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
@@ -160,6 +174,12 @@ impl Blob {
     pub fn is_binary(&self) -> bool {
         self.content == BlobContent::Binary
     }
+
+    /// Indicates if the content of the [`Blob`] is HTML.
+    #[must_use]
+    pub fn is_html(&self) -> bool {
+        matches!(self.content, BlobContent::Html(_))
+    }
 }
 
 /// Variants of blob content.
@@ -167,6 +187,8 @@ impl Blob {
 pub enum BlobContent {
     /// Content is ASCII and can be passed as a string.
     Ascii(String),
+    /// Content is syntax-highlighted HTML.
+    Html(String),
     /// Content is binary and needs special treatment.
     Binary,
 }
@@ -197,9 +219,11 @@ pub struct TreeEntry {
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob(
     browser: &mut Browser,
+    _peer_id: Option<&peer::PeerId>,
     default_branch: &str,
     maybe_revision: Option<String>,
     path: &str,
+    theme: Option<&Theme>,
 ) -> Result<Blob, error::Error> {
     browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
 
@@ -217,10 +241,8 @@ pub fn blob(
         .last_commit(commit_path)?
         .map(|c| CommitHeader::from(&c));
     let (_rest, last) = p.split_last();
-    let content = match std::str::from_utf8(&file.contents) {
-        Ok(content) => BlobContent::Ascii(content.to_string()),
-        Err(_) => BlobContent::Binary,
-    };
+
+    let content = blob_content(path, &file.contents, theme);
 
     Ok(Blob {
         content,
@@ -231,6 +253,45 @@ pub fn blob(
         },
         path: path.to_string(),
     })
+}
+
+/// Return a [`BlobContent`] given a file path, content and theme. Attempts to perform syntax
+/// highlighting when the theme is `Some`.
+fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobContent {
+    match (std::str::from_utf8(content), theme) {
+        (Ok(content), None) => BlobContent::Ascii(content.to_owned()),
+        (Ok(content), Some(theme)) => {
+            let syntax = std::path::Path::new(path)
+                .extension()
+                .and_then(std::ffi::OsStr::to_str)
+                .and_then(|ext| SYNTAX_SET.find_syntax_by_extension(ext));
+
+            let ts = ThemeSet::load_defaults();
+            let theme = match theme {
+                Theme::Light => ts.themes.get("base16-ocean.light"),
+                Theme::Dark => ts.themes.get("base16-ocean.dark"),
+            };
+
+            match (syntax, theme) {
+                (Some(syntax), Some(theme)) => {
+                    let mut highlighter = HighlightLines::new(syntax, theme);
+                    let mut html = String::with_capacity(content.len());
+
+                    for line in LinesWithEndings::from(content) {
+                        let regions = highlighter.highlight(line, &SYNTAX_SET);
+                        syntect::html::append_highlighted_html_for_styled_line(
+                            &regions[..],
+                            syntect::html::IncludeBackground::No,
+                            &mut html,
+                        );
+                    }
+                    BlobContent::Html(html)
+                },
+                _ => BlobContent::Ascii(content.to_owned()),
+            }
+        },
+        (Err(_), _) => BlobContent::Binary,
+    }
 }
 
 /// Given a project id to a repo returns the list of branches.
@@ -352,6 +413,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commits<'repo>(
     browser: &mut Browser<'repo>,
+    _peer_id: Option<&peer::PeerId>,
     branch: &str,
 ) -> Result<Vec<CommitHeader>, error::Error> {
     browser.branch(BranchName::new(branch))?;
@@ -386,6 +448,7 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
 /// TODO(fintohaps): default branch fall back from Browser
 pub fn tree<'repo>(
     browser: &mut Browser<'repo>,
+    _peer_id: Option<&peer::PeerId>,
     default_branch: &str, // TODO(finto): This should be handled by the broweser surf#115
     maybe_revision: Option<String>,
     maybe_prefix: Option<String>,

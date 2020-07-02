@@ -40,8 +40,7 @@
     border-radius: 4px;
     background: var(--color-background);
     border: 2px solid var(--color-foreground-level-3);
-    /* TODO(julien): Replace with `elevation-medium`. */
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.12), 0px 0px 1px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--elevation-medium);
     padding: 1rem;
   }
   .clone-dropdown .code-block {
@@ -62,7 +61,7 @@
   </Text>
   <Copyable {afterCopy}>
     <div class="code-block">
-      <Code style="padding-right: 0.5rem">rad:{projectId}</Code>
+      <Code style="padding-right: 0.5rem">{projectId}</Code>
       <svelte:component this={copyIcon} />
     </div>
   </Copyable>

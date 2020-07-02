@@ -1,13 +1,11 @@
 <script>
   import { getContext } from "svelte";
-  import { push, location } from "svelte-spa-router";
+  import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import {
-    currentPath,
-    currentRevision,
     fetchCommits,
     fetchRevisions,
     commits as commitsStore,
@@ -15,7 +13,7 @@
     ObjectType,
     readme,
     revisions as revisionsStore,
-    updateParams,
+    fetchObject,
   } from "../../src/source.ts";
 
   import { Code, Flex, Icon, Text, Title } from "../../DesignSystem/Primitive";
@@ -29,7 +27,26 @@
 
   import CloneButton from "./CloneButton.svelte";
 
-  export const params = null;
+  const { id, metadata } = getContext("project");
+
+  $: ({
+    currentPeerId,
+    currentRevision,
+    currentObjectType,
+    currentObjectPath,
+  } = path.parseProjectSourceLocation($querystring, metadata.defaultBranch));
+
+  const updateRevision = (projectId, revision, peerId) => {
+    push(
+      path.projectSource(
+        projectId,
+        peerId,
+        revision,
+        currentObjectType,
+        currentObjectPath
+      )
+    );
+  };
 
   const navigateOnReady = (path, store) => {
     const unsubscribe = store.subscribe(state => {
@@ -38,15 +55,6 @@
       }
     });
     unsubscribe();
-  };
-
-  const updateRevision = (projectId, revision) => {
-    updateParams({
-      path: path.extractProjectSourceObjectPath($location),
-      projectId: projectId,
-      revision: revision,
-      type: path.extractProjectSourceObjectType($location),
-    });
   };
 
   let copyIcon = Icon.Copy;
@@ -58,18 +66,15 @@
     }, 1000);
   };
 
-  const { id, metadata } = getContext("project");
-
-  const getRevision = current =>
-    current !== "" ? current : metadata.defaultBranch;
-
-  $: updateParams({
-    path: path.extractProjectSourceObjectPath($location),
+  $: fetchObject({
+    path: currentObjectPath,
+    peerId: currentPeerId,
     projectId: id,
-    revision: getRevision($currentRevision),
-    type: path.extractProjectSourceObjectType($location),
+    revision: currentRevision,
+    type: currentObjectType,
   });
-  $: fetchCommits({ projectId: id, branch: getRevision($currentRevision) });
+
+  $: fetchCommits({ projectId: id, branch: currentRevision });
 
   fetchRevisions({ projectId: id });
 </script>
@@ -175,15 +180,22 @@
         <div class="revision-selector-wrapper">
           <RevisionSelector
             style="height: 100%;"
-            currentRevision={getRevision($currentRevision)}
+            {currentPeerId}
+            {currentRevision}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail)} />
+            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.peerId)} />
         </div>
       </Remote>
 
       <!-- Tree -->
       <div class="source-tree" data-cy="source-tree">
-        <Folder projectId={project.id} toplevel name={project.metadata.name} />
+        <Folder
+          {currentRevision}
+          {currentObjectPath}
+          {currentPeerId}
+          projectId={project.id}
+          toplevel
+          name={project.metadata.name} />
       </div>
     </div>
 
@@ -196,7 +208,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                on:click={navigateOnReady(path.projectCommits(id, $currentRevision), commitsStore)}>
+                on:click={navigateOnReady(path.projectCommits(project.id, currentPeerId, currentRevision), commitsStore)}>
                 Commits
               </a>
             </Text>
@@ -221,7 +233,7 @@
         {#if object.info.objectType === ObjectType.Blob}
           <FileSource
             blob={object}
-            path={$currentPath}
+            path={currentObjectPath}
             rootPath={path.projectSource(project.id)}
             projectName={project.metadata.name}
             projectId={project.id} />
@@ -239,7 +251,7 @@
 
           <!-- Readme -->
           <Remote
-            store={readme(id, getRevision($currentRevision))}
+            store={readme(id, currentPeerId, currentRevision)}
             let:data={readme}>
             {#if readme}
               <Readme content={readme.content} path={readme.path} />

@@ -38,8 +38,8 @@ Cypress.Commands.add("pick", (...ids) => {
 Cypress.Commands.add(
   "createProjectWithFixture",
   async (
-    name = "Monadic",
-    description = "Monadic is currently supporting radicle.",
+    name = "platinum",
+    description = "Best project ever.",
     defaultBranch = "master"
   ) =>
     await fetch("http://localhost:8080/v1/control/create-project", {

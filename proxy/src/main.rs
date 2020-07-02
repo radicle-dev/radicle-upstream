@@ -4,6 +4,7 @@ use librad::paths;
 use radicle_keystore::pinentry::SecUtf8;
 
 use proxy::coco;
+use proxy::config;
 use proxy::env;
 use proxy::http;
 use proxy::keystore;
@@ -66,25 +67,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut keystore = keystore::Keystorage::new(&paths, pw);
     let key = keystore.init_librad_key()?;
 
-    let config = coco::config::configure(paths, key.clone());
-    let peer = coco::create_peer_api(config).await?;
-    let owner = match coco::default_owner(&peer) {
-        Some(owner) => Some(coco::verify_user(owner).await?),
-        None => None,
+    let (peer_api, owner) = {
+        let config = coco::config::configure(paths, key.clone());
+        let peer_api = coco::create_peer_api(config).await?;
+        let owner = match coco::default_owner(&peer_api) {
+            Some(owner) => Some(coco::verify_user(owner).await?),
+            None => None,
+        };
+
+        (peer_api, owner)
     };
 
     if args.test {
         // TODO(finto): Maybe we should set up the default owner here for the test case.
-        let owner = coco::verify_user(coco::init_user(&peer, key.clone(), "cloudhead")?).await?;
-        coco::control::setup_fixtures(&peer, key, &owner).expect("fixture creation failed");
+        let owner =
+            coco::verify_user(coco::init_user(&peer_api, key.clone(), "cloudhead")?).await?;
+        coco::control::setup_fixtures(&peer_api, key, &owner).expect("fixture creation failed");
     }
 
     let store = {
         let store_path = if args.test {
             temp_dir.path().join("store")
         } else {
-            let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
-            dir.data_dir().join("store")
+            let dirs = config::dirs();
+            dirs.data_dir().join("store")
         };
         let config = kv::Config::new(store_path).flush_every_ms(100);
 
@@ -94,7 +100,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(peer, owner, keystore, cache.clone(), store, args.test);
+    let api = http::api(peer_api, owner, keystore, cache.clone(), store, args.test);
 
     tokio::spawn(async move {
         cache.run().await.expect("cacher run failed");
