@@ -53,6 +53,7 @@
     padding: 0.5rem;
     display: flex;
     cursor: pointer;
+    justify-content: space-between;
   }
   .revision-selector:hover {
     box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
@@ -76,7 +77,6 @@
     overflow-x: hidden;
     color: var(--color-foreground-level-6);
     margin-right: 0.5rem;
-    text-align: right;
   }
   .selector-expand {
     align-self: flex-end;
