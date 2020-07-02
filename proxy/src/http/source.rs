@@ -1150,8 +1150,9 @@ mod test {
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
+        let peer_id = &peer.peer_id().clone();
         let (want, head_commit) = coco::with_browser(&peer, &urn, |mut browser| {
-            let want = coco::commits(&mut browser, None, branch)?;
+            let want = coco::commits(&mut browser, Some(peer_id), branch)?;
             let head_commit = coco::commit_header(&mut browser, head)?;
             Ok((want, head_commit))
         })?;
@@ -1448,10 +1449,11 @@ mod test {
         let prefix = "src";
 
         let default_branch = platinum_project.default_branch();
+        let peer_id = &peer.peer_id();
         let want = coco::with_browser(&peer, &urn, |mut browser| {
             coco::tree(
                 &mut browser,
-                None,
+                Some(peer_id),
                 default_branch,
                 Some(revision.to_string()),
                 Some(prefix.to_string()),
