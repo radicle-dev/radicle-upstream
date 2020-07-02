@@ -7,6 +7,8 @@ use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use librad::peer;
+
 use crate::coco;
 use crate::http;
 use crate::identity;
@@ -295,12 +297,13 @@ mod handler {
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob<R>(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         registry: http::Shared<R>,
         store: http::Shared<kv::Store>,
         project_urn: String,
         super::BlobQuery {
             path,
+            peer_id,
             revision,
             highlight,
         }: super::BlobQuery,
@@ -310,19 +313,26 @@ mod handler {
     {
         let registry = registry.read().await;
         let store = store.read().await;
-        let session = session::current(Arc::clone(&peer), &*registry, &store).await?;
+        let session = session::current(Arc::clone(&api), &*registry, &store).await?;
 
-        let peer = peer.lock().await;
+        let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let project = coco::get_project(&*peer, &urn)?;
+        let project = coco::get_project(&*api, &urn)?;
         let default_branch = project.default_branch();
         let theme = if let Some(true) = highlight {
             Some(&session.settings.appearance.theme)
         } else {
             None
         };
-        let blob = coco::with_browser(&*peer, &urn, |mut browser| {
-            coco::blob(&mut browser, default_branch, revision, &path, theme)
+        let blob = coco::with_browser(&*api, &urn, |mut browser| {
+            coco::blob(
+                &mut browser,
+                peer_id.as_ref(),
+                default_branch,
+                revision,
+                &path,
+                theme,
+            )
         })?;
 
         Ok(reply::json(&blob))
@@ -342,28 +352,28 @@ mod handler {
 
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
+        let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let commit =
-            coco::with_browser(&peer, &urn, |mut browser| coco::commit(&mut browser, &sha1))?;
+            coco::with_browser(&api, &urn, |mut browser| coco::commit(&mut browser, &sha1))?;
 
         Ok(reply::json(&commit))
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::CommitsQuery { branch }: super::CommitsQuery,
+        super::CommitsQuery { peer_id, branch }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
+        let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let commits = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::commits(&mut browser, &branch)
+        let commits = coco::with_browser(&api, &urn, |mut browser| {
+            coco::commits(&mut browser, peer_id.as_ref(), &branch)
         })?;
 
         Ok(reply::json(&commits))
@@ -387,30 +397,46 @@ mod handler {
             Ok((coco::branches(browser)?, coco::tags(browser)?))
         })?;
 
-        let revs = ["cloudhead", "rudolfs", "xla"]
-            .iter()
-            .map(|handle| super::Revision {
-                branches: branches.clone(),
-                tags: tags.clone(),
-                identity: identity::Identity {
-                    // TODO(finto): Get the right URN
-                    id: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
+        // TODO(rudolfs): the order of the returned peers/revisions determines the default peer in
+        // the repository selector in the UI. Make sure the list always returns the default peer
+        // first.
+        let revs = [
+            (
+                "cloudhead",
+                "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+            ),
+            (
+                "rudolfs",
+                "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
+            ),
+            (
+                "xla",
+                "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
+            ),
+        ]
+        .iter()
+        .map(|(fake_handle, fake_peer_urn)| super::Revision {
+            branches: branches.clone(),
+            tags: tags.clone(),
+            identity: identity::Identity {
+                // TODO(finto): Get the right URN
+                id: fake_peer_urn
+                    .parse()
+                    .expect("failed to parse hardcoded URN"),
+                metadata: identity::Metadata {
+                    handle: (*fake_handle).to_string(),
+                },
+                avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
+                registered: None,
+                shareable_entity_identifier: identity::SharedIdentifier {
+                    handle: (*fake_handle).to_string(),
+                    urn: fake_peer_urn
                         .parse()
                         .expect("failed to parse hardcoded URN"),
-                    metadata: identity::Metadata {
-                        handle: (*handle).to_string(),
-                    },
-                    avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
-                    registered: None,
-                    shareable_entity_identifier: identity::SharedIdentifier {
-                        handle: (*handle).to_string(),
-                        urn: "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try"
-                            .parse()
-                            .expect("failed to parse hardcoded URN"),
-                    },
                 },
-            })
-            .collect::<Vec<super::Revision>>();
+            },
+        })
+        .collect::<Vec<super::Revision>>();
 
         Ok(reply::json(&revs))
     }
@@ -429,16 +455,26 @@ mod handler {
 
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::TreeQuery { prefix, revision }: super::TreeQuery,
+        super::TreeQuery {
+            prefix,
+            peer_id,
+            revision,
+        }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
+        let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let project = coco::get_project(&peer, &urn)?;
+        let project = coco::get_project(&api, &urn)?;
         let default_branch = project.default_branch();
-        let tree = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::tree(&mut browser, default_branch, revision, prefix)
+        let tree = coco::with_browser(&api, &urn, |mut browser| {
+            coco::tree(
+                &mut browser,
+                peer_id.as_ref(),
+                default_branch,
+                revision,
+                prefix,
+            )
         })?;
 
         Ok(reply::json(&tree))
@@ -448,6 +484,8 @@ mod handler {
 /// Bundled query params to pass to the commits handler.
 #[derive(Debug, Deserialize)]
 pub struct CommitsQuery {
+    /// PeerId to scope the query by.
+    peer_id: Option<peer::PeerId>,
     /// Branch to get the commit history for.
     branch: String,
 }
@@ -457,6 +495,8 @@ pub struct CommitsQuery {
 pub struct BlobQuery {
     /// Location of the blob in tree.
     path: String,
+    /// PeerId to scope the query by.
+    peer_id: Option<peer::PeerId>,
     /// Revision to use for the history of the repo.
     revision: Option<String>,
     /// Whether or not to syntax highlight the blob.
@@ -468,6 +508,8 @@ pub struct BlobQuery {
 pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
+    /// PeerId to scope the query by.
+    peer_id: Option<peer::PeerId>,
     /// Revision to query at.
     revision: Option<String>,
 }
@@ -811,7 +853,6 @@ mod test {
     use warp::test::request;
 
     use librad::keys::SecretKey;
-    use librad::uri::RadUrn;
 
     use crate::avatar;
     use crate::coco;
@@ -846,9 +887,11 @@ mod test {
         let revision = "master";
         let default_branch = platinum_project.default_branch();
         let path = "text/arrows.txt";
+        let peer_id = (*peer.lock().await).peer_id().clone();
         let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
             coco::blob(
                 &mut browser,
+                Some(&peer_id),
                 default_branch,
                 Some(revision.to_string()),
                 path,
@@ -928,6 +971,7 @@ mod test {
         let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
             coco::blob(
                 browser,
+                None,
                 default_branch,
                 Some(revision.to_string()),
                 path,
@@ -1106,8 +1150,9 @@ mod test {
 
         let branch = "master";
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
+        let peer_id = &peer.peer_id().clone();
         let (want, head_commit) = coco::with_browser(&peer, &urn, |mut browser| {
-            let want = coco::commits(&mut browser, branch)?;
+            let want = coco::commits(&mut browser, Some(peer_id), branch)?;
             let head_commit = coco::commit_header(&mut browser, head)?;
             Ok((want, head_commit))
         })?;
@@ -1202,34 +1247,48 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        // TODO(finto): Get the right URN
-        let fake_user_urn: RadUrn =
-            "rad:git:hwd1yredksthny1hht3bkhtkxakuzfnjxd8dyk364prfkjxe4xpxsww3try".parse()?;
-
         let want = {
             let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
                 Ok((coco::branches(browser)?, coco::tags(browser)?))
             })?;
 
-            ["cloudhead", "rudolfs", "xla"]
-                .iter()
-                .map(|handle| super::Revision {
-                    branches: branches.clone(),
-                    tags: tags.clone(),
-                    identity: identity::Identity {
-                        id: fake_user_urn.clone(),
-                        metadata: identity::Metadata {
-                            handle: (*handle).to_string(),
-                        },
-                        avatar_fallback: avatar::Avatar::from(handle, avatar::Usage::Identity),
-                        registered: None,
-                        shareable_entity_identifier: identity::SharedIdentifier {
-                            handle: (*handle).to_string(),
-                            urn: fake_user_urn.clone(),
-                        },
+            [
+                (
+                    "cloudhead",
+                    "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+                ),
+                (
+                    "rudolfs",
+                    "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
+                ),
+                (
+                    "xla",
+                    "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
+                ),
+            ]
+            .iter()
+            .map(|(fake_handle, fake_peer_urn)| super::Revision {
+                branches: branches.clone(),
+                tags: tags.clone(),
+                identity: identity::Identity {
+                    // TODO(finto): Get the right URN
+                    id: fake_peer_urn
+                        .parse()
+                        .expect("failed to parse hardcoded URN"),
+                    metadata: identity::Metadata {
+                        handle: (*fake_handle).to_string(),
                     },
-                })
-                .collect::<Vec<super::Revision>>()
+                    avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
+                    registered: None,
+                    shareable_entity_identifier: identity::SharedIdentifier {
+                        handle: (*fake_handle).to_string(),
+                        urn: fake_peer_urn
+                            .parse()
+                            .expect("failed to parse hardcoded URN"),
+                    },
+                },
+            })
+            .collect::<Vec<super::Revision>>()
         };
 
         let api = super::filters(
@@ -1237,6 +1296,7 @@ mod test {
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
+
         let res = request()
             .method("GET")
             .path(&format!("/revisions/{}", urn))
@@ -1250,12 +1310,12 @@ mod test {
                 json!([
                     {
                         "identity": {
-                            "id": fake_user_urn,
+                            "id": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
                             "metadata": {
                                 "handle": "cloudhead",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("cloudhead@{}", fake_user_urn),
+                            "shareableEntityIdentifier": format!("cloudhead@{}", "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"),
                             "avatarFallback": {
                                 "background": {
                                     "r": 24,
@@ -1270,12 +1330,12 @@ mod test {
                     },
                     {
                         "identity": {
-                            "id": fake_user_urn,
+                            "id": "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
                             "metadata": {
                                 "handle": "rudolfs",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("rudolfs@{}", fake_user_urn),
+                            "shareableEntityIdentifier": format!("rudolfs@{}", "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro"),
                             "avatarFallback": {
                                 "background": {
                                     "r": 24,
@@ -1290,12 +1350,12 @@ mod test {
                     },
                     {
                         "identity": {
-                            "id": fake_user_urn,
+                            "id": "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
                             "metadata": {
                                 "handle": "xla",
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("xla@{}", fake_user_urn),
+                            "shareableEntityIdentifier": format!("xla@{}", "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"),
                             "avatarFallback": {
                                 "background": {
                                     "r": 155,
@@ -1389,9 +1449,11 @@ mod test {
         let prefix = "src";
 
         let default_branch = platinum_project.default_branch();
+        let peer_id = &peer.peer_id();
         let want = coco::with_browser(&peer, &urn, |mut browser| {
             coco::tree(
                 &mut browser,
+                Some(peer_id),
                 default_branch,
                 Some(revision.to_string()),
                 Some(prefix.to_string()),
