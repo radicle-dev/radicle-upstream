@@ -1,10 +1,25 @@
 :root {
-  --elevation-low: 0px 2px 4px rgba(0, 0, 0, 0.12),
-    0px 0px 1px rgba(0, 0, 0, 0.12);
+  --elevation-low: 0px 0.139033px 0.370755px rgba(0, 0, 0, 0.0129162),
+    0px 0.323263px 0.862035px rgba(0, 0, 0, 0.018661),
+    0px 0.580506px 1.54802px rgba(0, 0, 0, 0.0230026),
+    0px 0.963424px 2.56913px rgba(0, 0, 0, 0.0269974),
+    0px 1.58721px 4.23256px rgba(0, 0, 0, 0.031339),
+    0px 2.77398px 7.39728px rgba(0, 0, 0, 0.0370838),
+    0px 6px 16px rgba(0, 0, 0, 0.05);
 
-  --elevation-medium: 0px 4px 8px rgba(0, 0, 0, 0.12),
-    0px 0px 1px rgba(0, 0, 0, 0.12);
+  --elevation-medium: 0px 0.347583px 0.718338px rgba(0, 0, 0, 0.0180827),
+    0px 0.808158px 1.67019px rgba(0, 0, 0, 0.0261253),
+    0px 1.45126px 2.99928px rgba(0, 0, 0, 0.0322036),
+    0px 2.40856px 4.97769px rgba(0, 0, 0, 0.0377964),
+    0px 3.96802px 8.20058px rgba(0, 0, 0, 0.0438747),
+    0px 6.93495px 14.3322px rgba(0, 0, 0, 0.0519173),
+    0px 15px 31px rgba(0, 0, 0, 0.07);
 
-  --elevation-high: 0px 8px 16px rgba(0, 0, 0, 0.12),
-    0px 0px 1px rgba(0, 0, 0, 0.12);
+  --elevation-high: 0px 0.62565px 1.34399px rgba(0, 0, 0, 0.0180827),
+    0px 1.45468px 3.12488px rgba(0, 0, 0, 0.0261253),
+    0px 2.61228px 5.61156px rgba(0, 0, 0, 0.0322036),
+    0px 4.33541px 9.3131px rgba(0, 0, 0, 0.0377964),
+    0px 7.14244px 15.343px rgba(0, 0, 0, 0.0438747),
+    0px 12.4829px 26.8152px rgba(0, 0, 0, 0.0519173),
+    0px 27px 58px rgba(0, 0, 0, 0.07);
 }
