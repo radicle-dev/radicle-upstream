@@ -77,6 +77,8 @@
     overflow-x: hidden;
     color: var(--color-foreground-level-6);
     margin-right: 0.5rem;
+    width: 16rem;
+    white-space: nowrap;
   }
   .selector-expand {
     align-self: flex-end;
@@ -129,7 +131,7 @@
   hidden={expanded}>
   <div class="selector-avatar">
     <Avatar
-      title={currentSelectedPeer.identity.metadata.handle}
+      title={currentSelectedPeer && currentSelectedPeer.identity.shareableEntityIdentifier}
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
       size="small"
       style="--title-color: var(--color-foreground-level-6); justify-content:
@@ -147,7 +149,7 @@
     {#each revisions as repo}
       <div class="peer">
         <Avatar
-          title={repo.identity.metadata.handle}
+          title={repo.identity.shareableEntityIdentifier}
           avatarFallback={repo.identity.avatarFallback}
           size="small"
           style="--title-color: var(--color-foreground-level-6);
