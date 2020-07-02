@@ -21,7 +21,6 @@
   };
 
   $: negative = summaryIconState(summary.counts) === IconState.Negative;
-  $: console.log(list && list.offsetHeight);
 </script>
 
 <style>
