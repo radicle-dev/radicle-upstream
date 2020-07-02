@@ -1,11 +1,6 @@
+import { parse, stringify } from "qs";
 import regexparam from "regexparam";
-
-import * as config from "./config";
 import { ObjectType } from "./source";
-
-const PROJECT_SOURCE_PATH_MATCH = new RegExp(
-  `/source/(.*)/(${ObjectType.Blob}|${ObjectType.Tree})/(.*)`
-);
 
 export const search = (): string => "/search";
 export const settings = (): string => "/settings";
@@ -37,24 +32,43 @@ export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string =>
   `/projects/${id}/revisions`;
+
 export const projectSource = (
-  id: string,
-  revision: string,
-  objectType: string,
-  path: string
+  projectId: string,
+  peerId?: string,
+  revision?: string,
+  objectType: string = ObjectType.Tree,
+  objectPath?: string
 ): string => {
-  if (revision && path) {
-    return `/projects/${id}/source/${revision}/${objectType}/${
-      objectType === ObjectType.Tree ? `${path}/` : path
-    }`;
-  } else {
-    return `/projects/${id}/source`;
-  }
+  return `/projects/${projectId}/source?${stringify({
+    peerId,
+    revision,
+    objectType,
+    objectPath,
+  })}`;
 };
+
+export const parseProjectSourceLocation = (
+  querystring: string,
+  defaultRevision: string
+) => {
+  const parsed = parse(querystring);
+  return {
+    currentPeerId: parsed.peerId,
+    currentRevision: parsed.revision || defaultRevision,
+    currentObjectType: parsed.objectType,
+    currentObjectPath: parsed.objectPath,
+  };
+};
+
 export const projectCommit = (id: string, hash: string): string =>
   `/projects/${id}/commit/${hash}`;
-export const projectCommits = (id: string, branch: string): string =>
-  `/projects/${id}/commits/${encodeURIComponent(branch)}`;
+export const projectCommits = (
+  id: string,
+  peerId: string,
+  revision: string
+): string =>
+  `/projects/${id}/commits/${encodeURIComponent(revision)}?peerId=${peerId}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 
@@ -67,19 +81,4 @@ export const active = (
   loose = false
 ): boolean => {
   return regexparam(path, loose).pattern.test(location);
-};
-
-export const extractProjectSourceRevision = (location: string): string => {
-  const rev = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return rev === null ? config.DEFAULT_PROJECT_REVISION : rev[1];
-};
-
-export const extractProjectSourceObjectPath = (location: string): string => {
-  const path = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return path === null ? "" : path[3];
-};
-
-export const extractProjectSourceObjectType = (location: string): string => {
-  const type = PROJECT_SOURCE_PATH_MATCH.exec(location);
-  return type === null ? ObjectType.Tree : type[2];
 };

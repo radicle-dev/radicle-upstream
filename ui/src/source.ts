@@ -1,4 +1,4 @@
-import { derived, writable, Readable } from "svelte/store";
+import { Readable } from "svelte/store";
 
 import * as api from "./api";
 import * as config from "./config";
@@ -72,6 +72,7 @@ interface SourceObject {
 
 interface Blob extends SourceObject {
   binary?: boolean;
+  html?: boolean;
   content: string;
 }
 
@@ -101,12 +102,6 @@ export const commit = commitStore.readable;
 const commitsStore = remote.createStore<CommitHistory>();
 export const commits = commitsStore.readable;
 
-const currentPathStore = writable("");
-export const currentPath = derived(currentPathStore, $store => $store);
-
-const currentRevisionStore = writable("");
-export const currentRevision = derived(currentRevisionStore, $store => $store);
-
 const objectStore = remote.createStore<SourceObject>();
 export const object = objectStore.readable;
 
@@ -118,18 +113,20 @@ enum Kind {
   FetchCommit = "FETCH_COMMIT",
   FetchCommits = "FETCH_COMMITS",
   FetchRevisions = "FETCH_REVISIONS",
-  Update = "UPDATE",
+  FetchObject = "FETCH_OBJECT",
 }
 
 interface FetchCommit extends event.Event<Kind> {
   kind: Kind.FetchCommit;
   projectId: string;
+  peerId: string;
   sha1: string;
 }
 
 interface FetchCommits extends event.Event<Kind> {
   kind: Kind.FetchCommits;
   projectId: string;
+  peerId: string;
   branch: string;
 }
 
@@ -138,9 +135,10 @@ interface FetchRevisions extends event.Event<Kind> {
   projectId: string;
 }
 
-interface Update extends event.Event<Kind> {
-  kind: Kind.Update;
+interface FetchObject extends event.Event<Kind> {
+  kind: Kind.FetchObject;
   path: string;
+  peerId: string;
   projectId: string;
   revision: string;
   type: ObjectType;
@@ -172,7 +170,7 @@ const groupCommits = (history: CommitSummary[]): CommitHistory => {
   return days;
 };
 
-type Msg = FetchCommit | FetchCommits | FetchRevisions | Update;
+type Msg = FetchCommit | FetchCommits | FetchRevisions | FetchObject;
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
@@ -196,7 +194,10 @@ const update = (msg: Msg): void => {
 
       api
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
-          query: { branch: msg.branch },
+          query: {
+            peerId: msg.peerId,
+            branch: msg.branch,
+          },
         })
         .then(history => {
           commitsStore.success(groupCommits(history));
@@ -218,16 +219,19 @@ const update = (msg: Msg): void => {
         .catch(revisionsStore.error);
       break;
 
-    case Kind.Update:
-      currentPathStore.update(() => msg.path);
-      currentRevisionStore.update(() => msg.revision);
+    case Kind.FetchObject:
       objectStore.loading();
 
       switch (msg.type) {
         case ObjectType.Blob:
           api
             .get<SourceObject>(`source/blob/${msg.projectId}`, {
-              query: { revision: msg.revision, path: msg.path },
+              query: {
+                peerId: msg.peerId,
+                revision: msg.revision,
+                path: msg.path,
+                highlight: true,
+              },
             })
             .then(objectStore.success)
             .catch(objectStore.error);
@@ -236,7 +240,11 @@ const update = (msg: Msg): void => {
         case ObjectType.Tree:
           api
             .get<SourceObject>(`source/tree/${msg.projectId}`, {
-              query: { revision: msg.revision, prefix: msg.path },
+              query: {
+                peerId: msg.peerId,
+                revision: msg.revision,
+                prefix: msg.path,
+              },
             })
             .then(objectStore.success)
             .catch(objectStore.error);
@@ -252,7 +260,7 @@ export const fetchRevisions = event.create<Kind, Msg>(
   Kind.FetchRevisions,
   update
 );
-export const updateParams = event.create<Kind, Msg>(Kind.Update, update);
+export const fetchObject = event.create<Kind, Msg>(Kind.FetchObject, update);
 
 export const getLocalState = (path: string): Promise<LocalState> => {
   return api.get<LocalState>(`source/local-state/${path}`);
@@ -260,13 +268,16 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 
 export const tree = (
   projectId: string,
+  peerId: string,
   revision: string,
   prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
 
   api
-    .get<Tree>(`source/tree/${projectId}`, { query: { revision, prefix } })
+    .get<Tree>(`source/tree/${projectId}`, {
+      query: { peerId: peerId, revision, prefix },
+    })
     .then(treeStore.success)
     .catch(treeStore.error);
 
@@ -275,10 +286,14 @@ export const tree = (
 
 const blob = (
   projectId: string,
+  peerId: string,
   revision: string,
-  path: string
+  path: string,
+  highlight: boolean
 ): Promise<Blob> =>
-  api.get<Blob>(`source/blob/${projectId}`, { query: { revision, path } });
+  api.get<Blob>(`source/blob/${projectId}`, {
+    query: { revision, peerId, path, highlight },
+  });
 
 const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
@@ -307,6 +322,7 @@ export const formatTime = (t: number): string => {
 
 export const readme = (
   projectId: string,
+  peerId: string,
   revision: string
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
@@ -318,7 +334,7 @@ export const readme = (
         const path = findReadme(object as Tree);
 
         if (path) {
-          return blob(projectId, revision, path);
+          return blob(projectId, peerId, revision, path, false);
         }
       }
 

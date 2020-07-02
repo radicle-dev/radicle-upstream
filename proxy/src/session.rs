@@ -62,11 +62,14 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub async fn current<R: registry::Client>(
+pub async fn current<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
-    store: &kv::Store,
     registry: &R,
-) -> Result<Session, error::Error> {
+    store: &kv::Store,
+) -> Result<Session, error::Error>
+where
+    R: registry::Client,
+{
     let mut session = get(store, KEY_CURRENT)?;
     session.transaction_deposits = registry::get_deposits();
     session.minimum_transaction_fee = registry::MINIMUM_FEE;
