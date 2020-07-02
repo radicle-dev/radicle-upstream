@@ -134,3 +134,21 @@ export const updateRegistry = (registry: Registry): void =>
   )({
     settings: { ...get(settings), registry },
   });
+
+// TODO(sos): hook these two up to proxy
+export const updatePeerConfig = (seeds: string) => {
+  const parsed = seeds
+    .replace(/\n/g, ",")
+    .replace(/\s/g, "")
+    .split(",")
+    .filter(seed => seed != "");
+
+  // TODO(sos): submit to proxy
+};
+
+export const fetchSeeds = (seeds: string[]) => {
+  // TODO(sos): do we have default seeds?
+  const defaultSeeds = ["seed.radicle.xyz", "194.134.54.13"];
+
+  return defaultSeeds.join("\n");
+};

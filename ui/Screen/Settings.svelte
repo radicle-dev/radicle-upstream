@@ -2,52 +2,78 @@
   import {
     clear,
     clearCache,
+    fetchSeeds,
     settings,
     updateAppearance,
+    updatePeerConfig,
     updateRegistry,
   } from "../src/session.ts";
   import { networkOptions, themeOptions } from "../src/settings.ts";
 
-  import { Title, Text, Button } from "../DesignSystem/Primitive";
+  import { Button, Input, Text, Title } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
+
+  let seeds = fetchSeeds();
 
   const updateNetwork = event =>
     updateRegistry({ ...$settings.registry, network: event.detail });
 
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
+
+  const updateSeeds = event => {
+    updatePeerConfig(event.target.value);
+  };
 </script>
 
 <style>
   .container {
     max-width: var(--content-max-width);
-    margin: 64px auto;
+    margin: 64px 100px;
     min-width: var(--content-min-width);
     padding: 0 var(--content-padding);
   }
+
   section header {
     margin: 16px 0 24px 0;
     border-bottom: 1px solid var(--color-foreground-level-3);
-    padding: 12px;
+    padding: 12px 0;
+    display: flex;
+    justify-content: space-between;
   }
+
+  section header a {
+    color: var(--color-secondary);
+  }
+
+  section header a:hover {
+    text-decoration: underline;
+  }
+
   .section-item {
-    padding: 0 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
   }
+
   .action {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-left: 16px;
   }
+
+  @media (max-width: 1000px) {
+    .container {
+      margin: 64px auto;
+    }
+  }
 </style>
 
 <SidebarLayout dataCy="page">
   <div class="container">
-    <Title variant="big">Settings</Title>
+    <Title style="margin-bottom: 32px;" variant="big">Settings</Title>
 
     <section>
       <header>
@@ -82,6 +108,18 @@
             options={themeOptions}
             on:select={updateTheme} />
         </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <Title variant="large">Seeds</Title>
+        <!-- TODO(sos): link to actual docs abt seeds -->
+        <!-- TODO(sos): should we have a submit button for seeds? -->
+        <a href="link/to/docs">Learn about seeds</a>
+      </header>
+      <div class="info">
+        <Input.Textarea bind:value={seeds} on:change={updateSeeds} />
       </div>
     </section>
 
