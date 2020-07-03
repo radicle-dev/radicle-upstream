@@ -63,7 +63,7 @@
   $: if ($store.status === remote.Status.Success) {
     dispatch("success");
   } else if ($store.status === remote.Status.Error) {
-    dispatch("error");
+    dispatch("error", { message: $store.error.message });
   }
 </script>
 
