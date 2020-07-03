@@ -72,7 +72,10 @@ const createWindow = () => {
 
   mainWindow.webContents.on("will-navigate", (event, url) => {
     event.preventDefault();
-    if (url.startsWith("http://") || url.startsWith("https://")) {
+    if (
+      url.toLowerCase().startsWith("http://") ||
+      url.toLowerCase().startsWith("https://")
+    ) {
       console.log(`Opening external URL: ${url}`);
       shell.openExternal(url);
     } else {
