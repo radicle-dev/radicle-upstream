@@ -682,7 +682,7 @@
           showSuccessCheck
           validation={{ status: ValidationStatus.Success }}
           value="user123">
-          <div slot="avatar">
+          <div slot="left">
             <Avatar
               size="small"
               imageUrl="https://avatars1.githubusercontent.com/u/40774" />
@@ -696,7 +696,7 @@
           style="width: 100%"
           validation={{ status: ValidationStatus.Loading }}
           value="user123">
-          <div slot="avatar">
+          <div slot="left">
             <Avatar size="small" avatarFallback={avatarFallback1} />
           </div>
         </Input.Text>
@@ -710,7 +710,7 @@
           valid={false}
           validation={{ status: ValidationStatus.Error, message: 'Id already taken' }}
           value="myUser">
-          <div slot="avatar">
+          <div slot="left">
             <Avatar size="small" avatarFallback={avatarFallback2} />
           </div>
         </Input.Text>

@@ -112,7 +112,7 @@
       showSuccessCheck
       {showAvatar}
       validation={$validation}>
-      <div slot="avatar">
+      <div slot="left">
         <Avatar
           {avatarFallback}
           size="small"

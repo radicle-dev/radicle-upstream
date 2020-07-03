@@ -64,6 +64,7 @@
     margin-left: 16px;
   }
 
+  /* TODO(sos): implement responsive margins once we have screen-based layouts */
   @media (max-width: 1000px) {
     .container {
       margin: 64px auto;

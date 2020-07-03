@@ -31,6 +31,7 @@
     background-color: var(--color-secondary);
     color: var(--color-background);
     cursor: pointer;
+    user-select: none;
   }
 
   .toggle.hover {
