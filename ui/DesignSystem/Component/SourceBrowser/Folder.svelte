@@ -28,8 +28,6 @@
 
   $: store = tree(projectId, currentPeerId, currentRevision, prefix);
   $: active = prefix === currentObjectPath;
-
-  $: console.log(currentObjectPath, prefix);
 </script>
 
 <style>
