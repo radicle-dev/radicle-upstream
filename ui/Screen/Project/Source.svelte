@@ -34,7 +34,13 @@
     currentRevision,
     currentObjectType,
     currentObjectPath,
-  } = path.parseProjectSourceLocation($querystring, metadata.defaultBranch));
+  } = path.parseProjectSourceLocation(
+    $querystring,
+    null,
+    metadata.defaultBranch,
+    ObjectType.Tree,
+    null
+  ));
 
   const updateRevision = (projectId, revision, peerId) => {
     push(

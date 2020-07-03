@@ -74,7 +74,7 @@
 
 <div class="file-source" data-cy="file-source">
   <header>
-    <div class="file-header">
+    <div class="file-header" data-cy="file-header">
       <Icon.File />
       <span class="file-name">
         <a href={rootPath} use:link>{projectName}</a>
