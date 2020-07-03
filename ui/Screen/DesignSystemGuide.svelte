@@ -66,7 +66,6 @@
 
   const user = {
     username: "Rudolfs Osins",
-    avatar: "https://avatars.dicebear.com/v2/jdenticon/two.svg",
   };
 
   const avatarFallback1 = {

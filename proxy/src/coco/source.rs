@@ -1,7 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::hash_map::DefaultHasher;
 use std::fmt;
-use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 use librad::peer;
@@ -54,8 +52,6 @@ pub struct Person {
     pub name: String,
     /// Email part of the commit signature.
     pub email: String,
-    /// Reference (url/uri) to a persons avatar image.
-    pub avatar: String,
 }
 
 /// Commit statistics.
@@ -108,29 +104,17 @@ impl CommitHeader {
 
 impl From<&git::Commit> for CommitHeader {
     fn from(commit: &git::Commit) -> Self {
-        let avatar = |input: &String| {
-            let mut s = DefaultHasher::new();
-            input.hash(&mut s);
-
-            format!(
-                "https://avatars.dicebear.com/v2/jdenticon/{}.svg",
-                s.finish().to_string()
-            )
-        };
-
         Self {
             sha1: commit.id,
             author: Person {
                 name: commit.author.name.clone(),
                 email: commit.author.email.clone(),
-                avatar: avatar(&commit.author.email),
             },
             summary: commit.summary.clone(),
             message: commit.message.clone(),
             committer: Person {
                 name: commit.committer.name.clone(),
                 email: commit.committer.email.clone(),
-                avatar: avatar(&commit.committer.email),
             },
             committer_time: commit.author.time,
         }

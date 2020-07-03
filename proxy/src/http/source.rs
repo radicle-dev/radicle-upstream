@@ -736,7 +736,6 @@ impl Serialize for coco::Person {
         let mut state = serializer.serialize_struct("Person", 3)?;
         state.serialize_field("name", &self.name)?;
         state.serialize_field("email", &self.email)?;
-        state.serialize_field("avatar", &self.avatar)?;
         state.end()
     }
 }
@@ -755,12 +754,6 @@ impl ToDocumentedType for coco::Person {
             document::string()
                 .description("Email part of the commit signature.")
                 .example("self@cloudhead.io"),
-        );
-        properties.insert(
-            "avatar".into(),
-            document::string()
-                .description("Reference (url/uri) to a persons avatar image.")
-                .example("https://avatars1.githubusercontent.com/u/40774"),
         );
 
         document::DocumentedType::from(properties).description("Person")
@@ -936,12 +929,10 @@ mod test {
                         "lastCommit": {
                             "sha1": "1e0206da8571ca71c51c91154e2fee376e09b4e7",
                             "author": {
-                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
                                 "name": "Rūdolfs Ošiņš",
                                 "email": "rudolfs@osins.org",
                             },
                             "committer": {
-                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
                                 "name": "Rūdolfs Ošiņš",
                                 "email": "rudolfs@osins.org",
                             },
@@ -993,12 +984,10 @@ mod test {
                         "lastCommit": {
                             "sha1": "19bec071db6474af89c866a1bd0e4b1ff76e2b97",
                             "author": {
-                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
                                 "name": "Rūdolfs Ošiņš",
                                 "email": "rudolfs@osins.org",
                             },
                             "committer": {
-                                "avatar": "https://avatars.dicebear.com/v2/jdenticon/6579925199124505498.svg",
                                 "name": "Rūdolfs Ošiņš",
                                 "email": "rudolfs@osins.org",
                             },
@@ -1106,12 +1095,10 @@ mod test {
                 json!({
                     "sha1": sha1,
                     "author": {
-                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/6367167426181048581.svg",
                         "name": "Fintan Halpenny",
                         "email": "fintan.halpenny@gmail.com",
                     },
                     "committer": {
-                        "avatar": "https://avatars.dicebear.com/v2/jdenticon/16701125315436463681.svg",
                         "email": "noreply@github.com",
                         "name": "GitHub",
                     },
