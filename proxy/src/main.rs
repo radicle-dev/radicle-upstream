@@ -70,13 +70,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (peer_api, owner) = {
         let config = coco::config::configure(paths, key.clone());
         let peer_api = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer_api, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = match coco::default_owner(&peer_api) {
+            Some(owner) => Some(coco::verify_user(owner).await?),
+            None => None,
+        };
 
         (peer_api, owner)
     };
 
     if args.test {
+        // TODO(finto): Maybe we should set up the default owner here for the test case.
+        let owner =
+            coco::verify_user(coco::init_user(&peer_api, key.clone(), "cloudhead")?).await?;
         coco::control::setup_fixtures(&peer_api, key, &owner).expect("fixture creation failed");
     }
 
