@@ -86,7 +86,7 @@ context("source code browsing", () => {
     });
   });
 
-  context("when the 'source' section is selected in project sidebar", () => {
+  context("when the Source menu item is selected in project top-bar", () => {
     it("expands a tree starting at the root of the repo", () => {
       cy.pick("source-tree").within(() => {
         cy.contains("src").should("exist");
@@ -224,19 +224,49 @@ context("source code browsing", () => {
       });
     });
 
-    context("when clicking on folder names", () => {
-      it("allows diving deep into directory structures", () => {
-        cy.pick("source-tree").within(() => {
-          cy.pick("expand-this").click();
-          cy.pick("expand-is").click();
-          cy.pick("expand-a").click();
-          cy.pick("expand-really").click();
-          cy.pick("expand-deeply").click();
-          cy.pick("expand-nested").click();
-          cy.pick("expand-directory").click();
-          cy.pick("expand-tree").click();
-          cy.contains(".gitkeep").should("exist");
-        });
+    it("doesn't interfere with the top-bar menu item active state", () => {
+      cy.pick("topbar", "horizontal-menu", "Source")
+        .get("p")
+        .should("have.class", "active");
+
+      cy.pick("source-tree").within(() => {
+        cy.pick("expand-text").click();
+        cy.contains("arrows.txt").click();
+        cy.contains("arrows.txt").should("have.class", "active");
+      });
+
+      cy.pick("topbar", "horizontal-menu", "Source")
+        .get("p")
+        .should("have.class", "active");
+
+      cy.pick("file-source", "file-header").contains("platinum").click();
+
+      cy.pick("topbar", "horizontal-menu", "Source")
+        .get("p")
+        .should("have.class", "active");
+    });
+
+    it("allows navigating the tree structure", () => {
+      cy.pick("source-tree").within(() => {
+        // Traverse deeply nested folders.
+        cy.pick("expand-this").click();
+        cy.pick("expand-is").click();
+        cy.pick("expand-a").click();
+        cy.pick("expand-really").click();
+        cy.pick("expand-deeply").click();
+        cy.pick("expand-nested").click();
+        cy.pick("expand-directory").click();
+        cy.pick("expand-tree").click();
+
+        // Open a file within nested folders.
+        cy.contains(".gitkeep").click();
+        cy.contains(".gitkeep").should("have.class", "active");
+
+        // Preserve expanded folder state when selecting a different file.
+        cy.pick("expand-text").click();
+        cy.contains("arrows.txt").click();
+        cy.contains("arrows.txt").should("have.class", "active");
+        cy.contains(".gitkeep").should("not.have.class", "active");
       });
     });
 
