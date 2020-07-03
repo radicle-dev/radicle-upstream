@@ -240,6 +240,14 @@ context("source code browsing", () => {
       });
     });
 
+    it("highlights the selected file", () => {
+      cy.pick("source-tree").within(() => {
+        cy.contains(".i-am-well-hidden").should("not.have.class", "active");
+        cy.contains(".i-am-well-hidden").click();
+        cy.contains(".i-am-well-hidden").should("have.class", "active");
+      });
+    });
+
     context("when clicking on a file name", () => {
       context("for non-binary files", () => {
         it("shows the contents of the file", () => {

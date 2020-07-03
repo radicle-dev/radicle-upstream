@@ -11,7 +11,7 @@
   export let projectId = null;
 
   export let currentRevision = null;
-  export let currentPath = null;
+  export let currentObjectPath = null;
   export let currentPeerId = null;
 
   export let expanded = false;
@@ -27,7 +27,9 @@
   };
 
   $: store = tree(projectId, currentPeerId, currentRevision, prefix);
-  $: active = prefix === currentPath;
+  $: active = prefix === currentObjectPath;
+
+  $: console.log(currentObjectPath, prefix);
 </script>
 
 <style>
@@ -78,14 +80,14 @@
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
             {projectId}
-            {currentPath}
+            {currentObjectPath}
             {currentRevision}
             {currentPeerId}
             name={entry.info.name}
             prefix={`${entry.path}/`} />
         {:else}
           <File
-            active={entry.path === currentPath}
+            active={entry.path === currentObjectPath}
             href={path.projectSource(projectId, currentPeerId, currentRevision, ObjectType.Blob, entry.path)}
             name={entry.info.name} />
         {/if}
