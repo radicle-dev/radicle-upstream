@@ -50,7 +50,7 @@ pub fn default_owner(peer: &PeerApi) -> Option<user::User<entity::Draft>> {
     }
 }
 
-/// Get the default owner for this `PeerApi`.
+/// Set the default owner for this `PeerApi`.
 ///
 /// # Errors
 ///

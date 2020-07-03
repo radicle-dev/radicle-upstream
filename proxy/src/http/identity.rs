@@ -304,7 +304,7 @@ mod test {
         let session = session::current(Arc::clone(&peer), registry, store).await?;
         let urn = session.identity.expect("failed to set identity").id;
 
-        // Assert that we set the default owner ans it's the same one as the session
+        // Assert that we set the default owner and it's the same one as the session
         {
             let peer = &*peer.lock().await;
             assert_eq!(coco::default_owner(peer), Some(coco::get_user(peer, &urn)?));
