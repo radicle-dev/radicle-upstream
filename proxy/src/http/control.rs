@@ -194,12 +194,7 @@ mod handler {
         let mut keystore = keystore.write().await;
 
         let mut owner = owner.write().await;
-        let new_owner = if let Some(old_owner) = &*owner {
-            let new_owner = coco::init_user(&new_peer, key, old_owner.name())?;
-            Some(coco::verify_user(new_owner).await?)
-        } else {
-            None
-        };
+        let new_owner = None;
 
         *owner = new_owner;
         *peer = new_peer;
