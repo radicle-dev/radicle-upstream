@@ -1,4 +1,11 @@
-import { app, BrowserWindow, ipcMain, dialog, clipboard } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  dialog,
+  clipboard,
+  shell,
+} from "electron";
 import path from "path";
 import * as ipc from "./ipc.js";
 
@@ -62,6 +69,19 @@ const createWindow = () => {
       mainWindow.reload();
     });
   }
+
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    event.preventDefault();
+    if (
+      url.toLowerCase().startsWith("http://") ||
+      url.toLowerCase().startsWith("https://")
+    ) {
+      console.log(`Opening external URL: ${url}`);
+      shell.openExternal(url);
+    } else {
+      console.warn(`User tried opening URL with invalid URI scheme: ${url}`);
+    }
+  });
 
   mainWindow.loadURL(`file://${path.join(__dirname, "../public/index.html")}`);
   mainWindow.on("closed", () => {
