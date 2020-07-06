@@ -135,15 +135,18 @@ export const updateRegistry = (registry: Registry): void =>
     settings: { ...get(settings), registry },
   });
 
-// TODO(sos): hook these two up to proxy
-export const updatePeerConfig = (seeds: string) => {
-  const parsed = seeds
-    .replace(/\n/g, ",")
-    .replace(/\s/g, "")
+export const parseSeedsInput = (seeds: string) =>
+  seeds
+    .replace(/\r\n|\n|\r|\s/gm, ",")
     .split(",")
     .filter(seed => seed != "");
 
+// TODO(sos): hook these two up to proxy
+export const updatePeerConfig = (seeds: string) => {
+  const parsed = parseSeedsInput(seeds);
+
   // TODO(sos): submit to proxy
+  return parsed;
 };
 
 export const fetchSeeds = (seeds: string[]) => {

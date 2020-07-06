@@ -107,31 +107,6 @@
     },
     {
       domain: "radicle",
-      name: "radicle-keystore",
-      description: "A nice app for nice things",
-      shareableEntityIdentifier:
-        "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-      stats: {
-        commits: 220,
-        branches: 12,
-        contributors: 4,
-      },
-      maintainers: [
-        {
-          handle: "rafalca",
-          avatar: {
-            background: {
-              r: 255,
-              g: 0,
-              b: 179,
-            },
-            emoji: "🖕🏼",
-          },
-        },
-      ],
-    },
-    {
-      domain: "radicle",
       name: "radicle-long-repository-name-that-truncates-nicely",
       description: "A nice app for nice things",
       shareableEntityIdentifier:

@@ -157,7 +157,7 @@
     <li
       class="item indicator"
       class:active={path.active(path.discovery(), $location)}
-      data-cy="discover">
+      data-cy="discovery">
       <Tooltip value="Discover">
         <a href={path.discovery()} use:link>
           <Icon.Peer />

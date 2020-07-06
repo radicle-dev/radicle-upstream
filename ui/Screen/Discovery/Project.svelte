@@ -71,7 +71,8 @@
 <div
   class="container"
   on:mouseenter={toggleTrackButton}
-  on:mouseleave={toggleTrackButton}>
+  on:mouseleave={toggleTrackButton}
+  data-cy="project-card">
   <div class="header">
     <div class="title">
       <Title variant="large" style="color: var(--color-foreground-level-4);">
