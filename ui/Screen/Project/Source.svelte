@@ -16,8 +16,8 @@
     fetchObject,
   } from "../../src/source.ts";
 
-  import { Code, Flex, Icon, Text, Title } from "../../DesignSystem/Primitive";
-  import { Copyable, Placeholder, Remote } from "../../DesignSystem/Component";
+  import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { Copyable, EmptyState, Remote } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
@@ -34,7 +34,13 @@
     currentRevision,
     currentObjectType,
     currentObjectPath,
-  } = path.parseProjectSourceLocation($querystring, metadata.defaultBranch));
+  } = path.parseProjectSourceLocation(
+    $querystring,
+    null,
+    metadata.defaultBranch,
+    ObjectType.Tree,
+    null
+  ));
 
   const updateRevision = (projectId, revision, peerId) => {
     push(
@@ -256,10 +262,10 @@
             {#if readme}
               <Readme content={readme.content} path={readme.path} />
             {:else}
-              <Flex align="center">
-                <Placeholder style="width: 300px; height: 100px" />
-                <Text>No readme found placeholder.</Text>
-              </Flex>
+              <EmptyState
+                text="This project doesn't have a ReadMe yet."
+                icon="eyes"
+                primaryActionText="Open an issue to make one" />
             {/if}
           </Remote>
         {/if}

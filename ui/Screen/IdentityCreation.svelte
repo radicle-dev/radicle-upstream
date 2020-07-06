@@ -1,5 +1,5 @@
 <script>
-  import { pop, replace } from "svelte-spa-router";
+  import { replace } from "svelte-spa-router";
 
   import * as notification from "../src/notification.ts";
   import { State, store } from "../src/onboard.ts";
@@ -16,9 +16,20 @@
     store.set(State.Welcome);
   };
 
+  const truncateUrn = message => {
+    const urn = message.match(/(rad:git:\w{59})/)[1];
+
+    if (urn) {
+      return message.replace(/(rad:git:\w{59})/, urn.substr(-5));
+    } else {
+      return message;
+    }
+  };
+
   const onError = event => {
-    notification.error(`Could not create identity: ${event.detail}`);
-    pop();
+    notification.error(
+      `Could not create identity: ${truncateUrn(event.detail.message)}`
+    );
   };
 
   const complete = redirectPath => {

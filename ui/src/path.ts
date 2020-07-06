@@ -39,7 +39,7 @@ export const projectSource = (
   projectId: string,
   peerId?: string,
   revision?: string,
-  objectType: string = ObjectType.Tree,
+  objectType?: string,
   objectPath?: string
 ): string => {
   return `/projects/${projectId}/source?${stringify({
@@ -52,14 +52,17 @@ export const projectSource = (
 
 export const parseProjectSourceLocation = (
   querystring: string,
-  defaultRevision: string
+  defaultPeerId: string,
+  defaultRevision: string,
+  defaultObjectType: string,
+  defaultObjectPath: string
 ) => {
   const parsed = parse(querystring);
   return {
-    currentPeerId: parsed.peerId,
+    currentPeerId: parsed.peerId || defaultPeerId,
     currentRevision: parsed.revision || defaultRevision,
-    currentObjectType: parsed.objectType,
-    currentObjectPath: parsed.objectPath,
+    currentObjectType: parsed.objectType || defaultObjectType,
+    currentObjectPath: parsed.objectPath || defaultObjectPath,
   };
 };
 
