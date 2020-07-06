@@ -110,7 +110,7 @@
       bind:value={orgId}
       style="width: 100%;"
       showSuccessCheck
-      {showAvatar}
+      showLeftItem={showAvatar}
       validation={$validation}>
       <div slot="left">
         <Avatar
