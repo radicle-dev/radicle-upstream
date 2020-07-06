@@ -96,7 +96,7 @@ where
         peer,
         Arc::clone(&registry),
         Arc::clone(&store),
-        Arc::clone(&owner),
+        &Arc::clone(&owner),
     );
     let transaction_filter = transaction::filters(Arc::clone(&registry));
     let user_filter = user::routes(registry, store, subscriptions);

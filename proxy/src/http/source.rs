@@ -19,7 +19,7 @@ pub fn routes<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
-    owner: http::Shared<Option<coco::User>>,
+    owner: &http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
@@ -30,7 +30,7 @@ where
             .or(commit_filter(Arc::clone(&peer)))
             .or(commits_filter(Arc::clone(&peer)))
             .or(local_state_filter())
-            .or(revisions_filter(Arc::clone(&peer), Arc::clone(&owner)))
+            .or(revisions_filter(Arc::clone(&peer), Arc::clone(owner)))
             .or(tags_filter(Arc::clone(&peer)))
             .or(tree_filter(peer)),
     )

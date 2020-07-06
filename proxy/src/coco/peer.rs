@@ -20,6 +20,9 @@ use crate::project::Project;
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
+/// Export a remotes type.
+pub type Remotes = Result<Vec<(user::User<entity::Draft>, Vec<source::Branch>)>, error::Error>;
+
 /// Create a new `PeerApi` given a `PeerConfig`.
 ///
 /// # Errors
@@ -120,11 +123,7 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
 ///
 ///   * [`error::Error::LibradLock`]
 ///   * [`error::Error::Git`]
-pub fn remotes(
-    peer: &PeerApi,
-    owner: &User,
-    project_urn: &RadUrn,
-) -> Result<Vec<(user::User<entity::Draft>, Vec<source::Branch>)>, error::Error> {
+pub fn remotes(peer: &PeerApi, owner: &User, project_urn: &RadUrn) -> Remotes {
     let project = get_project(peer, project_urn)?;
     let peer_id = peer.peer_id();
     let storage = peer.storage();
@@ -132,11 +131,11 @@ pub fn remotes(
     let refs = repo.rad_refs()?;
 
     let local_branches = with_browser(peer, &project.urn(), |browser| {
-        Ok(source::local_branches(&browser)?)
+        Ok(source::local_branches(browser)?)
     })?;
 
     let owner = owner.to_data().build()?; // TODO(finto): Dirty hack to make our Verified User into a Draft one
-    let mut remotes = vec![(owner.clone(), local_branches)];
+    let mut remotes = vec![(owner, local_branches)];
 
     for remote in refs.remotes.flatten() {
         let refs = if remote == peer_id {
@@ -157,7 +156,7 @@ pub fn remotes(
         // TODO(finto): This doesn't actually get the user. The peer id is their peer
         // device rather than the Hash of their user profile.
         let id = RadUrn::new(hash, Protocol::Git, Path::new());
-        let user = get_user(&peer, &id)?;
+        let user = get_user(peer, &id)?;
 
         remotes.push((user, refs));
     }
