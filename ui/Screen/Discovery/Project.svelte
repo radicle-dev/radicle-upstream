@@ -22,6 +22,7 @@
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 4px;
     padding: 32px;
+    overflow: hidden;
   }
 
   .container:hover {
@@ -32,11 +33,15 @@
   .header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     height: 40px;
   }
 
   .title {
     display: flex;
+    flex: 1;
+    min-width: 0;
+    margin-right: 20px;
   }
 
   .shareableEntityIdentifier {
@@ -72,7 +77,7 @@
       <Title variant="large" style="color: var(--color-foreground-level-4);">
         {project.domain}
       </Title>
-      <Title variant="large">&nbsp;{`/ ${project.name}`}</Title>
+      <Title variant="large" truncate>&nbsp;{`/ ${project.name}`}</Title>
       <div class="registered">
         <Icon.Verified
           style="fill: var(--color-primary); position: relative; bottom: -5px;" />
@@ -80,8 +85,9 @@
     </div>
 
     {#if showTrackButton}
-      <TrackToggle peerCount="666" />
+      <TrackToggle peerCount="666" style="z-index: 10;" />
     {/if}
+
   </div>
   <div class="shareableEntityIdentifier">
     <Copyable>
