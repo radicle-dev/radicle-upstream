@@ -20,8 +20,16 @@ use crate::project::Project;
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
-/// Export a remotes type.
-pub type Remotes = Result<Vec<(user::User<entity::Draft>, Vec<source::Branch>)>, error::Error>;
+/// A bundled type for the revisions API response containing information about
+/// the user and its branches and tags scoped by a project.
+pub struct Remote {
+    /// The user identity.
+    pub user: user::User<entity::Draft>,
+    /// Branches scoped by project.
+    pub branches: Vec<source::Branch>,
+    /// Tags scoped by project.
+    pub tags: Vec<source::Tag>,
+}
 
 /// Create a new `PeerApi` given a `PeerConfig`.
 ///
@@ -123,19 +131,27 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
 ///
 ///   * [`error::Error::LibradLock`]
 ///   * [`error::Error::Git`]
-pub fn remotes(peer: &PeerApi, owner: &User, project_urn: &RadUrn) -> Remotes {
+pub fn remotes(
+    peer: &PeerApi,
+    owner: &User,
+    project_urn: &RadUrn,
+) -> Result<Vec<Remote>, error::Error> {
     let project = get_project(peer, project_urn)?;
     let peer_id = peer.peer_id();
     let storage = peer.storage();
     let repo = storage.open_repo(project.urn())?;
     let refs = repo.rad_refs()?;
 
-    let local_branches = with_browser(peer, &project.urn(), |browser| {
-        Ok(source::local_branches(browser)?)
+    let (local_branches, local_tags) = with_browser(peer, &project.urn(), |browser| {
+        Ok((source::local_branches(browser)?, source::tags(browser)?))
     })?;
 
     let owner = owner.to_data().build()?; // TODO(finto): Dirty hack to make our Verified User into a Draft one
-    let mut remotes = vec![(owner, local_branches)];
+    let mut remotes = vec![Remote {
+        user: owner,
+        branches: local_branches,
+        tags: local_tags,
+    }];
 
     for remote in refs.remotes.flatten() {
         let refs = if remote == peer_id {
@@ -158,7 +174,13 @@ pub fn remotes(peer: &PeerApi, owner: &User, project_urn: &RadUrn) -> Remotes {
         let id = RadUrn::new(hash, Protocol::Git, Path::new());
         let user = get_user(peer, &id)?;
 
-        remotes.push((user, refs));
+        remotes.push(Remote {
+            user,
+            branches: refs,
+            // TODO(rudolfs): implement remote peer tags once we decide how
+            // https://radicle.community/t/git-tags/214
+            tags: vec![],
+        });
     }
 
     Ok(remotes)

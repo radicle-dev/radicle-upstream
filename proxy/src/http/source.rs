@@ -402,12 +402,12 @@ mod handler {
 
         let revs = remotes
             .into_iter()
-            .map(|(user, refs)| {
-                let urn = user.urn();
-                let handle = user.name().to_string();
+            .map(|remote| {
+                let urn = remote.user.urn();
+                let handle = remote.user.name().to_string();
                 super::Revision {
-                    branches: refs,
-                    tags: Vec::new(),
+                    branches: remote.branches,
+                    tags: remote.tags,
                     identity: identity::Identity {
                         id: urn.clone(),
                         metadata: identity::Metadata {
@@ -1241,6 +1241,7 @@ mod test {
         let handle = owner.name().to_string();
         let avatar = avatar::Avatar::from(&owner_urn.to_string(), avatar::Usage::Identity);
 
+        // TODO(rudolfs): we should test remote peers as well
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
@@ -1256,7 +1257,7 @@ mod test {
                             "avatarFallback": avatar
                         },
                         "branches": [ "dev", "master" ],
-                        "tags": []
+                        "tags": ["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]
                     },
                 ]),
             )
