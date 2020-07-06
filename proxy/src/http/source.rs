@@ -837,7 +837,6 @@ mod test {
     use crate::coco;
     use crate::error;
     use crate::http;
-    use crate::identity;
     use crate::registry;
 
     #[tokio::test]
@@ -1225,55 +1224,11 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let want = {
-            let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
-                Ok((coco::branches(browser, None)?, coco::tags(browser)?))
-            })?;
-
-            [
-                (
-                    "cloudhead",
-                    "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-                ),
-                (
-                    "rudolfs",
-                    "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-                ),
-                (
-                    "xla",
-                    "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-                ),
-            ]
-            .iter()
-            .map(|(fake_handle, fake_peer_urn)| super::Revision {
-                branches: branches.clone(),
-                tags: tags.clone(),
-                identity: identity::Identity {
-                    // TODO(finto): Get the right URN
-                    id: fake_peer_urn
-                        .parse()
-                        .expect("failed to parse hardcoded URN"),
-                    metadata: identity::Metadata {
-                        handle: (*fake_handle).to_string(),
-                    },
-                    avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
-                    registered: None,
-                    shareable_entity_identifier: identity::SharedIdentifier {
-                        handle: (*fake_handle).to_string(),
-                        urn: fake_peer_urn
-                            .parse()
-                            .expect("failed to parse hardcoded URN"),
-                    },
-                },
-            })
-            .collect::<Vec<super::Revision>>()
-        };
-
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            Arc::new(RwLock::new(Some(owner))),
+            Arc::new(RwLock::new(Some(owner.clone()))),
         );
 
         let res = request()
@@ -1282,70 +1237,26 @@ mod test {
             .reply(&api)
             .await;
 
+        let owner_urn = owner.urn();
+        let handle = owner.name().to_string();
+        let avatar = avatar::Avatar::from(&owner_urn.to_string(), avatar::Usage::Identity);
+
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
             assert_eq!(
                 have,
                 json!([
                     {
                         "identity": {
-                            "id": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+                            "id": owner_urn,
                             "metadata": {
-                                "handle": "cloudhead",
+                                "handle": owner.name().to_string(),
                             },
                             "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("cloudhead@{}", "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 105,
-                                    "b": 216,
-                                },
-                                "emoji": "🌻",
-                            },
+                            "shareableEntityIdentifier": format!("{}@{}", handle, owner_urn),
+                            "avatarFallback": avatar
                         },
                         "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                    },
-                    {
-                        "identity": {
-                            "id": "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-                            "metadata": {
-                                "handle": "rudolfs",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("rudolfs@{}", "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 186,
-                                    "b": 214,
-                                },
-                            "emoji": "🧿",
-                            },
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                    },
-                    {
-                        "identity": {
-                            "id": "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-                            "metadata": {
-                                "handle": "xla",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("xla@{}", "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 155,
-                                    "g": 157,
-                                    "b": 169,
-                                },
-                            "emoji": "🗺",
-                            },
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                        "tags": []
                     },
                 ]),
             )
