@@ -8,12 +8,7 @@
     PayerType,
   } from "../../src/transaction.ts";
 
-  import {
-    Avatar,
-    Caption,
-    Numeric,
-    Title,
-  } from "../../DesignSystem/Primitive";
+  import { Avatar, Numeric, Title, Text } from "../../DesignSystem/Primitive";
 
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
@@ -47,54 +42,34 @@
   $: updateAvatar();
 </script>
 
-<Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
-  Your transaction
-</Caption>
-
-<Row dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
-  <div slot="left" data-cy="message">
-    <Title>{formatMessage(transaction.messages[0])}</Title>
+<div dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
+  <div
+    data-cy="message"
+    style="text-align:center; background-color: var(--color-foreground-level-1);
+    padding: 48px; border-radius: 4px; border: 1px solid
+    var(--color-foreground-level-2); margin-bottom:24px">
+    <Title variant="big">{formatMessage(transaction.messages[0])}</Title>
+    <caption style="display: inline-flex; margin:16px 0;">
+      {#if avatar}
+        <Avatar
+          title={subject.name}
+          imageUrl={avatar.url}
+          avatarFallback={avatar.emoji && avatar}
+          variant={subjectAvatarShape()}
+          style="color: var(--color-foreground)"
+          dataCy="subject-avatar" />
+      {:else}
+        <Title>{subject.name}</Title>
+      {/if}
+    </caption>
   </div>
+</div>
 
-  <div slot="right" data-cy="subject">
-    {#if avatar}
-      <Avatar
-        title={subject.name}
-        imageUrl={avatar.url}
-        avatarFallback={avatar.emoji && avatar}
-        variant={subjectAvatarShape()}
-        style="color: var(--color-foreground)"
-        dataCy="subject-avatar" />
-    {:else}
-      <Title>{subject.name}</Title>
-    {/if}
-  </div>
-</Row>
-
-{#if transaction.id}
-  <Row
-    variant="bottom"
-    style="height: 32px; background-color: var(--color-foreground-level-1)">
-    <div slot="left">
-      <Numeric variant="tiny" style="color: var(--color-foreground-level-6)">
-        {transaction.id}
-      </Numeric>
-    </div>
-  </Row>
-{/if}
-
-<Caption
-  style="color: var(--color-foreground-level-6); margin-bottom: 16px;
-  margin-top: 32px;">
-  Transaction cost
-</Caption>
-
-<Row
-  dataCy="deposit"
-  variant="top"
-  style="background-color: var(--color-foreground-level-1)">
+<Row dataCy="deposit" variant="top" style="">
   <div slot="left">
-    <Title>{formatStake(transaction.messages[0])}</Title>
+    <Text variant="regular" style="color:var(--color-foreground-level-6);">
+      {formatStake(transaction.messages[0])}
+    </Text>
   </div>
 
   <div slot="right">
@@ -102,48 +77,63 @@
   </div>
 </Row>
 
-<Row
-  dataCy="transaction-fee"
-  variant="middle"
-  style="background-color: var(--color-foreground-level-1)">
+<Row dataCy="transaction-fee" variant="middle" style="">
   <div slot="left">
-    <Title>Transaction Fee</Title>
+    <Text variant="regular" style="color:var(--color-foreground-level-6);">
+      Transaction Fee
+    </Text>
   </div>
 
   <div slot="right">
-    <Rad rad={summary.feeRad} usd={summary.feeUsd} size="big" />
+    <Rad rad={summary.feeRad} usd={summary.feeUsd} />
   </div>
 </Row>
 
-<Row
-  dataCy="total"
-  variant="bottom"
-  style="margin-bottom: 32px; background-color: var(--color-foreground-level-1)">
+<Row dataCy="total" variant="bottom" style="margin-bottom: 24px;">
   <div slot="left">
-    <Title style="color: var(--color-primary);" variant="big">Total</Title>
+    <Title style="color: var(--color-foreground-level-6);" variant="medium">
+      Total
+    </Title>
   </div>
 
   <div slot="right">
-    <Rad rad={summary.totalRad} usd={summary.totalUsd} size="big" />
+    <Rad rad={summary.totalRad} usd={summary.totalUsd} />
   </div>
 </Row>
 
-<Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
-  Paid by
-</Caption>
-
-<Row style="background-color: var(--color-foreground-level-1)">
+<Row style="margin-bottom: 24px;">
   <div slot="left">
+    <Text variant="regular" style="color:var(--color-foreground-level-6);">
+      Transaction ID
+    </Text>
+  </div>
+  <div slot="right">
+    <!-- TO DO make transaction ID copyable -->
+    {#if transaction.id}
+      <Numeric
+        variant="regular"
+        style="color: var(--color-foreground-level-6); max-width: 24ch;
+        overflow: hidden; text-overflow: ellipsis;">
+        {transaction.id}
+      </Numeric>
+    {/if}
+  </div>
+</Row>
+
+<Row style="">
+  <div slot="left">
+    <Text style="color: var(--color-foreground-level-6);" variant="regular">
+      Funding source
+    </Text>
+  </div>
+
+  <div slot="right">
     <Avatar
       dataCy="payer-avatar"
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}
       variant={payer.type === PayerType.User ? 'circle' : 'square'}
-      style="color: var(--color-foreground)" />
-  </div>
-
-  <div slot="right">
-    <Rad rad={999} usd={999} size="big" />
+      style="color: var(--color-foreground-level-6);" />
   </div>
 </Row>

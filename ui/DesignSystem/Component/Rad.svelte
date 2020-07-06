@@ -4,7 +4,6 @@
   export let rad = null;
   export let usd = null;
   export let style = null;
-  export let size = "regular"; // regular | big
 </script>
 
 <style>
@@ -18,30 +17,20 @@
     display: flex;
     align-items: center;
     margin-bottom: 4px;
+    display: inline-flex;
+    color: var(--color-negative);
+    background: var(--color-negative-level-1);
+    padding: 2px 4px;
+    border-radius: 4px;
   }
 </style>
 
 <div class="wrapper" {style}>
   <div class="rad-amount">
-    <Icon.Circle style="fill: var(--color-primary); margin-right: 4px" />
-    {#if size === 'big'}
-      <Numeric
-        dataCy="rad-amount"
-        variant="big"
-        style="display: inline-flex; color: var(--color-foreground-level-6)">
-        {rad}
-      </Numeric>
-    {:else}
-      <Numeric
-        dataCy="rad-amount"
-        style="display: inline-flex; color: var(--color-foreground-level-6)">
-        {rad}
-      </Numeric>
-    {/if}
+    <Icon.Currency style="fill: var(--color-negative); margin: 2px 4px 0 0" />
+    <Numeric dataCy="rad-amount">{rad}</Numeric>
   </div>
   {#if usd !== null}
-    <Numeric dataCy="usd-amount" style="color: var(--color-foreground-level-5)">
-      ${usd}
-    </Numeric>
+    <Numeric dataCy="usd-amount" style="display:none;">${usd}</Numeric>
   {/if}
 </div>

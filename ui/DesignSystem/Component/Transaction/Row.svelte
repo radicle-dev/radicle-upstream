@@ -17,8 +17,8 @@
   .row {
     padding-left: 16px;
     padding-right: 16px;
-    border: 1px solid var(--color-foreground-level-3);
-    height: 72px;
+    border: 1px solid var(--color-foreground-level-2);
+    height: 56px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -33,7 +33,7 @@
 
   .row.disabled {
     box-shadow: none;
-    border: 1px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-2);
     cursor: default;
   }
 
@@ -43,11 +43,11 @@
   }
 
   .single {
-    border-radius: 2px;
+    border-radius: 4px;
   }
 
   .bottom {
-    border-radius: 0 0 2px 2px;
+    border-radius: 0 0 4px 4px;
   }
 
   .middle {
@@ -56,7 +56,7 @@
 
   .top {
     margin-bottom: -1px;
-    border-radius: 2px 2px 0 0;
+    border-radius: 4px 4px 0 0;
   }
 </style>
 

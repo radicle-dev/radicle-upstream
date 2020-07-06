@@ -11,6 +11,7 @@ import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
 import Cross from "./Cross.svelte";
+import Currency from "./Currency.svelte";
 import Edit from "./Edit.svelte";
 import Ellipses from "./Ellipses.svelte";
 import EmptyState from "./EmptyState.svelte";
@@ -59,6 +60,7 @@ export default {
   Commit,
   Copy,
   Cross,
+  Currency,
   Edit,
   Ellipses,
   EmptyState,

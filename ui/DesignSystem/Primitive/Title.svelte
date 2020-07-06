@@ -6,6 +6,14 @@
 </script>
 
 <style>
+  .huge,
+  .big,
+  .large,
+  .medium,
+  .regular {
+    cursor: default;
+  }
+
   .huge {
     font-family: var(--typeface-bold);
     font-size: 36px;
