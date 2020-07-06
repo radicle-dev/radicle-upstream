@@ -327,6 +327,9 @@ mod test {
                     "appearance": {
                         "theme": "light",
                     },
+                    "ecosystem": {
+                        "seeds": []
+                    },
                     "registry": {
                         "network": "emulator",
                     },
@@ -389,6 +392,9 @@ mod test {
                 "settings": {
                     "appearance": {
                         "theme": "dark",
+                    },
+                    "ecosystem": {
+                        "seeds": []
                     },
                     "registry": {
                         "network": "emulator",

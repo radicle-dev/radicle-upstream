@@ -171,6 +171,8 @@ pub mod settings {
         pub appearance: Appearance,
         /// Currently set registry parameters.
         pub registry: Registry,
+        /// User-determined p2p parameters.
+        pub ecosystem: Ecosystem,
     }
 
     /// Knobs for the look and feel.
@@ -221,5 +223,12 @@ pub mod settings {
         fn default() -> Self {
             Self::Emulator
         }
+    }
+
+    /// p2p config parameters subject to user preferences
+    #[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
+    pub struct Ecosystem {
+        /// Sources of feeds
+        pub seeds: Vec<String>,
     }
 }
