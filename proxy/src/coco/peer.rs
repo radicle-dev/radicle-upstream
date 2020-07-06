@@ -10,9 +10,10 @@ use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
-use librad::uri::RadUrn;
+use librad::uri::{Path, Protocol, RadUrn};
 use radicle_surf::vcs::git::{self, git2};
 
+use super::source;
 use crate::error;
 use crate::project::Project;
 
@@ -111,6 +112,57 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
             })
         })
         .collect()
+}
+
+/// Get all peer IDs and their branches.
+///
+/// # Errors
+///
+///   * [`error::Error::LibradLock`]
+///   * [`error::Error::Git`]
+pub fn remotes(
+    peer: &PeerApi,
+    owner: &User,
+    project_urn: &RadUrn,
+) -> Result<Vec<(user::User<entity::Draft>, Vec<source::Branch>)>, error::Error> {
+    let project = get_project(peer, project_urn)?;
+    let peer_id = peer.peer_id();
+    let storage = peer.storage();
+    let repo = storage.open_repo(project.urn())?;
+    let refs = repo.rad_refs()?;
+
+    let local_branches = with_browser(peer, &project.urn(), |browser| {
+        Ok(source::local_branches(&browser)?)
+    })?;
+
+    let owner = owner.to_data().build()?; // TODO(finto): Dirty hack to make our Verified User into a Draft one
+    let mut remotes = vec![(owner.clone(), local_branches)];
+
+    for remote in refs.remotes.flatten() {
+        let refs = if remote == peer_id {
+            // TODO(finto): Bug in librad
+            continue;
+        } else {
+            let remote_branches = storage.rad_refs_of(&project.urn(), remote.clone())?;
+            remote_branches
+                .heads
+                .keys()
+                .cloned()
+                .map(source::Branch)
+                .collect()
+        };
+
+        // TODO(finto): Can we do this by not going through string?
+        let hash = librad::hash::Hash::hash(remote.to_string().as_bytes());
+        // TODO(finto): This doesn't actually get the user. The peer id is their peer
+        // device rather than the Hash of their user profile.
+        let id = RadUrn::new(hash, Protocol::Git, Path::new());
+        let user = get_user(&peer, &id)?;
+
+        remotes.push((user, refs));
+    }
+
+    Ok(remotes)
 }
 
 /// Returns the list of [`user::User`]s known for your peer.

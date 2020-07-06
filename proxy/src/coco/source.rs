@@ -5,7 +5,7 @@ use std::str::FromStr;
 use librad::peer;
 use radicle_surf::{
     diff, file_system,
-    vcs::git::{self, git2, BranchName, Browser},
+    vcs::git::{self, git2, BranchName, BranchType, Browser},
 };
 
 use syntect::easy::HighlightLines;
@@ -283,9 +283,29 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
+pub fn branches<'repo>(
+    browser: &Browser<'repo>,
+    branch_type: Option<BranchType>,
+) -> Result<Vec<Branch>, error::Error> {
     let mut branches = browser
-        .list_branches(None)?
+        .list_branches(branch_type)?
+        .into_iter()
+        .map(|b| Branch(b.name.name().to_string()))
+        .collect::<Vec<Branch>>();
+
+    branches.sort();
+
+    Ok(branches)
+}
+
+/// Given a project id to a repo returns the list of local branches.
+///
+/// # Errors
+///
+/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
+pub fn local_branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
+    let mut branches = browser
+        .list_branches(Some(BranchType::Local))?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
@@ -313,7 +333,7 @@ pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
     let repo = git::Repository::new(repo_path)?;
     let browser = Browser::new(&repo, "master")?;
     let mut branches = browser
-        .list_branches(Some(git::BranchType::Local))?
+        .list_branches(Some(BranchType::Local))?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();

@@ -19,6 +19,7 @@ pub fn routes<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
+    owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
@@ -29,7 +30,7 @@ where
             .or(commit_filter(Arc::clone(&peer)))
             .or(commits_filter(Arc::clone(&peer)))
             .or(local_state_filter())
-            .or(revisions_filter(Arc::clone(&peer)))
+            .or(revisions_filter(Arc::clone(&peer), Arc::clone(&owner)))
             .or(tags_filter(Arc::clone(&peer)))
             .or(tree_filter(peer)),
     )
@@ -41,6 +42,7 @@ fn filters<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
+    owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
@@ -50,7 +52,7 @@ where
         .or(commit_filter(Arc::clone(&peer)))
         .or(commits_filter(Arc::clone(&peer)))
         .or(local_state_filter())
-        .or(revisions_filter(Arc::clone(&peer)))
+        .or(revisions_filter(Arc::clone(&peer), Arc::clone(&owner)))
         .or(tags_filter(Arc::clone(&peer)))
         .or(tree_filter(peer))
 }
@@ -200,6 +202,7 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 /// `GET /revisions/<project_id>`
 fn revisions_filter(
     peer: Arc<Mutex<coco::PeerApi>>,
+    owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("revisions")
         .and(warp::get())
@@ -222,6 +225,7 @@ fn revisions_filter(
             )
             .description("List of branches and tags"),
         ))
+        .and(http::with_owner_guard(owner))
         .and_then(handler::revisions)
 }
 
@@ -345,7 +349,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let branches = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
+        let branches = coco::with_browser(&peer, &urn, |browser| coco::branches(browser, None))?;
 
         Ok(reply::json(&branches))
     }
@@ -390,53 +394,35 @@ mod handler {
     pub async fn revisions(
         peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
+        owner: coco::User,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
-            Ok((coco::branches(browser)?, coco::tags(browser)?))
-        })?;
+        let peer = &*peer.lock().await;
+        let remotes = coco::remotes(peer, &owner, &urn)?;
 
-        // TODO(rudolfs): the order of the returned peers/revisions determines the default peer in
-        // the repository selector in the UI. Make sure the list always returns the default peer
-        // first.
-        let revs = [
-            (
-                "cloudhead",
-                "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-            ),
-            (
-                "rudolfs",
-                "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-            ),
-            (
-                "xla",
-                "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-            ),
-        ]
-        .iter()
-        .map(|(fake_handle, fake_peer_urn)| super::Revision {
-            branches: branches.clone(),
-            tags: tags.clone(),
-            identity: identity::Identity {
-                // TODO(finto): Get the right URN
-                id: fake_peer_urn
-                    .parse()
-                    .expect("failed to parse hardcoded URN"),
-                metadata: identity::Metadata {
-                    handle: (*fake_handle).to_string(),
-                },
-                avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
-                registered: None,
-                shareable_entity_identifier: identity::SharedIdentifier {
-                    handle: (*fake_handle).to_string(),
-                    urn: fake_peer_urn
-                        .parse()
-                        .expect("failed to parse hardcoded URN"),
-                },
-            },
-        })
-        .collect::<Vec<super::Revision>>();
+        let revs = remotes
+            .into_iter()
+            .map(|(user, refs)| {
+                let urn = user.urn();
+                let handle = user.name().to_string();
+                super::Revision {
+                    branches: refs,
+                    tags: Vec::new(),
+                    identity: identity::Identity {
+                        id: urn.clone(),
+                        metadata: identity::Metadata {
+                            handle: handle.clone(),
+                        },
+                        avatar_fallback: avatar::Avatar::from(
+                            &urn.to_string(),
+                            avatar::Usage::Identity,
+                        ),
+                        registered: None,
+                        shareable_entity_identifier: identity::SharedIdentifier { handle, urn },
+                    },
+                }
+            })
+            .collect::<Vec<super::Revision>>();
 
         Ok(reply::json(&revs))
     }
@@ -896,6 +882,7 @@ mod test {
             Arc::clone(&peer),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
+            Arc::new(RwLock::new(Some(owner))),
         );
 
         // Get ASCII blob.
@@ -1026,12 +1013,13 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
+        let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser, None))?;
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
+            Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
@@ -1081,6 +1069,7 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
+            Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
@@ -1148,6 +1137,7 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
+            Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
@@ -1185,6 +1175,7 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
+            Arc::new(RwLock::new(None)),
         );
         let res = request()
             .method("GET")
@@ -1236,7 +1227,7 @@ mod test {
 
         let want = {
             let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
-                Ok((coco::branches(browser)?, coco::tags(browser)?))
+                Ok((coco::branches(browser, None)?, coco::tags(browser)?))
             })?;
 
             [
@@ -1282,6 +1273,7 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
+            Arc::new(RwLock::new(Some(owner))),
         );
 
         let res = request()
@@ -1391,6 +1383,7 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
+            Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
@@ -1451,6 +1444,7 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
+            Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
