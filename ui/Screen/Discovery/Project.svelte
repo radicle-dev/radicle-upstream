@@ -21,12 +21,12 @@
   .container {
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 4px;
-    padding: 32px;
+    padding: 24px;
     overflow: hidden;
   }
 
   .container:hover {
-    border: 2px solid var(--color-foreground-level-3);
+    box-shadow: 0 0 0 1px var(--color-foreground-level-2);
     background: var(--color-foreground-level-1);
   }
 
@@ -111,6 +111,6 @@
       branches={project.stats.branches}
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
-    <Avatar avatarFallback={project.maintainers[0].avatar} />
+    <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
   </div>
 </div>

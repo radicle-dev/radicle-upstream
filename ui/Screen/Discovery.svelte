@@ -11,24 +11,23 @@
 
 <style>
   .container {
-    margin: 64px 100px;
+    margin: var(--content-padding) 96px;
   }
 
   .projects {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    column-gap: 32px;
-    row-gap: 32px;
+    grid-gap: 24px;
   }
 </style>
 
 <SidebarLayout>
   <div class="container">
-    <Title variant="huge" style="margin-bottom: 28px;">Discover</Title>
+    <Title variant="huge" style="margin-bottom: 32px;">Discover</Title>
     <Input.Text
       placeholder="Filter projects"
       showLeftItem
-      style="margin-bottom: 28px; max-width: 350px;">
+      style="margin-bottom: 24px; max-width: 350px;">
       <div slot="left">
         <Icon.Search />
       </div>

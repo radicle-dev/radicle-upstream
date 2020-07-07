@@ -29,7 +29,7 @@
 <style>
   .container {
     max-width: var(--content-max-width);
-    margin: 64px 100px;
+    margin: 64px auto;
     min-width: var(--content-min-width);
     padding: 0 var(--content-padding);
   }
