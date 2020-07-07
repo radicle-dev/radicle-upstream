@@ -2,28 +2,25 @@
   import {
     clear,
     clearCache,
-    fetchSeeds,
+    addSeed,
+    removeSeed,
+    seeds,
     settings,
     updateAppearance,
-    updatePeerConfig,
     updateRegistry,
   } from "../src/session.ts";
   import { networkOptions, themeOptions } from "../src/settings.ts";
 
-  import { Button, Input, Text, Title } from "../DesignSystem/Primitive";
+  import { Button, Icon, Input, Text, Title } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
-  let seeds = fetchSeeds();
+  let seedInputValue;
 
   const updateNetwork = event =>
     updateRegistry({ ...$settings.registry, network: event.detail });
 
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
-
-  const updateSeeds = event => {
-    updatePeerConfig(event.target.value);
-  };
 </script>
 
 <style>
@@ -64,11 +61,30 @@
     margin-left: 16px;
   }
 
-  /* TODO(sos): implement responsive margins once we have screen-based layouts */
-  @media (max-width: 1000px) {
-    .container {
-      margin: 64px auto;
-    }
+  .seed-entry-field {
+    display: flex;
+  }
+
+  .seeds {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .seed {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-foreground-level-3);
+    border-radius: 4px;
+    margin: 0 8px 8px 0;
+    padding: 8px;
+    cursor: default;
+  }
+
+  .seed:hover {
+    box-shadow: 0 0 0 1px
+      var(--focus-outline-color, var(--color-foreground-level-3));
+    background: var(--color-foreground-level-1);
   }
 </style>
 
@@ -116,11 +132,28 @@
       <header>
         <Title variant="large">Seeds</Title>
         <!-- TODO(sos): link to actual docs abt seeds -->
-        <!-- TODO(sos): should we have a submit button for seeds? -->
         <a href="link/to/docs">Learn about seeds</a>
       </header>
       <div class="info">
-        <Input.Textarea bind:value={seeds} on:change={updateSeeds} />
+        <div class="seed-entry-field">
+          <Input.Text bind:value={seedInputValue} style="margin-right: 8px;" />
+          <Button on:click={addSeed(seedInputValue)} disabled={!seedInputValue}>
+            Add
+          </Button>
+        </div>
+
+        <div class="seeds">
+          {#each $seeds.data as seed}
+            <div class="seed">
+              <Text
+                style="color: var(--color-foreground-level-6);"
+                variant="small">
+                {seed}
+              </Text>
+              <Icon.Cross on:click={removeSeed(seed)} />
+            </div>
+          {/each}
+        </div>
       </div>
     </section>
 

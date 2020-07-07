@@ -1,7 +1,9 @@
+import { get } from "svelte/store";
+
 import * as api from "./api";
 import * as project from "./project";
 import * as remote from "./remote";
-import { get } from "svelte/store";
+
 import { surfProjectMock, upstreamProjectMock } from "./__mocks__/api";
 
 jest.mock("./api");

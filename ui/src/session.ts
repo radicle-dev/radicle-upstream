@@ -135,23 +135,25 @@ export const updateRegistry = (registry: Registry): void =>
     settings: { ...get(settings), registry },
   });
 
-export const parseSeedsInput = (seeds: string) =>
-  seeds
-    .replace(/\r\n|\n|\r|\s/gm, ",")
-    .split(",")
-    .filter(seed => seed != "");
+// TODO(sos): hook all of this up to proxy; handle adding/removing logic there too
+const defaultSeeds = ["seed.radicle.xyz", "194.134.54.13"];
 
-// TODO(sos): hook these two up to proxy
-export const updatePeerConfig = (seeds: string) => {
-  const parsed = parseSeedsInput(seeds);
+const temporaryLocalSeedStore = remote.createStore<string[]>();
+temporaryLocalSeedStore.success(defaultSeeds);
+export const seeds = temporaryLocalSeedStore.readable;
 
-  // TODO(sos): submit to proxy
-  return parsed;
+export const removeSeed = (seed: string) => {
+  const seeds = get(temporaryLocalSeedStore).data.filter(
+    (s: string) => s !== seed
+  );
+  temporaryLocalSeedStore.success(seeds);
 };
 
-export const fetchSeeds = (seeds: string[]) => {
-  // TODO(sos): do we have default seeds?
-  const defaultSeeds = ["seed.radicle.xyz", "194.134.54.13"];
+export const addSeed = (seed: string) => {
+  // TODO(sos): light validation store for common seed errors. for now don't allow
+  // duplicates.
+  if (get(temporaryLocalSeedStore).data.includes(seed)) return;
 
-  return defaultSeeds.join("\n");
+  const seeds = [...get(temporaryLocalSeedStore).data, seed];
+  temporaryLocalSeedStore.success(seeds);
 };

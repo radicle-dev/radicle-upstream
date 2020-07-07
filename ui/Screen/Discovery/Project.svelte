@@ -26,7 +26,8 @@
   }
 
   .container:hover {
-    box-shadow: 0 0 0 1px var(--color-foreground-level-2);
+    box-shadow: 0 0 0 1px
+      var(--focus-outline-color, var(--color-foreground-level-2));
     background: var(--color-foreground-level-1);
   }
 
