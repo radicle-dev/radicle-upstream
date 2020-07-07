@@ -6,12 +6,10 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::Mutex;
 
 use librad::keys;
-use librad::uri::RadUrn;
 
 use crate::avatar;
 use crate::coco;
 use crate::error;
-use crate::http;
 use crate::registry;
 
 pub use shared_identifier::SharedIdentifier;
@@ -21,7 +19,7 @@ pub use shared_identifier::SharedIdentifier;
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
     /// The librad id.
-    pub id: RadUrn,
+    pub id: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: SharedIdentifier,
     /// Bundle of user provided data.
@@ -45,17 +43,10 @@ pub struct Metadata {
 /// # Errors
 pub async fn create(
     peer: Arc<Mutex<coco::PeerApi>>,
-    owner: http::Shared<Option<coco::User>>,
     key: keys::SecretKey,
     handle: String,
 ) -> Result<Identity, error::Error> {
     let user = coco::init_owner(peer, key, &handle).await?;
-
-    // Set the shared owner
-    {
-        let mut owner = owner.write().await;
-        *owner = Some(user.clone());
-    }
 
     let id = user.urn();
     let shareable_entity_identifier = user.into();
@@ -73,7 +64,7 @@ pub async fn create(
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(peer: &coco::PeerApi, id: &RadUrn) -> Result<Identity, error::Error> {
+pub fn get(peer: &coco::PeerApi, id: &coco::Urn) -> Result<Identity, error::Error> {
     let user = coco::get_user(peer, id)?;
     Ok(Identity {
         id: id.clone(),
@@ -89,23 +80,23 @@ pub fn get(peer: &coco::PeerApi, id: &RadUrn) -> Result<Identity, error::Error> 
     })
 }
 
-/// A `SharedIdentifier` is the combination of a user handle and the [`RadUrn`] that identifies the
-/// user.
+/// A `SharedIdentifier` is the combination of a user handle and the [`coco::Urn`] that identifies
+/// the user.
 pub mod shared_identifier {
-
     use std::{fmt, str::FromStr};
 
     use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
     use librad::meta::user;
-    use librad::uri::{rad_urn, RadUrn};
+
+    use crate::coco;
 
     /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
     #[derive(Debug, thiserror::Error)]
     pub enum ParseError {
         /// Could not parse the URN portion of the identifier.
         #[error(transparent)]
-        Urn(#[from] rad_urn::ParseError),
+        Urn(#[from] coco::ParseError),
         /// The identifier contained more than one '@' symbol.
         #[error("shared identifier contains more than one '@' symbol")]
         AtSplitError,
@@ -123,7 +114,7 @@ pub mod shared_identifier {
         /// The user's chosen handle.
         pub handle: String,
         /// The unique identifier of the user.
-        pub urn: RadUrn,
+        pub urn: coco::Urn,
     }
 
     impl<ST> From<user::User<ST>> for SharedIdentifier {
