@@ -4,11 +4,11 @@ use std::time::SystemTimeError;
 
 use librad::meta::common::url;
 use librad::meta::entity;
-use librad::uri::RadUrn;
 use radicle_registry_client as registry;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
 
+use crate::coco;
 use crate::keystore;
 
 /// Project problems.
@@ -38,7 +38,7 @@ pub enum UserValidation {
 pub enum Error {
     /// Returned when an attempt to create an identity was made and there is one present.
     #[error("the identity '{0}' already exits")]
-    EntityExists(RadUrn),
+    EntityExists(coco::Urn),
 
     /// Configured default branch for the project is missing.
     #[error("repository '{0}' doesn't have the configured default branch '{1}'")]
@@ -100,9 +100,9 @@ pub enum Error {
     #[error(transparent)]
     LibradParse(#[from] librad::uri::path::ParseError),
 
-    /// Parse error for `RadUrn`
+    /// Parse error for [`coco::Urn`].
     #[error(transparent)]
-    LibradParseUrn(#[from] librad::uri::rad_urn::ParseError),
+    LibradParseUrn(#[from] coco::ParseError),
 
     /// Project error from `librad`.
     #[error(transparent)]
