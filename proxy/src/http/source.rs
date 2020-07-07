@@ -19,18 +19,17 @@ pub fn routes<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
-    owner: &http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
     path("source").and(
-        blob_filter(Arc::clone(&peer), registry, store)
+        blob_filter(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store))
             .or(branches_filter(Arc::clone(&peer)))
             .or(commit_filter(Arc::clone(&peer)))
             .or(commits_filter(Arc::clone(&peer)))
             .or(local_state_filter())
-            .or(revisions_filter(Arc::clone(&peer), Arc::clone(owner)))
+            .or(revisions_filter(Arc::clone(&peer), registry, store))
             .or(tags_filter(Arc::clone(&peer)))
             .or(tree_filter(peer)),
     )
@@ -42,17 +41,16 @@ fn filters<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
-    owner: &http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
-    blob_filter(Arc::clone(&peer), registry, store)
+    blob_filter(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store))
         .or(branches_filter(Arc::clone(&peer)))
         .or(commit_filter(Arc::clone(&peer)))
         .or(commits_filter(Arc::clone(&peer)))
         .or(local_state_filter())
-        .or(revisions_filter(Arc::clone(&peer), Arc::clone(owner)))
+        .or(revisions_filter(Arc::clone(&peer), registry, store))
         .or(tags_filter(Arc::clone(&peer)))
         .or(tree_filter(peer))
 }
@@ -200,13 +198,17 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 }
 
 /// `GET /revisions/<project_id>`
-fn revisions_filter(
+fn revisions_filter<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
-    owner: http::Shared<Option<coco::User>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    registry: http::Shared<R>,
+    store: http::Shared<kv::Store>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("revisions")
         .and(warp::get())
-        .and(super::with_peer(peer))
+        .and(http::with_peer(Arc::clone(&peer)))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -225,7 +227,7 @@ fn revisions_filter(
             )
             .description("List of branches and tags"),
         ))
-        .and(http::with_owner_guard(owner))
+        .and(http::with_owner_guard(peer, registry, store))
         .and_then(handler::revisions)
 }
 
@@ -881,7 +883,6 @@ mod test {
             Arc::clone(&peer),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            &Arc::new(RwLock::new(Some(owner))),
         );
 
         // Get ASCII blob.
@@ -1018,7 +1019,6 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            &Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
@@ -1068,7 +1068,6 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            &Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
@@ -1136,7 +1135,6 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            &Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
@@ -1174,7 +1172,6 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            &Arc::new(RwLock::new(None)),
         );
         let res = request()
             .method("GET")
@@ -1228,7 +1225,6 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            &Arc::new(RwLock::new(Some(owner.clone()))),
         );
 
         let res = request()
@@ -1295,7 +1291,6 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            &Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
@@ -1356,7 +1351,6 @@ mod test {
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
-            &Arc::new(RwLock::new(Some(owner))),
         );
         let res = request()
             .method("GET")
