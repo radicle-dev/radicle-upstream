@@ -16,27 +16,35 @@ use crate::project;
 use crate::registry;
 
 /// Combination of all routes.
-pub fn filters(
+pub fn filters<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     keystore: http::Shared<keystore::Keystorage>,
-    owner: http::Shared<Option<coco::User>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    registry: http::Shared<R>,
+    store: http::Shared<kv::Store>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     list_filter(Arc::clone(&peer))
-        .or(create_filter(Arc::clone(&peer), keystore, owner))
+        .or(create_filter(Arc::clone(&peer), keystore, registry, store))
         .or(get_filter(peer))
 }
 
 /// `POST /projects`
-fn create_filter(
+fn create_filter<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     keystore: http::Shared<keystore::Keystorage>,
-    owner: http::Shared<Option<coco::User>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    registry: http::Shared<R>,
+    store: http::Shared<kv::Store>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path!("projects")
         .and(warp::post())
-        .and(http::with_peer(peer))
+        .and(http::with_peer(Arc::clone(&peer)))
         .and(http::with_shared(keystore))
-        .and(http::with_owner_guard(owner))
+        .and(http::with_owner_guard(peer, registry, store))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -397,11 +405,17 @@ mod test {
     use crate::http;
     use crate::keystore;
     use crate::project;
+    use crate::registry;
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let paths = paths::Paths::from_root(tmp_dir.path())?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
@@ -411,9 +425,6 @@ mod test {
         let peer = coco::create_peer_api(config).await?;
         let peer = Arc::new(Mutex::new(peer));
 
-        let owner = coco::init_owner(Arc::clone(&peer), key, "cloudhead").await?;
-        let owner = Arc::new(RwLock::new(Some(owner)));
-
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
@@ -421,7 +432,8 @@ mod test {
         let api = super::filters(
             Arc::clone(&peer),
             Arc::new(RwLock::new(keystore)),
-            Arc::clone(&owner),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
         );
         let res = request()
             .method("POST")
@@ -467,6 +479,11 @@ mod test {
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let paths = paths::Paths::from_root(tmp_dir.path())?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
@@ -492,7 +509,8 @@ mod test {
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(keystore)),
-            Arc::new(RwLock::new(Some(owner))),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
         );
 
         let res = request()
@@ -512,6 +530,11 @@ mod test {
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let paths = paths::Paths::from_root(tmp_dir.path())?;
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
@@ -530,7 +553,8 @@ mod test {
         let api = super::filters(
             Arc::clone(&peer),
             Arc::new(RwLock::new(keystore)),
-            Arc::new(RwLock::new(Some(owner))),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
         );
         let res = request().method("GET").path("/projects").reply(&api).await;
 

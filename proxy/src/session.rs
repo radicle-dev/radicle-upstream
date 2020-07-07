@@ -77,12 +77,18 @@ where
     // Reset the permissions
     session.permissions = Permissions::default();
 
+    let api = peer.lock().await;
+
+    if let Some(id) = session.identity.clone() {
+        session.identity = identity::get(&*api, &id.id).ok();
+    }
+
     if let Some(mut id) = session.identity.clone() {
         if let Some(handle) = id.registered.clone() {
             if registry.get_user(handle.clone()).await?.is_some() {
                 session.orgs = registry.list_orgs(handle).await?;
                 session.permissions.register_org = true;
-                let projects = coco::list_projects(&*peer.lock().await)?;
+                let projects = coco::list_projects(&*api)?;
                 if !projects.is_empty() {
                     session.permissions.register_project = true;
                 }

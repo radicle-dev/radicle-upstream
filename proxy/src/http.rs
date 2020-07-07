@@ -51,7 +51,6 @@ macro_rules! combine {
 /// Main entry point for HTTP API.
 pub fn api<R>(
     peer: coco::PeerApi,
-    owner: Option<coco::User>, // None if the default owner was not found
     keystore: keystore::Keystorage,
     registry: R,
     store: kv::Store,
@@ -61,8 +60,6 @@ where
     R: registry::Cache + registry::Client + 'static,
 {
     let peer = Arc::new(Mutex::new(peer));
-    // TODO(finto): The user should be read from rad/self
-    let owner = Arc::new(RwLock::new(owner));
     let keystore = Arc::new(RwLock::new(keystore));
     let registry = Arc::new(RwLock::new(registry));
     let store = Arc::new(RwLock::new(store));
@@ -73,12 +70,11 @@ where
         enable_control,
         Arc::clone(&peer),
         Arc::clone(&keystore),
-        Arc::clone(&owner),
         Arc::clone(&registry),
+        Arc::clone(&store),
     );
     let identity_filter = identity::filters(
         Arc::clone(&peer),
-        Arc::clone(&owner),
         Arc::clone(&keystore),
         Arc::clone(&registry),
         Arc::clone(&store),
@@ -89,7 +85,12 @@ where
         Arc::clone(&registry),
         subscriptions.clone(),
     );
-    let project_filter = project::filters(Arc::clone(&peer), keystore, Arc::clone(&owner));
+    let project_filter = project::filters(
+        Arc::clone(&peer),
+        keystore,
+        Arc::clone(&registry),
+        Arc::clone(&store),
+    );
     let session_filter =
         session::routes(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
     let source_filter = source::routes(peer, Arc::clone(&registry), Arc::clone(&store));
@@ -140,17 +141,36 @@ where
 /// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-pub fn with_owner_guard(maybe_owner: Shared<Option<coco::User>>) -> BoxedFilter<(coco::User,)> {
+pub fn with_owner_guard<R>(
+    api: Arc<Mutex<coco::PeerApi>>,
+    registry: Shared<R>,
+    store: Arc<RwLock<kv::Store>>,
+) -> BoxedFilter<(coco::User,)>
+where
+    R: registry::Client + 'static,
+{
     warp::any()
-        .map(move || Arc::clone(&maybe_owner))
-        .and_then(|maybe_owner: Shared<Option<coco::User>>| async move {
-            let maybe_owner = maybe_owner.read().await;
+        .and(with_peer(api))
+        .and(with_shared(registry))
+        .and(with_shared(store))
+        .and_then(
+            |api: Arc<Mutex<coco::PeerApi>>, registry: Shared<R>, store: Arc<RwLock<kv::Store>>| async move {
+                let session =
+                    crate::session::current(Arc::clone(&api), &*registry.read().await, &*store.read().await)
+                        .await
+                        .expect("unable to get current sesison");
 
-            match &*maybe_owner {
-                Some(owner) => Ok(owner.clone()),
-                None => Err(Rejection::from(error::Routing::MissingOwner)),
-            }
-        })
+                if let Some(identity) = session.identity {
+                    let api = api.lock().await;
+                    let user = coco::get_user(&*api, &identity.id).expect("unable to get coco user");
+                    let user = coco::verify_user(user).await.expect("unable to verify user");
+
+                    Ok(user)
+                } else {
+                    Err(Rejection::from(error::Routing::MissingOwner))
+                }
+            },
+        )
         .boxed()
 }
 
@@ -274,11 +294,7 @@ mod test {
     use http::response::Response;
     use pretty_assertions::assert_eq;
     use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
-    use warp::test::request;
-    use warp::Filter as _;
 
     pub fn assert_response<F>(res: &Response<Bytes>, code: StatusCode, checks: F)
     where
@@ -294,17 +310,5 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).expect("failed to deserialise body");
         checks(have);
-    }
-
-    #[tokio::test]
-    async fn with_user_guard() {
-        let filter = warp::any()
-            .and(super::with_owner_guard(Arc::new(RwLock::new(None))))
-            .map(move |_owner| warp::reply())
-            .recover(super::error::recover);
-
-        let res = request().method("GET").path("/").reply(&filter).await;
-
-        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
     }
 }
