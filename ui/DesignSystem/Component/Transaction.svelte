@@ -101,24 +101,24 @@
   </div>
 </Row>
 
-<Row style="margin-bottom: 24px;">
-  <div slot="left">
-    <Text variant="regular" style="color:var(--color-foreground-level-6);">
-      Transaction ID
-    </Text>
-  </div>
-  <div slot="right">
-    <!-- TO DO make transaction ID copyable -->
-    {#if transaction.id}
+{#if transaction.id}
+  <Row style="margin-bottom: 24px;">
+    <div slot="left">
+      <Text variant="regular" style="color:var(--color-foreground-level-6);">
+        Transaction ID
+      </Text>
+    </div>
+    <div slot="right">
+      <!-- TO DO make transaction ID copyable -->
       <Numeric
         variant="regular"
         style="color: var(--color-foreground-level-6); max-width: 24ch;
         overflow: hidden; text-overflow: ellipsis;">
         {transaction.id}
       </Numeric>
-    {/if}
-  </div>
-</Row>
+    </div>
+  </Row>
+{/if}
 
 <Row style="">
   <div slot="left">

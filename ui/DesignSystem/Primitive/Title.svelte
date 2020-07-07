@@ -2,18 +2,10 @@
   export let style = null;
   export let dataCy = null;
 
-  export let variant = "regular"; // regular | medium | large | big | huge
+  export let variant = "regular"; // regular | tiny | medium | large | big | huge
 </script>
 
 <style>
-  .huge,
-  .big,
-  .large,
-  .medium,
-  .regular {
-    cursor: default;
-  }
-
   .huge {
     font-family: var(--typeface-bold);
     font-size: 36px;
@@ -42,6 +34,12 @@
     font-family: var(--typeface-medium);
     font-size: 16px;
     line-height: 22px;
+  }
+
+  .tiny {
+    font-family: var(--typeface-medium);
+    font-size: 14px;
+    line-height: 16px;
   }
 </style>
 

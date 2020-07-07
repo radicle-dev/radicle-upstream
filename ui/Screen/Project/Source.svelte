@@ -263,8 +263,9 @@
               <Readme content={readme.content} path={readme.path} />
             {:else}
               <EmptyState
-                text="This project doesn't have a ReadMe yet."
+                text="This project doesn't have a README yet."
                 icon="eyes"
+                style="cursor:default;"
                 primaryActionText="Open an issue to make one" />
             {/if}
           </Remote>

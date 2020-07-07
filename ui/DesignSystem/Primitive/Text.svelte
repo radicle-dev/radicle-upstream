@@ -5,13 +5,6 @@
 </script>
 
 <style>
-  .regular,
-  .small,
-  .tiny,
-  .medium {
-    cursor: default;
-  }
-
   .regular {
     font-family: var(--typeface-regular);
     font-size: 16px;

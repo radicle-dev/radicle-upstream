@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Numeric } from "../Primitive";
+  import { Icon, Title } from "../Primitive";
 
   export let rad = null;
   export let usd = null;
@@ -13,24 +13,41 @@
     align-items: flex-end;
   }
 
-  .rad-amount {
+  .amount {
     display: flex;
     align-items: center;
     margin-bottom: 4px;
     display: inline-flex;
+    fill: var(--color-negative);
     color: var(--color-negative);
     background: var(--color-negative-level-1);
     padding: 2px 4px;
     border-radius: 4px;
   }
+
+  .wrapper:hover .rad {
+    display: none;
+  }
+
+  .usd {
+    display: none;
+  }
+
+  .wrapper:hover .usd {
+    display: block;
+  }
 </style>
 
 <div class="wrapper" {style}>
-  <div class="rad-amount">
-    <Icon.Currency style="fill: var(--color-negative); margin: 2px 4px 0 0" />
-    <Numeric dataCy="rad-amount">{rad}</Numeric>
+  <div class="amount rad">
+    <Icon.Currency />
+    <Title variant="tiny" dataCy="rad-amount" style="margin-left:2px;">
+      {rad}
+    </Title>
   </div>
   {#if usd !== null}
-    <Numeric dataCy="usd-amount" style="display:none;">${usd}</Numeric>
+    <div class="amount usd">
+      <Title variant="tiny" dataCy="usd-amount">${usd}</Title>
+    </div>
   {/if}
 </div>
