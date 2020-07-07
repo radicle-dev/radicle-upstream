@@ -262,7 +262,7 @@ pub async fn register_project<R: registry::Client>(
     let reg = registry.read().await;
     let maybe_coco_id = input
         .maybe_coco_id
-        .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project RadUrn"));
+        .map(|id| coco::Urn::from_str(&id).expect("Project RadUrn"));
     let domain_id = registry::Id::try_from(domain_id_str).map_err(crate::error::Error::from)?;
     let domain = match domain_type {
         registry::DomainType::Org => registry::ProjectDomain::Org(domain_id),
