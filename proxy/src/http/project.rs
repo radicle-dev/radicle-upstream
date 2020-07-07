@@ -403,9 +403,11 @@ mod test {
     use crate::coco;
     use crate::error;
     use crate::http;
+    use crate::identity;
     use crate::keystore;
     use crate::project;
     use crate::registry;
+    use crate::session;
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
@@ -428,6 +430,11 @@ mod test {
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
         let path = dir.path().to_str().unwrap();
+
+        let handle = "cloudhead";
+        let id = identity::create(Arc::clone(&peer), key, handle.parse().unwrap()).await?;
+
+        session::set_identity(&store, id.clone())?;
 
         let api = super::filters(
             Arc::clone(&peer),

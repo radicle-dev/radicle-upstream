@@ -80,7 +80,7 @@ where
     let api = peer.lock().await;
 
     if let Some(id) = session.identity.clone() {
-        session.identity = identity::get(&*api, &id.id).ok();
+        identity::get(&*api, &id.id)?;
     }
 
     if let Some(mut id) = session.identity.clone() {
