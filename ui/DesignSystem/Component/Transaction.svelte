@@ -14,6 +14,8 @@
     Text,
   } from "../../DesignSystem/Primitive";
 
+  import Copyable from "../../DesignSystem/Component/Copyable.svelte";
+
   import Rad from "./Rad.svelte";
   import Header from "./Transaction/Header.svelte";
   import Row from "./Transaction/Row.svelte";
@@ -27,6 +29,15 @@
   const subject = formatSubject(transaction.messages[0]);
 
   const updateAvatar = async () => (avatar = await subject.avatarSource);
+
+  let copyIcon = Icon.Copy;
+
+  const afterCopy = () => {
+    copyIcon = Icon.Check;
+    setTimeout(() => {
+      copyIcon = Icon.Copy;
+    }, 1000);
+  };
 
   const summary = costSummary(
     transaction.messages[0].type,
@@ -84,17 +95,19 @@
     </div>
     <div slot="right">
       <!-- TO DO make transaction ID copyable -->
-      <div
+      <Copyable
+        {afterCopy}
         style="background:var(--color-foreground-level-2); border-radius:2px;
-        display:inline-flex">
+        display:flex; align-items: center; padding: 4px;">
         <Numeric
           variant="small"
           style="color: var(--color-foreground-level-6); max-width: 24ch;
-          overflow: hidden; text-overflow: ellipsis; padding:3px;">
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
           {transaction.id}
         </Numeric>
-        <Icon.Copy />
-      </div>
+        <svelte:component this={copyIcon} size="small" />
+      </Copyable>
+
     </div>
   </Row>
 {/if}
