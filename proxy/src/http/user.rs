@@ -307,7 +307,7 @@ mod test {
     use crate::coco;
     use crate::error;
     use crate::http;
-    use crate::registry::{self, Cache as _};
+    use crate::registry;
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
@@ -436,7 +436,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let urn = coco::Urn::new(
             owner.root_hash().clone(),
             librad::uri::Protocol::Git,

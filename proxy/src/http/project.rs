@@ -452,7 +452,7 @@ mod test {
         let api = super::filters(ctx);
 
         let ctx = ctx.lock().await;
-        let owner = coco::init_user(&ctx.peer_api, ctx.key(), "cloudhead")?;
+        let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
@@ -486,11 +486,12 @@ mod test {
         let api = super::filters(ctx);
 
         let ctx = ctx.lock().await;
-        let owner = coco::init_owner(&ctx.peer_api, ctx.key()?, "cloudhead").await?;
+        let owner = coco::init_owner(&ctx.peer_api, ctx.key()?, "cloudhead")?;
 
         coco::control::setup_fixtures(&ctx.peer_api, ctx.key()?, &owner)?;
 
-        let owner = coco::init_owner(&ctx.peer_api, key.clone(), "cloudhead")?;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = coco::init_owner(&ctx.peer_api, key, "cloudhead")?;
 
         let res = request().method("GET").path("/projects").reply(&api).await;
 

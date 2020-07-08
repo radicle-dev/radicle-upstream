@@ -131,7 +131,6 @@ where
     R: Registry,
 {
     warp::any()
-<<<<<<< HEAD
         .and(with_context(ctx))
         .and_then(|ctx: Ctx<R>| async move {
             let ctx = ctx.lock().await;
@@ -142,38 +141,13 @@ where
             if let Some(identity) = session.identity {
                 let user =
                     coco::get_user(&ctx.peer_api, &identity.id).expect("unable to get coco user");
-                let user = coco::verify_user(user)
-                    .await
-                    .expect("unable to verify user");
+                let user = coco::verify_user(user).expect("unable to verify user");
 
                 Ok(user)
             } else {
                 Err(Rejection::from(error::Routing::MissingOwner))
             }
         })
-=======
-        .and(with_peer(api))
-        .and(with_shared(registry))
-        .and(with_shared(store))
-        .and_then(
-            |api: Arc<Mutex<coco::PeerApi>>, registry: Shared<R>, store: Arc<RwLock<kv::Store>>| async move {
-                let session =
-                    crate::session::current(Arc::clone(&api), &*registry.read().await, &*store.read().await)
-                        .await
-                        .expect("unable to get current sesison");
-
-                if let Some(identity) = session.identity {
-                    let api = api.lock().await;
-                    let user = coco::get_user(&*api, &identity.id).expect("unable to get coco user");
-                    let user = coco::verify_user(user).expect("unable to verify user");
-
-                    Ok(user)
-                } else {
-                    Err(Rejection::from(error::Routing::MissingOwner))
-                }
-            },
-        )
->>>>>>> xla/bump-librad
         .boxed()
 }
 

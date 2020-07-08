@@ -582,7 +582,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
