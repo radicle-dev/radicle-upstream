@@ -1,18 +1,20 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::convert::Infallible;
 use std::convert::TryFrom;
 use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
+
+use serde::{Deserialize, Serialize};
+use tokio::sync::RwLock;
 use warp::filters::BoxedFilter;
 use warp::http::StatusCode;
 use warp::{
     document::{self, ToDocumentedType},
     path, reply, Filter, Rejection, Reply,
 };
+
+use librad::keys;
 
 use crate::coco;
 use crate::keystore;
@@ -50,52 +52,35 @@ macro_rules! combine {
 
 /// Main entry point for HTTP API.
 pub fn api<R>(
-    peer: coco::PeerApi,
+    peer_api: coco::PeerApi,
     keystore: keystore::Keystorage,
     registry: R,
     store: kv::Store,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Cache + registry::Client + 'static,
+    R: Registry,
 {
-    let peer = Arc::new(Mutex::new(peer));
-    let keystore = Arc::new(RwLock::new(keystore));
-    let registry = Arc::new(RwLock::new(registry));
-    let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
+    let ctx = Context {
+        peer_api,
+        keystore,
+        registry,
+        store,
+        subscriptions,
+    };
+    let ctx = Arc::new(RwLock::new(ctx));
 
     let avatar_filter = avatar::get_filter();
-    let control_filter = control::routes(
-        enable_control,
-        Arc::clone(&peer),
-        Arc::clone(&keystore),
-        Arc::clone(&registry),
-        Arc::clone(&store),
-    );
-    let identity_filter = identity::filters(
-        Arc::clone(&peer),
-        Arc::clone(&keystore),
-        Arc::clone(&registry),
-        Arc::clone(&store),
-    );
+    let control_filter = control::routes(enable_control, Arc::clone(&ctx));
+    let identity_filter = identity::filters(Arc::clone(&ctx));
     let notification_filter = notification::filters(subscriptions.clone());
-    let org_filter = org::routes(
-        Arc::clone(&peer),
-        Arc::clone(&registry),
-        subscriptions.clone(),
-    );
-    let project_filter = project::filters(
-        Arc::clone(&peer),
-        keystore,
-        Arc::clone(&registry),
-        Arc::clone(&store),
-    );
-    let session_filter =
-        session::routes(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
-    let source_filter = source::routes(peer, Arc::clone(&registry), Arc::clone(&store));
-    let transaction_filter = transaction::filters(Arc::clone(&registry));
-    let user_filter = user::routes(registry, store, subscriptions);
+    let org_filter = org::routes(Arc::clone(&ctx));
+    let project_filter = project::filters(Arc::clone(&ctx));
+    let session_filter = session::routes(Arc::clone(&ctx));
+    let source_filter = source::routes(Arc::clone(&ctx));
+    let transaction_filter = transaction::filters(Arc::clone(&ctx));
+    let user_filter = user::routes(Arc::clone(&ctx));
 
     let api = path("v1").and(combine!(
         avatar_filter,
@@ -141,75 +126,93 @@ where
 /// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard<R>(
-    api: Arc<Mutex<coco::PeerApi>>,
-    registry: Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> BoxedFilter<(coco::User,)>
+fn with_owner_guard<R>(ctx: Ctx<R>) -> BoxedFilter<(coco::User,)>
 where
-    R: registry::Client + 'static,
+    R: Registry,
 {
     warp::any()
-        .and(with_peer(api))
-        .and(with_shared(registry))
-        .and(with_shared(store))
-        .and_then(
-            |api: Arc<Mutex<coco::PeerApi>>, registry: Shared<R>, store: Arc<RwLock<kv::Store>>| async move {
-                let session =
-                    crate::session::current(Arc::clone(&api), &*registry.read().await, &*store.read().await)
-                        .await
-                        .expect("unable to get current sesison");
+        .and(with_context(ctx))
+        .and_then(|ctx: Ctx<R>| async move {
+            let ctx = ctx.read().await;
+            let session = crate::session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
+                .await
+                .expect("unable to get current sesison");
 
-                if let Some(identity) = session.identity {
-                    let api = api.lock().await;
-                    let user = coco::get_user(&*api, &identity.id).expect("unable to get coco user");
-                    let user = coco::verify_user(user).await.expect("unable to verify user");
+            if let Some(identity) = session.identity {
+                let user =
+                    coco::get_user(&ctx.peer_api, &identity.id).expect("unable to get coco user");
+                let user = coco::verify_user(user)
+                    .await
+                    .expect("unable to verify user");
 
-                    Ok(user)
-                } else {
-                    Err(Rejection::from(error::Routing::MissingOwner))
-                }
-            },
-        )
+                Ok(user)
+            } else {
+                Err(Rejection::from(error::Routing::MissingOwner))
+            }
+        })
         .boxed()
 }
 
-/// Thread-safe container for threadsafe pass-through to filters and handlers.
-type Shared<T> = Arc<RwLock<T>>;
+trait Registry: registry::Cache + registry::Client + 'static {}
 
-/// State filter to expose a [`Shared`] and its content.
-#[must_use]
-fn with_shared<T>(
-    container: Shared<T>,
-) -> impl Filter<Extract = (Shared<T>,), Error = Infallible> + Clone
+struct Context<R>
 where
-    T: Send + Sync,
+    R: Registry,
 {
-    warp::any().map(move || Arc::clone(&container))
-}
-
-/// State filter to expose a [`coco::PeerApi`].
-#[must_use]
-fn with_peer(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = (Arc<Mutex<coco::PeerApi>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&peer))
-}
-
-/// State filter to expose [`kv::Store`] to handlers.
-#[must_use]
-fn with_store(
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = (Arc<RwLock<kv::Store>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&store))
-}
-
-/// State filter to expose [`notification::Subscriptions`] to handlers.
-#[must_use]
-fn with_subscriptions(
+    peer_api: coco::PeerApi,
+    keystore: keystore::Keystorage,
+    registry: R,
+    store: kv::Store,
     subscriptions: crate::notification::Subscriptions,
-) -> impl Filter<Extract = (crate::notification::Subscriptions,), Error = Infallible> + Clone {
-    warp::any().map(move || crate::notification::Subscriptions::clone(&subscriptions))
+}
+
+impl<R> Context<R>
+where
+    R: Registry,
+{
+    fn key(&self) -> Result<keys::SecretKey, crate::error::Error> {
+        Ok(self.keystore.init_librad_key()?)
+    }
+
+    async fn tmp() -> Result<Ctx<R>, crate::error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
+
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
+
+        let peer_api = {
+            let config = coco::config::default(key, tmp_dir)?;
+            coco::create_peer_api(config).await?
+        };
+
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            let reg = registry::Registry::new(client);
+            registry::Cacher::new(reg, &store)
+        };
+
+        Ok(Arc::new(RwLock::new(Self {
+            keystore,
+            peer_api,
+            registry,
+            store,
+            subscriptions: crate::notification::Subscriptions::default(),
+        })))
+    }
+}
+
+type Ctx<R> = Arc<RwLock<Context<R>>>;
+
+#[must_use]
+fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
+where
+    R: Registry,
+{
+    warp::any().map(move || Arc::clone(&ctx)).boxed()
 }
 
 /// Bundled input data for project registration, shared

@@ -63,7 +63,7 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
 pub async fn current<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
+    peer: &coco::PeerApi,
     registry: &R,
     store: &kv::Store,
 ) -> Result<Session, error::Error>

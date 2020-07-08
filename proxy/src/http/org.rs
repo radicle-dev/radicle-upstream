@@ -15,62 +15,40 @@ use crate::project;
 use crate::registry;
 
 /// Prefixed filters.
-pub fn routes<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: http::Registry,
 {
     path("orgs").and(
-        get_filter(Arc::clone(&registry))
-            .or(register_project_filter(
-                Arc::clone(&registry),
-                subscriptions.clone(),
-            ))
-            .or(get_project_filter(Arc::clone(&registry)))
-            .or(get_projects_filter(peer, Arc::clone(&registry)))
-            .or(register_filter(
-                Arc::clone(&registry),
-                subscriptions.clone(),
-            ))
-            .or(register_member_filter(registry, subscriptions)),
+        get_filter(Arc::clone(&ctx))
+            .or(register_project_filter(Arc::clone(&ctx)))
+            .or(get_project_filter(Arc::clone(&ctx)))
+            .or(get_projects_filter(Arc::clone(&ctx)))
+            .or(register_filter(Arc::clone(&ctx)))
+            .or(register_member_filter(ctx)),
     )
 }
 
 /// Combination of all org routes.
 #[cfg(test)]
-fn filters<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: http::Registry,
 {
-    get_filter(Arc::clone(&registry))
-        .or(register_project_filter(
-            Arc::clone(&registry),
-            subscriptions.clone(),
-        ))
-        .or(get_project_filter(Arc::clone(&registry)))
-        .or(get_projects_filter(peer, Arc::clone(&registry)))
-        .or(register_filter(
-            Arc::clone(&registry),
-            subscriptions.clone(),
-        ))
-        .or(register_member_filter(registry, subscriptions))
+    get_filter(Arc::clone(&ctx))
+        .or(register_project_filter(Arc::clone(&ctx)))
+        .or(get_project_filter(Arc::clone(&ctx)))
+        .or(get_projects_filter(Arc::clone(&ctx)))
+        .or(register_filter(Arc::clone(&ctx)))
+        .or(register_member_filter(ctx))
 }
 
 /// `GET /<id>`
-fn get_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: http::Registry,
 {
-    http::with_shared(registry)
+    http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Unique ID of the Org"))
         .and(path::end())
@@ -94,12 +72,13 @@ where
 }
 
 /// `POST /<id>/projects/<name>`
-fn register_project_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_shared(registry)
-        .and(http::with_subscriptions(subscriptions))
+fn register_project_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: http::Registry,
+{
+    http::with_context(ctx)
         .and(warp::post())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -127,10 +106,13 @@ fn register_project_filter<R: registry::Client>(
 }
 
 /// `GET /<id>/projects/<project_name>`
-fn get_project_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_shared(registry)
+fn get_project_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: http::Registry,
+{
+    http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -162,14 +144,12 @@ fn get_project_filter<R: registry::Client>(
 
 /// `GET /<id>/projects`
 fn get_projects_filter<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
+    ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: http::Registry,
 {
-    http::with_shared(registry)
-        .and(http::with_peer(peer))
+    http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
@@ -189,12 +169,13 @@ where
 }
 
 /// `POST /`
-fn register_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_shared(registry)
-        .and(http::with_subscriptions(subscriptions))
+fn register_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: http::Registry,
+{
+    http::with_context(ctx)
         .and(warp::post())
         .and(path::end())
         .and(warp::body::json())
@@ -216,12 +197,13 @@ fn register_filter<R: registry::Client>(
 }
 
 /// `POST /<id>/members`
-fn register_member_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_shared(registry)
-        .and(http::with_subscriptions(subscriptions))
+fn register_member_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: http::Registry,
+{
+    http::with_context(ctx)
         .and(warp::post())
         .and(document::param::<String>("id", "Unique ID of the Org"))
         .and(path("members"))
@@ -260,68 +242,63 @@ mod handler {
     use crate::registry;
 
     /// Get the Org for the given `id`.
-    pub async fn get<R: registry::Client>(
-        registry: http::Shared<R>,
-        org_id: String,
-    ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
+    pub async fn get<R>(registry: http::Ctx<R>, org_id: String) -> Result<impl Reply, Rejection>
+    where
+        R: http::Registry,
+    {
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
-        let org = reg.get_org(org_id).await?;
+        let org = ctx.registry.get_org(org_id).await?;
 
         Ok(reply::json(&org))
     }
 
     /// Register a project in the Registry.
-    pub async fn register_project<R: registry::Client>(
-        registry: http::Shared<R>,
-        subscriptions: notification::Subscriptions,
+    pub async fn register_project<R>(
+        ctx: http::Ctx<R>,
         org_id: String,
         project_name: String,
         input: http::RegisterProjectInput,
-    ) -> Result<impl Reply, Rejection> {
-        http::register_project(
-            registry,
-            subscriptions,
-            registry::DomainType::Org,
-            org_id,
-            project_name,
-            input,
-        )
-        .await
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: http::Registry,
+    {
+        http::register_project(ctx, registry::DomainType::Org, org_id, project_name, input).await
     }
 
     /// Get the [`registry::Project`] under the given org id.
-    pub async fn get_project<R: registry::Client>(
-        registry: http::Shared<R>,
+    pub async fn get_project<R>(
+        ctx: http::Ctx<R>,
         org_id: String,
         project_name: String,
-    ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: http::Registry,
+    {
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let project_domain = registry::ProjectDomain::Org(org_id);
         let project_name = registry::ProjectName::try_from(project_name).map_err(Error::from)?;
-        let project = reg.get_project(project_domain, project_name).await?;
+        let project = ctx
+            .registry
+            .get_project(project_domain, project_name)
+            .await?;
 
         Ok(reply::json(&project))
     }
 
     /// Get all projects under the given org id.
-    pub async fn get_projects<R>(
-        registry: http::Shared<R>,
-        peer: Arc<Mutex<coco::PeerApi>>,
-        org_id: String,
-    ) -> Result<impl Reply, Rejection>
+    pub async fn get_projects<R>(ctx: http::Ctx<R>, org_id: String) -> Result<impl Reply, Rejection>
     where
-        R: registry::Client,
+        R: http::Registry,
     {
-        let reg = registry.read().await;
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
-        let projects = reg.list_org_projects(org_id).await?;
-        let peer = peer.lock().await;
+        let projects = ctx.registry.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
         for p in &projects {
             let maybe_project = if let Some(urn) = &p.maybe_project_id {
-                Some(project::get(&peer, urn).expect("Project not found"))
+                Some(project::get(&ctx.peer_api, urn).expect("Project not found"))
             } else {
                 None
             };
@@ -343,21 +320,24 @@ mod handler {
     }
 
     /// Register an org on the Registry.
-    pub async fn register<R: registry::Client>(
-        registry: http::Shared<R>,
-        subscriptions: notification::Subscriptions,
+    pub async fn register<R>(
+        ctx: http::Ctx<R>,
         input: super::RegisterInput,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: http::Registry,
+    {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let reg = registry.read().await;
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(input.id).map_err(Error::from)?;
-        let tx = reg
+        let tx = ctx
+            .registry
             .register_org(&fake_pair, org_id, input.transaction_fee)
             .await?;
 
-        subscriptions
+        ctx.subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
             .await;
 
@@ -365,23 +345,26 @@ mod handler {
     }
 
     /// Register a member under an org on the Registry.
-    pub async fn register_member<R: registry::Client>(
-        registry: http::Shared<R>,
-        subscriptions: notification::Subscriptions,
+    pub async fn register_member<R>(
+        ctx: http::Ctx<R>,
         id: String,
         input: super::RegisterMemberInput,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: http::Registry,
+    {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let reg = registry.read().await;
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(id).map_err(Error::from)?;
         let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
-        let tx = reg
+        let tx = ctx
+            .registry
             .register_member(&fake_pair, org_id, handle, input.transaction_fee)
             .await?;
 
-        subscriptions
+        ctx.subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
             .await;
 
@@ -558,38 +541,25 @@ mod test {
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::clone(&registry),
-            subscriptions,
-        );
+        let ctx = http::Context::tmp().await?;
+        let api = super::filters(ctx);
+
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
 
+        let ctx = ctx.read().await;
         // Register the user
-        registry
-            .write()
-            .await
-            .register_user(&author, handle.clone(), None, 10)
+        let fee: registry::Balance = 10;
+        ctx.registry
+            .register_user(&author, handle.clone(), None, fee)
             .await?;
 
-        let user = registry.read().await.get_user(handle).await?.unwrap();
+        let user = ctx.registry.get_user(handle).await?.unwrap();
 
         // Register the org
         let fee: registry::Balance = 100;
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_org(&author, org_id.clone(), fee)
             .await?;
 
@@ -616,24 +586,9 @@ mod test {
 
     #[tokio::test]
     async fn register_project() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key.clone(), tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key, "cloudhead")?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let subscriptions = notification::Subscriptions::default();
+        let ctx = http::Context::tmp().await?;
+        let api = super::filters(ctx);
 
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::clone(&cache),
-            subscriptions,
-        );
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
@@ -700,50 +655,36 @@ mod test {
 
     #[tokio::test]
     async fn get_project() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::clone(&registry),
-            subscriptions,
-        );
+        let ctx = http::Context::tmp().await?;
+        let api = super::filters(ctx);
+
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
         let project_name = registry::ProjectName::try_from("upstream")?;
         let project_domain = registry::ProjectDomain::Org(org_id.clone());
 
+        let ctx = ctx.read().await;
+
         // Register the user
-        registry
-            .write()
-            .await
-            .register_user(&author, handle, None, 10)
+        let fee: registry::Balance = 10;
+        ctx.registry
+            .register_user(&author, handle, None, fee)
             .await?;
 
         // Register the org.
-        registry
-            .write()
-            .await
-            .register_org(&author, org_id.clone(), 10)
+        ctx.registry
+            .register_org(&author, org_id.clone(), fee)
             .await?;
 
         // Register the project.
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_project(
                 &author,
                 project_domain.clone(),
                 project_name.clone(),
                 None,
-                10,
+                fee,
             )
             .await?;
 
