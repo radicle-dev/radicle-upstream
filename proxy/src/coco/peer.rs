@@ -138,7 +138,6 @@ pub fn remotes(
     project_urn: &RadUrn,
 ) -> Result<NonEmpty<Remote>, error::Error> {
     let project = get_project(peer, project_urn)?;
-    let peer_id = peer.peer_id();
     let storage = peer.storage();
     let repo = storage.open_repo(project.urn())?;
     let refs = repo.rad_refs()?;
@@ -155,18 +154,13 @@ pub fn remotes(
     });
 
     for remote in refs.remotes.flatten() {
-        let refs = if remote == peer_id {
-            // TODO(finto): Bug in librad
-            continue;
-        } else {
-            let remote_branches = storage.rad_refs_of(&project.urn(), remote.clone())?;
-            remote_branches
-                .heads
-                .keys()
-                .cloned()
-                .map(source::Branch)
-                .collect()
-        };
+        let remote_branches = storage
+            .rad_refs_of(&project.urn(), remote.clone())?
+            .heads
+            .keys()
+            .cloned()
+            .map(source::Branch)
+            .collect();
 
         // TODO(finto): Can we do this by not going through string?
         let hash = librad::hash::Hash::hash(remote.to_string().as_bytes());
@@ -177,7 +171,7 @@ pub fn remotes(
 
         remotes.push(Remote {
             user,
-            branches: refs,
+            branches: remote_branches,
             // TODO(rudolfs): implement remote peer tags once we decide how
             // https://radicle.community/t/git-tags/214
             tags: vec![],
