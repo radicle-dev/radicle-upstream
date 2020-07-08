@@ -73,10 +73,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     if args.test {
-        // TODO(xla): GIven that we have proper ownership and user handling in coco, we should
+        // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner =
-            coco::verify_user(coco::init_user(&peer_api, key.clone(), "cloudhead")?).await?;
+        let owner = coco::verify_user(coco::init_user(&peer_api, key.clone(), "cloudhead")?)?;
         coco::control::setup_fixtures(&peer_api, key, &owner).expect("fixture creation failed");
     }
 
