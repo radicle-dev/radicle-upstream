@@ -1,4 +1,7 @@
 use std::net::SocketAddr;
+use std::sync::Arc;
+
+use tokio::sync::Mutex;
 
 use librad::keys;
 use librad::meta::entity;
@@ -14,6 +17,28 @@ use crate::project::Project;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
+
+pub struct Api {
+    peer_api: Arc<Mutex<PeerApi>>,
+}
+
+impl Api {
+    pub async fn new<I>(
+        config: PeerConfig<discovery::Static<I, SocketAddr>>,
+    ) -> Result<Self, error::Error>
+    where
+        I: Iterator<Item = (librad::peer::PeerId, SocketAddr)> + Send + 'static,
+    {
+        let peer = config.try_into_peer().await?;
+        // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
+        // publish events.
+        let (api, _futures) = peer.accept()?;
+
+        Ok(Self {
+            peer_api: Arc::new(Mutex::new(api)),
+        })
+    }
+}
 
 /// Create a new `PeerApi` given a `PeerConfig`.
 ///
