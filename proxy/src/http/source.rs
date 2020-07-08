@@ -351,7 +351,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let branches = coco::with_browser(&peer, &urn, |browser| coco::branches(browser, None))?;
+        let branches = coco::with_browser(&peer, &urn, |browser| coco::local_branches(browser))?;
 
         Ok(reply::json(&branches))
     }
