@@ -11,7 +11,10 @@
 
 <style>
   .container {
-    margin: var(--content-padding) 96px;
+    max-width: var(--content-max-width);
+    margin: 64px auto;
+    min-width: var(--content-min-width);
+    padding: 0 var(--content-padding);
   }
 
   .projects {
