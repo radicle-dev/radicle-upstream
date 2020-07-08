@@ -485,7 +485,7 @@ mod test {
         );
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
-        let urn = librad::uri::RadUrn::new(
+        let urn = coco::Urn::new(
             owner.root_hash().clone(),
             librad::uri::Protocol::Git,
             librad::uri::Path::new(),
