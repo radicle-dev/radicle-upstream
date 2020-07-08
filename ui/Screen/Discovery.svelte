@@ -24,16 +24,19 @@
 <SidebarLayout>
   <div class="container">
     <Title variant="huge" style="margin-bottom: 32px;">Discover</Title>
-    <Input.Text
-      placeholder="Filter projects"
-      showLeftItem
-      style="margin-bottom: 24px; max-width: 350px;">
-      <div slot="left">
-        <Icon.Search />
-      </div>
-    </Input.Text>
 
     <div class="projects">
+      <Input.Text
+        placeholder="Filter projects"
+        showLeftItem
+        style="margin-bottom: 8px;">
+        <div slot="left" style="display: flex;">
+          <Icon.Search />
+        </div>
+      </Input.Text>
+
+      <div />
+
       {#each projectFeed as project}
         <Project {project} />
       {/each}

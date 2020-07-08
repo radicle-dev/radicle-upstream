@@ -6,14 +6,19 @@
     Text,
     Title,
   } from "../../DesignSystem/Primitive";
-  import { Copyable, Stats, TrackToggle } from "../../DesignSystem/Component";
+  import {
+    Copyable,
+    Stats,
+    TrackToggle,
+    Tooltip,
+  } from "../../DesignSystem/Component";
 
   export let project = null;
 
-  let showTrackButton = false;
+  let showTrackButton = project.tracked;
 
   const toggleTrackButton = e => {
-    showTrackButton = e.type === "mouseenter";
+    showTrackButton = project.tracked || e.type === "mouseenter";
   };
 </script>
 
@@ -23,12 +28,14 @@
     border-radius: 4px;
     padding: 24px;
     overflow: hidden;
+    cursor: pointer;
   }
 
   .container:hover {
     box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-2));
+      var(--color-foreground-level-3, var(--color-foreground-level-3));
     background: var(--color-foreground-level-1);
+    border-color: var(--color-foreground-level-3);
   }
 
   .header {
@@ -87,7 +94,10 @@
     </div>
 
     {#if showTrackButton}
-      <TrackToggle peerCount="666" style="z-index: 10;" />
+      <TrackToggle
+        peerCount="666"
+        style="z-index: 10;"
+        tracking={project.tracked} />
     {/if}
 
   </div>
@@ -112,6 +122,8 @@
       branches={project.stats.branches}
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
-    <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
+    <Tooltip value={project.maintainers[0].handle}>
+      <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
+    </Tooltip>
   </div>
 </div>

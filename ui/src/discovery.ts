@@ -23,6 +23,8 @@ export const getFeed = () => [
         },
       },
     ],
+    // TODO(sos): make sure tracking info is part of project feed api
+    tracked: false,
   },
   {
     domain: "radicle",
@@ -48,6 +50,7 @@ export const getFeed = () => [
         },
       },
     ],
+    tracked: true,
   },
   {
     domain: "radicle",
@@ -73,6 +76,7 @@ export const getFeed = () => [
         },
       },
     ],
+    tracked: false,
   },
   {
     domain: "radicle",
@@ -98,6 +102,7 @@ export const getFeed = () => [
         },
       },
     ],
+    tracked: false,
   },
   {
     domain: "radicle",
@@ -123,5 +128,6 @@ export const getFeed = () => [
         },
       },
     ],
+    tracked: false,
   },
 ];
