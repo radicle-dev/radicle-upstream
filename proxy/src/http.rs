@@ -57,7 +57,7 @@ pub fn api<R>(
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Cache + registry::Client + 'static,
 {
     let subscriptions = crate::notification::Subscriptions::default();
     let ctx = Context {

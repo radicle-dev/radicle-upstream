@@ -1,7 +1,6 @@
 //! Endpoints and serialisation for [`session::Session`] related types.
 
 use std::collections::HashMap;
-use std::sync::Arc;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -11,13 +10,14 @@ use crate::registry;
 use crate::session;
 
 /// Prefixed fitlers.
-pub fn routes<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + registry::Client + 'static,
+{
     path("session").and(
-        clear_cache_filter(Arc::clone(&ctx))
-            .or(delete_filter(Arc::clone(&ctx)))
-            .or(get_filter(Arc::clone(&ctx)))
+        clear_cache_filter(ctx.clone())
+            .or(delete_filter(ctx.clone()))
+            .or(get_filter(ctx.clone()))
             .or(update_settings_filter(ctx)),
     )
 }
@@ -26,11 +26,11 @@ pub fn routes<R>(
 #[cfg(test)]
 pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client + 'static,
+    R: registry::Cache + registry::Client + 'static,
 {
-    clear_cache_filter(Arc::clone(&ctx))
-        .or(delete_filter(Arc::clone(&ctx)))
-        .or(get_filter(Arc::clone(&ctx)))
+    clear_cache_filter(ctx.clone())
+        .or(delete_filter(ctx.clone()))
+        .or(get_filter(ctx.clone()))
         .or(update_settings_filter(ctx))
 }
 
@@ -39,7 +39,7 @@ fn clear_cache_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client + 'static,
+    R: registry::Cache + 'static,
 {
     path("cache")
         .and(warp::delete())

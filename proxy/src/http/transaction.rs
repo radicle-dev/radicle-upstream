@@ -9,16 +9,18 @@ use crate::http;
 use crate::registry;
 
 /// Combination of all transaction routes.
-pub fn filters<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + 'static,
+{
     list_filter(ctx)
 }
 
 /// `POST /transactions`
-fn list_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + 'static,
+{
     path!("transactions")
         .and(warp::post())
         .and(http::with_context(ctx))

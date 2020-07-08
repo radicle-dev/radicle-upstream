@@ -45,9 +45,9 @@ impl Api {
         })
     }
 
-    pub fn peer_id(&self) -> &PeerId {
+    pub fn peer_id(&self) -> PeerId {
         let api = self.peer_api.lock().unwrap();
-        api.peer_id()
+        api.peer_id().clone()
     }
 
     pub fn monorepo(&self) -> PathBuf {
@@ -146,15 +146,16 @@ impl Api {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage();
 
-        Ok(storage
-            .all_metadata()?
-            .flat_map(|entity| {
-                entity.ok()?.try_map(|info| match info {
-                    entity::data::EntityInfo::User(info) => Some(info),
-                    _ => None,
-                })
-            })
-            .collect())
+        let mut entities = vec![];
+        for entity in storage.all_metadata()? {
+            let entity = entity.ok().unwrap().try_map(|info| match info {
+                entity::data::EntityInfo::User(info) => Some(info),
+                _ => None,
+            });
+            entities.push(entity);
+        }
+
+        Ok(entities.into_iter().flatten().collect())
     }
 
     /// Get the project found at `project_urn`.

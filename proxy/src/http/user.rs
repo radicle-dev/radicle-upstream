@@ -11,7 +11,10 @@ use crate::registry;
 /// Prefixed filter
 pub fn routes<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("users").and(
         list_orgs_filter(ctx.clone())
             .or(register_project_filter(ctx.clone()))
@@ -22,7 +25,10 @@ pub fn routes<R>(
 
 /// Combination of all user filters.
 #[cfg(test)]
-fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     list_orgs_filter(ctx.clone())
         .or(register_project_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
@@ -32,7 +38,10 @@ fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Re
 /// GET /<handle>
 fn get_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     warp::get()
         .and(http::with_context(ctx))
         .and(document::param::<String>(
@@ -54,7 +63,10 @@ fn get_filter<R>(
 /// POST /
 fn register_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     warp::post()
         .and(http::with_context(ctx))
         .and(warp::body::json())
@@ -75,7 +87,10 @@ fn register_filter<R>(
 /// `GET /<handle>/orgs`
 fn list_orgs_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     warp::get()
         .and(http::with_context(ctx))
         .and(document::param::<String>(
@@ -100,7 +115,10 @@ fn list_orgs_filter<R>(
 /// `POST /<id>/projects/<name>`
 fn register_project_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     http::with_context(ctx)
         .and(warp::post())
         .and(document::param::<String>(
