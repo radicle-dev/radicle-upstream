@@ -6,7 +6,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
+use tokio::sync::Mutex;
 use warp::filters::BoxedFilter;
 use warp::http::StatusCode;
 use warp::{
@@ -69,18 +69,18 @@ where
         store,
         subscriptions,
     };
-    let ctx = Arc::new(RwLock::new(ctx));
+    let ctx = Arc::new(Mutex::new(ctx));
 
     let avatar_filter = avatar::get_filter();
-    let control_filter = control::routes(enable_control, Arc::clone(&ctx));
-    let identity_filter = identity::filters(Arc::clone(&ctx));
+    let control_filter = control::routes(enable_control, ctx.clone());
+    let identity_filter = identity::filters(ctx.clone());
     let notification_filter = notification::filters(subscriptions.clone());
-    let org_filter = org::routes(Arc::clone(&ctx));
-    let project_filter = project::filters(Arc::clone(&ctx));
-    let session_filter = session::routes(Arc::clone(&ctx));
-    let source_filter = source::routes(Arc::clone(&ctx));
-    let transaction_filter = transaction::filters(Arc::clone(&ctx));
-    let user_filter = user::routes(Arc::clone(&ctx));
+    let org_filter = org::routes(ctx.clone());
+    let project_filter = project::filters(ctx.clone());
+    let session_filter = session::routes(ctx.clone());
+    let source_filter = source::routes(ctx.clone());
+    let transaction_filter = transaction::filters(ctx.clone());
+    let user_filter = user::routes(ctx);
 
     let api = path("v1").and(combine!(
         avatar_filter,
@@ -133,7 +133,7 @@ where
     warp::any()
         .and(with_context(ctx))
         .and_then(|ctx: Ctx<R>| async move {
-            let ctx = ctx.read().await;
+            let ctx = ctx.lock().await;
             let session = crate::session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
                 .await
                 .expect("unable to get current sesison");
@@ -153,7 +153,7 @@ where
         .boxed()
 }
 
-trait Registry: registry::Cache + registry::Client + 'static {}
+trait Registry: registry::Cache + registry::Client + Sized + 'static {}
 
 struct Context<R>
 where
@@ -166,6 +166,16 @@ where
     subscriptions: crate::notification::Subscriptions,
 }
 
+type Ctx<R> = Arc<Mutex<Context<R>>>;
+
+#[must_use]
+fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
+where
+    R: Registry,
+{
+    warp::any().map(move || Arc::clone(&ctx)).boxed()
+}
+
 impl<R> Context<R>
 where
     R: Registry,
@@ -174,8 +184,7 @@ where
         Ok(self.keystore.init_librad_key()?)
     }
 
-    async fn tmp() -> Result<Ctx<R>, crate::error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
+    async fn tmp(tmp_dir: tempfile::TempDir) -> Result<Ctx<R>, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
@@ -195,7 +204,7 @@ where
             registry::Cacher::new(reg, &store)
         };
 
-        Ok(Arc::new(RwLock::new(Self {
+        Ok(Arc::new(Mutex::new(Self {
             keystore,
             peer_api,
             registry,
@@ -205,14 +214,13 @@ where
     }
 }
 
-type Ctx<R> = Arc<RwLock<Context<R>>>;
-
+/// State filter to expose [`notification::Subscriptions`] to handlers.
 #[must_use]
-fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
-where
-    R: Registry,
+fn with_subscriptions(
+    subscriptions: crate::notification::Subscriptions,
+) -> impl Filter<Extract = (crate::notification::Subscriptions,), Error = std::convert::Infallible> + Clone
 {
-    warp::any().map(move || Arc::clone(&ctx)).boxed()
+    warp::any().map(move || crate::notification::Subscriptions::clone(&subscriptions))
 }
 
 /// Bundled input data for project registration, shared
@@ -251,18 +259,21 @@ impl ToDocumentedType for RegisterProjectInput {
 /// # Errors
 ///
 /// Might return an http error
-async fn register_project<R: registry::Client>(
-    registry: Shared<R>,
-    subscriptions: crate::notification::Subscriptions,
+async fn register_project<R>(
+    ctx: Ctx<R>,
     domain_type: registry::DomainType,
     domain_id_str: String,
     project_name: String,
     input: RegisterProjectInput,
-) -> Result<impl Reply, Rejection> {
+) -> Result<impl Reply, Rejection>
+where
+    R: Registry,
+{
     // TODO(xla): Get keypair from persistent storage.
     let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-    let reg = registry.read().await;
+    let ctx = ctx.lock().await;
+
     let maybe_coco_id = input
         .maybe_coco_id
         .map(|id| coco::Urn::from_str(&id).expect("Project RadUrn"));
@@ -274,7 +285,8 @@ async fn register_project<R: registry::Client>(
     let project_name =
         registry::ProjectName::try_from(project_name).map_err(crate::error::Error::from)?;
 
-    let tx = reg
+    let tx = ctx
+        .registry
         .register_project(
             &fake_pair,
             domain,
@@ -284,7 +296,7 @@ async fn register_project<R: registry::Client>(
         )
         .await?;
 
-    subscriptions
+    ctx.subscriptions
         .broadcast(crate::notification::Notification::Transaction(tx.clone()))
         .await;
 

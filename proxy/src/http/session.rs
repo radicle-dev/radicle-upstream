@@ -120,14 +120,10 @@ where
 
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
 mod handler {
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::coco;
     use crate::http;
-    use crate::registry;
     use crate::session;
 
     /// Clear [`registry::Cache`].
@@ -135,7 +131,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         ctx.registry.clear()?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
@@ -146,7 +142,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         session::clear_current(&ctx.store)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
@@ -157,7 +153,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
 
         let sess = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
 
@@ -172,7 +168,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         session::set_settings(&ctx.store, settings)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
@@ -254,10 +250,11 @@ mod test {
 
     #[tokio::test]
     async fn delete() -> Result<(), error::Error> {
-        let ctx = http::Context::tmp().await?;
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
         session::set_settings(&ctx.store, settings).unwrap();
@@ -279,7 +276,8 @@ mod test {
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
-        let ctx = http::Context::tmp().await?;
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
         let res = request().method("GET").path("/").reply(&api).await;
@@ -320,7 +318,8 @@ mod test {
 
     #[tokio::test]
     async fn update_settings() -> Result<(), error::Error> {
-        let ctx = http::Context::tmp().await?;
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
         let mut settings = session::settings::Settings::default();

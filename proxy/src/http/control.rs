@@ -25,9 +25,9 @@ where
         })
         .untuple_one()
         .and(
-            create_project_filter(ctx)
-                .or(nuke_coco_filter(ctx))
-                .or(nuke_registry_filter(ctx))
+            create_project_filter(ctx.clone())
+                .or(nuke_coco_filter(ctx.clone()))
+                .or(nuke_registry_filter(ctx.clone()))
                 .or(register_user_filter(ctx)),
         )
 }
@@ -52,7 +52,7 @@ where
     R: http::Registry,
 {
     path!("create-project")
-        .and(super::with_context(ctx))
+        .and(super::with_context(ctx.clone()))
         .and(super::with_owner_guard(ctx))
         .and(warp::body::json())
         .and_then(handler::create_project)
@@ -119,7 +119,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
         let meta = coco::control::replicate_platinum(
@@ -149,7 +149,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
 
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
@@ -187,7 +187,7 @@ mod handler {
         let config = coco::config::configure(paths, key.clone());
         let new_peer_api = coco::create_peer_api(config).await?;
 
-        let mut ctx = ctx.write().await;
+        let mut ctx = ctx.lock().await;
         ctx.peer_api = new_peer_api;
         ctx.keystore = new_keystore;
 
@@ -200,7 +200,7 @@ mod handler {
         R: http::Registry,
     {
         let (client, _) = radicle_registry_client::Client::new_emulator();
-        let mut ctx = ctx.write().await;
+        let mut ctx = ctx.lock().await;
         ctx.registry.reset(client);
 
         Ok(reply::json(&true))
@@ -216,17 +216,18 @@ mod handler {
 
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {
-            let ctx = http::Context::tmp().await?;
+            let tmp_dir = tempfile::tempdir()?;
+            let ctx = http::Context::tmp(tmp_dir).await?;
 
             let (old_paths, old_peer_id) = {
-                let ctx = ctx.read().await;
+                let ctx = ctx.lock().await;
                 (ctx.peer_api.paths().clone(), ctx.peer_api.peer_id().clone())
             };
 
             super::nuke_coco(ctx).await.unwrap();
 
             let (new_paths, new_peer_id) = {
-                let ctx = ctx.read().await;
+                let ctx = ctx.lock().await;
                 (ctx.peer_api.paths().clone(), ctx.peer_api.peer_id().clone())
             };
 
@@ -234,7 +235,7 @@ mod handler {
             assert_ne!(old_peer_id, new_peer_id);
 
             let can_open = {
-                let ctx = ctx.read().await;
+                let ctx = ctx.lock().await;
                 let _ = ctx
                     .peer_api
                     .storage()
@@ -274,18 +275,11 @@ pub struct RegisterInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::paths;
-
-    use crate::coco;
     use crate::error;
     use crate::http;
-    use crate::keystore;
-    use crate::registry;
 
     // TODO(xla): This can't hold true anymore, given that we nuke the owner. Which is required in
     // order to register a project. Should we rework the test? How do we make sure an owner is
@@ -294,27 +288,8 @@ mod test {
     #[tokio::test]
     async fn create_project_after_nuke() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let paths = paths::Paths::from_root(tmp_dir.path())?;
-
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
-
-        let config = coco::config::default(key.clone(), tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(keystore)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
+        let ctx = http::Context::tmp(tmp_dir).await?;
+        let api = super::filters(ctx);
 
         // Create project before nuke.
         let res = request()

@@ -4,47 +4,34 @@ use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::sync::Arc;
-use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::coco;
 use crate::http;
-use crate::keystore;
 use crate::project;
 use crate::registry;
 
 /// Combination of all routes.
-pub fn filters<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    keystore: http::Shared<keystore::Keystorage>,
-    registry: http::Shared<R>,
-    store: http::Shared<kv::Store>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client + 'static,
+    R: http::Registry,
 {
-    list_filter(Arc::clone(&peer))
-        .or(create_filter(Arc::clone(&peer), keystore, registry, store))
-        .or(get_filter(peer))
+    list_filter(ctx.clone())
+        .or(create_filter(ctx.clone()))
+        .or(get_filter(ctx))
 }
 
 /// `POST /projects`
 fn create_filter<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    keystore: http::Shared<keystore::Keystorage>,
-    registry: http::Shared<R>,
-    store: http::Shared<kv::Store>,
+    ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client + 'static,
+    R: http::Registry,
 {
     path!("projects")
         .and(warp::post())
-        .and(http::with_peer(Arc::clone(&peer)))
-        .and(http::with_shared(keystore))
-        .and(http::with_owner_guard(peer, registry, store))
+        .and(http::with_context(ctx.clone()))
+        .and(http::with_owner_guard(ctx))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -64,12 +51,13 @@ where
 }
 
 /// `GET /projects/<id>`
-fn get_filter(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: http::Registry,
+{
     path("projects")
         .and(warp::get())
-        .and(http::with_peer(peer))
+        .and(http::with_context(ctx))
         .and(document::param::<String>("id", "Project id"))
         .and(document::document(document::description(
             "Find Project by ID",
@@ -93,12 +81,13 @@ fn get_filter(
 }
 
 /// `GET /projects`
-fn list_filter(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: http::Registry,
+{
     path!("projects")
         .and(warp::get())
-        .and(http::with_peer(peer))
+        .and(http::with_context(ctx.clone()))
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -117,31 +106,29 @@ fn list_filter(
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
     use crate::coco;
     use crate::error::Error;
     use crate::http;
-    use crate::keystore;
     use crate::project;
 
     /// Create a new [`project::Project`].
-    pub async fn create(
-        peer: Arc<Mutex<coco::PeerApi>>,
-        keystore: http::Shared<keystore::Keystorage>,
+    pub async fn create<R>(
+        ctx: http::Ctx<R>,
         owner: coco::User,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection> {
-        let keystore = &*keystore.read().await;
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: http::Registry,
+    {
+        let ctx = ctx.lock().await;
 
-        let key = keystore.get_librad_key().map_err(Error::from)?;
-        let peer = &*peer.lock().await;
+        let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
 
         let meta = coco::init_project(
-            peer,
+            &ctx.peer_api,
             key,
             &owner,
             &input.path,
@@ -151,7 +138,7 @@ mod handler {
         )?;
         let urn = meta.urn();
 
-        let stats = coco::with_browser(peer, &urn, |browser| Ok(browser.get_stats()?))?;
+        let stats = coco::with_browser(&ctx.peer_api, &urn, |browser| Ok(browser.get_stats()?))?;
         let project: project::Project = (meta, stats).into();
 
         Ok(reply::with_status(
@@ -161,20 +148,23 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get(
-        peer: Arc<Mutex<coco::PeerApi>>,
-        urn: String,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection>
+    where
+        R: http::Registry,
+    {
         let urn = urn.parse().map_err(Error::from)?;
-        let peer = peer.lock().await;
+        let ctx = ctx.lock().await;
 
-        Ok(reply::json(&project::get(&peer, &urn)?))
+        Ok(reply::json(&project::get(&ctx.peer_api, &urn)?))
     }
 
     /// List all known projects.
-    pub async fn list(peer: Arc<Mutex<coco::PeerApi>>) -> Result<impl Reply, Rejection> {
-        let peer = &*peer.lock().await;
-        let projects = coco::list_projects(peer)?;
+    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: http::Registry,
+    {
+        let ctx = ctx.lock().await;
+        let projects = coco::list_projects(&ctx.peer_api)?;
 
         Ok(reply::json(&projects))
     }
@@ -393,55 +383,28 @@ impl ToDocumentedType for MetadataInput {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
-
-    use librad::paths;
 
     use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
-    use crate::keystore;
     use crate::project;
-    use crate::registry;
     use crate::session;
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let paths = paths::Paths::from_root(tmp_dir.path())?;
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
+        let ctx = http::Context::tmp(tmp_dir).await?;
+        let api = super::filters(ctx);
 
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
-
-        let config = coco::config::configure(paths, key.clone());
-        let peer = coco::create_peer_api(config).await?;
-        let peer = Arc::new(Mutex::new(peer));
-
-        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
-        let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let path = dir.path().to_str().unwrap();
-
+        let ctx = ctx.lock().await;
         let handle = "cloudhead";
-        let id = identity::create(Arc::clone(&peer), key, handle.parse().unwrap()).await?;
+        let id = identity::create(&ctx.peer_api, ctx.key()?, handle.parse().unwrap()).await?;
 
-        session::set_identity(&store, id.clone())?;
+        session::set_identity(&ctx.store, id.clone())?;
 
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::new(RwLock::new(keystore)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
         let res = request()
             .method("POST")
             .path("/projects")
@@ -456,7 +419,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = coco::list_projects(&*peer.lock().await)?;
+        let projects = coco::list_projects(&ctx.peer_api)?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -485,25 +448,16 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let paths = paths::Paths::from_root(tmp_dir.path())?;
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
+        let ctx = http::Context::tmp(tmp_dir).await?;
+        let api = super::filters(ctx);
 
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
-
-        let config = coco::config::configure(paths, key.clone());
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let ctx = ctx.lock().await;
+        let owner = coco::init_user(&ctx.peer_api, ctx.key(), "cloudhead")?;
         let owner = coco::verify_user(owner).await?;
 
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
-            key,
+            &ctx.peer_api,
+            ctx.key()?,
             &owner,
             "git-platinum",
             "fixture data",
@@ -511,14 +465,7 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let project = project::get(&peer, &urn)?;
-
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(keystore)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
+        let project = project::get(&ctx.peer_api, &urn)?;
 
         let res = request()
             .method("GET")
@@ -536,33 +483,16 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let paths = paths::Paths::from_root(tmp_dir.path())?;
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
+        let ctx = http::Context::tmp(tmp_dir).await?;
+        let api = super::filters(ctx);
 
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
+        let ctx = ctx.lock().await;
+        let owner = coco::init_owner(&ctx.peer_api, ctx.key()?, "cloudhead").await?;
 
-        let config = coco::config::configure(paths, key.clone());
-        let peer = coco::create_peer_api(config).await?;
+        coco::control::setup_fixtures(&ctx.peer_api, ctx.key()?, &owner)?;
 
-        let peer = Arc::new(Mutex::new(peer));
-        let owner = coco::init_owner(Arc::clone(&peer), key.clone(), "cloudhead").await?;
+        let projects = coco::list_projects(&ctx.peer_api)?;
 
-        coco::control::setup_fixtures(&*peer.lock().await, key, &owner)?;
-
-        let projects = coco::list_projects(&*peer.lock().await)?;
-
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::new(RwLock::new(keystore)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
         let res = request().method("GET").path("/projects").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {

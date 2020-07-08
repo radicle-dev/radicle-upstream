@@ -2,15 +2,11 @@
 
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
-use std::sync::Arc;
-use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
-use crate::coco;
 use crate::http;
-use crate::notification;
 use crate::project;
 use crate::registry;
 
@@ -20,11 +16,11 @@ where
     R: http::Registry,
 {
     path("orgs").and(
-        get_filter(Arc::clone(&ctx))
-            .or(register_project_filter(Arc::clone(&ctx)))
-            .or(get_project_filter(Arc::clone(&ctx)))
-            .or(get_projects_filter(Arc::clone(&ctx)))
-            .or(register_filter(Arc::clone(&ctx)))
+        get_filter(ctx.clone())
+            .or(register_project_filter(ctx.clone()))
+            .or(get_project_filter(ctx.clone()))
+            .or(get_projects_filter(ctx.clone()))
+            .or(register_filter(ctx.clone()))
             .or(register_member_filter(ctx)),
     )
 }
@@ -35,11 +31,11 @@ fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Re
 where
     R: http::Registry,
 {
-    get_filter(Arc::clone(&ctx))
-        .or(register_project_filter(Arc::clone(&ctx)))
-        .or(get_project_filter(Arc::clone(&ctx)))
-        .or(get_projects_filter(Arc::clone(&ctx)))
-        .or(register_filter(Arc::clone(&ctx)))
+    get_filter(ctx.clone())
+        .or(register_project_filter(ctx.clone()))
+        .or(get_project_filter(ctx.clone()))
+        .or(get_projects_filter(ctx.clone()))
+        .or(register_filter(ctx.clone()))
         .or(register_member_filter(ctx))
 }
 
@@ -229,12 +225,9 @@ where
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::convert::TryFrom;
-    use std::sync::Arc;
-    use tokio::sync::Mutex;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::coco;
     use crate::error::Error;
     use crate::http;
     use crate::notification;
@@ -242,11 +235,11 @@ mod handler {
     use crate::registry;
 
     /// Get the Org for the given `id`.
-    pub async fn get<R>(registry: http::Ctx<R>, org_id: String) -> Result<impl Reply, Rejection>
+    pub async fn get<R>(ctx: http::Ctx<R>, org_id: String) -> Result<impl Reply, Rejection>
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let org = ctx.registry.get_org(org_id).await?;
 
@@ -275,7 +268,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let project_domain = registry::ProjectDomain::Org(org_id);
         let project_name = registry::ProjectName::try_from(project_name).map_err(Error::from)?;
@@ -292,7 +285,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let projects = ctx.registry.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
@@ -330,7 +323,7 @@ mod handler {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let org_id = registry::Id::try_from(input.id).map_err(Error::from)?;
         let tx = ctx
             .registry
@@ -356,7 +349,7 @@ mod handler {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let org_id = registry::Id::try_from(id).map_err(Error::from)?;
         let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         let tx = ctx
@@ -524,31 +517,28 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::keys::SecretKey;
     use radicle_registry_client as protocol;
 
     use crate::avatar;
     use crate::coco;
     use crate::error;
     use crate::http;
-    use crate::notification;
-    use crate::registry::{self, Cache as _, Client as _};
+    use crate::registry;
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
-        let ctx = http::Context::tmp().await?;
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
 
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         // Register the user
         let fee: registry::Balance = 10;
         ctx.registry
@@ -586,9 +576,13 @@ mod test {
 
     #[tokio::test]
     async fn register_project() -> Result<(), error::Error> {
-        let ctx = http::Context::tmp().await?;
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
+        let ctx = ctx.lock().await;
+        let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
@@ -599,17 +593,14 @@ mod test {
         );
 
         // Register user.
-        cache
-            .read()
-            .await
-            .register_user(&author, handle, None, 10)
+        let fee: registry::Balance = 10;
+        ctx.registry
+            .register_user(&author, handle, None, fee)
             .await?;
 
         // Register org.
-        cache
-            .read()
-            .await
-            .register_org(&author, org_id.clone(), 10)
+        ctx.registry
+            .register_org(&author, org_id.clone(), fee)
             .await?;
 
         // Register project
@@ -627,7 +618,7 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::CREATED);
 
-        let txs = cache.read().await.list_transactions(vec![])?;
+        let txs = ctx.registry.list_transactions(vec![])?;
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -655,7 +646,8 @@ mod test {
 
     #[tokio::test]
     async fn get_project() -> Result<(), error::Error> {
-        let ctx = http::Context::tmp().await?;
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -664,7 +656,7 @@ mod test {
         let project_name = registry::ProjectName::try_from("upstream")?;
         let project_domain = registry::ProjectDomain::Org(org_id.clone());
 
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
 
         // Register the user
         let fee: registry::Balance = 10;
@@ -711,24 +703,20 @@ mod test {
     #[tokio::test]
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key.clone(), tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let subscriptions = notification::Subscriptions::default();
+        let ctx = http::Context::tmp(tmp_dir).await?;
+        let api = super::filters(ctx);
 
+        let ctx = ctx.lock().await;
+
+        let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
+        let owner = coco::verify_user(owner).await?;
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
-            key,
+            &ctx.peer_api,
+            ctx.key()?,
             &owner,
             project_name,
             project_description,
@@ -736,42 +724,31 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::clone(&registry),
-            subscriptions,
-        );
-
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
         let project_name = registry::ProjectName::try_from(project_name)?;
         let project_domain = registry::ProjectDomain::Org(org_id.clone());
+        let fee: registry::Balance = 10;
 
-        registry
-            .write()
-            .await
-            .register_user(&author, handle, None, 10)
+        ctx.registry
+            .register_user(&author, handle, None, fee)
             .await?;
 
         // Register the org.
-        registry
-            .write()
-            .await
-            .register_org(&author, org_id.clone(), 10)
+        ctx.registry
+            .register_org(&author, org_id.clone(), fee)
             .await?;
 
         // Register the project.
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_project(
                 &author,
                 project_domain,
                 project_name.clone(),
                 Some(urn.clone()),
-                10,
+                fee,
             )
             .await?;
 
@@ -812,31 +789,18 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let subscriptions = notification::Subscriptions::default();
+        let ctx = http::Context::tmp(tmp_dir).await?;
+        let api = super::filters(ctx);
 
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::clone(&cache),
-            subscriptions,
-        );
+        let ctx = ctx.lock().await;
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
+        let fee: registry::Balance = 10;
 
         // Register the user
-        cache
-            .write()
-            .await
-            .register_user(&author, handle, None, 10)
+        ctx.registry
+            .register_user(&author, handle, None, fee)
             .await?;
 
         let res = request()
@@ -849,10 +813,10 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = cache.write().await.list_transactions(vec![])?;
+        let txs = ctx.registry.list_transactions(vec![])?;
 
         // Get the registered org
-        let org = cache.read().await.get_org(org_id.clone()).await?.unwrap();
+        let org = ctx.registry.get_org(org_id.clone()).await?.unwrap();
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(txs.len(), 2);
@@ -864,47 +828,30 @@ mod test {
     #[tokio::test]
     async fn register_member() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let subscriptions = notification::Subscriptions::default();
+        let ctx = http::Context::tmp(tmp_dir).await?;
+        let api = super::filters(ctx);
 
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::clone(&cache),
-            subscriptions,
-        );
+        let ctx = ctx.lock().await;
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
+        let fee: registry::Balance = 10;
 
         // Register the user
-        cache
-            .write()
-            .await
-            .register_user(&author, handle.clone(), None, 10)
+        ctx.registry
+            .register_user(&author, handle.clone(), None, fee)
             .await?;
 
         // Register the org
-        cache
-            .write()
-            .await
-            .register_org(&author, org_id.clone(), 10)
+        ctx.registry
+            .register_org(&author, org_id.clone(), fee)
             .await?;
 
         // Register a second user
         let author2 = protocol::ed25519::Pair::from_legacy_string("//Bob", None);
         let handle2 = registry::Id::try_from("bob")?;
-        cache
-            .write()
-            .await
-            .register_user(&author2, handle2.clone(), None, 10)
+        ctx.registry
+            .register_user(&author2, handle2.clone(), None, fee)
             .await?;
 
         // Register the second user as a member of the org
@@ -918,10 +865,10 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = cache.write().await.list_transactions(vec![])?;
+        let txs = ctx.registry.list_transactions(vec![])?;
 
         // Get the org and its members
-        let org = cache.read().await.get_org(org_id).await?.unwrap();
+        let org = ctx.registry.get_org(org_id).await?.unwrap();
         let member_handles: Vec<registry::Id> =
             org.members.iter().map(|user| user.handle.clone()).collect();
 

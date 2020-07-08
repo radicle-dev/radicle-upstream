@@ -93,7 +93,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
 
         if let Some(identity) = session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
             .await?
@@ -115,7 +115,7 @@ mod handler {
     where
         R: http::Registry,
     {
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let id = identity::get(&ctx.peer_api, &id.parse().expect("could not parse id"))?;
         Ok(reply::json(&id))
     }
@@ -244,7 +244,8 @@ mod test {
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
-        let ctx = http::Context::tmp().await?;
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
         let res = request()
@@ -256,7 +257,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
         let urn = session.identity.expect("failed to set identity").id;
 
@@ -290,10 +291,11 @@ mod test {
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
-        let ctx = http::Context::tmp().await?;
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
-        let ctx = ctx.read().await;
+        let ctx = ctx.lock().await;
         let user = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
