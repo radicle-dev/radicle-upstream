@@ -403,13 +403,13 @@ mod handler {
         let remotes = coco::remotes(peer, &owner, &urn)?;
 
         let revs = remotes
-            .into_iter()
+            .iter()
             .map(|remote| {
                 let urn = remote.user.urn();
                 let handle = remote.user.name().to_string();
                 super::Revision {
-                    branches: remote.branches,
-                    tags: remote.tags,
+                    branches: remote.branches.clone(),
+                    tags: remote.tags.clone(),
                     identity: identity::Identity {
                         id: urn.clone(),
                         metadata: identity::Metadata {

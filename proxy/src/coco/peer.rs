@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use async_trait::async_trait;
+use nonempty::NonEmpty;
 use tokio::sync::Mutex;
 
 use librad::keys;
@@ -135,7 +136,7 @@ pub fn remotes(
     peer: &PeerApi,
     owner: &User,
     project_urn: &RadUrn,
-) -> Result<Vec<Remote>, error::Error> {
+) -> Result<NonEmpty<Remote>, error::Error> {
     let project = get_project(peer, project_urn)?;
     let peer_id = peer.peer_id();
     let storage = peer.storage();
@@ -147,11 +148,11 @@ pub fn remotes(
     })?;
 
     let owner = owner.to_data().build()?; // TODO(finto): Dirty hack to make our Verified User into a Draft one
-    let mut remotes = vec![Remote {
+    let mut remotes = NonEmpty::new(Remote {
         user: owner,
         branches: local_branches,
         tags: local_tags,
-    }];
+    });
 
     for remote in refs.remotes.flatten() {
         let refs = if remote == peer_id {
