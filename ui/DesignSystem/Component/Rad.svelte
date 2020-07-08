@@ -4,6 +4,7 @@
   export let rad = null;
   export let usd = null;
   export let style = null;
+  export let deposit = null;
 </script>
 
 <style>
@@ -40,9 +41,10 @@
 
 <div class="wrapper" {style}>
   <div class="amount rad">
-    <!-- TODO Make <Icon.LockSmall /> appear only when the amount is a deposit -->
-    <Icon.LockSmall
-      style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
+    {#if deposit}
+      <Icon.LockSmall
+        style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
+    {/if}
     <Icon.Currency style="fill: var(--color-negative);" />
     <Title variant="tiny" dataCy="rad-amount" style="margin-left:2px;">
       {rad}

@@ -8,9 +8,9 @@
 
   import { Avatar, Icon, Title, Text } from "../../../DesignSystem/Primitive";
 
-  export let avatar;
-  export let transaction;
-  export let subject;
+  export let avatar = null;
+  export let transaction = null;
+  export let subject = null;
 
   const subjectAvatarShape = () => {
     switch (subject.type) {
