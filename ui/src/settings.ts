@@ -1,3 +1,5 @@
+import { createValidationStore } from "./validation";
+
 // TYPES
 export enum Theme {
   Dark = "dark",
@@ -53,3 +55,17 @@ export const themeOptions: Option[] = [
     value: Theme.Dark,
   },
 ];
+
+// TODO(sos): Do these validations in proxy; test them there
+const VALID_SEED_MATCH_STR = "^[a-z0-9][a-z0-9.]+$";
+const VALID_SEED_MATCH = new RegExp(VALID_SEED_MATCH_STR);
+
+export const seedValidation = createValidationStore({
+  presence: {
+    message: "Seed cannot be empty",
+  },
+  format: {
+    pattern: VALID_SEED_MATCH,
+    message: "Seed may only contain letters, numbers, and dots",
+  },
+});

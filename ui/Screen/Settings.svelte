@@ -9,7 +9,12 @@
     updateAppearance,
     updateRegistry,
   } from "../src/session.ts";
-  import { networkOptions, themeOptions } from "../src/settings.ts";
+  import {
+    networkOptions,
+    seedValidation,
+    themeOptions,
+  } from "../src/settings.ts";
+  import { ValidationStatus } from "../src/validation.ts";
 
   import { Button, Icon, Input, Text, Title } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
@@ -23,6 +28,9 @@
     updateAppearance({ ...$settings.appearance, theme: event.detail });
 
   const submitSeed = seed => {
+    seedValidation.validate(seed);
+    if ($seedValidation.status !== ValidationStatus.Success) return;
+
     addSeed(seed);
     seedInputValue = "";
   };
@@ -167,7 +175,8 @@
             <Input.Text
               bind:value={seedInputValue}
               placeholder="Enter a seed address here"
-              style="margin-right: 8px; min-width: 224px;" />
+              style="margin-right: 8px; min-width: 224px;"
+              validation={$seedValidation} />
             <Button
               on:click={submitSeed(seedInputValue)}
               disabled={!seedInputValue}
