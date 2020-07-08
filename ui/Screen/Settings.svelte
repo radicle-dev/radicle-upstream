@@ -21,6 +21,11 @@
 
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
+
+  const submitSeed = seed => {
+    addSeed(seed);
+    seedInputValue = "";
+  };
 </script>
 
 <style>
@@ -54,11 +59,22 @@
     margin-bottom: 24px;
   }
 
+  .info {
+    flex: 1;
+  }
+
   .action {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-left: 16px;
+  }
+
+  .seed-entry-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
   }
 
   .seed-entry-field {
@@ -68,6 +84,7 @@
   .seeds {
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     margin-top: 16px;
   }
 
@@ -76,9 +93,10 @@
     align-items: center;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    margin: 0 8px 8px 0;
+    margin: 0 0 8px 8px;
     padding: 8px;
     cursor: default;
+    max-width: 100%;
   }
 
   .seed:hover {
@@ -134,26 +152,45 @@
         <!-- TODO(sos): link to actual docs abt seeds -->
         <a href="link/to/docs">Learn about seeds</a>
       </header>
-      <div class="info">
-        <div class="seed-entry-field">
-          <Input.Text bind:value={seedInputValue} style="margin-right: 8px;" />
-          <Button on:click={addSeed(seedInputValue)} disabled={!seedInputValue}>
-            Add
-          </Button>
+      <div class="section-item" style="align-items: flex-start;">
+        <div class="info">
+          <Text variant="medium">
+            Seeds help you see more projects and people on the Radicle network
+          </Text>
+          <Text>
+            Have some seed addresses you’d like to join? New projects from the
+            seeds you’re subscribed to will appear in the Discover page.
+          </Text>
         </div>
+        <form class="seed-entry-form">
+          <div class="seed-entry-field">
+            <Input.Text
+              bind:value={seedInputValue}
+              placeholder="Enter a seed address here"
+              style="margin-right: 8px; min-width: 224px;" />
+            <Button
+              on:click={submitSeed(seedInputValue)}
+              disabled={!seedInputValue}
+              variant="outline">
+              Add
+            </Button>
+          </div>
 
-        <div class="seeds">
-          {#each $seeds.data as seed}
-            <div class="seed">
-              <Text
-                style="color: var(--color-foreground-level-6);"
-                variant="small">
-                {seed}
-              </Text>
-              <Icon.Cross on:click={removeSeed(seed)} />
-            </div>
-          {/each}
-        </div>
+          <div class="seeds">
+            {#each $seeds.data as seed}
+              <div class="seed">
+                <Icon.Cross
+                  on:click={removeSeed(seed)}
+                  variant="medium"
+                  style="margin-right: 8px;" />
+
+                <Text style="color: var(--color-foreground-level-6);">
+                  {seed}
+                </Text>
+              </div>
+            {/each}
+          </div>
+        </form>
       </div>
     </section>
 
