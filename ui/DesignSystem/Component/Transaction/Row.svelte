@@ -5,62 +5,45 @@
   export let dataCy = null;
 
   export let variant = "single"; // top || middle || bottom
-  export let active = false;
-  export let disabled = true;
-
-  $: disabledClass = disabled ? "disabled" : null;
-  $: activeClass = active ? "active" : null;
-  $: rowClass = ["row", activeClass, disabledClass, variant].join(" ");
 </script>
 
 <style>
   .row {
     padding-left: 16px;
     padding-right: 16px;
-    border: 1px solid var(--color-foreground-level-2);
-    height: 56px;
+    height: 52px;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
 
-  .row:hover {
-    outline: none;
-    box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-primary));
-    border: 1px solid var(--focus-outline-color, var(--color-primary));
-    cursor: pointer;
-  }
-
-  .row.disabled {
-    box-shadow: none;
-    border: 1px solid var(--color-foreground-level-2);
-    cursor: default;
-  }
-
-  .row.active {
-    box-shadow: 0 0 0 1px var(--focus-outline-color, var(--color-primary));
-    border: 1px solid var(--focus-outline-color, var(--color-primary));
-  }
-
   .single {
+    border: 1px solid var(--color-foreground-level-2);
     border-radius: 4px;
+    height: 56px;
   }
 
   .bottom {
+    border-left: 1px solid var(--color-foreground-level-2);
+    border-right: 1px solid var(--color-foreground-level-2);
+    border-bottom: 1px solid var(--color-foreground-level-2);
     border-radius: 0 0 4px 4px;
   }
 
   .middle {
-    margin-bottom: -1px;
+    border-left: 1px solid var(--color-foreground-level-2);
+    border-right: 1px solid var(--color-foreground-level-2);
   }
 
   .top {
-    margin-bottom: -1px;
     border-radius: 4px 4px 0 0;
+    border-left: 1px solid var(--color-foreground-level-2);
+    border-right: 1px solid var(--color-foreground-level-2);
+    border-top: 1px solid var(--color-foreground-level-2);
   }
 </style>
 
-<div class={rowClass} {style} data-cy={dataCy}>
+<div class="row {variant}" {style} data-cy={dataCy}>
   <Flex>
     <div slot="left">
       <slot name="left" />
