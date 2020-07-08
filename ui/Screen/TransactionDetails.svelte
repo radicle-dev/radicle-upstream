@@ -4,12 +4,7 @@
   import { fallback } from "../src/identity.ts";
   import * as transaction from "../src/transaction.ts";
 
-  import {
-    ModalLayout,
-    Remote,
-    Transaction,
-    TransactionStatusbar,
-  } from "../DesignSystem/Component";
+  import { ModalLayout, Remote, Transaction } from "../DesignSystem/Component";
 
   export let params = null;
 
@@ -38,11 +33,6 @@
         transaction={tx}
         {payer}
         transactionDeposits={session.transactionDeposits} />
-      <TransactionStatusbar
-        progress={transaction.iconProgress(tx.state)}
-        text={transaction.statusText(tx.state)}
-        variant={transaction.iconState(tx.state)}
-        style="margin-bottom: 24px; margin-top: 24px;" />
     </Remote>
 
   </div>

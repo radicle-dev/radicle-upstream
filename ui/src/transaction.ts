@@ -271,7 +271,7 @@ export const formatMessage = (msg: Message): string => {
       return "Project registration";
 
     case MessageType.UserRegistration:
-      return "User registration";
+      return "Handle registration";
   }
 };
 export const headerIcon = (msg: Message): string => {
@@ -426,7 +426,7 @@ export const statusText = (state: State): string => {
 
   switch (state.type) {
     case StateType.Confirmed:
-      return `Waiting for transaction to settle`;
+      return `In progress`;
 
     case StateType.Failed:
       return `Transaction failed ${timestamp}`;
@@ -435,7 +435,7 @@ export const statusText = (state: State): string => {
       return `Waiting for confirmation`;
 
     case StateType.Settled:
-      return `Transaction settled ${timestamp}`;
+      return `Settled ${timestamp}`;
   }
 };
 

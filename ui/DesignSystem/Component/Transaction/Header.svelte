@@ -36,7 +36,6 @@
         return Icon.Register;
     }
   };
-  console.log(transaction);
 </script>
 
 <style>
@@ -78,8 +77,10 @@
         <Title>{subject.name}</Title>
       {/if}
     </caption>
-    <Text variant="normal" style="color:var(--color-foreground-level-4);">
-      {timestamp(transaction.state)}
-    </Text>
+    {#if transaction.state}
+      <Text variant="normal" style="color:var(--color-foreground-level-4);">
+        {timestamp(transaction.state)}
+      </Text>
+    {/if}
   </div>
 </div>

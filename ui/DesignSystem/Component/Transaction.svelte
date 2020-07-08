@@ -4,6 +4,9 @@
     formatStake,
     formatSubject,
     PayerType,
+    iconState,
+    iconProgress,
+    statusText,
   } from "../../src/transaction.ts";
 
   import {
@@ -74,7 +77,11 @@
   </div>
 </Row>
 
-<Row dataCy="total" variant="bottom" style="margin-bottom: 24px;">
+<Row
+  dataCy="total"
+  variant="bottom"
+  style="margin-bottom: 24px; border-top: 1px solid
+  var(--color-foreground-level-2); ">
   <div slot="left">
     <Title style="color: var(--color-foreground-level-6);" variant="medium">
       Total
@@ -87,14 +94,13 @@
 </Row>
 
 {#if transaction.id}
-  <Row style="margin-bottom: 24px;">
+  <Row variant="top">
     <div slot="left">
       <Text variant="regular" style="color:var(--color-foreground-level-6);">
         Transaction ID
       </Text>
     </div>
     <div slot="right">
-      <!-- TO DO make transaction ID copyable -->
       <Copyable
         {afterCopy}
         style="background:var(--color-foreground-level-2); border-radius:2px;
@@ -108,6 +114,33 @@
         <svelte:component this={copyIcon} size="small" />
       </Copyable>
 
+    </div>
+  </Row>
+
+  <Row variant="bottom" style="margin-bottom: 24px;">
+    <div slot="left">
+      <Text variant="regular" style="color:var(--color-foreground-level-6);">
+        Status
+      </Text>
+    </div>
+    <div slot="right" style="display: flex; align-items: center;">
+      {#if iconState(transaction.state) === 'negative'}
+        <Icon.Important
+          style="margin-right: 8px; fill: var(--color-negative)" />
+      {:else if iconState(transaction.state) === 'positive'}
+        <Icon.Check
+          variant="filled"
+          style="margin-right: 8px; fill: var(--color-positive)" />
+      {:else}
+        <Icon.TransactionState
+          progress={iconProgress(transaction.state)}
+          style="margin-right: 8px;"
+          variant="small"
+          state={iconState(transaction.state)} />
+      {/if}
+      <Text style="align-self: center; color: var(--color-foreground-level-6);">
+        {statusText(transaction.state)}
+      </Text>
     </div>
   </Row>
 {/if}
