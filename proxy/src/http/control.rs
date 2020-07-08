@@ -86,7 +86,7 @@ where
 /// GET /nuke/registry
 fn nuke_registry_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
@@ -230,11 +230,7 @@ mod handler {
 
             let can_open = {
                 let ctx = ctx.lock().await;
-                let _ = ctx
-                    .peer_api
-                    .storage()
-                    .reopen()
-                    .expect("failed to reopen Storage");
+                let _ = ctx.peer_api.reopen()?;
                 true
             };
             assert!(can_open);

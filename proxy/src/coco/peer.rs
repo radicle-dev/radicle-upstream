@@ -8,6 +8,7 @@ use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
+use librad::paths;
 use librad::peer::PeerId;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
@@ -45,14 +46,28 @@ impl Api {
         })
     }
 
-    pub fn peer_id(&self) -> PeerId {
-        let api = self.peer_api.lock().unwrap();
-        api.peer_id().clone()
-    }
-
     pub fn monorepo(&self) -> PathBuf {
         let api = self.peer_api.lock().unwrap();
         api.paths().git_dir().join("")
+    }
+
+    pub fn paths(&self) -> &paths::Paths {
+        let api = self.peer_api.lock().unwrap();
+        let paths = api.paths();
+
+        paths
+    }
+
+    pub fn reopen(&self) -> Result<(), error::Error> {
+        let api = self.peer_api.lock().unwrap();
+        api.storage().reopen()?;
+
+        Ok(())
+    }
+
+    pub fn peer_id(&self) -> PeerId {
+        let api = self.peer_api.lock().unwrap();
+        api.peer_id().clone()
     }
 
     /// Get the default owner for this `PeerApi`.

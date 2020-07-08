@@ -1036,7 +1036,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            ctx.key()?,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1370,7 +1370,7 @@ mod test {
         let want = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::tree(
                 &mut browser,
-                Some(peer_id),
+                Some(&peer_id),
                 default_branch,
                 Some(revision.to_string()),
                 Some(prefix.to_string()),

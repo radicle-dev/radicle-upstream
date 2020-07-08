@@ -391,6 +391,10 @@ mod test {
         let ctx = http::Context::tmp(tmp_dir).await?;
         let api = super::filters(ctx);
 
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+        let dir = tempfile::tempdir_in(repos_dir.path())?;
+        let path = dir.path().to_str().unwrap();
+
         let ctx = ctx.lock().await;
         let handle = "cloudhead";
         let key = ctx.keystore.get_librad_key()?;
