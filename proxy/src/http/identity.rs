@@ -103,7 +103,7 @@ mod handler {
         }
 
         let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
-        let id = identity::create(&ctx.peer_api, key, input.handle.parse()?).await?;
+        let id = identity::create(&ctx.peer_api, key, input.handle.parse()?)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 

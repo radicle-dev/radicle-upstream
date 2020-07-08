@@ -401,7 +401,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let handle = "cloudhead";
-        let id = identity::create(&ctx.peer_api, ctx.key()?, handle.parse().unwrap()).await?;
+        let id = identity::create(&ctx.peer_api, ctx.key()?, handle.parse().unwrap())?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -453,8 +453,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key(), "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
-
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             ctx.key()?,
@@ -491,7 +490,7 @@ mod test {
 
         coco::control::setup_fixtures(&ctx.peer_api, ctx.key()?, &owner)?;
 
-        let projects = coco::list_projects(&ctx.peer_api)?;
+        let owner = coco::init_owner(&ctx.peer_api, key.clone(), "cloudhead")?;
 
         let res = request().method("GET").path("/projects").reply(&api).await;
 

@@ -865,7 +865,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             ctx.key()?,
@@ -1004,7 +1004,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             ctx.key()?,
@@ -1040,7 +1040,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             ctx.key()?,
@@ -1094,7 +1094,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             ctx.key()?,
@@ -1173,7 +1173,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             ctx.key()?,
@@ -1314,7 +1314,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             ctx.key()?,
@@ -1352,7 +1352,7 @@ mod test {
 
         let ctx = ctx.lock().await;
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             ctx.key()?,

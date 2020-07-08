@@ -707,9 +707,8 @@ mod test {
         let api = super::filters(ctx);
 
         let ctx = ctx.lock().await;
-
         let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
         let default_branch = "master";
