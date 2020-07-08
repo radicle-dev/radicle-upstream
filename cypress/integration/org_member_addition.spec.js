@@ -57,13 +57,13 @@ context("add member to org", () => {
 
   context("navigation", () => {
     it("can be closed by pressing cancel", () => {
-      cy.pick("add-member-modal").contains("Register a member");
+      cy.pick("add-member-modal").contains("Member registration");
       cy.pick("cancel-button").click();
       cy.pick("org-screen").should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
-      cy.pick("add-member-modal").contains("Register a member");
+      cy.pick("add-member-modal").contains("Member registration");
       cy.get("body").type("{esc}");
       cy.pick("org-screen").should("exist");
     });

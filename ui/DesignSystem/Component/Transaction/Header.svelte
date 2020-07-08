@@ -58,7 +58,7 @@
   }
 </style>
 
-<div dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
+<div data-cy="summary" variant={transaction.id ? 'top' : 'single'}>
   <div data-cy="message" class="container">
     <div class="icon">
       <svelte:component this={icon()} style="fill: var(--color-primary)" />
@@ -74,7 +74,7 @@
           style="color: var(--color-foreground)"
           dataCy="subject-avatar" />
       {:else}
-        <Title>{subject.name}</Title>
+        <Title dataCy="subject">{subject.name}</Title>
       {/if}
     </caption>
     {#if transaction.state}

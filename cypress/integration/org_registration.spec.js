@@ -13,7 +13,7 @@ context("org registration permission", () => {
     cy.registerUser();
     cy.visit("public/index.html");
     cy.pick("sidebar", "add-org").click();
-    cy.pick("org-reg-modal").contains("Register an org");
+    cy.pick("org-reg-modal").contains("Org registration");
   });
 });
 
@@ -30,13 +30,13 @@ context("org registration", () => {
 
   context("navigation", () => {
     it("can be closed by pressing cancel", () => {
-      cy.pick("org-reg-modal").contains("Register an org");
+      cy.pick("org-reg-modal").contains("Org registration");
       cy.pick("cancel-button").click();
       cy.pick("profile-screen").should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
-      cy.pick("org-reg-modal").contains("Register an org");
+      cy.pick("org-reg-modal").contains("Org registration");
       cy.get("body").type("{esc}");
       cy.pick("profile-screen").should("exist");
     });
@@ -131,7 +131,7 @@ context("org registration", () => {
       cy.pick("submit-button").click();
 
       cy.pick("message").contains("Org registration");
-      cy.pick("subject").contains("mariposa");
+      cy.pick("subject-avatar").contains("mariposa");
       cy.pick("subject-avatar", "emoji").should("have.class", "square");
 
       cy.pick("deposit", "rad-amount").contains("0.00001");
@@ -156,13 +156,15 @@ context("org registration", () => {
       // pick most recent transaction
       cy.pick("transaction-center", "transaction-item").first().click();
       cy.pick("summary", "message").contains("Org registration");
-      cy.pick("summary", "subject").contains("mariposa");
+      cy.pick("summary", "subject-avatar").contains("mariposa");
       cy.pick("summary", "subject-avatar", "emoji").should(
         "have.class",
         "square"
       );
-      cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🐲");
-      cy.pick("subject", "emoji").should(
+      cy.pick("subject-avatar", "emoji")
+        .find("img")
+        .should("have.attr", "alt", "🐲");
+      cy.pick("subject-avatar", "emoji").should(
         "have.css",
         "background-color",
         "rgb(186, 38, 114)"

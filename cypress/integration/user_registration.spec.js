@@ -107,7 +107,7 @@ context("user registration", () => {
     it("shows the correct transaction details for confirmation", async () => {
       cy.pick("next-button").click();
 
-      cy.pick("message").contains("User registration");
+      cy.pick("message").contains("Handle registration");
       cy.pick("subject").contains("secretariat");
 
       cy.pick("subject-avatar", "emoji").should("have.class", "circle");
@@ -137,8 +137,8 @@ context("user registration", () => {
 
       // pick most recent transaction
       cy.pick("transaction-item").last().click();
-      cy.pick("summary", "message").contains("User registration");
-      cy.pick("summary", "subject").contains("secretariat");
+      cy.pick("summary", "message").contains("Handle registration");
+      cy.pick("summary", "subject-avatar").contains("secretariat");
 
       cy.pick("summary", "subject-avatar", "emoji").should(
         "have.class",
