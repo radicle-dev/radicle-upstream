@@ -3,6 +3,7 @@
     formatMessage,
     headerIcon,
     SubjectType,
+    timestamp,
   } from "../../../src/transaction.ts";
 
   import { Avatar, Icon, Title, Text } from "../../../DesignSystem/Primitive";
@@ -35,6 +36,7 @@
         return Icon.Register;
     }
   };
+  console.log(transaction);
 </script>
 
 <style>
@@ -76,9 +78,8 @@
         <Title>{subject.name}</Title>
       {/if}
     </caption>
-    <!-- TO DO Make the timestamp real -->
     <Text variant="normal" style="color:var(--color-foreground-level-4);">
-      4 July 2020 16:20:21
+      {timestamp(transaction.state)}
     </Text>
   </div>
 </div>
