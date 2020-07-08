@@ -1,5 +1,9 @@
 <script>
-  import { formatMessage, SubjectType } from "../../../src/transaction.ts";
+  import {
+    formatMessage,
+    headerIcon,
+    SubjectType,
+  } from "../../../src/transaction.ts";
 
   import { Avatar, Icon, Title, Text } from "../../../DesignSystem/Primitive";
 
@@ -15,6 +19,20 @@
         return "circle";
       default:
         return "square";
+    }
+  };
+
+  const icon = () => {
+    const val = headerIcon(transaction.messages[0]);
+    switch (val) {
+      case "Project":
+        return Icon.Source;
+      case "User":
+        return Icon.Member;
+      case "Register":
+        return Icon.Register;
+      default:
+        return Icon.Register;
     }
   };
 </script>
@@ -40,11 +58,9 @@
 </style>
 
 <div dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
-  {console.log(transaction)}
   <div data-cy="message" class="container">
     <div class="icon">
-      <!-- TODO make the icon change based on transaction type -->
-      <Icon.Register style="fill: var(--color-primary)" />
+      <svelte:component this={icon()} style="fill: var(--color-primary)" />
     </div>
     <Title variant="big">{formatMessage(transaction.messages[0])}</Title>
     <caption style="display: inline-flex; margin:16px 0;">

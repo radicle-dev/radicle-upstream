@@ -274,6 +274,27 @@ export const formatMessage = (msg: Message): string => {
       return "User registration";
   }
 };
+export const headerIcon = (msg: Message): string => {
+  switch (msg.type) {
+    case MessageType.OrgRegistration:
+      return "Register";
+
+    case MessageType.OrgUnregistration:
+      return "Register";
+
+    case MessageType.MemberRegistration:
+      return "User";
+
+    case MessageType.MemberUnregistration:
+      return "User";
+
+    case MessageType.ProjectRegistration:
+      return "Project";
+
+    case MessageType.UserRegistration:
+      return "User";
+  }
+};
 
 export const formatStake = (msg: Message): string =>
   `${formatMessage(msg)} deposit`;
