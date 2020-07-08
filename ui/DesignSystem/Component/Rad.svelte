@@ -40,7 +40,10 @@
 
 <div class="wrapper" {style}>
   <div class="amount rad">
-    <Icon.Currency />
+    <!-- TODO Make <Icon.LockSmall /> appear only when the amount is a deposit -->
+    <Icon.LockSmall
+      style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
+    <Icon.Currency style="fill: var(--color-negative);" />
     <Title variant="tiny" dataCy="rad-amount" style="margin-left:2px;">
       {rad}
     </Title>

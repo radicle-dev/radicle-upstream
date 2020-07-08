@@ -4,10 +4,11 @@
 
 <svg
   on:click
+  {style}
   width="8"
   height="10"
   viewBox="0 0 8 10"
-  fill="var(--color-foreground-level-5)"
+  fill="var(--color-negative)"
   xmlns="http://www.w3.org/2000/svg">
   <path
     fill-rule="evenodd"

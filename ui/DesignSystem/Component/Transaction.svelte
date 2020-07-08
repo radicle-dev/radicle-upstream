@@ -8,7 +8,13 @@
     PayerType,
   } from "../../src/transaction.ts";
 
-  import { Avatar, Numeric, Title, Text } from "../../DesignSystem/Primitive";
+  import {
+    Avatar,
+    Icon,
+    Numeric,
+    Title,
+    Text,
+  } from "../../DesignSystem/Primitive";
 
   import Rad from "./Rad.svelte";
   import Row from "./Transaction/Row.svelte";
@@ -48,6 +54,13 @@
     style="text-align:center; background-color: var(--color-foreground-level-1);
     padding: 48px; border-radius: 4px; border: 1px solid
     var(--color-foreground-level-2); margin-bottom:24px">
+    <div
+      style="background:var(--color-background); border-radius:28px;
+      height:56px; margin:0 auto 16px; padding:14px; width:56px; border:2px
+      solid var(--color-primary-level-1);">
+      <!-- TODO make the icon change based on transaction type -->
+      <Icon.Register style="fill: var(--color-primary)" />
+    </div>
     <Title variant="big">{formatMessage(transaction.messages[0])}</Title>
     <caption style="display: inline-flex; margin:16px 0;">
       {#if avatar}
@@ -62,6 +75,10 @@
         <Title>{subject.name}</Title>
       {/if}
     </caption>
+    <!-- TO DO Make the timestamp real -->
+    <Text variant="normal" style="color:var(--color-foreground-level-4);">
+      4 July 2020 16:20:21
+    </Text>
   </div>
 </div>
 
@@ -110,12 +127,17 @@
     </div>
     <div slot="right">
       <!-- TO DO make transaction ID copyable -->
-      <Numeric
-        variant="regular"
-        style="color: var(--color-foreground-level-6); max-width: 24ch;
-        overflow: hidden; text-overflow: ellipsis;">
-        {transaction.id}
-      </Numeric>
+      <div
+        style="background:var(--color-foreground-level-2); border-radius:2px;
+        display:inline-flex">
+        <Numeric
+          variant="small"
+          style="color: var(--color-foreground-level-6); max-width: 24ch;
+          overflow: hidden; text-overflow: ellipsis; padding:3px;">
+          {transaction.id}
+        </Numeric>
+        <Icon.Copy />
+      </div>
     </div>
   </Row>
 {/if}
