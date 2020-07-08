@@ -415,6 +415,8 @@ mod handler {
                         metadata: identity::Metadata {
                             handle: handle.clone(),
                         },
+                        // TODO(finto): Add Avatar::from_urn, the string conversion is making me
+                        // nervous.
                         avatar_fallback: avatar::Avatar::from(
                             &urn.to_string(),
                             avatar::Usage::Identity,

@@ -24,6 +24,7 @@ pub type User = user::User<entity::Verified>;
 /// A bundled type for the revisions API response containing information about
 /// the user and its branches and tags scoped by a project.
 pub struct Remote {
+    // TODO(finto): Should probably be User<Verified> i.e. User from line 22.
     /// The user identity.
     pub user: user::User<entity::Draft>,
     /// Branches scoped by project.

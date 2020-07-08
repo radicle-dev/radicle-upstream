@@ -331,6 +331,7 @@ pub struct LocalState {
 /// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
     let repo = git::Repository::new(repo_path)?;
+    // TODO(finto): This should be the default branch of the project, possibly.
     let browser = Browser::new(&repo, "master")?;
     let mut branches = browser
         .list_branches(Some(BranchType::Local))?
