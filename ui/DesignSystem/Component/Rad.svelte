@@ -26,6 +26,12 @@
     border-radius: 4px;
   }
 
+  .deposit {
+    fill: var(--color-foreground-level-6);
+    color: var(--color-foreground-level-6);
+    background: var(--color-foreground-level-2);
+  }
+
   .wrapper:hover .rad {
     display: none;
   }
@@ -35,23 +41,29 @@
   }
 
   .wrapper:hover .usd {
-    display: block;
+    display: flex;
   }
 </style>
 
 <div class="wrapper" {style}>
-  <div class="amount rad">
+  <div class="amount rad" class:deposit>
     {#if deposit}
       <Icon.LockSmall
         style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
+      <Icon.Currency style="fill: var(--color-foreground-level-6);" />
+    {:else}
+      <Icon.Currency style="fill: var(--color-negative);" />
     {/if}
-    <Icon.Currency style="fill: var(--color-negative);" />
     <Title variant="tiny" dataCy="rad-amount" style="margin-left:2px;">
       {rad}
     </Title>
   </div>
   {#if usd !== null}
-    <div class="amount usd">
+    <div class="amount usd" class:deposit>
+      {#if deposit}
+        <Icon.LockSmall
+          style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
+      {/if}
       <Title variant="tiny" dataCy="usd-amount">${usd}</Title>
     </div>
   {/if}
