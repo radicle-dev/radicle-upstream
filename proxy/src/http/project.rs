@@ -14,7 +14,7 @@ use crate::registry;
 /// Combination of all routes.
 pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     list_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
@@ -26,7 +26,7 @@ fn create_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path!("projects")
         .and(warp::post())
@@ -53,7 +53,7 @@ where
 /// `GET /projects/<id>`
 fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path("projects")
         .and(warp::get())
@@ -83,7 +83,7 @@ where
 /// `GET /projects`
 fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path!("projects")
         .and(warp::get())
@@ -119,16 +119,12 @@ mod handler {
         ctx: http::Ctx<R>,
         owner: coco::User,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: http::Registry,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.lock().await;
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
 
-        let meta = coco::init_project(
-            &ctx.peer_api,
+        let meta = ctx.peer_api.init_project(
             key,
             &owner,
             &input.path,
@@ -138,7 +134,9 @@ mod handler {
         )?;
         let urn = meta.urn();
 
-        let stats = coco::with_browser(&ctx.peer_api, &urn, |browser| Ok(browser.get_stats()?))?;
+        let stats = ctx
+            .peer_api
+            .with_browser(&urn, |browser| Ok(browser.get_stats()?))?;
         let project: project::Project = (meta, stats).into();
 
         Ok(reply::with_status(
@@ -148,10 +146,7 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection>
-    where
-        R: http::Registry,
-    {
+    pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection> {
         let urn = urn.parse().map_err(Error::from)?;
         let ctx = ctx.lock().await;
 
@@ -159,12 +154,9 @@ mod handler {
     }
 
     /// List all known projects.
-    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: http::Registry,
-    {
+    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection> {
         let ctx = ctx.lock().await;
-        let projects = coco::list_projects(&ctx.peer_api)?;
+        let projects = ctx.peer_api.list_projects()?;
 
         Ok(reply::json(&projects))
     }
@@ -401,7 +393,8 @@ mod test {
 
         let ctx = ctx.lock().await;
         let handle = "cloudhead";
-        let id = identity::create(&ctx.peer_api, ctx.key()?, handle.parse().unwrap())?;
+        let key = ctx.keystore.get_librad_key()?;
+        let id = identity::create(&ctx.peer_api, key, handle.parse().unwrap())?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -419,7 +412,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = coco::list_projects(&ctx.peer_api)?;
+        let projects = ctx.peer_api.list_projects()?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -452,11 +445,12 @@ mod test {
         let api = super::filters(ctx);
 
         let ctx = ctx.lock().await;
-        let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            ctx.key()?,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -486,12 +480,12 @@ mod test {
         let api = super::filters(ctx);
 
         let ctx = ctx.lock().await;
-        let owner = coco::init_owner(&ctx.peer_api, ctx.key()?, "cloudhead")?;
-
-        coco::control::setup_fixtures(&ctx.peer_api, ctx.key()?, &owner)?;
-
         let key = ctx.keystore.get_librad_key()?;
-        let owner = coco::init_owner(&ctx.peer_api, key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(key, "cloudhead")?;
+
+        coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
+
+        let owner = ctx.peer_api.init_owner(key, "cloudhead")?;
 
         let res = request().method("GET").path("/projects").reply(&api).await;
 

@@ -12,7 +12,7 @@ pub fn routes<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path("control")
         .map(move || enable)
@@ -36,7 +36,7 @@ where
 #[allow(dead_code)]
 fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     create_project_filter(ctx.clone())
         .or(nuke_coco_filter(ctx.clone()))
@@ -49,7 +49,7 @@ fn create_project_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path!("create-project")
         .and(super::with_context(ctx.clone()))
@@ -63,7 +63,7 @@ fn register_user_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path!("register-user")
         .and(http::with_context(ctx))
@@ -76,7 +76,7 @@ fn nuke_coco_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path!("nuke" / "coco")
         .and(super::with_context(ctx))
@@ -86,9 +86,9 @@ where
 /// GET /nuke/registry
 fn nuke_registry_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone 
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path!("nuke" / "registry")
         .and(http::with_context(ctx))
@@ -115,10 +115,7 @@ mod handler {
         ctx: http::Ctx<R>,
         owner: coco::User,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: http::Registry,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.lock().await;
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
@@ -130,9 +127,9 @@ mod handler {
             &input.description,
             &input.default_branch,
         )?;
-        let stats = coco::with_browser(&ctx.peer_api, &meta.urn(), |browser| {
-            Ok(browser.get_stats()?)
-        })?;
+        let stats = ctx
+            .peer_api
+            .with_browser(&meta.urn(), |browser| Ok(browser.get_stats()?))?;
         let project: project::Project = (meta, stats).into();
 
         Ok(reply::with_status(
@@ -147,7 +144,7 @@ mod handler {
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let ctx = ctx.lock().await;
 
@@ -164,10 +161,7 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: http::Registry,
-    {
+    pub async fn nuke_coco<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
@@ -185,7 +179,7 @@ mod handler {
         let key = new_keystore.init_librad_key().map_err(Error::from)?;
 
         let config = coco::config::configure(paths, key.clone());
-        let new_peer_api = coco::create_peer_api(config).await?;
+        let new_peer_api = coco::Api::new(config).await?;
 
         let mut ctx = ctx.lock().await;
         ctx.peer_api = new_peer_api;
@@ -197,7 +191,7 @@ mod handler {
     /// Reset the Registry state by replacing the emulator in place.
     pub async fn nuke_registry<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let (client, _) = radicle_registry_client::Client::new_emulator();
         let mut ctx = ctx.lock().await;

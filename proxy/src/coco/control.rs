@@ -4,11 +4,10 @@ use std::env;
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
-use librad::net::peer::PeerApi;
 use radicle_surf::vcs::git::git2;
 
 use crate::coco::config;
-use crate::coco::peer::{init_project, User};
+use crate::coco::peer::{Api, User};
 use crate::error;
 
 /// Deletes the local git repsoitory coco uses to keep its state.
@@ -29,11 +28,7 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
 #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
-pub fn setup_fixtures(
-    peer: &PeerApi,
-    key: keys::SecretKey,
-    owner: &User,
-) -> Result<(), error::Error> {
+pub fn setup_fixtures(api: &Api, key: keys::SecretKey, owner: &User) -> Result<(), error::Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -56,7 +51,7 @@ pub fn setup_fixtures(
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(peer, key.clone(), owner, info.0, info.1, info.2)?;
+        replicate_platinum(api, key.clone(), owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -70,7 +65,7 @@ pub fn setup_fixtures(
 /// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
 pub fn replicate_platinum(
-    peer: &PeerApi,
+    api: &Api,
     key: keys::SecretKey,
     owner: &User,
     name: &str,
@@ -84,14 +79,13 @@ pub fn replicate_platinum(
     platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
 
     // Construct path for fixtures to clone into.
-    let monorepo = peer.paths().git_dir().join("");
+    let monorepo = api.monorepo();
     let workspace = monorepo.join("../workspace");
     let platinum_into = workspace.join(name);
 
     clone_platinum(&platinum_from, &platinum_into)?;
 
-    let meta = init_project(
-        peer,
+    let meta = api.init_project(
         key,
         owner,
         platinum_into.clone(),

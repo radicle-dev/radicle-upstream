@@ -61,7 +61,7 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
 pub async fn current<R>(
-    api: &coco::PeerApi,
+    api: &coco::Api,
     registry: &R,
     store: &kv::Store,
 ) -> Result<Session, error::Error>
@@ -84,7 +84,7 @@ where
             if registry.get_user(handle.clone()).await?.is_some() {
                 session.orgs = registry.list_orgs(handle).await?;
                 session.permissions.register_org = true;
-                let projects = coco::list_projects(&*api)?;
+                let projects = api.list_projects()?;
                 if !projects.is_empty() {
                     session.permissions.register_project = true;
                 }

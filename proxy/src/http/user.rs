@@ -9,10 +9,9 @@ use crate::http;
 use crate::registry;
 
 /// Prefixed filter
-pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+pub fn routes<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("users").and(
         list_orgs_filter(ctx.clone())
             .or(register_project_filter(ctx.clone()))
@@ -23,10 +22,7 @@ where
 
 /// Combination of all user filters.
 #[cfg(test)]
-fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_orgs_filter(ctx.clone())
         .or(register_project_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
@@ -34,10 +30,9 @@ where
 }
 
 /// GET /<handle>
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+fn get_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(http::with_context(ctx))
         .and(document::param::<String>(
@@ -59,10 +54,7 @@ where
 /// POST /
 fn register_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
         .and(http::with_context(ctx))
         .and(warp::body::json())
@@ -83,10 +75,7 @@ where
 /// `GET /<handle>/orgs`
 fn list_orgs_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::get()
         .and(http::with_context(ctx))
         .and(document::param::<String>(
@@ -111,10 +100,7 @@ where
 /// `POST /<id>/projects/<name>`
 fn register_project_filter<R>(
     ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_context(ctx)
         .and(warp::post())
         .and(document::param::<String>(
@@ -160,7 +146,7 @@ mod handler {
     /// Get the [`registry::User`] for the given `handle`.
     pub async fn get<R>(ctx: http::Ctx<R>, handle: String) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let ctx = ctx.lock().await;
 
@@ -172,7 +158,7 @@ mod handler {
     /// List the orgs the user is a member of.
     pub async fn list_orgs<R>(ctx: http::Ctx<R>, handle: String) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let ctx = ctx.lock().await;
 
@@ -188,7 +174,7 @@ mod handler {
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -224,7 +210,7 @@ mod handler {
         input: http::RegisterProjectInput,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         http::register_project(ctx, registry::DomainType::User, handle, project_name, input).await
     }
@@ -307,7 +293,7 @@ mod test {
     use crate::coco;
     use crate::error;
     use crate::http;
-    use crate::registry;
+    use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
@@ -435,7 +421,8 @@ mod test {
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
-        let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let urn = coco::Urn::new(
             owner.root_hash().clone(),

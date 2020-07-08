@@ -39,11 +39,11 @@ pub struct Metadata {
 ///
 /// # Errors
 pub fn create(
-    peer: &coco::PeerApi,
+    api: &coco::Api,
     key: keys::SecretKey,
     handle: String,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_owner(peer, key, &handle)?;
+    let user = api.init_owner(key, &handle)?;
 
     let id = user.urn();
     let shareable_entity_identifier = user.into();
@@ -61,8 +61,8 @@ pub fn create(
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(peer: &coco::PeerApi, id: &coco::Urn) -> Result<Identity, error::Error> {
-    let user = coco::get_user(peer, id)?;
+pub fn get(api: &coco::Api, id: &coco::Urn) -> Result<Identity, error::Error> {
+    let user = api.get_user(id)?;
     Ok(Identity {
         id: id.clone(),
         shareable_entity_identifier: SharedIdentifier {

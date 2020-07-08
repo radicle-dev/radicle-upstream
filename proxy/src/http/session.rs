@@ -11,10 +11,9 @@ use crate::registry;
 use crate::session;
 
 /// Prefixed fitlers.
-pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+pub fn routes<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("session").and(
         clear_cache_filter(Arc::clone(&ctx))
             .or(delete_filter(Arc::clone(&ctx)))
@@ -27,7 +26,7 @@ where
 #[cfg(test)]
 pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     clear_cache_filter(Arc::clone(&ctx))
         .or(delete_filter(Arc::clone(&ctx)))
@@ -40,7 +39,7 @@ fn clear_cache_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path("cache")
         .and(warp::delete())
@@ -61,7 +60,7 @@ fn delete_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     warp::delete()
         .and(path::end())
@@ -79,7 +78,7 @@ where
 /// `GET /`
 fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     warp::get()
         .and(path::end())
@@ -103,7 +102,7 @@ fn update_settings_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path("settings")
         .and(warp::post())
@@ -124,12 +123,13 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::http;
+    use crate::registry;
     use crate::session;
 
     /// Clear [`registry::Cache`].
     pub async fn clear_cache<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Cache,
     {
         let ctx = ctx.lock().await;
         ctx.registry.clear()?;
@@ -138,10 +138,7 @@ mod handler {
     }
 
     /// Clear the current [`session::Session`].
-    pub async fn delete<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
-    where
-        R: http::Registry,
-    {
+    pub async fn delete<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection> {
         let ctx = ctx.lock().await;
         session::clear_current(&ctx.store)?;
 
@@ -151,7 +148,7 @@ mod handler {
     /// Fetch the [`session::Session`].
     pub async fn get<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let ctx = ctx.lock().await;
 
@@ -164,10 +161,7 @@ mod handler {
     pub async fn update_settings<R>(
         ctx: http::Ctx<R>,
         settings: session::settings::Settings,
-    ) -> Result<impl Reply, Rejection>
-    where
-        R: http::Registry,
-    {
+    ) -> Result<impl Reply, Rejection> {
         let ctx = ctx.lock().await;
         session::set_settings(&ctx.store, settings)?;
 

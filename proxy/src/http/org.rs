@@ -13,7 +13,7 @@ use crate::registry;
 /// Prefixed filters.
 pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path("orgs").and(
         get_filter(ctx.clone())
@@ -29,7 +29,7 @@ where
 #[cfg(test)]
 fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     get_filter(ctx.clone())
         .or(register_project_filter(ctx.clone()))
@@ -42,7 +42,7 @@ where
 /// `GET /<id>`
 fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     http::with_context(ctx)
         .and(warp::get())
@@ -72,7 +72,7 @@ fn register_project_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     http::with_context(ctx)
         .and(warp::post())
@@ -106,7 +106,7 @@ fn get_project_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     http::with_context(ctx)
         .and(warp::get())
@@ -143,7 +143,7 @@ fn get_projects_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     http::with_context(ctx)
         .and(warp::get())
@@ -169,7 +169,7 @@ fn register_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     http::with_context(ctx)
         .and(warp::post())
@@ -197,7 +197,7 @@ fn register_member_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     http::with_context(ctx)
         .and(warp::post())
@@ -237,7 +237,7 @@ mod handler {
     /// Get the Org for the given `id`.
     pub async fn get<R>(ctx: http::Ctx<R>, org_id: String) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let ctx = ctx.lock().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
@@ -254,7 +254,7 @@ mod handler {
         input: http::RegisterProjectInput,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         http::register_project(ctx, registry::DomainType::Org, org_id, project_name, input).await
     }
@@ -266,7 +266,7 @@ mod handler {
         project_name: String,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let ctx = ctx.lock().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
@@ -283,7 +283,7 @@ mod handler {
     /// Get all projects under the given org id.
     pub async fn get_projects<R>(ctx: http::Ctx<R>, org_id: String) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let ctx = ctx.lock().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
@@ -318,7 +318,7 @@ mod handler {
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -344,7 +344,7 @@ mod handler {
         input: super::RegisterMemberInput,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -526,7 +526,7 @@ mod test {
     use crate::coco;
     use crate::error;
     use crate::http;
-    use crate::registry;
+    use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
@@ -581,7 +581,8 @@ mod test {
         let api = super::filters(ctx);
 
         let ctx = ctx.lock().await;
-        let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
@@ -707,7 +708,8 @@ mod test {
         let api = super::filters(ctx);
 
         let ctx = ctx.lock().await;
-        let owner = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
@@ -715,7 +717,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            ctx.key()?,
+            key,
             &owner,
             project_name,
             project_description,

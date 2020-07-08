@@ -8,11 +8,12 @@ use warp::{path, Filter, Rejection, Reply};
 use crate::avatar;
 use crate::http;
 use crate::identity;
+use crate::registry;
 
 /// Combination of all identity routes.
 pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     get_filter(Arc::clone(&ctx)).or(create_filter(ctx))
 }
@@ -22,7 +23,7 @@ fn create_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path!("identities")
         .and(warp::post())
@@ -48,7 +49,7 @@ where
 /// `GET /identities/<id>`
 fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: http::Registry,
+    R: registry::Client + 'static,
 {
     path("identities")
         .and(http::with_context(ctx))
@@ -83,6 +84,7 @@ mod handler {
     use crate::error;
     use crate::http;
     use crate::identity;
+    use crate::registry;
     use crate::session;
 
     /// Create a new [`identity::Identity`].
@@ -91,7 +93,7 @@ mod handler {
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Client,
     {
         let ctx = ctx.lock().await;
 
@@ -111,10 +113,7 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, id: String) -> Result<impl Reply, Rejection>
-    where
-        R: http::Registry,
-    {
+    pub async fn get<R>(ctx: http::Ctx<R>, id: String) -> Result<impl Reply, Rejection> {
         let ctx = ctx.lock().await;
         let id = identity::get(&ctx.peer_api, &id.parse().expect("could not parse id"))?;
         Ok(reply::json(&id))
@@ -236,7 +235,6 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
-    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -264,8 +262,8 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                coco::default_owner(&ctx.peer_api),
-                Some(coco::get_user(&ctx.peer_api, &urn)?)
+                ctx.peer_api.default_owner(),
+                Some(ctx.peer_api.get_user(&urn)?)
             );
         }
 
@@ -296,7 +294,8 @@ mod test {
         let api = super::filters(ctx);
 
         let ctx = ctx.lock().await;
-        let user = coco::init_user(&ctx.peer_api, ctx.key()?, "cloudhead")?;
+        let key = ctx.keystore.get_librad_key()?;
+        let user = ctx.peer_api.init_user(key, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
         let shareable_entity_identifier = user.into();

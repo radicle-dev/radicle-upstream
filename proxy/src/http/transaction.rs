@@ -9,18 +9,16 @@ use crate::http;
 use crate::registry;
 
 /// Combination of all transaction routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+pub fn filters<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     list_filter(ctx)
 }
 
 /// `POST /transactions`
-fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: http::Registry,
-{
+fn list_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("transactions")
         .and(warp::post())
         .and(http::with_context(ctx))
@@ -53,6 +51,7 @@ mod handler {
     use warp::{reply, Rejection, Reply};
 
     use crate::http;
+    use crate::registry;
 
     /// List all transactions.
     pub async fn list<R>(
@@ -60,7 +59,7 @@ mod handler {
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection>
     where
-        R: http::Registry,
+        R: registry::Cache,
     {
         // TODO(xla): Don't panic when trying to convert ids.
         let tx_ids = input
@@ -224,7 +223,7 @@ mod test {
 
     use crate::error;
     use crate::http;
-    use crate::registry;
+    use crate::registry::{self, Cache as _};
 
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {

@@ -14,8 +14,6 @@ use warp::{
     path, reply, Filter, Rejection, Reply,
 };
 
-use librad::keys;
-
 use crate::coco;
 use crate::keystore;
 use crate::registry;
@@ -52,14 +50,14 @@ macro_rules! combine {
 
 /// Main entry point for HTTP API.
 pub fn api<R>(
-    peer_api: coco::PeerApi,
+    peer_api: coco::Api,
     keystore: keystore::Keystorage,
     registry: R,
     store: kv::Store,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: Registry,
+    R: registry::Client,
 {
     let subscriptions = crate::notification::Subscriptions::default();
     let ctx = Context {
@@ -67,14 +65,14 @@ where
         keystore,
         registry,
         store,
-        subscriptions,
+        subscriptions: subscriptions.clone(),
     };
     let ctx = Arc::new(Mutex::new(ctx));
 
     let avatar_filter = avatar::get_filter();
     let control_filter = control::routes(enable_control, ctx.clone());
     let identity_filter = identity::filters(ctx.clone());
-    let notification_filter = notification::filters(subscriptions.clone());
+    let notification_filter = notification::filters(subscriptions);
     let org_filter = org::routes(ctx.clone());
     let project_filter = project::filters(ctx.clone());
     let session_filter = session::routes(ctx.clone());
@@ -128,7 +126,7 @@ where
 #[must_use]
 fn with_owner_guard<R>(ctx: Ctx<R>) -> BoxedFilter<(coco::User,)>
 where
-    R: Registry,
+    R: registry::Client + 'static,
 {
     warp::any()
         .and(with_context(ctx))
@@ -139,8 +137,10 @@ where
                 .expect("unable to get current sesison");
 
             if let Some(identity) = session.identity {
-                let user =
-                    coco::get_user(&ctx.peer_api, &identity.id).expect("unable to get coco user");
+                let user = ctx
+                    .peer_api
+                    .get_user(&identity.id)
+                    .expect("unable to get coco user");
                 let user = coco::verify_user(user).expect("unable to verify user");
 
                 Ok(user)
@@ -151,13 +151,8 @@ where
         .boxed()
 }
 
-trait Registry: registry::Cache + registry::Client + Sized + 'static {}
-
-struct Context<R>
-where
-    R: Registry,
-{
-    peer_api: coco::PeerApi,
+struct Context<R> {
+    peer_api: coco::Api,
     keystore: keystore::Keystorage,
     registry: R,
     store: kv::Store,
@@ -169,29 +164,24 @@ type Ctx<R> = Arc<Mutex<Context<R>>>;
 #[must_use]
 fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
 where
-    R: Registry,
+    R: Send + Sync + 'static,
 {
     warp::any().map(move || ctx.clone()).boxed()
 }
 
-impl<R> Context<R>
-where
-    R: Registry,
-{
-    fn key(&self) -> Result<keys::SecretKey, crate::error::Error> {
-        Ok(self.keystore.init_librad_key()?)
-    }
-
-    async fn tmp(tmp_dir: tempfile::TempDir) -> Result<Ctx<R>, crate::error::Error> {
-        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
+impl Context<registry::Cacher<registry::Registry>> {
+    async fn tmp(
+        tmp_dir: tempfile::TempDir,
+    ) -> Result<Ctx<registry::Cacher<registry::Registry>>, crate::error::Error> {
+        let paths = librad::paths::Paths::from_root(tmp_dir.path().clone())?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
         let key = keystore.init_librad_key()?;
 
         let peer_api = {
-            let config = coco::config::default(key, tmp_dir)?;
-            coco::create_peer_api(config).await?
+            let config = coco::config::default(key, tmp_dir.path().clone())?;
+            coco::Api::new(config).await?
         };
 
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
@@ -265,7 +255,7 @@ async fn register_project<R>(
     input: RegisterProjectInput,
 ) -> Result<impl Reply, Rejection>
 where
-    R: Registry,
+    R: registry::Client,
 {
     // TODO(xla): Get keypair from persistent storage.
     let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
