@@ -839,7 +839,9 @@ mod test {
     use crate::coco;
     use crate::error;
     use crate::http;
+    use crate::identity;
     use crate::registry;
+    use crate::session;
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
@@ -1208,11 +1210,18 @@ mod test {
         };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
+
+        let id =
+            identity::create(Arc::clone(&peer), key.clone(), "cloudhead".parse().unwrap()).await?;
+
+        let owner = coco::get_user(&*peer.lock().await, &id.id)?;
         let owner = coco::verify_user(owner).await?;
+
+        session::set_identity(&store, id.clone())?;
+
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &*peer.lock().await,
             key,
             &owner,
             "git-platinum",
@@ -1222,7 +1231,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let api = super::filters(
-            Arc::new(Mutex::new(peer)),
+            Arc::clone(&peer),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
