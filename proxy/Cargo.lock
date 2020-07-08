@@ -1597,7 +1597,7 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=455d4d54df019e2a353fef02227640642b61b2e4#455d4d54df019e2a353fef02227640642b61b2e4"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f97ed83b9d1d4303407de038206c7da852cfe22e#f97ed83b9d1d4303407de038206c7da852cfe22e"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -1611,6 +1611,7 @@ dependencies = [
  "governor",
  "hex",
  "lazy_static",
+ "libc",
  "libgit2-sys",
  "log 0.4.8",
  "minicbor",
@@ -2724,8 +2725,10 @@ dependencies = [
 [[package]]
 name = "radicle-keystore"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-keystore.git?rev=a04f4dbaec4d05be2c7a516a36b5bbec02ee32aa#a04f4dbaec4d05be2c7a516a36b5bbec02ee32aa"
+source = "git+https://github.com/radicle-dev/radicle-keystore.git?rev=27c9a7b8ce5b87d2be3703f7a3290fa7a0552fc6#27c9a7b8ce5b87d2be3703f7a3290fa7a0552fc6"
 dependencies = [
+ "async-trait",
+ "futures 0.3.5",
  "lazy_static",
  "rpassword",
  "secstr",
