@@ -1,8 +1,4 @@
 use std::net::SocketAddr;
-use std::sync::Arc;
-
-use async_trait::async_trait;
-use tokio::sync::Mutex;
 
 use librad::keys;
 use librad::meta::entity;
@@ -66,14 +62,11 @@ pub fn set_default_owner(peer: &PeerApi, user: User) -> Result<(), error::Error>
 ///   * Fails to initialise `User`.
 ///   * Fails to verify `User`.
 ///   * Fails to set the default `rad/self` for this `PeerApi`.
-pub async fn init_owner(
-    peer: Arc<Mutex<PeerApi>>,
-    key: keys::SecretKey,
-    handle: &str,
-) -> Result<User, error::Error> {
-    let user = init_user(&*peer.lock().await, key.clone(), handle)?;
-    let user = verify_user(user).await?;
-    set_default_owner(&*peer.lock().await, user.clone())?;
+pub fn init_owner(api: &PeerApi, key: keys::SecretKey, handle: &str) -> Result<User, error::Error> {
+    let user = init_user(api, key, handle)?;
+    let user = verify_user(user)?;
+    set_default_owner(api, user.clone())?;
+
     Ok(user)
 }
 
@@ -280,11 +273,9 @@ pub fn init_user(
 /// # Errors
 ///
 /// If any of the verification steps fail
-pub async fn verify_user(user: user::User<entity::Draft>) -> Result<User, error::Error> {
+pub fn verify_user(user: user::User<entity::Draft>) -> Result<User, error::Error> {
     let fake_resolver = FakeUserResolver(user.clone());
-    let verified_user = user
-        .check_history_status(&fake_resolver, &fake_resolver)
-        .await?;
+    let verified_user = user.check_history_status(&fake_resolver, &fake_resolver)?;
     Ok(verified_user)
 }
 
@@ -362,13 +353,12 @@ fn setup_remote(
 /// TODO(finto): Remove this once Resolvers are complete.
 struct FakeUserResolver(user::User<entity::Draft>);
 
-#[async_trait]
 impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
-    async fn resolve(&self, _uri: &RadUrn) -> Result<user::User<entity::Draft>, entity::Error> {
+    fn resolve(&self, _uri: &RadUrn) -> Result<user::User<entity::Draft>, entity::Error> {
         Ok(self.0.clone())
     }
 
-    async fn resolve_revision(
+    fn resolve_revision(
         &self,
         _uri: &RadUrn,
         _revision: u64,
@@ -412,7 +402,7 @@ mod test {
         let peer = super::create_peer_api(config).await?;
 
         let user = super::init_user(&peer, key.clone(), "cloudhead")?;
-        let user = super::verify_user(user).await?;
+        let user = super::verify_user(user)?;
         let project = super::init_project(
             &peer,
             key,
@@ -436,7 +426,7 @@ mod test {
         let peer = super::create_peer_api(config).await?;
 
         let user = super::init_user(&peer, key.clone(), "cloudhead")?;
-        let user = super::verify_user(user).await?;
+        let user = super::verify_user(user)?;
         let err = super::init_user(&peer, key, "cloudhead");
 
         if let Err(Error::EntityExists(urn)) = err {
@@ -460,7 +450,7 @@ mod test {
         let peer = super::create_peer_api(config).await?;
 
         let user = super::init_user(&peer, key.clone(), "cloudhead")?;
-        let user = super::verify_user(user).await?;
+        let user = super::verify_user(user)?;
         let _project = super::init_project(
             &peer,
             key.clone(),
@@ -503,14 +493,14 @@ mod test {
         let peer = super::create_peer_api(config).await?;
         let peer = Arc::new(Mutex::new(peer));
 
-        let user = super::init_owner(Arc::clone(&peer), key.clone(), "cloudhead").await?;
+        let user = super::init_owner(&*peer.lock().await, key.clone(), "cloudhead")?;
 
         let peer = &*peer.lock().await;
 
         control::setup_fixtures(peer, key.clone(), &user)?;
 
         let kalt = super::init_user(peer, key.clone(), "kalt")?;
-        let kalt = super::verify_user(kalt).await?;
+        let kalt = super::verify_user(kalt)?;
         let fakie = super::init_project(
             peer,
             key,
@@ -546,9 +536,9 @@ mod test {
         let peer = super::create_peer_api(config).await?;
 
         let cloudhead = super::init_user(&peer, key.clone(), "cloudhead")?;
-        let _cloudhead = super::verify_user(cloudhead).await?;
+        let _cloudhead = super::verify_user(cloudhead)?;
         let kalt = super::init_user(&peer, key, "kalt")?;
-        let _kalt = super::verify_user(kalt).await?;
+        let _kalt = super::verify_user(kalt)?;
 
         let users = super::list_users(&peer)?;
         let mut user_handles = users
