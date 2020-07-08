@@ -173,7 +173,7 @@ fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
 where
     R: Registry,
 {
-    warp::any().map(move || Arc::clone(&ctx)).boxed()
+    warp::any().map(move || ctx.clone()).boxed()
 }
 
 impl<R> Context<R>
