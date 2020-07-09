@@ -1,8 +1,10 @@
 <script>
-  import { Button, Code, Icon, Text } from "../../DesignSystem/Primitive";
-  import { Copyable } from "../../DesignSystem/Component";
+  import { Button, Input, Icon, Text } from "../../DesignSystem/Primitive";
+
+  import * as notification from "../../src/notification.ts";
 
   export let projectId = null;
+  export let projectName = null;
 
   // Dropdown element. Set by the view.
   let dropdown = null;
@@ -19,6 +21,13 @@
     if (expanded && dropdown !== ev.target && !dropdown.contains(ev.target)) {
       expanded = false;
     }
+  };
+
+  let checkoutDirectoryPath;
+
+  const handleCheckout = () => {
+    projectId;
+    notification.info(`${projectName} checked out to ${checkoutDirectoryPath}`);
   };
 </script>
 
@@ -37,18 +46,31 @@
 </style>
 
 <svelte:window on:click={clickOutside} />
+
 <div class="clone-dropdown" hidden={!expanded} bind:this={dropdown}>
-  <Text style="color: var(--color-foreground-level-6); user-select: none">
-    Clone this repository using the following URL.
+  <Text
+    style="color: var(--color-foreground-level-6); user-select: none;
+    margin-bottom: 16px;">
+    Checkout a working copy to your local disk
   </Text>
-  <Copyable
-    style="border-radius: 4px; color: var(--color-foreground); background:
-    var(--color-foreground-level-2); padding: 0.5rem; margin-top: 0.5rem;
-    display: flex; align-items: center;"
-    iconSize="normal">
-    <Code style="padding-right: 0.5rem">{projectId}</Code>
-  </Copyable>
+
+  <Input.Directory
+    style="margin-bottom: 16px;"
+    placeholder="~/path/to/folder"
+    validation={() => {}}
+    buttonVariant="outline"
+    bind:path={checkoutDirectoryPath} />
+
+  <Button
+    on:click={handleCheckout}
+    disabled={!checkoutDirectoryPath}
+    title={!checkoutDirectoryPath ? 'Please select a folder.' : ''}
+    variant="secondary"
+    style="width: 100%; display: block; text-align: center;">
+    Checkout
+  </Button>
 </div>
+
 <Button variant="transparent" icon={Icon.Copy} on:click={toggleDropdown}>
-  Clone
+  Checkout
 </Button>
