@@ -2,7 +2,7 @@
   export let dataCy = null;
   export let style = null;
   export let truncate = false;
-  export let variant = "regular"; // regular | medium | large | big | huge
+  export let variant = "regular"; // regular | tiny | medium | large | big | huge
 
   const titleClass = `${variant} ${truncate ? " truncate" : ""}`;
 </script>
@@ -36,6 +36,12 @@
     font-family: var(--typeface-medium);
     font-size: 16px;
     line-height: 22px;
+  }
+
+  .tiny {
+    font-family: var(--typeface-medium);
+    font-size: 14px;
+    line-height: 16px;
   }
 
   .truncate {
