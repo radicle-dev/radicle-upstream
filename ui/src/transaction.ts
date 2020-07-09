@@ -277,22 +277,16 @@ export const formatMessage = (msg: Message): string => {
 export const headerIcon = (msg: Message): string => {
   switch (msg.type) {
     case MessageType.OrgRegistration:
-      return "Register";
-
     case MessageType.OrgUnregistration:
       return "Register";
 
     case MessageType.MemberRegistration:
-      return "User";
-
     case MessageType.MemberUnregistration:
-      return "User";
+    case MessageType.UserRegistration:
+      return "Member";
 
     case MessageType.ProjectRegistration:
-      return "Project";
-
-    case MessageType.UserRegistration:
-      return "User";
+      return "Source";
   }
 };
 

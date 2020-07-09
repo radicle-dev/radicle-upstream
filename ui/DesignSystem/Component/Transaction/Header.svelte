@@ -22,20 +22,6 @@
         return "square";
     }
   };
-
-  const icon = () => {
-    const val = headerIcon(transaction.messages[0]);
-    switch (val) {
-      case "Project":
-        return Icon.Source;
-      case "User":
-        return Icon.Member;
-      case "Register":
-        return Icon.Register;
-      default:
-        return Icon.Register;
-    }
-  };
 </script>
 
 <style>
@@ -61,7 +47,9 @@
 <div data-cy="summary" variant={transaction.id ? 'top' : 'single'}>
   <div data-cy="message" class="container">
     <div class="icon">
-      <svelte:component this={icon()} style="fill: var(--color-primary)" />
+      <svelte:component
+        this={Icon[headerIcon(transaction.messages[0])]}
+        style="fill: var(--color-primary)" />
     </div>
     <Title variant="big">{formatMessage(transaction.messages[0])}</Title>
     <caption style="display: inline-flex; margin:16px 0;">
