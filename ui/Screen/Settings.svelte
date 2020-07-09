@@ -116,7 +116,7 @@
 
 <SidebarLayout dataCy="page">
   <div class="container">
-    <Title style="margin-bottom: 32px;" variant="big">Settings</Title>
+    <Title style="margin-bottom: 32px;" variant="huge">Settings</Title>
 
     <section>
       <header>
