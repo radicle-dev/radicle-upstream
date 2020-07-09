@@ -1,5 +1,5 @@
-use std::net::SocketAddr;
 use nonempty::NonEmpty;
+use std::net::SocketAddr;
 
 use librad::keys;
 use librad::meta::entity;
