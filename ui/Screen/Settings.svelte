@@ -192,7 +192,7 @@
                 <Icon.Cross
                   on:click={removeSeed(seed)}
                   variant="medium"
-                  style="margin-right: 8px;" />
+                  style="margin-right: 8px; cursor:pointer;" />
 
                 <Text
                   class="setting-text"
