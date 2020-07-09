@@ -163,7 +163,7 @@ where
                 if let Some(identity) = session.identity {
                     let api = api.lock().await;
                     let user = coco::get_user(&*api, &identity.id).expect("unable to get coco user");
-                    let user = coco::verify_user(user).await.expect("unable to verify user");
+                    let user = coco::verify_user(user).expect("unable to verify user");
 
                     Ok(user)
                 } else {
