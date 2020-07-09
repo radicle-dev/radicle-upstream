@@ -45,14 +45,17 @@
     {#if variant === 'deposit'}
       <Icon.LockSmall
         style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
-      {#if !hover || usd === null}
+      {#if !hover}
         <Icon.Currency style="fill: var(--color-foreground-level-6);" />
       {/if}
-    {:else if !hover || usd === null}
+    {:else if !hover}
       <Icon.Currency style="fill: var(--color-negative);" />
     {/if}
-    <Title variant="tiny" dataCy="rad-amount" style="margin-left:2px;">
-      {#if usd !== null && hover}${usd}{:else}{rad}{/if}
+    <Title
+      variant="tiny"
+      dataCy={hover ? 'usd-amount' : 'rad-amount'}
+      style="margin-left:2px;">
+      {#if hover}${usd}{:else}{rad}{/if}
     </Title>
   </div>
 </div>

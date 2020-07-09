@@ -1040,11 +1040,11 @@
       </Swatch>
 
       <Swatch>
-        <Rad rad="20" />
+        <Rad rad="20" usd="2" />
       </Swatch>
 
       <Swatch>
-        <Rad rad="20" variant="deposit" />
+        <Rad rad="20" usd="2" variant="deposit" />
       </Swatch>
 
       <Swatch>
