@@ -53,11 +53,11 @@
   }
 
   .shareableEntityIdentifier {
-    max-width: 180px;
     background: var(--color-foreground-level-2);
     margin-bottom: 16px;
     border-radius: 4px;
     padding: 4px;
+    overflow: hidden;
     max-width: 180px;
   }
 
@@ -102,7 +102,7 @@
 
   </div>
   <div class="shareableEntityIdentifier">
-    <Copyable>
+    <Copyable style="min-width: 0;">
       <Code
         variant="medium"
         style="color: var(--color-foreground-level-5); font-size: 14px;

@@ -142,18 +142,16 @@ const temporaryLocalSeedStore = remote.createStore<string[]>();
 temporaryLocalSeedStore.success(defaultSeeds);
 export const seeds = temporaryLocalSeedStore.readable;
 
-export const removeSeed = (seed: string) => {
-  const seeds = get(temporaryLocalSeedStore).data.filter(
-    (s: string) => s !== seed
-  );
-  temporaryLocalSeedStore.success(seeds);
+const parseSeedsInput = (input: string) => {
+  return input
+    .replace(/\r\n|\n|\r|\s/gm, ",")
+    .split(",")
+    .filter(seed => seed !== "");
 };
 
-export const addSeed = (seed: string) => {
-  // TODO(sos): light validation store for common seed errors. for now don't allow
-  // duplicates.
-  if (get(temporaryLocalSeedStore).data.includes(seed)) return;
-
-  const seeds = [...get(temporaryLocalSeedStore).data, seed];
-  temporaryLocalSeedStore.success(seeds);
+export const updateSeeds = (input: string) => {
+  const parsed = parseSeedsInput(input);
+  if (parsed) temporaryLocalSeedStore.success(parsed);
 };
+
+export const formatSeedsForInput = (seeds: string[]) => seeds.join("\n");

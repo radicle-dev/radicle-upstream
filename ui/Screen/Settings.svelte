@@ -2,24 +2,19 @@
   import {
     clear,
     clearCache,
-    addSeed,
-    removeSeed,
+    formatSeedsForInput,
     seeds,
     settings,
     updateAppearance,
     updateRegistry,
+    updateSeeds,
   } from "../src/session.ts";
-  import {
-    networkOptions,
-    seedValidation,
-    themeOptions,
-  } from "../src/settings.ts";
-  import { ValidationStatus } from "../src/validation.ts";
+  import { networkOptions, themeOptions } from "../src/settings.ts";
 
-  import { Button, Icon, Input, Text, Title } from "../DesignSystem/Primitive";
+  import { Button, Input, Text, Title } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
-  let seedInputValue;
+  let seedInputValue = formatSeedsForInput($seeds.data);
 
   const updateNetwork = event =>
     updateRegistry({ ...$settings.registry, network: event.detail });
@@ -27,12 +22,9 @@
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
 
-  const submitSeed = seed => {
-    seedValidation.validate(seed);
-    if ($seedValidation.status !== ValidationStatus.Success) return;
-
-    addSeed(seed);
-    seedInputValue = "";
+  const updateCocoSettings = event => {
+    updateSeeds(event.target.value);
+    seedInputValue = formatSeedsForInput($seeds.data);
   };
 </script>
 
@@ -77,41 +69,6 @@
     justify-content: space-between;
     align-items: center;
     margin-left: 16px;
-  }
-
-  .seed-entry-form {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-  }
-
-  .seed-entry-field {
-    display: flex;
-  }
-
-  .seeds {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    margin-top: 16px;
-  }
-
-  .seed {
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
-    margin: 0 0 8px 8px;
-    padding: 8px;
-    cursor: default;
-    max-width: 100%;
-  }
-
-  .seed:hover {
-    box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-3));
-    background: var(--color-foreground-level-1);
   }
 </style>
 
@@ -166,44 +123,17 @@
           <Text variant="medium">
             Seeds help you see more projects and people on the network
           </Text>
-          <Text style="color: var(--color-foreground-level-6);">
+          <Text
+            style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
             Have some seed addresses you’d like to join? Enter them here and new
             projects from the seeds you’re subscribed to will appear in the
             Discover page.
           </Text>
+          <Input.Textarea
+            bind:value={seedInputValue}
+            on:change={updateCocoSettings}
+            placeholder="Enter seeds here" />
         </div>
-        <form class="seed-entry-form">
-          <div class="seed-entry-field">
-            <Input.Text
-              bind:value={seedInputValue}
-              placeholder="Enter a seed address here"
-              style="margin-right: 8px; min-width: 224px;"
-              validation={$seedValidation} />
-            <Button
-              on:click={submitSeed(seedInputValue)}
-              disabled={!seedInputValue}
-              variant="outline">
-              Add
-            </Button>
-          </div>
-
-          <div class="seeds">
-            {#each $seeds.data as seed}
-              <div class="seed">
-                <Icon.Cross
-                  on:click={removeSeed(seed)}
-                  variant="medium"
-                  style="margin-right: 8px; cursor:pointer;" />
-
-                <Text
-                  class="setting-text"
-                  style="color: var(--color-foreground-level-6);">
-                  {seed}
-                </Text>
-              </div>
-            {/each}
-          </div>
-        </form>
       </div>
     </section>
 

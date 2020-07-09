@@ -47,4 +47,31 @@ describe("coco settings", () => {
     const store = session.seeds;
     expect(get(store).data).toEqual(defaultSeeds);
   });
+
+  it("formats stored seeds for display", () => {
+    const seedsArray = ["123.123.123", "seeds.seedy.xyz"];
+
+    expect(session.formatSeedsForInput(seedsArray)).toEqual(
+      "123.123.123\nseeds.seedy.xyz"
+    );
+  });
+
+  it("parses seed textarea input when updating the store", () => {
+    const desiredResult = ["seed.radicle.xyz", "192.134.54.13", "192.168.1.0"];
+
+    const newlineSeparated =
+      "seed.radicle.xyz\n192.134.54.13   \n\n192.168.1.0\n";
+    const commaSeparated = "seed.radicle.xyz, 192.134.54.13,192.168.1.0,,,,,,";
+    const carriageReturnSeparated =
+      "seed.radicle.xyz\r\n192.134.54.13  \r \r\n192.168.1.0\n";
+
+    session.updateSeeds(newlineSeparated);
+    expect(get(session.seeds).data).toEqual(desiredResult);
+
+    session.updateSeeds(commaSeparated);
+    expect(get(session.seeds).data).toEqual(desiredResult);
+
+    session.updateSeeds(carriageReturnSeparated);
+    expect(get(session.seeds).data).toEqual(desiredResult);
+  });
 });
