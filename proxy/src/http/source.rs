@@ -328,7 +328,7 @@ mod handler {
                 Some(peer)
             }
         });
-        let default_branch = match peer_id.clone() {
+        let default_branch = match peer_id {
             Some(peer_id) => git::Branch::remote(project.default_branch(), &peer_id.to_string()),
             None => git::Branch::local(project.default_branch()),
         };
@@ -464,12 +464,16 @@ mod handler {
     pub async fn tree(
         api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::TreeQuery { prefix, revision }: super::TreeQuery,
+        super::TreeQuery { prefix, peer_id, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&api, &urn)?;
-        let default_branch = git::Branch::local(project.default_branch());
+
+        let default_branch = match peer_id {
+            Some(peer_id) => git::Branch::remote(project.default_branch(), &peer_id.to_string()),
+            None => git::Branch::local(project.default_branch()),
+        };
 
         let tree = coco::with_browser(&api, &urn, |mut browser| {
             coco::tree(&mut browser, default_branch, revision, prefix)
@@ -515,6 +519,8 @@ pub struct BlobQuery {
 pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
+    /// PeerId to scope the query by.
+    peer_id: Option<peer::PeerId>,
     /// Revision to query at.
     revision: Option<coco::Revision>,
 }
@@ -1426,7 +1432,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let revision = coco::Revision::Branch {
-            name: "master".to_string(),
+            name: "dev".to_string(),
             remote: None,
         };
         let prefix = "src";
