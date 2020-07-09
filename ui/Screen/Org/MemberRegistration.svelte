@@ -69,6 +69,12 @@
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
+<style>
+  .wrapper {
+    margin: 92px 0 32px 0;
+  }
+</style>
+
 <ModalLayout dataCy="add-member-modal">
   <div class="wrapper">
     {#if state === RegistrationFlowState.Preparation}
