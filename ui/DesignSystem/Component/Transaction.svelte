@@ -33,15 +33,6 @@
 
   const updateAvatar = async () => (avatar = await subject.avatarSource);
 
-  let copyIcon = Icon.Copy;
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-    }, 1000);
-  };
-
   const summary = costSummary(
     transaction.messages[0].type,
     parseInt(transaction.fee),
@@ -102,7 +93,6 @@
     </div>
     <div slot="right">
       <Copyable
-        {afterCopy}
         style="background:var(--color-foreground-level-2); border-radius:2px;
         display:flex; align-items: center; padding: 4px;">
         <Numeric
@@ -111,9 +101,7 @@
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
           {transaction.id}
         </Numeric>
-        <svelte:component this={copyIcon} size="small" />
       </Copyable>
-
     </div>
   </Row>
 
