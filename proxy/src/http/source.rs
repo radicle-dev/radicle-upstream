@@ -8,6 +8,7 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use librad::peer;
+use radicle_surf::vcs::git;
 
 use crate::coco;
 use crate::http;
@@ -287,6 +288,8 @@ mod handler {
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
+    use radicle_surf::vcs::git;
+
     use crate::avatar;
     use crate::coco;
     use crate::error::Error;
@@ -318,7 +321,18 @@ mod handler {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&*api, &urn)?;
-        let default_branch = project.default_branch();
+        let peer_id = peer_id.and_then(|peer| {
+            if *api.peer_id() == peer {
+                None
+            } else {
+                Some(peer)
+            }
+        });
+        let default_branch = match peer_id.clone() {
+            Some(peer_id) => git::Branch::remote(project.default_branch(), &peer_id.to_string()),
+            None => git::Branch::local(project.default_branch()),
+        };
+
         let theme = if let Some(true) = highlight {
             Some(&session.settings.appearance.theme)
         } else {
@@ -327,7 +341,6 @@ mod handler {
         let blob = coco::with_browser(&*api, &urn, |mut browser| {
             coco::blob(
                 &mut browser,
-                peer_id.as_ref(),
                 default_branch,
                 revision,
                 &path,
@@ -368,12 +381,12 @@ mod handler {
     pub async fn commits(
         api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::CommitsQuery { peer_id, branch }: super::CommitsQuery,
+        query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let commits = coco::with_browser(&api, &urn, |mut browser| {
-            coco::commits(&mut browser, peer_id.as_ref(), &branch)
+            coco::commits(&mut browser, query.into())
         })?;
 
         Ok(reply::json(&commits))
@@ -459,18 +472,17 @@ mod handler {
         project_urn: String,
         super::TreeQuery {
             prefix,
-            peer_id,
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&api, &urn)?;
-        let default_branch = project.default_branch();
+        let default_branch = git::Branch::local(project.default_branch());
+
         let tree = coco::with_browser(&api, &urn, |mut browser| {
             coco::tree(
                 &mut browser,
-                peer_id.as_ref(),
                 default_branch,
                 revision,
                 prefix,
@@ -490,6 +502,15 @@ pub struct CommitsQuery {
     branch: String,
 }
 
+impl From<CommitsQuery> for git::Branch {
+    fn from(CommitsQuery { peer_id, branch }: CommitsQuery) -> Self {
+        match peer_id {
+            None => Self::local(&branch),
+            Some(peer_id) => Self::remote(&branch, &peer_id.to_string())
+        }
+    }
+}
+
 /// Bundled query params to pass to the blob handler.
 #[derive(Debug, Deserialize)]
 pub struct BlobQuery {
@@ -498,7 +519,7 @@ pub struct BlobQuery {
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
     /// Revision to use for the history of the repo.
-    revision: Option<String>,
+    revision: Option<coco::Revision>,
     /// Whether or not to syntax highlight the blob.
     highlight: Option<bool>,
 }
@@ -508,10 +529,8 @@ pub struct BlobQuery {
 pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
-    /// PeerId to scope the query by.
-    peer_id: Option<peer::PeerId>,
     /// Revision to query at.
-    revision: Option<String>,
+    revision: Option<coco::Revision>,
 }
 
 /// Bundled response to retrieve both branches and tags for a user repo.
@@ -846,6 +865,7 @@ mod test {
     use warp::test::request;
 
     use librad::keys::SecretKey;
+    use radicle_surf::vcs::git;
 
     use crate::avatar;
     use crate::coco;
@@ -877,16 +897,15 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let revision = "master";
-        let default_branch = platinum_project.default_branch();
+        let revision = coco::Revision::Branch {
+            name: "master".to_string(), remote: None };
+        let default_branch = git::Branch::local(platinum_project.default_branch());
         let path = "text/arrows.txt";
-        let peer_id = (*peer.lock().await).peer_id().clone();
         let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
             coco::blob(
                 &mut browser,
-                Some(&peer_id),
-                default_branch,
-                Some(revision.to_string()),
+                default_branch.clone(),
+                Some(revision.clone()),
                 path,
                 None,
             )
@@ -902,9 +921,11 @@ mod test {
         let res = request()
             .method("GET")
             .path(&format!(
-                "/blob/{}?revision={}&path={}",
-                urn, revision, path
+                "/blob/{}?path={}",
+                urn,
+                path
             ))
+            .json(&revision)
             .reply(&api)
             .await;
 
@@ -951,20 +972,19 @@ mod test {
         let res = request()
             .method("GET")
             .path(&format!(
-                "/blob/{}?revision={}&path={}",
-                urn.to_string(),
-                revision,
+                "/blob/{}?path={}",
+                urn,
                 path
             ))
+            .json(&revision)
             .reply(&api)
             .await;
 
         let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
             coco::blob(
                 browser,
-                None,
                 default_branch,
-                Some(revision.to_string()),
+                Some(revision),
                 path,
                 None,
             )
@@ -1035,7 +1055,7 @@ mod test {
         );
         let res = request()
             .method("GET")
-            .path(&format!("/branches/{}", urn.to_string()))
+            .path(&format!("/branches/{}", urn))
             .reply(&api)
             .await;
 
@@ -1084,7 +1104,7 @@ mod test {
         );
         let res = request()
             .method("GET")
-            .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
+            .path(&format!("/commit/{}/{}", urn, sha1))
             .reply(&api)
             .await;
 
@@ -1135,11 +1155,10 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let branch = "master";
+        let branch = git::Branch::local("master");
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
-        let peer_id = &peer.peer_id().clone();
         let (want, head_commit) = coco::with_browser(&peer, &urn, |mut browser| {
-            let want = coco::commits(&mut browser, Some(peer_id), branch)?;
+            let want = coco::commits(&mut browser, branch.clone())?;
             let head_commit = coco::commit_header(&mut browser, head)?;
             Ok((want, head_commit))
         })?;
@@ -1151,7 +1170,7 @@ mod test {
         );
         let res = request()
             .method("GET")
-            .path(&format!("/commits/{}?branch={}", urn.to_string(), branch))
+            .path(&format!("/commits/{}?branch={}", urn, branch.name))
             .reply(&api)
             .await;
 
@@ -1394,7 +1413,7 @@ mod test {
         );
         let res = request()
             .method("GET")
-            .path(&format!("/tags/{}", urn.to_string()))
+            .path(&format!("/tags/{}", urn))
             .reply(&api)
             .await;
 
@@ -1432,17 +1451,18 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let revision = "master";
+        let revision = coco::Revision::Branch {
+            name: "master".to_string(),
+            remote: None,
+        };
         let prefix = "src";
 
-        let default_branch = platinum_project.default_branch();
-        let peer_id = &peer.peer_id();
+        let default_branch = git::Branch::local(platinum_project.default_branch());
         let want = coco::with_browser(&peer, &urn, |mut browser| {
             coco::tree(
                 &mut browser,
-                Some(peer_id),
                 default_branch,
-                Some(revision.to_string()),
+                Some(revision.clone()),
                 Some(prefix.to_string()),
             )
         })?;
@@ -1455,11 +1475,11 @@ mod test {
         let res = request()
             .method("GET")
             .path(&format!(
-                "/tree/{}?revision={}&prefix={}",
-                urn.to_string(),
-                revision,
+                "/tree/{}?prefix={}",
+                urn,
                 prefix
             ))
+            .json(&revision)
             .reply(&api)
             .await;
 
