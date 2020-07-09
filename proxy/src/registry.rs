@@ -255,6 +255,20 @@ pub trait Client: Clone + Send + Sync {
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
+    /// Transfer tokens to the recipient.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn transfer(
+        &self,
+        author: &protocol::ed25519::Pair,
+        org: Option<Id>,
+        recipient: protocol::ed25519::Public,
+        value: Balance,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
     /// Graciously pay some tokens to the recipient out of Alices pocket.
     ///
     /// # Errors
@@ -591,6 +605,37 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::UserRegistration { handle, id },
+            fee,
+        ))
+    }
+
+    async fn transfer(
+        &self,
+        author: &protocol::ed25519::Pair,
+        _org: Option<Id>,
+        recipient: protocol::ed25519::Public,
+        value: Balance,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error> {
+        // Prepare and submit transfer transaction.
+        let transfer_message = protocol::message::Transfer {
+            recipient,
+            balance: value,
+        };
+        let transfer_tx = self
+            .new_signed_transaction(author, transfer_message, fee)
+            .await?;
+        let applied = self.client.submit_transaction(transfer_tx).await?.await?;
+        applied.result?;
+        let block = self.client.block_header(applied.block).await?;
+
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::Transfer {
+                recipient,
+                balance: value,
+            },
             fee,
         ))
     }
@@ -945,6 +990,37 @@ mod test {
 
         let res = registry
             .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .await;
+        assert!(res.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn transfer() -> Result<(), error::Error> {
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let handle = Id::try_from("alice")?;
+        let user_registration = registry
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Register the org
+        let org_id = Id::try_from("monadic")?;
+        let org_result = registry.register_org(&author, org_id.clone(), 10).await;
+        assert!(org_result.is_ok());
+        let org = registry
+            .client
+            .get_org(org_id.clone())
+            .await?
+            .expect("org not present");
+
+        let res = registry
+            .transfer(&author, None, org.account_id(), 1000, 100)
             .await;
         assert!(res.is_ok());
 

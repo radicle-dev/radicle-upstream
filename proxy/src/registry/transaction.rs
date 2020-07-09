@@ -163,6 +163,15 @@ pub enum Message {
         /// The Org in which to register the member.
         org_id: registry::Id,
     },
+
+    /// Transfer funds to the recipient.
+    #[serde(rename_all = "camelCase")]
+    Transfer {
+        /// User or org receiving the funds.
+        recipient: protocol::ed25519::Public,
+        /// The funds to transfer.
+        balance: registry::Balance,
+    },
 }
 
 /// Possible states a [`Transaction`] can have. Useful to reason about the lifecycle and
@@ -476,6 +485,24 @@ where
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self.client.register_user(author, handle, id, fee).await?;
+
+        self.cache_transaction(tx.clone())?;
+
+        Ok(tx)
+    }
+
+    async fn transfer(
+        &self,
+        author: &protocol::ed25519::Pair,
+        org: Option<registry::Id>,
+        recipient: protocol::ed25519::Public,
+        value: protocol::Balance,
+        fee: protocol::Balance,
+    ) -> Result<Transaction, error::Error> {
+        let tx = self
+            .client
+            .transfer(author, org, recipient, value, fee)
+            .await?;
 
         self.cache_transaction(tx.clone())?;
 
