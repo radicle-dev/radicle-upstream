@@ -116,7 +116,7 @@ mod handler {
         owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
         let meta = coco::control::replicate_platinum(
@@ -146,7 +146,7 @@ mod handler {
     where
         R: registry::Client,
     {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
@@ -181,7 +181,7 @@ mod handler {
         let config = coco::config::configure(paths, key.clone());
         let new_peer_api = coco::Api::new(config).await?;
 
-        let mut ctx = ctx.lock().await;
+        let mut ctx = ctx.write().await;
         ctx.peer_api = new_peer_api;
         ctx.keystore = new_keystore;
 
@@ -194,7 +194,7 @@ mod handler {
         R: registry::Client,
     {
         let (client, _) = radicle_registry_client::Client::new_emulator();
-        let mut ctx = ctx.lock().await;
+        let mut ctx = ctx.write().await;
         ctx.registry.reset(client);
 
         Ok(reply::json(&true))
@@ -211,17 +211,17 @@ mod handler {
         #[tokio::test]
         async fn nuke_coco() -> Result<(), error::Error> {
             let tmp_dir = tempfile::tempdir()?;
-            let ctx = http::Context::tmp(tmp_dir).await?;
+            let ctx = http::Context::tmp(&tmp_dir).await?;
 
             let (old_paths, old_peer_id) = {
-                let ctx = ctx.lock().await;
+                let ctx = ctx.read().await;
                 (ctx.peer_api.paths().clone(), ctx.peer_api.peer_id().clone())
             };
 
-            super::nuke_coco(ctx).await.unwrap();
+            super::nuke_coco(ctx.clone()).await.unwrap();
 
             let (new_paths, new_peer_id) = {
-                let ctx = ctx.lock().await;
+                let ctx = ctx.read().await;
                 (ctx.peer_api.paths().clone(), ctx.peer_api.peer_id().clone())
             };
 
@@ -229,7 +229,7 @@ mod handler {
             assert_ne!(old_peer_id, new_peer_id);
 
             let can_open = {
-                let ctx = ctx.lock().await;
+                let ctx = ctx.read().await;
                 let _ = ctx.peer_api.reopen()?;
                 true
             };
@@ -278,7 +278,7 @@ mod test {
     #[tokio::test]
     async fn create_project_after_nuke() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx);
 
         // Create project before nuke.

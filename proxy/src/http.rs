@@ -6,7 +6,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
-use tokio::sync::Mutex;
+use tokio::sync::RwLock;
 use warp::filters::BoxedFilter;
 use warp::http::StatusCode;
 use warp::{
@@ -67,7 +67,7 @@ where
         store,
         subscriptions: subscriptions.clone(),
     };
-    let ctx = Arc::new(Mutex::new(ctx));
+    let ctx = Arc::new(RwLock::new(ctx));
 
     let avatar_filter = avatar::get_filter();
     let control_filter = control::routes(enable_control, ctx.clone());
@@ -131,7 +131,7 @@ where
     warp::any()
         .and(with_context(ctx))
         .and_then(|ctx: Ctx<R>| async move {
-            let ctx = ctx.lock().await;
+            let ctx = ctx.read().await;
             let session = crate::session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
                 .await
                 .expect("unable to get current sesison");
@@ -151,7 +151,7 @@ where
         .boxed()
 }
 
-struct Context<R> {
+pub struct Context<R> {
     peer_api: coco::Api,
     keystore: keystore::Keystorage,
     registry: R,
@@ -159,7 +159,7 @@ struct Context<R> {
     subscriptions: crate::notification::Subscriptions,
 }
 
-type Ctx<R> = Arc<Mutex<Context<R>>>;
+pub type Ctx<R> = Arc<RwLock<Context<R>>>;
 
 #[must_use]
 fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
@@ -170,10 +170,11 @@ where
 }
 
 impl Context<registry::Cacher<registry::Registry>> {
+    #[cfg(test)]
     async fn tmp(
-        tmp_dir: tempfile::TempDir,
+        tmp_dir: &tempfile::TempDir,
     ) -> Result<Ctx<registry::Cacher<registry::Registry>>, crate::error::Error> {
-        let paths = librad::paths::Paths::from_root(tmp_dir.path().clone())?;
+        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
@@ -192,7 +193,7 @@ impl Context<registry::Cacher<registry::Registry>> {
             registry::Cacher::new(reg, &store)
         };
 
-        Ok(Arc::new(Mutex::new(Self {
+        Ok(Arc::new(RwLock::new(Self {
             keystore,
             peer_api,
             registry,
@@ -260,7 +261,7 @@ where
     // TODO(xla): Get keypair from persistent storage.
     let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-    let ctx = ctx.lock().await;
+    let ctx = ctx.read().await;
 
     let maybe_coco_id = input
         .maybe_coco_id

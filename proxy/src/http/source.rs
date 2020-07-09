@@ -305,7 +305,7 @@ mod handler {
     where
         R: registry::Client + 'static,
     {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
 
@@ -336,7 +336,7 @@ mod handler {
         ctx: http::Ctx<R>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let branches = ctx
             .peer_api
@@ -351,7 +351,7 @@ mod handler {
         project_urn: String,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let commit = ctx
             .peer_api
@@ -366,7 +366,7 @@ mod handler {
         project_urn: String,
         super::CommitsQuery { peer_id, branch }: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let commits = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::commits(&mut browser, peer_id.as_ref(), &branch)
@@ -387,7 +387,7 @@ mod handler {
         ctx: http::Ctx<R>,
         project_urn: String,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let (branches, tags) = ctx.peer_api.with_browser(&urn, |browser| {
             Ok((coco::branches(browser)?, coco::tags(browser)?))
@@ -439,7 +439,7 @@ mod handler {
 
     /// Fetch the list [`coco::Tag`].
     pub async fn tags<R>(ctx: http::Ctx<R>, project_urn: String) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let tags = ctx
             .peer_api
@@ -458,7 +458,7 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = ctx.peer_api.get_project(&urn)?;
@@ -848,10 +848,10 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
         let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner)?;
@@ -988,12 +988,12 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
@@ -1027,12 +1027,12 @@ mod test {
     #[allow(clippy::indexing_slicing)]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
@@ -1082,12 +1082,12 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
@@ -1130,8 +1130,8 @@ mod test {
     #[tokio::test]
     async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let path = "../fixtures/git-platinum";
         let res = request()
@@ -1162,12 +1162,12 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
@@ -1304,12 +1304,12 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
@@ -1345,12 +1345,12 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,

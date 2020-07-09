@@ -72,7 +72,7 @@ mod handler {
                     .expect("unable to get hash from string")
             })
             .collect();
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let txs = ctx.registry.list_transactions(tx_ids)?;
 
         Ok(reply::json(&txs))
@@ -230,8 +230,8 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let now = registry::Timestamp::now();
         let fee = registry::MINIMUM_FEE;
@@ -255,7 +255,7 @@ mod test {
             fee,
         };
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         ctx.registry.cache_transaction(tx.clone()).unwrap();
 
         let transactions = ctx.registry.list_transactions(vec![]).unwrap();

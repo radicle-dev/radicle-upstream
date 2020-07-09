@@ -239,7 +239,7 @@ mod handler {
     where
         R: registry::Client,
     {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let org = ctx.registry.get_org(org_id).await?;
 
@@ -268,7 +268,7 @@ mod handler {
     where
         R: registry::Client,
     {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let project_domain = registry::ProjectDomain::Org(org_id);
         let project_name = registry::ProjectName::try_from(project_name).map_err(Error::from)?;
@@ -285,7 +285,7 @@ mod handler {
     where
         R: registry::Client,
     {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
         let projects = ctx.registry.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
@@ -323,7 +323,7 @@ mod handler {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(input.id).map_err(Error::from)?;
         let tx = ctx
             .registry
@@ -349,7 +349,7 @@ mod handler {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let org_id = registry::Id::try_from(id).map_err(Error::from)?;
         let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         let tx = ctx
@@ -531,14 +531,14 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         // Register the user
         let fee: registry::Balance = 10;
         ctx.registry
@@ -577,10 +577,10 @@ mod test {
     #[tokio::test]
     async fn register_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
         let owner = ctx.peer_api.init_user(key, "cloudhead")?;
         let owner = coco::verify_user(owner)?;
@@ -648,8 +648,8 @@ mod test {
     #[tokio::test]
     async fn get_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
@@ -657,7 +657,7 @@ mod test {
         let project_name = registry::ProjectName::try_from("upstream")?;
         let project_domain = registry::ProjectDomain::Org(org_id.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         // Register the user
         let fee: registry::Balance = 10;
@@ -704,12 +704,12 @@ mod test {
     #[tokio::test]
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
         let owner = coco::verify_user(owner)?;
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
@@ -790,10 +790,10 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
@@ -829,10 +829,10 @@ mod test {
     #[tokio::test]
     async fn register_member() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;

@@ -95,7 +95,7 @@ mod handler {
     where
         R: registry::Client,
     {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         if let Some(identity) = session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
             .await?
@@ -104,7 +104,11 @@ mod handler {
             return Err(Rejection::from(error::Error::EntityExists(identity.id)));
         }
 
-        let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
+        let key = ctx
+            .keystore
+            .get_librad_key()
+            .map_err(error::Error::from)
+            .unwrap();
         let id = identity::create(&ctx.peer_api, key, input.handle.parse()?)?;
 
         session::set_identity(&ctx.store, id.clone())?;
@@ -114,7 +118,7 @@ mod handler {
 
     /// Get the [`identity::Identity`] for the given `id`.
     pub async fn get<R>(ctx: http::Ctx<R>, id: String) -> Result<impl Reply, Rejection> {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id.parse().expect("could not parse id"))?;
         Ok(reply::json(&id))
     }
@@ -243,8 +247,8 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let res = request()
             .method("POST")
@@ -255,7 +259,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
         let urn = session.identity.expect("failed to set identity").id;
 
@@ -290,10 +294,10 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
         let user = ctx.peer_api.init_user(key, "cloudhead")?;
         let urn = user.urn();

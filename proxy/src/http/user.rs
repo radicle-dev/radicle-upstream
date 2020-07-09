@@ -9,9 +9,7 @@ use crate::http;
 use crate::registry;
 
 /// Prefixed filter
-pub fn routes<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
@@ -36,9 +34,7 @@ where
 }
 
 /// GET /<handle>
-fn get_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
@@ -166,7 +162,7 @@ mod handler {
     where
         R: registry::Client,
     {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let handle = registry::Id::try_from(handle).map_err(Error::from)?;
         let user = ctx.registry.get_user(handle).await?;
@@ -178,7 +174,7 @@ mod handler {
     where
         R: registry::Client,
     {
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let handle = registry::Id::try_from(handle).map_err(Error::from)?;
         let orgs = ctx.registry.list_orgs(handle).await?;
@@ -197,7 +193,7 @@ mod handler {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
         let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         let tx = ctx
             .registry
@@ -316,10 +312,10 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("cloudhead").unwrap();
@@ -354,10 +350,10 @@ mod test {
     #[tokio::test]
     async fn list_orgs() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -401,10 +397,10 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let res = request()
             .method("POST")
@@ -432,10 +428,10 @@ mod test {
     #[tokio::test]
     async fn register_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(tmp_dir).await?;
-        let api = super::filters(ctx);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let ctx = ctx.lock().await;
+        let ctx = ctx.read().await;
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;

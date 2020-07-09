@@ -51,11 +51,9 @@ impl Api {
         api.paths().git_dir().join("")
     }
 
-    pub fn paths(&self) -> &paths::Paths {
+    pub fn paths(&self) -> paths::Paths {
         let api = self.peer_api.lock().unwrap();
-        let paths = api.paths();
-
-        paths
+        api.paths().clone()
     }
 
     pub fn reopen(&self) -> Result<(), error::Error> {
@@ -120,25 +118,31 @@ impl Api {
         clippy::wildcard_enum_match_arm
     )]
     pub fn list_projects(&self) -> Result<Vec<Project>, error::Error> {
-        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let project_meta = {
+            let api = self.peer_api.lock().expect("unable to acquire lock");
+            let storage = api.storage().reopen()?;
+            let owner = storage.default_rad_self()?;
 
-        let storage = api.storage().reopen()?;
-        let owner = storage.default_rad_self()?;
-        let project_meta = storage.all_metadata()?.flat_map(|entity| {
-            let entity = entity.ok()?;
-            let rad_self = storage.get_rad_self(&entity.urn()).ok()?;
+            let meta = storage.all_metadata()?;
+            meta.flat_map(|entity| {
+                let entity = entity.ok()?;
+                let rad_self = storage.get_rad_self(&entity.urn()).ok()?;
 
-            // We only list projects that are owned by the peer
-            if rad_self.urn() != owner.urn() {
-                return None;
-            }
+                // We only list projects that are owned by the peer
+                if rad_self.urn() != owner.urn() {
+                    return None;
+                }
 
-            entity.try_map(|info| match info {
-                entity::data::EntityInfo::Project(info) => Some(info),
-                _ => None,
+                entity.try_map(|info| match info {
+                    entity::data::EntityInfo::Project(info) => Some(info),
+                    _ => None,
+                })
             })
-        });
+            .collect::<Vec<_>>()
+        };
+
         project_meta
+            .into_iter()
             .map(|project| {
                 self.with_browser(&project.urn(), |browser| {
                     let stats = browser.get_stats()?;
@@ -212,11 +216,13 @@ impl Api {
     where
         F: Send + FnOnce(&mut git::Browser) -> Result<T, error::Error>,
     {
-        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let git_dir = {
+            let paths = self.paths();
+            paths.git_dir().join("")
+        };
 
         let project = self.get_project(project_urn)?;
         let default_branch = project.default_branch();
-        let git_dir = api.paths().git_dir();
         let repo = git::Repository::new(git_dir)?;
         let namespace = git::Namespace::from(project.urn().id.to_string().as_str());
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
@@ -305,13 +311,16 @@ impl Api {
         user.sign_owned(&key)?;
         let urn = user.urn();
 
-        let api = self.peer_api.lock().expect("unable to acquire lock");
-        let storage = api.storage().reopen()?;
+        // Initialising user in the storage.
+        {
+            let api = self.peer_api.lock().expect("unable to acquire lock");
+            let storage = api.storage().reopen()?;
 
-        if storage.has_urn(&urn)? {
-            return Err(error::Error::EntityExists(urn));
-        } else {
-            let _repo = storage.create_repo(&user)?;
+            if storage.has_urn(&urn)? {
+                return Err(error::Error::EntityExists(urn));
+            } else {
+                let _repo = storage.create_repo(&user)?;
+            }
         }
 
         Ok(user)
@@ -517,7 +526,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_list_projects() -> Result<(), Error> {
+    async fn list_projects() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
 
