@@ -163,11 +163,12 @@
       <div class="section-item" style="align-items: flex-start;">
         <div class="info">
           <Text variant="medium">
-            Seeds help you see more projects and people on the Radicle network
+            Seeds help you see more projects and people on the network
           </Text>
-          <Text>
-            Have some seed addresses you’d like to join? New projects from the
-            seeds you’re subscribed to will appear in the Discover page.
+          <Text style="color: var(--color-foreground-level-6);">
+            Have some seed addresses you’d like to join? Enter them here and new
+            projects from the seeds you’re subscribed to will appear in the
+            Discover page.
           </Text>
         </div>
         <form class="seed-entry-form">
@@ -193,7 +194,9 @@
                   variant="medium"
                   style="margin-right: 8px;" />
 
-                <Text style="color: var(--color-foreground-level-6);">
+                <Text
+                  class="setting-text"
+                  style="color: var(--color-foreground-level-6);">
                   {seed}
                 </Text>
               </div>
