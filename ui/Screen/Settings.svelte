@@ -47,7 +47,7 @@
   section header {
     margin: 16px 0 24px 0;
     border-bottom: 1px solid var(--color-foreground-level-3);
-    padding: 12px 0;
+    padding: 12px;
     display: flex;
     justify-content: space-between;
   }
@@ -65,6 +65,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+    padding: 0 12px;
   }
 
   .info {
