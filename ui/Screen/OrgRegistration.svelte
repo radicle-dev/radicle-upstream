@@ -100,7 +100,7 @@
   }
 </style>
 
-<ModalLayout dataCy="org-reg-modal">
+<ModalLayout dataCy="org-registration-modal">
   <div class="wrapper">
     {#if state === RegistrationFlowState.Preparation}
       <Title variant="big" style="text-align: center;">Org registration</Title>
