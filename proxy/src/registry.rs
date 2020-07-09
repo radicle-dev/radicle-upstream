@@ -8,11 +8,11 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_cbor::from_reader;
 use std::str::FromStr;
 
-use librad::uri::RadUrn;
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{Balance, Id, ProjectDomain, ProjectName, MINIMUM_FEE};
 
 use crate::avatar;
+use crate::coco;
 use crate::error;
 
 mod transaction;
@@ -64,7 +64,7 @@ impl Serialize for Hash {
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Librad project ID.
-    pub id: RadUrn,
+    pub id: coco::Urn,
     /// Metadata version.
     pub version: u8,
 }
@@ -98,7 +98,7 @@ pub struct Project {
     /// The domain of the project.
     pub domain: ProjectDomain,
     /// Optionally associated project id for attestation in other systems.
-    pub maybe_project_id: Option<RadUrn>,
+    pub maybe_project_id: Option<coco::Urn>,
 }
 
 /// The registered user with associated coco id.
@@ -231,7 +231,7 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         project_domain: ProjectDomain,
         project_name: ProjectName,
-        maybe_project_id: Option<RadUrn>,
+        maybe_project_id: Option<coco::Urn>,
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -492,7 +492,7 @@ impl Client for Registry {
         author: &protocol::ed25519::Pair,
         project_domain: ProjectDomain,
         project_name: ProjectName,
-        maybe_project_id: Option<RadUrn>,
+        maybe_project_id: Option<coco::Urn>,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit checkpoint transaction.
@@ -628,6 +628,7 @@ mod test {
     use std::convert::TryFrom as _;
 
     use crate::avatar;
+    use crate::coco;
     use crate::error;
 
     use super::{Client, Id, Metadata, ProjectDomain, ProjectName, Registry};
@@ -792,7 +793,7 @@ mod test {
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
         let project_name = ProjectName::try_from("upstream")?;
-        let urn = librad::uri::RadUrn::new(
+        let urn = coco::Urn::new(
             librad::hash::Hash::hash(b"cloudhead"),
             librad::uri::Protocol::Git,
             librad::uri::Path::new(),
@@ -841,7 +842,7 @@ mod test {
         let handle = Id::try_from("alice")?;
         let org_id = Id::try_from("monadic")?;
         let project_name = ProjectName::try_from("radicle")?;
-        let urn = librad::uri::RadUrn::new(
+        let urn = coco::Urn::new(
             librad::hash::Hash::hash(b"cloudhead"),
             librad::uri::Protocol::Git,
             librad::uri::Path::new(),
@@ -894,7 +895,7 @@ mod test {
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("alice")?;
         let project_name = ProjectName::try_from("radicle")?;
-        let urn = librad::uri::RadUrn::new(
+        let urn = coco::Urn::new(
             librad::hash::Hash::hash(b"upstream"),
             librad::uri::Protocol::Git,
             librad::uri::Path::new(),

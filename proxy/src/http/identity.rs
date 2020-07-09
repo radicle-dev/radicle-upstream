@@ -16,18 +16,16 @@ use crate::registry;
 /// Combination of all identity routes.
 pub fn filters<R: registry::Client>(
     peer: Arc<Mutex<coco::PeerApi>>,
-    owner: http::Shared<Option<coco::User>>,
     keystore: http::Shared<keystore::Keystorage>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter(Arc::clone(&peer)).or(create_filter(peer, owner, keystore, registry, store))
+    get_filter(Arc::clone(&peer)).or(create_filter(peer, keystore, registry, store))
 }
 
 /// `POST /identities`
 fn create_filter<R: registry::Client>(
     peer: Arc<Mutex<coco::PeerApi>>,
-    owner: http::Shared<Option<coco::User>>,
     keystore: http::Shared<keystore::Keystorage>,
     registry: http::Shared<R>,
     store: Arc<RwLock<kv::Store>>,
@@ -35,7 +33,6 @@ fn create_filter<R: registry::Client>(
     path!("identities")
         .and(warp::post())
         .and(http::with_peer(peer))
-        .and(http::with_shared(owner))
         .and(http::with_shared(keystore))
         .and(http::with_shared(registry))
         .and(http::with_store(store))
@@ -104,7 +101,6 @@ mod handler {
     /// Create a new [`identity::Identity`].
     pub async fn create<R: registry::Client>(
         peer: Arc<Mutex<coco::PeerApi>>,
-        owner: http::Shared<Option<coco::User>>,
         keystore: http::Shared<keystore::Keystorage>,
         registry: http::Shared<R>,
         store: Arc<RwLock<kv::Store>>,
@@ -122,7 +118,7 @@ mod handler {
 
         let keystore = keystore.read().await;
         let key = keystore.get_librad_key().map_err(error::Error::from)?;
-        let id = identity::create(peer, owner, key, input.handle.parse()?).await?;
+        let id = identity::create(&*peer.lock().await, key, input.handle.parse()?)?;
 
         session::set_identity(&store, id.clone())?;
 
@@ -284,7 +280,6 @@ mod test {
         ));
         let api = super::filters(
             Arc::clone(&peer),
-            Arc::new(RwLock::new(None)),
             Arc::new(RwLock::new(keystore)),
             Arc::clone(&registry),
             Arc::clone(&store),
@@ -354,7 +349,6 @@ mod test {
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(None)),
             Arc::new(RwLock::new(keystore)),
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
