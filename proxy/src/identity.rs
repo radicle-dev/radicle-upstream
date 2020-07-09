@@ -1,9 +1,6 @@
 //! Container to bundle and associate information around an identity.
 
-use std::sync::Arc;
-
 use serde::{Deserialize, Serialize};
-use tokio::sync::Mutex;
 
 use librad::keys;
 
@@ -41,12 +38,12 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub async fn create(
-    peer: Arc<Mutex<coco::PeerApi>>,
+pub fn create(
+    peer: &coco::PeerApi,
     key: keys::SecretKey,
     handle: String,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_owner(peer, key, &handle).await?;
+    let user = coco::init_owner(peer, key, &handle)?;
 
     let id = user.urn();
     let shareable_entity_identifier = user.into();

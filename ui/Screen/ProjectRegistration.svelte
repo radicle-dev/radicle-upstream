@@ -7,12 +7,11 @@
   import { fetch as fetchSession } from "../src/session.ts";
   import * as transaction from "../src/transaction.ts";
 
-  import { Flex, Title } from "../DesignSystem/Primitive";
+  import { Title } from "../DesignSystem/Primitive";
   import {
     NavigationButtons,
     ModalLayout,
     Remote,
-    StepCounter,
     Transaction,
   } from "../DesignSystem/Component";
 
@@ -84,16 +83,11 @@
   <ModalLayout dataCy="project-registration-screen">
     <div class="wrapper">
       <div class="project-registration">
-        <Flex align="center" style="margin-bottom: 40px;">
-          <StepCounter
-            selectedStep={showRegistrationDetails ? 1 : 2}
-            steps={['Prepare', 'Submit']}
-            style="margin-bottom: 48px" />
-
-          <Title variant="big">Register project</Title>
-        </Flex>
 
         {#if showRegistrationDetails === true}
+          <Title variant="big" style="text-align: center; margin-bottom: 24px;">
+            Project registration
+          </Title>
           <RegistrationDetailsStep
             identity={session.identity}
             {projects}

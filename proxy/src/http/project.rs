@@ -432,7 +432,7 @@ mod test {
         let path = dir.path().to_str().unwrap();
 
         let handle = "cloudhead";
-        let id = identity::create(Arc::clone(&peer), key, handle.parse().unwrap()).await?;
+        let id = identity::create(&*peer.lock().await, key, handle.parse().unwrap())?;
 
         session::set_identity(&store, id.clone())?;
 
@@ -499,7 +499,7 @@ mod test {
         let config = coco::config::configure(paths, key.clone());
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
 
         let platinum_project = coco::control::replicate_platinum(
             &peer,
@@ -551,7 +551,7 @@ mod test {
         let peer = coco::create_peer_api(config).await?;
 
         let peer = Arc::new(Mutex::new(peer));
-        let owner = coco::init_owner(Arc::clone(&peer), key.clone(), "cloudhead").await?;
+        let owner = coco::init_owner(&*peer.lock().await, key.clone(), "cloudhead")?;
 
         coco::control::setup_fixtures(&*peer.lock().await, key, &owner)?;
 

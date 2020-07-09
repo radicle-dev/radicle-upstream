@@ -63,15 +63,6 @@
     unsubscribe();
   };
 
-  let copyIcon = Icon.Copy;
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-    }, 1000);
-  };
-
   $: fetchObject({
     path: currentObjectPath,
     peerId: currentPeerId,
@@ -168,9 +159,10 @@
     <Title variant="big">{project.metadata.name}</Title>
     <div class="project-id">
       <Code>
-        <Copyable {afterCopy}>
-          {project.shareableEntityIdentifier}
-          <svelte:component this={copyIcon} style="vertical-align: bottom" />
+        <Copyable iconSize="normal">
+          <span style="margin-right: 8px;">
+            {project.shareableEntityIdentifier}
+          </span>
         </Copyable>
       </Code>
     </div>
@@ -263,7 +255,7 @@
               <Readme content={readme.content} path={readme.path} />
             {:else}
               <EmptyState
-                text="This project doesn't have a ReadMe yet."
+                text="This project doesn't have a README yet."
                 icon="eyes"
                 primaryActionText="Open an issue to make one" />
             {/if}

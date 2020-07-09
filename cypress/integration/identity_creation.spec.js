@@ -43,7 +43,7 @@ context("identity creation", () => {
       cy.pick("create-id-button").click();
       cy.pick("register-identity-link").click();
 
-      cy.contains("Register your handle").should("exist");
+      cy.contains("Handle registration").should("exist");
       cy.pick("next-button").click();
       cy.pick("submit-button").click();
       cy.pick("profile-screen", "entity-name").contains(validUser.handle);

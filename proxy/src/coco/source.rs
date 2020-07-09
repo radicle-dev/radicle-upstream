@@ -556,7 +556,7 @@ mod tests {
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             key,
