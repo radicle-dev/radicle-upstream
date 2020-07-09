@@ -51,10 +51,7 @@
     {:else if !hover}
       <Icon.Currency style="fill: var(--color-negative);" />
     {/if}
-    <Title
-      variant="tiny"
-      dataCy={hover ? 'usd-amount' : 'rad-amount'}
-      style="margin-left:2px;">
+    <Title variant="tiny" dataCy="amount" style="margin-left:2px;">
       {#if hover}${usd}{:else}{rad}{/if}
     </Title>
   </div>
