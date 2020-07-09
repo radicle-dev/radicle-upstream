@@ -8,7 +8,7 @@
   width="24"
   height="24"
   viewBox="0 0 24 24"
-  fill="none"
+  fill="var(--color-foreground-level-5)"
   xmlns="http://www.w3.org/2000/svg">
   <path
     d="M8 6C7.44772 6 7 6.44772 7 7C7 7.55228 7.44772 8 8 8H10C10.5523 8 11
