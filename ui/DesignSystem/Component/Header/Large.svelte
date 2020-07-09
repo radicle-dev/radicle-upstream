@@ -92,7 +92,7 @@
             variant="huge"
             style="display: flex; align-items: center;">
             {#if variant === 'profile' && entity.registered}
-              @{entity.registered}
+              {entity.registered}
             {:else if variant === 'profile' && !entity.registered}
               {entity.metadata.handle}
               <Button
