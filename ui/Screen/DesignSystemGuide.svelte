@@ -25,7 +25,6 @@
     SegmentedControl,
     Stats,
     SupportButton,
-    StepCounter,
     TrackToggle,
     TransactionCenter,
     TransactionStatusbar,
@@ -1035,18 +1034,17 @@
       <Swatch>
         <Rad rad="200" usd="2" />
       </Swatch>
+
       <Swatch>
         <Rad rad="10" usd="0.1" />
       </Swatch>
+
       <Swatch>
         <Rad rad="20" />
       </Swatch>
-      <Swatch>
-        <Rad rad="20" variant="deposit" />
-      </Swatch>
 
       <Swatch>
-        <StepCounter selectedStep={1} steps={['Step 1', 'Step 2', 'Step 3']} />
+        <Rad rad="20" variant="deposit" />
       </Swatch>
 
       <Swatch>

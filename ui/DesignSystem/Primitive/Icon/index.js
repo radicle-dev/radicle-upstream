@@ -43,7 +43,6 @@ import Search from "./Search.svelte";
 import Settings from "./Settings.svelte";
 import Source from "./Source.svelte";
 import Spinner from "./Spinner.svelte";
-import StepCounter from "./StepCounter.svelte";
 import TransactionState from "./TransactionState.svelte";
 import Trash from "./Trash.svelte";
 
@@ -93,7 +92,6 @@ export default {
   Settings,
   Source,
   Spinner,
-  StepCounter,
   TransactionState,
   Trash,
 };
