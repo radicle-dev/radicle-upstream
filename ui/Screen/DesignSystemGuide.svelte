@@ -1041,6 +1041,9 @@
       <Swatch>
         <Rad rad="20" />
       </Swatch>
+      <Swatch>
+        <Rad rad="20" variant="deposit" />
+      </Swatch>
 
       <Swatch>
         <StepCounter selectedStep={1} steps={['Step 1', 'Step 2', 'Step 3']} />

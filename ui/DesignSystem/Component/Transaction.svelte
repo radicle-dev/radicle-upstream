@@ -61,7 +61,7 @@
   </div>
 
   <div slot="right">
-    <Rad rad={summary.depositRad} usd={summary.depositUsd} deposit={true} />
+    <Rad rad={summary.depositRad} usd={summary.depositUsd} variant="deposit" />
   </div>
 </Row>
 
