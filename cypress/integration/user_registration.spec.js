@@ -107,7 +107,7 @@ context("user registration", () => {
     it("shows the correct transaction details for confirmation", async () => {
       cy.pick("next-button").click();
 
-      cy.pick("message").contains("User registration");
+      cy.pick("message").contains("Handle registration");
       cy.pick("subject").contains("secretariat");
 
       cy.pick("subject-avatar", "emoji").should("have.class", "circle");
@@ -119,14 +119,16 @@ context("user registration", () => {
       //   "rgb(185, 118, 211)"
       // );
 
-      cy.pick("deposit", "rad-amount").contains("0.00001");
-      cy.pick("deposit", "usd-amount").contains("$0.00001");
+      cy.pick("deposit", "amount").contains("0.00001");
+      cy.pick("deposit", "amount").trigger("mouseenter").contains("$0.00001");
 
-      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
-      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").contains("0.000001");
+      cy.pick("transaction-fee", "amount")
+        .trigger("mouseenter")
+        .contains("$0.000001");
 
-      cy.pick("total", "rad-amount").contains("0.000011");
-      cy.pick("total", "usd-amount").contains("$0.000011");
+      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").trigger("mouseenter").contains("$0.000011");
     });
 
     it("submits correct transaction details to proxy", () => {
@@ -137,8 +139,8 @@ context("user registration", () => {
 
       // pick most recent transaction
       cy.pick("transaction-item").last().click();
-      cy.pick("summary", "message").contains("User registration");
-      cy.pick("summary", "subject").contains("secretariat");
+      cy.pick("summary", "message").contains("Handle registration");
+      cy.pick("summary", "subject-avatar").contains("secretariat");
 
       cy.pick("summary", "subject-avatar", "emoji").should(
         "have.class",
@@ -152,14 +154,16 @@ context("user registration", () => {
       //   "rgb(185, 118, 211)"
       // );
 
-      cy.pick("deposit", "rad-amount").contains("0.00001");
-      cy.pick("deposit", "usd-amount").contains("$0.00001");
+      cy.pick("deposit", "amount").contains("0.00001");
+      cy.pick("deposit", "amount").trigger("mouseenter").contains("$0.00001");
 
-      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
-      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").contains("0.000001");
+      cy.pick("transaction-fee", "amount")
+        .trigger("mouseenter")
+        .contains("$0.000001");
 
-      cy.pick("total", "rad-amount").contains("0.000011");
-      cy.pick("total", "usd-amount").contains("$0.000011");
+      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").trigger("mouseenter").contains("$0.000011");
     });
   });
 

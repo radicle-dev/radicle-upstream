@@ -11,10 +11,10 @@
 
   import {
     NavigationButtons,
-    StepModalLayout,
+    ModalLayout,
     Transaction,
   } from "../DesignSystem/Component";
-  import { Avatar, Input, Text } from "../DesignSystem/Primitive";
+  import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
 
   let avatarFallback, orgId, payer, showAvatar, subject, transaction;
   let state = RegistrationFlowState.Preparation;
@@ -94,45 +94,51 @@
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
-<StepModalLayout
-  dataCy="org-reg-modal"
-  selectedStep={state + 1}
-  steps={['Preparation', 'Submit']}>
-  <div slot="title">Register an org</div>
-  {#if state === RegistrationFlowState.Preparation}
-    <Text style="color: var(--color-foreground-level-5); margin-bottom: 24px;">
-      Registering an org allows you to give others in your org the right to sign
-      transactions, like adding other members or adding projects.
-    </Text>
-    <Input.Text
-      dataCy="input"
-      placeholder="Org name (e.g. flowerpot)"
-      bind:value={orgId}
-      style="width: 100%;"
-      showSuccessCheck
-      {showAvatar}
-      validation={$validation}>
-      <div slot="avatar">
-        <Avatar
-          {avatarFallback}
-          size="small"
-          variant="square"
-          dataCy="avatar" />
+<style>
+  .wrapper {
+    margin: 92px 0 32px 0;
+  }
+</style>
+
+<ModalLayout dataCy="org-registration-modal">
+  <div class="wrapper">
+    {#if state === RegistrationFlowState.Preparation}
+      <Title variant="big" style="text-align: center;">Org registration</Title>
+      <Text
+        style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
+        Registering an org allows you to give others in your org the right to
+        sign transactions, like adding other members or adding projects.
+      </Text>
+      <Input.Text
+        dataCy="input"
+        placeholder="Org name (e.g. flowerpot)"
+        bind:value={orgId}
+        style="width: 100%;"
+        showSuccessCheck
+        {showAvatar}
+        validation={$validation}>
+        <div slot="avatar">
+          <Avatar
+            {avatarFallback}
+            size="small"
+            variant="square"
+            dataCy="avatar" />
+        </div>
+      </Input.Text>
+    {:else if state === RegistrationFlowState.Confirmation}
+      <div style="width: 100%;">
+        <Transaction
+          {transaction}
+          {subject}
+          {payer}
+          transactionDeposits={$session.data.transactionDeposits} />
       </div>
-    </Input.Text>
-  {:else if state === RegistrationFlowState.Confirmation}
-    <div style="width: 100%;">
-      <Transaction
-        {transaction}
-        {subject}
-        {payer}
-        transactionDeposits={$session.data.transactionDeposits} />
-    </div>
-  {/if}
-  <NavigationButtons
-    style="margin-top: 32px;"
-    {submitLabel}
-    {disableSubmit}
-    on:cancel={cancel}
-    on:submit={next} />
-</StepModalLayout>
+    {/if}
+    <NavigationButtons
+      style="margin-top: 32px;"
+      {submitLabel}
+      {disableSubmit}
+      on:cancel={cancel}
+      on:submit={next} />
+  </div>
+</ModalLayout>
