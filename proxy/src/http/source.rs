@@ -339,13 +339,7 @@ mod handler {
             None
         };
         let blob = coco::with_browser(&*api, &urn, |mut browser| {
-            coco::blob(
-                &mut browser,
-                default_branch,
-                revision,
-                &path,
-                theme,
-            )
+            coco::blob(&mut browser, default_branch, revision, &path, theme)
         })?;
 
         Ok(reply::json(&blob))
@@ -470,10 +464,7 @@ mod handler {
     pub async fn tree(
         api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::TreeQuery {
-            prefix,
-            revision,
-        }: super::TreeQuery,
+        super::TreeQuery { prefix, revision }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
@@ -481,12 +472,7 @@ mod handler {
         let default_branch = git::Branch::local(project.default_branch());
 
         let tree = coco::with_browser(&api, &urn, |mut browser| {
-            coco::tree(
-                &mut browser,
-                default_branch,
-                revision,
-                prefix,
-            )
+            coco::tree(&mut browser, default_branch, revision, prefix)
         })?;
 
         Ok(reply::json(&tree))
@@ -506,7 +492,7 @@ impl From<CommitsQuery> for git::Branch {
     fn from(CommitsQuery { peer_id, branch }: CommitsQuery) -> Self {
         match peer_id {
             None => Self::local(&branch),
-            Some(peer_id) => Self::remote(&branch, &peer_id.to_string())
+            Some(peer_id) => Self::remote(&branch, &peer_id.to_string()),
         }
     }
 }
@@ -898,7 +884,9 @@ mod test {
         let urn = platinum_project.urn();
 
         let revision = coco::Revision::Branch {
-            name: "master".to_string(), remote: None };
+            name: "master".to_string(),
+            remote: None,
+        };
         let default_branch = git::Branch::local(platinum_project.default_branch());
         let path = "text/arrows.txt";
         let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
@@ -920,11 +908,7 @@ mod test {
         // Get ASCII blob.
         let res = request()
             .method("GET")
-            .path(&format!(
-                "/blob/{}?path={}",
-                urn,
-                path
-            ))
+            .path(&format!("/blob/{}?path={}", urn, path))
             .json(&revision)
             .reply(&api)
             .await;
@@ -971,23 +955,13 @@ mod test {
         let path = "bin/ls";
         let res = request()
             .method("GET")
-            .path(&format!(
-                "/blob/{}?path={}",
-                urn,
-                path
-            ))
+            .path(&format!("/blob/{}?path={}", urn, path))
             .json(&revision)
             .reply(&api)
             .await;
 
         let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
-            coco::blob(
-                browser,
-                default_branch,
-                Some(revision),
-                path,
-                None,
-            )
+            coco::blob(browser, default_branch, Some(revision), path, None)
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -1474,11 +1448,7 @@ mod test {
         );
         let res = request()
             .method("GET")
-            .path(&format!(
-                "/tree/{}?prefix={}",
-                urn,
-                prefix
-            ))
+            .path(&format!("/tree/{}?prefix={}", urn, prefix))
             .json(&revision)
             .reply(&api)
             .await;

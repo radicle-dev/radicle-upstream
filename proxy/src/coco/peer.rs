@@ -1,5 +1,5 @@
-use std::net::SocketAddr;
 use std::convert::TryFrom;
+use std::net::SocketAddr;
 
 use librad::keys;
 use librad::meta::entity;

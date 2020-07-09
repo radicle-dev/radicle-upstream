@@ -204,7 +204,7 @@ pub enum Revision {
     /// Select a tag under the name provided.
     Tag {
         /// Name of the tag.
-        name: String
+        name: String,
     },
     /// Select a branch under the name provided.
     Branch {
@@ -216,7 +216,7 @@ pub enum Revision {
     /// Select a SHA1 under the name provided.
     Sha {
         /// The SHA1 value.
-        sha: String
+        sha: String,
     },
 }
 
@@ -226,12 +226,10 @@ impl TryFrom<Revision> for Rev {
     fn try_from(other: Revision) -> Result<Self, Self::Error> {
         match other {
             Revision::Tag { name } => Ok(git::TagName::new(&name).into()),
-            Revision::Branch { name, remote } => {
-                Ok(match remote {
-                    Some(peer) => git::Branch::remote(&name, &peer.to_string()).into(),
-                    None => git::Branch::local(&name).into(),
-                })
-            }
+            Revision::Branch { name, remote } => Ok(match remote {
+                Some(peer) => git::Branch::remote(&name, &peer.to_string()).into(),
+                None => git::Branch::local(&name).into(),
+            }),
             Revision::Sha { sha } => Ok(git::Oid::from_str(&sha)?.into()),
         }
     }
