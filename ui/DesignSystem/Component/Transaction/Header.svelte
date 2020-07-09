@@ -2,7 +2,7 @@
   import {
     formatMessage,
     headerIcon,
-    SubjectType,
+    subjectAvatarShape,
     timestamp,
   } from "../../../src/transaction.ts";
 
@@ -11,17 +11,6 @@
   export let avatar = null;
   export let transaction = null;
   export let subject = null;
-
-  const subjectAvatarShape = () => {
-    switch (subject.type) {
-      case SubjectType.User:
-      case SubjectType.Member:
-      case SubjectType.UserProject:
-        return "circle";
-      default:
-        return "square";
-    }
-  };
 </script>
 
 <style>
@@ -58,7 +47,7 @@
           title={subject.name}
           imageUrl={avatar.url}
           avatarFallback={avatar.emoji && avatar}
-          variant={subjectAvatarShape()}
+          variant={subjectAvatarShape(subject.type)}
           style="color: var(--color-foreground)"
           dataCy="subject-avatar" />
       {:else}

@@ -387,6 +387,17 @@ export const formatSubject = (msg: Message): Subject => {
   };
 };
 
+export const subjectAvatarShape = (subjectType: SubjectType): string => {
+  switch (subjectType) {
+    case SubjectType.User:
+    case SubjectType.Member:
+    case SubjectType.UserProject:
+      return "circle";
+    default:
+      return "square";
+  }
+};
+
 export const iconProgress = (state: State): number => {
   switch (state.type) {
     case StateType.Confirmed:
