@@ -78,7 +78,7 @@
     top: 0px;
     left: 0px;
     box-shadow: var(--elevation-medium);
-    border: 1px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-2);
     border-radius: 4px;
     user-select: none;
     background-color: var(--color-background);

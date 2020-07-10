@@ -37,7 +37,7 @@
   }
 
   textarea {
-    border: 1px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-2);
     padding: 8px 12px;
     border-radius: 4px;
     width: 100%;
@@ -55,7 +55,7 @@
     min-height: 98px;
     outline: none;
     border: 1px solid
-      var(--focus-outline-color, var(--color-foreground-level-3));
+      var(--focus-outline-color, var(--color-foreground-level-2));
     background-color: var(--color-foreground-level-1);
   }
 

@@ -16,7 +16,7 @@
   }
   ul {
     width: 100%;
-    border: 1px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-2);
     border-radius: 4px;
   }
 
@@ -24,7 +24,7 @@
     display: flex;
     width: 100%;
     flex: 1;
-    border-bottom: 1px solid var(--color-foreground-level-3);
+    border-bottom: 1px solid var(--color-foreground-level-2);
     cursor: pointer;
     user-select: none;
   }

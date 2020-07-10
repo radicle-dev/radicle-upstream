@@ -226,7 +226,7 @@
 
   .outline {
     background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-foreground-level-3);
+    border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
   }
 

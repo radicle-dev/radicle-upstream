@@ -57,7 +57,8 @@
   }
   .revision-selector:hover {
     color: var(--color-foreground);
-    background-color: var(--color-foreground-level-2);
+    border: 1px solid var(--color-foreground-level-3);
+    background-color: var(--color-foreground-level-1);
   }
   .revision-selector[hidden] {
     visibility: hidden;
