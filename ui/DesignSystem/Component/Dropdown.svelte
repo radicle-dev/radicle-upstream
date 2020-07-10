@@ -68,7 +68,7 @@
   }
 
   .button.disabled {
-    cursor: default;
+    cursor: not-allowed;
     box-shadow: 0px 0px 0px 0px;
     background-color: var(--color-background);
   }

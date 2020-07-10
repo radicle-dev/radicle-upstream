@@ -52,7 +52,6 @@
   input.invalid:focus,
   input.invalid {
     outline: none;
-    box-shadow: 0 0 0 1px var(--color-negative);
     border: 1px solid var(--color-negative);
     background: var(--color-background);
     background-position: right 14px top 55%;
