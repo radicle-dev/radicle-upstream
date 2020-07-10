@@ -8,6 +8,7 @@
   export let style = null;
   export let path = null;
   export let validation = null;
+  export let buttonVariant = "primary";
 
   const openFileDialog = async () => {
     path = await getDirectoryPath();
@@ -31,7 +32,7 @@
 
   <Button
     dataCy="choose-path-button"
-    variant="primary"
+    variant={buttonVariant}
     on:click={openFileDialog}>
     Choose
   </Button>
