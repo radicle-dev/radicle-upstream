@@ -75,6 +75,7 @@ where
             "ID of the project the blob is part of",
         ))
         .and(warp::filters::query::query::<BlobQuery>())
+        .and(warp::body::json())
         .and(document::document(
             document::query("revision", document::string()).description("Git revision"),
         ))
@@ -262,6 +263,7 @@ fn tree_filter(
             "ID of the project the blob is part of",
         ))
         .and(warp::filters::query::query::<TreeQuery>())
+        .and(warp::body::json())
         .and(document::document(
             document::query("revision", document::string()).description("Git revision"),
         ))
@@ -284,6 +286,7 @@ fn tree_filter(
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::sync::Arc;
+
     use tokio::sync::Mutex;
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
@@ -307,9 +310,9 @@ mod handler {
         super::BlobQuery {
             path,
             peer_id,
-            revision,
             highlight,
         }: super::BlobQuery,
+        revision: Option<coco::Revision>,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
@@ -464,7 +467,8 @@ mod handler {
     pub async fn tree(
         api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::TreeQuery { prefix, peer_id, revision }: super::TreeQuery,
+        super::TreeQuery { prefix, peer_id }: super::TreeQuery,
+        revision: Option<coco::Revision>,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
@@ -508,8 +512,6 @@ pub struct BlobQuery {
     path: String,
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
-    /// Revision to use for the history of the repo.
-    revision: Option<coco::Revision>,
     /// Whether or not to syntax highlight the blob.
     highlight: Option<bool>,
 }
@@ -521,8 +523,6 @@ pub struct TreeQuery {
     prefix: Option<String>,
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
-    /// Revision to query at.
-    revision: Option<coco::Revision>,
 }
 
 /// Bundled response to retrieve both branches and tags for a user repo.
@@ -1004,6 +1004,66 @@ mod test {
     }
 
     #[tokio::test]
+    async fn blob_dev_branch() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
+        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
+        let owner = coco::init_user(&*peer.lock().await, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner)?;
+        let platinum_project = coco::control::replicate_platinum(
+            &*peer.lock().await,
+            key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+        let urn = platinum_project.urn();
+
+        let revision = coco::Revision::Branch {
+            name: "dev".to_string(),
+            remote: None,
+        };
+        let default_branch = git::Branch::local(platinum_project.default_branch());
+        let path = "here-we-are-on-a-dev-branch.lol";
+        let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
+            coco::blob(
+                &mut browser,
+                default_branch.clone(),
+                Some(revision.clone()),
+                path,
+                None,
+            )
+        })?;
+
+        let api = super::filters(
+            Arc::clone(&peer),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
+
+        // Get ASCII blob.
+        let res = request()
+            .method("GET")
+            .path(&format!("/blob/{}?path={}", urn, path))
+            .json(&revision)
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
@@ -1432,7 +1492,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let revision = coco::Revision::Branch {
-            name: "dev".to_string(),
+            name: "master".to_string(),
             remote: None,
         };
         let prefix = "src";
@@ -1489,6 +1549,64 @@ mod test {
                     ],
                 }),
             );
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn tree_dev_branch() -> Result<(), error::Error> {
+        pretty_env_logger::init();
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        let config = coco::config::default(key.clone(), tmp_dir)?;
+        let peer = coco::create_peer_api(config).await?;
+        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner)?;
+        let platinum_project = coco::control::replicate_platinum(
+            &peer,
+            key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+        let urn = platinum_project.urn();
+
+        let revision = coco::Revision::Branch {
+            name: "dev".to_string(),
+            remote: None,
+        };
+
+        let default_branch = git::Branch::local(platinum_project.default_branch());
+        let want = coco::with_browser(&peer, &urn, |mut browser| {
+            coco::tree(
+                &mut browser,
+                default_branch,
+                Some(revision.clone()),
+                None,
+            )
+        })?;
+
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
+        );
+        let res = request()
+            .method("GET")
+            .path(&format!("/tree/{}", urn))
+            .json(&revision)
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
         });
 
         Ok(())

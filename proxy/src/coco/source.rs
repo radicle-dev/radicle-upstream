@@ -467,7 +467,6 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if any of the surf interactions fail.
-/// TODO(fintohaps): default branch fall back from Browser
 pub fn tree<'repo>(
     browser: &mut Browser<'repo>,
     default_branch: git::Branch,
