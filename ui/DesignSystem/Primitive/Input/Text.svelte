@@ -41,7 +41,8 @@
     padding: 0 40px 0 38px;
   }
 
-  input:focus {
+  input:focus,
+  input:hover {
     outline: none;
     border: 1px solid
       var(--focus-outline-color, var(--color-foreground-level-3));
