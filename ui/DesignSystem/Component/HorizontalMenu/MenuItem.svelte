@@ -25,15 +25,6 @@
     color: var(--color-foreground-level-6);
   }
 
-  .item::after {
-    display: block;
-    height: 0;
-    color: transparent;
-    overflow: hidden;
-    visibility: hidden;
-    content: var(--title);
-  }
-
   .item.active {
     font-family: var(--typeface-medium);
     color: var(--color-secondary);
@@ -52,7 +43,7 @@
     </div>
   {/if}
 
-  <p style={`--title: "${title}"`} class="item" class:active>{title}</p>
+  <p class="item" class:active>{title}</p>
 </a>
 
 {#if active}
