@@ -8,8 +8,6 @@
   let dropdown = null;
   // Dropdown state.
   let expanded = false;
-  // Icon to show next to clone command.
-  let copyIcon = Icon.Copy;
 
   const toggleDropdown = ev => {
     expanded = !expanded;
@@ -21,13 +19,6 @@
     if (expanded && dropdown !== ev.target && !dropdown.contains(ev.target)) {
       expanded = false;
     }
-  };
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-    }, 1000);
   };
 </script>
 
@@ -43,15 +34,6 @@
     box-shadow: var(--elevation-medium);
     padding: 1rem;
   }
-  .clone-dropdown .code-block {
-    border-radius: 4px;
-    color: var(--color-foreground);
-    background: var(--color-foreground-level-2);
-    padding: 0.5rem;
-    margin-top: 0.5rem;
-    display: flex;
-    align-items: center;
-  }
 </style>
 
 <svelte:window on:click={clickOutside} />
@@ -59,11 +41,12 @@
   <Text style="color: var(--color-foreground-level-6); user-select: none">
     Clone this repository using the following URL.
   </Text>
-  <Copyable {afterCopy}>
-    <div class="code-block">
-      <Code style="padding-right: 0.5rem">{projectId}</Code>
-      <svelte:component this={copyIcon} />
-    </div>
+  <Copyable
+    style="border-radius: 4px; color: var(--color-foreground); background:
+    var(--color-foreground-level-2); padding: 0.5rem; margin-top: 0.5rem;
+    display: flex; align-items: center;"
+    iconSize="normal">
+    <Code style="padding-right: 0.5rem">{projectId}</Code>
   </Copyable>
 </div>
 <Button variant="transparent" icon={Icon.Copy} on:click={toggleDropdown}>

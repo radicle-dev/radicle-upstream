@@ -637,7 +637,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
-        let urn = librad::uri::RadUrn::new(
+        let urn = coco::Urn::new(
             owner.root_hash().clone(),
             librad::uri::Protocol::Git,
             librad::uri::Path::new(),
@@ -774,7 +774,7 @@ mod test {
         let config = coco::config::default(key.clone(), tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
         let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
+        let owner = coco::verify_user(owner)?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))

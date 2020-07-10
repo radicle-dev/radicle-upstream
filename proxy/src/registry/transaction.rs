@@ -1,15 +1,18 @@
-#![allow(clippy::integer_arithmetic)]
 //! Abstractions and types to handle, persist and interact with transactions.
+
+#![allow(clippy::integer_arithmetic)]
+
+use std::time::{self, Duration, SystemTime};
 
 use async_trait::async_trait;
 use hex::ToHex;
 use kv::Codec as _;
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize, Serializer};
-use std::time::{self, Duration, SystemTime};
 
 use radicle_registry_client as protocol;
 
+use crate::coco;
 use crate::error;
 use crate::registry;
 
@@ -448,7 +451,7 @@ where
         author: &protocol::ed25519::Pair,
         project_domain: registry::ProjectDomain,
         project_name: registry::ProjectName,
-        maybe_project_id: Option<librad::uri::RadUrn>,
+        maybe_project_id: Option<coco::Urn>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self

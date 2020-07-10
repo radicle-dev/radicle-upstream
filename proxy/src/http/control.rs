@@ -15,11 +15,11 @@ pub fn routes<R>(
     enable: bool,
     peer: Arc<Mutex<coco::PeerApi>>,
     keystore: http::Shared<keystore::Keystorage>,
-    owner: http::Shared<Option<coco::User>>,
     registry: http::Shared<R>,
+    store: http::Shared<kv::Store>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
     path("control")
         .map(move || enable)
@@ -32,10 +32,15 @@ where
         })
         .untuple_one()
         .and(
-            create_project_filter(Arc::clone(&peer), Arc::clone(&keystore), Arc::clone(&owner))
-                .or(nuke_coco_filter(peer, keystore, owner))
-                .or(nuke_registry_filter(Arc::clone(&registry)))
-                .or(register_user_filter(registry)),
+            create_project_filter(
+                Arc::clone(&peer),
+                Arc::clone(&keystore),
+                Arc::clone(&registry),
+                store,
+            )
+            .or(nuke_coco_filter(peer, keystore))
+            .or(nuke_registry_filter(Arc::clone(&registry)))
+            .or(register_user_filter(registry)),
         )
 }
 
@@ -44,28 +49,37 @@ where
 fn filters<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     keystore: http::Shared<keystore::Keystorage>,
-    owner: http::Shared<Option<coco::User>>,
     registry: http::Shared<R>,
+    store: http::Shared<kv::Store>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
-    create_project_filter(Arc::clone(&peer), Arc::clone(&keystore), Arc::clone(&owner))
-        .or(nuke_coco_filter(peer, keystore, owner))
-        .or(nuke_registry_filter(Arc::clone(&registry)))
-        .or(register_user_filter(registry))
+    create_project_filter(
+        Arc::clone(&peer),
+        Arc::clone(&keystore),
+        Arc::clone(&registry),
+        store,
+    )
+    .or(nuke_coco_filter(peer, keystore))
+    .or(nuke_registry_filter(Arc::clone(&registry)))
+    .or(register_user_filter(registry))
 }
 
 /// POST /create-project
-fn create_project_filter(
+fn create_project_filter<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
     keystore: http::Shared<keystore::Keystorage>,
-    owner: http::Shared<Option<coco::User>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    registry: http::Shared<R>,
+    store: http::Shared<kv::Store>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path!("create-project")
-        .and(super::with_peer(peer))
+        .and(super::with_peer(Arc::clone(&peer)))
         .and(super::with_shared(keystore))
-        .and(super::with_owner_guard(owner))
+        .and(super::with_owner_guard(peer, registry, store))
         .and(warp::body::json())
         .and_then(handler::create_project)
 }
@@ -84,12 +98,10 @@ fn register_user_filter<R: registry::Client>(
 fn nuke_coco_filter(
     peer: Arc<Mutex<coco::PeerApi>>,
     keystore: http::Shared<keystore::Keystorage>,
-    owner: http::Shared<Option<coco::User>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path!("nuke" / "coco")
         .and(super::with_peer(peer))
         .and(super::with_shared(keystore))
-        .and(super::with_shared(owner))
         .and_then(handler::nuke_coco)
 }
 
@@ -168,7 +180,6 @@ mod handler {
     pub async fn nuke_coco(
         peer: Arc<Mutex<coco::PeerApi>>,
         keystore: http::Shared<keystore::Keystorage>,
-        owner: http::Shared<Option<coco::User>>,
     ) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
@@ -193,10 +204,6 @@ mod handler {
         let mut peer = peer.lock().await;
         let mut keystore = keystore.write().await;
 
-        let mut owner = owner.write().await;
-        let new_owner = None;
-
-        *owner = new_owner;
         *peer = new_peer;
         *keystore = new_keystore;
 
@@ -243,13 +250,9 @@ mod handler {
                 (peer.paths().clone(), peer.peer_id().clone())
             };
 
-            super::nuke_coco(
-                Arc::clone(&peer),
-                Arc::new(RwLock::new(keystore)),
-                Arc::new(RwLock::new(None)),
-            )
-            .await
-            .unwrap();
+            super::nuke_coco(Arc::clone(&peer), Arc::new(RwLock::new(keystore)))
+                .await
+                .unwrap();
 
             let (new_paths, new_peer_id) = {
                 let peer = peer.lock().await;
@@ -292,6 +295,7 @@ pub struct RegisterInput {
     transaction_fee: registry::Balance,
 }
 
+#[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
@@ -317,14 +321,14 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let paths = paths::Paths::from_root(tmp_dir.path())?;
 
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+
         let pw = keystore::SecUtf8::from("radicle-upstream");
         let mut keystore = keystore::Keystorage::new(&paths, pw);
         let key = keystore.init_librad_key()?;
 
         let config = coco::config::default(key.clone(), tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner).await?;
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -333,8 +337,8 @@ mod test {
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
             Arc::new(RwLock::new(keystore)),
-            Arc::new(RwLock::new(Some(owner))),
             Arc::new(RwLock::new(registry)),
+            Arc::new(RwLock::new(store)),
         );
 
         // Create project before nuke.
