@@ -43,8 +43,6 @@
 
   input:focus {
     outline: none;
-    box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-3));
     border: 1px solid
       var(--focus-outline-color, var(--color-foreground-level-3));
     background-color: var(--color-foreground-level-1);
