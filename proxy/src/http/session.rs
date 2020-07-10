@@ -327,8 +327,11 @@ mod test {
                     "appearance": {
                         "theme": "light",
                     },
-                    "ecosystem": {
-                        "seeds": []
+                    "coco": {
+                        "seeds": [
+                            "seed.radicle.xyz",
+                            "194.134.54.13"
+                        ]
                     },
                     "registry": {
                         "network": "emulator",
@@ -393,8 +396,11 @@ mod test {
                     "appearance": {
                         "theme": "dark",
                     },
-                    "ecosystem": {
-                        "seeds": []
+                    "coco": {
+                        "seeds": [
+                            "seed.radicle.xyz",
+                            "194.134.54.13"
+                        ],
                     },
                     "registry": {
                         "network": "emulator",

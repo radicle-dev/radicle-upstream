@@ -63,6 +63,8 @@ pub fn configure(paths: paths::Paths, key: keys::SecretKey) -> net::peer::PeerCo
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`
 
+    // TODO(sos): The session settings should update this
+
     // TODO(finto): Should be read from config file
     let gossip_params = net::gossip::MembershipParams::default();
     // TODO(finto): Read from config or passed as param
