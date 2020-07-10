@@ -25,7 +25,7 @@
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
-  import CloneButton from "./CloneButton.svelte";
+  import CheckoutButton from "./CheckoutButton.svelte";
 
   const { id, metadata } = getContext("project");
 
@@ -223,7 +223,9 @@
             <span class="stat">{project.stats.contributors}</span>
           </div>
         </div>
-        <CloneButton projectId={project.id} />
+        <CheckoutButton
+          projectId={project.id}
+          projectName={project.metadata.name} />
       </div>
 
       <!-- Object -->
