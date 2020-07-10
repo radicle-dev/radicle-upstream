@@ -16,7 +16,7 @@
   }
   ul {
     width: 100%;
-    border: 1px solid var(--color-foreground-level-2);
+    border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
   }
 
@@ -24,7 +24,7 @@
     display: flex;
     width: 100%;
     flex: 1;
-    border-bottom: 1px solid var(--color-foreground-level-2);
+    border-bottom: 1px solid var(--color-foreground-level-3);
     cursor: pointer;
     user-select: none;
   }
@@ -35,6 +35,11 @@
 
   li:last-child {
     border-bottom: 0;
+    border-radius: 0 0 3px 3px;
+  }
+
+  li:first-child {
+    border-radius: 3px 3px 0 0;
   }
 </style>
 
