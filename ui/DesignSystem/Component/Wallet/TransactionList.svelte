@@ -8,5 +8,10 @@
 </style>
 
 <Remote {store} let:data={transactions}>
-  {#if transactions.length > 0}{console.log(transactions)}{/if}
+  {#if transactions.length > 0}
+    {console.log(transactions)}
+    {#each transactions as tx}
+      <p>{tx.id}</p>
+    {/each}
+  {/if}
 </Remote>
