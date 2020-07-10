@@ -32,7 +32,6 @@
     overflow: hidden;
     visibility: hidden;
     content: var(--title);
-    font-family: var(--typeface-medium);
   }
 
   .item.active {
