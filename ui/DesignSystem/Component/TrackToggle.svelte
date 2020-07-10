@@ -1,20 +1,24 @@
 <script>
-  import { Code, Icon, Title } from "../Primitive";
+  import { Icon, Title } from "../Primitive";
 
   export let style = null;
-  export let peerCount = null;
+  export let tracking = false;
+
   let hover = false;
   let active = false;
-  export let tracking = false;
+
   const enter = () => {
     hover = true;
   };
+
   const leave = () => {
     hover = false;
   };
+
   const down = () => {
     active = true;
   };
+
   const up = () => {
     active = false;
     tracking = !tracking;
@@ -32,7 +36,6 @@
     color: var(--color-background);
     cursor: pointer;
   }
-
   .toggle.hover {
     border: 1px solid var(--color-secondary-level-2);
     background-color: var(--color-secondary-level-2);
@@ -60,20 +63,16 @@
     box-shadow: 0 0 0 1px var(--color-foreground-level-2);
     color: var(--color-foreground-level-4);
   }
-
   .left {
     background-color: var(--color-secondary);
     display: flex;
     height: 40px;
     align-items: center;
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
+    border-radius: 3px;
   }
-
   .toggle .left :global(svg) {
     fill: var(--color-background);
   }
-
   .left.hover {
     background-color: var(--color-secondary-level-2);
   }
@@ -95,28 +94,8 @@
   .left.tracking.active {
     background-color: var(--color-foreground-level-2);
   }
-
   .left.tracking.active :global(svg) {
     fill: var(--color-foreground-level-4);
-  }
-
-  .right {
-    background-color: var(--color-background);
-    color: var(--color-secondary);
-    height: 38px;
-    align-items: center;
-    display: flex;
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
-  }
-  .right.hover {
-    color: var(--color-secondary-level-2);
-  }
-  .right.active {
-    color: var(--color-secondary-level-1);
-  }
-  .right.tracking {
-    color: var(--color-foreground-level-6);
   }
 </style>
 
@@ -140,10 +119,5 @@
     {:else}
       <Icon.Peer style="margin: 0 12px" />
     {/if}
-  </div>
-  <div class="right" class:hover class:active class:tracking>
-    <Code style="font-family: var(--typeface-mono-bold); margin: 0 8px">
-      {peerCount}
-    </Code>
   </div>
 </div>
