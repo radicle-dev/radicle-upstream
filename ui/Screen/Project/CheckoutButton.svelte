@@ -39,7 +39,7 @@
     position: absolute;
     border-radius: 4px;
     background: var(--color-background);
-    border: 2px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-3);
     box-shadow: var(--elevation-medium);
     padding: 1rem;
   }
