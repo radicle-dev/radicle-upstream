@@ -37,6 +37,10 @@ pub enum UserValidation {
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Returned when an attempt to create an identity was made and there is one present.
+    #[error("Block {0} is missing")]
+    BlockMissing(registry::BlockHash),
+
+    /// Returned when an attempt to create an identity was made and there is one present.
     #[error("the identity '{0}' already exits")]
     EntityExists(coco::Urn),
 

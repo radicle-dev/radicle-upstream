@@ -44,7 +44,7 @@ rev = "27c9a7b8ce5b87d2be3703f7a3290fa7a0552fc6"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "0acd1e5467f0b70dfdff5fc7df1b5121d73b9858"
+rev = "a83405cb401f775798f6289fea53b706105a222f"
 
 [dependencies.radicle-surf]
 version = "0.3.1"

@@ -305,14 +305,36 @@ impl Registry {
         fee: Balance,
     ) -> Result<protocol::Transaction<M>, error::Error> {
         let nonce = self.client.account_nonce(&author.public()).await?;
-        let runtime_spec_version = self.client.runtime_version().await?.spec_version;
+        let runtime_transaction_version = self.client.runtime_version().await?.transaction_version;
         let extra = protocol::TransactionExtra {
             genesis_hash: self.client.genesis_hash(),
             nonce,
-            runtime_spec_version,
+            runtime_transaction_version,
             fee,
         };
         Ok(protocol::Transaction::new_signed(author, message, extra))
+    }
+
+    /// Sign a message, submit it to the chain and wait for it to be confirmed. Return the
+    /// transaction hash and the number of the block it was included in.
+    ///
+    /// Errors with [`error::Error::Runtime`] if applying the transction errors.
+    async fn submit_transaction(
+        &self,
+        author: &protocol::ed25519::Pair,
+        message: impl protocol::Message,
+        fee: Balance,
+    ) -> Result<(Hash, protocol::BlockNumber), error::Error> {
+        let tx = self.new_signed_transaction(author, message, fee).await?;
+        let applied = self.client.submit_transaction(tx).await?.await?;
+        applied.result?;
+        let block_hash = applied.block;
+        let block = self
+            .client
+            .block_header(block_hash)
+            .await?
+            .ok_or_else(|| error::Error::BlockMissing(block_hash))?;
+        Ok((Hash(applied.tx_hash), block.number))
     }
 }
 
@@ -367,15 +389,12 @@ impl Client for Registry {
         let register_message = protocol::message::RegisterOrg {
             org_id: org_id.clone(),
         };
-        let register_tx = self
-            .new_signed_transaction(author, register_message, fee)
+        let (tx_hash, block_number) = self
+            .submit_transaction(author, register_message, fee)
             .await?;
-        let applied = self.client.submit_transaction(register_tx).await?.await?;
-        applied.result?;
-        let block = self.client.block_header(applied.block).await?;
         let tx = Transaction::confirmed(
-            Hash(applied.tx_hash),
-            block.number,
+            tx_hash,
+            block_number,
             Message::OrgRegistration { id: org_id.clone() },
             fee,
         );
@@ -397,16 +416,12 @@ impl Client for Registry {
         let unregister_message = protocol::message::UnregisterOrg {
             org_id: org_id.clone(),
         };
-        let tx = self
-            .new_signed_transaction(author, unregister_message, fee)
+        let (tx_hash, block_number) = self
+            .submit_transaction(author, unregister_message, fee)
             .await?;
-        let applied = self.client.submit_transaction(tx).await?.await?;
-        applied.result?;
-        let block = self.client.block_header(applied.block).await?;
-
         Ok(Transaction::confirmed(
-            Hash(applied.tx_hash),
-            block.number,
+            tx_hash,
+            block_number,
             Message::OrgUnregistration { id: org_id },
             fee,
         ))
@@ -424,23 +439,18 @@ impl Client for Registry {
             org_id: org_id.clone(),
             user_id: user_id.clone(),
         };
-        let tx = self
-            .new_signed_transaction(author, register_message, fee)
+        let (tx_hash, block_number) = self
+            .submit_transaction(author, register_message, fee)
             .await?;
-        let applied = self.client.submit_transaction(tx).await?.await?;
-        applied.result?;
-        let block = self.client.block_header(applied.block).await?;
-        let tx = Transaction::confirmed(
-            Hash(applied.tx_hash),
-            block.number,
+        Ok(Transaction::confirmed(
+            tx_hash,
+            block_number,
             Message::MemberRegistration {
                 org_id: org_id.clone(),
                 handle: user_id,
             },
             fee,
-        );
-
-        Ok(tx)
+        ))
     }
 
     async fn get_project(
@@ -532,12 +542,9 @@ impl Client for Registry {
             checkpoint_id,
             metadata: register_metadata,
         };
-        let register_tx = self
-            .new_signed_transaction(author, register_message, fee)
+        let (tx_hash, block_number) = self
+            .submit_transaction(author, register_message, fee)
             .await?;
-        let applied = self.client.submit_transaction(register_tx).await?.await?;
-        applied.result?;
-        let block = self.client.block_header(applied.block).await?;
 
         let (domain_type, domain_id) = match project_domain {
             ProjectDomain::Org(id) => (DomainType::Org, id),
@@ -545,8 +552,8 @@ impl Client for Registry {
         };
 
         Ok(Transaction::confirmed(
-            Hash(applied.tx_hash),
-            block.number,
+            tx_hash,
+            block_number,
             Message::ProjectRegistration {
                 project_name,
                 domain_type,
@@ -580,16 +587,12 @@ impl Client for Registry {
         let register_message = protocol::message::RegisterUser {
             user_id: handle.clone(),
         };
-        let register_tx = self
-            .new_signed_transaction(author, register_message, fee)
+        let (tx_hash, block_number) = self
+            .submit_transaction(author, register_message, fee)
             .await?;
-        let applied = self.client.submit_transaction(register_tx).await?.await?;
-        applied.result?;
-        let block = self.client.block_header(applied.block).await?;
-
         Ok(Transaction::confirmed(
-            Hash(applied.tx_hash),
-            block.number,
+            tx_hash,
+            block_number,
             Message::UserRegistration { handle, id },
             fee,
         ))
