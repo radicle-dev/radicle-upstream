@@ -4,7 +4,8 @@
   export let rad = null;
   export let usd = null;
   export let style = null;
-  export let variant = "regular"; // regular | deposit
+  export let variant = "credit"; // regular | deposit
+  export let size = "regular"; // regular | big
 
   let hover = false;
   const enter = () => {
@@ -33,6 +34,11 @@
     border-radius: 4px;
   }
 
+  .big {
+    display: flex;
+    align-items: center;
+  }
+
   .deposit {
     fill: var(--color-foreground-level-6);
     color: var(--color-foreground-level-6);
@@ -41,18 +47,31 @@
 </style>
 
 <div class="wrapper" {style} on:mouseenter={enter} on:mouseleave={leave}>
-  <div class="amount {variant}">
-    {#if variant === 'deposit'}
-      <Icon.LockSmall
-        style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
-      {#if !hover}
-        <Icon.Currency style="fill: var(--color-foreground-level-6);" />
+  {#if size === 'regular'}
+    <div class="amount {variant}">
+      {#if variant === 'deposit'}
+        <Icon.LockSmall
+          style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
+        {#if !hover}
+          <Icon.Currency style="fill: var(--color-foreground-level-6);" />
+        {/if}
+      {:else if !hover}
+        <Icon.Currency style="fill: var(--color-negative);" />
       {/if}
-    {:else if !hover}
-      <Icon.Currency style="fill: var(--color-negative);" />
-    {/if}
-    <Title variant="tiny" dataCy="amount" style="margin-left:2px;">
-      {#if hover}${usd}{:else}{rad}{/if}
-    </Title>
-  </div>
+      <Title variant="tiny" dataCy="amount" style="margin-left:2px;">
+        {#if hover}${usd}{:else}{rad}{/if}
+      </Title>
+    </div>
+  {:else if size === 'big'}
+    <div class="big">
+      {#if !hover}
+        <Icon.Currency
+          size="big"
+          style="fill: var(--color-foreground-level-6);" />
+      {/if}
+      <Title variant="large" dataCy="amount">
+        {#if hover}${usd}{:else}{rad}{/if}
+      </Title>
+    </div>
+  {/if}
 </div>
