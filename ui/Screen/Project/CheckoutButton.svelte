@@ -57,7 +57,6 @@
   <Input.Directory
     style="margin-bottom: 16px;"
     placeholder="~/path/to/folder"
-    validation={() => {}}
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
 
