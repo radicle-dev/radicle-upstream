@@ -19,20 +19,10 @@
   }
 
   .item {
-    font-family: var(--typeface-regular);
+    font-family: var(--typeface-medium);
     font-size: 16px;
     line-height: 130%;
     color: var(--color-foreground-level-6);
-  }
-
-  .item::after {
-    display: block;
-    height: 0;
-    color: transparent;
-    overflow: hidden;
-    visibility: hidden;
-    content: var(--title);
-    font-family: var(--typeface-medium);
   }
 
   .item.active {
@@ -53,7 +43,7 @@
     </div>
   {/if}
 
-  <p style={`--title: "${title}"`} class="item" class:active>{title}</p>
+  <p class="item" class:active>{title}</p>
 </a>
 
 {#if active}
