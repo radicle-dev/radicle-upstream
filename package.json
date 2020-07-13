@@ -84,7 +84,7 @@
     "rollup-plugin-terser": "^5.2.0",
     "rollup-plugin-typescript2": "^0.27.0",
     "sirv-cli": "^0.4.5",
-    "standard-version": "^7.1.0",
+    "standard-version": "^8.0.1",
     "svelte": "^3.22.2",
     "svelte-spa-router": "^2.2.0",
     "ts-jest": "^26.0.0",
