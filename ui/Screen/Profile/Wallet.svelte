@@ -15,7 +15,6 @@
     margin: 0 auto;
     display: grid;
     grid-template-columns: auto 20rem;
-    grid-template-rows: auto;
     grid-gap: 1.5rem;
   }
 
@@ -32,6 +31,10 @@
     display: flex;
     justify-content: space-between;
   }
+
+  /* .send-receive {
+    height: 25.5rem;
+  } */
 </style>
 
 <div class="container">

@@ -26,7 +26,6 @@
   .amount {
     display: flex;
     align-items: center;
-    margin-bottom: 4px;
     fill: var(--color-negative);
     color: var(--color-negative);
     background: var(--color-negative-level-1);

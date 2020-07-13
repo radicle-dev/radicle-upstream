@@ -274,6 +274,25 @@ export const formatMessage = (msg: Message): string => {
       return "Handle registration";
   }
 };
+
+export const formatDesc = (msg: Message): string => {
+  switch (msg.type) {
+    case MessageType.OrgRegistration:
+    case MessageType.OrgUnregistration:
+      return msg.id;
+
+    case MessageType.MemberRegistration:
+    case MessageType.MemberUnregistration:
+      return msg.handle;
+
+    case MessageType.ProjectRegistration:
+      return msg.domainId;
+
+    case MessageType.UserRegistration:
+      return msg.handle;
+  }
+};
+
 export const headerIcon = (msg: Message): string => {
   switch (msg.type) {
     case MessageType.OrgRegistration:

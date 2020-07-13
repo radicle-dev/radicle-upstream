@@ -1,17 +1,18 @@
 <script>
+  import { push } from "svelte-spa-router";
   import { transactions as store } from "../../../src/transaction.ts";
+  import * as path from "../../../src/path.ts";
+
   import Remote from "../../../DesignSystem/Component/Remote.svelte";
+  import TransactionListItem from "./TransactionListItem.svelte";
+
+  const select = event => push(path.transactions(event));
 </script>
-
-<style>
-
-</style>
 
 <Remote {store} let:data={transactions}>
   {#if transactions.length > 0}
-    {console.log(transactions)}
     {#each transactions as tx}
-      <p>{tx.id}</p>
+      <TransactionListItem on:click={() => select(tx.id)} {tx} />
     {/each}
   {/if}
 </Remote>
