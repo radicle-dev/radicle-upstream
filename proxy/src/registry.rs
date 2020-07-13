@@ -307,10 +307,10 @@ impl Registry {
         let nonce = self.client.account_nonce(&author.public()).await?;
         let runtime_spec_version = self.client.runtime_version().await?.spec_version;
         let extra = protocol::TransactionExtra {
-            nonce,
             genesis_hash: self.client.genesis_hash(),
+            nonce,
+            runtime_spec_version,
             fee,
-            runtime_transaction_version: runtime_spec_version,
         };
         Ok(protocol::Transaction::new_signed(author, message, extra))
     }
@@ -375,7 +375,7 @@ impl Client for Registry {
         let block = self.client.block_header(applied.block).await?;
         let tx = Transaction::confirmed(
             Hash(applied.tx_hash),
-            block.map(|b| b.number),
+            block.number,
             Message::OrgRegistration { id: org_id.clone() },
             fee,
         );
@@ -406,7 +406,7 @@ impl Client for Registry {
 
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),
-            block.map(|b| b.number),
+            block.number,
             Message::OrgUnregistration { id: org_id },
             fee,
         ))
@@ -432,7 +432,7 @@ impl Client for Registry {
         let block = self.client.block_header(applied.block).await?;
         let tx = Transaction::confirmed(
             Hash(applied.tx_hash),
-            block.map(|b| b.number),
+            block.number,
             Message::MemberRegistration {
                 org_id: org_id.clone(),
                 handle: user_id,
@@ -546,7 +546,7 @@ impl Client for Registry {
 
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),
-            block.map(|b| b.number),
+            block.number,
             Message::ProjectRegistration {
                 project_name,
                 domain_type,
@@ -589,7 +589,7 @@ impl Client for Registry {
 
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),
-            block.map(|b| b.number),
+            block.number,
             Message::UserRegistration { handle, id },
             fee,
         ))

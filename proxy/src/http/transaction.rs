@@ -243,7 +243,7 @@ mod test {
                 domain_id: org_id,
             }],
             state: registry::State::Confirmed {
-                block: Some(1),
+                block: 1,
                 confirmations: 1,
                 min_confirmations: registry::MIN_CONFIRMATIONS,
                 timestamp: now,
