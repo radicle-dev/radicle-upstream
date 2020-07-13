@@ -214,12 +214,13 @@ where
     warp::filters::query::raw()
         .map(|raw: String| {
             log::debug!("attempting to deserialize query string '{}'", raw);
-            match serde_qs::from_str(&raw) {
+            let config = serde_qs::Config::new(5, false);
+            match config.deserialize_str(&raw) {
                 Ok(result) => result,
                 Err(err) => {
                     log::error!("failed to deserialize query string '{}': {}", raw, err);
                     panic!("{}", err)
-                }
+                },
             }
         })
         .boxed()

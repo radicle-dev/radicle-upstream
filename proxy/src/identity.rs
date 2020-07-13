@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use librad::keys;
+use librad::peer;
 
 use crate::avatar;
 use crate::coco;
@@ -15,6 +16,8 @@ pub use shared_identifier::SharedIdentifier;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
+    /// The Peer Id for the user.
+    pub peer_id: peer::PeerId,
     /// The librad id.
     pub id: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
@@ -44,10 +47,12 @@ pub fn create(
     handle: String,
 ) -> Result<Identity, error::Error> {
     let user = coco::init_owner(peer, key, &handle)?;
+    let peer_id = peer.peer_id().clone();
 
     let id = user.urn();
     let shareable_entity_identifier = user.into();
     Ok(Identity {
+        peer_id,
         id: id.clone(),
         shareable_entity_identifier,
         metadata: Metadata { handle },
@@ -56,14 +61,16 @@ pub fn create(
     })
 }
 
-/// Retrieve an identity by id.
+/// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
 ///
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub fn get(peer: &coco::PeerApi, id: &coco::Urn) -> Result<Identity, error::Error> {
     let user = coco::get_user(peer, id)?;
+    let peer_id = peer.peer_id().clone();
     Ok(Identity {
+        peer_id,
         id: id.clone(),
         shareable_entity_identifier: SharedIdentifier {
             handle: user.name().to_string(),

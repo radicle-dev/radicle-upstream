@@ -6,10 +6,6 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
 
-// TOOLING
-const filterBranches = (branches: string[]): string[] =>
-  branches.filter(branch => !config.HIDDEN_BRANCHES.includes(branch));
-
 // TYPES
 interface Person {
   avatar: string;
@@ -84,8 +80,8 @@ interface Tree extends SourceObject {
 
 interface Revision {
   user: identity.Identity;
-  branches: string[];
-  tags: string[];
+  branches: Branch[];
+  tags: Tag[];
 }
 
 type Revisions = Revision[];
@@ -95,24 +91,23 @@ interface Readme {
   path?: string;
 }
 
-interface BranchQuery {
+export interface Branch {
+  type: "branch";
   name: string;
-  peer?: string;
+  peerId?: string;
 }
 
-interface TagQuery {
+export interface Tag {
+  type: "tag";
   name: string;
 }
 
-interface ShaQuery {
+export interface Sha {
+  type: "sha";
   sha: string;
 }
 
-enum RevisionQuery {
-  BranchQuery = "BRANCH_QUERY",
-  TagQuery = "TAG_QUERY",
-  ShaQuery = "SHA_QUERY",
-}
+export type RevisionQuery = Branch | Tag | Sha;
 
 // STATE
 const commitStore = remote.createStore<Commit>();
@@ -227,14 +222,7 @@ const update = (msg: Msg): void => {
     case Kind.FetchRevisions:
       api
         .get<Revisions>(`source/revisions/${msg.projectId}`)
-        .then(revisions =>
-          revisionsStore.success(
-            revisions.map(rev => ({
-              ...rev,
-              branches: filterBranches(rev.branches),
-            }))
-          )
-        )
+        .then(revisions => revisionsStore.success(revisions))
         .catch(revisionsStore.error);
       break;
 
@@ -288,7 +276,7 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 export const tree = (
   projectId: string,
   peerId: string,
-  revision: string,
+  revision: RevisionQuery,
   prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
@@ -306,7 +294,7 @@ export const tree = (
 const blob = (
   projectId: string,
   peerId: string,
-  revision: string,
+  revision: RevisionQuery,
   path: string,
   highlight: boolean
 ): Promise<Blob> =>
@@ -342,7 +330,7 @@ export const formatTime = (t: number): string => {
 export const readme = (
   projectId: string,
   peerId: string,
-  revision: string
+  revision: RevisionQuery
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
 

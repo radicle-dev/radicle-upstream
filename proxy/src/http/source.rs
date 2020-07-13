@@ -289,6 +289,8 @@ mod handler {
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
+    use librad::keys::SecretKey;
+    use librad::peer;
     use radicle_surf::vcs::git;
 
     use crate::avatar;
@@ -405,45 +407,53 @@ mod handler {
             Ok((coco::branches(browser)?, coco::tags(browser)?))
         })?;
 
+        let owner = coco::default_owner(&peer).expect("owner not set");
+
         // TODO(rudolfs): the order of the returned peers/revisions determines the default peer in
         // the repository selector in the UI. Make sure the list always returns the default peer
         // first.
         let revs = [
             (
-                "cloudhead",
-                "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+                owner.name(),
+                peer.peer_id().clone(),
+                owner.urn().to_string(),
             ),
             (
                 "rudolfs",
-                "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
+                peer::PeerId::from(SecretKey::new()),
+                "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro".to_string(),
             ),
             (
                 "xla",
-                "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
+                peer::PeerId::from(SecretKey::new()), // TODO(finto): fake tracked peer id
+                "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc".to_string(),
             ),
         ]
         .iter()
-        .map(|(fake_handle, fake_peer_urn)| super::Revision {
-            branches: branches.clone(),
-            tags: tags.clone(),
-            identity: identity::Identity {
-                // TODO(finto): Get the right URN
-                id: fake_peer_urn
-                    .parse()
-                    .expect("failed to parse hardcoded URN"),
-                metadata: identity::Metadata {
-                    handle: (*fake_handle).to_string(),
-                },
-                avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
-                registered: None,
-                shareable_entity_identifier: identity::SharedIdentifier {
-                    handle: (*fake_handle).to_string(),
-                    urn: fake_peer_urn
+        .map(
+            |(fake_handle, fake_peer_id, fake_peer_urn)| super::Revision {
+                branches: branches.clone(),
+                tags: tags.clone(),
+                identity: identity::Identity {
+                    peer_id: fake_peer_id.clone(),
+                    // TODO(finto): Get the right URN
+                    id: fake_peer_urn
                         .parse()
                         .expect("failed to parse hardcoded URN"),
+                    metadata: identity::Metadata {
+                        handle: (*fake_handle).to_string(),
+                    },
+                    avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
+                    registered: None,
+                    shareable_entity_identifier: identity::SharedIdentifier {
+                        handle: (*fake_handle).to_string(),
+                        urn: fake_peer_urn
+                            .parse()
+                            .expect("failed to parse hardcoded URN"),
+                    },
                 },
             },
-        })
+        )
         .collect::<Vec<super::Revision>>();
 
         Ok(reply::json(&revs))
@@ -471,6 +481,12 @@ mod handler {
             revision,
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
+        log::debug!(
+            "query.prefix={:?}, query.peer_id={:?}, query.revision={:?}",
+            prefix,
+            peer_id,
+            revision
+        );
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&api, &urn)?;
@@ -480,6 +496,7 @@ mod handler {
             None => git::Branch::local(project.default_branch()),
         };
 
+        log::debug!("tree.default_branch={:?}", default_branch);
         let tree = coco::with_browser(&api, &urn, |mut browser| {
             coco::tree(&mut browser, default_branch, revision, prefix)
         })?;

@@ -80,9 +80,11 @@
     type: currentObjectType,
   });
 
-  $: fetchCommits({ projectId: id, branch: currentRevision });
+  $: fetchCommits({ projectId: id, branch: currentRevision.name });
 
   fetchRevisions({ projectId: id });
+
+  $: console.log("currentRevision: ", currentRevision);
 </script>
 
 <style>
@@ -187,9 +189,12 @@
           <RevisionSelector
             style="height: 100%;"
             {currentPeerId}
-            {currentRevision}
+            currentRevision={currentRevision.name}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.peerId)} />
+            on:select={event => {
+              console.log("What's the event? ", event);
+              updateRevision(project.id, event.detail.revision, event.detail.peerId);
+            }} />
         </div>
       </Remote>
 

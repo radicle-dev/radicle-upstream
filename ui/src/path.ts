@@ -1,6 +1,6 @@
 import { parse, stringify } from "qs";
 import regexparam from "regexparam";
-import { ObjectType } from "./source";
+import { ObjectType, Branch, RevisionQuery } from "./source";
 
 export const search = (): string => "/search";
 export const settings = (): string => "/settings";
@@ -36,7 +36,7 @@ export const projectRevisions = (id: string): string =>
 export const projectSource = (
   projectId: string,
   peerId?: string,
-  revision?: string,
+  revision?: RevisionQuery,
   objectType?: string,
   objectPath?: string
 ): string => {
@@ -51,11 +51,20 @@ export const projectSource = (
 export const parseProjectSourceLocation = (
   querystring: string,
   defaultPeerId: string,
-  defaultRevision: string,
+  defaultName: string,
   defaultObjectType: string,
   defaultObjectPath: string
 ) => {
+  console.log("QS: ", querystring);
+  console.log("QS decoded: ", decodeURIComponent(querystring));
   const parsed = parse(querystring);
+  const defaultRevision: Branch = {
+    type: "branch",
+    name: defaultName,
+    peerId: defaultPeerId,
+  };
+  console.log("Parsed: ", parsed);
+  console.log("Default: ", defaultRevision);
   return {
     currentPeerId: parsed.peerId || defaultPeerId,
     currentRevision: parsed.revision || defaultRevision,
