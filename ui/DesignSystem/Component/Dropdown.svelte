@@ -63,13 +63,12 @@
   }
 
   .button:hover {
-    box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
-    background-color: var(--color-foreground-level-2);
+    background-color: var(--color-foreground-level-1);
     color: var(--color-foreground);
   }
 
   .button.disabled {
-    cursor: default;
+    cursor: not-allowed;
     box-shadow: 0px 0px 0px 0px;
     background-color: var(--color-background);
   }
@@ -78,8 +77,7 @@
     position: absolute;
     top: 0px;
     left: 0px;
-    box-shadow: var(--elevation-medium),
-      0px 0px 0px 1px var(--color-foreground-level-3);
+    box-shadow: var(--elevation-medium);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
     user-select: none;

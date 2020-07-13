@@ -226,7 +226,7 @@
 
   .outline {
     background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-foreground-level-3);
+    border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
   }
 
@@ -236,16 +236,12 @@
 
   .outline:hover {
     background-color: var(--color-foreground-level-1);
-    box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-3));
     border: 1px solid var(--color-foreground-level-3);
     color: var(--color-foreground-level-6);
   }
 
   .outline:active {
     background-color: var(--color-foreground-level-1);
-    box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-2));
     border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-5);
   }

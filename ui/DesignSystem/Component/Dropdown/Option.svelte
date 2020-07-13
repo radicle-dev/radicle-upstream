@@ -32,8 +32,12 @@
   }
 
   .option.selected,
-  .option:hover {
+  .option.selected:hover {
     background-color: var(--color-foreground-level-2);
+  }
+
+  .option:hover {
+    background-color: var(--color-foreground-level-1);
   }
 </style>
 
