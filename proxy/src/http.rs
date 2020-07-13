@@ -204,6 +204,18 @@ pub fn with_store(
     warp::any().map(move || Arc::clone(&store))
 }
 
+/// Deserialise a query string using [`serde_qs`]. This is useful for more complicated query
+/// structures that involve nesting, enums, etc.
+#[must_use]
+pub fn with_qs<T>() -> BoxedFilter<(T,)>
+where
+    for<'de> T: Deserialize<'de> + Send + Sync,
+{
+    warp::filters::query::raw()
+        .map(|raw: String| serde_qs::from_str(&raw).expect("failed to deserialize query string"))
+        .boxed()
+}
+
 /// State filter to expose [`notification::Subscriptions`] to handlers.
 #[must_use]
 pub fn with_subscriptions(

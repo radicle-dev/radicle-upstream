@@ -74,8 +74,7 @@ where
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(warp::filters::query::query::<BlobQuery>())
-        .and(warp::body::json())
+        .and(http::with_qs::<BlobQuery>())
         .and(document::document(
             document::query("revision", document::string()).description("Git revision"),
         ))
@@ -262,8 +261,7 @@ fn tree_filter(
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(warp::filters::query::query::<TreeQuery>())
-        .and(warp::body::json())
+        .and(http::with_qs::<TreeQuery>())
         .and(document::document(
             document::query("revision", document::string()).description("Git revision"),
         ))
@@ -310,9 +308,9 @@ mod handler {
         super::BlobQuery {
             path,
             peer_id,
+            revision,
             highlight,
         }: super::BlobQuery,
-        revision: Option<coco::Revision>,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
@@ -467,8 +465,11 @@ mod handler {
     pub async fn tree(
         api: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
-        super::TreeQuery { prefix, peer_id }: super::TreeQuery,
-        revision: Option<coco::Revision>,
+        super::TreeQuery {
+            prefix,
+            peer_id,
+            revision,
+        }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
@@ -506,23 +507,27 @@ impl From<CommitsQuery> for git::Branch {
 }
 
 /// Bundled query params to pass to the blob handler.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BlobQuery {
     /// Location of the blob in tree.
     path: String,
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
+    /// Revision to query at.
+    revision: Option<coco::Revision>,
     /// Whether or not to syntax highlight the blob.
     highlight: Option<bool>,
 }
 
 /// Bundled query params to pass to the tree handler.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
+    /// Revision to query at.
+    revision: Option<coco::Revision>,
 }
 
 /// Bundled response to retrieve both branches and tags for a user repo.
@@ -911,13 +916,17 @@ mod test {
             Arc::new(RwLock::new(store)),
         );
 
+        let query = super::BlobQuery {
+            path: path.to_string(),
+            peer_id: None,
+            revision: Some(revision.clone()),
+            highlight: Some(false),
+        };
+
+        let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+
         // Get ASCII blob.
-        let res = request()
-            .method("GET")
-            .path(&format!("/blob/{}?path={}", urn, path))
-            .json(&revision)
-            .reply(&api)
-            .await;
+        let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -959,16 +968,20 @@ mod test {
 
         // Get binary blob.
         let path = "bin/ls";
-        let res = request()
-            .method("GET")
-            .path(&format!("/blob/{}?path={}", urn, path))
-            .json(&revision)
-            .reply(&api)
-            .await;
-
         let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
-            coco::blob(browser, default_branch, Some(revision), path, None)
+            coco::blob(browser, default_branch, Some(revision.clone()), path, None)
         })?;
+
+        let query = super::BlobQuery {
+            path: path.to_string(),
+            peer_id: None,
+            revision: Some(revision),
+            highlight: Some(false),
+        };
+
+        let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+
+        let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -1048,13 +1061,18 @@ mod test {
             Arc::new(RwLock::new(store)),
         );
 
+        let query = super::BlobQuery {
+            path: path.to_string(),
+            peer_id: None,
+            revision: Some(revision),
+            highlight: Some(false),
+        };
+
+        let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+
+        println!("PATH: {}", path);
         // Get ASCII blob.
-        let res = request()
-            .method("GET")
-            .path(&format!("/blob/{}?path={}", urn, path))
-            .json(&revision)
-            .reply(&api)
-            .await;
+        let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -1512,12 +1530,15 @@ mod test {
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
-        let res = request()
-            .method("GET")
-            .path(&format!("/tree/{}?prefix={}", urn, prefix))
-            .json(&revision)
-            .reply(&api)
-            .await;
+
+        let query = super::TreeQuery {
+            prefix: Some(prefix.to_string()),
+            peer_id: None,
+            revision: Some(revision),
+        };
+
+        let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+        let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -1556,7 +1577,6 @@ mod test {
 
     #[tokio::test]
     async fn tree_dev_branch() -> Result<(), error::Error> {
-        pretty_env_logger::init();
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let registry = {
@@ -1585,12 +1605,7 @@ mod test {
 
         let default_branch = git::Branch::local(platinum_project.default_branch());
         let want = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::tree(
-                &mut browser,
-                default_branch,
-                Some(revision.clone()),
-                None,
-            )
+            coco::tree(&mut browser, default_branch, Some(revision.clone()), None)
         })?;
 
         let api = super::filters(
@@ -1598,12 +1613,15 @@ mod test {
             Arc::new(RwLock::new(registry)),
             Arc::new(RwLock::new(store)),
         );
-        let res = request()
-            .method("GET")
-            .path(&format!("/tree/{}", urn))
-            .json(&revision)
-            .reply(&api)
-            .await;
+
+        let query = super::TreeQuery {
+            prefix: None,
+            peer_id: None,
+            revision: Some(revision),
+        };
+
+        let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+        let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
