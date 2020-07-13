@@ -383,6 +383,10 @@ where
         self.client.get_block_header(block).await
     }
 
+    async fn get_id_status(&self, id: &registry::Id) -> registry::IdStatus {
+        self.client.get_id_status(id).await
+    }
+
     async fn get_org(&self, id: registry::Id) -> Result<Option<registry::Org>, error::Error> {
         self.client.get_org(id).await
     }

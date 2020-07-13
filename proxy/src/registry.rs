@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{
-    Balance, BlockHash, Id, ProjectDomain, ProjectName, MINIMUM_FEE,
+    Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName, MINIMUM_FEE,
 };
 
 use crate::avatar;
@@ -157,6 +157,13 @@ pub trait Client: Clone + Send + Sync {
         &self,
         block: BlockHash,
     ) -> Result<protocol::BlockHeader, error::Error>;
+
+    /// Fetch the status of a given id.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn get_id_status(&self, id: &Id) -> IdStatus;
 
     /// Try to retrieve org from the Registry by id.
     ///
@@ -366,6 +373,10 @@ impl Client for Registry {
             .block_header(block)
             .await?
             .ok_or(error::Error::BlockNotFound(block))
+    }
+
+    async fn get_id_status(&self, id: &Id) -> IdStatus {
+        self.client.get_id_status(id).await
     }
 
     async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error> {

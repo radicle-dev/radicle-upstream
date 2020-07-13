@@ -22,6 +22,7 @@ mod avatar;
 mod control;
 mod doc;
 mod error;
+mod id;
 mod identity;
 mod notification;
 mod org;
@@ -73,6 +74,7 @@ where
         Arc::clone(&registry),
         Arc::clone(&store),
     );
+    let id_filter = id::routes(&Arc::clone(&registry));
     let identity_filter = identity::filters(
         Arc::clone(&peer),
         Arc::clone(&keystore),
@@ -100,6 +102,7 @@ where
     let api = path("v1").and(combine!(
         avatar_filter,
         control_filter,
+        id_filter,
         identity_filter,
         notification_filter,
         org_filter,
