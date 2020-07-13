@@ -122,8 +122,10 @@
       branches={project.stats.branches}
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
-    <Tooltip value={project.maintainers[0].handle}>
-      <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
-    </Tooltip>
+    <div>
+      <Tooltip value={project.maintainers[0].handle}>
+        <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
+      </Tooltip>
+    </div>
   </div>
 </div>
