@@ -32,9 +32,9 @@
     justify-content: space-between;
   }
 
-  /* .send-receive {
+  .send-receive {
     height: 25.5rem;
-  } */
+  }
 </style>
 
 <div class="container">
