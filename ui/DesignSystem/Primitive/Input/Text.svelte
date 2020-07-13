@@ -41,10 +41,9 @@
     padding: 0 40px 0 38px;
   }
 
-  input:focus {
+  input:focus,
+  input:hover {
     outline: none;
-    box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-3));
     border: 1px solid
       var(--focus-outline-color, var(--color-foreground-level-3));
     background-color: var(--color-foreground-level-1);
@@ -53,7 +52,6 @@
   input.invalid:focus,
   input.invalid {
     outline: none;
-    box-shadow: 0 0 0 1px var(--color-negative);
     border: 1px solid var(--color-negative);
     background: var(--color-background);
     background-position: right 14px top 55%;

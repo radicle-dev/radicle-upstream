@@ -15,14 +15,13 @@
   }
 
   .option.active {
-    box-shadow: 0 0 0 1px var(--color-primary);
     border: 1px solid var(--color-primary);
   }
 
   .option:hover {
     outline: none;
-    box-shadow: 0 0 0 1px var(--color-primary);
     border: 1px solid var(--color-primary);
+    color: var(--color-primary);
   }
 
   .header {
