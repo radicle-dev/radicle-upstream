@@ -28,12 +28,12 @@
 
 <Input.Text
   dataCy="handle"
-  style="--focus-outline-color: var(--color-primary)"
+  style="--focus-outline-color: var(--color-foreground-level-3)"
   placeholder="User handle"
   bind:value={handle}
   showSuccessCheck
   validation={$validation}>
-  <div slot="avatar">
+  <div slot="left">
     <Avatar
       avatarFallback={identity.avatarFallback}
       size="small"

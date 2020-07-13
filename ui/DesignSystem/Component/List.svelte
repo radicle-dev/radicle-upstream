@@ -35,6 +35,11 @@
 
   li:last-child {
     border-bottom: 0;
+    border-radius: 0 0 3px 3px;
+  }
+
+  li:first-child {
+    border-radius: 3px 3px 0 0;
   }
 </style>
 
