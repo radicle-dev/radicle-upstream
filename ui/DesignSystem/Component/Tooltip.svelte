@@ -53,10 +53,16 @@
     transform: rotate(45deg);
     border-radius: 0 0 0 0.1875rem;
   }
+
+  .container {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+  }
 </style>
 
 <div
-  style="height: 100%;"
+  class="container"
   data-tooltip
   on:mouseover={event => showTooltip(event)}
   on:mouseout={hideTooltip}>
