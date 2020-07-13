@@ -96,7 +96,7 @@ impl Transaction {
     #[must_use]
     pub fn confirmed(
         id: registry::Hash,
-        block: protocol::BlockNumber,
+        block: Option<protocol::BlockNumber>,
         message: Message,
         fee: protocol::Balance,
     ) -> Self {
@@ -174,7 +174,7 @@ pub enum State {
     #[serde(rename_all = "camelCase")]
     Confirmed {
         /// The height of the block the transaction has been applied to.
-        block: protocol::BlockNumber,
+        block: Option<protocol::BlockNumber>,
         /// Amount of progress made towards settlement. We assume height+5 to
         /// be mathematically impossible to be reverted.
         confirmations: u32,
@@ -293,7 +293,9 @@ where
                 State::Confirmed {
                     block, timestamp, ..
                 } => {
-                    let target = block.checked_add(BLOCK_BOUND).unwrap_or(MIN_CONFIRMATIONS);
+                    let target = block.map_or(0, |b| {
+                        b.checked_add(BLOCK_BOUND).unwrap_or(MIN_CONFIRMATIONS)
+                    });
 
                     if best_height >= target {
                         tx.state = State::Settled {
@@ -519,7 +521,7 @@ mod test {
                 id: registry::Hash(protocol::TxHash::random()),
                 messages: vec![],
                 state: State::Confirmed {
-                    block: 1,
+                    block: Some(1),
                     confirmations: 3,
                     min_confirmations: MIN_CONFIRMATIONS,
                     timestamp: now,
@@ -535,7 +537,7 @@ mod test {
                     id: registry::Hash(protocol::TxHash::random()),
                     messages: vec![],
                     state: State::Confirmed {
-                        block: height,
+                        block: Some(height),
                         confirmations: 2,
                         min_confirmations: MIN_CONFIRMATIONS,
                         timestamp: now,
