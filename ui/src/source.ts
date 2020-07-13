@@ -95,6 +95,25 @@ interface Readme {
   path?: string;
 }
 
+interface BranchQuery {
+  name: string;
+  peer?: string;
+}
+
+interface TagQuery {
+  name: string;
+}
+
+interface ShaQuery {
+  sha: string;
+}
+
+enum RevisionQuery {
+  BranchQuery = "BRANCH_QUERY",
+  TagQuery = "TAG_QUERY",
+  ShaQuery = "SHA_QUERY",
+}
+
 // STATE
 const commitStore = remote.createStore<Commit>();
 export const commit = commitStore.readable;
@@ -140,7 +159,7 @@ interface FetchObject extends event.Event<Kind> {
   path: string;
   peerId: string;
   projectId: string;
-  revision: string;
+  revision: RevisionQuery;
   type: ObjectType;
 }
 
