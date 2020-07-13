@@ -289,8 +289,6 @@ mod handler {
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
-    use librad::keys::SecretKey;
-    use librad::peer;
     use radicle_surf::vcs::git;
 
     use crate::avatar;
@@ -408,6 +406,7 @@ mod handler {
         })?;
 
         let owner = coco::default_owner(&peer).expect("owner not set");
+        let peer_id = peer.peer_id();
 
         // TODO(rudolfs): the order of the returned peers/revisions determines the default peer in
         // the repository selector in the UI. Make sure the list always returns the default peer
@@ -415,17 +414,17 @@ mod handler {
         let revs = [
             (
                 owner.name(),
-                peer.peer_id().clone(),
+                peer_id.clone(),
                 owner.urn().to_string(),
             ),
             (
                 "rudolfs",
-                peer::PeerId::from(SecretKey::new()),
+                 peer_id.clone(), // TODO(finto): Need to use real PeerId
                 "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro".to_string(),
             ),
             (
                 "xla",
-                peer::PeerId::from(SecretKey::new()), // TODO(finto): fake tracked peer id
+                peer_id.clone(),
                 "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc".to_string(),
             ),
         ]
@@ -482,7 +481,7 @@ mod handler {
         }: super::TreeQuery,
     ) -> Result<impl Reply, Rejection> {
         log::debug!(
-            "query.prefix={:?}, query.peer_id={:?}, query.revision={:?}",
+            "tree.query.prefix={:?}, tree.query.peer_id={:?}, tree.query.revision={:?}",
             prefix,
             peer_id,
             revision
@@ -913,7 +912,7 @@ mod test {
 
         let revision = coco::Revision::Branch {
             name: "master".to_string(),
-            remote: None,
+            peer_id: None,
         };
         let default_branch = git::Branch::local(platinum_project.default_branch());
         let path = "text/arrows.txt";
@@ -1058,7 +1057,7 @@ mod test {
 
         let revision = coco::Revision::Branch {
             name: "dev".to_string(),
-            remote: None,
+            peer_id: None,
         };
         let default_branch = git::Branch::local(platinum_project.default_branch());
         let path = "here-we-are-on-a-dev-branch.lol";
@@ -1316,8 +1315,8 @@ mod test {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let peer_id = peer.peer_id().clone();
+        let owner = coco::init_owner(&peer, key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             key,
@@ -1335,27 +1334,29 @@ mod test {
 
             [
                 (
-                    "cloudhead",
-                    "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+                    owner.name(),
+                    peer_id.clone(),
+                    owner.urn(),
                 ),
                 (
                     "rudolfs",
-                    "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
+                    peer_id.clone(),
+                    "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro".parse()?,
                 ),
                 (
                     "xla",
-                    "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
+                    peer_id.clone(),
+                    "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc".parse()?,
                 ),
             ]
             .iter()
-            .map(|(fake_handle, fake_peer_urn)| super::Revision {
+            .map(|(fake_handle, fake_peer_id, fake_peer_urn)| super::Revision {
                 branches: branches.clone(),
                 tags: tags.clone(),
                 identity: identity::Identity {
+                    peer_id: fake_peer_id.clone(),
                     // TODO(finto): Get the right URN
-                    id: fake_peer_urn
-                        .parse()
-                        .expect("failed to parse hardcoded URN"),
+                    id: fake_peer_urn.clone(),
                     metadata: identity::Metadata {
                         handle: (*fake_handle).to_string(),
                     },
@@ -1363,9 +1364,7 @@ mod test {
                     registered: None,
                     shareable_entity_identifier: identity::SharedIdentifier {
                         handle: (*fake_handle).to_string(),
-                        urn: fake_peer_urn
-                            .parse()
-                            .expect("failed to parse hardcoded URN"),
+                        urn: fake_peer_urn.clone(),
                     },
                 },
             })
@@ -1386,71 +1385,6 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
-            assert_eq!(
-                have,
-                json!([
-                    {
-                        "identity": {
-                            "id": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-                            "metadata": {
-                                "handle": "cloudhead",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("cloudhead@{}", "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 105,
-                                    "b": 216,
-                                },
-                                "emoji": "🌻",
-                            },
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                    },
-                    {
-                        "identity": {
-                            "id": "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-                            "metadata": {
-                                "handle": "rudolfs",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("rudolfs@{}", "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 186,
-                                    "b": 214,
-                                },
-                            "emoji": "🧿",
-                            },
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                    },
-                    {
-                        "identity": {
-                            "id": "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-                            "metadata": {
-                                "handle": "xla",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("xla@{}", "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 155,
-                                    "g": 157,
-                                    "b": 169,
-                                },
-                            "emoji": "🗺",
-                            },
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                    },
-                ]),
-            )
         });
 
         Ok(())
@@ -1528,7 +1462,7 @@ mod test {
 
         let revision = coco::Revision::Branch {
             name: "master".to_string(),
-            remote: None,
+            peer_id: None,
         };
         let prefix = "src";
 
@@ -1594,6 +1528,7 @@ mod test {
 
     #[tokio::test]
     async fn tree_dev_branch() -> Result<(), error::Error> {
+        pretty_env_logger::init();
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let registry = {
@@ -1617,7 +1552,7 @@ mod test {
 
         let revision = coco::Revision::Branch {
             name: "dev".to_string(),
-            remote: None,
+            peer_id: None,
         };
 
         let default_branch = git::Branch::local(platinum_project.default_branch());
@@ -1637,7 +1572,9 @@ mod test {
             revision: Some(revision),
         };
 
-        let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+        // Testing that the endpoint works with URL encoding
+        const FRAGMENT: &percent_encoding::AsciiSet = &percent_encoding::CONTROLS.add(b' ').add(b'"').add(b'[').add(b']').add(b'=');
+        let path = format!("/tree/{}?{}", urn, percent_encoding::utf8_percent_encode(&serde_qs::to_string(&query).unwrap(), FRAGMENT));
         let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {

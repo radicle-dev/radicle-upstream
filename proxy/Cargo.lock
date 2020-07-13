@@ -2636,6 +2636,7 @@ dependencies = [
  "librad",
  "log 0.4.8",
  "nonempty 0.2.0",
+ "percent-encoding 2.1.0",
  "pico-args",
  "pretty_assertions",
  "pretty_env_logger",

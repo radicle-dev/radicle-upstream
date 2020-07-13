@@ -213,9 +213,10 @@ where
 {
     warp::filters::query::raw()
         .map(|raw: String| {
-            log::debug!("attempting to deserialize query string '{}'", raw);
-            let config = serde_qs::Config::new(5, false);
-            match config.deserialize_str(&raw) {
+            log::debug!("attempting to decode query string '{}'", raw);
+            let utf8 = percent_encoding::percent_decode_str(&raw).decode_utf8_lossy();
+            log::debug!("attempting to deserialize query string '{}'", utf8);
+            match serde_qs::from_str(utf8.as_ref()) {
                 Ok(result) => result,
                 Err(err) => {
                     log::error!("failed to deserialize query string '{}': {}", raw, err);
