@@ -93,6 +93,7 @@
         imageUrl={avatar.url}
         avatarFallback={avatar.emoji && avatar}
         variant={subjectAvatarShape(subject.type)}
+        style="--title-color: var(--color-foreground-level-5);"
         dataCy="subject-avatar" />
     {:else}
       <Title style="color: var(--color-foreground-level-5)" dataCy="subject">
@@ -123,6 +124,6 @@
         </Text>
       </div>
     {/if}
-    <Rad rad={`-${  microRadToRad(tx.fee)}`} usd={`-${  microRadToRad(tx.fee)}`} />
+    <Rad rad={`-${microRadToRad(tx.fee)}`} usd={`-${microRadToRad(tx.fee)}`} />
   </div>
 </div>
