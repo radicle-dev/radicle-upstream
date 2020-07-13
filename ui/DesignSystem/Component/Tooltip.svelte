@@ -9,7 +9,11 @@
   };
   const showTooltip = e => {
     const rect = e.target.closest("[data-tooltip]").getBoundingClientRect();
-    tooltip = { positionY: rect.top, className: "visible" };
+    tooltip = {
+      positionY: rect.top,
+      positionX: rect.right + 20,
+      className: "visible",
+    };
   };
 </script>
 
@@ -58,7 +62,7 @@
   on:mouseout={hideTooltip}>
   <slot />
   <div
-    style={`top: ${tooltip.positionY}px`}
+    style={`top: ${tooltip.positionY}px; left: ${tooltip.positionX}px;`}
     class={`tooltip ${tooltip.className}`}>
     <Text>{value}</Text>
   </div>
