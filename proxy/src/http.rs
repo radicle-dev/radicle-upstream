@@ -212,7 +212,16 @@ where
     for<'de> T: Deserialize<'de> + Send + Sync,
 {
     warp::filters::query::raw()
-        .map(|raw: String| serde_qs::from_str(&raw).expect("failed to deserialize query string"))
+        .map(|raw: String| {
+            log::debug!("attempting to deserialize query string '{}'", raw);
+            match serde_qs::from_str(&raw) {
+                Ok(result) => result,
+                Err(err) => {
+                    log::error!("failed to deserialize query string '{}': {}", raw, err);
+                    panic!("{}", err)
+                }
+            }
+        })
         .boxed()
 }
 
