@@ -15,7 +15,6 @@
   }
 
   .option.active {
-    box-shadow: 0 0 0 1px var(--color-primary);
     border: 1px solid var(--color-primary);
   }
 
