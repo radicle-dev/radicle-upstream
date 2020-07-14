@@ -16,7 +16,6 @@
   import { Avatar, Caption, Icon, Text, Title } from "../../Primitive";
 
   const subject = formatSubject(tx.messages[0]);
-  console.log(subject);
 
   let avatar;
   const updateAvatar = async () => (avatar = await subject.avatarSource);
