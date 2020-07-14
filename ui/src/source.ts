@@ -140,8 +140,7 @@ interface FetchCommit extends event.Event<Kind> {
 interface FetchCommits extends event.Event<Kind> {
   kind: Kind.FetchCommits;
   projectId: string;
-  peerId: string;
-  branch: string;
+  revision: Branch;
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -209,7 +208,8 @@ const update = (msg: Msg): void => {
       api
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
           query: {
-            branch: msg.branch,
+            peerId: msg.revision.peerId,
+            branch: msg.revision.name,
           },
         })
         .then(history => {

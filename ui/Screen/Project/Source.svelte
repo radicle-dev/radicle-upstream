@@ -83,7 +83,7 @@
     type: currentObjectType,
   });
 
-  $: fetchCommits({ projectId: id, branch: currentRevision.name });
+  $: fetchCommits({ projectId: id, revision: currentRevision });
 
   fetchRevisions({ projectId: id });
 </script>
