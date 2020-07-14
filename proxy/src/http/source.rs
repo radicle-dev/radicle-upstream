@@ -1192,7 +1192,7 @@ mod test {
 
         let fintohaps = coco::init_user(&peer, key.clone(), "fintohaps")?;
 
-        let id = identity::create(&peer, key.clone(), "cloudhead".to_string())?;
+        let id = identity::create(&peer, key.clone(), "cloudhead")?;
 
         let owner = coco::get_user(&peer, &id.clone().id)?;
         let owner = coco::verify_user(owner)?;

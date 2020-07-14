@@ -60,9 +60,9 @@ pub struct Metadata {
 pub fn create(
     peer: &coco::PeerApi,
     key: keys::SecretKey,
-    handle: String,
+    handle: &str,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_owner(peer, key, &handle)?;
+    let user = coco::init_owner(peer, key, handle)?;
     Ok(user.into())
 }
 
