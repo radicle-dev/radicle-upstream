@@ -173,7 +173,7 @@ mod test {
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
-        // Register the user to that it can register orgs
+        // Register the user so that it can register orgs
         registry
             .write()
             .await
@@ -248,7 +248,7 @@ mod test {
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
-        // Register the user to that it can register orgs
+        // Register the user so that it can register orgs
         registry
             .write()
             .await
