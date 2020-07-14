@@ -126,9 +126,10 @@ impl ToDocumentedType for Input {
         );
         properties.insert(
             "recipient".into(),
+            // TODO(merle): Add correct account id example
             document::string()
                 .description("Account id of the recipient")
-                .example("TBD"),
+                .example("123"),
         );
         properties.insert(
             "value".into(),
@@ -176,12 +177,21 @@ mod test {
         let api = super::filters(Arc::clone(&registry), subscriptions);
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
 
         // Register the user
         registry
             .write()
             .await
             .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register the org
+        let fee: registry::Balance = 100;
+        registry
+            .write()
+            .await
+            .register_org(&author, org_id.clone(), fee)
             .await?;
 
         // Register a second user
@@ -201,6 +211,22 @@ mod test {
             .json(&super::Input {
                 recipient: author2.public(),
                 maybe_org: None,
+                value,
+                transaction_fee: registry::MINIMUM_FEE,
+            })
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::CREATED);
+
+        // Transfer tokens from the org to bob
+        let value: registry::Balance = 10;
+        let res = request()
+            .method("POST")
+            .path("/transfer")
+            .json(&super::Input {
+                recipient: author2.public(),
+                maybe_org: Some(org_id.to_string()),
                 value,
                 transaction_fee: registry::MINIMUM_FEE,
             })
