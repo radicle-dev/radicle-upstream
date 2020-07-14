@@ -322,16 +322,12 @@ mod handler {
         let api = api.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = coco::get_project(&*api, &urn)?;
-        let peer_id = peer_id.and_then(|peer| {
-            if *api.peer_id() == peer {
-                None
-            } else {
-                Some(peer)
-            }
-        });
+
         let default_branch = match peer_id {
-            Some(peer_id) => git::Branch::remote(project.default_branch(), &peer_id.to_string()),
-            None => git::Branch::local(project.default_branch()),
+            Some(peer_id) if peer_id != *api.peer_id() => {
+                git::Branch::remote(project.default_branch(), &peer_id.to_string())
+            },
+            Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
         let theme = if let Some(true) = highlight {
@@ -485,8 +481,10 @@ mod handler {
         let project = coco::get_project(&api, &urn)?;
 
         let default_branch = match peer_id {
-            Some(peer_id) => git::Branch::remote(project.default_branch(), &peer_id.to_string()),
-            None => git::Branch::local(project.default_branch()),
+            Some(peer_id) if peer_id != *api.peer_id() => {
+                git::Branch::remote(project.default_branch(), &peer_id.to_string())
+            },
+            Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
         log::debug!("tree.default_branch={:?}", default_branch);
