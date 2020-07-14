@@ -4,6 +4,7 @@
     headerIcon,
     formatMessage,
     formatSubject,
+    formatDate,
     iconState,
     iconProgress,
     statusText,
@@ -16,19 +17,6 @@
 
   const subject = formatSubject(tx.messages[0]);
   console.log(subject);
-
-  const formatDate = (timestamp, option) => {
-    const time = new Date(timestamp * 1000);
-    const day = {
-      day: "numeric",
-    };
-    const month = {
-      month: "long",
-    };
-
-    const options = option === "day" ? day : month;
-    return `${time.toLocaleString(undefined, options)}`;
-  };
 
   let avatar;
   const updateAvatar = async () => (avatar = await subject.avatarSource);

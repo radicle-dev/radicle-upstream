@@ -473,6 +473,19 @@ export const timestamp = (state: State): string => {
   return `${timestamp.toLocaleTimeString(undefined, options)}`;
 };
 
+export const formatDate = (timestamp: number, option: string): string => {
+  const time = new Date(timestamp * 1000);
+  const day = {
+    day: "numeric",
+  };
+  const month = {
+    month: "long",
+  };
+
+  const options = option === "day" ? day : month;
+  return `${time.toLocaleString(undefined, options)}`;
+};
+
 export const summaryIconProgress = (summary: Summary): number => {
   const sum =
     summary.counts[StateType.Confirmed] + summary.counts[StateType.Settled];

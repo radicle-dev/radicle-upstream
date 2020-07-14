@@ -32,8 +32,7 @@ import TransactionCenter from "./Transaction/Center.svelte";
 import TransactionStatusbar from "./Transaction/Statusbar.svelte";
 import Row from "./Transaction/Row.svelte";
 import UserCard from "./UserCard.svelte";
-import WalletTransactionList from "./Wallet/TransactionList.svelte";
-import WalletSendReceive from "./Wallet/SendReceive.svelte";
+import Wallet from "./Wallet.svelte";
 import QR from "./QR.svelte";
 
 export {
@@ -71,7 +70,6 @@ export {
   TransactionCenter,
   TransactionStatusbar,
   UserCard,
-  WalletTransactionList,
-  WalletSendReceive,
+  Wallet,
   QR,
 };
