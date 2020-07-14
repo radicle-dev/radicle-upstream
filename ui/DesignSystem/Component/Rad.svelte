@@ -4,18 +4,11 @@
 
   export let rad = null;
   export let usd = null;
-  export let style = null;
   export let variant = "credit"; // credit | deposit
   export let size = "regular"; // regular | big
 </script>
 
 <style>
-  .wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
   .amount {
     display: flex;
     align-items: center;
@@ -38,28 +31,29 @@
   }
 </style>
 
-<div class="wrapper" {style}>
-  <Tooltip value={`$${  usd}`}>
-    {#if size === 'regular'}
-      <div class="amount {variant}">
-        {#if variant === 'deposit'}
-          <Icon.LockSmall
-            style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
-          <Icon.Currency style="fill: var(--color-foreground-level-6);" />
-        {:else}
-          <Icon.Currency style="fill: var(--color-negative);" />
-        {/if}
-        <Title variant="tiny" dataCy="amount" style="margin-left:2px;">
-          {rad}
-        </Title>
-      </div>
-    {:else if size === 'big'}
-      <div class="big">
-        <Icon.Currency
-          size="big"
-          style="fill: var(--color-foreground-level-6);" />
-        <Title variant="large" dataCy="amount">{rad}</Title>
-      </div>
-    {/if}
-  </Tooltip>
-</div>
+<Tooltip value={`$${usd}`}>
+  {#if size === 'regular'}
+    <div class="amount {variant}">
+      {#if variant === 'deposit'}
+        <Icon.LockSmall
+          style="fill: var(--color-foreground-level-5); margin-right: 2px;" />
+        <Icon.Currency style="fill: var(--color-foreground-level-6);" />
+      {:else}
+        <Icon.Currency style="fill: var(--color-negative);" />
+      {/if}
+      <Title variant="tiny" dataCy="amount" style="margin-left:2px;">
+        {rad}
+      </Title>
+    </div>
+  {:else if size === 'big'}
+    <div class="big">
+      <Icon.Currency size="huge" style="fill: var(--color-secondary);" />
+      <Title
+        style="color: var(--color-secondary); margin-left: 2px;"
+        variant="huge"
+        dataCy="amount">
+        {rad}
+      </Title>
+    </div>
+  {/if}
+</Tooltip>

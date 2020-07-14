@@ -94,19 +94,22 @@
       <Input.Text
         placeholder="Enter the amount"
         style="flex: 1; padding-bottom: 1rem;" />
+      <!-- TODO: Add note back in when implemented on registry
       <Title style="padding-bottom: 0.5rem;">Note</Title>
       <Input.Text
         placeholder="Optional message"
-        style="flex: 1; padding-bottom: 1rem;" />
+        style="flex: 1; padding-bottom: 1rem;" /> -->
       <div class="submit">
         <Button disabled={true}>Send transaction</Button>
       </div>
     </div>
   {:else if currentlyActive === 'receive'}
     <div class="receive">
+      <!-- TODO: update QR code to represent the address. -->
       <QR />
       <Title style="padding-bottom: 0.5rem;">Address</Title>
       <Copyable iconSize="normal">
+        <!-- TODO: Update with actual wallet address + actuall trucation -->
         <Text>1Ao1drv6fyt5ipWWeN5zExM...</Text>
       </Copyable>
     </div>
