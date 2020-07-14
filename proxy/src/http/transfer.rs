@@ -1,10 +1,6 @@
 //! Transfer funds between orgs and users
 
-// use serde::ser::SerializeStruct as _;
-// use serde::{Deserialize, Serialize, Serializer};
 use serde::{Deserialize, Serialize};
-// use std::sync::Arc;
-// use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -147,16 +143,12 @@ impl ToDocumentedType for Input {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    // use serde_json::{json, Value};
     use std::convert::TryFrom;
     use std::sync::Arc;
-    // use tokio::sync::{Mutex, RwLock};
     use radicle_registry_client::CryptoPair;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
-
-    // use librad::keys::SecretKey;
 
     use crate::error;
     use crate::notification;
