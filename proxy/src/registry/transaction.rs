@@ -376,6 +376,13 @@ where
         self.client.best_height().await
     }
 
+    async fn get_block_header(
+        &self,
+        block: registry::BlockHash,
+    ) -> Result<protocol::BlockHeader, error::Error> {
+        self.client.get_block_header(block).await
+    }
+
     async fn get_org(&self, id: registry::Id) -> Result<Option<registry::Org>, error::Error> {
         self.client.get_org(id).await
     }

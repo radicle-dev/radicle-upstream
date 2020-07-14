@@ -1,15 +1,23 @@
-import { Org } from "../org";
-import { User } from "../user";
-import { Project } from "../project";
+import * as org from "../org";
+import * as project from "../project";
+import * as session from "../session";
+import * as settings from "../settings";
+import * as user from "../user";
 
-type MockedResponse = Org | Project | Project[] | User | null;
+type MockedResponse =
+  | org.Org
+  | project.Project
+  | project.Project[]
+  | session.Session
+  | user.User
+  | null;
 
 // just to give an idea of how we'd stub the api with other endpoints
-const userMock: User = {
+const userMock: user.User = {
   handle: "rafalca",
 };
 
-export const orgMock: Org = {
+export const orgMock: org.Org = {
   id: "radicle",
   shareableEntityIdentifier: "radicle@123abcd.git",
   avatarFallback: {
@@ -23,7 +31,7 @@ export const orgMock: Org = {
   members: [userMock],
 };
 
-export const upstreamProjectMock: Project = {
+export const upstreamProjectMock: project.Project = {
   id: "%rad:git:hwd1yregn1xe4krjs5h7ag5ceut9rwmjssr8e8t4pw6nrwdxgc761o3x4sa",
   shareableEntityIdentifier: "sos@{}",
   metadata: {
@@ -40,7 +48,7 @@ export const upstreamProjectMock: Project = {
   },
 };
 
-export const surfProjectMock: Project = {
+export const surfProjectMock: project.Project = {
   id: "%rad:git:hwd1yref66p4r3z1prxwdjr7ig6ihhrfzsawnc6us4zxtapfukrf6r7mupw",
   shareableEntityIdentifier: "sos@{}",
   metadata: {
@@ -53,6 +61,29 @@ export const surfProjectMock: Project = {
     branches: 3,
     commits: 33,
     contributors: 333,
+  },
+};
+
+export const sessionMock: session.Session = {
+  orgs: [],
+  permissions: {
+    registerHandle: true,
+    registerOrg: false,
+    registerProject: false,
+  },
+  settings: {
+    appearance: {
+      theme: settings.Theme.Light,
+    },
+    registry: {
+      network: settings.Network.Emulator,
+    },
+  },
+  transactionDeposits: {
+    memberRegistration: 0,
+    orgRegistration: 0,
+    projectRegistration: 0,
+    userRegistration: 0,
   },
 };
 
@@ -74,6 +105,8 @@ export const get = async (endpoint: string): Promise<MockedResponse> => {
         ? upstreamProjectMock
         : [upstreamProjectMock, surfProjectMock];
       break;
+    case "session":
+      response = sessionMock;
   }
 
   return new Promise(resolve => resolve(response));
@@ -82,4 +115,6 @@ export const get = async (endpoint: string): Promise<MockedResponse> => {
 // When we want to ensure a function is called with certain parameters, but we don't
 // care as much about response data (or if it doesn't have a response), we can use jest.fn()
 // to track it
-export const post = jest.fn();
+export const post = jest.fn(() => Promise.resolve());
+export const del = jest.fn(() => Promise.resolve());
+export const set = jest.fn(() => Promise.resolve());
