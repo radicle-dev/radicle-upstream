@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use librad::keys;
+use librad::meta::user;
 
 use crate::avatar;
 use crate::coco;
@@ -27,6 +28,24 @@ pub struct Identity {
     pub avatar_fallback: avatar::Avatar,
 }
 
+impl<S> From<user::User<S>> for Identity {
+    fn from(user: user::User<S>) -> Self {
+        let id = user.urn();
+        Self {
+            id: id.clone(),
+            shareable_entity_identifier: SharedIdentifier {
+                handle: user.name().to_string(),
+                urn: id.clone(),
+            },
+            metadata: Metadata {
+                handle: user.name().to_string(),
+            },
+            registered: None,
+            avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
+        }
+    }
+}
+
 /// User maintained information for an identity, which can evolve over time.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -44,16 +63,7 @@ pub fn create(
     handle: String,
 ) -> Result<Identity, error::Error> {
     let user = coco::init_owner(peer, key, &handle)?;
-
-    let id = user.urn();
-    let shareable_entity_identifier = user.into();
-    Ok(Identity {
-        id: id.clone(),
-        shareable_entity_identifier,
-        metadata: Metadata { handle },
-        registered: None,
-        avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
-    })
+    Ok(user.into())
 }
 
 /// Retrieve an identity by id.
@@ -63,18 +73,7 @@ pub fn create(
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub fn get(peer: &coco::PeerApi, id: &coco::Urn) -> Result<Identity, error::Error> {
     let user = coco::get_user(peer, id)?;
-    Ok(Identity {
-        id: id.clone(),
-        shareable_entity_identifier: SharedIdentifier {
-            handle: user.name().to_string(),
-            urn: id.clone(),
-        },
-        metadata: Metadata {
-            handle: user.name().to_string(),
-        },
-        registered: None,
-        avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
-    })
+    Ok(user.into())
 }
 
 /// A `SharedIdentifier` is the combination of a user handle and the [`coco::Urn`] that identifies
