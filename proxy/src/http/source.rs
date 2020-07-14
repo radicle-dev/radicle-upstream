@@ -1082,7 +1082,6 @@ mod test {
 
         let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
 
-        println!("PATH: {}", path);
         // Get ASCII blob.
         let res = request().method("GET").path(&path).reply(&api).await;
 
