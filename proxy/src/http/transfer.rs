@@ -51,11 +51,9 @@ where
 
 /// Transfer handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use std::convert::TryFrom;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::error::Error;
     use crate::http;
     use crate::notification;
     use crate::registry;
@@ -68,15 +66,12 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        // let recipient_key =
-        // radicle_registry_client::ed25519::Public::from_string(input.recipient);
 
         let reg = registry.write().await;
         let tx = if let Some(org_id) = input.maybe_org {
-            let org = registry::Id::try_from(org_id).map_err(Error::from)?;
             reg.transfer_from_org(
                 &fake_pair,
-                org,
+                org_id,
                 input.recipient,
                 input.value,
                 input.transaction_fee,
@@ -105,7 +100,7 @@ mod handler {
 #[serde(rename_all = "camelCase")]
 pub struct Input {
     /// Id if sent from an Org.
-    maybe_org: Option<String>,
+    maybe_org: Option<registry::Id>,
     /// Account id of the recipient.
     recipient: radicle_registry_client::ed25519::Public,
     /// Amount that is transferred.
@@ -226,7 +221,7 @@ mod test {
             .path("/transfer")
             .json(&super::Input {
                 recipient: author2.public(),
-                maybe_org: Some(org_id.to_string()),
+                maybe_org: Some(org_id),
                 value,
                 transaction_fee: registry::MINIMUM_FEE,
             })
