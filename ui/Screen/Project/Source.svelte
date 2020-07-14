@@ -25,7 +25,7 @@
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
-  import CloneButton from "./CloneButton.svelte";
+  import CheckoutButton from "./CheckoutButton.svelte";
 
   const { id, metadata } = getContext("project");
 
@@ -61,15 +61,6 @@
       }
     });
     unsubscribe();
-  };
-
-  let copyIcon = Icon.Copy;
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-    }, 1000);
   };
 
   $: fetchObject({
@@ -170,9 +161,10 @@
     <Title variant="big">{project.metadata.name}</Title>
     <div class="project-id">
       <Code>
-        <Copyable {afterCopy}>
-          {project.shareableEntityIdentifier}
-          <svelte:component this={copyIcon} style="vertical-align: bottom" />
+        <Copyable iconSize="normal">
+          <span style="margin-right: 8px;">
+            {project.shareableEntityIdentifier}
+          </span>
         </Copyable>
       </Code>
     </div>
@@ -236,7 +228,9 @@
             <span class="stat">{project.stats.contributors}</span>
           </div>
         </div>
-        <CloneButton projectId={project.id} />
+        <CheckoutButton
+          projectId={project.id}
+          projectName={project.metadata.name} />
       </div>
 
       <!-- Object -->
@@ -268,7 +262,7 @@
               <Readme content={readme.content} path={readme.path} />
             {:else}
               <EmptyState
-                text="This project doesn't have a ReadMe yet."
+                text="This project doesn't have a README yet."
                 icon="eyes"
                 primaryActionText="Open an issue to make one" />
             {/if}

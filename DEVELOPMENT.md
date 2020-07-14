@@ -81,9 +81,12 @@ git submodule foreach "git fetch --all"
 💡 *You'll have to run the previous commands every time there are any updates
 to the test fixture repository.*
 
-- To run tests call: `yarn test`.
-- To troubleshoot tests via the Cypress GUI, run: `yarn test:debug`.
-- To isolate a single test for debugging purposes use the [`.only` method][on].
+We use [Cypress](https://www.cypress.io/) for integration tests and [Jest](jestjs.io) for unit tests. You can find integration tests in the `cypress/` directory and unit tests next to the modules they correspond to.
+
+- To run all ui tests call: `yarn test`.
+- To troubleshoot integration tests via the Cypress GUI, run: `yarn test:integration:debug`.
+- To isolate a single integration test for debugging purposes, use the [`.only` method][on].
+- To develop unit tests in watch mode, run: `yarn test:unit:watch`
 
 
 ### Building an Upstream package for your platform
@@ -98,19 +101,22 @@ To get a list of all available script commands, run: `yarn run`.
 Here is a list of the most commonly used ones:
 
 ```sh
-yarn start            # Start Upstream in development mode
+yarn start                  # Start Upstream in development mode
 
-yarn test             # Run Cypress end-to-end tests
-yarn test:debug       # Show the Cypress GUI, handy for visual debugging
+yarn test                   # Run all ui tests
+yarn test:integration       # Run only integration tests
+yarn test:unit              # Run only unit tests
+yarn test:integration:debug # Show the Cypress GUI, handy for visual debugging
+yarn test:unit:watch        # Run Jest tests in watch mode
 
-yarn dist             # Bundles Upstream into an installable package
+yarn dist                   # Bundles Upstream into an installable package
 
-yarn release          # Start a two-step process to cut a new release, for more
-                      # details have a look at ../DEVELOPMENT.md
+yarn release                # Start a two-step process to cut a new release, for more
+                            # details have a look at ../DEVELOPMENT.md
 
-yarn prettier:check   # Check UI code formatting
-yarn prettier:write   # Auto-format UI code
-yarn lint             # Check UI code for linting errors
+yarn prettier:check         # Check UI code formatting
+yarn prettier:write         # Auto-format UI code
+yarn lint                   # Check UI code for linting errors
 ```
 
 

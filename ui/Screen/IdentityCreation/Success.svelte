@@ -8,21 +8,11 @@
     Avatar,
     Button,
     Flex,
-    Icon,
     Text,
     Title,
   } from "../../DesignSystem/Primitive";
 
   const dispatch = createEventDispatcher();
-
-  let copyIcon = Icon.Copy;
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-    }, 2000);
-  };
 </script>
 
 <style>
@@ -80,7 +70,7 @@
         <Avatar size="big" avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">
           <Title>{identity.metadata.handle}</Title>
-          <Copyable {afterCopy}>
+          <Copyable iconSize="normal">
             <Flex align="left">
               <Text
                 style="color: var(--color-foreground-level-6); white-space:
@@ -88,7 +78,6 @@
                 350px;">
                 {identity.shareableEntityIdentifier}
               </Text>
-              <svelte:component this={copyIcon} style="margin-left: 8px;" />
             </Flex>
           </Copyable>
         </div>

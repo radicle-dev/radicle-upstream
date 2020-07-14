@@ -25,7 +25,6 @@
     SegmentedControl,
     Stats,
     SupportButton,
-    StepCounter,
     TrackToggle,
     TransactionCenter,
     TransactionStatusbar,
@@ -681,7 +680,7 @@
           showSuccessCheck
           validation={{ status: ValidationStatus.Success }}
           value="user123">
-          <div slot="avatar">
+          <div slot="left">
             <Avatar
               size="small"
               imageUrl="https://avatars1.githubusercontent.com/u/40774" />
@@ -695,7 +694,7 @@
           style="width: 100%"
           validation={{ status: ValidationStatus.Loading }}
           value="user123">
-          <div slot="avatar">
+          <div slot="left">
             <Avatar size="small" avatarFallback={avatarFallback1} />
           </div>
         </Input.Text>
@@ -709,7 +708,7 @@
           valid={false}
           validation={{ status: ValidationStatus.Error, message: 'Id already taken' }}
           value="myUser">
-          <div slot="avatar">
+          <div slot="left">
             <Avatar size="small" avatarFallback={avatarFallback2} />
           </div>
         </Input.Text>
@@ -1035,15 +1034,17 @@
       <Swatch>
         <Rad rad="200" usd="2" />
       </Swatch>
+
       <Swatch>
         <Rad rad="10" usd="0.1" />
       </Swatch>
+
       <Swatch>
-        <Rad rad="20" />
+        <Rad rad="20" usd="2" />
       </Swatch>
 
       <Swatch>
-        <StepCounter selectedStep={1} steps={['Step 1', 'Step 2', 'Step 3']} />
+        <Rad rad="20" usd="2" variant="deposit" />
       </Swatch>
 
       <Swatch>

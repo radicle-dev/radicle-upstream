@@ -154,6 +154,17 @@
     </li>
   </ul>
   <ul class="bottom">
+    <li
+      class="item indicator"
+      class:active={path.active(path.discovery(), $location)}
+      data-cy="discovery">
+      <Tooltip value="Discover">
+        <a href={path.discovery()} use:link>
+          <Icon.Peer />
+        </a>
+      </Tooltip>
+    </li>
+    <!-- TODO(sos or whoever): this should be active when user is on wallet page -->
     <li class="item indicator" data-cy="wallet">
       <Tooltip value="Wallet">
         <a href={path.profileWallet()} use:link>

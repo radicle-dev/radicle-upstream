@@ -56,9 +56,9 @@
     justify-content: space-between;
   }
   .revision-selector:hover {
-    box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
     color: var(--color-foreground);
-    background-color: var(--color-foreground-level-2);
+    border: 1px solid var(--color-foreground-level-3);
+    background-color: var(--color-foreground-level-1);
   }
   .revision-selector[hidden] {
     visibility: hidden;
@@ -94,8 +94,7 @@
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    box-shadow: var(--elevation-medium),
-      0px 0px 0px 1px var(--color-foreground-level-3);
+    box-shadow: var(--elevation-medium);
     z-index: 8;
   }
   .peer {
@@ -119,6 +118,10 @@
   .tag:hover {
     color: var(--color-foreground);
     background: var(--color-foreground-level-2);
+  }
+
+  .revision-dropdown ul:last-child li {
+    border-radius: 0 0 3px 3px;
   }
 </style>
 

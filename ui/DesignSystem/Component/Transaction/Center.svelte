@@ -26,7 +26,7 @@
 <style>
   .center {
     background: var(--color-background);
-    border: 1px solid var(--color-foreground-level-2);
+    border: 1px solid var(--color-foreground-level-3);
     border-radius: 8px;
     box-shadow: var(--elevation-medium);
     cursor: pointer;

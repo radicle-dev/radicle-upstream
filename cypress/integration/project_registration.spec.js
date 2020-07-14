@@ -233,14 +233,16 @@ context("project registration", () => {
 
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
 
-        cy.pick("deposit", "rad-amount").contains("0.00001");
-        cy.pick("deposit", "usd-amount").contains("$0.00001");
+        cy.pick("deposit", "amount").contains("0.00001");
+        cy.pick("deposit", "amount").trigger("mouseenter").contains("$0.00001");
 
-        cy.pick("transaction-fee", "rad-amount").contains("0.000001");
-        cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+        cy.pick("transaction-fee", "amount").contains("0.000001");
+        cy.pick("transaction-fee", "amount")
+          .trigger("mouseenter")
+          .contains("$0.000001");
 
-        cy.pick("total", "rad-amount").contains("0.000011");
-        cy.pick("total", "usd-amount").contains("$0.000011");
+        cy.pick("total", "amount").contains("0.000011");
+        cy.pick("total", "amount").trigger("mouseenter").contains("$0.000011");
 
         // submit the transaction
         cy.pick("submit-button").click();
@@ -268,14 +270,16 @@ context("project registration", () => {
 
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
 
-        cy.pick("deposit", "rad-amount").contains("0.00001");
-        cy.pick("deposit", "usd-amount").contains("$0.00001");
+        cy.pick("deposit", "amount").contains("0.00001");
+        cy.pick("deposit", "amount").trigger("mouseenter").contains("$0.00001");
 
-        cy.pick("transaction-fee", "rad-amount").contains("0.000001");
-        cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+        cy.pick("transaction-fee", "amount").contains("0.000001");
+        cy.pick("transaction-fee", "amount")
+          .trigger("mouseenter")
+          .contains("$0.000001");
 
-        cy.pick("total", "rad-amount").contains("0.000011");
-        cy.pick("total", "usd-amount").contains("$0.000011");
+        cy.pick("total", "amount").contains("0.000011");
+        cy.pick("total", "amount").trigger("mouseenter").contains("$0.000011");
 
         cy.pick("summary", "message").contains("Project registration");
       });
