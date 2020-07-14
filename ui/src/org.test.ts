@@ -32,7 +32,10 @@ describe("validation", () => {
     });
 
     process.nextTick(() => {
-      expect(get(validation)).toEqual({ status: ValidationStatus.Success });
+      expect(get(validation)).toEqual({
+        status: ValidationStatus.Error,
+        message: "Sorry, this one is already taken",
+      });
     });
   });
 
