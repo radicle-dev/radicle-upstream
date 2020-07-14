@@ -271,9 +271,7 @@ mod test {
 
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let peer_id = {
-            peer.lock().await.peer_id().clone()
-        };
+        let peer_id = { peer.lock().await.peer_id().clone() };
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))

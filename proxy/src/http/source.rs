@@ -412,14 +412,10 @@ mod handler {
         // the repository selector in the UI. Make sure the list always returns the default peer
         // first.
         let revs = [
-            (
-                owner.name(),
-                peer_id.clone(),
-                owner.urn().to_string(),
-            ),
+            (owner.name(), peer_id.clone(), owner.urn().to_string()),
             (
                 "rudolfs",
-                 peer_id.clone(), // TODO(finto): Need to use real PeerId
+                peer_id.clone(), // TODO(finto): Need to use real PeerId
                 "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro".to_string(),
             ),
             (
@@ -1333,41 +1329,41 @@ mod test {
             })?;
 
             [
-                (
-                    owner.name(),
-                    peer_id.clone(),
-                    owner.urn(),
-                ),
+                (owner.name(), peer_id.clone(), owner.urn()),
                 (
                     "rudolfs",
                     peer_id.clone(),
-                    "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro".parse()?,
+                    "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro"
+                        .parse()?,
                 ),
                 (
                     "xla",
                     peer_id.clone(),
-                    "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc".parse()?,
+                    "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"
+                        .parse()?,
                 ),
             ]
             .iter()
-            .map(|(fake_handle, fake_peer_id, fake_peer_urn)| super::Revision {
-                branches: branches.clone(),
-                tags: tags.clone(),
-                identity: identity::Identity {
-                    peer_id: fake_peer_id.clone(),
-                    // TODO(finto): Get the right URN
-                    id: fake_peer_urn.clone(),
-                    metadata: identity::Metadata {
-                        handle: (*fake_handle).to_string(),
-                    },
-                    avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
-                    registered: None,
-                    shareable_entity_identifier: identity::SharedIdentifier {
-                        handle: (*fake_handle).to_string(),
-                        urn: fake_peer_urn.clone(),
+            .map(
+                |(fake_handle, fake_peer_id, fake_peer_urn)| super::Revision {
+                    branches: branches.clone(),
+                    tags: tags.clone(),
+                    identity: identity::Identity {
+                        peer_id: fake_peer_id.clone(),
+                        // TODO(finto): Get the right URN
+                        id: fake_peer_urn.clone(),
+                        metadata: identity::Metadata {
+                            handle: (*fake_handle).to_string(),
+                        },
+                        avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
+                        registered: None,
+                        shareable_entity_identifier: identity::SharedIdentifier {
+                            handle: (*fake_handle).to_string(),
+                            urn: fake_peer_urn.clone(),
+                        },
                     },
                 },
-            })
+            )
             .collect::<Vec<super::Revision>>()
         };
 
@@ -1573,8 +1569,17 @@ mod test {
         };
 
         // Testing that the endpoint works with URL encoding
-        const FRAGMENT: &percent_encoding::AsciiSet = &percent_encoding::CONTROLS.add(b' ').add(b'"').add(b'[').add(b']').add(b'=');
-        let path = format!("/tree/{}?{}", urn, percent_encoding::utf8_percent_encode(&serde_qs::to_string(&query).unwrap(), FRAGMENT));
+        const FRAGMENT: &percent_encoding::AsciiSet = &percent_encoding::CONTROLS
+            .add(b' ')
+            .add(b'"')
+            .add(b'[')
+            .add(b']')
+            .add(b'=');
+        let path = format!(
+            "/tree/{}?{}",
+            urn,
+            percent_encoding::utf8_percent_encode(&serde_qs::to_string(&query).unwrap(), FRAGMENT)
+        );
         let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
