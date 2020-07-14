@@ -9,7 +9,9 @@ use serde_cbor::from_reader;
 use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
-pub use radicle_registry_client::{Balance, Id, ProjectDomain, ProjectName, MINIMUM_FEE};
+pub use radicle_registry_client::{
+    Balance, BlockHash, Id, ProjectDomain, ProjectName, MINIMUM_FEE,
+};
 
 use crate::avatar;
 use crate::coco;
@@ -145,6 +147,17 @@ pub trait Client: Clone + Send + Sync {
     ///
     /// Will return `Err` if a protocol error occurs.
     async fn best_height(&self) -> Result<u32, error::Error>;
+
+    /// Fetch the block header for the block with the given block hash.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a block with the given has can not be found in the Registry.
+    async fn get_block_header(
+        &self,
+        block: BlockHash,
+    ) -> Result<protocol::BlockHeader, error::Error>;
+
     /// Try to retrieve org from the Registry by id.
     ///
     /// # Errors
@@ -307,10 +320,10 @@ impl Registry {
         let nonce = self.client.account_nonce(&author.public()).await?;
         let runtime_spec_version = self.client.runtime_version().await?.spec_version;
         let extra = protocol::TransactionExtra {
-            genesis_hash: self.client.genesis_hash(),
             nonce,
-            runtime_spec_version,
+            genesis_hash: self.client.genesis_hash(),
             fee,
+            runtime_transaction_version: runtime_spec_version,
         };
         Ok(protocol::Transaction::new_signed(author, message, extra))
     }
@@ -345,6 +358,16 @@ impl Client for Registry {
         }
     }
 
+    async fn get_block_header(
+        &self,
+        block: BlockHash,
+    ) -> Result<protocol::BlockHeader, error::Error> {
+        self.client
+            .block_header(block)
+            .await?
+            .ok_or(error::Error::BlockNotFound(block))
+    }
+
     async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error> {
         let mut orgs = Vec::new();
         for id in &self.client.list_orgs().await? {
@@ -372,7 +395,7 @@ impl Client for Registry {
             .await?;
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
-        let block = self.client.block_header(applied.block).await?;
+        let block = self.get_block_header(applied.block).await?;
         let tx = Transaction::confirmed(
             Hash(applied.tx_hash),
             block.number,
@@ -402,7 +425,7 @@ impl Client for Registry {
             .await?;
         let applied = self.client.submit_transaction(tx).await?.await?;
         applied.result?;
-        let block = self.client.block_header(applied.block).await?;
+        let block = self.get_block_header(applied.block).await?;
 
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),
@@ -429,7 +452,7 @@ impl Client for Registry {
             .await?;
         let applied = self.client.submit_transaction(tx).await?.await?;
         applied.result?;
-        let block = self.client.block_header(applied.block).await?;
+        let block = self.get_block_header(applied.block).await?;
         let tx = Transaction::confirmed(
             Hash(applied.tx_hash),
             block.number,
@@ -537,7 +560,7 @@ impl Client for Registry {
             .await?;
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
-        let block = self.client.block_header(applied.block).await?;
+        let block = self.get_block_header(applied.block).await?;
 
         let (domain_type, domain_id) = match project_domain {
             ProjectDomain::Org(id) => (DomainType::Org, id),
@@ -585,7 +608,7 @@ impl Client for Registry {
             .await?;
         let applied = self.client.submit_transaction(register_tx).await?.await?;
         applied.result?;
-        let block = self.client.block_header(applied.block).await?;
+        let block = self.get_block_header(applied.block).await?;
 
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),

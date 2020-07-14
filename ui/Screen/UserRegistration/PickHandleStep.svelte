@@ -33,7 +33,7 @@
   bind:value={handle}
   showSuccessCheck
   validation={$validation}>
-  <div slot="avatar">
+  <div slot="left">
     <Avatar
       avatarFallback={identity.avatarFallback}
       size="small"
