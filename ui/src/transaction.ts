@@ -271,7 +271,41 @@ export const formatMessage = (msg: Message): string => {
       return "Project registration";
 
     case MessageType.UserRegistration:
-      return "User registration";
+      return "Handle registration";
+  }
+};
+
+export const formatDesc = (msg: Message): string => {
+  switch (msg.type) {
+    case MessageType.OrgRegistration:
+    case MessageType.OrgUnregistration:
+      return msg.id;
+
+    case MessageType.MemberRegistration:
+    case MessageType.MemberUnregistration:
+      return msg.handle;
+
+    case MessageType.ProjectRegistration:
+      return msg.domainId;
+
+    case MessageType.UserRegistration:
+      return msg.handle;
+  }
+};
+
+export const headerIcon = (msg: Message): string => {
+  switch (msg.type) {
+    case MessageType.OrgRegistration:
+    case MessageType.OrgUnregistration:
+      return "Register";
+
+    case MessageType.MemberRegistration:
+    case MessageType.MemberUnregistration:
+    case MessageType.UserRegistration:
+      return "Member";
+
+    case MessageType.ProjectRegistration:
+      return "Source";
   }
 };
 
@@ -372,6 +406,17 @@ export const formatSubject = (msg: Message): Subject => {
   };
 };
 
+export const subjectAvatarShape = (subjectType: SubjectType): string => {
+  switch (subjectType) {
+    case SubjectType.User:
+    case SubjectType.Member:
+    case SubjectType.UserProject:
+      return "circle";
+    default:
+      return "square";
+  }
+};
+
 export const iconProgress = (state: State): number => {
   switch (state.type) {
     case StateType.Confirmed:
@@ -405,7 +450,7 @@ export const statusText = (state: State): string => {
 
   switch (state.type) {
     case StateType.Confirmed:
-      return `Waiting for transaction to settle`;
+      return `In progress`;
 
     case StateType.Failed:
       return `Transaction failed ${timestamp}`;
@@ -414,8 +459,18 @@ export const statusText = (state: State): string => {
       return `Waiting for confirmation`;
 
     case StateType.Settled:
-      return `Transaction settled ${timestamp}`;
+      return `Settled ${timestamp}`;
   }
+};
+
+export const timestamp = (state: State): string => {
+  const timestamp = new Date(state.timestamp.secs * 1000);
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  return `${timestamp.toLocaleTimeString(undefined, options)}`;
 };
 
 export const summaryIconProgress = (summary: Summary): number => {

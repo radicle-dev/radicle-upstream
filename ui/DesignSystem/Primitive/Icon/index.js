@@ -6,11 +6,11 @@ import Verified from "./Verified.svelte";
 import Branch from "./Branch.svelte";
 import Check from "./Check.svelte";
 import Chevron from "./Chevron.svelte";
-import Circle from "./Circle.svelte";
 import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
 import Cross from "./Cross.svelte";
+import Currency from "./Currency.svelte";
 import Edit from "./Edit.svelte";
 import Ellipses from "./Ellipses.svelte";
 import EmptyState from "./EmptyState.svelte";
@@ -28,6 +28,7 @@ import Info from "./Info.svelte";
 import Issue from "./Issue.svelte";
 import Key from "./Key.svelte";
 import Label from "./Label.svelte";
+import LockSmall from "./LockSmall.svelte";
 import Member from "./Member.svelte";
 import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
@@ -41,7 +42,6 @@ import Search from "./Search.svelte";
 import Settings from "./Settings.svelte";
 import Source from "./Source.svelte";
 import Spinner from "./Spinner.svelte";
-import StepCounter from "./StepCounter.svelte";
 import TransactionState from "./TransactionState.svelte";
 import Trash from "./Trash.svelte";
 
@@ -54,11 +54,11 @@ export default {
   Branch,
   Check,
   Chevron,
-  Circle,
   CloseIssue,
   Commit,
   Copy,
   Cross,
+  Currency,
   Edit,
   Ellipses,
   EmptyState,
@@ -76,6 +76,7 @@ export default {
   Issue,
   Key,
   Label,
+  LockSmall,
   Member,
   Merge,
   Minus,
@@ -89,7 +90,6 @@ export default {
   Settings,
   Source,
   Spinner,
-  StepCounter,
   TransactionState,
   Trash,
 };

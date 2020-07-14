@@ -55,11 +55,6 @@
   .support:hover:after {
     content: "";
     position: absolute;
-    top: -1px;
-    right: -1px;
-    bottom: -1px;
-    left: -1px;
-    transform: translateZ(-1px);
     border-radius: inherit;
     background: linear-gradient(
       90deg,

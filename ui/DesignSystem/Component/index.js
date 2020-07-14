@@ -17,14 +17,12 @@ import ProjectCard from "./ProjectCard.svelte";
 import Rad from "./Rad.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
-import StepModalLayout from "./Registration/StepModalLayout.svelte";
 import Remote from "./Remote.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
-import StepCounter from "./StepCounter.svelte";
 import Timeline from "./Timeline.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
@@ -34,6 +32,9 @@ import TransactionCenter from "./Transaction/Center.svelte";
 import TransactionStatusbar from "./Transaction/Statusbar.svelte";
 import Row from "./Transaction/Row.svelte";
 import UserCard from "./UserCard.svelte";
+import WalletTransactionList from "./Wallet/TransactionList.svelte";
+import WalletSendReceive from "./Wallet/SendReceive.svelte";
+import QR from "./QR.svelte";
 
 export {
   AdditionalActionsDropdown,
@@ -56,14 +57,12 @@ export {
   RadicleLogo,
   RadioOption,
   Stats,
-  StepModalLayout,
   Remote,
   Row,
   SegmentedControl,
   Sidebar,
   SidebarLayout,
   SupportButton,
-  StepCounter,
   Timeline,
   Tooltip,
   Topbar,
@@ -72,4 +71,7 @@ export {
   TransactionCenter,
   TransactionStatusbar,
   UserCard,
+  WalletTransactionList,
+  WalletSendReceive,
+  QR,
 };

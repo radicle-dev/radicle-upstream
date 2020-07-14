@@ -1,21 +1,26 @@
 <script>
   import {
     costSummary,
-    formatMessage,
     formatStake,
     formatSubject,
-    SubjectType,
     PayerType,
+    iconState,
+    iconProgress,
+    statusText,
   } from "../../src/transaction.ts";
 
   import {
     Avatar,
-    Caption,
+    Icon,
     Numeric,
     Title,
+    Text,
   } from "../../DesignSystem/Primitive";
 
+  import Copyable from "../../DesignSystem/Component/Copyable.svelte";
+
   import Rad from "./Rad.svelte";
+  import Header from "./Transaction/Header.svelte";
   import Row from "./Transaction/Row.svelte";
 
   export let transaction = null;
@@ -25,16 +30,6 @@
   let avatar;
 
   const subject = formatSubject(transaction.messages[0]);
-  const subjectAvatarShape = () => {
-    switch (subject.type) {
-      case SubjectType.User:
-      case SubjectType.Member:
-      case SubjectType.UserProject:
-        return "circle";
-      default:
-        return "square";
-    }
-  };
 
   const updateAvatar = async () => (avatar = await subject.avatarSource);
 
@@ -47,103 +42,111 @@
   $: updateAvatar();
 </script>
 
-<Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
-  Your transaction
-</Caption>
+<Header {transaction} {avatar} {subject} />
 
-<Row dataCy="summary" variant={transaction.id ? 'top' : 'single'}>
-  <div slot="left" data-cy="message">
-    <Title>{formatMessage(transaction.messages[0])}</Title>
-  </div>
-
-  <div slot="right" data-cy="subject">
-    {#if avatar}
-      <Avatar
-        title={subject.name}
-        imageUrl={avatar.url}
-        avatarFallback={avatar.emoji && avatar}
-        variant={subjectAvatarShape()}
-        style="color: var(--color-foreground)"
-        dataCy="subject-avatar" />
-    {:else}
-      <Title>{subject.name}</Title>
-    {/if}
-  </div>
-</Row>
-
-{#if transaction.id}
-  <Row
-    variant="bottom"
-    style="height: 32px; background-color: var(--color-foreground-level-1)">
-    <div slot="left">
-      <Numeric variant="tiny" style="color: var(--color-foreground-level-6)">
-        {transaction.id}
-      </Numeric>
-    </div>
-  </Row>
-{/if}
-
-<Caption
-  style="color: var(--color-foreground-level-6); margin-bottom: 16px;
-  margin-top: 32px;">
-  Transaction cost
-</Caption>
-
-<Row
-  dataCy="deposit"
-  variant="top"
-  style="background-color: var(--color-foreground-level-1)">
+<Row dataCy="deposit" variant="top" style="">
   <div slot="left">
-    <Title>{formatStake(transaction.messages[0])}</Title>
+    <Text variant="regular" style="color:var(--color-foreground-level-6);">
+      {formatStake(transaction.messages[0])}
+    </Text>
   </div>
 
   <div slot="right">
-    <Rad rad={summary.depositRad} usd={summary.depositUsd} />
+    <Rad rad={summary.depositRad} usd={summary.depositUsd} variant="deposit" />
   </div>
 </Row>
 
-<Row
-  dataCy="transaction-fee"
-  variant="middle"
-  style="background-color: var(--color-foreground-level-1)">
+<Row dataCy="transaction-fee" variant="middle" style="">
   <div slot="left">
-    <Title>Transaction Fee</Title>
+    <Text variant="regular" style="color:var(--color-foreground-level-6);">
+      Transaction Fee
+    </Text>
   </div>
 
   <div slot="right">
-    <Rad rad={summary.feeRad} usd={summary.feeUsd} size="big" />
+    <Rad rad={summary.feeRad} usd={summary.feeUsd} />
   </div>
 </Row>
 
 <Row
   dataCy="total"
   variant="bottom"
-  style="margin-bottom: 32px; background-color: var(--color-foreground-level-1)">
+  style="margin-bottom: 24px; border-top: 1px solid
+  var(--color-foreground-level-2); ">
   <div slot="left">
-    <Title style="color: var(--color-primary);" variant="big">Total</Title>
+    <Title style="color: var(--color-foreground-level-6);" variant="medium">
+      Total
+    </Title>
   </div>
 
   <div slot="right">
-    <Rad rad={summary.totalRad} usd={summary.totalUsd} size="big" />
+    <Rad rad={summary.totalRad} usd={summary.totalUsd} />
   </div>
 </Row>
 
-<Caption style="color: var(--color-foreground-level-6); margin-bottom: 16px">
-  Paid by
-</Caption>
+{#if transaction.id}
+  <Row variant="top">
+    <div slot="left">
+      <Text variant="regular" style="color:var(--color-foreground-level-6);">
+        Transaction ID
+      </Text>
+    </div>
+    <div slot="right">
+      <Copyable
+        style="background:var(--color-foreground-level-2); border-radius:2px;
+        display:flex; align-items: center; padding: 4px;">
+        <Numeric
+          variant="small"
+          style="color: var(--color-foreground-level-6); max-width: 24ch;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          {transaction.id}
+        </Numeric>
+      </Copyable>
+    </div>
+  </Row>
 
-<Row style="background-color: var(--color-foreground-level-1)">
+  <Row variant="bottom" style="margin-bottom: 24px;">
+    <div slot="left">
+      <Text variant="regular" style="color:var(--color-foreground-level-6);">
+        Status
+      </Text>
+    </div>
+    <div slot="right" style="display: flex; align-items: center;">
+      {#if iconState(transaction.state) === 'negative'}
+        <Icon.Important
+          style="margin-right: 8px; fill: var(--color-negative)" />
+      {:else if iconState(transaction.state) === 'positive'}
+        <Icon.Check
+          variant="filled"
+          style="margin-right: 8px; fill: var(--color-positive)" />
+      {:else}
+        <Icon.TransactionState
+          progress={iconProgress(transaction.state)}
+          style="margin-right: 8px;"
+          variant="small"
+          state={iconState(transaction.state)} />
+      {/if}
+      <Text style="align-self: center; color: var(--color-foreground-level-6);">
+        {statusText(transaction.state)}
+      </Text>
+    </div>
+  </Row>
+{/if}
+
+<Row style="">
   <div slot="left">
+    <Text style="color: var(--color-foreground-level-6);" variant="regular">
+      Funding source
+    </Text>
+  </div>
+
+  <div slot="right">
     <Avatar
       dataCy="payer-avatar"
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}
       variant={payer.type === PayerType.User ? 'circle' : 'square'}
-      style="color: var(--color-foreground)" />
-  </div>
-
-  <div slot="right">
-    <Rad rad={999} usd={999} size="big" />
+      style="color: var(--color-foreground-level-6);" />
   </div>
 </Row>

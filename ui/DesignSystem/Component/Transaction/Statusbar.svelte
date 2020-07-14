@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Text } from "../../Primitive";
+  import { Icon, Title } from "../../Primitive";
 
   export let progress = null; // only applys on variant: caution
   export let style = null;
@@ -11,7 +11,7 @@
   .statusbar {
     border-radius: 4px;
     display: flex;
-    height: 40px;
+    height: 56px;
     width: 100%;
   }
 
@@ -30,17 +30,21 @@
 
 <div {style} class="statusbar {variant}">
   {#if variant === 'negative'}
-    <Icon.Important style="margin: 8px; fill: var(--color-background)" />
+    <Icon.Important style="margin: 16px; fill: var(--color-background)" />
   {:else if variant === 'positive'}
     <Icon.Check
       variant="filled"
-      style="margin: 8px; fill: var(--color-background)" />
+      style="margin: 16px; fill: var(--color-background)" />
   {:else}
     <Icon.TransactionState
       {progress}
       variant="inverted"
-      style="margin: 8px; fill: var(--color-background)"
+      style="margin: 16px; fill: var(--color-background)"
       state={variant} />
   {/if}
-  <Text variant="tiny" style="align-self: center;">{text}</Text>
+  <Title
+    variant="medium"
+    style="align-self: center; color: var(--color-background);">
+    {text}
+  </Title>
 </div>

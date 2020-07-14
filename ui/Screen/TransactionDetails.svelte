@@ -1,17 +1,10 @@
 <script>
   import { getContext } from "svelte";
-  import { pop } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
   import * as transaction from "../src/transaction.ts";
 
-  import {
-    ModalLayout,
-    Remote,
-    Transaction,
-    TransactionStatusbar,
-  } from "../DesignSystem/Component";
-  import { Button } from "../DesignSystem/Primitive";
+  import { ModalLayout, Remote, Transaction } from "../DesignSystem/Component";
 
   export let params = null;
 
@@ -31,37 +24,16 @@
   .transaction {
     margin: 48px 0 32px 0;
   }
-
-  .button-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 32px;
-  }
 </style>
 
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
     <Remote {store} let:data={tx}>
-      <TransactionStatusbar
-        progress={transaction.iconProgress(tx.state)}
-        text={transaction.statusText(tx.state)}
-        variant={transaction.iconState(tx.state)}
-        style="margin-bottom: 32px; margin-top: 96px;" />
       <Transaction
         transaction={tx}
         {payer}
         transactionDeposits={session.transactionDeposits} />
     </Remote>
 
-    <div class="button-row">
-      <Button
-        dataCy="back-button"
-        disabled={false}
-        on:click={pop}
-        variant="vanilla">
-        Back
-      </Button>
-    </div>
   </div>
 </ModalLayout>
