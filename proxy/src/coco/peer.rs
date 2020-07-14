@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::net::SocketAddr;
 
 use librad::keys;
@@ -168,10 +169,10 @@ where
     F: Send + FnOnce(&mut git::Browser) -> Result<T, error::Error>,
 {
     let project = get_project(peer, project_urn)?;
-    let default_branch = project.default_branch();
+    let default_branch = git::Branch::local(project.default_branch());
     let git_dir = peer.paths().git_dir();
     let repo = git::Repository::new(git_dir)?;
-    let namespace = git::Namespace::from(project.urn().id.to_string().as_str());
+    let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
     let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
 
     callback(&mut browser)

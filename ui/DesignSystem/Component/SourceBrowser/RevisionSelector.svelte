@@ -165,7 +165,11 @@
             class="branch"
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
-            on:click|stopPropagation={() => selectRevision(repo.identity.id, branch)}>
+            on:click|stopPropagation={() => selectRevision(repo.identity.id, {
+                type: 'branch',
+                peerId: repo.identity.id,
+                name: branch,
+              })}>
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
@@ -177,7 +181,10 @@
             class="tag"
             data-repo-handle={repo.identity.metadata.handle}
             data-tag={tag}
-            on:click|stopPropagation={() => selectRevision(repo.identity.id, tag)}>
+            on:click|stopPropagation={() => selectRevision(repo.identity.id, {
+                type: 'tag',
+                name: tag,
+              })}>
             <Icon.Commit
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />

@@ -6,10 +6,6 @@ import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
 
-// TOOLING
-const filterBranches = (branches: string[]): string[] =>
-  branches.filter(branch => !config.HIDDEN_BRANCHES.includes(branch));
-
 // TYPES
 interface Person {
   avatar: string;
@@ -84,8 +80,8 @@ interface Tree extends SourceObject {
 
 interface Revision {
   user: identity.Identity;
-  branches: string[];
-  tags: string[];
+  branches: Branch[];
+  tags: Tag[];
 }
 
 type Revisions = Revision[];
@@ -94,6 +90,24 @@ interface Readme {
   content: string;
   path?: string;
 }
+
+export interface Branch {
+  type: "branch";
+  name: string;
+  peerId?: string;
+}
+
+export interface Tag {
+  type: "tag";
+  name: string;
+}
+
+export interface Sha {
+  type: "sha";
+  sha: string;
+}
+
+export type RevisionQuery = Branch | Tag | Sha;
 
 // STATE
 const commitStore = remote.createStore<Commit>();
@@ -126,8 +140,7 @@ interface FetchCommit extends event.Event<Kind> {
 interface FetchCommits extends event.Event<Kind> {
   kind: Kind.FetchCommits;
   projectId: string;
-  peerId: string;
-  branch: string;
+  revision: Branch;
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -140,7 +153,7 @@ interface FetchObject extends event.Event<Kind> {
   path: string;
   peerId: string;
   projectId: string;
-  revision: string;
+  revision: RevisionQuery;
   type: ObjectType;
 }
 
@@ -195,8 +208,8 @@ const update = (msg: Msg): void => {
       api
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
           query: {
-            peerId: msg.peerId,
-            branch: msg.branch,
+            peerId: msg.revision.peerId,
+            branch: msg.revision.name,
           },
         })
         .then(history => {
@@ -208,14 +221,7 @@ const update = (msg: Msg): void => {
     case Kind.FetchRevisions:
       api
         .get<Revisions>(`source/revisions/${msg.projectId}`)
-        .then(revisions =>
-          revisionsStore.success(
-            revisions.map(rev => ({
-              ...rev,
-              branches: filterBranches(rev.branches),
-            }))
-          )
-        )
+        .then(revisions => revisionsStore.success(revisions))
         .catch(revisionsStore.error);
       break;
 
@@ -269,7 +275,7 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 export const tree = (
   projectId: string,
   peerId: string,
-  revision: string,
+  revision: RevisionQuery,
   prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
@@ -287,7 +293,7 @@ export const tree = (
 const blob = (
   projectId: string,
   peerId: string,
-  revision: string,
+  revision: RevisionQuery,
   path: string,
   highlight: boolean
 ): Promise<Blob> =>
@@ -323,7 +329,7 @@ export const formatTime = (t: number): string => {
 export const readme = (
   projectId: string,
   peerId: string,
-  revision: string
+  revision: RevisionQuery
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
 
