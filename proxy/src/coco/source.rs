@@ -298,23 +298,6 @@ pub fn branches<'repo>(
     Ok(branches)
 }
 
-/// Given a project id to a repo returns the list of local branches.
-///
-/// # Errors
-///
-/// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn local_branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
-    let mut branches = browser
-        .list_branches(Some(BranchType::Local))?
-        .into_iter()
-        .map(|b| Branch(b.name.name().to_string()))
-        .collect::<Vec<Branch>>();
-
-    branches.sort();
-
-    Ok(branches)
-}
-
 /// Information about a locally checked out repository.
 #[derive(Deserialize, Serialize)]
 pub struct LocalState {

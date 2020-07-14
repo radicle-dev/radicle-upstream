@@ -293,6 +293,8 @@ mod handler {
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
+    use radicle_surf::vcs::git::BranchType;
+
     use crate::avatar;
     use crate::coco;
     use crate::error::Error;
@@ -351,7 +353,9 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let branches = coco::with_browser(&peer, &urn, |browser| coco::local_branches(browser))?;
+        let branches = coco::with_browser(&peer, &urn, |browser| {
+            coco::branches(browser, Some(BranchType::Local))
+        })?;
 
         Ok(reply::json(&branches))
     }

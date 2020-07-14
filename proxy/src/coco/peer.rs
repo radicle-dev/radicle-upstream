@@ -10,7 +10,7 @@ use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::peer;
 use librad::uri::RadUrn;
-use radicle_surf::vcs::git::{self, git2};
+use radicle_surf::vcs::git::{self, git2, BranchType};
 
 use super::source;
 use crate::error;
@@ -138,7 +138,10 @@ pub fn remotes(
     let repo = storage.open_repo(project.urn())?;
 
     let (local_branches, local_tags) = with_browser(peer, &project.urn(), |browser| {
-        Ok((source::local_branches(browser)?, source::tags(browser)?))
+        Ok((
+            source::branches(browser, Some(BranchType::Local))?,
+            source::tags(browser)?,
+        ))
     })?;
 
     let owner = owner.to_data().build()?; // TODO(finto): Dirty hack to make our Verified User into a Draft one
