@@ -27,9 +27,9 @@ pub type User = user::User<entity::Verified>;
 pub struct Revision {
     /// Owner of the repo.
     pub(crate) identity: identity::Identity,
-    /// List of [`coco::Branch`].
+    /// List of [`source::Branch`].
     pub(crate) branches: Vec<source::Branch>,
-    /// List of [`coco::Tag`].
+    /// List of [`source::Tag`].
     pub(crate) tags: Vec<source::Tag>,
 }
 
