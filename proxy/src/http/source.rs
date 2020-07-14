@@ -432,7 +432,7 @@ mod handler {
                 identity: identity::Identity {
                     peer_id: fake_peer_id.clone(),
                     // TODO(finto): Get the right URN
-                    id: fake_peer_urn
+                    urn: fake_peer_urn
                         .parse()
                         .expect("failed to parse hardcoded URN"),
                     metadata: identity::Metadata {
@@ -442,9 +442,7 @@ mod handler {
                     registered: None,
                     shareable_entity_identifier: identity::SharedIdentifier {
                         handle: (*fake_handle).to_string(),
-                        urn: fake_peer_urn
-                            .parse()
-                            .expect("failed to parse hardcoded URN"),
+                        peer_id: fake_peer_id.clone(),
                     },
                 },
             },
@@ -1350,7 +1348,7 @@ mod test {
                     identity: identity::Identity {
                         peer_id: fake_peer_id.clone(),
                         // TODO(finto): Get the right URN
-                        id: fake_peer_urn.clone(),
+                        urn: fake_peer_urn.clone(),
                         metadata: identity::Metadata {
                             handle: (*fake_handle).to_string(),
                         },
@@ -1358,7 +1356,7 @@ mod test {
                         registered: None,
                         shareable_entity_identifier: identity::SharedIdentifier {
                             handle: (*fake_handle).to_string(),
-                            urn: fake_peer_urn.clone(),
+                            peer_id: fake_peer_id.clone(),
                         },
                     },
                 },

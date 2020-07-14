@@ -19,7 +19,7 @@ pub struct Identity {
     /// The Peer Id for the user.
     pub peer_id: peer::PeerId,
     /// The librad id.
-    pub id: coco::Urn,
+    pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: SharedIdentifier,
     /// Bundle of user provided data.
@@ -49,15 +49,15 @@ pub fn create(
     let user = coco::init_owner(peer, key, &handle)?;
     let peer_id = peer.peer_id().clone();
 
-    let id = user.urn();
-    let shareable_entity_identifier = user.into();
+    let urn = user.urn();
+    let shareable_entity_identifier = (peer_id.clone(), user).into();
     Ok(Identity {
         peer_id,
-        id: id.clone(),
+        urn: urn.clone(),
         shareable_entity_identifier,
         metadata: Metadata { handle },
         registered: None,
-        avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
+        avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
     })
 }
 
@@ -68,19 +68,17 @@ pub fn create(
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub fn get(peer: &coco::PeerApi, id: &coco::Urn) -> Result<Identity, error::Error> {
     let user = coco::get_user(peer, id)?;
+    let handle = user.name().to_string();
+    let urn = user.urn();
     let peer_id = peer.peer_id().clone();
+    let shareable_entity_identifier = (peer_id.clone(), user).into();
     Ok(Identity {
         peer_id,
-        id: id.clone(),
-        shareable_entity_identifier: SharedIdentifier {
-            handle: user.name().to_string(),
-            urn: id.clone(),
-        },
-        metadata: Metadata {
-            handle: user.name().to_string(),
-        },
+        urn: urn.clone(),
+        shareable_entity_identifier,
+        metadata: Metadata { handle },
         registered: None,
-        avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
+        avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
     })
 }
 
@@ -92,15 +90,14 @@ pub mod shared_identifier {
     use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
     use librad::meta::user;
-
-    use crate::coco;
+    use librad::peer;
 
     /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
     #[derive(Debug, thiserror::Error)]
     pub enum ParseError {
         /// Could not parse the URN portion of the identifier.
         #[error(transparent)]
-        Urn(#[from] coco::ParseError),
+        Peer(#[from] peer::conversion::Error),
         /// The identifier contained more than one '@' symbol.
         #[error("shared identifier contains more than one '@' symbol")]
         AtSplitError,
@@ -109,7 +106,7 @@ pub mod shared_identifier {
         MissingHandle,
         /// The urn portion of the identifier was missing.
         #[error("shared identifier is missing the URN to the right of the '@' symbol")]
-        MissingUrn,
+        MissingPeerId,
     }
 
     /// The combination of a handle and a urn give user's a structure for sharing their identities.
@@ -118,14 +115,14 @@ pub mod shared_identifier {
         /// The user's chosen handle.
         pub handle: String,
         /// The unique identifier of the user.
-        pub urn: coco::Urn,
+        pub peer_id: peer::PeerId,
     }
 
-    impl<ST> From<user::User<ST>> for SharedIdentifier {
-        fn from(user: user::User<ST>) -> Self {
+    impl<ST> From<(peer::PeerId, user::User<ST>)> for SharedIdentifier {
+        fn from((peer_id, user): (peer::PeerId, user::User<ST>)) -> Self {
             Self {
                 handle: user.name().to_string(),
-                urn: user.urn(),
+                peer_id,
             }
         }
     }
@@ -136,24 +133,24 @@ pub mod shared_identifier {
         fn from_str(s: &str) -> Result<Self, Self::Err> {
             let mut sub = s.split('@');
             let handle = sub.next();
-            let urn = sub.next();
+            let peer_id = sub.next();
 
             if sub.count() != 0 {
                 return Err(ParseError::AtSplitError);
             }
 
             let handle = handle.ok_or(ParseError::MissingHandle)?.to_string();
-            let urn = urn
-                .ok_or(ParseError::MissingUrn)
-                .and_then(|urn| Ok(urn.parse()?))?;
+            let peer_id = peer_id
+                .ok_or(ParseError::MissingPeerId)
+                .and_then(|peer_id| Ok(peer_id.parse()?))?;
 
-            Ok(Self { handle, urn })
+            Ok(Self { handle, peer_id })
         }
     }
 
     impl fmt::Display for SharedIdentifier {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "{}@{}", self.handle, self.urn)
+            write!(f, "{}@{}", self.handle, self.peer_id)
         }
     }
 
