@@ -143,9 +143,9 @@ impl ToDocumentedType for Input {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
+    use radicle_registry_client::CryptoPair;
     use std::convert::TryFrom;
     use std::sync::Arc;
-    use radicle_registry_client::CryptoPair;
     use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
