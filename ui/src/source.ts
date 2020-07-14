@@ -209,7 +209,6 @@ const update = (msg: Msg): void => {
       api
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
           query: {
-            peerId: msg.peerId,
             branch: msg.branch,
           },
         })

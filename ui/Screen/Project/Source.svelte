@@ -220,7 +220,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                on:click={navigateOnReady(path.projectCommits(project.id, currentPeerId, currentRevision), commitsStore)}>
+                on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
                 Commits
               </a>
             </Text>

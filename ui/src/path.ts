@@ -56,12 +56,8 @@ export const parseProjectSourceLocation = (querystring: string) => {
 
 export const projectCommit = (id: string, hash: string): string =>
   `/projects/${id}/commit/${hash}`;
-export const projectCommits = (
-  id: string,
-  peerId: string,
-  revision: string
-): string =>
-  `/projects/${id}/commits/${encodeURIComponent(revision)}?peerId=${peerId}`;
+export const projectCommits = (id: string, revision: RevisionQuery): string =>
+  `/projects/${id}/commits/${revision}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 
