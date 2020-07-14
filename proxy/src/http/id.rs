@@ -87,15 +87,16 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
         let id = registry::Id::try_from(id_string).map_err(Error::from)?;
-        let id_status = reg.get_id_status(&id).await;
+        let id_status = reg.get_id_status(&id).await?;
 
         Ok(reply::json(&id_status))
     }
 }
 
-#[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
+#[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic, warnings)]
 #[cfg(test)]
 mod test {
+    use crate::registry::Client;
     use pretty_assertions::assert_eq;
     use serde_json::json;
     use std::convert::TryFrom;
@@ -109,7 +110,7 @@ mod test {
     use crate::registry;
 
     #[tokio::test]
-    async fn get_status() -> Result<(), error::Error> {
+    async fn get_status_available() -> Result<(), error::Error> {
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -117,6 +118,7 @@ mod test {
         let api = super::filters(&Arc::clone(&registry));
 
         let id = registry::Id::try_from("monadic")?;
+        let reg = registry.read().await;
         let res = request()
             .method("GET")
             .path(&format!("/{}/status", id.to_string()))
@@ -130,5 +132,154 @@ mod test {
         Ok(())
     }
 
-    //TODO(nuno): test taken and retired
+    #[tokio::test]
+    async fn get_status_taken_by_user() -> Result<(), error::Error> {
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
+        let api = super::filters(&Arc::clone(&registry));
+
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+
+        // Register the user
+        registry
+            .write()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/{}/status", handle.to_string()))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(registry::IdStatus::Taken));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_status_taken_by_org() -> Result<(), error::Error> {
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
+        let api = super::filters(&Arc::clone(&registry));
+
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        // Register the user to that it can register orgs
+        registry
+            .write()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register the org
+        let org_id = registry::Id::try_from("monadic")?;
+        registry
+            .write()
+            .await
+            .register_org(&author, org_id.clone(), 10)
+            .await?;
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/{}/status", org_id.to_string()))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(registry::IdStatus::Taken));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_status_retired_by_user() -> Result<(), error::Error> {
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
+        let api = super::filters(&Arc::clone(&registry));
+
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        // Register the user
+        registry
+            .write()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Unregister the user
+        registry
+            .write()
+            .await
+            .unregister_user(&author, handle.clone(), 10)
+            .await?;
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/{}/status", handle.to_string()))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(registry::IdStatus::Retired));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_status_retired_by_org() -> Result<(), error::Error> {
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
+        let api = super::filters(&Arc::clone(&registry));
+
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        // Register the user to that it can register orgs
+        registry
+            .write()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register the org
+        let org_id = registry::Id::try_from("monadic")?;
+        registry
+            .write()
+            .await
+            .register_org(&author, org_id.clone(), 10)
+            .await?;
+
+        // Unregister the org
+        registry
+            .write()
+            .await
+            .unregister_org(&author, org_id.clone(), 10)
+            .await?;
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/{}/status", org_id.to_string()))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(registry::IdStatus::Retired));
+        });
+
+        Ok(())
+    }
 }
