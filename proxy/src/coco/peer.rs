@@ -1,12 +1,14 @@
 use nonempty::NonEmpty;
 use std::net::SocketAddr;
 
+use librad::git::types::{Namespace, Reference};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
+use librad::peer;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
 
@@ -132,7 +134,7 @@ pub fn remotes(
     project_urn: &RadUrn,
 ) -> Result<NonEmpty<Remote>, error::Error> {
     let project = get_project(peer, project_urn)?;
-    let storage = peer.storage();
+    let storage = peer.storage().reopen()?;
     let repo = storage.open_repo(project.urn())?;
 
     let (local_branches, local_tags) = with_browser(peer, &project.urn(), |browser| {
@@ -148,11 +150,11 @@ pub fn remotes(
 
     for peer_id in repo.tracked()? {
         let remote_branches = storage
-            .rad_refs_of(&project.urn(), peer_id.clone())?
-            .heads
-            .keys()
-            .cloned()
-            .map(source::Branch)
+            .references(&Reference::heads(project.urn().id, peer_id.clone()))?
+            .filter_map(|reference| {
+                let reference = reference.ok()?;
+                remote_branch_name(&reference, &project.urn().id, &peer_id)
+            })
             .collect();
 
         let user = repo.get_rad_self_of(peer_id)?;
@@ -167,6 +169,20 @@ pub fn remotes(
     }
 
     Ok(remotes)
+}
+
+/// Get the [`source::Branch`] name for a remote peer's head [`git2::Reference`].
+fn remote_branch_name(
+    reference: &git2::Reference,
+    namespace: &Namespace,
+    remote: &peer::PeerId,
+) -> Option<source::Branch> {
+    let name = reference.name()?;
+    let name = name.trim_start_matches(&format!(
+        "refs/namespaces/{}/refs/remotes/{}/heads/",
+        namespace, remote
+    ));
+    Some(source::Branch(name.to_string()))
 }
 
 /// Returns the list of [`user::User`]s known for your peer.

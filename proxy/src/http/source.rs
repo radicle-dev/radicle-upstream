@@ -836,6 +836,7 @@ mod test {
     use warp::test::request;
 
     use librad::keys::SecretKey;
+    use radicle_surf::vcs::git::git2;
 
     use crate::avatar;
     use crate::coco;
@@ -1215,13 +1216,11 @@ mod test {
         println!("\n");
         println!("config: {}", config.paths.git_dir().display());
         println!("\n");
-        // let _platinum =
-        // git2::Repository::open(config.paths.git_dir()).expect("failed to open monorepo");
         let peer = coco::create_peer_api(config).await?;
 
-        let _fintohaps = coco::init_user(&peer, key.clone(), "fintohaps")?;
+        let fintohaps = coco::init_user(&peer, key.clone(), "fintohaps")?;
 
-        let id = identity::create(&peer, key.clone(), "cloudhead".parse().unwrap())?;
+        let id = identity::create(&peer, key.clone(), "cloudhead".to_string())?;
 
         let owner = coco::get_user(&peer, &id.clone().id)?;
         let owner = coco::verify_user(owner)?;
@@ -1238,12 +1237,62 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
+        // TODO(finto): We're faking a lot of the networking interaction here.
+        // Create git references of the form and track the peer.
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/refs/heads
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/id
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
+        //   to fintohaps
         {
-            let key = SecretKey::new();
-            let peer = &peer;
-            let storage = peer.storage();
-            let peer_id: librad::peer::PeerId = key.into();
-            storage.track(&urn, &peer_id)?;
+            let remote = librad::peer::PeerId::from(SecretKey::new());
+            let platinum =
+                git2::Repository::open(peer.paths().git_dir()).expect("failed to open monorepo");
+            let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
+
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/heads/master", urn.id))
+                .expect("failed to get master")
+                .target()
+                .expect("missing target");
+            let _heads = platinum
+                .reference(
+                    &format!("{}/heads/master", prefix),
+                    target,
+                    false,
+                    "remote heads",
+                )
+                .expect("failed to create heads");
+
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/rad/id", urn.id))
+                .expect("failed to get rad/id")
+                .target()
+                .expect("missing target");
+            let _rad_id = platinum
+                .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
+                .expect("failed to create rad/id");
+
+            let _rad_self = platinum
+                .reference_symbolic(
+                    &format!("{}/rad/self", prefix),
+                    &format!("refs/namespaces/{}/refs/rad/id", fintohaps.urn().id),
+                    false,
+                    "rad/self",
+                )
+                .expect("failed to create rad/self");
+
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/rad/refs", urn.id))
+                .expect("failed to get rad/refs")
+                .target()
+                .expect("missing target");
+            let _rad_id = platinum
+                .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
+                .expect("failed to create rad/id");
+
+            peer.storage()
+                .track(&urn, &remote)
+                .expect("failed to track peer");
         }
 
         let api = super::filters(
@@ -1262,7 +1311,11 @@ mod test {
         let handle = owner.name().to_string();
         let avatar = avatar::Avatar::from(&owner_urn.to_string(), avatar::Usage::Identity);
 
-        // TODO(rudolfs): we should test remote peers as well
+        let fintohaps_urn = fintohaps.urn();
+        let fintohaps_handle = fintohaps.name().to_string();
+        let fintohaps_avatar =
+            avatar::Avatar::from(&fintohaps_urn.to_string(), avatar::Usage::Identity);
+
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
@@ -1271,7 +1324,7 @@ mod test {
                         "identity": {
                             "id": owner_urn,
                             "metadata": {
-                                "handle": owner.name().to_string(),
+                                "handle": handle.clone()
                             },
                             "registered": Value::Null,
                             "shareableEntityIdentifier": format!("{}@{}", handle, owner_urn),
@@ -1280,6 +1333,19 @@ mod test {
                         "branches": [ "dev", "master" ],
                         "tags": ["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]
                     },
+                    {
+                        "identity": {
+                            "id": fintohaps_urn,
+                            "metadata": {
+                                "handle": fintohaps_handle.clone()
+                            },
+                            "registered": Value::Null,
+                            "shareableEntityIdentifier": format!("{}@{}", fintohaps_handle, fintohaps_urn),
+                            "avatarFallback": fintohaps_avatar
+                        },
+                        "branches": [ "master" ],
+                        "tags": [],
+                    }
                 ]),
             )
         });
