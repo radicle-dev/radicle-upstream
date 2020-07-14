@@ -25,7 +25,7 @@ lazy_static::lazy_static! {
 
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
-pub struct Branch(pub(super) String);
+pub struct Branch(pub(crate) String);
 
 impl fmt::Display for Branch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -37,7 +37,7 @@ impl fmt::Display for Branch {
 ///
 /// We still need full tag support.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Tag(pub(super) String);
+pub struct Tag(pub(crate) String);
 
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

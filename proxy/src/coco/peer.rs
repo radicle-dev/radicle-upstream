@@ -1,6 +1,6 @@
 use nonempty::NonEmpty;
-use std::net::SocketAddr;
 use serde::Serialize;
+use std::net::SocketAddr;
 
 use librad::git::types::{Namespace, Reference};
 use librad::keys;
@@ -15,8 +15,8 @@ use radicle_surf::vcs::git::{self, git2, BranchType};
 
 use super::source;
 use crate::error;
-use crate::project::Project;
 use crate::identity;
+use crate::project::Project;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -26,13 +26,12 @@ pub type User = user::User<entity::Verified>;
 #[serde(rename_all = "camelCase")]
 pub struct Revision {
     /// Owner of the repo.
-    identity: identity::Identity,
+    pub(crate) identity: identity::Identity,
     /// List of [`coco::Branch`].
-    branches: Vec<source::Branch>,
+    pub(crate) branches: Vec<source::Branch>,
     /// List of [`coco::Tag`].
-    tags: Vec<source::Tag>,
+    pub(crate) tags: Vec<source::Tag>,
 }
-
 
 /// Create a new `PeerApi` given a `PeerConfig`.
 ///

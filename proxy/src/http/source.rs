@@ -814,7 +814,6 @@ mod test {
     use librad::keys::SecretKey;
     use radicle_surf::vcs::git::git2;
 
-    use crate::avatar;
     use crate::coco;
     use crate::error;
     use crate::http;
@@ -1189,9 +1188,6 @@ mod test {
         };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
-        println!("\n");
-        println!("config: {}", config.paths.git_dir().display());
-        println!("\n");
         let peer = coco::create_peer_api(config).await?;
 
         let fintohaps = coco::init_user(&peer, key.clone(), "fintohaps")?;
@@ -1283,46 +1279,30 @@ mod test {
             .reply(&api)
             .await;
 
-        let owner_urn = owner.urn();
-        let handle = owner.name().to_string();
-        let avatar = avatar::Avatar::from(&owner_urn.to_string(), avatar::Usage::Identity);
-
-        let fintohaps_urn = fintohaps.urn();
-        let fintohaps_handle = fintohaps.name().to_string();
-        let fintohaps_avatar =
-            avatar::Avatar::from(&fintohaps_urn.to_string(), avatar::Usage::Identity);
-
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
                 json!([
-                    {
-                        "identity": {
-                            "id": owner_urn,
-                            "metadata": {
-                                "handle": handle.clone()
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("{}@{}", handle, owner_urn),
-                            "avatarFallback": avatar
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": ["v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0"]
+                    coco::Revision {
+                        identity: owner.into(),
+                        branches: vec![
+                            coco::Branch("dev".to_string()),
+                            coco::Branch("master".to_string())
+                        ],
+                        tags: vec![
+                            coco::Tag("v0.1.0".to_string()),
+                            coco::Tag("v0.2.0".to_string()),
+                            coco::Tag("v0.3.0".to_string()),
+                            coco::Tag("v0.4.0".to_string()),
+                            coco::Tag("v0.5.0".to_string())
+                        ]
                     },
-                    {
-                        "identity": {
-                            "id": fintohaps_urn,
-                            "metadata": {
-                                "handle": fintohaps_handle.clone()
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("{}@{}", fintohaps_handle, fintohaps_urn),
-                            "avatarFallback": fintohaps_avatar
-                        },
-                        "branches": [ "master" ],
-                        "tags": [],
-                    }
-                ]),
+                    coco::Revision {
+                        identity: fintohaps.into(),
+                        branches: vec![coco::Branch("master".to_string())],
+                        tags: vec![]
+                    },
+                ])
             )
         });
 
