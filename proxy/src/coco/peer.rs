@@ -146,9 +146,8 @@ pub fn revisions(
         ))
     })?;
 
-    let owner = owner.to_data().build()?; // TODO(finto): Dirty hack to make our Verified User into a Draft one
     let mut remotes = NonEmpty::new(Revision {
-        identity: owner.into(),
+        identity: owner.clone().into(),
         branches: local_branches,
         tags: local_tags,
     });
