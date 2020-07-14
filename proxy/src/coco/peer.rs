@@ -7,7 +7,7 @@ use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
-use librad::uri::{Path, Protocol, RadUrn};
+use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
 
 use super::source;
@@ -134,7 +134,6 @@ pub fn remotes(
     let project = get_project(peer, project_urn)?;
     let storage = peer.storage();
     let repo = storage.open_repo(project.urn())?;
-    let refs = repo.rad_refs()?;
 
     let (local_branches, local_tags) = with_browser(peer, &project.urn(), |browser| {
         Ok((source::local_branches(browser)?, source::tags(browser)?))
@@ -147,21 +146,16 @@ pub fn remotes(
         tags: local_tags,
     });
 
-    for remote in refs.remotes.flatten() {
+    for peer_id in repo.tracked()? {
         let remote_branches = storage
-            .rad_refs_of(&project.urn(), remote.clone())?
+            .rad_refs_of(&project.urn(), peer_id.clone())?
             .heads
             .keys()
             .cloned()
             .map(source::Branch)
             .collect();
 
-        // TODO(finto): Can we do this by not going through string?
-        let hash = librad::hash::Hash::hash(remote.to_string().as_bytes());
-        // TODO(finto): This doesn't actually get the user. The peer id is their peer
-        // device rather than the Hash of their user profile.
-        let id = RadUrn::new(hash, Protocol::Git, Path::new());
-        let user = get_user(peer, &id)?;
+        let user = repo.get_rad_self_of(peer_id)?;
 
         remotes.push(Remote {
             user,

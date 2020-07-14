@@ -1212,14 +1212,21 @@ mod test {
         };
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
         let config = coco::config::default(key.clone(), tmp_dir)?;
+        println!("\n");
+        println!("config: {}", config.paths.git_dir().display());
+        println!("\n");
+        // let _platinum =
+        // git2::Repository::open(config.paths.git_dir()).expect("failed to open monorepo");
         let peer = coco::create_peer_api(config).await?;
 
-        let identity = identity::create(&peer, key.clone(), "cloudhead".parse().unwrap())?;
+        let _fintohaps = coco::init_user(&peer, key.clone(), "fintohaps")?;
 
-        let owner = coco::get_user(&peer, &identity.clone().id)?;
+        let id = identity::create(&peer, key.clone(), "cloudhead".parse().unwrap())?;
+
+        let owner = coco::get_user(&peer, &id.clone().id)?;
         let owner = coco::verify_user(owner)?;
 
-        session::set_identity(&store, identity)?;
+        session::set_identity(&store, id)?;
 
         let platinum_project = coco::control::replicate_platinum(
             &peer,
@@ -1230,6 +1237,14 @@ mod test {
             "master",
         )?;
         let urn = platinum_project.urn();
+
+        {
+            let key = SecretKey::new();
+            let peer = &peer;
+            let storage = peer.storage();
+            let peer_id: librad::peer::PeerId = key.into();
+            storage.track(&urn, &peer_id)?;
+        }
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
