@@ -1,5 +1,5 @@
 <script>
-  import { Button, Input, Text, Title } from "../../Primitive";
+  import { Button, Input, Icon, Text, Title } from "../../Primitive";
   import Copyable from "../Copyable.svelte";
   import QR from "../QR.svelte";
 
@@ -93,7 +93,14 @@
       <Title style="padding-bottom: 0.5rem;">Amount</Title>
       <Input.Text
         placeholder="Enter the amount"
-        style="flex: 1; padding-bottom: 1rem;" />
+        showLeftItem
+        style="flex: 1; padding-bottom: 1rem;">
+        <div slot="left" style="display: flex;">
+          <Icon.Currency
+            size="big"
+            style="fill: var(--color-foreground-level-6)" />
+        </div>
+      </Input.Text>
       <!-- TODO: Add note back in when implemented on registry
       <Title style="padding-bottom: 0.5rem;">Note</Title>
       <Input.Text
