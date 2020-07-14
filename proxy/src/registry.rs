@@ -163,7 +163,7 @@ pub trait Client: Clone + Send + Sync {
     /// # Errors
     ///
     /// Will return `Err` if a protocol error occurs.
-    async fn get_id_status(&self, id: &Id) -> IdStatus;
+    async fn get_id_status(&self, id: &Id) -> Result<IdStatus, error::Error>;
 
     /// Try to retrieve org from the Registry by id.
     ///
@@ -275,6 +275,18 @@ pub trait Client: Clone + Send + Sync {
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
+    /// Remove a registered User from the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn unregister_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        handle: Id,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
     /// Graciously pay some tokens to the recipient out of Alices pocket.
     ///
     /// # Errors
@@ -375,8 +387,9 @@ impl Client for Registry {
             .ok_or(error::Error::BlockNotFound(block))
     }
 
-    async fn get_id_status(&self, id: &Id) -> IdStatus {
-        self.client.get_id_status(id).await
+    async fn get_id_status(&self, id: &Id) -> Result<IdStatus, error::Error> {
+        let status = self.client.get_id_status(id).await?;
+        Ok(status)
     }
 
     async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error> {
@@ -625,6 +638,31 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::UserRegistration { handle, id },
+            fee,
+        ))
+    }
+
+    async fn unregister_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        handle: Id,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error> {
+        // Prepare and submit user unregistration transaction.
+        let unregister_message = protocol::message::UnregisterUser {
+            user_id: handle.clone(),
+        };
+        let tx = self
+            .new_signed_transaction(author, unregister_message, fee)
+            .await?;
+        let applied = self.client.submit_transaction(tx).await?.await?;
+        applied.result?;
+        let block = self.get_block_header(applied.block).await?;
+
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::UserUnregistration { id: handle },
             fee,
         ))
     }
