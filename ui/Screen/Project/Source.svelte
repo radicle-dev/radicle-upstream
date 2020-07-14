@@ -29,18 +29,30 @@
 
   const { id, metadata } = getContext("project");
 
-  $: ({
-    currentPeerId,
-    currentRevision,
-    currentObjectType,
-    currentObjectPath,
-  } = path.parseProjectSourceLocation(
-    $querystring,
-    null,
-    metadata.defaultBranch,
-    ObjectType.Tree,
-    null
-  ));
+  let currentPeerId;
+  let currentRevision;
+  let currentObjectType;
+  let currentObjectPath;
+
+  $: {
+    const parsed = path.parseProjectSourceLocation($querystring);
+
+    currentPeerId = parsed.peerId || null;
+    currentObjectType = parsed.objectType || ObjectType.Tree;
+    currentObjectPath = parsed.objectPath || null;
+
+    if (parsed.revision) {
+      if (JSON.stringify(currentRevision) !== JSON.stringify(parsed.revision)) {
+        currentRevision = parsed.revision;
+      }
+    } else {
+      currentRevision = {
+        type: "branch",
+        name: metadata.defaultBranch,
+        peerId: "",
+      };
+    }
+  }
 
   const updateRevision = (projectId, revision, peerId) => {
     push(
@@ -74,8 +86,6 @@
   $: fetchCommits({ projectId: id, branch: currentRevision.name });
 
   fetchRevisions({ projectId: id });
-
-  $: console.log("currentRevision: ", currentRevision);
 </script>
 
 <style>
@@ -184,7 +194,6 @@
             currentRevision={currentRevision.name}
             {revisions}
             on:select={event => {
-              console.log("What's the event? ", event);
               updateRevision(project.id, event.detail.revision, event.detail.peerId);
             }} />
         </div>

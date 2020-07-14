@@ -50,29 +50,8 @@ export const projectSource = (
   })}`;
 };
 
-export const parseProjectSourceLocation = (
-  querystring: string,
-  defaultPeerId: string,
-  defaultName: string,
-  defaultObjectType: string,
-  defaultObjectPath: string
-) => {
-  console.log("QS: ", querystring);
-  console.log("QS decoded: ", decodeURIComponent(querystring));
-  const parsed = parse(querystring);
-  const defaultRevision: Branch = {
-    type: "branch",
-    name: defaultName,
-    peerId: defaultPeerId,
-  };
-  console.log("Parsed: ", parsed);
-  console.log("Default: ", defaultRevision);
-  return {
-    currentPeerId: parsed.peerId || defaultPeerId,
-    currentRevision: parsed.revision || defaultRevision,
-    currentObjectType: parsed.objectType || defaultObjectType,
-    currentObjectPath: parsed.objectPath || defaultObjectPath,
-  };
+export const parseProjectSourceLocation = (querystring: string) => {
+  return parse(querystring);
 };
 
 export const projectCommit = (id: string, hash: string): string =>
