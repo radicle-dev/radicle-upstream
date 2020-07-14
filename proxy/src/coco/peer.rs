@@ -1,5 +1,6 @@
 use nonempty::NonEmpty;
 use std::net::SocketAddr;
+use serde::Serialize;
 
 use librad::git::types::{Namespace, Reference};
 use librad::keys;
@@ -15,21 +16,23 @@ use radicle_surf::vcs::git::{self, git2, BranchType};
 use super::source;
 use crate::error;
 use crate::project::Project;
+use crate::identity;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
-/// A bundled type for the revisions API response containing information about
-/// the user and its branches and tags scoped by a project.
-pub struct Remote {
-    // TODO(finto): Should probably be User<Verified> i.e. User from line 22.
-    /// The user identity.
-    pub user: user::User<entity::Draft>,
-    /// Branches scoped by project.
-    pub branches: Vec<source::Branch>,
-    /// Tags scoped by project.
-    pub tags: Vec<source::Tag>,
+/// Bundled response to retrieve both branches and tags for a user repo.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Revision {
+    /// Owner of the repo.
+    identity: identity::Identity,
+    /// List of [`coco::Branch`].
+    branches: Vec<source::Branch>,
+    /// List of [`coco::Tag`].
+    tags: Vec<source::Tag>,
 }
+
 
 /// Create a new `PeerApi` given a `PeerConfig`.
 ///
@@ -128,11 +131,11 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
 ///
 ///   * [`error::Error::LibradLock`]
 ///   * [`error::Error::Git`]
-pub fn remotes(
+pub fn revisions(
     peer: &PeerApi,
     owner: &User,
     project_urn: &RadUrn,
-) -> Result<NonEmpty<Remote>, error::Error> {
+) -> Result<NonEmpty<Revision>, error::Error> {
     let project = get_project(peer, project_urn)?;
     let storage = peer.storage().reopen()?;
     let repo = storage.open_repo(project.urn())?;
@@ -145,8 +148,8 @@ pub fn remotes(
     })?;
 
     let owner = owner.to_data().build()?; // TODO(finto): Dirty hack to make our Verified User into a Draft one
-    let mut remotes = NonEmpty::new(Remote {
-        user: owner,
+    let mut remotes = NonEmpty::new(Revision {
+        identity: owner.into(),
         branches: local_branches,
         tags: local_tags,
     });
@@ -162,8 +165,8 @@ pub fn remotes(
 
         let user = repo.get_rad_self_of(peer_id)?;
 
-        remotes.push(Remote {
-            user,
+        remotes.push(Revision {
+            identity: user.into(),
             branches: remote_branches,
             // TODO(rudolfs): implement remote peer tags once we decide how
             // https://radicle.community/t/git-tags/214

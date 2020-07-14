@@ -295,11 +295,9 @@ mod handler {
 
     use radicle_surf::vcs::git::BranchType;
 
-    use crate::avatar;
     use crate::coco;
     use crate::error::Error;
     use crate::http;
-    use crate::identity;
     use crate::registry;
     use crate::session;
 
@@ -404,35 +402,9 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let urn = project_urn.parse().map_err(Error::from)?;
         let peer = &*peer.lock().await;
-        let remotes = coco::remotes(peer, &owner, &urn)?;
+        let revisions: Vec<_> = coco::revisions(peer, &owner, &urn)?.into();
 
-        let revs = remotes
-            .iter()
-            .map(|remote| {
-                let urn = remote.user.urn();
-                let handle = remote.user.name().to_string();
-                super::Revision {
-                    branches: remote.branches.clone(),
-                    tags: remote.tags.clone(),
-                    identity: identity::Identity {
-                        id: urn.clone(),
-                        metadata: identity::Metadata {
-                            handle: handle.clone(),
-                        },
-                        // TODO(finto): Add Avatar::from_urn, the string conversion is making me
-                        // nervous.
-                        avatar_fallback: avatar::Avatar::from(
-                            &urn.to_string(),
-                            avatar::Usage::Identity,
-                        ),
-                        registered: None,
-                        shareable_entity_identifier: identity::SharedIdentifier { handle, urn },
-                    },
-                }
-            })
-            .collect::<Vec<super::Revision>>();
-
-        Ok(reply::json(&revs))
+        Ok(reply::json(&revisions))
     }
 
     /// Fetch the list [`coco::Tag`].
