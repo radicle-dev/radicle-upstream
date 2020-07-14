@@ -42,7 +42,13 @@
     currentObjectPath = parsed.objectPath || null;
 
     if (parsed.revision) {
-      if (JSON.stringify(currentRevision) !== JSON.stringify(parsed.revision)) {
+      if (
+        !(
+          currentRevision.type === parsed.revision.type &&
+          currentRevision.name === parsed.revision.name &&
+          currentRevision.peerId === parsed.revision.peerId
+        )
+      ) {
         currentRevision = parsed.revision;
       }
     } else {
