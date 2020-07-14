@@ -1524,6 +1524,13 @@ mod test {
 
     #[tokio::test]
     async fn tree_dev_branch() -> Result<(), error::Error> {
+        // Testing that the endpoint works with URL encoding
+        const FRAGMENT: &percent_encoding::AsciiSet = &percent_encoding::CONTROLS
+            .add(b' ')
+            .add(b'"')
+            .add(b'[')
+            .add(b']')
+            .add(b'=');
         pretty_env_logger::init();
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
@@ -1568,13 +1575,6 @@ mod test {
             revision: Some(revision),
         };
 
-        // Testing that the endpoint works with URL encoding
-        const FRAGMENT: &percent_encoding::AsciiSet = &percent_encoding::CONTROLS
-            .add(b' ')
-            .add(b'"')
-            .add(b'[')
-            .add(b']')
-            .add(b'=');
         let path = format!(
             "/tree/{}?{}",
             urn,
