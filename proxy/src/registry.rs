@@ -268,7 +268,7 @@ pub trait Client: Clone + Send + Sync {
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
-    /// Transfer tokens from an orgto the recipient.
+    /// Transfer tokens from an org to the recipient.
     ///
     /// # Errors
     ///
