@@ -9,8 +9,10 @@
   };
   const showTooltip = e => {
     const rect = e.target.closest("[data-tooltip]").getBoundingClientRect();
+    const offsetY = rect.height < 32 ? (32 - rect.height) / 2 : 0;
+
     tooltip = {
-      positionY: rect.top,
+      positionY: rect.top - offsetY,
       positionX: rect.right + 20,
       className: "visible",
     };
