@@ -2939,7 +2939,7 @@ dependencies = [
  "lazy_static",
  "librad",
  "log 0.4.8",
- "nonempty 0.2.0",
+ "nonempty 0.5.0",
  "parity-scale-codec",
  "percent-encoding 2.1.0",
  "pico-args",
@@ -3127,9 +3127,9 @@ dependencies = [
 
 [[package]]
 name = "radicle-surf"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52ff80ba96994f84154bcbe61c2077d202561dc548a2c0c87eeee23fa7e13ffe"
+checksum = "a683a05a2c99be50c2932d3f64dae8b5f0602dca6799f7efc70c79162af25852"
 dependencies = [
  "either",
  "git2",

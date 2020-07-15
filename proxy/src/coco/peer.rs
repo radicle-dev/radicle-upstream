@@ -3,14 +3,12 @@ use serde::Serialize;
 use std::convert::TryFrom;
 use std::net::SocketAddr;
 
-use librad::git::types::{Namespace, Reference};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
-use librad::peer;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2, BranchType};
 
@@ -139,6 +137,7 @@ pub fn revisions(
     let project = get_project(peer, project_urn)?;
     let storage = peer.storage().reopen()?;
     let repo = storage.open_repo(project.urn())?;
+    let mut user_revisions = vec![];
 
     let (local_branches, local_tags) = with_browser(peer, &project.urn(), |browser| {
         Ok((
@@ -147,24 +146,22 @@ pub fn revisions(
         ))
     })?;
 
-    let mut remotes = NonEmpty::new(UserRevisions {
-        identity: (peer.peer_id().clone(), owner.clone()).into(),
-        branches: local_branches,
-        tags: local_tags,
-    });
+    if !local_branches.is_empty() {
+        user_revisions.push(UserRevisions {
+            identity: (peer.peer_id().clone(), owner.clone()).into(),
+            branches: local_branches,
+            tags: local_tags,
+        })
+    }
 
     for peer_id in repo.tracked()? {
-        let remote_branches = storage
-            .references(&Reference::heads(project.urn().id, peer_id.clone()))?
-            .filter_map(|reference| {
-                let reference = reference.ok()?;
-                remote_branch_name(&reference, &project.urn().id, &peer_id)
-            })
-            .collect();
+        let remote_branches = with_browser(peer, &project.urn(), |browser| {
+            source::branches(browser, Some(BranchType::Remote { name : Some(format!("{}/heads", peer_id)) }))
+        })?;
 
         let user = repo.get_rad_self_of(peer_id.clone())?;
 
-        remotes.push(UserRevisions {
+        user_revisions.push(UserRevisions {
             identity: (peer_id, user).into(),
             branches: remote_branches,
             // TODO(rudolfs): implement remote peer tags once we decide how
@@ -173,21 +170,7 @@ pub fn revisions(
         });
     }
 
-    Ok(remotes)
-}
-
-/// Get the [`source::Branch`] name for a remote peer's head [`git2::Reference`].
-fn remote_branch_name(
-    reference: &git2::Reference,
-    namespace: &Namespace,
-    remote: &peer::PeerId,
-) -> Option<source::Branch> {
-    let name = reference.name()?;
-    let name = name.trim_start_matches(&format!(
-        "refs/namespaces/{}/refs/remotes/{}/heads/",
-        namespace, remote
-    ));
-    Some(source::Branch(name.to_string()))
+    NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyUserRevisions)
 }
 
 /// Returns the list of [`user::User`]s known for your peer.

@@ -19,7 +19,7 @@ hex = "0.4"
 kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
-nonempty = "0.2"
+nonempty = "0.5"
 percent-encoding = "2.1"
 parity-scale-codec = "1.3.1"
 pico-args = "0.3"
@@ -50,7 +50,7 @@ git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "2cb4f5da3b28dc5239dd0a301d67ee88277a7dcf"
 
 [dependencies.radicle-surf]
-version = "0.4.0"
+version = "0.4.1"
 features = ["serialize"]
 
 [dev-dependencies]
