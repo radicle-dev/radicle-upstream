@@ -145,6 +145,16 @@ pub const fn get_deposits() -> Deposits {
 /// Methods to interact with the Registry in a uniform way.
 #[async_trait]
 pub trait Client: Clone + Send + Sync {
+    /// Check whether a given account exists on chain.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn account_exists(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<bool, error::Error>;
+
     /// Fetch the current best height by virtue of checking the block header of the best chain.
     ///
     /// # Errors
@@ -354,6 +364,16 @@ impl Registry {
 
 #[async_trait]
 impl Client for Registry {
+    async fn account_exists(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<bool, error::Error> {
+        self.client
+            .account_exists(account_id)
+            .await
+            .map_err(|e| e.into())
+    }
+
     async fn best_height(&self) -> Result<u32, error::Error> {
         let header = self.client.block_header_best_chain().await?;
 
@@ -701,7 +721,7 @@ impl Client for Registry {
 #[allow(clippy::indexing_slicing, clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use radicle_registry_client::{self as protocol, ClientT};
+    use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
 
@@ -710,6 +730,35 @@ mod test {
     use crate::error;
 
     use super::{Client, Id, Metadata, ProjectDomain, ProjectName, Registry};
+
+    #[tokio::test]
+    async fn test_account_exists() -> Result<(), error::Error> {
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+
+        let existing_account =
+            protocol::ed25519::Pair::from_legacy_string("//Alice", None).public();
+        assert!(
+            registry.account_exists(&existing_account).await.unwrap(),
+            "Account should exist on chain"
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_account_does_not_exist() -> Result<(), error::Error> {
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+
+        let random_account = protocol::ed25519::Pair::generate().0.public();
+        assert!(
+            registry.account_exists(&random_account).await.unwrap(),
+            "Account should not be on chain"
+        );
+
+        Ok(())
+    }
 
     #[tokio::test]
     async fn test_register_org() -> Result<(), error::Error> {
