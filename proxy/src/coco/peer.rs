@@ -123,7 +123,13 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
         .collect()
 }
 
-/// Get all peer IDs and their branches.
+/// Get all [`UserRevisions`] for a given project.
+///
+/// # Parameters
+///
+/// * `peer` - the peer API we're interacting through
+/// * `owner` - the owner of this peer, i.e. the current user
+/// * `project_urn` - the [`RadUrn`] pointing to the project we're interested in
 ///
 /// # Errors
 ///
