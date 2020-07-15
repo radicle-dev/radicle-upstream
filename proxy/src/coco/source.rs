@@ -73,7 +73,7 @@ pub struct Commit {
     /// The changeset introduced by this commit.
     pub diff: diff::Diff,
     /// The branch this commit belongs to.
-    pub branch: String,
+    pub branch: Branch,
 }
 
 /// Representation of a code commit.
@@ -429,10 +429,12 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
     let branch = branches.first();
 
     // Known commits always have at least one branch. If this isn't the case, it's a bug.
-    let branch = branch
-        .expect("known commits must be on a branch")
-        .name
-        .to_string();
+    let branch = Branch(
+        branch
+            .expect("known commits must be on a branch")
+            .name
+            .to_string(),
+    );
 
     Ok(Commit {
         header: commit.into(),
