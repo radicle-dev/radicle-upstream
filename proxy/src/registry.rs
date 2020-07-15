@@ -668,7 +668,7 @@ impl Client for Registry {
             .await?;
         let applied = self.client.submit_transaction(transfer_tx).await?.await?;
         applied.result?;
-        let block = self.client.block_header(applied.block).await?;
+        let block = self.get_block_header(applied.block).await?;
 
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),
@@ -700,7 +700,7 @@ impl Client for Registry {
             .await?;
         let applied = self.client.submit_transaction(transfer_tx).await?.await?;
         applied.result?;
-        let block = self.client.block_header(applied.block).await?;
+        let block = self.get_block_header(applied.block).await?;
 
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),

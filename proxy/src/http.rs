@@ -29,7 +29,6 @@ mod project;
 mod session;
 mod source;
 mod transaction;
-mod transfer;
 mod user;
 
 /// Helper to combine the multiple filters together with Filter::or, possibly boxing the types in
@@ -96,7 +95,6 @@ where
         session::routes(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
     let source_filter = source::routes(peer, Arc::clone(&registry), Arc::clone(&store));
     let transaction_filter = transaction::filters(Arc::clone(&registry));
-    let transfer_filter = transfer::filters(Arc::clone(&registry), subscriptions.clone());
     let user_filter = user::routes(registry, store, subscriptions);
 
     let api = path("v1").and(combine!(
@@ -109,7 +107,6 @@ where
         session_filter,
         source_filter,
         transaction_filter,
-        transfer_filter,
         user_filter
     ));
 
