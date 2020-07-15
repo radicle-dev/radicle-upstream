@@ -421,7 +421,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
         }
     }
 
-    let branches = browser.revision_branches(sha1)?;
+    let branches = browser.revision_branches(oid)?;
 
     // If a commit figures in more than one branch, there's no real way to know
     // which branch to show without additional context. So, we choose the first
