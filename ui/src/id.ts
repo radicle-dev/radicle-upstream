@@ -17,7 +17,7 @@ enum Status {
 
 // Check if the given id is available
 const isAvailable = (id: string): Promise<boolean> =>
-  api.get<string>(`ids/${id}/status`).then(status => status == "available");
+  api.get<string>(`ids/${id}/status`).then(status => status === "available");
 
 // ID validation
 const VALID_ID_MATCH_STR = "^[a-z0-9][a-z0-9]+$";
