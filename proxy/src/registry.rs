@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{
-    Balance, BlockHash, Id, ProjectDomain, ProjectName, MINIMUM_FEE,
+    Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName, MINIMUM_FEE,
 };
 
 use crate::avatar;
@@ -162,6 +162,13 @@ pub trait Client: Clone + Send + Sync {
         block: BlockHash,
     ) -> Result<protocol::BlockHeader, error::Error>;
 
+    /// Fetch the status of a given id.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn get_id_status(&self, id: &Id) -> Result<IdStatus, error::Error>;
+
     /// Try to retrieve org from the Registry by id.
     ///
     /// # Errors
@@ -269,6 +276,18 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         handle: Id,
         id: Option<String>,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
+    /// Remove a registered User from the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn unregister_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        handle: Id,
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -398,6 +417,11 @@ impl Client for Registry {
             .block_header(block)
             .await?
             .ok_or(error::Error::BlockNotFound(block))
+    }
+
+    async fn get_id_status(&self, id: &Id) -> Result<IdStatus, error::Error> {
+        let status = self.client.get_id_status(id).await?;
+        Ok(status)
     }
 
     async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error> {
@@ -651,6 +675,31 @@ impl Client for Registry {
         ))
     }
 
+    async fn unregister_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        handle: Id,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error> {
+        // Prepare and submit user unregistration transaction.
+        let unregister_message = protocol::message::UnregisterUser {
+            user_id: handle.clone(),
+        };
+        let tx = self
+            .new_signed_transaction(author, unregister_message, fee)
+            .await?;
+        let applied = self.client.submit_transaction(tx).await?.await?;
+        applied.result?;
+        let block = self.get_block_header(applied.block).await?;
+
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::UserUnregistration { id: handle },
+            fee,
+        ))
+    }
+
     async fn transfer_from_user(
         &self,
         author: &protocol::ed25519::Pair,
@@ -775,6 +824,27 @@ mod test {
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.members()[0], protocol::Id::try_from("alice")?);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_unregister_user() -> Result<(), error::Error> {
+        // Test that org unregistration submits valid transactions and they succeed.
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice")?;
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Unregister the org
+        let unregistration = registry.unregister_user(&author, handle, 10).await;
+        assert!(unregistration.is_ok());
 
         Ok(())
     }

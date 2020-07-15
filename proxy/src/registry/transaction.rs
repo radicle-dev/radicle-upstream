@@ -155,6 +155,13 @@ pub enum Message {
         id: Option<String>,
     },
 
+    /// Issue an org unregistration with a given id.
+    #[serde(rename_all = "camelCase")]
+    UserUnregistration {
+        /// The [`registry::User`] id.
+        id: registry::Id,
+    },
+
     /// Issue a member registration for a given handle under a given org.
     #[serde(rename_all = "camelCase")]
     MemberRegistration {
@@ -403,6 +410,10 @@ where
         self.client.get_block_header(block).await
     }
 
+    async fn get_id_status(&self, id: &registry::Id) -> Result<registry::IdStatus, error::Error> {
+        self.client.get_id_status(id).await
+    }
+
     async fn get_org(&self, id: registry::Id) -> Result<Option<registry::Org>, error::Error> {
         self.client.get_org(id).await
     }
@@ -504,6 +515,18 @@ where
     ) -> Result<Transaction, error::Error> {
         let tx = self.client.register_user(author, handle, id, fee).await?;
 
+        self.cache_transaction(tx.clone())?;
+
+        Ok(tx)
+    }
+
+    async fn unregister_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        handle: registry::Id,
+        fee: protocol::Balance,
+    ) -> Result<Transaction, error::Error> {
+        let tx = self.unregister_user(author, handle, fee).await?;
         self.cache_transaction(tx.clone())?;
 
         Ok(tx)
