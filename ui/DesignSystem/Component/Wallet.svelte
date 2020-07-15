@@ -1,7 +1,7 @@
 <script>
   import { Title } from "../Primitive";
   import Rad from "./Rad.svelte";
-  import TransactionList from "./Wallet/TransactionList.svelte";
+  import TransactionList from "./Wallet/TxList.svelte";
   import SendReceive from "./Wallet/SendReceive.svelte";
 </script>
 
@@ -20,14 +20,16 @@
     border-radius: 4px;
     border: 1px solid var(--color-foreground-level-2);
   }
+
   .transactions {
     width: 100%;
+    height: 100%;
     margin-left: 1.5rem;
   }
 
   .balance {
-    padding: 1.25rem 1.5rem;
     width: 20rem;
+    padding: 1.25rem 1.5rem;
     margin-bottom: 1.5rem;
   }
 </style>

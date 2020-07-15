@@ -12,7 +12,7 @@
   } from "../../../src/transaction.ts";
   import { microRadToRad } from "../../../src/currency.ts";
 
-  import { Rad } from "../../Component";
+  import Rad from "../Rad.svelte";
   import { Avatar, Caption, Icon, Text, Title } from "../../Primitive";
 
   const subject = formatSubject(tx.messages[0]);

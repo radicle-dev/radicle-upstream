@@ -3,8 +3,8 @@
   import { transactions as store } from "../../../src/transaction.ts";
   import * as path from "../../../src/path.ts";
 
-  import Remote from "../../../DesignSystem/Component/Remote.svelte";
-  import TransactionListItem from "./TransactionListItem.svelte";
+  import Remote from "../Remote.svelte";
+  import TransactionListItem from "./TxListItem.svelte";
 
   const select = event => push(path.transactions(event));
 </script>

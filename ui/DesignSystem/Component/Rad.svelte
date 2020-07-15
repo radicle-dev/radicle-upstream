@@ -1,6 +1,6 @@
 <script>
   import { Icon, Title } from "../Primitive";
-  import { Tooltip } from "../Component";
+  import Tooltip from "./Tooltip.svelte";
 
   export let rad = null;
   export let usd = null;
