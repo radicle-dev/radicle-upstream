@@ -733,6 +733,27 @@ mod test {
     }
 
     #[tokio::test]
+    async fn test_unregister_user() -> Result<(), error::Error> {
+        // Test that org unregistration submits valid transactions and they succeed.
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice")?;
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Unregister the org
+        let unregistration = registry.unregister_user(&author, handle, 10).await;
+        assert!(unregistration.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_unregister_org() -> Result<(), error::Error> {
         // Test that org unregistration submits valid transactions and they succeed.
         let (client, _) = protocol::Client::new_emulator();

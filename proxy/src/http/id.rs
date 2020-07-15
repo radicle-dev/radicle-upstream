@@ -61,7 +61,6 @@ mod handler {
     use crate::http;
     use crate::registry;
 
-    #[allow(clippy::all)]
     /// Get the status for the given `id`.
     pub async fn get_status<R: registry::Client>(
         registry: http::Shared<R>,
