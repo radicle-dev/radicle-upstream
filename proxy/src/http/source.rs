@@ -105,6 +105,10 @@ fn branches_filter(
             "project_id",
             "ID of the project the blob is part of",
         ))
+        .and(warp::filters::query::query::<PeerQuery>())
+        .and(document::document(
+            document::query("peerId", document::string()).description("The peer identifier"),
+        ))
         .and(document::document(document::description("List Branches")))
         .and(document::document(document::tag("Source")))
         .and(document::document(
@@ -296,9 +300,10 @@ mod handler {
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
-    use radicle_surf::vcs::git::{self, BranchType};
+    use radicle_surf::vcs::git;
 
     use crate::coco;
+    use crate::error::Error;
     use crate::http;
     use crate::registry;
     use crate::session;
@@ -349,10 +354,12 @@ mod handler {
     pub async fn branches(
         peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: coco::Urn,
+        super::PeerQuery { peer_id }: super::PeerQuery,
     ) -> Result<impl Reply, Rejection> {
+        log::info!("peer.id = {:?}", peer_id);
         let peer = peer.lock().await;
         let branches = coco::with_browser(&peer, &project_urn, |browser| {
-            coco::branches(browser, Some(BranchType::Local))
+            coco::branches(browser, Some(coco::into_branch_type(peer_id)))
         })?;
 
         Ok(reply::json(&branches))
@@ -395,12 +402,20 @@ mod handler {
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
-        peer: Arc<Mutex<coco::PeerApi>>,
+        api: Arc<Mutex<coco::PeerApi>>,
         project_urn: coco::Urn,
         owner: coco::User,
     ) -> Result<impl Reply, Rejection> {
-        let peer = &*peer.lock().await;
-        let revisions: Vec<_> = coco::revisions(peer, &owner, &project_urn)?.into();
+        let api = &*api.lock().await;
+        let storage = api.storage().reopen().map_err(Error::from)?;
+        let repo = storage.open_repo(project_urn.clone()).map_err(Error::from)?;
+        let peers = repo.tracked().map_err(Error::from)?.map(|peer_id| {
+            repo.get_rad_self_of(peer_id.clone()).map(|user| (user, peer_id.clone())).map_err(Error::from)
+        }).collect::<Result<Vec<_>, _>>()?;
+        let peer_id = api.peer_id().clone();
+        let revisions: Vec<_> = coco::with_browser(&api, &project_urn, |browser| {
+            Ok(coco::revisions(&browser, peer_id, &owner, peers)?.into())
+        })?;
 
         Ok(reply::json(&revisions))
     }
@@ -480,6 +495,13 @@ pub struct BlobQuery {
     revision: Option<coco::Revision>,
     /// Whether or not to syntax highlight the blob.
     highlight: Option<bool>,
+}
+
+/// A query param that only consists of a single `PeerId`.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PeerQuery {
+    peer_id: Option<peer::PeerId>,
 }
 
 /// Bundled query params to pass to the tree handler.
@@ -1289,7 +1311,7 @@ mod test {
                 .expect("missing target");
             let _heads = platinum
                 .reference(
-                    &format!("{}/heads/master", prefix),
+                    &format!("{}/heads/haptop", prefix),
                     target,
                     false,
                     "remote heads",
@@ -1359,12 +1381,22 @@ mod test {
                         ]
                     },
                     coco::UserRevisions {
-                        identity: (remote, fintohaps).into(),
-                        branches: vec![coco::Branch("master".to_string())],
+                        identity: (remote.clone(), fintohaps).into(),
+                        branches: vec![coco::Branch("haptop".to_string())],
                         tags: vec![]
                     },
                 ])
             )
+        });
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/branches/{}?peerId={}", urn, remote))
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!([coco::Branch("haptop".to_string())]));
         });
 
         Ok(())
@@ -1515,7 +1547,6 @@ mod test {
             .add(b'[')
             .add(b']')
             .add(b'=');
-        pretty_env_logger::init();
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let registry = {
