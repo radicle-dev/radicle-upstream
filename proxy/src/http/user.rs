@@ -243,7 +243,7 @@ mod handler {
 
 impl ToDocumentedType for registry::User {
     fn document() -> document::DocumentedType {
-        let mut props = HashMap::with_capacity(2);
+        let mut props = HashMap::with_capacity(3);
         props.insert(
             "handle".into(),
             document::string()
@@ -256,6 +256,12 @@ impl ToDocumentedType for registry::User {
                 .description("Exisiting entity id for attestion")
                 .example("cloudhead@123abcd.git")
                 .nullable(true),
+        );
+        props.insert(
+            "accountId".into(),
+            document::string()
+                .description("Public key of the account associated with the user")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
 
         document::DocumentedType::from(props)
@@ -325,7 +331,7 @@ mod test {
     use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
-    async fn get() {
+    async fn get() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().unwrap();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
@@ -346,12 +352,19 @@ mod test {
             .await
             .unwrap();
 
-        let api = super::filters(registry, store, subscriptions);
+        let api = super::filters(Arc::clone(&registry), store, subscriptions);
         let res = request()
             .method("GET")
-            .path(&format!("/{}", handle))
+            .path(&format!("/{}", handle.clone()))
             .reply(&api)
             .await;
+
+        let user = registry
+            .read()
+            .await
+            .get_user(handle.clone())
+            .await?
+            .unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
@@ -359,10 +372,13 @@ mod test {
         assert_eq!(
             have,
             json!({
+                "accountId": user.account_id,
                 "handle": "cloudhead",
                 "maybeEntityId": Value::Null,
             })
         );
+
+        Ok(())
     }
 
     #[tokio::test]
@@ -403,6 +419,13 @@ mod test {
             .register_org(&author, org_id.clone(), 100)
             .await?;
 
+        let org = registry
+            .read()
+            .await
+            .get_org(org_id.clone())
+            .await?
+            .unwrap();
+
         let res = request()
             .method("GET")
             .path(&format!("/{}/orgs", handle))
@@ -417,6 +440,7 @@ mod test {
             json!([registry::Org {
                 id: org_id.clone(),
                 shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                account_id: org.account_id,
                 avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                 members: vec![user]
             }])
