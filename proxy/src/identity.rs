@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 
 use librad::keys;
+use librad::meta::user;
 use librad::peer;
 
 use crate::avatar;
@@ -30,6 +31,25 @@ pub struct Identity {
     pub avatar_fallback: avatar::Avatar,
 }
 
+impl<S> From<(peer::PeerId, user::User<S>)> for Identity {
+    fn from((peer_id, user): (peer::PeerId, user::User<S>)) -> Self {
+        let urn = user.urn();
+        Self {
+            peer_id: peer_id.clone(),
+            urn: urn.clone(),
+            shareable_entity_identifier: SharedIdentifier {
+                handle: user.name().to_string(),
+                peer_id,
+            },
+            metadata: Metadata {
+                handle: user.name().to_string(),
+            },
+            registered: None,
+            avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
+        }
+    }
+}
+
 /// User maintained information for an identity, which can evolve over time.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -44,21 +64,10 @@ pub struct Metadata {
 pub fn create(
     peer: &coco::PeerApi,
     key: keys::SecretKey,
-    handle: String,
+    handle: &str,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_owner(peer, key, &handle)?;
-    let peer_id = peer.peer_id().clone();
-
-    let urn = user.urn();
-    let shareable_entity_identifier = (peer_id.clone(), user).into();
-    Ok(Identity {
-        peer_id,
-        urn: urn.clone(),
-        shareable_entity_identifier,
-        metadata: Metadata { handle },
-        registered: None,
-        avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
-    })
+    let user = coco::init_owner(peer, key, handle)?;
+    Ok((peer.peer_id().clone(), user).into())
 }
 
 /// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
@@ -68,18 +77,7 @@ pub fn create(
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub fn get(peer: &coco::PeerApi, id: &coco::Urn) -> Result<Identity, error::Error> {
     let user = coco::get_user(peer, id)?;
-    let handle = user.name().to_string();
-    let urn = user.urn();
-    let peer_id = peer.peer_id().clone();
-    let shareable_entity_identifier = (peer_id.clone(), user).into();
-    Ok(Identity {
-        peer_id,
-        urn: urn.clone(),
-        shareable_entity_identifier,
-        metadata: Metadata { handle },
-        registered: None,
-        avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
-    })
+    Ok((peer.peer_id().clone(), user).into())
 }
 
 /// A `SharedIdentifier` is the combination of a user handle and the [`coco::Urn`] that identifies

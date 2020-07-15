@@ -22,15 +22,15 @@ pub fn routes<R>(
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
     path("source").and(
-        blob_filter(Arc::clone(&peer), registry, store)
+        blob_filter(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store))
             .or(branches_filter(Arc::clone(&peer)))
             .or(commit_filter(Arc::clone(&peer)))
             .or(commits_filter(Arc::clone(&peer)))
             .or(local_state_filter())
-            .or(revisions_filter(Arc::clone(&peer)))
+            .or(revisions_filter(Arc::clone(&peer), registry, store))
             .or(tags_filter(Arc::clone(&peer)))
             .or(tree_filter(peer)),
     )
@@ -44,14 +44,14 @@ fn filters<R>(
     store: Arc<RwLock<kv::Store>>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
-    blob_filter(Arc::clone(&peer), registry, store)
+    blob_filter(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store))
         .or(branches_filter(Arc::clone(&peer)))
         .or(commit_filter(Arc::clone(&peer)))
         .or(commits_filter(Arc::clone(&peer)))
         .or(local_state_filter())
-        .or(revisions_filter(Arc::clone(&peer)))
+        .or(revisions_filter(Arc::clone(&peer), registry, store))
         .or(tags_filter(Arc::clone(&peer)))
         .or(tree_filter(peer))
 }
@@ -199,12 +199,17 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 }
 
 /// `GET /revisions/<project_id>`
-fn revisions_filter(
+fn revisions_filter<R>(
     peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    registry: http::Shared<R>,
+    store: http::Shared<kv::Store>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("revisions")
         .and(warp::get())
-        .and(super::with_peer(peer))
+        .and(http::with_peer(Arc::clone(&peer)))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -217,12 +222,14 @@ fn revisions_filter(
             document::response(
                 200,
                 document::body(
-                    document::array(Revision::document()).description("List of revisions per repo"),
+                    document::array(coco::UserRevisions::document())
+                        .description("List of revisions per repo"),
                 )
                 .mime("application/json"),
             )
             .description("List of branches and tags"),
         ))
+        .and(http::with_owner_guard(peer, registry, store))
         .and_then(handler::revisions)
 }
 
@@ -289,13 +296,11 @@ mod handler {
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
-    use radicle_surf::vcs::git;
+    use radicle_surf::vcs::git::{self, BranchType};
 
-    use crate::avatar;
     use crate::coco;
     use crate::error::Error;
     use crate::http;
-    use crate::identity;
     use crate::registry;
     use crate::session;
 
@@ -349,7 +354,9 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let branches = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
+        let branches = coco::with_browser(&peer, &urn, |browser| {
+            coco::branches(browser, Some(BranchType::Local))
+        })?;
 
         Ok(reply::json(&branches))
     }
@@ -394,58 +401,13 @@ mod handler {
     pub async fn revisions(
         peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: String,
+        owner: coco::User,
     ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
-            Ok((coco::branches(browser)?, coco::tags(browser)?))
-        })?;
+        let peer = &*peer.lock().await;
+        let revisions: Vec<_> = coco::revisions(peer, &owner, &urn)?.into();
 
-        let owner = coco::default_owner(&peer).expect("owner not set");
-        let peer_id = peer.peer_id();
-
-        // TODO(rudolfs): the order of the returned peers/revisions determines the default peer in
-        // the repository selector in the UI. Make sure the list always returns the default peer
-        // first.
-        let revs = [
-            (owner.name(), peer_id.clone(), owner.urn().to_string()),
-            (
-                "rudolfs",
-                peer_id.clone(), // TODO(finto): Need to use real PeerId
-                "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro".to_string(),
-            ),
-            (
-                "xla",
-                peer_id.clone(),
-                "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc".to_string(),
-            ),
-        ]
-        .iter()
-        .map(
-            |(fake_handle, fake_peer_id, fake_peer_urn)| super::Revision {
-                branches: branches.clone(),
-                tags: tags.clone(),
-                identity: identity::Identity {
-                    peer_id: fake_peer_id.clone(),
-                    // TODO(finto): Get the right URN
-                    urn: fake_peer_urn
-                        .parse()
-                        .expect("failed to parse hardcoded URN"),
-                    metadata: identity::Metadata {
-                        handle: (*fake_handle).to_string(),
-                    },
-                    avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
-                    registered: None,
-                    shareable_entity_identifier: identity::SharedIdentifier {
-                        handle: (*fake_handle).to_string(),
-                        peer_id: fake_peer_id.clone(),
-                    },
-                },
-            },
-        )
-        .collect::<Vec<super::Revision>>();
-
-        Ok(reply::json(&revs))
+        Ok(reply::json(&revisions))
     }
 
     /// Fetch the list [`coco::Tag`].
@@ -536,29 +498,6 @@ pub struct TreeQuery {
     peer_id: Option<peer::PeerId>,
     /// Revision to query at.
     revision: Option<coco::Revision>,
-}
-
-/// Bundled response to retrieve both branches and tags for a user repo.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Revision {
-    /// Owner of the repo.
-    identity: identity::Identity,
-    /// List of [`coco::Branch`].
-    branches: Vec<coco::Branch>,
-    /// List of [`coco::Tag`].
-    tags: Vec<coco::Tag>,
-}
-
-impl ToDocumentedType for Revision {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert("identity".into(), identity::Identity::document());
-        properties.insert("branches".into(), document::array(coco::Branch::document()));
-        properties.insert("tags".into(), document::array(coco::Tag::document()));
-
-        document::DocumentedType::from(properties).description("Revision")
-    }
 }
 
 impl Serialize for coco::Blob {
@@ -860,6 +799,17 @@ impl ToDocumentedType for coco::TreeEntry {
     }
 }
 
+impl ToDocumentedType for coco::UserRevisions {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert("identity".into(), identity::Identity::document());
+        properties.insert("branches".into(), document::array(coco::Branch::document()));
+        properties.insert("tags".into(), document::array(coco::Tag::document()));
+
+        document::DocumentedType::from(properties).description("UserRevisions")
+    }
+}
+
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
@@ -871,14 +821,14 @@ mod test {
     use warp::test::request;
 
     use librad::keys::SecretKey;
-    use radicle_surf::vcs::git;
+    use radicle_surf::vcs::git::{self, git2};
 
-    use crate::avatar;
     use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
     use crate::registry;
+    use crate::session;
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
@@ -1112,7 +1062,7 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser))?;
+        let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser, None))?;
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
@@ -1308,7 +1258,17 @@ mod test {
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let peer = coco::create_peer_api(config).await?;
         let peer_id = peer.peer_id().clone();
-        let owner = coco::init_owner(&peer, key.clone(), "cloudhead")?;
+
+        let fintohaps = coco::init_user(&peer, key.clone(), "fintohaps")?;
+        let remote = librad::peer::PeerId::from(SecretKey::new());
+
+        let id = identity::create(&peer, key.clone(), "cloudhead")?;
+
+        let owner = coco::get_user(&peer, &id.clone().urn)?;
+        let owner = coco::verify_user(owner)?;
+
+        session::set_identity(&store, id)?;
+
         let platinum_project = coco::control::replicate_platinum(
             &peer,
             key,
@@ -1319,49 +1279,62 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let want = {
-            let (branches, tags) = coco::with_browser(&peer, &urn, |browser| {
-                Ok((coco::branches(browser)?, coco::tags(browser)?))
-            })?;
+        // TODO(finto): We're faking a lot of the networking interaction here.
+        // Create git references of the form and track the peer.
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/refs/heads
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/id
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
+        //   to fintohaps
+        {
+            let platinum =
+                git2::Repository::open(peer.paths().git_dir()).expect("failed to open monorepo");
+            let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 
-            [
-                (owner.name(), peer_id.clone(), owner.urn()),
-                (
-                    "rudolfs",
-                    peer_id.clone(),
-                    "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro"
-                        .parse()?,
-                ),
-                (
-                    "xla",
-                    peer_id.clone(),
-                    "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"
-                        .parse()?,
-                ),
-            ]
-            .iter()
-            .map(
-                |(fake_handle, fake_peer_id, fake_peer_urn)| super::Revision {
-                    branches: branches.clone(),
-                    tags: tags.clone(),
-                    identity: identity::Identity {
-                        peer_id: fake_peer_id.clone(),
-                        // TODO(finto): Get the right URN
-                        urn: fake_peer_urn.clone(),
-                        metadata: identity::Metadata {
-                            handle: (*fake_handle).to_string(),
-                        },
-                        avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
-                        registered: None,
-                        shareable_entity_identifier: identity::SharedIdentifier {
-                            handle: (*fake_handle).to_string(),
-                            peer_id: fake_peer_id.clone(),
-                        },
-                    },
-                },
-            )
-            .collect::<Vec<super::Revision>>()
-        };
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/heads/master", urn.id))
+                .expect("failed to get master")
+                .target()
+                .expect("missing target");
+            let _heads = platinum
+                .reference(
+                    &format!("{}/heads/master", prefix),
+                    target,
+                    false,
+                    "remote heads",
+                )
+                .expect("failed to create heads");
+
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/rad/id", urn.id))
+                .expect("failed to get rad/id")
+                .target()
+                .expect("missing target");
+            let _rad_id = platinum
+                .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
+                .expect("failed to create rad/id");
+
+            let _rad_self = platinum
+                .reference_symbolic(
+                    &format!("{}/rad/self", prefix),
+                    &format!("refs/namespaces/{}/refs/rad/id", fintohaps.urn().id),
+                    false,
+                    "rad/self",
+                )
+                .expect("failed to create rad/self");
+
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/rad/refs", urn.id))
+                .expect("failed to get rad/refs")
+                .target()
+                .expect("missing target");
+            let _rad_id = platinum
+                .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
+                .expect("failed to create rad/id");
+
+            peer.storage()
+                .track(&urn, &remote)
+                .expect("failed to track peer");
+        }
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
@@ -1376,7 +1349,30 @@ mod test {
             .await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
+            assert_eq!(
+                have,
+                json!([
+                    coco::UserRevisions {
+                        identity: (peer_id, owner).into(),
+                        branches: vec![
+                            coco::Branch("dev".to_string()),
+                            coco::Branch("master".to_string())
+                        ],
+                        tags: vec![
+                            coco::Tag("v0.1.0".to_string()),
+                            coco::Tag("v0.2.0".to_string()),
+                            coco::Tag("v0.3.0".to_string()),
+                            coco::Tag("v0.4.0".to_string()),
+                            coco::Tag("v0.5.0".to_string())
+                        ]
+                    },
+                    coco::UserRevisions {
+                        identity: (remote, fintohaps).into(),
+                        branches: vec![coco::Branch("master".to_string())],
+                        tags: vec![]
+                    },
+                ])
+            )
         });
 
         Ok(())
