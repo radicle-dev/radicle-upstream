@@ -1,6 +1,6 @@
 before(() => {
   cy.nukeAllState();
-  cy.createIdentity();
+  cy.createIdentity("cloudhead");
   cy.createProjectWithFixture();
 });
 

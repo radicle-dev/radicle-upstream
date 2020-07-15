@@ -20,12 +20,15 @@ kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
 nonempty = "0.2"
+percent-encoding = "2.1"
+parity-scale-codec = "1.3.1"
 pico-args = "0.3"
 pretty_env_logger = "0.3"
 rand = "0.7"
 serde = { version = "1.0", features = [ "derive" ] }
 serde_cbor = "0.11.1"
 serde_json = "1.0"
+serde_qs = "0.6"
 syntect = "4.2"
 tempfile = "3.1"
 thiserror = "1.0"
@@ -44,10 +47,10 @@ rev = "27c9a7b8ce5b87d2be3703f7a3290fa7a0552fc6"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "0acd1e5467f0b70dfdff5fc7df1b5121d73b9858"
+rev = "2cb4f5da3b28dc5239dd0a301d67ee88277a7dcf"
 
 [dependencies.radicle-surf]
-version = "0.3.1"
+version = "0.4.0"
 features = ["serialize"]
 
 [dev-dependencies]

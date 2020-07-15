@@ -1,9 +1,11 @@
 import { parse, stringify } from "qs";
 import regexparam from "regexparam";
-import { ObjectType } from "./source";
+import { ObjectType, Branch, RevisionQuery } from "./source";
 
 export const search = (): string => "/search";
 export const settings = (): string => "/settings";
+
+export const discovery = (): string => "/discovery";
 
 export const profile = (): string => "/profile";
 export const profileOnboard = (): string => "/profile/onboard";
@@ -36,7 +38,7 @@ export const projectRevisions = (id: string): string =>
 export const projectSource = (
   projectId: string,
   peerId?: string,
-  revision?: string,
+  revision?: RevisionQuery,
   objectType?: string,
   objectPath?: string
 ): string => {
@@ -48,30 +50,14 @@ export const projectSource = (
   })}`;
 };
 
-export const parseProjectSourceLocation = (
-  querystring: string,
-  defaultPeerId: string,
-  defaultRevision: string,
-  defaultObjectType: string,
-  defaultObjectPath: string
-) => {
-  const parsed = parse(querystring);
-  return {
-    currentPeerId: parsed.peerId || defaultPeerId,
-    currentRevision: parsed.revision || defaultRevision,
-    currentObjectType: parsed.objectType || defaultObjectType,
-    currentObjectPath: parsed.objectPath || defaultObjectPath,
-  };
+export const parseProjectSourceLocation = (querystring: string) => {
+  return parse(querystring);
 };
 
 export const projectCommit = (id: string, hash: string): string =>
   `/projects/${id}/commit/${hash}`;
-export const projectCommits = (
-  id: string,
-  peerId: string,
-  revision: string
-): string =>
-  `/projects/${id}/commits/${encodeURIComponent(revision)}?peerId=${peerId}`;
+export const projectCommits = (id: string, revision: RevisionQuery): string =>
+  `/projects/${id}/commits/${revision}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 
