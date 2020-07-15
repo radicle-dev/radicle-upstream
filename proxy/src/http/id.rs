@@ -17,7 +17,7 @@ where
     path("ids")
         .and(http::with_shared(registry))
         .and(warp::get())
-        .and(document::param::<String>(
+        .and(document::param::<registry::Id>(
             "id",
             "The id whose status will be obtained",
         ))
@@ -64,10 +64,9 @@ mod handler {
     /// Get the status for the given `id`.
     pub async fn get_status<R: registry::Client>(
         registry: http::Shared<R>,
-        id_string: String,
+        id: registry::Id,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let id = registry::Id::try_from(id_string).map_err(Error::from)?;
         let id_status = reg.get_id_status(&id).await?;
 
         Ok(reply::json(&id_status))
