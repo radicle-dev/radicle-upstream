@@ -74,7 +74,7 @@ where
         Arc::clone(&registry),
         Arc::clone(&store),
     );
-    let id_filter = id::routes(&Arc::clone(&registry));
+    let id_filter = id::get_status_filter(Arc::clone(&registry));
     let identity_filter = identity::filters(
         Arc::clone(&peer),
         Arc::clone(&keystore),

@@ -1,4 +1,5 @@
 import * as api from "./api";
+import * as org from "./org";
 import * as validation from "./validation";
 
 // The possible availability statuses of an Id
@@ -11,12 +12,12 @@ enum Status {
   Retired = "retired",
 }
 
-const getStatus = (id: string): Promise<Status> =>
-  api.get<Status>(`ids/${id}/status`);
+// const getStatus = (id: string): Promise<Status> =>
+//   api.get<Status>(`ids/${id}/status`);
 
 // Check if the given id is available
 const isAvailable = (id: string): Promise<boolean> =>
-  getStatus(id).then(status => status == Status.Available);
+  api.get<string>(`ids/${id}/status`).then(status => status == "available");
 
 // ID validation
 const VALID_ID_MATCH_STR = "^[a-z0-9][a-z0-9]+$";
@@ -37,6 +38,6 @@ export const idValidationStore = (): validation.ValidationStore =>
   validation.createValidationStore(idConstraints, [
     {
       promise: isAvailable,
-      validationMessage: "Sorry, this one is already taken",
+      validationMessage: "Sorry, this one is no longer available",
     },
   ]);

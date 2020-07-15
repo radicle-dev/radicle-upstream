@@ -1,42 +1,21 @@
 //! Endpoints for Id.
 
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
 use crate::registry;
 
-/// Prefixed filters.
-pub fn routes<R>(
-    registry: &http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client,
-{
-    get_status_filter(Arc::clone(registry))
-}
-
-/// Combination of all ids routes.
-#[cfg(test)]
-fn filters<R>(
-    registry: &http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client,
-{
-    get_status_filter(Arc::clone(registry))
-}
-
-/// `GET /<id>/status`
-fn get_status_filter<R: registry::Client>(
+/// `GET ids/<id>/status`
+pub fn get_status_filter<R: registry::Client>(
     registry: http::Shared<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client,
 {
-    http::with_shared(registry)
+    path("ids")
+        .and(http::with_shared(registry))
         .and(warp::get())
         .and(document::param::<String>(
             "id",
@@ -44,8 +23,9 @@ where
         ))
         .and(path("status"))
         .and(path::end())
+        .and(document::document(document::tag("Id")))
         .and(document::document(document::description(
-            "Get the status for the given id",
+            "Fetch the availability status of the given id",
         )))
         .and(document::document(
             document::response(
@@ -57,7 +37,7 @@ where
         .and_then(handler::get_status)
 }
 
-/// The type of domain under which a project is registered.
+/// The status of an org or user id in the Registry.
 /// Only used for implementing `ToDocumentedType`.
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -72,6 +52,7 @@ impl ToDocumentedType for Status {
 }
 
 /// Org handlers for conversion between core domain and http request fullfilment.
+#[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic, warnings)]
 mod handler {
     use std::convert::TryFrom;
     use warp::{reply, Rejection, Reply};
@@ -80,6 +61,7 @@ mod handler {
     use crate::http;
     use crate::registry;
 
+    #[allow(clippy::all)]
     /// Get the status for the given `id`.
     pub async fn get_status<R: registry::Client>(
         registry: http::Shared<R>,
@@ -115,13 +97,13 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::filters(&Arc::clone(&registry));
+        let api = super::get_status_filter(Arc::clone(&registry));
 
         let id = registry::Id::try_from("monadic")?;
         let reg = registry.read().await;
         let res = request()
             .method("GET")
-            .path(&format!("/{}/status", id.to_string()))
+            .path(&format!("/ids/{}/status", id.to_string()))
             .reply(&api)
             .await;
 
@@ -138,7 +120,7 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::filters(&Arc::clone(&registry));
+        let api = super::get_status_filter(Arc::clone(&registry));
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
@@ -152,7 +134,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}/status", handle.to_string()))
+            .path(&format!("/ids/{}/status", handle.to_string()))
             .reply(&api)
             .await;
 
@@ -169,7 +151,7 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::filters(&Arc::clone(&registry));
+        let api = super::get_status_filter(Arc::clone(&registry));
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
@@ -190,7 +172,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}/status", org_id.to_string()))
+            .path(&format!("/ids/{}/status", org_id.to_string()))
             .reply(&api)
             .await;
 
@@ -207,7 +189,7 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::filters(&Arc::clone(&registry));
+        let api = super::get_status_filter(Arc::clone(&registry));
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
@@ -227,7 +209,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}/status", handle.to_string()))
+            .path(&format!("/ids/{}/status", handle.to_string()))
             .reply(&api)
             .await;
 
@@ -244,7 +226,7 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::filters(&Arc::clone(&registry));
+        let api = super::get_status_filter(Arc::clone(&registry));
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
@@ -272,7 +254,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}/status", org_id.to_string()))
+            .path(&format!("/ids/{}/status", org_id.to_string()))
             .reply(&api)
             .await;
 
