@@ -85,6 +85,8 @@ pub struct Thresholds {
 pub struct Org {
     /// The unique identifier of the org
     pub id: Id,
+    /// The public key of the org
+    pub account_id: protocol::ed25519::Public,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: String,
     /// Generated fallback avatar
@@ -111,6 +113,8 @@ pub struct User {
     pub handle: Id,
     /// Associated entity id for attestion.
     pub maybe_entity_id: Option<String>,
+    /// The public key of the user
+    pub account_id: protocol::ed25519::Public,
 }
 
 /// Default transaction fees and deposits.
@@ -349,6 +353,7 @@ impl Client for Registry {
             }
             Ok(Some(Org {
                 id: org_id.clone(),
+                account_id: org.account_id(),
                 shareable_entity_identifier: format!("%{}", org_id.clone()),
                 avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                 members,
@@ -584,9 +589,10 @@ impl Client for Registry {
             .client
             .get_user(handle.clone())
             .await?
-            .map(|_user| User {
+            .map(|user| User {
                 handle,
                 maybe_entity_id: None,
+                account_id: user.account_id(),
             }))
     }
 
