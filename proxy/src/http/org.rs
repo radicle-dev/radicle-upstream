@@ -263,7 +263,10 @@ where
     http::with_shared(registry)
         .and(http::with_subscriptions(subscriptions))
         .and(warp::post())
-        .and(document::param::<String>("id", "Unique ID of the Org"))
+        .and(document::param::<registry::Id>(
+            "id",
+            "Unique ID of the Org",
+        ))
         .and(path("transfer"))
         .and(path::end())
         .and(warp::body::json())
@@ -430,18 +433,17 @@ mod handler {
     pub async fn transfer<R: registry::Client>(
         registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
-        id: String,
+        id: registry::Id,
         input: super::TransferInput,
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         let reg = registry.write().await;
-        let org_id = registry::Id::try_from(id).map_err(Error::from)?;
         let tx = reg
             .transfer_from_org(
                 &fake_pair,
-                org_id,
+                id,
                 input.recipient,
                 input.value,
                 input.transaction_fee,

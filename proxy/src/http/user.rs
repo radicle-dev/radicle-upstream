@@ -175,7 +175,7 @@ where
     http::with_shared(registry)
         .and(http::with_subscriptions(subscriptions))
         .and(warp::post())
-        .and(document::param::<String>(
+        .and(document::param::<registry::Id>(
             "handle",
             "ID of the user to transfer funds from",
         ))
@@ -289,7 +289,7 @@ mod handler {
     pub async fn transfer<R: registry::Client>(
         registry: http::Shared<R>,
         subscriptions: notification::Subscriptions,
-        _handle: String,
+        _handle: registry::Id,
         input: super::TransferInput,
     ) -> Result<impl Reply, Rejection> {
         // TODO(xla): Get keypair from persistent storage.
