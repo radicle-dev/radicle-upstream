@@ -753,7 +753,7 @@ mod test {
 
         let random_account = protocol::ed25519::Pair::generate().0.public();
         assert!(
-            registry.account_exists(&random_account).await.unwrap(),
+            !registry.account_exists(&random_account).await.unwrap(),
             "Account should not be on chain"
         );
 
