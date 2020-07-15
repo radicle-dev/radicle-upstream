@@ -24,7 +24,12 @@ pub fn routes<R: registry::Client>(
                 subscriptions.clone(),
             ))
             .or(get_filter(Arc::clone(&registry)))
-            .or(register_filter(registry, store, subscriptions)),
+            .or(register_filter(
+                Arc::clone(&registry),
+                store,
+                subscriptions.clone(),
+            ))
+            .or(transfer_filter(registry, subscriptions)),
     )
 }
 
@@ -41,7 +46,12 @@ fn filters<R: registry::Client>(
             subscriptions.clone(),
         ))
         .or(get_filter(Arc::clone(&registry)))
-        .or(register_filter(registry, store, subscriptions))
+        .or(register_filter(
+            Arc::clone(&registry),
+            store,
+            subscriptions.clone(),
+        ))
+        .or(transfer_filter(registry, subscriptions))
 }
 
 /// GET /<handle>
@@ -54,6 +64,7 @@ fn get_filter<R: registry::Client>(
             "handle",
             "ID of the user to query for",
         ))
+        .and(path::end())
         .and(document::document(document::description("Fetch a User")))
         .and(document::document(document::tag("User")))
         .and(document::document(
@@ -73,6 +84,7 @@ fn register_filter<R: registry::Client>(
     subscriptions: notification::Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::post()
+        .and(path::end())
         .and(http::with_shared(registry))
         .and(http::with_store(store))
         .and(http::with_subscriptions(subscriptions))
@@ -150,6 +162,39 @@ fn register_project_filter<R: registry::Client>(
             .description("Registration succeeded"),
         ))
         .and_then(handler::register_project)
+}
+
+/// `POST /<id>/transfer`
+fn transfer_filter<R: registry::Client>(
+    registry: http::Shared<R>,
+    subscriptions: notification::Subscriptions,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
+    http::with_shared(registry)
+        .and(http::with_subscriptions(subscriptions))
+        .and(warp::post())
+        .and(document::param::<registry::Id>(
+            "handle",
+            "ID of the user to transfer funds from",
+        ))
+        .and(path("transfer"))
+        .and(path::end())
+        .and(warp::body::json())
+        .and(document::document(document::description("Transfer funds")))
+        .and(document::document(document::tag("User")))
+        .and(document::document(
+            document::body(TransferInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(registry::Transaction::document()).mime("application/json"),
+            )
+            .description("Transfer succeeded"),
+        ))
+        .and_then(handler::transfer)
 }
 
 /// User handlers for conversion between core domain and http request fullfilment.
@@ -239,6 +284,33 @@ mod handler {
         )
         .await
     }
+
+    /// Transfer funds to the given `recipient`.
+    pub async fn transfer<R: registry::Client>(
+        registry: http::Shared<R>,
+        subscriptions: notification::Subscriptions,
+        _handle: registry::Id,
+        input: super::TransferInput,
+    ) -> Result<impl Reply, Rejection> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let reg = registry.write().await;
+        let tx = reg
+            .transfer_from_user(
+                &fake_pair,
+                input.recipient,
+                input.balance,
+                input.transaction_fee,
+            )
+            .await?;
+
+        subscriptions
+            .broadcast(notification::Notification::Transaction(tx.clone()))
+            .await;
+
+        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+    }
 }
 
 impl ToDocumentedType for registry::User {
@@ -305,7 +377,45 @@ impl ToDocumentedType for RegisterInput {
                 .nullable(true),
         );
 
-        document::DocumentedType::from(props).description("Input for Uesr registration")
+        document::DocumentedType::from(props).description("Input for User registration")
+    }
+}
+
+/// Bundled input data for transfer.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransferInput {
+    /// Account id of the recipient.
+    recipient: radicle_registry_client::ed25519::Public,
+    /// Amount that is transferred.
+    balance: registry::Balance,
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
+}
+
+impl ToDocumentedType for TransferInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(1);
+        properties.insert(
+            "recipient".into(),
+            document::string()
+                .description("Account id of the recipient")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
+        );
+        properties.insert(
+            "balance".into(),
+            document::string()
+                .description("Amount that is transferred")
+                .example(100),
+        );
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+
+        document::DocumentedType::from(properties).description("Input for transferring funds")
     }
 }
 
@@ -313,6 +423,7 @@ impl ToDocumentedType for RegisterInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
+    use radicle_registry_client::CryptoPair;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
     use std::sync::Arc;
@@ -559,6 +670,59 @@ mod test {
             },
             _ => panic!("The tx message is an unexpected variant."),
         }
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn transfer() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().unwrap();
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let subscriptions = notification::Subscriptions::default();
+
+        let api = super::filters(
+            Arc::clone(&cache),
+            Arc::new(RwLock::new(store)),
+            subscriptions,
+        );
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+
+        // Register the user
+        cache
+            .write()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register a second user
+        let author2 = radicle_registry_client::ed25519::Pair::from_legacy_string("//Bob", None);
+        let handle2 = registry::Id::try_from("bob")?;
+        cache
+            .write()
+            .await
+            .register_user(&author2, handle2.clone(), None, 10)
+            .await?;
+
+        // Transfer tokens from alice to bob
+        let balance: registry::Balance = 10;
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/transfer", handle))
+            .json(&super::TransferInput {
+                recipient: author2.public(),
+                balance,
+                transaction_fee: registry::MINIMUM_FEE,
+            })
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::CREATED);
 
         Ok(())
     }
