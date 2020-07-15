@@ -38,7 +38,7 @@
   <div>
     <div class="balance">
       <Title style="padding-bottom: 1rem;" variant="large">Balance</Title>
-      <Rad size="big" rad="234" usd="74" />
+      <Rad style="display: inline-block;" size="big" rad="234" usd="74" />
     </div>
     <div class="send-receive">
       <SendReceive />
