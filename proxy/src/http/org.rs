@@ -391,7 +391,7 @@ mod handler {
 
 impl ToDocumentedType for registry::Org {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
+        let mut properties = std::collections::HashMap::with_capacity(4);
         properties.insert("avatarFallback".into(), avatar::Avatar::document());
         properties.insert(
             "id".into(),
@@ -404,6 +404,12 @@ impl ToDocumentedType for registry::Org {
             document::string()
                 .description("Unique identifier that can be shared and looked up")
                 .example("%monadic"),
+        );
+        properties.insert(
+            "accountId".into(),
+            document::string()
+                .description("Public key of the account associated with the org")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
         properties.insert(
             "members".into(),
@@ -593,6 +599,13 @@ mod test {
             .register_org(&author, org_id.clone(), fee)
             .await?;
 
+        let org = registry
+            .read()
+            .await
+            .get_org(org_id.clone())
+            .await?
+            .unwrap();
+
         let res = request()
             .method("GET")
             .path(&format!("/{}", org_id.to_string()))
@@ -605,6 +618,7 @@ mod test {
                 json!(registry::Org {
                     id: org_id.clone(),
                     shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                    account_id: org.account_id,
                     avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                     members: vec![user]
                 })
