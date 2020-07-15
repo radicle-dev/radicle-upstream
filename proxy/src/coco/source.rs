@@ -72,6 +72,8 @@ pub struct Commit {
     pub stats: CommitStats,
     /// The changeset introduced by this commit.
     pub diff: diff::Diff,
+    /// The branch this commit belongs to.
+    pub branch: Branch,
 }
 
 /// Representation of a code commit.
@@ -423,12 +425,28 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
         }
     }
 
+    let branches = browser.revision_branches(oid)?;
+
+    // If a commit figures in more than one branch, there's no real way to know
+    // which branch to show without additional context. So, we choose the first
+    // branch.
+    let branch = branches.first();
+
+    // Known commits always have at least one branch. If this isn't the case, it's a bug.
+    let branch = Branch(
+        branch
+            .expect("known commits must be on a branch")
+            .name
+            .to_string(),
+    );
+
     Ok(Commit {
         header: commit.into(),
         stats: CommitStats {
             additions,
             deletions,
         },
+        branch,
         diff,
     })
 }

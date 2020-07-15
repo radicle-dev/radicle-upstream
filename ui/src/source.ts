@@ -192,13 +192,7 @@ const update = (msg: Msg): void => {
 
       api
         .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
-        .then(commit => {
-          commitStore.success({
-            // TODO(cloudhead): Fetch branch from backend.
-            branch: "master",
-            ...commit,
-          });
-        })
+        .then(commitStore.success)
         .catch(commitStore.error);
       break;
 
