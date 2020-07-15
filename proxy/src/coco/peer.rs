@@ -5,15 +5,17 @@ use std::net::SocketAddr;
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use futures::stream::StreamExt;
+
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
 use librad::meta::user;
 use librad::net::discovery;
-pub use librad::net::peer::{PeerApi, PeerConfig};
+pub use librad::net::peer::{PeerApi, PeerConfig, RunLoop};
 use librad::paths;
 use librad::peer::PeerId;
-use librad::uri::RadUrn;
+use librad::uri::{RadUrn, RadUrl};
 use radicle_surf::vcs::git::{self, git2};
 
 use crate::error;
@@ -43,7 +45,28 @@ impl Api {
         let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
         // publish events.
-        let (api, _futures) = peer.accept()?;
+        let (api, run_loop) = peer.accept()?;
+
+        let protocol = api.protocol();
+        let protocol_subscriber = protocol.subscribe().await;
+        let protocol_notifications = protocol_subscriber.for_each(|notification| {
+            log::info!("protocol.notification = {:?}", notification);
+
+            futures::future::ready(())
+        });
+        tokio::spawn(protocol_notifications);
+
+        let subscriber = api.subscribe();
+        let api_notifications = subscriber.await.for_each(|notification| {
+            log::info!("peer.event = {:?}", notification);
+
+            futures::future::ready(())
+        });
+        tokio::spawn(api_notifications);
+
+        tokio::spawn(async move {
+            run_loop.await;
+        });
 
         Ok(Self {
             peer_api: Arc::new(Mutex::new(api)),
@@ -204,6 +227,17 @@ impl Api {
         let storage = api.storage().reopen()?;
 
         Ok(storage.metadata_of(urn, peer)?)
+    }
+
+    /// TODO
+    pub fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, error::Error>
+    where
+        Addrs: IntoIterator<Item = SocketAddr>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        let repo = storage.clone_repo::<user::UserInfo, _>(url, addr_hints)?;
+        Ok(repo.urn)
     }
 
     /// Get the user found at `urn`.
@@ -477,6 +511,9 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[allow(clippy::panic)]
 mod test {
     use librad::keys::SecretKey;
+    // use librad::meta::project;
+    use librad::paths;
+    // use librad::peer::PeerId;
 
     use crate::coco::config;
     use crate::coco::control;
@@ -623,6 +660,54 @@ mod test {
         user_handles.sort();
 
         assert_eq!(user_handles, vec!["cloudhead", "kalt"],);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_can_clone() -> Result<(), Error> {
+        pretty_env_logger::init();
+        let mut bob_addr = *config::LOCALHOST_ANY;
+        bob_addr.set_port(8081);
+        let mut alice_addr = *config::LOCALHOST_ANY;
+        alice_addr.set_port(8080);
+
+        let alice_key = SecretKey::new();
+        // let alice_peer_id = PeerId::from(alice_key.clone());
+        let bob_key = SecretKey::new();
+        // let bob_peer_id = PeerId::from(bob_key.clone());
+
+        let alice_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        log::debug!("alice.tmpdir = {:?}", alice_tmp_dir.path());
+        let paths = paths::Paths::from_root(alice_tmp_dir.path())?;
+        log::debug!("alice.addr = {}", alice_addr);
+        let config = config::configure(
+            paths,
+            alice_key.clone(),
+            alice_addr,
+            vec![],
+        );
+        let alice_peer = Api::new(config).await?;
+
+        let bob_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        log::debug!("bob.tmpdir = {:?}", bob_tmp_dir.path());
+        let paths = paths::Paths::from_root(bob_tmp_dir.path())?;
+        log::debug!("bob.addr = {}", bob_addr);
+        let config = config::configure(
+            paths,
+            bob_key.clone(),
+            bob_addr,
+            vec![],
+        );
+        let bob_peer = Api::new(config).await?;
+
+        let alice = alice_peer.init_user(alice_key, "alice")?;
+        let _ = bob_peer.clone_user(
+            alice.urn().into_rad_url(alice_peer.peer_id().clone()),
+            vec![alice_addr].into_iter(),
+        )?;
+
+        assert_eq!(bob_peer.list_users()?, vec![]);
 
         Ok(())
     }

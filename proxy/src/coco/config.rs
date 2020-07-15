@@ -1,7 +1,7 @@
 //! Configuration for [`crate::coco`].
 
 use std::convert::TryFrom;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 use librad::keys;
 use librad::net;
@@ -10,6 +10,12 @@ use librad::paths;
 use librad::peer;
 
 use crate::error;
+
+lazy_static! {
+    /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
+    pub static ref LOCALHOST_ANY: SocketAddr =
+        SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 0));
+}
 
 /// Path configuration
 pub enum Paths {
@@ -54,7 +60,7 @@ pub fn default(
     path: impl AsRef<std::path::Path>,
 ) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, error::Error> {
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(paths, key))
+    Ok(configure(paths, key, *LOCALHOST_ANY, vec![]))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
@@ -62,16 +68,14 @@ pub fn default(
 pub fn configure(
     paths: paths::Paths,
     key: keys::SecretKey,
+    listen_addr: SocketAddr,
+    seeds: Vec<(peer::PeerId, SocketAddr)>,
 ) -> net::peer::PeerConfig<Disco, keys::SecretKey> {
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`
 
     // TODO(finto): Should be read from config file
     let gossip_params = net::gossip::MembershipParams::default();
-    // TODO(finto): Read from config or passed as param
-    let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
-    // TODO(finto): could we initialise with known seeds from a cache?
-    let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
     let disco = discovery::Static::new(seeds);
     // TODO(finto): read in from config or passed as param
     net::peer::PeerConfig {

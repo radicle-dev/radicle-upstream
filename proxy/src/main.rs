@@ -73,7 +73,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let key = keystore.init_librad_key()?;
 
     let coco_api = {
-        let config = coco::config::configure(paths, key.clone());
+        let config =
+            coco::config::configure(paths, key.clone(), *coco::config::LOCALHOST_ANY, vec![]);
         coco::Api::new(config).await?
     };
 
