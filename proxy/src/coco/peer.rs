@@ -156,7 +156,12 @@ pub fn revisions(
 
     for peer_id in repo.tracked()? {
         let remote_branches = with_browser(peer, &project.urn(), |browser| {
-            source::branches(browser, Some(BranchType::Remote { name : Some(format!("{}/heads", peer_id)) }))
+            source::branches(
+                browser,
+                Some(BranchType::Remote {
+                    name: Some(format!("{}/heads", peer_id)),
+                }),
+            )
         })?;
 
         let user = repo.get_rad_self_of(peer_id.clone())?;
