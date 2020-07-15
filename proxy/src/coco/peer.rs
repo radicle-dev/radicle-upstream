@@ -1,3 +1,5 @@
+use nonempty::NonEmpty;
+use serde::Serialize;
 use std::convert::TryFrom;
 use std::net::SocketAddr;
 
@@ -8,13 +10,27 @@ use librad::meta::user;
 use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::uri::RadUrn;
-use radicle_surf::vcs::git::{self, git2};
+use radicle_surf::vcs::git::{self, git2, BranchType};
 
+use super::source;
 use crate::error;
+use crate::identity;
 use crate::project::Project;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
+
+/// Bundled response to retrieve both branches and tags for a user repo.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserRevisions {
+    /// Owner of the repo.
+    pub(crate) identity: identity::Identity,
+    /// List of [`source::Branch`].
+    pub(crate) branches: Vec<source::Branch>,
+    /// List of [`source::Tag`].
+    pub(crate) tags: Vec<source::Tag>,
+}
 
 /// Create a new `PeerApi` given a `PeerConfig`.
 ///
@@ -105,6 +121,67 @@ pub fn list_projects(peer: &PeerApi) -> Result<Vec<Project>, error::Error> {
             })
         })
         .collect()
+}
+
+/// Get all [`UserRevisions`] for a given project.
+///
+/// # Parameters
+///
+/// * `peer` - the peer API we're interacting through
+/// * `owner` - the owner of this peer, i.e. the current user
+/// * `project_urn` - the [`RadUrn`] pointing to the project we're interested in
+///
+/// # Errors
+///
+///   * [`error::Error::LibradLock`]
+///   * [`error::Error::Git`]
+pub fn revisions(
+    peer: &PeerApi,
+    owner: &User,
+    project_urn: &RadUrn,
+) -> Result<NonEmpty<UserRevisions>, error::Error> {
+    let project = get_project(peer, project_urn)?;
+    let storage = peer.storage().reopen()?;
+    let repo = storage.open_repo(project.urn())?;
+    let mut user_revisions = vec![];
+
+    let (local_branches, local_tags) = with_browser(peer, &project.urn(), |browser| {
+        Ok((
+            source::branches(browser, Some(BranchType::Local))?,
+            source::tags(browser)?,
+        ))
+    })?;
+
+    if !local_branches.is_empty() {
+        user_revisions.push(UserRevisions {
+            identity: (peer.peer_id().clone(), owner.clone()).into(),
+            branches: local_branches,
+            tags: local_tags,
+        })
+    }
+
+    for peer_id in repo.tracked()? {
+        let remote_branches = with_browser(peer, &project.urn(), |browser| {
+            source::branches(
+                browser,
+                Some(BranchType::Remote {
+                    name: Some(format!("{}/heads", peer_id)),
+                }),
+            )
+        })?;
+
+        let user = repo.get_rad_self_of(peer_id.clone())?;
+
+        user_revisions.push(UserRevisions {
+            identity: (peer_id, user).into(),
+            branches: remote_branches,
+            // TODO(rudolfs): implement remote peer tags once we decide how
+            // https://radicle.community/t/git-tags/214
+            tags: vec![],
+        });
+    }
+
+    NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyUserRevisions)
 }
 
 /// Returns the list of [`user::User`]s known for your peer.

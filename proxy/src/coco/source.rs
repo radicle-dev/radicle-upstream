@@ -6,7 +6,7 @@ use std::str::FromStr;
 use librad::peer;
 use radicle_surf::{
     diff, file_system,
-    vcs::git::{self, git2, Browser, Rev},
+    vcs::git::{self, git2, BranchType, Browser, Rev},
 };
 
 use syntect::easy::HighlightLines;
@@ -26,7 +26,7 @@ lazy_static::lazy_static! {
 
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
-pub struct Branch(pub(super) String);
+pub struct Branch(pub(crate) String);
 
 impl fmt::Display for Branch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -38,7 +38,7 @@ impl fmt::Display for Branch {
 ///
 /// We still need full tag support.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Tag(pub(super) String);
+pub struct Tag(pub(crate) String);
 
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -322,9 +322,12 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
+pub fn branches<'repo>(
+    browser: &Browser<'repo>,
+    branch_type: Option<BranchType>,
+) -> Result<Vec<Branch>, error::Error> {
     let mut branches = browser
-        .list_branches(None)?
+        .list_branches(branch_type)?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
@@ -350,9 +353,10 @@ pub struct LocalState {
 /// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
     let repo = git::Repository::new(repo_path)?;
+    // TODO(finto): This should be the default branch of the project, possibly.
     let browser = Browser::new(&repo, git::Branch::local("master"))?;
     let mut branches = browser
-        .list_branches(Some(git::BranchType::Local))?
+        .list_branches(Some(BranchType::Local))?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
