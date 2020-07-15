@@ -70,7 +70,7 @@ where
         .and(http::with_peer(peer))
         .and(http::with_shared(registry))
         .and(http::with_store(store))
-        .and(document::param::<String>(
+        .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
@@ -101,7 +101,7 @@ fn branches_filter(
     path("branches")
         .and(warp::get())
         .and(http::with_peer(peer))
-        .and(document::param::<String>(
+        .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
@@ -127,7 +127,7 @@ fn commit_filter(
     path("commit")
         .and(warp::get())
         .and(http::with_peer(peer))
-        .and(document::param::<String>(
+        .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
@@ -151,7 +151,7 @@ fn commits_filter(
     path("commits")
         .and(warp::get())
         .and(http::with_peer(peer))
-        .and(document::param::<String>(
+        .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
@@ -210,7 +210,7 @@ where
     path("revisions")
         .and(warp::get())
         .and(http::with_peer(Arc::clone(&peer)))
-        .and(document::param::<String>(
+        .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
@@ -240,7 +240,7 @@ fn tags_filter(
     path("tags")
         .and(warp::get())
         .and(http::with_peer(peer))
-        .and(document::param::<String>(
+        .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
@@ -264,7 +264,7 @@ fn tree_filter(
     path("tree")
         .and(warp::get())
         .and(http::with_peer(peer))
-        .and(document::param::<String>(
+        .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
         ))
@@ -299,7 +299,6 @@ mod handler {
     use radicle_surf::vcs::git::{self, BranchType};
 
     use crate::coco;
-    use crate::error::Error;
     use crate::http;
     use crate::registry;
     use crate::session;
@@ -309,7 +308,7 @@ mod handler {
         api: Arc<Mutex<coco::PeerApi>>,
         registry: http::Shared<R>,
         store: http::Shared<kv::Store>,
-        project_urn: String,
+        project_urn: coco::Urn,
         super::BlobQuery {
             path,
             peer_id,
@@ -325,8 +324,7 @@ mod handler {
         let session = session::current(Arc::clone(&api), &*registry, &store).await?;
 
         let api = api.lock().await;
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let project = coco::get_project(&*api, &urn)?;
+        let project = coco::get_project(&*api, &project_urn)?;
 
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != *api.peer_id() => {
@@ -340,7 +338,7 @@ mod handler {
         } else {
             None
         };
-        let blob = coco::with_browser(&*api, &urn, |mut browser| {
+        let blob = coco::with_browser(&*api, &project_urn, |mut browser| {
             coco::blob(&mut browser, default_branch, revision, &path, theme)
         })?;
 
@@ -350,11 +348,10 @@ mod handler {
     /// Fetch the list [`coco::Branch`].
     pub async fn branches(
         peer: Arc<Mutex<coco::PeerApi>>,
-        project_urn: String,
+        project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let branches = coco::with_browser(&peer, &urn, |browser| {
+        let branches = coco::with_browser(&peer, &project_urn, |browser| {
             coco::branches(browser, Some(BranchType::Local))
         })?;
 
@@ -364,13 +361,13 @@ mod handler {
     /// Fetch a [`coco::Commit`].
     pub async fn commit(
         api: Arc<Mutex<coco::PeerApi>>,
-        project_urn: String,
+        project_urn: coco::Urn,
         sha1: String,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let commit =
-            coco::with_browser(&api, &urn, |mut browser| coco::commit(&mut browser, &sha1))?;
+        let commit = coco::with_browser(&api, &project_urn, |mut browser| {
+            coco::commit(&mut browser, &sha1)
+        })?;
 
         Ok(reply::json(&commit))
     }
@@ -378,12 +375,11 @@ mod handler {
     /// Fetch the list of [`coco::Commit`] from a branch.
     pub async fn commits(
         api: Arc<Mutex<coco::PeerApi>>,
-        project_urn: String,
+        project_urn: coco::Urn,
         query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection> {
         let api = api.lock().await;
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let commits = coco::with_browser(&api, &urn, |mut browser| {
+        let commits = coco::with_browser(&api, &project_urn, |mut browser| {
             coco::commits(&mut browser, query.into())
         })?;
 
@@ -400,12 +396,11 @@ mod handler {
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions(
         peer: Arc<Mutex<coco::PeerApi>>,
-        project_urn: String,
+        project_urn: coco::Urn,
         owner: coco::User,
     ) -> Result<impl Reply, Rejection> {
-        let urn = project_urn.parse().map_err(Error::from)?;
         let peer = &*peer.lock().await;
-        let revisions: Vec<_> = coco::revisions(peer, &owner, &urn)?.into();
+        let revisions: Vec<_> = coco::revisions(peer, &owner, &project_urn)?.into();
 
         Ok(reply::json(&revisions))
     }
@@ -413,11 +408,10 @@ mod handler {
     /// Fetch the list [`coco::Tag`].
     pub async fn tags(
         peer: Arc<Mutex<coco::PeerApi>>,
-        project_urn: String,
+        project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let tags = coco::with_browser(&peer, &urn, |browser| coco::tags(browser))?;
+        let tags = coco::with_browser(&peer, &project_urn, |browser| coco::tags(browser))?;
 
         Ok(reply::json(&tags))
     }
@@ -425,7 +419,7 @@ mod handler {
     /// Fetch a [`coco::Tree`].
     pub async fn tree(
         api: Arc<Mutex<coco::PeerApi>>,
-        project_urn: String,
+        project_urn: coco::Urn,
         super::TreeQuery {
             prefix,
             peer_id,
@@ -439,8 +433,7 @@ mod handler {
             revision
         );
         let api = api.lock().await;
-        let urn = project_urn.parse().map_err(Error::from)?;
-        let project = coco::get_project(&api, &urn)?;
+        let project = coco::get_project(&api, &project_urn)?;
 
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != *api.peer_id() => {
@@ -450,7 +443,7 @@ mod handler {
         };
 
         log::debug!("tree.default_branch={:?}", default_branch);
-        let tree = coco::with_browser(&api, &urn, |mut browser| {
+        let tree = coco::with_browser(&api, &project_urn, |mut browser| {
             coco::tree(&mut browser, default_branch, revision, prefix)
         })?;
 
