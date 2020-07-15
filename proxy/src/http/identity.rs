@@ -113,7 +113,7 @@ mod handler {
             .await?
             .identity
         {
-            return Err(Rejection::from(error::Error::EntityExists(identity.id)));
+            return Err(Rejection::from(error::Error::EntityExists(identity.urn)));
         }
 
         let keystore = keystore.read().await;
@@ -271,6 +271,7 @@ mod test {
 
         let config = coco::config::default(key, tmp_dir.path())?;
         let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
+        let peer_id = { peer.lock().await.peer_id().clone() };
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
@@ -297,7 +298,7 @@ mod test {
         let store = &*store.read().await;
         let registry = &*registry.read().await;
         let session = session::current(Arc::clone(&peer), registry, store).await?;
-        let urn = session.identity.expect("failed to set identity").id;
+        let urn = session.identity.expect("failed to set identity").urn;
 
         // Assert that we set the default owner and it's the same one as the session
         {
@@ -307,12 +308,13 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
             let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
-            let shareable_entity_identifier = format!("cloudhead@{}", urn);
+            let shareable_entity_identifier = format!("cloudhead@{}", peer_id);
             assert_eq!(
                 have,
                 json!({
+                    "peerId": peer_id,
                     "avatarFallback": avatar,
-                    "id": urn,
+                    "urn": urn,
                     "metadata": {
                         "handle": "cloudhead",
                     },
@@ -336,6 +338,7 @@ mod test {
 
         let config = coco::config::default(key.clone(), tmp_dir.path())?;
         let peer = coco::create_peer_api(config).await?;
+        let peer_id = peer.peer_id().clone();
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             registry::Registry::new(client)
@@ -345,7 +348,7 @@ mod test {
         let user = coco::init_user(&peer, key, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
-        let shareable_entity_identifier = user.into();
+        let shareable_entity_identifier = (peer_id.clone(), user).into();
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
@@ -365,7 +368,8 @@ mod test {
         assert_eq!(
             have,
             json!(identity::Identity {
-                id: urn.clone(),
+                peer_id,
+                urn: urn.clone(),
                 shareable_entity_identifier,
                 metadata: identity::Metadata { handle },
                 registered: None,

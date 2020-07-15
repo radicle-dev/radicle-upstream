@@ -1,5 +1,6 @@
 use nonempty::NonEmpty;
 use serde::Serialize;
+use std::convert::TryFrom;
 use std::net::SocketAddr;
 
 use librad::git::types::{Namespace, Reference};
@@ -24,7 +25,7 @@ pub type User = user::User<entity::Verified>;
 /// Bundled response to retrieve both branches and tags for a user repo.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Revision {
+pub struct UserRevisions {
     /// Owner of the repo.
     pub(crate) identity: identity::Identity,
     /// List of [`source::Branch`].
@@ -134,7 +135,7 @@ pub fn revisions(
     peer: &PeerApi,
     owner: &User,
     project_urn: &RadUrn,
-) -> Result<NonEmpty<Revision>, error::Error> {
+) -> Result<NonEmpty<UserRevisions>, error::Error> {
     let project = get_project(peer, project_urn)?;
     let storage = peer.storage().reopen()?;
     let repo = storage.open_repo(project.urn())?;
@@ -146,8 +147,8 @@ pub fn revisions(
         ))
     })?;
 
-    let mut remotes = NonEmpty::new(Revision {
-        identity: owner.clone().into(),
+    let mut remotes = NonEmpty::new(UserRevisions {
+        identity: (peer.peer_id().clone(), owner.clone()).into(),
         branches: local_branches,
         tags: local_tags,
     });
@@ -161,10 +162,10 @@ pub fn revisions(
             })
             .collect();
 
-        let user = repo.get_rad_self_of(peer_id)?;
+        let user = repo.get_rad_self_of(peer_id.clone())?;
 
-        remotes.push(Revision {
-            identity: user.into(),
+        remotes.push(UserRevisions {
+            identity: (peer_id, user).into(),
             branches: remote_branches,
             // TODO(rudolfs): implement remote peer tags once we decide how
             // https://radicle.community/t/git-tags/214
@@ -251,10 +252,10 @@ where
     F: Send + FnOnce(&mut git::Browser) -> Result<T, error::Error>,
 {
     let project = get_project(peer, project_urn)?;
-    let default_branch = project.default_branch();
+    let default_branch = git::Branch::local(project.default_branch());
     let git_dir = peer.paths().git_dir();
     let repo = git::Repository::new(git_dir)?;
-    let namespace = git::Namespace::from(project.urn().id.to_string().as_str());
+    let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
     let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
 
     callback(&mut browser)

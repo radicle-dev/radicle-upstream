@@ -11,14 +11,14 @@ mod peer;
 pub use peer::{
     create_peer_api, default_owner, get_project, get_user, init_owner, init_project, init_user,
     list_projects, list_users, revisions, set_default_owner, verify_user, with_browser, PeerApi,
-    Revision, User,
+    User, UserRevisions,
 };
 
 /// Module that captures all types and functions for source code.
 mod source;
 pub use source::{
     blob, branches, commit, commit_header, commits, local_state, tags, tree, Blob, BlobContent,
-    Branch, Commit, CommitHeader, Info, ObjectType, Person, Tag, Tree, TreeEntry,
+    Branch, Commit, CommitHeader, Info, ObjectType, Person, Revision, Tag, Tree, TreeEntry,
 };
 
 pub mod config;

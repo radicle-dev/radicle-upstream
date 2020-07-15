@@ -29,18 +29,36 @@
 
   const { id, metadata } = getContext("project");
 
-  $: ({
-    currentPeerId,
-    currentRevision,
-    currentObjectType,
-    currentObjectPath,
-  } = path.parseProjectSourceLocation(
-    $querystring,
-    null,
-    metadata.defaultBranch,
-    ObjectType.Tree,
-    null
-  ));
+  let currentPeerId;
+  let currentRevision;
+  let currentObjectType;
+  let currentObjectPath;
+
+  $: {
+    const parsed = path.parseProjectSourceLocation($querystring);
+
+    currentPeerId = parsed.peerId || null;
+    currentObjectType = parsed.objectType || ObjectType.Tree;
+    currentObjectPath = parsed.objectPath || null;
+
+    if (parsed.revision) {
+      if (
+        !(
+          currentRevision.type === parsed.revision.type &&
+          currentRevision.name === parsed.revision.name &&
+          currentRevision.peerId === parsed.revision.peerId
+        )
+      ) {
+        currentRevision = parsed.revision;
+      }
+    } else {
+      currentRevision = {
+        type: "branch",
+        name: metadata.defaultBranch,
+        peerId: "",
+      };
+    }
+  }
 
   const updateRevision = (projectId, revision, peerId) => {
     push(
@@ -71,7 +89,7 @@
     type: currentObjectType,
   });
 
-  $: fetchCommits({ projectId: id, branch: currentRevision });
+  $: fetchCommits({ projectId: id, revision: currentRevision });
 
   fetchRevisions({ projectId: id });
 </script>
@@ -179,9 +197,11 @@
           <RevisionSelector
             style="height: 100%;"
             {currentPeerId}
-            {currentRevision}
+            currentRevision={currentRevision.name}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.peerId)} />
+            on:select={event => {
+              updateRevision(project.id, event.detail.revision, event.detail.peerId);
+            }} />
         </div>
       </Remote>
 
@@ -206,7 +226,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                on:click={navigateOnReady(path.projectCommits(project.id, currentPeerId, currentRevision), commitsStore)}>
+                on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
                 Commits
               </a>
             </Text>
