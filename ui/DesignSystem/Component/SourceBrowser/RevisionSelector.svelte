@@ -1,13 +1,13 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Avatar, Icon } from "../../Primitive";
+  import { Avatar, Icon, Text } from "../../Primitive";
 
   export let currentRevision = null;
   export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
-  export let style = "";
+  export let style = null;
 
   let currentSelectedPeer;
 
@@ -67,27 +67,16 @@
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: 0.5rem;
-  }
-  .selector-avatar :global(h3) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .selector-branch {
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    color: var(--color-foreground-level-6);
-    margin-right: 0.5rem;
-    width: 16rem;
-    white-space: nowrap;
+    display: flex;
   }
   .selector-expand {
     align-self: flex-end;
   }
   .revision-dropdown-container {
+    display: flex;
     position: absolute;
     top: 0px;
     left: 0px;
-    width: 100%;
   }
   .revision-dropdown {
     position: relative;
@@ -96,15 +85,13 @@
     border-radius: 4px;
     box-shadow: var(--elevation-medium);
     z-index: 8;
+    max-width: 40rem;
   }
   .peer {
+    display: flex;
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
     user-select: none;
-  }
-  .peer :global(h3) {
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .branch,
   .tag {
@@ -113,13 +100,15 @@
     cursor: pointer;
     overflow-x: hidden;
     user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .branch:hover,
   .tag:hover {
     color: var(--color-foreground);
     background: var(--color-foreground-level-2);
   }
-
   .revision-dropdown ul:last-child li {
     border-radius: 0 0 3px 3px;
   }
@@ -134,14 +123,15 @@
   hidden={expanded}>
   <div class="selector-avatar">
     <Avatar
-      title={currentSelectedPeer && currentSelectedPeer.identity.shareableEntityIdentifier}
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
       size="small"
-      style="--title-color: var(--color-foreground-level-6); justify-content:
-      flex-start;"
+      style="display: flex; justify-content: flex-start; margin-right: 8px;"
       variant="circle" />
+    <Text
+      style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+      {currentRevision}
+    </Text>
   </div>
-  <div class="selector-branch">{currentRevision}</div>
   <div class="selector-expand">
     <Icon.Expand
       style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
@@ -152,12 +142,14 @@
     {#each revisions as repo}
       <div class="peer">
         <Avatar
-          title={repo.identity.shareableEntityIdentifier}
           avatarFallback={repo.identity.avatarFallback}
+          style="display: flex; justify-content: flex-start; margin-right: 8px;"
           size="small"
-          style="--title-color: var(--color-foreground-level-6);
-          justify-content: flex-start;"
           variant="circle" />
+        <Text
+          style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+          {repo.identity.shareableEntityIdentifier}
+        </Text>
       </div>
       <ul>
         {#each repo.branches as branch}
