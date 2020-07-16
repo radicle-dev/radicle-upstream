@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{
-    Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName, MINIMUM_FEE,
+    AccountId, Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName, MINIMUM_FEE,
 };
 
 use crate::avatar;
@@ -318,7 +318,7 @@ pub trait Client: Clone + Send + Sync {
     /// Will return `Err` if a protocol error occurs.
     async fn prepay_account(
         &self,
-        recipient: protocol::AccountId,
+        recipient: AccountId,
         balance: Balance,
     ) -> Result<(), error::Error>;
 
@@ -715,7 +715,7 @@ impl Client for Registry {
 
     async fn prepay_account(
         &self,
-        recipient: protocol::AccountId,
+        recipient: AccountId,
         balance: Balance,
     ) -> Result<(), error::Error> {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
