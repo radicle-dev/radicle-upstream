@@ -132,17 +132,20 @@
   on:click|stopPropagation={showDropdown}
   hidden={expanded}>
   <div class="selector-avatar">
-    <div style="display: flex;">
+    <div style="display: flex; overflow: hidden;">
       {#if currentRevision.type === RevisionType.Branch}
         <Icon.Branch
-          style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
+          style="vertical-align: bottom; fill: var(--color-foreground-level-4);
+          flex-shrink: 0;" />
       {:else}
         <Icon.Commit
-          style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
+          style="vertical-align: bottom; fill: var(--color-foreground-level-4);
+          flex-shrink: 0;" />
       {/if}
       <Text
         style="color: var(--color-foreground-level-6); white-space: nowrap;
-        text-overflow: ellipsis; overflow: hidden; margin-left: 0.5rem;">
+        text-overflow: ellipsis; overflow: hidden; margin-left: 0.5rem;
+        margin-right: 0.5rem;">
         {currentRevision.name}
       </Text>
     </div>
