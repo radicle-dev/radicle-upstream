@@ -44,9 +44,9 @@
     currentObjectPath = parsed.objectPath || null;
 
     if (currentRevision && parsed.revision) {
-      // Only perform assignment if there is a change to revision, otherwise
-      // this assignment would trigger the reacitve statement would cause a
-      // reload of the source browser.
+      // Only perform assignment if there is a change to the revision.
+      // Otherwise an assignment triggers this reacitve statement to update
+      // the source browser even if there are no changes.
       if (!revisionQueryEq(currentRevision, parsed.revision)) {
         currentRevision = parsed.revision;
       }
