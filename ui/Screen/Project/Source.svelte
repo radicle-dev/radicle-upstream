@@ -194,7 +194,6 @@
       <Remote store={revisionsStore} let:data={revisions}>
         <div class="revision-selector-wrapper">
           <RevisionSelector
-            style="height: 100%;"
             {currentPeerId}
             currentRevision={currentRevision.name}
             {revisions}

@@ -9,7 +9,6 @@
   export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
-  export let style = null;
 
   let currentSelectedPeer;
 
@@ -79,6 +78,7 @@
     position: absolute;
     top: 0px;
     left: 0px;
+    min-width: 100%;
   }
   .revision-dropdown {
     position: relative;
@@ -87,7 +87,9 @@
     border-radius: 4px;
     box-shadow: var(--elevation-medium);
     z-index: 8;
-    max-width: 40rem;
+    max-width: 30rem;
+    height: 100%;
+    min-width: 100%;
   }
   .peer {
     display: flex;
@@ -136,7 +138,8 @@
       style="display: flex; justify-content: flex-start; margin-right: 8px;"
       variant="circle" />
     <Text
-      style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+      style="color: var(--color-foreground-level-6); white-space: nowrap;
+      text-overflow: ellipsis; overflow: hidden;">
       {currentRevision}
     </Text>
   </div>
@@ -146,7 +149,7 @@
   </div>
 </div>
 <div class="revision-dropdown-container" bind:this={dropdown}>
-  <div class="revision-dropdown" hidden={!expanded} {style}>
+  <div class="revision-dropdown" hidden={!expanded}>
     {#each revisions as repo}
       <div class="peer">
         <Avatar
@@ -156,7 +159,7 @@
           variant="circle" />
         <Text
           style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
-          {repo.identity.shareableEntityIdentifier}
+          {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
         </Text>
       </div>
       <ul>
