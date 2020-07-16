@@ -195,7 +195,7 @@
         <div class="revision-selector-wrapper">
           <RevisionSelector
             {currentPeerId}
-            currentRevision={currentRevision.name}
+            {currentRevision}
             {revisions}
             on:select={event => {
               updateRevision(project.id, event.detail.revision, event.detail.peerId);

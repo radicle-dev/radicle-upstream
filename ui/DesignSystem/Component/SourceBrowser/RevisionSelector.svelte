@@ -3,7 +3,7 @@
 
   import { RevisionType } from "../../../src/source.ts";
 
-  import { Avatar, Icon, Text } from "../../Primitive";
+  import { Avatar, Icon, Text, Title } from "../../Primitive";
 
   export let currentRevision = null;
   export let currentPeerId = null;
@@ -67,8 +67,9 @@
   .selector-avatar {
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-right: 0.5rem;
     display: flex;
+    justify-content: space-between;
+    width: 100%;
   }
   .selector-expand {
     align-self: flex-end;
@@ -112,7 +113,6 @@
   .tag:hover {
     background: var(--color-foreground-level-1);
   }
-
   .branch.selected,
   .branch.selected:hover,
   .tag.selected,
@@ -128,20 +128,29 @@
 <div
   class="revision-selector"
   data-cy="revision-selector"
-  data-revision={currentRevision}
+  data-revision={currentRevision.name}
   on:click|stopPropagation={showDropdown}
   hidden={expanded}>
   <div class="selector-avatar">
+    <div style="display: flex;">
+      {#if currentRevision.type === RevisionType.Branch}
+        <Icon.Branch
+          style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
+      {:else}
+        <Icon.Commit
+          style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
+      {/if}
+      <Text
+        style="color: var(--color-foreground-level-6); white-space: nowrap;
+        text-overflow: ellipsis; overflow: hidden; margin-left: 0.5rem;">
+        {currentRevision.name}
+      </Text>
+    </div>
     <Avatar
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
       size="small"
-      style="display: flex; justify-content: flex-start; margin-right: 8px;"
+      style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
       variant="circle" />
-    <Text
-      style="color: var(--color-foreground-level-6); white-space: nowrap;
-      text-overflow: ellipsis; overflow: hidden;">
-      {currentRevision}
-    </Text>
   </div>
   <div class="selector-expand">
     <Icon.Expand
@@ -157,16 +166,16 @@
           style="display: flex; justify-content: flex-start; margin-right: 8px;"
           size="small"
           variant="circle" />
-        <Text
+        <Title
           style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
           {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
-        </Text>
+        </Title>
       </div>
       <ul>
         {#each repo.branches as branch}
           <li
             class="branch"
-            class:selected={currentRevision === branch && currentSelectedPeer.identity.peerId === repo.identity.peerId}
+            class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
             on:click|stopPropagation={() => selectRevision(
@@ -187,7 +196,7 @@
           <li
             class="tag"
             data-repo-handle={repo.identity.metadata.handle}
-            class:selected={currentRevision === tag && currentSelectedPeer.identity.peerId === repo.identity.peerId}
+            class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-tag={tag}
             on:click|stopPropagation={() => selectRevision(
                 repo.identity.peerId,
