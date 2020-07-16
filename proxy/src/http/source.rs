@@ -592,10 +592,11 @@ impl Serialize for coco::Commit {
     where
         S: Serializer,
     {
-        let mut changeset = serializer.serialize_struct("Commit", 3)?;
+        let mut changeset = serializer.serialize_struct("Commit", 4)?;
         changeset.serialize_field("header", &self.header)?;
         changeset.serialize_field("stats", &self.stats)?;
         changeset.serialize_field("diff", &self.diff)?;
+        changeset.serialize_field("branch", &self.branch)?;
         changeset.end()
     }
 }
