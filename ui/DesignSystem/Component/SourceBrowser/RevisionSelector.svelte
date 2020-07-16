@@ -166,7 +166,7 @@
         {#each repo.branches as branch}
           <li
             class="branch"
-            class:selected={currentRevision === branch}
+            class:selected={currentRevision === branch && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
             on:click|stopPropagation={() => selectRevision(
@@ -187,7 +187,7 @@
           <li
             class="tag"
             data-repo-handle={repo.identity.metadata.handle}
-            class:selected={currentRevision === tag}
+            class:selected={currentRevision === tag && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-tag={tag}
             on:click|stopPropagation={() => selectRevision(
                 repo.identity.peerId,
