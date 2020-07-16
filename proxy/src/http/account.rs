@@ -1,9 +1,6 @@
-//! Endpoints for Org.
+//! Endpoints for registry accounts.
 
-// use serde::ser::SerializeStruct as _;
-// use serde::{Deserialize, Serialize, Serializer};
 use std::sync::Arc;
-// use tokio::sync::Mutex;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
