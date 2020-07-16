@@ -1,6 +1,9 @@
-use serde::{Deserialize, Serialize};
+//! Source code related functionality.
+
 use std::fmt;
 use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
 
 use librad::peer;
 use radicle_surf::{

@@ -1,3 +1,5 @@
+//! Utility for fixture data in the monorepo.
+
 use std::convert::TryFrom;
 use std::env;
 

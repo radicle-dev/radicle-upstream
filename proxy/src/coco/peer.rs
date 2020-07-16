@@ -1,3 +1,5 @@
+//! Utility to work with [`librad::PeerApi`].
+
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};

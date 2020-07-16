@@ -155,7 +155,7 @@ where
 pub struct Context<R> {
     /// [`coco::Api`] to operate on the local monorepo.
     peer_api: coco::Api,
-    /// [`keystorage::KeyStorate`] to manage keys.
+    /// [`keystore::KeyStorage`] to manage keys.
     keystore: keystore::Keystorage,
     /// [`registry::Client`] to perform registry operations.
     registry: R,
