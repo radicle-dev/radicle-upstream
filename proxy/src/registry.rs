@@ -155,6 +155,16 @@ pub trait Client: Clone + Send + Sync {
         account_id: &protocol::ed25519::Public,
     ) -> Result<bool, error::Error>;
 
+    /// Get the balance of a given account on chain.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn free_balance(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<Balance, error::Error>;
+
     /// Fetch the current best height by virtue of checking the block header of the best chain.
     ///
     /// # Errors
@@ -370,6 +380,16 @@ impl Client for Registry {
     ) -> Result<bool, error::Error> {
         self.client
             .account_exists(account_id)
+            .await
+            .map_err(|e| e.into())
+    }
+
+    async fn free_balance(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<Balance, error::Error> {
+        self.client
+            .free_balance(account_id)
             .await
             .map_err(|e| e.into())
     }

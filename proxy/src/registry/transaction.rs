@@ -386,6 +386,13 @@ where
         self.client.account_exists(account_id).await
     }
 
+    async fn free_balance(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<protocol::Balance, error::Error> {
+        self.client.free_balance(account_id).await
+    }
+
     async fn best_height(&self) -> Result<u32, error::Error> {
         self.client.best_height().await
     }
