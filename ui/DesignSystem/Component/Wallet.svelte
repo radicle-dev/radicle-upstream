@@ -1,9 +1,12 @@
 <script>
-  export let transactions = null;
   import { Title } from "../Primitive";
   import Rad from "./Rad.svelte";
   import TransactionList from "./Wallet/TxList.svelte";
   import SendReceive from "./Wallet/SendReceive.svelte";
+  import Receive from "./Wallet/Receive.svelte";
+  export let transactions = null;
+  export let balance = null;
+  export let address = null;
 </script>
 
 <style>
@@ -36,21 +39,39 @@
   .send-receive {
     width: 20rem;
   }
+  .empty-state {
+    width: 20rem;
+    margin: 0 auto;
+    padding-top: 6rem;
+  }
 </style>
 
 <div class="container">
-  <div>
-    <div class="balance">
-      <Title style="padding-bottom: 1rem;" variant="large">Balance</Title>
-      <Rad style="display: inline-block;" size="big" rad="234" usd="74" />
+  {#if balance !== '0' || transactions.length !== 0}
+    <div>
+      <div class="balance">
+        <Title style="padding-bottom: 1rem;" variant="large">Balance</Title>
+        <Rad
+          style="display: inline-block;"
+          size="big"
+          rad={balance}
+          usd={balance} />
+      </div>
+      <div class="send-receive">
+        <SendReceive {address} />
+      </div>
     </div>
-    <div class="send-receive">
-      <SendReceive
-        address="hyda4fhdx8up8hhocagkdz3d41txb98stw4pkqe3uommo1p5m6s9oy" />
+    <div class="transactions">
+      <Title variant="large" style="padding: 1.25rem 1.5rem;">
+        Transactions
+      </Title>
+      <TransactionList {transactions} />
     </div>
-  </div>
-  <div class="transactions">
-    <Title variant="large" style="padding: 1.25rem 1.5rem;">Transactions</Title>
-    <TransactionList {transactions} />
-  </div>
+  {:else}
+    <div class="empty-state">
+      <Receive
+        {address}
+        text="To get started, buy some RADs and transfer them here." />
+    </div>
+  {/if}
 </div>

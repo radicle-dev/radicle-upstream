@@ -1,7 +1,6 @@
 <script>
   import { Button, Input, Icon, Title } from "../../Primitive";
-  import Urn from "../Urn.svelte";
-  import QR from "../QR.svelte";
+  import Receive from "./Receive.svelte";
 
   export let address = null;
 
@@ -13,9 +12,11 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
+
   .selector:hover button.active:not(:hover) {
     background: none;
   }
+
   .selector button {
     cursor: pointer;
     padding: 20px 16px;
@@ -26,9 +27,11 @@
     font-size: 1rem;
     border: 1px solid transparent;
   }
+
   .selector button:first-child {
     border-top-left-radius: 4px;
   }
+
   .selector button:first-child:not(.active) {
     border-bottom: 1px solid var(--color-foreground-level-2);
     border-right: 1px solid var(--color-foreground-level-2);
@@ -37,32 +40,32 @@
   .selector button:last-child {
     border-top-right-radius: 4px;
   }
+
   .selector button:last-child:not(.active) {
     border-bottom: 1px solid var(--color-foreground-level-2);
     border-left: 1px solid var(--color-foreground-level-2);
   }
+
   .selector button:focus {
     outline: none;
   }
+
   .selector button.active {
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
   .selector button:hover {
     color: var(--color-foreground-level-6);
   }
+
   .selector button:active {
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
   .send {
     padding: 1.5rem;
-  }
-  .receive {
-    display: flex;
-    flex-direction: column;
-    padding: 2rem 1.5rem;
-    text-align: center;
   }
 
   .submit {
@@ -114,10 +117,6 @@
       </div>
     </div>
   {:else if currentlyActive === 'receive'}
-    <div class="receive">
-      <QR key={address} size="136" color="var(--color-primary)" />
-      <Title style="padding: 1.5rem 0 0.5rem 0;">Address</Title>
-      <Urn urn={address} />
-    </div>
+    <Receive {address} />
   {/if}
 </div>
