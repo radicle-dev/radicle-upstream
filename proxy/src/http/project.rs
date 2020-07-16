@@ -432,7 +432,7 @@ mod test {
         let path = dir.path().to_str().unwrap();
 
         let handle = "cloudhead";
-        let id = identity::create(&*peer.lock().await, key, handle.parse().unwrap())?;
+        let id = identity::create(&*peer.lock().await, key, handle)?;
 
         session::set_identity(&store, id.clone())?;
 

@@ -19,7 +19,7 @@ hex = "0.4"
 kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
-nonempty = "0.2"
+nonempty = "0.5"
 percent-encoding = "2.1"
 parity-scale-codec = "1.3.1"
 pico-args = "0.3"
@@ -39,7 +39,7 @@ warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", featur
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "f97ed83b9d1d4303407de038206c7da852cfe22e"
+rev = "269a7ededafd7373ebfb03210770d0b3778002fb"
 
 [dependencies.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore.git"
@@ -50,7 +50,7 @@ git = "https://github.com/radicle-dev/radicle-registry.git"
 rev = "e98f433712646bf29815f287d228154282c7e819"
 
 [dependencies.radicle-surf]
-version = "0.4.0"
+version = "0.4.1"
 features = ["serialize"]
 
 [dev-dependencies]
