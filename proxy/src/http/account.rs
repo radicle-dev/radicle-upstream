@@ -2,31 +2,20 @@
 
 use std::sync::Arc;
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
 use crate::registry;
 
 /// Prefixed filters.
-pub fn filters<R>(
-    registry: &http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(registry: &http::Shared<R>) -> BoxedFilter<(impl Reply,)>
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
-    path("accounts")
-        .and(exists_filter(Arc::clone(registry)).or(get_balance_filter(Arc::clone(registry))))
-}
-
-/// Combination of all account filters.
-#[cfg(test)]
-fn test_filters<R>(
-    registry: &http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client,
-{
-    exists_filter(Arc::clone(registry)).or(get_balance_filter(Arc::clone(registry)))
+    exists_filter(Arc::clone(registry))
+        .or(get_balance_filter(Arc::clone(registry)))
+        .boxed()
 }
 
 /// `GET /<id>/exists`
@@ -127,7 +116,7 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::test_filters(&Arc::clone(&registry));
+        let api = super::filters(&Arc::clone(&registry));
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
 
@@ -158,7 +147,7 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::test_filters(&Arc::clone(&registry));
+        let api = super::filters(&Arc::clone(&registry));
         let author =
             radicle_registry_client::ed25519::Pair::from_legacy_string("//Cloudhead", None);
         let res = request()
@@ -184,7 +173,7 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::test_filters(&Arc::clone(&registry));
+        let api = super::filters(&Arc::clone(&registry));
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
 
@@ -219,7 +208,7 @@ mod test {
             let (client, _) = radicle_registry_client::Client::new_emulator();
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
-        let api = super::test_filters(&Arc::clone(&registry));
+        let api = super::filters(&Arc::clone(&registry));
         let unkown_account =
             radicle_registry_client::ed25519::Pair::from_legacy_string("//Cloudhead", None)
                 .public();
