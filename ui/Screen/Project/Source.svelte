@@ -14,6 +14,8 @@
     readme,
     revisions as revisionsStore,
     fetchObject,
+    revisionQueryEq,
+    RevisionType,
   } from "../../src/source.ts";
 
   import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
@@ -41,19 +43,16 @@
     currentObjectType = parsed.objectType || ObjectType.Tree;
     currentObjectPath = parsed.objectPath || null;
 
-    if (parsed.revision) {
-      if (
-        !(
-          currentRevision.type === parsed.revision.type &&
-          currentRevision.name === parsed.revision.name &&
-          currentRevision.peerId === parsed.revision.peerId
-        )
-      ) {
+    if (currentRevision && parsed.revision) {
+      // Only perform assignment if there is a change to revision, otherwise
+      // this assignment would trigger the reacitve statement would cause a
+      // reload of the source browser.
+      if (!revisionQueryEq(currentRevision, parsed.revision)) {
         currentRevision = parsed.revision;
       }
     } else {
       currentRevision = {
-        type: "branch",
+        type: RevisionType.Branch,
         name: metadata.defaultBranch,
         peerId: "",
       };

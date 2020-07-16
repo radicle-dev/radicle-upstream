@@ -1,6 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
+  import { RevisionType } from "../../../src/source.ts";
+
   import { Avatar, Icon, Text } from "../../Primitive";
 
   export let currentRevision = null;
@@ -158,7 +160,7 @@
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
             on:click|stopPropagation={() => selectRevision(repo.identity.id, {
-                type: 'branch',
+                type: RevisionType.Branch,
                 peerId: repo.identity.id,
                 name: branch,
               })}>
@@ -174,7 +176,7 @@
             data-repo-handle={repo.identity.metadata.handle}
             data-tag={tag}
             on:click|stopPropagation={() => selectRevision(repo.identity.id, {
-                type: 'tag',
+                type: RevisionType.Tag,
                 name: tag,
               })}>
             <Icon.Commit

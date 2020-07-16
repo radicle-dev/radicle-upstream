@@ -1,7 +1,6 @@
 import { Readable } from "svelte/store";
 
 import * as api from "./api";
-import * as config from "./config";
 import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
@@ -91,10 +90,10 @@ interface Readme {
   path?: string;
 }
 
-enum RevisionType {
-  Branch,
-  Tag,
-  Sha,
+export enum RevisionType {
+  Branch = "branch",
+  Tag = "tag",
+  Sha = "sha",
 }
 
 export interface Branch {
@@ -330,6 +329,33 @@ export const formatTime = (t: number): string => {
     day: "numeric",
     year: "numeric",
   });
+};
+
+export const revisionQueryEq = (
+  query1: RevisionQuery,
+  query2: RevisionQuery
+): boolean => {
+  console.log(query1.type);
+  console.log(RevisionType.Branch);
+  if (
+    query1.type === RevisionType.Branch &&
+    query2.type === RevisionType.Branch
+  ) {
+    return query1.name === query2.name && query1.peerId === query2.peerId;
+  } else if (
+    query1.type === RevisionType.Tag &&
+    query2.type === RevisionType.Tag
+  ) {
+    return query1.name === query2.name;
+  } else if (
+    query1.type === RevisionType.Sha &&
+    query2.type === RevisionType.Sha
+  ) {
+    return query1.sha === query2.sha;
+  } else {
+    console.log("BAAAAAAA");
+    return false;
+  }
 };
 
 export const readme = (
