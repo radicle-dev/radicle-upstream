@@ -335,8 +335,6 @@ export const revisionQueryEq = (
   query1: RevisionQuery,
   query2: RevisionQuery
 ): boolean => {
-  console.log(query1.type);
-  console.log(RevisionType.Branch);
   if (
     query1.type === RevisionType.Branch &&
     query2.type === RevisionType.Branch
@@ -353,7 +351,6 @@ export const revisionQueryEq = (
   ) {
     return query1.sha === query2.sha;
   } else {
-    console.log("BAAAAAAA");
     return false;
   }
 };
