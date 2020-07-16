@@ -246,9 +246,9 @@ impl TryFrom<Revision> for Rev {
 pub struct UserRevisions {
     /// Owner of the repo.
     pub(crate) identity: identity::Identity,
-    /// List of [`source::Branch`].
+    /// List of [`git::Branch`].
     pub(crate) branches: Vec<Branch>,
-    /// List of [`source::Tag`].
+    /// List of [`git::Tag`].
     pub(crate) tags: Vec<Tag>,
 }
 
