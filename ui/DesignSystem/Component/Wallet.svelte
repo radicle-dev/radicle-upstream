@@ -1,4 +1,5 @@
 <script>
+  export let transactions = null;
   import { Title } from "../Primitive";
   import Rad from "./Rad.svelte";
   import TransactionList from "./Wallet/TxList.svelte";
@@ -50,6 +51,6 @@
   </div>
   <div class="transactions">
     <Title variant="large" style="padding: 1.25rem 1.5rem;">Transactions</Title>
-    <TransactionList />
+    <TransactionList {transactions} />
   </div>
 </div>
