@@ -75,6 +75,7 @@ fn get_balance_filter<R: registry::Client>(
 mod handler {
     use warp::{reply, Rejection, Reply};
 
+    use crate::error;
     use crate::http;
     use crate::registry;
 
@@ -95,9 +96,11 @@ mod handler {
         account_id: registry::AccountId,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let balance = reg.free_balance(&account_id).await?;
-
-        Ok(reply::json(&balance))
+        match reg.free_balance(&account_id).await {
+            Ok(balance) => Ok(reply::json(&balance)),
+            Err(error::Error::AccountNotFound(_)) => Err(warp::reject::not_found()),
+            Err(other_error) => Err(Rejection::from(other_error)),
+        }
     }
 }
 
@@ -217,19 +220,17 @@ mod test {
             Arc::new(RwLock::new(registry::Registry::new(client)))
         };
         let api = super::test_filters(&Arc::clone(&registry));
-        let author =
-            radicle_registry_client::ed25519::Pair::from_legacy_string("//Cloudhead", None);
+        let unkown_account =
+            radicle_registry_client::ed25519::Pair::from_legacy_string("//Cloudhead", None)
+                .public();
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}/balance", author.public().to_string()))
+            .path(&format!("/{}/balance", unkown_account.to_string()))
             .reply(&api)
             .await;
 
-        http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(0), "Account doesn't have the expected amount");
-        });
-
+        assert_eq!(res.status(), StatusCode::NOT_FOUND);
         Ok(())
     }
 }

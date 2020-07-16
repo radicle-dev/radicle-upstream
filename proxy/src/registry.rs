@@ -155,7 +155,7 @@ pub trait Client: Clone + Send + Sync {
         account_id: &protocol::ed25519::Public,
     ) -> Result<bool, error::Error>;
 
-    /// Get the balance of a given account on chain.
+    /// Get the free balance of a given account on chain.
     ///
     /// # Errors
     ///
@@ -415,10 +415,15 @@ impl Client for Registry {
         &self,
         account_id: &protocol::ed25519::Public,
     ) -> Result<Balance, error::Error> {
-        self.client
-            .free_balance(account_id)
-            .await
-            .map_err(|e| e.into())
+        let exists = self.account_exists(account_id).await?;
+        if exists {
+            self.client
+                .free_balance(account_id)
+                .await
+                .map_err(|e| e.into())
+        } else {
+            Err(error::Error::AccountNotFound(*account_id))
+        }
     }
 
     async fn best_height(&self) -> Result<u32, error::Error> {
