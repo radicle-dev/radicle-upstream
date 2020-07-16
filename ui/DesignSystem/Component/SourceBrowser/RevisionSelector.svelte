@@ -14,7 +14,7 @@
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
-      return rev.identity.id === currentPeerId;
+      return rev.identity.peerId === currentPeerId;
     });
   } else {
     // The API returns a revision list where the first entry is the default
@@ -169,11 +169,14 @@
             class:selected={currentRevision === branch}
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
-            on:click|stopPropagation={() => selectRevision(repo.identity.id, {
-                type: RevisionType.Branch,
-                peerId: repo.identity.id,
-                name: branch,
-              })}>
+            on:click|stopPropagation={() => selectRevision(
+                repo.identity.peerId,
+                {
+                  type: RevisionType.Branch,
+                  peerId: repo.identity.peerId,
+                  name: branch,
+                }
+              )}>
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
@@ -186,10 +189,13 @@
             data-repo-handle={repo.identity.metadata.handle}
             class:selected={currentRevision === tag}
             data-tag={tag}
-            on:click|stopPropagation={() => selectRevision(repo.identity.id, {
-                type: RevisionType.Tag,
-                name: tag,
-              })}>
+            on:click|stopPropagation={() => selectRevision(
+                repo.identity.peerId,
+                {
+                  type: RevisionType.Tag,
+                  name: tag,
+                }
+              )}>
             <Icon.Commit
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
