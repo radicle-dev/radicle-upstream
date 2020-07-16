@@ -108,8 +108,14 @@
   }
   .branch:hover,
   .tag:hover {
-    color: var(--color-foreground);
-    background: var(--color-foreground-level-2);
+    background: var(--color-foreground-level-1);
+  }
+
+  .branch.selected,
+  .branch.selected:hover,
+  .tag.selected,
+  .tag.selected:hover {
+    background-color: var(--color-foreground-level-2);
   }
   .revision-dropdown ul:last-child li {
     border-radius: 0 0 3px 3px;
@@ -157,6 +163,7 @@
         {#each repo.branches as branch}
           <li
             class="branch"
+            class:selected={currentRevision === branch}
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
             on:click|stopPropagation={() => selectRevision(repo.identity.id, {
@@ -174,6 +181,7 @@
           <li
             class="tag"
             data-repo-handle={repo.identity.metadata.handle}
+            class:selected={currentRevision === tag}
             data-tag={tag}
             on:click|stopPropagation={() => selectRevision(repo.identity.id, {
                 type: RevisionType.Tag,
