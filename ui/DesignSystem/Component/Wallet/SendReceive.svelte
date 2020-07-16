@@ -59,11 +59,6 @@
     color: var(--color-foreground-level-6);
   }
 
-  .selector button:active {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-  }
-
   .send {
     padding: 1.5rem;
   }
