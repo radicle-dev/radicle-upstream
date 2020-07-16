@@ -4,7 +4,7 @@
 
   export let address = null;
 
-  $: currentlyActive = "receive";
+  $: currentlyActiveSend = true;
 </script>
 
 <style>
@@ -73,19 +73,19 @@
 <div class="send-receive">
   <div class="selector">
     <button
-      class:active={'send' === currentlyActive}
+      class:active={currentlyActiveSend}
       value="send"
-      on:click={() => (currentlyActive = 'send')}>
+      on:click={() => (currentlyActiveSend = true)}>
       Send
     </button>
     <button
-      class:active={'receive' === currentlyActive}
+      class:active={!currentlyActiveSend}
       value="receive"
-      on:click={() => (currentlyActive = 'receive')}>
+      on:click={() => (currentlyActiveSend = false)}>
       Receive
     </button>
   </div>
-  {#if currentlyActive === 'send'}
+  {#if currentlyActiveSend}
     <div class="send">
       <Title style="padding-bottom: 0.5rem;">To</Title>
       <Input.Text
@@ -111,7 +111,7 @@
         <Button disabled={true}>Send transaction</Button>
       </div>
     </div>
-  {:else if currentlyActive === 'receive'}
+  {:else}
     <Receive {address} />
   {/if}
 </div>
