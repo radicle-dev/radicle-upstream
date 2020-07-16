@@ -10,7 +10,8 @@ pub use radicle_surf::vcs::git::Stats;
 mod peer;
 pub use peer::{
     create_peer_api, default_owner, get_project, get_user, init_owner, init_project, init_user,
-    list_projects, list_users, set_default_owner, verify_user, with_browser, PeerApi, User,
+    list_projects, list_users, revisions, set_default_owner, verify_user, with_browser, PeerApi,
+    User, UserRevisions,
 };
 
 /// Module that captures all types and functions for source code.

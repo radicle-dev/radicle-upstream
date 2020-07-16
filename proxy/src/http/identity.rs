@@ -118,7 +118,7 @@ mod handler {
 
         let keystore = keystore.read().await;
         let key = keystore.get_librad_key().map_err(error::Error::from)?;
-        let id = identity::create(&*peer.lock().await, key, input.handle.parse()?)?;
+        let id = identity::create(&*peer.lock().await, key, &input.handle)?;
 
         session::set_identity(&store, id.clone())?;
 
