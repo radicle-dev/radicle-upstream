@@ -1,12 +1,12 @@
+use nonempty::NonEmpty;
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
-use nonempty::NonEmpty;
 
-use librad::peer;
-use librad::meta::user;
 use librad::meta::entity;
+use librad::meta::user;
+use librad::peer;
 use radicle_surf::{
     diff, file_system,
     vcs::git::{self, git2, BranchType, Browser, Rev},

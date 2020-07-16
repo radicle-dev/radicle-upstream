@@ -408,10 +408,18 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let api = &*api.lock().await;
         let storage = api.storage().reopen().map_err(Error::from)?;
-        let repo = storage.open_repo(project_urn.clone()).map_err(Error::from)?;
-        let peers = repo.tracked().map_err(Error::from)?.map(|peer_id| {
-            repo.get_rad_self_of(peer_id.clone()).map(|user| (user, peer_id.clone())).map_err(Error::from)
-        }).collect::<Result<Vec<_>, _>>()?;
+        let repo = storage
+            .open_repo(project_urn.clone())
+            .map_err(Error::from)?;
+        let peers = repo
+            .tracked()
+            .map_err(Error::from)?
+            .map(|peer_id| {
+                repo.get_rad_self_of(peer_id.clone())
+                    .map(|user| (user, peer_id.clone()))
+                    .map_err(Error::from)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
         let peer_id = api.peer_id().clone();
         let revisions: Vec<_> = coco::with_browser(&api, &project_urn, |browser| {
             Ok(coco::revisions(&browser, peer_id, &owner, peers)?.into())
