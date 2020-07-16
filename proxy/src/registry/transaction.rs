@@ -399,6 +399,13 @@ impl<C> registry::Client for Cacher<C>
 where
     C: registry::Client,
 {
+    async fn account_exists(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<bool, error::Error> {
+        self.client.account_exists(account_id).await
+    }
+
     async fn best_height(&self) -> Result<u32, error::Error> {
         self.client.best_height().await
     }
