@@ -421,8 +421,8 @@ mod handler {
             })
             .collect::<Result<Vec<_>, _>>()?;
         let peer_id = api.peer_id().clone();
-        let revisions: Vec<_> = coco::with_browser(&api, &project_urn, |browser| {
-            Ok(coco::revisions(&browser, peer_id, &owner, peers)?.into())
+        let revisions: Vec<_> = coco::with_browser(api, &project_urn, |browser| {
+            Ok(coco::revisions(browser, peer_id, &owner, peers)?.into())
         })?;
 
         Ok(reply::json(&revisions))
@@ -509,6 +509,7 @@ pub struct BlobQuery {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PeerQuery {
+    /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
 }
 

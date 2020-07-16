@@ -582,7 +582,7 @@ pub fn tree<'repo>(
 ///
 /// # Parameters
 ///
-/// * `peer_id` - the PeerId of this peer
+/// * `peer_id` - the `PeerId` of this peer
 /// * `owner` - the owner of this peer, i.e. the current user
 /// * `peers` - an iterator of a peer and the default self it used for this project
 ///
@@ -624,6 +624,7 @@ pub fn revisions(
 
 /// Turn an `Option<peer::PeerId>` into a [`BranchType`]. If the `PeerId` is present then this is
 /// set as the remote of the `BranchType`. Otherwise, it's local branch.
+#[must_use]
 pub fn into_branch_type(peer_id: Option<peer::PeerId>) -> BranchType {
     peer_id.map_or(BranchType::Local, |peer_id| BranchType::Remote {
         // We qualify the remotes as the PeerId + heads, otherwise we would grab the tags too.
