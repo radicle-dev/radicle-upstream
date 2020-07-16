@@ -45,13 +45,6 @@ where
         .and(document::document(document::description(
             "Check whether a given account exists on chain",
         )))
-        .and(document::document(
-            document::response(
-                404,
-                document::body(http::error::Error::document()).mime("application/json"),
-            )
-            .description("Account not found"),
-        ))
         .and_then(handler::exists)
 }
 
@@ -68,9 +61,6 @@ fn get_balance_filter<R: registry::Client>(
         .and(document::document(document::description(
             "Fetch the balance of the account from the Registry",
         )))
-        .and(document::document(
-            document::body(http::RegisterProjectInput::document()).mime("application/json"),
-        ))
         .and(document::document(
             document::response(
                 200,
@@ -213,7 +203,7 @@ mod test {
             assert_eq!(
                 have.to_string(),
                 "1152921504606846965",
-                "Account was expected to exist on chain"
+                "Account doesn't have the expected amount"
             );
         });
 
@@ -237,7 +227,7 @@ mod test {
             .await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(0), "Account was expected to exist on chain");
+            assert_eq!(have, json!(0), "Account doesn't have the expected amount");
         });
 
         Ok(())
