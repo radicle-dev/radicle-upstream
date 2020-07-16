@@ -1,11 +1,11 @@
 <script>
-  import { Button, Input, Icon, Text, Title } from "../../Primitive";
-  import Copyable from "../Copyable.svelte";
+  import { Button, Input, Icon, Title } from "../../Primitive";
+  import Urn from "../Urn.svelte";
   import QR from "../QR.svelte";
 
   export let address = null;
 
-  $: currentlyActive = "send";
+  $: currentlyActive = "receive";
 </script>
 
 <style>
@@ -115,14 +115,9 @@
     </div>
   {:else if currentlyActive === 'receive'}
     <div class="receive">
-      <QR key={address} size="200" color="var(--color-foreground-level-5)" />
+      <QR key={address} size="136" color="var(--color-primary)" />
       <Title style="padding: 1.5rem 0 0.5rem 0;">Address</Title>
-      <Copyable iconSize="normal" style="overflow: hidden;">
-        <Text
-          style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
-          {address}
-        </Text>
-      </Copyable>
+      <Urn urn={address} />
     </div>
   {/if}
 </div>
