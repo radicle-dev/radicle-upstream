@@ -100,6 +100,7 @@
 <div
   style="height: 100%;"
   data-tooltip
+  data-cy="tooltip"
   on:mouseover={event => showTooltip(event)}
   on:mouseout={hideTooltip}>
   <slot />
