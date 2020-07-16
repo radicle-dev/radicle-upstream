@@ -1,4 +1,4 @@
-//! Utility to work with [`librad::PeerApi`].
+//! Utility to work with the peer api of librad.
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
