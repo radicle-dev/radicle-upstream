@@ -356,7 +356,6 @@ mod handler {
         project_urn: coco::Urn,
         super::PeerQuery { peer_id }: super::PeerQuery,
     ) -> Result<impl Reply, Rejection> {
-        log::info!("peer.id = {:?}", peer_id);
         let peer = peer.lock().await;
         let branches = coco::with_browser(&peer, &project_urn, |browser| {
             coco::branches(browser, Some(coco::into_branch_type(peer_id)))
