@@ -91,19 +91,25 @@ interface Readme {
   path?: string;
 }
 
+enum RevisionType {
+  Branch,
+  Tag,
+  Sha,
+}
+
 export interface Branch {
-  type: "branch";
+  type: RevisionType.Branch;
   name: string;
   peerId?: string;
 }
 
 export interface Tag {
-  type: "tag";
+  type: RevisionType.Tag;
   name: string;
 }
 
 export interface Sha {
-  type: "sha";
+  type: RevisionType.Sha;
   sha: string;
 }
 
