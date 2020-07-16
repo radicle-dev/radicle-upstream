@@ -10,7 +10,7 @@ use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{
-    Balance, BlockHash, Id, ProjectDomain, ProjectName, MINIMUM_FEE,
+    Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName, MINIMUM_FEE,
 };
 
 use crate::avatar;
@@ -85,6 +85,8 @@ pub struct Thresholds {
 pub struct Org {
     /// The unique identifier of the org
     pub id: Id,
+    /// The public key of the org
+    pub account_id: protocol::ed25519::Public,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: String,
     /// Generated fallback avatar
@@ -111,6 +113,8 @@ pub struct User {
     pub handle: Id,
     /// Associated entity id for attestion.
     pub maybe_entity_id: Option<String>,
+    /// The public key of the user
+    pub account_id: protocol::ed25519::Public,
 }
 
 /// Default transaction fees and deposits.
@@ -141,6 +145,16 @@ pub const fn get_deposits() -> Deposits {
 /// Methods to interact with the Registry in a uniform way.
 #[async_trait]
 pub trait Client: Clone + Send + Sync {
+    /// Check whether a given account exists on chain.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn account_exists(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<bool, error::Error>;
+
     /// Fetch the current best height by virtue of checking the block header of the best chain.
     ///
     /// # Errors
@@ -157,6 +171,13 @@ pub trait Client: Clone + Send + Sync {
         &self,
         block: BlockHash,
     ) -> Result<protocol::BlockHeader, error::Error>;
+
+    /// Fetch the status of a given id.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn get_id_status(&self, id: &Id) -> Result<IdStatus, error::Error>;
 
     /// Try to retrieve org from the Registry by id.
     ///
@@ -268,6 +289,45 @@ pub trait Client: Clone + Send + Sync {
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
+    /// Remove a registered User from the Registry.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn unregister_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        handle: Id,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
+    /// Transfer tokens from the user to the recipient.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn transfer_from_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        recipient: protocol::ed25519::Public,
+        value: Balance,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
+    /// Transfer tokens from an org to the recipient.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn transfer_from_org(
+        &self,
+        author: &protocol::ed25519::Pair,
+        org_id: Id,
+        recipient: protocol::ed25519::Public,
+        value: Balance,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error>;
+
     /// Graciously pay some tokens to the recipient out of Alices pocket.
     ///
     /// # Errors
@@ -331,6 +391,16 @@ impl Registry {
 
 #[async_trait]
 impl Client for Registry {
+    async fn account_exists(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<bool, error::Error> {
+        self.client
+            .account_exists(account_id)
+            .await
+            .map_err(|e| e.into())
+    }
+
     async fn best_height(&self) -> Result<u32, error::Error> {
         let header = self.client.block_header_best_chain().await?;
 
@@ -349,6 +419,7 @@ impl Client for Registry {
             }
             Ok(Some(Org {
                 id: org_id.clone(),
+                account_id: org.account_id(),
                 shareable_entity_identifier: format!("%{}", org_id.clone()),
                 avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                 members,
@@ -366,6 +437,11 @@ impl Client for Registry {
             .block_header(block)
             .await?
             .ok_or(error::Error::BlockNotFound(block))
+    }
+
+    async fn get_id_status(&self, id: &Id) -> Result<IdStatus, error::Error> {
+        let status = self.client.get_id_status(id).await?;
+        Ok(status)
     }
 
     async fn list_orgs(&self, handle: Id) -> Result<Vec<Org>, error::Error> {
@@ -584,9 +660,10 @@ impl Client for Registry {
             .client
             .get_user(handle.clone())
             .await?
-            .map(|_user| User {
+            .map(|user| User {
                 handle,
                 maybe_entity_id: None,
+                account_id: user.account_id(),
             }))
     }
 
@@ -614,6 +691,94 @@ impl Client for Registry {
             Hash(applied.tx_hash),
             block.number,
             Message::UserRegistration { handle, id },
+            fee,
+        ))
+    }
+
+    async fn unregister_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        handle: Id,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error> {
+        // Prepare and submit user unregistration transaction.
+        let unregister_message = protocol::message::UnregisterUser {
+            user_id: handle.clone(),
+        };
+        let tx = self
+            .new_signed_transaction(author, unregister_message, fee)
+            .await?;
+        let applied = self.client.submit_transaction(tx).await?.await?;
+        applied.result?;
+        let block = self.get_block_header(applied.block).await?;
+
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::UserUnregistration { id: handle },
+            fee,
+        ))
+    }
+
+    async fn transfer_from_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        recipient: protocol::ed25519::Public,
+        value: Balance,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error> {
+        // Prepare and submit transfer transaction.
+        let transfer_message = protocol::message::Transfer {
+            recipient,
+            balance: value,
+        };
+        let transfer_tx = self
+            .new_signed_transaction(author, transfer_message, fee)
+            .await?;
+        let applied = self.client.submit_transaction(transfer_tx).await?.await?;
+        applied.result?;
+        let block = self.get_block_header(applied.block).await?;
+
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::Transfer {
+                recipient,
+                balance: value,
+            },
+            fee,
+        ))
+    }
+
+    async fn transfer_from_org(
+        &self,
+        author: &protocol::ed25519::Pair,
+        org_id: Id,
+        recipient: protocol::ed25519::Public,
+        value: Balance,
+        fee: Balance,
+    ) -> Result<Transaction, error::Error> {
+        // Prepare and submit transfer transaction.
+        let transfer_message = protocol::message::TransferFromOrg {
+            org_id: org_id.clone(),
+            recipient,
+            value,
+        };
+        let transfer_tx = self
+            .new_signed_transaction(author, transfer_message, fee)
+            .await?;
+        let applied = self.client.submit_transaction(transfer_tx).await?.await?;
+        applied.result?;
+        let block = self.get_block_header(applied.block).await?;
+
+        Ok(Transaction::confirmed(
+            Hash(applied.tx_hash),
+            block.number,
+            Message::TransferFromOrg {
+                org_id,
+                recipient,
+                value,
+            },
             fee,
         ))
     }
@@ -646,7 +811,7 @@ impl Client for Registry {
 #[allow(clippy::indexing_slicing, clippy::panic, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use radicle_registry_client::{self as protocol, ClientT};
+    use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
     use serde_cbor::from_reader;
     use std::convert::TryFrom as _;
 
@@ -655,6 +820,35 @@ mod test {
     use crate::error;
 
     use super::{Client, Id, Metadata, ProjectDomain, ProjectName, Registry};
+
+    #[tokio::test]
+    async fn test_account_exists() -> Result<(), error::Error> {
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+
+        let existing_account =
+            protocol::ed25519::Pair::from_legacy_string("//Alice", None).public();
+        assert!(
+            registry.account_exists(&existing_account).await.unwrap(),
+            "Account should exist on chain"
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_account_does_not_exist() -> Result<(), error::Error> {
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+
+        let random_account = protocol::ed25519::Pair::generate().0.public();
+        assert!(
+            !registry.account_exists(&random_account).await.unwrap(),
+            "Account should not be on chain"
+        );
+
+        Ok(())
+    }
 
     #[tokio::test]
     async fn test_register_org() -> Result<(), error::Error> {
@@ -679,6 +873,27 @@ mod test {
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
         assert_eq!(org.members()[0], protocol::Id::try_from("alice")?);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_unregister_user() -> Result<(), error::Error> {
+        // Test that org unregistration submits valid transactions and they succeed.
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client.clone());
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = Id::try_from("alice")?;
+
+        // Register the user
+        let user_registration = registry
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Unregister the org
+        let unregistration = registry.unregister_user(&author, handle, 10).await;
+        assert!(unregistration.is_ok());
 
         Ok(())
     }
@@ -968,6 +1183,68 @@ mod test {
 
         let res = registry
             .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .await;
+        assert!(res.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn transfer_from_user() -> Result<(), error::Error> {
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let handle = Id::try_from("alice")?;
+        let user_registration = registry
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Register the org
+        let org_id = Id::try_from("monadic")?;
+        let org_result = registry.register_org(&author, org_id.clone(), 10).await;
+        assert!(org_result.is_ok());
+        let org = registry
+            .client
+            .get_org(org_id.clone())
+            .await?
+            .expect("org not present");
+
+        let res = registry
+            .transfer_from_user(&author, org.account_id(), 1000, 100)
+            .await;
+        assert!(res.is_ok());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn transfer_from_org() -> Result<(), error::Error> {
+        let (client, _) = protocol::Client::new_emulator();
+        let registry = Registry::new(client);
+        let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // Register the user
+        let handle = Id::try_from("alice")?;
+        let user_registration = registry
+            .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .await;
+        assert!(user_registration.is_ok());
+
+        // Register the org
+        let org_id = Id::try_from("monadic")?;
+        let org_result = registry.register_org(&author, org_id.clone(), 10).await;
+        assert!(org_result.is_ok());
+        registry
+            .client
+            .get_org(org_id.clone())
+            .await?
+            .expect("org not present");
+
+        let res = registry
+            .transfer_from_org(&author, org_id, author.public(), 10, 100)
             .await;
         assert!(res.is_ok());
 

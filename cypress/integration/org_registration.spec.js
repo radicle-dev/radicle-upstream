@@ -111,7 +111,7 @@ context("org registration", () => {
 
       cy.pick("org-registration-modal", "input").type("coolname");
       cy.pick("org-registration-modal").contains(
-        "Sorry, this one is already taken"
+        "Sorry, this one is no longer available"
       );
       cy.pick("submit-button").should("be.disabled");
     });
@@ -121,7 +121,7 @@ context("org registration", () => {
 
       cy.pick("org-registration-modal", "input").type("userxyz");
       cy.pick("org-registration-modal").contains(
-        "Sorry, this one is already taken"
+        "Sorry, this one is no longer available"
       );
       cy.pick("submit-button").should("be.disabled");
     });

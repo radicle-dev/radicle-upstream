@@ -35,7 +35,11 @@ where
                 Arc::clone(&registry),
                 subscriptions.clone(),
             ))
-            .or(register_member_filter(registry, subscriptions)),
+            .or(register_member_filter(
+                Arc::clone(&registry),
+                subscriptions.clone(),
+            ))
+            .or(transfer_filter(registry, subscriptions)),
     )
 }
 
@@ -60,7 +64,11 @@ where
             Arc::clone(&registry),
             subscriptions.clone(),
         ))
-        .or(register_member_filter(registry, subscriptions))
+        .or(register_member_filter(
+            Arc::clone(&registry),
+            subscriptions.clone(),
+        ))
+        .or(transfer_filter(registry, subscriptions))
 }
 
 /// `GET /<id>`
@@ -244,6 +252,39 @@ fn register_member_filter<R: registry::Client>(
         .and_then(handler::register_member)
 }
 
+/// `POST /<id>/transfer`
+fn transfer_filter<R: registry::Client>(
+    registry: http::Shared<R>,
+    subscriptions: notification::Subscriptions,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client,
+{
+    http::with_shared(registry)
+        .and(http::with_subscriptions(subscriptions))
+        .and(warp::post())
+        .and(document::param::<registry::Id>(
+            "id",
+            "Unique ID of the Org",
+        ))
+        .and(path("transfer"))
+        .and(path::end())
+        .and(warp::body::json())
+        .and(document::document(document::description("Transfer funds")))
+        .and(document::document(document::tag("Org")))
+        .and(document::document(
+            document::body(TransferInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(registry::Transaction::document()).mime("application/json"),
+            )
+            .description("Transfer succeeded"),
+        ))
+        .and_then(handler::transfer)
+}
+
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::convert::TryFrom;
@@ -387,11 +428,39 @@ mod handler {
 
         Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
     }
+
+    /// Transfer funds to the given `recipient`.
+    pub async fn transfer<R: registry::Client>(
+        registry: http::Shared<R>,
+        subscriptions: notification::Subscriptions,
+        id: registry::Id,
+        input: super::TransferInput,
+    ) -> Result<impl Reply, Rejection> {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let reg = registry.write().await;
+        let tx = reg
+            .transfer_from_org(
+                &fake_pair,
+                id,
+                input.recipient,
+                input.value,
+                input.transaction_fee,
+            )
+            .await?;
+
+        subscriptions
+            .broadcast(notification::Notification::Transaction(tx.clone()))
+            .await;
+
+        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+    }
 }
 
 impl ToDocumentedType for registry::Org {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
+        let mut properties = std::collections::HashMap::with_capacity(4);
         properties.insert("avatarFallback".into(), avatar::Avatar::document());
         properties.insert(
             "id".into(),
@@ -404,6 +473,12 @@ impl ToDocumentedType for registry::Org {
             document::string()
                 .description("Unique identifier that can be shared and looked up")
                 .example("%monadic"),
+        );
+        properties.insert(
+            "accountId".into(),
+            document::string()
+                .description("Public key of the account associated with the org")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
         properties.insert(
             "members".into(),
@@ -535,10 +610,49 @@ impl ToDocumentedType for RegisterMemberInput {
     }
 }
 
+/// Bundled input data for transfer.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransferInput {
+    /// Account id of the recipient.
+    recipient: radicle_registry_client::ed25519::Public,
+    /// Amount that is transferred.
+    value: registry::Balance,
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
+}
+
+impl ToDocumentedType for TransferInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(1);
+        properties.insert(
+            "recipient".into(),
+            document::string()
+                .description("Account id of the recipient")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
+        );
+        properties.insert(
+            "value".into(),
+            document::string()
+                .description("Amount that is transferred")
+                .example(100),
+        );
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+
+        document::DocumentedType::from(properties).description("Input for transferring funds")
+    }
+}
+
 #[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
+    use radicle_registry_client::CryptoPair;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
     use std::sync::Arc;
@@ -593,6 +707,13 @@ mod test {
             .register_org(&author, org_id.clone(), fee)
             .await?;
 
+        let org = registry
+            .read()
+            .await
+            .get_org(org_id.clone())
+            .await?
+            .unwrap();
+
         let res = request()
             .method("GET")
             .path(&format!("/{}", org_id.to_string()))
@@ -605,6 +726,7 @@ mod test {
                 json!(registry::Org {
                     id: org_id.clone(),
                     shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                    account_id: org.account_id,
                     avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                     members: vec![user]
                 })
@@ -989,6 +1111,62 @@ mod test {
         assert_eq!(org.members.len(), 2);
         assert!(member_handles.contains(&handle));
         assert!(member_handles.contains(&handle2));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn transfer() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let key = SecretKey::new();
+        let config = coco::config::default(key, tmp_dir.path())?;
+        let peer = coco::create_peer_api(config).await?;
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            registry::Registry::new(client)
+        };
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
+        let subscriptions = notification::Subscriptions::default();
+
+        let api = super::filters(
+            Arc::new(Mutex::new(peer)),
+            Arc::clone(&cache),
+            subscriptions,
+        );
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
+
+        // Register the user
+        cache
+            .write()
+            .await
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register the org
+        let fee: registry::Balance = 100;
+        cache
+            .write()
+            .await
+            .register_org(&author, org_id.clone(), fee)
+            .await?;
+
+        // Transfer tokens from the org to the user
+        let value: registry::Balance = 10;
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/transfer", org_id))
+            .json(&super::TransferInput {
+                recipient: author.public(),
+                value,
+                transaction_fee: registry::MINIMUM_FEE,
+            })
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::CREATED);
 
         Ok(())
     }

@@ -83,7 +83,7 @@ context("user registration", () => {
     it("prevents the user from registering an unavailable handle", () => {
       cy.pick("handle").clear();
       cy.pick("handle").type("nope");
-      cy.pick("page").contains("Sorry, this one is already taken");
+      cy.pick("page").contains("Sorry, this one is no longer available");
     });
 
     it("prevents the user from registering an id already taken by an org", () => {
@@ -92,7 +92,9 @@ context("user registration", () => {
 
       cy.pick("register-user", "handle").clear();
       cy.pick("register-user", "handle").type("neoxyz");
-      cy.pick("register-user").contains("Sorry, this one is already taken");
+      cy.pick("register-user").contains(
+        "Sorry, this one is no longer available"
+      );
       cy.pick("next-button").should("be.disabled");
     });
   });
