@@ -204,7 +204,6 @@ context("source code browsing", () => {
         cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
         cy.pick("sidebar", "profile").click();
         cy.pick("project-list", "project-list-entry-gold").click();
-        cy.pick("revision-selector").contains("cloudhead@");
         cy.pick("revision-selector").contains("master");
       });
     });
