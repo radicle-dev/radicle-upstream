@@ -6509,6 +6509,11 @@ pupa@^2.0.1:
   dependencies:
     escape-goat "^2.0.0"
 
+pure-svg-code@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/pure-svg-code/-/pure-svg-code-1.0.6.tgz#b0a4da22685b9ba2412244ae8b22a1d663461edb"
+  integrity sha512-uxq2BMTdnKW7jDghpLJrczCd9KDOdyghFtEEpfomqMJkUM83/N+W7sFJPJ3AxBf0mJ3xtxAycl6NW8p6F53jEw==
+
 q@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/q/-/q-1.5.1.tgz#7e32f75b41381291d04611f1bf14109ac00651d7"

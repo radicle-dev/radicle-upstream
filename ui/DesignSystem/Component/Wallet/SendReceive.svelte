@@ -3,6 +3,8 @@
   import Copyable from "../Copyable.svelte";
   import QR from "../QR.svelte";
 
+  export let address = null;
+
   $: currentlyActive = "send";
 </script>
 
@@ -57,11 +59,12 @@
     padding: 1.5rem;
   }
   .receive {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     padding: 2rem 1.5rem;
-    grid-template-rows: 228px auto auto;
-    justify-items: center;
+    text-align: center;
   }
+
   .submit {
     display: flex;
     flex-direction: row;
@@ -112,12 +115,13 @@
     </div>
   {:else if currentlyActive === 'receive'}
     <div class="receive">
-      <!-- TODO: update QR code to represent the address. -->
-      <QR />
-      <Title style="padding-bottom: 0.5rem;">Address</Title>
-      <Copyable iconSize="normal">
-        <!-- TODO: Update with actual wallet address + actuall trucation -->
-        <Text>1Ao1drv6fyt5ipWWeN5zExM...</Text>
+      <QR key={address} size="200" color="var(--color-foreground-level-5)" />
+      <Title style="padding: 1.5rem 0 0.5rem 0;">Address</Title>
+      <Copyable iconSize="normal" style="overflow: hidden;">
+        <Text
+          style="overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+          {address}
+        </Text>
       </Copyable>
     </div>
   {/if}

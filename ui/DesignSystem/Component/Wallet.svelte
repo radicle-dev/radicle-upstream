@@ -32,6 +32,9 @@
     padding: 1.25rem 1.5rem;
     margin-bottom: 1.5rem;
   }
+  .send-receive {
+    width: 20rem;
+  }
 </style>
 
 <div class="container">
@@ -41,7 +44,8 @@
       <Rad style="display: inline-block;" size="big" rad="234" usd="74" />
     </div>
     <div class="send-receive">
-      <SendReceive />
+      <SendReceive
+        address="hyda4fhdx8up8hhocagkdz3d41txb98stw4pkqe3uommo1p5m6s9oy" />
     </div>
   </div>
   <div class="transactions">
