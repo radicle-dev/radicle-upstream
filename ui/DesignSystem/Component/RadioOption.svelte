@@ -15,13 +15,16 @@
   }
 
   .option.active {
-    border: 1px solid var(--color-primary);
+    border: 1px solid var(--color-foreground-level-3);
+  }
+
+  .option.active:hover {
+    background-color: var(--color-background);
   }
 
   .option:hover {
     outline: none;
-    border: 1px solid var(--color-primary);
-    color: var(--color-primary);
+    background-color: var(--color-foreground-level-1);
   }
 
   .header {
