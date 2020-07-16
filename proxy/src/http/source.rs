@@ -335,7 +335,10 @@ mod handler {
     pub async fn branches<R>(
         ctx: http::Ctx<R>,
         project_urn: String,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let branches = ctx
@@ -350,7 +353,10 @@ mod handler {
         ctx: http::Ctx<R>,
         project_urn: String,
         sha1: String,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let commit = ctx
@@ -365,7 +371,10 @@ mod handler {
         ctx: http::Ctx<R>,
         project_urn: String,
         super::CommitsQuery { peer_id, branch }: super::CommitsQuery,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let commits = ctx.peer_api.with_browser(&urn, |mut browser| {
@@ -386,7 +395,10 @@ mod handler {
     pub async fn revisions<R>(
         ctx: http::Ctx<R>,
         project_urn: String,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let (branches, tags) = ctx.peer_api.with_browser(&urn, |browser| {
@@ -438,7 +450,10 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags<R>(ctx: http::Ctx<R>, project_urn: String) -> Result<impl Reply, Rejection> {
+    pub async fn tags<R>(ctx: http::Ctx<R>, project_urn: String) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let tags = ctx
@@ -457,7 +472,10 @@ mod handler {
             peer_id,
             revision,
         }: super::TreeQuery,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
 
         let urn = project_urn.parse().map_err(Error::from)?;

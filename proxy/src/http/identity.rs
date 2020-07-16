@@ -104,11 +104,7 @@ mod handler {
             return Err(Rejection::from(error::Error::EntityExists(identity.id)));
         }
 
-        let key = ctx
-            .keystore
-            .get_librad_key()
-            .map_err(error::Error::from)
-            .unwrap();
+        let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
         let id = identity::create(&ctx.peer_api, key, input.handle.parse()?)?;
 
         session::set_identity(&ctx.store, id.clone())?;
@@ -117,7 +113,10 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, id: String) -> Result<impl Reply, Rejection> {
+    pub async fn get<R>(ctx: http::Ctx<R>, id: String) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id.parse().expect("could not parse id"))?;
         Ok(reply::json(&id))

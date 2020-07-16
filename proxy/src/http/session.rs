@@ -138,7 +138,10 @@ mod handler {
     }
 
     /// Clear the current [`session::Session`].
-    pub async fn delete<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection> {
+    pub async fn delete<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         session::clear_current(&ctx.store)?;
 
@@ -161,7 +164,10 @@ mod handler {
     pub async fn update_settings<R>(
         ctx: http::Ctx<R>,
         settings: session::settings::Settings,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         session::set_settings(&ctx.store, settings)?;
 

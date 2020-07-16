@@ -19,7 +19,9 @@ use crate::project::Project;
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
+/// High-level interface to the coco monorepo and gossip layer.
 pub struct Api {
+    /// Thread-safe wrapper around [`PeerApi`].
     peer_api: Arc<Mutex<PeerApi>>,
 }
 
@@ -46,32 +48,43 @@ impl Api {
         })
     }
 
+    /// Returns the [`PathBuf`] to the underlying monorepo.
+    #[must_use]
     pub fn monorepo(&self) -> PathBuf {
-        let api = self.peer_api.lock().unwrap();
+        let api = self.peer_api.lock().expect("unable to acquire lock");
         api.paths().git_dir().join("")
     }
 
+    /// Returns the underlying [`paths::Paths`].
+    #[must_use]
     pub fn paths(&self) -> paths::Paths {
-        let api = self.peer_api.lock().unwrap();
+        let api = self.peer_api.lock().expect("unable to acquire lock");
         api.paths().clone()
     }
 
+    /// Convenience method to trigger a reopen of the storage.
+    ///
+    /// # Errors
+    ///
+    /// When the underlying lock acquisition fails or opening the storage.
     pub fn reopen(&self) -> Result<(), error::Error> {
-        let api = self.peer_api.lock().unwrap();
+        let api = self.peer_api.lock().expect("unable to acquire lock");
         api.storage().reopen()?;
 
         Ok(())
     }
 
+    /// Our current peers [`PeerId`].
+    #[must_use]
     pub fn peer_id(&self) -> PeerId {
-        let api = self.peer_api.lock().unwrap();
+        let api = self.peer_api.lock().expect("unable to acquire lock");
         api.peer_id().clone()
     }
 
     /// Get the default owner for this `PeerApi`.
     #[must_use]
     pub fn default_owner(&self) -> Option<user::User<entity::Draft>> {
-        let api = self.peer_api.lock().unwrap();
+        let api = self.peer_api.lock().expect("unable to acquire lock");
 
         match api.storage().default_rad_self() {
             Ok(user) => Some(user),
@@ -167,14 +180,16 @@ impl Api {
 
         let mut entities = vec![];
         for entity in storage.all_metadata()? {
-            let entity = entity.ok().unwrap().try_map(|info| match info {
+            let entity = entity?;
+            if let Some(e) = entity.try_map(|info| match info {
                 entity::data::EntityInfo::User(info) => Some(info),
                 _ => None,
-            });
-            entities.push(entity);
+            }) {
+                entities.push(e);
+            }
         }
 
-        Ok(entities.into_iter().flatten().collect())
+        Ok(entities)
     }
 
     /// Get the project found at `project_urn`.

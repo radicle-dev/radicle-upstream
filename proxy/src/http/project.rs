@@ -87,7 +87,7 @@ where
 {
     path!("projects")
         .and(warp::get())
-        .and(http::with_context(ctx.clone()))
+        .and(http::with_context(ctx))
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -119,7 +119,10 @@ mod handler {
         ctx: http::Ctx<R>,
         owner: coco::User,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
@@ -146,7 +149,10 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection> {
+    pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let urn = urn.parse().map_err(Error::from)?;
         let ctx = ctx.read().await;
 
@@ -154,7 +160,10 @@ mod handler {
     }
 
     /// List all known projects.
-    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection> {
+    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
         let projects = ctx.peer_api.list_projects()?;
 

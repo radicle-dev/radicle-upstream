@@ -115,7 +115,10 @@ mod handler {
         ctx: http::Ctx<R>,
         owner: coco::User,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         let ctx = ctx.read().await;
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
@@ -161,7 +164,10 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection> {
+    pub async fn nuke_coco<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
@@ -215,14 +221,14 @@ mod handler {
 
             let (old_paths, old_peer_id) = {
                 let ctx = ctx.read().await;
-                (ctx.peer_api.paths().clone(), ctx.peer_api.peer_id().clone())
+                (ctx.peer_api.paths(), ctx.peer_api.peer_id())
             };
 
             super::nuke_coco(ctx.clone()).await.unwrap();
 
             let (new_paths, new_peer_id) = {
                 let ctx = ctx.read().await;
-                (ctx.peer_api.paths().clone(), ctx.peer_api.peer_id().clone())
+                (ctx.peer_api.paths(), ctx.peer_api.peer_id())
             };
 
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
@@ -230,7 +236,7 @@ mod handler {
 
             let can_open = {
                 let ctx = ctx.read().await;
-                let _ = ctx.peer_api.reopen()?;
+                ctx.peer_api.reopen()?;
                 true
             };
             assert!(can_open);

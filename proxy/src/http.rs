@@ -151,16 +151,24 @@ where
         .boxed()
 }
 
+/// Container to pass down dependencies into HTTP filter chains.
 pub struct Context<R> {
+    /// [`coco::Api`] to operate on the local monorepo.
     peer_api: coco::Api,
+    /// [`keystorage::KeyStorate`] to manage keys.
     keystore: keystore::Keystorage,
+    /// [`registry::Client`] to perform registry operations.
     registry: R,
+    /// [`kv::Store`] used for session state and cache.
     store: kv::Store,
+    /// Subscriptions for notification of significant events in the system.
     subscriptions: crate::notification::Subscriptions,
 }
 
+/// Wrapper around the thread-safe handle on [`Context`].
 pub type Ctx<R> = Arc<RwLock<Context<R>>>;
 
+/// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]
 fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
 where
@@ -181,11 +189,11 @@ impl Context<registry::Cacher<registry::Registry>> {
         let key = keystore.init_librad_key()?;
 
         let peer_api = {
-            let config = coco::config::default(key, tmp_dir.path().clone())?;
+            let config = coco::config::default(key, tmp_dir.path())?;
             coco::Api::new(config).await?
         };
 
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();

@@ -14,15 +14,16 @@
 // TODO(xla): Remove let_underscore_must_use once the issue is resolved: https://github.com/rust-lang/rust-clippy/issues/4980
 // TODO(xla): Remove used_underscore_binding.
 #![allow(
+    clippy::clone_on_ref_ptr,
+    clippy::expect_used,
     clippy::implicit_return,
+    clippy::integer_arithmetic,
     clippy::let_underscore_must_use,
     clippy::missing_inline_in_public_items,
-    clippy::expect_used,
     clippy::or_fun_call,
     clippy::shadow_reuse,
     clippy::unseparated_literal_suffix,
-    clippy::used_underscore_binding,
-    clippy::integer_arithmetic
+    clippy::used_underscore_binding
 )]
 #![feature(result_flattening)]
 
