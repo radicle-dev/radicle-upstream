@@ -135,6 +135,7 @@ export const updateRegistry = (registry: Registry): void =>
   )({
     settings: { ...get(settings), registry },
   });
+
 export const updateCoCo = (coco: CoCo): void =>
   event.create<Kind, Msg>(
     Kind.UpdateSettings,
@@ -143,23 +144,9 @@ export const updateCoCo = (coco: CoCo): void =>
     settings: { ...get(settings), coco },
   });
 
-// TODO(sos): hook all of this up to proxy; handle adding/removing logic there too
-const defaultSeeds = ["seed.radicle.xyz", "194.134.54.13"];
-
-const temporaryLocalSeedStore = remote.createStore<string[]>();
-temporaryLocalSeedStore.success(defaultSeeds);
-export const seeds = temporaryLocalSeedStore.readable;
-
-const parseSeedsInput = (input: string) => {
+export const parseSeedsInput = (input: string) => {
   return input
     .replace(/\r\n|\n|\r|\s/gm, ",")
     .split(",")
     .filter(seed => seed !== "");
 };
-
-export const updateSeeds = (input: string) => {
-  const parsed = parseSeedsInput(input);
-  if (parsed) temporaryLocalSeedStore.success(parsed);
-};
-
-export const formatSeedsForInput = (seeds: string[]) => seeds.join("\n");
