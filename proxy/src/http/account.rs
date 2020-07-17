@@ -95,18 +95,10 @@ mod handler {
         account_id_string: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        println!("account_id_string is {}", account_id_string);
         let account_id: registry::AccountId = match registry::parse_ss58_address(&account_id_string)
         {
             Ok(x) => x,
-            Err(_) => {
-                return Ok(warp::reply::with_status(
-                    reply::json(
-                        &"A bad account id was provided. It needs to be in the SS58 format.",
-                    ),
-                    StatusCode::BAD_REQUEST,
-                ))
-            },
+            Err(_) => return Ok(bad_account_id_reply()),
         };
 
         let exists = reg.account_exists(&account_id).await?;
@@ -125,14 +117,7 @@ mod handler {
         let account_id: registry::AccountId = match registry::parse_ss58_address(&account_id_string)
         {
             Ok(x) => x,
-            Err(_) => {
-                return Ok(warp::reply::with_status(
-                    reply::json(
-                        &"A bad account id was provided. It needs to be in the SS58 format.",
-                    ),
-                    StatusCode::BAD_REQUEST,
-                ))
-            },
+            Err(_) => return Ok(bad_account_id_reply()),
         };
         match reg.free_balance(&account_id).await {
             Ok(balance) => Ok(warp::reply::with_status(
@@ -142,6 +127,13 @@ mod handler {
             Err(error::Error::AccountNotFound(_)) => Err(warp::reject::not_found()),
             Err(other_error) => Err(Rejection::from(other_error)),
         }
+    }
+
+    fn bad_account_id_reply() -> warp::reply::WithStatus<reply::Json> {
+        warp::reply::with_status(
+            reply::json(&"A bad account id was provided. It needs to be in the SS58 format."),
+            StatusCode::BAD_REQUEST,
+        )
     }
 }
 
