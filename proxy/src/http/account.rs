@@ -129,6 +129,7 @@ mod handler {
         }
     }
 
+    /// The reply for when a bad account id is provided.
     fn bad_account_id_reply() -> warp::reply::WithStatus<reply::Json> {
         warp::reply::with_status(
             reply::json(&"A bad account id was provided. It needs to be in the SS58 format."),
