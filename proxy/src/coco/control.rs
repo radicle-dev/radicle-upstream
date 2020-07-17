@@ -135,6 +135,9 @@ pub fn track_fake_peer(
     key: keys::SecretKey,
     project: &project::Project<entity::Draft>,
     fake_user_handle: &str,
+) -> (
+    librad::peer::PeerId,
+    librad::meta::entity::Entity<librad::meta::user::UserInfo, librad::meta::entity::Draft>,
 ) {
     // TODO(finto): We're faking a lot of the networking interaction here.
     // Create git references of the form and track the peer.
@@ -200,6 +203,8 @@ pub fn track_fake_peer(
     peer.storage()
         .track(&urn, &remote)
         .expect("failed to track peer");
+
+    (remote, fake_user)
 }
 
 /// This function exists as a standalone because the logic does not play well with async in

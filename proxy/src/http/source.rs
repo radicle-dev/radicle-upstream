@@ -821,7 +821,7 @@ mod test {
     use warp::test::request;
 
     use librad::keys::SecretKey;
-    use radicle_surf::vcs::git::{self, git2};
+    use radicle_surf::vcs::git;
 
     use crate::coco;
     use crate::error;
@@ -1259,9 +1259,6 @@ mod test {
         let peer = coco::create_peer_api(config).await?;
         let peer_id = peer.peer_id().clone();
 
-        let fintohaps = coco::init_user(&peer, key.clone(), "fintohaps")?;
-        let remote = librad::peer::PeerId::from(SecretKey::new());
-
         let id = identity::create(&peer, key.clone(), "cloudhead")?;
 
         let owner = coco::get_user(&peer, &id.clone().urn)?;
@@ -1279,62 +1276,8 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        // TODO(finto): We're faking a lot of the networking interaction here.
-        // Create git references of the form and track the peer.
-        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/refs/heads
-        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/id
-        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
-        //   to fintohaps
-        {
-            let monorepo =
-                git2::Repository::open(peer.paths().git_dir()).expect("failed to open monorepo");
-            let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
-
-            let target = monorepo
-                .find_reference(&format!("refs/namespaces/{}/refs/heads/master", urn.id))
-                .expect("failed to get master")
-                .target()
-                .expect("missing target");
-            let _heads = monorepo
-                .reference(
-                    &format!("{}/heads/master", prefix),
-                    target,
-                    false,
-                    "remote heads",
-                )
-                .expect("failed to create heads");
-
-            let target = monorepo
-                .find_reference(&format!("refs/namespaces/{}/refs/rad/id", urn.id))
-                .expect("failed to get rad/id")
-                .target()
-                .expect("missing target");
-            let _rad_id = monorepo
-                .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
-                .expect("failed to create rad/id");
-
-            let _rad_self = monorepo
-                .reference_symbolic(
-                    &format!("{}/rad/self", prefix),
-                    &format!("refs/namespaces/{}/refs/rad/id", fintohaps.urn().id),
-                    false,
-                    "rad/self",
-                )
-                .expect("failed to create rad/self");
-
-            let target = monorepo
-                .find_reference(&format!("refs/namespaces/{}/refs/rad/refs", urn.id))
-                .expect("failed to get rad/refs")
-                .target()
-                .expect("missing target");
-            let _rad_id = monorepo
-                .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
-                .expect("failed to create rad/id");
-
-            peer.storage()
-                .track(&urn, &remote)
-                .expect("failed to track peer");
-        }
+        let (remote, fintohaps) =
+            coco::control::track_fake_peer(&peer, key, &platinum_project, "fintohaps");
 
         let api = super::filters(
             Arc::new(Mutex::new(peer)),
