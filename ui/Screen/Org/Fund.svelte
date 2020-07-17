@@ -1,5 +1,6 @@
 <script>
-  import { transactions as store } from "../../src/transaction.ts";
+  import { transactions as txStore } from "../../src/transaction.ts";
+  import { org as orgStore } from "../../src/org.ts";
   import { Wallet, Remote } from "../../DesignSystem/Component";
 
   export let params = null;
@@ -13,9 +14,11 @@
   };
 </script>
 
-<Remote {store} let:data={transactions}>
-  <Wallet
-    transactions={orgTransactions(transactions)}
-    balance="3484"
-    address="hyda4fhdx8up8hhocagkdz3d41txb98stw4pkqe3uommo1p5m6s9oy" />
+<Remote store={txStore} let:data={transactions}>
+  <Remote store={orgStore} let:data={org}>
+    <Wallet
+      transactions={orgTransactions(transactions)}
+      balance="3484"
+      address={org.accountId} />
+  </Remote>
 </Remote>

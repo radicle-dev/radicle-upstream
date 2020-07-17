@@ -11,6 +11,7 @@ import * as user from "./user";
 // Types
 export interface Org {
   id: string;
+  accountId: string;
   shareableEntityIdentifier: string;
   avatarFallback: avatar.EmojiAvatar;
   members: [user.User];
