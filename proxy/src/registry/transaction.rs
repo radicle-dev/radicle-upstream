@@ -177,7 +177,7 @@ pub enum Message {
         /// User or org receiving the funds.
         recipient: protocol::ed25519::Public,
         /// The funds to transfer.
-        balance: registry::Balance,
+        amount: registry::Balance,
     },
 
     /// Transfer funds from an org to the recipient.
@@ -188,7 +188,7 @@ pub enum Message {
         /// User or org receiving the funds.
         recipient: protocol::ed25519::Public,
         /// The funds to transfer.
-        value: registry::Balance,
+        amount: registry::Balance,
     },
 }
 
@@ -404,6 +404,13 @@ where
         account_id: &protocol::ed25519::Public,
     ) -> Result<bool, error::Error> {
         self.client.account_exists(account_id).await
+    }
+
+    async fn free_balance(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<protocol::Balance, error::Error> {
+        self.client.free_balance(account_id).await
     }
 
     async fn best_height(&self) -> Result<u32, error::Error> {
