@@ -845,7 +845,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &*peer.lock().await,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -990,7 +990,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &*peer.lock().await,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1054,7 +1054,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1100,7 +1100,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1163,7 +1163,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1271,7 +1271,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1286,16 +1286,16 @@ mod test {
         //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
         //   to fintohaps
         {
-            let platinum =
+            let monorepo =
                 git2::Repository::open(peer.paths().git_dir()).expect("failed to open monorepo");
             let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 
-            let target = platinum
+            let target = monorepo
                 .find_reference(&format!("refs/namespaces/{}/refs/heads/master", urn.id))
                 .expect("failed to get master")
                 .target()
                 .expect("missing target");
-            let _heads = platinum
+            let _heads = monorepo
                 .reference(
                     &format!("{}/heads/master", prefix),
                     target,
@@ -1304,16 +1304,16 @@ mod test {
                 )
                 .expect("failed to create heads");
 
-            let target = platinum
+            let target = monorepo
                 .find_reference(&format!("refs/namespaces/{}/refs/rad/id", urn.id))
                 .expect("failed to get rad/id")
                 .target()
                 .expect("missing target");
-            let _rad_id = platinum
+            let _rad_id = monorepo
                 .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
                 .expect("failed to create rad/id");
 
-            let _rad_self = platinum
+            let _rad_self = monorepo
                 .reference_symbolic(
                     &format!("{}/rad/self", prefix),
                     &format!("refs/namespaces/{}/refs/rad/id", fintohaps.urn().id),
@@ -1322,12 +1322,12 @@ mod test {
                 )
                 .expect("failed to create rad/self");
 
-            let target = platinum
+            let target = monorepo
                 .find_reference(&format!("refs/namespaces/{}/refs/rad/refs", urn.id))
                 .expect("failed to get rad/refs")
                 .target()
                 .expect("missing target");
-            let _rad_id = platinum
+            let _rad_id = monorepo
                 .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
                 .expect("failed to create rad/id");
 
@@ -1393,7 +1393,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1440,7 +1440,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1537,7 +1537,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",

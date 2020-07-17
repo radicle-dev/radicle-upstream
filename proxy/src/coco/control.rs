@@ -8,7 +8,7 @@ use librad::net::peer::PeerApi;
 use radicle_surf::vcs::git::git2;
 
 use crate::coco::config;
-use crate::coco::peer::{init_project, User};
+use crate::coco::peer::{init_project, init_user, User};
 use crate::error;
 
 /// Deletes the local git repsoitory coco uses to keep its state.
@@ -56,7 +56,7 @@ pub fn setup_fixtures(
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(peer, key.clone(), owner, info.0, info.1, info.2)?;
+        replicate_platinum(peer, &key, owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -71,7 +71,7 @@ pub fn setup_fixtures(
 /// the coco project.
 pub fn replicate_platinum(
     peer: &PeerApi,
-    key: keys::SecretKey,
+    key: &keys::SecretKey,
     owner: &User,
     name: &str,
     description: &str,
@@ -92,7 +92,7 @@ pub fn replicate_platinum(
 
     let meta = init_project(
         peer,
-        key,
+        key.clone(),
         owner,
         platinum_into.clone(),
         name,
@@ -127,6 +127,79 @@ pub fn replicate_platinum(
 
     // Init as rad project.
     Ok(meta)
+}
+
+/// Create and track a fake peer.
+pub fn track_fake_peer(
+    peer: &PeerApi,
+    key: keys::SecretKey,
+    project: &project::Project<entity::Draft>,
+    fake_user_handle: &str,
+) {
+    // TODO(finto): We're faking a lot of the networking interaction here.
+    // Create git references of the form and track the peer.
+    //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/refs/heads
+    //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/id
+    //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
+    //   to fake_user
+    let urn = project.urn();
+    let fake_user =
+        init_user(peer, key, fake_user_handle).unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
+    let remote = librad::peer::PeerId::from(keys::SecretKey::new());
+    let monorepo = git2::Repository::open(peer.paths().git_dir()).expect("failed to open monorepo");
+    let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
+
+    // Grab the Oid of master for the given project.
+    let target = monorepo
+        .find_reference(&format!("refs/namespaces/{}/refs/heads/master", urn.id))
+        .expect("failed to get master")
+        .target()
+        .expect("missing target");
+
+    // TODO: try pass branches in
+    // Creates a new reference to the 'target' Oid above.
+    let _heads = monorepo
+        .reference(
+            &format!("{}/heads/master", prefix),
+            target,
+            false,
+            "remote heads",
+        )
+        .expect("failed to create heads");
+
+    // Copy the rad/id under the remote
+    let target = monorepo
+        .find_reference(&format!("refs/namespaces/{}/refs/rad/id", urn.id))
+        .expect("failed to get rad/id")
+        .target()
+        .expect("missing target");
+    let _rad_id = monorepo
+        .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
+        .expect("failed to create rad/id");
+
+    // Create symlink to the User Identity for this project
+    let _rad_self = monorepo
+        .reference_symbolic(
+            &format!("{}/rad/self", prefix),
+            &format!("refs/namespaces/{}/refs/rad/id", fake_user.urn().id),
+            false,
+            "rad/self",
+        )
+        .expect("failed to create rad/self");
+
+    // Create the copy of the rad/refs under the remote
+    let target = monorepo
+        .find_reference(&format!("refs/namespaces/{}/refs/rad/refs", urn.id))
+        .expect("failed to get rad/refs")
+        .target()
+        .expect("missing target");
+    let _rad_id = monorepo
+        .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
+        .expect("failed to create rad/refs");
+
+    peer.storage()
+        .track(&urn, &remote)
+        .expect("failed to track peer");
 }
 
 /// This function exists as a standalone because the logic does not play well with async in

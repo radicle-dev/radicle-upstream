@@ -909,7 +909,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             project_name,
             project_description,
