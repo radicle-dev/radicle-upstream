@@ -9,6 +9,7 @@
     iconProgress,
     statusText,
     subjectAvatarShape,
+    StateType,
   } from "../../../src/transaction.ts";
   import { microRadToRad } from "../../../src/currency.ts";
 
@@ -57,7 +58,7 @@
 
 <div class="item" on:click>
   <div class="date">
-    {#if tx.state.type === 'settled'}
+    {#if tx.state.type === StateType.Settled}
       <Caption
         style="color: var(--color-foreground-level-3); margin-bottom: 1px;">
         {formatDate(tx.state.timestamp.secs, 'month').substring(0, 3)}
@@ -89,7 +90,7 @@
     {/if}
   </div>
   <div class="meta">
-    {#if tx.state.type !== 'settled'}
+    {#if tx.state.type !== StateType.Settled}
       <div class="status">
         {#if iconState(tx.state) === 'negative'}
           <Icon.Important
