@@ -501,7 +501,6 @@
     <Section title="Small Icons" subTitle="Icons at 16px width and height">
       <IconSwatch>
         <Icon.Verified />
-        <Icon.Circle />
       </IconSwatch>
 
     </Section>

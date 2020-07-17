@@ -149,15 +149,19 @@ context("org registration", () => {
       cy.pick("subject-avatar", "emoji").should("have.class", "square");
 
       cy.pick("deposit", "amount").contains("0.00001");
-      cy.pick("deposit", "amount").trigger("mouseenter").contains("$0.00001");
+      cy.pick("deposit", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.00001");
+      cy.pick("deposit", "amount").trigger("mouseout");
 
       cy.pick("transaction-fee", "amount").contains("0.000001");
-      cy.pick("transaction-fee", "amount")
-        .trigger("mouseenter")
-        .contains("$0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseout");
 
       cy.pick("total", "amount").contains("0.000011");
-      cy.pick("total", "amount").trigger("mouseenter").contains("$0.000011");
+      cy.pick("total", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000011");
+      cy.pick("total", "amount").trigger("mouseout");
     });
 
     it("submits correct transaction details to proxy", () => {
@@ -187,15 +191,19 @@ context("org registration", () => {
       );
 
       cy.pick("deposit", "amount").contains("0.00001");
-      cy.pick("deposit", "amount").trigger("mouseenter").contains("$0.00001");
+      cy.pick("deposit", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.00001");
+      cy.pick("deposit", "amount").trigger("mouseout");
 
       cy.pick("transaction-fee", "amount").contains("0.000001");
-      cy.pick("transaction-fee", "amount")
-        .trigger("mouseenter")
-        .contains("$0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseout");
 
       cy.pick("total", "amount").contains("0.000011");
-      cy.pick("total", "amount").trigger("mouseenter").contains("$0.000011");
+      cy.pick("total", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000011");
+      cy.pick("total", "amount").trigger("mouseout");
     });
   });
 });

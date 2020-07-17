@@ -43,7 +43,7 @@
       <svelte:component
         this={copyIcon}
         size={iconSize}
-        style="display: flex; min-width: 16px;" />
+        style="display: flex; min-width: {iconSize === 'small' ? '16px' : '24px'};" />
     {/if}
   </span>
 </div>

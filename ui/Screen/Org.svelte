@@ -29,13 +29,11 @@
   };
 
   import ProjectsMenu from "./Org/ProjectsMenu.svelte";
-  import FundMenu from "./Org/FundMenu.svelte";
   import MembersMenu from "./Org/MembersMenu.svelte";
 
   const menuRoutes = {
     "/orgs/:id/": ProjectsMenu,
     "/orgs/:id/projects": ProjectsMenu,
-    "/orgs/:id/fund": FundMenu,
     "/orgs/:id/members": MembersMenu,
   };
 
@@ -48,7 +46,7 @@
     },
     {
       icon: Icon.Fund,
-      title: "Fund",
+      title: "Wallet",
       href: path.orgFund(orgId),
       looseActiveStateMatching: false,
     },
