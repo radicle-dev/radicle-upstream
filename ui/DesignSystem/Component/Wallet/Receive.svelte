@@ -16,7 +16,7 @@
   }
 </style>
 
-<div class="receive">
+<div class="receive" data-cy="receive">
   <QR key={address} size="136" />
   {#if text}
     <Text style="padding-top: 1.5rem; color: var(--color-foreground-level-6)">

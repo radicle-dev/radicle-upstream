@@ -4,6 +4,7 @@
   import TransactionList from "./Wallet/TxList.svelte";
   import SendReceive from "./Wallet/SendReceive.svelte";
   import Receive from "./Wallet/Receive.svelte";
+  export let dataCy = null;
   export let transactions = null;
   export let balance = null;
   export let address = null;
@@ -46,10 +47,10 @@
   }
 </style>
 
-<div class="container">
+<div class="container" data-cy={dataCy}>
   {#if balance !== '0' || transactions.length !== 0}
     <div>
-      <div class="balance">
+      <div class="balance" data-cy="balance">
         <Title style="padding-bottom: 1rem;" variant="large">Balance</Title>
         <Rad
           style="display: inline-block;"
