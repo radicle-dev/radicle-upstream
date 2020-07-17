@@ -177,7 +177,7 @@ pub enum Message {
         /// User or org receiving the funds.
         recipient: protocol::ed25519::Public,
         /// The funds to transfer.
-        balance: registry::Balance,
+        amount: registry::Balance,
     },
 
     /// Transfer funds from an org to the recipient.
@@ -188,7 +188,7 @@ pub enum Message {
         /// User or org receiving the funds.
         recipient: protocol::ed25519::Public,
         /// The funds to transfer.
-        value: registry::Balance,
+        amount: registry::Balance,
     },
 }
 

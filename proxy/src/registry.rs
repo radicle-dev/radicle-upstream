@@ -320,7 +320,7 @@ pub trait Client: Clone + Send + Sync {
         &self,
         author: &protocol::ed25519::Pair,
         recipient: protocol::ed25519::Public,
-        value: Balance,
+        amount: Balance,
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -334,7 +334,7 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         org_id: Id,
         recipient: protocol::ed25519::Public,
-        value: Balance,
+        amount: Balance,
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -346,7 +346,7 @@ pub trait Client: Clone + Send + Sync {
     async fn prepay_account(
         &self,
         recipient: AccountId,
-        balance: Balance,
+        amount: Balance,
     ) -> Result<(), error::Error>;
 
     /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
@@ -749,14 +749,11 @@ impl Client for Registry {
         &self,
         author: &protocol::ed25519::Pair,
         recipient: protocol::ed25519::Public,
-        value: Balance,
+        amount: Balance,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit transfer transaction.
-        let transfer_message = protocol::message::Transfer {
-            recipient,
-            balance: value,
-        };
+        let transfer_message = protocol::message::Transfer { recipient, amount };
         let transfer_tx = self
             .new_signed_transaction(author, transfer_message, fee)
             .await?;
@@ -767,10 +764,7 @@ impl Client for Registry {
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),
             block.number,
-            Message::Transfer {
-                recipient,
-                balance: value,
-            },
+            Message::Transfer { recipient, amount },
             fee,
         ))
     }
@@ -780,14 +774,14 @@ impl Client for Registry {
         author: &protocol::ed25519::Pair,
         org_id: Id,
         recipient: protocol::ed25519::Public,
-        value: Balance,
+        amount: Balance,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit transfer transaction.
         let transfer_message = protocol::message::TransferFromOrg {
             org_id: org_id.clone(),
             recipient,
-            value,
+            amount,
         };
         let transfer_tx = self
             .new_signed_transaction(author, transfer_message, fee)
@@ -802,7 +796,7 @@ impl Client for Registry {
             Message::TransferFromOrg {
                 org_id,
                 recipient,
-                value,
+                amount,
             },
             fee,
         ))
@@ -811,16 +805,12 @@ impl Client for Registry {
     async fn prepay_account(
         &self,
         recipient: AccountId,
-        balance: Balance,
+        amount: Balance,
     ) -> Result<(), error::Error> {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
 
         self.client
-            .sign_and_submit_message(
-                &alice,
-                protocol::message::Transfer { recipient, balance },
-                1,
-            )
+            .sign_and_submit_message(&alice, protocol::message::Transfer { recipient, amount }, 1)
             .await?
             .await?
             .result?;
