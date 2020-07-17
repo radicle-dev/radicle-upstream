@@ -105,7 +105,7 @@ fn branches_filter(
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(warp::filters::query::query::<PeerQuery>())
+        .and(warp::filters::query::query::<BranchQuery>())
         .and(document::document(
             document::query("peerId", document::string()).description("The peer identifier"),
         ))
@@ -354,7 +354,7 @@ mod handler {
     pub async fn branches(
         peer: Arc<Mutex<coco::PeerApi>>,
         project_urn: coco::Urn,
-        super::PeerQuery { peer_id }: super::PeerQuery,
+        super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection> {
         let peer = peer.lock().await;
         let branches = coco::with_browser(&peer, &project_urn, |browser| {
@@ -504,10 +504,10 @@ pub struct BlobQuery {
     highlight: Option<bool>,
 }
 
-/// A query param that only consists of a single `PeerId`.
+/// A query param for [`handler::branches`].
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PeerQuery {
+pub struct BranchQuery {
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
 }
