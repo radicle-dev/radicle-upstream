@@ -195,6 +195,18 @@ context("source code browsing", () => {
         ).click();
         cy.contains("test-file-deletion.txt").should("not.exist");
       });
+
+      it("does not crash on a page reload", () => {
+        cy.pick("revision-selector").click();
+        cy.get(
+          '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]'
+        ).click();
+
+        cy.reload();
+
+        // Make sure the revision selector still loads.
+        cy.contains(".i-too-am-hidden").should("exist");
+      });
     });
 
     context("when switching between projects", () => {
@@ -204,7 +216,6 @@ context("source code browsing", () => {
         cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
         cy.pick("sidebar", "profile").click();
         cy.pick("project-list", "project-list-entry-gold").click();
-        cy.pick("revision-selector").contains("cloudhead@");
         cy.pick("revision-selector").contains("master");
       });
     });
