@@ -27,13 +27,20 @@ where
 {
     http::with_shared(registry)
         .and(warp::get())
-        .and(document::param::<registry::AccountId>("id", "Account id"))
+        .and(document::param::<String>("id", "Account id in SS58 format"))
         .and(path("exists"))
         .and(path::end())
         .and(document::document(document::tag("Account")))
         .and(document::document(document::description(
             "Check whether a given account exists on chain",
         )))
+        .and(document::document(
+            document::response(
+                400,
+                document::body(http::error::Error::document()).mime("application/json"),
+            )
+            .description("A bad account id was provided"),
+        ))
         .and_then(handler::exists)
 }
 
@@ -43,7 +50,7 @@ fn get_balance_filter<R: registry::Client>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     http::with_shared(registry)
         .and(warp::get())
-        .and(document::param::<registry::AccountId>("id", "Account id"))
+        .and(document::param::<String>("id", "Account id in SS58 format"))
         .and(path("balance"))
         .and(path::end())
         .and(document::document(document::tag("Account")))
@@ -57,12 +64,26 @@ fn get_balance_filter<R: registry::Client>(
             )
             .description("Successful retrieval"),
         ))
+        .and(document::document(
+            document::response(
+                400,
+                document::body(http::error::Error::document()).mime("application/json"),
+            )
+            .description("A bad account id was provided"),
+        ))
+        .and(document::document(
+            document::response(
+                404,
+                document::body(http::error::Error::document()).mime("application/json"),
+            )
+            .description("Account not found"),
+        ))
         .and_then(handler::get_balance)
 }
 
 /// Account handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::{reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use crate::error;
     use crate::http;
@@ -71,22 +92,53 @@ mod handler {
     /// Check whether the given account exists on chain
     pub async fn exists<R: registry::Client>(
         registry: http::Shared<R>,
-        account_id: registry::AccountId,
+        account_id_string: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
-        let exists = reg.account_exists(&account_id).await?;
+        println!("account_id_string is {}", account_id_string);
+        let account_id: registry::AccountId = match registry::parse_ss58_address(&account_id_string)
+        {
+            Ok(x) => x,
+            Err(_) => {
+                return Ok(warp::reply::with_status(
+                    reply::json(
+                        &"A bad account id was provided. It needs to be in the SS58 format.",
+                    ),
+                    StatusCode::BAD_REQUEST,
+                ))
+            },
+        };
 
-        Ok(reply::json(&exists))
+        let exists = reg.account_exists(&account_id).await?;
+        Ok(warp::reply::with_status(
+            reply::json(&exists),
+            StatusCode::OK,
+        ))
     }
 
     /// Get the [`registry::Balance`] of a given account.
     pub async fn get_balance<R: registry::Client>(
         registry: http::Shared<R>,
-        account_id: registry::AccountId,
+        account_id_string: String,
     ) -> Result<impl Reply, Rejection> {
         let reg = registry.read().await;
+        let account_id: registry::AccountId = match registry::parse_ss58_address(&account_id_string)
+        {
+            Ok(x) => x,
+            Err(_) => {
+                return Ok(warp::reply::with_status(
+                    reply::json(
+                        &"A bad account id was provided. It needs to be in the SS58 format.",
+                    ),
+                    StatusCode::BAD_REQUEST,
+                ))
+            },
+        };
         match reg.free_balance(&account_id).await {
-            Ok(balance) => Ok(reply::json(&balance)),
+            Ok(balance) => Ok(warp::reply::with_status(
+                reply::json(&balance),
+                StatusCode::OK,
+            )),
             Err(error::Error::AccountNotFound(_)) => Err(warp::reject::not_found()),
             Err(other_error) => Err(Rejection::from(other_error)),
         }
@@ -168,6 +220,25 @@ mod test {
     }
 
     #[tokio::test]
+    async fn account_exists_bad_request() -> Result<(), error::Error> {
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
+        let api = super::filters(&Arc::clone(&registry));
+        let non_ss58_address = "abc";
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/{}/exists", non_ss58_address))
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn existing_account_balance() -> Result<(), error::Error> {
         let registry = {
             let (client, _) = radicle_registry_client::Client::new_emulator();
@@ -220,6 +291,25 @@ mod test {
             .await;
 
         assert_eq!(res.status(), StatusCode::NOT_FOUND);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn account_balance_bad_request() -> Result<(), error::Error> {
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            Arc::new(RwLock::new(registry::Registry::new(client)))
+        };
+        let api = super::filters(&Arc::clone(&registry));
+        let non_ss58_address = "abc";
+
+        let res = request()
+            .method("GET")
+            .path(&format!("/{}/balance", non_ss58_address))
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::BAD_REQUEST);
         Ok(())
     }
 }

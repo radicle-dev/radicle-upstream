@@ -10,7 +10,8 @@ use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{
-    AccountId, Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName, MINIMUM_FEE,
+    parse_ss58_address, AccountId, Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName,
+    MINIMUM_FEE,
 };
 
 use crate::avatar;
