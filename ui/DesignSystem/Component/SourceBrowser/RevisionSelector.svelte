@@ -135,10 +135,12 @@
     <div style="display: flex; overflow: hidden;">
       {#if currentRevision.type === RevisionType.Branch}
         <Icon.Branch
+          dataCy="branch-icon"
           style="vertical-align: bottom; fill: var(--color-foreground-level-4);
           flex-shrink: 0;" />
       {:else}
         <Icon.Commit
+          dataCy="tag-icon"
           style="vertical-align: bottom; fill: var(--color-foreground-level-4);
           flex-shrink: 0;" />
       {/if}
@@ -151,6 +153,7 @@
     </div>
     <Avatar
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
+      dataCy={`avatar-${currentSelectedPeer.identity.metadata.handle}`}
       size="small"
       style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
       variant="circle" />
@@ -190,6 +193,7 @@
                 }
               )}>
             <Icon.Branch
+              dataCy="branch-icon"
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
             <span style="line-height: 1.5rem">{branch}</span>
@@ -209,6 +213,7 @@
                 }
               )}>
             <Icon.Commit
+              dataCy="tag-icon"
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
             <span style="line-height: 1.5rem">{tag}</span>

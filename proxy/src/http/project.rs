@@ -503,7 +503,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
