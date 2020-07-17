@@ -6,7 +6,7 @@
   import TransactionListItem from "./TxListItem.svelte";
   import { Text } from "../../Primitive";
 
-  const select = event => push(path.transactions(event));
+  const select = transactionId => push(path.transactions(transactionId));
 </script>
 
 <style>

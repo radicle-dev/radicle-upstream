@@ -1,5 +1,4 @@
 <script>
-  export let tx = null;
   import {
     headerIcon,
     formatMessage,
@@ -10,11 +9,13 @@
     statusText,
     subjectAvatarShape,
     StateType,
+    IconState,
   } from "../../../src/transaction.ts";
   import { microRadToRad } from "../../../src/currency.ts";
-
   import Rad from "../Rad.svelte";
   import { Avatar, Caption, Icon, Text, Title } from "../../Primitive";
+
+  export let tx = null;
 
   const subject = formatSubject(tx.messages[0]);
 
@@ -92,10 +93,10 @@
   <div class="meta">
     {#if tx.state.type !== StateType.Settled}
       <div class="status">
-        {#if iconState(tx.state) === 'negative'}
+        {#if iconState(tx.state) === IconState.Negative}
           <Icon.Important
             style="margin-right: 8px; fill: var(--color-negative)" />
-        {:else if iconState(tx.state) === 'positive'}
+        {:else if iconState(tx.state) === IconState.positive}
           <Icon.Check
             variant="filled"
             style="margin-right: 8px; fill: var(--color-positive)" />
