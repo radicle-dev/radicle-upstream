@@ -76,7 +76,7 @@ where
     session.permissions = Permissions::default();
 
     if let Some(id) = session.identity.clone() {
-        identity::get(api, &id.id)?;
+        identity::get(api, &id.urn)?;
     }
 
     if let Some(mut id) = session.identity.clone() {

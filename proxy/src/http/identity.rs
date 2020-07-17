@@ -101,11 +101,11 @@ mod handler {
             .await?
             .identity
         {
-            return Err(Rejection::from(error::Error::EntityExists(identity.id)));
+            return Err(Rejection::from(error::Error::EntityExists(identity.urn)));
         }
 
         let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
-        let id = identity::create(&ctx.peer_api, key, input.handle.parse()?)?;
+        let id = identity::create(&ctx.peer_api, key, &input.handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -259,8 +259,9 @@ mod test {
             .await;
 
         let ctx = ctx.read().await;
+        let peer_id = ctx.peer_api.peer_id();
         let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
-        let urn = session.identity.expect("failed to set identity").id;
+        let urn = session.identity.expect("failed to set identity").urn;
 
         // Assert that we set the default owner and it's the same one as the session
         {
@@ -272,12 +273,13 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
             let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
-            let shareable_entity_identifier = format!("cloudhead@{}", urn);
+            let shareable_entity_identifier = format!("cloudhead@{}", peer_id);
             assert_eq!(
                 have,
                 json!({
+                    "peerId": peer_id,
                     "avatarFallback": avatar,
-                    "id": urn,
+                    "urn": urn,
                     "metadata": {
                         "handle": "cloudhead",
                     },
@@ -301,7 +303,8 @@ mod test {
         let user = ctx.peer_api.init_user(key, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
-        let shareable_entity_identifier = user.into();
+        let peer_id = ctx.peer_api.peer_id();
+        let shareable_entity_identifier = (peer_id.clone(), user).into();
 
         let res = request()
             .method("GET")
@@ -314,7 +317,8 @@ mod test {
         assert_eq!(
             have,
             json!(identity::Identity {
-                id: urn.clone(),
+                peer_id,
+                urn: urn.clone(),
                 shareable_entity_identifier,
                 metadata: identity::Metadata { handle },
                 registered: None,

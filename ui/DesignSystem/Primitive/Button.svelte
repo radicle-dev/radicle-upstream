@@ -1,6 +1,4 @@
 <script>
-  import Title from "./Title.svelte";
-
   // vanilla | primary | secondary | transparent | outline | destructive
   export let variant = "primary";
 
@@ -8,6 +6,7 @@
   export let icon = null;
   export let style = null;
   export let dataCy = null;
+  export let title = null;
 
   const iconClass = icon ? "icon" : null;
 
@@ -30,6 +29,9 @@
     outline-style: none;
     padding: 0 12px;
     user-select: none;
+    font-family: var(--typeface-medium);
+    font-size: 16px;
+    line-height: 22px;
   }
 
   .button :global(svg) {
@@ -224,7 +226,7 @@
 
   .outline {
     background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-foreground-level-3);
+    border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
   }
 
@@ -234,16 +236,12 @@
 
   .outline:hover {
     background-color: var(--color-foreground-level-1);
-    box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-3));
     border: 1px solid var(--color-foreground-level-3);
     color: var(--color-foreground-level-6);
   }
 
   .outline:active {
     background-color: var(--color-foreground-level-1);
-    box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-2));
     border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-5);
   }
@@ -326,11 +324,10 @@
 <button
   data-cy={dataCy}
   class="button {buttonClass}"
+  {title}
   {disabled}
   on:click
   {style}>
   <svelte:component this={icon} />
-  <Title>
-    <slot />
-  </Title>
+  <slot />
 </button>

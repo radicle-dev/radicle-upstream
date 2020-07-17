@@ -6,6 +6,7 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use librad::peer;
+use radicle_surf::vcs::git;
 
 use crate::coco;
 use crate::http;
@@ -57,7 +58,7 @@ where
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(warp::filters::query::query::<BlobQuery>())
+        .and(http::with_qs::<BlobQuery>())
         .and(document::document(
             document::query("revision", document::string()).description("Git revision"),
         ))
@@ -199,7 +200,8 @@ where
 {
     path("revisions")
         .and(warp::get())
-        .and(super::with_context(ctx))
+        .and(super::with_context(ctx.clone()))
+        .and(http::with_owner_guard(ctx))
         .and(document::param::<String>(
             "project_id",
             "ID of the project the blob is part of",
@@ -212,7 +214,8 @@ where
             document::response(
                 200,
                 document::body(
-                    document::array(Revision::document()).description("List of revisions per repo"),
+                    document::array(coco::UserRevisions::document())
+                        .description("List of revisions per repo"),
                 )
                 .mime("application/json"),
             )
@@ -258,7 +261,7 @@ where
             "project_id",
             "ID of the project the blob is part of",
         ))
-        .and(warp::filters::query::query::<TreeQuery>())
+        .and(http::with_qs::<TreeQuery>())
         .and(document::document(
             document::query("revision", document::string()).description("Git revision"),
         ))
@@ -283,11 +286,11 @@ mod handler {
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
-    use crate::avatar;
+    use radicle_surf::vcs::git::{self, BranchType};
+
     use crate::coco;
     use crate::error::Error;
     use crate::http;
-    use crate::identity;
     use crate::registry;
     use crate::session;
 
@@ -311,21 +314,21 @@ mod handler {
 
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = ctx.peer_api.get_project(&urn)?;
-        let default_branch = project.default_branch();
+
+        let default_branch = match peer_id {
+            Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
+                git::Branch::remote(project.default_branch(), &peer_id.to_string())
+            },
+            Some(_) | None => git::Branch::local(project.default_branch()),
+        };
+
         let theme = if let Some(true) = highlight {
             Some(&session.settings.appearance.theme)
         } else {
             None
         };
         let blob = ctx.peer_api.with_browser(&urn, |mut browser| {
-            coco::blob(
-                &mut browser,
-                peer_id.as_ref(),
-                default_branch,
-                revision,
-                &path,
-                theme,
-            )
+            coco::blob(&mut browser, default_branch, revision, &path, theme)
         })?;
 
         Ok(reply::json(&blob))
@@ -341,9 +344,9 @@ mod handler {
     {
         let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let branches = ctx
-            .peer_api
-            .with_browser(&urn, |browser| coco::branches(browser))?;
+        let branches = ctx.peer_api.with_browser(&urn, |browser| {
+            coco::branches(browser, Some(BranchType::Local))
+        })?;
 
         Ok(reply::json(&branches))
     }
@@ -370,7 +373,7 @@ mod handler {
     pub async fn commits<R>(
         ctx: http::Ctx<R>,
         project_urn: String,
-        super::CommitsQuery { peer_id, branch }: super::CommitsQuery,
+        query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
@@ -378,7 +381,7 @@ mod handler {
         let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
         let commits = ctx.peer_api.with_browser(&urn, |mut browser| {
-            coco::commits(&mut browser, peer_id.as_ref(), &branch)
+            coco::commits(&mut browser, query.into())
         })?;
 
         Ok(reply::json(&commits))
@@ -394,6 +397,7 @@ mod handler {
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
     pub async fn revisions<R>(
         ctx: http::Ctx<R>,
+        owner: coco::User,
         project_urn: String,
     ) -> Result<impl Reply, Rejection>
     where
@@ -401,52 +405,9 @@ mod handler {
     {
         let ctx = ctx.read().await;
         let urn = project_urn.parse().map_err(Error::from)?;
-        let (branches, tags) = ctx.peer_api.with_browser(&urn, |browser| {
-            Ok((coco::branches(browser)?, coco::tags(browser)?))
-        })?;
+        let revisions: Vec<_> = ctx.peer_api.revisions(&owner, &urn)?.into();
 
-        // TODO(rudolfs): the order of the returned peers/revisions determines the default peer in
-        // the repository selector in the UI. Make sure the list always returns the default peer
-        // first.
-        let revs = [
-            (
-                "cloudhead",
-                "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-            ),
-            (
-                "rudolfs",
-                "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-            ),
-            (
-                "xla",
-                "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-            ),
-        ]
-        .iter()
-        .map(|(fake_handle, fake_peer_urn)| super::Revision {
-            branches: branches.clone(),
-            tags: tags.clone(),
-            identity: identity::Identity {
-                // TODO(finto): Get the right URN
-                id: fake_peer_urn
-                    .parse()
-                    .expect("failed to parse hardcoded URN"),
-                metadata: identity::Metadata {
-                    handle: (*fake_handle).to_string(),
-                },
-                avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
-                registered: None,
-                shareable_entity_identifier: identity::SharedIdentifier {
-                    handle: (*fake_handle).to_string(),
-                    urn: fake_peer_urn
-                        .parse()
-                        .expect("failed to parse hardcoded URN"),
-                },
-            },
-        })
-        .collect::<Vec<super::Revision>>();
-
-        Ok(reply::json(&revs))
+        Ok(reply::json(&revisions))
     }
 
     /// Fetch the list [`coco::Tag`].
@@ -480,15 +441,14 @@ mod handler {
 
         let urn = project_urn.parse().map_err(Error::from)?;
         let project = ctx.peer_api.get_project(&urn)?;
-        let default_branch = project.default_branch();
+        let default_branch = match peer_id {
+            Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
+                git::Branch::remote(project.default_branch(), &peer_id.to_string())
+            },
+            Some(_) | None => git::Branch::local(project.default_branch()),
+        };
         let tree = ctx.peer_api.with_browser(&urn, |mut browser| {
-            coco::tree(
-                &mut browser,
-                peer_id.as_ref(),
-                default_branch,
-                revision,
-                prefix,
-            )
+            coco::tree(&mut browser, default_branch, revision, prefix)
         })?;
 
         Ok(reply::json(&tree))
@@ -504,51 +464,37 @@ pub struct CommitsQuery {
     branch: String,
 }
 
+impl From<CommitsQuery> for git::Branch {
+    fn from(CommitsQuery { peer_id, branch }: CommitsQuery) -> Self {
+        match peer_id {
+            None => Self::local(&branch),
+            Some(peer_id) => Self::remote(&branch, &peer_id.to_string()),
+        }
+    }
+}
+
 /// Bundled query params to pass to the blob handler.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BlobQuery {
     /// Location of the blob in tree.
     path: String,
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
-    /// Revision to use for the history of the repo.
-    revision: Option<String>,
+    /// Revision to query at.
+    revision: Option<coco::Revision>,
     /// Whether or not to syntax highlight the blob.
     highlight: Option<bool>,
 }
 
 /// Bundled query params to pass to the tree handler.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TreeQuery {
     /// Path prefix to query the tree.
     prefix: Option<String>,
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
     /// Revision to query at.
-    revision: Option<String>,
-}
-
-/// Bundled response to retrieve both branches and tags for a user repo.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Revision {
-    /// Owner of the repo.
-    identity: identity::Identity,
-    /// List of [`coco::Branch`].
-    branches: Vec<coco::Branch>,
-    /// List of [`coco::Tag`].
-    tags: Vec<coco::Tag>,
-}
-
-impl ToDocumentedType for Revision {
-    fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
-        properties.insert("identity".into(), identity::Identity::document());
-        properties.insert("branches".into(), document::array(coco::Branch::document()));
-        properties.insert("tags".into(), document::array(coco::Tag::document()));
-
-        document::DocumentedType::from(properties).description("Revision")
-    }
+    revision: Option<coco::Revision>,
 }
 
 impl Serialize for coco::Blob {
@@ -620,10 +566,11 @@ impl Serialize for coco::Commit {
     where
         S: Serializer,
     {
-        let mut changeset = serializer.serialize_struct("Commit", 3)?;
+        let mut changeset = serializer.serialize_struct("Commit", 4)?;
         changeset.serialize_field("header", &self.header)?;
         changeset.serialize_field("stats", &self.stats)?;
         changeset.serialize_field("diff", &self.diff)?;
+        changeset.serialize_field("branch", &self.branch)?;
         changeset.end()
     }
 }
@@ -849,6 +796,17 @@ impl ToDocumentedType for coco::TreeEntry {
     }
 }
 
+impl ToDocumentedType for coco::UserRevisions {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(3);
+        properties.insert("identity".into(), identity::Identity::document());
+        properties.insert("branches".into(), document::array(coco::Branch::document()));
+        properties.insert("tags".into(), document::array(coco::Tag::document()));
+
+        document::DocumentedType::from(properties).description("UserRevisions")
+    }
+}
+
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
@@ -857,11 +815,14 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use crate::avatar;
+    use librad::keys::SecretKey;
+    use radicle_surf::vcs::git::{self, git2};
+
     use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
+    use crate::session;
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
@@ -883,30 +844,33 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let revision = "master";
-        let default_branch = platinum_project.default_branch();
+        let revision = coco::Revision::Branch {
+            name: "master".to_string(),
+            peer_id: None,
+        };
+        let default_branch = git::Branch::local(platinum_project.default_branch());
         let path = "text/arrows.txt";
-        let peer_id = ctx.peer_api.peer_id().clone();
         let want = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::blob(
                 &mut browser,
-                Some(&peer_id),
-                default_branch,
-                Some(revision.to_string()),
+                default_branch.clone(),
+                Some(revision.clone()),
                 path,
                 None,
             )
         })?;
 
+        let query = super::BlobQuery {
+            path: path.to_string(),
+            peer_id: None,
+            revision: Some(revision.clone()),
+            highlight: Some(false),
+        };
+
+        let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+
         // Get ASCII blob.
-        let res = request()
-            .method("GET")
-            .path(&format!(
-                "/blob/{}?revision={}&path={}",
-                urn, revision, path
-            ))
-            .reply(&api)
-            .await;
+        let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -948,27 +912,20 @@ mod test {
 
         // Get binary blob.
         let path = "bin/ls";
-        let res = request()
-            .method("GET")
-            .path(&format!(
-                "/blob/{}?revision={}&path={}",
-                urn.to_string(),
-                revision,
-                path
-            ))
-            .reply(&api)
-            .await;
-
         let want = ctx.peer_api.with_browser(&urn, |browser| {
-            coco::blob(
-                browser,
-                None,
-                default_branch,
-                Some(revision.to_string()),
-                path,
-                None,
-            )
+            coco::blob(browser, default_branch, Some(revision.clone()), path, None)
         })?;
+
+        let query = super::BlobQuery {
+            path: path.to_string(),
+            peer_id: None,
+            revision: Some(revision),
+            highlight: Some(false),
+        };
+
+        let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+
+        let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -1004,6 +961,61 @@ mod test {
     }
 
     #[tokio::test]
+    async fn blob_dev_branch() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner)?;
+        let platinum_project = coco::control::replicate_platinum(
+            &ctx.peer_api,
+            key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+        let urn = platinum_project.urn();
+
+        let revision = coco::Revision::Branch {
+            name: "dev".to_string(),
+            peer_id: None,
+        };
+        let default_branch = git::Branch::local(platinum_project.default_branch());
+        let path = "here-we-are-on-a-dev-branch.lol";
+        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
+            coco::blob(
+                &mut browser,
+                default_branch.clone(),
+                Some(revision.clone()),
+                path,
+                None,
+            )
+        })?;
+
+        let query = super::BlobQuery {
+            path: path.to_string(),
+            peer_id: None,
+            revision: Some(revision),
+            highlight: Some(false),
+        };
+
+        let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+
+        // Get ASCII blob.
+        let res = request().method("GET").path(&path).reply(&api).await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = http::Context::tmp(&tmp_dir).await?;
@@ -1025,11 +1037,11 @@ mod test {
 
         let want = ctx
             .peer_api
-            .with_browser(&urn, |browser| coco::branches(browser))?;
+            .with_browser(&urn, |browser| coco::branches(browser, None))?;
 
         let res = request()
             .method("GET")
-            .path(&format!("/branches/{}", urn.to_string()))
+            .path(&format!("/branches/{}", urn))
             .reply(&api)
             .await;
 
@@ -1069,7 +1081,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/commit/{}/{}", urn.to_string(), sha1))
+            .path(&format!("/commit/{}/{}", urn, sha1))
             .reply(&api)
             .await;
 
@@ -1117,18 +1129,17 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let branch = "master";
+        let branch = git::Branch::local("master");
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
-        let peer_id = &ctx.peer_api.peer_id().clone();
         let (want, head_commit) = ctx.peer_api.with_browser(&urn, |mut browser| {
-            let want = coco::commits(&mut browser, Some(peer_id), branch)?;
+            let want = coco::commits(&mut browser, branch.clone())?;
             let head_commit = coco::commit_header(&mut browser, head)?;
             Ok((want, head_commit))
         })?;
 
         let res = request()
             .method("GET")
-            .path(&format!("/commits/{}?branch={}", urn.to_string(), branch))
+            .path(&format!("/commits/{}?branch={}", urn, branch.name))
             .reply(&api)
             .await;
 
@@ -1185,8 +1196,18 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
+        let peer_id = ctx.peer_api.peer_id();
+
+        let fintohaps = ctx.peer_api.init_user(key.clone(), "fintohaps")?;
+        let remote = librad::peer::PeerId::from(SecretKey::new());
+
+        let id = identity::create(&ctx.peer_api, key.clone(), "cloudhead")?;
+
+        let owner = ctx.peer_api.get_user(&id.clone().urn)?;
         let owner = coco::verify_user(owner)?;
+
+        session::set_identity(&ctx.store, id)?;
+
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             key,
@@ -1197,49 +1218,60 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let want = {
-            let (branches, tags) = ctx.peer_api.with_browser(&urn, |browser| {
-                Ok((coco::branches(browser)?, coco::tags(browser)?))
-            })?;
+        // TODO(finto): We're faking a lot of the networking interaction here.
+        // Create git references of the form and track the peer.
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/refs/heads
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/id
+        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
+        //   to fintohaps
+        {
+            let platinum = git2::Repository::open(ctx.peer_api.paths().git_dir())
+                .expect("failed to open monorepo");
+            let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 
-            [
-                (
-                    "cloudhead",
-                    "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-                ),
-                (
-                    "rudolfs",
-                    "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-                ),
-                (
-                    "xla",
-                    "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-                ),
-            ]
-            .iter()
-            .map(|(fake_handle, fake_peer_urn)| super::Revision {
-                branches: branches.clone(),
-                tags: tags.clone(),
-                identity: identity::Identity {
-                    // TODO(finto): Get the right URN
-                    id: fake_peer_urn
-                        .parse()
-                        .expect("failed to parse hardcoded URN"),
-                    metadata: identity::Metadata {
-                        handle: (*fake_handle).to_string(),
-                    },
-                    avatar_fallback: avatar::Avatar::from(fake_handle, avatar::Usage::Identity),
-                    registered: None,
-                    shareable_entity_identifier: identity::SharedIdentifier {
-                        handle: (*fake_handle).to_string(),
-                        urn: fake_peer_urn
-                            .parse()
-                            .expect("failed to parse hardcoded URN"),
-                    },
-                },
-            })
-            .collect::<Vec<super::Revision>>()
-        };
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/heads/master", urn.id))
+                .expect("failed to get master")
+                .target()
+                .expect("missing target");
+            let _heads = platinum
+                .reference(
+                    &format!("{}/heads/master", prefix),
+                    target,
+                    false,
+                    "remote heads",
+                )
+                .expect("failed to create heads");
+
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/rad/id", urn.id))
+                .expect("failed to get rad/id")
+                .target()
+                .expect("missing target");
+            let _rad_id = platinum
+                .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
+                .expect("failed to create rad/id");
+
+            let _rad_self = platinum
+                .reference_symbolic(
+                    &format!("{}/rad/self", prefix),
+                    &format!("refs/namespaces/{}/refs/rad/id", fintohaps.urn().id),
+                    false,
+                    "rad/self",
+                )
+                .expect("failed to create rad/self");
+
+            let target = platinum
+                .find_reference(&format!("refs/namespaces/{}/refs/rad/refs", urn.id))
+                .expect("failed to get rad/refs")
+                .target()
+                .expect("missing target");
+            let _rad_id = platinum
+                .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
+                .expect("failed to create rad/id");
+
+            ctx.peer_api.track(&urn, &remote)?;
+        }
 
         let res = request()
             .method("GET")
@@ -1248,71 +1280,29 @@ mod test {
             .await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(want));
             assert_eq!(
                 have,
                 json!([
-                    {
-                        "identity": {
-                            "id": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
-                            "metadata": {
-                                "handle": "cloudhead",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("cloudhead@{}", "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 105,
-                                    "b": 216,
-                                },
-                                "emoji": "🌻",
-                            },
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                    coco::UserRevisions {
+                        identity: (peer_id, owner).into(),
+                        branches: vec![
+                            coco::Branch("dev".to_string()),
+                            coco::Branch("master".to_string())
+                        ],
+                        tags: vec![
+                            coco::Tag("v0.1.0".to_string()),
+                            coco::Tag("v0.2.0".to_string()),
+                            coco::Tag("v0.3.0".to_string()),
+                            coco::Tag("v0.4.0".to_string()),
+                            coco::Tag("v0.5.0".to_string())
+                        ]
                     },
-                    {
-                        "identity": {
-                            "id": "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro",
-                            "metadata": {
-                                "handle": "rudolfs",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("rudolfs@{}", "rad:git:hwd1yrereyss6pihzu3f3k4783boykpwr1uzdn3cwugmmxwrpsay5ycyuro"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 24,
-                                    "g": 186,
-                                    "b": 214,
-                                },
-                            "emoji": "🧿",
-                            },
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
+                    coco::UserRevisions {
+                        identity: (remote, fintohaps).into(),
+                        branches: vec![coco::Branch("master".to_string())],
+                        tags: vec![]
                     },
-                    {
-                        "identity": {
-                            "id": "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc",
-                            "metadata": {
-                                "handle": "xla",
-                            },
-                            "registered": Value::Null,
-                            "shareableEntityIdentifier": format!("xla@{}", "rad:git:hwd1yreyu554sa1zgx4fxciwju1pk77uka84nrz5fu64at9zxuc8f698xmc"),
-                            "avatarFallback": {
-                                "background": {
-                                    "r": 155,
-                                    "g": 157,
-                                    "b": 169,
-                                },
-                            "emoji": "🗺",
-                            },
-                        },
-                        "branches": [ "dev", "master" ],
-                        "tags": [ "v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0", "v0.5.0" ]
-                    },
-                ]),
+                ])
             )
         });
 
@@ -1345,7 +1335,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/tags/{}", urn.to_string()))
+            .path(&format!("/tags/{}", urn))
             .reply(&api)
             .await;
 
@@ -1380,31 +1370,30 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let revision = "master";
+        let revision = coco::Revision::Branch {
+            name: "master".to_string(),
+            peer_id: None,
+        };
         let prefix = "src";
 
-        let default_branch = platinum_project.default_branch();
-        let peer_id = ctx.peer_api.peer_id();
+        let default_branch = git::Branch::local(platinum_project.default_branch());
         let want = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::tree(
                 &mut browser,
-                Some(&peer_id),
                 default_branch,
-                Some(revision.to_string()),
+                Some(revision.clone()),
                 Some(prefix.to_string()),
             )
         })?;
 
-        let res = request()
-            .method("GET")
-            .path(&format!(
-                "/tree/{}?revision={}&prefix={}",
-                urn.to_string(),
-                revision,
-                prefix
-            ))
-            .reply(&api)
-            .await;
+        let query = super::TreeQuery {
+            prefix: Some(prefix.to_string()),
+            peer_id: None,
+            revision: Some(revision),
+        };
+
+        let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
+        let res = request().method("GET").path(&path).reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -1436,6 +1425,66 @@ mod test {
                     ],
                 }),
             );
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn tree_dev_branch() -> Result<(), error::Error> {
+        // Testing that the endpoint works with URL encoding
+        const FRAGMENT: &percent_encoding::AsciiSet = &percent_encoding::CONTROLS
+            .add(b' ')
+            .add(b'"')
+            .add(b'[')
+            .add(b']')
+            .add(b'=');
+
+        pretty_env_logger::init();
+
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
+        let owner = coco::verify_user(owner)?;
+        let platinum_project = coco::control::replicate_platinum(
+            &ctx.peer_api,
+            key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+        let urn = platinum_project.urn();
+
+        let revision = coco::Revision::Branch {
+            name: "dev".to_string(),
+            peer_id: None,
+        };
+
+        let default_branch = git::Branch::local(platinum_project.default_branch());
+        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
+            coco::tree(&mut browser, default_branch, Some(revision.clone()), None)
+        })?;
+
+        let query = super::TreeQuery {
+            prefix: None,
+            peer_id: None,
+            revision: Some(revision),
+        };
+
+        let path = format!(
+            "/tree/{}?{}",
+            urn,
+            percent_encoding::utf8_percent_encode(&serde_qs::to_string(&query).unwrap(), FRAGMENT)
+        );
+        let res = request().method("GET").path(&path).reply(&api).await;
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, json!(want));
         });
 
         Ok(())

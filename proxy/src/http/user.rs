@@ -17,7 +17,8 @@ where
         list_orgs_filter(ctx.clone())
             .or(register_project_filter(ctx.clone()))
             .or(get_filter(ctx.clone()))
-            .or(register_filter(ctx)),
+            .or(register_filter(ctx.clone()))
+            .or(transfer_filter(ctx)),
     )
 }
 
@@ -30,7 +31,8 @@ where
     list_orgs_filter(ctx.clone())
         .or(register_project_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
-        .or(register_filter(ctx))
+        .or(register_filter(ctx.clone()))
+        .or(transfer_filter(ctx))
 }
 
 /// GET /<handle>
@@ -44,6 +46,7 @@ where
             "handle",
             "ID of the user to query for",
         ))
+        .and(path::end())
         .and(document::document(document::description("Fetch a User")))
         .and(document::document(document::tag("User")))
         .and(document::document(
@@ -145,6 +148,37 @@ where
         .and_then(handler::register_project)
 }
 
+/// `POST /<id>/transfer`
+fn transfer_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    http::with_context(ctx)
+        .and(warp::post())
+        .and(document::param::<registry::Id>(
+            "handle",
+            "ID of the user to transfer funds from",
+        ))
+        .and(path("transfer"))
+        .and(path::end())
+        .and(warp::body::json())
+        .and(document::document(document::description("Transfer funds")))
+        .and(document::document(document::tag("User")))
+        .and(document::document(
+            document::body(TransferInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(registry::Transaction::document()).mime("application/json"),
+            )
+            .description("Transfer succeeded"),
+        ))
+        .and_then(handler::transfer)
+}
+
 /// User handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::convert::TryFrom;
@@ -228,11 +262,41 @@ mod handler {
     {
         http::register_project(ctx, registry::DomainType::User, handle, project_name, input).await
     }
+
+    /// Transfer funds to the given `recipient`.
+    pub async fn transfer<R>(
+        ctx: http::Ctx<R>,
+        _handle: registry::Id,
+        input: super::TransferInput,
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let ctx = ctx.read().await;
+        let tx = ctx
+            .registry
+            .transfer_from_user(
+                &fake_pair,
+                input.recipient,
+                input.balance,
+                input.transaction_fee,
+            )
+            .await?;
+
+        ctx.subscriptions
+            .broadcast(notification::Notification::Transaction(tx.clone()))
+            .await;
+
+        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+    }
 }
 
 impl ToDocumentedType for registry::User {
     fn document() -> document::DocumentedType {
-        let mut props = HashMap::with_capacity(2);
+        let mut props = HashMap::with_capacity(3);
         props.insert(
             "handle".into(),
             document::string()
@@ -245,6 +309,12 @@ impl ToDocumentedType for registry::User {
                 .description("Exisiting entity id for attestion")
                 .example("cloudhead@123abcd.git")
                 .nullable(true),
+        );
+        props.insert(
+            "accountId".into(),
+            document::string()
+                .description("Public key of the account associated with the user")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
 
         document::DocumentedType::from(props)
@@ -288,7 +358,45 @@ impl ToDocumentedType for RegisterInput {
                 .nullable(true),
         );
 
-        document::DocumentedType::from(props).description("Input for Uesr registration")
+        document::DocumentedType::from(props).description("Input for User registration")
+    }
+}
+
+/// Bundled input data for transfer.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransferInput {
+    /// Account id of the recipient.
+    recipient: radicle_registry_client::ed25519::Public,
+    /// Amount that is transferred.
+    balance: registry::Balance,
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
+}
+
+impl ToDocumentedType for TransferInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(1);
+        properties.insert(
+            "recipient".into(),
+            document::string()
+                .description("Account id of the recipient")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
+        );
+        properties.insert(
+            "balance".into(),
+            document::string()
+                .description("Amount that is transferred")
+                .example(100),
+        );
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+
+        document::DocumentedType::from(properties).description("Input for transferring funds")
     }
 }
 
@@ -296,6 +404,7 @@ impl ToDocumentedType for RegisterInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
+    use radicle_registry_client::CryptoPair;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
     use warp::http::StatusCode;
@@ -329,9 +438,11 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/{}", handle))
+            .path(&format!("/{}", handle.clone()))
             .reply(&api)
             .await;
+
+        let user = ctx.registry.get_user(handle.clone()).await?.unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
@@ -339,6 +450,7 @@ mod test {
         assert_eq!(
             have,
             json!({
+                "accountId": user.account_id,
                 "handle": "cloudhead",
                 "maybeEntityId": Value::Null,
             })
@@ -372,6 +484,8 @@ mod test {
             .register_org(&author, org_id.clone(), fee)
             .await?;
 
+        let org = ctx.registry.get_org(org_id.clone()).await?.unwrap();
+
         let res = request()
             .method("GET")
             .path(&format!("/{}/orgs", handle))
@@ -386,6 +500,7 @@ mod test {
             json!([registry::Org {
                 id: org_id.clone(),
                 shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                account_id: org.account_id,
                 avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                 members: vec![user]
             }])
@@ -431,7 +546,7 @@ mod test {
         let ctx = http::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let ctx = ctx.read().await;
+        let ctx = ctx.write().await;
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
@@ -487,6 +602,46 @@ mod test {
             },
             _ => panic!("The tx message is an unexpected variant."),
         }
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn transfer() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+
+        let ctx = ctx.write().await;
+        // Register the user
+        ctx.registry
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register a second user
+        let author2 = radicle_registry_client::ed25519::Pair::from_legacy_string("//Bob", None);
+        let handle2 = registry::Id::try_from("bob")?;
+        ctx.registry
+            .register_user(&author2, handle2.clone(), None, 10)
+            .await?;
+
+        // Transfer tokens from alice to bob
+        let balance: registry::Balance = 10;
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/transfer", handle))
+            .json(&super::TransferInput {
+                recipient: author2.public(),
+                balance,
+                transaction_fee: registry::MINIMUM_FEE,
+            })
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::CREATED);
 
         Ok(())
     }

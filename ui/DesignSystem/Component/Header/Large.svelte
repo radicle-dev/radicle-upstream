@@ -13,15 +13,6 @@
   const onRegisterHandle = () => {
     dispatch("registerHandle");
   };
-
-  let copyIcon = Icon.Copy;
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-    }, 1000);
-  };
 </script>
 
 <style>
@@ -92,7 +83,7 @@
             variant="huge"
             style="display: flex; align-items: center;">
             {#if variant === 'profile' && entity.registered}
-              @{entity.registered}
+              {entity.registered}
             {:else if variant === 'profile' && !entity.registered}
               {entity.metadata.handle}
               <Button
@@ -114,19 +105,14 @@
           <Text variant="tiny" style="margin-right: 4px; white-space: nowrap;">
             Radicle ID
           </Text>
-          <Copyable {afterCopy} style="display: flex;">
+          <Copyable>
             <Numeric
               variant="small"
               style="max-width: 20rem; white-space: nowrap; overflow: hidden;
-              text-overflow: ellipsis;">
+              text-overflow: ellipsis; margin-right: 8px;">
               {entity.shareableEntityIdentifier}
             </Numeric>
-            <svelte:component
-              this={copyIcon}
-              size="small"
-              style="margin-left: 8px; vertical-align: bottom;" />
           </Copyable>
-
         </div>
       </div>
     </div>

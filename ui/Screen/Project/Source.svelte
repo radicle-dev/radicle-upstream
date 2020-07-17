@@ -25,22 +25,40 @@
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
-  import CloneButton from "./CloneButton.svelte";
+  import CheckoutButton from "./CheckoutButton.svelte";
 
   const { id, metadata } = getContext("project");
 
-  $: ({
-    currentPeerId,
-    currentRevision,
-    currentObjectType,
-    currentObjectPath,
-  } = path.parseProjectSourceLocation(
-    $querystring,
-    null,
-    metadata.defaultBranch,
-    ObjectType.Tree,
-    null
-  ));
+  let currentPeerId;
+  let currentRevision;
+  let currentObjectType;
+  let currentObjectPath;
+
+  $: {
+    const parsed = path.parseProjectSourceLocation($querystring);
+
+    currentPeerId = parsed.peerId || null;
+    currentObjectType = parsed.objectType || ObjectType.Tree;
+    currentObjectPath = parsed.objectPath || null;
+
+    if (parsed.revision) {
+      if (
+        !(
+          currentRevision.type === parsed.revision.type &&
+          currentRevision.name === parsed.revision.name &&
+          currentRevision.peerId === parsed.revision.peerId
+        )
+      ) {
+        currentRevision = parsed.revision;
+      }
+    } else {
+      currentRevision = {
+        type: "branch",
+        name: metadata.defaultBranch,
+        peerId: "",
+      };
+    }
+  }
 
   const updateRevision = (projectId, revision, peerId) => {
     push(
@@ -63,15 +81,6 @@
     unsubscribe();
   };
 
-  let copyIcon = Icon.Copy;
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-    }, 1000);
-  };
-
   $: fetchObject({
     path: currentObjectPath,
     peerId: currentPeerId,
@@ -80,7 +89,7 @@
     type: currentObjectType,
   });
 
-  $: fetchCommits({ projectId: id, branch: currentRevision });
+  $: fetchCommits({ projectId: id, revision: currentRevision });
 
   fetchRevisions({ projectId: id });
 </script>
@@ -168,9 +177,10 @@
     <Title variant="big">{project.metadata.name}</Title>
     <div class="project-id">
       <Code>
-        <Copyable {afterCopy}>
-          {project.shareableEntityIdentifier}
-          <svelte:component this={copyIcon} style="vertical-align: bottom" />
+        <Copyable iconSize="normal">
+          <span style="margin-right: 8px;">
+            {project.shareableEntityIdentifier}
+          </span>
         </Copyable>
       </Code>
     </div>
@@ -187,9 +197,11 @@
           <RevisionSelector
             style="height: 100%;"
             {currentPeerId}
-            {currentRevision}
+            currentRevision={currentRevision.name}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.peerId)} />
+            on:select={event => {
+              updateRevision(project.id, event.detail.revision, event.detail.peerId);
+            }} />
         </div>
       </Remote>
 
@@ -214,7 +226,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                on:click={navigateOnReady(path.projectCommits(project.id, currentPeerId, currentRevision), commitsStore)}>
+                on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
                 Commits
               </a>
             </Text>
@@ -231,7 +243,9 @@
             <span class="stat">{project.stats.contributors}</span>
           </div>
         </div>
-        <CloneButton projectId={project.id} />
+        <CheckoutButton
+          projectId={project.id}
+          projectName={project.metadata.name} />
       </div>
 
       <!-- Object -->
@@ -263,7 +277,7 @@
               <Readme content={readme.content} path={readme.path} />
             {:else}
               <EmptyState
-                text="This project doesn't have a ReadMe yet."
+                text="This project doesn't have a README yet."
                 icon="eyes"
                 primaryActionText="Open an issue to make one" />
             {/if}

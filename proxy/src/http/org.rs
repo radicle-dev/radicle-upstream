@@ -21,7 +21,8 @@ where
             .or(get_project_filter(ctx.clone()))
             .or(get_projects_filter(ctx.clone()))
             .or(register_filter(ctx.clone()))
-            .or(register_member_filter(ctx)),
+            .or(register_member_filter(ctx.clone()))
+            .or(transfer_filter(ctx)),
     )
 }
 
@@ -36,7 +37,8 @@ where
         .or(get_project_filter(ctx.clone()))
         .or(get_projects_filter(ctx.clone()))
         .or(register_filter(ctx.clone()))
-        .or(register_member_filter(ctx))
+        .or(register_member_filter(ctx.clone()))
+        .or(transfer_filter(ctx))
 }
 
 /// `GET /<id>`
@@ -222,13 +224,44 @@ where
         .and_then(handler::register_member)
 }
 
+/// `POST /<id>/transfer`
+fn transfer_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    http::with_context(ctx)
+        .and(warp::post())
+        .and(document::param::<registry::Id>(
+            "id",
+            "Unique ID of the Org",
+        ))
+        .and(path("transfer"))
+        .and(path::end())
+        .and(warp::body::json())
+        .and(document::document(document::description("Transfer funds")))
+        .and(document::document(document::tag("Org")))
+        .and(document::document(
+            document::body(TransferInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(
+                201,
+                document::body(registry::Transaction::document()).mime("application/json"),
+            )
+            .description("Transfer succeeded"),
+        ))
+        .and_then(handler::transfer)
+}
+
 /// Org handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::convert::TryFrom;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::error::Error;
+    use crate::error;
     use crate::http;
     use crate::notification;
     use crate::project;
@@ -240,7 +273,7 @@ mod handler {
         R: registry::Client,
     {
         let ctx = ctx.read().await;
-        let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
+        let org_id = registry::Id::try_from(org_id).map_err(error::Error::from)?;
         let org = ctx.registry.get_org(org_id).await?;
 
         Ok(reply::json(&org))
@@ -269,9 +302,10 @@ mod handler {
         R: registry::Client,
     {
         let ctx = ctx.read().await;
-        let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
+        let org_id = registry::Id::try_from(org_id).map_err(error::Error::from)?;
         let project_domain = registry::ProjectDomain::Org(org_id);
-        let project_name = registry::ProjectName::try_from(project_name).map_err(Error::from)?;
+        let project_name =
+            registry::ProjectName::try_from(project_name).map_err(error::Error::from)?;
         let project = ctx
             .registry
             .get_project(project_domain, project_name)
@@ -286,7 +320,7 @@ mod handler {
         R: registry::Client,
     {
         let ctx = ctx.read().await;
-        let org_id = registry::Id::try_from(org_id).map_err(Error::from)?;
+        let org_id = registry::Id::try_from(org_id).map_err(error::Error::from)?;
         let projects = ctx.registry.list_org_projects(org_id).await?;
         let mut mapped_projects = Vec::new();
         for p in &projects {
@@ -324,7 +358,7 @@ mod handler {
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         let ctx = ctx.read().await;
-        let org_id = registry::Id::try_from(input.id).map_err(Error::from)?;
+        let org_id = registry::Id::try_from(input.id).map_err(error::Error::from)?;
         let tx = ctx
             .registry
             .register_org(&fake_pair, org_id, input.transaction_fee)
@@ -350,11 +384,42 @@ mod handler {
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
         let ctx = ctx.read().await;
-        let org_id = registry::Id::try_from(id).map_err(Error::from)?;
-        let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
+        let org_id = registry::Id::try_from(id).map_err(error::Error::from)?;
+        let handle = registry::Id::try_from(input.handle).map_err(error::Error::from)?;
         let tx = ctx
             .registry
             .register_member(&fake_pair, org_id, handle, input.transaction_fee)
+            .await?;
+
+        ctx.subscriptions
+            .broadcast(notification::Notification::Transaction(tx.clone()))
+            .await;
+
+        Ok(reply::with_status(reply::json(&tx), StatusCode::CREATED))
+    }
+
+    /// Transfer funds to the given `recipient`.
+    pub async fn transfer<R>(
+        ctx: http::Ctx<R>,
+        id: registry::Id,
+        input: super::TransferInput,
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        // TODO(xla): Get keypair from persistent storage.
+        let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        let ctx = ctx.read().await;
+        let tx = ctx
+            .registry
+            .transfer_from_org(
+                &fake_pair,
+                id,
+                input.recipient,
+                input.value,
+                input.transaction_fee,
+            )
             .await?;
 
         ctx.subscriptions
@@ -367,7 +432,7 @@ mod handler {
 
 impl ToDocumentedType for registry::Org {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(3);
+        let mut properties = std::collections::HashMap::with_capacity(4);
         properties.insert("avatarFallback".into(), avatar::Avatar::document());
         properties.insert(
             "id".into(),
@@ -380,6 +445,12 @@ impl ToDocumentedType for registry::Org {
             document::string()
                 .description("Unique identifier that can be shared and looked up")
                 .example("%monadic"),
+        );
+        properties.insert(
+            "accountId".into(),
+            document::string()
+                .description("Public key of the account associated with the org")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
         properties.insert(
             "members".into(),
@@ -511,10 +582,49 @@ impl ToDocumentedType for RegisterMemberInput {
     }
 }
 
+/// Bundled input data for transfer.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TransferInput {
+    /// Account id of the recipient.
+    recipient: radicle_registry_client::ed25519::Public,
+    /// Amount that is transferred.
+    value: registry::Balance,
+    /// User specified transaction fee.
+    transaction_fee: registry::Balance,
+}
+
+impl ToDocumentedType for TransferInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = std::collections::HashMap::with_capacity(1);
+        properties.insert(
+            "recipient".into(),
+            document::string()
+                .description("Account id of the recipient")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
+        );
+        properties.insert(
+            "value".into(),
+            document::string()
+                .description("Amount that is transferred")
+                .example(100),
+        );
+        properties.insert(
+            "transactionFee".into(),
+            document::string()
+                .description("User specified transaction fee")
+                .example(100),
+        );
+
+        document::DocumentedType::from(properties).description("Input for transferring funds")
+    }
+}
+
 #[allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
+    use radicle_registry_client::CryptoPair;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
     use warp::http::StatusCode;
@@ -553,6 +663,8 @@ mod test {
             .register_org(&author, org_id.clone(), fee)
             .await?;
 
+        let org = ctx.registry.get_org(org_id.clone()).await?.unwrap();
+
         let res = request()
             .method("GET")
             .path(&format!("/{}", org_id.to_string()))
@@ -565,6 +677,7 @@ mod test {
                 json!(registry::Org {
                     id: org_id.clone(),
                     shareable_entity_identifier: format!("%{}", org_id.to_string()),
+                    account_id: org.account_id,
                     avatar_fallback: avatar::Avatar::from(&org_id.to_string(), avatar::Usage::Org),
                     members: vec![user]
                 })
@@ -878,6 +991,46 @@ mod test {
         assert_eq!(org.members.len(), 2);
         assert!(member_handles.contains(&handle));
         assert!(member_handles.contains(&handle2));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn transfer() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
+        let handle = registry::Id::try_from("alice")?;
+        let org_id = registry::Id::try_from("radicle")?;
+
+        // Register the user
+        ctx.registry
+            .register_user(&author, handle.clone(), None, 10)
+            .await?;
+
+        // Register the org
+        let fee: registry::Balance = 100;
+        ctx.registry
+            .register_org(&author, org_id.clone(), fee)
+            .await?;
+
+        // Transfer tokens from the org to the user
+        let value: registry::Balance = 10;
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/transfer", org_id))
+            .json(&super::TransferInput {
+                recipient: author.public(),
+                value,
+                transaction_fee: registry::MINIMUM_FEE,
+            })
+            .reply(&api)
+            .await;
+
+        assert_eq!(res.status(), StatusCode::CREATED);
 
         Ok(())
     }

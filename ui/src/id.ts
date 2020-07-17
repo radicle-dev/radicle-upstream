@@ -1,10 +1,23 @@
+import * as api from "./api";
 import * as org from "./org";
-import * as user from "./user";
 import * as validation from "./validation";
+
+// The possible availability statuses of an Id
+enum Status {
+  // Available
+  Available = "available",
+  // Currently taken by an Org or a User
+  Taken = "taken",
+  // The id was unregistered by an Org or a User and is no longer claimable
+  Retired = "retired",
+}
+
+// const getStatus = (id: string): Promise<Status> =>
+//   api.get<Status>(`ids/${id}/status`);
 
 // Check if the given id is available
 const isAvailable = (id: string): Promise<boolean> =>
-  org.getOrg(id).then(org => !org && user.get(id).then(user => !user));
+  api.get<string>(`ids/${id}/status`).then(status => status === "available");
 
 // ID validation
 const VALID_ID_MATCH_STR = "^[a-z0-9][a-z0-9]+$";
@@ -25,6 +38,6 @@ export const idValidationStore = (): validation.ValidationStore =>
   validation.createValidationStore(idConstraints, [
     {
       promise: isAvailable,
-      validationMessage: "Sorry, this one is already taken",
+      validationMessage: "Sorry, this one is no longer available",
     },
   ]);

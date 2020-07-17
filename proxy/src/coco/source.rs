@@ -2,13 +2,14 @@
 
 use std::fmt;
 use std::str::FromStr;
+use std::convert::TryFrom;
 
 use serde::{Deserialize, Serialize};
 
 use librad::peer;
 use radicle_surf::{
     diff, file_system,
-    vcs::git::{self, git2, BranchName, Browser},
+    vcs::git::{self, git2, BranchType, Browser, Rev},
 };
 
 use syntect::easy::HighlightLines;
@@ -28,7 +29,7 @@ lazy_static::lazy_static! {
 
 /// Branch name representation.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
-pub struct Branch(pub(super) String);
+pub struct Branch(pub(crate) String);
 
 impl fmt::Display for Branch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -40,7 +41,7 @@ impl fmt::Display for Branch {
 ///
 /// We still need full tag support.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
-pub struct Tag(pub(super) String);
+pub struct Tag(pub(crate) String);
 
 impl fmt::Display for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -74,6 +75,8 @@ pub struct Commit {
     pub stats: CommitStats,
     /// The changeset introduced by this commit.
     pub diff: diff::Diff,
+    /// The branch this commit belongs to.
+    pub branch: Branch,
 }
 
 /// Representation of a code commit.
@@ -199,6 +202,44 @@ pub struct TreeEntry {
     pub path: String,
 }
 
+/// A revision selector for a `Browser`.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
+pub enum Revision {
+    /// Select a tag under the name provided.
+    Tag {
+        /// Name of the tag.
+        name: String,
+    },
+    /// Select a branch under the name provided.
+    Branch {
+        /// Name of the branch.
+        name: String,
+        /// The remote peer, if specified.
+        peer_id: Option<peer::PeerId>,
+    },
+    /// Select a SHA1 under the name provided.
+    Sha {
+        /// The SHA1 value.
+        sha: String,
+    },
+}
+
+impl TryFrom<Revision> for Rev {
+    type Error = error::Error;
+
+    fn try_from(other: Revision) -> Result<Self, Self::Error> {
+        match other {
+            Revision::Tag { name } => Ok(git::TagName::new(&name).into()),
+            Revision::Branch { name, peer_id } => Ok(match peer_id {
+                Some(peer) => git::Branch::remote(&name, &peer.to_string()).into(),
+                None => git::Branch::local(&name).into(),
+            }),
+            Revision::Sha { sha } => Ok(git::Oid::from_str(&sha)?.into()),
+        }
+    }
+}
+
 /// Returns the [`Blob`] for a file at `revision` under `path`.
 ///
 /// # Errors
@@ -206,13 +247,13 @@ pub struct TreeEntry {
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
 pub fn blob(
     browser: &mut Browser,
-    _peer_id: Option<&peer::PeerId>,
-    default_branch: &str,
-    maybe_revision: Option<String>,
+    default_branch: git::Branch,
+    maybe_revision: Option<Revision>,
     path: &str,
     theme: Option<&Theme>,
 ) -> Result<Blob, error::Error> {
-    browser.revspec(&maybe_revision.unwrap_or_else(|| default_branch.to_string()))?;
+    let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
+    browser.rev(maybe_revision.unwrap_or_else(|| default_branch.into()))?;
 
     let root = browser.get_directory()?;
     let p = file_system::Path::from_str(path)?;
@@ -286,9 +327,12 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
-pub fn branches<'repo>(browser: &Browser<'repo>) -> Result<Vec<Branch>, error::Error> {
+pub fn branches<'repo>(
+    browser: &Browser<'repo>,
+    branch_type: Option<BranchType>,
+) -> Result<Vec<Branch>, error::Error> {
     let mut branches = browser
-        .list_branches(None)?
+        .list_branches(branch_type)?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
@@ -314,9 +358,10 @@ pub struct LocalState {
 /// Will return [`error::Error`] if the repository doesn't exist.
 pub fn local_state(repo_path: &str) -> Result<LocalState, error::Error> {
     let repo = git::Repository::new(repo_path)?;
-    let browser = Browser::new(&repo, "master")?;
+    // TODO(finto): This should be the default branch of the project, possibly.
+    let browser = Browser::new(&repo, git::Branch::local("master"))?;
     let mut branches = browser
-        .list_branches(Some(git::BranchType::Local))?
+        .list_branches(Some(BranchType::Local))?
         .into_iter()
         .map(|b| Branch(b.name.name().to_string()))
         .collect::<Vec<Branch>>();
@@ -383,12 +428,28 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
         }
     }
 
+    let branches = browser.revision_branches(oid)?;
+
+    // If a commit figures in more than one branch, there's no real way to know
+    // which branch to show without additional context. So, we choose the first
+    // branch.
+    let branch = branches.first();
+
+    // Known commits always have at least one branch. If this isn't the case, it's a bug.
+    let branch = Branch(
+        branch
+            .expect("known commits must be on a branch")
+            .name
+            .to_string(),
+    );
+
     Ok(Commit {
         header: commit.into(),
         stats: CommitStats {
             additions,
             deletions,
         },
+        branch,
         diff,
     })
 }
@@ -400,10 +461,9 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
 /// Will return [`error::Error`] if the project doesn't exist or the surf interaction fails.
 pub fn commits<'repo>(
     browser: &mut Browser<'repo>,
-    _peer_id: Option<&peer::PeerId>,
-    branch: &str,
+    branch: git::Branch,
 ) -> Result<Vec<CommitHeader>, error::Error> {
-    browser.branch(BranchName::new(branch))?;
+    browser.branch(branch)?;
 
     let commits = browser.get().iter().map(CommitHeader::from).collect();
 
@@ -432,18 +492,17 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if any of the surf interactions fail.
-/// TODO(fintohaps): default branch fall back from Browser
 pub fn tree<'repo>(
     browser: &mut Browser<'repo>,
-    _peer_id: Option<&peer::PeerId>,
-    default_branch: &str, // TODO(finto): This should be handled by the broweser surf#115
-    maybe_revision: Option<String>,
+    default_branch: git::Branch,
+    maybe_revision: Option<Revision>,
     maybe_prefix: Option<String>,
 ) -> Result<Tree, error::Error> {
-    let revision = maybe_revision.unwrap_or_else(|| default_branch.to_string());
+    let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
+    let revision = maybe_revision.unwrap_or_else(|| default_branch.into());
     let prefix = maybe_prefix.unwrap_or_default();
 
-    browser.revspec(&revision)?;
+    browser.rev(revision)?;
 
     let path = if prefix == "/" || prefix == "" {
         file_system::Path::root()

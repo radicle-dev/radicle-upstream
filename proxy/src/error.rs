@@ -80,6 +80,10 @@ pub enum Error {
     #[error("the Project Name '{0}' is invalid")]
     InvalidProjectName(String),
 
+    /// The given block could not be found in the registry.
+    #[error("the given block '{0}' could not be found in the Registry")]
+    BlockNotFound(registry::BlockHash),
+
     /// Accept error from `librad`.
     #[error(transparent)]
     LibradAccept(#[from] librad::net::peer::AcceptError),
@@ -159,6 +163,13 @@ pub enum Error {
     /// Overflow while incrementing confirmed transaction.
     #[error("while calculating the number of confirmed transactions, we encountered an overflow")]
     TransactionConfirmationOverflow,
+
+    /// We expect at least one [`coco::UserRevisions`] when looking at a project, however the
+    /// computation found none.
+    #[error(
+        "while trying to get user revisions we could not find any, there should be at least one"
+    )]
+    EmptyUserRevisions,
 }
 
 impl From<registry::DispatchError> for Error {

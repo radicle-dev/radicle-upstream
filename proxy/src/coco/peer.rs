@@ -1,8 +1,12 @@
 //! Utility to work with the peer api of librad.
 
+use std::convert::TryFrom;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
+
+use nonempty::NonEmpty;
+use serde::Serialize;
 
 use librad::keys;
 use librad::meta::entity;
@@ -13,13 +17,27 @@ pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
 use librad::uri::RadUrn;
-use radicle_surf::vcs::git::{self, git2};
+use radicle_surf::vcs::git::{self, git2, BranchType};
 
+use super::source;
 use crate::error;
+use crate::identity;
 use crate::project::Project;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
+
+/// Bundled response to retrieve both branches and tags for a user repo.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserRevisions {
+    /// Owner of the repo.
+    pub(crate) identity: identity::Identity,
+    /// List of [`source::Branch`].
+    pub(crate) branches: Vec<source::Branch>,
+    /// List of [`source::Tag`].
+    pub(crate) tags: Vec<source::Tag>,
+}
 
 /// High-level interface to the coco monorepo and gossip layer.
 pub struct Api {
@@ -183,6 +201,7 @@ impl Api {
         let mut entities = vec![];
         for entity in storage.all_metadata()? {
             let entity = entity?;
+
             if let Some(e) = entity.try_map(|info| match info {
                 entity::data::EntityInfo::User(info) => Some(info),
                 _ => None,
@@ -192,6 +211,68 @@ impl Api {
         }
 
         Ok(entities)
+    }
+
+    /// Get all [`UserRevisions`] for a given project.
+    ///
+    /// # Parameters
+    ///
+    /// * `peer` - the peer API we're interacting through
+    /// * `owner` - the owner of this peer, i.e. the current user
+    /// * `project_urn` - the [`RadUrn`] pointing to the project we're interested in
+    ///
+    /// # Errors
+    ///
+    ///   * [`error::Error::LibradLock`]
+    ///   * [`error::Error::Git`]
+    pub fn revisions(
+        &self,
+        owner: &User,
+        project_urn: &RadUrn,
+    ) -> Result<NonEmpty<UserRevisions>, error::Error> {
+        let project = self.get_project(project_urn)?;
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        let repo = storage.open_repo(project.urn())?;
+        let mut user_revisions = vec![];
+
+        let (local_branches, local_tags) = self.with_browser(&project.urn(), |browser| {
+            Ok((
+                source::branches(browser, Some(BranchType::Local))?,
+                source::tags(browser)?,
+            ))
+        })?;
+
+        if !local_branches.is_empty() {
+            user_revisions.push(UserRevisions {
+                identity: (self.peer_id(), owner.clone()).into(),
+                branches: local_branches,
+                tags: local_tags,
+            })
+        }
+
+        for peer_id in repo.tracked()? {
+            let remote_branches = self.with_browser(&project.urn(), |browser| {
+                source::branches(
+                    browser,
+                    Some(BranchType::Remote {
+                        name: Some(format!("{}/heads", peer_id)),
+                    }),
+                )
+            })?;
+
+            let user = repo.get_rad_self_of(peer_id.clone())?;
+
+            user_revisions.push(UserRevisions {
+                identity: (peer_id, user).into(),
+                branches: remote_branches,
+                // TODO(rudolfs): implement remote peer tags once we decide how
+                // https://radicle.community/t/git-tags/214
+                tags: vec![],
+            });
+        }
+
+        NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyUserRevisions)
     }
 
     /// Get the project found at `project_urn`.
@@ -239,9 +320,9 @@ impl Api {
         };
 
         let project = self.get_project(project_urn)?;
-        let default_branch = project.default_branch();
+        let default_branch = git::Branch::local(project.default_branch());
         let repo = git::Repository::new(git_dir)?;
-        let namespace = git::Namespace::from(project.urn().id.to_string().as_str());
+        let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
         let mut browser = git::Browser::new_with_namespace(&repo, &namespace, default_branch)?;
 
         callback(&mut browser)
@@ -341,6 +422,16 @@ impl Api {
         }
 
         Ok(user)
+    }
+
+    /// Wrapper around the storage track.
+    ///
+    /// # Errors
+    ///
+    /// * When the storage operation fails.
+    pub fn track(&self, urn: &RadUrn, remote: &PeerId) -> Result<(), error::Error> {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        Ok(api.storage().track(urn, remote)?)
     }
 }
 

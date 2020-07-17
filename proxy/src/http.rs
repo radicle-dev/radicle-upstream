@@ -22,6 +22,7 @@ mod avatar;
 mod control;
 mod doc;
 mod error;
+mod id;
 mod identity;
 mod notification;
 mod org;
@@ -71,6 +72,7 @@ where
 
     let avatar_filter = avatar::get_filter();
     let control_filter = control::routes(enable_control, ctx.clone());
+    let id_filter = id::get_status_filter(ctx.clone());
     let identity_filter = identity::filters(ctx.clone());
     let notification_filter = notification::filters(subscriptions);
     let org_filter = org::routes(ctx.clone());
@@ -83,6 +85,7 @@ where
     let api = path("v1").and(combine!(
         avatar_filter,
         control_filter,
+        id_filter,
         identity_filter,
         notification_filter,
         org_filter,
@@ -139,7 +142,7 @@ where
             if let Some(identity) = session.identity {
                 let user = ctx
                     .peer_api
-                    .get_user(&identity.id)
+                    .get_user(&identity.urn)
                     .expect("unable to get coco user");
                 let user = coco::verify_user(user).expect("unable to verify user");
 
@@ -209,6 +212,29 @@ impl Context<registry::Cacher<registry::Registry>> {
             subscriptions: crate::notification::Subscriptions::default(),
         })))
     }
+}
+
+/// Deserialise a query string using [`serde_qs`]. This is useful for more complicated query
+/// structures that involve nesting, enums, etc.
+#[must_use]
+pub fn with_qs<T>() -> BoxedFilter<(T,)>
+where
+    for<'de> T: Deserialize<'de> + Send + Sync,
+{
+    warp::filters::query::raw()
+        .map(|raw: String| {
+            log::debug!("attempting to decode query string '{}'", raw);
+            let utf8 = percent_encoding::percent_decode_str(&raw).decode_utf8_lossy();
+            log::debug!("attempting to deserialize query string '{}'", utf8);
+            match serde_qs::from_str(utf8.as_ref()) {
+                Ok(result) => result,
+                Err(err) => {
+                    log::error!("failed to deserialize query string '{}': {}", raw, err);
+                    panic!("{}", err)
+                },
+            }
+        })
+        .boxed()
 }
 
 /// State filter to expose [`notification::Subscriptions`] to handlers.
