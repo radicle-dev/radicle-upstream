@@ -32,8 +32,6 @@
   }
 
   .container:hover {
-    box-shadow: 0 0 0 1px
-      var(--color-foreground-level-3, var(--color-foreground-level-3));
     background: var(--color-foreground-level-1);
     border-color: var(--color-foreground-level-3);
   }
