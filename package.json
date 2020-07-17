@@ -129,6 +129,7 @@
     "@types/qs": "^6.9.2",
     "babel-register": "^6.26.0",
     "marked": "^1.0.0",
+    "pure-svg-code": "^1.0.6",
     "timeago.js": "^4.0.2",
     "twemoji": "^12.1.6",
     "twemoji-svg-assets": "https://github.com/radicle-dev/twemoji-svg-assets.git#v12.1.6",

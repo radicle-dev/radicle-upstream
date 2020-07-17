@@ -31,7 +31,10 @@ import Transaction from "./Transaction.svelte";
 import TransactionCenter from "./Transaction/Center.svelte";
 import TransactionStatusbar from "./Transaction/Statusbar.svelte";
 import Row from "./Transaction/Row.svelte";
+import Urn from "./Urn.svelte";
 import UserCard from "./UserCard.svelte";
+import Wallet from "./Wallet.svelte";
+import QR from "./QR.svelte";
 
 export {
   AdditionalActionsDropdown,
@@ -67,5 +70,8 @@ export {
   Transaction,
   TransactionCenter,
   TransactionStatusbar,
+  Urn,
   UserCard,
+  Wallet,
+  QR,
 };

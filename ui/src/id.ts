@@ -12,9 +12,6 @@ enum Status {
   Retired = "retired",
 }
 
-// const getStatus = (id: string): Promise<Status> =>
-//   api.get<Status>(`ids/${id}/status`);
-
 // Check if the given id is available
 const isAvailable = (id: string): Promise<boolean> =>
   api.get<string>(`ids/${id}/status`).then(status => status === "available");
