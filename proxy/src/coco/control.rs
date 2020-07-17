@@ -130,6 +130,7 @@ pub fn replicate_platinum(
 }
 
 /// Create and track a fake peer.
+#[must_use]
 pub fn track_fake_peer(
     peer: &PeerApi,
     key: keys::SecretKey,
