@@ -1,9 +1,11 @@
 <script>
   export let style = null;
+  export let dataCy = null;
 </script>
 
 <svg
   {style}
+  data-cy={dataCy}
   width="24"
   height="24"
   viewBox="0 0 24 24"

@@ -144,12 +144,18 @@ mod handler {
         let key = keystore.get_librad_key().map_err(Error::from)?;
         let meta = coco::control::replicate_platinum(
             peer,
-            key,
+            &key,
             &owner,
             &input.name,
             &input.description,
             &input.default_branch,
         )?;
+
+        if let Some(user_handle_list) = input.fake_peers {
+            for user_handle in user_handle_list {
+                let _ = coco::control::track_fake_peer(peer, key.clone(), &meta, &user_handle);
+            }
+        }
         let stats = coco::with_browser(peer, &meta.urn(), |browser| Ok(browser.get_stats()?))?;
         let project: project::Project = (meta, stats).into();
 
@@ -284,6 +290,8 @@ pub struct CreateInput {
     description: String,
     /// Configured default branch.
     default_branch: String,
+    /// Create and track fake peers
+    fake_peers: Option<Vec<String>>,
 }
 /// Input for user registration.
 #[derive(Deserialize, Serialize)]
@@ -349,6 +357,7 @@ mod test {
                 name: "Monadic".into(),
                 description: "blabla".into(),
                 default_branch: "master".into(),
+                fake_peers: None,
             })
             .reply(&api)
             .await;
@@ -365,6 +374,7 @@ mod test {
                 name: "Monadic".into(),
                 description: "blabla".into(),
                 default_branch: "master".into(),
+                fake_peers: None,
             })
             .reply(&api)
             .await;
