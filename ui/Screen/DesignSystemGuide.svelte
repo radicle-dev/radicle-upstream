@@ -1053,7 +1053,7 @@
       </Swatch>
 
       <Swatch>
-        <TrackToggle peerCount="2.3k" />
+        <TrackToggle />
       </Swatch>
 
       <Swatch>

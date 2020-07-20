@@ -1,9 +1,8 @@
 import * as api from "./api";
-import * as org from "./org";
 import * as validation from "./validation";
 
 // The possible availability statuses of an Id
-enum Status {
+export enum Status {
   // Available
   Available = "available",
   // Currently taken by an Org or a User

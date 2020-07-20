@@ -38,6 +38,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
     border-radius: 4px;
     cursor: pointer;
     outline-style: none;

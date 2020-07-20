@@ -26,7 +26,6 @@
 
   let domainId = params.domainId || null;
   let domainType = null;
-  let domainAvatar = null;
 
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
@@ -65,6 +64,12 @@
       },
     ],
   });
+
+  const handleDetailsNextClick = event => {
+    domainId = event.detail.domainId;
+    domainType = event.detail.domainType;
+    showRegistrationDetails = false;
+  };
 </script>
 
 <style>
@@ -96,12 +101,7 @@
             bind:projectId
             bind:domainId
             bind:projectName
-            on:next={event => {
-              domainId = event.detail.domainId;
-              domainType = event.detail.domainType;
-              showRegistrationDetails = false;
-              domainAvatar = event.detail.domainAvatar;
-            }} />
+            on:next={handleDetailsNextClick} />
         {:else}
           <Transaction
             transaction={tx()}

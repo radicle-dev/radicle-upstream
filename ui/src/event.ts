@@ -2,7 +2,7 @@ export type Event<K> = {
   kind: K;
 };
 
-type Msg = object | null;
+type Msg = Record<string, unknown> | null;
 
 declare type callback<K, M extends Event<K>> = (event: M) => void;
 declare type call = (msg?: Msg) => void;

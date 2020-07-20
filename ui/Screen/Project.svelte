@@ -131,7 +131,7 @@
 
       <div slot="right" style="display: flex">
         <Router routes={menuRoutes} />
-        <TrackToggle style="margin-left: 16px" peerCount="1.3k" />
+        <TrackToggle style="margin-left: 16px" />
         <AdditionalActionsDropdown
           dataCy="context-menu"
           style="margin: 0 24px 0 16px"
