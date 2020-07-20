@@ -7,6 +7,7 @@ use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use librad::meta::user;
 use librad::peer;
 use radicle_surf::vcs::git;
 
@@ -420,9 +421,12 @@ mod handler {
             })
             .collect::<Result<Vec<_>, _>>()?;
         let peer_id = api.peer_id().clone();
-        let revisions: Vec<_> = coco::with_browser(api, &project_urn, |browser| {
+        let revisions: Vec<super::Revisions> = coco::with_browser(api, &project_urn, |browser| {
             let owner = owner.to_data().build()?; // TODO(finto): downgraded verified user, which should not be needed.
-            Ok(coco::revisions(browser, peer_id, owner, peers)?.into())
+            Ok(coco::revisions(browser, peer_id, owner, peers)?
+                .into_iter()
+                .map(|revision| revision.into())
+                .collect())
         })?;
 
         Ok(reply::json(&revisions))
@@ -831,6 +835,26 @@ impl<P, U> ToDocumentedType for coco::Revisions<P, U> {
         properties.insert("tags".into(), document::array(coco::Tag::document()));
 
         document::DocumentedType::from(properties).description("Revisions")
+    }
+}
+
+#[derive(Serialize)]
+struct Revisions {
+    /// The [`identity::Identity`] that owns these revisions.
+    identity: identity::Identity,
+    /// The branches for this project.
+    branches: Vec<coco::Branch>,
+    /// The branches for this project.
+    tags: Vec<coco::Tag>,
+}
+
+impl<S> From<coco::Revisions<peer::PeerId, user::User<S>>> for Revisions {
+    fn from(other: coco::Revisions<peer::PeerId, user::User<S>>) -> Self {
+        Self {
+            identity: (other.peer_id, other.user).into(),
+            branches: other.branches,
+            tags: other.tags,
+        }
     }
 }
 
@@ -1320,9 +1344,8 @@ mod test {
             assert_eq!(
                 have,
                 json!([
-                    coco::Revisions {
-                        peer_id,
-                        user: owner,
+                    super::Revisions {
+                        identity: (peer_id, owner).into(),
                         branches: vec![
                             coco::Branch("dev".to_string()),
                             coco::Branch("master".to_string())
@@ -1335,9 +1358,8 @@ mod test {
                             coco::Tag("v0.5.0".to_string())
                         ]
                     },
-                    coco::Revisions {
-                        peer_id: remote.clone(),
-                        user: fintohaps,
+                    super::Revisions {
+                        identity: (remote.clone(), fintohaps).into(),
                         branches: vec![coco::Branch("master".to_string())],
                         tags: vec![]
                     },

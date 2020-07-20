@@ -240,13 +240,13 @@ where
     }
 }
 
-/// Bundled response to retrieve both [`Branch`]es and [`Tag`]s for a [`user::User`]'s repo.
+/// Bundled response to retrieve both [`Branch`]es and [`Tag`]s for a user's repo.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Revisions<P, U> {
-    /// The peer identifier for the provided user.
+    /// The peer identifier for the user.
     pub peer_id: P,
-    /// Owner of the revision set.
+    /// The user who owns these revisions.
     pub user: U,
     /// List of [`git::Branch`].
     pub branches: Vec<Branch>,
