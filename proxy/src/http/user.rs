@@ -67,6 +67,7 @@ where
     R: registry::Client + 'static,
 {
     warp::post()
+        .and(path::end())
         .and(http::with_context(ctx))
         .and(warp::body::json())
         .and(document::document(document::description(
@@ -111,7 +112,7 @@ where
         .and_then(handler::list_orgs)
 }
 
-/// `POST /<id>/projects/<name>`
+/// `POST /<handle>/projects/<name>`
 fn register_project_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -148,7 +149,7 @@ where
         .and_then(handler::register_project)
 }
 
-/// `POST /<id>/transfer`
+/// `POST /<handle>/transfer`
 fn transfer_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -204,13 +205,13 @@ mod handler {
     }
 
     /// List the orgs the user is a member of.
-    pub async fn list_orgs<R>(ctx: http::Ctx<R>, handle: String) -> Result<impl Reply, Rejection>
+    pub async fn list_orgs<R>(ctx: http::Ctx<R>, input: String) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
     {
         let ctx = ctx.read().await;
 
-        let handle = registry::Id::try_from(handle).map_err(Error::from)?;
+        let handle = registry::Id::try_from(input).map_err(Error::from)?;
         let orgs = ctx.registry.list_orgs(handle).await?;
 
         Ok(reply::json(&orgs))
