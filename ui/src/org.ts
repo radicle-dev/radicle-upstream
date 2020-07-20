@@ -99,7 +99,7 @@ const update = (msg: Msg): void => {
   }
 };
 
-export const registerMemberTransaction = (
+export const registerMemberTransaction: Record<string, unknown> = (
   orgId: string,
   handle: string,
   fee: currency.MicroRad

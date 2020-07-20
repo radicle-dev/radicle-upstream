@@ -149,9 +149,10 @@ const parseSeedsInput = (input: string) => {
     .filter(seed => seed !== "");
 };
 
-export const updateSeeds = (input: string) => {
+export const updateSeeds = (input: string): void => {
   const parsed = parseSeedsInput(input);
   if (parsed) temporaryLocalSeedStore.success(parsed);
 };
 
-export const formatSeedsForInput = (seeds: string[]) => seeds.join("\n");
+export const formatSeedsForInput = (seeds: string[]): string =>
+  seeds.join("\n");
