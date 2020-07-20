@@ -173,3 +173,12 @@ export const memberHandleValidationStore = (
     },
   ]);
 };
+
+export const orgTransactions = (
+  transactions: [transaction.Transaction],
+  id: string
+): [transaction.Transaction] | transaction.Transaction[] => {
+  return transactions.filter(tx => {
+    return "domainId" in tx.messages[0] ? tx.messages[0].domainId == id : null;
+  });
+};
