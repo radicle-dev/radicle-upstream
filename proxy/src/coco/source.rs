@@ -4,7 +4,6 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
-use librad::peer;
 use radicle_surf::{
     diff, file_system,
     vcs::git::{self, git2, BranchType, Browser, Rev},
@@ -203,7 +202,7 @@ pub struct TreeEntry {
 /// A revision selector for a `Browser`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
-pub enum Revision {
+pub enum Revision<P> {
     /// Select a tag under the name provided.
     Tag {
         /// Name of the tag.
@@ -214,7 +213,7 @@ pub enum Revision {
         /// Name of the branch.
         name: String,
         /// The remote peer, if specified.
-        peer_id: Option<peer::PeerId>,
+        peer_id: Option<P>,
     },
     /// Select a SHA1 under the name provided.
     Sha {
@@ -223,10 +222,13 @@ pub enum Revision {
     },
 }
 
-impl TryFrom<Revision> for Rev {
+impl<P> TryFrom<Revision<P>> for Rev
+where
+    P: ToString,
+{
     type Error = error::Error;
 
-    fn try_from(other: Revision) -> Result<Self, Self::Error> {
+    fn try_from(other: Revision<P>) -> Result<Self, Self::Error> {
         match other {
             Revision::Tag { name } => Ok(git::TagName::new(&name).into()),
             Revision::Branch { name, peer_id } => Ok(match peer_id {
@@ -242,9 +244,9 @@ impl TryFrom<Revision> for Rev {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Revisions<P, U> {
-    /// The [`peer::PeerId`] of the provided [`user::User`].
+    /// The peer identifier for the provided user.
     pub peer_id: P,
-    /// Owner of the repo.
+    /// Owner of the revision set.
     pub user: U,
     /// List of [`git::Branch`].
     pub branches: Vec<Branch>,
@@ -257,13 +259,16 @@ pub struct Revisions<P, U> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if the project doesn't exist or a surf interaction fails.
-pub fn blob(
+pub fn blob<P>(
     browser: &mut Browser,
     default_branch: git::Branch,
-    maybe_revision: Option<Revision>,
+    maybe_revision: Option<Revision<P>>,
     path: &str,
     theme: Option<&Theme>,
-) -> Result<Blob, error::Error> {
+) -> Result<Blob, error::Error>
+where
+    P: ToString,
+{
     let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
     browser.rev(maybe_revision.unwrap_or_else(|| default_branch.into()))?;
 
@@ -504,12 +509,15 @@ pub fn tags<'repo>(browser: &Browser<'repo>) -> Result<Vec<Tag>, error::Error> {
 /// # Errors
 ///
 /// Will return [`error::Error`] if any of the surf interactions fail.
-pub fn tree<'repo>(
+pub fn tree<'repo, P>(
     browser: &mut Browser<'repo>,
     default_branch: git::Branch,
-    maybe_revision: Option<Revision>,
+    maybe_revision: Option<Revision<P>>,
     maybe_prefix: Option<String>,
-) -> Result<Tree, error::Error> {
+) -> Result<Tree, error::Error>
+where
+    P: ToString,
+{
     let maybe_revision = maybe_revision.map(Rev::try_from).transpose()?;
     let revision = maybe_revision.unwrap_or_else(|| default_branch.into());
     let prefix = maybe_prefix.unwrap_or_default();
@@ -598,7 +606,7 @@ pub fn tree<'repo>(
 ///
 /// # Parameters
 ///
-/// * `peer_id` - the `PeerId` of this peer
+/// * `peer_id` - the identifier of this peer
 /// * `owner` - the owner of this peer, i.e. the current user
 /// * `peers` - an iterator of a peer and the default self it used for this project
 ///
@@ -612,7 +620,9 @@ pub fn revisions<P, U>(
     owner: U,
     peers: Vec<(P, U)>,
 ) -> Result<NonEmpty<Revisions<P, U>>, error::Error>
-where P: Clone + ToString, {
+where
+    P: Clone + ToString,
+{
     let mut user_revisions = vec![];
 
     let local_branches = branches(browser, Some(BranchType::Local))?;
@@ -641,10 +651,13 @@ where P: Clone + ToString, {
     NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyRevisions)
 }
 
-/// Turn an `Option<peer::PeerId>` into a [`BranchType`]. If the `PeerId` is present then this is
+/// Turn an `Option<P>` into a [`BranchType`]. If the `P` is present then this is
 /// set as the remote of the `BranchType`. Otherwise, it's local branch.
 #[must_use]
-pub fn into_branch_type<P>(peer_id: Option<P>) -> BranchType where P: ToString, {
+pub fn into_branch_type<P>(peer_id: Option<P>) -> BranchType
+where
+    P: ToString,
+{
     peer_id.map_or(BranchType::Local, |peer_id| BranchType::Remote {
         // We qualify the remotes as the PeerId + heads, otherwise we would grab the tags too.
         name: Some(format!("{}/heads", peer_id.to_string())),

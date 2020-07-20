@@ -500,7 +500,7 @@ pub struct BlobQuery {
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
     /// Revision to query at.
-    revision: Option<coco::Revision>,
+    revision: Option<coco::Revision<peer::PeerId>>,
     /// Whether or not to syntax highlight the blob.
     highlight: Option<bool>,
 }
@@ -521,7 +521,7 @@ pub struct TreeQuery {
     /// PeerId to scope the query by.
     peer_id: Option<peer::PeerId>,
     /// Revision to query at.
-    revision: Option<coco::Revision>,
+    revision: Option<coco::Revision<peer::PeerId>>,
 }
 
 impl Serialize for coco::Blob {
