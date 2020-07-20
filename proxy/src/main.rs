@@ -54,6 +54,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+    log::debug!(
+        "Temporary path being used for this run is: {:?}",
+        temp_dir.path()
+    );
 
     let paths_config = if args.test {
         coco::config::Paths::FromRoot(temp_dir.path().to_path_buf())

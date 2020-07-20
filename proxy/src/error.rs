@@ -80,7 +80,11 @@ pub enum Error {
     #[error("the Project Name '{0}' is invalid")]
     InvalidProjectName(String),
 
-    /// The given block could not be found in the registry.
+    /// The given account could not be found in the Registry.
+    #[error("the given account '{0}' could not be found in the Registry")]
+    AccountNotFound(registry::AccountId),
+
+    /// The given block could not be found in the Registry.
     #[error("the given block '{0}' could not be found in the Registry")]
     BlockNotFound(registry::BlockHash),
 

@@ -668,7 +668,7 @@ mod tests {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &peer,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
