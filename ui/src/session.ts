@@ -139,6 +139,7 @@ export const updateAppearance = (appearance: Appearance): void =>
     Kind.UpdateSettings,
     update
   )({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     settings: { ...get(settings), appearance },
   });
 export const updateRegistry = (registry: Registry): void =>
@@ -146,6 +147,7 @@ export const updateRegistry = (registry: Registry): void =>
     Kind.UpdateSettings,
     update
   )({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     settings: { ...get(settings), registry },
   });
 

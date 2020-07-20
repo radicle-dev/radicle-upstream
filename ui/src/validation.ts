@@ -58,6 +58,7 @@ export const createValidationStore = (
     status: ValidationStatus.NotStarted,
   } as ValidationState;
   const internalStore = writable(initialState);
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const { subscribe, update } = internalStore;
   let inputStore: Writable<string> | undefined = undefined;
 
@@ -68,6 +69,7 @@ export const createValidationStore = (
     });
 
     // Check for errors
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const errors = validatejs(
       { input: input },
       { input: constraints },
@@ -76,6 +78,7 @@ export const createValidationStore = (
 
     if (errors) {
       update(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         return { status: ValidationStatus.Error, message: errors.input[0] };
       });
       return;
@@ -110,6 +113,7 @@ export const createValidationStore = (
             if (get(inputStore) !== input) return store;
             return {
               status: ValidationStatus.Error,
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
               message: `Cannot validate "${input}": ${error.message}`,
             };
           });
