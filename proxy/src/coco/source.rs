@@ -4,8 +4,6 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
 
-use librad::meta::entity;
-use librad::meta::user;
 use librad::peer;
 use radicle_surf::{
     diff, file_system,
@@ -17,9 +15,7 @@ use syntect::highlighting::ThemeSet;
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 
-use crate::coco::User;
 use crate::error;
-use crate::identity;
 use crate::session::settings::Theme;
 
 lazy_static::lazy_static! {
@@ -242,16 +238,18 @@ impl TryFrom<Revision> for Rev {
     }
 }
 
-/// Bundled response to retrieve both branches and tags for a user repo.
+/// Bundled response to retrieve both [`Branch`]es and [`Tag`]s for a [`user::User`]'s repo.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserRevisions {
+pub struct Revisions<P, U> {
+    /// The [`peer::PeerId`] of the provided [`user::User`].
+    pub peer_id: P,
     /// Owner of the repo.
-    pub(crate) identity: identity::Identity,
+    pub user: U,
     /// List of [`git::Branch`].
-    pub(crate) branches: Vec<Branch>,
+    pub branches: Vec<Branch>,
     /// List of [`git::Tag`].
-    pub(crate) tags: Vec<Tag>,
+    pub tags: Vec<Tag>,
 }
 
 /// Returns the [`Blob`] for a file at `revision` under `path`.
@@ -596,7 +594,7 @@ pub fn tree<'repo>(
     })
 }
 
-/// Get all [`UserRevisions`] for a given project.
+/// Get all [`Revisions`] for a given project.
 ///
 /// # Parameters
 ///
@@ -608,28 +606,31 @@ pub fn tree<'repo>(
 ///
 ///   * [`error::Error::LibradLock`]
 ///   * [`error::Error::Git`]
-pub fn revisions(
+pub fn revisions<P, U>(
     browser: &Browser,
-    peer_id: peer::PeerId,
-    owner: &User,
-    peers: Vec<(user::User<entity::Draft>, peer::PeerId)>,
-) -> Result<NonEmpty<UserRevisions>, error::Error> {
+    peer_id: P,
+    owner: U,
+    peers: Vec<(P, U)>,
+) -> Result<NonEmpty<Revisions<P, U>>, error::Error>
+where P: Clone + ToString, {
     let mut user_revisions = vec![];
 
     let local_branches = branches(browser, Some(BranchType::Local))?;
     if !local_branches.is_empty() {
-        user_revisions.push(UserRevisions {
-            identity: (peer_id, owner.clone()).into(),
+        user_revisions.push(Revisions {
+            peer_id,
+            user: owner,
             branches: local_branches,
             tags: tags(browser)?,
         })
     }
 
-    for (user, peer_id) in peers {
+    for (peer_id, user) in peers {
         let remote_branches = branches(browser, Some(into_branch_type(Some(peer_id.clone()))))?;
 
-        user_revisions.push(UserRevisions {
-            identity: (peer_id, user).into(),
+        user_revisions.push(Revisions {
+            peer_id,
+            user,
             branches: remote_branches,
             // TODO(rudolfs): implement remote peer tags once we decide how
             // https://radicle.community/t/git-tags/214
@@ -637,13 +638,13 @@ pub fn revisions(
         });
     }
 
-    NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyUserRevisions)
+    NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyRevisions)
 }
 
 /// Turn an `Option<peer::PeerId>` into a [`BranchType`]. If the `PeerId` is present then this is
 /// set as the remote of the `BranchType`. Otherwise, it's local branch.
 #[must_use]
-pub fn into_branch_type(peer_id: Option<peer::PeerId>) -> BranchType {
+pub fn into_branch_type<P>(peer_id: Option<P>) -> BranchType where P: ToString, {
     peer_id.map_or(BranchType::Local, |peer_id| BranchType::Remote {
         // We qualify the remotes as the PeerId + heads, otherwise we would grab the tags too.
         name: Some(format!("{}/heads", peer_id.to_string())),

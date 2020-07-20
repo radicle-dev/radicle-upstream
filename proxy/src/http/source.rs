@@ -226,7 +226,7 @@ where
             document::response(
                 200,
                 document::body(
-                    document::array(coco::UserRevisions::document())
+                    document::array(coco::Revisions::<(), ()>::document())
                         .description("List of revisions per repo"),
                 )
                 .mime("application/json"),
@@ -415,13 +415,14 @@ mod handler {
             .map_err(Error::from)?
             .map(|peer_id| {
                 repo.get_rad_self_of(peer_id.clone())
-                    .map(|user| (user, peer_id.clone()))
+                    .map(|user| (peer_id.clone(), user))
                     .map_err(Error::from)
             })
             .collect::<Result<Vec<_>, _>>()?;
         let peer_id = api.peer_id().clone();
         let revisions: Vec<_> = coco::with_browser(api, &project_urn, |browser| {
-            Ok(coco::revisions(browser, peer_id, &owner, peers)?.into())
+            let owner = owner.to_data().build()?; // TODO(finto): downgraded verified user, which should not be needed.
+            Ok(coco::revisions(browser, peer_id, owner, peers)?.into())
         })?;
 
         Ok(reply::json(&revisions))
@@ -822,14 +823,14 @@ impl ToDocumentedType for coco::TreeEntry {
     }
 }
 
-impl ToDocumentedType for coco::UserRevisions {
+impl<P, U> ToDocumentedType for coco::Revisions<P, U> {
     fn document() -> document::DocumentedType {
         let mut properties = std::collections::HashMap::with_capacity(3);
         properties.insert("identity".into(), identity::Identity::document());
         properties.insert("branches".into(), document::array(coco::Branch::document()));
         properties.insert("tags".into(), document::array(coco::Tag::document()));
 
-        document::DocumentedType::from(properties).description("UserRevisions")
+        document::DocumentedType::from(properties).description("Revisions")
     }
 }
 
@@ -1314,12 +1315,14 @@ mod test {
             .reply(&api)
             .await;
 
+        let owner = owner.to_data().build()?; // TODO(finto): Unverify owner, unfortunately
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
                 json!([
-                    coco::UserRevisions {
-                        identity: (peer_id, owner).into(),
+                    coco::Revisions {
+                        peer_id,
+                        user: owner,
                         branches: vec![
                             coco::Branch("dev".to_string()),
                             coco::Branch("master".to_string())
@@ -1332,8 +1335,9 @@ mod test {
                             coco::Tag("v0.5.0".to_string())
                         ]
                     },
-                    coco::UserRevisions {
-                        identity: (remote.clone(), fintohaps).into(),
+                    coco::Revisions {
+                        peer_id: remote.clone(),
+                        user: fintohaps,
                         branches: vec![coco::Branch("master".to_string())],
                         tags: vec![]
                     },
