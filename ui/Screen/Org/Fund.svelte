@@ -18,7 +18,7 @@
   <Remote store={orgStore} let:data={org}>
     <Wallet
       transactions={orgTransactions(transactions)}
-      balance="3484"
+      balance={3484}
       address={org.accountId} />
   </Remote>
 </Remote>
