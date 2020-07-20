@@ -179,6 +179,10 @@ export const orgTransactions = (
   id: string
 ): [transaction.Transaction] | transaction.Transaction[] => {
   return transactions.filter(tx => {
-    return "domainId" in tx.messages[0] ? tx.messages[0].domainId == id : null;
+    return tx.messages[0].type ===
+      transaction.MessageType.ProjectRegistration &&
+      tx.messages[0].domainType === project.Domain.Org
+      ? tx.messages[0].domainId == id
+      : null;
   });
 };
