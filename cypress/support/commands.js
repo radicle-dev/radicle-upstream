@@ -40,7 +40,8 @@ Cypress.Commands.add(
   async (
     name = "platinum",
     description = "Best project ever.",
-    defaultBranch = "master"
+    defaultBranch = "master",
+    fakePeers = []
   ) =>
     await fetch("http://localhost:8080/v1/control/create-project", {
       method: "POST",
@@ -51,6 +52,7 @@ Cypress.Commands.add(
         name,
         description,
         defaultBranch,
+        fakePeers,
       }),
     })
 );
