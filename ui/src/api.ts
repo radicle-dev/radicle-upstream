@@ -1,14 +1,14 @@
 import * as qs from "qs";
 
 interface Options {
-  query?: object;
+  query?: Record<string, unknown>;
 }
 
 interface Init extends Options {
   body?: string;
   method: string;
   headers?: Record<string, string>;
-  query?: object;
+  query?: Record<string, unknown>;
 }
 
 const request = (endpoint: string, init?: Init): Request => {
