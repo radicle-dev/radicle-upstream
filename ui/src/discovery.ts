@@ -1,4 +1,4 @@
-export const getFeed = (): Record<string, unknown> => [
+export const getFeed = (): Array<Record<string, unknown>> => [
   {
     domain: "radicle",
     name: "radicle-upstream",
