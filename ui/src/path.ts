@@ -1,6 +1,6 @@
 import { parse, stringify } from "qs";
 import regexparam from "regexparam";
-import { ObjectType, Branch, RevisionQuery } from "./source";
+import { RevisionQuery } from "./source";
 
 export const search = (): string => "/search";
 export const settings = (): string => "/settings";
