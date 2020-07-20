@@ -17,7 +17,7 @@ where
     path("ids")
         .and(http::with_context(ctx))
         .and(warp::get())
-        .and(document::param::<registry::Id>(
+        .and(document::param::<String>(
             "id",
             "The id whose status will be obtained",
         ))
@@ -62,11 +62,12 @@ mod handler {
     use crate::registry;
 
     /// Get the status for the given `id`.
-    pub async fn get_status<R>(ctx: http::Ctx<R>, id: registry::Id) -> Result<impl Reply, Rejection>
+    pub async fn get_status<R>(ctx: http::Ctx<R>, input: String) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
     {
         let ctx = ctx.read().await;
+        let id = registry::Id::try_from(input).map_err(Error::from)?;
         let id_status = ctx.registry.get_id_status(&id).await?;
 
         Ok(reply::json(&id_status))

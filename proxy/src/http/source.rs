@@ -815,8 +815,7 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::keys::SecretKey;
-    use radicle_surf::vcs::git::{self, git2};
+    use radicle_surf::vcs::git;
 
     use crate::coco;
     use crate::error;
@@ -836,7 +835,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -972,7 +971,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1027,7 +1026,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1066,7 +1065,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1121,7 +1120,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1198,9 +1197,6 @@ mod test {
         let key = ctx.keystore.get_librad_key()?;
         let peer_id = ctx.peer_api.peer_id();
 
-        let fintohaps = ctx.peer_api.init_user(key.clone(), "fintohaps")?;
-        let remote = librad::peer::PeerId::from(SecretKey::new());
-
         let id = identity::create(&ctx.peer_api, key.clone(), "cloudhead")?;
 
         let owner = ctx.peer_api.get_user(&id.clone().urn)?;
@@ -1210,7 +1206,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1218,60 +1214,8 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        // TODO(finto): We're faking a lot of the networking interaction here.
-        // Create git references of the form and track the peer.
-        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/refs/heads
-        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/id
-        //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
-        //   to fintohaps
-        {
-            let platinum = git2::Repository::open(ctx.peer_api.paths().git_dir())
-                .expect("failed to open monorepo");
-            let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
-
-            let target = platinum
-                .find_reference(&format!("refs/namespaces/{}/refs/heads/master", urn.id))
-                .expect("failed to get master")
-                .target()
-                .expect("missing target");
-            let _heads = platinum
-                .reference(
-                    &format!("{}/heads/master", prefix),
-                    target,
-                    false,
-                    "remote heads",
-                )
-                .expect("failed to create heads");
-
-            let target = platinum
-                .find_reference(&format!("refs/namespaces/{}/refs/rad/id", urn.id))
-                .expect("failed to get rad/id")
-                .target()
-                .expect("missing target");
-            let _rad_id = platinum
-                .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
-                .expect("failed to create rad/id");
-
-            let _rad_self = platinum
-                .reference_symbolic(
-                    &format!("{}/rad/self", prefix),
-                    &format!("refs/namespaces/{}/refs/rad/id", fintohaps.urn().id),
-                    false,
-                    "rad/self",
-                )
-                .expect("failed to create rad/self");
-
-            let target = platinum
-                .find_reference(&format!("refs/namespaces/{}/refs/rad/refs", urn.id))
-                .expect("failed to get rad/refs")
-                .target()
-                .expect("missing target");
-            let _rad_id = platinum
-                .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
-                .expect("failed to create rad/id");
-
-            ctx.peer_api.track(&urn, &remote)?;
-        }
+        let (remote, fintohaps) =
+            coco::control::track_fake_peer(&ctx.peer_api, key, &platinum_project, "fintohaps");
 
         let res = request()
             .method("GET")
@@ -1321,7 +1265,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1362,7 +1306,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1452,7 +1396,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",

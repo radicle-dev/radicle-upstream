@@ -339,7 +339,7 @@ impl Api {
     #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
     pub fn init_project(
         &self,
-        key: keys::SecretKey,
+        key: &keys::SecretKey,
         owner: &User,
         path: impl AsRef<std::path::Path> + Send,
         name: &str,
@@ -570,7 +570,8 @@ mod test {
 
         let user = api.init_user(key.clone(), "cloudhead")?;
         let user = super::verify_user(user)?;
-        let project = api.init_project(key, &user, &repo_path, "radicalise", "the people", "power");
+        let project =
+            api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
 
         assert!(project.is_ok());
 
@@ -610,16 +611,10 @@ mod test {
 
         let user = api.init_user(key.clone(), "cloudhead")?;
         let user = super::verify_user(user)?;
-        let _project = api.init_project(
-            key.clone(),
-            &user,
-            &repo_path,
-            "radicalise",
-            "the people",
-            "power",
-        )?;
+        let _project =
+            api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power")?;
 
-        let err = api.init_project(key, &user, &repo_path, "radicalise", "the people", "power");
+        let err = api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
 
         if let Err(Error::RadRemoteExists(path)) = err {
             assert_eq!(path, format!("{}", repo_path.display()))
@@ -649,7 +644,7 @@ mod test {
         let kalt = api.init_user(key.clone(), "kalt")?;
         let kalt = super::verify_user(kalt)?;
         let fakie = api.init_project(
-            key,
+            &key,
             &kalt,
             &repo_path,
             "fakie-nose-kickflip-backside-180-to-handplant",

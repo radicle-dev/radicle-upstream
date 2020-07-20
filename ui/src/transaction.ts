@@ -274,6 +274,25 @@ export const formatMessage = (msg: Message): string => {
       return "Handle registration";
   }
 };
+
+export const formatDesc = (msg: Message): string => {
+  switch (msg.type) {
+    case MessageType.OrgRegistration:
+    case MessageType.OrgUnregistration:
+      return msg.id;
+
+    case MessageType.MemberRegistration:
+    case MessageType.MemberUnregistration:
+      return msg.handle;
+
+    case MessageType.ProjectRegistration:
+      return msg.domainId;
+
+    case MessageType.UserRegistration:
+      return msg.handle;
+  }
+};
+
 export const headerIcon = (msg: Message): string => {
   switch (msg.type) {
     case MessageType.OrgRegistration:
@@ -452,6 +471,19 @@ export const timestamp = (state: State): string => {
     day: "numeric",
   };
   return `${timestamp.toLocaleTimeString(undefined, options)}`;
+};
+
+export const formatDate = (timestamp: number, option: string): string => {
+  const time = new Date(timestamp * 1000);
+  const day = {
+    day: "numeric",
+  };
+  const month = {
+    month: "long",
+  };
+
+  const options = option === "day" ? day : month;
+  return `${time.toLocaleString(undefined, options)}`;
 };
 
 export const summaryIconProgress = (summary: Summary): number => {

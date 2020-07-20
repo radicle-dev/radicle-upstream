@@ -128,7 +128,7 @@ mod handler {
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
 
         let meta = ctx.peer_api.init_project(
-            key,
+            &key,
             &owner,
             &input.path,
             &input.metadata.name,
@@ -462,7 +462,7 @@ mod test {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",

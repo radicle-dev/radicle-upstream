@@ -6,7 +6,6 @@ import Verified from "./Verified.svelte";
 import Branch from "./Branch.svelte";
 import Check from "./Check.svelte";
 import Chevron from "./Chevron.svelte";
-import Circle from "./Circle.svelte";
 import CloseIssue from "./CloseIssue.svelte";
 import Commit from "./Commit.svelte";
 import Copy from "./Copy.svelte";
@@ -55,7 +54,6 @@ export default {
   Branch,
   Check,
   Chevron,
-  Circle,
   CloseIssue,
   Commit,
   Copy,

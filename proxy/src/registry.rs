@@ -10,7 +10,8 @@ use std::str::FromStr;
 
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{
-    Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName, MINIMUM_FEE,
+    parse_ss58_address, AccountId, Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName,
+    MINIMUM_FEE,
 };
 
 use crate::avatar;
@@ -154,6 +155,16 @@ pub trait Client: Clone + Send + Sync {
         &self,
         account_id: &protocol::ed25519::Public,
     ) -> Result<bool, error::Error>;
+
+    /// Get the free balance of a given account on chain.
+    ///
+    /// # Errors
+    ///
+    /// Will return `Err` if a protocol error occurs.
+    async fn free_balance(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<Balance, error::Error>;
 
     /// Fetch the current best height by virtue of checking the block header of the best chain.
     ///
@@ -310,7 +321,7 @@ pub trait Client: Clone + Send + Sync {
         &self,
         author: &protocol::ed25519::Pair,
         recipient: protocol::ed25519::Public,
-        value: Balance,
+        amount: Balance,
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -324,7 +335,7 @@ pub trait Client: Clone + Send + Sync {
         author: &protocol::ed25519::Pair,
         org_id: Id,
         recipient: protocol::ed25519::Public,
-        value: Balance,
+        amount: Balance,
         fee: Balance,
     ) -> Result<Transaction, error::Error>;
 
@@ -335,8 +346,8 @@ pub trait Client: Clone + Send + Sync {
     /// Will return `Err` if a protocol error occurs.
     async fn prepay_account(
         &self,
-        recipient: protocol::AccountId,
-        balance: Balance,
+        recipient: AccountId,
+        amount: Balance,
     ) -> Result<(), error::Error>;
 
     /// Replaces the underlying client. Useful to reset the state of an emulator client, or connect
@@ -399,6 +410,21 @@ impl Client for Registry {
             .account_exists(account_id)
             .await
             .map_err(|e| e.into())
+    }
+
+    async fn free_balance(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<Balance, error::Error> {
+        let exists = self.account_exists(account_id).await?;
+        if exists {
+            self.client
+                .free_balance(account_id)
+                .await
+                .map_err(|e| e.into())
+        } else {
+            Err(error::Error::AccountNotFound(*account_id))
+        }
     }
 
     async fn best_height(&self) -> Result<u32, error::Error> {
@@ -724,14 +750,11 @@ impl Client for Registry {
         &self,
         author: &protocol::ed25519::Pair,
         recipient: protocol::ed25519::Public,
-        value: Balance,
+        amount: Balance,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit transfer transaction.
-        let transfer_message = protocol::message::Transfer {
-            recipient,
-            balance: value,
-        };
+        let transfer_message = protocol::message::Transfer { recipient, amount };
         let transfer_tx = self
             .new_signed_transaction(author, transfer_message, fee)
             .await?;
@@ -742,10 +765,7 @@ impl Client for Registry {
         Ok(Transaction::confirmed(
             Hash(applied.tx_hash),
             block.number,
-            Message::Transfer {
-                recipient,
-                balance: value,
-            },
+            Message::Transfer { recipient, amount },
             fee,
         ))
     }
@@ -755,14 +775,14 @@ impl Client for Registry {
         author: &protocol::ed25519::Pair,
         org_id: Id,
         recipient: protocol::ed25519::Public,
-        value: Balance,
+        amount: Balance,
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // Prepare and submit transfer transaction.
         let transfer_message = protocol::message::TransferFromOrg {
             org_id: org_id.clone(),
             recipient,
-            value,
+            amount,
         };
         let transfer_tx = self
             .new_signed_transaction(author, transfer_message, fee)
@@ -777,7 +797,7 @@ impl Client for Registry {
             Message::TransferFromOrg {
                 org_id,
                 recipient,
-                value,
+                amount,
             },
             fee,
         ))
@@ -785,17 +805,13 @@ impl Client for Registry {
 
     async fn prepay_account(
         &self,
-        recipient: protocol::AccountId,
-        balance: Balance,
+        recipient: AccountId,
+        amount: Balance,
     ) -> Result<(), error::Error> {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
 
         self.client
-            .sign_and_submit_message(
-                &alice,
-                protocol::message::Transfer { recipient, balance },
-                1,
-            )
+            .sign_and_submit_message(&alice, protocol::message::Transfer { recipient, amount }, 1)
             .await?
             .await?
             .result?;

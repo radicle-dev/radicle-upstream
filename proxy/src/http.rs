@@ -18,6 +18,7 @@ use crate::coco;
 use crate::keystore;
 use crate::registry;
 
+mod account;
 mod avatar;
 mod control;
 mod doc;
@@ -70,6 +71,7 @@ where
     };
     let ctx = Arc::new(RwLock::new(ctx));
 
+    let account_filter = path("accounts").and(account::filters(ctx.clone()));
     let avatar_filter = avatar::get_filter();
     let control_filter = control::routes(enable_control, ctx.clone());
     let id_filter = id::get_status_filter(ctx.clone());
@@ -83,6 +85,7 @@ where
     let user_filter = user::routes(ctx);
 
     let api = path("v1").and(combine!(
+        account_filter,
         avatar_filter,
         control_filter,
         id_filter,

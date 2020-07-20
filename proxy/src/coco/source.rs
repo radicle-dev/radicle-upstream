@@ -1,8 +1,8 @@
 //! Source code related functionality.
 
+use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
-use std::convert::TryFrom;
 
 use serde::{Deserialize, Serialize};
 
@@ -600,7 +600,7 @@ mod tests {
         let owner = coco::verify_user(owner)?;
         let platinum_project = coco::control::replicate_platinum(
             &api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",
