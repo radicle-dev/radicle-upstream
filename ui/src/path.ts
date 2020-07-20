@@ -1,4 +1,4 @@
-import { parse, stringify } from "qs";
+import { parse, stringify, ParsedQs } from "qs";
 import regexparam from "regexparam";
 import { RevisionQuery } from "./source";
 
@@ -50,7 +50,7 @@ export const projectSource = (
   })}`;
 };
 
-export const parseProjectSourceLocation = (querystring: string) => {
+export const parseProjectSourceLocation = (querystring: string): ParsedQs => {
   return parse(querystring);
 };
 
