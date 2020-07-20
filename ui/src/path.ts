@@ -57,7 +57,7 @@ export const parseProjectSourceLocation = (querystring: string): ParsedQs => {
 export const projectCommit = (id: string, hash: string): string =>
   `/projects/${id}/commit/${hash}`;
 export const projectCommits = (id: string, revision: RevisionQuery): string =>
-  `/projects/${id}/commits/${revision}`;
+  `/projects/${id}/commits/${JSON.stringify(revision)}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 
