@@ -92,10 +92,7 @@
     </div>
 
     {#if showTrackButton}
-      <TrackToggle
-        peerCount="666"
-        style="z-index: 10;"
-        tracking={project.tracked} />
+      <TrackToggle style="z-index: 10;" tracking={project.tracked} />
     {/if}
 
   </div>
