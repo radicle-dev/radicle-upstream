@@ -135,7 +135,9 @@ export const createValidationStore = (
     if (!inputStore) {
       inputStore = writable(input);
       inputStore.subscribe((input: string) => {
-        runValidations(input);
+        runValidations(input).catch(reason => {
+          console.error("runValidations() failed: ", reason);
+        });
       });
       return;
     }
