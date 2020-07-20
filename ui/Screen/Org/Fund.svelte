@@ -11,5 +11,5 @@
   <Wallet
     transactions={orgTransactions(transactions, params.id)}
     balance={3484}
-    address={accountId} />
+    {accountId} />
 </Remote>

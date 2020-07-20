@@ -13,5 +13,5 @@
   <Wallet
     transactions={userTransactions(transactions)}
     balance={3552}
-    address="hyda4fhdx8up8hhocagkdz3d41txb98stw4pkqe3uommo1p5m6s9oy" />
+    accountId="hyda4fhdx8up8hhocagkdz3d41txb98stw4pkqe3uommo1p5m6s9oy" />
 </Remote>
