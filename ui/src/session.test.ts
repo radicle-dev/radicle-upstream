@@ -45,6 +45,7 @@ describe("coco settings", () => {
     const defaultSeeds = ["seed.radicle.xyz", "194.134.54.13"];
 
     const store = session.seeds;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(get(store).data).toEqual(defaultSeeds);
   });
 
@@ -66,12 +67,15 @@ describe("coco settings", () => {
       "seed.radicle.xyz\r\n192.134.54.13  \r \r\n192.168.1.0\n";
 
     session.updateSeeds(newlineSeparated);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(get(session.seeds).data).toEqual(desiredResult);
 
     session.updateSeeds(commaSeparated);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(get(session.seeds).data).toEqual(desiredResult);
 
     session.updateSeeds(carriageReturnSeparated);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     expect(get(session.seeds).data).toEqual(desiredResult);
   });
 });
