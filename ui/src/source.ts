@@ -20,7 +20,7 @@ interface Commit {
   committerTime: number;
   description: string;
   summary: string;
-  changeset: object;
+  changeset: Record<string, unknown>;
 }
 
 interface CommitSummary {

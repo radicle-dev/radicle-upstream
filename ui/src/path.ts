@@ -1,6 +1,6 @@
-import { parse, stringify } from "qs";
+import { parse, stringify, ParsedQs } from "qs";
 import regexparam from "regexparam";
-import { ObjectType, Branch, RevisionQuery } from "./source";
+import { RevisionQuery } from "./source";
 
 export const search = (): string => "/search";
 export const settings = (): string => "/settings";
@@ -50,14 +50,14 @@ export const projectSource = (
   })}`;
 };
 
-export const parseProjectSourceLocation = (querystring: string) => {
+export const parseProjectSourceLocation = (querystring: string): ParsedQs => {
   return parse(querystring);
 };
 
 export const projectCommit = (id: string, hash: string): string =>
   `/projects/${id}/commit/${hash}`;
 export const projectCommits = (id: string, revision: RevisionQuery): string =>
-  `/projects/${id}/commits/${revision}`;
+  `/projects/${id}/commits/${JSON.stringify(revision)}`;
 
 export const transactions = (id: string): string => `/transactions/${id}`;
 

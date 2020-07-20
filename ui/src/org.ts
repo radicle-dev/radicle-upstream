@@ -104,7 +104,7 @@ export const registerMemberTransaction = (
   orgId: string,
   handle: string,
   fee: currency.MicroRad
-) => ({
+): Record<string, unknown> => ({
   fee,
   messages: [
     {

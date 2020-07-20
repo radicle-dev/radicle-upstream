@@ -95,23 +95,37 @@ const update = (msg: Msg): void => {
       api
         .del(`session`)
         .then(fetchSession)
-        .then(() => transaction.fetchList());
+        .then(() => transaction.fetchList())
+        .catch(reason => {
+          console.error("DEL session failed: ", reason);
+        });
 
       break;
 
     case Kind.ClearCache:
-      api.del(`session/cache`).then(() => transaction.fetchList());
+      api
+        .del(`session/cache`)
+        .then(() => transaction.fetchList())
+        .catch(reason => {
+          console.error("DEL session/cache failed: ", reason);
+        });
 
       break;
 
     case Kind.Fetch:
       sessionStore.loading();
-      fetchSession().then(() => transaction.fetchList());
+      fetchSession()
+        .then(() => transaction.fetchList())
+        .catch(reason => {
+          console.error("fetchSession() failed: ", reason);
+        });
 
       break;
 
     case Kind.UpdateSettings:
-      updateSettings(msg.settings);
+      updateSettings(msg.settings).catch(reason => {
+        console.error("updateSettings() failed: ", reason);
+      });
 
       break;
   }
@@ -125,6 +139,7 @@ export const updateAppearance = (appearance: Appearance): void =>
     Kind.UpdateSettings,
     update
   )({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     settings: { ...get(settings), appearance },
   });
 export const updateRegistry = (registry: Registry): void =>
@@ -132,6 +147,7 @@ export const updateRegistry = (registry: Registry): void =>
     Kind.UpdateSettings,
     update
   )({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     settings: { ...get(settings), registry },
   });
 
@@ -149,9 +165,10 @@ const parseSeedsInput = (input: string) => {
     .filter(seed => seed !== "");
 };
 
-export const updateSeeds = (input: string) => {
+export const updateSeeds = (input: string): void => {
   const parsed = parseSeedsInput(input);
   if (parsed) temporaryLocalSeedStore.success(parsed);
 };
 
-export const formatSeedsForInput = (seeds: string[]) => seeds.join("\n");
+export const formatSeedsForInput = (seeds: string[]): string =>
+  seeds.join("\n");

@@ -3,7 +3,6 @@ import * as currency from "./currency";
 import * as event from "./event";
 import * as org from "./org";
 import * as remote from "./remote";
-import * as source from "./source";
 import * as transaction from "./transaction";
 import * as user from "./user";
 
