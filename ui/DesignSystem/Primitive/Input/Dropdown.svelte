@@ -53,7 +53,7 @@
   }
 </style>
 
-<select data-cy={dataCy} {style} bind:value {disabled} on:change={change}>
+<select data-cy={dataCy} {style} bind:value {disabled} on:blur={change}>
   {#each items as item}
     <option value={item}>{item}</option>
   {/each}

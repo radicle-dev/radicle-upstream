@@ -7,7 +7,7 @@
   export let dataCy = null;
   export let transactions = null;
   export let balance = null;
-  export let address = null;
+  export let accountId = null;
 </script>
 
 <style>
@@ -59,7 +59,7 @@
           usd={balance} />
       </div>
       <div class="send-receive" data-cy="send-receive">
-        <SendReceive {address} />
+        <SendReceive {accountId} />
       </div>
     </div>
     <div class="transactions" data-cy="transactions">
@@ -71,7 +71,7 @@
   {:else}
     <div class="empty-state">
       <Receive
-        {address}
+        {accountId}
         text="To get started, buy some RADs and transfer them here." />
     </div>
   {/if}
