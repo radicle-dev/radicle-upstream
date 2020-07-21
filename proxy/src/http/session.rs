@@ -327,7 +327,7 @@ mod test {
                     "appearance": {
                         "theme": "light",
                     },
-                    "coco": {
+                    "seeds": {
                         "seeds": [
                             "seed.radicle.xyz",
                             "194.134.54.13"
@@ -396,7 +396,7 @@ mod test {
                     "appearance": {
                         "theme": "dark",
                     },
-                    "coco": {
+                    "seeds": {
                         "seeds": [
                             "seed.radicle.xyz",
                             "194.134.54.13"

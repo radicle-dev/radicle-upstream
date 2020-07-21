@@ -178,7 +178,7 @@ pub mod settings {
         /// Currently set registry parameters.
         pub registry: Registry,
         /// User-determined p2p parameters.
-        pub coco: CoCo,
+        pub seeds: Seeds,
     }
 
     /// Knobs for the look and feel.
@@ -233,13 +233,13 @@ pub mod settings {
 
     /// `CoCo` config parameters subject to user preferences
     #[derive(Debug, Deserialize, Serialize, PartialEq)]
-    pub struct CoCo {
+    pub struct Seeds {
         /// Sources of feeds
         pub seeds: Vec<String>,
     }
 
     // TODO(sos): should these come  from librad?
-    impl Default for CoCo {
+    impl Default for Seeds {
         fn default() -> Self {
             Self {
                 seeds: ["seed.radicle.xyz", "194.134.54.13"]
