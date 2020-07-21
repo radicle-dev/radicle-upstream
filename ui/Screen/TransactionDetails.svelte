@@ -32,7 +32,7 @@
       <Transaction
         transaction={tx}
         {payer}
-        transactionDeposits={session.transactionDeposits} />
+        registrationFee={session.registrationFee} />
     </Remote>
 
   </div>

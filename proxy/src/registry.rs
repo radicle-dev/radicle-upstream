@@ -11,7 +11,7 @@ use std::str::FromStr;
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{
     parse_ss58_address, AccountId, Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName,
-    MINIMUM_FEE,
+    MINIMUM_TX_FEE, REGISTRATION_FEE,
 };
 
 use crate::avatar;
@@ -116,31 +116,6 @@ pub struct User {
     pub maybe_entity_id: Option<String>,
     /// The public key of the user
     pub account_id: protocol::ed25519::Public,
-}
-
-/// Default transaction fees and deposits.
-#[derive(Clone, Default, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Deposits {
-    /// User registration deposit.
-    user_registration: Balance,
-    /// Organization registration deposit.
-    org_registration: Balance,
-    /// Project registration deposit.
-    project_registration: Balance,
-    /// Member registration on org deposit.
-    member_registration: Balance,
-}
-
-/// Return a list of costs for all supported transactions.
-#[must_use]
-pub const fn get_deposits() -> Deposits {
-    Deposits {
-        user_registration: protocol::REGISTER_USER_DEPOSIT,
-        org_registration: protocol::REGISTER_ORG_DEPOSIT,
-        project_registration: protocol::REGISTER_PROJECT_DEPOSIT,
-        member_registration: protocol::REGISTER_MEMBER_DEPOSIT,
-    }
 }
 
 /// Methods to interact with the Registry in a uniform way.

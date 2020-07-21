@@ -19,13 +19,6 @@ interface Timestamp {
   nanos: number;
 }
 
-export interface Deposits {
-  userRegistration: currency.MicroRad;
-  orgRegistration: currency.MicroRad;
-  projectRegistration: currency.MicroRad;
-  memberRegistration: currency.MicroRad;
-}
-
 // Note: The schemas of each variant must correspond to
 // their proxy > registry > Message variant counterpart.
 export enum MessageType {
@@ -311,7 +304,7 @@ export const headerIcon = (msg: Message): string => {
 };
 
 export const formatStake = (msg: Message): string =>
-  `${formatMessage(msg)} deposit`;
+  `${formatMessage(msg)} fee`;
 
 // Having both enums & interfaces here is somewhat verbose; the reason we do this
 // is so we have compatibility with non-TS svelte components while still enjoying
@@ -542,52 +535,40 @@ export const summaryText = (counts: SummaryCounts): string => {
 };
 
 interface CostSummary {
-  depositRad: currency.Rad;
-  depositUsd: currency.Usd;
+  registrationFeeRad: currency.Rad;
+  registrationFeeUsd: currency.Usd;
   feeRad: currency.Rad;
   feeUsd: currency.Usd;
   totalRad: currency.Rad;
   totalUsd: currency.Usd;
 }
 
+const paysRegistrationFee = (messageType: MessageType): boolean => {
+  return (
+    messageType === MessageType.OrgRegistration ||
+    messageType === MessageType.UserRegistration
+  );
+};
+
 export const costSummary = (
   messageType: MessageType,
   fee: currency.MicroRad,
-  deposits: Deposits
+  registrationFee: currency.MicroRad
 ): CostSummary => {
-  let deposit = 0;
+  const registrationCost = paysRegistrationFee(messageType) ? registrationFee : 0;
+  const total = fee + registrationCost;
 
-  switch (messageType) {
-    case MessageType.OrgRegistration:
-      deposit = deposits.orgRegistration;
-      break;
-    case MessageType.MemberRegistration:
-      deposit = deposits.memberRegistration;
-      break;
-    case MessageType.ProjectRegistration:
-      deposit = deposits.projectRegistration;
-      break;
-    case MessageType.UserRegistration:
-      deposit = deposits.userRegistration;
-      break;
-    default:
-      throw `MessageType: ${messageType} not implemented`;
-      break;
-  }
-
-  const total = deposit + fee;
-
-  const depositRad = currency.microRadToRad(deposit);
+  const registrationFeeRad = currency.microRadToRad(registrationCost);
   const feeRad = currency.microRadToRad(fee);
   const totalRad = currency.microRadToRad(total);
 
-  const depositUsd = currency.radToUsd(depositRad);
+  const registrationFeeUsd = currency.radToUsd(registrationFeeRad);
   const feeUsd = currency.radToUsd(feeRad);
   const totalUsd = currency.radToUsd(totalRad);
 
   return {
-    depositRad,
-    depositUsd,
+    registrationFeeRad,
+    registrationFeeUsd,
     feeRad,
     feeUsd,
     totalRad,

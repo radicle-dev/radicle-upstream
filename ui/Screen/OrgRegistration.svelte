@@ -131,7 +131,7 @@
           {transaction}
           {subject}
           {payer}
-          transactionDeposits={$session.data.transactionDeposits} />
+          registrationFee={$session.data.registrationFee} />
       </div>
     {/if}
     <NavigationButtons

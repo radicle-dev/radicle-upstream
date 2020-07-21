@@ -25,7 +25,7 @@
 
   export let transaction = null;
   export let payer = null;
-  export let transactionDeposits = null;
+  export let registrationFee = null;
 
   let avatar;
 
@@ -36,7 +36,7 @@
   const summary = costSummary(
     transaction.messages[0].type,
     parseInt(transaction.fee),
-    transactionDeposits
+    registrationFee
   );
 
   $: updateAvatar();
@@ -44,7 +44,7 @@
 
 <Header {transaction} {avatar} {subject} />
 
-<Row dataCy="deposit" variant="top" style="">
+<Row dataCy="registration-fee" variant="top" style="">
   <div slot="left">
     <Text variant="regular" style="color:var(--color-foreground-level-6);">
       {formatStake(transaction.messages[0])}
@@ -52,7 +52,10 @@
   </div>
 
   <div slot="right">
-    <Rad rad={summary.depositRad} usd={summary.depositUsd} variant="deposit" />
+    <Rad
+      rad={summary.registrationFeeRad}
+      usd={summary.registrationFeeUsd}
+      variant="deposit" />
   </div>
 </Row>
 

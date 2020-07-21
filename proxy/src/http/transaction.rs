@@ -231,7 +231,7 @@ mod test {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
         let cache = registry::Cacher::new(registry, &store);
         let now = registry::Timestamp::now();
-        let fee = registry::MINIMUM_FEE;
+        let fee = registry::MINIMUM_TX_FEE;
 
         let org_id = registry::Id::try_from("radicle").unwrap();
 

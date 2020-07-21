@@ -106,7 +106,7 @@
           <Transaction
             transaction={tx()}
             payer={wallet()}
-            transactionDeposits={session.transactionDeposits} />
+            transactionFee={session.transactionFee} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}
