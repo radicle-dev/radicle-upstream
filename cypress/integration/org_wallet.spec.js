@@ -3,16 +3,18 @@ before(() => {
 
   cy.createIdentity("coolname");
   cy.registerUser("coolname");
+  cy.registerOrg("coolorg");
 });
 
 context("navigation", () => {
   beforeEach(() => {
     cy.visit("public/index.html");
+    cy.pick("sidebar", "org-coolorg").click();
     cy.pick("Wallet").click();
   });
   it("shows the wallet page", () => {
-    // user wallet exists
-    cy.pick("user-wallet").should("exist");
+    // org wallet exists
+    cy.pick("org-wallet").should("exist");
   });
   it("has a balance", () => {
     // balance is present

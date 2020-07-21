@@ -13,7 +13,7 @@
   }
 </style>
 
-<div class="wrapper">
+<div class="wrapper" data-cy="urn">
   <Copyable iconSize="small" style="overflow: hidden; align-items: center; ">
     <Text
       style="font-family: var(--typeface-mono-medium); font-size: 14px; color:

@@ -58,7 +58,7 @@
           rad={balance}
           usd={balance} />
       </div>
-      <div class="send-receive">
+      <div class="send-receive" data-cy="send-receive">
         <SendReceive {address} />
       </div>
     </div>

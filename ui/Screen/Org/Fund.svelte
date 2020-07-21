@@ -15,6 +15,7 @@
 
 <Remote {store} let:data={transactions}>
   <Wallet
+    dataCy="org-wallet"
     transactions={orgTransactions(transactions)}
     balance="3484"
     address="hyda4fhdx8up8hhocagkdz3d41txb98stw4pkqe3uommo1p5m6s9oy" />
