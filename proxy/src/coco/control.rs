@@ -1,14 +1,15 @@
+//! Utility for fixture data in the monorepo.
+
 use std::convert::TryFrom;
 use std::env;
 
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
-use librad::net::peer::PeerApi;
 use radicle_surf::vcs::git::git2;
 
 use crate::coco::config;
-use crate::coco::peer::{init_project, init_user, User};
+use crate::coco::peer::{Api, User};
 use crate::error;
 
 /// Deletes the local git repsoitory coco uses to keep its state.
@@ -29,11 +30,7 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
 #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
-pub fn setup_fixtures(
-    peer: &PeerApi,
-    key: keys::SecretKey,
-    owner: &User,
-) -> Result<(), error::Error> {
+pub fn setup_fixtures(api: &Api, key: keys::SecretKey, owner: &User) -> Result<(), error::Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -56,7 +53,7 @@ pub fn setup_fixtures(
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(peer, &key, owner, info.0, info.1, info.2)?;
+        replicate_platinum(api, &key, owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -70,7 +67,7 @@ pub fn setup_fixtures(
 /// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
 pub fn replicate_platinum(
-    peer: &PeerApi,
+    api: &Api,
     key: &keys::SecretKey,
     owner: &User,
     name: &str,
@@ -84,15 +81,14 @@ pub fn replicate_platinum(
     platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
 
     // Construct path for fixtures to clone into.
-    let monorepo = peer.paths().git_dir().join("");
+    let monorepo = api.monorepo();
     let workspace = monorepo.join("../workspace");
     let platinum_into = workspace.join(name);
 
     clone_platinum(&platinum_from, &platinum_into)?;
 
-    let meta = init_project(
-        peer,
-        key.clone(),
+    let meta = api.init_project(
+        key,
         owner,
         platinum_into.clone(),
         name,
@@ -132,7 +128,7 @@ pub fn replicate_platinum(
 /// Create and track a fake peer.
 #[must_use]
 pub fn track_fake_peer(
-    peer: &PeerApi,
+    api: &Api,
     key: keys::SecretKey,
     project: &project::Project<entity::Draft>,
     fake_user_handle: &str,
@@ -148,9 +144,9 @@ pub fn track_fake_peer(
     //   to fake_user
     let urn = project.urn();
     let fake_user =
-        init_user(peer, key, fake_user_handle).unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
+        api.init_user(key, fake_user_handle).unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
     let remote = librad::peer::PeerId::from(keys::SecretKey::new());
-    let monorepo = git2::Repository::open(peer.paths().git_dir()).expect("failed to open monorepo");
+    let monorepo = git2::Repository::open(api.monorepo()).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
 
     // Grab the Oid of master for the given project.
@@ -201,9 +197,7 @@ pub fn track_fake_peer(
         .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
         .expect("failed to create rad/refs");
 
-    peer.storage()
-        .track(&urn, &remote)
-        .expect("failed to track peer");
+    api.track(&urn, &remote).expect("failed to track peer");
 
     (remote, fake_user)
 }

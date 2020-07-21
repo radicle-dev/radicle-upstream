@@ -1,7 +1,10 @@
-use serde::{Deserialize, Serialize};
+//! Source code related functionality.
+
 use std::convert::TryFrom;
 use std::fmt;
 use std::str::FromStr;
+
+use serde::{Deserialize, Serialize};
 
 use librad::peer;
 use radicle_surf::{
@@ -592,11 +595,10 @@ mod tests {
         let tmp_dir = tempfile::tempdir()?;
         let key = SecretKey::new();
         let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let api = coco::Api::new(config).await?;
+        let owner = api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &api,
             &key,
             &owner,
             "git-platinum",
@@ -606,7 +608,7 @@ mod tests {
         let urn = platinum_project.urn();
         let sha = "91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1";
 
-        let commit = coco::with_browser(&peer, &urn, |browser| super::commit_header(browser, sha))?;
+        let commit = api.with_browser(&urn, |browser| super::commit_header(browser, sha))?;
 
         assert_eq!(commit.sha1, git::Oid::from_str(sha)?);
 

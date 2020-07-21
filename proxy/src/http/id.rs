@@ -8,14 +8,14 @@ use crate::http;
 use crate::registry;
 
 /// `GET ids/<id>/status`
-pub fn get_status_filter<R: registry::Client>(
-    registry: http::Shared<R>,
+pub fn get_status_filter<R>(
+    ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
     path("ids")
-        .and(http::with_shared(registry))
+        .and(http::with_context(ctx))
         .and(warp::get())
         .and(document::param::<String>(
             "id",
@@ -62,13 +62,13 @@ mod handler {
     use crate::registry;
 
     /// Get the status for the given `id`.
-    pub async fn get_status<R: registry::Client>(
-        registry: http::Shared<R>,
-        id_string: String,
-    ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
-        let id = registry::Id::try_from(id_string).map_err(Error::from)?;
-        let id_status = reg.get_id_status(&id).await?;
+    pub async fn get_status<R>(ctx: http::Ctx<R>, input: String) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        let ctx = ctx.read().await;
+        let id = registry::Id::try_from(input).map_err(Error::from)?;
+        let id_status = ctx.registry.get_id_status(&id).await?;
 
         Ok(reply::json(&id_status))
     }
@@ -92,14 +92,11 @@ mod test {
 
     #[tokio::test]
     async fn get_status_available() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::get_status_filter(Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::get_status_filter(ctx.clone());
 
         let id = registry::Id::try_from("monadic")?;
-        let reg = registry.read().await;
         let res = request()
             .method("GET")
             .path(&format!("/ids/{}/status", id.to_string()))
@@ -115,19 +112,16 @@ mod test {
 
     #[tokio::test]
     async fn get_status_taken_by_user() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::get_status_filter(Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::get_status_filter(ctx.clone());
 
+        let ctx = ctx.read().await;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
 
         // Register the user
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_user(&author, handle.clone(), None, 10)
             .await?;
 
@@ -146,26 +140,21 @@ mod test {
 
     #[tokio::test]
     async fn get_status_taken_by_org() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::get_status_filter(Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::get_status_filter(ctx.clone());
 
+        let ctx = ctx.read().await;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         // Register the user so that it can register orgs
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_user(&author, handle.clone(), None, 10)
             .await?;
 
         // Register the org
         let org_id = registry::Id::try_from("monadic")?;
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_org(&author, org_id.clone(), 10)
             .await?;
 
@@ -184,25 +173,20 @@ mod test {
 
     #[tokio::test]
     async fn get_status_retired_by_user() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::get_status_filter(Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::get_status_filter(ctx.clone());
 
+        let ctx = ctx.read().await;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         // Register the user
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_user(&author, handle.clone(), None, 10)
             .await?;
 
         // Unregister the user
-        registry
-            .write()
-            .await
+        ctx.registry
             .unregister_user(&author, handle.clone(), 10)
             .await?;
 
@@ -221,33 +205,26 @@ mod test {
 
     #[tokio::test]
     async fn get_status_retired_by_org() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::get_status_filter(Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::get_status_filter(ctx.clone());
 
+        let ctx = ctx.read().await;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         // Register the user so that it can register orgs
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_user(&author, handle.clone(), None, 10)
             .await?;
 
         // Register the org
         let org_id = registry::Id::try_from("monadic")?;
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_org(&author, org_id.clone(), 10)
             .await?;
 
         // Unregister the org
-        registry
-            .write()
-            .await
+        ctx.registry
             .unregister_org(&author, org_id.clone(), 10)
             .await?;
 
