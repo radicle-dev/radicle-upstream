@@ -458,8 +458,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,

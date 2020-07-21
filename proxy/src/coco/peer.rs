@@ -189,7 +189,7 @@ impl Api {
     ///
     /// # Errors
     ///
-    ///   * The retrieving the project entities from the store fails.
+    ///   * Retrieval of the user entities from the store fails.
     #[allow(
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
@@ -217,9 +217,8 @@ impl Api {
     ///
     /// # Parameters
     ///
-    /// * `peer` - the peer API we're interacting through
     /// * `owner` - the owner of this peer, i.e. the current user
-    /// * `project_urn` - the [`RadUrn`] pointing to the project we're interested in
+    /// * `urn` - the [`RadUrn`] pointing to the project we're interested in
     ///
     /// # Errors
     ///
@@ -228,12 +227,12 @@ impl Api {
     pub fn revisions(
         &self,
         owner: &User,
-        project_urn: &RadUrn,
+        urn: &RadUrn,
     ) -> Result<NonEmpty<UserRevisions>, error::Error> {
-        let project = self.get_project(project_urn)?;
+        let project = self.get_project(urn)?;
         let mut user_revisions = vec![];
 
-        let (local_branches, local_tags) = self.with_browser(project_urn, |browser| {
+        let (local_branches, local_tags) = self.with_browser(urn, |browser| {
             Ok((
                 source::branches(browser, Some(BranchType::Local))?,
                 source::tags(browser)?,
@@ -251,7 +250,7 @@ impl Api {
         let tracked_peers = {
             let api = self.peer_api.lock().expect("unable to acquire lock");
             let storage = api.storage().reopen()?;
-            let repo = storage.open_repo(project_urn.clone())?;
+            let repo = storage.open_repo(urn.clone())?;
             repo.tracked()?
         };
 
@@ -267,7 +266,7 @@ impl Api {
 
             let api = self.peer_api.lock().expect("unable to acquire lock");
             let storage = api.storage().reopen()?;
-            let user = storage.get_rad_self_of(project_urn, peer_id.clone())?;
+            let user = storage.get_rad_self_of(urn, peer_id.clone())?;
 
             user_revisions.push(UserRevisions {
                 identity: (peer_id, user).into(),
@@ -281,11 +280,10 @@ impl Api {
         NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyUserRevisions)
     }
 
-    /// Get the project found at `project_urn`.
+    /// Get the project found at `urn`.
     ///
     /// # Errors
     ///
-    ///   * Parsing the `project_urn` fails.
     ///   * Resolving the project fails.
     pub fn get_project(
         &self,
@@ -316,16 +314,13 @@ impl Api {
     ///
     /// The function will result in an error if the mutex guard was poisoned. See
     /// [`std::sync::Mutex::lock`] for further details.
-    pub fn with_browser<F, T>(&self, project_urn: &RadUrn, callback: F) -> Result<T, error::Error>
+    pub fn with_browser<F, T>(&self, urn: &RadUrn, callback: F) -> Result<T, error::Error>
     where
         F: Send + FnOnce(&mut git::Browser) -> Result<T, error::Error>,
     {
-        let git_dir = {
-            let paths = self.paths();
-            paths.git_dir().join("")
-        };
+        let git_dir = self.monorepo();
 
-        let project = self.get_project(project_urn)?;
+        let project = self.get_project(urn)?;
         let default_branch = git::Branch::local(project.default_branch());
         let repo = git::Repository::new(git_dir)?;
         let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
@@ -574,8 +569,7 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_user(key.clone(), "cloudhead")?;
-        let user = super::verify_user(user)?;
+        let user = api.init_owner(key.clone(), "cloudhead")?;
         let project =
             api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
 
@@ -591,8 +585,7 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_user(key.clone(), "cloudhead")?;
-        let user = super::verify_user(user)?;
+        let user = api.init_owner(key.clone(), "cloudhead")?;
         let err = api.init_user(key, "cloudhead");
 
         if let Err(Error::EntityExists(urn)) = err {
@@ -615,8 +608,7 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_user(key.clone(), "cloudhead")?;
-        let user = super::verify_user(user)?;
+        let user = api.init_owner(key.clone(), "cloudhead")?;
         let _project =
             api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power")?;
 

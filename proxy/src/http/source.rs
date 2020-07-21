@@ -200,7 +200,7 @@ where
 {
     path("revisions")
         .and(warp::get())
-        .and(super::with_context(ctx.clone()))
+        .and(http::with_context(ctx.clone()))
         .and(http::with_owner_guard(ctx))
         .and(document::param::<String>(
             "project_id",
@@ -831,8 +831,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -967,8 +966,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -1022,8 +1020,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -1061,8 +1058,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -1116,8 +1112,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -1261,8 +1256,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -1302,8 +1296,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -1392,8 +1385,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_user(key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,

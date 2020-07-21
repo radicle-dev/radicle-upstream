@@ -1,6 +1,6 @@
 //! Proxy serving a specialized API to the Upstream UI.
 
-#![deny(unused_import_braces, unused_qualifications, warnings)]
+#![deny(missing_docs, unused_import_braces, unused_qualifications, warnings)]
 #![deny(
     clippy::all,
     // clippy::cargo,

@@ -6,6 +6,7 @@ use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
+use crate::coco;
 use crate::http;
 use crate::identity;
 use crate::registry;
@@ -53,7 +54,10 @@ where
 {
     path("identities")
         .and(http::with_context(ctx))
-        .and(document::param::<String>("id", "Unique ID of the Identity"))
+        .and(document::param::<coco::Urn>(
+            "id",
+            "Unique ID of the Identity",
+        ))
         .and(warp::get())
         .and(document::document(document::description(
             "Find Identity by ID",
@@ -81,6 +85,7 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -113,12 +118,12 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, id: String) -> Result<impl Reply, Rejection>
+    pub async fn get<R>(ctx: http::Ctx<R>, id: coco::Urn) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let id = identity::get(&ctx.peer_api, &id.parse().expect("could not parse id"))?;
+        let id = identity::get(&ctx.peer_api, &id)?;
         Ok(reply::json(&id))
     }
 }
