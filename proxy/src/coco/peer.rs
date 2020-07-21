@@ -299,7 +299,7 @@ impl Api {
     ///
     /// # Errors
     ///
-    ///   * Resolving the project fails.
+    ///   * Resolving the user fails.
     ///   * Could not successfully acquire a lock to the API.
     pub fn get_user(&self, urn: &RadUrn) -> Result<user::User<entity::Draft>, error::Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
