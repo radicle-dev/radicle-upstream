@@ -10,7 +10,7 @@
 <Remote store={txStore} let:data={transactions}>
   <Wallet
     dataCy="org-wallet"
-    transactions={orgTransactions(transactions)}
+    transactions={orgTransactions(transactions, params.id)}
     balance="3484"
     {accountId} />
 </Remote>
