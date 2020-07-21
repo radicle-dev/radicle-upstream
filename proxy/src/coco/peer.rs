@@ -233,7 +233,7 @@ impl Api {
         let project = self.get_project(project_urn)?;
         let mut user_revisions = vec![];
 
-        let (local_branches, local_tags) = self.with_browser(&project_urn, |browser| {
+        let (local_branches, local_tags) = self.with_browser(project_urn, |browser| {
             Ok((
                 source::branches(browser, Some(BranchType::Local))?,
                 source::tags(browser)?,
@@ -267,7 +267,7 @@ impl Api {
 
             let api = self.peer_api.lock().expect("unable to acquire lock");
             let storage = api.storage().reopen()?;
-            let user = storage.get_rad_self_of(&project_urn, peer_id.clone())?;
+            let user = storage.get_rad_self_of(project_urn, peer_id.clone())?;
 
             user_revisions.push(UserRevisions {
                 identity: (peer_id, user).into(),
@@ -374,7 +374,7 @@ impl Api {
                     .add_key(key.public())
                     .add_certifier(owner.urn())
                     .build()?;
-            meta.sign_owned(&key)?;
+            meta.sign_owned(key)?;
             let urn = meta.urn();
 
             let storage = api.storage().reopen()?;
