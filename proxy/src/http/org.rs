@@ -78,9 +78,9 @@ where
 {
     http::with_context(ctx)
         .and(warp::post())
-        .and(document::param::<String>("org_id", "Unique ID of the Org"))
+        .and(document::param::<registry::Id>("org_id", "Unique ID of the Org"))
         .and(path("projects"))
-        .and(document::param::<String>(
+        .and(document::param::<registry::ProjectName>(
             "project_name",
             "Name of the project",
         ))
@@ -282,8 +282,8 @@ mod handler {
     /// Register a project in the Registry.
     pub async fn register_project<R>(
         ctx: http::Ctx<R>,
-        org_id: String,
-        project_name: String,
+        org_id: registry::Id,
+        project_name: registry::ProjectName,
         input: http::RegisterProjectInput,
     ) -> Result<impl Reply, Rejection>
     where
@@ -724,7 +724,7 @@ mod test {
             .method("POST")
             .path(&format!("/{}/projects/{}", org_id, project_name))
             .json(&http::RegisterProjectInput {
-                maybe_coco_id: Some(urn.to_string()),
+                maybe_coco_id: Some(urn),
                 transaction_fee: registry::MINIMUM_FEE,
             })
             .reply(&api)

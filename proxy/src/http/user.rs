@@ -121,12 +121,12 @@ where
 {
     http::with_context(ctx)
         .and(warp::post())
-        .and(document::param::<String>(
+        .and(document::param::<registry::Id>(
             "handle",
             "ID of the user under which to register the project",
         ))
         .and(path("projects"))
-        .and(document::param::<String>(
+        .and(document::param::<registry::ProjectName>(
             "project_name",
             "Name of the project",
         ))
@@ -254,8 +254,8 @@ mod handler {
     /// Register a project in the Registry.
     pub async fn register_project<R>(
         ctx: http::Ctx<R>,
-        handle: String,
-        project_name: String,
+        handle: registry::Id,
+        project_name: registry::ProjectName,
         input: http::RegisterProjectInput,
     ) -> Result<impl Reply, Rejection>
     where
@@ -547,7 +547,7 @@ mod test {
         let ctx = http::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
-        let ctx = ctx.write().await;
+        let ctx = ctx.read().await;
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
@@ -573,7 +573,7 @@ mod test {
             .method("POST")
             .path(&format!("/{}/projects/{}", handle, project_name))
             .json(&http::RegisterProjectInput {
-                maybe_coco_id: Some(urn.to_string()),
+                maybe_coco_id: Some(urn),
                 transaction_fee: registry::MINIMUM_FEE,
             })
             .reply(&api)
@@ -616,7 +616,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
 
-        let ctx = ctx.write().await;
+        let ctx = ctx.read().await;
         // Register the user
         ctx.registry
             .register_user(&author, handle.clone(), None, 10)

@@ -1,8 +1,6 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
 use std::collections::HashMap;
-use std::convert::TryFrom;
-use std::str::FromStr;
 use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
@@ -257,7 +255,7 @@ pub struct RegisterProjectInput {
     /// User specified transaction fee.
     transaction_fee: registry::Balance,
     /// Optionally passed coco id to store for attestion.
-    maybe_coco_id: Option<String>,
+    maybe_coco_id: Option<coco::Urn>,
 }
 
 impl ToDocumentedType for RegisterProjectInput {
@@ -288,8 +286,8 @@ impl ToDocumentedType for RegisterProjectInput {
 async fn register_project<R>(
     ctx: Ctx<R>,
     domain_type: registry::DomainType,
-    domain_id_str: String,
-    project_name: String,
+    domain_id: registry::Id,
+    project_name: registry::ProjectName,
     input: RegisterProjectInput,
 ) -> Result<impl Reply, Rejection>
 where
@@ -300,16 +298,10 @@ where
 
     let ctx = ctx.read().await;
 
-    let maybe_coco_id = input
-        .maybe_coco_id
-        .map(|id| coco::Urn::from_str(&id).expect("Project RadUrn"));
-    let domain_id = registry::Id::try_from(domain_id_str).map_err(crate::error::Error::from)?;
     let domain = match domain_type {
         registry::DomainType::Org => registry::ProjectDomain::Org(domain_id),
         registry::DomainType::User => registry::ProjectDomain::User(domain_id),
     };
-    let project_name =
-        registry::ProjectName::try_from(project_name).map_err(crate::error::Error::from)?;
 
     let tx = ctx
         .registry
@@ -317,7 +309,7 @@ where
             &fake_pair,
             domain,
             project_name,
-            maybe_coco_id,
+            input.maybe_coco_id,
             input.transaction_fee,
         )
         .await?;
