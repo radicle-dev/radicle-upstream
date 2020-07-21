@@ -8,6 +8,7 @@
   import { create } from "../src/project.ts";
   import { getLocalState } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
+  import { fetch as fetchSession } from "../src/session.ts";
 
   import {
     Button,
@@ -163,6 +164,10 @@
         },
         isNew ? newRepositoryPath : existingRepositoryPath
       );
+
+      // Re-fetch session so we have the right permissions to enable the
+      // project registration button rithout a page-reload.
+      await fetchSession();
 
       push(path.projectSource(response.id));
       notification.info(
