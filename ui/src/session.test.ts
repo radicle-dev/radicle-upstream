@@ -9,7 +9,7 @@ jest.mock("./api");
 const defaultSettings = {
   appearance: { theme: "light" },
   registry: { network: "emulator" },
-  coco: { seeds: ["seed.radicle.xyz"] },
+  seeds: { seeds: ["seed.radicle.xyz"] },
 };
 
 describe("clearing", () => {
@@ -46,7 +46,7 @@ describe("registry settings", () => {
   });
 });
 
-describe("coco settings", () => {
+describe("seed settings", () => {
   it("parses seed textarea input", () => {
     const desiredResult = ["seed.radicle.xyz", "192.134.54.13", "192.168.1.0"];
 
@@ -65,11 +65,11 @@ describe("coco settings", () => {
   });
 
   it("sends a request to update CoCo settings when updateCoCo is called", () => {
-    session.updateCoCo({ seeds: ["new_seed.radicle.xyz"] });
+    session.updateSeeds({ seeds: ["new_seed.radicle.xyz"] });
 
     expect(api.set).toHaveBeenCalledWith("session/settings", {
       ...defaultSettings,
-      coco: { seeds: ["new_seed.radicle.xyz"] },
+      seeds: { seeds: ["new_seed.radicle.xyz"] },
     });
   });
 });

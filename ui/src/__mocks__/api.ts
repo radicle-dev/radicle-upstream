@@ -78,7 +78,7 @@ export const sessionMock: session.Session = {
     registry: {
       network: settings.Network.Emulator,
     },
-    coco: {
+    seeds: {
       seeds: ["seed.radicle.xyz"],
     },
   },
