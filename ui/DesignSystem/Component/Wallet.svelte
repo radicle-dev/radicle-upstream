@@ -62,7 +62,7 @@
         <SendReceive {address} />
       </div>
     </div>
-    <div class="transactions">
+    <div class="transactions" data-cy="transactions">
       <Title variant="large" style="padding: 1.25rem 1.5rem;">
         Transactions
       </Title>

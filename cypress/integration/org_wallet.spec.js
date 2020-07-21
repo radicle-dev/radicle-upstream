@@ -16,10 +16,13 @@ context("navigation", () => {
     // org wallet exists
     cy.pick("org-wallet").should("exist");
   });
-  it("has a balance", () => {
-    // balance is present
-    cy.pick("balance").should("exist");
-    cy.pick("amount").should("exist");
+  context("balance", () => {
+    // checks the balance component
+    it("has a balance", () => {
+      // balance is present
+      cy.pick("balance").should("exist");
+      cy.pick("amount").should("exist");
+    });
   });
   context("send-receive tab", () => {
     // send receive is there and functional
@@ -36,6 +39,13 @@ context("navigation", () => {
       cy.pick("send-tab").click();
       cy.pick("send").should("exist");
       // todo validate fields & test send functionality when implemented
+    });
+  });
+  context("transactions", () => {
+    // checks the transactions component
+    it("has transaction component", () => {
+      // balance is present
+      cy.pick("transactions").should("exist");
     });
   });
 });
