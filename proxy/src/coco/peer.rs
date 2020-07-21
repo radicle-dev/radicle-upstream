@@ -231,12 +231,9 @@ impl Api {
         project_urn: &RadUrn,
     ) -> Result<NonEmpty<UserRevisions>, error::Error> {
         let project = self.get_project(project_urn)?;
-        let api = self.peer_api.lock().expect("unable to acquire lock");
-        let storage = api.storage().reopen()?;
-        let repo = storage.open_repo(project.urn())?;
         let mut user_revisions = vec![];
 
-        let (local_branches, local_tags) = self.with_browser(&project.urn(), |browser| {
+        let (local_branches, local_tags) = self.with_browser(&project_urn, |browser| {
             Ok((
                 source::branches(browser, Some(BranchType::Local))?,
                 source::tags(browser)?,
@@ -251,7 +248,14 @@ impl Api {
             })
         }
 
-        for peer_id in repo.tracked()? {
+        let tracked_peers = {
+            let api = self.peer_api.lock().expect("unable to acquire lock");
+            let storage = api.storage().reopen()?;
+            let repo = storage.open_repo(project_urn.clone())?;
+            repo.tracked()?
+        };
+
+        for peer_id in tracked_peers {
             let remote_branches = self.with_browser(&project.urn(), |browser| {
                 source::branches(
                     browser,
@@ -261,7 +265,9 @@ impl Api {
                 )
             })?;
 
-            let user = repo.get_rad_self_of(peer_id.clone())?;
+            let api = self.peer_api.lock().expect("unable to acquire lock");
+            let storage = api.storage().reopen()?;
+            let user = storage.get_rad_self_of(&project_urn, peer_id.clone())?;
 
             user_revisions.push(UserRevisions {
                 identity: (peer_id, user).into(),
