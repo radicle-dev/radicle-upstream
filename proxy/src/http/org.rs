@@ -78,7 +78,10 @@ where
 {
     http::with_context(ctx)
         .and(warp::post())
-        .and(document::param::<registry::Id>("org_id", "Unique ID of the Org"))
+        .and(document::param::<registry::Id>(
+            "org_id",
+            "Unique ID of the Org",
+        ))
         .and(path("projects"))
         .and(document::param::<registry::ProjectName>(
             "project_name",
