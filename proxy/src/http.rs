@@ -18,6 +18,7 @@ use crate::coco;
 use crate::keystore;
 use crate::registry;
 
+mod account;
 mod avatar;
 mod control;
 mod doc;
@@ -66,6 +67,7 @@ where
     let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
 
+    let account_filter = path("accounts").and(account::filters(&Arc::clone(&registry)));
     let avatar_filter = avatar::get_filter();
     let control_filter = control::routes(
         enable_control,
@@ -100,6 +102,7 @@ where
     let user_filter = user::routes(registry, store, subscriptions);
 
     let api = path("v1").and(combine!(
+        account_filter,
         avatar_filter,
         control_filter,
         id_filter,
