@@ -9,19 +9,21 @@ use crate::http;
 use crate::registry;
 
 /// Combination of all transaction routes.
-pub fn filters<C: registry::Cache>(
-    cache: http::Shared<C>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    list_filter(cache)
+pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + 'static,
+{
+    list_filter(ctx)
 }
 
 /// `POST /transactions`
-fn list_filter<C: registry::Cache>(
-    cache: http::Shared<C>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + 'static,
+{
     path!("transactions")
         .and(warp::post())
-        .and(http::with_shared(cache))
+        .and(http::with_context(ctx))
         .and(warp::body::json())
         .and(document::document(document::description(
             "List transactions",
@@ -54,10 +56,13 @@ mod handler {
     use crate::registry;
 
     /// List all transactions.
-    pub async fn list<C: registry::Cache>(
-        cache: http::Shared<C>,
+    pub async fn list<R>(
+        ctx: http::Ctx<R>,
         input: super::ListInput,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Cache,
+    {
         // TODO(xla): Don't panic when trying to convert ids.
         let tx_ids = input
             .ids
@@ -67,7 +72,8 @@ mod handler {
                     .expect("unable to get hash from string")
             })
             .collect();
-        let txs = cache.read().await.list_transactions(tx_ids)?;
+        let ctx = ctx.read().await;
+        let txs = ctx.registry.list_transactions(tx_ids)?;
 
         Ok(reply::json(&txs))
     }
@@ -211,25 +217,22 @@ impl ToDocumentedType for ListInput {
 #[cfg(test)]
 mod test {
     use std::convert::TryFrom;
-    use std::sync::Arc;
 
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use crate::error;
+    use crate::http;
     use crate::registry::{self, Cache as _};
 
     #[tokio::test]
-    async fn list() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let cache = registry::Cacher::new(registry, &store);
+    async fn list() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
         let now = registry::Timestamp::now();
         let fee = registry::MINIMUM_FEE;
 
@@ -252,11 +255,11 @@ mod test {
             fee,
         };
 
-        cache.cache_transaction(tx.clone()).unwrap();
+        let ctx = ctx.read().await;
+        ctx.registry.cache_transaction(tx.clone()).unwrap();
 
-        let transactions = cache.list_transactions(vec![]).unwrap();
+        let transactions = ctx.registry.list_transactions(vec![]).unwrap();
 
-        let api = super::filters(Arc::new(RwLock::new(cache)));
         let res = request()
             .method("POST")
             .path("/transactions")
@@ -268,5 +271,7 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::OK);
         assert_eq!(have, json!(transactions));
+
+        Ok(())
     }
 }

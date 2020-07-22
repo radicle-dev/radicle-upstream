@@ -2,8 +2,6 @@
 
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
-use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -17,60 +15,46 @@ use crate::identity;
 use crate::registry;
 
 /// Prefixed filters.
-pub fn routes<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
     path("source").and(
-        blob_filter(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store))
-            .or(branches_filter(Arc::clone(&peer)))
-            .or(commit_filter(Arc::clone(&peer)))
-            .or(commits_filter(Arc::clone(&peer)))
+        blob_filter(ctx.clone())
+            .or(branches_filter(ctx.clone()))
+            .or(commit_filter(ctx.clone()))
+            .or(commits_filter(ctx.clone()))
             .or(local_state_filter())
-            .or(revisions_filter(Arc::clone(&peer), registry, store))
-            .or(tags_filter(Arc::clone(&peer)))
-            .or(tree_filter(peer)),
+            .or(revisions_filter(ctx.clone()))
+            .or(tags_filter(ctx.clone()))
+            .or(tree_filter(ctx)),
     )
 }
 
 /// Combination of all source filters.
 #[cfg(test)]
-fn filters<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    blob_filter(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store))
-        .or(branches_filter(Arc::clone(&peer)))
-        .or(commit_filter(Arc::clone(&peer)))
-        .or(commits_filter(Arc::clone(&peer)))
+    blob_filter(ctx.clone())
+        .or(branches_filter(ctx.clone()))
+        .or(commit_filter(ctx.clone()))
+        .or(commits_filter(ctx.clone()))
         .or(local_state_filter())
-        .or(revisions_filter(Arc::clone(&peer), registry, store))
-        .or(tags_filter(Arc::clone(&peer)))
-        .or(tree_filter(peer))
+        .or(revisions_filter(ctx.clone()))
+        .or(tags_filter(ctx.clone()))
+        .or(tree_filter(ctx))
 }
 
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`
-fn blob_filter<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn blob_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
     path("blob")
         .and(warp::get())
-        .and(http::with_peer(peer))
-        .and(http::with_shared(registry))
-        .and(http::with_store(store))
+        .and(http::with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -96,12 +80,15 @@ where
 }
 
 /// `GET /branches/<project_id>`
-fn branches_filter(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn branches_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("branches")
         .and(warp::get())
-        .and(http::with_peer(peer))
+        .and(http::with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -126,12 +113,15 @@ fn branches_filter(
 }
 
 /// `GET /commit/<project_id>/<sha1>`
-fn commit_filter(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn commit_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("commit")
         .and(warp::get())
-        .and(http::with_peer(peer))
+        .and(http::with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -150,12 +140,15 @@ fn commit_filter(
 }
 
 /// `GET /commits/<project_id>?branch=<branch>`
-fn commits_filter(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn commits_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("commits")
         .and(warp::get())
-        .and(http::with_peer(peer))
+        .and(http::with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -205,16 +198,15 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 
 /// `GET /revisions/<project_id>`
 fn revisions_filter<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    store: http::Shared<kv::Store>,
+    ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
     path("revisions")
         .and(warp::get())
-        .and(http::with_peer(Arc::clone(&peer)))
+        .and(http::with_context(ctx.clone()))
+        .and(http::with_owner_guard(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -234,17 +226,17 @@ where
             )
             .description("List of branches and tags"),
         ))
-        .and(http::with_owner_guard(peer, registry, store))
         .and_then(handler::revisions)
 }
 
 /// `GET /tags/<project_id>`
-fn tags_filter(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn tags_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("tags")
         .and(warp::get())
-        .and(http::with_peer(peer))
+        .and(http::with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -263,12 +255,13 @@ fn tags_filter(
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
-fn tree_filter(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn tree_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("tree")
         .and(warp::get())
-        .and(http::with_peer(peer))
+        .and(http::with_context(ctx))
         .and(document::param::<coco::Urn>(
             "project_id",
             "ID of the project the blob is part of",
@@ -295,25 +288,19 @@ fn tree_filter(
 
 /// Source handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use std::sync::Arc;
-
-    use tokio::sync::Mutex;
     use warp::path::Tail;
     use warp::{reply, Rejection, Reply};
 
     use radicle_surf::vcs::git;
 
     use crate::coco;
-    use crate::error::Error;
     use crate::http;
     use crate::registry;
     use crate::session;
 
     /// Fetch a [`coco::Blob`].
     pub async fn blob<R>(
-        api: Arc<Mutex<coco::PeerApi>>,
-        registry: http::Shared<R>,
-        store: http::Shared<kv::Store>,
+        ctx: http::Ctx<R>,
         project_urn: coco::Urn,
         super::BlobQuery {
             path,
@@ -323,17 +310,16 @@ mod handler {
         }: super::BlobQuery,
     ) -> Result<impl Reply, Rejection>
     where
-        R: registry::Client,
+        R: registry::Client + 'static,
     {
-        let registry = registry.read().await;
-        let store = store.read().await;
-        let session = session::current(Arc::clone(&api), &*registry, &store).await?;
+        let ctx = ctx.read().await;
 
-        let api = api.lock().await;
-        let project = coco::get_project(&*api, &project_urn)?;
+        let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
+
+        let project = ctx.peer_api.get_project(&project_urn)?;
 
         let default_branch = match peer_id {
-            Some(peer_id) if peer_id != *api.peer_id() => {
+            Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
             },
             Some(_) | None => git::Branch::local(project.default_branch()),
@@ -344,7 +330,7 @@ mod handler {
         } else {
             None
         };
-        let blob = coco::with_browser(&*api, &project_urn, |mut browser| {
+        let blob = ctx.peer_api.with_browser(&project_urn, |mut browser| {
             coco::blob(&mut browser, default_branch, revision, &path, theme)
         })?;
 
@@ -352,13 +338,16 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`].
-    pub async fn branches(
-        peer: Arc<Mutex<coco::PeerApi>>,
+    pub async fn branches<R>(
+        ctx: http::Ctx<R>,
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
-    ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
-        let branches = coco::with_browser(&peer, &project_urn, |browser| {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let branches = ctx.peer_api.with_browser(&project_urn, |browser| {
             coco::branches(browser, Some(coco::into_branch_type(peer_id)))
         })?;
 
@@ -366,13 +355,16 @@ mod handler {
     }
 
     /// Fetch a [`coco::Commit`].
-    pub async fn commit(
-        api: Arc<Mutex<coco::PeerApi>>,
+    pub async fn commit<R>(
+        ctx: http::Ctx<R>,
         project_urn: coco::Urn,
         sha1: String,
-    ) -> Result<impl Reply, Rejection> {
-        let api = api.lock().await;
-        let commit = coco::with_browser(&api, &project_urn, |mut browser| {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let commit = ctx.peer_api.with_browser(&project_urn, |mut browser| {
             coco::commit(&mut browser, &sha1)
         })?;
 
@@ -380,13 +372,16 @@ mod handler {
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
-    pub async fn commits(
-        api: Arc<Mutex<coco::PeerApi>>,
+    pub async fn commits<R>(
+        ctx: http::Ctx<R>,
         project_urn: coco::Urn,
         query: super::CommitsQuery,
-    ) -> Result<impl Reply, Rejection> {
-        let api = api.lock().await;
-        let commits = coco::with_browser(&api, &project_urn, |mut browser| {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let commits = ctx.peer_api.with_browser(&project_urn, |mut browser| {
             coco::commits(&mut browser, query.into())
         })?;
 
@@ -401,77 +396,67 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions(
-        api: Arc<Mutex<coco::PeerApi>>,
-        project_urn: coco::Urn,
+    pub async fn revisions<R>(
+        ctx: http::Ctx<R>,
         owner: coco::User,
-    ) -> Result<impl Reply, Rejection> {
-        let api = &*api.lock().await;
-        let storage = api.storage().reopen().map_err(Error::from)?;
-        let repo = storage
-            .open_repo(project_urn.clone())
-            .map_err(Error::from)?;
-        let peers = repo
-            .tracked()
-            .map_err(Error::from)?
-            .map(|peer_id| {
-                repo.get_rad_self_of(peer_id.clone())
-                    .map(|user| (peer_id.clone(), user))
-                    .map_err(Error::from)
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-        let peer_id = api.peer_id().clone();
-        let revisions: Vec<super::Revisions> = coco::with_browser(api, &project_urn, |browser| {
-            // TODO(finto): downgraded verified user, which should not be needed.
-            let owner = owner.to_data().build()?;
-            Ok(coco::revisions(browser, peer_id, owner, peers)?
-                .into_iter()
-                .map(|revision| revision.into())
-                .collect())
-        })?;
+        project_urn: coco::Urn,
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let peers = ctx.peer_api.tracked(&project_urn)?;
+        let peer_id = ctx.peer_api.peer_id();
+        let revisions: Vec<super::Revisions> =
+            ctx.peer_api.with_browser(&project_urn, |browser| {
+                // TODO(finto): downgraded verified user, which should not be needed.
+                let owner = owner.to_data().build()?;
+                Ok(coco::revisions(browser, peer_id, owner, peers)?
+                    .into_iter()
+                    .map(|revision| revision.into())
+                    .collect())
+            })?;
 
         Ok(reply::json(&revisions))
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags(
-        peer: Arc<Mutex<coco::PeerApi>>,
-        project_urn: coco::Urn,
-    ) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
-        let tags = coco::with_browser(&peer, &project_urn, |browser| coco::tags(browser))?;
+    pub async fn tags<R>(ctx: http::Ctx<R>, project_urn: coco::Urn) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let tags = ctx
+            .peer_api
+            .with_browser(&project_urn, |browser| coco::tags(browser))?;
 
         Ok(reply::json(&tags))
     }
 
     /// Fetch a [`coco::Tree`].
-    pub async fn tree(
-        api: Arc<Mutex<coco::PeerApi>>,
+    pub async fn tree<R>(
+        ctx: http::Ctx<R>,
         project_urn: coco::Urn,
         super::TreeQuery {
             prefix,
             peer_id,
             revision,
         }: super::TreeQuery,
-    ) -> Result<impl Reply, Rejection> {
-        log::debug!(
-            "tree.query.prefix={:?}, tree.query.peer_id={:?}, tree.query.revision={:?}",
-            prefix,
-            peer_id,
-            revision
-        );
-        let api = api.lock().await;
-        let project = coco::get_project(&api, &project_urn)?;
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
 
+        let project = ctx.peer_api.get_project(&project_urn)?;
         let default_branch = match peer_id {
-            Some(peer_id) if peer_id != *api.peer_id() => {
+            Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
             },
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
-        log::debug!("tree.default_branch={:?}", default_branch);
-        let tree = coco::with_browser(&api, &project_urn, |mut browser| {
+        let tree = ctx.peer_api.with_browser(&project_urn, |mut browser| {
             coco::tree(&mut browser, default_branch, revision, prefix)
         })?;
 
@@ -865,36 +850,28 @@ impl<S> From<coco::Revisions<peer::PeerId, user::User<S>>> for Revisions {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::keys::SecretKey;
     use radicle_surf::vcs::git;
 
     use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
-    use crate::registry;
     use crate::session;
 
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let owner = coco::init_user(&*peer.lock().await, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &*peer.lock().await,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -909,7 +886,7 @@ mod test {
         };
         let default_branch = git::Branch::local(platinum_project.default_branch());
         let path = "text/arrows.txt";
-        let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
+        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::blob(
                 &mut browser,
                 default_branch.clone(),
@@ -918,12 +895,6 @@ mod test {
                 None,
             )
         })?;
-
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
 
         let query = super::BlobQuery {
             path: path.to_string(),
@@ -977,7 +948,7 @@ mod test {
 
         // Get binary blob.
         let path = "bin/ls";
-        let want = coco::with_browser(&*peer.lock().await, &urn, |browser| {
+        let want = ctx.peer_api.with_browser(&urn, |browser| {
             coco::blob(browser, default_branch, Some(revision.clone()), path, None)
         })?;
 
@@ -1028,18 +999,14 @@ mod test {
     #[tokio::test]
     async fn blob_dev_branch() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let owner = coco::init_user(&*peer.lock().await, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &*peer.lock().await,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -1054,7 +1021,7 @@ mod test {
         };
         let default_branch = git::Branch::local(platinum_project.default_branch());
         let path = "here-we-are-on-a-dev-branch.lol";
-        let want = coco::with_browser(&*peer.lock().await, &urn, |mut browser| {
+        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::blob(
                 &mut browser,
                 default_branch.clone(),
@@ -1063,12 +1030,6 @@ mod test {
                 None,
             )
         })?;
-
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
 
         let query = super::BlobQuery {
             path: path.to_string(),
@@ -1092,18 +1053,14 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -1112,13 +1069,10 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let want = coco::with_browser(&peer, &urn, |browser| coco::branches(browser, None))?;
+        let want = ctx
+            .peer_api
+            .with_browser(&urn, |browser| coco::branches(browser, None))?;
 
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
         let res = request()
             .method("GET")
             .path(&format!("/branches/{}", urn))
@@ -1137,19 +1091,14 @@ mod test {
     #[allow(clippy::indexing_slicing)]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -1159,15 +1108,10 @@ mod test {
         let urn = platinum_project.urn();
 
         let sha1 = "3873745c8f6ffb45c990eb23b491d4b4b6182f95";
-        let want = coco::with_browser(&peer, &urn, |mut browser| {
-            coco::commit_header(&mut browser, sha1)
-        })?;
+        let want = ctx
+            .peer_api
+            .with_browser(&urn, |mut browser| coco::commit_header(&mut browser, sha1))?;
 
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
         let res = request()
             .method("GET")
             .path(&format!("/commit/{}/{}", urn, sha1))
@@ -1201,18 +1145,14 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -1223,17 +1163,12 @@ mod test {
 
         let branch = git::Branch::local("master");
         let head = "223aaf87d6ea62eef0014857640fd7c8dd0f80b5";
-        let (want, head_commit) = coco::with_browser(&peer, &urn, |mut browser| {
+        let (want, head_commit) = ctx.peer_api.with_browser(&urn, |mut browser| {
             let want = coco::commits(&mut browser, branch.clone())?;
             let head_commit = coco::commit_header(&mut browser, head)?;
             Ok((want, head_commit))
         })?;
 
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
         let res = request()
             .method("GET")
             .path(&format!("/commits/{}?branch={}", urn, branch.name))
@@ -1256,21 +1191,10 @@ mod test {
     #[tokio::test]
     async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key.clone(), &tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let path = "../fixtures/git-platinum";
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
         let res = request()
             .method("GET")
             .path(&format!("/local-state/{}", path))
@@ -1299,25 +1223,22 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let peer_id = peer.peer_id().clone();
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let id = identity::create(&peer, key.clone(), "cloudhead")?;
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let peer_id = ctx.peer_api.peer_id();
 
-        let owner = coco::get_user(&peer, &id.clone().urn)?;
+        let id = identity::create(&ctx.peer_api, key.clone(), "cloudhead")?;
+
+        let owner = ctx.peer_api.get_user(&id.clone().urn)?;
         let owner = coco::verify_user(owner)?;
 
-        session::set_identity(&store, id)?;
+        session::set_identity(&ctx.store, id)?;
 
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -1327,13 +1248,7 @@ mod test {
         let urn = platinum_project.urn();
 
         let (remote, fintohaps) =
-            coco::control::track_fake_peer(&peer, key, &platinum_project, "fintohaps");
-
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
+            coco::control::track_fake_peer(&ctx.peer_api, key, &platinum_project, "fintohaps");
 
         let res = request()
             .method("GET")
@@ -1385,18 +1300,14 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -1405,13 +1316,10 @@ mod test {
         )?;
         let urn = platinum_project.urn();
 
-        let want = coco::with_browser(&peer, &urn, |browser| coco::tags(browser))?;
+        let want = ctx
+            .peer_api
+            .with_browser(&urn, |browser| coco::tags(browser))?;
 
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
         let res = request()
             .method("GET")
             .path(&format!("/tags/{}", urn))
@@ -1432,18 +1340,14 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -1459,7 +1363,7 @@ mod test {
         let prefix = "src";
 
         let default_branch = git::Branch::local(platinum_project.default_branch());
-        let want = coco::with_browser(&peer, &urn, |mut browser| {
+        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::tree(
                 &mut browser,
                 default_branch,
@@ -1467,12 +1371,6 @@ mod test {
                 Some(prefix.to_string()),
             )
         })?;
-
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
 
         let query = super::TreeQuery {
             prefix: Some(prefix.to_string()),
@@ -1527,19 +1425,16 @@ mod test {
             .add(b'[')
             .add(b']')
             .add(b'=');
+
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let config = coco::config::default(key.clone(), tmp_dir)?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-        let owner = coco::verify_user(owner)?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
-            &peer,
+            &ctx.peer_api,
             &key,
             &owner,
             "git-platinum",
@@ -1554,15 +1449,9 @@ mod test {
         };
 
         let default_branch = git::Branch::local(platinum_project.default_branch());
-        let want = coco::with_browser(&peer, &urn, |mut browser| {
+        let want = ctx.peer_api.with_browser(&urn, |mut browser| {
             coco::tree(&mut browser, default_branch, Some(revision.clone()), None)
         })?;
-
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
 
         let query = super::TreeQuery {
             prefix: None,
