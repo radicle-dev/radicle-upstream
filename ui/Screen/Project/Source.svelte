@@ -72,8 +72,8 @@
     );
   };
 
+  // TODO(rudolfs): this functionality should be part of navigation/routing.
   let unsubscribe;
-
   const navigateOnReady = (path, store) => {
     if (unsubscribe) {
       unsubscribe();
