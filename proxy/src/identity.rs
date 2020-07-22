@@ -13,6 +13,8 @@ use crate::registry;
 
 pub use shared_identifier::SharedIdentifier;
 
+use radicle_registry_client::{ed25519, CryptoPair};
+
 /// The users personal identifying metadata and keys.
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,6 +25,8 @@ pub struct Identity {
     pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: SharedIdentifier,
+    /// Public key associated with this identity.
+    pub account_id: ed25519::Public,
     /// Bundle of user provided data.
     pub metadata: Metadata,
     /// Indicator if the identity is registered on the Registry.
@@ -41,6 +45,7 @@ impl<S> From<(peer::PeerId, user::User<S>)> for Identity {
                 handle: user.name().to_string(),
                 peer_id,
             },
+            account_id: ed25519::Pair::from_legacy_string("//Alice", None).public(),
             metadata: Metadata {
                 handle: user.name().to_string(),
             },
