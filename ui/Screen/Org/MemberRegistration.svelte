@@ -65,7 +65,6 @@
     if (validating) validation.validate(userHandle);
   }
 
-  $: imageUrl = $validation.status === ValidationStatus.Success && "";
   $: disableSubmit = $validation.status !== ValidationStatus.Success;
 </script>
 
