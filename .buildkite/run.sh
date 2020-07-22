@@ -58,6 +58,9 @@ time yarn lint
 echo "--- Run app prettier checks"
 time yarn prettier:check
 
+echo "--- Run app svelte checks"
+time yarn svelte:check
+
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test
 
