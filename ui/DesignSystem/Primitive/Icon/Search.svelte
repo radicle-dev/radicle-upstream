@@ -1,16 +1,12 @@
 <script>
+  import IconWrapper from "./IconWrapper.svelte";
+
+  export let dataCy = null;
   export let style = null;
   export let variant = "normal"; // normal | small
 </script>
 
-<svg
-  on:click
-  style={`flex-shrink:0;${style}`}
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="var(--color-foreground-level-5)"
-  xmlns="http://www.w3.org/2000/svg">
+<IconWrapper on:click {dataCy} {style}>
   {#if variant === 'normal'}
     <path
       fill-rule="evenodd"
@@ -32,4 +28,4 @@
       14.4765L19.7071 18.2928C20.0976 18.6834 20.0976 19.3165 19.7071
       19.7071C19.3165 20.0976 18.6834 20.0976 18.2928 19.7071L14.4765 15.8907Z" />
   {/if}
-</svg>
+</IconWrapper>

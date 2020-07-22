@@ -1,15 +1,12 @@
 <script>
+  import IconWrapper from "./IconWrapper.svelte";
+
+  export let dataCy = null;
   export let style = null;
   export let variant = "plant"; // eyes | plant | sight | tent
 </script>
 
-<svg
-  width="48"
-  height="48"
-  viewBox="0 0 48 48"
-  style={`flex-shrink:0;${style}`}
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg">
+<IconWrapper on:click {dataCy} {style} width="48" height="48">
   {#if variant === 'plant'}
     <path
       d="M22.5333 28H9.3335C9.3335 28 11.6221 36.7249 15.2231 40.9222C17.6751
@@ -243,5 +240,4 @@
       </clipPath>
     </defs>
   {/if}
-
-</svg>
+</IconWrapper>

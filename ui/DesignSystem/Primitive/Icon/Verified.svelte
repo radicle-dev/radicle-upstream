@@ -1,19 +1,13 @@
 <script>
+  import IconWrapper from "./IconWrapper.svelte";
+
   export let dataCy = null;
   export let style = null;
   export let size = "small"; // small | large
 </script>
 
 {#if size === 'small'}
-  <svg
-    on:click
-    data-cy={dataCy}
-    style={`flex-shrink:0;${style}`}
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="var(--color-foreground-level-5)"
-    xmlns="http://www.w3.org/2000/svg">
+  <IconWrapper on:click {dataCy} {style} width="16" height="16">
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
@@ -43,17 +37,9 @@
       1.20081L10.2022 1.36062C9.92082 1.40583 9.63354 1.32885 9.41248
       1.14902L8.63102 0.513322ZM6.99995 11.4142L11.7071 6.70706L10.2928
       5.29285L6.99995 8.58574L5.20706 6.79285L3.79285 8.20706L6.99995 11.4142Z" />
-  </svg>
+  </IconWrapper>
 {:else if size === 'large'}
-  <svg
-    on:click
-    data-cy={dataCy}
-    style={`flex-shrink:0;${style}`}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="var(--color-foreground-level-5)"
-    xmlns="http://www.w3.org/2000/svg">
+  <IconWrapper on:click {dataCy} {style}>
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
@@ -87,5 +73,5 @@
       11.2929C5.90237 11.6834 5.90237 12.3166 6.29289 12.7071L10.2929
       16.7071C10.4899 16.9041 10.76 17.01 11.0384 16.9993C11.3167 16.9886 11.578
       16.8623 11.7593 16.6508L17.7593 9.65079Z" />
-  </svg>
+  </IconWrapper>
 {/if}
