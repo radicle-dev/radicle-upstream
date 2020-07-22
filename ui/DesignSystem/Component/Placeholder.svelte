@@ -2,7 +2,7 @@
   export let style = null;
 </script>
 
-<style type="text/css">
+<style>
   rect,
   path {
     fill: none;
