@@ -130,7 +130,7 @@ mod handler {
 
 impl ToDocumentedType for identity::Identity {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(5);
+        let mut properties = std::collections::HashMap::with_capacity(6);
         properties.insert("avatarFallback".into(), avatar::Avatar::document());
         properties.insert(
             "id".into(),
@@ -151,6 +151,12 @@ impl ToDocumentedType for identity::Identity {
             document::string()
                 .description("Unique identifier that can be shared and looked up")
                 .example("cloudhead@123abcd.git"),
+        );
+        properties.insert(
+            "accountId".into(),
+            document::string()
+                .description("Public key of identity")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
 
         document::DocumentedType::from(properties).description("Unique identity")
@@ -238,6 +244,7 @@ impl ToDocumentedType for CreateInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
+    use radicle_registry_client::{ed25519, CryptoPair};
     use serde_json::{json, Value};
     use warp::http::StatusCode;
     use warp::test::request;
@@ -289,7 +296,8 @@ mod test {
                         "handle": "cloudhead",
                     },
                     "registered": Value::Null,
-                    "shareableEntityIdentifier": &shareable_entity_identifier
+                    "shareableEntityIdentifier": &shareable_entity_identifier,
+                    "accountId": ed25519::Pair::from_legacy_string("//Alice", None).public()
                 })
             );
         });
@@ -328,6 +336,7 @@ mod test {
                 metadata: identity::Metadata { handle },
                 registered: None,
                 avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
+                account_id: ed25519::Pair::from_legacy_string("//Alice", None).public(),
             })
         );
 
