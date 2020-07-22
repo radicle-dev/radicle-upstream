@@ -422,7 +422,8 @@ mod handler {
             .collect::<Result<Vec<_>, _>>()?;
         let peer_id = api.peer_id().clone();
         let revisions: Vec<super::Revisions> = coco::with_browser(api, &project_urn, |browser| {
-            let owner = owner.to_data().build()?; // TODO(finto): downgraded verified user, which should not be needed.
+            // TODO(finto): downgraded verified user, which should not be needed.
+            let owner = owner.to_data().build()?;
             Ok(coco::revisions(browser, peer_id, owner, peers)?
                 .into_iter()
                 .map(|revision| revision.into())
