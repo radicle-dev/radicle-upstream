@@ -233,19 +233,14 @@ context("project registration", () => {
 
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
 
-        cy.pick("deposit", "amount").contains("0.00001");
-        cy.pick("deposit", "amount").trigger("mouseover");
-        cy.pick("tooltip").contains("$0.00001");
-        cy.pick("deposit", "amount").trigger("mouseout");
-
         cy.pick("transaction-fee", "amount").contains("0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseover");
         cy.pick("tooltip").contains("$0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-        cy.pick("total", "amount").contains("0.000011");
+        cy.pick("total", "amount").contains("0.000001");
         cy.pick("total", "amount").trigger("mouseover");
-        cy.pick("tooltip").contains("$0.000011");
+        cy.pick("tooltip").contains("$0.000001");
         cy.pick("total", "amount").trigger("mouseout");
 
         // submit the transaction
@@ -274,19 +269,14 @@ context("project registration", () => {
 
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
 
-        cy.pick("deposit", "amount").contains("0.00001");
-        cy.pick("deposit", "amount").trigger("mouseover");
-        cy.pick("tooltip").contains("$0.00001");
-        cy.pick("deposit", "amount").trigger("mouseover");
-
         cy.pick("transaction-fee", "amount").contains("0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseover");
         cy.pick("tooltip").contains("$0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseover");
 
-        cy.pick("total", "amount").contains("0.000011");
+        cy.pick("total", "amount").contains("0.000001");
         cy.pick("total", "amount").trigger("mouseover");
-        cy.pick("tooltip").contains("$0.000011");
+        cy.pick("tooltip").contains("$0.000001");
         cy.pick("total", "amount").trigger("mouseover");
 
         cy.pick("summary", "message").contains("Project registration");
