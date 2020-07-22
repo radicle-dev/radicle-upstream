@@ -44,6 +44,8 @@ context("add member to org", () => {
       cy.pick("message").contains("Member registration");
       cy.pick("subject").contains("user2");
 
+      cy.pick("registration-fee").should("not.exist");
+
       cy.pick("transaction-fee", "amount").contains("0.000001");
       cy.pick("transaction-fee", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.000001");
