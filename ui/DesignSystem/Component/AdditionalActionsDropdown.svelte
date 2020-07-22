@@ -38,6 +38,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
     border-radius: 4px;
     cursor: pointer;
     outline-style: none;
@@ -131,7 +132,7 @@
 
       {#if menuItems}
         <div class="menu" data-cy="dropdown-menu">
-          {#each menuItems as item, index}
+          {#each menuItems as item}
             <div
               title={item.tooltip}
               data-cy={item.dataCy}

@@ -1,17 +1,13 @@
 <script>
+  import IconWrapper from "./IconWrapper.svelte";
+
+  export let dataCy = null;
   export let style = null;
   export let size = "normal"; // normal | big | huge
 </script>
 
 {#if size === 'normal'}
-  <svg
-    on:click
-    {style}
-    width="8"
-    height="10"
-    viewBox="0 0 8 10"
-    fill="var(--color-foreground-level-5)"
-    xmlns="http://www.w3.org/2000/svg">
+  <IconWrapper on:click {dataCy} {style} width="8" height="10">
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
@@ -24,16 +20,9 @@
       9.25V0.75ZM1.50495 5.75H3.63168L1.50495 2.96678V5.75ZM2.27194
       1.5H4.29066C5.54392 1.5 6.5 2.42071 6.5 3.6C6.5 4.43031 6.03085 5.14391
       5.33051 5.50272L2.27194 1.5Z" />
-  </svg>
+  </IconWrapper>
 {:else if size === 'big'}
-  <svg
-    on:click
-    {style}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="var(--color-foreground-level-5)"
-    xmlns="http://www.w3.org/2000/svg">
+  <IconWrapper on:click {dataCy} {style}>
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
@@ -44,16 +33,9 @@
       7.55228 19 7 19C6.44772 19 6 18.5523 6 18V6ZM8 13H11.5316L8
       8.76205V13ZM9.13504 7H13C14.6569 7 16 8.34315 16 10C16 11.3083 15.1625
       12.421 13.9944 12.8313L9.13504 7Z" />
-  </svg>
+  </IconWrapper>
 {:else if size === 'huge'}
-  <svg
-    on:click
-    {style}
-    width="22"
-    height="26"
-    viewBox="0 0 22 26"
-    fill="var(--color-foreground-level-5)"
-    xmlns="http://www.w3.org/2000/svg">
+  <IconWrapper on:click {dataCy} {style} width="22" height="26">
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
@@ -66,5 +48,5 @@
       14.8571H10.1413L3.66667 6.98665V14.8571ZM5.74758 3.71428H12.8333C15.8709
       3.71428 18.3333 6.20869 18.3333 9.2857C18.3333 11.7154 16.798 13.7818
       14.6564 14.5437L5.74758 3.71428Z" />
-  </svg>
+  </IconWrapper>
 {/if}

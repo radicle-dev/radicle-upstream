@@ -32,8 +32,11 @@
     grid-template-columns: 2.5rem auto auto;
     grid-column-gap: 1rem;
     padding: 0.75rem;
-    border-top: 1px solid var(--color-foreground-level-2);
+    border-bottom: 1px solid var(--color-foreground-level-2);
     cursor: pointer;
+  }
+  .item:last-child {
+    border: none;
   }
   .item:hover {
     background-color: var(--color-foreground-level-1);

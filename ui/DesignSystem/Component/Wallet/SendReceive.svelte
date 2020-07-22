@@ -2,7 +2,7 @@
   import { Button, Input, Icon, Title } from "../../Primitive";
   import Receive from "./Receive.svelte";
 
-  export let address = null;
+  export let accountId = null;
 
   $: currentlyActiveSend = true;
 </script>
@@ -112,6 +112,6 @@
       </div>
     </div>
   {:else}
-    <Receive {address} />
+    <Receive {accountId} />
   {/if}
 </div>

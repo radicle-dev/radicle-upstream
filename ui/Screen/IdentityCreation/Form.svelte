@@ -65,6 +65,13 @@
   } else if ($store.status === remote.Status.Error) {
     dispatch("error", { message: $store.error.message });
   }
+
+  const handleCreateButtonClick = () => {
+    beginValidation = true;
+    validate();
+    if (!validatejs.isEmpty(validations)) return;
+    create({ handle: handle });
+  };
 </script>
 
 <style>
@@ -104,12 +111,7 @@
       <Button
         dataCy="create-id-button"
         disabled={!handle || validations || $store.status === remote.Status.Loading}
-        on:click={() => {
-          beginValidation = true;
-          validate();
-          if (!validatejs.isEmpty(validations)) return;
-          create({ handle: handle });
-        }}>
+        on:click={handleCreateButtonClick}>
         Create
       </Button>
     </div>

@@ -48,6 +48,7 @@ export const createStore = <T>(): Store<T> => {
       return starter();
     }
   });
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const { subscribe, update } = internalStore;
 
   const updateInternalStore: Update<T> = (

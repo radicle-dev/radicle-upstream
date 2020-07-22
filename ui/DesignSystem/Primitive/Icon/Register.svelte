@@ -1,15 +1,11 @@
 <script>
+  import IconWrapper from "./IconWrapper.svelte";
+
+  export let dataCy = null;
   export let style = null;
 </script>
 
-<svg
-  on:click
-  {style}
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="var(--color-foreground-level-5)"
-  xmlns="http://www.w3.org/2000/svg">
+<IconWrapper on:click {dataCy} {style}>
   <path
     d="M8 6C7.44772 6 7 6.44772 7 7C7 7.55228 7.44772 8 8 8H10C10.5523 8 11
     7.55228 11 7C11 6.44772 10.5523 6 10 6H8Z" />
@@ -31,4 +27,4 @@
     21H16C17.6569 21 19 19.6569 19 18ZM7 5C6.44772 5 6 5.44772 6 6V18C6 18.5523
     6.44772 19 7 19H16C16.5523 19 17 18.5523 17 18V13.4142L14.414 16.0002L12
     17L12.9998 14.586L17 10.5858V6C17 5.44772 16.5523 5 16 5H7Z" />
-</svg>
+</IconWrapper>

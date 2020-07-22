@@ -6,6 +6,8 @@ use librad::keys;
 use librad::meta::user;
 use librad::peer;
 
+use radicle_registry_client::{ed25519, CryptoPair};
+
 use crate::avatar;
 use crate::coco;
 use crate::error;
@@ -23,6 +25,8 @@ pub struct Identity {
     pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: SharedIdentifier,
+    /// Public key associated with this identity.
+    pub account_id: ed25519::Public,
     /// Bundle of user provided data.
     pub metadata: Metadata,
     /// Indicator if the identity is registered on the Registry.
@@ -41,6 +45,7 @@ impl<S> From<(peer::PeerId, user::User<S>)> for Identity {
                 handle: user.name().to_string(),
                 peer_id,
             },
+            account_id: ed25519::Pair::from_legacy_string("//Alice", None).public(),
             metadata: Metadata {
                 handle: user.name().to_string(),
             },
@@ -62,12 +67,12 @@ pub struct Metadata {
 ///
 /// # Errors
 pub fn create(
-    peer: &coco::PeerApi,
+    api: &coco::Api,
     key: keys::SecretKey,
     handle: &str,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_owner(peer, key, handle)?;
-    Ok((peer.peer_id().clone(), user).into())
+    let user = api.init_owner(key, handle)?;
+    Ok((api.peer_id(), user).into())
 }
 
 /// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
@@ -75,9 +80,9 @@ pub fn create(
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(peer: &coco::PeerApi, id: &coco::Urn) -> Result<Identity, error::Error> {
-    let user = coco::get_user(peer, id)?;
-    Ok((peer.peer_id().clone(), user).into())
+pub fn get(api: &coco::Api, id: &coco::Urn) -> Result<Identity, error::Error> {
+    let user = api.get_user(id)?;
+    Ok((api.peer_id(), user).into())
 }
 
 /// A `SharedIdentifier` is the combination of a user handle and the [`coco::Urn`] that identifies

@@ -10,14 +10,18 @@ jest.mock("./api");
 
 describe("creating a project", () => {
   it("sends a correctly-formatted POST request to api", () => {
-    project.create(
-      {
-        name: "radicle-surf",
-        defaultBranch: "trunk",
-        description: "surfing",
-      },
-      "somewhere/in/the/machine"
-    );
+    project
+      .create(
+        {
+          name: "radicle-surf",
+          defaultBranch: "trunk",
+          description: "surfing",
+        },
+        "somewhere/in/the/machine"
+      )
+      .catch(reason => {
+        console.error("Project creation failed: ", reason);
+      });
 
     expect(api.post).toHaveBeenCalledWith("projects", {
       metadata: {
@@ -32,13 +36,17 @@ describe("creating a project", () => {
 
 describe("registering a project", () => {
   it("sends a correctly-formatted POST request to the api", () => {
-    project.register(
-      project.Domain.Org,
-      "radicle",
-      "radicle-link",
-      22,
-      "this_is_a_coco_id"
-    );
+    project
+      .register(
+        project.Domain.Org,
+        "radicle",
+        "radicle-link",
+        22,
+        "this_is_a_coco_id"
+      )
+      .catch(reason => {
+        console.error("Project registration failed: ", reason);
+      });
 
     expect(api.post).toHaveBeenLastCalledWith(
       "orgs/radicle/projects/radicle-link",

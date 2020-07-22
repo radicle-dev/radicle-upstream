@@ -19,6 +19,7 @@ const userMock: user.User = {
 
 export const orgMock: org.Org = {
   id: "radicle",
+  accountId: "5EEAHNstTd1QGN3889TZNZ24U3PVVEvDbRp8S7FyUwmN2LtN",
   shareableEntityIdentifier: "radicle@123abcd.git",
   avatarFallback: {
     background: {

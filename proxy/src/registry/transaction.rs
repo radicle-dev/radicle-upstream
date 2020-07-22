@@ -455,7 +455,7 @@ where
         org_id: registry::Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
-        let tx = self.unregister_org(author, org_id, fee).await?;
+        let tx = self.client.unregister_org(author, org_id, fee).await?;
 
         self.cache_transaction(tx.clone())?;
 
@@ -540,7 +540,7 @@ where
         handle: registry::Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
-        let tx = self.unregister_user(author, handle, fee).await?;
+        let tx = self.client.unregister_user(author, handle, fee).await?;
         self.cache_transaction(tx.clone())?;
 
         Ok(tx)

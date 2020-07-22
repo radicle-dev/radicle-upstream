@@ -6,7 +6,7 @@
   import Receive from "./Wallet/Receive.svelte";
   export let transactions = null;
   export let balance = null;
-  export let address = null;
+  export let accountId = null;
 </script>
 
 <style>
@@ -58,11 +58,14 @@
           usd={balance} />
       </div>
       <div class="send-receive">
-        <SendReceive {address} />
+        <SendReceive {accountId} />
       </div>
     </div>
     <div class="transactions">
-      <Title variant="large" style="padding: 1.25rem 1.5rem;">
+      <Title
+        variant="large"
+        style="padding: 1.25rem 1.5rem; border-bottom: 1px solid
+        var(--color-foreground-level-2);">
         Transactions
       </Title>
       <TransactionList {transactions} />
@@ -70,7 +73,7 @@
   {:else}
     <div class="empty-state">
       <Receive
-        {address}
+        {accountId}
         text="To get started, buy some RADs and transfer them here." />
     </div>
   {/if}

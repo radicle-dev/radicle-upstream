@@ -2,7 +2,6 @@
 
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
@@ -10,32 +9,26 @@ use crate::avatar;
 use crate::coco;
 use crate::http;
 use crate::identity;
-use crate::keystore;
 use crate::registry;
 
 /// Combination of all identity routes.
-pub fn filters<R: registry::Client>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    keystore: http::Shared<keystore::Keystorage>,
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    get_filter(Arc::clone(&peer)).or(create_filter(peer, keystore, registry, store))
+pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    get_filter(Arc::clone(&ctx)).or(create_filter(ctx))
 }
 
 /// `POST /identities`
-fn create_filter<R: registry::Client>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    keystore: http::Shared<keystore::Keystorage>,
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn create_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path!("identities")
         .and(warp::post())
-        .and(http::with_peer(peer))
-        .and(http::with_shared(keystore))
-        .and(http::with_shared(registry))
-        .and(http::with_store(store))
+        .and(http::with_context(ctx))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new unique Identity",
@@ -55,12 +48,16 @@ fn create_filter<R: registry::Client>(
 }
 
 /// `GET /identities/<id>`
-fn get_filter(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("identities")
-        .and(http::with_peer(peer))
-        .and(document::param::<String>("id", "Unique ID of the Identity"))
+        .and(http::with_context(ctx))
+        .and(document::param::<coco::Urn>(
+            "id",
+            "Unique ID of the Identity",
+        ))
         .and(warp::get())
         .and(document::document(document::description(
             "Find Identity by ID",
@@ -85,8 +82,6 @@ fn get_filter(
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -94,48 +89,48 @@ mod handler {
     use crate::error;
     use crate::http;
     use crate::identity;
-    use crate::keystore;
     use crate::registry;
     use crate::session;
 
     /// Create a new [`identity::Identity`].
-    pub async fn create<R: registry::Client>(
-        peer: Arc<Mutex<coco::PeerApi>>,
-        keystore: http::Shared<keystore::Keystorage>,
-        registry: http::Shared<R>,
-        store: Arc<RwLock<kv::Store>>,
+    pub async fn create<R>(
+        ctx: http::Ctx<R>,
         input: super::CreateInput,
-    ) -> Result<impl Reply, Rejection> {
-        let registry = registry.read().await;
-        let store = store.read().await;
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        let ctx = ctx.read().await;
 
-        if let Some(identity) = session::current(Arc::clone(&peer), &*registry, &store)
+        if let Some(identity) = session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
             .await?
             .identity
         {
             return Err(Rejection::from(error::Error::EntityExists(identity.urn)));
         }
 
-        let keystore = keystore.read().await;
-        let key = keystore.get_librad_key().map_err(error::Error::from)?;
-        let id = identity::create(&*peer.lock().await, key, &input.handle)?;
+        let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
+        let id = identity::create(&ctx.peer_api, key, &input.handle)?;
 
-        session::set_identity(&store, id.clone())?;
+        session::set_identity(&ctx.store, id.clone())?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(peer: Arc<Mutex<coco::PeerApi>>, id: String) -> Result<impl Reply, Rejection> {
-        let peer = peer.lock().await;
-        let id = identity::get(&peer, &id.parse().expect("could not parse id"))?;
+    pub async fn get<R>(ctx: http::Ctx<R>, id: coco::Urn) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let id = identity::get(&ctx.peer_api, &id)?;
         Ok(reply::json(&id))
     }
 }
 
 impl ToDocumentedType for identity::Identity {
     fn document() -> document::DocumentedType {
-        let mut properties = std::collections::HashMap::with_capacity(5);
+        let mut properties = std::collections::HashMap::with_capacity(6);
         properties.insert("avatarFallback".into(), avatar::Avatar::document());
         properties.insert(
             "id".into(),
@@ -156,6 +151,12 @@ impl ToDocumentedType for identity::Identity {
             document::string()
                 .description("Unique identifier that can be shared and looked up")
                 .example("cloudhead@123abcd.git"),
+        );
+        properties.insert(
+            "accountId".into(),
+            document::string()
+                .description("Public key of identity")
+                .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
 
         document::DocumentedType::from(properties).description("Unique identity")
@@ -243,48 +244,22 @@ impl ToDocumentedType for CreateInput {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
+    use radicle_registry_client::{ed25519, CryptoPair};
     use serde_json::{json, Value};
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::paths;
-
     use crate::avatar;
-    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
-    use crate::keystore;
-    use crate::registry;
     use crate::session;
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let paths = paths::Paths::from_root(tmp_dir.path())?;
-
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
-
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let peer_id = { peer.lock().await.peer_id().clone() };
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let store = Arc::new(RwLock::new(
-            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
-        ));
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::new(RwLock::new(keystore)),
-            Arc::clone(&registry),
-            Arc::clone(&store),
-        );
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let res = request()
             .method("POST")
@@ -295,15 +270,17 @@ mod test {
             .reply(&api)
             .await;
 
-        let store = &*store.read().await;
-        let registry = &*registry.read().await;
-        let session = session::current(Arc::clone(&peer), registry, store).await?;
+        let ctx = ctx.read().await;
+        let peer_id = ctx.peer_api.peer_id();
+        let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
         let urn = session.identity.expect("failed to set identity").urn;
 
         // Assert that we set the default owner and it's the same one as the session
         {
-            let peer = &*peer.lock().await;
-            assert_eq!(coco::default_owner(peer), Some(coco::get_user(peer, &urn)?));
+            assert_eq!(
+                ctx.peer_api.default_owner(),
+                Some(ctx.peer_api.get_user(&urn)?)
+            );
         }
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
@@ -319,7 +296,8 @@ mod test {
                         "handle": "cloudhead",
                     },
                     "registered": Value::Null,
-                    "shareableEntityIdentifier": &shareable_entity_identifier
+                    "shareableEntityIdentifier": &shareable_entity_identifier,
+                    "accountId": ed25519::Pair::from_legacy_string("//Alice", None).public()
                 })
             );
         });
@@ -330,32 +308,16 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let paths = paths::Paths::from_root(tmp_dir.path())?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
-
-        let config = coco::config::default(key.clone(), tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let peer_id = peer.peer_id().clone();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-
-        let user = coco::init_user(&peer, key, "cloudhead")?;
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let user = ctx.peer_api.init_user(key, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
+        let peer_id = ctx.peer_api.peer_id();
         let shareable_entity_identifier = (peer_id.clone(), user).into();
-
-        let api = super::filters(
-            Arc::new(Mutex::new(peer)),
-            Arc::new(RwLock::new(keystore)),
-            Arc::new(RwLock::new(registry)),
-            Arc::new(RwLock::new(store)),
-        );
 
         let res = request()
             .method("GET")
@@ -374,6 +336,7 @@ mod test {
                 metadata: identity::Metadata { handle },
                 registered: None,
                 avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
+                account_id: ed25519::Pair::from_legacy_string("//Alice", None).public(),
             })
         );
 
