@@ -4,12 +4,13 @@
   export let message = null;
   export let state = null;
 
-  $: color = {
+  const colors = {
     confirmed: "var(--color-caution)",
     failed: "var(--color-negative)",
     pending: "var(--color-caution)",
     settled: "var(--color-positive)",
-  }[state];
+  };
+  $: color = colors[state];
 </script>
 
 <style>
