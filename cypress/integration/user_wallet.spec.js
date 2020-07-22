@@ -36,13 +36,13 @@ context("navigation", () => {
     it("goes to back to send tab and checks that everything is there", () => {
       cy.pick("send-tab").click();
       cy.pick("send").should("exist");
-      // todo validate fields & test send functionality when implemented
+      // TODO(Julien): validate fields & test send functionality when implemented
     });
   });
   context("transactions", () => {
     // checks the transactions component
     it("has transaction component", () => {
-      // balance is present
+      // transactions are present
       cy.pick("transactions").should("exist");
     });
   });
