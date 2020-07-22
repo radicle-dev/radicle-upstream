@@ -276,8 +276,7 @@
             {:else}
               <EmptyState
                 text="This project doesn't have a README yet."
-                icon="eyes"
-                primaryActionText="Open an issue to make one" />
+                icon="eyes" />
             {/if}
           </Remote>
         {/if}
