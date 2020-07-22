@@ -38,7 +38,7 @@
 
 <nav data-cy="horizontal-menu">
   <ul class="menu-list">
-    {#each items as item, i}
+    {#each items as item}
       <li class="menu-list-item">
         <MenuItem
           icon={item.icon}

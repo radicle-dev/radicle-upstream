@@ -76,6 +76,6 @@
 <Hotkeys />
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Theme />
-<Remote {store} let:data={session} context="session">
+<Remote {store} context="session">
   <Router {routes} />
 </Remote>
