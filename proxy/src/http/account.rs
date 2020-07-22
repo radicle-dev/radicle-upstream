@@ -1,6 +1,5 @@
 //! Endpoints for registry accounts.
 
-use std::sync::Arc;
 use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
@@ -9,23 +8,23 @@ use crate::http;
 use crate::registry;
 
 /// Prefixed filters.
-pub fn filters<R>(registry: &http::Shared<R>) -> BoxedFilter<(impl Reply,)>
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
-    exists_filter(Arc::clone(registry))
-        .or(get_balance_filter(Arc::clone(registry)))
+    exists_filter(ctx.clone())
+        .or(get_balance_filter(ctx))
         .boxed()
 }
 
 /// `GET /<id>/exists`
-fn exists_filter<R: registry::Client>(
-    registry: http::Shared<R>,
+fn exists_filter<R>(
+    ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
-    http::with_shared(registry)
+    http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Account id in SS58 format"))
         .and(path("exists"))
@@ -45,10 +44,13 @@ where
 }
 
 /// `GET /<id>/balance`
-fn get_balance_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_shared(registry)
+fn get_balance_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Account id in SS58 format"))
         .and(path("balance"))
@@ -90,18 +92,21 @@ mod handler {
     use crate::registry;
 
     /// Check whether the given account exists on chain
-    pub async fn exists<R: registry::Client>(
-        registry: http::Shared<R>,
+    pub async fn exists<R>(
+        ctx: http::Ctx<R>,
         account_id_string: String,
-    ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        let ctx = ctx.read().await;
         let account_id: registry::AccountId = match registry::parse_ss58_address(&account_id_string)
         {
             Ok(x) => x,
             Err(_) => return Ok(bad_account_id_reply()),
         };
 
-        let exists = reg.account_exists(&account_id).await?;
+        let exists = ctx.registry.account_exists(&account_id).await?;
         Ok(warp::reply::with_status(
             reply::json(&exists),
             StatusCode::OK,
@@ -109,17 +114,20 @@ mod handler {
     }
 
     /// Get the [`registry::Balance`] of a given account.
-    pub async fn get_balance<R: registry::Client>(
-        registry: http::Shared<R>,
+    pub async fn get_balance<R>(
+        ctx: http::Ctx<R>,
         account_id_string: String,
-    ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        let ctx = ctx.read().await;
         let account_id: registry::AccountId = match registry::parse_ss58_address(&account_id_string)
         {
             Ok(x) => x,
             Err(_) => return Ok(bad_account_id_reply()),
         };
-        match reg.free_balance(&account_id).await {
+        match ctx.registry.free_balance(&account_id).await {
             Ok(balance) => Ok(warp::reply::with_status(
                 reply::json(&balance),
                 StatusCode::OK,
@@ -144,8 +152,6 @@ mod test {
     use pretty_assertions::assert_eq;
     use serde_json::json;
     use std::convert::TryFrom;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
@@ -157,21 +163,19 @@ mod test {
 
     #[tokio::test]
     async fn account_exists() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::filters(&Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
 
         // Register the user
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_user(&author, handle.clone(), None, 10)
             .await?;
-        let user = registry.read().await.get_user(handle).await?.unwrap();
+        let user = ctx.registry.get_user(handle).await?.unwrap();
 
         let res = request()
             .method("GET")
@@ -188,11 +192,10 @@ mod test {
 
     #[tokio::test]
     async fn account_does_not_exists() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::filters(&Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx);
+
         let author =
             radicle_registry_client::ed25519::Pair::from_legacy_string("//Cloudhead", None);
         let res = request()
@@ -214,11 +217,10 @@ mod test {
 
     #[tokio::test]
     async fn account_exists_bad_request() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::filters(&Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx);
+
         let non_ss58_address = "abc";
 
         let res = request()
@@ -233,21 +235,19 @@ mod test {
 
     #[tokio::test]
     async fn existing_account_balance() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::filters(&Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
 
         // Register the user
-        registry
-            .write()
-            .await
+        ctx.registry
             .register_user(&author, handle.clone(), None, 10)
             .await?;
-        let user = registry.read().await.get_user(handle).await?.unwrap();
+        let user = ctx.registry.get_user(handle).await?.unwrap();
 
         let res = request()
             .method("GET")
@@ -268,11 +268,10 @@ mod test {
 
     #[tokio::test]
     async fn unexisting_account_balance() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::filters(&Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
         let unkown_account =
             radicle_registry_client::ed25519::Pair::from_legacy_string("//Cloudhead", None)
                 .public();
@@ -289,11 +288,10 @@ mod test {
 
     #[tokio::test]
     async fn account_balance_bad_request() -> Result<(), error::Error> {
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let api = super::filters(&Arc::clone(&registry));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
         let non_ss58_address = "abc";
 
         let res = request()
