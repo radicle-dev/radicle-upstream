@@ -39,14 +39,14 @@
     registrationFee
   );
 
-  const txFeeVariant = summary.registrationFeeRad ? "middle" : "top";
+  const txFeeRowPosition = summary.registrationFee ? "middle" : "top";
 
   $: updateAvatar();
 </script>
 
 <Header {transaction} {avatar} {subject} />
 
-{#if summary.registrationFeeRad}
+{#if summary.registrationFee}
   <Row dataCy="registration-fee" variant="top" style="">
     <div slot="left">
       <Text variant="regular" style="color:var(--color-foreground-level-6);">
@@ -56,14 +56,14 @@
 
     <div slot="right">
       <Rad
-        rad={summary.registrationFeeRad}
-        usd={summary.registrationFeeUsd}
+        rad={summary.registrationFee.rad}
+        usd={summary.registrationFee.usd}
         variant="deposit" />
     </div>
   </Row>
 {/if}
 
-<Row dataCy="transaction-fee" variant={txFeeVariant} style="">
+<Row dataCy="transaction-fee" variant={txFeeRowPosition} style="">
   <div slot="left">
     <Text variant="regular" style="color:var(--color-foreground-level-6);">
       Transaction Fee
@@ -71,7 +71,7 @@
   </div>
 
   <div slot="right">
-    <Rad rad={summary.feeRad} usd={summary.feeUsd} />
+    <Rad rad={summary.txFee.rad} usd={summary.txFee.usd} />
   </div>
 </Row>
 
@@ -87,7 +87,7 @@
   </div>
 
   <div slot="right">
-    <Rad rad={summary.totalRad} usd={summary.totalUsd} />
+    <Rad rad={summary.total.rad} usd={summary.total.usd} />
   </div>
 </Row>
 

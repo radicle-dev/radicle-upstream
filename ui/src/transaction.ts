@@ -535,12 +535,9 @@ export const summaryText = (counts: SummaryCounts): string => {
 };
 
 interface CostSummary {
-  registrationFeeRad?: currency.Rad;
-  registrationFeeUsd?: currency.Usd;
-  feeRad: currency.Rad;
-  feeUsd: currency.Usd;
-  totalRad: currency.Rad;
-  totalUsd: currency.Usd;
+  registrationFee?: FeeAmount;
+  txFee: FeeAmount;
+  total: FeeAmount;
 }
 
 const paysRegistrationFee = (messageType: MessageType): boolean => {
@@ -550,34 +547,38 @@ const paysRegistrationFee = (messageType: MessageType): boolean => {
   );
 };
 
+interface FeeAmount {
+  rad: currency.Rad;
+  usd: currency.Usd;
+}
+
+const feeAmount = (microRad: currency.MicroRad): FeeAmount => {
+  return {
+    rad: currency.microRadToRad(microRad),
+    usd: currency.microRadToUsd(microRad),
+  };
+};
+
 export const costSummary = (
   messageType: MessageType,
-  fee: currency.MicroRad,
-  registrationFee: currency.MicroRad
+  txFeeMicroRad: currency.MicroRad,
+  registrationFeeMicroRad: currency.MicroRad
 ): CostSummary => {
-  const registrationCost = paysRegistrationFee(messageType)
-    ? registrationFee
+  const registrationFee: FeeAmount | undefined = paysRegistrationFee(
+    messageType
+  )
+    ? feeAmount(registrationFeeMicroRad)
     : undefined;
-  const total = fee + (registrationCost ?? 0);
 
-  const registrationFeeRad = registrationCost
-    ? currency.microRadToRad(registrationCost)
-    : undefined;
-  const feeRad = currency.microRadToRad(fee);
-  const totalRad = currency.microRadToRad(total);
+  const txFee = feeAmount(txFeeMicroRad);
 
-  const registrationFeeUsd = registrationFeeRad
-    ? currency.radToUsd(registrationFeeRad)
-    : undefined;
-  const feeUsd = currency.radToUsd(feeRad);
-  const totalUsd = currency.radToUsd(totalRad);
+  const totalMicroRad =
+    txFeeMicroRad + (registrationFee ? registrationFeeMicroRad : 0);
+  const total = feeAmount(totalMicroRad);
 
   return {
-    registrationFeeRad,
-    registrationFeeUsd,
-    feeRad,
-    feeUsd,
-    totalRad,
-    totalUsd,
+    registrationFee,
+    txFee,
+    total,
   };
 };
