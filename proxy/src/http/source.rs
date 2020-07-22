@@ -839,6 +839,7 @@ impl<P, U> ToDocumentedType for coco::Revisions<P, U> {
     }
 }
 
+/// The output structure when calling the `/revisions` endpoint.
 #[derive(Serialize)]
 struct Revisions {
     /// The [`identity::Identity`] that owns these revisions.
