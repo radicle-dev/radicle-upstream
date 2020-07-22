@@ -5,7 +5,7 @@
     parseSeedsInput,
     settings,
     updateAppearance,
-    updateSeeds,
+    updateCoCo,
     updateRegistry,
   } from "../src/session.ts";
   import { networkOptions, themeOptions } from "../src/settings.ts";
@@ -13,7 +13,7 @@
   import { Button, Input, Text, Title } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
-  let seedInputValue = $settings.seeds.seeds.join("\n");
+  let seedInputValue = $settings.coco.seeds.join("\n");
 
   const updateNetwork = event =>
     updateRegistry({ ...$settings.registry, network: event.detail });
@@ -21,9 +21,9 @@
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
 
-  const updateSeedsSettings = event => {
+  const updateSeeds = event => {
     const seeds = parseSeedsInput(event.target.value);
-    updateSeeds({ ...$settings.seeds, seeds });
+    updateCoCo({ ...$settings.coco, seeds });
     seedInputValue = seeds.join("\n");
   };
 </script>
@@ -131,7 +131,7 @@
           </Text>
           <Input.Textarea
             bind:value={seedInputValue}
-            on:change={updateSeedsSettings}
+            on:change={updateSeeds}
             placeholder="Enter seeds here" />
         </div>
       </div>

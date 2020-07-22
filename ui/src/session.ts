@@ -7,7 +7,7 @@ import * as identity from "./identity";
 import * as notification from "./notification";
 import * as org from "./org";
 import * as remote from "./remote";
-import { Appearance, Registry, Settings, Seeds } from "./settings";
+import { Appearance, CoCo, Registry, Settings } from "./settings";
 import * as transaction from "./transaction";
 
 // TYPES
@@ -136,12 +136,12 @@ export const updateRegistry = (registry: Registry): void =>
     settings: { ...get(settings), registry },
   });
 
-export const updateSeeds = (seeds: Seeds): void =>
+export const updateCoCo = (coco: CoCo): void =>
   event.create<Kind, Msg>(
     Kind.UpdateSettings,
     update
   )({
-    settings: { ...get(settings), seeds },
+    settings: { ...get(settings), coco },
   });
 
 export const parseSeedsInput = (input: string) => {

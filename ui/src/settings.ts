@@ -18,14 +18,14 @@ export interface Registry {
   network: Network;
 }
 
-export interface Seeds {
+export interface CoCo {
   seeds: string[];
 }
 
 export interface Settings {
   appearance: Appearance;
   registry: Registry;
-  seeds: Seeds;
+  coco: CoCo;
 }
 
 interface Option {
