@@ -4,7 +4,8 @@
 </script>
 
 <svg
-  {style}
+  on:click
+  style={`flex-shrink:0;${  style}`}
   data-cy={dataCy}
   width="24"
   height="24"

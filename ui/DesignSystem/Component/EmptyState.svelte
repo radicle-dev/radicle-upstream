@@ -48,7 +48,7 @@
 </style>
 
 <div class="empty-state" data-cy="empty-state" {style}>
-  <Icon.EmptyState variant={icon} style="height: 48px; width: 48px;" />
+  <Icon.EmptyState variant={icon} />
   <Text style="margin: 1.5rem 0; color: var(--color-foreground-level-6);">
     {text}
   </Text>

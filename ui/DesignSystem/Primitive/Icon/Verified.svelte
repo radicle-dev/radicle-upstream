@@ -8,7 +8,7 @@
   <svg
     on:click
     data-cy={dataCy}
-    {style}
+    style={`flex-shrink:0;${  style}`}
     width="16"
     height="16"
     viewBox="0 0 16 16"
@@ -48,7 +48,7 @@
   <svg
     on:click
     data-cy={dataCy}
-    {style}
+    style={`flex-shrink:0;${  style}`}
     width="24"
     height="24"
     viewBox="0 0 24 24"

@@ -6,7 +6,7 @@
 {#if size === 'normal'}
   <svg
     on:click
-    {style}
+    style={`flex-shrink:0;${  style}`}
     width="8"
     height="10"
     viewBox="0 0 8 10"

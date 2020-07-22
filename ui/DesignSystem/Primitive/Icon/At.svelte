@@ -4,7 +4,7 @@
 
 <svg
   on:click
-  {style}
+  style={`flex-shrink:0;${  style}`}
   width="24"
   height="24"
   fill="var(--color-foreground-level-5)"
