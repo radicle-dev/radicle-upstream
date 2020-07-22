@@ -25,18 +25,32 @@ context("commit browsing", () => {
   context("commit history", () => {
     it("shows the commit history for the default branch", () => {
       cy.pick("commits-button").click();
-      cy.contains("27acd68").should("not.exist");
-      cy.contains("91b69e0").click();
-      cy.contains("91b69e00cd8e5a07e20942e9e4457d83ce7a3ff1").should("exist");
+      cy.pick("commits-page").should("exist");
+      cy.pick("commit-teaser")
+        .contains("Commit on the dev branch")
+        .should("not.exist");
+      cy.pick("commit-teaser")
+        .contains("Merge pull request #4 from FintanH/fintan")
+        .click();
+      cy.pick("commit-page").should("exist");
+      cy.pick("commit-header")
+        .contains("Commit 223aaf87d6ea62eef0014857640fd7c8dd0f80b5")
+        .should("exist");
     });
 
     it("shows the commit history for another branch", () => {
       cy.pick("revision-selector").click();
       cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
       cy.pick("commits-button").click();
-      cy.contains("91b69e0").should("not.exist");
-      cy.contains("27acd68").click();
-      cy.contains("27acd68c7504755aa11023300890bb85bbd69d45").should("exist");
+
+      cy.pick("commits-page").should("exist");
+      cy.pick("commit-teaser")
+        .contains("Merge pull request #4 from FintanH/fintan")
+        .should("not.exist");
+      cy.pick("commit-teaser").contains("Commit on the dev branch").click();
+      cy.pick("commit-header")
+        .contains("Commit 27acd68c7504755aa11023300890bb85bbd69d45")
+        .should("exist");
     });
   });
 });
