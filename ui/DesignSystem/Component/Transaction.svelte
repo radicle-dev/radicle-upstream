@@ -39,27 +39,31 @@
     registrationFee
   );
 
+  const txFeeVariant = summary.registrationFeeRad ? "middle" : "top";
+
   $: updateAvatar();
 </script>
 
 <Header {transaction} {avatar} {subject} />
 
-<Row dataCy="registration-fee" variant="top" style="">
-  <div slot="left">
-    <Text variant="regular" style="color:var(--color-foreground-level-6);">
-      {formatStake(transaction.messages[0])}
-    </Text>
-  </div>
+{#if summary.registrationFeeRad}
+  <Row dataCy="registration-fee" variant="top" style="">
+    <div slot="left">
+      <Text variant="regular" style="color:var(--color-foreground-level-6);">
+        {formatStake(transaction.messages[0])}
+      </Text>
+    </div>
 
-  <div slot="right">
-    <Rad
-      rad={summary.registrationFeeRad}
-      usd={summary.registrationFeeUsd}
-      variant="deposit" />
-  </div>
-</Row>
+    <div slot="right">
+      <Rad
+        rad={summary.registrationFeeRad}
+        usd={summary.registrationFeeUsd}
+        variant="deposit" />
+    </div>
+  </Row>
+{/if}
 
-<Row dataCy="transaction-fee" variant="middle" style="">
+<Row dataCy="transaction-fee" variant={txFeeVariant} style="">
   <div slot="left">
     <Text variant="regular" style="color:var(--color-foreground-level-6);">
       Transaction Fee

@@ -535,8 +535,8 @@ export const summaryText = (counts: SummaryCounts): string => {
 };
 
 interface CostSummary {
-  registrationFeeRad: currency.Rad;
-  registrationFeeUsd: currency.Usd;
+  registrationFeeRad?: currency.Rad;
+  registrationFeeUsd?: currency.Usd;
   feeRad: currency.Rad;
   feeUsd: currency.Usd;
   totalRad: currency.Rad;
@@ -555,14 +555,20 @@ export const costSummary = (
   fee: currency.MicroRad,
   registrationFee: currency.MicroRad
 ): CostSummary => {
-  const registrationCost = paysRegistrationFee(messageType) ? registrationFee : 0;
-  const total = fee + registrationCost;
+  const registrationCost = paysRegistrationFee(messageType)
+    ? registrationFee
+    : undefined;
+  const total = fee + (registrationCost ?? 0);
 
-  const registrationFeeRad = currency.microRadToRad(registrationCost);
+  const registrationFeeRad = registrationCost
+    ? currency.microRadToRad(registrationCost)
+    : undefined;
   const feeRad = currency.microRadToRad(fee);
   const totalRad = currency.microRadToRad(total);
 
-  const registrationFeeUsd = currency.radToUsd(registrationFeeRad);
+  const registrationFeeUsd = registrationFeeRad
+    ? currency.radToUsd(registrationFeeRad)
+    : undefined;
   const feeUsd = currency.radToUsd(feeRad);
   const totalUsd = currency.radToUsd(totalRad);
 
