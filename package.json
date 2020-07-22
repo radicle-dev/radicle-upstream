@@ -107,6 +107,7 @@
     "wait:debug": "wait-on tcp:8080 && yarn cypress:open",
     "dist": "rm -rf ./dist && mkdir ./dist && yarn svelte:clean && yarn svelte:build && yarn proxy:build:release && cp proxy/target/release/proxy dist && electron-builder --publish never",
     "electron:start": "wait-on ./public/bundle.js && wait-on ./native/main.comp.js && wait-on tcp:8080 && NODE_ENV=development electron .",
+    "svelte:check": "svelte-check",
     "svelte:clean": "rm -rf public/bundle.*",
     "svelte:build": "yarn svelte:clean && rollup -c",
     "svelte:watch": "yarn svelte:clean && rollup -c -w",
