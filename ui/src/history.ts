@@ -1,7 +1,7 @@
 import { Readable, derived, get, writable } from "svelte/store";
 
 interface History<Item> {
-  current: Readable<Item>;
+  readonly current: Readable<Item>;
   pop(): void;
   push(item: Item): void;
   reset(): void;
@@ -23,9 +23,12 @@ export const create = <Item>(initial: Item): History<Item> => {
       }
     },
     push: (item: Item): void => {
-      const currentItem = get(store);
-      history.push(currentItem);
+      const currentItem = safeGet(store);
+      if (item === currentItem) {
+        return;
+      }
 
+      history.push(currentItem);
       store.set(item);
     },
     reset: (): void => {
@@ -33,4 +36,8 @@ export const create = <Item>(initial: Item): History<Item> => {
       store.set(initial);
     },
   };
+};
+
+const safeGet = <Item>(store: Readable<Item>): Item => {
+  return get(store) as Item;
 };

@@ -16,7 +16,7 @@
   import Blank from "./Screen/Blank.svelte";
   /* import IdentityCreation from "./Screen/IdentityCreation.svelte"; */
   /* import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte"; */
-  /* import Help from "./Screen/Help.svelte"; */
+  import Help from "./Screen/Help.svelte";
   /* import NotFound from "./Screen/NotFound.svelte"; */
   /* import Org from "./Screen/Org.svelte"; */
   /* import OrgRegistration from "./Screen/OrgRegistration.svelte"; */
@@ -53,6 +53,9 @@
 
   const views = {};
   views[navigation.Screen.Blank] = { component: Blank };
+  views[navigation.Screen.Help] = { component: Help };
+
+  console.log(views);
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:

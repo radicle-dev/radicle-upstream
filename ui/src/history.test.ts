@@ -23,7 +23,6 @@ describe("history", () => {
       const nav = history.create<Item>(initial);
 
       nav.push(next);
-
       expect(get(nav.current)).toEqual(next);
     });
   });
