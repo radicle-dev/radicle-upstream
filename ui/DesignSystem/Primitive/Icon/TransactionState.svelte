@@ -58,7 +58,7 @@
 
 <svg
   on:click
-  style={`flex-shrink:0;${  style}`}
+  style={`flex-shrink:0;${style}`}
   width={size}
   height={size}
   viewBox="0 0 {size}
