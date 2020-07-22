@@ -402,7 +402,9 @@ impl Registry {
     /// Sign a message, submit it to the chain and wait for it to be confirmed. Return the
     /// transaction hash and the number of the block it was included in.
     ///
-    /// Errors with [`error::Error::Runtime`] if applying the transction errors.
+    /// # Errors
+    ///
+    /// Fails with [`error::Error::Runtime`] if applying the transction errors.
     async fn submit_transaction(
         &self,
         author: &protocol::ed25519::Pair,
