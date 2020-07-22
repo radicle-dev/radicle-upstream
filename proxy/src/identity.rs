@@ -62,12 +62,12 @@ pub struct Metadata {
 ///
 /// # Errors
 pub fn create(
-    peer: &coco::PeerApi,
+    api: &coco::Api,
     key: keys::SecretKey,
     handle: &str,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_owner(peer, key, handle)?;
-    Ok((peer.peer_id().clone(), user).into())
+    let user = api.init_owner(key, handle)?;
+    Ok((api.peer_id(), user).into())
 }
 
 /// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
@@ -75,9 +75,9 @@ pub fn create(
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(peer: &coco::PeerApi, id: &coco::Urn) -> Result<Identity, error::Error> {
-    let user = coco::get_user(peer, id)?;
-    Ok((peer.peer_id().clone(), user).into())
+pub fn get(api: &coco::Api, id: &coco::Urn) -> Result<Identity, error::Error> {
+    let user = api.get_user(id)?;
+    Ok((api.peer_id(), user).into())
 }
 
 /// A `SharedIdentifier` is the combination of a user handle and the [`coco::Urn`] that identifies
