@@ -284,7 +284,7 @@
               <EmptyState
                 text="This project doesn't have a README yet."
                 icon="eyes"
-                primaryActionText="Open an issue to make one" />
+                style="height: 320px;" />
             {/if}
           </Remote>
         {/if}
