@@ -2,8 +2,6 @@
 //! configuration of all sorts.
 
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
-use tokio::sync::Mutex;
 
 use crate::coco;
 use crate::error;
@@ -63,7 +61,7 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
 pub async fn current<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
+    api: &coco::Api,
     registry: &R,
     store: &kv::Store,
 ) -> Result<Session, error::Error>
@@ -77,12 +75,16 @@ where
     // Reset the permissions
     session.permissions = Permissions::default();
 
+    if let Some(id) = session.identity.clone() {
+        identity::get(api, &id.urn)?;
+    }
+
     if let Some(mut id) = session.identity.clone() {
         if let Some(handle) = id.registered.clone() {
             if registry.get_user(handle.clone()).await?.is_some() {
                 session.orgs = registry.list_orgs(handle).await?;
                 session.permissions.register_org = true;
-                let projects = coco::list_projects(&*peer.lock().await)?;
+                let projects = api.list_projects()?;
                 if !projects.is_empty() {
                     session.permissions.register_project = true;
                 }

@@ -23,11 +23,9 @@
   };
 
   import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
-  import WalletMenu from "./Profile/WalletMenu.svelte";
 
   const menuRoutes = {
     "/profile/projects": ProjectsMenu,
-    "/profile/wallet": WalletMenu,
   };
 
   const topbarMenuItems = [

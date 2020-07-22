@@ -1,12 +1,10 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::convert::Infallible;
-use std::convert::TryFrom;
-use std::str::FromStr;
 use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
+
+use serde::{Deserialize, Serialize};
+use tokio::sync::RwLock;
 use warp::filters::BoxedFilter;
 use warp::http::StatusCode;
 use warp::{
@@ -18,10 +16,12 @@ use crate::coco;
 use crate::keystore;
 use crate::registry;
 
+mod account;
 mod avatar;
 mod control;
 mod doc;
 mod error;
+mod id;
 mod identity;
 mod notification;
 mod org;
@@ -50,8 +50,7 @@ macro_rules! combine {
 
 /// Main entry point for HTTP API.
 pub fn api<R>(
-    peer: coco::PeerApi,
-    owner: coco::User,
+    peer_api: coco::Api,
     keystore: keystore::Keystorage,
     registry: R,
     store: kv::Store,
@@ -60,44 +59,34 @@ pub fn api<R>(
 where
     R: registry::Cache + registry::Client + 'static,
 {
-    let peer = Arc::new(Mutex::new(peer));
-    // TODO(finto): The user should be read from rad/self
-    let owner = Arc::new(RwLock::new(Some(owner)));
-    let keystore = Arc::new(RwLock::new(keystore));
-    let registry = Arc::new(RwLock::new(registry));
-    let store = Arc::new(RwLock::new(store));
     let subscriptions = crate::notification::Subscriptions::default();
+    let ctx = Context {
+        peer_api,
+        keystore,
+        registry,
+        store,
+        subscriptions: subscriptions.clone(),
+    };
+    let ctx = Arc::new(RwLock::new(ctx));
 
+    let account_filter = path("accounts").and(account::filters(ctx.clone()));
     let avatar_filter = avatar::get_filter();
-    let control_filter = control::routes(
-        enable_control,
-        Arc::clone(&peer),
-        Arc::clone(&keystore),
-        Arc::clone(&owner),
-        Arc::clone(&registry),
-    );
-    let identity_filter = identity::filters(
-        Arc::clone(&peer),
-        Arc::clone(&keystore),
-        Arc::clone(&registry),
-        Arc::clone(&store),
-    );
-    let notification_filter = notification::filters(subscriptions.clone());
-    let org_filter = org::routes(
-        Arc::clone(&peer),
-        Arc::clone(&registry),
-        subscriptions.clone(),
-    );
-    let project_filter = project::filters(Arc::clone(&peer), keystore, Arc::clone(&owner));
-    let session_filter =
-        session::routes(Arc::clone(&peer), Arc::clone(&registry), Arc::clone(&store));
-    let source_filter = source::routes(peer, Arc::clone(&registry), Arc::clone(&store));
-    let transaction_filter = transaction::filters(Arc::clone(&registry));
-    let user_filter = user::routes(registry, store, subscriptions);
+    let control_filter = control::routes(enable_control, ctx.clone());
+    let id_filter = id::get_status_filter(ctx.clone());
+    let identity_filter = identity::filters(ctx.clone());
+    let notification_filter = notification::filters(subscriptions);
+    let org_filter = org::routes(ctx.clone());
+    let project_filter = project::filters(ctx.clone());
+    let session_filter = session::routes(ctx.clone());
+    let source_filter = source::routes(ctx.clone());
+    let transaction_filter = transaction::filters(ctx.clone());
+    let user_filter = user::routes(ctx);
 
     let api = path("v1").and(combine!(
+        account_filter,
         avatar_filter,
         control_filter,
+        id_filter,
         identity_filter,
         notification_filter,
         org_filter,
@@ -139,55 +128,122 @@ where
 /// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-pub fn with_owner_guard(maybe_owner: Shared<Option<coco::User>>) -> BoxedFilter<(coco::User,)> {
+fn with_owner_guard<R>(ctx: Ctx<R>) -> BoxedFilter<(coco::User,)>
+where
+    R: registry::Client + 'static,
+{
     warp::any()
-        .map(move || Arc::clone(&maybe_owner))
-        .and_then(|maybe_owner: Shared<Option<coco::User>>| async move {
-            let maybe_owner = maybe_owner.read().await;
+        .and(with_context(ctx))
+        .and_then(|ctx: Ctx<R>| async move {
+            let ctx = ctx.read().await;
+            let session = crate::session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
+                .await
+                .expect("unable to get current sesison");
 
-            match &*maybe_owner {
-                Some(owner) => Ok(owner.clone()),
-                None => Err(Rejection::from(error::Routing::MissingOwner)),
+            if let Some(identity) = session.identity {
+                let user = ctx
+                    .peer_api
+                    .get_user(&identity.urn)
+                    .expect("unable to get coco user");
+                let user = coco::verify_user(user).expect("unable to verify user");
+
+                Ok(user)
+            } else {
+                Err(Rejection::from(error::Routing::MissingOwner))
             }
         })
         .boxed()
 }
 
-/// Thread-safe container for threadsafe pass-through to filters and handlers.
-pub type Shared<T> = Arc<RwLock<T>>;
+/// Container to pass down dependencies into HTTP filter chains.
+pub struct Context<R> {
+    /// [`coco::Api`] to operate on the local monorepo.
+    peer_api: coco::Api,
+    /// Storage to manage keys.
+    keystore: keystore::Keystorage,
+    /// [`registry::Client`] to perform registry operations.
+    registry: R,
+    /// [`kv::Store`] used for session state and cache.
+    store: kv::Store,
+    /// Subscriptions for notification of significant events in the system.
+    subscriptions: crate::notification::Subscriptions,
+}
 
-/// State filter to expose a [`Shared`] and its content.
+/// Wrapper around the thread-safe handle on [`Context`].
+pub type Ctx<R> = Arc<RwLock<Context<R>>>;
+
+/// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]
-pub fn with_shared<T>(
-    container: Shared<T>,
-) -> impl Filter<Extract = (Shared<T>,), Error = Infallible> + Clone
+fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
 where
-    T: Send + Sync,
+    R: Send + Sync + 'static,
 {
-    warp::any().map(move || Arc::clone(&container))
+    warp::any().map(move || ctx.clone()).boxed()
 }
 
-/// State filter to expose a [`coco::PeerApi`].
-#[must_use]
-pub fn with_peer(
-    peer: Arc<Mutex<coco::PeerApi>>,
-) -> impl Filter<Extract = (Arc<Mutex<coco::PeerApi>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&peer))
+impl Context<registry::Cacher<registry::Registry>> {
+    #[cfg(test)]
+    async fn tmp(
+        tmp_dir: &tempfile::TempDir,
+    ) -> Result<Ctx<registry::Cacher<registry::Registry>>, crate::error::Error> {
+        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
+
+        let pw = keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let key = keystore.init_librad_key()?;
+
+        let peer_api = {
+            let config = coco::config::default(key, tmp_dir.path())?;
+            coco::Api::new(config).await?
+        };
+
+        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+
+        let registry = {
+            let (client, _) = radicle_registry_client::Client::new_emulator();
+            let reg = registry::Registry::new(client);
+            registry::Cacher::new(reg, &store)
+        };
+
+        Ok(Arc::new(RwLock::new(Self {
+            keystore,
+            peer_api,
+            registry,
+            store,
+            subscriptions: crate::notification::Subscriptions::default(),
+        })))
+    }
 }
 
-/// State filter to expose [`kv::Store`] to handlers.
+/// Deserialise a query string using [`serde_qs`]. This is useful for more complicated query
+/// structures that involve nesting, enums, etc.
 #[must_use]
-pub fn with_store(
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = (Arc<RwLock<kv::Store>>,), Error = Infallible> + Clone {
-    warp::any().map(move || Arc::clone(&store))
+pub fn with_qs<T>() -> BoxedFilter<(T,)>
+where
+    for<'de> T: Deserialize<'de> + Send + Sync,
+{
+    warp::filters::query::raw()
+        .map(|raw: String| {
+            log::debug!("attempting to decode query string '{}'", raw);
+            let utf8 = percent_encoding::percent_decode_str(&raw).decode_utf8_lossy();
+            log::debug!("attempting to deserialize query string '{}'", utf8);
+            match serde_qs::from_str(utf8.as_ref()) {
+                Ok(result) => result,
+                Err(err) => {
+                    log::error!("failed to deserialize query string '{}': {}", raw, err);
+                    panic!("{}", err)
+                },
+            }
+        })
+        .boxed()
 }
 
 /// State filter to expose [`notification::Subscriptions`] to handlers.
 #[must_use]
-pub fn with_subscriptions(
+fn with_subscriptions(
     subscriptions: crate::notification::Subscriptions,
-) -> impl Filter<Extract = (crate::notification::Subscriptions,), Error = Infallible> + Clone {
+) -> impl Filter<Extract = (crate::notification::Subscriptions,), Error = std::convert::Infallible> + Clone
+{
     warp::any().map(move || crate::notification::Subscriptions::clone(&subscriptions))
 }
 
@@ -199,7 +255,7 @@ pub struct RegisterProjectInput {
     /// User specified transaction fee.
     transaction_fee: registry::Balance,
     /// Optionally passed coco id to store for attestion.
-    maybe_coco_id: Option<String>,
+    maybe_coco_id: Option<coco::Urn>,
 }
 
 impl ToDocumentedType for RegisterProjectInput {
@@ -227,40 +283,38 @@ impl ToDocumentedType for RegisterProjectInput {
 /// # Errors
 ///
 /// Might return an http error
-pub async fn register_project<R: registry::Client>(
-    registry: Shared<R>,
-    subscriptions: crate::notification::Subscriptions,
+async fn register_project<R>(
+    ctx: Ctx<R>,
     domain_type: registry::DomainType,
-    domain_id_str: String,
-    project_name: String,
+    domain_id: registry::Id,
+    project_name: registry::ProjectName,
     input: RegisterProjectInput,
-) -> Result<impl Reply, Rejection> {
+) -> Result<impl Reply, Rejection>
+where
+    R: registry::Client,
+{
     // TODO(xla): Get keypair from persistent storage.
     let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-    let reg = registry.read().await;
-    let maybe_coco_id = input
-        .maybe_coco_id
-        .map(|id| librad::uri::RadUrn::from_str(&id).expect("Project RadUrn"));
-    let domain_id = registry::Id::try_from(domain_id_str).map_err(crate::error::Error::from)?;
+    let ctx = ctx.read().await;
+
     let domain = match domain_type {
         registry::DomainType::Org => registry::ProjectDomain::Org(domain_id),
         registry::DomainType::User => registry::ProjectDomain::User(domain_id),
     };
-    let project_name =
-        registry::ProjectName::try_from(project_name).map_err(crate::error::Error::from)?;
 
-    let tx = reg
+    let tx = ctx
+        .registry
         .register_project(
             &fake_pair,
             domain,
             project_name,
-            maybe_coco_id,
+            input.maybe_coco_id,
             input.transaction_fee,
         )
         .await?;
 
-    subscriptions
+    ctx.subscriptions
         .broadcast(crate::notification::Notification::Transaction(tx.clone()))
         .await;
 
@@ -273,11 +327,7 @@ mod test {
     use http::response::Response;
     use pretty_assertions::assert_eq;
     use serde_json::Value;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
-    use warp::test::request;
-    use warp::Filter as _;
 
     pub fn assert_response<F>(res: &Response<Bytes>, code: StatusCode, checks: F)
     where
@@ -293,17 +343,5 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).expect("failed to deserialise body");
         checks(have);
-    }
-
-    #[tokio::test]
-    async fn with_user_guard() {
-        let filter = warp::any()
-            .and(super::with_owner_guard(Arc::new(RwLock::new(None))))
-            .map(move |_owner| warp::reply())
-            .recover(super::error::recover);
-
-        let res = request().method("GET").path("/").reply(&filter).await;
-
-        assert_eq!(res.status(), StatusCode::UNAUTHORIZED);
     }
 }

@@ -15,16 +15,6 @@
     expanded = false;
   };
 
-  let copyIcon = Icon.Copy;
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-      hideModal();
-    }, 250);
-  };
-
   const handleItemSelection = item => {
     hideModal();
     item.event();
@@ -48,6 +38,7 @@
     width: 100%;
     display: flex;
     justify-content: center;
+    align-items: center;
     border-radius: 4px;
     cursor: pointer;
     outline-style: none;
@@ -128,18 +119,15 @@
   {#if expanded}
     <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
       {#if headerTitle}
-        <Copyable {afterCopy}>
-          <div class="header">
+        <div class="header">
+          <Copyable iconSize="normal">
             <Text
               style="white-space: nowrap; overflow: hidden; text-overflow:
-              ellipsis; max-width: 170px;">
+              ellipsis; max-width: 170px; margin-right: 8px;">
               {headerTitle}
             </Text>
-            <svelte:component
-              this={copyIcon}
-              style="margin-left: 8px; min-width: 16px;" />
-          </div>
-        </Copyable>
+          </Copyable>
+        </div>
       {/if}
 
       {#if menuItems}

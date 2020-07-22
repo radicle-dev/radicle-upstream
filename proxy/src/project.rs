@@ -2,7 +2,6 @@
 //! abstraction.
 
 use librad::meta::project;
-use librad::uri;
 use serde::{Deserialize, Serialize};
 
 use crate::coco;
@@ -40,7 +39,7 @@ where
 /// Radicle project for sharing and collaborating.
 pub struct Project {
     /// Unique identifier of the project in the network.
-    pub id: uri::RadUrn,
+    pub id: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
@@ -82,9 +81,9 @@ pub enum Registration {
 }
 
 /// Fetch the project with a given urn from a peer
-pub fn get(peer: &coco::PeerApi, project_urn: &uri::RadUrn) -> Result<Project, error::Error> {
-    let project = coco::get_project(peer, project_urn)?;
-    let stats = coco::with_browser(peer, project_urn, |browser| Ok(browser.get_stats()?))?;
+pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::Error> {
+    let project = api.get_project(project_urn)?;
+    let stats = api.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
     Ok((project, stats).into())
 }

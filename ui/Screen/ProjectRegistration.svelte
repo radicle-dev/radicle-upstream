@@ -7,12 +7,11 @@
   import { fetch as fetchSession } from "../src/session.ts";
   import * as transaction from "../src/transaction.ts";
 
-  import { Flex, Title } from "../DesignSystem/Primitive";
+  import { Title } from "../DesignSystem/Primitive";
   import {
     NavigationButtons,
     ModalLayout,
     Remote,
-    StepCounter,
     Transaction,
   } from "../DesignSystem/Component";
 
@@ -27,7 +26,6 @@
 
   let domainId = params.domainId || null;
   let domainType = null;
-  let domainAvatar = null;
 
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
@@ -66,6 +64,12 @@
       },
     ],
   });
+
+  const handleDetailsNextClick = event => {
+    domainId = event.detail.domainId;
+    domainType = event.detail.domainType;
+    showRegistrationDetails = false;
+  };
 </script>
 
 <style>
@@ -84,16 +88,11 @@
   <ModalLayout dataCy="project-registration-screen">
     <div class="wrapper">
       <div class="project-registration">
-        <Flex align="center" style="margin-bottom: 40px;">
-          <StepCounter
-            selectedStep={showRegistrationDetails ? 1 : 2}
-            steps={['Prepare', 'Submit']}
-            style="margin-bottom: 48px" />
-
-          <Title variant="big">Register project</Title>
-        </Flex>
 
         {#if showRegistrationDetails === true}
+          <Title variant="big" style="text-align: center; margin-bottom: 24px;">
+            Project registration
+          </Title>
           <RegistrationDetailsStep
             identity={session.identity}
             {projects}
@@ -102,12 +101,7 @@
             bind:projectId
             bind:domainId
             bind:projectName
-            on:next={event => {
-              domainId = event.detail.domainId;
-              domainType = event.detail.domainType;
-              showRegistrationDetails = false;
-              domainAvatar = event.detail.domainAvatar;
-            }} />
+            on:next={handleDetailsNextClick} />
         {:else}
           <Transaction
             transaction={tx()}

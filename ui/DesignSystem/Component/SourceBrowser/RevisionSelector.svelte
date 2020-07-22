@@ -1,19 +1,20 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Avatar, Icon } from "../../Primitive";
+  import { RevisionType } from "../../../src/source.ts";
+
+  import { Avatar, Icon, Text, Title } from "../../Primitive";
 
   export let currentRevision = null;
   export let currentPeerId = null;
   export let expanded = false;
   export let revisions = null;
-  export let style = "";
 
   let currentSelectedPeer;
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
-      return rev.identity.id === currentPeerId;
+      return rev.identity.peerId === currentPeerId;
     });
   } else {
     // The API returns a revision list where the first entry is the default
@@ -56,9 +57,9 @@
     justify-content: space-between;
   }
   .revision-selector:hover {
-    box-shadow: 0px 0px 0px 1px var(--color-foreground-level-3);
     color: var(--color-foreground);
-    background-color: var(--color-foreground-level-2);
+    border: 1px solid var(--color-foreground-level-3);
+    background-color: var(--color-foreground-level-1);
   }
   .revision-selector[hidden] {
     visibility: hidden;
@@ -66,46 +67,36 @@
   .selector-avatar {
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-right: 0.5rem;
-  }
-  .selector-avatar :global(h3) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .selector-branch {
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    color: var(--color-foreground-level-6);
-    margin-right: 0.5rem;
-    width: 16rem;
-    white-space: nowrap;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
   }
   .selector-expand {
     align-self: flex-end;
   }
   .revision-dropdown-container {
+    display: flex;
     position: absolute;
     top: 0px;
     left: 0px;
-    width: 100%;
+    min-width: 100%;
   }
   .revision-dropdown {
     position: relative;
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
-    box-shadow: var(--elevation-medium),
-      0px 0px 0px 1px var(--color-foreground-level-3);
+    box-shadow: var(--elevation-medium);
     z-index: 8;
+    max-width: 30rem;
+    height: 100%;
+    min-width: 100%;
   }
   .peer {
+    display: flex;
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
     user-select: none;
-  }
-  .peer :global(h3) {
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .branch,
   .tag {
@@ -114,11 +105,22 @@
     cursor: pointer;
     overflow-x: hidden;
     user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .branch:hover,
   .tag:hover {
-    color: var(--color-foreground);
-    background: var(--color-foreground-level-2);
+    background: var(--color-foreground-level-1);
+  }
+  .branch.selected,
+  .branch.selected:hover,
+  .tag.selected,
+  .tag.selected:hover {
+    background-color: var(--color-foreground-level-2);
+  }
+  .revision-dropdown ul:last-child li {
+    border-radius: 0 0 3px 3px;
   }
 </style>
 
@@ -126,44 +128,72 @@
 <div
   class="revision-selector"
   data-cy="revision-selector"
-  data-revision={currentRevision}
+  data-revision={currentRevision.name}
   on:click|stopPropagation={showDropdown}
   hidden={expanded}>
   <div class="selector-avatar">
+    <div style="display: flex; overflow: hidden;">
+      {#if currentRevision.type === RevisionType.Branch}
+        <Icon.Branch
+          dataCy="branch-icon"
+          style="vertical-align: bottom; fill: var(--color-foreground-level-4);
+          flex-shrink: 0;" />
+      {:else}
+        <Icon.Commit
+          dataCy="tag-icon"
+          style="vertical-align: bottom; fill: var(--color-foreground-level-4);
+          flex-shrink: 0;" />
+      {/if}
+      <Text
+        style="color: var(--color-foreground-level-6); white-space: nowrap;
+        text-overflow: ellipsis; overflow: hidden; margin-left: 0.5rem;
+        margin-right: 0.5rem;">
+        {currentRevision.name}
+      </Text>
+    </div>
     <Avatar
-      title={currentSelectedPeer && currentSelectedPeer.identity.shareableEntityIdentifier}
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
+      dataCy={`avatar-${currentSelectedPeer.identity.metadata.handle}`}
       size="small"
-      style="--title-color: var(--color-foreground-level-6); justify-content:
-      flex-start;"
+      style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
       variant="circle" />
   </div>
-  <div class="selector-branch">{currentRevision}</div>
   <div class="selector-expand">
     <Icon.Expand
       style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
   </div>
 </div>
 <div class="revision-dropdown-container" bind:this={dropdown}>
-  <div class="revision-dropdown" hidden={!expanded} {style}>
+  <div class="revision-dropdown" hidden={!expanded}>
     {#each revisions as repo}
       <div class="peer">
         <Avatar
-          title={repo.identity.shareableEntityIdentifier}
           avatarFallback={repo.identity.avatarFallback}
+          style="display: flex; justify-content: flex-start; margin-right: 8px;"
           size="small"
-          style="--title-color: var(--color-foreground-level-6);
-          justify-content: flex-start;"
           variant="circle" />
+        <Title
+          style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+          {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
+        </Title>
       </div>
       <ul>
         {#each repo.branches as branch}
           <li
             class="branch"
+            class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
-            on:click|stopPropagation={() => selectRevision(repo.identity.id, branch)}>
+            on:click|stopPropagation={() => selectRevision(
+                repo.identity.peerId,
+                {
+                  type: RevisionType.Branch,
+                  peerId: repo.identity.peerId,
+                  name: branch,
+                }
+              )}>
             <Icon.Branch
+              dataCy="branch-icon"
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
             <span style="line-height: 1.5rem">{branch}</span>
@@ -173,9 +203,17 @@
           <li
             class="tag"
             data-repo-handle={repo.identity.metadata.handle}
+            class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-tag={tag}
-            on:click|stopPropagation={() => selectRevision(repo.identity.id, tag)}>
+            on:click|stopPropagation={() => selectRevision(
+                repo.identity.peerId,
+                {
+                  type: RevisionType.Tag,
+                  name: tag,
+                }
+              )}>
             <Icon.Commit
+              dataCy="tag-icon"
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
             <span style="line-height: 1.5rem">{tag}</span>

@@ -9,6 +9,7 @@ readme = "https://github.com/radicle-dev/radicle-upstream/blob/master/proxy/READ
 categories = [ "crypto", "p2p" ]
 keywords = [ "radicle-upstream", "proxy" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
+default-run = "proxy"
 
 [dependencies]
 async-trait = "0.1"
@@ -18,13 +19,16 @@ hex = "0.4"
 kv = { version = "0.20", features = [ "bincode-value", "json-value" ] }
 lazy_static = "1.4"
 log = "0.4"
-nonempty = "0.2"
+nonempty = "0.5"
+percent-encoding = "2.1"
+parity-scale-codec = "1.3.1"
 pico-args = "0.3"
 pretty_env_logger = "0.3"
 rand = "0.7"
 serde = { version = "1.0", features = [ "derive" ] }
 serde_cbor = "0.11.1"
 serde_json = "1.0"
+serde_qs = "0.6"
 syntect = "4.2"
 tempfile = "3.1"
 thiserror = "1.0"
@@ -35,18 +39,18 @@ warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", featur
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "79460f429e4d9ae9a49c9b389a2411fbc138ed0e"
+rev = "269a7ededafd7373ebfb03210770d0b3778002fb"
 
 [dependencies.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore.git"
-rev = "a04f4dbaec4d05be2c7a516a36b5bbec02ee32aa"
+rev = "27c9a7b8ce5b87d2be3703f7a3290fa7a0552fc6"
 
 [dependencies.radicle-registry-client]
 git = "https://github.com/radicle-dev/radicle-registry.git"
-rev = "0acd1e5467f0b70dfdff5fc7df1b5121d73b9858"
+rev = "dd35a97c9f853e685455ec93c2f312f34dc08591"
 
 [dependencies.radicle-surf]
-version = "0.3.1"
+version = "0.4.1"
 features = ["serialize"]
 
 [dev-dependencies]

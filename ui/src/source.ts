@@ -1,14 +1,9 @@
 import { Readable } from "svelte/store";
 
 import * as api from "./api";
-import * as config from "./config";
 import * as event from "./event";
 import * as identity from "./identity";
 import * as remote from "./remote";
-
-// TOOLING
-const filterBranches = (branches: string[]): string[] =>
-  branches.filter(branch => !config.HIDDEN_BRANCHES.includes(branch));
 
 // TYPES
 interface Person {
@@ -25,7 +20,7 @@ interface Commit {
   committerTime: number;
   description: string;
   summary: string;
-  changeset: object;
+  changeset: Record<string, unknown>;
 }
 
 interface CommitSummary {
@@ -84,8 +79,8 @@ interface Tree extends SourceObject {
 
 interface Revision {
   user: identity.Identity;
-  branches: string[];
-  tags: string[];
+  branches: Branch[];
+  tags: Tag[];
 }
 
 type Revisions = Revision[];
@@ -94,6 +89,30 @@ interface Readme {
   content: string;
   path?: string;
 }
+
+export enum RevisionType {
+  Branch = "branch",
+  Tag = "tag",
+  Sha = "sha",
+}
+
+export interface Branch {
+  type: RevisionType.Branch;
+  name: string;
+  peerId?: string;
+}
+
+export interface Tag {
+  type: RevisionType.Tag;
+  name: string;
+}
+
+export interface Sha {
+  type: RevisionType.Sha;
+  sha: string;
+}
+
+export type RevisionQuery = Branch | Tag | Sha;
 
 // STATE
 const commitStore = remote.createStore<Commit>();
@@ -126,8 +145,7 @@ interface FetchCommit extends event.Event<Kind> {
 interface FetchCommits extends event.Event<Kind> {
   kind: Kind.FetchCommits;
   projectId: string;
-  peerId: string;
-  branch: string;
+  revision: Branch;
 }
 
 interface FetchRevisions extends event.Event<Kind> {
@@ -140,7 +158,7 @@ interface FetchObject extends event.Event<Kind> {
   path: string;
   peerId: string;
   projectId: string;
-  revision: string;
+  revision: RevisionQuery;
   type: ObjectType;
 }
 
@@ -179,13 +197,7 @@ const update = (msg: Msg): void => {
 
       api
         .get<Commit>(`source/commit/${msg.projectId}/${msg.sha1}`)
-        .then(commit => {
-          commitStore.success({
-            // TODO(cloudhead): Fetch branch from backend.
-            branch: "master",
-            ...commit,
-          });
-        })
+        .then(commitStore.success)
         .catch(commitStore.error);
       break;
 
@@ -195,8 +207,8 @@ const update = (msg: Msg): void => {
       api
         .get<CommitSummary[]>(`source/commits/${msg.projectId}/`, {
           query: {
-            peerId: msg.peerId,
-            branch: msg.branch,
+            peerId: msg.revision.peerId,
+            branch: msg.revision.name,
           },
         })
         .then(history => {
@@ -208,14 +220,7 @@ const update = (msg: Msg): void => {
     case Kind.FetchRevisions:
       api
         .get<Revisions>(`source/revisions/${msg.projectId}`)
-        .then(revisions =>
-          revisionsStore.success(
-            revisions.map(rev => ({
-              ...rev,
-              branches: filterBranches(rev.branches),
-            }))
-          )
-        )
+        .then(revisions => revisionsStore.success(revisions))
         .catch(revisionsStore.error);
       break;
 
@@ -269,7 +274,7 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 export const tree = (
   projectId: string,
   peerId: string,
-  revision: string,
+  revision: RevisionQuery,
   prefix: string
 ): Readable<remote.Data<Tree>> => {
   const treeStore = remote.createStore<Tree>();
@@ -287,7 +292,7 @@ export const tree = (
 const blob = (
   projectId: string,
   peerId: string,
-  revision: string,
+  revision: RevisionQuery,
   path: string,
   highlight: boolean
 ): Promise<Blob> =>
@@ -320,10 +325,34 @@ export const formatTime = (t: number): string => {
   });
 };
 
+export const revisionQueryEq = (
+  query1: RevisionQuery,
+  query2: RevisionQuery
+): boolean => {
+  if (
+    query1.type === RevisionType.Branch &&
+    query2.type === RevisionType.Branch
+  ) {
+    return query1.name === query2.name && query1.peerId === query2.peerId;
+  } else if (
+    query1.type === RevisionType.Tag &&
+    query2.type === RevisionType.Tag
+  ) {
+    return query1.name === query2.name;
+  } else if (
+    query1.type === RevisionType.Sha &&
+    query2.type === RevisionType.Sha
+  ) {
+    return query1.sha === query2.sha;
+  } else {
+    return false;
+  }
+};
+
 export const readme = (
   projectId: string,
   peerId: string,
-  revision: string
+  revision: RevisionQuery
 ): Readable<remote.Data<Readme | null>> => {
   const readme = remote.createStore<Readme | null>();
 

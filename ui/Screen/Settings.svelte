@@ -2,20 +2,30 @@
   import {
     clear,
     clearCache,
+    formatSeedsForInput,
+    seeds,
     settings,
     updateAppearance,
     updateRegistry,
+    updateSeeds,
   } from "../src/session.ts";
   import { networkOptions, themeOptions } from "../src/settings.ts";
 
-  import { Title, Text, Button } from "../DesignSystem/Primitive";
+  import { Button, Input, Text, Title } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
+
+  let seedInputValue = formatSeedsForInput($seeds.data);
 
   const updateNetwork = event =>
     updateRegistry({ ...$settings.registry, network: event.detail });
 
   const updateTheme = event =>
     updateAppearance({ ...$settings.appearance, theme: event.detail });
+
+  const updateCocoSettings = event => {
+    updateSeeds(event.target.value);
+    seedInputValue = formatSeedsForInput($seeds.data);
+  };
 </script>
 
 <style>
@@ -25,18 +35,35 @@
     min-width: var(--content-min-width);
     padding: 0 var(--content-padding);
   }
+
   section header {
     margin: 16px 0 24px 0;
     border-bottom: 1px solid var(--color-foreground-level-3);
     padding: 12px;
+    display: flex;
+    justify-content: space-between;
   }
+
+  section header a {
+    color: var(--color-secondary);
+  }
+
+  section header a:hover {
+    text-decoration: underline;
+  }
+
   .section-item {
-    padding: 0 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+    padding: 0 12px;
   }
+
+  .info {
+    flex: 1;
+  }
+
   .action {
     display: flex;
     justify-content: space-between;
@@ -47,7 +74,7 @@
 
 <SidebarLayout dataCy="page">
   <div class="container">
-    <Title variant="big">Settings</Title>
+    <Title style="margin-bottom: 32px;" variant="huge">Settings</Title>
 
     <section>
       <header>
@@ -81,6 +108,31 @@
             active={$settings.appearance.theme}
             options={themeOptions}
             on:select={updateTheme} />
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <header>
+        <Title variant="large">Seeds</Title>
+        <!-- TODO(sos): link to actual docs abt seeds -->
+        <a href="link/to/docs">Learn about seeds</a>
+      </header>
+      <div class="section-item" style="align-items: flex-start;">
+        <div class="info">
+          <Text variant="medium">
+            Seeds help you see more projects and people on the network
+          </Text>
+          <Text
+            style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
+            Have some seed addresses you’d like to join? Enter them here and new
+            projects from the seeds you’re subscribed to will appear in the
+            Discover page.
+          </Text>
+          <Input.Textarea
+            bind:value={seedInputValue}
+            on:change={updateCocoSettings}
+            placeholder="Enter seeds here" />
         </div>
       </div>
     </section>
@@ -137,26 +189,6 @@
             on:click={clear}>
             Clear session
           </Button>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <header>
-        <Title variant="large">Developer tools</Title>
-      </header>
-      <div class="section-item">
-        <div class="info">
-          <Text variant="medium">
-            Unlink all unregistered projects from my profile
-          </Text>
-          <Text style="color: var(--color-foreground-level-6);">
-            This unlinks your local repositories from Upstream. The local data
-            will remain on your computer.
-          </Text>
-        </div>
-        <div class="action">
-          <Button variant="destructive">Remove</Button>
         </div>
       </div>
     </section>

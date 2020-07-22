@@ -44,26 +44,32 @@ context("add member to org", () => {
       cy.pick("message").contains("Member registration");
       cy.pick("subject").contains("user2");
 
-      cy.pick("deposit", "rad-amount").contains("0.00001");
-      cy.pick("deposit", "usd-amount").contains("$0.00001");
+      cy.pick("deposit", "amount").contains("0.00001");
+      cy.pick("deposit", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.00001");
+      cy.pick("deposit", "amount").trigger("mouseout");
 
-      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
-      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").contains("0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-      cy.pick("total", "rad-amount").contains("0.000011");
-      cy.pick("total", "usd-amount").contains("$0.000011");
+      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000011");
+      cy.pick("total", "amount").trigger("mouseout");
     });
   });
 
   context("navigation", () => {
     it("can be closed by pressing cancel", () => {
-      cy.pick("add-member-modal").contains("Register a member");
+      cy.pick("add-member-modal").contains("Member registration");
       cy.pick("cancel-button").click();
       cy.pick("org-screen").should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
-      cy.pick("add-member-modal").contains("Register a member");
+      cy.pick("add-member-modal").contains("Member registration");
       cy.get("body").type("{esc}");
       cy.pick("org-screen").should("exist");
     });
@@ -97,14 +103,20 @@ context("after submitting the transaction", () => {
     cy.pick("transaction-center").click();
     cy.pick("transaction-center", "transaction-item").first().click();
 
-    cy.pick("deposit", "rad-amount").contains("0.00001");
-    cy.pick("deposit", "usd-amount").contains("$0.00001");
+    cy.pick("deposit", "amount").contains("0.00001");
+    cy.pick("deposit", "amount").trigger("mouseover");
+    cy.pick("tooltip").contains("$0.00001");
+    cy.pick("deposit", "amount").trigger("mouseout");
 
-    cy.pick("transaction-fee", "rad-amount").contains("0.000001");
-    cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+    cy.pick("transaction-fee", "amount").contains("0.000001");
+    cy.pick("transaction-fee", "amount").trigger("mouseover");
+    cy.pick("tooltip").contains("$0.000001");
+    cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-    cy.pick("total", "rad-amount").contains("0.000011");
-    cy.pick("total", "usd-amount").contains("$0.000011");
+    cy.pick("total", "amount").contains("0.000011");
+    cy.pick("total", "amount").trigger("mouseover");
+    cy.pick("tooltip").contains("$0.000011");
+    cy.pick("total", "amount").trigger("mouseout");
 
     cy.pick("summary", "message").contains("Member registration");
     cy.pick("summary", "subject").contains("user2");

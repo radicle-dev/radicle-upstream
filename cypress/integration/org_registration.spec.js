@@ -13,7 +13,7 @@ context("org registration permission", () => {
     cy.registerUser();
     cy.visit("public/index.html");
     cy.pick("sidebar", "add-org").click();
-    cy.pick("org-reg-modal").contains("Register an org");
+    cy.pick("org-registration-modal").contains("Org registration");
   });
 });
 
@@ -30,13 +30,13 @@ context("org registration", () => {
 
   context("navigation", () => {
     it("can be closed by pressing cancel", () => {
-      cy.pick("org-reg-modal").contains("Register an org");
+      cy.pick("org-registration-modal").contains("Org registration");
       cy.pick("cancel-button").click();
       cy.pick("profile-screen").should("exist");
     });
 
     it("can be closed by pressing escape key", () => {
-      cy.pick("org-reg-modal").contains("Register an org");
+      cy.pick("org-registration-modal").contains("Org registration");
       cy.get("body").type("{esc}");
       cy.pick("profile-screen").should("exist");
     });
@@ -64,51 +64,65 @@ context("org registration", () => {
       // no empty input
       cy.pick("input").type("a_name");
       cy.pick("input").clear();
-      cy.pick("org-reg-modal").contains("This field is required");
+      cy.pick("org-registration-modal").contains("This field is required");
       cy.pick("submit-button").should("be.disabled");
 
       // no spaces
       cy.pick("input").type("no spaces");
-      cy.pick("org-reg-modal").contains("It should match ^[a-z0-9][a-z0-9]+$");
+      cy.pick("org-registration-modal").contains(
+        "It should match ^[a-z0-9][a-z0-9]+$"
+      );
       cy.pick("submit-button").should("be.disabled");
 
       // no special characters
       cy.pick("input").clear();
       cy.pick("input").type("^^^inVaLiD***");
-      cy.pick("org-reg-modal").contains("It should match ^[a-z0-9][a-z0-9]+$");
+      cy.pick("org-registration-modal").contains(
+        "It should match ^[a-z0-9][a-z0-9]+$"
+      );
       cy.pick("submit-button").should("be.disabled");
 
       // no starting with an underscore or dash
       cy.pick("input").clear();
       cy.pick("input").type("_nVaLiD");
-      cy.pick("org-reg-modal").contains("It should match ^[a-z0-9][a-z0-9]+$");
+      cy.pick("org-registration-modal").contains(
+        "It should match ^[a-z0-9][a-z0-9]+$"
+      );
       cy.pick("submit-button").should("be.disabled");
 
       cy.pick("input").clear();
       cy.pick("input").type("-alsoInVaLiD");
-      cy.pick("org-reg-modal").contains("It should match ^[a-z0-9][a-z0-9]+$");
+      cy.pick("org-registration-modal").contains(
+        "It should match ^[a-z0-9][a-z0-9]+$"
+      );
       cy.pick("submit-button").should("be.disabled");
 
       // must meet minimum length
       cy.pick("input").clear();
       cy.pick("input").type("x");
-      cy.pick("org-reg-modal").contains("It should match ^[a-z0-9][a-z0-9]+$");
+      cy.pick("org-registration-modal").contains(
+        "It should match ^[a-z0-9][a-z0-9]+$"
+      );
       cy.pick("submit-button").should("be.disabled");
     });
 
     it("prevents the user from registering an id already taken by another org", () => {
       cy.registerOrg("coolname");
 
-      cy.pick("org-reg-modal", "input").type("coolname");
-      cy.pick("org-reg-modal").contains("Sorry, this one is already taken");
+      cy.pick("org-registration-modal", "input").type("coolname");
+      cy.pick("org-registration-modal").contains(
+        "Sorry, this one is no longer available"
+      );
       cy.pick("submit-button").should("be.disabled");
     });
 
     it("prevents the user from registering an id already taken by a user", () => {
       cy.registerAlternativeUser("userxyz");
 
-      cy.pick("org-reg-modal", "input").type("userxyz");
-      cy.pick("org-reg-modal").contains("Sorry, this one is already taken");
+      cy.pick("org-registration-modal", "input").type("userxyz");
+      cy.pick("org-registration-modal").contains(
+        "Sorry, this one is no longer available"
+      );
       cy.pick("submit-button").should("be.disabled");
     });
   });
@@ -131,17 +145,23 @@ context("org registration", () => {
       cy.pick("submit-button").click();
 
       cy.pick("message").contains("Org registration");
-      cy.pick("subject").contains("mariposa");
+      cy.pick("subject-avatar").contains("mariposa");
       cy.pick("subject-avatar", "emoji").should("have.class", "square");
 
-      cy.pick("deposit", "rad-amount").contains("0.00001");
-      cy.pick("deposit", "usd-amount").contains("$0.00001");
+      cy.pick("deposit", "amount").contains("0.00001");
+      cy.pick("deposit", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.00001");
+      cy.pick("deposit", "amount").trigger("mouseout");
 
-      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
-      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").contains("0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-      cy.pick("total", "rad-amount").contains("0.000011");
-      cy.pick("total", "usd-amount").contains("$0.000011");
+      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000011");
+      cy.pick("total", "amount").trigger("mouseout");
     });
 
     it("submits correct transaction details to proxy", () => {
@@ -156,26 +176,34 @@ context("org registration", () => {
       // pick most recent transaction
       cy.pick("transaction-center", "transaction-item").first().click();
       cy.pick("summary", "message").contains("Org registration");
-      cy.pick("summary", "subject").contains("mariposa");
+      cy.pick("summary", "subject-avatar").contains("mariposa");
       cy.pick("summary", "subject-avatar", "emoji").should(
         "have.class",
         "square"
       );
-      cy.pick("subject", "emoji").find("img").should("have.attr", "alt", "🐲");
-      cy.pick("subject", "emoji").should(
+      cy.pick("subject-avatar", "emoji")
+        .find("img")
+        .should("have.attr", "alt", "🐲");
+      cy.pick("subject-avatar", "emoji").should(
         "have.css",
         "background-color",
         "rgb(186, 38, 114)"
       );
 
-      cy.pick("deposit", "rad-amount").contains("0.00001");
-      cy.pick("deposit", "usd-amount").contains("$0.00001");
+      cy.pick("deposit", "amount").contains("0.00001");
+      cy.pick("deposit", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.00001");
+      cy.pick("deposit", "amount").trigger("mouseout");
 
-      cy.pick("transaction-fee", "rad-amount").contains("0.000001");
-      cy.pick("transaction-fee", "usd-amount").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").contains("0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000001");
+      cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-      cy.pick("total", "rad-amount").contains("0.000011");
-      cy.pick("total", "usd-amount").contains("$0.000011");
+      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").trigger("mouseover");
+      cy.pick("tooltip").contains("$0.000011");
+      cy.pick("total", "amount").trigger("mouseout");
     });
   });
 });

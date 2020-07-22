@@ -14,10 +14,12 @@
     readme,
     revisions as revisionsStore,
     fetchObject,
+    revisionQueryEq,
+    RevisionType,
   } from "../../src/source.ts";
 
-  import { Code, Flex, Icon, Text, Title } from "../../DesignSystem/Primitive";
-  import { Copyable, Placeholder, Remote } from "../../DesignSystem/Component";
+  import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { Copyable, EmptyState, Remote } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
@@ -25,16 +27,37 @@
   import Folder from "../../DesignSystem/Component/SourceBrowser/Folder.svelte";
   import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
 
-  import CloneButton from "./CloneButton.svelte";
+  import CheckoutButton from "./CheckoutButton.svelte";
 
   const { id, metadata } = getContext("project");
 
-  $: ({
-    currentPeerId,
-    currentRevision,
-    currentObjectType,
-    currentObjectPath,
-  } = path.parseProjectSourceLocation($querystring, metadata.defaultBranch));
+  let currentPeerId;
+  let currentRevision;
+  let currentObjectType;
+  let currentObjectPath;
+
+  $: {
+    const parsed = path.parseProjectSourceLocation($querystring);
+
+    currentPeerId = parsed.peerId || null;
+    currentObjectType = parsed.objectType || ObjectType.Tree;
+    currentObjectPath = parsed.objectPath || null;
+
+    if (currentRevision && parsed.revision) {
+      // Only perform assignment if there is a change to the revision.
+      // Otherwise an assignment triggers this reacitve statement to update
+      // the source browser even if there are no changes.
+      if (!revisionQueryEq(currentRevision, parsed.revision)) {
+        currentRevision = parsed.revision;
+      }
+    } else {
+      currentRevision = {
+        type: RevisionType.Branch,
+        name: metadata.defaultBranch,
+        peerId: "",
+      };
+    }
+  }
 
   const updateRevision = (projectId, revision, peerId) => {
     push(
@@ -57,15 +80,6 @@
     unsubscribe();
   };
 
-  let copyIcon = Icon.Copy;
-
-  const afterCopy = () => {
-    copyIcon = Icon.Check;
-    setTimeout(() => {
-      copyIcon = Icon.Copy;
-    }, 1000);
-  };
-
   $: fetchObject({
     path: currentObjectPath,
     peerId: currentPeerId,
@@ -74,7 +88,7 @@
     type: currentObjectType,
   });
 
-  $: fetchCommits({ projectId: id, branch: currentRevision });
+  $: fetchCommits({ projectId: id, revision: currentRevision });
 
   fetchRevisions({ projectId: id });
 </script>
@@ -162,9 +176,10 @@
     <Title variant="big">{project.metadata.name}</Title>
     <div class="project-id">
       <Code>
-        <Copyable {afterCopy}>
-          {project.shareableEntityIdentifier}
-          <svelte:component this={copyIcon} style="vertical-align: bottom" />
+        <Copyable iconSize="normal">
+          <span style="margin-right: 8px;">
+            {project.shareableEntityIdentifier}
+          </span>
         </Copyable>
       </Code>
     </div>
@@ -179,11 +194,12 @@
       <Remote store={revisionsStore} let:data={revisions}>
         <div class="revision-selector-wrapper">
           <RevisionSelector
-            style="height: 100%;"
             {currentPeerId}
             {currentRevision}
             {revisions}
-            on:select={event => updateRevision(project.id, event.detail.revision, event.detail.peerId)} />
+            on:select={event => {
+              updateRevision(project.id, event.detail.revision, event.detail.peerId);
+            }} />
         </div>
       </Remote>
 
@@ -208,7 +224,7 @@
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
-                on:click={navigateOnReady(path.projectCommits(project.id, currentPeerId, currentRevision), commitsStore)}>
+                on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
                 Commits
               </a>
             </Text>
@@ -225,7 +241,9 @@
             <span class="stat">{project.stats.contributors}</span>
           </div>
         </div>
-        <CloneButton projectId={project.id} />
+        <CheckoutButton
+          projectId={project.id}
+          projectName={project.metadata.name} />
       </div>
 
       <!-- Object -->
@@ -256,10 +274,10 @@
             {#if readme}
               <Readme content={readme.content} path={readme.path} />
             {:else}
-              <Flex align="center">
-                <Placeholder style="width: 300px; height: 100px" />
-                <Text>No readme found placeholder.</Text>
-              </Flex>
+              <EmptyState
+                text="This project doesn't have a README yet."
+                icon="eyes"
+                primaryActionText="Open an issue to make one" />
             {/if}
           </Remote>
         {/if}

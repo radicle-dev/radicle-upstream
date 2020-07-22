@@ -11,7 +11,7 @@
 
   export let disabled = null;
   export let validation = null;
-  export let showAvatar = false;
+  export let showLeftItem = false;
   export let showSuccessCheck = false;
 </script>
 
@@ -37,14 +37,13 @@
     color: var(--color-foreground-level-5);
   }
 
-  input.avatar {
+  input.left-item {
     padding: 0 40px 0 38px;
   }
 
-  input:focus {
+  input:focus,
+  input:hover {
     outline: none;
-    box-shadow: 0 0 0 1px
-      var(--focus-outline-color, var(--color-foreground-level-3));
     border: 1px solid
       var(--focus-outline-color, var(--color-foreground-level-3));
     background-color: var(--color-foreground-level-1);
@@ -53,7 +52,6 @@
   input.invalid:focus,
   input.invalid {
     outline: none;
-    box-shadow: 0 0 0 1px var(--color-negative);
     border: 1px solid var(--color-negative);
     background: var(--color-background);
     background-position: right 14px top 55%;
@@ -71,7 +69,7 @@
     margin-left: 12px;
   }
 
-  .avatar-wrapper {
+  .left-item-wrapper {
     align-items: center;
     display: flex;
     height: 40px;
@@ -87,16 +85,16 @@
   <input
     data-cy={dataCy}
     class:invalid={validation && validation.status === ValidationStatus.Error}
-    class:avatar={showAvatar}
+    class:left-item={showLeftItem}
     {placeholder}
     bind:value
     {disabled}
     on:change
     on:input />
 
-  {#if showAvatar}
-    <div class="avatar-wrapper">
-      <slot name="avatar" />
+  {#if showLeftItem}
+    <div class="left-item-wrapper">
+      <slot name="left" />
     </div>
   {/if}
 

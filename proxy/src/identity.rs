@@ -1,12 +1,10 @@
 //! Container to bundle and associate information around an identity.
 
-use std::sync::Arc;
-
 use serde::{Deserialize, Serialize};
-use tokio::sync::Mutex;
 
 use librad::keys;
-use librad::uri::RadUrn;
+use librad::meta::user;
+use librad::peer;
 
 use crate::avatar;
 use crate::coco;
@@ -19,8 +17,10 @@ pub use shared_identifier::SharedIdentifier;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
+    /// The Peer Id for the user.
+    pub peer_id: peer::PeerId,
     /// The librad id.
-    pub id: RadUrn,
+    pub urn: coco::Urn,
     /// Unambiguous identifier pointing at this identity.
     pub shareable_entity_identifier: SharedIdentifier,
     /// Bundle of user provided data.
@@ -29,6 +29,25 @@ pub struct Identity {
     pub registered: Option<registry::Id>,
     /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
     pub avatar_fallback: avatar::Avatar,
+}
+
+impl<S> From<(peer::PeerId, user::User<S>)> for Identity {
+    fn from((peer_id, user): (peer::PeerId, user::User<S>)) -> Self {
+        let urn = user.urn();
+        Self {
+            peer_id: peer_id.clone(),
+            urn: urn.clone(),
+            shareable_entity_identifier: SharedIdentifier {
+                handle: user.name().to_string(),
+                peer_id,
+            },
+            metadata: Metadata {
+                handle: user.name().to_string(),
+            },
+            registered: None,
+            avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
+        }
+    }
 }
 
 /// User maintained information for an identity, which can evolve over time.
@@ -42,62 +61,41 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub async fn create(
-    peer: Arc<Mutex<coco::PeerApi>>,
+pub fn create(
+    api: &coco::Api,
     key: keys::SecretKey,
-    handle: String,
+    handle: &str,
 ) -> Result<Identity, error::Error> {
-    let user = coco::init_user(&*peer.lock().await, key, &handle)?;
-    let user = coco::verify_user(user).await?;
-    let id = user.urn();
-    let shareable_entity_identifier = user.into();
-    Ok(Identity {
-        id: id.clone(),
-        shareable_entity_identifier,
-        metadata: Metadata { handle },
-        registered: None,
-        avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
-    })
+    let user = api.init_owner(key, handle)?;
+    Ok((api.peer_id(), user).into())
 }
 
-/// Retrieve an identity by id.
+/// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
 ///
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(peer: &coco::PeerApi, id: &RadUrn) -> Result<Identity, error::Error> {
-    let user = coco::get_user(peer, id)?;
-    Ok(Identity {
-        id: id.clone(),
-        shareable_entity_identifier: SharedIdentifier {
-            handle: user.name().to_string(),
-            urn: id.clone(),
-        },
-        metadata: Metadata {
-            handle: user.name().to_string(),
-        },
-        registered: None,
-        avatar_fallback: avatar::Avatar::from(&id.to_string(), avatar::Usage::Identity),
-    })
+pub fn get(api: &coco::Api, id: &coco::Urn) -> Result<Identity, error::Error> {
+    let user = api.get_user(id)?;
+    Ok((api.peer_id(), user).into())
 }
 
-/// A `SharedIdentifier` is the combination of a user handle and the [`RadUrn`] that identifies the
-/// user.
+/// A `SharedIdentifier` is the combination of a user handle and the [`coco::Urn`] that identifies
+/// the user.
 pub mod shared_identifier {
-
     use std::{fmt, str::FromStr};
 
     use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
     use librad::meta::user;
-    use librad::uri::{rad_urn, RadUrn};
+    use librad::peer;
 
     /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
     #[derive(Debug, thiserror::Error)]
     pub enum ParseError {
         /// Could not parse the URN portion of the identifier.
         #[error(transparent)]
-        Urn(#[from] rad_urn::ParseError),
+        Peer(#[from] peer::conversion::Error),
         /// The identifier contained more than one '@' symbol.
         #[error("shared identifier contains more than one '@' symbol")]
         AtSplitError,
@@ -106,7 +104,7 @@ pub mod shared_identifier {
         MissingHandle,
         /// The urn portion of the identifier was missing.
         #[error("shared identifier is missing the URN to the right of the '@' symbol")]
-        MissingUrn,
+        MissingPeerId,
     }
 
     /// The combination of a handle and a urn give user's a structure for sharing their identities.
@@ -115,14 +113,14 @@ pub mod shared_identifier {
         /// The user's chosen handle.
         pub handle: String,
         /// The unique identifier of the user.
-        pub urn: RadUrn,
+        pub peer_id: peer::PeerId,
     }
 
-    impl<ST> From<user::User<ST>> for SharedIdentifier {
-        fn from(user: user::User<ST>) -> Self {
+    impl<ST> From<(peer::PeerId, user::User<ST>)> for SharedIdentifier {
+        fn from((peer_id, user): (peer::PeerId, user::User<ST>)) -> Self {
             Self {
                 handle: user.name().to_string(),
-                urn: user.urn(),
+                peer_id,
             }
         }
     }
@@ -133,24 +131,24 @@ pub mod shared_identifier {
         fn from_str(s: &str) -> Result<Self, Self::Err> {
             let mut sub = s.split('@');
             let handle = sub.next();
-            let urn = sub.next();
+            let peer_id = sub.next();
 
             if sub.count() != 0 {
                 return Err(ParseError::AtSplitError);
             }
 
             let handle = handle.ok_or(ParseError::MissingHandle)?.to_string();
-            let urn = urn
-                .ok_or(ParseError::MissingUrn)
-                .and_then(|urn| Ok(urn.parse()?))?;
+            let peer_id = peer_id
+                .ok_or(ParseError::MissingPeerId)
+                .and_then(|peer_id| Ok(peer_id.parse()?))?;
 
-            Ok(Self { handle, urn })
+            Ok(Self { handle, peer_id })
         }
     }
 
     impl fmt::Display for SharedIdentifier {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "{}@{}", self.handle, self.urn)
+            write!(f, "{}@{}", self.handle, self.peer_id)
         }
     }
 

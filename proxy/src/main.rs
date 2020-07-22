@@ -4,6 +4,7 @@ use librad::paths;
 use radicle_keystore::pinentry::SecUtf8;
 
 use proxy::coco;
+use proxy::config;
 use proxy::env;
 use proxy::http;
 use proxy::keystore;
@@ -53,6 +54,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+    log::debug!(
+        "Temporary path being used for this run is: {:?}",
+        temp_dir.path()
+    );
 
     let paths_config = if args.test {
         coco::config::Paths::FromRoot(temp_dir.path().to_path_buf())
@@ -66,21 +71,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut keystore = keystore::Keystorage::new(&paths, pw);
     let key = keystore.init_librad_key()?;
 
-    let config = coco::config::configure(paths, key.clone());
-    let peer = coco::create_peer_api(config).await?;
-    let owner = coco::init_user(&peer, key.clone(), "cloudhead")?;
-    let owner = coco::verify_user(owner).await?;
+    let coco_api = {
+        let config = coco::config::configure(paths, key.clone());
+        coco::Api::new(config).await?
+    };
 
     if args.test {
-        coco::control::setup_fixtures(&peer, key, &owner).expect("fixture creation failed");
+        // TODO(xla): Given that we have proper ownership and user handling in coco, we should
+        // evaluate how meaningful these fixtures are.
+        let owner = coco_api.init_owner(key.clone(), "cloudhead")?;
+        coco::control::setup_fixtures(&coco_api, key, &owner).expect("fixture creation failed");
     }
 
     let store = {
         let store_path = if args.test {
             temp_dir.path().join("store")
         } else {
-            let dir = directories::ProjectDirs::from("xyz", "radicle", "upstream").unwrap();
-            dir.data_dir().join("store")
+            let dirs = config::dirs();
+            dirs.data_dir().join("store")
         };
         let config = kv::Config::new(store_path).flush_every_ms(100);
 
@@ -90,7 +98,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(peer, owner, keystore, cache.clone(), store, args.test);
+    let api = http::api(coco_api, keystore, cache.clone(), store, args.test);
 
     tokio::spawn(async move {
         cache.run().await.expect("cacher run failed");

@@ -52,12 +52,13 @@ interface FormatConstraints {
 
 export const createValidationStore = (
   constraints: FormatConstraints,
-  remoteValidations: RemoteValidation[]
+  remoteValidations?: RemoteValidation[]
 ): ValidationStore => {
   const initialState = {
     status: ValidationStatus.NotStarted,
   } as ValidationState;
   const internalStore = writable(initialState);
+  // eslint-disable-next-line @typescript-eslint/unbound-method
   const { subscribe, update } = internalStore;
   let inputStore: Writable<string> | undefined = undefined;
 
@@ -68,6 +69,7 @@ export const createValidationStore = (
     });
 
     // Check for errors
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const errors = validatejs(
       { input: input },
       { input: constraints },
@@ -76,6 +78,7 @@ export const createValidationStore = (
 
     if (errors) {
       update(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
         return { status: ValidationStatus.Error, message: errors.input[0] };
       });
       return;
@@ -83,11 +86,26 @@ export const createValidationStore = (
 
     let remoteSuccess = true;
 
-    for (const remoteValidation of remoteValidations) {
-      try {
-        const valid = await remoteValidation.promise(input);
+    if (remoteValidations) {
+      for (const remoteValidation of remoteValidations) {
+        try {
+          const valid = await remoteValidation.promise(input);
 
-        if (!valid) {
+          if (!valid) {
+            remoteSuccess = false;
+
+            update(store => {
+              // If the input has changed since this request was fired off, don't update
+              if (get(inputStore) !== input) return store;
+              return {
+                status: ValidationStatus.Error,
+                message: remoteValidation.validationMessage,
+              };
+            });
+
+            break;
+          }
+        } catch (error) {
           remoteSuccess = false;
 
           update(store => {
@@ -95,30 +113,18 @@ export const createValidationStore = (
             if (get(inputStore) !== input) return store;
             return {
               status: ValidationStatus.Error,
-              message: remoteValidation.validationMessage,
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
+              message: `Cannot validate "${input}": ${error.message}`,
             };
           });
 
           break;
         }
-      } catch (error) {
-        remoteSuccess = false;
-
-        update(store => {
-          // If the input has changed since this request was fired off, don't update
-          if (get(inputStore) !== input) return store;
-          return {
-            status: ValidationStatus.Error,
-            message: `Cannot validate "${input}": ${error.message}`,
-          };
-        });
-
-        break;
       }
-    }
 
-    if (!remoteSuccess) {
-      return;
+      if (!remoteSuccess) {
+        return;
+      }
     }
 
     // If we made it here, it's valid
@@ -133,7 +139,9 @@ export const createValidationStore = (
     if (!inputStore) {
       inputStore = writable(input);
       inputStore.subscribe((input: string) => {
-        runValidations(input);
+        runValidations(input).catch(reason => {
+          console.error("runValidations() failed: ", reason);
+        });
       });
       return;
     }

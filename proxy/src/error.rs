@@ -4,11 +4,11 @@ use std::time::SystemTimeError;
 
 use librad::meta::common::url;
 use librad::meta::entity;
-use librad::uri::RadUrn;
 use radicle_registry_client as registry;
 use radicle_surf as surf;
 use radicle_surf::git::git2;
 
+use crate::coco;
 use crate::keystore;
 
 /// Project problems.
@@ -38,7 +38,7 @@ pub enum UserValidation {
 pub enum Error {
     /// Returned when an attempt to create an identity was made and there is one present.
     #[error("the identity '{0}' already exits")]
-    EntityExists(RadUrn),
+    EntityExists(coco::Urn),
 
     /// Configured default branch for the project is missing.
     #[error("repository '{0}' doesn't have the configured default branch '{1}'")]
@@ -80,6 +80,14 @@ pub enum Error {
     #[error("the Project Name '{0}' is invalid")]
     InvalidProjectName(String),
 
+    /// The given account could not be found in the Registry.
+    #[error("the given account '{0}' could not be found in the Registry")]
+    AccountNotFound(registry::AccountId),
+
+    /// The given block could not be found in the Registry.
+    #[error("the given block '{0}' could not be found in the Registry")]
+    BlockNotFound(registry::BlockHash),
+
     /// Accept error from `librad`.
     #[error(transparent)]
     LibradAccept(#[from] librad::net::peer::AcceptError),
@@ -100,9 +108,9 @@ pub enum Error {
     #[error(transparent)]
     LibradParse(#[from] librad::uri::path::ParseError),
 
-    /// Parse error for `RadUrn`
+    /// Parse error for [`coco::Urn`].
     #[error(transparent)]
-    LibradParseUrn(#[from] librad::uri::rad_urn::ParseError),
+    LibradParseUrn(#[from] coco::ParseError),
 
     /// Project error from `librad`.
     #[error(transparent)]
@@ -159,6 +167,13 @@ pub enum Error {
     /// Overflow while incrementing confirmed transaction.
     #[error("while calculating the number of confirmed transactions, we encountered an overflow")]
     TransactionConfirmationOverflow,
+
+    /// We expect at least one [`coco::UserRevisions`] when looking at a project, however the
+    /// computation found none.
+    #[error(
+        "while trying to get user revisions we could not find any, there should be at least one"
+    )]
+    EmptyUserRevisions,
 }
 
 impl From<registry::DispatchError> for Error {

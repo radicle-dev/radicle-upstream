@@ -1,15 +1,18 @@
-#![allow(clippy::integer_arithmetic)]
 //! Abstractions and types to handle, persist and interact with transactions.
+
+#![allow(clippy::integer_arithmetic)]
+
+use std::time::{self, Duration, SystemTime};
 
 use async_trait::async_trait;
 use hex::ToHex;
 use kv::Codec as _;
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize, Serializer};
-use std::time::{self, Duration, SystemTime};
 
 use radicle_registry_client as protocol;
 
+use crate::coco;
 use crate::error;
 use crate::registry;
 
@@ -152,6 +155,13 @@ pub enum Message {
         id: Option<String>,
     },
 
+    /// Issue an org unregistration with a given id.
+    #[serde(rename_all = "camelCase")]
+    UserUnregistration {
+        /// The [`registry::User`] id.
+        id: registry::Id,
+    },
+
     /// Issue a member registration for a given handle under a given org.
     #[serde(rename_all = "camelCase")]
     MemberRegistration {
@@ -159,6 +169,26 @@ pub enum Message {
         handle: registry::Id,
         /// The Org in which to register the member.
         org_id: registry::Id,
+    },
+
+    /// Transfer funds from the author to the recipient.
+    #[serde(rename_all = "camelCase")]
+    Transfer {
+        /// User or org receiving the funds.
+        recipient: protocol::ed25519::Public,
+        /// The funds to transfer.
+        amount: registry::Balance,
+    },
+
+    /// Transfer funds from an org to the recipient.
+    #[serde(rename_all = "camelCase")]
+    TransferFromOrg {
+        /// Org sending the funds.
+        org_id: registry::Id,
+        /// User or org receiving the funds.
+        recipient: protocol::ed25519::Public,
+        /// The funds to transfer.
+        amount: registry::Balance,
     },
 }
 
@@ -369,8 +399,33 @@ impl<C> registry::Client for Cacher<C>
 where
     C: registry::Client,
 {
+    async fn account_exists(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<bool, error::Error> {
+        self.client.account_exists(account_id).await
+    }
+
+    async fn free_balance(
+        &self,
+        account_id: &protocol::ed25519::Public,
+    ) -> Result<protocol::Balance, error::Error> {
+        self.client.free_balance(account_id).await
+    }
+
     async fn best_height(&self) -> Result<u32, error::Error> {
         self.client.best_height().await
+    }
+
+    async fn get_block_header(
+        &self,
+        block: registry::BlockHash,
+    ) -> Result<protocol::BlockHeader, error::Error> {
+        self.client.get_block_header(block).await
+    }
+
+    async fn get_id_status(&self, id: &registry::Id) -> Result<registry::IdStatus, error::Error> {
+        self.client.get_id_status(id).await
     }
 
     async fn get_org(&self, id: registry::Id) -> Result<Option<registry::Org>, error::Error> {
@@ -400,7 +455,7 @@ where
         org_id: registry::Id,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
-        let tx = self.unregister_org(author, org_id, fee).await?;
+        let tx = self.client.unregister_org(author, org_id, fee).await?;
 
         self.cache_transaction(tx.clone())?;
 
@@ -448,7 +503,7 @@ where
         author: &protocol::ed25519::Pair,
         project_domain: registry::ProjectDomain,
         project_name: registry::ProjectName,
-        maybe_project_id: Option<librad::uri::RadUrn>,
+        maybe_project_id: Option<coco::Urn>,
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self
@@ -473,6 +528,53 @@ where
         fee: protocol::Balance,
     ) -> Result<Transaction, error::Error> {
         let tx = self.client.register_user(author, handle, id, fee).await?;
+
+        self.cache_transaction(tx.clone())?;
+
+        Ok(tx)
+    }
+
+    async fn unregister_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        handle: registry::Id,
+        fee: protocol::Balance,
+    ) -> Result<Transaction, error::Error> {
+        let tx = self.client.unregister_user(author, handle, fee).await?;
+        self.cache_transaction(tx.clone())?;
+
+        Ok(tx)
+    }
+
+    async fn transfer_from_user(
+        &self,
+        author: &protocol::ed25519::Pair,
+        recipient: protocol::AccountId,
+        value: protocol::Balance,
+        fee: protocol::Balance,
+    ) -> Result<Transaction, error::Error> {
+        let tx = self
+            .client
+            .transfer_from_user(author, recipient, value, fee)
+            .await?;
+
+        self.cache_transaction(tx.clone())?;
+
+        Ok(tx)
+    }
+
+    async fn transfer_from_org(
+        &self,
+        author: &protocol::ed25519::Pair,
+        org_id: registry::Id,
+        recipient: protocol::ed25519::Public,
+        value: protocol::Balance,
+        fee: protocol::Balance,
+    ) -> Result<Transaction, error::Error> {
+        let tx = self
+            .client
+            .transfer_from_org(author, org_id, recipient, value, fee)
+            .await?;
 
         self.cache_transaction(tx.clone())?;
 

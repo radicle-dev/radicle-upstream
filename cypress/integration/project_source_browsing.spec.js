@@ -1,7 +1,10 @@
 before(() => {
   cy.nukeAllState();
-  cy.createProjectWithFixture();
-  cy.createIdentity();
+  cy.createIdentity("cloudhead");
+  cy.createProjectWithFixture("platinum", "Best project ever.", "master", [
+    "ele",
+    "abbey",
+  ]);
 });
 
 beforeEach(() => {
@@ -86,7 +89,7 @@ context("source code browsing", () => {
     });
   });
 
-  context("when the 'source' section is selected in project sidebar", () => {
+  context("when the Source menu item is selected in project top-bar", () => {
     it("expands a tree starting at the root of the repo", () => {
       cy.pick("source-tree").within(() => {
         cy.contains("src").should("exist");
@@ -195,6 +198,71 @@ context("source code browsing", () => {
         ).click();
         cy.contains("test-file-deletion.txt").should("not.exist");
       });
+
+      it("does not crash on a page reload", () => {
+        cy.pick("revision-selector").click();
+        cy.get(
+          '.revision-dropdown [data-branch="dev"][data-repo-handle="cloudhead"]'
+        ).click();
+
+        cy.reload();
+
+        // Make sure the revision selector still loads.
+        cy.contains(".i-too-am-hidden").should("exist");
+      });
+
+      it("allows selecting different peers", () => {
+        cy.pick("revision-selector").click();
+        // Default revision is highlighted.
+        cy.get(
+          '.revision-dropdown [data-branch="master"][data-repo-handle="cloudhead"]'
+        ).should("have.class", "selected");
+        cy.get(
+          '.revision-dropdown [data-branch="master"][data-repo-handle="abbey"]'
+        ).click();
+
+        cy.pick("revision-selector").contains("master");
+        cy.pick("revision-selector", "branch-icon").should("exist");
+        // TODO(rudolfs): check for the actual avatar once we have a way to
+        // mock peers that don't get a random avatar every time.
+        cy.pick("revision-selector", "avatar-abbey").should("exist");
+
+        cy.pick("revision-selector").click();
+        // Previous selection is highlighted.
+        cy.get(
+          '.revision-dropdown [data-branch="master"][data-repo-handle="abbey"]'
+        ).should("have.class", "selected");
+        cy.get(
+          '.revision-dropdown [data-branch="master"][data-repo-handle="ele"]'
+        ).click();
+
+        cy.pick("revision-selector").contains("master");
+        cy.pick("revision-selector", "branch-icon").should("exist");
+        // TODO(rudolfs): check for the actual avatar once we have a way to
+        // mock peers that don't get a random avatar every time.
+        cy.pick("revision-selector", "avatar-ele").should("exist");
+
+        cy.pick("revision-selector").click();
+        // Previous selection is highlighted.
+        cy.get(
+          '.revision-dropdown [data-branch="master"][data-repo-handle="ele"]'
+        ).should("have.class", "selected");
+        cy.get(
+          '.revision-dropdown [data-tag="v0.1.0"][data-repo-handle="cloudhead"]'
+        ).click();
+
+        cy.pick("revision-selector").contains("v0.1.0");
+        cy.pick("revision-selector", "tag-icon").should("exist");
+        // TODO(rudolfs): check for the actual avatar once we have a way to
+        // mock peers that don't get a random avatar every time.
+        cy.pick("revision-selector", "avatar-cloudhead").should("exist");
+
+        cy.pick("revision-selector").click();
+        // Previous selection is highlighted.
+        cy.get(
+          '.revision-dropdown [data-tag="v0.1.0"][data-repo-handle="cloudhead"]'
+        ).should("have.class", "selected");
+      });
     });
 
     context("when switching between projects", () => {
@@ -204,7 +272,6 @@ context("source code browsing", () => {
         cy.get('[data-branch="dev"][data-repo-handle="cloudhead"]').click();
         cy.pick("sidebar", "profile").click();
         cy.pick("project-list", "project-list-entry-gold").click();
-        cy.pick("revision-selector").contains("cloudhead@");
         cy.pick("revision-selector").contains("master");
       });
     });
@@ -224,19 +291,57 @@ context("source code browsing", () => {
       });
     });
 
-    context("when clicking on folder names", () => {
-      it("allows diving deep into directory structures", () => {
-        cy.pick("source-tree").within(() => {
-          cy.pick("expand-this").click();
-          cy.pick("expand-is").click();
-          cy.pick("expand-a").click();
-          cy.pick("expand-really").click();
-          cy.pick("expand-deeply").click();
-          cy.pick("expand-nested").click();
-          cy.pick("expand-directory").click();
-          cy.pick("expand-tree").click();
-          cy.contains(".gitkeep").should("exist");
-        });
+    it("doesn't interfere with the top-bar menu item active state", () => {
+      cy.pick("topbar", "horizontal-menu", "Source")
+        .get("p")
+        .should("have.class", "active");
+
+      cy.pick("source-tree").within(() => {
+        cy.pick("expand-text").click();
+        cy.contains("arrows.txt").click();
+        cy.contains("arrows.txt").should("have.class", "active");
+      });
+
+      cy.pick("topbar", "horizontal-menu", "Source")
+        .get("p")
+        .should("have.class", "active");
+
+      cy.pick("file-source", "file-header").contains("platinum").click();
+
+      cy.pick("topbar", "horizontal-menu", "Source")
+        .get("p")
+        .should("have.class", "active");
+    });
+
+    it("allows navigating the tree structure", () => {
+      cy.pick("source-tree").within(() => {
+        // Traverse deeply nested folders.
+        cy.pick("expand-this").click();
+        cy.pick("expand-is").click();
+        cy.pick("expand-a").click();
+        cy.pick("expand-really").click();
+        cy.pick("expand-deeply").click();
+        cy.pick("expand-nested").click();
+        cy.pick("expand-directory").click();
+        cy.pick("expand-tree").click();
+
+        // Open a file within nested folders.
+        cy.contains(".gitkeep").click();
+        cy.contains(".gitkeep").should("have.class", "active");
+
+        // Preserve expanded folder state when selecting a different file.
+        cy.pick("expand-text").click();
+        cy.contains("arrows.txt").click();
+        cy.contains("arrows.txt").should("have.class", "active");
+        cy.contains(".gitkeep").should("not.have.class", "active");
+      });
+    });
+
+    it("highlights the selected file", () => {
+      cy.pick("source-tree").within(() => {
+        cy.contains(".i-am-well-hidden").should("not.have.class", "active");
+        cy.contains(".i-am-well-hidden").click();
+        cy.contains(".i-am-well-hidden").should("have.class", "active");
       });
     });
 
