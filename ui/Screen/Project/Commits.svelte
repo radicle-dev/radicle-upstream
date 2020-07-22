@@ -53,7 +53,7 @@
   }
 </style>
 
-<div class="commits-page">
+<div class="commits-page" data-cy="commits-page">
   <Remote {store} let:data={histories}>
     {#each histories as history}
       <div class="commit-group">

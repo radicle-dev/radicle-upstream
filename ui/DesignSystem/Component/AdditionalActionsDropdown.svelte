@@ -132,7 +132,7 @@
 
       {#if menuItems}
         <div class="menu" data-cy="dropdown-menu">
-          {#each menuItems as item, index}
+          {#each menuItems as item}
             <div
               title={item.tooltip}
               data-cy={item.dataCy}
