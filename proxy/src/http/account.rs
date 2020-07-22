@@ -245,7 +245,7 @@ mod test {
         registry
             .write()
             .await
-            .register_user(&author, handle.clone(), None, 10)
+            .register_user(&author, handle.clone(), None, 3)
             .await?;
         let user = registry.read().await.get_user(handle).await?.unwrap();
 
@@ -258,7 +258,7 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have.to_string(),
-                "1152921504606846965",
+                "1152921504606846962",
                 "Account doesn't have the expected amount"
             );
         });
