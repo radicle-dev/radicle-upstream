@@ -6,14 +6,14 @@ use librad::keys;
 use librad::meta::user;
 use librad::peer;
 
+use radicle_registry_client::{ed25519, CryptoPair};
+
 use crate::avatar;
 use crate::coco;
 use crate::error;
 use crate::registry;
 
 pub use shared_identifier::SharedIdentifier;
-
-use radicle_registry_client::{ed25519, CryptoPair};
 
 /// The users personal identifying metadata and keys.
 #[derive(Clone, Debug, Deserialize, Serialize)]
