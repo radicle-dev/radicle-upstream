@@ -13,6 +13,7 @@ default-run = "proxy"
 
 [dependencies]
 async-trait = "0.1"
+anyhow = "1.0"
 directories = "2.0"
 futures = { version = "0.3", features = [ "compat" ] }
 hex = "0.4"
@@ -38,6 +39,10 @@ url = "2.1"
 warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ], default-features = false }
 
 [dependencies.librad]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "55cd394b0eede746ccf4120956f0c3eaf459b073"
+
+[dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "55cd394b0eede746ccf4120956f0c3eaf459b073"
 
