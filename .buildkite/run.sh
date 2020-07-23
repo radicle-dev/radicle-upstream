@@ -12,6 +12,7 @@ mkdir -p "$YARN_TEMPDIR"
 
 echo "--- Installing yarn dependencies"
 TMPDIR="$YARN_TEMPDIR" time yarn install
+sleep 3600
 
 echo "--- Loading proxy/target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"
