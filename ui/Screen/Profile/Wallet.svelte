@@ -15,7 +15,8 @@
 
 <Remote {store} let:data={transactions}>
   <Wallet
+    dataCy="user-wallet"
     transactions={userTransactions(transactions)}
-    balance={3552}
+    balance={342}
     {accountId} />
 </Remote>

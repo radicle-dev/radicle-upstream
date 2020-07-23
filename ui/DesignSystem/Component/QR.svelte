@@ -14,6 +14,6 @@
   });
 </script>
 
-<div class="container">
+<div class="container" data-cy="qr-code">
   {@html svgString}
 </div>
