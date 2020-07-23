@@ -1,4 +1,5 @@
 <script>
+  import { getContext } from "svelte";
   import { transactions as store } from "../../src/transaction.ts";
   import { Wallet, Remote } from "../../DesignSystem/Component";
 
@@ -7,11 +8,15 @@
       return tx.messages[0].domainType !== "org";
     });
   };
+
+  const session = getContext("session");
+  $: accountId = session.identity ? session.identity.accountId : null;
 </script>
 
 <Remote {store} let:data={transactions}>
   <Wallet
+    dataCy="user-wallet"
     transactions={userTransactions(transactions)}
-    balance={3552}
-    accountId="hyda4fhdx8up8hhocagkdz3d41txb98stw4pkqe3uommo1p5m6s9oy" />
+    balance={342}
+    {accountId} />
 </Remote>

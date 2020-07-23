@@ -75,18 +75,20 @@
     <button
       class:active={currentlyActiveSend}
       value="send"
+      data-cy="send-tab"
       on:click={() => (currentlyActiveSend = true)}>
       Send
     </button>
     <button
       class:active={!currentlyActiveSend}
       value="receive"
+      data-cy="receive-tab"
       on:click={() => (currentlyActiveSend = false)}>
       Receive
     </button>
   </div>
   {#if currentlyActiveSend}
-    <div class="send">
+    <div class="send" data-cy="send">
       <Title style="padding-bottom: 0.5rem;">To</Title>
       <Input.Text
         placeholder="Enter address or registered handle"
