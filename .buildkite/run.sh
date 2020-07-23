@@ -5,17 +5,13 @@ TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
 
 source .buildkite/env.sh
 
-echo "--- Installing yarn dependencies"
-# FIXME(rudolfs): yarn install sometimes fails on the first run with the
-# following error message: "Error: ENOSPC: no space left on device, write".
-#
-# However looking at the disk image when this happens shows that there's plenty
-# of space. It might have something to do with yarn trying to run post-install
-# scripts that try to extract stuff to /tmp which is limited on CI.
-#
-# Until we figure out how to fix this proper, just retry running yarn install.
+echo "--- Removing old Yarn temp dir"
+du -hs "$YARN_TEMPDIR"
+rm -rf "$YARN_TEMPDIR"
+mkdir -p "$YARN_TEMPDIR"
 
-time yarn install || time yarn install
+echo "--- Installing yarn dependencies"
+time TMPDIR="$YARN_TEMPDIR" yarn install
 
 echo "--- Loading proxy/target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"

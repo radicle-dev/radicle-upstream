@@ -1,15 +1,20 @@
 <script>
+  import { updateBalance, balance as balanceStore } from "../../src/account.ts";
   import { transactions as txStore } from "../../src/transaction.ts";
   import { org, orgTransactions } from "../../src/org.ts";
   import { Wallet, Remote } from "../../DesignSystem/Component";
 
   export let params = null;
   const accountId = $org.data.accountId;
+  $: updateBalance(accountId);
 </script>
 
 <Remote store={txStore} let:data={transactions}>
-  <Wallet
-    transactions={orgTransactions(transactions, params.id)}
-    balance={3484}
-    {accountId} />
+  <Remote store={balanceStore} let:data={balance}>
+    <Wallet
+      dataCy="org-wallet"
+      transactions={orgTransactions(transactions, params.id)}
+      {balance}
+      {accountId} />
+  </Remote>
 </Remote>
