@@ -234,13 +234,12 @@ pub mod settings {
         pub seeds: Vec<String>,
     }
 
-    // TODO(sos): should these come  from librad?
     impl Default for CoCo {
         fn default() -> Self {
             Self {
-                seeds: ["seed.radicle.xyz", "194.134.54.13"]
-                    .iter()
-                    .map(|s| (*s).to_string())
+                seeds: vec!["seed.radicle.xyz", "194.134.54.13"]
+                    .into_iter()
+                    .map(std::string::ToString::to_string)
                     .collect(),
             }
         }
