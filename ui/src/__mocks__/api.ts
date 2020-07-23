@@ -80,7 +80,12 @@ export const sessionMock: session.Session = {
       network: settings.Network.Emulator,
     },
   },
-  registrationFee: 10,
+  registrationFee: {
+    user: 10,
+    org: 10,
+    project: undefined,
+    member: undefined,
+  },
 };
 
 export const get = async (endpoint: string): Promise<MockedResponse> => {

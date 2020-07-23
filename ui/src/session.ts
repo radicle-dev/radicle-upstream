@@ -18,7 +18,14 @@ export interface Session {
   orgs: org.Org[];
   permissions: Permissions;
   settings: Settings;
-  registrationFee: MicroRad;
+  registrationFee: RegistrationFee;
+}
+
+export interface RegistrationFee {
+  user?: MicroRad;
+  org?: MicroRad;
+  project?: MicroRad;
+  member?: MicroRad;
 }
 
 export interface Permissions {

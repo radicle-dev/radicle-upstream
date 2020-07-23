@@ -115,6 +115,7 @@ export interface Transaction {
   state: State;
   timestamp: Timestamp;
   fee: currency.MicroRad;
+  registrationFee?: currency.MicroRad;
 }
 
 type Transactions = Transaction[];
@@ -559,21 +560,14 @@ const feeAmount = (microRad: currency.MicroRad): FeeAmount => {
   };
 };
 
-export const costSummary = (
-  messageType: MessageType,
-  txFeeMicroRad: currency.MicroRad,
-  registrationFeeMicroRad: currency.MicroRad
-): CostSummary => {
-  const registrationFee: FeeAmount | undefined = paysRegistrationFee(
-    messageType
-  )
-    ? feeAmount(registrationFeeMicroRad)
+export const costSummary = (transaction: Transaction): CostSummary => {
+  const registrationFee: FeeAmount | undefined = transaction.registrationFee
+    ? feeAmount(transaction.registrationFee)
     : undefined;
-
-  const txFee = feeAmount(txFeeMicroRad);
-
+  const txFee = feeAmount(transaction.fee);
   const totalMicroRad =
-    txFeeMicroRad + (registrationFee ? registrationFeeMicroRad : 0);
+    transaction.fee +
+    (transaction.registrationFee ? transaction.registrationFee : 0);
   const total = feeAmount(totalMicroRad);
 
   return {

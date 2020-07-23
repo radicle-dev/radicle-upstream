@@ -30,7 +30,9 @@
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
 
+  // The `transactionFee` will be user-customizable in the future.
   const transactionFee = session.minimumTransactionFee;
+  const registrationFee = session.registrationFee.project;
 
   const registerProject = async () => {
     try {
@@ -55,6 +57,7 @@
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
     fee: transactionFee,
+    registrationFee: registrationFee,
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
@@ -103,10 +106,7 @@
             bind:projectName
             on:next={handleDetailsNextClick} />
         {:else}
-          <Transaction
-            transaction={tx()}
-            payer={wallet()}
-            transactionFee={session.transactionFee} />
+          <Transaction transaction={tx()} payer={wallet()} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

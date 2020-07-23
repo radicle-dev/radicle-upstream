@@ -31,7 +31,7 @@
       <div class="amount">
         <Icon.Currency style="fill: var(--color-negative);" />
         <Title variant="tiny" dataCy="amount" style="margin-left:2px;">
-          -{rad}
+          {rad}
         </Title>
       </div>
     {:else if size === 'big'}

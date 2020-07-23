@@ -29,10 +29,7 @@
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
     <Remote {store} let:data={tx}>
-      <Transaction
-        transaction={tx}
-        {payer}
-        registrationFee={session.registrationFee} />
+      <Transaction transaction={tx} {payer} />
     </Remote>
 
   </div>

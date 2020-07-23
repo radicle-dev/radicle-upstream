@@ -25,7 +25,6 @@
 
   export let transaction = null;
   export let payer = null;
-  export let registrationFee = null;
 
   let avatar;
 
@@ -33,21 +32,27 @@
 
   const updateAvatar = async () => (avatar = await subject.avatarSource);
 
-  const summary = costSummary(
-    transaction.messages[0].type,
-    parseInt(transaction.fee),
-    registrationFee
-  );
-
-  const txFeeRowPosition = summary.registrationFee ? "middle" : "top";
+  const summary = costSummary(transaction);
 
   $: updateAvatar();
 </script>
 
 <Header {transaction} {avatar} {subject} />
 
+<Row dataCy="transaction-fee" variant="top" style="">
+  <div slot="left">
+    <Text variant="regular" style="color:var(--color-foreground-level-6);">
+      Transaction Fee
+    </Text>
+  </div>
+
+  <div slot="right">
+    <Rad rad={summary.txFee.rad} usd={summary.txFee.usd} />
+  </div>
+</Row>
+
 {#if summary.registrationFee}
-  <Row dataCy="registration-fee" variant="top" style="">
+  <Row dataCy="registration-fee" variant="middle" style="">
     <div slot="left">
       <Text variant="regular" style="color:var(--color-foreground-level-6);">
         {formatStake(transaction.messages[0])}
@@ -61,18 +66,6 @@
     </div>
   </Row>
 {/if}
-
-<Row dataCy="transaction-fee" variant={txFeeRowPosition} style="">
-  <div slot="left">
-    <Text variant="regular" style="color:var(--color-foreground-level-6);">
-      Transaction Fee
-    </Text>
-  </div>
-
-  <div slot="right">
-    <Rad rad={summary.txFee.rad} usd={summary.txFee.usd} />
-  </div>
-</Row>
 
 <Row
   dataCy="total"

@@ -116,6 +116,6 @@
         </Text>
       </div>
     {/if}
-    <Rad rad={`-${microRadToRad(tx.fee)}`} usd={`-${microRadToRad(tx.fee)}`} />
+    <Rad rad={`${microRadToRad(tx.fee)}`} usd={`${microRadToRad(tx.fee)}`} />
   </div>
 </div>
