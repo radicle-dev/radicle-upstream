@@ -138,7 +138,7 @@ pub fn track_fake_peer(
 ) {
     // TODO(finto): We're faking a lot of the networking interaction here.
     // Create git references of the form and track the peer.
-    //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/refs/heads
+    //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/signed_refs/heads
     //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/id
     //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
     //   to fake_user
@@ -189,12 +189,17 @@ pub fn track_fake_peer(
 
     // Create the copy of the rad/refs under the remote
     let target = monorepo
-        .find_reference(&format!("refs/namespaces/{}/refs/rad/refs", urn.id))
-        .expect("failed to get rad/refs")
+        .find_reference(&format!("refs/namespaces/{}/refs/rad/signed_refs", urn.id))
+        .expect("failed to get rad/signed_refs")
         .target()
         .expect("missing target");
     let _rad_id = monorepo
-        .reference(&format!("{}/rad/refs", prefix), target, false, "rad/refs")
+        .reference(
+            &format!("{}/rad/signed_refs", prefix),
+            target,
+            false,
+            "rad/signed_refs",
+        )
         .expect("failed to create rad/refs");
 
     api.track(&urn, &remote).expect("failed to track peer");
