@@ -62,7 +62,10 @@
       </div>
     </div>
     <div class="transactions">
-      <Title variant="large" style="padding: 1.25rem 1.5rem;">
+      <Title
+        variant="large"
+        style="padding: 1.25rem 1.5rem; border-bottom: 1px solid
+        var(--color-foreground-level-2);">
         Transactions
       </Title>
       <TransactionList {transactions} />

@@ -4,9 +4,10 @@
 
   const dispatch = createEventDispatcher();
 
+  export let style = null;
   export let icon = "plant";
   export let text = "Nothing to see here";
-  export let primaryActionText = "Go back";
+  export let primaryActionText = null;
   export let secondaryActionText = null;
 
   const onPrimaryAction = () => {
@@ -46,17 +47,19 @@
   }
 </style>
 
-<div class="empty-state" data-cy="empty-state">
+<div class="empty-state" data-cy="empty-state" {style}>
   <Icon.EmptyState variant={icon} />
   <Text style="margin: 1.5rem 0; color: var(--color-foreground-level-6);">
     {text}
   </Text>
-  <Button
-    dataCy="primary-action"
-    on:click={() => onPrimaryAction()}
-    style="margin-bottom: 0.75rem;">
-    {primaryActionText}
-  </Button>
+  {#if primaryActionText !== null}
+    <Button
+      dataCy="primary-action"
+      on:click={() => onPrimaryAction()}
+      style="margin-bottom: 0.75rem;">
+      {primaryActionText}
+    </Button>
+  {/if}
   {#if secondaryActionText !== null}
     <button data-cy="secondary-action" on:click={() => onSecondaryAction()}>
       <Text>{secondaryActionText}</Text>
