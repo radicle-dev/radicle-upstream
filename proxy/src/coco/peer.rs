@@ -141,6 +141,15 @@ impl Api {
         Ok(user)
     }
 
+    /// Returns a feed of untracked [`project::Project`]s
+    ///
+    /// # Errors
+    ///
+    ///   * Retrieving the feed fails
+    pub fn discover_projects(&self) -> Result<String, error::Error> {
+        Ok("feed goes here".to_string())
+    }
+
     /// Returns the list of [`project::Project`]s for your peer.
     ///
     /// # Errors

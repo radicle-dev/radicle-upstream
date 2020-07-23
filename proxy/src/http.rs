@@ -76,7 +76,7 @@ where
     let identity_filter = identity::filters(ctx.clone());
     let notification_filter = notification::filters(subscriptions);
     let org_filter = org::routes(ctx.clone());
-    let project_filter = project::filters(ctx.clone());
+    let project_filter = project::routes(ctx.clone());
     let session_filter = session::routes(ctx.clone());
     let source_filter = source::routes(ctx.clone());
     let transaction_filter = transaction::filters(ctx.clone());
@@ -232,7 +232,7 @@ where
                 Err(err) => {
                     log::error!("failed to deserialize query string '{}': {}", raw, err);
                     panic!("{}", err)
-                },
+                }
             }
         })
         .boxed()

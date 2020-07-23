@@ -9,7 +9,7 @@ use crate::identity;
 use crate::registry;
 use crate::session;
 
-/// Prefixed fitlers.
+/// Prefixed filters.
 pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Cache + registry::Client + 'static,
