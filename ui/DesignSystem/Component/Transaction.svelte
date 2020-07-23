@@ -57,8 +57,7 @@
     <div slot="right">
       <Rad
         rad={summary.registrationFee.rad}
-        usd={summary.registrationFee.usd}
-        variant="deposit" />
+        usd={summary.registrationFee.usd} />
     </div>
   </Row>
 {/if}
