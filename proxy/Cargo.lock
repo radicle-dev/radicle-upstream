@@ -1800,7 +1800,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=269a7ededafd7373ebfb03210770d0b3778002fb#269a7ededafd7373ebfb03210770d0b3778002fb"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=55cd394b0eede746ccf4120956f0c3eaf459b073#55cd394b0eede746ccf4120956f0c3eaf459b073"
 dependencies = [
  "async-trait",
  "bit-vec",
