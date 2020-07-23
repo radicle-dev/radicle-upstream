@@ -24,6 +24,7 @@ export const memberRegistration = (id: string): string =>
   `/orgs/${id}/members/register`;
 
 export const createProject = (): string => "/projects/new";
+export const sendFunds = (): string => "/send-funds";
 export const registerProject = (domainId: string): string =>
   `/projects/register/${domainId}`;
 export const registerExistingProject = (

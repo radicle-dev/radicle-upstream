@@ -25,6 +25,7 @@
   import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import Search from "./Screen/Search.svelte";
+  import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
@@ -48,6 +49,7 @@
     "/help": Help,
     "/user-registration": UserRegistration,
     "/transactions/:id": TransactionDetails,
+    "/send-funds": SendFunds,
     "*": NotFound,
   };
 

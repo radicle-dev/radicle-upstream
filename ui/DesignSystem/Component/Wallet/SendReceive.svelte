@@ -1,4 +1,7 @@
 <script>
+  import { push } from "svelte-spa-router";
+  import * as path from "../../../src/path.ts";
+
   import { Button, Input, Icon, Title } from "../../Primitive";
   import Receive from "./Receive.svelte";
 
@@ -110,7 +113,9 @@
         placeholder="Optional message"
         style="flex: 1; padding-bottom: 1rem;" /> -->
       <div class="submit">
-        <Button disabled={true}>Send transaction</Button>
+        <Button on:click={() => push(path.sendFunds())}>
+          Send transaction
+        </Button>
       </div>
     </div>
   {:else}
