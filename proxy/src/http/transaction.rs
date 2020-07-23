@@ -253,6 +253,7 @@ mod test {
             },
             timestamp: now,
             fee,
+            registration_fee: None,
         };
 
         let ctx = ctx.read().await;

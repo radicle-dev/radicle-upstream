@@ -69,13 +69,23 @@ pub struct Transaction {
     // TODO(rudolfs): remove this once https://github.com/serde-rs/json/issues/625
     // is fixed.
     /// Transaction fee in μRAD.
-    #[serde(serialize_with = "fee_serializer")]
-    #[serde(deserialize_with = "fee_deserializer")]
+    #[serde(serialize_with = "balance_serializer")]
+    #[serde(deserialize_with = "balance_deserializer")]
     pub fee: protocol::Balance,
+
+    // Unfortunately serde_json doesn't support u128 values, and until it does
+    // we work around it by serializing the value to a String.
+    //
+    // TODO(rudolfs): remove this once https://github.com/serde-rs/json/issues/625
+    // is fixed.
+    /// Transaction fee in μRAD.
+    #[serde(serialize_with = "balance_serializer")]
+    #[serde(deserialize_with = "balance_deserializer")]
+    pub registration_fee: Option<protocol::Balance>,
 }
 
 /// Custom serializer for fees, it converts an u128 value to String
-fn fee_serializer<S>(fee: &protocol::Balance, serializer: S) -> Result<S::Ok, S::Error>
+fn balance_serializer<S>(fee: &protocol::Balance, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -83,7 +93,7 @@ where
 }
 
 /// Custom deserializer for fees, it converts a String value to u128
-fn fee_deserializer<'de, D>(deserializer: D) -> Result<protocol::Balance, D::Error>
+fn balance_deserializer<'de, D>(deserializer: D) -> Result<protocol::Balance, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -99,9 +109,9 @@ impl Transaction {
         block: protocol::BlockNumber,
         message: Message,
         fee: protocol::Balance,
+        registration_fee: Option<protocol::Balance>,
     ) -> Self {
         let now = Timestamp::now();
-
         Self {
             id,
             messages: vec![message],
@@ -113,6 +123,7 @@ impl Transaction {
             },
             timestamp: now,
             fee,
+            registration_fee,
         }
     }
 }
@@ -625,6 +636,7 @@ mod test {
                 },
                 timestamp: now,
                 fee,
+                registration_fee: None,
             };
 
             cache.cache_transaction(tx.clone()).unwrap();
@@ -641,6 +653,7 @@ mod test {
                     },
                     timestamp: now,
                     fee,
+                    registration_fee: None,
                 };
 
                 cache.cache_transaction(tx.clone()).unwrap();

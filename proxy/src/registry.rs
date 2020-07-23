@@ -495,6 +495,7 @@ impl Client for Registry {
             block_number,
             Message::OrgRegistration { id: org_id.clone() },
             fee,
+            Some(REGISTRATION_FEE),
         );
 
         // TODO(xla): Remove automatic prepayment once we have proper balances.
@@ -522,6 +523,7 @@ impl Client for Registry {
             block_number,
             Message::OrgUnregistration { id: org_id },
             fee,
+            None,
         ))
     }
 
@@ -548,6 +550,7 @@ impl Client for Registry {
                 handle: user_id,
             },
             fee,
+            None,
         ))
     }
 
@@ -658,6 +661,7 @@ impl Client for Registry {
                 domain_id,
             },
             fee,
+            None,
         ))
     }
 
@@ -694,6 +698,7 @@ impl Client for Registry {
             block_number,
             Message::UserRegistration { handle, id },
             fee,
+            Some(REGISTRATION_FEE),
         ))
     }
 
@@ -716,6 +721,7 @@ impl Client for Registry {
             block_number,
             Message::UserUnregistration { id: handle },
             fee,
+            None,
         ))
     }
 
@@ -737,6 +743,7 @@ impl Client for Registry {
             block_number,
             Message::Transfer { recipient, amount },
             fee,
+            None,
         ))
     }
 
@@ -767,6 +774,7 @@ impl Client for Registry {
                 amount,
             },
             fee,
+            None,
         ))
     }
 
