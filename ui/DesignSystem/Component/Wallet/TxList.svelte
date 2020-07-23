@@ -4,27 +4,17 @@
   import * as path from "../../../src/path.ts";
 
   import TransactionListItem from "./TxListItem.svelte";
-  import { Text } from "../../Primitive";
+  import EmptyState from "./../EmptyState.svelte";
 
   const select = transactionId => push(path.transactions(transactionId));
 </script>
-
-<style>
-  .empty-state {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 5rem;
-    border-top: 1px solid var(--color-foreground-level-2);
-  }
-</style>
 
 {#if transactions.length > 0}
   {#each transactions as tx}
     <TransactionListItem on:click={() => select(tx.id)} {tx} />
   {/each}
 {:else}
-  <div class="empty-state">
-    <Text>No transactions yet</Text>
-  </div>
+  <EmptyState
+    text="No transactions yet"
+    style="height: 100%; padding: 2rem 0 1rem;" />
 {/if}

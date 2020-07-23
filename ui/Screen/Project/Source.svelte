@@ -5,6 +5,7 @@
 
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
+  import * as remote from "../../src/remote.ts";
   import {
     fetchCommits,
     fetchRevisions,
@@ -71,13 +72,21 @@
     );
   };
 
+  // TODO(rudolfs): this functionality should be part of navigation/routing.
+  let unsubscribe;
   const navigateOnReady = (path, store) => {
-    const unsubscribe = store.subscribe(state => {
-      if (state.status === "SUCCESS") {
+    if (unsubscribe) {
+      unsubscribe();
+    }
+
+    fetchCommits({ projectId: id, revision: currentRevision });
+
+    unsubscribe = store.subscribe(state => {
+      if (state.status === remote.Status.Success) {
         push(path);
+        unsubscribe();
       }
     });
-    unsubscribe();
   };
 
   $: fetchObject({
@@ -87,8 +96,6 @@
     revision: currentRevision,
     type: currentObjectType,
   });
-
-  $: fetchCommits({ projectId: id, revision: currentRevision });
 
   fetchRevisions({ projectId: id });
 </script>
@@ -277,7 +284,7 @@
               <EmptyState
                 text="This project doesn't have a README yet."
                 icon="eyes"
-                primaryActionText="Open an issue to make one" />
+                style="height: 320px;" />
             {/if}
           </Remote>
         {/if}

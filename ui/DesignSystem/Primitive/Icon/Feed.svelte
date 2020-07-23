@@ -1,15 +1,11 @@
 <script>
+  import IconWrapper from "./IconWrapper.svelte";
+
+  export let dataCy = null;
   export let style = null;
 </script>
 
-<svg
-  on:click
-  {style}
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="var(--color-foreground-level-5)"
-  xmlns="http://www.w3.org/2000/svg">
+<IconWrapper on:click {dataCy} {style}>
   <path
     fill-rule="evenodd"
     clip-rule="evenodd"
@@ -22,4 +18,4 @@
     6.25C6.33579 6.25 6 6.58579 6 7C6 7.41421 6.33579 7.75 6.75
     7.75H10.25C10.6642 7.75 11 7.41421 11 7C11 6.58579 10.6642 6.25 10.25
     6.25H6.75Z" />
-</svg>
+</IconWrapper>

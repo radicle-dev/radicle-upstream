@@ -1,58 +1,50 @@
 //! Endpoints and serialisation for [`session::Session`] related types.
 
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::{Mutex, RwLock};
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
-use crate::coco;
 use crate::http;
 use crate::identity;
 use crate::registry;
 use crate::session;
 
 /// Prefixed fitlers.
-pub fn routes<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Cache + registry::Client,
+    R: registry::Cache + registry::Client + 'static,
 {
     path("session").and(
-        clear_cache_filter(Arc::clone(&registry))
-            .or(delete_filter(Arc::clone(&store)))
-            .or(get_filter(peer, registry, Arc::clone(&store)))
-            .or(update_settings_filter(store)),
+        clear_cache_filter(ctx.clone())
+            .or(delete_filter(ctx.clone()))
+            .or(get_filter(ctx.clone()))
+            .or(update_settings_filter(ctx)),
     )
 }
 
 /// Combination of all session filters.
 #[cfg(test)]
-pub fn filters<R>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Cache + registry::Client,
+    R: registry::Cache + registry::Client + 'static,
 {
-    clear_cache_filter(Arc::clone(&registry))
-        .or(delete_filter(Arc::clone(&store)))
-        .or(get_filter(peer, registry, Arc::clone(&store)))
-        .or(update_settings_filter(store))
+    clear_cache_filter(ctx.clone())
+        .or(delete_filter(ctx.clone()))
+        .or(get_filter(ctx.clone()))
+        .or(update_settings_filter(ctx))
 }
 
 /// `DELETE /cache`
-fn clear_cache_filter<R: registry::Cache>(
-    registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn clear_cache_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Cache + 'static,
+{
     path("cache")
         .and(warp::delete())
         .and(path::end())
-        .and(http::with_shared(registry))
+        .and(http::with_context(ctx))
         .and(document::document(document::description(
             "Clear cached data",
         )))
@@ -64,12 +56,15 @@ fn clear_cache_filter<R: registry::Cache>(
 }
 
 /// `DELETE /`
-fn delete_filter(
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn delete_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     warp::delete()
         .and(path::end())
-        .and(http::with_store(store))
+        .and(http::with_context(ctx))
         .and(document::document(document::description(
             "Clear current Session",
         )))
@@ -81,16 +76,13 @@ fn delete_filter(
 }
 
 /// `GET /`
-fn get_filter<R: registry::Client>(
-    peer: Arc<Mutex<coco::PeerApi>>,
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     warp::get()
         .and(path::end())
-        .and(http::with_peer(peer))
-        .and(http::with_shared(registry))
-        .and(http::with_store(store))
+        .and(http::with_context(ctx))
         .and(document::document(document::description(
             "Fetch current Session",
         )))
@@ -106,13 +98,16 @@ fn get_filter<R: registry::Client>(
 }
 
 /// `Post /settings`
-fn update_settings_filter(
-    store: Arc<RwLock<kv::Store>>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn update_settings_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("settings")
         .and(warp::post())
         .and(path::end())
-        .and(http::with_store(store))
+        .and(http::with_context(ctx))
         .and(warp::body::json())
         .and(document::document(document::description("Update settings")))
         .and(document::document(document::tag("Session")))
@@ -124,55 +119,57 @@ fn update_settings_filter(
 
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
 mod handler {
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use crate::coco;
     use crate::http;
     use crate::registry;
     use crate::session;
 
     /// Clear [`registry::Cache`].
-    pub async fn clear_cache<R: registry::Cache>(
-        cache: http::Shared<R>,
-    ) -> Result<impl Reply, Rejection> {
-        let cache = cache.read().await;
-        cache.clear()?;
+    pub async fn clear_cache<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Cache,
+    {
+        let ctx = ctx.read().await;
+        ctx.registry.clear()?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
     }
 
     /// Clear the current [`session::Session`].
-    pub async fn delete(store: Arc<RwLock<kv::Store>>) -> Result<impl Reply, Rejection> {
-        let store = store.read().await;
-        session::clear_current(&store)?;
+    pub async fn delete<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        session::clear_current(&ctx.store)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
     }
 
     /// Fetch the [`session::Session`].
-    pub async fn get<R: registry::Client>(
-        peer: Arc<Mutex<coco::PeerApi>>,
-        registry: http::Shared<R>,
-        store: Arc<RwLock<kv::Store>>,
-    ) -> Result<impl Reply, Rejection> {
-        let store = store.read().await;
-        let reg = registry.read().await;
+    pub async fn get<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        let ctx = ctx.read().await;
 
-        let sess = session::current(peer, &*reg, &store).await?;
+        let sess = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
 
         Ok(reply::json(&sess))
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.
-    pub async fn update_settings(
-        store: Arc<RwLock<kv::Store>>,
+    pub async fn update_settings<R>(
+        ctx: http::Ctx<R>,
         settings: session::settings::Settings,
-    ) -> Result<impl Reply, Rejection> {
-        let store = store.read().await;
-        session::set_settings(&store, settings)?;
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        session::set_settings(&ctx.store, settings)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
     }
@@ -244,47 +241,29 @@ impl ToDocumentedType for session::settings::Network {
 mod test {
     use pretty_assertions::assert_eq;
     use serde_json::{json, Value};
-    use std::sync::Arc;
-    use tokio::sync::{Mutex, RwLock};
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::keys::SecretKey;
-
-    use crate::coco;
     use crate::error;
-    use crate::registry;
+    use crate::http;
     use crate::session;
 
     #[tokio::test]
     async fn delete() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let store = Arc::new(RwLock::new(
-            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
-        ));
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(
-            registry,
-            &*store.read().await,
-        )));
-        let api = super::filters(Arc::clone(&peer), Arc::clone(&cache), Arc::clone(&store));
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
+        let ctx = ctx.read().await;
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;
-        session::set_settings(&*store.read().await, settings).unwrap();
+        session::set_settings(&ctx.store, settings).unwrap();
 
         let res = request().method("DELETE").path("/").reply(&api).await;
         assert_eq!(res.status(), StatusCode::NO_CONTENT);
 
         // Test that we reset the session to default.
-        let store = store.read().await;
-        let have = session::current(peer, &*cache.read().await, &*store)
+        let have = session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
             .await
             .unwrap()
             .settings;
@@ -297,21 +276,9 @@ mod test {
 
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::clone(&cache),
-            Arc::new(RwLock::new(store)),
-        );
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let res = request().method("GET").path("/").reply(&api).await;
 
@@ -346,21 +313,9 @@ mod test {
 
     #[tokio::test]
     async fn update_settings() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let key = SecretKey::new();
-        let config = coco::config::default(key, tmp_dir.path())?;
-        let peer = Arc::new(Mutex::new(coco::create_peer_api(config).await?));
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let api = super::filters(
-            Arc::clone(&peer),
-            Arc::clone(&cache),
-            Arc::new(RwLock::new(store)),
-        );
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
         let mut settings = session::settings::Settings::default();
         settings.appearance.theme = session::settings::Theme::Dark;

@@ -2,64 +2,46 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
-use crate::notification;
 use crate::registry;
 
 /// Prefixed filter
-pub fn routes<R: registry::Client>(
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     path("users").and(
-        list_orgs_filter(Arc::clone(&registry))
-            .or(register_project_filter(
-                Arc::clone(&registry),
-                subscriptions.clone(),
-            ))
-            .or(get_filter(Arc::clone(&registry)))
-            .or(register_filter(
-                Arc::clone(&registry),
-                store,
-                subscriptions.clone(),
-            ))
-            .or(transfer_filter(registry, subscriptions)),
+        list_orgs_filter(ctx.clone())
+            .or(register_project_filter(ctx.clone()))
+            .or(get_filter(ctx.clone()))
+            .or(register_filter(ctx.clone()))
+            .or(transfer_filter(ctx)),
     )
 }
 
 /// Combination of all user filters.
 #[cfg(test)]
-fn filters<R: registry::Client>(
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    list_orgs_filter(Arc::clone(&registry))
-        .or(register_project_filter(
-            Arc::clone(&registry),
-            subscriptions.clone(),
-        ))
-        .or(get_filter(Arc::clone(&registry)))
-        .or(register_filter(
-            Arc::clone(&registry),
-            store,
-            subscriptions.clone(),
-        ))
-        .or(transfer_filter(registry, subscriptions))
+fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    list_orgs_filter(ctx.clone())
+        .or(register_project_filter(ctx.clone()))
+        .or(get_filter(ctx.clone()))
+        .or(register_filter(ctx.clone()))
+        .or(transfer_filter(ctx))
 }
 
 /// GET /<handle>
-fn get_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     warp::get()
-        .and(http::with_shared(registry))
+        .and(http::with_context(ctx))
         .and(document::param::<String>(
             "handle",
             "ID of the user to query for",
@@ -78,16 +60,15 @@ fn get_filter<R: registry::Client>(
 }
 
 /// POST /
-fn register_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-    store: Arc<RwLock<kv::Store>>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn register_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     warp::post()
         .and(path::end())
-        .and(http::with_shared(registry))
-        .and(http::with_store(store))
-        .and(http::with_subscriptions(subscriptions))
+        .and(http::with_context(ctx))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Register a handle on the Registry",
@@ -104,11 +85,14 @@ fn register_filter<R: registry::Client>(
 }
 
 /// `GET /<handle>/orgs`
-fn list_orgs_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn list_orgs_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
     warp::get()
-        .and(http::with_shared(registry))
+        .and(http::with_context(ctx))
         .and(document::param::<String>(
             "handle",
             "ID of the user to query for",
@@ -128,20 +112,21 @@ fn list_orgs_filter<R: registry::Client>(
         .and_then(handler::list_orgs)
 }
 
-/// `POST /<id>/projects/<name>`
-fn register_project_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-    subscriptions: notification::Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    http::with_shared(registry)
-        .and(http::with_subscriptions(subscriptions))
+/// `POST /<handle>/projects/<name>`
+fn register_project_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    http::with_context(ctx)
         .and(warp::post())
-        .and(document::param::<String>(
+        .and(document::param::<registry::Id>(
             "handle",
             "ID of the user under which to register the project",
         ))
         .and(path("projects"))
-        .and(document::param::<String>(
+        .and(document::param::<registry::ProjectName>(
             "project_name",
             "Name of the project",
         ))
@@ -164,16 +149,14 @@ fn register_project_filter<R: registry::Client>(
         .and_then(handler::register_project)
 }
 
-/// `POST /<id>/transfer`
-fn transfer_filter<R: registry::Client>(
-    registry: http::Shared<R>,
-    subscriptions: notification::Subscriptions,
+/// `POST /<handle>/transfer`
+fn transfer_filter<R>(
+    ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
-    R: registry::Client,
+    R: registry::Client + 'static,
 {
-    http::with_shared(registry)
-        .and(http::with_subscriptions(subscriptions))
+    http::with_context(ctx)
         .and(warp::post())
         .and(document::param::<registry::Id>(
             "handle",
@@ -200,8 +183,6 @@ where
 /// User handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use std::convert::TryFrom;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -212,40 +193,45 @@ mod handler {
     use crate::session;
 
     /// Get the [`registry::User`] for the given `handle`.
-    pub async fn get<R: registry::Client>(
-        registry: http::Shared<R>,
-        handle: String,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn get<R>(ctx: http::Ctx<R>, handle: String) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        let ctx = ctx.read().await;
+
         let handle = registry::Id::try_from(handle).map_err(Error::from)?;
-        let user = registry.read().await.get_user(handle).await?;
+        let user = ctx.registry.get_user(handle).await?;
         Ok(reply::json(&user))
     }
 
     /// List the orgs the user is a member of.
-    pub async fn list_orgs<R: registry::Client>(
-        registry: http::Shared<R>,
-        handle: String,
-    ) -> Result<impl Reply, Rejection> {
-        let reg = registry.read().await;
-        let handle = registry::Id::try_from(handle).map_err(Error::from)?;
-        let orgs = reg.list_orgs(handle).await?;
+    pub async fn list_orgs<R>(ctx: http::Ctx<R>, input: String) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        let ctx = ctx.read().await;
+
+        let handle = registry::Id::try_from(input).map_err(Error::from)?;
+        let orgs = ctx.registry.list_orgs(handle).await?;
 
         Ok(reply::json(&orgs))
     }
 
     /// Register a user on the Registry.
-    pub async fn register<R: registry::Client>(
-        registry: http::Shared<R>,
-        store: Arc<RwLock<kv::Store>>,
-        subscriptions: notification::Subscriptions,
+    pub async fn register<R>(
+        ctx: http::Ctx<R>,
         input: super::RegisterInput,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
+        let ctx = ctx.read().await;
         let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
-        let reg = registry.write().await;
-        let tx = reg
+        let tx = ctx
+            .registry
             .register_user(
                 &fake_pair,
                 handle.clone(),
@@ -256,10 +242,9 @@ mod handler {
 
         // TODO(xla): This should only happen once the corresponding tx is confirmed.
         // Store registered user in session.
-        let store = store.read().await;
-        session::set_handle(&store, handle)?;
+        session::set_handle(&ctx.store, handle)?;
 
-        subscriptions
+        ctx.subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
             .await;
 
@@ -267,36 +252,33 @@ mod handler {
     }
 
     /// Register a project in the Registry.
-    pub async fn register_project<R: registry::Client>(
-        registry: http::Shared<R>,
-        subscriptions: notification::Subscriptions,
-        handle: String,
-        project_name: String,
+    pub async fn register_project<R>(
+        ctx: http::Ctx<R>,
+        handle: registry::Id,
+        project_name: registry::ProjectName,
         input: http::RegisterProjectInput,
-    ) -> Result<impl Reply, Rejection> {
-        http::register_project(
-            registry,
-            subscriptions,
-            registry::DomainType::User,
-            handle,
-            project_name,
-            input,
-        )
-        .await
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
+        http::register_project(ctx, registry::DomainType::User, handle, project_name, input).await
     }
 
     /// Transfer funds to the given `recipient`.
-    pub async fn transfer<R: registry::Client>(
-        registry: http::Shared<R>,
-        subscriptions: notification::Subscriptions,
+    pub async fn transfer<R>(
+        ctx: http::Ctx<R>,
         _handle: registry::Id,
         input: super::TransferInput,
-    ) -> Result<impl Reply, Rejection> {
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client,
+    {
         // TODO(xla): Get keypair from persistent storage.
         let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
 
-        let reg = registry.write().await;
-        let tx = reg
+        let ctx = ctx.read().await;
+        let tx = ctx
+            .registry
             .transfer_from_user(
                 &fake_pair,
                 input.recipient,
@@ -305,7 +287,7 @@ mod handler {
             )
             .await?;
 
-        subscriptions
+        ctx.subscriptions
             .broadcast(notification::Notification::Transaction(tx.clone()))
             .await;
 
@@ -426,56 +408,42 @@ mod test {
     use radicle_registry_client::CryptoPair;
     use serde_json::{json, Value};
     use std::convert::TryFrom;
-    use std::sync::Arc;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
-    use librad::keys::SecretKey;
     use radicle_registry_client as protocol;
 
     use crate::avatar;
     use crate::coco;
-    use crate::error::Error;
+    use crate::error;
     use crate::http;
-    use crate::notification;
     use crate::registry::{self, Cache as _, Client as _};
 
     #[tokio::test]
-    async fn get() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let store = Arc::new(RwLock::new(
-            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
-        ));
-        let subscriptions = notification::Subscriptions::default();
+    async fn get() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
 
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("cloudhead").unwrap();
+        let fee: registry::Balance = 100;
 
-        let _tx = registry
-            .write()
-            .await
-            .register_user(&author, handle.clone(), None, 100)
+        let _tx = ctx
+            .registry
+            .register_user(&author, handle.clone(), None, fee)
             .await
             .unwrap();
 
-        let api = super::filters(Arc::clone(&registry), store, subscriptions);
         let res = request()
             .method("GET")
             .path(&format!("/{}", handle.clone()))
             .reply(&api)
             .await;
 
-        let user = registry
-            .read()
-            .await
-            .get_user(handle.clone())
-            .await?
-            .unwrap();
+        let user = ctx.registry.get_user(handle.clone()).await?.unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
@@ -493,49 +461,31 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_orgs() -> Result<(), Error> {
+    async fn list_orgs() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            Arc::new(RwLock::new(registry::Registry::new(client)))
-        };
-        let store = Arc::new(RwLock::new(
-            kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap(),
-        ));
-        let subscriptions = notification::Subscriptions::default();
-        let api = super::filters(Arc::clone(&registry), store, subscriptions);
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
 
         // Register the user
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
-        let handle = registry::Id::try_from("cloudhead").map_err(Error::from)?;
-        let org_id = registry::Id::try_from("radicle").map_err(Error::from)?;
+        let handle = registry::Id::try_from("cloudhead").map_err(error::Error::from)?;
+        let org_id = registry::Id::try_from("radicle").map_err(error::Error::from)?;
+        let fee: registry::Balance = 100;
 
-        registry
-            .write()
-            .await
-            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
+        ctx.registry
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), fee)
             .await?;
 
-        let user = registry
-            .read()
-            .await
-            .get_user(handle.clone())
-            .await?
-            .unwrap();
+        let user = ctx.registry.get_user(handle.clone()).await?.unwrap();
 
         // Register the org
-        registry
-            .write()
-            .await
-            .register_org(&author, org_id.clone(), 100)
+        ctx.registry
+            .register_org(&author, org_id.clone(), fee)
             .await?;
 
-        let org = registry
-            .read()
-            .await
-            .get_org(org_id.clone())
-            .await?
-            .unwrap();
+        let org = ctx.registry.get_org(org_id.clone()).await?.unwrap();
 
         let res = request()
             .method("GET")
@@ -561,21 +511,12 @@ mod test {
     }
 
     #[tokio::test]
-    async fn register() {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let subscriptions = notification::Subscriptions::default();
+    async fn register() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let api = super::filters(
-            Arc::clone(&cache),
-            Arc::new(RwLock::new(store)),
-            subscriptions,
-        );
+        let ctx = ctx.read().await;
 
         let res = request()
             .method("POST")
@@ -588,38 +529,30 @@ mod test {
             .reply(&api)
             .await;
 
-        let txs = cache.read().await.list_transactions(vec![]).unwrap();
+        let txs = ctx.registry.list_transactions(vec![])?;
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
 
         assert_eq!(res.status(), StatusCode::CREATED);
         assert_eq!(have, json!(tx));
+
+        Ok(())
     }
 
     #[allow(clippy::panic)]
     #[tokio::test]
-    async fn register_project() -> Result<(), Error> {
+    async fn register_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let key = SecretKey::new();
-        let config = coco::config::default(key.clone(), tmp_dir.path())?;
-        let peer = coco::create_peer_api(config).await?;
-        let owner = coco::init_user(&peer, key, "cloudhead")?;
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let subscriptions = notification::Subscriptions::default();
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let api = super::filters(
-            Arc::clone(&cache),
-            Arc::new(RwLock::new(store)),
-            subscriptions,
-        );
+        let ctx = ctx.read().await;
+
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key, "cloudhead")?;
         let urn = coco::Urn::new(
             owner.root_hash().clone(),
             librad::uri::Protocol::Git,
@@ -627,10 +560,9 @@ mod test {
         );
 
         // Register user
-        cache
-            .read()
-            .await
-            .register_user(&author, handle.clone(), None, 10)
+        let fee: registry::Balance = 10;
+        ctx.registry
+            .register_user(&author, handle.clone(), None, fee)
             .await?;
 
         // Register project
@@ -640,7 +572,7 @@ mod test {
             .method("POST")
             .path(&format!("/{}/projects/{}", handle, project_name))
             .json(&http::RegisterProjectInput {
-                maybe_coco_id: Some(urn.to_string()),
+                maybe_coco_id: Some(urn),
                 transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
@@ -648,7 +580,7 @@ mod test {
 
         assert_eq!(res.status(), StatusCode::CREATED);
 
-        let txs = cache.read().await.list_transactions(vec![])?;
+        let txs = ctx.registry.list_transactions(vec![])?;
         let tx = txs.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -675,37 +607,24 @@ mod test {
     }
 
     #[tokio::test]
-    async fn transfer() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().unwrap();
-        let registry = {
-            let (client, _) = radicle_registry_client::Client::new_emulator();
-            registry::Registry::new(client)
-        };
-        let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store"))).unwrap();
-        let cache = Arc::new(RwLock::new(registry::Cacher::new(registry, &store)));
-        let subscriptions = notification::Subscriptions::default();
+    async fn transfer() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
 
-        let api = super::filters(
-            Arc::clone(&cache),
-            Arc::new(RwLock::new(store)),
-            subscriptions,
-        );
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
 
+        let ctx = ctx.read().await;
         // Register the user
-        cache
-            .write()
-            .await
+        ctx.registry
             .register_user(&author, handle.clone(), None, 10)
             .await?;
 
         // Register a second user
         let author2 = radicle_registry_client::ed25519::Pair::from_legacy_string("//Bob", None);
         let handle2 = registry::Id::try_from("bob")?;
-        cache
-            .write()
-            .await
+        ctx.registry
             .register_user(&author2, handle2.clone(), None, 10)
             .await?;
 

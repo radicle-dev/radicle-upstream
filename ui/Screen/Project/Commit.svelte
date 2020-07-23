@@ -121,7 +121,7 @@
   }
 </style>
 
-<div class="commit-page">
+<div class="commit-page" data-cy="commit-page">
   <Remote {store} let:data={commit}>
     <Header.Back style="padding: 1rem;" on:arrowClick={() => pop()}>
       <Title variant="large" style="margin-bottom: .75rem">
@@ -148,7 +148,7 @@
         </span>
       </div>
     </Header.Back>
-    <div class="content">
+    <div class="content" data-cy="commit-header">
       <pre class="description" style="margin-bottom: 1rem">
         {commit.header.summary}
       </pre>
