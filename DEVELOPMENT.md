@@ -390,7 +390,6 @@ build times. If you need to update this image, proceed as follows:
     ```sh
     cd .buildkite
     docker build . -t gcr.io/opensourcecoin/radicle-upstream:0.2.1
-    docker push gcr.io/opensourcecoin/radicle-upstream:0.2.1
     ```
 
 5. Push the new image version to Google Cloud:
