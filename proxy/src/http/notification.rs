@@ -1,25 +1,24 @@
 //! Unidirectional updates about significant state changes.
 
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::notification::{Notification, Subscriptions};
 
 /// SSE based notification endpoints.
-pub fn filters(
-    subscriptions: Subscriptions,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+pub fn filters(subscriptions: Subscriptions) -> BoxedFilter<(impl Reply,)> {
     test_html_filter()
         .or(test_js_filter())
         .or(stream_filter(subscriptions))
+        .boxed()
 }
 
-/// `GET /notifications`
+/// `GET /`
 fn stream_filter(
     subscriptions: Subscriptions,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("notifications")
-        .and(warp::get())
+    warp::get()
         .and(document::document(document::description(
             "SSE stream of incoming notifications",
         )))
@@ -35,9 +34,9 @@ fn stream_filter(
         .and_then(handler::stream)
 }
 
-/// `GET /notifications/test/index.html`
+/// `GET /test/index.html`
 fn test_html_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("notifications" / "test" / "index.html")
+    path!("test" / "index.html")
         .and(warp::get())
         .and(document::document(document::description("Test HTML")))
         .and(document::document(document::tag("Notification")))
@@ -48,9 +47,9 @@ fn test_html_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
         })
 }
 
-/// `GET /notifications/test/index.js`
+/// `GET /test/index.js`
 fn test_js_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path!("notifications" / "test" / "index.js")
+    path!("test" / "index.js")
         .and(warp::get())
         .and(document::document(document::description("Test JS")))
         .and(document::document(document::tag("Notification")))
@@ -111,7 +110,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path("/notifications")
+            .path("/")
             .header("Connection", "Keep-Alive")
             .reply(&api)
             .await
