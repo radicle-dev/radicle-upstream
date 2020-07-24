@@ -245,7 +245,7 @@ mod test {
 
         // Register the user
         ctx.registry
-            .register_user(&author, handle.clone(), None, 10)
+            .register_user(&author, handle.clone(), None, 1)
             .await?;
         let user = ctx.registry.get_user(handle).await?.unwrap();
 
@@ -258,7 +258,7 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have.to_string(),
-                "1152921504606846962",
+                "1152921504606846965",
                 "Account doesn't have the expected amount"
             );
         });

@@ -785,6 +785,11 @@ impl Client for Registry {
     ) -> Result<(), error::Error> {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
 
+        // We don't want this transfer to happen from alice to herself.
+        if recipient == alice.public() {
+            return Ok(());
+        }
+
         self.client
             .sign_and_submit_message(&alice, protocol::message::Transfer { recipient, amount }, 1)
             .await?

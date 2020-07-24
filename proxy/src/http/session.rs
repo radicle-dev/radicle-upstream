@@ -298,7 +298,12 @@ mod test {
                         "network": "emulator",
                     },
                 },
-                "registrationFee": 10,
+                "registrationFee": {
+                    "user": 10,
+                    "org": 10,
+                    "member": Value::Null,
+                    "project": Value::Null,
+                },
                 "minimumTransactionFee": 1,
                 "permissions": {
                     "registerHandle": false,
@@ -344,7 +349,12 @@ mod test {
                         "network": "emulator",
                     },
                 },
-                "registrationFee": 10,
+                "registrationFee": {
+                    "user": 10,
+                    "org": 10,
+                    "member": Value::Null,
+                    "project": Value::Null,
+                },
                 "minimumTransactionFee": 1,
                 "permissions": {
                     "registerHandle": false,
