@@ -8,8 +8,8 @@
 
   import Sidebar from "./Sidebar.svelte";
 
-  export let dataCy = null;
-  export let style = null;
+  export let dataCy = "";
+  export let style = "";
 
   const session = getContext("session");
 </script>

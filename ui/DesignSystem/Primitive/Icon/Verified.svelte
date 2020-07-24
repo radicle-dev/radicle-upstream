@@ -1,8 +1,8 @@
 <script>
   import IconWrapper from "./IconWrapper.svelte";
 
-  export let dataCy = null;
-  export let style = null;
+  export let dataCy = "";
+  export let style = "";
   export let size = "small"; // small | large
 </script>
 

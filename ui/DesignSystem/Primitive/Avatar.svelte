@@ -3,13 +3,13 @@
   import Icon from "./Icon";
   import Title from "./Title.svelte";
 
-  export let style = null;
-  export let dataCy = null;
+  export let style = "";
+  export let dataCy = "";
 
   // the hierarchy of usage for the following avatars is:
   // imageUrl > avatarFallback
   export let imageUrl = null;
-  export let avatarFallback = null; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
+  export let avatarFallback = {}; // {emoji: <emoji>, background: {r: <r>, g: <g>, b: <b>}};
   export let title = null;
   export let registered = false;
 

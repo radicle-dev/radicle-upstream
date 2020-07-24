@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
   import { getContext } from "svelte";
   import Router, { push } from "svelte-spa-router";
 
-  import { fetch, org as store } from "../src/org.ts";
-  import * as path from "../src/path.ts";
+  import { fetch, org as store, Org } from "../src/org";
+  import * as path from "../src/path";
 
   import { Icon } from "../DesignSystem/Primitive";
   import {
@@ -18,7 +18,7 @@
   import Members from "./Org/Members.svelte";
   import Projects from "./Org/Projects.svelte";
 
-  export let params = null;
+  export let params: { id: string };
   const session = getContext("session");
 
   const routes = {
@@ -30,6 +30,7 @@
 
   import ProjectsMenu from "./Org/ProjectsMenu.svelte";
   import MembersMenu from "./Org/MembersMenu.svelte";
+  import MenuItem from "../DesignSystem/Component/HorizontalMenu/MenuItem.svelte";
 
   const menuRoutes = {
     "/orgs/:id/": ProjectsMenu,
@@ -37,7 +38,7 @@
     "/orgs/:id/members": MembersMenu,
   };
 
-  const topbarMenuItems = orgId => [
+  const topbarMenuItems = (orgId: string) => [
     {
       icon: Icon.Source,
       title: "Projects",
@@ -58,7 +59,24 @@
     },
   ];
 
-  let registerProjectMenuItem;
+  interface MenuItem {
+    title: string;
+    icon: any;
+    event?: () => void;
+    dataCy?: string;
+    disabled?: boolean;
+    tooltip?: string;
+  }
+
+  let dropdownMenuItems: {
+    title: string;
+    icon: any;
+    event?: () => void;
+    dataCy?: string;
+    disabled?: boolean;
+    tooltip?: string;
+  }[];
+  let registerProjectMenuItem: MenuItem;
 
   $: dropdownMenuItems = [
     registerProjectMenuItem,
@@ -96,7 +114,7 @@
 
 <SidebarLayout dataCy="org-screen" style="margin-top: 0;">
   <Remote {store} let:data={org}>
-    <Header.Large variant="org" entity={org}>
+    <Header.Large entity={org}>
       <div slot="left">
         <HorizontalMenu items={topbarMenuItems(params.id)} />
       </div>

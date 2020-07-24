@@ -1,18 +1,23 @@
-<script>
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
+
+  import * as org from "../../../src/org";
+  import * as identity from "../../../src/identity";
 
   import { Avatar, Button, Icon, Title, Text, Numeric } from "../../Primitive";
   import Copyable from "../Copyable.svelte";
 
   const dispatch = createEventDispatcher();
 
-  export let style = null;
-  export let entity = null;
-  export let variant = null; // profile | org
+  export let style = "";
+  export let entity: org.Org | identity.Identity;
 
   const onRegisterHandle = () => {
     dispatch("registerHandle");
   };
+
+  const isOrg = (entity: org.Org | identity.Identity): entity is org.Org =>
+    (entity as org.Org).members !== undefined;
 </script>
 
 <style>
@@ -73,7 +78,7 @@
       <Avatar
         style="margin-right: 32px"
         size="huge"
-        variant={variant === 'profile' ? 'circle' : 'square'}
+        variant={isOrg(entity) ? 'square' : 'circle'}
         avatarFallback={entity.avatarFallback} />
 
       <div class="metadata">
@@ -82,9 +87,11 @@
             dataCy="entity-name"
             variant="huge"
             style="display: flex; align-items: center;">
-            {#if variant === 'profile' && entity.registered}
+            {#if isOrg(entity)}
+              {entity.id}
+            {:else if entity.registered}
               {entity.registered}
-            {:else if variant === 'profile' && !entity.registered}
+            {:else}
               {entity.metadata.handle}
               <Button
                 variant="outline"
@@ -92,9 +99,10 @@
                 on:click={() => onRegisterHandle()}>
                 Register handle
               </Button>
-            {:else if variant === 'org'}{entity.id}{/if}
+            {/if}
           </Title>
-          {#if variant === 'org' || entity.registered}
+
+          {#if isOrg(entity) || entity.registered}
             <Icon.Verified
               dataCy="verified-badge"
               size="large"

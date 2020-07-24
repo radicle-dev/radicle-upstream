@@ -1,5 +1,5 @@
 <script>
-  export let style = null;
+  export let style = "";
 
   export let variant = "regular"; // regular | small | tiny | medium
 </script>

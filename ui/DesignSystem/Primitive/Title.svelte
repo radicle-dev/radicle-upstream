@@ -1,6 +1,6 @@
 <script>
-  export let dataCy = null;
-  export let style = null;
+  export let dataCy = "";
+  export let style = "";
   export let truncate = false;
   export let variant = "regular"; // regular | tiny | medium | large | big | huge
 
