@@ -1,19 +1,12 @@
-<script>
-  import { store } from "./src/navigation.ts";
+<script lang="ts">
+  import { create } from "./src/navigation";
 
-  export let views = null;
-
-  let view;
-
-  store.subscribe(val => {
-    view = views[val];
-  });
-
-  $: console.log(view);
+  const nav = create({});
+  const view = nav.current;
 </script>
 
-{#if view.props}
-  <svelte:component this={view.component} {...view.props} />
+{#if $view.props}
+  <svelte:component this={$view.component} {...$view.props} />
 {:else}
-  <svelte:component this={view.component} />
+  <svelte:component this={$view.component} />
 {/if}
