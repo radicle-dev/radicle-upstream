@@ -194,18 +194,17 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
 
         Ok(reply::json(&projects))
     }
 
     /// Get a feed of untracked projects.
-    pub async fn discover<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn discover<R>(_ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
     {
-        let ctx = ctx.read().await;
-        let feed = ctx.peer_api.discover_projects()?;
+        let feed = project::discover()?;
 
         Ok(reply::json(&feed))
     }
@@ -464,7 +463,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -536,7 +535,7 @@ mod test {
 
         coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
 
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
         let res = request().method("GET").path("/").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -558,7 +557,7 @@ mod test {
 
         coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
 
-        let feed = ctx.peer_api.discover_projects()?;
+        let feed = project::discover()?;
         let res = request().method("GET").path("/discover").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {

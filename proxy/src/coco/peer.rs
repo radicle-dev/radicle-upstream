@@ -14,10 +14,9 @@ pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
 use librad::uri::RadUrn;
-use radicle_surf::vcs::git::{self, git2, Stats};
+use radicle_surf::vcs::git::{self, git2};
 
 use crate::error;
-use crate::project::{DiscoveryItem, Metadata, Project};
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -128,12 +127,12 @@ impl Api {
     ///
     /// # Errors
     ///
-    ///   * The retrieving the project entities from the store fails.
+    ///   * Retrieving the project entities from the store fails.
     #[allow(
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
     )]
-    pub fn list_projects(&self) -> Result<Vec<Project>, error::Error> {
+    pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
         let project_meta = {
             let api = self.peer_api.lock().expect("unable to acquire lock");
             let storage = api.storage().reopen()?;
@@ -157,15 +156,7 @@ impl Api {
             .collect::<Vec<_>>()
         };
 
-        project_meta
-            .into_iter()
-            .map(|project| {
-                self.with_browser(&project.urn(), |browser| {
-                    let stats = browser.get_stats()?;
-                    Ok((project, stats).into())
-                })
-            })
-            .collect()
+        Ok(project_meta)
     }
 
     /// Returns the list of [`user::User`]s known for your peer.
@@ -305,34 +296,6 @@ impl Api {
         setup_remote(&api, path, &meta.urn().id, default_branch)?;
 
         Ok(meta)
-    }
-
-    /// Returns a feed of untracked [`project::Project`]s
-    ///
-    /// # Errors
-    ///
-    ///   * Retrieving the feed fails
-    #[allow(clippy::unused_self)]
-    pub fn discover_projects(&self) -> Result<Vec<DiscoveryItem>, error::Error> {
-        let projects = vec![
-            DiscoveryItem {
-                id: "rad@12345".to_string(),
-                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
-                metadata: Metadata {
-                    name: "radicle-upstream".to_string(),
-                    description: "It is not the slumber of reason that engenders monsters, but vigilant and insomniac rationality.".to_string(),
-                    default_branch: "main".to_string()
-                },
-                stats: Stats {
-                    contributors: 6,
-                    branches: 36,
-                    commits: 216
-                },
-                registration: None,
-            }
-        ];
-
-        Ok(projects)
     }
 
     /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a
@@ -622,7 +585,7 @@ mod test {
         let projects = api.list_projects()?;
         let mut project_names = projects
             .into_iter()
-            .map(|project| project.metadata.name)
+            .map(|project| project.name().to_string())
             .collect::<Vec<_>>();
         project_names.sort();
 

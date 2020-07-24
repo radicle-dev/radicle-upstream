@@ -88,6 +88,44 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
     Ok((project, stats).into())
 }
 
+/// Returns a list of `Project`s for your peer.
+pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
+    let project_meta = api.list_projects()?;
+
+    project_meta
+        .into_iter()
+        .map(|project| {
+            api.with_browser(&project.urn(), |browser| {
+                let stats = browser.get_stats()?;
+                Ok((project, stats).into())
+            })
+        })
+        .collect()
+}
+
+/// Returns a stubbed feed of `DiscoveryItem`s
+pub fn discover() -> Result<Vec<DiscoveryItem>, error::Error> {
+    let projects = vec![
+            DiscoveryItem {
+                id: "rad@12345".to_string(),
+                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
+                metadata: Metadata {
+                    name: "radicle-upstream".to_string(),
+                    description: "It is not the slumber of reason that engenders monsters, but vigilant and insomniac rationality.".to_string(),
+                    default_branch: "main".to_string()
+                },
+                stats: coco::Stats {
+                    contributors: 6,
+                    branches: 36,
+                    commits: 216
+                },
+                registration: None,
+            }
+        ];
+
+    Ok(projects)
+}
+
 /// Controversial placeholder struct for `EventStream` projects. It's cumbersome to create
 /// a new `RadUrn` otherwise and the `EventStream` will likely include fields the `Project`
 /// does not (e.g. maintainers)
