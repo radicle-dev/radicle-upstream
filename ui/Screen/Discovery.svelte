@@ -1,5 +1,5 @@
 <script>
-  import { feed, fetch } from "../src/discovery.ts";
+  import { projects as store, fetch } from "../src/discovery";
 
   import { Remote, SidebarLayout } from "../DesignSystem/Component";
   import { Icon, Input, Title } from "../DesignSystem/Primitive";
@@ -39,7 +39,7 @@
       </Input.Text>
 
       <div />
-      <Remote store={feed} let:data={projects}>
+      <Remote {store} let:data={projects}>
         {#each projects as project}
           <Project {project} />
         {/each}

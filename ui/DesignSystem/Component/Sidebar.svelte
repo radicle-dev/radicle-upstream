@@ -11,9 +11,6 @@
 
   const dispatch = createEventDispatcher();
 
-  // TODO(sos): remove this feature flag when we're ready
-  const showDiscovery = true;
-
   export let identity = null;
   export let orgs = null;
   export let registerOrgPermission = null;
@@ -157,18 +154,16 @@
     </li>
   </ul>
   <ul class="bottom">
-    {#if showDiscovery}
-      <li
-        class="item indicator"
-        class:active={path.active(path.discovery(), $location)}
-        data-cy="discovery">
-        <Tooltip value="Discover">
-          <a href={path.discovery()} use:link>
-            <Icon.Peer />
-          </a>
-        </Tooltip>
-      </li>
-    {/if}
+    <li
+      class="item indicator"
+      class:active={path.active(path.discovery(), $location)}
+      data-cy="discovery">
+      <Tooltip value="Discover">
+        <a href={path.discovery()} use:link>
+          <Icon.Peer />
+        </a>
+      </Tooltip>
+    </li>
     <li
       class="item indicator"
       data-cy="wallet"

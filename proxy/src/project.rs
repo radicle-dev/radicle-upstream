@@ -128,7 +128,7 @@ pub fn discover() -> Result<Vec<DiscoveryItem>, error::Error> {
 
 /// Controversial placeholder struct for `EventStream` projects. It's cumbersome to create
 /// a new `RadUrn` otherwise and the `EventStream` will likely include fields the `Project`
-/// does not (e.g. maintainers)
+/// does not depend on (e.g. maintainers)
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DiscoveryItem {

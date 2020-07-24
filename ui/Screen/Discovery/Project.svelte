@@ -123,7 +123,7 @@
       branches={project.stats.branches}
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
-    {#if project.maintainers && project.maintainers.length}
+    {#if project.maintainers && project.maintainers.length > 0}
       <Tooltip value={project.maintainers[0].handle}>
         <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
       </Tooltip>
