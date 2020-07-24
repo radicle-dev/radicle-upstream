@@ -1800,7 +1800,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=269a7ededafd7373ebfb03210770d0b3778002fb#269a7ededafd7373ebfb03210770d0b3778002fb"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=55cd394b0eede746ccf4120956f0c3eaf459b073#55cd394b0eede746ccf4120956f0c3eaf459b073"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -2929,6 +2929,7 @@ checksum = "d883f78645c21b7281d21305181aa1f4dd9e9363e7cf2566c93121552cff003e"
 name = "proxy"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-trait",
  "bytes 0.5.6",
  "directories",
@@ -2945,6 +2946,7 @@ dependencies = [
  "pico-args",
  "pretty_assertions",
  "pretty_env_logger",
+ "radicle-git-helpers",
  "radicle-keystore",
  "radicle-registry-client",
  "radicle-surf",
@@ -3028,6 +3030,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aa563d17ecb180e500da1cfd2b028310ac758de548efdd203e18f283af693f37"
 dependencies = [
  "proc-macro2 1.0.18",
+]
+
+[[package]]
+name = "radicle-git-helpers"
+version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=55cd394b0eede746ccf4120956f0c3eaf459b073#55cd394b0eede746ccf4120956f0c3eaf459b073"
+dependencies = [
+ "anyhow",
+ "git2",
+ "libgit2-sys",
+ "librad",
+ "radicle-keystore",
 ]
 
 [[package]]
@@ -4917,7 +4931,7 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3bfd5b7557925ce778ff9b9ef90e3ade34c524b5ff10e239c69a42d546d2af56"
 dependencies = [
- "rand 0.7.3",
+ "rand 0.5.6",
 ]
 
 [[package]]

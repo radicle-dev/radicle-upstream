@@ -5,9 +5,6 @@ use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use nonempty::NonEmpty;
-use serde::Serialize;
-
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -17,27 +14,13 @@ pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
 use librad::uri::RadUrn;
-use radicle_surf::vcs::git::{self, git2, BranchType, Stats};
+use radicle_surf::vcs::git::{self, git2, Stats};
 
-use super::source;
 use crate::error;
-use crate::identity;
 use crate::project::{DiscoveryItem, Metadata, Project};
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
-
-/// Bundled response to retrieve both branches and tags for a user repo.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UserRevisions {
-    /// Owner of the repo.
-    pub(crate) identity: identity::Identity,
-    /// List of [`source::Branch`].
-    pub(crate) branches: Vec<source::Branch>,
-    /// List of [`source::Tag`].
-    pub(crate) tags: Vec<source::Tag>,
-}
 
 /// High-level interface to the coco monorepo and gossip layer.
 pub struct Api {
@@ -211,73 +194,6 @@ impl Api {
         }
 
         Ok(entities)
-    }
-
-    /// Get all [`UserRevisions`] for a given project.
-    ///
-    /// # Parameters
-    ///
-    /// * `owner` - the owner of this peer, i.e. the current user
-    /// * `urn` - the [`RadUrn`] pointing to the project we're interested in
-    ///
-    /// # Errors
-    ///
-    ///   * [`error::Error::LibradLock`]
-    ///   * [`error::Error::Git`]
-    pub fn revisions(
-        &self,
-        owner: &User,
-        urn: &RadUrn,
-    ) -> Result<NonEmpty<UserRevisions>, error::Error> {
-        let project = self.get_project(urn)?;
-        let mut user_revisions = vec![];
-
-        let (local_branches, local_tags) = self.with_browser(urn, |browser| {
-            Ok((
-                source::branches(browser, Some(BranchType::Local))?,
-                source::tags(browser)?,
-            ))
-        })?;
-
-        if !local_branches.is_empty() {
-            user_revisions.push(UserRevisions {
-                identity: (self.peer_id(), owner.clone()).into(),
-                branches: local_branches,
-                tags: local_tags,
-            })
-        }
-
-        let tracked_peers = {
-            let api = self.peer_api.lock().expect("unable to acquire lock");
-            let storage = api.storage().reopen()?;
-            let repo = storage.open_repo(urn.clone())?;
-            repo.tracked()?
-        };
-
-        for peer_id in tracked_peers {
-            let remote_branches = self.with_browser(&project.urn(), |browser| {
-                source::branches(
-                    browser,
-                    Some(BranchType::Remote {
-                        name: Some(format!("{}/heads", peer_id)),
-                    }),
-                )
-            })?;
-
-            let api = self.peer_api.lock().expect("unable to acquire lock");
-            let storage = api.storage().reopen()?;
-            let user = storage.get_rad_self_of(urn, peer_id.clone())?;
-
-            user_revisions.push(UserRevisions {
-                identity: (peer_id, user).into(),
-                branches: remote_branches,
-                // TODO(rudolfs): implement remote peer tags once we decide how
-                // https://radicle.community/t/git-tags/214
-                tags: vec![],
-            });
-        }
-
-        NonEmpty::from_vec(user_revisions).ok_or(error::Error::EmptyUserRevisions)
     }
 
     /// Get the project found at `urn`.
@@ -461,6 +377,31 @@ impl Api {
     pub fn track(&self, urn: &RadUrn, remote: &PeerId) -> Result<(), error::Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         Ok(api.storage().track(urn, remote)?)
+    }
+
+    /// Get the [`user::User`]s that are tracking this project, including their [`PeerId`].
+    ///
+    /// # Errors
+    ///
+    /// * If we could not acquire the lock
+    /// * If we could not open the storage
+    /// * If did not have the `urn` in storage
+    /// * If we could not fetch the tracked peers
+    /// * If we could not get the `rad/self` of the peer
+    pub fn tracked(
+        &self,
+        urn: &RadUrn,
+    ) -> Result<Vec<(PeerId, user::User<entity::Draft>)>, error::Error> {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        let repo = storage.open_repo(urn.clone())?;
+        repo.tracked()?
+            .map(move |peer_id| {
+                repo.get_rad_self_of(peer_id.clone())
+                    .map(|user| (peer_id.clone(), user))
+                    .map_err(error::Error::from)
+            })
+            .collect()
     }
 }
 
