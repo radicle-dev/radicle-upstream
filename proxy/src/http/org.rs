@@ -3,6 +3,7 @@
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
@@ -10,25 +11,8 @@ use crate::http;
 use crate::project;
 use crate::registry;
 
-/// Prefixed filters.
-pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
-    path("orgs").and(
-        get_filter(ctx.clone())
-            .or(register_project_filter(ctx.clone()))
-            .or(get_project_filter(ctx.clone()))
-            .or(get_projects_filter(ctx.clone()))
-            .or(register_filter(ctx.clone()))
-            .or(register_member_filter(ctx.clone()))
-            .or(transfer_filter(ctx)),
-    )
-}
-
 /// Combination of all org routes.
-#[cfg(test)]
-fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
@@ -39,6 +23,7 @@ where
         .or(register_filter(ctx.clone()))
         .or(register_member_filter(ctx.clone()))
         .or(transfer_filter(ctx))
+        .boxed()
 }
 
 /// `GET /<id>`

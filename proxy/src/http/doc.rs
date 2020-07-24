@@ -1,6 +1,15 @@
 //! Infrastructure to provide `OpenAPI` documentation for the exposed endpoints.
 
+use warp::filters::BoxedFilter;
 use warp::{document, path, reply, Filter, Rejection, Reply};
+
+/// Combined docs filters.
+pub fn filters<F>(api: &F) -> BoxedFilter<(impl Reply,)>
+where
+    F: Filter + 'static,
+{
+    describe_filter(api).or(index_filter()).boxed()
+}
 
 /// GET /
 /// GET /index.html
@@ -13,10 +22,11 @@ pub fn index_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
 }
 
 /// GET /opnapi.json
-pub fn describe_filter<F: Filter>(
-    routes: &F,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    let docs = document::to_openapi(document::describe(routes));
+pub fn describe_filter<F>(api: &F) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    F: Filter,
+{
+    let docs = document::to_openapi(document::describe(api));
 
     path!("openapi.json").map(move || reply::json(&docs))
 }

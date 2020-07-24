@@ -5,12 +5,10 @@ use std::sync::Arc;
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
+use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::http::StatusCode;
-use warp::{
-    document::{self, ToDocumentedType},
-    path, reply, Filter, Rejection, Reply,
-};
+use warp::{path, reject, reply, Filter, Rejection, Reply};
 
 use crate::coco;
 use crate::keystore;
@@ -70,17 +68,27 @@ where
     let ctx = Arc::new(RwLock::new(ctx));
 
     let account_filter = path("accounts").and(account::filters(ctx.clone()));
-    let avatar_filter = avatar::get_filter();
-    let control_filter = control::routes(enable_control, ctx.clone());
-    let id_filter = id::get_status_filter(ctx.clone());
-    let identity_filter = identity::filters(ctx.clone());
-    let notification_filter = notification::filters(subscriptions);
-    let org_filter = org::routes(ctx.clone());
-    let project_filter = project::filters(ctx.clone());
-    let session_filter = session::routes(ctx.clone());
-    let source_filter = source::routes(ctx.clone());
-    let transaction_filter = transaction::filters(ctx.clone());
-    let user_filter = user::routes(ctx);
+    let avatar_filter = path("avatars").and(avatar::get_filter());
+    let control_filter = path("control")
+        .map(move || enable_control)
+        .and_then(|enable| async move {
+            if enable {
+                Ok(())
+            } else {
+                Err(reject::not_found())
+            }
+        })
+        .untuple_one()
+        .and(control::filters(ctx.clone()));
+    let id_filter = path("ids").and(id::get_status_filter(ctx.clone()));
+    let identity_filter = path("identities").and(identity::filters(ctx.clone()));
+    let notification_filter = path("notifications").and(notification::filters(subscriptions));
+    let org_filter = path("orgs").and(org::filters(ctx.clone()));
+    let project_filter = path("projects").and(project::filters(ctx.clone()));
+    let session_filter = path("session").and(session::filters(ctx.clone()));
+    let source_filter = path("source").and(source::filters(ctx.clone()));
+    let transaction_filter = path("transactions").and(transaction::filters(ctx.clone()));
+    let user_filter = path("users").and(user::filters(ctx));
 
     let api = path("v1").and(combine!(
         account_filter,
@@ -98,7 +106,7 @@ where
     ));
 
     // let docs = path("docs").and(doc::filters(&api));
-    let docs = path("docs").and(doc::index_filter().or(doc::describe_filter(&api)));
+    let docs = path("docs").and(doc::filters(&api));
     let cors = warp::cors()
         .allow_any_origin()
         .allow_headers(&[warp::http::header::CONTENT_TYPE])

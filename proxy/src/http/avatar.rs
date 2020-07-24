@@ -2,13 +2,14 @@
 
 use serde::Deserialize;
 use warp::document::{self, ToDocumentedType};
-use warp::{path, Filter, Rejection, Reply};
+use warp::filters::BoxedFilter;
+use warp::{Filter, Reply};
 
 use crate::avatar;
 
-/// `GET /avatars/<id>?usage=<usage>`
-pub fn get_filter() -> impl Filter<Extract = (impl Reply,), Error = Rejection> + Clone {
-    path("avatars")
+/// `GET /<id>?usage=<usage>`
+pub fn get_filter() -> BoxedFilter<(impl Reply,)> {
+    warp::any()
         .and(document::param::<String>(
             "id",
             "ID for the Avatar creation",
@@ -38,6 +39,7 @@ pub fn get_filter() -> impl Filter<Extract = (impl Reply,), Error = Rejection> +
             .description("Wrong usage for Avatar"),
         ))
         .and_then(handler::get)
+        .boxed()
 }
 
 /// Avatar handlers for conversion between core domain and http request fullfilment.
@@ -96,7 +98,7 @@ mod test {
         let api = super::get_filter();
         let res = request()
             .method("GET")
-            .path(&format!("/avatars/{}?usage={}", "monadic", "org"))
+            .path(&format!("/{}?usage={}", "monadic", "org"))
             .reply(&api)
             .await;
 
