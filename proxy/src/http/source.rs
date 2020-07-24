@@ -3,8 +3,8 @@
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use warp::document::{self, ToDocumentedType};
-use warp::{path, Filter, Rejection, Reply};
 use warp::filters::BoxedFilter;
+use warp::{path, Filter, Rejection, Reply};
 
 use librad::meta::user;
 use librad::peer;
