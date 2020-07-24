@@ -56,6 +56,10 @@ pub enum Error {
     #[error("the path '{0}' was not found")]
     PathNotFound(surf::file_system::Path),
 
+    /// Could not construct a path.
+    #[error("could not join paths")]
+    JoinPathsError(#[from] std::env::JoinPathsError),
+
     /// Originated from `radicle_surf`.
     #[error(transparent)]
     Git(#[from] surf::git::error::Error),

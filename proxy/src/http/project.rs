@@ -17,8 +17,42 @@ where
     R: registry::Client + 'static,
 {
     list_filter(ctx.clone())
+        .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(get_filter(ctx))
+}
+
+/// `POST /projects/<id>/checkout`
+fn checkout_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    path("projects")
+        .and(warp::post())
+        .and(http::with_context(ctx.clone()))
+        .and(document::param::<String>("id", "Project id"))
+        .and(http::with_owner_guard(ctx))
+        .and(warp::body::json())
+        .and(document::document(document::description(
+            "Create a new working copy for a project",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(
+            document::body(CheckoutInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(201, None).description("Checkout succeeded"),
+        ))
+        .and(document::document(
+            document::response(
+                404,
+                document::body(super::error::Error::document()).mime("application/json"),
+            )
+            .description("Project not found"),
+        ))
+        .and_then(handler::checkout)
 }
 
 /// `POST /projects`
@@ -146,6 +180,25 @@ mod handler {
             reply::json(&project),
             StatusCode::CREATED,
         ))
+    }
+
+    /// Checkout a [`project::Project`]'s source code.
+    pub async fn checkout<R>(
+        ctx: http::Ctx<R>,
+        urn: String,
+        _owner: coco::User,
+        input: super::CheckoutInput,
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+
+        let urn = urn.parse().map_err(Error::from)?;
+        ctx.peer_api
+            .checkout(&urn, &input.path, &input.branch, &input.remote)?;
+
+        Ok(reply::with_status(reply(), StatusCode::CREATED))
     }
 
     /// Get the [`project::Project`] for the given `id`.
@@ -338,6 +391,46 @@ impl ToDocumentedType for CreateInput {
         properties.insert("metadata".into(), MetadataInput::document());
 
         document::DocumentedType::from(properties).description("Input for project creation")
+    }
+}
+
+/// Bundled input data for project checkout.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckoutInput {
+    /// Location on the filesystem where the working copy should be created.
+    path: String,
+    /// The branch which will be checked out by default.
+    branch: String,
+    /// Default remote that will be set up for the working copy.
+    remote: String,
+}
+
+impl ToDocumentedType for CheckoutInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(2);
+        properties.insert(
+            "path".into(),
+            document::string()
+                .description("Filesystem location where the working copy should be created")
+                .example("/Users/rudolfs/work/radicle-tests/upstream-checkout"),
+        );
+
+        properties.insert(
+            "branch".into(),
+            document::string()
+                .description("Branch that will be checked out by default")
+                .example("master"),
+        );
+
+        properties.insert(
+            "remote".into(),
+            document::string()
+                .description("Default remote that will be set up for the working copy")
+                .example("hyy65tdus74a9q4doa8gfui4i5kuizg7gasy6wzg9ncxqtr3xfs8ty"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for project checkout")
     }
 }
 

@@ -1,5 +1,6 @@
 <script>
   import { Button, Input, Icon, Text } from "../../DesignSystem/Primitive";
+  import { checkoutWorkingDirectory } from "../../src/project.ts";
 
   import * as notification from "../../src/notification.ts";
 
@@ -25,8 +26,16 @@
 
   let checkoutDirectoryPath;
 
+  // TODO(rudolfs): extract this out to the parent screen
   const handleCheckout = () => {
-    projectId;
+    checkoutWorkingDirectory({
+      id: projectId,
+      remote: "PEER_ID_GOES_HERE",
+      branch: "BRANCH_TO_CHECK_OUT_GOES_HERE",
+      path: checkoutDirectoryPath,
+    });
+
+    // TODO(rudolfs): show this only when the checkout is done & successful
     notification.info(`${projectName} checked out to ${checkoutDirectoryPath}`);
   };
 </script>

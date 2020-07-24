@@ -3,8 +3,10 @@
 use std::convert::TryFrom;
 use std::net::SocketAddr;
 use std::path::PathBuf;
+use std::process::Command;
 use std::sync::{Arc, Mutex};
 
+use librad::git::local::url::LocalUrl;
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -305,6 +307,51 @@ impl Api {
         setup_remote(&api, path, &meta.urn().id, default_branch)?;
 
         Ok(meta)
+    }
+
+    /// Checkout a working copy of a [`project::Project`].
+    pub fn checkout(
+        &self,
+        project_urn: &RadUrn,
+        checkout_path: &str,
+        _branch: &str,
+        _remote: &str,
+    ) -> Result<(), error::Error> {
+        let path_of_proxy_binary = std::env::current_exe()?;
+        let path_of_proxy_binary = path_of_proxy_binary.parent().unwrap();
+
+        let env_path = match std::env::var_os("PATH") {
+            None => std::env::join_paths(Some(path_of_proxy_binary)),
+            Some(path) => {
+                let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
+                paths.push(path_of_proxy_binary.to_path_buf());
+                paths.reverse();
+                std::env::join_paths(paths)
+            },
+        }?;
+
+        let mut child_process = Command::new("git")
+            .arg("-c")
+            // TODO(rudolfs): we'll have to figure out how to pass the secret
+            // key to git in a safe manner. As it is now it could be sniffed
+            // out from the process list while the user is doing a clone.
+            //
+            // How will we get ahold on the secret key here?
+            .arg(format!(
+                "credential.helper=!f() {{ test \"$1\" = get && echo \"password={}\"; }}; f",
+                "radicle-upstream"
+            ))
+            .arg("clone")
+            .arg(LocalUrl::from(project_urn).to_string())
+            .arg(&checkout_path)
+            .env("PATH", &env_path)
+            .env("RAD_HOME", self.monorepo())
+            .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
+            .spawn()?;
+
+        child_process.wait()?;
+
+        Ok(())
     }
 
     /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a
