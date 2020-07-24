@@ -2,20 +2,18 @@
 
 use serde::{Deserialize, Serialize};
 use warp::document::{self, ToDocumentedType};
-use warp::{path, Filter, Rejection, Reply};
+use warp::filters::BoxedFilter;
+use warp::{path, Filter, Reply};
 
 use crate::http;
 use crate::registry;
 
-/// `GET ids/<id>/status`
-pub fn get_status_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+/// `GET /<id>/status`
+pub fn get_status_filter<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
-    path("ids")
-        .and(http::with_context(ctx))
+    http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>(
             "id",
@@ -35,6 +33,7 @@ where
             .description("Successful retrieval"),
         ))
         .and_then(handler::get_status)
+        .boxed()
 }
 
 /// The status of an org or user id in the Registry.
@@ -99,7 +98,7 @@ mod test {
         let id = registry::Id::try_from("monadic")?;
         let res = request()
             .method("GET")
-            .path(&format!("/ids/{}/status", id.to_string()))
+            .path(&format!("/{}/status", id.to_string()))
             .reply(&api)
             .await;
 
@@ -127,7 +126,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/ids/{}/status", handle.to_string()))
+            .path(&format!("/{}/status", handle.to_string()))
             .reply(&api)
             .await;
 
@@ -160,7 +159,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/ids/{}/status", org_id.to_string()))
+            .path(&format!("/{}/status", org_id.to_string()))
             .reply(&api)
             .await;
 
@@ -192,7 +191,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/ids/{}/status", handle.to_string()))
+            .path(&format!("/{}/status", handle.to_string()))
             .reply(&api)
             .await;
 
@@ -230,7 +229,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/ids/{}/status", org_id.to_string()))
+            .path(&format!("/{}/status", org_id.to_string()))
             .reply(&api)
             .await;
 

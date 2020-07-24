@@ -3,27 +3,27 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use warp::document::{self, ToDocumentedType};
-use warp::{path, Filter, Rejection, Reply};
+use warp::filters::BoxedFilter;
+use warp::{Filter, Reply};
 
 use crate::http;
 use crate::registry;
 
 /// Combination of all transaction routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + 'static,
 {
     list_filter(ctx)
 }
 
-/// `POST /transactions`
-fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+/// `POST /`
+fn list_filter<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + 'static,
 {
-    path!("transactions")
+    http::with_context(ctx)
         .and(warp::post())
-        .and(http::with_context(ctx))
         .and(warp::body::json())
         .and(document::document(document::description(
             "List transactions",
@@ -44,6 +44,7 @@ where
             .description("Creation succeeded"),
         ))
         .and_then(handler::list)
+        .boxed()
 }
 
 /// Transaction handlers to implement conversion and translation between core domain and http
@@ -262,7 +263,7 @@ mod test {
 
         let res = request()
             .method("POST")
-            .path("/transactions")
+            .path("/")
             .json(&super::ListInput { ids: vec![] })
             .reply(&api)
             .await;
