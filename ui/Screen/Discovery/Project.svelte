@@ -81,14 +81,20 @@
   data-cy="project-card">
   <div class="header">
     <div class="title">
-      <Title variant="large" style="color: var(--color-foreground-level-4);">
-        {project.domain}
-      </Title>
-      <Title variant="large" truncate>&nbsp;{`/ ${project.name}`}</Title>
-      <div class="registered">
-        <Icon.Verified
-          style="fill: var(--color-primary); position: relative; bottom: -5px;" />
-      </div>
+      {#if project.registration}
+        <Title variant="large" style="color: var(--color-foreground-level-4);">
+          {project.domain}
+        </Title>
+        <Title variant="large" truncate>
+          &nbsp;{`/ ${project.metadata.name}`}
+        </Title>
+        <div class="registered">
+          <Icon.Verified
+            style="fill: var(--color-primary); position: relative; bottom: -5px;" />
+        </div>
+      {:else}
+        <Title variant="large" truncate>{project.metadata.name}</Title>
+      {/if}
     </div>
 
     {#if showTrackButton}
@@ -109,7 +115,7 @@
   <!-- TODO(sos): middle-truncate shareableEntityID & show copy icon -->
 
   <div class="description">
-    <Text>{project.description}</Text>
+    <Text>{project.metadata.description}</Text>
   </div>
 
   <div class="bottom">
@@ -117,8 +123,10 @@
       branches={project.stats.branches}
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
-    <Tooltip value={project.maintainers[0].handle}>
-      <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
-    </Tooltip>
+    {#if project.maintainers && project.maintainers.length}
+      <Tooltip value={project.maintainers[0].handle}>
+        <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
+      </Tooltip>
+    {/if}
   </div>
 </div>

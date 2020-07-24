@@ -11,6 +11,9 @@
 
   const dispatch = createEventDispatcher();
 
+  // TODO(sos): remove this feature flag when we're ready
+  const showDiscovery = true;
+
   export let identity = null;
   export let orgs = null;
   export let registerOrgPermission = null;
@@ -154,18 +157,22 @@
     </li>
   </ul>
   <ul class="bottom">
+    {#if showDiscovery}
+      <li
+        class="item indicator"
+        class:active={path.active(path.discovery(), $location)}
+        data-cy="discovery">
+        <Tooltip value="Discover">
+          <a href={path.discovery()} use:link>
+            <Icon.Peer />
+          </a>
+        </Tooltip>
+      </li>
+    {/if}
     <li
       class="item indicator"
-      class:active={path.active(path.discovery(), $location)}
-      data-cy="discovery">
-      <Tooltip value="Discover">
-        <a href={path.discovery()} use:link>
-          <Icon.Peer />
-        </a>
-      </Tooltip>
-    </li>
-    <!-- TODO(sos or whoever): this should be active when user is on wallet page -->
-    <li class="item indicator" data-cy="wallet">
+      data-cy="wallet"
+      class:active={path.active(path.profileWallet(), $location)}>
       <Tooltip value="Wallet">
         <a href={path.profileWallet()} use:link>
           <Icon.Fund />

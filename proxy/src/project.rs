@@ -87,3 +87,22 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
 
     Ok((project, stats).into())
 }
+
+/// Controversial placeholder struct for `EventStream` projects. It's cumbersome to create
+/// a new `RadUrn` otherwise and the `EventStream` will likely include fields the `Project`
+/// does not (e.g. maintainers)
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscoveryItem {
+    /// Unique identifier of the project in the network.
+    pub id: String,
+    /// Unambiguous identifier pointing at this identity.
+    pub shareable_entity_identifier: String,
+    /// Attached metadata, mostly for human pleasure.
+    pub metadata: Metadata,
+    /// Informs if the project is present in the Registry and under what top-level entity it can be
+    /// found.
+    pub registration: Option<Registration>,
+    /// High-level statistics about the project
+    pub stats: coco::Stats,
+}

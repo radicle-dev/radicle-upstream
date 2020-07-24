@@ -1,12 +1,12 @@
 <script>
-  import { getFeed } from "../src/discovery.ts";
+  import { feed, fetch } from "../src/discovery.ts";
 
-  import { SidebarLayout } from "../DesignSystem/Component";
+  import { Remote, SidebarLayout } from "../DesignSystem/Component";
   import { Icon, Input, Title } from "../DesignSystem/Primitive";
 
   import Project from "./Discovery/Project.svelte";
 
-  const projectFeed = getFeed();
+  fetch();
 </script>
 
 <style>
@@ -39,10 +39,11 @@
       </Input.Text>
 
       <div />
-
-      {#each projectFeed as project}
-        <Project {project} />
-      {/each}
+      <Remote store={feed} let:data={projects}>
+        {#each projects as project}
+          <Project {project} />
+        {/each}
+      </Remote>
     </div>
   </div>
 </SidebarLayout>

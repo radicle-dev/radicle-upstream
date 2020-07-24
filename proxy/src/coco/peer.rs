@@ -17,12 +17,12 @@ pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
 use librad::uri::RadUrn;
-use radicle_surf::vcs::git::{self, git2, BranchType};
+use radicle_surf::vcs::git::{self, git2, BranchType, Stats};
 
 use super::source;
 use crate::error;
 use crate::identity;
-use crate::project::Project;
+use crate::project::{DiscoveryItem, Metadata, Project};
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -139,15 +139,6 @@ impl Api {
         self.set_default_owner(user.clone())?;
 
         Ok(user)
-    }
-
-    /// Returns a feed of untracked [`project::Project`]s
-    ///
-    /// # Errors
-    ///
-    ///   * Retrieving the feed fails
-    pub fn discover_projects(&self) -> Result<String, error::Error> {
-        Ok("feed goes here".to_string())
     }
 
     /// Returns the list of [`project::Project`]s for your peer.
@@ -398,6 +389,34 @@ impl Api {
         setup_remote(&api, path, &meta.urn().id, default_branch)?;
 
         Ok(meta)
+    }
+
+    /// Returns a feed of untracked [`project::Project`]s
+    ///
+    /// # Errors
+    ///
+    ///   * Retrieving the feed fails
+    #[allow(clippy::unused_self)]
+    pub fn discover_projects(&self) -> Result<Vec<DiscoveryItem>, error::Error> {
+        let projects = vec![
+            DiscoveryItem {
+                id: "rad@12345".to_string(),
+                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
+                metadata: Metadata {
+                    name: "radicle-upstream".to_string(),
+                    description: "It is not the slumber of reason that engenders monsters, but vigilant and insomniac rationality.".to_string(),
+                    default_branch: "main".to_string()
+                },
+                stats: Stats {
+                    contributors: 6,
+                    branches: 36,
+                    commits: 216
+                },
+                registration: None,
+            }
+        ];
+
+        Ok(projects)
     }
 
     /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a

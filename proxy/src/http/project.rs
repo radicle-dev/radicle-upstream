@@ -20,7 +20,7 @@ where
         get_filter(ctx.clone())
             .or(create_filter(ctx.clone()))
             .or(discover_filter(ctx.clone()))
-            .or(list_filter(ctx.clone())),
+            .or(list_filter(ctx)),
     )
 }
 
@@ -33,7 +33,7 @@ where
     get_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
-        .or(list_filter(ctx.clone()))
+        .or(list_filter(ctx))
 }
 
 /// `POST /`
@@ -45,7 +45,7 @@ where
 {
     http::with_context(ctx.clone())
         .and(warp::post())
-        .and(http::with_owner_guard(ctx.clone()))
+        .and(http::with_owner_guard(ctx))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -199,6 +199,7 @@ mod handler {
         Ok(reply::json(&projects))
     }
 
+    /// Get a feed of untracked projects.
     pub async fn discover<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
@@ -260,7 +261,7 @@ impl Serialize for project::Registration {
         match self {
             Self::Org(org_id) => {
                 serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
-            }
+            },
             Self::User(user_id) => serializer.serialize_newtype_variant(
                 "Registration",
                 1,
