@@ -857,24 +857,27 @@ mod test {
 
         // Register the user
         let user_registration = registry
-            .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
         // Register the org
         let initial_balance = registry.free_balance(&author.public()).await?;
         let fee = 2;
-        let result = registry.register_org(&author, org_id, fee).await;
+        let result = registry.register_org(&author, org_id.clone(), fee).await;
         assert!(result.is_ok());
 
-        let org_id = protocol::Id::try_from("monadic")?;
-        let maybe_org = client.get_org(org_id.clone()).await?;
+        let maybe_org = client.get_org(org_id).await?;
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
-        assert_eq!(org.members()[0], protocol::Id::try_from("alice")?);
+        assert_eq!(org.members()[0], handle);
+
+        // The amount prepaid on org registration.
+        // TODO(nuno): delete once we no longer prepay accounts
+        let prepaid_transfer_costs = 1000 + 1;
         assert_eq!(
             registry.free_balance(&author.public()).await?,
-            initial_balance - fee - protocol::REGISTRATION_FEE
+            initial_balance - prepaid_transfer_costs - fee - protocol::REGISTRATION_FEE
         );
 
         Ok(())
@@ -929,12 +932,7 @@ mod test {
         assert!(registration.is_ok());
 
         // Unregister the org
-        let org = registry
-            .get_org(org_id.clone())
-            .await
-            .unwrap()
-            .expect("org should exist");
-        let initial_balance = registry.free_balance(&org.account_id).await?;
+        let initial_balance = registry.free_balance(&author.public()).await?;
         let fee = 2;
         let unregistration = registry.unregister_org(&author, org_id, fee).await;
         assert!(unregistration.is_ok());
@@ -978,10 +976,11 @@ mod test {
         let initial_balance = registry.free_balance(&org.account_id()).await?;
         let fee = 2;
         let member_registration = registry
-            .register_member(&author, org_id, handle2, fee)
+            .register_member(&author, org_id.clone(), handle2, fee)
             .await;
         assert!(member_registration.is_ok());
 
+        let org = client.get_org(org_id).await?.unwrap();
         assert_eq!(org.members().len(), 2);
         assert!(org.members().contains(&protocol::Id::try_from("alice")?));
         assert!(org.members().contains(&protocol::Id::try_from("bob")?));
@@ -1216,14 +1215,15 @@ mod test {
 
         assert_eq!(
             registry.free_balance(&author.public()).await?,
-            initial_balance - fee
+            // one fee for project checkpoint setting and one for registration
+            initial_balance - 2 * fee
         );
 
         Ok(())
     }
 
     #[tokio::test]
-    async fn register_user() -> Result<(), error::Error> {
+    async fn test_register_user() -> Result<(), error::Error> {
         let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client);
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
