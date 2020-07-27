@@ -297,7 +297,6 @@ mod test {
                     "coco": {
                         "seeds": [
                             "seed.radicle.xyz",
-                            "194.134.54.13"
                         ]
                     },
                     "registry": {
@@ -354,7 +353,6 @@ mod test {
                     "coco": {
                         "seeds": [
                             "seed.radicle.xyz",
-                            "194.134.54.13"
                         ],
                     },
                     "registry": {
