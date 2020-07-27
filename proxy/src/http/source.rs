@@ -3,6 +3,7 @@
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use librad::meta::user;
@@ -14,26 +15,8 @@ use crate::http;
 use crate::identity;
 use crate::registry;
 
-/// Prefixed filters.
-pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
-    path("source").and(
-        blob_filter(ctx.clone())
-            .or(branches_filter(ctx.clone()))
-            .or(commit_filter(ctx.clone()))
-            .or(commits_filter(ctx.clone()))
-            .or(local_state_filter())
-            .or(revisions_filter(ctx.clone()))
-            .or(tags_filter(ctx.clone()))
-            .or(tree_filter(ctx)),
-    )
-}
-
 /// Combination of all source filters.
-#[cfg(test)]
-fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
@@ -45,6 +28,7 @@ where
         .or(revisions_filter(ctx.clone()))
         .or(tags_filter(ctx.clone()))
         .or(tree_filter(ctx))
+        .boxed()
 }
 
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`

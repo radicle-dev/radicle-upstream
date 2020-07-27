@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
@@ -12,26 +13,26 @@ use crate::project;
 use crate::registry;
 
 /// Combination of all routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
     list_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
         .or(get_filter(ctx))
+        .boxed()
 }
 
-/// `POST /projects`
+/// `POST /`
 fn create_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path!("projects")
-        .and(warp::post())
-        .and(http::with_context(ctx.clone()))
+    http::with_context(ctx.clone())
         .and(http::with_owner_guard(ctx))
+        .and(warp::post())
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -50,14 +51,13 @@ where
         .and_then(handler::create)
 }
 
-/// `GET /projects/<id>`
+/// `GET /<id>`
 fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path("projects")
+    http::with_context(ctx)
         .and(warp::get())
-        .and(http::with_context(ctx))
         .and(document::param::<String>("id", "Project id"))
         .and(document::document(document::description(
             "Find Project by ID",
@@ -80,14 +80,14 @@ where
         .and_then(handler::get)
 }
 
-/// `GET /projects`
+/// `GET /`
 fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path!("projects")
+    http::with_context(ctx)
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(path::end())
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -412,7 +412,7 @@ mod test {
 
         let res = request()
             .method("POST")
-            .path("/projects")
+            .path("/")
             .json(&super::CreateInput {
                 path: path.into(),
                 metadata: super::MetadataInput {
@@ -473,7 +473,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/projects/{}", urn))
+            .path(&format!("/{}", urn))
             .reply(&api)
             .await;
 
@@ -497,7 +497,7 @@ mod test {
         coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
 
         let projects = ctx.peer_api.list_projects()?;
-        let res = request().method("GET").path("/projects").reply(&api).await;
+        let res = request().method("GET").path("/").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects));

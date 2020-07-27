@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
@@ -9,22 +10,8 @@ use crate::identity;
 use crate::registry;
 use crate::session;
 
-/// Prefixed fitlers.
-pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Cache + registry::Client + 'static,
-{
-    path("session").and(
-        clear_cache_filter(ctx.clone())
-            .or(delete_filter(ctx.clone()))
-            .or(get_filter(ctx.clone()))
-            .or(update_settings_filter(ctx)),
-    )
-}
-
 /// Combination of all session filters.
-#[cfg(test)]
-pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + registry::Client + 'static,
 {
@@ -32,6 +19,7 @@ where
         .or(delete_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
         .or(update_settings_filter(ctx))
+        .boxed()
 }
 
 /// `DELETE /cache`
