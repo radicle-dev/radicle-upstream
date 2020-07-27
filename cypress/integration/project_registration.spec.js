@@ -235,7 +235,7 @@ context("project registration", () => {
 
         cy.pick("registration-fee").should("not.exist");
 
-        cy.pick("transaction-fee", "amount").contains("0.000001");
+        cy.pick("transaction-fee", "amount").contains("-0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseover");
         cy.pick("tooltip").contains("$0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseout");
@@ -271,7 +271,7 @@ context("project registration", () => {
 
         cy.pick("subject-avatar").contains(`${org1} / ${project1.name}`);
 
-        cy.pick("transaction-fee", "amount").contains("0.000001");
+        cy.pick("transaction-fee", "amount").contains("-0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseover");
         cy.pick("tooltip").contains("$0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseover");
