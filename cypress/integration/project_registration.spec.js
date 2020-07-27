@@ -240,7 +240,7 @@ context("project registration", () => {
         cy.pick("tooltip").contains("$0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-        cy.pick("total", "amount").contains("0.000001");
+        cy.pick("total", "amount").contains("-0.000001");
         cy.pick("total", "amount").trigger("mouseover");
         cy.pick("tooltip").contains("$0.000001");
         cy.pick("total", "amount").trigger("mouseout");
@@ -276,7 +276,7 @@ context("project registration", () => {
         cy.pick("tooltip").contains("$0.000001");
         cy.pick("transaction-fee", "amount").trigger("mouseover");
 
-        cy.pick("total", "amount").contains("0.000001");
+        cy.pick("total", "amount").contains("-0.000001");
         cy.pick("total", "amount").trigger("mouseover");
         cy.pick("tooltip").contains("$0.000001");
         cy.pick("total", "amount").trigger("mouseover");

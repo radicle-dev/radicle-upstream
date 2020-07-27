@@ -148,7 +148,7 @@ context("org registration", () => {
       cy.pick("subject-avatar").contains("mariposa");
       cy.pick("subject-avatar", "emoji").should("have.class", "square");
 
-      cy.pick("registration-fee", "amount").contains("0.00001");
+      cy.pick("registration-fee", "amount").contains("-0.00001");
       cy.pick("registration-fee", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.00001");
       cy.pick("registration-fee", "amount").trigger("mouseout");
@@ -158,7 +158,7 @@ context("org registration", () => {
       cy.pick("tooltip").contains("$0.000001");
       cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").contains("-0.000011");
       cy.pick("total", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.000011");
       cy.pick("total", "amount").trigger("mouseout");
@@ -190,7 +190,7 @@ context("org registration", () => {
         "rgb(186, 38, 114)"
       );
 
-      cy.pick("registration-fee", "amount").contains("0.00001");
+      cy.pick("registration-fee", "amount").contains("-0.00001");
       cy.pick("registration-fee", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.00001");
       cy.pick("registration-fee", "amount").trigger("mouseout");
@@ -200,7 +200,7 @@ context("org registration", () => {
       cy.pick("tooltip").contains("$0.000001");
       cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").contains("-0.000011");
       cy.pick("total", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.000011");
       cy.pick("total", "amount").trigger("mouseout");

@@ -121,7 +121,7 @@ context("user registration", () => {
       //   "rgb(185, 118, 211)"
       // );
 
-      cy.pick("registration-fee", "amount").contains("0.00001");
+      cy.pick("registration-fee", "amount").contains("-0.00001");
       cy.pick("registration-fee", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.00001");
       cy.pick("registration-fee", "amount").trigger("mouseout");
@@ -131,7 +131,7 @@ context("user registration", () => {
       cy.pick("tooltip").contains("$0.000001");
       cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").contains("-0.000011");
       cy.pick("total", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.000011");
       cy.pick("total", "amount").trigger("mouseout");
@@ -160,7 +160,7 @@ context("user registration", () => {
       //   "rgb(185, 118, 211)"
       // );
 
-      cy.pick("registration-fee", "amount").contains("0.00001");
+      cy.pick("registration-fee", "amount").contains("-0.00001");
       cy.pick("registration-fee", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.00001");
       cy.pick("registration-fee", "amount").trigger("mouseout");
@@ -170,7 +170,7 @@ context("user registration", () => {
       cy.pick("tooltip").contains("$0.000001");
       cy.pick("transaction-fee", "amount").trigger("mouseout");
 
-      cy.pick("total", "amount").contains("0.000011");
+      cy.pick("total", "amount").contains("-0.000011");
       cy.pick("total", "amount").trigger("mouseover");
       cy.pick("tooltip").contains("$0.000011");
       cy.pick("total", "amount").trigger("mouseout");
