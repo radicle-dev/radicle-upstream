@@ -1,6 +1,11 @@
 <script>
   import { getContext } from "svelte";
-  import { fromStore, toStore, amountStore } from "../src/transfer.ts";
+  import {
+    TransferState,
+    fromStore,
+    toStore,
+    amountStore,
+  } from "../src/transfer.ts";
 
   import { Dropdown, ModalLayout, Rad } from "../DesignSystem/Component";
   import Row from "../DesignSystem/Component/Transaction/Row.svelte";
@@ -53,14 +58,14 @@
     });
   }
 
-  let step = 1;
+  let state = TransferState.Preparation;
 
   const nextStep = () => {
-    step += 1;
+    state = TransferState.Confirmation;
   };
 
   const previousStep = () => {
-    step -= 1;
+    state = TransferState.Preparation;
   };
 </script>
 
@@ -115,7 +120,7 @@
 
 <ModalLayout dataCy="page">
   <div class="wrapper">
-    {#if step === 1}
+    {#if state === TransferState.Preparation}
       <header>
         <div class="icon">
           <Icon.ArrowUp style="fill: var(--color-primary)" />
@@ -157,7 +162,7 @@
         <Button on:click={() => nextStep()}>Review transfer</Button>
       </div>
     {/if}
-    {#if step === 2}
+    {#if state === TransferState.Confirmation}
       <header>
         <div class="icon">
           <Icon.ArrowUp style="fill: var(--color-primary)" />
