@@ -536,6 +536,25 @@ mod test {
     }
 
     #[tokio::test]
+    async fn can_create_project_directory_exists() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let repo_path = repo_path.join("radicalise");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let user = api.init_owner(key.clone(), "cloudhead")?;
+        let project =
+            api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
+
+        assert!(project.is_ok());
+        assert!(repo_path.exists());
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn cannot_create_user_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
