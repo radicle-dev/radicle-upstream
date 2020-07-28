@@ -7,7 +7,7 @@ import * as identity from "./identity";
 import * as notification from "./notification";
 import * as org from "./org";
 import * as remote from "./remote";
-import { Appearance, Registry, Settings } from "./settings";
+import { Appearance, CoCo, Registry, Settings } from "./settings";
 import * as transaction from "./transaction";
 import { MicroRad } from "./currency";
 
@@ -142,6 +142,7 @@ const update = (msg: Msg): void => {
 export const clear = event.create<Kind, Msg>(Kind.Clear, update);
 export const clearCache = event.create<Kind, Msg>(Kind.ClearCache, update);
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
+
 export const updateAppearance = (appearance: Appearance): void =>
   event.create<Kind, Msg>(
     Kind.UpdateSettings,
@@ -159,24 +160,18 @@ export const updateRegistry = (registry: Registry): void =>
     settings: { ...get(settings), registry },
   });
 
-// TODO(sos): hook all of this up to proxy; handle adding/removing logic there too
-const defaultSeeds = ["seed.radicle.xyz", "194.134.54.13"];
+export const updateCoCo = (coco: CoCo): void =>
+  event.create<Kind, Msg>(
+    Kind.UpdateSettings,
+    update
+  )({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    settings: { ...get(settings), coco },
+  });
 
-const temporaryLocalSeedStore = remote.createStore<string[]>();
-temporaryLocalSeedStore.success(defaultSeeds);
-export const seeds = temporaryLocalSeedStore.readable;
-
-const parseSeedsInput = (input: string) => {
+export const parseSeedsInput = (input: string): string[] => {
   return input
     .replace(/\r\n|\n|\r|\s/gm, ",")
     .split(",")
     .filter(seed => seed !== "");
 };
-
-export const updateSeeds = (input: string): void => {
-  const parsed = parseSeedsInput(input);
-  if (parsed) temporaryLocalSeedStore.success(parsed);
-};
-
-export const formatSeedsForInput = (seeds: string[]): string =>
-  seeds.join("\n");

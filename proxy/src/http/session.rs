@@ -282,6 +282,11 @@ mod test {
                     "appearance": {
                         "theme": "light",
                     },
+                    "coco": {
+                        "seeds": [
+                            "seed.radicle.xyz",
+                        ]
+                    },
                     "registry": {
                         "network": "emulator",
                     },
@@ -332,6 +337,11 @@ mod test {
                 "settings": {
                     "appearance": {
                         "theme": "dark",
+                    },
+                    "coco": {
+                        "seeds": [
+                            "seed.radicle.xyz",
+                        ],
                     },
                     "registry": {
                         "network": "emulator",

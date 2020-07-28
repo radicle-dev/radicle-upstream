@@ -191,6 +191,8 @@ pub mod settings {
         pub appearance: Appearance,
         /// Currently set registry parameters.
         pub registry: Registry,
+        /// User-determined p2p parameters.
+        pub coco: CoCo,
     }
 
     /// Knobs for the look and feel.
@@ -240,6 +242,24 @@ pub mod settings {
     impl Default for Network {
         fn default() -> Self {
             Self::Emulator
+        }
+    }
+
+    /// `CoCo` config parameters subject to user preferences
+    #[derive(Debug, Deserialize, Serialize, PartialEq)]
+    pub struct CoCo {
+        /// Sources of feeds
+        pub seeds: Vec<String>,
+    }
+
+    impl Default for CoCo {
+        fn default() -> Self {
+            Self {
+                seeds: vec!["seed.radicle.xyz"]
+                    .into_iter()
+                    .map(std::string::ToString::to_string)
+                    .collect(),
+            }
         }
     }
 }
