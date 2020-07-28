@@ -541,13 +541,6 @@ interface CostSummary {
   total: FeeAmount;
 }
 
-const paysRegistrationFee = (messageType: MessageType): boolean => {
-  return (
-    messageType === MessageType.OrgRegistration ||
-    messageType === MessageType.UserRegistration
-  );
-};
-
 interface FeeAmount {
   rad: currency.Rad;
   usd: currency.Usd;
