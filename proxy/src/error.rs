@@ -168,12 +168,12 @@ pub enum Error {
     #[error("while calculating the number of confirmed transactions, we encountered an overflow")]
     TransactionConfirmationOverflow,
 
-    /// We expect at least one [`coco::UserRevisions`] when looking at a project, however the
+    /// We expect at least one [`coco::Revisions`] when looking at a project, however the
     /// computation found none.
     #[error(
         "while trying to get user revisions we could not find any, there should be at least one"
     )]
-    EmptyUserRevisions,
+    EmptyRevisions,
 }
 
 impl From<registry::DispatchError> for Error {

@@ -5,17 +5,13 @@ TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
 
 source .buildkite/env.sh
 
-echo "--- Installing yarn dependencies"
-# FIXME(rudolfs): yarn install sometimes fails on the first run with the
-# following error message: "Error: ENOSPC: no space left on device, write".
-#
-# However looking at the disk image when this happens shows that there's plenty
-# of space. It might have something to do with yarn trying to run post-install
-# scripts that try to extract stuff to /tmp which is limited on CI.
-#
-# Until we figure out how to fix this proper, just retry running yarn install.
+echo "--- Removing old Yarn temp dir"
+du -hs "$YARN_TEMPDIR"
+rm -rf "$YARN_TEMPDIR"
+mkdir -p "$YARN_TEMPDIR"
 
-time yarn install || time yarn install
+echo "--- Installing yarn dependencies"
+time TMPDIR="$YARN_TEMPDIR" yarn install
 
 echo "--- Loading proxy/target cache"
 declare -r target_cache="$CACHE_FOLDER/proxy-target"
@@ -40,17 +36,14 @@ echo "--- Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
 
-echo "--- Run proxy tests"
-(cd proxy && time cargo test --all --all-features --all-targets)
+echo "--- Run proxy docs"
+(cd proxy && time cargo doc --no-deps)
 
-echo "--- Run cargo fmt"
+echo "--- Run proxy fmt"
 (cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy lints"
 (cd proxy && time cargo clippy --all --all-features --all-targets)
-
-echo "--- Run proxy docs"
-(cd proxy && time cargo doc --no-deps)
 
 echo "--- Run app eslint checks"
 time yarn lint
@@ -60,6 +53,9 @@ time yarn prettier:check
 
 echo "--- Run app svelte checks"
 time yarn svelte:check
+
+echo "--- Run proxy tests"
+(cd proxy && time cargo test --all --all-features --all-targets)
 
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test
