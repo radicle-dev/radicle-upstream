@@ -2,7 +2,7 @@
 
 use std::convert::TryFrom;
 use std::net::SocketAddr;
-use std::path::PathBuf;
+use std::path::{self, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
 
@@ -260,7 +260,7 @@ impl Api {
         &self,
         key: &keys::SecretKey,
         owner: &User,
-        path: impl AsRef<std::path::Path> + Send,
+        path: impl AsRef<path::Path> + Send,
         name: &str,
         description: &str,
         default_branch: &str,
@@ -310,10 +310,14 @@ impl Api {
     }
 
     /// Checkout a working copy of a [`project::Project`].
+    ///
+    /// NOTE: 'RAD_HOME' should be expected to be set if using a custom root for
+    /// [`librad::paths::Paths`]. If it is not set the underlying binary will delegate to the
+    /// `ProjectDirs` setup of the `Paths`.
     pub fn checkout(
         &self,
         project_urn: &RadUrn,
-        checkout_path: &str,
+        checkout_path: impl AsRef<path::Path>,
         _branch: &str,
         _remote: &str,
     ) -> Result<(), error::Error> {
@@ -343,9 +347,8 @@ impl Api {
             ))
             .arg("clone")
             .arg(LocalUrl::from(project_urn).to_string())
-            .arg(&checkout_path)
+            .arg(&checkout_path.as_ref().as_os_str())
             .env("PATH", &env_path)
-            .env("RAD_HOME", self.monorepo())
             .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
             .spawn()?;
 

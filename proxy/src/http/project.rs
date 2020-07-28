@@ -1,5 +1,7 @@
 //! Endpoints and serialisation for [`project::Project`] related types.
 
+use std::path::PathBuf;
+
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
@@ -7,6 +9,7 @@ use std::convert::TryFrom;
 use warp::document::{self, ToDocumentedType};
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::project;
 use crate::registry;
@@ -32,8 +35,7 @@ where
     path("projects")
         .and(warp::post())
         .and(http::with_context(ctx.clone()))
-        .and(document::param::<String>("id", "Project id"))
-        .and(http::with_owner_guard(ctx))
+        .and(document::param::<coco::Urn>("id", "Project id"))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new working copy for a project",
@@ -185,8 +187,7 @@ mod handler {
     /// Checkout a [`project::Project`]'s source code.
     pub async fn checkout<R>(
         ctx: http::Ctx<R>,
-        urn: String,
-        _owner: coco::User,
+        urn: coco::Urn,
         input: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection>
     where
@@ -194,7 +195,6 @@ mod handler {
     {
         let ctx = ctx.read().await;
 
-        let urn = urn.parse().map_err(Error::from)?;
         ctx.peer_api
             .checkout(&urn, &input.path, &input.branch, &input.remote)?;
 
@@ -374,7 +374,7 @@ impl ToDocumentedType for project::Metadata {
 pub struct CreateInput {
     /// Location on the filesystem of the project, an empty directory means we set up a fresh git
     /// repo at the path before initialising the project.
-    path: String,
+    path: PathBuf,
     /// User provided metadata for the project.
     metadata: MetadataInput,
 }
@@ -399,7 +399,7 @@ impl ToDocumentedType for CreateInput {
 #[serde(rename_all = "camelCase")]
 pub struct CheckoutInput {
     /// Location on the filesystem where the working copy should be created.
-    path: String,
+    path: PathBuf,
     /// The branch which will be checked out by default.
     branch: String,
     /// Default remote that will be set up for the working copy.
@@ -408,7 +408,7 @@ pub struct CheckoutInput {
 
 impl ToDocumentedType for CheckoutInput {
     fn document() -> document::DocumentedType {
-        let mut properties = HashMap::with_capacity(2);
+        let mut properties = HashMap::with_capacity(3);
         properties.insert(
             "path".into(),
             document::string()
@@ -492,7 +492,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let path = dir.path().to_str().unwrap();
+        let path = dir.path();
         let ctx = http::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
@@ -595,6 +595,46 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects));
         });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn checkout() -> Result<(), error::Error> {
+        pretty_env_logger::init();
+        let tmp_dir = tempfile::tempdir()?;
+        std::env::set_var("RAD_HOME", tmp_dir.path());
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let handle = "cloudhead";
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), handle)?;
+
+        let platinum_project = coco::control::replicate_platinum(
+            &ctx.peer_api,
+            &key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+        let urn = platinum_project.urn();
+
+        let path = tmp_dir.path().join("projects").join("git-platinum");
+        let _res = request()
+            .method("POST")
+            .path(&format!("/projects?id={}", urn))
+            .json(&super::CheckoutInput {
+                path: path.clone(),
+                branch: "main".to_string(),
+                remote: "origin".to_string(),
+            })
+            .reply(&api)
+            .await;
+
+        assert!(path.exists());
 
         Ok(())
     }
