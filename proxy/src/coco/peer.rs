@@ -505,7 +505,7 @@ mod test {
     use super::Api;
 
     #[tokio::test]
-    async fn test_can_create_user() -> Result<(), Error> {
+    async fn can_create_user() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
@@ -518,7 +518,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_can_create_project() -> Result<(), Error> {
+    async fn can_create_project() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
@@ -536,7 +536,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_cannot_create_user_twice() -> Result<(), Error> {
+    async fn cannot_create_user_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
@@ -558,7 +558,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_cannot_create_project_twice() -> Result<(), Error> {
+    async fn cannot_create_project_twice() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
@@ -625,7 +625,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_list_users() -> Result<(), Error> {
+    async fn list_users() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
