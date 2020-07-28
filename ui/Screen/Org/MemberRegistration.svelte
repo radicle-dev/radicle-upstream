@@ -30,6 +30,7 @@
   const validation = memberHandleValidationStore(orgId);
 
   const transactionFee = $session.data.minimumTransactionFee;
+  const registrationFee = $session.data.registrationFee.member;
 
   const next = () => {
     switch (state) {
@@ -38,7 +39,8 @@
           transaction = registerMemberTransaction(
             orgId,
             userHandle,
-            transactionFee
+            transactionFee,
+            registrationFee
           );
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.Confirmation;
@@ -94,11 +96,7 @@
         dataCy="input" />
     {:else if state === RegistrationFlowState.Confirmation}
       <div style="width: 100%;">
-        <Transaction
-          {transaction}
-          {subject}
-          {payer}
-          transactionDeposits={$session.data.transactionDeposits} />
+        <Transaction {transaction} {subject} {payer} />
       </div>
     {/if}
     <NavigationButtons

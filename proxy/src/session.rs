@@ -25,10 +25,23 @@ pub struct Session {
     pub permissions: Permissions,
     /// User controlled parameters to control the behaviour and state of the application.
     pub settings: settings::Settings,
-    /// Transaction deposits.
-    pub transaction_deposits: registry::Deposits,
+    /// Registration fee
+    pub registration_fee: RegistrationFee,
     /// Minimum transaction fee.
     pub minimum_transaction_fee: registry::Balance,
+}
+
+/// The Registration fee breakdown
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+pub struct RegistrationFee {
+    /// The fee associated with registering an org
+    org: Option<registry::Balance>,
+    /// The fee associated with registering a user
+    user: Option<registry::Balance>,
+    /// The fee associated with registering a project
+    project: Option<registry::Balance>,
+    /// The fee associated with adding a member to an org
+    member: Option<registry::Balance>,
 }
 
 /// Set of permitted actions the user can perform.
@@ -69,8 +82,13 @@ where
     R: registry::Client,
 {
     let mut session = get(store, KEY_CURRENT)?;
-    session.transaction_deposits = registry::get_deposits();
-    session.minimum_transaction_fee = registry::MINIMUM_FEE;
+    session.registration_fee = RegistrationFee {
+        user: Some(registry::REGISTRATION_FEE),
+        org: Some(registry::REGISTRATION_FEE),
+        project: None,
+        member: None,
+    };
+    session.minimum_transaction_fee = registry::MINIMUM_TX_FEE;
 
     // Reset the permissions
     session.permissions = Permissions::default();

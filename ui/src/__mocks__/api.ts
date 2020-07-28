@@ -80,11 +80,11 @@ export const sessionMock: session.Session = {
       network: settings.Network.Emulator,
     },
   },
-  transactionDeposits: {
-    memberRegistration: 0,
-    orgRegistration: 0,
-    projectRegistration: 0,
-    userRegistration: 0,
+  registrationFee: {
+    user: 10,
+    org: 10,
+    project: undefined,
+    member: undefined,
   },
 };
 

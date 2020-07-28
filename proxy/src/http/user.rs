@@ -511,7 +511,7 @@ mod test {
             .json(&super::RegisterInput {
                 handle: "cloudhead".into(),
                 maybe_entity_id: Some("cloudhead@123abcd.git".into()),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -560,7 +560,7 @@ mod test {
             .path(&format!("/{}/projects/{}", handle, project_name))
             .json(&http::RegisterProjectInput {
                 maybe_coco_id: Some(urn),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -623,7 +623,7 @@ mod test {
             .json(&super::TransferInput {
                 recipient: author2.public(),
                 balance,
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
