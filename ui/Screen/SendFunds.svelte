@@ -21,19 +21,6 @@
   const { identity } = getContext("session");
   const { orgs } = getContext("session");
 
-  let fromAddress;
-  fromStore.subscribe(value => {
-    fromAddress = value;
-  });
-  let toAddress;
-  toStore.subscribe(value => {
-    toAddress = value;
-  });
-  let amount;
-  amountStore.subscribe(value => {
-    amount = value;
-  });
-
   const dropdownOptions = [];
   dropdownOptions.push({
     variant: "avatar",
@@ -133,7 +120,7 @@
         To
       </Title>
       <Input.Text
-        bind:value={toAddress}
+        bind:value={$toStore}
         placeholder="Enter recipient address"
         style="flex: 1; padding-bottom: 0.5rem;" />
       <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
@@ -141,7 +128,7 @@
       </Title>
       <Input.Text
         placeholder="Enter the amount"
-        bind:value={amount}
+        bind:value={$amountStore}
         showLeftItem
         style="flex: 1; padding-bottom: 0.5rem;">
         <div slot="left" style="display: flex;">
@@ -156,7 +143,7 @@
       <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
       <Dropdown
         placeholder="Select wallet you want to use"
-        bind:value={fromAddress}
+        bind:value={$fromStore}
         options={dropdownOptions} />
       <div class="submit">
         <Button on:click={() => nextStep()}>Review transfer</Button>
@@ -171,7 +158,7 @@
         <div class="from-to">
           <div class="from">
             {#each dropdownOptions as option}
-              {#if option.value === fromAddress}
+              {#if option.value === $fromStore}
                 <Avatar
                   size="small"
                   title={option.avatarProps.title}
@@ -183,7 +170,7 @@
           <Icon.ArrowRight />
           <div class="to">
             <Title truncate style="color: var(--color-foreground-level-6);">
-              {toAddress}
+              {$toStore}
             </Title>
           </div>
         </div>
@@ -198,7 +185,7 @@
         </div>
 
         <div slot="right">
-          <Rad rad={amount} />
+          <Rad rad={$amountStore} />
         </div>
       </Row>
       <Row variant="middle" style="">
@@ -211,7 +198,7 @@
         </div>
 
         <div slot="right">
-          <Rad rad={amount} />
+          <Rad rad={$amountStore} />
         </div>
       </Row>
       <Row
@@ -226,7 +213,7 @@
         </div>
 
         <div slot="right">
-          <Rad rad={amount} />
+          <Rad rad={$amountStore} />
         </div>
       </Row>
       <Row style="margin-top: 1.5rem;">
@@ -240,7 +227,7 @@
 
         <div slot="right">
           {#each dropdownOptions as option}
-            {#if option.value === fromAddress}
+            {#if option.value === $fromStore}
               <Avatar
                 size="small"
                 title={option.avatarProps.title}
