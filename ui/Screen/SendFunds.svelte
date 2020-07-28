@@ -2,8 +2,16 @@
   import { getContext } from "svelte";
   import { fromStore, toStore, amountStore } from "../src/transfer.ts";
 
-  import { Dropdown, ModalLayout } from "../DesignSystem/Component";
-  import { Button, Icon, Input, Title } from "../DesignSystem/Primitive";
+  import { Dropdown, ModalLayout, Rad } from "../DesignSystem/Component";
+  import Row from "../DesignSystem/Component/Transaction/Row.svelte";
+  import {
+    Avatar,
+    Button,
+    Icon,
+    Input,
+    Text,
+    Title,
+  } from "../DesignSystem/Primitive";
 
   const { identity } = getContext("session");
   const { orgs } = getContext("session");
@@ -20,8 +28,6 @@
   amountStore.subscribe(value => {
     amount = value;
   });
-
-  console.log(fromAddress, " - ", toAddress, " - ", amount);
 
   const dropdownOptions = [];
   dropdownOptions.push({
@@ -46,8 +52,6 @@
       },
     });
   }
-
-  // compare who the transfer is from and set the dropdown value
 
   let step = 1;
 
@@ -74,7 +78,7 @@
     align-items: center;
     width: 100%;
     padding: 2rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     background-color: var(--color-foreground-level-1);
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.25rem;
@@ -93,7 +97,19 @@
   .submit {
     display: flex;
     justify-content: flex-end;
-    padding-top: 1rem;
+    padding-top: 1.5rem;
+  }
+
+  .from-to {
+    display: grid;
+    grid-template-columns: 13rem 1.5rem 13rem;
+    grid-column-gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .from {
+    display: flex;
+    justify-content: flex-end;
   }
 </style>
 
@@ -106,12 +122,18 @@
         </div>
         <Title variant="big">Outgoing transfer</Title>
       </header>
-      <Title style="padding: 0.5rem;">To</Title>
+      <Title
+        style="color: var(--color-foreground-level-6); padding: 0 0.5rem 0.5rem
+        0.5rem;">
+        To
+      </Title>
       <Input.Text
         bind:value={toAddress}
         placeholder="Enter recipient address"
         style="flex: 1; padding-bottom: 0.5rem;" />
-      <Title style="padding: 0.5rem;">Amount</Title>
+      <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
+        Amount
+      </Title>
       <Input.Text
         placeholder="Enter the amount"
         bind:value={amount}
@@ -123,7 +145,9 @@
             style="fill: var(--color-foreground-level-6)" />
         </div>
       </Input.Text>
-      <Title style="padding: 0.5rem;">From</Title>
+      <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
+        From
+      </Title>
       <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
       <Dropdown
         placeholder="Select wallet you want to use"
@@ -134,11 +158,99 @@
       </div>
     {/if}
     {#if step === 2}
-      <header>step 2</header>
-      <p>amount: {amount}</p>
-      <p>to: {toAddress}</p>
-      <p>from: {fromAddress}</p>
-      <Button on:click={() => previousStep()}>back</Button>
+      <header>
+        <div class="icon">
+          <Icon.ArrowUp style="fill: var(--color-primary)" />
+        </div>
+        <Title variant="big">Outgoing transfer</Title>
+        <div class="from-to">
+          <div class="from">
+            {#each dropdownOptions as option}
+              {#if option.value === fromAddress}
+                <Avatar
+                  size="small"
+                  title={option.avatarProps.title}
+                  variant={option.avatarProps.variant}
+                  avatarFallback={option.avatarProps.avatarFallback} />
+              {/if}
+            {/each}
+          </div>
+          <Icon.ArrowRight />
+          <div class="to">
+            <Title truncate style="color: var(--color-foreground-level-6);">
+              {toAddress}
+            </Title>
+          </div>
+        </div>
+      </header>
+      <Row variant="top" style="">
+        <div slot="left">
+          <Text
+            variant="regular"
+            style="color:var(--color-foreground-level-6);">
+            Amount
+          </Text>
+        </div>
+
+        <div slot="right">
+          <Rad rad={amount} />
+        </div>
+      </Row>
+      <Row variant="middle" style="">
+        <div slot="left">
+          <Text
+            variant="regular"
+            style="color:var(--color-foreground-level-6);">
+            Transaction Fee
+          </Text>
+        </div>
+
+        <div slot="right">
+          <Rad rad={amount} />
+        </div>
+      </Row>
+      <Row
+        variant="bottom"
+        style="border: 1px solid var(--color-foreground-level-2);">
+        <div slot="left">
+          <Title
+            variant="regular"
+            style="color:var(--color-foreground-level-6);">
+            Total
+          </Title>
+        </div>
+
+        <div slot="right">
+          <Rad rad={amount} />
+        </div>
+      </Row>
+      <Row style="margin-top: 1.5rem;">
+        <div slot="left">
+          <Text
+            variant="regular"
+            style="color:var(--color-foreground-level-6);">
+            Funding source
+          </Text>
+        </div>
+
+        <div slot="right">
+          {#each dropdownOptions as option}
+            {#if option.value === fromAddress}
+              <Avatar
+                size="small"
+                title={option.avatarProps.title}
+                variant={option.avatarProps.variant}
+                avatarFallback={option.avatarProps.avatarFallback} />
+            {/if}
+          {/each}
+        </div>
+      </Row>
+      <div class="submit">
+        <Button variant="transparent" on:click={() => previousStep()}>
+          back
+        </Button>
+        <Button style="margin-left: 1rem;" on:click>Confirm and send</Button>
+      </div>
     {/if}
   </div>
 </ModalLayout>

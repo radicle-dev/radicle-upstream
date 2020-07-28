@@ -105,7 +105,7 @@
       <Title style="padding-bottom: 0.5rem;">To</Title>
       <Input.Text
         bind:value={toAddress}
-        placeholder="Enter address or registered handle"
+        placeholder="Enter an account address"
         style="flex: 1; padding-bottom: 1rem;" />
       <Title style="padding-bottom: 0.5rem;">Amount</Title>
       <Input.Text
