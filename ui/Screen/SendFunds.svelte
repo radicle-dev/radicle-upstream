@@ -1,12 +1,20 @@
 <script>
   import { pop } from "svelte-spa-router";
-  import { get } from "svelte/store";
 
   import { fromStore, toStore, amountStore } from "../src/transfer.ts";
 
-  const fromAddress = get(fromStore);
-  const toAddress = get(toStore);
-  const amount = get(amountStore);
+  let fromAddress;
+  fromStore.subscribe(value => {
+    fromAddress = value;
+  });
+  let toAddress;
+  toStore.subscribe(value => {
+    toAddress = value;
+  });
+  let amount;
+  amountStore.subscribe(value => {
+    amount = value;
+  });
   console.log(fromAddress, " - ", toAddress, " - ", amount);
 </script>
 
