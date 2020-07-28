@@ -145,7 +145,7 @@ where
 {
     http::with_context(ctx)
         .and(warp::post())
-        .and(document::param::<registry::Id>(
+        .and(document::param::<String>(
             "handle",
             "ID of the user to transfer funds from",
         ))
@@ -254,7 +254,7 @@ mod handler {
     /// Transfer funds to the given `recipient`.
     pub async fn transfer<R>(
         ctx: http::Ctx<R>,
-        _handle: registry::Id,
+        _handle: String,
         input: super::TransferInput,
     ) -> Result<impl Reply, Rejection>
     where
@@ -269,7 +269,7 @@ mod handler {
             .transfer_from_user(
                 &fake_pair,
                 input.recipient,
-                input.balance,
+                input.amount,
                 input.transaction_fee,
             )
             .await?;
@@ -357,7 +357,7 @@ pub struct TransferInput {
     /// Account id of the recipient.
     recipient: radicle_registry_client::ed25519::Public,
     /// Amount that is transferred.
-    balance: registry::Balance,
+    amount: registry::Balance,
     /// User specified transaction fee.
     transaction_fee: registry::Balance,
 }
@@ -372,7 +372,7 @@ impl ToDocumentedType for TransferInput {
                 .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
         properties.insert(
-            "balance".into(),
+            "amount".into(),
             document::string()
                 .description("Amount that is transferred")
                 .example(100),

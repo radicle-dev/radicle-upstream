@@ -405,7 +405,7 @@ mod handler {
                 &fake_pair,
                 id,
                 input.recipient,
-                input.value,
+                input.amount,
                 input.transaction_fee,
             )
             .await?;
@@ -577,7 +577,7 @@ pub struct TransferInput {
     /// Account id of the recipient.
     recipient: radicle_registry_client::ed25519::Public,
     /// Amount that is transferred.
-    value: registry::Balance,
+    amount: registry::Balance,
     /// User specified transaction fee.
     transaction_fee: registry::Balance,
 }
@@ -592,7 +592,7 @@ impl ToDocumentedType for TransferInput {
                 .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
         properties.insert(
-            "value".into(),
+            "amount".into(),
             document::string()
                 .description("Amount that is transferred")
                 .example(100),
