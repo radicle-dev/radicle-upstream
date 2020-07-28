@@ -616,13 +616,13 @@ mod test {
             .await?;
 
         // Transfer tokens from alice to bob
-        let balance: registry::Balance = 10;
+        let amount: registry::Balance = 10;
         let res = request()
             .method("POST")
             .path(&format!("/{}/transfer", handle))
             .json(&super::TransferInput {
                 recipient: author2.public(),
-                balance,
+                amount,
                 transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)

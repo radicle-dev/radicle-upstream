@@ -1004,13 +1004,13 @@ mod test {
             .await?;
 
         // Transfer tokens from the org to the user
-        let value: registry::Balance = 10;
+        let amount: registry::Balance = 10;
         let res = request()
             .method("POST")
             .path(&format!("/{}/transfer", org_id))
             .json(&super::TransferInput {
                 recipient: author.public(),
-                value,
+                amount,
                 transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
