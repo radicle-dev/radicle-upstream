@@ -2,8 +2,8 @@
   import { getContext } from "svelte";
   import {
     TransferState,
-    fromStore,
-    toStore,
+    payerStore,
+    recipientStore,
     amountStore,
   } from "../src/transfer.ts";
 
@@ -20,6 +20,11 @@
 
   const { identity } = getContext("session");
   const { orgs } = getContext("session");
+
+  // pre-populate inputs with store values
+  let amount = $amountStore,
+    recipient = $recipientStore,
+    payer = $payerStore;
 
   const dropdownOptions = [];
   dropdownOptions.push({
@@ -54,6 +59,11 @@
   const previousStep = () => {
     state = TransferState.Preparation;
   };
+
+  // update each store whenever the input values change
+  $: amountStore.set(amount);
+  $: recipientStore.set(recipient);
+  $: payerStore.set(payer);
 </script>
 
 <style>
@@ -120,7 +130,7 @@
         To
       </Title>
       <Input.Text
-        bind:value={$toStore}
+        bind:value={recipient}
         placeholder="Enter recipient address"
         style="flex: 1; padding-bottom: 0.5rem;" />
       <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
@@ -128,7 +138,7 @@
       </Title>
       <Input.Text
         placeholder="Enter the amount"
-        bind:value={$amountStore}
+        bind:value={amount}
         showLeftItem
         style="flex: 1; padding-bottom: 0.5rem;">
         <div slot="left" style="display: flex;">
@@ -143,7 +153,7 @@
       <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
       <Dropdown
         placeholder="Select wallet you want to use"
-        bind:value={$fromStore}
+        bind:value={payer}
         options={dropdownOptions} />
       <div class="submit">
         <Button on:click={() => nextStep()}>Review transfer</Button>
@@ -158,7 +168,7 @@
         <div class="from-to">
           <div class="from">
             {#each dropdownOptions as option}
-              {#if option.value === $fromStore}
+              {#if option.value === $payerStore}
                 <Avatar
                   size="small"
                   title={option.avatarProps.title}
@@ -170,7 +180,7 @@
           <Icon.ArrowRight />
           <div class="to">
             <Title truncate style="color: var(--color-foreground-level-6);">
-              {$toStore}
+              {$recipientStore}
             </Title>
           </div>
         </div>
@@ -227,7 +237,7 @@
 
         <div slot="right">
           {#each dropdownOptions as option}
-            {#if option.value === $fromStore}
+            {#if option.value === $payerStore}
               <Avatar
                 size="small"
                 title={option.avatarProps.title}

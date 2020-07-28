@@ -1,23 +1,26 @@
 <script>
   import { push } from "svelte-spa-router";
   import * as path from "../../../src/path.ts";
-  import { fromStore, toStore, amountStore } from "../../../src/transfer.ts";
+  import {
+    payerStore,
+    recipientStore,
+    amountStore,
+  } from "../../../src/transfer.ts";
 
   import { Button, Input, Icon, Title } from "../../Primitive";
   import Receive from "./Receive.svelte";
 
   export let accountId = null;
-  let toAddress;
-  let amount;
+  let recipient,
+    amount,
+    currentlyActiveSend = true;
 
   const openSendModal = () => {
-    fromStore.set(accountId);
-    toStore.set(toAddress);
+    payerStore.set(accountId);
+    recipientStore.set(recipient);
     amountStore.set(amount);
     push(path.sendFunds());
   };
-
-  $: currentlyActiveSend = true;
 </script>
 
 <style>
@@ -104,7 +107,7 @@
     <div class="send" data-cy="send">
       <Title style="padding-bottom: 0.5rem;">To</Title>
       <Input.Text
-        bind:value={toAddress}
+        bind:value={recipient}
         placeholder="Enter an account address"
         style="flex: 1; padding-bottom: 1rem;" />
       <Title style="padding-bottom: 0.5rem;">Amount</Title>
