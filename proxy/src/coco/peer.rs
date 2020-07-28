@@ -265,12 +265,27 @@ impl Api {
     ) -> Result<project::Project<entity::Draft>, error::Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
 
+        // Check if the path provided ends in the 'name' provided. If not we create the full path
+        // to that name.
+        let path = path.as_ref();
+        let project_path = if let Some(destination) = path.components().next_back() {
+            let destination: &std::ffi::OsStr = destination.as_ref();
+            let name: &std::ffi::OsStr = name.as_ref();
+            if destination == name {
+                path.to_path_buf()
+            } else {
+                path.join(name)
+            }
+        } else {
+            path.join(name)
+        };
+
         // Test if the repo has setup rad remote.
-        if let Ok(repo) = git2::Repository::open(&path) {
+        if let Ok(repo) = git2::Repository::open(&project_path) {
             if repo.find_remote("rad").is_ok() {
                 return Err(error::Error::RadRemoteExists(format!(
                     "{}",
-                    path.as_ref().display(),
+                    project_path.display(),
                 )));
             }
         }
@@ -302,7 +317,7 @@ impl Api {
         // Doing ? above breaks inference. Gaaaawwwwwd Rust!
         let meta = meta?;
 
-        setup_remote(&api, path, &meta.urn().id, default_branch)?;
+        setup_remote(&api, project_path, &meta.urn().id, default_branch)?;
 
         Ok(meta)
     }
