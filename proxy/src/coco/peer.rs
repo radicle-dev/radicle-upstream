@@ -591,7 +591,7 @@ mod test {
         let err = api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
 
         if let Err(Error::RadRemoteExists(path)) = err {
-            assert_eq!(path, format!("{}", repo_path.display()))
+            assert_eq!(path, format!("{}", repo_path.join("radicalise").display()))
         } else {
             panic!(
                 "unexpected error when creating the project a second time: {:?}",
