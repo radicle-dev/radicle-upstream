@@ -481,6 +481,19 @@ export const formatDate = (timestamp: number, option: string): string => {
   return `${time.toLocaleString(undefined, options)}`;
 };
 
+export const nFormatter = (num: number): string => {
+  if (num > 999 && num < 1000000) {
+    return `${(num / 1000).toFixed(3)}K`; // convert to K for number from > 1000 < 1 million
+  } else if (num > 1000000 && num < 1000000000) {
+    return `${(num / 1000000).toFixed(3)}M`; // convert to M for number from > 1 million
+  } else if (num > 1000000000 && num < 1000000000000) {
+    return `${(num / 1000000000).toFixed(3)}B`; // convert to B for number from > 1 billion
+  } else if (num > 1000000000000) {
+    return `${(num / 1000000000000).toFixed(3)}T`; // convert to T for number from > 1 trillion
+  }
+  return `${num}`; // if value < 1000, nothing to do
+};
+
 export const summaryIconProgress = (summary: Summary): number => {
   const sum =
     summary.counts[StateType.Confirmed] + summary.counts[StateType.Settled];

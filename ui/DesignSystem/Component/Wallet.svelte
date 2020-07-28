@@ -1,4 +1,5 @@
 <script>
+  import { nFormatter } from "../../src/transaction.ts";
   import { Title } from "../Primitive";
   import Rad from "./Rad.svelte";
   import TransactionList from "./Wallet/TxList.svelte";
@@ -55,8 +56,8 @@
         <Rad
           style="display: inline-block;"
           size="big"
-          rad={balance}
-          usd={balance} />
+          rad={nFormatter(balance)}
+          usd={nFormatter(balance)} />
       </div>
       <div class="send-receive" data-cy="send-receive">
         <SendReceive {accountId} />
