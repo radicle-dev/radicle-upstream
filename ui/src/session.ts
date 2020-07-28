@@ -9,6 +9,7 @@ import * as org from "./org";
 import * as remote from "./remote";
 import { Appearance, CoCo, Registry, Settings } from "./settings";
 import * as transaction from "./transaction";
+import { MicroRad } from "./currency";
 
 // TYPES
 
@@ -17,7 +18,14 @@ export interface Session {
   orgs: org.Org[];
   permissions: Permissions;
   settings: Settings;
-  transactionDeposits: transaction.Deposits;
+  registrationFee: RegistrationFee;
+}
+
+export interface RegistrationFee {
+  user?: MicroRad;
+  org?: MicroRad;
+  project?: MicroRad;
+  member?: MicroRad;
 }
 
 export interface Permissions {

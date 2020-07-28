@@ -291,11 +291,11 @@ mod test {
                         "network": "emulator",
                     },
                 },
-                "transactionDeposits": {
-                    "memberRegistration": 10,
-                    "orgRegistration": 10,
-                    "projectRegistration": 10,
-                    "userRegistration": 10,
+                "registrationFee": {
+                    "user": 10,
+                    "org": 10,
+                    "member": Value::Null,
+                    "project": Value::Null,
                 },
                 "minimumTransactionFee": 1,
                 "permissions": {
@@ -347,11 +347,11 @@ mod test {
                         "network": "emulator",
                     },
                 },
-                "transactionDeposits": {
-                    "memberRegistration": 10,
-                    "orgRegistration": 10,
-                    "projectRegistration": 10,
-                    "userRegistration": 10,
+                "registrationFee": {
+                    "user": 10,
+                    "org": 10,
+                    "member": Value::Null,
+                    "project": Value::Null,
                 },
                 "minimumTransactionFee": 1,
                 "permissions": {

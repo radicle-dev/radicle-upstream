@@ -103,9 +103,11 @@ const update = (msg: Msg): void => {
 export const registerMemberTransaction = (
   orgId: string,
   handle: string,
-  fee: currency.MicroRad
+  fee: currency.MicroRad,
+  registrationFee?: currency.MicroRad
 ): Record<string, unknown> => ({
   fee,
+  registrationFee,
   messages: [
     {
       type: transaction.MessageType.MemberRegistration,

@@ -235,7 +235,7 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let now = registry::Timestamp::now();
-        let fee = registry::MINIMUM_FEE;
+        let fee = registry::MINIMUM_TX_FEE;
 
         let org_id = registry::Id::try_from("radicle").unwrap();
 
@@ -254,6 +254,7 @@ mod test {
             },
             timestamp: now,
             fee,
+            registration_fee: None,
         };
 
         let ctx = ctx.read().await;

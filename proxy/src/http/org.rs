@@ -712,7 +712,7 @@ mod test {
             .path(&format!("/{}/projects/{}", org_id, project_name))
             .json(&http::RegisterProjectInput {
                 maybe_coco_id: Some(urn),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -908,7 +908,7 @@ mod test {
             .path("/")
             .json(&super::RegisterInput {
                 id: org_id.to_string(),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -960,7 +960,7 @@ mod test {
             .path(&format!("/{}/members", org_id.clone()))
             .json(&super::RegisterMemberInput {
                 handle: handle2.clone().to_string(),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -1011,7 +1011,7 @@ mod test {
             .json(&super::TransferInput {
                 recipient: author.public(),
                 value,
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;

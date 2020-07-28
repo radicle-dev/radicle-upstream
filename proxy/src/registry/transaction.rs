@@ -7,8 +7,10 @@ use std::time::{self, Duration, SystemTime};
 use async_trait::async_trait;
 use hex::ToHex;
 use kv::Codec as _;
-use serde::de::{self, Deserializer};
-use serde::{Deserialize, Serialize, Serializer};
+use serde::{
+    de::{self, Deserializer},
+    ser, Deserialize, Serialize, Serializer,
+};
 
 use radicle_registry_client as protocol;
 
@@ -69,26 +71,66 @@ pub struct Transaction {
     // TODO(rudolfs): remove this once https://github.com/serde-rs/json/issues/625
     // is fixed.
     /// Transaction fee in μRAD.
-    #[serde(serialize_with = "fee_serializer")]
-    #[serde(deserialize_with = "fee_deserializer")]
+    #[serde(serialize_with = "u128_serializer")]
+    #[serde(deserialize_with = "u128_deserializer")]
     pub fee: protocol::Balance,
+
+    // Unfortunately serde_json doesn't support u128 values, and until it does
+    // we work around it by serializing the value to a String.
+    //
+    // TODO(rudolfs): remove this once https://github.com/serde-rs/json/issues/625
+    // is fixed.
+    /// Transaction fee in μRAD.
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(serialize_with = "option_u128_serializer")]
+    #[serde(deserialize_with = "option_u128_deserializer")]
+    pub registration_fee: Option<protocol::Balance>,
 }
 
-/// Custom serializer for fees, it converts an u128 value to String
-fn fee_serializer<S>(fee: &protocol::Balance, serializer: S) -> Result<S::Ok, S::Error>
+/// Custom serializer for u128
+fn u128_serializer<S>(fee: &protocol::Balance, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     serializer.serialize_str(&format!("{}", fee))
 }
 
-/// Custom deserializer for fees, it converts a String value to u128
-fn fee_deserializer<'de, D>(deserializer: D) -> Result<protocol::Balance, D::Error>
+/// Custom deserializer for u128.
+fn u128_deserializer<'de, D>(deserializer: D) -> Result<protocol::Balance, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let s = String::deserialize(deserializer)?;
-    s.parse().map_err(de::Error::custom)
+    String::deserialize(deserializer)?
+        .parse()
+        .map_err(de::Error::custom)
+}
+
+/// Custom serializer for Option<u128>. Only called for `Option::is_some` values.
+fn option_u128_serializer<S>(value: &Option<u128>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let as_string = match value {
+        Some(x) => Ok(x.to_string()),
+        None => Err(ser::Error::custom(
+            "Shouldn't serialize Option::is_none values",
+        )),
+    }?;
+    serializer.serialize_str(&as_string)
+}
+
+#[allow(clippy::all, warnings)]
+/// Custom deserializer for Option<u128>
+fn option_u128_deserializer<'de, D>(deserializer: D) -> Result<Option<u128>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let opt_str = Option::<String>::deserialize(deserializer)?;
+    match opt_str {
+        None => Ok(None),
+        Some(s) => s.parse().map(Some).map_err(de::Error::custom),
+    }
 }
 
 impl Transaction {
@@ -99,9 +141,9 @@ impl Transaction {
         block: protocol::BlockNumber,
         message: Message,
         fee: protocol::Balance,
+        registration_fee: Option<protocol::Balance>,
     ) -> Self {
         let now = Timestamp::now();
-
         Self {
             id,
             messages: vec![message],
@@ -113,6 +155,7 @@ impl Transaction {
             },
             timestamp: now,
             fee,
+            registration_fee,
         }
     }
 }
@@ -625,6 +668,7 @@ mod test {
                 },
                 timestamp: now,
                 fee,
+                registration_fee: None,
             };
 
             cache.cache_transaction(tx.clone()).unwrap();
@@ -641,6 +685,7 @@ mod test {
                     },
                     timestamp: now,
                     fee,
+                    registration_fee: None,
                 };
 
                 cache.cache_transaction(tx.clone()).unwrap();
@@ -676,5 +721,39 @@ mod test {
             let txs = cache.list_transactions(Vec::new()).unwrap();
             assert_eq!(txs.len(), 10);
         }
+    }
+
+    #[allow(clippy::panic)]
+    #[tokio::test]
+    async fn test_optional_u128_none() {
+        let x: Option<u128> = None;
+        let serialized = serde_json::to_string(&x).expect("Should have worked");
+        let deserialized: Option<u128> =
+            serde_json::from_str(&serialized).expect("Should have worked");
+        assert_eq!(deserialized, x)
+    }
+
+    #[allow(clippy::panic)]
+    #[tokio::test]
+    async fn test_optional_u128_some() {
+        let x: Option<u128> = Some(123);
+        let serialized = serde_json::to_string(&x).expect("Should have worked");
+        let deserialized: Option<u128> =
+            serde_json::from_str(&serialized).expect("Should have worked");
+        assert_eq!(deserialized, x)
+    }
+
+    #[allow(clippy::panic)]
+    #[tokio::test]
+    async fn test_optional_u128_deserialize_null() {
+        let deserialized: Option<u128> = serde_json::from_str("null").expect("Should have worked");
+        assert_eq!(deserialized, None)
+    }
+
+    #[allow(clippy::panic)]
+    #[tokio::test]
+    async fn test_optional_u128_deserialize_bad_string() {
+        let res: Result<Option<u128>, _> = serde_json::from_str("x123z");
+        assert!(res.is_err(), "Expected to fail deserialization")
     }
 }
