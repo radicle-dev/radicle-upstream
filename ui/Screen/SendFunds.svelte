@@ -1,5 +1,4 @@
 <script>
-  import { get } from "svelte/store";
   import { getContext } from "svelte";
   import { fromStore, toStore, amountStore } from "../src/transfer.ts";
 
@@ -9,9 +8,19 @@
   const { identity } = getContext("session");
   const { orgs } = getContext("session");
 
-  const fromAddress = get(fromStore);
-  const toAddress = get(toStore);
-  const amount = get(amountStore);
+  let fromAddress;
+  fromStore.subscribe(value => {
+    fromAddress = value;
+  });
+  let toAddress;
+  toStore.subscribe(value => {
+    toAddress = value;
+  });
+  let amount;
+  amountStore.subscribe(value => {
+    amount = value;
+  });
+
   console.log(fromAddress, " - ", toAddress, " - ", amount);
 
   const dropdownOptions = [];
@@ -37,6 +46,18 @@
       },
     });
   }
+
+  // compare who the transfer is from and set the dropdown value
+
+  let step = 1;
+
+  const nextStep = () => {
+    step += 1;
+  };
+
+  const previousStep = () => {
+    step -= 1;
+  };
 </script>
 
 <style>
@@ -78,38 +99,46 @@
 
 <ModalLayout dataCy="page">
   <div class="wrapper">
-    <header>
-      <div class="icon">
-        <Icon.ArrowUp style="fill: var(--color-primary)" />
+    {#if step === 1}
+      <header>
+        <div class="icon">
+          <Icon.ArrowUp style="fill: var(--color-primary)" />
+        </div>
+        <Title variant="big">Outgoing transfer</Title>
+      </header>
+      <Title style="padding: 0.5rem;">To</Title>
+      <Input.Text
+        bind:value={toAddress}
+        placeholder="Enter recipient address"
+        style="flex: 1; padding-bottom: 0.5rem;" />
+      <Title style="padding: 0.5rem;">Amount</Title>
+      <Input.Text
+        placeholder="Enter the amount"
+        bind:value={amount}
+        showLeftItem
+        style="flex: 1; padding-bottom: 0.5rem;">
+        <div slot="left" style="display: flex;">
+          <Icon.Currency
+            size="big"
+            style="fill: var(--color-foreground-level-6)" />
+        </div>
+      </Input.Text>
+      <Title style="padding: 0.5rem;">From</Title>
+      <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
+      <Dropdown
+        placeholder="Select wallet you want to use"
+        bind:value={fromAddress}
+        options={dropdownOptions} />
+      <div class="submit">
+        <Button on:click={() => nextStep()}>Review transfer</Button>
       </div>
-      <Title variant="big">Outgoing transfer</Title>
-    </header>
-    <Title style="padding: 0.5rem;">To</Title>
-    <Input.Text
-      value={toAddress}
-      placeholder="Enter recipient address"
-      style="flex: 1; padding-bottom: 0.5rem;" />
-    <Title style="padding: 0.5rem;">Amount</Title>
-    <Input.Text
-      placeholder="Enter the amount"
-      value={amount}
-      showLeftItem
-      style="flex: 1; padding-bottom: 0.5rem;">
-      <div slot="left" style="display: flex;">
-        <Icon.Currency
-          size="big"
-          style="fill: var(--color-foreground-level-6)" />
-      </div>
-    </Input.Text>
-    <Title style="padding: 0.5rem;">From</Title>
-    <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
-    <Dropdown
-      placeholder="Select wallet you want to use"
-      value={identity.accountId}
-      options={dropdownOptions} />
-    <div class="submit">
-      <Button on:click>Review transfer</Button>
-    </div>
-
+    {/if}
+    {#if step === 2}
+      <header>step 2</header>
+      <p>amount: {amount}</p>
+      <p>to: {toAddress}</p>
+      <p>from: {fromAddress}</p>
+      <Button on:click={() => previousStep()}>back</Button>
+    {/if}
   </div>
 </ModalLayout>
