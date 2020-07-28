@@ -515,6 +515,7 @@ mod test {
             api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
 
         assert!(project.is_ok());
+        assert!(repo_path.join("radicalise").exists());
 
         Ok(())
     }
