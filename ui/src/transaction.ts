@@ -77,11 +77,12 @@ interface Transfer {
 
 interface TransferFromOrg {
   type: MessageType.TransferFromOrg;
-  amount: number;
+  orgId: string;
   recipient: string;
+  amount: number;
 }
 
-type Message =
+export type Message =
   | OrgRegistration
   | OrgUnregistration
   | MemberRegistration
