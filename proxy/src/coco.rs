@@ -1,7 +1,8 @@
 //! Abstractions and utilities for git interactions through the API.
 
-pub use librad::uri::rad_urn::ParseError;
-pub use librad::uri::RadUrn as Urn;
+pub use librad::hash::Hash;
+pub use librad::meta::project::Project;
+pub use librad::uri::{rad_urn::ParseError, Path, Protocol, RadUrn as Urn};
 
 pub use radicle_surf::diff::{Diff, FileDiff};
 pub use radicle_surf::vcs::git::Stats;

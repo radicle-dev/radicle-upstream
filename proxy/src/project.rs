@@ -1,7 +1,6 @@
 //! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
 //! abstraction.
 
-use librad::meta::project;
 use serde::{Deserialize, Serialize};
 
 use crate::coco;
@@ -20,11 +19,11 @@ pub struct Metadata {
     pub default_branch: String,
 }
 
-impl<ST> From<project::Project<ST>> for Metadata
+impl<ST> From<coco::Project<ST>> for Metadata
 where
     ST: Clone,
 {
-    fn from(project_meta: project::Project<ST>) -> Self {
+    fn from(project_meta: coco::Project<ST>) -> Self {
         Self {
             name: project_meta.name().to_string(),
             description: project_meta
@@ -52,13 +51,13 @@ pub struct Project {
 }
 
 /// Construct a Project from its metadata and stats
-impl<ST> From<(project::Project<ST>, coco::Stats)> for Project
+impl<ST> From<(coco::Project<ST>, coco::Stats)> for Project
 where
     ST: Clone,
 {
     /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
     /// for the repository.
-    fn from((project, stats): (project::Project<ST>, coco::Stats)) -> Self {
+    fn from((project, stats): (coco::Project<ST>, coco::Stats)) -> Self {
         let id = project.urn();
 
         Self {
@@ -103,11 +102,17 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
         .collect()
 }
 
-/// Returns a stubbed feed of `DiscoveryItem`s
-pub fn discover() -> Result<Vec<DiscoveryItem>, error::Error> {
+/// Returns a stubbed feed of `Project`s
+pub fn discover() -> Result<Vec<Project>, error::Error> {
+    let urn = coco::Urn::new(
+        coco::Hash::hash(b"hash"),
+        coco::Protocol::Git,
+        coco::Path::parse("rad/issues/42")?,
+    );
+
     let projects = vec![
-            DiscoveryItem {
-                id: "rad@12345".to_string(),
+            Project {
+                id: urn,
                 shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
                 metadata: Metadata {
                     name: "radicle-upstream".to_string(),
@@ -124,23 +129,4 @@ pub fn discover() -> Result<Vec<DiscoveryItem>, error::Error> {
         ];
 
     Ok(projects)
-}
-
-/// Controversial placeholder struct for `EventStream` projects. It's cumbersome to create
-/// a new `RadUrn` otherwise and the `EventStream` will likely include fields the `Project`
-/// does not depend on (e.g. maintainers)
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DiscoveryItem {
-    /// Unique identifier of the project in the network.
-    pub id: String,
-    /// Unambiguous identifier pointing at this identity.
-    pub shareable_entity_identifier: String,
-    /// Attached metadata, mostly for human pleasure.
-    pub metadata: Metadata,
-    /// Informs if the project is present in the Registry and under what top-level entity it can be
-    /// found.
-    pub registration: Option<Registration>,
-    /// High-level statistics about the project
-    pub stats: coco::Stats,
 }
