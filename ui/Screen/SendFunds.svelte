@@ -72,6 +72,7 @@
   const onConfirmed = async () => {
     try {
       await transfer(
+        identity,
         $payerStore,
         parseInt($amountStore),
         $recipientStore,
