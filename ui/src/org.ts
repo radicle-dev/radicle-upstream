@@ -189,10 +189,13 @@ const involvesOrg = (
       );
     // TODO(nuno): Include Transfer when receipient is the given org, from which we need the address.
     case transaction.MessageType.OrgRegistration:
+    case transaction.MessageType.OrgUnregistration:
       return message.id == orgId;
     case transaction.MessageType.Transfer:
       return message.recipient == accountId;
     case transaction.MessageType.TransferFromOrg:
+    case transaction.MessageType.MemberRegistration:
+    case transaction.MessageType.MemberUnregistration:
       return message.orgId === orgId;
     default:
       return false;
