@@ -5,35 +5,23 @@ use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
 use crate::project;
 use crate::registry;
 
-/// Prefixed filters.
-pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+/// Combination of all routes.
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
-    path("projects").and(
-        get_filter(ctx.clone())
-            .or(create_filter(ctx.clone()))
-            .or(discover_filter(ctx.clone()))
-            .or(list_filter(ctx)),
-    )
-}
-
-/// Combination of all project filters.
-#[cfg(test)]
-pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
-    get_filter(ctx.clone())
+    list_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
-        .or(list_filter(ctx))
+        .or(get_filter(ctx))
+        .boxed()
 }
 
 /// `POST /`
@@ -44,8 +32,8 @@ where
     R: registry::Client + 'static,
 {
     http::with_context(ctx.clone())
-        .and(warp::post())
         .and(http::with_owner_guard(ctx))
+        .and(warp::post())
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -101,6 +89,7 @@ where
 {
     http::with_context(ctx)
         .and(warp::get())
+        .and(path::end())
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(

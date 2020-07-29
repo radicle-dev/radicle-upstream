@@ -20,6 +20,7 @@
   let state = RegistrationFlowState.Preparation;
 
   const transactionFee = $session.data.minimumTransactionFee;
+  const registrationFee = $session.data.registrationFee.org;
 
   const next = () => {
     switch (state) {
@@ -27,6 +28,7 @@
         if ($validation.status === ValidationStatus.Success) {
           transaction = {
             fee: transactionFee,
+            registrationFee: registrationFee,
             messages: [
               {
                 type: MessageType.OrgRegistration,
@@ -127,11 +129,7 @@
       </Input.Text>
     {:else if state === RegistrationFlowState.Confirmation}
       <div style="width: 100%;">
-        <Transaction
-          {transaction}
-          {subject}
-          {payer}
-          transactionDeposits={$session.data.transactionDeposits} />
+        <Transaction {transaction} {subject} {payer} />
       </div>
     {/if}
     <NavigationButtons

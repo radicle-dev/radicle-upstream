@@ -3,28 +3,14 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
 use crate::registry;
 
-/// Prefixed filter
-pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
-    path("users").and(
-        list_orgs_filter(ctx.clone())
-            .or(register_project_filter(ctx.clone()))
-            .or(get_filter(ctx.clone()))
-            .or(register_filter(ctx.clone()))
-            .or(transfer_filter(ctx)),
-    )
-}
-
 /// Combination of all user filters.
-#[cfg(test)]
-fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
@@ -33,6 +19,7 @@ where
         .or(get_filter(ctx.clone()))
         .or(register_filter(ctx.clone()))
         .or(transfer_filter(ctx))
+        .boxed()
 }
 
 /// GET /<handle>
@@ -524,7 +511,7 @@ mod test {
             .json(&super::RegisterInput {
                 handle: "cloudhead".into(),
                 maybe_entity_id: Some("cloudhead@123abcd.git".into()),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -573,7 +560,7 @@ mod test {
             .path(&format!("/{}/projects/{}", handle, project_name))
             .json(&http::RegisterProjectInput {
                 maybe_coco_id: Some(urn),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -636,7 +623,7 @@ mod test {
             .json(&super::TransferInput {
                 recipient: author2.public(),
                 balance,
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;

@@ -245,7 +245,7 @@ mod test {
 
         // Register the user
         ctx.registry
-            .register_user(&author, handle.clone(), None, 10)
+            .register_user(&author, handle.clone(), None, 1)
             .await?;
         let user = ctx.registry.get_user(handle).await?.unwrap();
 
