@@ -54,11 +54,11 @@
 
   let state = TransferState.Preparation;
 
-  const nextStep = () => {
+  const goToConfirmation = () => {
     state = TransferState.Confirmation;
   };
 
-  const previousStep = () => {
+  const backToPreperation = () => {
     state = TransferState.Preparation;
   };
 
@@ -176,7 +176,7 @@
         bind:value={payer}
         options={dropdownOptions} />
       <div class="submit">
-        <Button on:click={() => nextStep()}>Review transfer</Button>
+        <Button on:click={goToConfirmation}>Review transfer</Button>
       </div>
     {/if}
     {#if state === TransferState.Confirmation}
@@ -268,9 +268,7 @@
         </div>
       </Row>
       <div class="submit">
-        <Button variant="transparent" on:click={() => previousStep()}>
-          back
-        </Button>
+        <Button variant="transparent" on:click={backToPreperation}>back</Button>
         <Button style="margin-left: 1rem;" on:click={onConfirmed}>
           Confirm and send
         </Button>
