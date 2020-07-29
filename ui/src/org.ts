@@ -177,7 +177,11 @@ export const memberHandleValidationStore = (
 };
 
 // Check whether a transaction Message involves a specific org.
-const involvesOrg = (message: transaction.Message, orgId: string): boolean => {
+const involvesOrg = (
+  message: transaction.Message,
+  orgId: string,
+  accountId: string
+): boolean => {
   switch (message.type) {
     case transaction.MessageType.ProjectRegistration:
       return (
@@ -186,6 +190,8 @@ const involvesOrg = (message: transaction.Message, orgId: string): boolean => {
     // TODO(nuno): Include Transfer when receipient is the given org, from which we need the address.
     case transaction.MessageType.OrgRegistration:
       return message.id == orgId;
+    case transaction.MessageType.Transfer:
+      return message.recipient == accountId;
     case transaction.MessageType.TransferFromOrg:
       return message.orgId === orgId;
     default:
@@ -196,7 +202,8 @@ const involvesOrg = (message: transaction.Message, orgId: string): boolean => {
 // Obtain the transactions that involve an org with the given `id`.
 export const orgTransactions = (
   transactions: [transaction.Transaction],
-  id: string
+  id: string,
+  accountId: string
 ): [transaction.Transaction] | transaction.Transaction[] => {
-  return transactions.filter(tx => involvesOrg(tx.messages[0], id));
+  return transactions.filter(tx => involvesOrg(tx.messages[0], id, accountId));
 };
