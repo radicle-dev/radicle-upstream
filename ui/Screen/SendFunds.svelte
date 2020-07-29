@@ -69,6 +69,7 @@
   const onConfirmed = async () => {
     try {
       await transfer(
+        identity,
         $payerStore,
         parseInt($amountStore),
         $recipientStore,
@@ -137,6 +138,7 @@
 </style>
 
 <ModalLayout dataCy="page">
+  {payer === identity.metadata.handle}
   <div class="wrapper">
     {#if state === TransferState.Preparation}
       <header>
