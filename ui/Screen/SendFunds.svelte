@@ -7,6 +7,7 @@
     payerStore,
     recipientStore,
     amountStore,
+    amountValidationStore,
     transfer,
   } from "../src/transfer.ts";
 
@@ -23,6 +24,9 @@
 
   const { identity } = getContext("session");
   const { orgs } = getContext("session");
+
+  const amountValidation = amountValidationStore();
+  let validating = false;
 
   // pre-populate inputs with store values
   let amount = $amountStore,
@@ -86,6 +90,11 @@
   $: amountStore.set(amount);
   $: recipientStore.set(recipient);
   $: payerStore.set(payer);
+
+  $: {
+    if ($amountStore && $amountStore.length > 0) validating = true;
+    if (validating) amountValidation.validate($amountStore);
+  }
 </script>
 
 <style>
@@ -163,7 +172,8 @@
         placeholder="Enter the amount"
         bind:value={amount}
         showLeftItem
-        style="flex: 1; padding-bottom: 0.5rem;">
+        style="flex: 1; padding-bottom: 0.5rem;"
+        validation={$amountValidation}>
         <div slot="left" style="display: flex;">
           <Icon.Currency
             size="big"

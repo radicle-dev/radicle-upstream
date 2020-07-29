@@ -3,6 +3,7 @@ import { writable } from "svelte/store";
 import * as api from "./api";
 import * as currency from "./currency";
 import * as transaction from "./transaction";
+import * as validation from "./validation";
 import { Identity } from "./identity";
 
 export const payerStore = writable(String);
@@ -40,4 +41,19 @@ export const transfer = (
       transactionFee,
     }
   );
+};
+
+export const amountConstraints = {
+  presence: {
+    message: "Transfer amount is required",
+    allowEmpty: false,
+  },
+  numericality: {
+    strict: true,
+    greaterThan: 0,
+  },
+};
+
+export const amountValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore(amountConstraints);
 };
