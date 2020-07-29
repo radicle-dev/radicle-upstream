@@ -176,7 +176,11 @@
         bind:value={payer}
         options={dropdownOptions} />
       <div class="submit">
-        <Button on:click={goToConfirmation}>Review transfer</Button>
+        <Button
+          disabled={recipient === '' || amount === '' || payer === '' || recipient === null || amount === null || payer === null}
+          on:click={goToConfirmation}>
+          Review transfer
+        </Button>
       </div>
     {/if}
     {#if state === TransferState.Confirmation}
