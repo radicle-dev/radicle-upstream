@@ -1,5 +1,6 @@
 <script>
   import {
+    costSummary,
     headerIcon,
     formatMessage,
     formatSubject,
@@ -11,7 +12,6 @@
     StateType,
     IconState,
   } from "../../../src/transaction.ts";
-  import { microRadToRad } from "../../../src/currency.ts";
   import Rad from "../Rad.svelte";
   import { Avatar, Caption, Icon, Text, Title } from "../../Primitive";
 
@@ -21,6 +21,8 @@
 
   let avatar;
   const updateAvatar = async () => (avatar = await subject.avatarSource);
+
+  const summary = costSummary(tx);
 
   $: updateAvatar();
 </script>
@@ -116,6 +118,6 @@
         </Text>
       </div>
     {/if}
-    <Rad rad={`${microRadToRad(tx.fee)}`} usd={`${microRadToRad(tx.fee)}`} />
+    <Rad rad={`${summary.total.rad}`} usd={`${summary.total.usd}`} />
   </div>
 </div>
