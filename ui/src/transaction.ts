@@ -570,6 +570,7 @@ export const summaryText = (counts: SummaryCounts): string => {
 
 interface CostSummary {
   registrationFee?: FeeAmount;
+  transferAmount?: FeeAmount;
   txFee: FeeAmount;
   total: FeeAmount;
 }
@@ -590,14 +591,22 @@ export const costSummary = (transaction: Transaction): CostSummary => {
   const registrationFee: FeeAmount | undefined = transaction.registrationFee
     ? feeAmount(transaction.registrationFee)
     : undefined;
+  const transferAmount: FeeAmount | undefined =
+    transaction.messages[0].type === MessageType.Transfer
+      ? feeAmount(transaction.messages[0].amount)
+      : undefined;
   const txFee = feeAmount(transaction.fee);
   const totalMicroRad =
     transaction.fee * 1 +
-    (transaction.registrationFee ? transaction.registrationFee * 1 : 0);
+    (transaction.registrationFee ? transaction.registrationFee * 1 : 0) +
+    (transaction.messages[0].type === MessageType.Transfer
+      ? transaction.messages[0].amount * 1
+      : 0);
   const total = feeAmount(totalMicroRad);
 
   return {
     registrationFee,
+    transferAmount,
     txFee,
     total,
   };
