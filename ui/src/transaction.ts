@@ -29,6 +29,7 @@ export enum MessageType {
   ProjectRegistration = "projectRegistration",
   UserRegistration = "userRegistration",
   Transfer = "transfer",
+  TransferFromOrg = "transferFromOrg",
 }
 
 interface OrgRegistration {
@@ -74,6 +75,12 @@ interface Transfer {
   recipient: string;
 }
 
+interface TransferFromOrg {
+  type: MessageType.TransferFromOrg;
+  amount: number;
+  recipient: string;
+}
+
 type Message =
   | OrgRegistration
   | OrgUnregistration
@@ -81,7 +88,8 @@ type Message =
   | MemberUnregistration
   | ProjectRegistration
   | UserRegistration
-  | Transfer;
+  | Transfer
+  | TransferFromOrg;
 
 export enum StateType {
   Confirmed = "confirmed",
@@ -278,6 +286,9 @@ export const formatMessage = (msg: Message): string => {
 
     case MessageType.Transfer:
       return "Transfer";
+
+    case MessageType.TransferFromOrg:
+      return "Org transfer";
   }
 };
 
@@ -298,6 +309,7 @@ export const formatDesc = (msg: Message): string => {
       return msg.handle;
 
     case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
       return msg.recipient;
   }
 };
@@ -315,6 +327,7 @@ export const headerIcon = (msg: Message): string => {
 
     case MessageType.ProjectRegistration:
     case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
       return "Source";
   }
 };
@@ -409,6 +422,7 @@ export const formatSubject = (msg: Message): Subject => {
       break;
 
     case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
       name = `${msg.amount} RAD to ${msg.recipient}`;
       type = SubjectType.User;
       break;

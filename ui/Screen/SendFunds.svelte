@@ -33,37 +33,36 @@
     recipient = $recipientStore,
     payer = $payerStore;
 
-  const dropdownOptions = [];
-  dropdownOptions.push({
-    variant: "avatar",
-    value: identity.metadata.handle,
-    avatarProps: {
-      variant: "circle",
-      title: identity.metadata.handle,
-      avatarFallback: identity.avatarFallback,
-      imageUrl: identity.imageUrl,
-    },
-  });
-  for (let i = 0; i < orgs.length; i++) {
-    dropdownOptions.push({
+  const dropdownOptions = [
+    {
       variant: "avatar",
-      value: orgs[i].id,
+      value: identity.metadata.handle,
+      avatarProps: {
+        variant: "circle",
+        title: identity.metadata.handle,
+        avatarFallback: identity.avatarFallback,
+        imageUrl: identity.imageUrl,
+      },
+    },
+    ...orgs.map(org => ({
+      variant: "avatar",
+      value: org.id,
       avatarProps: {
         variant: "square",
-        title: orgs[i].id,
-        avatarFallback: orgs[i].avatarFallback,
+        title: org.id,
+        avatarFallback: org.avatarFallback,
         imageUrl: null,
       },
-    });
-  }
+    })),
+  ];
 
   let state = TransferState.Preparation;
 
-  const nextStep = () => {
+  const goToConfirmation = () => {
     state = TransferState.Confirmation;
   };
 
-  const previousStep = () => {
+  const backToPreperation = () => {
     state = TransferState.Preparation;
   };
 
@@ -73,7 +72,6 @@
   const onConfirmed = async () => {
     try {
       await transfer(
-        identity,
         $payerStore,
         parseInt($amountStore),
         $recipientStore,
@@ -147,7 +145,6 @@
 </style>
 
 <ModalLayout dataCy="page">
-  {payer === identity.metadata.handle}
   <div class="wrapper">
     {#if state === TransferState.Preparation}
       <header>
@@ -189,7 +186,11 @@
         bind:value={payer}
         options={dropdownOptions} />
       <div class="submit">
-        <Button on:click={() => nextStep()}>Review transfer</Button>
+        <Button
+          disabled={recipient === '' || amount === '' || payer === '' || recipient === null || amount === null || payer === null}
+          on:click={goToConfirmation}>
+          Review transfer
+        </Button>
       </div>
     {/if}
     {#if state === TransferState.Confirmation}
@@ -281,9 +282,7 @@
         </div>
       </Row>
       <div class="submit">
-        <Button variant="transparent" on:click={() => previousStep()}>
-          back
-        </Button>
+        <Button variant="transparent" on:click={backToPreperation}>back</Button>
         <Button style="margin-left: 1rem;" on:click={onConfirmed}>
           Confirm and send
         </Button>

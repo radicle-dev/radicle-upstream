@@ -129,7 +129,11 @@
         placeholder="Optional message"
         style="flex: 1; padding-bottom: 1rem;" /> -->
       <div class="submit">
-        <Button on:click={() => openSendModal()}>Send transaction</Button>
+        <Button
+          disabled={recipient === '' || recipient === null || amount === '' || amount === null}
+          on:click={openSendModal}>
+          Send transaction
+        </Button>
       </div>
     </div>
   {:else}
