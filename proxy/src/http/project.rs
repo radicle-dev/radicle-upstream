@@ -60,7 +60,6 @@ where
     http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Project id"))
-        .and(path::end())
         .and(document::document(document::description(
             "Find Project by ID",
         )))

@@ -106,8 +106,14 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
 pub fn discover() -> Result<Vec<Project>, error::Error> {
     let urn = coco::Urn::new(
         coco::Hash::hash(b"hash"),
-        coco::Protocol::Git,
-        coco::Path::parse("rad/issues/42")?,
+        coco::uri::Protocol::Git,
+        coco::uri::Path::parse("")?,
+    );
+
+    let other_urn = coco::Urn::new(
+        coco::Hash::hash(b"something_else"),
+        coco::uri::Protocol::Git,
+        coco::uri::Path::parse("")?,
     );
 
     let projects = vec![
@@ -116,7 +122,8 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                 shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
                 metadata: Metadata {
                     name: "radicle-upstream".to_string(),
-                    description: "It is not the slumber of reason that engenders monsters, but vigilant and insomniac rationality.".to_string(),
+                    description: "It is not the slumber of reason that engenders monsters,
+                        but vigilant and insomniac rationality.".to_string(),
                     default_branch: "main".to_string()
                 },
                 stats: coco::Stats {
@@ -125,7 +132,25 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                     commits: 216
                 },
                 registration: None,
-            }
+            },
+            Project {
+                id: other_urn,
+                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fdsfj".to_string(),
+                metadata: Metadata {
+                    name: "radicle-link".to_string(),
+                    description: "The monstrous complexity of our reality, a reality 
+                        cross-hatched with fibre-optic cables, radio and microwaves, 
+                        oil and gas pipelines, aerial and shipping routes, and the unrelenting,
+                        simultaneous execution of millions of communication protocols with every passing millisecond.".to_string(),
+                    default_branch: "main".to_string()
+                },
+                stats: coco::Stats {
+                    contributors: 7,
+                    branches: 49,
+                    commits: 343
+                },
+                registration: None,
+            },
         ];
 
     Ok(projects)
