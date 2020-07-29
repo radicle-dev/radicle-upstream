@@ -1,10 +1,13 @@
 <script>
   import { getContext } from "svelte";
+  import { pop } from "svelte-spa-router";
+  import * as notification from "../src/notification.ts";
   import {
     TransferState,
     payerStore,
     recipientStore,
     amountStore,
+    transfer,
   } from "../src/transfer.ts";
 
   import { Dropdown, ModalLayout, Rad } from "../DesignSystem/Component";
@@ -58,6 +61,24 @@
 
   const previousStep = () => {
     state = TransferState.Preparation;
+  };
+
+  // TODO(nuno): use transaction fee defined by user once possible
+  const transactionFee = 1;
+
+  const onConfirmed = async () => {
+    try {
+      await transfer(
+        identity.metadata.handle,
+        parseInt(amount),
+        recipient,
+        transactionFee
+      );
+    } catch (error) {
+      notification.error(`Could not transfer funds: ${error.message}`);
+    } finally {
+      pop();
+    }
   };
 
   // update each store whenever the input values change
@@ -251,7 +272,9 @@
         <Button variant="transparent" on:click={() => previousStep()}>
           back
         </Button>
-        <Button style="margin-left: 1rem;" on:click>Confirm and send</Button>
+        <Button style="margin-left: 1rem;" on:click={onConfirmed}>
+          Confirm and send
+        </Button>
       </div>
     {/if}
   </div>
