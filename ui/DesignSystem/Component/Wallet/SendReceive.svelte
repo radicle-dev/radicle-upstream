@@ -11,12 +11,13 @@
   import Receive from "./Receive.svelte";
 
   export let accountId = null;
+  export let id = null;
   let recipient,
     amount,
     currentlyActiveSend = true;
 
   const openSendModal = () => {
-    payerStore.set(accountId);
+    payerStore.set(id);
     recipientStore.set(recipient);
     amountStore.set(amount);
     push(path.sendFunds());

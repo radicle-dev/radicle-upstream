@@ -32,7 +32,7 @@
   const dropdownOptions = [];
   dropdownOptions.push({
     variant: "avatar",
-    value: identity.accountId,
+    value: identity.metadata.handle,
     avatarProps: {
       variant: "circle",
       title: identity.metadata.handle,
@@ -43,7 +43,7 @@
   for (let i = 0; i < orgs.length; i++) {
     dropdownOptions.push({
       variant: "avatar",
-      value: orgs[i].accountId,
+      value: orgs[i].id,
       avatarProps: {
         variant: "square",
         title: orgs[i].id,
@@ -69,9 +69,9 @@
   const onConfirmed = async () => {
     try {
       await transfer(
-        identity.metadata.handle,
-        parseInt(amount),
-        recipient,
+        $payerStore,
+        parseInt($amountStore),
+        $recipientStore,
         transactionFee
       );
     } catch (error) {

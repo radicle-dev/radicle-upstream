@@ -6,6 +6,7 @@
 
   export let params = null;
   const accountId = $org.data.accountId;
+  const id = $org.data.id;
   $: updateBalance(accountId);
 </script>
 
@@ -15,6 +16,7 @@
       dataCy="org-wallet"
       transactions={orgTransactions(transactions, params.id)}
       {balance}
-      {accountId} />
+      {accountId}
+      {id} />
   </Remote>
 </Remote>

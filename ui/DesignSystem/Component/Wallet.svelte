@@ -5,10 +5,12 @@
   import TransactionList from "./Wallet/TxList.svelte";
   import SendReceive from "./Wallet/SendReceive.svelte";
   import Receive from "./Wallet/Receive.svelte";
+
   export let dataCy = null;
   export let transactions = null;
   export let balance = null;
   export let accountId = null;
+  export let id = null;
 </script>
 
 <style>
@@ -60,7 +62,7 @@
           usd={nFormatter(balance)} />
       </div>
       <div class="send-receive" data-cy="send-receive">
-        <SendReceive {accountId} />
+        <SendReceive {accountId} {id} />
       </div>
     </div>
     <div class="transactions" data-cy="transactions">
