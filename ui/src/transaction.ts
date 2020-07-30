@@ -8,6 +8,7 @@ import * as event from "./event";
 import { Identity } from "./identity";
 import { Domain } from "./project";
 import * as remote from "./remote";
+import { transfer } from "./transfer";
 
 const POLL_INTERVAL = 10000;
 
@@ -584,40 +585,57 @@ export const summaryText = (counts: SummaryCounts): string => {
 };
 
 interface CostSummary {
-  registrationFee?: FeeAmount;
-  transferAmount?: FeeAmount;
-  txFee: FeeAmount;
-  total: FeeAmount;
+  registrationFee?: Amount;
+  transferAmount?: Amount;
+  txFee: Amount;
+  total: Amount;
 }
 
-interface FeeAmount {
+interface Amount {
   rad: currency.Rad;
   usd: currency.Usd;
 }
 
-const feeAmount = (microRad: currency.MicroRad): FeeAmount => {
+const amount = (microRad: currency.MicroRad): Amount => {
   return {
     rad: currency.microRadToRad(microRad),
     usd: currency.microRadToUsd(microRad),
   };
 };
 
+const obtainTransferAmount = (msg: Message): currency.MicroRad | undefined => {
+  switch (msg.type) {
+    case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
+      return msg.amount;
+    default:
+      return undefined;
+  }
+};
+
+const calculateTotal = (
+  txFee: currency.MicroRad,
+  transferAmount?: currency.MicroRad,
+  registrationFee?: currency.MicroRad
+): Amount => {
+  const totalMicroRad = txFee + (transferAmount ?? 0) + (registrationFee ?? 0);
+  return amount(totalMicroRad);
+};
+
 export const costSummary = (transaction: Transaction): CostSummary => {
-  const registrationFee: FeeAmount | undefined = transaction.registrationFee
-    ? feeAmount(transaction.registrationFee)
+  const registrationFee: Amount | undefined = transaction.registrationFee
+    ? amount(transaction.registrationFee)
     : undefined;
-  const transferAmount: FeeAmount | undefined =
-    transaction.messages[0].type === MessageType.Transfer
-      ? feeAmount(transaction.messages[0].amount)
-      : undefined;
-  const txFee = feeAmount(transaction.fee);
-  const totalMicroRad =
-    transaction.fee * 1 +
-    (transaction.registrationFee ? transaction.registrationFee * 1 : 0) +
-    (transaction.messages[0].type === MessageType.Transfer
-      ? transaction.messages[0].amount * 1
-      : 0);
-  const total = feeAmount(totalMicroRad);
+  const transferAmountMicroRad = obtainTransferAmount(transaction.messages[0]);
+  const transferAmount = transferAmountMicroRad
+    ? amount(transferAmountMicroRad)
+    : undefined;
+  const txFee = amount(transaction.fee);
+  const total = calculateTotal(
+    transaction.fee * 1,
+    transferAmountMicroRad,
+    transaction.registrationFee
+  );
 
   return {
     registrationFee,
