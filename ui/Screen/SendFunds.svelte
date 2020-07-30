@@ -11,6 +11,7 @@
     recipientValidationStore,
     transfer,
   } from "../src/transfer.ts";
+  import { costSummary, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import { Dropdown, ModalLayout, Rad } from "../DesignSystem/Component";
@@ -28,9 +29,18 @@
   const { orgs } = getContext("session");
 
   const amountValidation = amountValidationStore();
+
   const recipientValidation = recipientValidationStore();
   let validatingAmount = false;
   let validatingRecipient = false;
+
+  // TODO(nuno): receive this from the user once possible
+  const transactionFee = 1;
+
+  // Filled on `goToConfirmation`
+  let isTransferringFromUser = null;
+  let tx = null;
+  let summary = null;
 
   const dropdownOptions = [
     {
@@ -58,6 +68,25 @@
   let state = TransferState.Preparation;
 
   const goToConfirmation = () => {
+    isTransferringFromUser = $payerStore === identity.metadata.handle;
+    tx = {
+      fee: transactionFee,
+      messages: [
+        isTransferringFromUser
+          ? {
+              type: MessageType.Transfer,
+              amount: parseInt($amountStore),
+              recipient: $recipientStore,
+            }
+          : {
+              type: MessageType.TransferFromOrg,
+              amount: parseInt($amountStore),
+              recipient: $recipientStore,
+              orgId: $payerStore,
+            },
+      ],
+    };
+    summary = costSummary(tx);
     state = TransferState.Confirmation;
   };
 
@@ -65,13 +94,10 @@
     state = TransferState.Preparation;
   };
 
-  // TODO(nuno): use transaction fee defined by user once possible
-  const transactionFee = 1;
-
   const onConfirmed = async () => {
     try {
       await transfer(
-        identity,
+        isTransferringFromUser,
         $payerStore,
         parseInt($amountStore),
         $recipientStore,
@@ -234,7 +260,9 @@
         </div>
 
         <div slot="right">
-          <Rad rad={$amountStore} />
+          <Rad
+            rad={summary.transferAmount.rad}
+            usd={summary.transferAmount.usd} />
         </div>
       </Row>
       <Row variant="middle" style="">
@@ -245,9 +273,8 @@
             Transaction Fee
           </Text>
         </div>
-
         <div slot="right">
-          <Rad rad={$amountStore} />
+          <Rad rad={summary.txFee.rad} usd={summary.txFee.usd} />
         </div>
       </Row>
       <Row
@@ -260,9 +287,8 @@
             Total
           </Title>
         </div>
-
         <div slot="right">
-          <Rad rad={$amountStore} />
+          <Rad rad={summary.total.rad} usd={summary.total.usd} />
         </div>
       </Row>
       <Row style="margin-top: 1.5rem;">

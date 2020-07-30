@@ -25,15 +25,13 @@ interface TransferInput {
 
 // / Transfer funds from an account with the given `senderId` to a given `recipient`.
 export const transfer = (
-  identity: Identity,
+  fromUser: boolean,
   senderId: string,
   amount: currency.MicroRad,
   recipient: string,
   transactionFee: number
 ): Promise<transaction.Transaction> => {
-  const fromUser = senderId === identity.metadata.handle;
   const endpointBase = fromUser ? "users" : "orgs";
-
   return api.post<TransferInput, transaction.Transaction>(
     `${endpointBase}/${senderId}/transfer`,
     {
