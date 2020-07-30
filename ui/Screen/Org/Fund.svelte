@@ -4,7 +4,6 @@
   import { org, orgTransactions } from "../../src/org.ts";
   import { Wallet, Remote } from "../../DesignSystem/Component";
 
-  export let params = null;
   const accountId = $org.data.accountId;
   const id = $org.data.id;
   $: updateBalance(accountId);
