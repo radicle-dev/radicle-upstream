@@ -7,9 +7,9 @@ import * as transaction from "./transaction";
 import * as validation from "./validation";
 import { Identity } from "./identity";
 
-export const payerStore = writable(String);
-export const recipientStore = writable(String);
-export const amountStore = writable(String);
+export const payerStore = writable("");
+export const recipientStore = writable("");
+export const amountStore = writable("");
 
 export enum TransferState {
   Preparation,
