@@ -425,7 +425,7 @@ export const formatSubject = (msg: Message): Subject => {
 
     case MessageType.Transfer:
     case MessageType.TransferFromOrg:
-      name = `${msg.amount} RAD to ${msg.recipient}`;
+      name = `to ${msg.recipient}`;
       type = SubjectType.User;
       break;
   }
