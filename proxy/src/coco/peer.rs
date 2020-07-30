@@ -314,11 +314,11 @@ impl Api {
     /// NOTE: 'RAD_HOME' should be expected to be set if using a custom root for
     /// [`librad::paths::Paths`]. If it is not set the underlying binary will delegate to the
     /// `ProjectDirs` setup of the `Paths`.
-    pub fn checkout(
+    pub async fn checkout(
         &self,
         project_urn: &RadUrn,
         checkout_path: impl AsRef<path::Path>,
-        _branch: &str,
+        branch: &str,
         _remote: &str,
     ) -> Result<(), error::Error> {
         let path_of_proxy_binary = std::env::current_exe()?;
@@ -346,15 +346,24 @@ impl Api {
                 "radicle-upstream"
             ))
             .arg("clone")
+            .arg("-b")
+            .arg(branch)
             .arg(LocalUrl::from(project_urn).to_string())
             .arg(&checkout_path.as_ref().as_os_str())
             .env("PATH", &env_path)
             .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
             .spawn()?;
 
-        child_process.wait()?;
+        // TODO: Capture the error if any and respond
+        let result = child_process.wait()?;
 
-        Ok(())
+        if result.success() {
+            Ok(())
+        } else {
+            Err(error::Error::Checkout {
+                reason: result.to_string(),
+            })
+        }
     }
 
     /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a

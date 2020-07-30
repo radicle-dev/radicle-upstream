@@ -194,9 +194,10 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
+        let project = ctx.peer_api.get_project(&urn)?;
 
         ctx.peer_api
-            .checkout(&urn, &input.path, &input.branch, &input.remote)?;
+            .checkout(&urn, &input.path, &project.default_branch(), &input.remote)?;
 
         Ok(reply::with_status(reply(), StatusCode::CREATED))
     }

@@ -92,6 +92,13 @@ pub enum Error {
     #[error("the given block '{0}' could not be found in the Registry")]
     BlockNotFound(registry::BlockHash),
 
+    /// An error occurred while performing the checkout of a project.
+    #[error("checkout of the project failed with reason '{reason}'")]
+    Checkout {
+        /// The exit status reason.
+        reason: String,
+    },
+
     /// Accept error from `librad`.
     #[error(transparent)]
     LibradAccept(#[from] librad::net::peer::AcceptError),
