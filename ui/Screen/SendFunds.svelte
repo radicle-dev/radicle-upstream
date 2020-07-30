@@ -175,7 +175,7 @@
 </style>
 
 <ModalLayout dataCy="page">
-  <div class="wrapper">
+  <div class="wrapper" data-cy="send-funds-modal">
     {#if state === TransferState.Preparation}
       <header>
         <div class="icon">
