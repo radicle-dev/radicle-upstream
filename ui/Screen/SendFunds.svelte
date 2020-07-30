@@ -177,61 +177,140 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="send-funds-modal">
     {#if state === TransferState.Preparation}
-      <header>
-        <div class="icon">
-          <Icon.ArrowUp style="fill: var(--color-primary)" />
+      <div data-cy="preperation-step">
+        <header>
+          <div class="icon">
+            <Icon.ArrowUp style="fill: var(--color-primary)" />
+          </div>
+          <Title variant="big">Outgoing transfer</Title>
+        </header>
+        <Title
+          style="color: var(--color-foreground-level-6); padding: 0 0.5rem
+          0.5rem 0.5rem;">
+          To
+        </Title>
+        <Input.Text
+          dataCy="modal-recipient-input"
+          bind:value={$recipientStore}
+          placeholder="Enter recipient address"
+          style="flex: 1; padding-bottom: 0.5rem;"
+          validation={$recipientValidation} />
+        <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
+          Amount
+        </Title>
+        <Input.Text
+          dataCy="modal-amount-input"
+          placeholder="Enter the amount"
+          bind:value={$amountStore}
+          showLeftItem
+          style="flex: 1; padding-bottom: 0.5rem;"
+          validation={$amountValidation}>
+          <div slot="left" style="display: flex;">
+            <Icon.Currency
+              size="big"
+              style="fill: var(--color-foreground-level-6)" />
+          </div>
+        </Input.Text>
+        <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
+          From
+        </Title>
+        <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
+        <Dropdown
+          dataCy="modal-sender-dropdown"
+          placeholder="Select wallet you want to use"
+          bind:value={$payerStore}
+          options={dropdownOptions}
+          valid={$payerStore && $payerStore.length > 0}
+          validationMessage="From entity is required" />
+        <div class="submit">
+          <Button
+            dataCy="review-tranfer-button"
+            disabled={disableSubmit}
+            on:click={goToConfirmation}>
+            Review transfer
+          </Button>
         </div>
-        <Title variant="big">Outgoing transfer</Title>
-      </header>
-      <Title
-        style="color: var(--color-foreground-level-6); padding: 0 0.5rem 0.5rem
-        0.5rem;">
-        To
-      </Title>
-      <Input.Text
-        bind:value={$recipientStore}
-        placeholder="Enter recipient address"
-        style="flex: 1; padding-bottom: 0.5rem;"
-        validation={$recipientValidation} />
-      <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
-        Amount
-      </Title>
-      <Input.Text
-        placeholder="Enter the amount"
-        bind:value={$amountStore}
-        showLeftItem
-        style="flex: 1; padding-bottom: 0.5rem;"
-        validation={$amountValidation}>
-        <div slot="left" style="display: flex;">
-          <Icon.Currency
-            size="big"
-            style="fill: var(--color-foreground-level-6)" />
-        </div>
-      </Input.Text>
-      <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
-        From
-      </Title>
-      <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
-      <Dropdown
-        placeholder="Select wallet you want to use"
-        bind:value={$payerStore}
-        options={dropdownOptions}
-        valid={$payerStore && $payerStore.length > 0}
-        validationMessage="From entity is required" />
-      <div class="submit">
-        <Button disabled={disableSubmit} on:click={goToConfirmation}>
-          Review transfer
-        </Button>
       </div>
     {/if}
     {#if state === TransferState.Confirmation}
-      <header>
-        <div class="icon">
-          <Icon.ArrowUp style="fill: var(--color-primary)" />
-        </div>
-        <Title variant="big">Outgoing transfer</Title>
-        <div class="from-to">
-          <div class="from">
+      <div data-cy="review-step">
+        <header>
+          <div class="icon">
+            <Icon.ArrowUp style="fill: var(--color-primary)" />
+          </div>
+          <Title variant="big">Outgoing transfer</Title>
+          <div class="from-to">
+            <div class="from">
+              {#each dropdownOptions as option}
+                {#if option.value === $payerStore}
+                  <Avatar
+                    size="small"
+                    title={option.avatarProps.title}
+                    variant={option.avatarProps.variant}
+                    avatarFallback={option.avatarProps.avatarFallback} />
+                {/if}
+              {/each}
+            </div>
+            <Icon.ArrowRight />
+            <div class="to">
+              <Title truncate style="color: var(--color-foreground-level-6);">
+                {$recipientStore}
+              </Title>
+            </div>
+          </div>
+        </header>
+
+        <Row variant="top" style="">
+          <div slot="left">
+            <Text
+              variant="regular"
+              style="color:var(--color-foreground-level-6);">
+              Amount
+            </Text>
+          </div>
+
+          <div slot="right">
+            <Rad
+              rad={summary.transferAmount.rad}
+              usd={summary.transferAmount.usd} />
+          </div>
+        </Row>
+        <Row variant="middle" style="">
+          <div slot="left">
+            <Text
+              variant="regular"
+              style="color:var(--color-foreground-level-6);">
+              Transaction Fee
+            </Text>
+          </div>
+          <div slot="right">
+            <Rad rad={summary.txFee.rad} usd={summary.txFee.usd} />
+          </div>
+        </Row>
+        <Row
+          variant="bottom"
+          style="border: 1px solid var(--color-foreground-level-2);">
+          <div slot="left">
+            <Title
+              variant="regular"
+              style="color:var(--color-foreground-level-6);">
+              Total
+            </Title>
+          </div>
+          <div slot="right">
+            <Rad rad={summary.total.rad} usd={summary.total.usd} />
+          </div>
+        </Row>
+        <Row style="margin-top: 1.5rem;">
+          <div slot="left">
+            <Text
+              variant="regular"
+              style="color:var(--color-foreground-level-6);">
+              Funding source
+            </Text>
+          </div>
+
+          <div slot="right">
             {#each dropdownOptions as option}
               {#if option.value === $payerStore}
                 <Avatar
@@ -242,82 +321,21 @@
               {/if}
             {/each}
           </div>
-          <Icon.ArrowRight />
-          <div class="to">
-            <Title truncate style="color: var(--color-foreground-level-6);">
-              {$recipientStore}
-            </Title>
-          </div>
+        </Row>
+        <div class="submit">
+          <Button
+            dataCy="back-to-review-button"
+            variant="transparent"
+            on:click={backToPreperation}>
+            back
+          </Button>
+          <Button
+            dataCy="submit-tranfer-button"
+            style="margin-left: 1rem;"
+            on:click={onConfirmed}>
+            Confirm and send
+          </Button>
         </div>
-      </header>
-
-      <Row variant="top" style="">
-        <div slot="left">
-          <Text
-            variant="regular"
-            style="color:var(--color-foreground-level-6);">
-            Amount
-          </Text>
-        </div>
-
-        <div slot="right">
-          <Rad
-            rad={summary.transferAmount.rad}
-            usd={summary.transferAmount.usd} />
-        </div>
-      </Row>
-      <Row variant="middle" style="">
-        <div slot="left">
-          <Text
-            variant="regular"
-            style="color:var(--color-foreground-level-6);">
-            Transaction Fee
-          </Text>
-        </div>
-        <div slot="right">
-          <Rad rad={summary.txFee.rad} usd={summary.txFee.usd} />
-        </div>
-      </Row>
-      <Row
-        variant="bottom"
-        style="border: 1px solid var(--color-foreground-level-2);">
-        <div slot="left">
-          <Title
-            variant="regular"
-            style="color:var(--color-foreground-level-6);">
-            Total
-          </Title>
-        </div>
-        <div slot="right">
-          <Rad rad={summary.total.rad} usd={summary.total.usd} />
-        </div>
-      </Row>
-      <Row style="margin-top: 1.5rem;">
-        <div slot="left">
-          <Text
-            variant="regular"
-            style="color:var(--color-foreground-level-6);">
-            Funding source
-          </Text>
-        </div>
-
-        <div slot="right">
-          {#each dropdownOptions as option}
-            {#if option.value === $payerStore}
-              <Avatar
-                size="small"
-                title={option.avatarProps.title}
-                variant={option.avatarProps.variant}
-                avatarFallback={option.avatarProps.avatarFallback} />
-            {/if}
-          {/each}
-        </div>
-      </Row>
-      <div class="submit">
-        <Button variant="transparent" on:click={backToPreperation}>back</Button>
-        <Button style="margin-left: 1rem;" on:click={onConfirmed}>
-          Confirm and send
-        </Button>
       </div>
     {/if}
   </div>

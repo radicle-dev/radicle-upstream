@@ -55,6 +55,22 @@ context("navigation", () => {
       cy.pick("amount-input").type("123");
       cy.pick("send-transaction-button").click();
     });
+    it("tests the button is disabled when there is no amount is filled in", () => {
+      cy.pick("send-tab").click();
+      cy.pick("send").should("exist");
+      cy.pick("recipient-input").should("exist");
+      cy.pick("recipient-input").type(
+        "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+      );
+      cy.pick("send-transaction-button").should("be.disabled");
+    });
+    it("tests the button is disabled when there is no recipient is filled in", () => {
+      cy.pick("send-tab").click();
+      cy.pick("send").should("exist");
+      cy.pick("amount-input").should("exist");
+      cy.pick("amount-input").type("123");
+      cy.pick("send-transaction-button").should("be.disabled");
+    });
   });
   context("check if it opens the modal", () => {
     it("opens the send funds modal", () => {
