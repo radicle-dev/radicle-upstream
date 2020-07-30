@@ -6,6 +6,12 @@ import * as settings from "./settings";
 
 jest.mock("./api");
 
+const defaultSettings = {
+  appearance: { theme: "light" },
+  registry: { network: "emulator" },
+  coco: { seeds: ["seed.radicle.xyz"] },
+};
+
 describe("clearing", () => {
   it("sends a request to clear the session when clear() is called", () => {
     session.clear();
@@ -23,8 +29,8 @@ describe("appearance settings", () => {
     session.updateAppearance({ theme: settings.Theme.Dark });
 
     expect(api.set).toHaveBeenCalledWith("session/settings", {
-      appearance: { theme: "dark" },
-      registry: { network: "emulator" },
+      ...defaultSettings,
+      appearance: { theme: settings.Theme.Dark },
     });
   });
 });
@@ -34,30 +40,14 @@ describe("registry settings", () => {
     session.updateRegistry({ network: settings.Network.FFnet });
 
     expect(api.set).toHaveBeenCalledWith("session/settings", {
-      appearance: { theme: "light" },
-      registry: { network: "ffnet" },
+      ...defaultSettings,
+      registry: { network: settings.Network.FFnet },
     });
   });
 });
 
-describe("coco settings", () => {
-  it("initially contains default seeds", () => {
-    const defaultSeeds = ["seed.radicle.xyz", "194.134.54.13"];
-
-    const store = session.seeds;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(get(store).data).toEqual(defaultSeeds);
-  });
-
-  it("formats stored seeds for display", () => {
-    const seedsArray = ["123.123.123", "seeds.seedy.xyz"];
-
-    expect(session.formatSeedsForInput(seedsArray)).toEqual(
-      "123.123.123\nseeds.seedy.xyz"
-    );
-  });
-
-  it("parses seed textarea input when updating the store", () => {
+describe("seed settings", () => {
+  it("parses seed textarea input", () => {
     const desiredResult = ["seed.radicle.xyz", "192.134.54.13", "192.168.1.0"];
 
     const newlineSeparated =
@@ -66,16 +56,20 @@ describe("coco settings", () => {
     const carriageReturnSeparated =
       "seed.radicle.xyz\r\n192.134.54.13  \r \r\n192.168.1.0\n";
 
-    session.updateSeeds(newlineSeparated);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(get(session.seeds).data).toEqual(desiredResult);
+    expect(session.parseSeedsInput(newlineSeparated)).toEqual(desiredResult);
+    expect(session.parseSeedsInput(commaSeparated)).toEqual(desiredResult);
+    expect(session.parseSeedsInput(carriageReturnSeparated)).toEqual(
+      desiredResult
+    );
+    expect(session.parseSeedsInput("")).toEqual([]);
+  });
 
-    session.updateSeeds(commaSeparated);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(get(session.seeds).data).toEqual(desiredResult);
+  it("sends a request to update CoCo settings when updateCoCo is called", () => {
+    session.updateCoCo({ seeds: ["new_seed.radicle.xyz"] });
 
-    session.updateSeeds(carriageReturnSeparated);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(get(session.seeds).data).toEqual(desiredResult);
+    expect(api.set).toHaveBeenCalledWith("session/settings", {
+      ...defaultSettings,
+      coco: { seeds: ["new_seed.radicle.xyz"] },
+    });
   });
 });
