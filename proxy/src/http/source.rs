@@ -316,7 +316,7 @@ mod handler {
 
         let session = session::current(&ctx.peer_api, &ctx.registry, &ctx.store).await?;
 
-        let project = ctx.peer_api.get_project(&project_urn)?;
+        let project = ctx.peer_api.get_project(&project_urn, None)?;
 
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
@@ -448,7 +448,7 @@ mod handler {
     {
         let ctx = ctx.read().await;
 
-        let project = ctx.peer_api.get_project(&project_urn)?;
+        let project = ctx.peer_api.get_project(&project_urn, None)?;
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
