@@ -42,7 +42,7 @@
         <Icon.Currency
           style={variant === 'credit' ? 'fill: var(--color-negative);' : 'fill: var(--color-positive);'} />
         <Title variant="tiny" dataCy="amount" style="margin-left:2px;">
-          {variant === 'credit' ? `-${rad}` : `${rad}`}
+          {variant === 'credit' ? `-${rad}` : `+${rad}`}
         </Title>
       </div>
     {:else if size === 'big'}
