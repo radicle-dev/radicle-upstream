@@ -81,7 +81,7 @@
   </div>
   <div class="description">
     <svelte:component this={Icon[headerIcon(tx.messages[0])]} />
-    <Title style="margin: 0 .5rem">
+    <Title style="margin: 0 .5rem; white-space: nowrap;">
       {formatMessage(tx.messages[0], accountId)}
     </Title>
     {#if avatar}
@@ -94,7 +94,10 @@
         style="--title-color: var(--color-foreground-level-5);"
         dataCy="subject-avatar" />
     {:else}
-      <Title style="color: var(--color-foreground-level-5)" dataCy="subject">
+      <Title
+        truncate
+        style="color: var(--color-foreground-level-5); max-width: 25rem;"
+        dataCy="subject">
         {subject.name}
       </Title>
     {/if}
