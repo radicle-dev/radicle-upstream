@@ -2,6 +2,7 @@
 
 use std::convert::TryFrom;
 use std::fmt;
+use std::path;
 use std::str::FromStr;
 
 use nonempty::NonEmpty;
@@ -309,7 +310,7 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
     match (std::str::from_utf8(content), theme) {
         (Ok(content), None) => BlobContent::Ascii(content.to_owned()),
         (Ok(content), Some(theme)) => {
-            let syntax = std::path::Path::new(path)
+            let syntax = path::Path::new(path)
                 .extension()
                 .and_then(std::ffi::OsStr::to_str)
                 .and_then(|ext| SYNTAX_SET.find_syntax_by_extension(ext));

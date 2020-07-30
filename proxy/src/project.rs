@@ -1,8 +1,14 @@
 //! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
 //! abstraction.
 
-use librad::meta::project;
+use std::ffi;
+use std::path;
+use std::process::Command;
+
 use serde::{Deserialize, Serialize};
+
+use librad::git::local::url::LocalUrl;
+use librad::meta::project;
 
 use crate::coco;
 use crate::error;
@@ -86,4 +92,108 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
     let stats = api.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
     Ok((project, stats).into())
+}
+
+/// Specify how to create the git credential helper argument for a [`Checkout`]
+enum Credential {
+    Password(String),
+}
+
+impl Credential {
+    fn to_helper(&self) -> String {
+        match self {
+            Credential::Password(pass) => format!(
+                "credential.helper=!f() {{ test \"$1\" = get && echo \"password={}\"; }}; f",
+                pass
+            ),
+        }
+    }
+}
+
+/// The data necessary for checking out a project.
+pub struct Checkout<P>
+where
+    P: AsRef<path::Path>,
+{
+    /// The credential helper.
+    credential: Credential,
+    /// The project URN.
+    urn: coco::Urn,
+    /// The branch to use for the checkout.
+    branch: String,
+    /// The path on the filesystem where we're going to checkout to.
+    path: P,
+    bin_path: Option<ffi::OsString>,
+}
+
+impl<P> Checkout<P>
+where
+    P: AsRef<path::Path>,
+{
+    /// Create a new `Checkout` with the mock `Credential::Password` helper.
+    pub fn new<Bin>(urn: coco::Urn, branch: String, path: P, bin_path: Bin) -> Self
+    where
+        Bin: Into<Option<ffi::OsString>>,
+    {
+        Checkout {
+            // TODO(rudolfs): we'll have to figure out how to pass the secret
+            // key to git in a safe manner. As it is now it could be sniffed
+            // out from the process list while the user is doing a clone.
+            //
+            // How will we get ahold on the secret key here?
+            credential: Credential::Password("radicle-upstream".to_owned()),
+            urn,
+            branch,
+            path,
+            bin_path: bin_path.into(),
+        }
+    }
+
+    /// Checkout a working copy of a [`Project`].
+    ///
+    /// NOTE: 'RAD_HOME' should be expected to be set if using a custom root for
+    /// [`librad::paths::Paths`]. If it is not set the underlying binary will delegate to the
+    /// `ProjectDirs` setup of the `Paths`.
+    pub fn run(self) -> Result<(), error::Error> {
+        let bin_path = match self.bin_path {
+            Some(path) => Ok(path),
+            None => Self::default_bin_path(),
+        }?;
+
+        let mut child_process = Command::new("git")
+            .arg("-c")
+            .arg(self.credential.to_helper())
+            .arg("clone")
+            .arg("-b")
+            .arg(self.branch)
+            .arg(LocalUrl::from(self.urn).to_string())
+            .arg(&self.path.as_ref().as_os_str())
+            .env("PATH", &bin_path)
+            .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
+            .spawn()?;
+
+        // TODO: Capture the error if any and respond
+        let result = child_process.wait()?;
+
+        if result.success() {
+            Ok(())
+        } else {
+            Err(error::Error::Checkout)
+        }
+    }
+
+    /// Set up the PATH env variable used for running the checkout.
+    fn default_bin_path() -> Result<ffi::OsString, error::Error> {
+        let exe_path = std::env::current_exe()?;
+        let exe_path = exe_path.parent().expect("failed to find executable path");
+
+        let paths = std::env::var_os("PATH").map_or(vec![exe_path.to_path_buf()], |path| {
+            let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
+            paths.push(exe_path.to_path_buf());
+            paths.reverse();
+            paths
+        });
+
+        Ok(std::env::join_paths(paths)?)
+    }
 }

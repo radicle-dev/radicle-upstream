@@ -188,16 +188,15 @@ mod handler {
     pub async fn checkout<R>(
         ctx: http::Ctx<R>,
         urn: coco::Urn,
-        input: super::CheckoutInput,
+        super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let project = ctx.peer_api.get_project(&urn)?;
+        let project = ctx.peer_api.get_project(&urn, peer_id)?;
 
-        ctx.peer_api
-            .checkout(&urn, &input.path, &project.default_branch(), &input.remote)?;
+        project::Checkout::new(urn, project.default_branch().to_owned(), path, None).run()?;
 
         Ok(reply::with_status(reply(), StatusCode::CREATED))
     }
@@ -401,10 +400,7 @@ impl ToDocumentedType for CreateInput {
 pub struct CheckoutInput {
     /// Location on the filesystem where the working copy should be created.
     path: PathBuf,
-    /// The branch which will be checked out by default.
-    branch: String,
-    /// Default remote that will be set up for the working copy.
-    remote: String,
+    peer_id: Option<coco::PeerId>,
 }
 
 impl ToDocumentedType for CheckoutInput {
@@ -415,20 +411,6 @@ impl ToDocumentedType for CheckoutInput {
             document::string()
                 .description("Filesystem location where the working copy should be created")
                 .example("/Users/rudolfs/work/radicle-tests/upstream-checkout"),
-        );
-
-        properties.insert(
-            "branch".into(),
-            document::string()
-                .description("Branch that will be checked out by default")
-                .example("master"),
-        );
-
-        properties.insert(
-            "remote".into(),
-            document::string()
-                .description("Default remote that will be set up for the working copy")
-                .example("hyy65tdus74a9q4doa8gfui4i5kuizg7gasy6wzg9ncxqtr3xfs8ty"),
         );
 
         document::DocumentedType::from(properties).description("Input for project checkout")
@@ -596,46 +578,6 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects));
         });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn checkout() -> Result<(), error::Error> {
-        pretty_env_logger::init();
-        let tmp_dir = tempfile::tempdir()?;
-        std::env::set_var("RAD_HOME", tmp_dir.path());
-        let ctx = http::Context::tmp(&tmp_dir).await?;
-        let api = super::filters(ctx.clone());
-
-        let ctx = ctx.read().await;
-        let handle = "cloudhead";
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(key.clone(), handle)?;
-
-        let platinum_project = coco::control::replicate_platinum(
-            &ctx.peer_api,
-            &key,
-            &owner,
-            "git-platinum",
-            "fixture data",
-            "master",
-        )?;
-        let urn = platinum_project.urn();
-
-        let path = tmp_dir.path().join("projects").join("git-platinum");
-        let _res = request()
-            .method("POST")
-            .path(&format!("/projects?id={}", urn))
-            .json(&super::CheckoutInput {
-                path: path.clone(),
-                branch: "main".to_string(),
-                remote: "origin".to_string(),
-            })
-            .reply(&api)
-            .await;
-
-        assert!(path.exists());
 
         Ok(())
     }

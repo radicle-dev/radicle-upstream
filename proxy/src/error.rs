@@ -93,11 +93,8 @@ pub enum Error {
     BlockNotFound(registry::BlockHash),
 
     /// An error occurred while performing the checkout of a project.
-    #[error("checkout of the project failed with reason '{reason}'")]
-    Checkout {
-        /// The exit status reason.
-        reason: String,
-    },
+    #[error("checkout of the project failed")]
+    Checkout,
 
     /// Accept error from `librad`.
     #[error(transparent)]

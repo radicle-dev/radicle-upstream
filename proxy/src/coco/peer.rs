@@ -3,10 +3,8 @@
 use std::convert::TryFrom;
 use std::net::SocketAddr;
 use std::path::{self, PathBuf};
-use std::process::Command;
 use std::sync::{Arc, Mutex};
 
-use librad::git::local::url::LocalUrl;
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -311,63 +309,6 @@ impl Api {
         setup_remote(&api, path, &meta.urn().id, default_branch)?;
 
         Ok(meta)
-    }
-
-    /// Checkout a working copy of a [`project::Project`].
-    ///
-    /// NOTE: 'RAD_HOME' should be expected to be set if using a custom root for
-    /// [`librad::paths::Paths`]. If it is not set the underlying binary will delegate to the
-    /// `ProjectDirs` setup of the `Paths`.
-    pub async fn checkout(
-        &self,
-        project_urn: &RadUrn,
-        checkout_path: impl AsRef<path::Path>,
-        branch: &str,
-        _remote: &str,
-    ) -> Result<(), error::Error> {
-        let path_of_proxy_binary = std::env::current_exe()?;
-        let path_of_proxy_binary = path_of_proxy_binary.parent().unwrap();
-
-        let env_path = match std::env::var_os("PATH") {
-            None => std::env::join_paths(Some(path_of_proxy_binary)),
-            Some(path) => {
-                let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
-                paths.push(path_of_proxy_binary.to_path_buf());
-                paths.reverse();
-                std::env::join_paths(paths)
-            },
-        }?;
-
-        let mut child_process = Command::new("git")
-            .arg("-c")
-            // TODO(rudolfs): we'll have to figure out how to pass the secret
-            // key to git in a safe manner. As it is now it could be sniffed
-            // out from the process list while the user is doing a clone.
-            //
-            // How will we get ahold on the secret key here?
-            .arg(format!(
-                "credential.helper=!f() {{ test \"$1\" = get && echo \"password={}\"; }}; f",
-                "radicle-upstream"
-            ))
-            .arg("clone")
-            .arg("-b")
-            .arg(branch)
-            .arg(LocalUrl::from(project_urn).to_string())
-            .arg(&checkout_path.as_ref().as_os_str())
-            .env("PATH", &env_path)
-            .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
-            .spawn()?;
-
-        // TODO: Capture the error if any and respond
-        let result = child_process.wait()?;
-
-        if result.success() {
-            Ok(())
-        } else {
-            Err(error::Error::Checkout {
-                reason: result.to_string(),
-            })
-        }
     }
 
     /// Create a [`user::User`] with the provided `handle`. This assumes that you are creating a
