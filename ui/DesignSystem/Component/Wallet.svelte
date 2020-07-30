@@ -1,4 +1,5 @@
 <script>
+  import * as currency from "../../src/currency.ts";
   import { nFormatter } from "../../src/transaction.ts";
   import { Title } from "../Primitive";
   import Rad from "./Rad.svelte";
@@ -11,6 +12,8 @@
   export let balance = null;
   export let accountId = null;
   export let id = null;
+
+  $: balanceRad = currency.microRadToRad(balance);
 </script>
 
 <style>
@@ -58,8 +61,8 @@
         <Rad
           style="display: inline-block;"
           size="big"
-          rad={nFormatter(balance)}
-          usd={nFormatter(balance)} />
+          rad={nFormatter(balanceRad)}
+          usd={nFormatter(balanceRad)} />
       </div>
       <div class="send-receive" data-cy="send-receive">
         <SendReceive {accountId} {id} />

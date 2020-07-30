@@ -1,6 +1,8 @@
 <script>
   import { getContext } from "svelte";
   import { pop } from "svelte-spa-router";
+
+  import * as currency from "../src/currency.ts";
   import * as notification from "../src/notification.ts";
   import {
     TransferState,
@@ -69,18 +71,20 @@
 
   const goToConfirmation = () => {
     isTransferringFromUser = $payerStore === identity.metadata.handle;
+    const amountInMicroRad = currency.radToMicroRad($amountStore);
+
     tx = {
       fee: transactionFee,
       messages: [
         isTransferringFromUser
           ? {
               type: MessageType.Transfer,
-              amount: parseInt($amountStore),
+              amount: amountInMicroRad,
               recipient: $recipientStore,
             }
           : {
               type: MessageType.TransferFromOrg,
-              amount: parseInt($amountStore),
+              amount: amountInMicroRad,
               recipient: $recipientStore,
               orgId: $payerStore,
             },

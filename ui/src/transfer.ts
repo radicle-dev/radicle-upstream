@@ -26,7 +26,7 @@ interface TransferInput {
 export const transfer = (
   fromUser: boolean,
   senderId: string,
-  amount: currency.MicroRad,
+  amount: currency.Rad,
   recipient: string,
   transactionFee: number
 ): Promise<transaction.Transaction> => {
@@ -34,7 +34,7 @@ export const transfer = (
   return api.post<TransferInput, transaction.Transaction>(
     `${endpointBase}/${senderId}/transfer`,
     {
-      amount,
+      amount: currency.radToMicroRad(amount),
       recipient,
       transactionFee,
     }
