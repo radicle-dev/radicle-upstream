@@ -7,6 +7,7 @@
     formatDate,
     iconState,
     iconProgress,
+    isIncoming,
     statusText,
     subjectAvatarShape,
     StateType,
@@ -24,6 +25,8 @@
   const updateAvatar = async () => (avatar = await subject.avatarSource);
 
   const summary = costSummary(tx);
+
+  $: radVariant = isIncoming(tx.messages[0], accountId) ? "debit" : "credit";
 
   $: updateAvatar();
 </script>
@@ -121,6 +124,10 @@
         </Text>
       </div>
     {/if}
-    <Rad rad={`${summary.total.rad}`} usd={`${summary.total.usd}`} />
+
+    <Rad
+      variant={radVariant}
+      rad={`${summary.total.rad}`}
+      usd={`${summary.total.usd}`} />
   </div>
 </div>

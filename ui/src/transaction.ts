@@ -465,11 +465,21 @@ export const formatSubject = (
   };
 };
 
+export const isIncoming = (msg: Message, viewerAccountId: string): boolean => {
+  switch (msg.type) {
+    case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
+      return msg.recipient === viewerAccountId;
+    default:
+      return false;
+  }
+};
+
 const transferSubjectName = (
   msg: Transfer | TransferFromOrg,
   viewerAccountId: string
 ): string => {
-  const direction = msg.recipient === viewerAccountId ? "from" : "to";
+  const direction = isIncoming(msg, viewerAccountId) ? "from" : "to";
   return `${direction} ${msg.recipient}`;
 };
 
@@ -660,8 +670,8 @@ export const costSummary = (transaction: Transaction): CostSummary => {
   const txFee = amount(transaction.fee);
   const total = amount(
     transaction.fee * 1 +
-    (transferAmountMicroRad ? transferAmountMicroRad * 1 : 0) +
-    (transaction.registrationFee ? transaction.registrationFee * 1 : 0)
+      (transferAmountMicroRad ? transferAmountMicroRad * 1 : 0) +
+      (transaction.registrationFee ? transaction.registrationFee * 1 : 0)
   );
 
   return {
