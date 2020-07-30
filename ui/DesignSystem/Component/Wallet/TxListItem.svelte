@@ -26,8 +26,6 @@
 
   const summary = costSummary(tx);
 
-  $: radVariant = isIncoming(tx.messages[0], accountId) ? "debit" : "credit";
-
   $: updateAvatar();
 </script>
 
@@ -125,9 +123,17 @@
       </div>
     {/if}
 
-    <Rad
-      variant={radVariant}
-      rad={`${summary.total.rad}`}
-      usd={`${summary.total.usd}`} />
+    {#if isIncoming(tx.messages[0], accountId)}
+      <Rad
+        variant="debit"
+        rad={summary.transferAmount.rad}
+        usd="{summary.transferAmount.usd}}" />
+    {:else}
+      <Rad
+        variant="credit"
+        rad={summary.total.rad}
+        usd="{summary.total.usd}}" />
+    {/if}
+
   </div>
 </div>
