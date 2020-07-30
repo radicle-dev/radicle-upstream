@@ -122,7 +122,7 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
                 shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
                 metadata: Metadata {
                     name: "radicle-upstream".to_string(),
-                    description: "It is not the slumber of reason that engenders monsters,
+                    description: "It is not the slumber of reason that engenders monsters, \
                         but vigilant and insomniac rationality.".to_string(),
                     default_branch: "main".to_string()
                 },
@@ -135,13 +135,13 @@ pub fn discover() -> Result<Vec<Project>, error::Error> {
             },
             Project {
                 id: other_urn,
-                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fdsfj".to_string(),
+                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd".to_string(),
                 metadata: Metadata {
                     name: "radicle-link".to_string(),
-                    description: "The monstrous complexity of our reality, a reality 
-                        cross-hatched with fibre-optic cables, radio and microwaves, 
-                        oil and gas pipelines, aerial and shipping routes, and the unrelenting,
-                        simultaneous execution of millions of communication protocols with every passing millisecond.".to_string(),
+                    description: "The monstrous complexity of our reality, a reality \
+                    cross-hatched with fibre-optic cables, radio and microwaves, \
+                    oil and gas pipelines, aerial and shipping routes, and the unrelenting, \
+                    simultaneous execution of millions of communication protocols with every passing millisecond.".to_string(),
                     default_branch: "main".to_string()
                 },
                 stats: coco::Stats {

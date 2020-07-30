@@ -60,6 +60,7 @@ where
     http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Project id"))
+        .and(path::end())
         .and(document::document(document::description(
             "Find Project by ID",
         )))
@@ -114,8 +115,18 @@ where
     path("discover")
         .and(warp::get())
         .and(http::with_context(ctx))
+        .and(path::end())
         .and(document::document(document::description(
-            "Feed of untracked projects",
+            "Fetch discovery feed",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(document::response(
+            200,
+            document::body(
+                document::array(project::Project::document())
+                    .description("Feed of untracked projects"),
+            )
+            .mime("application/json"),
         )))
         .and_then(handler::discover)
 }
@@ -545,11 +556,45 @@ mod test {
 
         coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
 
-        let feed = project::discover()?;
         let res = request().method("GET").path("/discover").reply(&api).await;
+        let want = json!([
+            {
+                "id": "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c",
+                "metadata": {
+                    "defaultBranch": "main",
+                    "description": "It is not the slumber of reason that engenders monsters, \
+                    but vigilant and insomniac rationality.",
+                    "name": "radicle-upstream"
+                },
+                "registration": serde_json::Value::Null,
+                "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+                "stats": {
+                    "branches": 36,
+                    "commits": 216,
+                    "contributors": 6,
+                },
+            },
+            {
+                "id": "rad:git:hwd1yrefz6xkwb46xkt7dhmwsjendiaqsaynpjwweqrqjc8muaath4gsf7o",
+                "metadata": {
+                    "defaultBranch": "main",
+                    "description": "The monstrous complexity of our reality, a reality cross-hatched with fibre-optic cables, \
+                    radio and microwaves, oil and gas pipelines, aerial and shipping routes, and the unrelenting, simultaneous execution \
+                    of millions of communication protocols with every passing millisecond.",
+                    "name": "radicle-link"
+                },
+                "registration": serde_json::Value::Null,
+                "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd",
+                "stats": {
+                    "branches": 49,
+                    "commits": 343,
+                    "contributors": 7,
+                },
+            },
+        ]);
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            assert_eq!(have, json!(feed));
+            assert_eq!(have, want);
         });
 
         Ok(())
