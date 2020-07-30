@@ -1,7 +1,9 @@
 <script>
   import { getContext } from "svelte";
+  import { querystring } from "svelte-spa-router";
 
   import { fallback } from "../src/identity.ts";
+  import { parseQueryString } from "../src/path.ts";
   import * as transaction from "../src/transaction.ts";
 
   import { ModalLayout, Remote, Transaction } from "../DesignSystem/Component";
@@ -18,6 +20,7 @@
 
   $: payer = transaction.formatPayer(identity);
   $: store = transaction.fetch(params.id);
+  $: viewerAccountId = parseQueryString($querystring).viewerAccountId;
 </script>
 
 <style>
@@ -29,7 +32,7 @@
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
     <Remote {store} let:data={tx}>
-      <Transaction transaction={tx} {payer} />
+      <Transaction transaction={tx} {payer} {viewerAccountId} />
     </Remote>
 
   </div>

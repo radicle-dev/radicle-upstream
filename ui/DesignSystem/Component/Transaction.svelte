@@ -25,10 +25,11 @@
 
   export let transaction = null;
   export let payer = null;
+  export let viewerAccountId = null;
 
   let avatar;
 
-  const subject = formatSubject(transaction.messages[0]);
+  const subject = formatSubject(transaction.messages[0], viewerAccountId);
 
   const updateAvatar = async () => (avatar = await subject.avatarSource);
 
@@ -37,12 +38,12 @@
   $: updateAvatar();
 </script>
 
-<Header {transaction} {avatar} {subject} />
+<Header {transaction} {avatar} {subject} accountId={viewerAccountId} />
 
 <Row dataCy="transaction-fee" variant="top" style="">
   <div slot="left">
     <Text variant="regular" style="color:var(--color-foreground-level-6);">
-      Transaction Fee
+      Transaction fee
     </Text>
   </div>
 
@@ -55,7 +56,7 @@
   <Row dataCy="registration-fee" variant="middle" style="">
     <div slot="left">
       <Text variant="regular" style="color:var(--color-foreground-level-6);">
-        {formatStake(transaction.messages[0])}
+        {formatStake(transaction.messages[0].type)}
       </Text>
     </div>
 

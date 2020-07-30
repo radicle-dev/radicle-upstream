@@ -8,7 +8,6 @@ import * as event from "./event";
 import { Identity } from "./identity";
 import { Domain } from "./project";
 import * as remote from "./remote";
-import { transfer } from "./transfer";
 
 const POLL_INTERVAL = 10000;
 
@@ -32,6 +31,27 @@ export enum MessageType {
   Transfer = "transfer",
   TransferFromOrg = "transferFromOrg",
 }
+
+const displayMessageType = (type: MessageType): string => {
+  switch (type) {
+    case MessageType.OrgRegistration:
+      return "Org Registration";
+    case MessageType.OrgUnregistration:
+      return "Org Unregistration";
+    case MessageType.MemberRegistration:
+      return "Member Registration";
+    case MessageType.MemberUnregistration:
+      return "Member Unregistration";
+    case MessageType.ProjectRegistration:
+      return "Project Registration";
+    case MessageType.UserRegistration:
+      return "User Registration";
+    case MessageType.Transfer:
+      return "Transfer";
+    case MessageType.TransferFromOrg:
+      return "Org transfer";
+  }
+};
 
 interface OrgRegistration {
   type: MessageType.OrgRegistration;
@@ -265,8 +285,10 @@ transactionsStore.start(() => {
   return (): void => clearInterval(poll);
 });
 
-// FORMATTING
-export const formatMessage = (msg: Message): string => {
+export const formatMessage = (
+  msg: Message,
+  viewerAccountId: string
+): string => {
   switch (msg.type) {
     case MessageType.OrgRegistration:
       return "Org registration";
@@ -287,10 +309,10 @@ export const formatMessage = (msg: Message): string => {
       return "Handle registration";
 
     case MessageType.Transfer:
-      return "Transfer";
-
-    case MessageType.TransferFromOrg:
-      return "Org transfer";
+    case MessageType.TransferFromOrg: {
+      const type = msg.recipient === viewerAccountId ? "Incoming" : "Outgoing";
+      return `${type} transfer`;
+    }
   }
 };
 
@@ -334,8 +356,8 @@ export const headerIcon = (msg: Message): string => {
   }
 };
 
-export const formatStake = (msg: Message): string =>
-  `${formatMessage(msg)} fee`;
+export const formatStake = (type: MessageType): string =>
+  `${displayMessageType(type)} fee`;
 
 // Having both enums & interfaces here is somewhat verbose; the reason we do this
 // is so we have compatibility with non-TS svelte components while still enjoying
@@ -374,7 +396,10 @@ interface Subject {
   avatarSource?: Promise<Avatar>;
 }
 
-export const formatSubject = (msg: Message): Subject => {
+export const formatSubject = (
+  msg: Message,
+  viewerAccountId: string
+): Subject => {
   let avatarSource, name, type;
 
   switch (msg.type) {
@@ -424,9 +449,12 @@ export const formatSubject = (msg: Message): Subject => {
       break;
 
     case MessageType.Transfer:
-    case MessageType.TransferFromOrg:
-      name = `to ${msg.recipient}`;
+      name = transferSubjectName(msg, viewerAccountId);
       type = SubjectType.User;
+      break;
+    case MessageType.TransferFromOrg:
+      name = transferSubjectName(msg, viewerAccountId);
+      type = SubjectType.Org;
       break;
   }
 
@@ -435,6 +463,14 @@ export const formatSubject = (msg: Message): Subject => {
     type,
     avatarSource,
   };
+};
+
+const transferSubjectName = (
+  msg: Transfer | TransferFromOrg,
+  viewerAccountId: string
+): string => {
+  const direction = msg.recipient === viewerAccountId ? "from" : "to";
+  return `${direction} ${msg.recipient}`;
 };
 
 export const subjectAvatarShape = (subjectType: SubjectType): string => {
@@ -624,8 +660,8 @@ export const costSummary = (transaction: Transaction): CostSummary => {
   const txFee = amount(transaction.fee);
   const total = amount(
     transaction.fee * 1 +
-      (transferAmountMicroRad ? transferAmountMicroRad * 1 : 0) +
-      (transaction.registrationFee ? transaction.registrationFee * 1 : 0)
+    (transferAmountMicroRad ? transferAmountMicroRad * 1 : 0) +
+    (transaction.registrationFee ? transaction.registrationFee * 1 : 0)
   );
 
   return {

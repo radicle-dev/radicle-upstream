@@ -72,7 +72,7 @@
         var(--color-foreground-level-2);">
         Transactions
       </Title>
-      <TransactionList {transactions} />
+      <TransactionList {transactions} {accountId} />
     </div>
   {:else}
     <div class="empty-state">

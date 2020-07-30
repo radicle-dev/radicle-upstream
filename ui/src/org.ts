@@ -202,7 +202,7 @@ const involvesOrg = (
   }
 };
 
-// Obtain the transactions that involve an org with the given `id`.
+// Obtain the transactions that involve an org with the given `id` and `accountId`.
 export const orgTransactions = (
   transactions: [transaction.Transaction],
   id: string,

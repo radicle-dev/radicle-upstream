@@ -16,8 +16,9 @@
   import { Avatar, Caption, Icon, Text, Title } from "../../Primitive";
 
   export let tx = null;
+  export let accountId = null;
 
-  const subject = formatSubject(tx.messages[0]);
+  const subject = formatSubject(tx.messages[0], accountId);
 
   let avatar;
   const updateAvatar = async () => (avatar = await subject.avatarSource);
@@ -79,7 +80,9 @@
   </div>
   <div class="description">
     <svelte:component this={Icon[headerIcon(tx.messages[0])]} />
-    <Title style="margin: 0 .5rem">{formatMessage(tx.messages[0])}</Title>
+    <Title style="margin: 0 .5rem">
+      {formatMessage(tx.messages[0], accountId)}
+    </Title>
     {#if avatar}
       <Avatar
         title={subject.name}
