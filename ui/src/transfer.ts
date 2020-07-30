@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 
 import * as api from "./api";
+import * as account from "./account";
 import * as currency from "./currency";
 import * as transaction from "./transaction";
 import * as validation from "./validation";
@@ -56,4 +57,23 @@ export const amountConstraints = {
 
 export const amountValidationStore = (): validation.ValidationStore => {
   return validation.createValidationStore(amountConstraints);
+};
+
+const validateRecipientExistence = (accountId: string): Promise<boolean> =>
+  account.exists(accountId);
+
+export const recipientConstraints = {
+  presence: {
+    message: "Transfer amount is required",
+    allowEmpty: false,
+  },
+};
+
+export const recipientValidationStore = (): validation.ValidationStore => {
+  return validation.createValidationStore(recipientConstraints, [
+    {
+      promise: validateRecipientExistence,
+      validationMessage: "Cannot find this address",
+    },
+  ]);
 };

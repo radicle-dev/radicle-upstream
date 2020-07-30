@@ -8,8 +8,10 @@
     recipientStore,
     amountStore,
     amountValidationStore,
+    recipientValidationStore,
     transfer,
   } from "../src/transfer.ts";
+  import { ValidationStatus } from "../src/validation.ts";
 
   import { Dropdown, ModalLayout, Rad } from "../DesignSystem/Component";
   import Row from "../DesignSystem/Component/Transaction/Row.svelte";
@@ -26,12 +28,9 @@
   const { orgs } = getContext("session");
 
   const amountValidation = amountValidationStore();
-  let validating = false;
-
-  // pre-populate inputs with store values
-  let amount = $amountStore,
-    recipient = $recipientStore,
-    payer = $payerStore;
+  const recipientValidation = recipientValidationStore();
+  let validatingAmount = false;
+  let validatingRecipient = false;
 
   const dropdownOptions = [
     {
@@ -85,15 +84,18 @@
     }
   };
 
-  // update each store whenever the input values change
-  $: amountStore.set(amount);
-  $: recipientStore.set(recipient);
-  $: payerStore.set(payer);
-
   $: {
-    if ($amountStore && $amountStore.length > 0) validating = true;
-    if (validating) amountValidation.validate($amountStore);
+    if ($amountStore && $amountStore.length > 0) validatingAmount = true;
+    if (validatingAmount) amountValidation.validate($amountStore);
   }
+  $: {
+    if ($recipientStore && $recipientStore.length > 0)
+      validatingRecipient = true;
+    if (validatingRecipient) recipientValidation.validate($recipientStore);
+  }
+  $: disableSubmit =
+    $amountValidation.status !== ValidationStatus.Success ||
+    $recipientValidation.status !== ValidationStatus.Success;
 </script>
 
 <style>
@@ -160,15 +162,16 @@
         To
       </Title>
       <Input.Text
-        bind:value={recipient}
+        bind:value={$recipientStore}
         placeholder="Enter recipient address"
-        style="flex: 1; padding-bottom: 0.5rem;" />
+        style="flex: 1; padding-bottom: 0.5rem;"
+        validation={$recipientValidation} />
       <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
         Amount
       </Title>
       <Input.Text
         placeholder="Enter the amount"
-        bind:value={amount}
+        bind:value={$amountStore}
         showLeftItem
         style="flex: 1; padding-bottom: 0.5rem;"
         validation={$amountValidation}>
@@ -184,12 +187,10 @@
       <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
       <Dropdown
         placeholder="Select wallet you want to use"
-        bind:value={payer}
+        bind:value={$payerStore}
         options={dropdownOptions} />
       <div class="submit">
-        <Button
-          disabled={recipient === '' || amount === '' || payer === '' || recipient === null || amount === null || payer === null}
-          on:click={goToConfirmation}>
+        <Button disabled={disableSubmit} on:click={goToConfirmation}>
           Review transfer
         </Button>
       </div>
