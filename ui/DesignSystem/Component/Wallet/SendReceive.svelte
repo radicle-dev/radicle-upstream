@@ -130,7 +130,7 @@
         style="flex: 1; padding-bottom: 1rem;" /> -->
       <div class="submit">
         <Button
-          disabled={recipient === '' || recipient === null || amount === '' || amount === null}
+          disabled={!recipient || !amount || recipient === '' || amount === ''}
           on:click={openSendModal}>
           Send transaction
         </Button>

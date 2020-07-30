@@ -95,7 +95,8 @@
   }
   $: disableSubmit =
     $amountValidation.status !== ValidationStatus.Success ||
-    $recipientValidation.status !== ValidationStatus.Success;
+    $recipientValidation.status !== ValidationStatus.Success ||
+    $payerStore.length === 0;
 </script>
 
 <style>
@@ -188,7 +189,9 @@
       <Dropdown
         placeholder="Select wallet you want to use"
         bind:value={$payerStore}
-        options={dropdownOptions} />
+        options={dropdownOptions}
+        valid={$payerStore && $payerStore.length > 0}
+        validationMessage="From entity is required" />
       <div class="submit">
         <Button disabled={disableSubmit} on:click={goToConfirmation}>
           Review transfer
