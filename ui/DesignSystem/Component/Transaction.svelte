@@ -67,6 +67,20 @@
   </Row>
 {/if}
 
+{#if summary.transferAmount}
+  <Row dataCy="registration-fee" variant="middle" style="">
+    <div slot="left">
+      <Text variant="regular" style="color:var(--color-foreground-level-6);">
+        Amount
+      </Text>
+    </div>
+
+    <div slot="right">
+      <Rad rad={summary.transferAmount.rad} usd={summary.transferAmount.usd} />
+    </div>
+  </Row>
+{/if}
+
 <Row
   dataCy="total"
   variant="bottom"
