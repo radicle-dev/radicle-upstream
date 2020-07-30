@@ -16,11 +16,9 @@ context("navigation", () => {
     cy.pick("send-receive").should("exist");
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
-    cy.pick("recipient-input").should("exist");
     cy.pick("recipient-input").type(
       "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
     );
-    cy.pick("amount-input").should("exist");
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
@@ -32,11 +30,9 @@ context("navigation", () => {
     cy.pick("send-receive").should("exist");
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
-    cy.pick("recipient-input").should("exist");
     cy.pick("recipient-input").type(
       "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
     );
-    cy.pick("amount-input").should("exist");
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
@@ -46,11 +42,9 @@ context("navigation", () => {
     cy.pick("send-receive").should("exist");
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
-    cy.pick("recipient-input").should("exist");
     cy.pick("recipient-input").type(
       "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
     );
-    cy.pick("amount-input").should("exist");
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
@@ -63,11 +57,9 @@ context("navigation", () => {
     cy.pick("send-receive").should("exist");
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
-    cy.pick("recipient-input").should("exist");
     cy.pick("recipient-input").type(
       "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
     );
-    cy.pick("amount-input").should("exist");
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
@@ -79,11 +71,9 @@ context("navigation", () => {
     cy.pick("send-receive").should("exist");
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
-    cy.pick("recipient-input").should("exist");
     cy.pick("recipient-input").type(
       "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
     );
-    cy.pick("amount-input").should("exist");
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
@@ -100,11 +90,9 @@ context("navigation", () => {
     cy.pick("send-receive").should("exist");
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
-    cy.pick("recipient-input").should("exist");
     cy.pick("recipient-input").type(
       "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
     );
-    cy.pick("amount-input").should("exist");
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
@@ -126,11 +114,9 @@ context("validation", () => {
     cy.pick("send-receive").should("exist");
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
-    cy.pick("recipient-input").should("exist");
     cy.pick("recipient-input").type(
       "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
     );
-    cy.pick("amount-input").should("exist");
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
