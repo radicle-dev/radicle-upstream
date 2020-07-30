@@ -44,7 +44,7 @@ export const transfer = (
 
 export const amountConstraints = {
   presence: {
-    message: "Transfer amount is required",
+    message: "The amount is required",
     allowEmpty: false,
   },
   numericality: {
@@ -62,7 +62,7 @@ const validateRecipientExistence = (accountId: string): Promise<boolean> =>
 
 export const recipientConstraints = {
   presence: {
-    message: "Transfer amount is required",
+    message: "The recipient address is required",
     allowEmpty: false,
   },
 };
