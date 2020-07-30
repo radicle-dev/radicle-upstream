@@ -57,8 +57,8 @@ pub enum Error {
     PathNotFound(surf::file_system::Path),
 
     /// Could not construct a path.
-    #[error("could not join paths")]
-    JoinPathsError(#[from] std::env::JoinPathsError),
+    #[error(transparent)]
+    JoinPaths(#[from] std::env::JoinPathsError),
 
     /// Originated from `radicle_surf`.
     #[error(transparent)]

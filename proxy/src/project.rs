@@ -87,6 +87,11 @@ pub enum Registration {
 }
 
 /// Fetch the project with a given urn from a peer
+///
+/// # Errors
+///
+///   * Failed to get the project.
+///   * Failed to get the stats of the project.
 pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::Error> {
     let project = api.get_project(project_urn, None)?;
     let stats = api.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
@@ -96,13 +101,15 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
 
 /// Specify how to create the git credential helper argument for a [`Checkout`]
 enum Credential {
+    /// Plain-text password. You've been warned!
     Password(String),
 }
 
 impl Credential {
+    /// Convert the `Credential` into the git credential helper.
     fn to_helper(&self) -> String {
         match self {
-            Credential::Password(pass) => format!(
+            Self::Password(pass) => format!(
                 "credential.helper=!f() {{ test \"$1\" = get && echo \"password={}\"; }}; f",
                 pass
             ),
@@ -123,6 +130,9 @@ where
     branch: String,
     /// The path on the filesystem where we're going to checkout to.
     path: P,
+    /// The `PATH` environment variable to be used for the checkout. It is safe to leave this
+    /// `None` when executing the application for real. However, if we want to run an integration
+    /// test we need to tell say where the `git-rad-remote` helper can be found.
     bin_path: Option<ffi::OsString>,
 }
 
@@ -135,7 +145,7 @@ where
     where
         Bin: Into<Option<ffi::OsString>>,
     {
-        Checkout {
+        Self {
             // TODO(rudolfs): we'll have to figure out how to pass the secret
             // key to git in a safe manner. As it is now it could be sniffed
             // out from the process list while the user is doing a clone.
@@ -151,9 +161,14 @@ where
 
     /// Checkout a working copy of a [`Project`].
     ///
-    /// NOTE: 'RAD_HOME' should be expected to be set if using a custom root for
+    /// NOTE: `RAD_HOME` should be expected to be set if using a custom root for
     /// [`librad::paths::Paths`]. If it is not set the underlying binary will delegate to the
     /// `ProjectDirs` setup of the `Paths`.
+    ///
+    /// # Errors
+    ///
+    ///   * We couldn't resolve the executable path.
+    ///   * The checkout process failed.
     pub fn run(self) -> Result<(), error::Error> {
         let bin_path = match self.bin_path {
             Some(path) => Ok(path),

@@ -34,7 +34,7 @@ where
 {
     path("projects")
         .and(warp::post())
-        .and(http::with_context(ctx.clone()))
+        .and(http::with_context(ctx))
         .and(document::param::<coco::Urn>("id", "Project id"))
         .and(warp::body::json())
         .and(document::document(document::description(
@@ -400,6 +400,7 @@ impl ToDocumentedType for CreateInput {
 pub struct CheckoutInput {
     /// Location on the filesystem where the working copy should be created.
     path: PathBuf,
+    /// Which peer are we checking out from. If it's `None`, we're checking out our own project.
     peer_id: Option<coco::PeerId>,
 }
 
