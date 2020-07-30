@@ -5,7 +5,6 @@ import * as account from "./account";
 import * as currency from "./currency";
 import * as transaction from "./transaction";
 import * as validation from "./validation";
-import { Identity } from "./identity";
 
 export const payerStore = writable("");
 export const recipientStore = writable("");
