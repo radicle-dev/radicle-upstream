@@ -613,15 +613,6 @@ const obtainTransferAmount = (msg: Message): currency.MicroRad | undefined => {
   }
 };
 
-const calculateTotal = (
-  txFee: currency.MicroRad,
-  transferAmount?: currency.MicroRad,
-  registrationFee?: currency.MicroRad
-): Amount => {
-  const totalMicroRad = txFee + (transferAmount ?? 0) + (registrationFee ?? 0);
-  return amount(totalMicroRad);
-};
-
 export const costSummary = (transaction: Transaction): CostSummary => {
   const registrationFee: Amount | undefined = transaction.registrationFee
     ? amount(transaction.registrationFee)
@@ -631,10 +622,10 @@ export const costSummary = (transaction: Transaction): CostSummary => {
     ? amount(transferAmountMicroRad)
     : undefined;
   const txFee = amount(transaction.fee);
-  const total = calculateTotal(
-    transaction.fee * 1,
-    transferAmountMicroRad ? transferAmountMicroRad * 1 : undefined,
-    transaction.registrationFee ? transaction.registrationFee * 1 : undefined
+  const total = amount(
+    transaction.fee * 1 +
+      (transferAmountMicroRad ? transferAmountMicroRad * 1 : 0) +
+      (transaction.registrationFee ? transaction.registrationFee * 1 : 0)
   );
 
   return {
