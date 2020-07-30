@@ -633,8 +633,8 @@ export const costSummary = (transaction: Transaction): CostSummary => {
   const txFee = amount(transaction.fee);
   const total = calculateTotal(
     transaction.fee * 1,
-    transferAmountMicroRad,
-    transaction.registrationFee
+    transferAmountMicroRad ? transferAmountMicroRad * 1 : undefined,
+    transaction.registrationFee ? transaction.registrationFee * 1 : undefined
   );
 
   return {
