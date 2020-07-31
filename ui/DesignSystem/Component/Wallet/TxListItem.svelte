@@ -81,7 +81,7 @@
   </div>
   <div class="description">
     <svelte:component this={Icon[headerIcon(tx.messages[0])]} />
-    <Title style="margin: 0 .5rem; white-space: nowrap;">
+    <Title dataCy="message" style="margin: 0 .5rem; white-space: nowrap;">
       {formatMessage(tx.messages[0], accountId)}
     </Title>
     {#if avatar}

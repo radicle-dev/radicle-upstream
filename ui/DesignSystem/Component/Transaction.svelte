@@ -69,7 +69,7 @@
 {/if}
 
 {#if summary.transferAmount}
-  <Row dataCy="registration-fee" variant="middle" style="">
+  <Row dataCy="transfer-amount" variant="middle" style="">
     <div slot="left">
       <Text variant="regular" style="color:var(--color-foreground-level-6);">
         Amount
@@ -156,7 +156,7 @@
 
   <div slot="right">
     <Avatar
-      dataCy="payer-avatar"
+      dataCy="funding-source"
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}

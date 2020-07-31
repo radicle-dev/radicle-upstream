@@ -78,8 +78,8 @@ context("navigation", () => {
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
     cy.pick("page", "preperation-step").should("exist");
-    cy.pick("review-tranfer-button").should("exist");
-    cy.pick("review-tranfer-button").click();
+    cy.pick("review-transfer-button").should("exist");
+    cy.pick("review-transfer-button").click();
     cy.pick("page", "review-step").should("exist");
     cy.pick("back-to-review-button").should("exist");
     cy.pick("back-to-review-button").click();
@@ -97,8 +97,8 @@ context("navigation", () => {
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
     cy.pick("page", "preperation-step").should("exist");
-    cy.pick("review-tranfer-button").should("exist");
-    cy.pick("review-tranfer-button").click();
+    cy.pick("review-transfer-button").should("exist");
+    cy.pick("review-transfer-button").click();
     cy.pick("page", "review-step").should("exist");
     cy.pick("submit-tranfer-button").should("exist");
     cy.pick("submit-tranfer-button").click();
@@ -126,15 +126,15 @@ context("validation", () => {
     cy.pick("modal-recipient-input").should("exist");
     cy.pick("modal-recipient-input").clear();
     cy.pick("page").contains("The recipient address is required");
-    cy.pick("review-tranfer-button").should("exist");
-    cy.pick("review-tranfer-button").should("be.disabled");
+    cy.pick("review-transfer-button").should("exist");
+    cy.pick("review-transfer-button").should("be.disabled");
   });
   it("checks if it does the validation and disables button when removing prefilled amount", () => {
     cy.pick("modal-amount-input").should("exist");
     cy.pick("modal-amount-input").clear();
     cy.pick("page").contains("The amount is required");
-    cy.pick("review-tranfer-button").should("exist");
-    cy.pick("review-tranfer-button").should("be.disabled");
+    cy.pick("review-transfer-button").should("exist");
+    cy.pick("review-transfer-button").should("be.disabled");
   });
   it("checks if it does the validation and disables button when removing prefilled recipient and amount", () => {
     cy.pick("modal-recipient-input").should("exist");
@@ -143,21 +143,21 @@ context("validation", () => {
     cy.pick("modal-amount-input").clear();
     cy.pick("page").contains("The recipient address is required");
     cy.pick("page").contains("The amount is required");
-    cy.pick("review-tranfer-button").should("exist");
-    cy.pick("review-tranfer-button").should("be.disabled");
+    cy.pick("review-transfer-button").should("exist");
+    cy.pick("review-transfer-button").should("be.disabled");
   });
   it("checks if the address is a valid address that exists", () => {
     cy.pick("modal-recipient-input").should("exist");
     cy.pick("modal-recipient-input").clear();
     cy.pick("modal-recipient-input").type("bla");
     cy.pick("page").contains("Cannot find this address");
-    cy.pick("review-tranfer-button").should("exist");
-    cy.pick("review-tranfer-button").should("be.disabled");
+    cy.pick("review-transfer-button").should("exist");
+    cy.pick("review-transfer-button").should("be.disabled");
   });
   it("checks if review step contains filled in information", () => {
     cy.pick("page", "preperation-step").should("exist");
-    cy.pick("review-tranfer-button").should("exist");
-    cy.pick("review-tranfer-button").click();
+    cy.pick("review-transfer-button").should("exist");
+    cy.pick("review-transfer-button").click();
     cy.pick("page", "review-step").should("exist");
     cy.pick("page").contains(
       "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"

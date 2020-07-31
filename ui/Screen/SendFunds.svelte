@@ -235,7 +235,7 @@
           validationMessage="From entity is required" />
         <div class="submit">
           <Button
-            dataCy="review-tranfer-button"
+            dataCy="review-transfer-button"
             disabled={disableSubmit}
             on:click={goToConfirmation}>
             Review transfer
@@ -271,7 +271,7 @@
           </div>
         </header>
 
-        <Row variant="top" style="">
+        <Row dataCy="transfer-amount" variant="top" style="">
           <div slot="left">
             <Text
               variant="regular"
@@ -286,7 +286,7 @@
               usd={summary.transferAmount.usd} />
           </div>
         </Row>
-        <Row variant="middle" style="">
+        <Row dataCy="transaction-fee" variant="middle" style="">
           <div slot="left">
             <Text
               variant="regular"
@@ -299,6 +299,7 @@
           </div>
         </Row>
         <Row
+          dataCy="total"
           variant="bottom"
           style="border: 1px solid var(--color-foreground-level-2);">
           <div slot="left">
@@ -312,7 +313,7 @@
             <Rad rad={summary.total.rad} usd={summary.total.usd} />
           </div>
         </Row>
-        <Row style="margin-top: 1.5rem;">
+        <Row dataCy="funding-source" style="margin-top: 1.5rem;">
           <div slot="left">
             <Text
               variant="regular"
