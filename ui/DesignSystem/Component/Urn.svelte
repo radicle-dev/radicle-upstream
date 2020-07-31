@@ -5,8 +5,6 @@
   export let urn = null;
   const firstSix = urn.substring(0, 7);
   const lastSix = urn.substring(urn.length - 7, urn.length);
-
-  console.log(firstSix, lastSix);
 </script>
 
 <style>
@@ -20,7 +18,7 @@
 </style>
 
 <div class="wrapper" data-cy="urn">
-  <Copyable iconSize="small" style="align-items: center;">
+  <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
     <Text
       style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
       var(--color-foreground-level-5);">
