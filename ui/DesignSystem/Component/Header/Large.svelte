@@ -106,7 +106,7 @@
           <Text variant="tiny" style="margin-right: 4px; white-space: nowrap;">
             Radicle ID
           </Text>
-          <Urn urn={entity.shareableEntityIdentifier} />
+          <Urn urn={entity.shareableEntityIdentifier} showOnHover />
         </div>
       </div>
     </div>
