@@ -2,7 +2,7 @@
   import { fade } from "svelte/transition";
 
   import { Icon, Text } from "../Primitive";
-  import Copyable from "./Copyable.svelte";
+  import Urn from "./Urn.svelte";
 
   let triggerEl;
   let expanded = false;
@@ -120,13 +120,7 @@
     <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
       {#if headerTitle}
         <div class="header">
-          <Copyable iconSize="normal">
-            <Text
-              style="white-space: nowrap; overflow: hidden; text-overflow:
-              ellipsis; max-width: 170px; margin-right: 8px;">
-              {headerTitle}
-            </Text>
-          </Copyable>
+          <Urn urn={headerTitle} />
         </div>
       {/if}
 
