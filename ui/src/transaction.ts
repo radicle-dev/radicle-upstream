@@ -5,11 +5,11 @@ import * as api from "./api";
 import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar";
 import * as currency from "./currency";
 import * as event from "./event";
-import { Identity } from "./identity";
+import { Identity, fallback as identityFallback } from "./identity";
 import { Domain } from "./project";
 import * as remote from "./remote";
 import { Session } from "./session";
-import { Org } from "./org";
+import { Org, fallback as orgFallback } from "./org";
 
 const POLL_INTERVAL = 10000;
 
@@ -393,12 +393,11 @@ export const payerFromOrg = (org: Org): Payer => {
 };
 
 export const getPayer = (msg: Message, session: Session): Payer | undefined => {
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const identity = session.identity!;
+  const identity = session.identity ?? identityFallback;
   const orgs = session.orgs;
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const org = (org_id: string) => orgs.find(org => org.id == org_id)!;
+  const org = (org_id: string) =>
+    orgs.find(org => org.id == org_id) ?? orgFallback();
 
   switch (msg.type) {
     case MessageType.OrgRegistration:
