@@ -13,7 +13,8 @@
   let copyIcon = iconBeforeCopy;
 
   const copy = () => {
-    const content = copyContent !== null ? copyContent : slotContent.textContent;
+    const content =
+      copyContent !== null ? copyContent : slotContent.textContent;
     copyToClipboard(content.trim());
 
     copyIcon = Icon.Check;

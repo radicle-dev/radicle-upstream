@@ -5,7 +5,9 @@
   export let urn = null;
   export let showOnHover = false;
 
-  const cleanUrn = urn.includes("rad:git:") ? urn.substring(8, urn.length) : urn;
+  const cleanUrn = urn.includes("rad:git:")
+    ? urn.substring(8, urn.length)
+    : urn;
   console.log(cleanUrn);
 
   const firstSix = cleanUrn.substring(0, 7);
