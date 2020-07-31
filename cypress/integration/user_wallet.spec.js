@@ -68,6 +68,9 @@ context("navigation", () => {
       cy.pick("send-transaction-button").should("be.disabled");
     });
   });
+
+  // Note: the transfer above was directed to the sender itself.
+  // For now, we show those circular transactions as "Incoming transfer".
   context("sending funds flow", () => {
     it("send funds to another account", () => {
       // 0. it starts with a single transaction in the list of transactions
@@ -98,9 +101,7 @@ context("navigation", () => {
       cy.pick("submit-tranfer-button").click();
     });
 
-    it("shows the submited transfer in the list of transactions", () => {
-      // Note: the transfer above was directed to the sender itself.
-      // For now, we show those circular transactions as "Incoming transfer".
+    it("shows the expected updated wallet state after the transfer", () => {
       cy.pick("transactions").should("exist");
       cy.pick("transactions").children(".item").should("have.length", 2);
       cy.pick("transactions")
@@ -123,8 +124,6 @@ context("navigation", () => {
         .contains("+432");
     });
     it("shows the all correct values when viewing the specific transfer", () => {
-      // Note: the transfer above was directed to the sender itself.
-      // For now, we show those circular transactions as "Incoming transfer".
       cy.pick("transactions").should("exist");
       cy.pick("transactions").children(".item").should("have.length", 2);
       cy.pick("transactions").children(".item").eq(0).click();
