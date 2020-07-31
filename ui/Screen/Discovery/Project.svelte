@@ -52,6 +52,7 @@
 
   .description {
     height: 100px;
+    overflow: hidden;
   }
 
   .registered {
