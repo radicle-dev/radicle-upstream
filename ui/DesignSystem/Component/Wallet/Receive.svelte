@@ -14,6 +14,10 @@
     padding: 2rem 1.5rem;
     text-align: center;
   }
+  .center {
+    display: flex;
+    justify-content: center;
+  }
 </style>
 
 <div class="receive" data-cy="receive">
@@ -24,5 +28,7 @@
     </Text>
   {/if}
   <Title style="padding: 1.5rem 0 0.5rem 0;">Address</Title>
-  <Urn urn={accountId} />
+  <div class="center">
+    <Urn urn={accountId} />
+  </div>
 </div>
