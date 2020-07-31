@@ -6,6 +6,6 @@ context("project discovery", () => {
 
   it("loads", () => {
     cy.pick("discovery").click();
-    cy.pick("project-card").should("have.length", 5);
+    cy.pick("project-card").should("have.length", 2);
   });
 });
