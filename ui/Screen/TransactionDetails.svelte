@@ -18,6 +18,7 @@
     identity = session.identity;
   }
 
+  // TODO(nuno): call transaction.getPayer(tx.msg, session) then build payer
   $: payer = transaction.formatPayer(identity);
   $: store = transaction.fetch(params.id);
   $: viewerAccountId = parseQueryString($querystring).viewerAccountId;

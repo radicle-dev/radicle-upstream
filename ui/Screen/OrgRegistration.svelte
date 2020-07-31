@@ -6,7 +6,7 @@
   import * as notification from "../src/notification.ts";
   import { RegistrationFlowState, register } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
-  import { formatPayer, MessageType } from "../src/transaction.ts";
+  import { getPayer, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -22,7 +22,7 @@
   const transactionFee = $session.data.minimumTransactionFee;
   const registrationFee = $session.data.registrationFee.org;
 
-  const next = () => {
+  const next = async () => {
     switch (state) {
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
@@ -36,7 +36,10 @@
               },
             ],
           };
-          payer = formatPayer($session.data.identity);
+          payer = await getPayer(
+            transaction.messages[0],
+            $session.data.identity
+          );
           state = RegistrationFlowState.Confirmation;
         }
         break;

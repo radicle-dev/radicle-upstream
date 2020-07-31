@@ -42,6 +42,7 @@
             transactionFee,
             registrationFee
           );
+          // TODO(nuno): call transaction.getPayer(tx.msg, session) then build payer
           payer = formatPayer($session.data.identity);
           state = RegistrationFlowState.Confirmation;
         }

@@ -8,6 +8,7 @@ import * as event from "./event";
 import { Identity } from "./identity";
 import { Domain } from "./project";
 import * as remote from "./remote";
+import { Org, getOrg } from "./org";
 
 const POLL_INTERVAL = 10000;
 
@@ -374,6 +375,53 @@ interface Payer {
   avatarFallback: EmojiAvatar;
   imageUrl?: string;
 }
+
+export const payerFromIdentity = (identity: Identity): Payer => {
+  return {
+    name: identity.registered ?? identity.metadata.handle,
+    type: PayerType.User,
+    avatarFallback: identity.avatarFallback,
+  };
+};
+
+export const payerFromOrg = (org: Org): Payer => {
+  return {
+    name: org.id,
+    type: PayerType.Org,
+    avatarFallback: org.avatarFallback,
+  };
+};
+
+export const findOrg = (org_id: string, orgs: Org[]): Org | undefined => {
+  return orgs.find(org => org.id == org_id);
+};
+
+export const getPayer = async (
+  msg: Message,
+  identity: Identity
+): Promise<Payer | undefined> => {
+  switch (msg.type) {
+    case MessageType.OrgRegistration:
+    case MessageType.UserRegistration:
+    case MessageType.Transfer:
+    case MessageType.OrgUnregistration:
+      return payerFromIdentity(identity);
+
+    case MessageType.ProjectRegistration: {
+      switch (msg.domainType) {
+        case Domain.Org:
+          return payerFromOrg(await getOrg(msg.domainId));
+        case Domain.User:
+          return payerFromIdentity(identity);
+      }
+      break;
+    }
+
+    case MessageType.MemberRegistration:
+    case MessageType.TransferFromOrg:
+      return payerFromOrg(await getOrg(msg.orgId));
+  }
+};
 
 export const formatPayer = (identity: Identity): Payer =>
   identity && {

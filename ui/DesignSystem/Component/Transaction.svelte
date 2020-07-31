@@ -155,6 +155,7 @@
   </div>
 
   <div slot="right">
+    {JSON.stringify(payer)}
     <Avatar
       dataCy="funding-source"
       title={payer.name}

@@ -28,10 +28,12 @@
     ],
   };
 
-  const payer = transaction.formatPayer(identity);
+  // TODO(nuno): call transaction.getPayer(tx.msg, session) then build payer
+  const payer = async () =>
+    await transaction.getPayer(tx.messages[0], identity);
 </script>
 
-<Transaction transaction={tx} {payer} />
+<Transaction transaction={tx} payer={payer()} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
