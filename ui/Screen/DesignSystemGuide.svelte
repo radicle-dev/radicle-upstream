@@ -29,6 +29,7 @@
     TransactionCenter,
     TransactionStatusbar,
     UserCard,
+    Urn,
   } from "../DesignSystem/Component";
 
   import Section from "./DesignSystemGuide/Section.svelte";
@@ -1069,6 +1070,10 @@
 
       <Swatch>
         <Stats branches={2} commits={12} contributors={4} />
+      </Swatch>
+
+      <Swatch>
+        <Urn urn="5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu" />
       </Swatch>
     </Section>
   </div>
