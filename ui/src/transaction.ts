@@ -384,7 +384,7 @@ export const payerFromIdentity = (identity: Identity): Payer => {
   };
 };
 
-export const payerFromOrg = (org: Org): Payer => {
+const payerFromOrg = (org: Org): Payer => {
   return {
     name: org.id,
     type: PayerType.Org,
@@ -392,6 +392,9 @@ export const payerFromOrg = (org: Org): Payer => {
   };
 };
 
+// Get the payer of a transaction.
+// Note: It now look the payer up based on the local session, whereas
+// in the future we want to look it up on the network.
 export const getPayer = (msg: Message, session: Session): Payer | undefined => {
   const identity = session.identity ?? identityFallback;
   const orgs = session.orgs;
