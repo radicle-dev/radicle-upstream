@@ -52,8 +52,29 @@ export const amountConstraints = {
   },
 };
 
-export const amountValidationStore = (): validation.ValidationStore => {
-  return validation.createValidationStore(amountConstraints);
+const validateSufficientBalance = (fee: number, payerAccountId: string) => (
+  amount: string
+): Promise<boolean> => {
+  return account
+    .getBalance(payerAccountId)
+    .then(balance => balance >= +amount + fee);
+};
+
+export const amountValidationStore = (
+  fee: number,
+  payer: string
+): validation.ValidationStore => {
+  if (payer && payer.length > 0) {
+    return validation.createValidationStore(amountConstraints, [
+      {
+        promise: validateSufficientBalance(fee, payer),
+        validationMessage:
+          "You don't have enough funds in this wallet for this transfer",
+      },
+    ]);
+  } else {
+    return validation.createValidationStore(amountConstraints);
+  }
 };
 
 const validateRecipientExistence = (accountId: string): Promise<boolean> =>

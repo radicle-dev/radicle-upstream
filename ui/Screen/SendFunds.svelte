@@ -30,9 +30,12 @@
   const { identity } = getContext("session");
   const { orgs } = getContext("session");
 
-  const amountValidation = amountValidationStore();
+  const payerAccountIds = {};
+  payerAccountIds[identity.metadata.handle] = identity.accountId;
+  orgs.forEach(org => (payerAccountIds[org.id] = org.accountId));
 
   const recipientValidation = recipientValidationStore();
+
   let validatingAmount = false;
   let validatingRecipient = false;
 
@@ -114,6 +117,10 @@
     }
   };
 
+  $: amountValidation = amountValidationStore(
+    transactionFee,
+    payerAccountIds[$payerStore]
+  );
   $: {
     if ($amountStore && $amountStore.length > 0) validatingAmount = true;
     if (validatingAmount) amountValidation.validate($amountStore);
