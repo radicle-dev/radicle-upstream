@@ -119,12 +119,6 @@ context("navigation", () => {
         .children(".item")
         .eq(0)
         .get(".description")
-        .pick("subject")
-        .contains("from 5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu");
-      cy.pick("transactions")
-        .children(".item")
-        .eq(0)
-        .get(".description")
         .pick("amount")
         .contains("+432");
     });
