@@ -425,13 +425,6 @@ export const getPayer = (msg: Message, session: Session): Payer | undefined => {
   }
 };
 
-export const formatPayer = (identity: Identity): Payer =>
-  identity && {
-    name: identity.metadata.handle,
-    type: PayerType.User,
-    avatarFallback: identity.avatarFallback,
-  };
-
 export enum SubjectType {
   User = "user",
   OrgProject = "org_project",
