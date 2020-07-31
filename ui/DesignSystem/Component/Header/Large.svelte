@@ -1,8 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Avatar, Button, Icon, Title, Text, Numeric } from "../../Primitive";
-  import Copyable from "../Copyable.svelte";
+  import { Avatar, Button, Icon, Title, Text } from "../../Primitive";
+  import Urn from "../Urn.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -50,6 +50,7 @@
 
   .shareable-entity-identifier {
     display: flex;
+    align-items: center;
     padding-top: 8px;
     color: var(--color-foreground-level-6);
   }
@@ -105,14 +106,7 @@
           <Text variant="tiny" style="margin-right: 4px; white-space: nowrap;">
             Radicle ID
           </Text>
-          <Copyable>
-            <Numeric
-              variant="small"
-              style="max-width: 20rem; white-space: nowrap; overflow: hidden;
-              text-overflow: ellipsis; margin-right: 8px;">
-              {entity.shareableEntityIdentifier}
-            </Numeric>
-          </Copyable>
+          <Urn urn={entity.shareableEntityIdentifier} />
         </div>
       </div>
     </div>
