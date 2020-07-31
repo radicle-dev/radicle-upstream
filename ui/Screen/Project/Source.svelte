@@ -19,8 +19,8 @@
     RevisionType,
   } from "../../src/source.ts";
 
-  import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
-  import { Copyable, EmptyState, Remote } from "../../DesignSystem/Component";
+  import { Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { EmptyState, Remote, Urn } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
@@ -182,13 +182,7 @@
   <div class="header">
     <Title variant="big">{project.metadata.name}</Title>
     <div class="project-id">
-      <Code>
-        <Copyable iconSize="normal">
-          <span style="margin-right: 8px;">
-            {project.shareableEntityIdentifier}
-          </span>
-        </Copyable>
-      </Code>
+      <Urn urn={project.shareableEntityIdentifier} />
     </div>
     <div class="description">
       <Text>{project.metadata.description}</Text>
