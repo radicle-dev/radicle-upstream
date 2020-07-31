@@ -96,7 +96,7 @@
     {:else}
       <Title
         truncate
-        style="color: var(--color-foreground-level-5); max-width: 25rem;"
+        style="color: var(--color-foreground-level-5); max-width: 15rem;"
         dataCy="subject">
         {subject.name}
       </Title>
@@ -120,7 +120,8 @@
             state={iconState(tx.state)} />
         {/if}
         <Text
-          style="align-self: center; color: var(--color-foreground-level-6);">
+          style="align-self: center; color: var(--color-foreground-level-6);
+          white-space: nowrap;">
           {statusText(tx.state)}
         </Text>
       </div>
