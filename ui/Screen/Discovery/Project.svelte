@@ -1,16 +1,10 @@
 <script>
+  import { Avatar, Icon, Text, Title } from "../../DesignSystem/Primitive";
   import {
-    Avatar,
-    Code,
-    Icon,
-    Text,
-    Title,
-  } from "../../DesignSystem/Primitive";
-  import {
-    Copyable,
     Stats,
     TrackToggle,
     Tooltip,
+    Urn,
   } from "../../DesignSystem/Component";
 
   export let project = null;
@@ -51,12 +45,9 @@
   }
 
   .shareableEntityIdentifier {
-    background: var(--color-foreground-level-2);
     margin-bottom: 16px;
-    border-radius: 4px;
-    padding: 4px;
-    overflow: hidden;
-    max-width: 180px;
+    display: flex;
+    justify-content: flex-start;
   }
 
   .description {
@@ -103,14 +94,7 @@
 
   </div>
   <div class="shareableEntityIdentifier">
-    <Copyable style="min-width: 0;">
-      <Code
-        variant="medium"
-        style="color: var(--color-foreground-level-5); font-size: 14px;
-        text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
-        {project.shareableEntityIdentifier}
-      </Code>
-    </Copyable>
+    <Urn urn={project.shareableEntityIdentifier} />
   </div>
   <!-- TODO(sos): middle-truncate shareableEntityID & show copy icon -->
 
