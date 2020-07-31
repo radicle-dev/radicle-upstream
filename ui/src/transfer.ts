@@ -57,7 +57,7 @@ const validateSufficientBalance = (fee: number, payerAccountId: string) => (
 ): Promise<boolean> => {
   return account
     .getBalance(payerAccountId)
-    .then(balance => balance >= +amount + fee);
+    .then(balance => currency.microRadToRad(balance) >= +amount + fee);
 };
 
 export const amountValidationStore = (

@@ -154,6 +154,22 @@ context("validation", () => {
     cy.pick("review-transfer-button").should("exist");
     cy.pick("review-transfer-button").should("be.disabled");
   });
+  it("checks if the amount is a valid", () => {
+    cy.pick("modal-amount-input").should("exist");
+    cy.pick("modal-amount-input").clear();
+    cy.pick("modal-amount-input").type(".0");
+    cy.pick("page").contains("must be a valid number");
+    cy.pick("review-transfer-button").should("be.disabled");
+  });
+  it("checks if the amount is covered by the chosen wallet", () => {
+    cy.pick("modal-amount-input").should("exist");
+    cy.pick("modal-amount-input").clear();
+    cy.pick("modal-amount-input").type("325");
+    cy.pick("page").contains(
+      "You don't have enough funds in this wallet for this transfer"
+    );
+    cy.pick("review-transfer-button").should("be.disabled");
+  });
   it("checks if review step contains filled in information", () => {
     cy.pick("page", "preperation-step").should("exist");
     cy.pick("review-transfer-button").should("exist");
