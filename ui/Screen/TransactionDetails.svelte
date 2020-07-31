@@ -18,8 +18,10 @@
     identity = session.identity;
   }
 
-  // TODO(nuno): call transaction.getPayer(tx.msg, session) then build payer
-  $: payer = transaction.formatPayer(identity);
+  const getPlayer = tx => {
+    return transaction.getPayer(tx.messages[0], session);
+  };
+
   $: store = transaction.fetch(params.id);
   $: viewerAccountId = parseQueryString($querystring).viewerAccountId;
 </script>
@@ -33,7 +35,7 @@
 <ModalLayout dataCy="page">
   <div class="transaction" data-cy="transaction">
     <Remote {store} let:data={tx}>
-      <Transaction transaction={tx} {payer} {viewerAccountId} />
+      <Transaction transaction={tx} payer={getPlayer(tx)} {viewerAccountId} />
     </Remote>
 
   </div>

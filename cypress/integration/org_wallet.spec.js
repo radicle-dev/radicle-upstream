@@ -138,7 +138,6 @@ context("navigation", () => {
       cy.pick("transaction", "transfer-amount", "amount").contains("-112");
       cy.pick("transaction", "transaction-fee", "amount").contains("-0.000001");
       cy.pick("transaction", "total", "amount").contains("-112.000001");
-      // TODO(nuno): fix the pass to have this assertion passing
       cy.pick("transaction", "funding-source").contains("coolorg");
 
       // Done

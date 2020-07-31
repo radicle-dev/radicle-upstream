@@ -22,7 +22,7 @@
   const transactionFee = $session.data.minimumTransactionFee;
   const registrationFee = $session.data.registrationFee.org;
 
-  const next = async () => {
+  const next = () => {
     switch (state) {
       case RegistrationFlowState.Preparation:
         if ($validation.status === ValidationStatus.Success) {
@@ -36,10 +36,7 @@
               },
             ],
           };
-          payer = await getPayer(
-            transaction.messages[0],
-            $session.data.identity
-          );
+          payer = getPayer(transaction.messages[0], $session.data);
           state = RegistrationFlowState.Confirmation;
         }
         break;

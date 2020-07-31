@@ -8,7 +8,8 @@ import * as event from "./event";
 import { Identity } from "./identity";
 import { Domain } from "./project";
 import * as remote from "./remote";
-import { Org, getOrg } from "./org";
+import { Session } from "./session";
+import { Org } from "./org";
 
 const POLL_INTERVAL = 10000;
 
@@ -248,7 +249,6 @@ const update = (msg: Msg): void => {
         .post<ListInput, Transactions>("transactions", { ids: msg.ids })
         .then(transactionsStore.success)
         .catch(transactionsStore.error);
-
       break;
 
     case Kind.RefetchList:
@@ -392,14 +392,14 @@ export const payerFromOrg = (org: Org): Payer => {
   };
 };
 
-export const findOrg = (org_id: string, orgs: Org[]): Org | undefined => {
-  return orgs.find(org => org.id == org_id);
-};
+export const getPayer = (msg: Message, session: Session): Payer | undefined => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const identity = session.identity!;
+  const orgs = session.orgs;
 
-export const getPayer = async (
-  msg: Message,
-  identity: Identity
-): Promise<Payer | undefined> => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const org = (org_id: string) => orgs.find(org => org.id == org_id)!;
+
   switch (msg.type) {
     case MessageType.OrgRegistration:
     case MessageType.UserRegistration:
@@ -410,7 +410,7 @@ export const getPayer = async (
     case MessageType.ProjectRegistration: {
       switch (msg.domainType) {
         case Domain.Org:
-          return payerFromOrg(await getOrg(msg.domainId));
+          return payerFromOrg(org(msg.domainId));
         case Domain.User:
           return payerFromIdentity(identity);
       }
@@ -419,7 +419,7 @@ export const getPayer = async (
 
     case MessageType.MemberRegistration:
     case MessageType.TransferFromOrg:
-      return payerFromOrg(await getOrg(msg.orgId));
+      return payerFromOrg(org(msg.orgId));
   }
 };
 

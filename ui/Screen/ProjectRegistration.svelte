@@ -51,9 +51,6 @@
     }
   };
 
-  // TODO(nuno): payer should be built from domainId
-  const payer = () => transaction.formatPayer(session.identity);
-
   // TODO(sos): coordinate message format for project registration with proxy
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
@@ -68,6 +65,8 @@
       },
     ],
   });
+
+  const payer = () => transaction.getPayer(tx().messages[0], session);
 
   const handleDetailsNextClick = event => {
     domainId = event.detail.domainId;

@@ -28,12 +28,13 @@
     ],
   };
 
-  // TODO(nuno): call transaction.getPayer(tx.msg, session) then build payer
-  const payer = async () =>
-    await transaction.getPayer(tx.messages[0], identity);
+  // When registering a user, we don't yet have orgs in the session
+  // as orgs require a registered user. Therefore we can here assume
+  // that the payer is the given identity as it can't be no one else.
+  const payer = transaction.payerFromIdentity(identity);
 </script>
 
-<Transaction transaction={tx} payer={payer()} />
+<Transaction transaction={tx} {payer} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button
