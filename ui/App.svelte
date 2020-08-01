@@ -27,6 +27,7 @@
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
+  import Untracked from "./Screen/Project/Untracked.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
 
   const routes = {
@@ -39,6 +40,7 @@
     "/orgs/:id/members/register": MemberRegistration,
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
+    "/projects/untracked/:uri": Untracked,
     "/projects/new": ProjectCreation,
     "/projects/register/:domainId": ProjectRegistration,
     "/projects/:projectId/register/:domainId": ProjectRegistration,

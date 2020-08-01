@@ -1,7 +1,6 @@
 import { writable } from "svelte/store";
 
 import * as event from "./event";
-import * as remote from "./remote";
 
 import { ValidationStatus } from "./validation";
 
@@ -26,14 +25,11 @@ const update = (msg: Msg): void => {
       validation.set({ status: ValidationStatus.Loading });
       setTimeout(() => {
         validation.set({ status: ValidationStatus.Success });
-        project.success({ uri: msg.uri });
       }, 1000);
   }
 };
 
-// TODO(sos): actual validation store
+// TODO(sos): actual validation & remote stores
 export const validation = writable({ status: ValidationStatus.NotStarted });
-
-export const project = remote.createStore<UntrackedProject>();
 
 export const updateUri = event.create<Kind, Msg>(Kind.Update, update);

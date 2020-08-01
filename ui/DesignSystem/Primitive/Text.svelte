@@ -2,6 +2,9 @@
   export let style = null;
 
   export let variant = "regular"; // regular | small | tiny | medium
+  export let align = "left"; // left | center | end | justify
+
+  $: textAlign = `text-align: ${align}`;
 </script>
 
 <style>
@@ -27,6 +30,6 @@
   }
 </style>
 
-<p class={variant} {style}>
+<p class={variant} style={style ? style.concat(textAlign) : textAlign}>
   <slot />
 </p>

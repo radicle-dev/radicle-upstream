@@ -1,17 +1,30 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import { push } from "svelte-spa-router";
 
   import { Code, Icon, Input, Text } from "../Primitive";
 
   import Copyable from "./Copyable.svelte";
   import TrackToggle from "./TrackToggle.svelte";
 
+  import * as path from "../../src/path";
   import { Status } from "../../src/remote";
-  import { project, updateUri, validation } from "../../src/search";
+  import { updateUri, validation } from "../../src/search";
+  import { ValidationStatus } from "../../src/validation";
 
+  // Trying a `hide` variable here because animating the transition might be
+  // easier this way
   let searchBar,
     hide = false,
     value;
+
+  const navigateToProject = () => {
+    if ($validation.status !== ValidationStatus.Success) return;
+
+    hide = true;
+    dispatch("hide");
+    push(path.projectUntracked(value));
+  };
 
   const onKeydown = ev => {
     switch (ev.key) {
@@ -20,9 +33,7 @@
         dispatch("hide");
         break;
       case "Enter":
-        if ($project.status === Status.Success) {
-          hide = true;
-        }
+        navigateToProject();
         break;
     }
   };
@@ -37,12 +48,12 @@
   };
 
   $: if (value && value.length > 0) {
-    updateUri(value);
+    updateUri({ uri: value });
   }
 
   // TODO(sos): animate & show/hide based on actual remote response
   $: showTrackingInfo =
-    value && value.length > 0 && $project.status === Status.Success;
+    value && value.length > 0 && $validation.status === Status.Success;
 </script>
 
 <style>
@@ -101,7 +112,7 @@
     margin-bottom: 48px;
   }
 
-  .shareable-entity-identifier {
+  .uri {
     background: var(--color-foreground-level-2);
     max-width: 180px;
     padding: 4px;
@@ -113,7 +124,7 @@
 
 <div class="search-modal" class:hide>
   <div class="overlay" />
-  <div class="content">
+  <div class="content" on:click={navigateToProject}>
     <div class="search-bar" bind:this={searchBar}>
       <Input.Text
         autofocus
@@ -130,7 +141,7 @@
     {#if showTrackingInfo}
       <div class="tracking-info">
         <div class="header">
-          <div class="shareable-entity-identifier">
+          <div class="uri">
             <Copyable style="min-width: 0;">
               <Code
                 variant="medium"
@@ -143,7 +154,7 @@
 
           <TrackToggle />
         </div>
-        <Text style="text-align: left; color: var(--color-foreground-level-6);">
+        <Text align="center" style="color: var(--color-foreground-level-6);">
           You’re not tracking this project yet, so there’s nothing to show here.
           Track it and you’ll be notified as soon as it’s available.
         </Text>
