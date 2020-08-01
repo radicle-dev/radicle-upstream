@@ -154,6 +154,14 @@
     </li>
   </ul>
   <ul class="bottom">
+    <!-- TODO(sos): make active when search is open -->
+    <li class="item indicator" data-cy="search">
+      <Tooltip value="Navigate to a project">
+        <div on:click|stopPropagation={() => dispatch('opensearch')}>
+          <Icon.Search />
+        </div>
+      </Tooltip>
+    </li>
     <li
       class="item indicator"
       class:active={path.active(path.discovery(), $location)}

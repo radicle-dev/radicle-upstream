@@ -50,7 +50,7 @@
     margin-right: 20px;
   }
 
-  .shareableEntityIdentifier {
+  .shareable-entity-identifier {
     background: var(--color-foreground-level-2);
     margin-bottom: 16px;
     border-radius: 4px;
@@ -102,7 +102,7 @@
     {/if}
 
   </div>
-  <div class="shareableEntityIdentifier">
+  <div class="shareable-entity-identifier">
     <Copyable style="min-width: 0;">
       <Code
         variant="medium"

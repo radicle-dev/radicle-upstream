@@ -25,7 +25,6 @@
   import Project from "./Screen/Project.svelte";
   import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
-  import Search from "./Screen/Search.svelte";
   import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
@@ -33,7 +32,6 @@
   const routes = {
     "/": Blank,
     "/identity/new": IdentityCreation,
-    "/search": Search,
     "/settings": Settings,
     "/discovery": Discovery,
     "/profile/*": Profile,

@@ -4,6 +4,8 @@
 
   import { ValidationStatus } from "../../../src/validation.ts";
 
+  let input;
+
   export let style = null;
   export let placeholder = null;
   export let value = null;
@@ -13,6 +15,11 @@
   export let validation = null;
   export let showLeftItem = false;
   export let showSuccessCheck = false;
+  export let autofocus = false;
+
+  // Can't use normal `autofocus` attribute on the `input`:
+  // "Autofocus processing was blocked because a document's URL has a fragment"
+  $: if (autofocus) input && input.focus();
 </script>
 
 <style>
@@ -90,7 +97,9 @@
     bind:value
     {disabled}
     on:change
-    on:input />
+    on:input
+    bind:this={input}
+    spellcheck={false} />
 
   {#if showLeftItem}
     <div class="left-item-wrapper">
