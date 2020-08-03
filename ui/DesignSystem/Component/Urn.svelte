@@ -4,11 +4,15 @@
 
   export let urn = null;
   export let showOnHover = false;
+  let cleanUrn;
 
-  const cleanUrn = urn.includes("rad:git:")
-    ? urn.substring(8, urn.length)
-    : urn;
-  console.log(cleanUrn);
+  if (urn.includes("%rad:git:")) {
+    cleanUrn = urn.substring(9, urn.length);
+  } else if (urn.includes("rad:git:")) {
+    cleanUrn = urn.substring(8, urn.length);
+  } else {
+    cleanUrn = urn;
+  }
 
   const firstSix = cleanUrn.substring(0, 7);
   const lastSix = cleanUrn.substring(cleanUrn.length - 7, cleanUrn.length);
