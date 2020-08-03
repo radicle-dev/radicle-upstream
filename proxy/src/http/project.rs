@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::coco;
@@ -15,17 +16,19 @@ use crate::project;
 use crate::registry;
 
 /// Combination of all routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
     list_filter(ctx.clone())
         .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
+        .or(discover_filter(ctx.clone()))
         .or(get_filter(ctx))
+        .boxed()
 }
 
-/// `POST /projects/<id>/checkout`
+/// `POST /<id>/checkout`
 fn checkout_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -57,17 +60,16 @@ where
         .and_then(handler::checkout)
 }
 
-/// `POST /projects`
+/// `POST /`
 fn create_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path!("projects")
-        .and(warp::post())
-        .and(http::with_context(ctx.clone()))
+    http::with_context(ctx.clone())
         .and(http::with_owner_guard(ctx))
+        .and(warp::post())
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -86,15 +88,15 @@ where
         .and_then(handler::create)
 }
 
-/// `GET /projects/<id>`
+/// `GET /<id>`
 fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path("projects")
+    http::with_context(ctx)
         .and(warp::get())
-        .and(http::with_context(ctx))
         .and(document::param::<String>("id", "Project id"))
+        .and(path::end())
         .and(document::document(document::description(
             "Find Project by ID",
         )))
@@ -116,14 +118,14 @@ where
         .and_then(handler::get)
 }
 
-/// `GET /projects`
+/// `GET /`
 fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path!("projects")
+    http::with_context(ctx)
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(path::end())
         .and(document::document(document::description("List projects")))
         .and(document::document(document::tag("Project")))
         .and(document::document(
@@ -137,6 +139,32 @@ where
             .description("Creation succeeded"),
         ))
         .and_then(handler::list)
+}
+
+/// `GET /discover`
+fn discover_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    path("discover")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and(document::document(document::description(
+            "Fetch discovery feed",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(document::response(
+            200,
+            document::body(
+                document::array(project::Project::document())
+                    .description("Feed of untracked projects"),
+            )
+            .mime("application/json"),
+        )))
+        .and_then(handler::discover)
 }
 
 /// Project handlers to implement conversion and translation between core domain and http request
@@ -218,9 +246,19 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
 
         Ok(reply::json(&projects))
+    }
+
+    /// Get a feed of untracked projects.
+    pub async fn discover<R>(_ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let feed = project::discover()?;
+
+        Ok(reply::json(&feed))
     }
 }
 
@@ -489,7 +527,7 @@ mod test {
 
         let res = request()
             .method("POST")
-            .path("/projects")
+            .path("/")
             .json(&super::CreateInput {
                 path: path.into(),
                 metadata: super::MetadataInput {
@@ -501,7 +539,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -550,7 +588,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/projects/{}", urn))
+            .path(&format!("/{}", urn))
             .reply(&api)
             .await;
 
@@ -573,11 +611,67 @@ mod test {
 
         coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
 
-        let projects = ctx.peer_api.list_projects()?;
-        let res = request().method("GET").path("/projects").reply(&api).await;
+        let projects = project::list_projects(&ctx.peer_api)?;
+        let res = request().method("GET").path("/").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn discover() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
+
+        coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
+
+        let res = request().method("GET").path("/discover").reply(&api).await;
+        let want = json!([
+            {
+                "id": "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c",
+                "metadata": {
+                    "defaultBranch": "main",
+                    "description": "It is not the slumber of reason that engenders monsters, \
+                    but vigilant and insomniac rationality.",
+                    "name": "radicle-upstream"
+                },
+                "registration": serde_json::Value::Null,
+                "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+                "stats": {
+                    "branches": 36,
+                    "commits": 216,
+                    "contributors": 6,
+                },
+            },
+            {
+                "id": "rad:git:hwd1yrefz6xkwb46xkt7dhmwsjendiaqsaynpjwweqrqjc8muaath4gsf7o",
+                "metadata": {
+                    "defaultBranch": "main",
+                    "description": "The monstrous complexity of our reality, a reality cross-hatched with fibre-optic cables, \
+                    radio and microwaves, oil and gas pipelines, aerial and shipping routes, and the unrelenting, simultaneous execution \
+                    of millions of communication protocols with every passing millisecond.",
+                    "name": "radicle-link"
+                },
+                "registration": serde_json::Value::Null,
+                "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd",
+                "stats": {
+                    "branches": 49,
+                    "commits": 343,
+                    "contributors": 7,
+                },
+            },
+        ]);
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, want);
         });
 
         Ok(())

@@ -11,7 +11,7 @@ use std::str::FromStr;
 use radicle_registry_client::{self as protocol, ClientT, CryptoPair};
 pub use radicle_registry_client::{
     parse_ss58_address, AccountId, Balance, BlockHash, Id, IdStatus, ProjectDomain, ProjectName,
-    MINIMUM_FEE,
+    MINIMUM_TX_FEE, REGISTRATION_FEE,
 };
 
 use crate::avatar;
@@ -116,31 +116,6 @@ pub struct User {
     pub maybe_entity_id: Option<String>,
     /// The public key of the user
     pub account_id: protocol::ed25519::Public,
-}
-
-/// Default transaction fees and deposits.
-#[derive(Clone, Default, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Deposits {
-    /// User registration deposit.
-    user_registration: Balance,
-    /// Organization registration deposit.
-    org_registration: Balance,
-    /// Project registration deposit.
-    project_registration: Balance,
-    /// Member registration on org deposit.
-    member_registration: Balance,
-}
-
-/// Return a list of costs for all supported transactions.
-#[must_use]
-pub const fn get_deposits() -> Deposits {
-    Deposits {
-        user_registration: protocol::REGISTER_USER_DEPOSIT,
-        org_registration: protocol::REGISTER_ORG_DEPOSIT,
-        project_registration: protocol::REGISTER_PROJECT_DEPOSIT,
-        member_registration: protocol::REGISTER_MEMBER_DEPOSIT,
-    }
 }
 
 /// Methods to interact with the Registry in a uniform way.
@@ -362,6 +337,8 @@ pub struct Registry {
     client: protocol::Client,
 }
 
+const PREPAID_AMOUNT_MICRO_RAD: Balance = 321 * 1_000_000;
+
 /// Registry client wrapper methods
 impl Registry {
     /// Wraps a registry client.
@@ -520,11 +497,13 @@ impl Client for Registry {
             block_number,
             Message::OrgRegistration { id: org_id.clone() },
             fee,
+            Some(REGISTRATION_FEE),
         );
 
         // TODO(xla): Remove automatic prepayment once we have proper balances.
         let org = self.client.get_org(org_id).await?.expect("org not present");
-        self.prepay_account(org.account_id(), 1000).await?;
+        self.prepay_account(org.account_id(), PREPAID_AMOUNT_MICRO_RAD)
+            .await?;
 
         Ok(tx)
     }
@@ -547,6 +526,7 @@ impl Client for Registry {
             block_number,
             Message::OrgUnregistration { id: org_id },
             fee,
+            None,
         ))
     }
 
@@ -573,6 +553,7 @@ impl Client for Registry {
                 handle: user_id,
             },
             fee,
+            None,
         ))
     }
 
@@ -683,6 +664,7 @@ impl Client for Registry {
                 domain_id,
             },
             fee,
+            None,
         ))
     }
 
@@ -706,7 +688,8 @@ impl Client for Registry {
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // TODO(xla): Remove automatic prepayment once we have proper balances.
-        self.prepay_account(author.public(), 1000).await?;
+        self.prepay_account(author.public(), PREPAID_AMOUNT_MICRO_RAD)
+            .await?;
         // Prepare and submit user registration transaction.
         let register_message = protocol::message::RegisterUser {
             user_id: handle.clone(),
@@ -719,6 +702,7 @@ impl Client for Registry {
             block_number,
             Message::UserRegistration { handle, id },
             fee,
+            Some(REGISTRATION_FEE),
         ))
     }
 
@@ -741,6 +725,7 @@ impl Client for Registry {
             block_number,
             Message::UserUnregistration { id: handle },
             fee,
+            None,
         ))
     }
 
@@ -762,6 +747,7 @@ impl Client for Registry {
             block_number,
             Message::Transfer { recipient, amount },
             fee,
+            None,
         ))
     }
 
@@ -792,6 +778,7 @@ impl Client for Registry {
                 amount,
             },
             fee,
+            None,
         ))
     }
 
@@ -801,6 +788,11 @@ impl Client for Registry {
         amount: Balance,
     ) -> Result<(), error::Error> {
         let alice = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
+
+        // We don't want this transfer to happen from alice to herself.
+        if recipient == alice.public() {
+            return Ok(());
+        }
 
         self.client
             .sign_and_submit_message(&alice, protocol::message::Transfer { recipient, amount }, 1)
@@ -869,18 +861,28 @@ mod test {
 
         // Register the user
         let user_registration = registry
-            .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
             .await;
         assert!(user_registration.is_ok());
 
-        let result = registry.register_org(&author, org_id, 10).await;
+        // Register the org
+        let initial_balance = registry.free_balance(&author.public()).await?;
+        let fee = 2;
+        let result = registry.register_org(&author, org_id.clone(), fee).await;
         assert!(result.is_ok());
 
-        let org_id = protocol::Id::try_from("monadic")?;
-        let maybe_org = client.get_org(org_id.clone()).await?;
+        let maybe_org = client.get_org(org_id).await?;
         assert!(maybe_org.is_some());
         let org = maybe_org.unwrap();
-        assert_eq!(org.members()[0], protocol::Id::try_from("alice")?);
+        assert_eq!(org.members()[0], handle);
+
+        // The amount prepaid on org registration.
+        // TODO(nuno): delete once we no longer prepay accounts
+        let prepaid_transfer_costs = super::PREPAID_AMOUNT_MICRO_RAD + 1;
+        assert_eq!(
+            registry.free_balance(&author.public()).await?,
+            initial_balance - prepaid_transfer_costs - fee - protocol::REGISTRATION_FEE
+        );
 
         Ok(())
     }
@@ -894,14 +896,22 @@ mod test {
         let handle = Id::try_from("alice")?;
 
         // Register the user
+        let fee = 2;
         let user_registration = registry
-            .register_user(&author, handle.clone(), Some("123abcd.git".into()), 100)
+            .register_user(&author, handle.clone(), Some("123abcd.git".into()), fee)
             .await;
         assert!(user_registration.is_ok());
 
-        // Unregister the org
-        let unregistration = registry.unregister_user(&author, handle, 10).await;
+        // Unregister the user
+        let initial_balance = registry.free_balance(&author.public()).await?;
+        let fee = 2;
+        let unregistration = registry.unregister_user(&author, handle, fee).await;
         assert!(unregistration.is_ok());
+
+        assert_eq!(
+            registry.free_balance(&author.public()).await?,
+            initial_balance - fee
+        );
 
         Ok(())
     }
@@ -926,8 +936,15 @@ mod test {
         assert!(registration.is_ok());
 
         // Unregister the org
-        let unregistration = registry.unregister_org(&author, org_id, 10).await;
+        let initial_balance = registry.free_balance(&author.public()).await?;
+        let fee = 2;
+        let unregistration = registry.unregister_org(&author, org_id, fee).await;
         assert!(unregistration.is_ok());
+
+        assert_eq!(
+            registry.free_balance(&author.public()).await?,
+            initial_balance - fee
+        );
 
         Ok(())
     }
@@ -959,16 +976,23 @@ mod test {
         assert!(user_registration2.is_ok());
 
         // Register the second user as a member
+        let org = client.get_org(org_id.clone()).await?.unwrap();
+        let initial_balance = registry.free_balance(&org.account_id()).await?;
+        let fee = 2;
         let member_registration = registry
-            .register_member(&author, org_id, handle2, 100)
+            .register_member(&author, org_id.clone(), handle2, fee)
             .await;
         assert!(member_registration.is_ok());
 
-        let org_id = protocol::Id::try_from("monadic")?;
         let org = client.get_org(org_id).await?.unwrap();
         assert_eq!(org.members().len(), 2);
         assert!(org.members().contains(&protocol::Id::try_from("alice")?));
         assert!(org.members().contains(&protocol::Id::try_from("bob")?));
+
+        assert_eq!(
+            registry.free_balance(&org.account_id()).await?,
+            initial_balance - fee
+        );
 
         Ok(())
     }
@@ -1105,13 +1129,20 @@ mod test {
         assert!(org_result.is_ok());
 
         // Register the project
+        let org = registry
+            .get_org(org_id.clone())
+            .await
+            .unwrap()
+            .expect("org should exist");
+        let initial_balance = registry.free_balance(&org.account_id).await?;
+        let fee = 2;
         let result = registry
             .register_project(
                 &author,
                 ProjectDomain::Org(org_id.clone()),
                 project_name.clone(),
                 Some(urn),
-                10,
+                fee,
             )
             .await;
         assert!(result.is_ok());
@@ -1130,11 +1161,16 @@ mod test {
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
 
+        assert_eq!(
+            registry.free_balance(&org.account_id).await?,
+            initial_balance - fee
+        );
+
         Ok(())
     }
 
     #[tokio::test]
-    async fn test_register_project() -> Result<(), error::Error> {
+    async fn test_register_project_under_user() -> Result<(), error::Error> {
         // Test that project registration submits valid transactions and they succeed.
         let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client.clone());
@@ -1154,13 +1190,15 @@ mod test {
         assert!(user_registration.is_ok());
 
         // Register the project
+        let initial_balance = registry.free_balance(&author.public()).await?;
+        let fee = 2;
         let result = registry
             .register_project(
                 &author,
                 ProjectDomain::User(handle.clone()),
                 project_name.clone(),
                 Some(urn),
-                10,
+                fee,
             )
             .await;
         assert!(result.is_ok());
@@ -1179,20 +1217,33 @@ mod test {
         let metadata: Metadata = from_reader(&metadata_vec[..]).unwrap();
         assert_eq!(metadata.version, 1);
 
+        assert_eq!(
+            registry.free_balance(&author.public()).await?,
+            // one fee for project checkpoint setting and one for registration
+            initial_balance - 2 * fee
+        );
+
         Ok(())
     }
 
     #[tokio::test]
-    async fn register_user() -> Result<(), error::Error> {
+    async fn test_register_user() -> Result<(), error::Error> {
         let (client, _) = protocol::Client::new_emulator();
         let registry = Registry::new(client);
         let author = protocol::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = Id::try_from("cloudhead")?;
 
+        let initial_balance = registry.free_balance(&author.public()).await?;
+        let fee = 2;
         let res = registry
-            .register_user(&author, handle, Some("123abcd.git".into()), 100)
+            .register_user(&author, handle, Some("123abcd.git".into()), fee)
             .await;
         assert!(res.is_ok());
+
+        assert_eq!(
+            registry.free_balance(&author.public()).await?,
+            initial_balance - fee - protocol::REGISTRATION_FEE
+        );
 
         Ok(())
     }
@@ -1220,10 +1271,19 @@ mod test {
             .await?
             .expect("org not present");
 
+        // Transfer from user to org
+        let initial_balance = registry.free_balance(&author.public()).await?;
+        let fee = 2;
+        let amount = 100;
         let res = registry
-            .transfer_from_user(&author, org.account_id(), 1000, 100)
+            .transfer_from_user(&author, org.account_id(), amount, fee)
             .await;
         assert!(res.is_ok());
+
+        assert_eq!(
+            registry.free_balance(&author.public()).await?,
+            initial_balance - fee - amount
+        );
 
         Ok(())
     }
@@ -1245,16 +1305,26 @@ mod test {
         let org_id = Id::try_from("monadic")?;
         let org_result = registry.register_org(&author, org_id.clone(), 10).await;
         assert!(org_result.is_ok());
-        registry
+        let org = registry
             .client
             .get_org(org_id.clone())
-            .await?
+            .await
+            .unwrap()
             .expect("org not present");
 
+        // Transfer from org to user
+        let initial_balance = registry.free_balance(&org.account_id()).await?;
+        let fee = 2;
+        let amount = 100;
         let res = registry
-            .transfer_from_org(&author, org_id, author.public(), 10, 100)
+            .transfer_from_org(&author, org_id, author.public(), amount, fee)
             .await;
         assert!(res.is_ok());
+
+        assert_eq!(
+            registry.free_balance(&org.account_id()).await?,
+            initial_balance - fee - amount
+        );
 
         Ok(())
     }

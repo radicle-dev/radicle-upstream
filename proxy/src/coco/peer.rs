@@ -17,7 +17,6 @@ use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
 
 use crate::error;
-use crate::project::Project;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -128,12 +127,12 @@ impl Api {
     ///
     /// # Errors
     ///
-    ///   * The retrieving the project entities from the store fails.
+    ///   * Retrieving the project entities from the store fails.
     #[allow(
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
     )]
-    pub fn list_projects(&self) -> Result<Vec<Project>, error::Error> {
+    pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
         let project_meta = {
             let api = self.peer_api.lock().expect("unable to acquire lock");
             let storage = api.storage().reopen()?;
@@ -157,15 +156,7 @@ impl Api {
             .collect::<Vec<_>>()
         };
 
-        project_meta
-            .into_iter()
-            .map(|project| {
-                self.with_browser(&project.urn(), |browser| {
-                    let stats = browser.get_stats()?;
-                    Ok((project, stats).into())
-                })
-            })
-            .collect()
+        Ok(project_meta)
     }
 
     /// Returns the list of [`user::User`]s known for your peer.
@@ -598,7 +589,7 @@ mod test {
         let projects = api.list_projects()?;
         let mut project_names = projects
             .into_iter()
-            .map(|project| project.metadata.name)
+            .map(|project| project.name().to_string())
             .collect::<Vec<_>>();
         project_names.sort();
 

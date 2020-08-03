@@ -8,6 +8,8 @@ import * as event from "./event";
 import { Identity } from "./identity";
 import { Domain } from "./project";
 import * as remote from "./remote";
+import { Session } from "./session";
+import { Org } from "./org";
 
 const POLL_INTERVAL = 10000;
 
@@ -19,13 +21,6 @@ interface Timestamp {
   nanos: number;
 }
 
-export interface Deposits {
-  userRegistration: currency.MicroRad;
-  orgRegistration: currency.MicroRad;
-  projectRegistration: currency.MicroRad;
-  memberRegistration: currency.MicroRad;
-}
-
 // Note: The schemas of each variant must correspond to
 // their proxy > registry > Message variant counterpart.
 export enum MessageType {
@@ -35,7 +30,30 @@ export enum MessageType {
   MemberUnregistration = "memberUnregistration",
   ProjectRegistration = "projectRegistration",
   UserRegistration = "userRegistration",
+  Transfer = "transfer",
+  TransferFromOrg = "transferFromOrg",
 }
+
+const displayMessageType = (type: MessageType): string => {
+  switch (type) {
+    case MessageType.OrgRegistration:
+      return "Org Registration";
+    case MessageType.OrgUnregistration:
+      return "Org Unregistration";
+    case MessageType.MemberRegistration:
+      return "Member Registration";
+    case MessageType.MemberUnregistration:
+      return "Member Unregistration";
+    case MessageType.ProjectRegistration:
+      return "Project Registration";
+    case MessageType.UserRegistration:
+      return "User Registration";
+    case MessageType.Transfer:
+      return "Transfer";
+    case MessageType.TransferFromOrg:
+      return "Org transfer";
+  }
+};
 
 interface OrgRegistration {
   type: MessageType.OrgRegistration;
@@ -74,13 +92,28 @@ interface UserRegistration {
   id: string;
 }
 
-type Message =
+interface Transfer {
+  type: MessageType.Transfer;
+  amount: number;
+  recipient: string;
+}
+
+interface TransferFromOrg {
+  type: MessageType.TransferFromOrg;
+  orgId: string;
+  recipient: string;
+  amount: number;
+}
+
+export type Message =
   | OrgRegistration
   | OrgUnregistration
   | MemberRegistration
   | MemberUnregistration
   | ProjectRegistration
-  | UserRegistration;
+  | UserRegistration
+  | Transfer
+  | TransferFromOrg;
 
 export enum StateType {
   Confirmed = "confirmed",
@@ -122,6 +155,7 @@ export interface Transaction {
   state: State;
   timestamp: Timestamp;
   fee: currency.MicroRad;
+  registrationFee?: currency.MicroRad;
 }
 
 type Transactions = Transaction[];
@@ -215,7 +249,6 @@ const update = (msg: Msg): void => {
         .post<ListInput, Transactions>("transactions", { ids: msg.ids })
         .then(transactionsStore.success)
         .catch(transactionsStore.error);
-
       break;
 
     case Kind.RefetchList:
@@ -253,8 +286,10 @@ transactionsStore.start(() => {
   return (): void => clearInterval(poll);
 });
 
-// FORMATTING
-export const formatMessage = (msg: Message): string => {
+export const formatMessage = (
+  msg: Message,
+  viewerAccountId: string
+): string => {
   switch (msg.type) {
     case MessageType.OrgRegistration:
       return "Org registration";
@@ -273,6 +308,12 @@ export const formatMessage = (msg: Message): string => {
 
     case MessageType.UserRegistration:
       return "Handle registration";
+
+    case MessageType.Transfer:
+    case MessageType.TransferFromOrg: {
+      const type = msg.recipient === viewerAccountId ? "Incoming" : "Outgoing";
+      return `${type} transfer`;
+    }
   }
 };
 
@@ -291,6 +332,10 @@ export const formatDesc = (msg: Message): string => {
 
     case MessageType.UserRegistration:
       return msg.handle;
+
+    case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
+      return msg.recipient;
   }
 };
 
@@ -306,12 +351,14 @@ export const headerIcon = (msg: Message): string => {
       return "Member";
 
     case MessageType.ProjectRegistration:
+    case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
       return "Source";
   }
 };
 
-export const formatStake = (msg: Message): string =>
-  `${formatMessage(msg)} deposit`;
+export const formatStake = (type: MessageType): string =>
+  `${displayMessageType(type)} fee`;
 
 // Having both enums & interfaces here is somewhat verbose; the reason we do this
 // is so we have compatibility with non-TS svelte components while still enjoying
@@ -329,12 +376,85 @@ interface Payer {
   imageUrl?: string;
 }
 
-export const formatPayer = (identity: Identity): Payer =>
-  identity && {
-    name: identity.metadata.handle,
+export const payerFromIdentity = (identity: Identity): Payer => {
+  return {
+    name: identity.registered ?? identity.metadata.handle,
     type: PayerType.User,
     avatarFallback: identity.avatarFallback,
   };
+};
+
+const payerFromOrg = (org: Org): Payer => {
+  return {
+    name: org.id,
+    type: PayerType.Org,
+    avatarFallback: org.avatarFallback,
+  };
+};
+
+const unkownAvatar: EmojiAvatar = {
+  background: {
+    r: 245,
+    g: 245,
+    b: 245,
+  },
+  emoji: "❔",
+};
+
+// When we look at transfer records involving an org that is no longer
+// around(on the local machine), we need data to display the avatar
+// component of such entities. To reproduce, register an org, transfer
+// something from it to the (registered) user, restart the app, and
+// now look at the 'Incoming Transfer' in the user wallet.
+export const unkownOrg: Org = {
+  id: "Unkown org",
+  accountId: "5CNskZBkQcJzwjJ1sgWPpByThABe3wKrsBJoe8wi1kKzGGpS",
+  shareableEntityIdentifier: "org@radicle",
+  members: [{ handle: "user" }],
+  avatarFallback: unkownAvatar,
+};
+
+// Identity counter part of `unkownOrg`.
+export const unkownIdentity: Identity = {
+  id: "user@unkown.git",
+  metadata: {
+    handle: "Unkown user",
+  },
+  avatarFallback: unkownAvatar,
+};
+
+// Get the payer of a transaction.
+// Note: It now looks the payer up based on the local session, whereas
+// in the future we want to look it up on the network.
+export const getPayer = (msg: Message, session: Session): Payer | undefined => {
+  const identity = session.identity ?? unkownIdentity;
+  const orgs = session.orgs;
+
+  const org = (org_id: string) =>
+    orgs.find(org => org.id == org_id) ?? unkownOrg;
+
+  switch (msg.type) {
+    case MessageType.OrgRegistration:
+    case MessageType.UserRegistration:
+    case MessageType.Transfer:
+    case MessageType.OrgUnregistration:
+      return payerFromIdentity(identity);
+
+    case MessageType.ProjectRegistration: {
+      switch (msg.domainType) {
+        case Domain.Org:
+          return payerFromOrg(org(msg.domainId));
+        case Domain.User:
+          return payerFromIdentity(identity);
+      }
+      break;
+    }
+
+    case MessageType.MemberRegistration:
+    case MessageType.TransferFromOrg:
+      return payerFromOrg(org(msg.orgId));
+  }
+};
 
 export enum SubjectType {
   User = "user",
@@ -350,7 +470,10 @@ interface Subject {
   avatarSource?: Promise<Avatar>;
 }
 
-export const formatSubject = (msg: Message): Subject => {
+export const formatSubject = (
+  msg: Message,
+  viewerAccountId: string
+): Subject => {
   let avatarSource, name, type;
 
   switch (msg.type) {
@@ -398,6 +521,15 @@ export const formatSubject = (msg: Message): Subject => {
         msg.domainId
       );
       break;
+
+    case MessageType.Transfer:
+      name = transferSubjectName(msg, viewerAccountId);
+      type = SubjectType.User;
+      break;
+    case MessageType.TransferFromOrg:
+      name = transferSubjectName(msg, viewerAccountId);
+      type = SubjectType.Org;
+      break;
   }
 
   return {
@@ -405,6 +537,24 @@ export const formatSubject = (msg: Message): Subject => {
     type,
     avatarSource,
   };
+};
+
+export const isIncoming = (msg: Message, viewerAccountId: string): boolean => {
+  switch (msg.type) {
+    case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
+      return msg.recipient === viewerAccountId;
+    default:
+      return false;
+  }
+};
+
+const transferSubjectName = (
+  msg: Transfer | TransferFromOrg,
+  viewerAccountId: string
+): string => {
+  const direction = isIncoming(msg, viewerAccountId) ? "from" : "to";
+  return `${direction} ${msg.recipient}`;
 };
 
 export const subjectAvatarShape = (subjectType: SubjectType): string => {
@@ -487,6 +637,19 @@ export const formatDate = (timestamp: number, option: string): string => {
   return `${time.toLocaleString(undefined, options)}`;
 };
 
+export const formatRad = (x: currency.Rad): string => {
+  if (x > 999 && x < 1000000) {
+    return `${(x / 1000).toFixed(3)}K`; // convert to K for number from > 1000 < 1 million
+  } else if (x > 1000000 && x < 1000000000) {
+    return `${(x / 1000000).toFixed(3)}M`; // convert to M for number from > 1 million
+  } else if (x > 1000000000 && x < 1000000000000) {
+    return `${(x / 1000000000).toFixed(3)}B`; // convert to B for number from > 1 billion
+  } else if (x > 1000000000000) {
+    return `${(x / 1000000000000).toFixed(3)}T`; // convert to T for number from > 1 trillion
+  }
+  return `${x}`; // if x < 1000, nothing to do
+};
+
 export const summaryIconProgress = (summary: Summary): number => {
   const sum =
     summary.counts[StateType.Confirmed] + summary.counts[StateType.Settled];
@@ -542,55 +705,53 @@ export const summaryText = (counts: SummaryCounts): string => {
 };
 
 interface CostSummary {
-  depositRad: currency.Rad;
-  depositUsd: currency.Usd;
-  feeRad: currency.Rad;
-  feeUsd: currency.Usd;
-  totalRad: currency.Rad;
-  totalUsd: currency.Usd;
+  registrationFee?: Amount;
+  transferAmount?: Amount;
+  txFee: Amount;
+  total: Amount;
 }
 
-export const costSummary = (
-  messageType: MessageType,
-  fee: currency.MicroRad,
-  deposits: Deposits
-): CostSummary => {
-  let deposit = 0;
+interface Amount {
+  rad: currency.Rad;
+  usd: currency.Usd;
+}
 
-  switch (messageType) {
-    case MessageType.OrgRegistration:
-      deposit = deposits.orgRegistration;
-      break;
-    case MessageType.MemberRegistration:
-      deposit = deposits.memberRegistration;
-      break;
-    case MessageType.ProjectRegistration:
-      deposit = deposits.projectRegistration;
-      break;
-    case MessageType.UserRegistration:
-      deposit = deposits.userRegistration;
-      break;
+const amount = (microRad: currency.MicroRad): Amount => {
+  return {
+    rad: currency.microRadToRad(microRad),
+    usd: currency.microRadToUsd(microRad),
+  };
+};
+
+const obtainTransferAmount = (msg: Message): currency.MicroRad | undefined => {
+  switch (msg.type) {
+    case MessageType.Transfer:
+    case MessageType.TransferFromOrg:
+      return msg.amount;
     default:
-      throw `MessageType: ${messageType} not implemented`;
-      break;
+      return undefined;
   }
+};
 
-  const total = deposit + fee;
-
-  const depositRad = currency.microRadToRad(deposit);
-  const feeRad = currency.microRadToRad(fee);
-  const totalRad = currency.microRadToRad(total);
-
-  const depositUsd = currency.radToUsd(depositRad);
-  const feeUsd = currency.radToUsd(feeRad);
-  const totalUsd = currency.radToUsd(totalRad);
+export const costSummary = (transaction: Transaction): CostSummary => {
+  const registrationFee: Amount | undefined = transaction.registrationFee
+    ? amount(transaction.registrationFee)
+    : undefined;
+  const transferAmountMicroRad = obtainTransferAmount(transaction.messages[0]);
+  const transferAmount = transferAmountMicroRad
+    ? amount(transferAmountMicroRad)
+    : undefined;
+  const txFee = amount(transaction.fee);
+  const total = amount(
+    transaction.fee * 1 +
+      (transferAmountMicroRad ? transferAmountMicroRad * 1 : 0) +
+      (transaction.registrationFee ? transaction.registrationFee * 1 : 0)
+  );
 
   return {
-    depositRad,
-    depositUsd,
-    feeRad,
-    feeUsd,
-    totalRad,
-    totalUsd,
+    registrationFee,
+    transferAmount,
+    txFee,
+    total,
   };
 };

@@ -1,40 +1,14 @@
 //! Endpoints to manipulate app state in test mode.
 
 use serde::{Deserialize, Serialize};
-use warp::{path, reject, Filter, Rejection, Reply};
+use warp::filters::BoxedFilter;
+use warp::{path, Filter, Rejection, Reply};
 
 use crate::http;
 use crate::registry;
 
-/// Prefixed control filters.
-pub fn routes<R>(
-    enable: bool,
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
-    path("control")
-        .map(move || enable)
-        .and_then(|enable| async move {
-            if enable {
-                Ok(())
-            } else {
-                Err(reject::not_found())
-            }
-        })
-        .untuple_one()
-        .and(
-            create_project_filter(ctx.clone())
-                .or(nuke_coco_filter(ctx.clone()))
-                .or(nuke_registry_filter(ctx.clone()))
-                .or(register_user_filter(ctx)),
-        )
-}
-
 /// Combination of all control filters.
-#[allow(dead_code)]
-fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
@@ -42,6 +16,7 @@ where
         .or(nuke_coco_filter(ctx.clone()))
         .or(nuke_registry_filter(ctx.clone()))
         .or(register_user_filter(ctx))
+        .boxed()
 }
 
 /// POST /create-project
@@ -97,6 +72,7 @@ where
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
+    use radicle_registry_client::CryptoPair;
     use std::convert::TryFrom;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
@@ -160,6 +136,12 @@ mod handler {
 
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
+
+        log::info!(
+            "Registering user handle {} with public key {}",
+            &input.handle,
+            &fake_pair.public()
+        );
 
         let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         ctx.registry

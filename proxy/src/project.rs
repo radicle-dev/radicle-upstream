@@ -8,7 +8,6 @@ use std::process::Command;
 use serde::{Deserialize, Serialize};
 
 use librad::git::local::url::LocalUrl;
-use librad::meta::project;
 
 use crate::coco;
 use crate::error;
@@ -26,11 +25,11 @@ pub struct Metadata {
     pub default_branch: String,
 }
 
-impl<ST> From<project::Project<ST>> for Metadata
+impl<ST> From<coco::Project<ST>> for Metadata
 where
     ST: Clone,
 {
-    fn from(project_meta: project::Project<ST>) -> Self {
+    fn from(project_meta: coco::Project<ST>) -> Self {
         Self {
             name: project_meta.name().to_string(),
             description: project_meta
@@ -58,13 +57,13 @@ pub struct Project {
 }
 
 /// Construct a Project from its metadata and stats
-impl<ST> From<(project::Project<ST>, coco::Stats)> for Project
+impl<ST> From<(coco::Project<ST>, coco::Stats)> for Project
 where
     ST: Clone,
 {
     /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
     /// for the repository.
-    fn from((project, stats): (project::Project<ST>, coco::Stats)) -> Self {
+    fn from((project, stats): (coco::Project<ST>, coco::Stats)) -> Self {
         let id = project.urn();
 
         Self {
@@ -211,4 +210,73 @@ where
 
         Ok(std::env::join_paths(paths)?)
     }
+}
+
+/// Returns a list of `Project`s for your peer.
+pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
+    let project_meta = api.list_projects()?;
+
+    project_meta
+        .into_iter()
+        .map(|project| {
+            api.with_browser(&project.urn(), |browser| {
+                let stats = browser.get_stats()?;
+                Ok((project, stats).into())
+            })
+        })
+        .collect()
+}
+
+/// Returns a stubbed feed of `Project`s
+pub fn discover() -> Result<Vec<Project>, error::Error> {
+    let urn = coco::Urn::new(
+        coco::Hash::hash(b"hash"),
+        coco::uri::Protocol::Git,
+        coco::uri::Path::parse("")?,
+    );
+
+    let other_urn = coco::Urn::new(
+        coco::Hash::hash(b"something_else"),
+        coco::uri::Protocol::Git,
+        coco::uri::Path::parse("")?,
+    );
+
+    let projects = vec![
+            Project {
+                id: urn,
+                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe".to_string(),
+                metadata: Metadata {
+                    name: "radicle-upstream".to_string(),
+                    description: "It is not the slumber of reason that engenders monsters, \
+                        but vigilant and insomniac rationality.".to_string(),
+                    default_branch: "main".to_string()
+                },
+                stats: coco::Stats {
+                    contributors: 6,
+                    branches: 36,
+                    commits: 216
+                },
+                registration: None,
+            },
+            Project {
+                id: other_urn,
+                shareable_entity_identifier: "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd".to_string(),
+                metadata: Metadata {
+                    name: "radicle-link".to_string(),
+                    description: "The monstrous complexity of our reality, a reality \
+                    cross-hatched with fibre-optic cables, radio and microwaves, \
+                    oil and gas pipelines, aerial and shipping routes, and the unrelenting, \
+                    simultaneous execution of millions of communication protocols with every passing millisecond.".to_string(),
+                    default_branch: "main".to_string()
+                },
+                stats: coco::Stats {
+                    contributors: 7,
+                    branches: 49,
+                    commits: 343
+                },
+                registration: None,
+            },
+        ];
+
+    Ok(projects)
 }

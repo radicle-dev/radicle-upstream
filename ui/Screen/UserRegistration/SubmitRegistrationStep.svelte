@@ -14,9 +14,11 @@
   export let onNextStep = null;
   export let onPreviousStep = null;
 
-  const { transactionDeposits } = getContext("session");
+  const { registrationFee } = getContext("session");
+
   const tx = {
     fee: transactionFee,
+    registrationFee: registrationFee.user,
     messages: [
       {
         type: transaction.MessageType.UserRegistration,
@@ -26,10 +28,13 @@
     ],
   };
 
-  const payer = transaction.formatPayer(identity);
+  // When registering a user, we don't yet have orgs in the session
+  // as orgs require a registered user. Therefore we can here assume
+  // that the payer is the given identity as it can't be no one else.
+  const payer = transaction.payerFromIdentity(identity);
 </script>
 
-<Transaction transaction={tx} {payer} {transactionDeposits} />
+<Transaction transaction={tx} {payer} />
 
 <Flex style="margin-top: 32px;" align="right">
   <Button

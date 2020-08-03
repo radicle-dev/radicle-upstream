@@ -8,8 +8,11 @@ export const getBalance = (id: string): Promise<number> =>
   api.get<number>(`accounts/${id}/balance`);
 
 // Check whether an account with the given id exists on chain
-export const exists = (id: string): Promise<boolean> =>
-  api.get<boolean>(`accounts/${id}/exists`);
+export const exists = (id: string): Promise<boolean> => {
+  return api
+    .get<boolean>(`accounts/${id}/exists`)
+    .catch(_err => Promise.resolve(false));
+};
 
 // State
 const balanceStore = remote.createStore<number>();

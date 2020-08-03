@@ -30,7 +30,9 @@
   let skipNamePreselection = false;
   let showRegistrationDetails = true;
 
+  // The `transactionFee` will be user-customizable in the future.
   const transactionFee = session.minimumTransactionFee;
+  const registrationFee = session.registrationFee.project;
 
   const registerProject = async () => {
     try {
@@ -49,12 +51,11 @@
     }
   };
 
-  const wallet = () => transaction.formatPayer(session.identity);
-
   // TODO(sos): coordinate message format for project registration with proxy
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
     fee: transactionFee,
+    registrationFee: registrationFee,
     messages: [
       {
         type: transaction.MessageType.ProjectRegistration,
@@ -64,6 +65,8 @@
       },
     ],
   });
+
+  const payer = () => transaction.getPayer(tx().messages[0], session);
 
   const handleDetailsNextClick = event => {
     domainId = event.detail.domainId;
@@ -103,10 +106,7 @@
             bind:projectName
             on:next={handleDetailsNextClick} />
         {:else}
-          <Transaction
-            transaction={tx()}
-            payer={wallet()}
-            transactionDeposits={session.transactionDeposits} />
+          <Transaction transaction={tx()} payer={payer()} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

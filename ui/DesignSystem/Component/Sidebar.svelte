@@ -164,8 +164,10 @@
         </a>
       </Tooltip>
     </li>
-    <!-- TODO(sos or whoever): this should be active when user is on wallet page -->
-    <li class="item indicator" data-cy="wallet">
+    <li
+      class="item indicator"
+      data-cy="wallet"
+      class:active={path.active(path.profileWallet(), $location)}>
       <Tooltip value="Wallet">
         <a href={path.profileWallet()} use:link>
           <Icon.Fund />

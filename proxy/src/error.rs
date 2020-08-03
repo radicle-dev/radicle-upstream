@@ -118,7 +118,7 @@ pub enum Error {
 
     /// Parse error for [`coco::Urn`].
     #[error(transparent)]
-    LibradParseUrn(#[from] coco::ParseError),
+    LibradParseUrn(#[from] coco::uri::rad_urn::ParseError),
 
     /// Project error from `librad`.
     #[error(transparent)]

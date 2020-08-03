@@ -1,9 +1,11 @@
 //! Endpoints and serialisation for [`identity::Identity`] related types.
 
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+
+use serde::{Deserialize, Serialize};
 use warp::document::{self, ToDocumentedType};
-use warp::{path, Filter, Rejection, Reply};
+use warp::filters::BoxedFilter;
+use warp::{Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::coco;
@@ -12,23 +14,22 @@ use crate::identity;
 use crate::registry;
 
 /// Combination of all identity routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
-    get_filter(Arc::clone(&ctx)).or(create_filter(ctx))
+    get_filter(Arc::clone(&ctx)).or(create_filter(ctx)).boxed()
 }
 
-/// `POST /identities`
+/// `POST /`
 fn create_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path!("identities")
+    http::with_context(ctx)
         .and(warp::post())
-        .and(http::with_context(ctx))
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new unique Identity",
@@ -47,13 +48,12 @@ where
         .and_then(handler::create)
 }
 
-/// `GET /identities/<id>`
+/// `GET /<id>`
 fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path("identities")
-        .and(http::with_context(ctx))
+    http::with_context(ctx)
         .and(document::param::<coco::Urn>(
             "id",
             "Unique ID of the Identity",
@@ -263,7 +263,7 @@ mod test {
 
         let res = request()
             .method("POST")
-            .path("/identities")
+            .path("/")
             .json(&super::CreateInput {
                 handle: "cloudhead".into(),
             })
@@ -321,7 +321,7 @@ mod test {
 
         let res = request()
             .method("GET")
-            .path(&format!("/identities/{}", urn))
+            .path(&format!("/{}", urn))
             .reply(&api)
             .await;
 

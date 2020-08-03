@@ -1,10 +1,27 @@
 <script>
+  import { push } from "svelte-spa-router";
+  import * as path from "../../../src/path.ts";
+  import {
+    payerStore,
+    recipientStore,
+    amountStore,
+  } from "../../../src/transfer.ts";
+
   import { Button, Input, Icon, Title } from "../../Primitive";
   import Receive from "./Receive.svelte";
 
   export let accountId = null;
+  export let id = null;
+  let recipient,
+    amount,
+    currentlyActiveSend = true;
 
-  $: currentlyActiveSend = true;
+  const openSendModal = () => {
+    payerStore.set(id);
+    recipientStore.set(recipient);
+    amountStore.set(amount);
+    push(path.sendFunds());
+  };
 </script>
 
 <style>
@@ -91,10 +108,14 @@
     <div class="send" data-cy="send">
       <Title style="padding-bottom: 0.5rem;">To</Title>
       <Input.Text
-        placeholder="Enter address or registered handle"
+        dataCy="recipient-input"
+        bind:value={recipient}
+        placeholder="Enter an account address"
         style="flex: 1; padding-bottom: 1rem;" />
       <Title style="padding-bottom: 0.5rem;">Amount</Title>
       <Input.Text
+        dataCy="amount-input"
+        bind:value={amount}
         placeholder="Enter the amount"
         showLeftItem
         style="flex: 1; padding-bottom: 1rem;">
@@ -110,7 +131,12 @@
         placeholder="Optional message"
         style="flex: 1; padding-bottom: 1rem;" /> -->
       <div class="submit">
-        <Button disabled={true}>Send transaction</Button>
+        <Button
+          dataCy="send-transaction-button"
+          disabled={!recipient || !amount || recipient === '' || amount === ''}
+          on:click={openSendModal}>
+          Send transaction
+        </Button>
       </div>
     </div>
   {:else}

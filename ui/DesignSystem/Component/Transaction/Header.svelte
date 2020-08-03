@@ -11,6 +11,7 @@
   export let avatar = null;
   export let transaction = null;
   export let subject = null;
+  export let accountId = null;
 </script>
 
 <style>
@@ -40,8 +41,10 @@
         this={Icon[headerIcon(transaction.messages[0])]}
         style="fill: var(--color-primary)" />
     </div>
-    <Title variant="big">{formatMessage(transaction.messages[0])}</Title>
-    <caption style="display: inline-flex; margin:16px 0;">
+    <Title variant="big">
+      {formatMessage(transaction.messages[0], accountId)}
+    </Title>
+    <caption style="display: inline-flex; margin:16px 0; max-width: 20rem;">
       {#if avatar}
         <Avatar
           title={subject.name}
@@ -51,7 +54,7 @@
           style="color: var(--color-foreground)"
           dataCy="subject-avatar" />
       {:else}
-        <Title dataCy="subject">{subject.name}</Title>
+        <Title truncate dataCy="subject">{subject.name}</Title>
       {/if}
     </caption>
     {#if transaction.state}

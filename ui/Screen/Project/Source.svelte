@@ -38,7 +38,7 @@
   let currentObjectPath;
 
   $: {
-    const parsed = path.parseProjectSourceLocation($querystring);
+    const parsed = path.parseQueryString($querystring);
 
     currentPeerId = parsed.peerId || null;
     currentObjectType = parsed.objectType || ObjectType.Tree;

@@ -4,9 +4,10 @@
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
-  import { fetch, session as store } from "./src/session.ts";
+  import { clear, fetch, session as store } from "./src/session.ts";
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
+  import { Button, Title } from "./DesignSystem/Primitive";
 
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
@@ -25,6 +26,7 @@
   import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import Search from "./Screen/Search.svelte";
+  import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
@@ -48,6 +50,7 @@
     "/help": Help,
     "/user-registration": UserRegistration,
     "/transactions/:id": TransactionDetails,
+    "/send-funds": SendFunds,
     "*": NotFound,
   };
 
@@ -73,9 +76,27 @@
   }
 </script>
 
+<style>
+  .error {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
+
 <Hotkeys />
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Theme />
 <Remote {store} context="session">
   <Router {routes} />
+
+  <div slot="error" class="error">
+    <Title variant="big" style="margin-bottom: 32px;">
+      We're having trouble logging you into radicle. 😪
+    </Title>
+    <Button on:click={clear}>Clear Session</Button>
+  </div>
 </Remote>

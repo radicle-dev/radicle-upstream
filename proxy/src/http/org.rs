@@ -3,6 +3,7 @@
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use warp::document::{self, ToDocumentedType};
+use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
@@ -10,25 +11,8 @@ use crate::http;
 use crate::project;
 use crate::registry;
 
-/// Prefixed filters.
-pub fn routes<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-{
-    path("orgs").and(
-        get_filter(ctx.clone())
-            .or(register_project_filter(ctx.clone()))
-            .or(get_project_filter(ctx.clone()))
-            .or(get_projects_filter(ctx.clone()))
-            .or(register_filter(ctx.clone()))
-            .or(register_member_filter(ctx.clone()))
-            .or(transfer_filter(ctx)),
-    )
-}
-
 /// Combination of all org routes.
-#[cfg(test)]
-fn filters<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
@@ -39,6 +23,7 @@ where
         .or(register_filter(ctx.clone()))
         .or(register_member_filter(ctx.clone()))
         .or(transfer_filter(ctx))
+        .boxed()
 }
 
 /// `GET /<id>`
@@ -420,7 +405,7 @@ mod handler {
                 &fake_pair,
                 id,
                 input.recipient,
-                input.value,
+                input.amount,
                 input.transaction_fee,
             )
             .await?;
@@ -592,7 +577,7 @@ pub struct TransferInput {
     /// Account id of the recipient.
     recipient: radicle_registry_client::ed25519::Public,
     /// Amount that is transferred.
-    value: registry::Balance,
+    amount: registry::Balance,
     /// User specified transaction fee.
     transaction_fee: registry::Balance,
 }
@@ -607,7 +592,7 @@ impl ToDocumentedType for TransferInput {
                 .example("5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"),
         );
         properties.insert(
-            "value".into(),
+            "amount".into(),
             document::string()
                 .description("Amount that is transferred")
                 .example(100),
@@ -727,7 +712,7 @@ mod test {
             .path(&format!("/{}/projects/{}", org_id, project_name))
             .json(&http::RegisterProjectInput {
                 maybe_coco_id: Some(urn),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -923,7 +908,7 @@ mod test {
             .path("/")
             .json(&super::RegisterInput {
                 id: org_id.to_string(),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -975,7 +960,7 @@ mod test {
             .path(&format!("/{}/members", org_id.clone()))
             .json(&super::RegisterMemberInput {
                 handle: handle2.clone().to_string(),
-                transaction_fee: registry::MINIMUM_FEE,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
@@ -1019,14 +1004,14 @@ mod test {
             .await?;
 
         // Transfer tokens from the org to the user
-        let value: registry::Balance = 10;
+        let amount: registry::Balance = 10;
         let res = request()
             .method("POST")
             .path(&format!("/{}/transfer", org_id))
             .json(&super::TransferInput {
                 recipient: author.public(),
-                value,
-                transaction_fee: registry::MINIMUM_FEE,
+                amount,
+                transaction_fee: registry::MINIMUM_TX_FEE,
             })
             .reply(&api)
             .await;
