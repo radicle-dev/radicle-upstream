@@ -337,6 +337,7 @@ pub struct Registry {
     client: protocol::Client,
 }
 
+/// A fake credit balance which we use in integration tests.
 const PREPAID_AMOUNT_MICRO_RAD: Balance = 321 * 1_000_000;
 
 /// Registry client wrapper methods
