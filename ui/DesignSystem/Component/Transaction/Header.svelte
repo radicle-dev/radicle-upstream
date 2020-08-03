@@ -44,7 +44,7 @@
     <Title variant="big">
       {formatMessage(transaction.messages[0], accountId)}
     </Title>
-    <caption style="display: inline-flex; margin:16px 0;">
+    <caption style="display: inline-flex; margin:16px 0; max-width: 20rem;">
       {#if avatar}
         <Avatar
           title={subject.name}
