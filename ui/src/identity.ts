@@ -54,7 +54,6 @@ function update(msg: Msg): void {
           creationStore.success(id);
         })
         .catch(creationStore.error);
-
       break;
   }
 }

@@ -5,9 +5,10 @@
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
-  import { fetch, session as store } from "./src/session.ts";
+  import { clear, fetch, session as store } from "./src/session.ts";
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
+  import { Button, Title } from "./DesignSystem/Primitive";
 
   import Hotkeys from "./Hotkeys.svelte";
   import Navigation from "./Navigation.svelte";
@@ -79,9 +80,27 @@
   }
 </script>
 
+<style>
+  .error {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+</style>
+
 <Hotkeys />
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Theme />
 <Remote {store} context="session">
   <Navigation {views} />
+
+  <div slot="error" class="error">
+    <Title variant="big" style="margin-bottom: 32px;">
+      We're having trouble logging you into radicle. 😪
+    </Title>
+    <Button on:click={clear}>Clear Session</Button>
+  </div>
 </Remote>

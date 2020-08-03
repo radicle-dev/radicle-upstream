@@ -25,48 +25,62 @@
 
   export let transaction = null;
   export let payer = null;
-  export let transactionDeposits = null;
+  export let viewerAccountId = null;
 
   let avatar;
 
-  const subject = formatSubject(transaction.messages[0]);
+  const subject = formatSubject(transaction.messages[0], viewerAccountId);
 
   const updateAvatar = async () => (avatar = await subject.avatarSource);
 
-  const summary = costSummary(
-    transaction.messages[0].type,
-    parseInt(transaction.fee),
-    transactionDeposits
-  );
+  const summary = costSummary(transaction);
 
   $: updateAvatar();
 </script>
 
-<Header {transaction} {avatar} {subject} />
+<Header {transaction} {avatar} {subject} accountId={viewerAccountId} />
 
-<Row dataCy="deposit" variant="top" style="">
+<Row dataCy="transaction-fee" variant="top" style="">
   <div slot="left">
     <Text variant="regular" style="color:var(--color-foreground-level-6);">
-      {formatStake(transaction.messages[0])}
+      Transaction fee
     </Text>
   </div>
 
   <div slot="right">
-    <Rad rad={summary.depositRad} usd={summary.depositUsd} variant="deposit" />
+    <Rad rad={summary.txFee.rad} usd={summary.txFee.usd} />
   </div>
 </Row>
 
-<Row dataCy="transaction-fee" variant="middle" style="">
-  <div slot="left">
-    <Text variant="regular" style="color:var(--color-foreground-level-6);">
-      Transaction Fee
-    </Text>
-  </div>
+{#if summary.registrationFee}
+  <Row dataCy="registration-fee" variant="middle" style="">
+    <div slot="left">
+      <Text variant="regular" style="color:var(--color-foreground-level-6);">
+        {formatStake(transaction.messages[0].type)}
+      </Text>
+    </div>
 
-  <div slot="right">
-    <Rad rad={summary.feeRad} usd={summary.feeUsd} />
-  </div>
-</Row>
+    <div slot="right">
+      <Rad
+        rad={summary.registrationFee.rad}
+        usd={summary.registrationFee.usd} />
+    </div>
+  </Row>
+{/if}
+
+{#if summary.transferAmount}
+  <Row dataCy="transfer-amount" variant="middle" style="">
+    <div slot="left">
+      <Text variant="regular" style="color:var(--color-foreground-level-6);">
+        Amount
+      </Text>
+    </div>
+
+    <div slot="right">
+      <Rad rad={summary.transferAmount.rad} usd={summary.transferAmount.usd} />
+    </div>
+  </Row>
+{/if}
 
 <Row
   dataCy="total"
@@ -80,7 +94,7 @@
   </div>
 
   <div slot="right">
-    <Rad rad={summary.totalRad} usd={summary.totalUsd} />
+    <Rad rad={summary.total.rad} usd={summary.total.usd} />
   </div>
 </Row>
 
@@ -142,7 +156,7 @@
 
   <div slot="right">
     <Avatar
-      dataCy="payer-avatar"
+      dataCy="funding-source"
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}

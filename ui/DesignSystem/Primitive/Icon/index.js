@@ -1,5 +1,6 @@
 import ArrowDown from "./ArrowDown.svelte";
 import ArrowLeft from "./ArrowLeft.svelte";
+import ArrowRight from "./ArrowRight.svelte";
 import ArrowUp from "./ArrowUp.svelte";
 import At from "./At.svelte";
 import Verified from "./Verified.svelte";
@@ -28,7 +29,6 @@ import Info from "./Info.svelte";
 import Issue from "./Issue.svelte";
 import Key from "./Key.svelte";
 import Label from "./Label.svelte";
-import LockSmall from "./LockSmall.svelte";
 import Member from "./Member.svelte";
 import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
@@ -48,6 +48,7 @@ import Trash from "./Trash.svelte";
 export default {
   ArrowDown,
   ArrowLeft,
+  ArrowRight,
   ArrowUp,
   At,
   Verified,
@@ -76,7 +77,6 @@ export default {
   Issue,
   Key,
   Label,
-  LockSmall,
   Member,
   Merge,
   Minus,

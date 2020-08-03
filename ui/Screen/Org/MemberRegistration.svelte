@@ -8,7 +8,7 @@
     memberHandleValidationStore,
   } from "../../src/org.ts";
   import { session } from "../../src/session.ts";
-  import { formatPayer } from "../../src/transaction.ts";
+  import { getPayer } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
   import { Input, Text, Title } from "../../DesignSystem/Primitive";
@@ -30,6 +30,7 @@
   const validation = memberHandleValidationStore(orgId);
 
   const transactionFee = $session.data.minimumTransactionFee;
+  const registrationFee = $session.data.registrationFee.member;
 
   const next = () => {
     switch (state) {
@@ -38,9 +39,10 @@
           transaction = registerMemberTransaction(
             orgId,
             userHandle,
-            transactionFee
+            transactionFee,
+            registrationFee
           );
-          payer = formatPayer($session.data.identity);
+          payer = getPayer(transaction.messages[0], $session.data);
           state = RegistrationFlowState.Confirmation;
         }
         break;
@@ -94,11 +96,7 @@
         dataCy="input" />
     {:else if state === RegistrationFlowState.Confirmation}
       <div style="width: 100%;">
-        <Transaction
-          {transaction}
-          {subject}
-          {payer}
-          transactionDeposits={$session.data.transactionDeposits} />
+        <Transaction {transaction} {subject} {payer} />
       </div>
     {/if}
     <NavigationButtons

@@ -6,7 +6,7 @@
   import * as notification from "../src/notification.ts";
   import { RegistrationFlowState, register } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
-  import { formatPayer, MessageType } from "../src/transaction.ts";
+  import { getPayer, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -20,6 +20,7 @@
   let state = RegistrationFlowState.Preparation;
 
   const transactionFee = $session.data.minimumTransactionFee;
+  const registrationFee = $session.data.registrationFee.org;
 
   const next = () => {
     switch (state) {
@@ -27,6 +28,7 @@
         if ($validation.status === ValidationStatus.Success) {
           transaction = {
             fee: transactionFee,
+            registrationFee: registrationFee,
             messages: [
               {
                 type: MessageType.OrgRegistration,
@@ -34,7 +36,7 @@
               },
             ],
           };
-          payer = formatPayer($session.data.identity);
+          payer = getPayer(transaction.messages[0], $session.data);
           state = RegistrationFlowState.Confirmation;
         }
         break;
@@ -127,11 +129,7 @@
       </Input.Text>
     {:else if state === RegistrationFlowState.Confirmation}
       <div style="width: 100%;">
-        <Transaction
-          {transaction}
-          {subject}
-          {payer}
-          transactionDeposits={$session.data.transactionDeposits} />
+        <Transaction {transaction} {subject} {payer} />
       </div>
     {/if}
     <NavigationButtons

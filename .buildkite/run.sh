@@ -36,17 +36,14 @@ echo "--- Set custom git config"
 cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
 
-echo "--- Run proxy tests"
-(cd proxy && time cargo test --all --all-features --all-targets)
+echo "--- Run proxy docs"
+(cd proxy && time cargo doc --no-deps)
 
-echo "--- Run cargo fmt"
+echo "--- Run proxy fmt"
 (cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy lints"
-(cd proxy && time cargo clippy --all --all-features --all-targets)
-
-echo "--- Run proxy docs"
-(cd proxy && time cargo doc --no-deps)
+(cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options)
 
 echo "--- Run app eslint checks"
 time yarn lint
@@ -56,6 +53,9 @@ time yarn prettier:check
 
 echo "--- Run app svelte checks"
 time yarn svelte:check
+
+echo "--- Run proxy tests"
+(cd proxy && time cargo test --all --all-features --all-targets)
 
 echo "--- Starting proxy daemon and runing app tests"
 time ELECTRON_ENABLE_LOGGING=1 yarn test

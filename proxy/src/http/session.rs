@@ -282,15 +282,20 @@ mod test {
                     "appearance": {
                         "theme": "light",
                     },
+                    "coco": {
+                        "seeds": [
+                            "seed.radicle.xyz",
+                        ]
+                    },
                     "registry": {
                         "network": "emulator",
                     },
                 },
-                "transactionDeposits": {
-                    "memberRegistration": 10,
-                    "orgRegistration": 10,
-                    "projectRegistration": 10,
-                    "userRegistration": 10,
+                "registrationFee": {
+                    "user": 10,
+                    "org": 10,
+                    "member": Value::Null,
+                    "project": Value::Null,
                 },
                 "minimumTransactionFee": 1,
                 "permissions": {
@@ -333,15 +338,20 @@ mod test {
                     "appearance": {
                         "theme": "dark",
                     },
+                    "coco": {
+                        "seeds": [
+                            "seed.radicle.xyz",
+                        ],
+                    },
                     "registry": {
                         "network": "emulator",
                     },
                 },
-                "transactionDeposits": {
-                    "memberRegistration": 10,
-                    "orgRegistration": 10,
-                    "projectRegistration": 10,
-                    "userRegistration": 10,
+                "registrationFee": {
+                    "user": 10,
+                    "org": 10,
+                    "member": Value::Null,
+                    "project": Value::Null,
                 },
                 "minimumTransactionFee": 1,
                 "permissions": {
