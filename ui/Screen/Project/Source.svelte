@@ -182,7 +182,7 @@
   <div class="header">
     <Title variant="big">{project.metadata.name}</Title>
     <div class="project-id">
-      <Urn urn={project.shareableEntityIdentifier} />
+      <Urn urn={project.shareableEntityIdentifier} showOnHover />
     </div>
     <div class="description">
       <Text>{project.metadata.description}</Text>
