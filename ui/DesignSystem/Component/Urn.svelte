@@ -34,7 +34,7 @@
     position: relative;
   }
   .urn {
-    background-color: var(--color-foreground-level-1);
+    background-color: var(--color-foreground-level-2);
     padding: 0 4px;
     border-radius: 4px;
   }
@@ -61,7 +61,7 @@
       <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
         <Text
           style="font-family: var(--typeface-mono-medium); font-size: 14px;
-          color: var(--color-foreground-level-5); padding-right: 0.25rem;">
+          color: var(--color-foreground-level-6); padding-right: 0.25rem;">
           {cleanUrn}
         </Text>
       </Copyable>
@@ -71,19 +71,19 @@
     {#if urn.length > 24}
       <Text
         style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
-        var(--color-foreground-level-5);">
+        var(--color-foreground-level-6);">
         {firstSix}
       </Text>
       <Icon.Ellipses size="small" />
       <Text
         style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
-        var(--color-foreground-level-5); padding-right: 0.25rem">
+        var(--color-foreground-level-6); padding-right: 0.25rem">
         {lastSix}
       </Text>
     {:else}
       <Text
         style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
-        var(--color-foreground-level-5); padding-right: 0.25rem">
+        var(--color-foreground-level-6); padding-right: 0.25rem">
         {urn}
       </Text>
     {/if}
