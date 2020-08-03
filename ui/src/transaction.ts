@@ -5,11 +5,11 @@ import * as api from "./api";
 import { Avatar, getAvatar, Usage, EmojiAvatar } from "./avatar";
 import * as currency from "./currency";
 import * as event from "./event";
-import { Identity, fallback as identityFallback } from "./identity";
+import { Identity } from "./identity";
 import { Domain } from "./project";
 import * as remote from "./remote";
 import { Session } from "./session";
-import { Org, fallback as orgFallback } from "./org";
+import { Org } from "./org";
 
 const POLL_INTERVAL = 10000;
 
@@ -392,15 +392,46 @@ const payerFromOrg = (org: Org): Payer => {
   };
 };
 
+const unkownAvatar: EmojiAvatar = {
+  background: {
+    r: 245,
+    g: 245,
+    b: 245,
+  },
+  emoji: "❔",
+};
+
+// When we look at transfer records involving an org that is no longer
+// around(on the local machine), we need data to display the avatar
+// component of such entities. To reproduce, register an org, transfer
+// something from it to the (registered) user, restart the app, and
+// now look at the 'Incoming Transfer' in the user wallet.
+export const unkownOrg: Org = {
+  id: "Unkown org",
+  accountId: "5CNskZBkQcJzwjJ1sgWPpByThABe3wKrsBJoe8wi1kKzGGpS",
+  shareableEntityIdentifier: "org@radicle",
+  members: [{ handle: "user" }],
+  avatarFallback: unkownAvatar,
+};
+
+// Identity counter part of `unkownOrg`.
+export const unkownIdentity: Identity = {
+  id: "user@unkown.git",
+  metadata: {
+    handle: "Unkown user",
+  },
+  avatarFallback: unkownAvatar,
+};
+
 // Get the payer of a transaction.
 // Note: It now looks the payer up based on the local session, whereas
 // in the future we want to look it up on the network.
 export const getPayer = (msg: Message, session: Session): Payer | undefined => {
-  const identity = session.identity ?? identityFallback;
+  const identity = session.identity ?? unkownIdentity;
   const orgs = session.orgs;
 
   const org = (org_id: string) =>
-    orgs.find(org => org.id == org_id) ?? orgFallback();
+    orgs.find(org => org.id == org_id) ?? unkownOrg;
 
   switch (msg.type) {
     case MessageType.OrgRegistration:

@@ -210,20 +210,3 @@ export const orgTransactions = (
 ): [transaction.Transaction] | transaction.Transaction[] => {
   return transactions.filter(tx => involvesOrg(tx.messages[0], id, accountId));
 };
-
-export const fallback = (): Org => {
-  return {
-    id: "org",
-    accountId: "5CNskZBkQcJzwjJ1sgWPpBywhABe3wKrsBJoe8wi1kKzGGpS",
-    shareableEntityIdentifier: "org@radicle",
-    members: [{ handle: "user" }],
-    avatarFallback: {
-      background: {
-        r: 0,
-        g: 112,
-        b: 200,
-      },
-      emoji: "❔",
-    },
-  };
-};
