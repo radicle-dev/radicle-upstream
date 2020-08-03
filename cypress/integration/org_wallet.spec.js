@@ -98,7 +98,7 @@ context("navigation", () => {
       cy.pick("transaction-fee", "amount").contains("-0.000001");
       cy.pick("total", "amount").contains("-112.000001");
       cy.pick("funding-source").contains("coolorg");
-      cy.pick("submit-tranfer-button").click();
+      cy.pick("submit-transfer-button").click();
     });
     it("shows the expected updated wallet state after the transfer", () => {
       cy.pick("balance", "amount").contains("208.999999");

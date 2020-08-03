@@ -50,7 +50,6 @@ context("navigation", () => {
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
-    cy.pick("modal-close-button").should("exist");
     cy.pick("modal-close-button").click();
     cy.pick("Wallet").should("exist");
   });
@@ -79,13 +78,12 @@ context("navigation", () => {
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
-    cy.pick("page", "preperation-step").should("exist");
+    cy.pick("page", "preparation-step").should("exist");
     cy.pick("review-transfer-button").should("exist");
     cy.pick("review-transfer-button").click();
     cy.pick("page", "review-step").should("exist");
-    cy.pick("back-to-review-button").should("exist");
     cy.pick("back-to-review-button").click();
-    cy.pick("preperation-step").should("exist");
+    cy.pick("preparation-step").should("exist");
   });
   it("is able to go to review step and submit", () => {
     cy.pick("Wallet").click();
@@ -98,12 +96,10 @@ context("navigation", () => {
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
-    cy.pick("page", "preperation-step").should("exist");
-    cy.pick("review-transfer-button").should("exist");
+    cy.pick("page", "preparation-step").should("exist");
     cy.pick("review-transfer-button").click();
     cy.pick("page", "review-step").should("exist");
-    cy.pick("submit-tranfer-button").should("exist");
-    cy.pick("submit-tranfer-button").click();
+    cy.pick("submit-transfer-button").click();
     cy.pick("Wallet").should("exist");
   });
 });
@@ -122,7 +118,7 @@ context("validation", () => {
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
     cy.pick("send-funds-modal").should("exist");
-    cy.pick("preperation-step").should("exist");
+    cy.pick("preparation-step").should("exist");
   });
   it("checks if it does the validation and disables button when removing prefilled recipient", () => {
     cy.pick("modal-recipient-input").should("exist");
@@ -173,7 +169,7 @@ context("validation", () => {
     cy.pick("review-transfer-button").should("be.disabled");
   });
   it("checks if review step contains filled in information", () => {
-    cy.pick("page", "preperation-step").should("exist");
+    cy.pick("page", "preparation-step").should("exist");
     cy.pick("review-transfer-button").should("exist");
     cy.pick("review-transfer-button").click();
     cy.pick("page", "review-step").should("exist");

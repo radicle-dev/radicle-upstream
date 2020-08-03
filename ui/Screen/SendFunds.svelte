@@ -190,7 +190,7 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="send-funds-modal">
     {#if state === TransferState.Preparation}
-      <div data-cy="preperation-step">
+      <div data-cy="preparation-step">
         <header>
           <div class="icon">
             <Icon.ArrowUp style="fill: var(--color-primary)" />
@@ -343,7 +343,7 @@
             back
           </Button>
           <Button
-            dataCy="submit-tranfer-button"
+            dataCy="submit-transfer-button"
             style="margin-left: 1rem;"
             on:click={onConfirmed}>
             Confirm and send

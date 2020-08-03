@@ -115,7 +115,7 @@ context("navigation", () => {
       cy.pick("transaction-fee", "amount").contains("-0.000001");
       cy.pick("total", "amount").contains("-432000000.000001");
       cy.pick("funding-source").contains("coolname");
-      cy.pick("submit-tranfer-button").click();
+      cy.pick("submit-transfer-button").click();
     });
 
     it("shows the expected updated wallet state after the transfer", () => {
