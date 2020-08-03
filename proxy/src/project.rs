@@ -213,6 +213,11 @@ where
 }
 
 /// Returns a list of `Project`s for your peer.
+///
+/// # Errors
+///
+///   * We couldn't get a project list.
+///   * We couldn't get project stats.
 pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
     let project_meta = api.list_projects()?;
 
@@ -228,6 +233,10 @@ pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
 }
 
 /// Returns a stubbed feed of `Project`s
+///
+/// # Errors
+///
+///   * Parsing an empty path fails (it shouldn't really).
 pub fn discover() -> Result<Vec<Project>, error::Error> {
     let urn = coco::Urn::new(
         coco::Hash::hash(b"hash"),
