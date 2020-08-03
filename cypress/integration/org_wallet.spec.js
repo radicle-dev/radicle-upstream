@@ -63,7 +63,7 @@ context("navigation", () => {
       );
       cy.pick("send-transaction-button").should("be.disabled");
     });
-    it("tests the button is disabled when there is no recipient is filled in", () => {
+    it("disables the button when there is no recipient filled in", () => {
       cy.pick("send-tab").click();
       cy.pick("send").should("exist");
       cy.pick("amount-input").type("123");
