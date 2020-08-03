@@ -51,8 +51,6 @@
     }
   };
 
-  const wallet = () => transaction.formatPayer(session.identity);
-
   // TODO(sos): coordinate message format for project registration with proxy
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
@@ -67,6 +65,8 @@
       },
     ],
   });
+
+  const payer = () => transaction.getPayer(tx().messages[0], session);
 
   const handleDetailsNextClick = event => {
     domainId = event.detail.domainId;
@@ -106,7 +106,7 @@
             bind:projectName
             on:next={handleDetailsNextClick} />
         {:else}
-          <Transaction transaction={tx()} payer={wallet()} />
+          <Transaction transaction={tx()} payer={payer()} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

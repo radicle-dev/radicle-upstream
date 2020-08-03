@@ -337,6 +337,8 @@ pub struct Registry {
     client: protocol::Client,
 }
 
+const PREPAID_AMOUNT_MICRO_RAD: Balance = 321 * 1_000_000;
+
 /// Registry client wrapper methods
 impl Registry {
     /// Wraps a registry client.
@@ -500,7 +502,8 @@ impl Client for Registry {
 
         // TODO(xla): Remove automatic prepayment once we have proper balances.
         let org = self.client.get_org(org_id).await?.expect("org not present");
-        self.prepay_account(org.account_id(), 1000).await?;
+        self.prepay_account(org.account_id(), PREPAID_AMOUNT_MICRO_RAD)
+            .await?;
 
         Ok(tx)
     }
@@ -685,7 +688,8 @@ impl Client for Registry {
         fee: Balance,
     ) -> Result<Transaction, error::Error> {
         // TODO(xla): Remove automatic prepayment once we have proper balances.
-        self.prepay_account(author.public(), 1000).await?;
+        self.prepay_account(author.public(), PREPAID_AMOUNT_MICRO_RAD)
+            .await?;
         // Prepare and submit user registration transaction.
         let register_message = protocol::message::RegisterUser {
             user_id: handle.clone(),
@@ -874,7 +878,7 @@ mod test {
 
         // The amount prepaid on org registration.
         // TODO(nuno): delete once we no longer prepay accounts
-        let prepaid_transfer_costs = 1000 + 1;
+        let prepaid_transfer_costs = super::PREPAID_AMOUNT_MICRO_RAD + 1;
         assert_eq!(
             registry.free_balance(&author.public()).await?,
             initial_balance - prepaid_transfer_costs - fee - protocol::REGISTRATION_FEE

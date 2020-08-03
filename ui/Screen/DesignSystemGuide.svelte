@@ -1035,6 +1035,10 @@
       </Swatch>
 
       <Swatch>
+        <Rad rad="200" usd="2" variant="debit" />
+      </Swatch>
+
+      <Swatch>
         <Rad rad="10" usd="0.1" />
       </Swatch>
 

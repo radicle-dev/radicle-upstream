@@ -6,7 +6,7 @@
   import * as notification from "../src/notification.ts";
   import { RegistrationFlowState, register } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
-  import { formatPayer, MessageType } from "../src/transaction.ts";
+  import { getPayer, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -36,7 +36,7 @@
               },
             ],
           };
-          payer = formatPayer($session.data.identity);
+          payer = getPayer(transaction.messages[0], $session.data);
           state = RegistrationFlowState.Confirmation;
         }
         break;

@@ -1,26 +1,30 @@
 <script>
   import {
+    costSummary,
     headerIcon,
     formatMessage,
     formatSubject,
     formatDate,
     iconState,
     iconProgress,
+    isIncoming,
     statusText,
     subjectAvatarShape,
     StateType,
     IconState,
   } from "../../../src/transaction.ts";
-  import { microRadToRad } from "../../../src/currency.ts";
   import Rad from "../Rad.svelte";
   import { Avatar, Caption, Icon, Text, Title } from "../../Primitive";
 
   export let tx = null;
+  export let accountId = null;
 
-  const subject = formatSubject(tx.messages[0]);
+  const subject = formatSubject(tx.messages[0], accountId);
 
   let avatar;
   const updateAvatar = async () => (avatar = await subject.avatarSource);
+
+  const summary = costSummary(tx);
 
   $: updateAvatar();
 </script>
@@ -77,7 +81,9 @@
   </div>
   <div class="description">
     <svelte:component this={Icon[headerIcon(tx.messages[0])]} />
-    <Title style="margin: 0 .5rem">{formatMessage(tx.messages[0])}</Title>
+    <Title dataCy="message" style="margin: 0 .5rem; white-space: nowrap;">
+      {formatMessage(tx.messages[0], accountId)}
+    </Title>
     {#if avatar}
       <Avatar
         title={subject.name}
@@ -88,7 +94,10 @@
         style="--title-color: var(--color-foreground-level-5);"
         dataCy="subject-avatar" />
     {:else}
-      <Title style="color: var(--color-foreground-level-5)" dataCy="subject">
+      <Title
+        truncate
+        style="color: var(--color-foreground-level-5); max-width: 15rem;"
+        dataCy="subject">
         {subject.name}
       </Title>
     {/if}
@@ -111,11 +120,24 @@
             state={iconState(tx.state)} />
         {/if}
         <Text
-          style="align-self: center; color: var(--color-foreground-level-6);">
+          style="align-self: center; color: var(--color-foreground-level-6);
+          white-space: nowrap;">
           {statusText(tx.state)}
         </Text>
       </div>
     {/if}
-    <Rad rad={`${microRadToRad(tx.fee)}`} usd={`${microRadToRad(tx.fee)}`} />
+
+    {#if isIncoming(tx.messages[0], accountId)}
+      <Rad
+        variant="debit"
+        rad={summary.transferAmount.rad}
+        usd="{summary.transferAmount.usd}}" />
+    {:else}
+      <Rad
+        variant="credit"
+        rad={summary.total.rad}
+        usd="{summary.total.usd}}" />
+    {/if}
+
   </div>
 </div>
