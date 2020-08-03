@@ -4,6 +4,8 @@ before(() => {
   cy.createIdentity("coolname");
   cy.registerUser("coolname");
   cy.registerOrg("coolorg");
+  // user2 has the account id 5DjHdsNAL7L7UynCDUscMsbnYd1DW4DxqJrA8wX4aS3Moyz3
+  cy.registerAlternativeUser("user2");
 });
 
 context("navigation", () => {
@@ -72,7 +74,7 @@ context("navigation", () => {
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
     cy.pick("recipient-input").type(
-      "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+      "5DjHdsNAL7L7UynCDUscMsbnYd1DW4DxqJrA8wX4aS3Moyz3"
     );
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();
@@ -91,7 +93,7 @@ context("navigation", () => {
     cy.pick("send-tab").click();
     cy.pick("send").should("exist");
     cy.pick("recipient-input").type(
-      "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+      "5DjHdsNAL7L7UynCDUscMsbnYd1DW4DxqJrA8wX4aS3Moyz3"
     );
     cy.pick("amount-input").type("123");
     cy.pick("send-transaction-button").click();

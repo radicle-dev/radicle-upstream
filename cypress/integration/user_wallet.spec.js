@@ -3,6 +3,7 @@ before(() => {
 
   cy.createIdentity("coolname");
   cy.registerUser("coolname");
+  // user2 has the account id 5DjHdsNAL7L7UynCDUscMsbnYd1DW4DxqJrA8wX4aS3Moyz3
   cy.registerAlternativeUser("user2");
 });
 
