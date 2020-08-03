@@ -46,8 +46,7 @@
           dataCy: "register-project",
           icon: Icon.Register,
           disabled: true,
-          tooltip:
-            "To unlock project registration, register your own handle first.",
+          tooltip: "Register your handle to register a project.",
         },
       ];
     }
