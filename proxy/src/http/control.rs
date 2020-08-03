@@ -72,6 +72,7 @@ where
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
+    use radicle_registry_client::CryptoPair;
     use std::convert::TryFrom;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
@@ -135,6 +136,12 @@ mod handler {
 
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
+
+        log::info!(
+            "Registering user handle {} with public key {}",
+            &input.handle,
+            &fake_pair.public()
+        );
 
         let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         ctx.registry

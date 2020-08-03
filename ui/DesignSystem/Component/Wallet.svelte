@@ -1,13 +1,19 @@
 <script>
+  import * as currency from "../../src/currency.ts";
+  import { formatRad } from "../../src/transaction.ts";
   import { Title } from "../Primitive";
   import Rad from "./Rad.svelte";
   import TransactionList from "./Wallet/TxList.svelte";
   import SendReceive from "./Wallet/SendReceive.svelte";
   import Receive from "./Wallet/Receive.svelte";
+
   export let dataCy = null;
   export let transactions = null;
   export let balance = null;
   export let accountId = null;
+  export let id = null;
+
+  $: balanceRad = currency.microRadToRad(balance);
 </script>
 
 <style>
@@ -55,11 +61,11 @@
         <Rad
           style="display: inline-block;"
           size="big"
-          rad={balance}
-          usd={balance} />
+          rad={formatRad(balanceRad)}
+          usd={formatRad(balanceRad)} />
       </div>
       <div class="send-receive" data-cy="send-receive">
-        <SendReceive {accountId} />
+        <SendReceive {accountId} {id} />
       </div>
     </div>
     <div class="transactions" data-cy="transactions">
@@ -69,7 +75,7 @@
         var(--color-foreground-level-2);">
         Transactions
       </Title>
-      <TransactionList {transactions} />
+      <TransactionList {transactions} {accountId} />
     </div>
   {:else}
     <div class="empty-state">

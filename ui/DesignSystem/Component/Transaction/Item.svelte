@@ -6,8 +6,9 @@
   import ItemDescription from "./ItemDescription.svelte";
 
   export let tx = null;
+  export let accountId = null;
 
-  $: message = transaction.formatMessage(tx.messages[0]);
+  $: message = transaction.formatMessage(tx.messages[0], accountId);
   $: progress = transaction.iconProgress(tx.state);
   $: iconState = transaction.iconState(tx.state);
 </script>

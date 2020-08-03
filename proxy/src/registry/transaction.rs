@@ -220,6 +220,8 @@ pub enum Message {
         /// User or org receiving the funds.
         recipient: protocol::ed25519::Public,
         /// The funds to transfer.
+        #[serde(serialize_with = "u128_serializer")]
+        #[serde(deserialize_with = "u128_deserializer")]
         amount: registry::Balance,
     },
 
@@ -231,6 +233,8 @@ pub enum Message {
         /// User or org receiving the funds.
         recipient: protocol::ed25519::Public,
         /// The funds to transfer.
+        #[serde(serialize_with = "u128_serializer")]
+        #[serde(deserialize_with = "u128_deserializer")]
         amount: registry::Balance,
     },
 }
