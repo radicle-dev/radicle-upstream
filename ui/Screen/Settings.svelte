@@ -46,10 +46,11 @@
 
   section header a {
     color: var(--color-secondary);
+    text-decoration: underline;
   }
 
   section header a:hover {
-    text-decoration: underline;
+    color: var(--color-secondary-level-6);
   }
 
   .section-item {
