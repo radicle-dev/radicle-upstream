@@ -123,7 +123,7 @@ context("navigation", () => {
         .pick("amount")
         .contains("-112");
     });
-    it("shows the all correct values when viewing the specific transfer", () => {
+    it("shows all correct values when viewing the specific transfer", () => {
       cy.pick("transactions").should("exist");
       cy.pick("transactions").children(".item").should("have.length", 2);
       cy.pick("transactions").children(".item").eq(0).click();
