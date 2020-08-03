@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Avatar, Button, Icon, Title, Text } from "../../Primitive";
+  import { Avatar, Button, Icon, Title } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
   const dispatch = createEventDispatcher();
@@ -52,7 +52,6 @@
     display: flex;
     align-items: center;
     padding-top: 8px;
-    color: var(--color-foreground-level-6);
   }
 
   .action-bar {
@@ -103,9 +102,6 @@
           {/if}
         </div>
         <div class="shareable-entity-identifier">
-          <Text variant="tiny" style="margin-right: 4px; white-space: nowrap;">
-            Radicle ID
-          </Text>
           <Urn urn={entity.shareableEntityIdentifier} showOnHover />
         </div>
       </div>

@@ -4,8 +4,8 @@
 
   export let urn = null;
   export let showOnHover = false;
-  let cleanUrn;
 
+  let cleanUrn;
   if (urn.includes("%rad:git:")) {
     cleanUrn = urn.substring(9, urn.length);
   } else if (urn.includes("rad:git:")) {
@@ -68,16 +68,24 @@
     </div>
   {/if}
   <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
-    <Text
-      style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
-      var(--color-foreground-level-5);">
-      {firstSix}
-    </Text>
-    <Icon.Ellipses size="small" />
-    <Text
-      style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
-      var(--color-foreground-level-5); padding-right: 0.25rem">
-      {lastSix}
-    </Text>
+    {#if urn.length > 24}
+      <Text
+        style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
+        var(--color-foreground-level-5);">
+        {firstSix}
+      </Text>
+      <Icon.Ellipses size="small" />
+      <Text
+        style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
+        var(--color-foreground-level-5); padding-right: 0.25rem">
+        {lastSix}
+      </Text>
+    {:else}
+      <Text
+        style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
+        var(--color-foreground-level-5); padding-right: 0.25rem">
+        {urn}
+      </Text>
+    {/if}
   </Copyable>
 </div>
