@@ -34,7 +34,9 @@
   payerAccountIds[identity.metadata.handle] = identity.accountId;
   orgs.forEach(org => (payerAccountIds[org.id] = org.accountId));
 
-  const recipientValidation = recipientValidationStore();
+  $: recipientValidation = recipientValidationStore(
+    payerAccountIds[$payerStore]
+  );
 
   let validatingAmount = false;
   let validatingRecipient = false;

@@ -71,6 +71,21 @@ context("navigation", () => {
   });
 
   context("sending funds flow", () => {
+    it("cannot send funds to the same account", () => {
+      // Fill the 'Send' form in 'SendReceive' using the
+      // / sender's account id as the recipient.
+      cy.pick("send-receive").should("exist");
+      cy.pick("send-tab").click();
+      cy.pick("send").should("exist");
+      cy.pick("recipient-input").type(
+        "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+      );
+      cy.pick("amount-input").type("123");
+      cy.pick("send-transaction-button").click();
+      cy.get(".validation-row > p").contains(
+        "Cannot make a transfer to the same account"
+      );
+    });
     it("send funds to another account", () => {
       // 0. it starts with two transactions in the list of transactions
       // Note: one of it is the user registration of 'user2'

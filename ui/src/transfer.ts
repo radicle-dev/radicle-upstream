@@ -87,11 +87,21 @@ export const recipientConstraints = {
   },
 };
 
-export const recipientValidationStore = (): validation.ValidationStore => {
+const validateRecipientIsNotSender = (senderAccountId?: string) => (
+  recipientAccountId: string
+): Promise<boolean> => Promise.resolve(senderAccountId !== recipientAccountId);
+
+export const recipientValidationStore = (
+  senderAccountId?: string
+): validation.ValidationStore => {
   return validation.createValidationStore(recipientConstraints, [
     {
       promise: validateRecipientExistence,
       validationMessage: "Cannot find this address",
+    },
+    {
+      promise: validateRecipientIsNotSender(senderAccountId),
+      validationMessage: "Cannot make a transfer to the same account",
     },
   ]);
 };
