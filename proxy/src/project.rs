@@ -61,7 +61,7 @@ impl<ST> From<(coco::Project<ST>, coco::Stats)> for Project
 where
     ST: Clone,
 {
-    /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
+    /// Create a `Project` given a `librad` defined [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from((project, stats): (coco::Project<ST>, coco::Stats)) -> Self {
         let id = project.urn();
