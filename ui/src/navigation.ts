@@ -6,35 +6,23 @@ import * as history from "./history";
 import Blank from "../Screen/Blank.svelte";
 import Help from "../Screen/Help.svelte";
 
-process.stdout.write(Blank.toString());
-
-export enum Screen {
-  Blank = "Blank",
-  Help = "Help",
-}
-
 export interface View {
   readonly component: unknown;
   readonly props?: Props;
 }
 
 type Props = Record<string, 0 | string>;
-type ComponentMap<Key extends string, C extends SvelteComponent> = Required<
+export type ComponentMap<Key extends string, C extends typeof SvelteComponent> = Required<
   Record<Key, C>
 >;
 
-const screenMap: ComponentMap<Screen, SvelteComponent> = {
-  [Screen.Blank]: Blank,
-  [Screen.Help]: Help,
-};
-
-interface Navigation<Key extends string> {
+export interface Navigation<Key extends string> {
   readonly current: Readable<View>;
   back(): void;
   set(key: Key, props?: Props): void;
 }
 
-export const create = <K extends string, C extends SvelteComponent>(
+export const create = <K extends string, C extends typeof SvelteComponent>(
   componentMap: ComponentMap<K, C>,
   initial: K
 ): Navigation<K> => {
@@ -54,4 +42,12 @@ export const create = <K extends string, C extends SvelteComponent>(
   };
 };
 
-console.log(screenMap);
+export enum Screen {
+  Blank = "Blank",
+  Help = "Help",
+}
+
+export const screens: ComponentMap<Screen, typeof SvelteComponent> = {
+  [Screen.Blank]: Blank,
+  [Screen.Help]: Help,
+};

@@ -1,11 +1,12 @@
-<script>
+<script lang="ts">
+  import { setContext } from "svelte";
   import { push, location } from "svelte-spa-router";
 
-  import * as navigation from "./src/navigation.ts";
-  import * as notification from "./src/notification.ts";
-  import * as path from "./src/path.ts";
-  import * as remote from "./src/remote.ts";
-  import { clear, fetch, session as store } from "./src/session.ts";
+  import * as navigation from "./src/navigation";
+  import * as notification from "./src/notification";
+  import * as path from "./src/path";
+  import * as remote from "./src/remote";
+  import { clear, fetch, session as store } from "./src/session";
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
   import { Button, Title } from "./DesignSystem/Primitive";
@@ -14,10 +15,8 @@
   import Navigation from "./Navigation.svelte";
   import Theme from "./Theme.svelte";
 
-  import Blank from "./Screen/Blank.svelte";
   /* import IdentityCreation from "./Screen/IdentityCreation.svelte"; */
   /* import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte"; */
-  import Help from "./Screen/Help.svelte";
   /* import NotFound from "./Screen/NotFound.svelte"; */
   /* import Org from "./Screen/Org.svelte"; */
   /* import OrgRegistration from "./Screen/OrgRegistration.svelte"; */
@@ -52,11 +51,9 @@
   /*   "*": NotFound, */
   /* }; */
 
-  const views = {};
-  views[navigation.Screen.Blank] = { component: Blank };
-  views[navigation.Screen.Help] = { component: Help };
 
-  console.log(views);
+  const screens = navigation.create(navigation.screens, navigation.Screen.Blank);
+  setContext("screens", screens);
 
   $: switch ($store.status) {
     case remote.Status.NotAsked:
@@ -95,7 +92,7 @@
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Theme />
 <Remote {store} context="session">
-  <Navigation {views} />
+  <Navigation nav={screens} />
 
   <div slot="error" class="error">
     <Title variant="big" style="margin-bottom: 32px;">
