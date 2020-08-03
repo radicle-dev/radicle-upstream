@@ -227,7 +227,6 @@
         <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
           From
         </Title>
-        <!-- TODO(julien): shouldn't identity.accountId be the same as fromAddress -->
         <Dropdown
           dataCy="modal-sender-dropdown"
           placeholder="Select wallet you want to use"
