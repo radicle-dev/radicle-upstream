@@ -52,16 +52,19 @@ p.bold,
 p.italic,
 .paragraph-italic {
   font-family: var(--typeface-regular-italic);
+  font-size: 16px;
 }
 
 p.mono,
 .paragraph-mono {
   font-family: var(--typeface-mono-regular);
+  font-size: 16px;
 }
 
 p.mono-bold,
 .paragraph-mono-bold {
   font-family: var(--typeface-mono-medium);
+  font-size: 16px;
 }
 
 p.small,
