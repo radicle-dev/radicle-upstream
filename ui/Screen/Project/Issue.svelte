@@ -160,9 +160,7 @@ Part of #277
       </div>
       <Text style="color: var(--color-foreground-level-5)">
         {issue.open ? 'Opened' : 'Closed'} {issue.created_at} by
-        <span
-          style="color: var(--color-foreground-level-6); font-family:
-          var(--typeface-medium);">
+        <span class="semi-bold" style="color: var(--color-foreground-level-6);">
           {issue.author.handle}
         </span>
       </Text>
