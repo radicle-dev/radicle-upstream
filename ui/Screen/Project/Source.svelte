@@ -3,6 +3,8 @@
   import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
+  import { checkoutWorkingDirectory } from "../../src/project.ts";
+  import * as notification from "../../src/notification.ts";
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
@@ -69,6 +71,20 @@
         currentObjectType,
         currentObjectPath
       )
+    );
+  };
+
+  const handleCheckout = event => {
+    checkoutWorkingDirectory({
+      id: id,
+      remote: "PEER_ID_GOES_HERE",
+      branch: "BRANCH_TO_CHECK_OUT_GOES_HERE",
+      path: event.detail.checkoutDirectoryPath,
+    });
+
+    // TODO(rudolfs): show this only when the checkout is done & successful
+    notification.info(
+      `${metadata.name} checked out to ${event.detail.checkoutDirectoryPath}`
     );
   };
 
@@ -249,7 +265,7 @@
           </div>
         </div>
         <CheckoutButton
-          projectId={project.id}
+          on:checkout={handleCheckout}
           projectName={project.metadata.name} />
       </div>
 

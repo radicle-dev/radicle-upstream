@@ -1,11 +1,8 @@
 <script>
+  import { createEventDispatcher } from "svelte";
   import { Button, Input, Icon, Text } from "../../DesignSystem/Primitive";
-  import { checkoutWorkingDirectory } from "../../src/project.ts";
 
-  import * as notification from "../../src/notification.ts";
-
-  export let projectId = null;
-  export let projectName = null;
+  const dispatch = createEventDispatcher();
 
   // Dropdown element. Set by the view.
   let dropdown = null;
@@ -25,19 +22,6 @@
   };
 
   let checkoutDirectoryPath;
-
-  // TODO(rudolfs): extract this out to the parent screen
-  const handleCheckout = () => {
-    checkoutWorkingDirectory({
-      id: projectId,
-      remote: "PEER_ID_GOES_HERE",
-      branch: "BRANCH_TO_CHECK_OUT_GOES_HERE",
-      path: checkoutDirectoryPath,
-    });
-
-    // TODO(rudolfs): show this only when the checkout is done & successful
-    notification.info(`${projectName} checked out to ${checkoutDirectoryPath}`);
-  };
 </script>
 
 <style>
@@ -70,7 +54,9 @@
     bind:path={checkoutDirectoryPath} />
 
   <Button
-    on:click={handleCheckout}
+    on:click={() => {
+      dispatch('checkout', { checkoutDirectoryPath: checkoutDirectoryPath });
+    }}
     disabled={!checkoutDirectoryPath}
     title={!checkoutDirectoryPath ? 'Please select a folder.' : ''}
     variant="secondary"
