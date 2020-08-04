@@ -1,0 +1,125 @@
+/* Headers */
+
+h1,
+.typo-header-1 {
+  font-family: var(--typeface-bold);
+  font-size: 36px;
+}
+
+h2,
+.typo-header-2 {
+  font-family: var(--typeface-bold);
+  font-size: 24px;
+}
+
+h3,
+.typo-header-3 {
+  font-family: var(--typeface-bold);
+  font-size: 20px;
+}
+
+h4,
+.typo-header-4 {
+  font-family: var(--typeface-bold);
+  font-size: 16px;
+  line-height: 22.5px;
+}
+
+h5,
+.typo-header-5,
+.all-caps {
+  font-family: var(--typeface-medium);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5rem;
+}
+
+/* Paragraph */
+
+p {
+  font-family: var(--typeface-regular);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+p.bold,
+.paragraph-bold {
+  font-family: var(--typeface-medium);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+p.italic,
+.paragraph-italic {
+  font-family: var(--typeface-regular-italic);
+}
+
+p.small,
+.paragraph-small {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+p.small-bold,
+.paragraph-small-bold {
+  font-family: var(--typeface-medium);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+p.small-mono,
+.paragraph-small-mono {
+  font-family: var(--typeface-mono-medium);
+  font-size: 14px;
+}
+
+/* Links */
+
+a,
+.typo-link {
+  color: var(--color-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+a:hover,
+a:focus,
+.typo-link:hover,
+.typo-link:focus {
+  color: var(--color-secondary-level-2);
+}
+
+a:active,
+.typo-link:active {
+  color: var(--color-secondary-level-6);
+}
+
+/* Modifiers */
+
+.regular {
+  font-family: var(--typeface-regular);
+}
+
+.italic {
+  font-family: var(--typeface-regular-italic);
+}
+
+.semi-bold {
+  font-family: var(--typeface-medium);
+}
+
+.bold {
+  font-family: var(--typeface-bold);
+}
+
+.mono {
+  font-family: var(--typeface-mono-regular);
+}
+
+.mono-semi-bold {
+  font-family: var(--typeface-mono-medium);
+}
+
+.mono-bold {
+  font-family: var(--typeface-mono-bold);
+}
