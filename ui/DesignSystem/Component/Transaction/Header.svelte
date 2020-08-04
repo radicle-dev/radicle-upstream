@@ -52,7 +52,7 @@
           style="color: var(--color-foreground)"
           dataCy="subject-avatar" />
       {:else}
-        <p class="bold overflow-ellipses" dataCy="subject">{subject.name}</p>
+        <p class="bold overflow-ellipses" data-cy="subject">{subject.name}</p>
       {/if}
     </caption>
     {#if transaction.state}

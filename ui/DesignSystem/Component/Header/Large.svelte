@@ -78,7 +78,7 @@
 
       <div class="metadata">
         <div class="user">
-          <h1 dataCy="entity-name" style="display: flex; align-items: center;">
+          <h1 data-cy="entity-name" style="display: flex; align-items: center;">
             {#if variant === 'profile' && entity.registered}
               {entity.registered}
             {:else if variant === 'profile' && !entity.registered}

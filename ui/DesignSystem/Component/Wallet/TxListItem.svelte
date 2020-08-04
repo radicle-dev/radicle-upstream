@@ -90,7 +90,7 @@
     <svelte:component this={Icon[headerIcon(tx.messages[0])]} />
     <p
       class="bold"
-      dataCy="message"
+      data-cy="message"
       style="margin: 0 0.5rem; white-space: nowrap;">
       {formatMessage(tx.messages[0], accountId)}
     </p>
@@ -107,7 +107,7 @@
       <p
         class="bold overflow-ellipses"
         style="color: var(--color-foreground-level-5); max-width: 15rem;"
-        dataCy="subject">
+        data-cy="subject">
         {subject.name}
       </p>
     {/if}

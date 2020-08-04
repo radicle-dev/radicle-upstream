@@ -41,7 +41,7 @@
       <div class="amount {variant}">
         <Icon.Currency
           style={variant === 'credit' ? 'fill: var(--color-negative);' : 'fill: var(--color-positive);'} />
-        <p class="small-bold" dataCy="amount" style="margin-left:2px;">
+        <p class="small-bold" data-cy="amount" style="margin-left:2px;">
           {variant === 'credit' ? `-${rad}` : `+${rad}`}
         </p>
       </div>
@@ -50,7 +50,7 @@
         <Icon.Currency size="huge" style="fill: var(--color-secondary);" />
         <h1
           style="color: var(--color-secondary); margin-left: 2px;"
-          dataCy="amount">
+          data-cy="amount">
           {rad}
         </h1>
       </div>
