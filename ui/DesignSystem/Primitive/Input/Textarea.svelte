@@ -50,8 +50,7 @@
     color: var(--color-foreground-level-5);
   }
 
-  textarea:focus,
-  textarea:hover {
+  textarea:focus {
     min-height: 98px;
     outline: none;
     border: 1px solid
