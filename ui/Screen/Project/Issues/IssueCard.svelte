@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title, Text } from "../../../DesignSystem/Primitive";
+  import { Icon } from "../../../DesignSystem/Primitive";
 
   export let issue = null;
 
@@ -43,25 +43,25 @@
     <Icon.Issue
       style="margin-right: 12px; fill: var({issueIconColor(issue.open)})" />
     <div>
-      <Title>{issue.title}</Title>
-      <Text style="color: var(--color-foreground-level-5); padding-top: 6px">
+      <p class="bold">{issue.title}</p>
+      <p style="color: var(--color-foreground-level-5); padding-top: 6px">
         {issueCaption(issue)}
-      </Text>
+      </p>
     </div>
   </div>
   <div class="right">
     {#if issue.replies > 0}
       <div class="reply-count">
         <Icon.Replies />
-        <Text
-          style="margin-left: 4px;font-family: var(--typeface-bold); color:
-          var(--color-foreground-level-5);">
+        <p
+          class="bold"
+          style="margin-left: 4px; color: var(--color-foreground-level-5);">
           {issue.replies}
-        </Text>
+        </p>
       </div>
     {/if}
-    <Text style="color: var(--color-foreground-level-5);">
+    <p style="color: var(--color-foreground-level-5);">
       Updated {issue.updated_at} ago
-    </Text>
+    </p>
   </div>
 </div>
