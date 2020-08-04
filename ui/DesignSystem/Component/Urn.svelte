@@ -10,13 +10,13 @@
   const firstSix = cleanUrn.substring(0, 7);
   const lastSix = cleanUrn.substring(cleanUrn.length - 7, cleanUrn.length);
 
-  let visibilityClass = "hidden";
+  let hover = false;
 
   const hideFullUrn = () => {
-    visibilityClass = "hidden";
+    hover = false;
   };
   const showFullUrn = () => {
-    visibilityClass = "visible";
+    hover = true;
   };
 </script>
 
@@ -31,17 +31,6 @@
     padding: 0 4px;
     border-radius: 4px;
   }
-  .fullUrn {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-  .fullUrn.visible {
-    visibility: visible;
-  }
-  .fullUrn.hidden {
-    visibility: hidden;
-  }
 </style>
 
 <div
@@ -49,30 +38,27 @@
   data-cy="urn"
   on:mouseover={showFullUrn}
   on:mouseout={hideFullUrn}>
-  {#if showOnHover && urn.length > 24}
-    <div class={`fullUrn urn ${visibilityClass}`}>
-      <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
+  <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
+    {#if urn.length > 24}
+      {#if (showOnHover && !hover) || !showOnHover}
+        <Text
+          style="font-family: var(--typeface-mono-medium); font-size: 14px;
+          color: var(--color-foreground-level-6);">
+          {firstSix}
+        </Text>
+        <Icon.Ellipses size="small" />
+        <Text
+          style="font-family: var(--typeface-mono-medium); font-size: 14px;
+          color: var(--color-foreground-level-6); padding-right: 0.25rem">
+          {lastSix}
+        </Text>
+      {:else if showOnHover && hover}
         <Text
           style="font-family: var(--typeface-mono-medium); font-size: 14px;
           color: var(--color-foreground-level-6); padding-right: 0.25rem;">
           {cleanUrn}
         </Text>
-      </Copyable>
-    </div>
-  {/if}
-  <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
-    {#if urn.length > 24}
-      <Text
-        style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
-        var(--color-foreground-level-6);">
-        {firstSix}
-      </Text>
-      <Icon.Ellipses size="small" />
-      <Text
-        style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
-        var(--color-foreground-level-6); padding-right: 0.25rem">
-        {lastSix}
-      </Text>
+      {/if}
     {:else}
       <Text
         style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
