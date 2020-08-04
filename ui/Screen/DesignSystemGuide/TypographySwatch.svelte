@@ -11,7 +11,8 @@
   .swatch {
     display: flex;
     align-items: flex-end;
-    margin-bottom: 14px;
+    padding: 2rem 0;
+    border-top: 1px solid var(--color-foreground-level-2);
   }
 </style>
 

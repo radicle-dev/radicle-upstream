@@ -31,7 +31,7 @@ h5,
   font-family: var(--typeface-medium);
   font-size: 13px;
   text-transform: uppercase;
-  letter-spacing: 0.5rem;
+  letter-spacing: 0.05rem;
 }
 
 /* Paragraph */
@@ -52,6 +52,16 @@ p.bold,
 p.italic,
 .paragraph-italic {
   font-family: var(--typeface-regular-italic);
+}
+
+p.mono,
+.paragraph-mono {
+  font-family: var(--typeface-mono-regular);
+}
+
+p.mono-bold,
+.paragraph-mono-bold {
+  font-family: var(--typeface-mono-medium);
 }
 
 p.small,
@@ -75,26 +85,17 @@ p.small-mono,
 
 /* Links */
 
-a {
-  color: var(--color-foreground);
-  cursor: pointer;
-  text-decoration: none;
-}
-
 .typo-link {
   color: var(--color-secondary);
   cursor: pointer;
   text-decoration: underline;
 }
 
-a:hover,
-a:focus,
 .typo-link:hover,
 .typo-link:focus {
   color: var(--color-secondary-level-2);
 }
 
-a:active,
 .typo-link:active {
   color: var(--color-secondary-level-6);
 }
