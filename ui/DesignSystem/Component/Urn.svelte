@@ -56,7 +56,7 @@
   data-cy="urn"
   on:mouseover={showFullUrn}
   on:mouseout={hideFullUrn}>
-  {#if showOnHover}
+  {#if showOnHover && urn.length > 24}
     <div class={`fullUrn urn ${fullUrn.className}`}>
       <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
         <Text
