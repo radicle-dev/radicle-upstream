@@ -75,7 +75,12 @@ p.small-mono,
 
 /* Links */
 
-a,
+a {
+  color: var(--color-foreground);
+  cursor: pointer;
+  text-decoration: none;
+}
+
 .typo-link {
   color: var(--color-secondary);
   cursor: pointer;
