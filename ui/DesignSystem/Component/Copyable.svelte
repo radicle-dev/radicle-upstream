@@ -12,14 +12,23 @@
   let slotContent;
   let copyIcon = iconBeforeCopy;
 
+  let copied = false;
+
   const copy = () => {
+    if (copied) {
+      return;
+    }
+
     const content =
       copyContent !== null ? copyContent : slotContent.textContent;
     copyToClipboard(content.trim());
 
+    copied = true;
+
     copyIcon = Icon.Check;
     setTimeout(() => {
       copyIcon = Icon.Copy;
+      copied = false;
     }, 1000);
   };
 </script>
