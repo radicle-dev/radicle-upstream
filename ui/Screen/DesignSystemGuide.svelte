@@ -2,14 +2,7 @@
   import * as notification from "../src/notification.ts";
   import * as transaction from "../src/transaction.ts";
 
-  import {
-    Avatar,
-    Button,
-    Icon,
-    Input,
-    Text,
-    Title,
-  } from "../DesignSystem/Primitive";
+  import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     Dropdown,
@@ -348,7 +341,7 @@
 
 <ModalLayout full>
   <div class="layout">
-    <Title variant="huge" style="margin-bottom: 92px">Primitives</Title>
+    <h1 style="margin-bottom: 92px">Primitives</h1>
 
     <Section
       title="Typography updated"
@@ -419,46 +412,12 @@
     <Section title="Colors" subTitle="Primary, secondary and grays">
 
       {#each colors as color}
-        <Text
+        <p
           style="background-color: var({color}); margin-bottom: 8px;
           border-radius: 2px; padding: 4px 8px;">
           {color}
-        </Text>
+        </p>
       {/each}
-    </Section>
-
-    <Section
-      title="Typography"
-      subTitle="Using Inter and Source Code Pro fonts">
-
-      <TypographySwatch title="huge Title">
-        <Title variant="huge">Open Source Coin</Title>
-      </TypographySwatch>
-
-      <TypographySwatch title="big Title">
-        <Title variant="big">Open Source Coin</Title>
-      </TypographySwatch>
-
-      <TypographySwatch title="medium Title">
-        <Title variant="medium">Open Source Coin</Title>
-      </TypographySwatch>
-
-      <TypographySwatch title="regular Title">
-        <Title>Open Source Coin</Title>
-      </TypographySwatch>
-
-      <TypographySwatch title="regular Text">
-        <Text>Open Source Coin</Text>
-      </TypographySwatch>
-
-      <TypographySwatch title="small Text">
-        <Text variant="small">Open Source Coin</Text>
-      </TypographySwatch>
-
-      <TypographySwatch title="tiny Text">
-        <Text variant="tiny">Open Source Coin</Text>
-      </TypographySwatch>
-
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">
@@ -772,7 +731,7 @@
       </Swatch>
     </Section>
 
-    <Title variant="huge" style="margin-bottom: 92px">Components</Title>
+    <h1 style="margin-bottom: 92px">Components</h1>
 
     <Section
       title="Avatars"
@@ -943,7 +902,7 @@
       <Swatch>
         <Row style="width:100%" disabled={false}>
           <div slot="left">
-            <Title>Your Wallet</Title>
+            <p class="bold">Your Wallet</p>
           </div>
 
           <div slot="right">
@@ -956,7 +915,7 @@
         <div style="flex-direction: column; width: 100%">
           <Row variant="top">
             <div slot="left">
-              <Title>Cost 1</Title>
+              <p class="bold">Cost 1</p>
             </div>
 
             <div slot="right">
@@ -965,7 +924,7 @@
           </Row>
           <Row variant="middle">
             <div slot="left">
-              <Title>Cost 2</Title>
+              <p class="bold">Cost 2</p>
             </div>
 
             <div slot="right">
@@ -974,7 +933,7 @@
           </Row>
           <Row variant="bottom">
             <div slot="left">
-              <Title>Total</Title>
+              <p class="bold">Total</p>
             </div>
 
             <div slot="right">

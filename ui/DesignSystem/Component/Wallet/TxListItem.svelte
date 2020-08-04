@@ -14,7 +14,7 @@
     IconState,
   } from "../../../src/transaction.ts";
   import Rad from "../Rad.svelte";
-  import { Avatar, Icon, Text, Title } from "../../Primitive";
+  import { Avatar, Icon } from "../../Primitive";
 
   export let tx = null;
   export let accountId = null;
@@ -62,6 +62,12 @@
     align-items: center;
     margin-right: 1rem;
   }
+
+  .status p {
+    align-self: center;
+    color: var(--color-foreground-level-6);
+    white-space: nowrap;
+  }
 </style>
 
 <div class="item" on:click>
@@ -82,9 +88,12 @@
   </div>
   <div class="description">
     <svelte:component this={Icon[headerIcon(tx.messages[0])]} />
-    <Title dataCy="message" style="margin: 0 .5rem; white-space: nowrap;">
+    <p
+      class="bold"
+      dataCy="message"
+      style="margin: 0 0.5rem; white-space: nowrap;">
       {formatMessage(tx.messages[0], accountId)}
-    </Title>
+    </p>
     {#if avatar}
       <Avatar
         title={subject.name}
@@ -95,12 +104,12 @@
         style="--title-color: var(--color-foreground-level-5);"
         dataCy="subject-avatar" />
     {:else}
-      <Title
-        truncate
+      <p
+        class="bold overflow-ellipses"
         style="color: var(--color-foreground-level-5); max-width: 15rem;"
         dataCy="subject">
         {subject.name}
-      </Title>
+      </p>
     {/if}
   </div>
   <div class="meta">
@@ -120,11 +129,7 @@
             variant="small"
             state={iconState(tx.state)} />
         {/if}
-        <Text
-          style="align-self: center; color: var(--color-foreground-level-6);
-          white-space: nowrap;">
-          {statusText(tx.state)}
-        </Text>
+        <p>{statusText(tx.state)}</p>
       </div>
     {/if}
 

@@ -1,5 +1,5 @@
 <script>
-  import { Flex, Icon, Text } from "../../Primitive";
+  import { Flex, Icon } from "../../Primitive";
 
   import * as transaction from "../../../src/transaction.ts";
 
@@ -19,6 +19,11 @@
   .text {
     display: flex;
   }
+
+  .text p {
+    align-self: center;
+    width: max-content;
+  }
 </style>
 
 <div class="summary" on:click>
@@ -29,9 +34,7 @@
         {rotate}
         {state}
         style="margin: 11px 12px;" />
-      <Text style="align-self: center; width: max-content;" variant="small">
-        {text}
-      </Text>
+      <p class="small">{text}</p>
     </div>
     <div slot="right">
       <Icon.Expand style="margin-right: 16px; vertical-align: middle;" />
