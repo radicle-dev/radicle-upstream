@@ -131,3 +131,9 @@ p.small-mono,
 .mono-bold {
   font-family: var(--typeface-mono-bold);
 }
+
+.overflow-ellipses {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
