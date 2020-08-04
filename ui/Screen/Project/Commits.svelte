@@ -71,7 +71,8 @@
                   commitSha={commit.sha1}
                   timestamp={format(commit.committerTime * 1000)}
                   style="background: none; --commit-message-color:
-                  var(--color-foreground-level-6)" />
+                  var(--color-foreground-level-6); --commit-sha-color:
+                  var(--color-foreground)" />
               </a>
             </li>
           {/each}

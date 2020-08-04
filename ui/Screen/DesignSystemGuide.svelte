@@ -28,7 +28,6 @@
     TrackToggle,
     TransactionCenter,
     TransactionStatusbar,
-    UserCard,
     Urn,
   } from "../DesignSystem/Component";
 
@@ -63,10 +62,6 @@
         ]),
       []
     );
-
-  const user = {
-    username: "Rudolfs Osins",
-  };
 
   const avatarFallback1 = {
     emoji: "📐",
@@ -964,9 +959,6 @@
           showRegisteredBadge={true} />
       </Swatch>
 
-      <Swatch>
-        <UserCard {user} />
-      </Swatch>
     </Section>
 
     <Section title="Transaction" subTitle="Row, Accordion and Statusbar">
