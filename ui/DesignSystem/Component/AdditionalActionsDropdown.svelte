@@ -3,7 +3,6 @@
 
   import { Icon, Text } from "../Primitive";
   import Urn from "./Urn.svelte";
-  import Copyable from "./Copyable.svelte";
   import Tooltip from "./Tooltip.svelte";
 
   let triggerEl;
