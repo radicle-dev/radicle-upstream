@@ -105,7 +105,7 @@
     "start": "run-p --race svelte:watch proxy:start electron:start",
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
-    "test:integration": "run-p --race proxy:start:test wait:test",
+    "test:integration": "TZ='UTC' run-p --race proxy:start:test wait:test",
     "test:integration:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
