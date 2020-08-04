@@ -10,13 +10,13 @@
   const firstSix = cleanUrn.substring(0, 7);
   const lastSix = cleanUrn.substring(cleanUrn.length - 7, cleanUrn.length);
 
-  const fullUrn = { className: "hidden" };
+  let visibilityClass = "hidden";
 
   const hideFullUrn = () => {
-    fullUrn.className = "hidden";
+    visibilityClass = "hidden";
   };
   const showFullUrn = () => {
-    fullUrn.className = "visible";
+    visibilityClass = "visible";
   };
 </script>
 
@@ -50,7 +50,7 @@
   on:mouseover={showFullUrn}
   on:mouseout={hideFullUrn}>
   {#if showOnHover && urn.length > 24}
-    <div class={`fullUrn urn ${fullUrn.className}`}>
+    <div class={`fullUrn urn ${visibilityClass}`}>
       <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
         <Text
           style="font-family: var(--typeface-mono-medium); font-size: 14px;
