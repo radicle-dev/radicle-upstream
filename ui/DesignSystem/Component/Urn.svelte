@@ -5,14 +5,7 @@
   export let urn = null;
   export let showOnHover = false;
 
-  let cleanUrn;
-  if (urn.includes("%rad:git:")) {
-    cleanUrn = urn.substring(9, urn.length);
-  } else if (urn.includes("rad:git:")) {
-    cleanUrn = urn.substring(8, urn.length);
-  } else {
-    cleanUrn = urn;
-  }
+  const cleanUrn = urn.replace(/^%?rad:git:/, "");
 
   const firstSix = cleanUrn.substring(0, 7);
   const lastSix = cleanUrn.substring(cleanUrn.length - 7, cleanUrn.length);
