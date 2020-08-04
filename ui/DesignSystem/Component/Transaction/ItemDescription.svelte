@@ -1,6 +1,4 @@
 <script>
-  import { Text } from "../../Primitive";
-
   export let message = null;
   export let state = null;
 
@@ -22,8 +20,8 @@
 </style>
 
 <div class="description">
-  <Text variant="small" style="width: max-content">{message}</Text>
-  <Text variant="small" style="color: {color}; text-transform: capitalize;">
+  <p class="small" style="width: max-content">{message}</p>
+  <p class="small" style="color: {color}; text-transform: capitalize;">
     {state}
-  </Text>
+  </p>
 </div>
