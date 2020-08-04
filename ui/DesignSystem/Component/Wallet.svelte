@@ -36,6 +36,7 @@
     width: 100%;
     height: 100%;
     margin-left: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   .balance {
