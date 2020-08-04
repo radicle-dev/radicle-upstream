@@ -97,17 +97,21 @@
   }
 </style>
 
-<div
-  style="height: 100%;"
-  data-tooltip
-  data-cy="tooltip"
-  on:mouseenter={event => showTooltip(event)}
-  on:mouseleave={hideTooltip}>
-  <slot />
+{#if value}
   <div
-    style={`top: ${tooltip.positionY}px; left: ${tooltip.positionX}px;`}
-    class={`tooltip ${tooltip.className} ${position}`}>
-    <Text>{value}</Text>
+    style="height: 100%;"
+    data-tooltip
+    data-cy="tooltip"
+    on:mouseenter={event => showTooltip(event)}
+    on:mouseleave={hideTooltip}>
+    <slot />
+    <div
+      style={`top: ${tooltip.positionY}px; left: ${tooltip.positionX}px;`}
+      class={`tooltip ${tooltip.className} ${position}`}>
+      <Text>{value}</Text>
+    </div>
+    <span class="triangle" />
   </div>
-  <span class="triangle" />
-</div>
+{:else}
+  <slot />
+{/if}

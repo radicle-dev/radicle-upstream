@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
   import { Button, Input, Icon, Text } from "../../DesignSystem/Primitive";
+  import { Tooltip } from "../../DesignSystem/Component";
 
   const dispatch = createEventDispatcher();
 
@@ -53,16 +54,19 @@
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
 
-  <Button
-    on:click={() => {
-      dispatch('checkout', { checkoutDirectoryPath: checkoutDirectoryPath });
-    }}
-    disabled={!checkoutDirectoryPath}
-    title={!checkoutDirectoryPath ? 'Please select a folder.' : ''}
-    variant="secondary"
-    style="width: 100%; display: block; text-align: center;">
-    Checkout
-  </Button>
+  <Tooltip
+    value={!checkoutDirectoryPath ? 'Please select a folder.' : null}
+    position="bottom">
+    <Button
+      on:click={() => {
+        dispatch('checkout', { checkoutDirectoryPath: checkoutDirectoryPath });
+      }}
+      disabled={!checkoutDirectoryPath}
+      variant="secondary"
+      style="width: 100%; display: block; text-align: center;">
+      Checkout
+    </Button>
+  </Tooltip>
 </div>
 
 <Button variant="transparent" icon={Icon.Copy} on:click={toggleDropdown}>
