@@ -101,8 +101,8 @@
   style="height: 100%;"
   data-tooltip
   data-cy="tooltip"
-  on:mouseover={event => showTooltip(event)}
-  on:mouseout={hideTooltip}>
+  on:mouseenter={event => showTooltip(event)}
+  on:mouseleave={hideTooltip}>
   <slot />
   <div
     style={`top: ${tooltip.positionY}px; left: ${tooltip.positionX}px;`}
