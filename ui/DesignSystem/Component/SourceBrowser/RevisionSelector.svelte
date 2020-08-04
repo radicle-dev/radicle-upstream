@@ -3,7 +3,7 @@
 
   import { RevisionType } from "../../../src/source.ts";
 
-  import { Avatar, Icon, Text, Title } from "../../Primitive";
+  import { Avatar, Icon } from "../../Primitive";
 
   export let currentRevision = null;
   export let currentPeerId = null;
@@ -48,6 +48,14 @@
 </script>
 
 <style>
+  .revision-name {
+    color: var(--color-foreground-level-6);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
   .revision-selector {
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
@@ -144,12 +152,7 @@
           style="vertical-align: bottom; fill: var(--color-foreground-level-4);
           flex-shrink: 0;" />
       {/if}
-      <Text
-        style="color: var(--color-foreground-level-6); white-space: nowrap;
-        text-overflow: ellipsis; overflow: hidden; margin-left: 0.5rem;
-        margin-right: 0.5rem;">
-        {currentRevision.name}
-      </Text>
+      <p class="revision-name">{currentRevision.name}</p>
     </div>
     <Avatar
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
@@ -172,10 +175,9 @@
           style="display: flex; justify-content: flex-start; margin-right: 8px;"
           size="small"
           variant="circle" />
-        <Title
-          style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+        <p class="bold overflow-ellipses">
           {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
-        </Title>
+        </p>
       </div>
       <ul>
         {#each repo.branches as branch}
