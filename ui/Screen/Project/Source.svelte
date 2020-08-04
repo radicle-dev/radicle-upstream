@@ -170,7 +170,6 @@
     margin-right: 1rem;
   }
   .stat {
-    font-family: var(--typeface-mono-bold);
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
     padding: 0 0.5rem;
@@ -229,17 +228,17 @@
                 Commits
               </a>
             </Text>
-            <span class="stat">{project.stats.commits}</span>
+            <span class="stat mono-bold">{project.stats.commits}</span>
           </div>
           <div class="repo-stat-item">
             <Icon.Branch />
             <Text style="margin: 0 8px;">Branches</Text>
-            <span class="stat">{project.stats.branches}</span>
+            <span class="stat mono-bold">{project.stats.branches}</span>
           </div>
           <div class="repo-stat-item">
             <Icon.Member />
             <Text style="margin: 0 8px;">Contributors</Text>
-            <span class="stat">{project.stats.contributors}</span>
+            <span class="stat mono-bold">{project.stats.contributors}</span>
           </div>
         </div>
         <CheckoutButton
