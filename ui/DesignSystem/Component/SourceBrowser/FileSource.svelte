@@ -33,7 +33,6 @@
 
   header .file-name {
     margin-left: 0.5rem;
-    font-family: var(--typeface-medium);
   }
 
   header .file-name a {
@@ -50,8 +49,6 @@
   }
 
   .line-numbers {
-    font-family: var(--typeface-mono-regular);
-    font-size: 16px;
     color: var(--color-foreground-level-4);
     text-align: right;
     user-select: none;
@@ -60,11 +57,6 @@
 
   .code {
     padding-bottom: 0.5rem;
-  }
-
-  .code {
-    font-family: var(--typeface-mono-regular);
-    font-size: 16px;
     overflow-x: auto;
   }
 
@@ -75,7 +67,7 @@
 
 <div class="file-source" data-cy="file-source">
   <header>
-    <div class="file-header" data-cy="file-header">
+    <div class="file-header semi-bold" data-cy="file-header">
       <Icon.File />
       <span class="file-name">
         <a href={rootPath} use:link>{projectName}</a>
@@ -99,7 +91,7 @@
         text="Binary content"
         style="height: 100%; padding: 2rem 0 1rem;" />
     {:else}
-      <pre class="line-numbers">
+      <pre class="line-numbers paragraph-mono">
         {@html blob.content
           .split('\n')
           .slice(0, -1)
@@ -108,7 +100,7 @@
           })
           .join('\n')}
       </pre>
-      <pre class="code">
+      <pre class="code paragraph-mono">
         {#if blob.html}
           {@html blob.content}
         {:else}{blob.content}{/if}
