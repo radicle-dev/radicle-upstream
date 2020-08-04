@@ -4,6 +4,7 @@
 
   import { Icon } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
+  import EmptyState from "../EmptyState.svelte";
 
   export let blob = null;
   export let path = null;
@@ -93,7 +94,10 @@
   </header>
   <div class="container">
     {#if blob.binary}
-      ఠ ͟ಠ Binary content.
+      <EmptyState
+        icon="eyes"
+        text="Binary content"
+        style="height: 100%; padding: 2rem 0 1rem;" />
     {:else}
       <pre class="line-numbers">
         {@html blob.content

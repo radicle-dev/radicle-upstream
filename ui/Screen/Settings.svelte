@@ -46,15 +46,17 @@
 
   section header a {
     color: var(--color-secondary);
-  }
-
-  section header a:hover {
     text-decoration: underline;
   }
 
+  section header a:hover {
+    color: var(--color-secondary-level-6);
+  }
+
   .section-item {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 1rem;
     align-items: center;
     margin-bottom: 24px;
     padding: 0 12px;
@@ -66,7 +68,7 @@
 
   .action {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-left: 16px;
   }
@@ -129,7 +131,10 @@
             projects from the seeds you’re subscribed to will appear in the
             Discover page.
           </Text>
+        </div>
+        <div class="action">
           <Input.Textarea
+            style="flex: 1; height: 6rem;"
             bind:value={seedInputValue}
             on:change={updateSeeds}
             placeholder="Enter seeds here" />
