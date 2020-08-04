@@ -2,22 +2,33 @@
   // TODO(sarah): write tests for this once it's implemented in the ui somewhere
   import { copyToClipboard } from "../../../native/ipc.js";
   import Icon from "../Primitive/Icon";
-  export let style = null;
 
+  export let style = null;
+  export let copyContent = null;
   export let iconBeforeCopy = Icon.Copy;
   export let iconAfterCopy = Icon.Check;
   export let iconSize = "small";
 
   let slotContent;
-
   let copyIcon = iconBeforeCopy;
 
+  let copied = false;
+
   const copy = () => {
-    copyToClipboard(slotContent.textContent.trim());
+    if (copied) {
+      return;
+    }
+
+    const content =
+      copyContent !== null ? copyContent : slotContent.textContent;
+    copyToClipboard(content.trim());
+
+    copied = true;
 
     copyIcon = Icon.Check;
     setTimeout(() => {
       copyIcon = Icon.Copy;
+      copied = false;
     }, 1000);
   };
 </script>
