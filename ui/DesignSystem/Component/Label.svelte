@@ -1,5 +1,4 @@
 <script>
-  import { Text } from "../Primitive";
   export let title = null;
   export let color = null;
   export let style = null;
@@ -15,5 +14,5 @@
 </style>
 
 <div class="label" style="--color: {color}; {style}">
-  <Text variant="small">{title}</Text>
+  <p class="small">{title}</p>
 </div>

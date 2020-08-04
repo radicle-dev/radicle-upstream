@@ -9,7 +9,7 @@
     statusText,
   } from "../../src/transaction.ts";
 
-  import { Avatar, Icon, Title, Text } from "../../DesignSystem/Primitive";
+  import { Avatar, Icon } from "../../DesignSystem/Primitive";
 
   import Urn from "../../DesignSystem/Component/Urn.svelte";
 
@@ -32,13 +32,17 @@
   $: updateAvatar();
 </script>
 
+<style>
+  p {
+    color: var(--color-foreground-level-6);
+  }
+</style>
+
 <Header {transaction} {avatar} {subject} accountId={viewerAccountId} />
 
-<Row dataCy="transaction-fee" variant="top" style="">
+<Row dataCy="transaction-fee" variant="top">
   <div slot="left">
-    <Text variant="regular" style="color:var(--color-foreground-level-6);">
-      Transaction fee
-    </Text>
+    <p>Transaction fee</p>
   </div>
 
   <div slot="right">
@@ -47,11 +51,9 @@
 </Row>
 
 {#if summary.registrationFee}
-  <Row dataCy="registration-fee" variant="middle" style="">
+  <Row dataCy="registration-fee" variant="middle">
     <div slot="left">
-      <Text variant="regular" style="color:var(--color-foreground-level-6);">
-        {formatStake(transaction.messages[0].type)}
-      </Text>
+      <p>{formatStake(transaction.messages[0].type)}</p>
     </div>
 
     <div slot="right">
@@ -63,11 +65,9 @@
 {/if}
 
 {#if summary.transferAmount}
-  <Row dataCy="transfer-amount" variant="middle" style="">
+  <Row dataCy="transfer-amount" variant="middle">
     <div slot="left">
-      <Text variant="regular" style="color:var(--color-foreground-level-6);">
-        Amount
-      </Text>
+      <p>Amount</p>
     </div>
 
     <div slot="right">
@@ -82,9 +82,7 @@
   style="margin-bottom: 24px; border-top: 1px solid
   var(--color-foreground-level-2); ">
   <div slot="left">
-    <Title style="color: var(--color-foreground-level-6);" variant="medium">
-      Total
-    </Title>
+    <p class="bold">Total</p>
   </div>
 
   <div slot="right">
@@ -95,9 +93,7 @@
 {#if transaction.id}
   <Row variant="top">
     <div slot="left">
-      <Text variant="regular" style="color:var(--color-foreground-level-6);">
-        Transaction ID
-      </Text>
+      <p>Transaction ID</p>
     </div>
     <div slot="right">
       <Urn urn={transaction.id} />
@@ -106,9 +102,7 @@
 
   <Row variant="bottom" style="margin-bottom: 24px;">
     <div slot="left">
-      <Text variant="regular" style="color:var(--color-foreground-level-6);">
-        Status
-      </Text>
+      <p>Status</p>
     </div>
     <div slot="right" style="display: flex; align-items: center;">
       {#if iconState(transaction.state) === 'negative'}
@@ -125,18 +119,14 @@
           variant="small"
           state={iconState(transaction.state)} />
       {/if}
-      <Text style="align-self: center; color: var(--color-foreground-level-6);">
-        {statusText(transaction.state)}
-      </Text>
+      <p style="align-self: center;">{statusText(transaction.state)}</p>
     </div>
   </Row>
 {/if}
 
-<Row style="">
+<Row>
   <div slot="left">
-    <Text style="color: var(--color-foreground-level-6);" variant="regular">
-      Funding source
-    </Text>
+    <p>Funding source</p>
   </div>
 
   <div slot="right">
