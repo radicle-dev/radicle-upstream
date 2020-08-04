@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title } from "../Primitive";
+  import { Icon } from "../Primitive";
   import Tooltip from "./Tooltip.svelte";
 
   export let style = null;
@@ -41,19 +41,18 @@
       <div class="amount {variant}">
         <Icon.Currency
           style={variant === 'credit' ? 'fill: var(--color-negative);' : 'fill: var(--color-positive);'} />
-        <Title variant="tiny" dataCy="amount" style="margin-left:2px;">
+        <p class="small-bold" dataCy="amount" style="margin-left:2px;">
           {variant === 'credit' ? `-${rad}` : `+${rad}`}
-        </Title>
+        </p>
       </div>
     {:else if size === 'big'}
       <div class="big">
         <Icon.Currency size="huge" style="fill: var(--color-secondary);" />
-        <Title
+        <h1
           style="color: var(--color-secondary); margin-left: 2px;"
-          variant="huge"
           dataCy="amount">
           {rad}
-        </Title>
+        </h1>
       </div>
     {/if}
   </Tooltip>

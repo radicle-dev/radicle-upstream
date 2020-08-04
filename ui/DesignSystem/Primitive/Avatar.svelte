@@ -1,7 +1,6 @@
 <script>
   import twemoji from "twemoji";
   import Icon from "./Icon";
-  import Title from "./Title.svelte";
 
   export let style = null;
   export let dataCy = null;
@@ -170,26 +169,26 @@
 
   {#if title}
     {#if size === 'big' || size === 'huge'}
-      <Title variant="big" style="white-space: nowrap; margin-left: 12px">
-        {title}
-      </Title>
+      <h2 style="white-space: nowrap; margin-left: 12px">{title}</h2>
     {:else if size === 'small'}
-      <Title
+      <p
+        class="bold"
         style="white-space: nowrap; margin-left: 0.5rem; color:
         var(--title-color, var(--color-foreground))">
         {title}
-      </Title>
+      </p>
       {#if registered}
         <Icon.Verified
           dataCy="registered-badge"
           style="margin-left: 8px; fill: var(--color-primary);" />
       {/if}
     {:else}
-      <Title
+      <p
+        class="bold"
         style="white-space: nowrap; margin-left: 12px; color: var(--title-color,
         var(--color-foreground))">
         {title}
-      </Title>
+      </p>
       {#if registered}
         <Icon.Verified
           dataCy="registered-badge"

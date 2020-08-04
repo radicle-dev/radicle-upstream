@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title } from "../Primitive";
+  import { Icon } from "../Primitive";
   import { slide } from "svelte/transition";
 
   export let title = null;
@@ -47,7 +47,7 @@
 
 <div class="option" class:active data-cy={dataCy}>
   <div class="header" on:click>
-    <Title style="color: var(--color-foreground-level-6)">{title}</Title>
+    <p class="bold" style="color: var(--color-foreground-level-6)">{title}</p>
     <Icon.Check
       variant="filled"
       style={active ? 'display: block; fill: var(--color-primary)' : 'display: none'} />

@@ -1,5 +1,5 @@
 <script>
-  import { Avatar, Icon, Title } from "../../DesignSystem/Primitive";
+  import { Avatar, Icon } from "../../DesignSystem/Primitive";
 
   export let org = null;
   export let user = null;
@@ -30,6 +30,6 @@
     <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}
     <Icon.Projects />
-    <Title style="white-space: nowrap; margin-left: 8px;">{title}</Title>
+    <p class="bold" style="white-space: nowrap; margin-left: 8px;">{title}</p>
   {/if}
 </div>

@@ -1,10 +1,10 @@
 <script>
-  import { Flex, Title } from "../DesignSystem/Primitive";
+  import { Flex } from "../DesignSystem/Primitive";
   import { SidebarLayout } from "../DesignSystem/Component";
 </script>
 
 <SidebarLayout>
   <Flex align="left">
-    <Title variant="big">Not Found</Title>
+    <h2>Not Found</h2>
   </Flex>
 </SidebarLayout>

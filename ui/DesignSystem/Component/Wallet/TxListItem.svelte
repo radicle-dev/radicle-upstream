@@ -78,12 +78,12 @@
         style="color: var(--color-foreground-level-3); margin-bottom: 1px;">
         {formatDate(tx.state.timestamp.secs, 'month').substring(0, 3)}
       </p>
-      <Title>{formatDate(tx.state.timestamp.secs, 'day')}</Title>
+      <p class="bold">{formatDate(tx.state.timestamp.secs, 'day')}</p>
     {:else}
       <p class="all-caps" style="color: var(--color-foreground-level-3)">
         {formatDate(tx.timestamp.secs, 'month').substring(0, 3)}
       </p>
-      <Title>{formatDate(tx.timestamp.secs, 'day')}</Title>
+      <p class="bold">{formatDate(tx.timestamp.secs, 'day')}</p>
     {/if}
   </div>
   <div class="description">

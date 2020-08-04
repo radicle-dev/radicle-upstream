@@ -1,5 +1,5 @@
 <script>
-  import { Title, Icon } from "../../Primitive";
+  import { Icon } from "../../Primitive";
 
   export let file = null;
 
@@ -136,7 +136,7 @@
 <article class="changeset-file">
   <header>
     <Icon.File style="margin-right: 8px;" />
-    <Title>{file.path}</Title>
+    <p class="bold">{file.path}</p>
   </header>
   <main>
     {#if file.diff.type == 'plain' && file.diff.hunks.length > 0}

@@ -6,7 +6,7 @@
   import { commit as store, fetchCommit } from "../../src/source.ts";
   import * as remote from "../../src/remote.ts";
 
-  import { Title, Flex, Icon } from "../../DesignSystem/Primitive";
+  import { Flex, Icon } from "../../DesignSystem/Primitive";
   import { Header, Remote } from "../../DesignSystem/Component";
 
   import FileDiff from "../../DesignSystem/Component/SourceBrowser/FileDiff.svelte";
@@ -104,9 +104,7 @@
 <div class="commit-page" data-cy="commit-page">
   <Remote {store} let:data={commit}>
     <Header.Back style="padding: 1rem;" on:arrowClick={() => pop()}>
-      <Title variant="large" style="margin-bottom: .75rem">
-        {commit.header.summary}
-      </Title>
+      <h3 style="margin-bottom: .75rem">{commit.header.summary}</h3>
       <div class="metadata">
         <span class="field">
           <!-- NOTE(cloudhead): These awful margin hacks are here because
@@ -183,7 +181,7 @@
         {#each commit.diff.created as path}
           <header class="file-header">
             <Icon.File style="margin-right: 8px;" />
-            <Title>{path}</Title>
+            <p class="bold">{path}</p>
             <span class="diff-type created">created</span>
           </header>
         {/each}

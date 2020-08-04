@@ -175,7 +175,6 @@ complexity. Currently you'll find the following types of components in the
 
     <Icon.Home />
     <Button variant="secondary">OK</Button>
-    <Title variant="huge">Radicle</Title>
     ```
 
   - `Component`: reusable low-to-high complexity components and layouts.
@@ -247,7 +246,7 @@ use slots:
 
 ```html
 <Flex align="left">
-  <Title variant="big">Issues</Title>
+  <h1>Issues</h1>
 </Flex>
 
 <Flex style="margin-top: 48px;">

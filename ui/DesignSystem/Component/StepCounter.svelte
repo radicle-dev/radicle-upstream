@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Line, Title } from "../Primitive";
+  import { Icon, Line } from "../Primitive";
 
   export let selectedStep = null;
   export let steps = null;
@@ -30,11 +30,12 @@
       <Line height="15" width="126" />
     {/if}
     <div class="step" class:active={selectedStep === index + 1}>
-      <Title
+      <p
+        class="bold"
         style="color: inherit; margin-bottom: 14px; align-self: center;
         white-space: nowrap;">
         {stepName}
-      </Title>
+      </p>
       <Icon.StepCounter active={selectedStep === index + 1} />
     </div>
   {/each}
