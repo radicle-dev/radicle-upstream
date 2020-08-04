@@ -1,6 +1,5 @@
 import Avatar from "./Avatar.svelte";
 import Button from "./Button.svelte";
-import Code from "./Code.svelte";
 import Flex from "./Flex.svelte";
 import Icon from "./Icon";
 import Input from "./Input";
@@ -13,7 +12,6 @@ import Title from "./Title.svelte";
 export {
   Avatar,
   Button,
-  Code,
   Flex,
   Icon,
   Input,

@@ -5,7 +5,6 @@
   import {
     Avatar,
     Button,
-    Code,
     Icon,
     Input,
     Text,
@@ -459,10 +458,6 @@
 
       <TypographySwatch title="tiny Text">
         <Text variant="tiny">Open Source Coin</Text>
-      </TypographySwatch>
-
-      <TypographySwatch title="Code">
-        <Code>Open Source Coin</Code>
       </TypographySwatch>
 
       <TypographySwatch title="big Numeric">
