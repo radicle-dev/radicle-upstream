@@ -6,7 +6,6 @@
     Avatar,
     Button,
     Code,
-    Caption,
     Icon,
     Input,
     Text,
@@ -466,10 +465,6 @@
         <Code>Open Source Coin</Code>
       </TypographySwatch>
 
-      <TypographySwatch title="Caption">
-        <Caption>Open Source Coin</Caption>
-      </TypographySwatch>
-
       <TypographySwatch title="big Numeric">
         <Numeric variant="big">0123456789</Numeric>
       </TypographySwatch>
@@ -485,7 +480,7 @@
 
     <Section title="Icons" subTitle="Icons at 24px width and height">
       <Swatch>
-        <Caption>Main</Caption>
+        <h5>Main</h5>
       </Swatch>
       <IconSwatch>
         <Icon.Home />
@@ -496,7 +491,7 @@
         <Icon.Settings />
       </IconSwatch>
       <Swatch>
-        <Caption>Functional</Caption>
+        <h5>Functional</h5>
       </Swatch>
       <IconSwatch>
         <Icon.ArrowDown />
@@ -524,7 +519,7 @@
         <Icon.Search variant="small" />
       </IconSwatch>
       <Swatch>
-        <Caption>Representational</Caption>
+        <h5>Representational</h5>
       </Swatch>
       <IconSwatch>
         <Icon.Replies />
@@ -544,7 +539,7 @@
         <Icon.Verified size="large" />
       </IconSwatch>
       <Swatch>
-        <Caption>Code</Caption>
+        <h5>Code</h5>
       </Swatch>
       <IconSwatch>
         <Icon.Commit />
@@ -587,16 +582,16 @@
         <thead>
           <tr>
             <td>
-              <Caption>Variant</Caption>
+              <h5>Variant</h5>
             </td>
             <td>
-              <Caption>Disabled</Caption>
+              <h5>Disabled</h5>
             </td>
             <td>
-              <Caption>Variant</Caption>
+              <h5>Variant</h5>
             </td>
             <td>
-              <Caption>Disabled</Caption>
+              <h5>Disabled</h5>
             </td>
           </tr>
         </thead>

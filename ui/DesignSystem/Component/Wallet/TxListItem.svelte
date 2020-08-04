@@ -14,7 +14,7 @@
     IconState,
   } from "../../../src/transaction.ts";
   import Rad from "../Rad.svelte";
-  import { Avatar, Caption, Icon, Text, Title } from "../../Primitive";
+  import { Avatar, Icon, Text, Title } from "../../Primitive";
 
   export let tx = null;
   export let accountId = null;
@@ -67,15 +67,16 @@
 <div class="item" on:click>
   <div class="date">
     {#if tx.state.type === StateType.Settled}
-      <Caption
+      <p
+        class="all-caps"
         style="color: var(--color-foreground-level-3); margin-bottom: 1px;">
         {formatDate(tx.state.timestamp.secs, 'month').substring(0, 3)}
-      </Caption>
+      </p>
       <Title>{formatDate(tx.state.timestamp.secs, 'day')}</Title>
     {:else}
-      <Caption style="color: var(--color-foreground-level-3)">
+      <p class="all-caps" style="color: var(--color-foreground-level-3)">
         {formatDate(tx.timestamp.secs, 'month').substring(0, 3)}
-      </Caption>
+      </p>
       <Title>{formatDate(tx.timestamp.secs, 'day')}</Title>
     {/if}
   </div>
