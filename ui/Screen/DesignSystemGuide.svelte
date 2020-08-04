@@ -419,10 +419,6 @@
       <TypographySwatch title="small Numeric">
         <Numeric variant="small">0123456789</Numeric>
       </TypographySwatch>
-
-      <TypographySwatch title="tiny Numeric">
-        <Numeric variant="tiny">0123456789</Numeric>
-      </TypographySwatch>
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">

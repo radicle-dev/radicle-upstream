@@ -11,12 +11,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  color: var(--color-foreground);
-  cursor: pointer;
-  text-decoration: none;
-}
-
 :root {
   --sidebar-width: 4rem;
   --topbar-height: 4rem;

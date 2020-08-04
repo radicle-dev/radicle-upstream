@@ -23,12 +23,6 @@
     font-size: 14px;
     line-height: 18px;
   }
-
-  .tiny {
-    font-family: var(--typeface-mono-medium);
-    font-size: 12px;
-    line-height: 15px;
-  }
 </style>
 
 <p data-cy={dataCy} class={variant} {style}>
