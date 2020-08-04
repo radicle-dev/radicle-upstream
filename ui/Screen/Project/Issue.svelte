@@ -1,7 +1,7 @@
 <script>
   import { pop } from "svelte-spa-router";
 
-  import { Title, Text, Markdown } from "../../DesignSystem/Primitive";
+  import { Markdown } from "../../DesignSystem/Primitive";
   import { Comment, Header, Timeline } from "../../DesignSystem/Component";
 
   $: openClass = issue.open ? "open" : "closed";
@@ -153,17 +153,17 @@ Part of #277
     on:arrowClick={() => pop()}
     style="padding: 0 16px 24px 16px; border-bottom: 1px solid
     var(--color-foreground-level-3);">
-    <Title variant="large">{issue.title}</Title>
+    <h3>{issue.title}</h3>
     <div class="metadata">
       <div class="state-badge {openClass}">
-        <Text variant="small">{issue.open ? 'Open' : 'Closed'}</Text>
+        <p class="small-bold">{issue.open ? 'Open' : 'Closed'}</p>
       </div>
-      <Text style="color: var(--color-foreground-level-5)">
+      <p style="color: var(--color-foreground-level-5)">
         {issue.open ? 'Opened' : 'Closed'} {issue.created_at} by
         <span class="semi-bold" style="color: var(--color-foreground-level-6);">
           {issue.author.handle}
         </span>
-      </Text>
+      </p>
     </div>
   </Header.Back>
   <article>

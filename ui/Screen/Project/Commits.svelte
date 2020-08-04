@@ -6,7 +6,6 @@
   import { commits as store, formatTime } from "../../src/source.ts";
 
   import { Remote } from "../../DesignSystem/Component";
-  import { Text } from "../../DesignSystem/Primitive";
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
 
   export let params = null;
@@ -58,7 +57,7 @@
     {#each histories as history}
       <div class="commit-group">
         <header>
-          <Text>{formatTime(history.time * 1000)}</Text>
+          <p>{formatTime(history.time * 1000)}</p>
         </header>
         <ul>
           {#each history.commits as commit}

@@ -8,7 +8,6 @@
   import * as user from "../src/user.ts";
 
   import { ModalLayout } from "../DesignSystem/Component";
-  import { Title, Text } from "../DesignSystem/Primitive";
 
   import PickHandleStep from "./UserRegistration/PickHandleStep.svelte";
   import SubmitRegistrationStep from "./UserRegistration/SubmitRegistrationStep.svelte";
@@ -55,20 +54,26 @@
     text-align: left;
     width: 540px;
   }
+
+  h2 {
+    text-align: center;
+  }
+
+  p {
+    color: var(--color-foreground-level-5);
+    margin: 16px 0 24px 0;
+  }
 </style>
 
 <ModalLayout dataCy="page">
   <div class="wrapper">
     <div class="register-user" data-cy="register-user">
       {#if step === 1}
-        <Title variant="big" style="text-align: center;">
-          Handle registration
-        </Title>
-        <Text
-          style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
+        <h2>Handle registration</h2>
+        <p>
           Registering your handle makes it unique and allows others to easily
           find you.
-        </Text>
+        </p>
         <PickHandleStep bind:handle {identity} onNextStep={nextStep} />
       {/if}
 

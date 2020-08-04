@@ -4,13 +4,7 @@
   import { store } from "../../src/identity.ts";
 
   import { Copyable, Remote } from "../../DesignSystem/Component";
-  import {
-    Avatar,
-    Button,
-    Flex,
-    Text,
-    Title,
-  } from "../../DesignSystem/Primitive";
+  import { Avatar, Button, Flex } from "../../DesignSystem/Primitive";
 
   const dispatch = createEventDispatcher();
 </script>
@@ -54,8 +48,8 @@
 
 <div class="container">
   <div class="content">
-    <Title variant="big" style="text-align: center;">Identity created ✨</Title>
-    <Text style="margin: 20px 0; color: var(--color-foreground-level-5);">
+    <h2 style="text-align: center;">Identity created ✨</h2>
+    <p style="margin: 20px 0; color: var(--color-foreground-level-5);">
       This is your peer-to-peer identity. Even though your radicleID is unique,
       your handle isn't. To get a unique handle, you have to
       <span
@@ -64,20 +58,20 @@
         on:click={() => dispatch('register')}>
         register it.
       </span>
-    </Text>
+    </p>
     <Remote {store} let:data={identity}>
       <div class="identity-card" data-cy="identity-card">
         <Avatar size="big" avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">
-          <Title>{identity.metadata.handle}</Title>
+          <p class="bold">{identity.metadata.handle}</p>
           <Copyable iconSize="normal">
             <Flex align="left">
-              <Text
+              <p
                 style="color: var(--color-foreground-level-6); white-space:
                 nowrap; overflow: hidden; text-overflow: ellipsis; max-width:
                 350px;">
                 {identity.shareableEntityIdentifier}
-              </Text>
+              </p>
             </Flex>
           </Copyable>
         </div>

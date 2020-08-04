@@ -6,7 +6,7 @@
   import * as notification from "../../src/notification.ts";
   import { getOrgProject, Domain } from "../../src/project.ts";
 
-  import { Text, Title, Input } from "../../DesignSystem/Primitive";
+  import { Input } from "../../DesignSystem/Primitive";
   import { Dropdown, NavigationButtons } from "../../DesignSystem/Component";
 
   const dispatch = createEventDispatcher();
@@ -156,6 +156,11 @@
     margin-left: 12px;
     margin-top: 12px;
   }
+
+  .name-validation p {
+    color: var(--color-negative);
+    text-align: left;
+  }
 </style>
 
 <Dropdown
@@ -173,11 +178,11 @@
     dataCy="domain-dropdown"
     bind:value={domainId}
     options={domainDropdownOptions} />
-  <Title
-    style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);"
-    variant="regular">
+  <p
+    class="bold"
+    style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);">
     /
-  </Title>
+  </p>
   <Input.Text
     dataCy="name-input"
     placeholder="Project name*"
@@ -190,9 +195,7 @@
 
 {#if validations && validations.projectName}
   <div class="name-validation">
-    <Text style="color: var(--color-negative); text-align: left;">
-      {validations.projectName[0]}
-    </Text>
+    <p>{validations.projectName[0]}</p>
   </div>
 {/if}
 
