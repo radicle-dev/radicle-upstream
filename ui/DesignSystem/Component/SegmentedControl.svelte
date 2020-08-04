@@ -29,7 +29,6 @@
     margin: 0;
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);
-    font-family: var(--typeface-medium);
   }
   .segmented-control button:focus {
     outline: none;
@@ -50,6 +49,7 @@
 <div class="segmented-control">
   {#each options as option}
     <button
+      class="semi-bold"
       class:active={option.value === currentlyActive}
       value={option.value}
       on:click={() => onClick(option)}>
