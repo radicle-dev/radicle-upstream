@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Numeric } from "../Primitive";
+  import { Icon } from "../Primitive";
 
   export let contributors = null;
   export let branches = null;
@@ -25,15 +25,17 @@
     align-items: center;
     margin-right: 32px;
   }
+
+  .stat p {
+    color: var(--color-foreground-level-6);
+  }
 </style>
 
 <div class="stats" {style}>
   {#each formattedStats as stat}
     <span class="stat">
       <svelte:component this={stat.icon} style="margin-right: 4px;" />
-      <Numeric style="color: var(--color-foreground-level-6);">
-        {stat.count}
-      </Numeric>
+      <p class="mono-bold">{stat.count}</p>
       <slot />
     </span>
   {/each}

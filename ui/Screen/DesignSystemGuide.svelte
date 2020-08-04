@@ -9,7 +9,6 @@
     Input,
     Text,
     Title,
-    Numeric,
   } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
@@ -460,17 +459,6 @@
         <Text variant="tiny">Open Source Coin</Text>
       </TypographySwatch>
 
-      <TypographySwatch title="big Numeric">
-        <Numeric variant="big">0123456789</Numeric>
-      </TypographySwatch>
-
-      <TypographySwatch title="regular Numeric">
-        <Numeric>0123456789</Numeric>
-      </TypographySwatch>
-
-      <TypographySwatch title="small Numeric">
-        <Numeric variant="small">0123456789</Numeric>
-      </TypographySwatch>
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">
