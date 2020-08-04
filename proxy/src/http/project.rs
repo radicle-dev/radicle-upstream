@@ -35,9 +35,8 @@ fn checkout_filter<R>(
 where
     R: registry::Client + 'static,
 {
-    path("projects")
+    http::with_context(ctx.clone())
         .and(warp::post())
-        .and(http::with_context(ctx))
         .and(document::param::<coco::Urn>("id", "Project id"))
         .and(warp::body::json())
         .and(document::document(document::description(
