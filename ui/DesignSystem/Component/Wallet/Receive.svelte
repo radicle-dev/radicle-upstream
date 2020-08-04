@@ -1,7 +1,7 @@
 <script>
   import Urn from "../Urn.svelte";
   import QR from "../QR.svelte";
-  import { Text, Title } from "../../Primitive";
+  import { Flex, Text, Title } from "../../Primitive";
 
   export let accountId = null;
   export let text = null;
@@ -24,5 +24,7 @@
     </Text>
   {/if}
   <Title style="padding: 1.5rem 0 0.5rem 0;">Address</Title>
-  <Urn urn={accountId} />
+  <Flex align="center">
+    <Urn urn={accountId} />
+  </Flex>
 </div>
