@@ -1,10 +1,5 @@
 <script>
-  import {
-    Avatar,
-    Text,
-    Title,
-    Markdown,
-  } from "../../../DesignSystem/Primitive";
+  import { Avatar, Markdown } from "../../../DesignSystem/Primitive";
   export let item = null;
 </script>
 
@@ -32,11 +27,11 @@
   imageUrl={item.user.avatar_url} />
 <div class="comment-box">
   <div class="meta">
-    <Title style="margin-right: 8px;">{item.user.handle}</Title>
-    <Text style="color: var(--color-foreground-level-6);">commented</Text>
-    <Text style="color: var(--color-foreground-level-5); margin-left: 8px;">
+    <p class="bold" style="margin-right: 8px;">{item.user.handle}</p>
+    <p style="color: var(--color-foreground-level-6);">commented</p>
+    <p style="color: var(--color-foreground-level-5); margin-left: 8px;">
       {item.time_ago}
-    </Text>
+    </p>
   </div>
   <div class="content">
     <Markdown content={item.comment} />
