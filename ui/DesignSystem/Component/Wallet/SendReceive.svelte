@@ -40,7 +40,6 @@
     margin: 0;
     background-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-5);
-    font-family: var(--typeface-bold);
     font-size: 1rem;
     border: 1px solid transparent;
   }
@@ -90,6 +89,7 @@
 <div class="send-receive">
   <div class="selector">
     <button
+      class="semi-bold"
       class:active={currentlyActiveSend}
       value="send"
       data-cy="send-tab"
@@ -97,6 +97,7 @@
       Send
     </button>
     <button
+      class="semi-bold"
       class:active={!currentlyActiveSend}
       value="receive"
       data-cy="receive-tab"
