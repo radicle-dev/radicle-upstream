@@ -38,10 +38,6 @@
     padding: 1.5rem;
   }
 
-  .description {
-    font-family: var(--typeface-mono-regular);
-  }
-
   .field {
     color: var(--color-foreground-level-6);
     margin-bottom: 0.5rem;
@@ -51,23 +47,13 @@
     margin-bottom: 0;
   }
 
-  .email {
-    font-family: var(--typeface-mono-regular);
-  }
-
   .branch {
     margin: 0 0.5rem;
-    font-family: var(--typeface-medium);
     color: var(--color-foreground-level-6);
   }
 
   .author {
-    font-family: var(--typeface-medium);
     color: var(--color-foreground);
-  }
-
-  .hash {
-    font-family: var(--typeface-mono-regular);
   }
 
   .changeset-summary {
@@ -76,18 +62,12 @@
     margin-left: 1.5rem;
   }
 
-  .changeset-summary .amount {
-    font-family: var(--typeface-medium);
-  }
-
   .changeset-summary .additions {
     color: var(--color-positive);
-    font-family: var(--typeface-medium);
   }
 
   .changeset-summary .deletions {
     color: var(--color-negative);
-    font-family: var(--typeface-medium);
   }
 
   .file-header {
@@ -134,9 +114,9 @@
             it differently. -->
           <span>{commit.header.author.name}</span>
           <span>committed</span>
-          <span class="hash">{commit.header.sha1.substring(0, 7)}</span>
+          <span class="mono">{commit.header.sha1.substring(0, 7)}</span>
           <span style="margin-right: -1ch">to</span>
-          <span class="branch">
+          <span class="branch semi-bold">
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-6)" />
@@ -149,7 +129,7 @@
       </div>
     </Header.Back>
     <div class="content" data-cy="commit-header">
-      <pre class="description" style="margin-bottom: 1rem">
+      <pre class="mono" style="margin-bottom: 1rem">
         {commit.header.summary}
       </pre>
       <pre class="description" style="margin-bottom: 1rem">
@@ -160,14 +140,16 @@
         <div slot="left">
           <p class="field">
             Authored by
-            <span class="author">{commit.header.author.name}</span>
-            <span class="email">&lt;{commit.header.author.email}&gt;</span>
+            <span class="author semi-bold">{commit.header.author.name}</span>
+            <span class="mono">&lt;{commit.header.author.email}&gt;</span>
           </p>
           {#if commit.header.committer.email != commit.header.author.email}
             <p class="field">
               Committed by
-              <span class="author">{commit.header.committer.name}</span>
-              <span class="email">&lt;{commit.header.committer.email}&gt;</span>
+              <span class="author semi-bold">
+                {commit.header.committer.name}
+              </span>
+              <span class="mono">&lt;{commit.header.committer.email}&gt;</span>
             </p>
           {/if}
         </div>
@@ -184,13 +166,17 @@
     <main>
       <div class="changeset-summary">
         {#if commit.diff.modified.length > 0}
-          <span class="amount">
+          <span class="semi-bold">
             {commit.diff.modified.length} file(s) changed
           </span>
           with
-          <span class="additions">{commit.stats.additions} additions</span>
+          <span class="additions semi-bold">
+            {commit.stats.additions} additions
+          </span>
           and
-          <span class="deletions">{commit.stats.deletions} deletions</span>
+          <span class="deletions semi-bold">
+            {commit.stats.deletions} deletions
+          </span>
         {/if}
       </div>
       <div>
