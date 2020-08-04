@@ -3,6 +3,7 @@
 
   import { Icon, Text } from "../Primitive";
   import Copyable from "./Copyable.svelte";
+  import Tooltip from "./Tooltip.svelte";
 
   let triggerEl;
   let expanded = false;
@@ -133,15 +134,29 @@
       {#if menuItems}
         <div class="menu" data-cy="dropdown-menu">
           {#each menuItems as item}
-            <div
-              title={item.tooltip}
-              data-cy={item.dataCy}
-              class="menu-item"
-              class:disabled={item.disabled}
-              on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
-              <svelte:component this={item.icon} style="margin-right: 12px" />
-              <Text>{item.title}</Text>
-            </div>
+            {#if item.tooltip !== undefined}
+              <Tooltip value={item.tooltip} position="bottom">
+                <div
+                  data-cy={item.dataCy}
+                  class="menu-item"
+                  class:disabled={item.disabled}
+                  on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
+                  <svelte:component
+                    this={item.icon}
+                    style="margin-right: 12px" />
+                  <Text>{item.title}</Text>
+                </div>
+              </Tooltip>
+            {:else}
+              <div
+                data-cy={item.dataCy}
+                class="menu-item"
+                class:disabled={item.disabled}
+                on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
+                <svelte:component this={item.icon} style="margin-right: 12px" />
+                <Text>{item.title}</Text>
+              </div>
+            {/if}
           {/each}
         </div>
       {/if}
