@@ -128,7 +128,6 @@ p.typo-small-mono,
   overflow: hidden;
 }
 
-caption,
 .typo-all-caps {
   font-family: var(--typeface-medium);
   font-size: 13px;
