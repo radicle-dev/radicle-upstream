@@ -286,7 +286,7 @@ need to use another html element than `<p>`, there are classes that match the
 paragraph styling, e.g.: `<p class="typo-bold">` -> `<span
 class="typo-text-bold">`
 
-The modifiers are to give us some flexibility and allow us to create classes for
+The modifiers give us some flexibility and allow us to create classes for
 certain css functionality we use over and over. Such as,
 `typo-overflow-ellipses` and `typo-all-caps`. These should be self-explanatory.
 
@@ -294,7 +294,7 @@ We also added a set of modifiers that allow you to add the font-family as a
 class where you need it, here again we would recommend not doing that as most
 styles should fit into one of the two categories above.
 
-The only place in the app we're not using this is in `<Markdown />`, since the
+The only place in the app where we're not using this is in `<Markdown />`, since the
 library we use doesn't allow us to overwrite the styles without using global
 declarations. If you have any questions or improvements, open an issue and we're
 happy to help you along.
