@@ -727,6 +727,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "134951f4028bdadb9b84baf4232681efbf277da25144b9b0ad65df75946c422b"
 
 [[package]]
+name = "dyn-clone"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c53dc3a653e0f64081026e4bf048d48fec9fce90c66e8326ca7292df0ff2d82"
+
+[[package]]
 name = "ed25519-dalek"
 version = "1.0.0-pre.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1807,6 +1813,56 @@ dependencies = [
  "bs58",
  "bytes 0.5.6",
  "directories",
+ "futures 0.3.5",
+ "futures-timer 3.0.2",
+ "futures_codec",
+ "git2",
+ "governor",
+ "hex",
+ "lazy_static",
+ "libc",
+ "libgit2-sys",
+ "log 0.4.8",
+ "minicbor",
+ "multibase",
+ "multihash 0.10.1",
+ "nonempty 0.2.0",
+ "olpc-cjson",
+ "percent-encoding 2.1.0",
+ "quinn",
+ "radicle-keystore",
+ "rand 0.7.3",
+ "rand_pcg 0.2.1",
+ "rcgen",
+ "regex",
+ "rustls",
+ "secstr",
+ "serde",
+ "serde_json",
+ "sha2",
+ "sodiumoxide",
+ "tempfile",
+ "thiserror",
+ "tokio 0.2.21",
+ "tokio-util",
+ "tracing",
+ "url 2.1.1",
+ "urltemplate",
+ "webpki",
+ "yasna",
+]
+
+[[package]]
+name = "librad"
+version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=7f10f3acfa1b68b38f3c7d4ea326cdf08849405c#7f10f3acfa1b68b38f3c7d4ea326cdf08849405c"
+dependencies = [
+ "async-trait",
+ "bit-vec",
+ "bs58",
+ "bytes 0.5.6",
+ "directories",
+ "dyn-clone",
  "futures 0.3.5",
  "futures-timer 3.0.2",
  "futures_codec",
@@ -2938,7 +2994,7 @@ dependencies = [
  "http",
  "kv",
  "lazy_static",
- "librad",
+ "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=7f10f3acfa1b68b38f3c7d4ea326cdf08849405c)",
  "log 0.4.8",
  "nonempty 0.5.0",
  "parity-scale-codec",
@@ -3040,7 +3096,7 @@ dependencies = [
  "anyhow",
  "git2",
  "libgit2-sys",
- "librad",
+ "librad 0.1.0 (git+https://github.com/radicle-dev/radicle-link.git?rev=55cd394b0eede746ccf4120956f0c3eaf459b073)",
  "radicle-keystore",
 ]
 
