@@ -343,72 +343,6 @@
   <div class="layout">
     <h1 style="margin-bottom: 92px">Primitives</h1>
 
-    <Section
-      title="Typography updated"
-      subTitle="Using Inter and Source Code Pro fonts">
-
-      <TypographySwatch title="h1">
-        <h1>Radicle Upstream</h1>
-      </TypographySwatch>
-
-      <TypographySwatch title="h2">
-        <h2>Radicle Upstream</h2>
-      </TypographySwatch>
-
-      <TypographySwatch title="h3">
-        <h3>Radicle Upstream</h3>
-      </TypographySwatch>
-
-      <TypographySwatch title="h3.typo-mono">
-        <h3 class="typo-mono-bold">Radicle Upstream</h3>
-      </TypographySwatch>
-
-      <TypographySwatch title="h4">
-        <h4>Radicle Upstream</h4>
-      </TypographySwatch>
-
-      <TypographySwatch title="h5.typo-all-caps">
-        <h5>Radicle Upstream</h5>
-      </TypographySwatch>
-
-      <TypographySwatch title="p">
-        <p>Radicle Upstream</p>
-      </TypographySwatch>
-
-      <TypographySwatch title="p.typo-bold">
-        <p class="typo-bold">Radicle Upstream</p>
-      </TypographySwatch>
-
-      <TypographySwatch title="p.typo-italic">
-        <p class="typo-italic">Radicle Upstream</p>
-      </TypographySwatch>
-
-      <TypographySwatch title="p.typo-mono">
-        <p class="typo-mono">Radicle Upstream</p>
-      </TypographySwatch>
-
-      <TypographySwatch title="p.typo-mono-bold">
-        <p class="typo-mono-bold">Radicle Upstream</p>
-      </TypographySwatch>
-
-      <TypographySwatch title="p.typo-small">
-        <p class="typo-small">Radicle Upstream</p>
-      </TypographySwatch>
-
-      <TypographySwatch title="p.typo-small-bold">
-        <p class="typo-small-bold">Radicle Upstream</p>
-      </TypographySwatch>
-
-      <TypographySwatch title="p.typo-small-bold">
-        <p class="typo-small-bold">0123456789</p>
-      </TypographySwatch>
-
-      <TypographySwatch title="link">
-        <a href="/" class="typo-link">Radicle Upstream</a>
-      </TypographySwatch>
-
-    </Section>
-
     <Section title="Colors" subTitle="Primary, secondary and grays">
 
       {#each colors as color}
@@ -418,6 +352,68 @@
           {color}
         </p>
       {/each}
+    </Section>
+
+    <Section
+      title="Typography"
+      subTitle="Using Inter and Source Code Pro fonts">
+
+      <TypographySwatch title="<h1>">
+        <h1>Radicle Upstream</h1>
+      </TypographySwatch>
+
+      <TypographySwatch title="<h2>">
+        <h2>Radicle Upstream</h2>
+      </TypographySwatch>
+
+      <TypographySwatch title="<h3>">
+        <h3>Radicle Upstream</h3>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<h3 class="typo-mono-bold">`}>
+        <h3 class="typo-mono-bold">Radicle Upstream</h3>
+      </TypographySwatch>
+
+      <TypographySwatch title="<h4>">
+        <h4>Radicle Upstream</h4>
+      </TypographySwatch>
+
+      <TypographySwatch title="<p>">
+        <p>Radicle Upstream</p>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-bold">`}>
+        <p class="typo-bold">Radicle Upstream</p>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-mono">`}>
+        <p class="typo-mono">Radicle Upstream</p>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-mono-bold">`}>
+        <p class="typo-mono-bold">Radicle Upstream</p>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-small">`}>
+        <p class="typo-small">Radicle Upstream</p>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-small-bold">`}>
+        <p class="typo-small-bold">Radicle Upstream</p>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-small-bold">`}>
+        <p class="typo-small-bold">0123456789</p>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<a href="/" class="typo-link">`}>
+        <a href="/" class="typo-link">Radicle Upstream</a>
+      </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-all-caps">`}>
+        <p class="typo-all-caps">Radicle Upstream</p>
+      </TypographySwatch>
+
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">

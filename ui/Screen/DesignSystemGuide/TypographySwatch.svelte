@@ -3,13 +3,10 @@
 </script>
 
 <style>
-  .title {
-    width: 8em;
-  }
-
   .swatch {
     display: flex;
     align-items: flex-end;
+    justify-content: space-between;
     padding: 2rem 0;
     border-top: 1px solid var(--color-foreground-level-2);
   }
@@ -20,8 +17,6 @@
 </style>
 
 <div class="swatch">
-  <div class="title">
-    <p class="typo-small">{title}</p>
-  </div>
+  <p class="typo-small">{title}</p>
   <slot />
 </div>
