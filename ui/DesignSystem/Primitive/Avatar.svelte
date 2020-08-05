@@ -172,7 +172,7 @@
       <h2 style="white-space: nowrap; margin-left: 12px">{title}</h2>
     {:else if size === 'small'}
       <p
-        class="typo-bold"
+        class="typo-text-bold"
         style="white-space: nowrap; margin-left: 0.5rem; color:
         var(--title-color, var(--color-foreground))">
         {title}
@@ -184,7 +184,7 @@
       {/if}
     {:else}
       <p
-        class="typo-bold"
+        class="typo-text-bold"
         style="white-space: nowrap; margin-left: 12px; color: var(--title-color,
         var(--color-foreground))">
         {title}

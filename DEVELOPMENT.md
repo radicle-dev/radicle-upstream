@@ -277,14 +277,10 @@ For the headers you can just use `<h1>` up to `<h5>`, if you want to apply the
 same styles to other html elements you can use the matching classes
 `typo-header-1` to `typo-header-5` (use `<h1>` to `<h5>` where you can).
 
-For text we recommend using a `<p>` wherever they are used in the Figma files.
-There are matching modifiers if you're looking for a bold paragraph,
-`<p class="typo-bold">`, or any of the other ones we have. Check out
+For text we you can use the classes that start with `typo-text`. These come
+in 2 sizes, the normal one and `typo-text-small`. Check out
 [typography.css](./public/typography.css) to get an idea of the possible
-combinations. All the ones we're using in Figma are represented here. If you
-need to use another html element than `<p>`, there are classes that match the
-paragraph styling, e.g.: `<p class="typo-bold">` ->
-`<span class="typo-text-bold">`
+combinations. All the ones we're using in Figma are represented here.
 
 The modifiers give us some flexibility and allow us to create classes for
 certain css functionality we use over and over. Such as,

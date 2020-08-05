@@ -185,7 +185,7 @@
         {#each commit.diff.created as path}
           <header class="file-header">
             <Icon.File style="margin-right: 8px;" />
-            <p class="typo-bold">{path}</p>
+            <p class="typo-text-bold">{path}</p>
             <span class="diff-type created">created</span>
           </header>
         {/each}

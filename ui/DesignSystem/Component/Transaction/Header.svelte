@@ -52,7 +52,7 @@
           style="color: var(--color-foreground)"
           dataCy="subject-avatar" />
       {:else}
-        <p class="typo-bold typo-overflow-ellipses" data-cy="subject">
+        <p class="typo-text-bold typo-overflow-ellipses" data-cy="subject">
           {subject.name}
         </p>
       {/if}

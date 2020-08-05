@@ -156,7 +156,7 @@ Part of #277
     <h3>{issue.title}</h3>
     <div class="metadata">
       <div class="state-badge {openClass}">
-        <p class="typo-small-bold">{issue.open ? 'Open' : 'Closed'}</p>
+        <p class="typo-text-small-bold">{issue.open ? 'Open' : 'Closed'}</p>
       </div>
       <p style="color: var(--color-foreground-level-5)">
         {issue.open ? 'Opened' : 'Closed'} {issue.created_at} by

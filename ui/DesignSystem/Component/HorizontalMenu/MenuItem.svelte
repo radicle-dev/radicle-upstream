@@ -40,7 +40,7 @@
     </div>
   {/if}
 
-  <p class="item typo-bold" class:active>{title}</p>
+  <p class="item typo-text-bold" class:active>{title}</p>
 </a>
 
 {#if active}

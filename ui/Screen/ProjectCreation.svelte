@@ -265,7 +265,9 @@
         placeholder="Project description"
         bind:value={description} />
 
-      <p class="typo-bold" style="margin: 16px 0 12px 16px; text-align: left">
+      <p
+        class="typo-text-bold"
+        style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
       </p>
 
@@ -332,7 +334,7 @@
         <div class="validation-row">
           <Icon.Important
             style="margin-right: 8px;fill: var(--color-negative)" />
-          <p class="typo-bold" style="color: var(--color-negative)">
+          <p class="typo-text-bold" style="color: var(--color-negative)">
             {validations.currentSelection[0]}
           </p>
         </div>
@@ -341,7 +343,7 @@
       <Flex style="margin-top: 32px">
         <div slot="left">
           <p
-            class="typo-small"
+            class="typo-text-small"
             style="color: var(--color-foreground-level-5); padding-left: 15px;">
             * required
           </p>

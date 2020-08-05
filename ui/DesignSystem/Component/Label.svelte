@@ -14,5 +14,5 @@
 </style>
 
 <div class="label" style="--color: {color}; {style}">
-  <p class="typo-small">{title}</p>
+  <p class="typo-text-small">{title}</p>
 </div>

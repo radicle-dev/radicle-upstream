@@ -27,7 +27,7 @@
   imageUrl={item.user.avatar_url} />
 <div class="comment-box">
   <div class="meta">
-    <p class="typo-bold" style="margin-right: 8px;">{item.user.handle}</p>
+    <p class="typo-text-bold" style="margin-right: 8px;">{item.user.handle}</p>
     <p style="color: var(--color-foreground-level-6);">commented</p>
     <p style="color: var(--color-foreground-level-5); margin-left: 8px;">
       {item.time_ago}

@@ -35,7 +35,7 @@
   {#each formattedStats as stat}
     <span class="stat">
       <svelte:component this={stat.icon} style="margin-right: 4px;" />
-      <p class="typo-mono-bold">{stat.count}</p>
+      <p class="typo-text-mono-bold">{stat.count}</p>
       <slot />
     </span>
   {/each}

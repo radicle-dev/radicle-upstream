@@ -167,7 +167,7 @@
           style="display: flex; justify-content: flex-start; margin-right: 8px;"
           size="small"
           variant="circle" />
-        <p class="typo-bold typo-overflow-ellipses">
+        <p class="typo-text-bold typo-overflow-ellipses">
           {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
         </p>
       </div>

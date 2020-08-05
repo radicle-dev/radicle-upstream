@@ -382,28 +382,28 @@
         <p>Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title={`<p class="typo-bold">`}>
-        <p class="typo-bold">Radicle Upstream</p>
+      <TypographySwatch title={`<p class="typo-text-bold">`}>
+        <p class="typo-text-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title={`<p class="typo-mono">`}>
-        <p class="typo-mono">Radicle Upstream</p>
+      <TypographySwatch title={`<p class="typo-text-mono">`}>
+        <p class="typo-text-mono">Radicle Upstream</p>
       </TypographySwatch>
 
       <TypographySwatch title={`<p class="typo-mono-bold">`}>
         <p class="typo-mono-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title={`<p class="typo-small">`}>
-        <p class="typo-small">Radicle Upstream</p>
+      <TypographySwatch title={`<p class="typo-text-small">`}>
+        <p class="typo-text-small">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title={`<p class="typo-small-bold">`}>
-        <p class="typo-small-bold">Radicle Upstream</p>
+      <TypographySwatch title={`<p class="typo-text-small-bold">`}>
+        <p class="typo-text-small-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title={`<p class="typo-small-bold">`}>
-        <p class="typo-small-bold">0123456789</p>
+      <TypographySwatch title={`<p class="typo-text-small-bold">`}>
+        <p class="typo-text-small-bold">0123456789</p>
       </TypographySwatch>
 
       <TypographySwatch title={`<a href="/" class="typo-link">`}>
@@ -898,7 +898,7 @@
       <Swatch>
         <Row style="width:100%" disabled={false}>
           <div slot="left">
-            <p class="typo-bold">Your Wallet</p>
+            <p class="typo-text-bold">Your Wallet</p>
           </div>
 
           <div slot="right">
@@ -911,7 +911,7 @@
         <div style="flex-direction: column; width: 100%">
           <Row variant="top">
             <div slot="left">
-              <p class="typo-bold">Cost 1</p>
+              <p class="typo-text-bold">Cost 1</p>
             </div>
 
             <div slot="right">
@@ -920,7 +920,7 @@
           </Row>
           <Row variant="middle">
             <div slot="left">
-              <p class="typo-bold">Cost 2</p>
+              <p class="typo-text-bold">Cost 2</p>
             </div>
 
             <div slot="right">
@@ -929,7 +929,7 @@
           </Row>
           <Row variant="bottom">
             <div slot="left">
-              <p class="typo-bold">Total</p>
+              <p class="typo-text-bold">Total</p>
             </div>
 
             <div slot="right">

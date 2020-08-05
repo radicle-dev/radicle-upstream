@@ -60,16 +60,16 @@
       use:link>
       {commitSha.substring(0, 7)}
     </a>
-    <p class="commit-message typo-small">{commitMessage}</p>
+    <p class="commit-message typo-text-small">{commitMessage}</p>
   </div>
 
   <div class="align-right">
     <p
-      class="typo-small-bold"
+      class="typo-text-small-bold"
       style="margin-right: 8px; color: var(--color-foreground-level-6)">
       {user.username}
     </p>
-    <p class="typo-small" style="color: var(--color-foreground-level-6)">
+    <p class="typo-text-small" style="color: var(--color-foreground-level-6)">
       {timestamp}
     </p>
   </div>

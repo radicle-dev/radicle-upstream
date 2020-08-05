@@ -42,38 +42,32 @@ p,
   line-height: 24px;
 }
 
-p.typo-bold,
 .typo-text-bold {
   font-family: var(--typeface-medium);
   font-size: 16px;
 }
 
-p.typo-mono,
 .typo-text-mono {
   font-family: var(--typeface-mono-regular);
   font-size: 16px;
 }
 
-p.typo-mono-bold,
 .typo-text-mono-bold {
   font-family: var(--typeface-mono-medium);
   font-size: 16px;
 }
 
-p.typo-small,
 .typo-text-small {
   font-size: 14px;
   line-height: 18px;
 }
 
-p.typo-small-bold,
 .typo-text-small-bold {
   font-family: var(--typeface-medium);
   font-size: 14px;
   line-height: 18px;
 }
 
-p.typo-small-mono,
 .typo-text-small-mono {
   font-family: var(--typeface-mono-medium);
   font-size: 14px;

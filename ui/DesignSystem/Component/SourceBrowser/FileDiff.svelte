@@ -128,7 +128,7 @@
 <article class="changeset-file">
   <header>
     <Icon.File style="margin-right: 8px;" />
-    <p class="typo-bold">{file.path}</p>
+    <p class="typo-text-bold">{file.path}</p>
   </header>
   <main>
     {#if file.diff.type == 'plain' && file.diff.hunks.length > 0}

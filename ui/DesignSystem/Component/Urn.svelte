@@ -45,16 +45,18 @@
   <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
     {#if urn.length > 24}
       {#if (showOnHover && !hover) || !showOnHover}
-        <p class="typo-small-mono">{firstSix}</p>
+        <p class="typo-text-small-mono">{firstSix}</p>
         <Icon.Ellipses size="small" />
-        <p class="typo-small-mono" style="padding-right: 0.25rem">{lastSix}</p>
+        <p class="typo-text-small-mono" style="padding-right: 0.25rem">
+          {lastSix}
+        </p>
       {:else if showOnHover && hover}
-        <p class="typo-small-mono" style="padding-right: 0.25rem;">
+        <p class="typo-text-small-mono" style="padding-right: 0.25rem;">
           {cleanUrn}
         </p>
       {/if}
     {:else}
-      <p class="typo-small-mono" style="padding-right: 0.25rem">{urn}</p>
+      <p class="typo-text-small-mono" style="padding-right: 0.25rem">{urn}</p>
     {/if}
   </Copyable>
 </div>

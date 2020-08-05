@@ -47,7 +47,7 @@
 
 <div class="option" class:active data-cy={dataCy}>
   <div class="header" on:click>
-    <p class="typo-bold" style="color: var(--color-foreground-level-6)">
+    <p class="typo-text-bold" style="color: var(--color-foreground-level-6)">
       {title}
     </p>
     <Icon.Check

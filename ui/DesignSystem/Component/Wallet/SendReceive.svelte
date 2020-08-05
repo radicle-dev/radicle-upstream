@@ -110,13 +110,13 @@
   </div>
   {#if currentlyActiveSend}
     <div class="send" data-cy="send">
-      <p class="typo-bold">To</p>
+      <p class="typo-text-bold">To</p>
       <Input.Text
         dataCy="recipient-input"
         bind:value={recipient}
         placeholder="Enter an account address"
         style="flex: 1; padding-bottom: 1rem;" />
-      <p class="typo-bold">Amount</p>
+      <p class="typo-text-bold">Amount</p>
       <Input.Text
         dataCy="amount-input"
         bind:value={amount}
@@ -130,7 +130,7 @@
         </div>
       </Input.Text>
       <!-- TODO: Add note back in when implemented on registry
-      <p class="typo-bold">Note</p>
+      <p class="typo-text-bold">Note</p>
       <Input.Text
         placeholder="Optional message"
         style="flex: 1; padding-bottom: 1rem;" /> -->

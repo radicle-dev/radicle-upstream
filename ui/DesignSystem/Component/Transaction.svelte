@@ -82,7 +82,7 @@
   style="margin-bottom: 24px; border-top: 1px solid
   var(--color-foreground-level-2); ">
   <div slot="left">
-    <p class="typo-bold">Total</p>
+    <p class="typo-text-bold">Total</p>
   </div>
 
   <div slot="right">

@@ -68,6 +68,6 @@
   <p style="padding-left: 8px;">{message}</p>
 
   <div class={`close ${level.toLowerCase()}`} on:click>
-    <p class="typo-bold">Close</p>
+    <p class="typo-text-bold">Close</p>
   </div>
 </div>
