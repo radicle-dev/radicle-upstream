@@ -2,18 +2,19 @@
   import { setContext } from "svelte";
   import { push, location } from "svelte-spa-router";
 
-  import * as navigation from "./src/navigation";
   import * as notification from "./src/notification";
   import * as path from "./src/path";
   import * as remote from "./src/remote";
+  import * as screen from "./src/screen";
   import { clear, fetch, session as store } from "./src/session";
+  import * as view from "./src/view";
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
   import { Button, Title } from "./DesignSystem/Primitive";
 
   import Hotkeys from "./Hotkeys.svelte";
-  import Navigation from "./Navigation.svelte";
   import Theme from "./Theme.svelte";
+  import ViewRouter from "./View/Router.svelte";
 
   /* import IdentityCreation from "./Screen/IdentityCreation.svelte"; */
   /* import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte"; */
@@ -52,7 +53,7 @@
   /* }; */
 
 
-  const screens = navigation.create(navigation.screens, navigation.Screen.Blank);
+  const screens = view.create(screen.map, screen.Screen.Blank);
   setContext("screens", screens);
 
   $: switch ($store.status) {
@@ -92,7 +93,7 @@
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Theme />
 <Remote {store} context="session">
-  <Navigation nav={screens} />
+  <ViewRouter nav={screens} />
 
   <div slot="error" class="error">
     <Title variant="big" style="margin-bottom: 32px;">
