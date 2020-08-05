@@ -55,7 +55,7 @@
     bind:path={checkoutDirectoryPath} />
 
   <Tooltip
-    value={!checkoutDirectoryPath ? 'Please select a folder.' : null}
+    value={!checkoutDirectoryPath ? 'Please select a folder' : null}
     position="bottom">
     <Button
       on:click={() => {
