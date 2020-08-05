@@ -34,7 +34,7 @@
         {rotate}
         {state}
         style="margin: 11px 12px;" />
-      <p class="typo-text-small">{text}</p>
+      <p class="typo-text-small-bold">{text}</p>
     </div>
     <div slot="right">
       <Icon.Expand style="margin-right: 16px; vertical-align: middle;" />

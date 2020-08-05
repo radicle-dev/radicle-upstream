@@ -20,7 +20,11 @@
 </style>
 
 <div class="description">
-  <p class="typo-text-small" style="width: max-content">{message}</p>
+  <p
+    class="typo-text-small-bold"
+    style="color: var(--color-foreground-level-6); width: max-content">
+    {message}
+  </p>
   <p
     class="typo-text-small"
     style="color: {color}; text-transform: capitalize;">
