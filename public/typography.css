@@ -138,3 +138,10 @@ p.typo-small-mono,
   text-overflow: ellipsis;
   overflow: hidden;
 }
+
+.typo-all-caps {
+  font-family: var(--typeface-medium);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
