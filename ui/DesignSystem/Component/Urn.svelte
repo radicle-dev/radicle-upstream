@@ -32,7 +32,7 @@
     border-radius: 4px;
   }
 
-  .urn > p {
+  .urn p {
     color: var(--color-foreground-level-6);
   }
 </style>
