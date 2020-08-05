@@ -265,6 +265,13 @@ use slots:
 ```
 
 
+#### Typography
+
+The design system provides a constrained set of typographic styles. This consists of a set of styled headers, a set of styled paragraphs and a set of modifiers. These also overlap with the components we have in our design system in Figma, where the design of the app exists.
+
+For the headers, you can just use `<h1 />` up to `<h5 />`, if you want to apply the same styles to other html elements you can use the matching classes `typo-header-1` to `typo-header-5` (use this sparingly).
+
+
 #### Colors
 
 The design system supports multiple color palettes via themes which can be
