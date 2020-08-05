@@ -52,14 +52,17 @@ pub type Disco = discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)
 pub fn default(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<Disco>, error::Error> {
+) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, error::Error> {
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(paths, key))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
 #[must_use]
-pub fn configure(paths: paths::Paths, key: keys::SecretKey) -> net::peer::PeerConfig<Disco> {
+pub fn configure(
+    paths: paths::Paths,
+    key: keys::SecretKey,
+) -> net::peer::PeerConfig<Disco, keys::SecretKey> {
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`
 
@@ -72,7 +75,7 @@ pub fn configure(paths: paths::Paths, key: keys::SecretKey) -> net::peer::PeerCo
     let disco = discovery::Static::new(seeds);
     // TODO(finto): read in from config or passed as param
     net::peer::PeerConfig {
-        key,
+        signer: key,
         paths,
         listen_addr,
         gossip_params,
