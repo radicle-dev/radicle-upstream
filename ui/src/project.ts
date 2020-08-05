@@ -43,9 +43,6 @@ export interface Registered {
 }
 
 // STATE
-const checkoutStore = remote.createStore<Project>();
-export const checkout = checkoutStore.readable;
-
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
 
@@ -57,18 +54,9 @@ export const projects = projectsStore.readable;
 
 // EVENTS
 enum Kind {
-  Checkout = "CHECKOUT",
   Create = "CREATE",
   Fetch = "FETCH",
   FetchList = "FETCH_LIST",
-}
-
-interface Checkout extends event.Event<Kind> {
-  kind: Kind.Checkout;
-  id: string;
-  path: string;
-  remote: string;
-  branch: string;
 }
 
 interface Create extends event.Event<Kind> {
@@ -86,13 +74,7 @@ interface FetchList extends event.Event<Kind> {
   kind: Kind.FetchList;
 }
 
-type Msg = Checkout | Create | Fetch | FetchList;
-
-interface CheckoutInput {
-  remote: string;
-  branch: string;
-  path: string;
-}
+type Msg = Create | Fetch | FetchList;
 
 interface CreateInput {
   metadata: Metadata;
@@ -106,18 +88,6 @@ interface RegisterInput {
 
 const update = (msg: Msg): void => {
   switch (msg.kind) {
-    case Kind.Checkout:
-      checkoutStore.loading();
-      api
-        .post<CheckoutInput, Project>(`projects/${msg.id}`, {
-          branch: msg.branch,
-          path: msg.path,
-          remote: msg.remote,
-        })
-        .then(checkoutStore.success)
-        .catch(checkoutStore.error);
-
-      break;
     case Kind.Create:
       creationStore.loading();
       api
@@ -156,6 +126,25 @@ export const create = (metadata: Metadata, path: string): Promise<Project> => {
   });
 };
 
+interface CheckoutInput {
+  remote: string;
+  branch: string;
+  path: string;
+}
+
+export const checkout = (
+  id: string,
+  path: string,
+  remote: string,
+  branch: string
+): Promise<boolean> => {
+  return api.post<CheckoutInput, boolean>(`projects/${id}`, {
+    branch,
+    path,
+    remote,
+  });
+};
+
 export const getOrgProject = (
   orgId: string,
   projectName: string
@@ -190,10 +179,6 @@ export const register = (
   );
 };
 
-export const checkoutWorkingDirectory = event.create<Kind, Msg>(
-  Kind.Checkout,
-  update
-);
 export const fetch = event.create<Kind, Msg>(Kind.Fetch, update);
 const fetchList = event.create<Kind, Msg>(Kind.FetchList, update);
 

@@ -12,7 +12,7 @@
 
   const toggleDropdown = ev => {
     expanded = !expanded;
-    ev.stopPropagation();
+    ev && ev.stopPropagation();
   };
 
   const clickOutside = ev => {
@@ -60,6 +60,7 @@
     <Button
       on:click={() => {
         dispatch('checkout', { checkoutDirectoryPath: checkoutDirectoryPath });
+        toggleDropdown();
       }}
       disabled={!checkoutDirectoryPath}
       variant="secondary"

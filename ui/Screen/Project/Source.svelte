@@ -3,7 +3,7 @@
   import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
-  import { checkoutWorkingDirectory } from "../../src/project.ts";
+  import { checkout } from "../../src/project.ts";
   import * as notification from "../../src/notification.ts";
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
@@ -74,18 +74,21 @@
     );
   };
 
-  const handleCheckout = event => {
-    checkoutWorkingDirectory({
-      id: id,
-      remote: "PEER_ID_GOES_HERE",
-      branch: "BRANCH_TO_CHECK_OUT_GOES_HERE",
-      path: event.detail.checkoutDirectoryPath,
-    });
+  const handleCheckout = async event => {
+    try {
+      await checkout(
+        id,
+        event.detail.checkoutDirectoryPath,
+        "PEER_ID_GOES_HERE",
+        "BRANCH_TO_CHECK_OUT_GOES_HERE"
+      );
 
-    // TODO(rudolfs): show this only when the checkout is done & successful
-    notification.info(
-      `${metadata.name} checked out to ${event.detail.checkoutDirectoryPath}`
-    );
+      notification.info(
+        `${metadata.name} checked out to ${event.detail.checkoutDirectoryPath}`
+      );
+    } catch (error) {
+      notification.error(`Checkout failed: ${error.message}`);
+    }
   };
 
   // TODO(rudolfs): this functionality should be part of navigation/routing.

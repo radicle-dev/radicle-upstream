@@ -225,7 +225,7 @@ mod handler {
 
         project::Checkout::new(urn, project.default_branch().to_owned(), path, None).run()?;
 
-        Ok(reply::with_status(reply(), StatusCode::CREATED))
+        Ok(reply::with_status(reply::json(&true), StatusCode::CREATED))
     }
 
     /// Get the [`project::Project`] for the given `id`.
