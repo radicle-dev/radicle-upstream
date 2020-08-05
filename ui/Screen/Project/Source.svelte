@@ -84,10 +84,15 @@
       );
 
       notification.info(
-        `${metadata.name} checked out to ${event.detail.checkoutDirectoryPath}`
+        `${metadata.name} checked out to ${event.detail.checkoutDirectoryPath}`,
+        true,
+        "Open folder",
+        () => {
+          console.log("opening folder");
+        }
       );
     } catch (error) {
-      notification.error(`Checkout failed: ${error.message}`);
+      notification.error(`Checkout failed: ${error.message}`, true);
     }
   };
 

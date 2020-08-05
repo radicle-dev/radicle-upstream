@@ -1,12 +1,17 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import { Level } from "../../src/notification.ts";
 
   import { Icon } from "../Primitive";
+
+  const dispatch = createEventDispatcher();
 
   export let style = null;
   export let level = Level.Info;
   export let showIcon = false;
   export let message = null;
+  export let actionText = null;
 </script>
 
 <style>
@@ -67,7 +72,11 @@
 
   <p style="padding-left: 8px;">{message}</p>
 
-  <div class={`close ${level.toLowerCase()}`} on:click>
-    <p class="typo-text-bold">Close</p>
+  <div
+    class={`close ${level.toLowerCase()}`}
+    on:click={() => {
+      dispatch('action');
+    }}>
+    <p class="typo-text-bold">{actionText}</p>
   </div>
 </div>

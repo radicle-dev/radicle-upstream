@@ -1,7 +1,7 @@
 <script>
   import { blur } from "svelte/transition";
   import { flip } from "svelte/animate";
-  import { remove, store } from "../../src/notification.ts";
+  import { store } from "../../src/notification.ts";
 
   import Notification from "./Notification.svelte";
 
@@ -28,9 +28,11 @@
       animate:flip
       transition:blur={{ duration: 300 }}>
       <Notification
+        showIcon={notification.showIcon}
         level={notification.level}
         message={notification.message}
-        on:click={() => remove(notification.id)} />
+        actionText={notification.actionText}
+        on:action={notification.actionHandler} />
     </div>
   {/each}
 </div>
