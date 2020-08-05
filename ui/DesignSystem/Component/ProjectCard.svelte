@@ -33,9 +33,6 @@
 
   .desc {
     color: var(--color-foreground-level-5);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 </style>
 
@@ -50,7 +47,7 @@
         </div>
       {/if}
     </div>
-    <p class="desc">
+    <p class="desc typo-overflow-ellipses">
       {#if description}{description}{/if}
     </p>
   </div>
