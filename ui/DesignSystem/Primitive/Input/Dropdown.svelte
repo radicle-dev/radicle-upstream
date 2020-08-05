@@ -53,7 +53,7 @@
 </style>
 
 <select
-  class="regular"
+  class="typo-regular"
   data-cy={dataCy}
   {style}
   bind:value

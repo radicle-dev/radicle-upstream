@@ -33,7 +33,7 @@
     <Input.Textarea placeholder="Leave a comment" style="flex: 1" />
     <div class="comment-meta">
       <p
-        class="small"
+        class="typo-small"
         style="margin-left: 12px; color: var(--color-foreground-level-4);">
         Markdown supported
       </p>

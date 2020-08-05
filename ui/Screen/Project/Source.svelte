@@ -228,17 +228,19 @@
                 Commits
               </a>
             </p>
-            <span class="stat mono-bold">{project.stats.commits}</span>
+            <span class="stat typo-mono-bold">{project.stats.commits}</span>
           </div>
           <div class="repo-stat-item">
             <Icon.Branch />
             <p style="margin: 0 8px;">Branches</p>
-            <span class="stat mono-bold">{project.stats.branches}</span>
+            <span class="stat typo-mono-bold">{project.stats.branches}</span>
           </div>
           <div class="repo-stat-item">
             <Icon.Member />
             <p style="margin: 0 8px;">Contributors</p>
-            <span class="stat mono-bold">{project.stats.contributors}</span>
+            <span class="stat typo-mono-bold">
+              {project.stats.contributors}
+            </span>
           </div>
         </div>
         <CheckoutButton

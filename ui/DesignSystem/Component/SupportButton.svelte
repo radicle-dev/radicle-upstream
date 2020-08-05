@@ -80,5 +80,5 @@
 </style>
 
 <button data-cy={dataCy} class="support" on:click {style}>
-  <p class="bold">Support</p>
+  <p class="typo-bold">Support</p>
 </button>

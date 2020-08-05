@@ -27,60 +27,61 @@ h4,
 
 h5,
 .typo-header-5,
-.all-caps {
+.typo-all-caps {
   font-family: var(--typeface-medium);
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.05rem;
 }
 
-/* Paragraph */
+/* paragraph */
 
-p {
+p,
+.typo-text {
   font-family: var(--typeface-regular);
   font-size: 16px;
   line-height: 24px;
 }
 
-p.bold,
-.paragraph-bold {
+p.typo-bold,
+.typo-text-bold {
   font-family: var(--typeface-medium);
   font-size: 16px;
 }
 
-p.italic,
-.paragraph-italic {
+p.typo-italic,
+.typo-text-italic {
   font-family: var(--typeface-regular-italic);
   font-size: 16px;
 }
 
-p.mono,
-.paragraph-mono {
+p.typo-mono,
+.typo-text-mono {
   font-family: var(--typeface-mono-regular);
   font-size: 16px;
 }
 
-p.mono-bold,
-.paragraph-mono-bold {
+p.typo-mono-bold,
+.typo-text-mono-bold {
   font-family: var(--typeface-mono-medium);
   font-size: 16px;
 }
 
-p.small,
-.paragraph-small {
+p.typo-small,
+.typo-text-small {
   font-size: 14px;
   line-height: 18px;
 }
 
-p.small-bold,
-.paragraph-small-bold {
+p.typo-small-bold,
+.typo-text-small-bold {
   font-family: var(--typeface-medium);
   font-size: 14px;
   line-height: 18px;
 }
 
-p.small-mono,
-.paragraph-small-mono {
+p.typo-small-mono,
+.typo-text-small-mono {
   font-family: var(--typeface-mono-medium);
   font-size: 14px;
 }
@@ -104,35 +105,35 @@ p.small-mono,
 
 /* Modifiers */
 
-.regular {
+.typo-regular {
   font-family: var(--typeface-regular);
 }
 
-.italic {
+.typo-italic {
   font-family: var(--typeface-regular-italic);
 }
 
-.semi-bold {
+.typo-semi-bold {
   font-family: var(--typeface-medium);
 }
 
-.bold {
+.typo-bold {
   font-family: var(--typeface-bold);
 }
 
-.mono {
+.typo-mono {
   font-family: var(--typeface-mono-regular);
 }
 
-.mono-semi-bold {
+.typo-mono-semi-bold {
   font-family: var(--typeface-mono-medium);
 }
 
-.mono-bold {
+.typo-mono-bold {
   font-family: var(--typeface-mono-bold);
 }
 
-.overflow-ellipses {
+.typo-overflow-ellipses {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;

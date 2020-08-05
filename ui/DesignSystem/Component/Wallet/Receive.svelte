@@ -23,7 +23,7 @@
       {text}
     </p>
   {/if}
-  <p class="bold" style="padding: 1.5rem 0 0.5rem 0;">Address</p>
+  <p class="typo-bold" style="padding: 1.5rem 0 0.5rem 0;">Address</p>
   <Flex align="center">
     <Urn urn={accountId} />
   </Flex>

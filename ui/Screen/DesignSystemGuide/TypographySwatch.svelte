@@ -21,7 +21,7 @@
 
 <div class="swatch">
   <div class="title">
-    <p class="small">{title}</p>
+    <p class="typo-small">{title}</p>
   </div>
   <slot />
 </div>

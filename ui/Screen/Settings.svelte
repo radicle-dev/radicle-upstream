@@ -103,7 +103,7 @@
       </header>
       <div class="section-item">
         <div class="info">
-          <p class="bold">Theme</p>
+          <p class="typo-bold">Theme</p>
         </div>
         <div class="action">
           <SegmentedControl
@@ -122,7 +122,7 @@
       </header>
       <div class="section-item" style="align-items: flex-start;">
         <div class="info">
-          <p class="bold">
+          <p class="typo-bold">
             Seeds help you see more projects and people on the network
           </p>
           <p
@@ -148,7 +148,7 @@
       </header>
       <div class="section-item">
         <div class="info">
-          <p class="bold">Network</p>
+          <p class="typo-bold">Network</p>
         </div>
         <div class="action">
           <SegmentedControl
@@ -165,7 +165,7 @@
       </header>
       <div class="section-item">
         <div class="info">
-          <p class="bold">Clear local cache</p>
+          <p class="typo-bold">Clear local cache</p>
           <p style="color: var(--color-foreground-level-6);">
             Removes all locally-stored temporary data from your device.
           </p>
@@ -181,7 +181,7 @@
       </div>
       <div class="section-item">
         <div class="info">
-          <p class="bold">Clears all authentication data</p>
+          <p class="typo-bold">Clears all authentication data</p>
           <p style="color: var(--color-foreground-level-6);">
             This is similar to how logout works. You will have to create a new
             identity or restore your existing identity.
@@ -204,7 +204,7 @@
       </header>
       <div class="section-item">
         <div class="info">
-          <p class="bold">Twemoji</p>
+          <p class="typo-bold">Twemoji</p>
           <p style="color: var(--color-foreground-level-6);">
             Copyright 2020 Twitter, Inc and other contributors. Licensed under
             CC-BY 4.0.
@@ -213,7 +213,7 @@
       </div>
       <div class="section-item">
         <div class="info">
-          <p class="bold">Inter</p>
+          <p class="typo-bold">Inter</p>
           <p style="color: var(--color-foreground-level-6);">
             Inter font by Rasmus Andersson licensed under the SIL Open Font
             License 1.1.
@@ -222,7 +222,7 @@
       </div>
       <div class="section-item">
         <div class="info">
-          <p class="bold">Source Code Pro</p>
+          <p class="typo-bold">Source Code Pro</p>
           <p style="color: var(--color-foreground-level-6);">
             Source Code Pro font by Adobe Fonts distributed under the SIL Open
             Font License.

@@ -191,7 +191,7 @@
           <h2>Outgoing transfer</h2>
         </header>
         <p
-          class="bold"
+          class="typo-bold"
           style="color: var(--color-foreground-level-6); padding: 0 0.5rem
           0.5rem 0.5rem;">
           To
@@ -203,7 +203,7 @@
           style="flex: 1; padding-bottom: 0.5rem;"
           validation={$recipientValidation} />
         <p
-          class="bold"
+          class="typo-bold"
           style="color: var(--color-foreground-level-6); padding: 0.5rem;">
           Amount
         </p>
@@ -221,7 +221,7 @@
           </div>
         </Input.Text>
         <p
-          class="bold"
+          class="typo-bold"
           style="color: var(--color-foreground-level-6); padding: 0.5rem;">
           From
         </p>
@@ -264,7 +264,7 @@
             <Icon.ArrowRight />
             <div class="to">
               <p
-                class="bold overflow-ellipses"
+                class="typo-bold typo-overflow-ellipses"
                 style="color: var(--color-foreground-level-6);">
                 {$recipientStore}
               </p>
@@ -298,7 +298,7 @@
           variant="bottom"
           style="border: 1px solid var(--color-foreground-level-2);">
           <div slot="left">
-            <p class="bold" style="color:var(--color-foreground-level-6);">
+            <p class="typo-bold" style="color:var(--color-foreground-level-6);">
               Total
             </p>
           </div>

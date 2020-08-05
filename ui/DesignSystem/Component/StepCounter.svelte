@@ -31,7 +31,7 @@
     {/if}
     <div class="step" class:active={selectedStep === index + 1}>
       <p
-        class="bold"
+        class="typo-bold"
         style="color: inherit; margin-bottom: 14px; align-self: center;
         white-space: nowrap;">
         {stepName}

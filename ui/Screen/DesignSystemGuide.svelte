@@ -359,15 +359,15 @@
         <h3>Radicle Upstream</h3>
       </TypographySwatch>
 
-      <TypographySwatch title="h3.mono">
-        <h3 class="mono-bold">Radicle Upstream</h3>
+      <TypographySwatch title="h3.typo-mono">
+        <h3 class="typo-mono-bold">Radicle Upstream</h3>
       </TypographySwatch>
 
       <TypographySwatch title="h4">
         <h4>Radicle Upstream</h4>
       </TypographySwatch>
 
-      <TypographySwatch title="h5.all-caps">
+      <TypographySwatch title="h5.typo-all-caps">
         <h5>Radicle Upstream</h5>
       </TypographySwatch>
 
@@ -375,32 +375,32 @@
         <p>Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="p.bold">
-        <p class="bold">Radicle Upstream</p>
+      <TypographySwatch title="p.typo-bold">
+        <p class="typo-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="p.italic">
-        <p class="italic">Radicle Upstream</p>
+      <TypographySwatch title="p.typo-italic">
+        <p class="typo-italic">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="p.mono">
-        <p class="mono">Radicle Upstream</p>
+      <TypographySwatch title="p.typo-mono">
+        <p class="typo-mono">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="p.mono.bold">
-        <p class="mono-bold">Radicle Upstream</p>
+      <TypographySwatch title="p.typo-mono-bold">
+        <p class="typo-mono-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="p.small">
-        <p class="small">Radicle Upstream</p>
+      <TypographySwatch title="p.typo-small">
+        <p class="typo-small">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="p.small.bold">
-        <p class="small-bold">Radicle Upstream</p>
+      <TypographySwatch title="p.typo-small-bold">
+        <p class="typo-small-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="p.small.mono">
-        <p class="small-mono">0123456789</p>
+      <TypographySwatch title="p.typo-small-bold">
+        <p class="typo-small-bold">0123456789</p>
       </TypographySwatch>
 
       <TypographySwatch title="link">
@@ -902,7 +902,7 @@
       <Swatch>
         <Row style="width:100%" disabled={false}>
           <div slot="left">
-            <p class="bold">Your Wallet</p>
+            <p class="typo-bold">Your Wallet</p>
           </div>
 
           <div slot="right">
@@ -915,7 +915,7 @@
         <div style="flex-direction: column; width: 100%">
           <Row variant="top">
             <div slot="left">
-              <p class="bold">Cost 1</p>
+              <p class="typo-bold">Cost 1</p>
             </div>
 
             <div slot="right">
@@ -924,7 +924,7 @@
           </Row>
           <Row variant="middle">
             <div slot="left">
-              <p class="bold">Cost 2</p>
+              <p class="typo-bold">Cost 2</p>
             </div>
 
             <div slot="right">
@@ -933,7 +933,7 @@
           </Row>
           <Row variant="bottom">
             <div slot="left">
-              <p class="bold">Total</p>
+              <p class="typo-bold">Total</p>
             </div>
 
             <div slot="right">

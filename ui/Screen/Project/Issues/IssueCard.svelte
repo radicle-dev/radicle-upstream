@@ -43,7 +43,7 @@
     <Icon.Issue
       style="margin-right: 12px; fill: var({issueIconColor(issue.open)})" />
     <div>
-      <p class="bold">{issue.title}</p>
+      <p class="typo-bold">{issue.title}</p>
       <p style="color: var(--color-foreground-level-5); padding-top: 6px">
         {issueCaption(issue)}
       </p>
@@ -54,7 +54,7 @@
       <div class="reply-count">
         <Icon.Replies />
         <p
-          class="bold"
+          class="typo-bold"
           style="margin-left: 4px; color: var(--color-foreground-level-5);">
           {issue.replies}
         </p>

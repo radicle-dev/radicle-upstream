@@ -77,13 +77,15 @@
         <h3 style="color: var(--color-foreground-level-4);">
           {project.domain}
         </h3>
-        <h3 class="overflow-ellipses">&nbsp;{`/ ${project.metadata.name}`}</h3>
+        <h3 class="typo-overflow-ellipses">
+          &nbsp;{`/ ${project.metadata.name}`}
+        </h3>
         <div class="registered">
           <Icon.Verified
             style="fill: var(--color-primary); position: relative; bottom: -5px;" />
         </div>
       {:else}
-        <h3 class="overflow-ellipses">{project.metadata.name}</h3>
+        <h3 class="typo-overflow-ellipses">{project.metadata.name}</h3>
       {/if}
     </div>
 

@@ -42,7 +42,7 @@
 <div class="project-card">
   <div class="container">
     <div class="title-row">
-      <p class="bold">{title}</p>
+      <p class="typo-bold">{title}</p>
       {#if showRegisteredBadge}
         <div data-cy="registered" class="registered">
           <Icon.Verified

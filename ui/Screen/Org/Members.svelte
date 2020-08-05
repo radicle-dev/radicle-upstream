@@ -68,14 +68,14 @@
     style="margin: 0 auto;">
     <div class="member">
       <div class="info">
-        <p class="bold">{member.handle}</p>
+        <p class="typo-bold">{member.handle}</p>
         <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
       </div>
 
       <div class="membership-details">
         {#if member.pending}
           <div class="pending">
-            <p class="small">Pending</p>
+            <p class="typo-small">Pending</p>
           </div>
         {/if}
         <AdditionalActionsDropdown menuItems={menuItems(member)} />

@@ -74,22 +74,22 @@
   <div class="date">
     {#if tx.state.type === StateType.Settled}
       <p
-        class="all-caps"
+        class="typo-all-caps"
         style="color: var(--color-foreground-level-3); margin-bottom: 1px;">
         {formatDate(tx.state.timestamp.secs, 'month').substring(0, 3)}
       </p>
-      <p class="bold">{formatDate(tx.state.timestamp.secs, 'day')}</p>
+      <p class="typo-bold">{formatDate(tx.state.timestamp.secs, 'day')}</p>
     {:else}
-      <p class="all-caps" style="color: var(--color-foreground-level-3)">
+      <p class="typo-all-caps" style="color: var(--color-foreground-level-3)">
         {formatDate(tx.timestamp.secs, 'month').substring(0, 3)}
       </p>
-      <p class="bold">{formatDate(tx.timestamp.secs, 'day')}</p>
+      <p class="typo-bold">{formatDate(tx.timestamp.secs, 'day')}</p>
     {/if}
   </div>
   <div class="description">
     <svelte:component this={Icon[headerIcon(tx.messages[0])]} />
     <p
-      class="bold"
+      class="typo-bold"
       data-cy="message"
       style="margin: 0 0.5rem; white-space: nowrap;">
       {formatMessage(tx.messages[0], accountId)}
@@ -105,7 +105,7 @@
         dataCy="subject-avatar" />
     {:else}
       <p
-        class="bold overflow-ellipses"
+        class="typo-bold typo-overflow-ellipses"
         style="color: var(--color-foreground-level-5); max-width: 15rem;"
         data-cy="subject">
         {subject.name}

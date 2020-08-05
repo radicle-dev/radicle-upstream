@@ -112,9 +112,9 @@
             it differently. -->
           <span>{commit.header.author.name}</span>
           <span>committed</span>
-          <span class="mono">{commit.header.sha1.substring(0, 7)}</span>
+          <span class="typo-mono">{commit.header.sha1.substring(0, 7)}</span>
           <span style="margin-right: -1ch">to</span>
-          <span class="branch semi-bold">
+          <span class="branch typo-semi-bold">
             <Icon.Branch
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-6)" />
@@ -127,7 +127,7 @@
       </div>
     </Header.Back>
     <div class="content" data-cy="commit-header">
-      <pre class="mono" style="margin-bottom: 1rem">
+      <pre class="typo-mono" style="margin-bottom: 1rem">
         {commit.header.summary}
       </pre>
       <pre class="description" style="margin-bottom: 1rem">
@@ -138,16 +138,20 @@
         <div slot="left">
           <p class="field">
             Authored by
-            <span class="author semi-bold">{commit.header.author.name}</span>
-            <span class="mono">&lt;{commit.header.author.email}&gt;</span>
+            <span class="author typo-semi-bold">
+              {commit.header.author.name}
+            </span>
+            <span class="typo-mono">&lt;{commit.header.author.email}&gt;</span>
           </p>
           {#if commit.header.committer.email != commit.header.author.email}
             <p class="field">
               Committed by
-              <span class="author semi-bold">
+              <span class="author typo-semi-bold">
                 {commit.header.committer.name}
               </span>
-              <span class="mono">&lt;{commit.header.committer.email}&gt;</span>
+              <span class="typo-mono">
+                &lt;{commit.header.committer.email}&gt;
+              </span>
             </p>
           {/if}
         </div>
@@ -164,15 +168,15 @@
     <main>
       <div class="changeset-summary">
         {#if commit.diff.modified.length > 0}
-          <span class="semi-bold">
+          <span class="typo-semi-bold">
             {commit.diff.modified.length} file(s) changed
           </span>
           with
-          <span class="additions semi-bold">
+          <span class="additions typo-semi-bold">
             {commit.stats.additions} additions
           </span>
           and
-          <span class="deletions semi-bold">
+          <span class="deletions typo-semi-bold">
             {commit.stats.deletions} deletions
           </span>
         {/if}
@@ -181,7 +185,7 @@
         {#each commit.diff.created as path}
           <header class="file-header">
             <Icon.File style="margin-right: 8px;" />
-            <p class="bold">{path}</p>
+            <p class="typo-bold">{path}</p>
             <span class="diff-type created">created</span>
           </header>
         {/each}

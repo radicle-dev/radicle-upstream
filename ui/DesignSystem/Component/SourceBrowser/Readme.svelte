@@ -39,7 +39,7 @@
 
 <div class="file-source" data-cy="file-source">
   <header>
-    <div class="file-header semi-bold">
+    <div class="file-header typo-semi-bold">
       <Icon.File />
       <span class="file-name">{path}</span>
     </div>
@@ -48,7 +48,7 @@
     {#if isMarkdown(path)}
       <Markdown {content} />
     {:else}
-      <pre class="code paragraph-mono">{content}</pre>
+      <pre class="code typo-text-mono">{content}</pre>
     {/if}
   </div>
 </div>

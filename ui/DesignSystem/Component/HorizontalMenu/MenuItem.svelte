@@ -41,7 +41,7 @@
     </div>
   {/if}
 
-  <p class="item semi-bold" class:active>{title}</p>
+  <p class="item typo-bold" class:active>{title}</p>
 </a>
 
 {#if active}

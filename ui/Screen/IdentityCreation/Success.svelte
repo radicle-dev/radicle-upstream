@@ -63,7 +63,7 @@
       <div class="identity-card" data-cy="identity-card">
         <Avatar size="big" avatarFallback={identity.avatarFallback} />
         <div class="identity-card-text-container">
-          <p class="bold">{identity.metadata.handle}</p>
+          <p class="typo-bold">{identity.metadata.handle}</p>
           <Copyable iconSize="normal">
             <Flex align="left">
               <p

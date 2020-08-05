@@ -20,8 +20,8 @@
 </style>
 
 <div class="description">
-  <p class="small" style="width: max-content">{message}</p>
-  <p class="small" style="color: {color}; text-transform: capitalize;">
+  <p class="typo-small" style="width: max-content">{message}</p>
+  <p class="typo-small" style="color: {color}; text-transform: capitalize;">
     {state}
   </p>
 </div>

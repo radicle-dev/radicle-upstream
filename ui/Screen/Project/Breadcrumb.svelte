@@ -30,6 +30,8 @@
     <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
   {:else}
     <Icon.Projects />
-    <p class="bold" style="white-space: nowrap; margin-left: 8px;">{title}</p>
+    <p class="typo-bold" style="white-space: nowrap; margin-left: 8px;">
+      {title}
+    </p>
   {/if}
 </div>

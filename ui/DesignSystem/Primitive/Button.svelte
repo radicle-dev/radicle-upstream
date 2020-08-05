@@ -321,7 +321,7 @@
 
 <button
   data-cy={dataCy}
-  class="button paragraph-bold {buttonClass}"
+  class="button typo-text-bold {buttonClass}"
   {title}
   {disabled}
   on:click

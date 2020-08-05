@@ -55,12 +55,12 @@
   <div class="align-left">
     <Icon.Commit style="fill: var(--color-secondary)" />
     <a
-      class="commit-sha paragraph-small-mono"
+      class="commit-sha typo-text-small-mono"
       href={path.projectCommit(projectId, commitSha)}
       use:link>
       {commitSha.substring(0, 7)}
     </a>
-    <p class="commit-message small">{commitMessage}</p>
+    <p class="commit-message typo-small">{commitMessage}</p>
   </div>
 
   <div class="align-right">
@@ -69,7 +69,7 @@
       style="margin-right: 8px; color: var(--color-foreground-level-6)">
       {user.username}
     </p>
-    <p class="small" style="color: var(--color-foreground-level-6)">
+    <p class="typo-small" style="color: var(--color-foreground-level-6)">
       {timestamp}
     </p>
   </div>

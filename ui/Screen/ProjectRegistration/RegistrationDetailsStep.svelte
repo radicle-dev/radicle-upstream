@@ -179,7 +179,7 @@
     bind:value={domainId}
     options={domainDropdownOptions} />
   <p
-    class="bold"
+    class="typo-bold"
     style="margin: 0 8px 0 8px; color: var(--color-foreground-level-5);">
     /
   </p>

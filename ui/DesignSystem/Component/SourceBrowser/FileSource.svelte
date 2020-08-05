@@ -66,7 +66,7 @@
 
 <div class="file-source" data-cy="file-source">
   <header>
-    <div class="file-header semi-bold" data-cy="file-header">
+    <div class="file-header typo-semi-bold" data-cy="file-header">
       <Icon.File />
       <span class="file-name">
         <a href={rootPath} use:link>{projectName}</a>
@@ -90,7 +90,7 @@
         text="Binary content"
         style="height: 100%; padding: 2rem 0 1rem;" />
     {:else}
-      <pre class="line-numbers paragraph-mono">
+      <pre class="line-numbers typo-text-mono">
         {@html blob.content
           .split('\n')
           .slice(0, -1)
@@ -99,7 +99,7 @@
           })
           .join('\n')}
       </pre>
-      <pre class="code paragraph-mono">
+      <pre class="code typo-text-mono">
         {#if blob.html}
           {@html blob.content}
         {:else}{blob.content}{/if}

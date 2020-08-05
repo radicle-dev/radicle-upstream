@@ -93,7 +93,7 @@
 <div class="send-receive">
   <div class="selector">
     <button
-      class="semi-bold"
+      class="typo-semi-bold"
       class:active={currentlyActiveSend}
       value="send"
       data-cy="send-tab"
@@ -101,7 +101,7 @@
       Send
     </button>
     <button
-      class="semi-bold"
+      class="typo-semi-bold"
       class:active={!currentlyActiveSend}
       value="receive"
       data-cy="receive-tab"
@@ -111,13 +111,13 @@
   </div>
   {#if currentlyActiveSend}
     <div class="send" data-cy="send">
-      <p class="bold">To</p>
+      <p class="typo-bold">To</p>
       <Input.Text
         dataCy="recipient-input"
         bind:value={recipient}
         placeholder="Enter an account address"
         style="flex: 1; padding-bottom: 1rem;" />
-      <p class="bold">Amount</p>
+      <p class="typo-bold">Amount</p>
       <Input.Text
         dataCy="amount-input"
         bind:value={amount}
@@ -131,7 +131,7 @@
         </div>
       </Input.Text>
       <!-- TODO: Add note back in when implemented on registry
-      <p class="bold">Note</p>
+      <p class="typo-bold">Note</p>
       <Input.Text
         placeholder="Optional message"
         style="flex: 1; padding-bottom: 1rem;" /> -->
