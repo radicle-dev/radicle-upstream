@@ -11,7 +11,7 @@
   import { getPayer } from "../../src/transaction.ts";
   import { ValidationStatus } from "../../src/validation.ts";
 
-  import { Input, Text, Title } from "../../DesignSystem/Primitive";
+  import { Input } from "../../DesignSystem/Primitive";
   import {
     NavigationButtons,
     ModalLayout,
@@ -74,19 +74,25 @@
   .wrapper {
     margin: 92px 0 32px 0;
   }
+
+  h2 {
+    text-align: center;
+  }
+
+  p {
+    color: var(--color-foreground-level-5);
+    margin: 16px 0 24px 0;
+  }
 </style>
 
 <ModalLayout dataCy="add-member-modal">
   <div class="wrapper">
     {#if state === RegistrationFlowState.Preparation}
-      <Title variant="big" style="text-align: center;">
-        Member registration
-      </Title>
-      <Text
-        style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
+      <h2>Member registration</h2>
+      <p>
         Registering a member will allow them to sign transactions for your org.
         Only registered users can be added as members.
-      </Text>
+      </p>
       <Input.Text
         placeholder="Registered user id"
         bind:value={userHandle}

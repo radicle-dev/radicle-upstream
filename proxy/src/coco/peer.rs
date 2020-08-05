@@ -24,7 +24,7 @@ pub type User = user::User<entity::Verified>;
 /// High-level interface to the coco monorepo and gossip layer.
 pub struct Api {
     /// Thread-safe wrapper around [`PeerApi`].
-    peer_api: Arc<Mutex<PeerApi>>,
+    peer_api: Arc<Mutex<PeerApi<keys::SecretKey>>>,
 }
 
 impl Api {
@@ -35,7 +35,7 @@ impl Api {
     /// If turning the config into a `Peer` fails
     /// If trying to accept on the socket fails
     pub async fn new<I>(
-        config: PeerConfig<discovery::Static<I, SocketAddr>>,
+        config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     ) -> Result<Self, error::Error>
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
@@ -388,7 +388,7 @@ pub fn verify_user(user: user::User<entity::Draft>) -> Result<User, error::Error
 /// Equips a repository with a rad remote for the given id. If the directory at the given path
 /// is not managed by git yet we initialise it first.
 fn setup_remote(
-    peer: &PeerApi,
+    peer: &PeerApi<keys::SecretKey>,
     path: impl AsRef<std::path::Path>,
     id: &librad::hash::Hash,
     default_branch: &str,

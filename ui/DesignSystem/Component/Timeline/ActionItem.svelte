@@ -1,5 +1,5 @@
 <script>
-  import { Avatar, Text, Icon } from "../../../DesignSystem/Primitive";
+  import { Avatar, Icon } from "../../../DesignSystem/Primitive";
   import Label from "../Label.svelte";
 
   export let item = null;
@@ -39,9 +39,7 @@
   variant="circle"
   imageUrl={item.user.avatar_url}
   title={item.user.handle} />
-<Text style="color: var(--color-foreground-level-6);">
-  {action(item.variant)}
-</Text>
+<p style="color: var(--color-foreground-level-6);">{action(item.variant)}</p>
 {#if item.variant === 'label'}
   <div class="labels">
     {#each item.labels as label}
@@ -59,6 +57,6 @@
     imageUrl={item.assignee.avatar_url}
     title={item.assignee.handle} />
 {/if}
-<Text style="color: var(--color-foreground-level-5); margin-left: 8px;">
+<p style="color: var(--color-foreground-level-5); margin-left: 8px;">
   {item.time_ago}
-</Text>
+</p>

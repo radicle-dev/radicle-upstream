@@ -1,6 +1,4 @@
 <script>
-  import Title from "../Primitive/Title.svelte";
-
   export let style = null;
   export let dataCy = null;
 </script>
@@ -82,5 +80,5 @@
 </style>
 
 <button data-cy={dataCy} class="support" on:click {style}>
-  <Title>Support</Title>
+  <p class="typo-text-bold">Support</p>
 </button>

@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { Button, Input, Icon, Text } from "../../DesignSystem/Primitive";
+
+  import { Button, Input, Icon } from "../../DesignSystem/Primitive";
   import { Tooltip } from "../../DesignSystem/Component";
 
   const dispatch = createEventDispatcher();
@@ -37,16 +38,17 @@
     box-shadow: var(--elevation-medium);
     padding: 1rem;
   }
+  p {
+    color: var(--color-foreground-level-6);
+    user-select: none;
+    margin-bottom: 16px;
+  }
 </style>
 
 <svelte:window on:click={clickOutside} />
 
 <div class="clone-dropdown" hidden={!expanded} bind:this={dropdown}>
-  <Text
-    style="color: var(--color-foreground-level-6); user-select: none;
-    margin-bottom: 16px;">
-    Checkout a working copy to your local disk
-  </Text>
+  <p>Checkout a working copy to your local disk</p>
 
   <Input.Directory
     style="margin-bottom: 16px;"

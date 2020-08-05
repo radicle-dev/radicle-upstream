@@ -1,5 +1,4 @@
 <script>
-  import { Text } from "../Primitive";
   export let value = null;
   export let position = "right"; // right | bottom | top | left
 
@@ -108,7 +107,7 @@
     <div
       style={`top: ${tooltip.positionY}px; left: ${tooltip.positionX}px;`}
       class={`tooltip ${tooltip.className} ${position}`}>
-      <Text>{value}</Text>
+      <p>{value}</p>
     </div>
     <span class="triangle" />
   </div>

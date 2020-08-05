@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Text, Title } from "../Primitive";
+  import { Icon } from "../Primitive";
 
   export let title = null;
   export let description = null;
@@ -30,12 +30,16 @@
     display: flex;
     margin-left: 9px;
   }
+
+  .desc {
+    color: var(--color-foreground-level-5);
+  }
 </style>
 
 <div class="project-card">
   <div class="container">
     <div class="title-row">
-      <Title>{title}</Title>
+      <p class="typo-text-bold">{title}</p>
       {#if showRegisteredBadge}
         <div data-cy="registered" class="registered">
           <Icon.Verified
@@ -43,10 +47,8 @@
         </div>
       {/if}
     </div>
-    <Text
-      style="color: var(--color-foreground-level-5); white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis;">
+    <p class="desc typo-overflow-ellipses">
       {#if description}{description}{/if}
-    </Text>
+    </p>
   </div>
 </div>

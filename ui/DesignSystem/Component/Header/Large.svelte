@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Avatar, Button, Icon, Title } from "../../Primitive";
+  import { Avatar, Button, Icon } from "../../Primitive";
   import Urn from "../Urn.svelte";
 
   const dispatch = createEventDispatcher();
@@ -78,10 +78,7 @@
 
       <div class="metadata">
         <div class="user">
-          <Title
-            dataCy="entity-name"
-            variant="huge"
-            style="display: flex; align-items: center;">
+          <h1 data-cy="entity-name" style="display: flex; align-items: center;">
             {#if variant === 'profile' && entity.registered}
               {entity.registered}
             {:else if variant === 'profile' && !entity.registered}
@@ -93,7 +90,7 @@
                 Register handle
               </Button>
             {:else if variant === 'org'}{entity.id}{/if}
-          </Title>
+          </h1>
           {#if variant === 'org' || entity.registered}
             <Icon.Verified
               dataCy="verified-badge"

@@ -1,6 +1,4 @@
 <script>
-  import { Text, Title } from "../../DesignSystem/Primitive";
-
   export let title = null;
   export let subTitle = null;
 </script>
@@ -16,12 +14,20 @@
     grid-column-start: 1;
     margin-right: 90px;
   }
+
+  h2 {
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: var(--color-foreground-level-5);
+  }
 </style>
 
 <div class="section">
   <div class="titles">
-    <Title variant="big" style="margin-bottom: 8px">{title}</Title>
-    <Text style="color: var(--color-foreground-level-5)">{subTitle}</Text>
+    <h2>{title}</h2>
+    <p>{subTitle}</p>
   </div>
   <div class="content">
     <slot />
