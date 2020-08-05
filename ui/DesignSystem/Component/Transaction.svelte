@@ -9,15 +9,9 @@
     statusText,
   } from "../../src/transaction.ts";
 
-  import {
-    Avatar,
-    Icon,
-    Numeric,
-    Title,
-    Text,
-  } from "../../DesignSystem/Primitive";
+  import { Avatar, Icon, Title, Text } from "../../DesignSystem/Primitive";
 
-  import Copyable from "../../DesignSystem/Component/Copyable.svelte";
+  import Urn from "../../DesignSystem/Component/Urn.svelte";
 
   import Rad from "./Rad.svelte";
   import Header from "./Transaction/Header.svelte";
@@ -106,16 +100,7 @@
       </Text>
     </div>
     <div slot="right">
-      <Copyable
-        style="background:var(--color-foreground-level-2); border-radius:2px;
-        display:flex; align-items: center; padding: 4px;">
-        <Numeric
-          variant="small"
-          style="color: var(--color-foreground-level-6); max-width: 24ch;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          {transaction.id}
-        </Numeric>
-      </Copyable>
+      <Urn urn={transaction.id} />
     </div>
   </Row>
 
