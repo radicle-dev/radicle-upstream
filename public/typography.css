@@ -26,8 +26,7 @@ h4,
 }
 
 h5,
-.typo-header-5,
-.typo-all-caps {
+.typo-header-5 {
   font-family: var(--typeface-medium);
   font-size: 13px;
   text-transform: uppercase;
@@ -46,12 +45,6 @@ p,
 p.typo-bold,
 .typo-text-bold {
   font-family: var(--typeface-medium);
-  font-size: 16px;
-}
-
-p.typo-italic,
-.typo-text-italic {
-  font-family: var(--typeface-regular-italic);
   font-size: 16px;
 }
 
@@ -109,10 +102,6 @@ p.typo-small-mono,
   font-family: var(--typeface-regular);
 }
 
-.typo-italic {
-  font-family: var(--typeface-regular-italic);
-}
-
 .typo-semi-bold {
   font-family: var(--typeface-medium);
 }
@@ -139,6 +128,7 @@ p.typo-small-mono,
   overflow: hidden;
 }
 
+caption,
 .typo-all-caps {
   font-family: var(--typeface-medium);
   font-size: 13px;
