@@ -267,10 +267,17 @@ use slots:
 
 #### Typography
 
-The design system provides a constrained set of typographic styles. This consists of a set of styled headers, a set of styled paragraphs and a set of modifiers. These also overlap with the components we have in our design system in Figma, where the design of the app exists.
+The design system provides a constrained set of typographic styles. This consists of a set of styled headers, a set of styled paragraphs and a set of modifiers. These also overlap with the components we have in our design system in Figma, where the design of the app exists. All classes are prefixed with `typo-` so this might be helpful if you have any autocomplete in your editor.
 
-For the headers, you can just use `<h1 />` up to `<h5 />`, if you want to apply the same styles to other html elements you can use the matching classes `typo-header-1` to `typo-header-5` (use this sparingly).
+For the headers you can just use `<h1>` up to `<h5>`, if you want to apply the same styles to other html elements you can use the matching classes `typo-header-1` to `typo-header-5` (use `<h1>` to `<h5>` where you can).
 
+For text we recommend using a `<p>` wherever they are used in the Figma files. There are matching modifiers if you're looking for a bold paragraph, `<p class="typo-bold">`, or any of the other ones we have. Check out [typography.css](./public/typography.css) to get an idea of the possible combinations. All the ones we're using in figma are represented here. If you need to use another html element than `<p>`, there are classes that match the paragraph styling, e.g.: `<p class="typo-bold">` -> `<span class="typo-text-bold">`
+
+The modifiers are to give us some flexibility and allow us to create classes for certain css functionality we use over and over. Such as, `typo-overflow-ellipses` and `typo-all-caps`. These should be self-explanatory.
+
+We also added a set of modifiers that allow you to add the font-family as a class where you need it, here again we would recommend not doing that as most styles should fit into one of the two catagories above.
+
+The only place in the app we're not using this is in `<Markdown />`, since the library we use doesn't allow us to overwrite the styles without using global declarations. If you have any questions or improvements, open an issue and we're happy to help you along.
 
 #### Colors
 
