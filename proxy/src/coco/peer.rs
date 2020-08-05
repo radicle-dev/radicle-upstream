@@ -244,7 +244,6 @@ impl Api {
     /// Will error if:
     ///     * The signing of the project metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
     pub fn init_project(
         &self,
         key: &keys::SecretKey,
@@ -255,45 +254,26 @@ impl Api {
         default_branch: &str,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
 
-        // Test if the repo has setup rad remote.
-        if let Ok(repo) = git2::Repository::open(&path) {
-            if repo.find_remote("rad").is_ok() {
-                return Err(error::Error::RadRemoteExists(format!(
-                    "{}",
-                    path.as_ref().display(),
-                )));
-            }
+        // Create the project meta
+        let mut meta = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
+            .to_builder()
+            .set_description(description.to_string())
+            .set_default_branch(default_branch.to_string())
+            .add_key(key.public())
+            .add_certifier(owner.urn())
+            .build()?;
+        meta.sign_owned(key)?;
+        let urn = meta.urn();
+
+        if storage.has_urn(&urn)? {
+            return Err(error::Error::EntityExists(urn));
         }
 
-        let meta: Result<project::Project<entity::Draft>, error::Error> = {
-            // Create the project meta
-            let mut meta =
-                project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
-                    .to_builder()
-                    .set_description(description.to_string())
-                    .set_default_branch(default_branch.to_string())
-                    .add_key(key.public())
-                    .add_certifier(owner.urn())
-                    .build()?;
-            meta.sign_owned(key)?;
-            let urn = meta.urn();
-
-            let storage = api.storage().reopen()?;
-
-            if storage.has_urn(&urn)? {
-                return Err(error::Error::EntityExists(urn));
-            } else {
-                let repo = storage.create_repo(&meta)?;
-                repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
-            }
-            Ok(meta)
-        };
-
-        // Doing ? above breaks inference. Gaaaawwwwwd Rust!
-        let meta = meta?;
-
-        setup_remote(&api, path, &meta.urn().id, default_branch)?;
+        setup_repo(&api, path, &urn.id, default_branch)?;
+        let repo = storage.create_repo(&meta)?;
+        repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
 
         Ok(meta)
     }
@@ -306,7 +286,6 @@ impl Api {
     /// Will error if:
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
     pub fn init_user(
         &self,
         key: keys::SecretKey,
@@ -381,16 +360,14 @@ pub fn verify_user(user: user::User<entity::Draft>) -> Result<User, error::Error
     Ok(verified_user)
 }
 
-/// Equips a repository with a rad remote for the given id. If the directory at the given path
-/// is not managed by git yet we initialise it first.
-fn setup_remote(
-    peer: &PeerApi<keys::SecretKey>,
+fn setup_repo(
+    api: &PeerApi<keys::SecretKey>,
     path: impl AsRef<std::path::Path>,
     id: &librad::hash::Hash,
     default_branch: &str,
 ) -> Result<(), error::Error> {
     // Check if directory at path is a git repo.
-    if git2::Repository::open(&path).is_err() {
+    let repo = git2::Repository::open(&path).or_else::<git2::Error, _>(|_| {
         let repo = git2::Repository::init(&path)?;
         // First use the config to initialize a commit signature for the user.
         let sig = repo.signature()?;
@@ -401,6 +378,8 @@ fn setup_remote(
             // For our purposes, we'll leave the index empty for now.
             index.write_tree()?
         };
+
+        {
         let tree = repo.find_tree(tree_id)?;
         // Normally creating a commit would involve looking up the current HEAD
         // commit and making that be the parent of the initial commit, but here this
@@ -413,9 +392,29 @@ fn setup_remote(
             &tree,
             &[],
         )?;
+        }
+
+        Ok(repo)
+    })?;
+
+    // Set up the rad remote if we need to
+    if !repo.find_remote("rad").is_ok() {
+        setup_remote(&repo, &api, &id, default_branch)?;
     }
 
-    let repo = git2::Repository::open(path)?;
+    Ok(())
+}
+
+/// Equips a repository with a rad remote for the given id. If the directory at the given path
+/// is not managed by git yet we initialise it first.
+fn setup_remote(
+    repo: &git2::Repository,
+    peer: &PeerApi<keys::SecretKey>,
+    id: &librad::hash::Hash,
+    default_branch: &str,
+) -> Result<(), error::Error> {
+    // TODO(finto): Need to check that Hash is the same for this repository. So basically we
+    // initialise the remote or update it.
 
     if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
         log::error!("error while trying to find default branch: {:?}", err);
@@ -431,7 +430,7 @@ fn setup_remote(
         "rad",
         &format!(
             "file://{}",
-            monorepo.to_str().expect("unable to get str for monorepo")
+            monorepo.display(),
         ),
         &format!("+{}/heads/*:refs/heads/*", namespace_prefix),
     )?;
@@ -473,12 +472,14 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[allow(clippy::panic)]
 mod test {
     use librad::keys::SecretKey;
+    use librad::meta::entity;
+    use librad::meta::project;
 
     use crate::coco::config;
     use crate::coco::control;
     use crate::error::Error;
 
-    use super::Api;
+    use super::{Api, User};
 
     #[tokio::test]
     async fn test_can_create_user() -> Result<(), Error> {
@@ -541,13 +542,13 @@ mod test {
         let api = Api::new(config).await?;
 
         let user = api.init_owner(key.clone(), "cloudhead")?;
-        let _project =
+        let project =
             api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power")?;
 
         let err = api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
 
-        if let Err(Error::RadRemoteExists(path)) = err {
-            assert_eq!(path, format!("{}", repo_path.display()))
+        if let Err(Error::EntityExists(urn)) = err {
+            assert_eq!(urn, project.urn())
         } else {
             panic!(
                 "unexpected error when creating the project a second time: {:?}",
@@ -621,5 +622,45 @@ mod test {
         assert_eq!(user_handles, vec!["cloudhead", "kalt"],);
 
         Ok(())
+    }
+
+    #[tokio::test]
+    async fn create_with_existing_remote() -> Result<(), Error> {
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let repo_path = tmp_dir.path().join("radicle");
+        let key = SecretKey::new();
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let kalt = api.init_owner(key.clone(), "kalt")?;
+
+        let _fakie = create_fakie(&api, &key, kalt.clone(), &repo_path)?;
+
+        std::fs::remove_dir_all(tmp_dir.path().join("git")).expect("failed to remove tmp path");
+        assert!(repo_path.exists());
+
+        let config = config::default(key.clone(), tmp_dir.path())?;
+        let api = Api::new(config).await?;
+
+        let kalt = api.init_owner(key.clone(), "kalt")?;
+        let _fakie = create_fakie(&api, &key, kalt.clone(), &repo_path)?;
+
+        Ok(())
+    }
+
+    fn create_fakie(
+        api: &Api,
+        key: &SecretKey,
+        owner: User,
+        repo_path: &std::path::Path,
+    ) -> Result<project::Project<entity::Draft>, Error> {
+        api.init_project(
+            &key,
+            &owner,
+            &repo_path,
+            "fakie-nose-kickflip-backside-180-to-handplant",
+            "rad git tricks",
+            "dope",
+        )
     }
 }
