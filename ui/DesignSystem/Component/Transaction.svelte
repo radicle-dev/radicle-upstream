@@ -33,7 +33,7 @@
 </script>
 
 <style>
-  p {
+  .row-text {
     color: var(--color-foreground-level-6);
   }
 </style>
@@ -42,7 +42,7 @@
 
 <Row dataCy="transaction-fee" variant="top">
   <div slot="left">
-    <p>Transaction fee</p>
+    <p class="row-text">Transaction fee</p>
   </div>
 
   <div slot="right">
@@ -53,7 +53,7 @@
 {#if summary.registrationFee}
   <Row dataCy="registration-fee" variant="middle">
     <div slot="left">
-      <p>{formatStake(transaction.messages[0].type)}</p>
+      <p class="row-text">{formatStake(transaction.messages[0].type)}</p>
     </div>
 
     <div slot="right">
@@ -67,7 +67,7 @@
 {#if summary.transferAmount}
   <Row dataCy="transfer-amount" variant="middle">
     <div slot="left">
-      <p>Amount</p>
+      <p class="row-text">Amount</p>
     </div>
 
     <div slot="right">
@@ -93,7 +93,7 @@
 {#if transaction.id}
   <Row variant="top">
     <div slot="left">
-      <p>Transaction ID</p>
+      <p class="row-text">Transaction ID</p>
     </div>
     <div slot="right">
       <Urn urn={transaction.id} />
@@ -102,7 +102,7 @@
 
   <Row variant="bottom" style="margin-bottom: 24px;">
     <div slot="left">
-      <p>Status</p>
+      <p class="row-text">Status</p>
     </div>
     <div slot="right" style="display: flex; align-items: center;">
       {#if iconState(transaction.state) === 'negative'}
@@ -126,7 +126,7 @@
 
 <Row>
   <div slot="left">
-    <p>Funding source</p>
+    <p class="row-text">Funding source</p>
   </div>
 
   <div slot="right">
