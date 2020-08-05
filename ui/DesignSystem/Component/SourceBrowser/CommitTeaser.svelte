@@ -65,7 +65,7 @@
 
   <div class="align-right">
     <p
-      class="small-bold"
+      class="typo-small-bold"
       style="margin-right: 8px; color: var(--color-foreground-level-6)">
       {user.username}
     </p>
