@@ -24,7 +24,7 @@ pub type User = user::User<entity::Verified>;
 /// High-level interface to the coco monorepo and gossip layer.
 pub struct Api {
     /// Thread-safe wrapper around [`PeerApi`].
-    peer_api: Arc<Mutex<PeerApi>>,
+    peer_api: Arc<Mutex<PeerApi<keys::SecretKey>>>,
 }
 
 impl Api {
