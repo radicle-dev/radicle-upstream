@@ -65,9 +65,9 @@
     {/if}
   {/if}
 
-  <p style="padding-left: 8px;">{message}</p>
+  <p style="padding-left: 8px; margin-top: -1px;">{message}</p>
 
   <div class={`close ${level.toLowerCase()}`} on:click>
-    <p class="typo-text-bold">Close</p>
+    <p class="typo-text-bold" style="margin-top: -1px;">Close</p>
   </div>
 </div>
