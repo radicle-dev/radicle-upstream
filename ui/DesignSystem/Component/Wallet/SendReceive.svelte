@@ -40,7 +40,6 @@
     margin: 0;
     background-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-5);
-    font-size: 1rem;
     border: 1px solid transparent;
   }
 

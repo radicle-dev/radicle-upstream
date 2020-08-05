@@ -19,7 +19,6 @@
   }
 
   .item {
-    font-size: 16px;
     line-height: 130%;
     color: var(--color-foreground-level-6);
   }

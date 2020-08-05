@@ -22,7 +22,6 @@
 
   header .file-header {
     display: flex;
-    font-size: 1rem;
     height: 3rem;
     align-items: center;
     padding-left: 13px;

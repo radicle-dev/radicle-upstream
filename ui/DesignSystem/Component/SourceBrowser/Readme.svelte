@@ -15,7 +15,6 @@
 
   header .file-header {
     display: flex;
-    font-size: 1rem;
     height: 3rem;
     align-items: center;
     padding-left: 13px;
@@ -39,7 +38,7 @@
 
 <div class="file-source" data-cy="file-source">
   <header>
-    <div class="file-header typo-semi-bold">
+    <div class="file-header typo-text-bold">
       <Icon.File />
       <span class="file-name">{path}</span>
     </div>
