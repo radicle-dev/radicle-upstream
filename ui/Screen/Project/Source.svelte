@@ -19,7 +19,7 @@
     RevisionType,
   } from "../../src/source.ts";
 
-  import { Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { Icon } from "../../DesignSystem/Primitive";
   import { EmptyState, Remote, Urn } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
@@ -170,7 +170,6 @@
     margin-right: 1rem;
   }
   .stat {
-    font-family: var(--typeface-mono-bold);
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
     padding: 0 0.5rem;
@@ -180,12 +179,12 @@
 
 <Remote store={projectStore} let:data={project}>
   <div class="header">
-    <Title variant="big">{project.metadata.name}</Title>
+    <h2>{project.metadata.name}</h2>
     <div class="project-id">
       <Urn urn={project.shareableEntityIdentifier} showOnHover />
     </div>
     <div class="description">
-      <Text>{project.metadata.description}</Text>
+      <p>{project.metadata.description}</p>
     </div>
   </div>
 
@@ -221,25 +220,27 @@
         <div class="repo-stats" data-cy="repo-stats">
           <div class="repo-stat-item">
             <Icon.Commit />
-            <Text style="margin: 0 8px;">
+            <p style="margin: 0 8px;">
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
                 on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
                 Commits
               </a>
-            </Text>
-            <span class="stat">{project.stats.commits}</span>
+            </p>
+            <span class="stat typo-mono-bold">{project.stats.commits}</span>
           </div>
           <div class="repo-stat-item">
             <Icon.Branch />
-            <Text style="margin: 0 8px;">Branches</Text>
-            <span class="stat">{project.stats.branches}</span>
+            <p style="margin: 0 8px;">Branches</p>
+            <span class="stat typo-mono-bold">{project.stats.branches}</span>
           </div>
           <div class="repo-stat-item">
             <Icon.Member />
-            <Text style="margin: 0 8px;">Contributors</Text>
-            <span class="stat">{project.stats.contributors}</span>
+            <p style="margin: 0 8px;">Contributors</p>
+            <span class="stat typo-mono-bold">
+              {project.stats.contributors}
+            </span>
           </div>
         </div>
         <CheckoutButton

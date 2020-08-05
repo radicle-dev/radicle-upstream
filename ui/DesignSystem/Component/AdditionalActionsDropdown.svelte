@@ -1,7 +1,7 @@
 <script>
   import { fade } from "svelte/transition";
 
-  import { Icon, Text } from "../Primitive";
+  import { Icon } from "../Primitive";
   import Urn from "./Urn.svelte";
   import Tooltip from "./Tooltip.svelte";
 
@@ -138,7 +138,7 @@
                   <svelte:component
                     this={item.icon}
                     style="margin-right: 12px" />
-                  <Text>{item.title}</Text>
+                  <p>{item.title}</p>
                 </div>
               </Tooltip>
             {:else}
@@ -148,7 +148,7 @@
                 class:disabled={item.disabled}
                 on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
                 <svelte:component this={item.icon} style="margin-right: 12px" />
-                <Text>{item.title}</Text>
+                <p>{item.title}</p>
               </div>
             {/if}
           {/each}

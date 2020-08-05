@@ -2,17 +2,7 @@
   import * as notification from "../src/notification.ts";
   import * as transaction from "../src/transaction.ts";
 
-  import {
-    Avatar,
-    Button,
-    Code,
-    Caption,
-    Icon,
-    Input,
-    Text,
-    Title,
-    Numeric,
-  } from "../DesignSystem/Primitive";
+  import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     Dropdown,
@@ -28,7 +18,6 @@
     TrackToggle,
     TransactionCenter,
     TransactionStatusbar,
-    UserCard,
     Urn,
   } from "../DesignSystem/Component";
 
@@ -63,10 +52,6 @@
         ]),
       []
     );
-
-  const user = {
-    username: "Rudolfs Osins",
-  };
 
   const avatarFallback1 = {
     emoji: "📐",
@@ -356,16 +341,16 @@
 
 <ModalLayout full>
   <div class="layout">
-    <Title variant="huge" style="margin-bottom: 92px">Primitives</Title>
+    <h1 style="margin-bottom: 92px">Primitives</h1>
 
     <Section title="Colors" subTitle="Primary, secondary and grays">
 
       {#each colors as color}
-        <Text
+        <p
           style="background-color: var({color}); margin-bottom: 8px;
           border-radius: 2px; padding: 4px 8px;">
           {color}
-        </Text>
+        </p>
       {/each}
     </Section>
 
@@ -373,62 +358,67 @@
       title="Typography"
       subTitle="Using Inter and Source Code Pro fonts">
 
-      <TypographySwatch title="huge Title">
-        <Title variant="huge">Open Source Coin</Title>
+      <TypographySwatch title="<h1>">
+        <h1>Radicle Upstream</h1>
       </TypographySwatch>
 
-      <TypographySwatch title="big Title">
-        <Title variant="big">Open Source Coin</Title>
+      <TypographySwatch title="<h2>">
+        <h2>Radicle Upstream</h2>
       </TypographySwatch>
 
-      <TypographySwatch title="medium Title">
-        <Title variant="medium">Open Source Coin</Title>
+      <TypographySwatch title="<h3>">
+        <h3>Radicle Upstream</h3>
       </TypographySwatch>
 
-      <TypographySwatch title="regular Title">
-        <Title>Open Source Coin</Title>
+      <TypographySwatch title={`<h3 class="typo-mono-bold">`}>
+        <h3 class="typo-mono-bold">Radicle Upstream</h3>
       </TypographySwatch>
 
-      <TypographySwatch title="regular Text">
-        <Text>Open Source Coin</Text>
+      <TypographySwatch title="<h4>">
+        <h4>Radicle Upstream</h4>
       </TypographySwatch>
 
-      <TypographySwatch title="small Text">
-        <Text variant="small">Open Source Coin</Text>
+      <TypographySwatch title="<p>">
+        <p>Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="tiny Text">
-        <Text variant="tiny">Open Source Coin</Text>
+      <TypographySwatch title={`<p class="typo-text-bold">`}>
+        <p class="typo-text-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="Code">
-        <Code>Open Source Coin</Code>
+      <TypographySwatch title={`<p class="typo-text-mono">`}>
+        <p class="typo-text-mono">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="Caption">
-        <Caption>Open Source Coin</Caption>
+      <TypographySwatch title={`<p class="typo-mono-bold">`}>
+        <p class="typo-mono-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="big Numeric">
-        <Numeric variant="big">0123456789</Numeric>
+      <TypographySwatch title={`<p class="typo-text-small">`}>
+        <p class="typo-text-small">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="regular Numeric">
-        <Numeric>0123456789</Numeric>
+      <TypographySwatch title={`<p class="typo-text-small-bold">`}>
+        <p class="typo-text-small-bold">Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title="small Numeric">
-        <Numeric variant="small">0123456789</Numeric>
+      <TypographySwatch title={`<p class="typo-text-small-bold">`}>
+        <p class="typo-text-small-bold">0123456789</p>
       </TypographySwatch>
 
-      <TypographySwatch title="tiny Numeric">
-        <Numeric variant="tiny">0123456789</Numeric>
+      <TypographySwatch title={`<a href="/" class="typo-link">`}>
+        <a href="/" class="typo-link">Radicle Upstream</a>
       </TypographySwatch>
+
+      <TypographySwatch title={`<p class="typo-all-caps">`}>
+        <p class="typo-all-caps">Radicle Upstream</p>
+      </TypographySwatch>
+
     </Section>
 
     <Section title="Icons" subTitle="Icons at 24px width and height">
       <Swatch>
-        <Caption>Main</Caption>
+        <h5>Main</h5>
       </Swatch>
       <IconSwatch>
         <Icon.Home />
@@ -439,7 +429,7 @@
         <Icon.Settings />
       </IconSwatch>
       <Swatch>
-        <Caption>Functional</Caption>
+        <h5>Functional</h5>
       </Swatch>
       <IconSwatch>
         <Icon.ArrowDown />
@@ -467,7 +457,7 @@
         <Icon.Search variant="small" />
       </IconSwatch>
       <Swatch>
-        <Caption>Representational</Caption>
+        <h5>Representational</h5>
       </Swatch>
       <IconSwatch>
         <Icon.Replies />
@@ -487,7 +477,7 @@
         <Icon.Verified size="large" />
       </IconSwatch>
       <Swatch>
-        <Caption>Code</Caption>
+        <h5>Code</h5>
       </Swatch>
       <IconSwatch>
         <Icon.Commit />
@@ -530,16 +520,16 @@
         <thead>
           <tr>
             <td>
-              <Caption>Variant</Caption>
+              <h5>Variant</h5>
             </td>
             <td>
-              <Caption>Disabled</Caption>
+              <h5>Disabled</h5>
             </td>
             <td>
-              <Caption>Variant</Caption>
+              <h5>Variant</h5>
             </td>
             <td>
-              <Caption>Disabled</Caption>
+              <h5>Disabled</h5>
             </td>
           </tr>
         </thead>
@@ -737,7 +727,7 @@
       </Swatch>
     </Section>
 
-    <Title variant="huge" style="margin-bottom: 92px">Components</Title>
+    <h1 style="margin-bottom: 92px">Components</h1>
 
     <Section
       title="Avatars"
@@ -902,16 +892,13 @@
           showRegisteredBadge={true} />
       </Swatch>
 
-      <Swatch>
-        <UserCard {user} />
-      </Swatch>
     </Section>
 
     <Section title="Transaction" subTitle="Row, Accordion and Statusbar">
       <Swatch>
         <Row style="width:100%" disabled={false}>
           <div slot="left">
-            <Title>Your Wallet</Title>
+            <p class="typo-text-bold">Your Wallet</p>
           </div>
 
           <div slot="right">
@@ -924,7 +911,7 @@
         <div style="flex-direction: column; width: 100%">
           <Row variant="top">
             <div slot="left">
-              <Title>Cost 1</Title>
+              <p class="typo-text-bold">Cost 1</p>
             </div>
 
             <div slot="right">
@@ -933,7 +920,7 @@
           </Row>
           <Row variant="middle">
             <div slot="left">
-              <Title>Cost 2</Title>
+              <p class="typo-text-bold">Cost 2</p>
             </div>
 
             <div slot="right">
@@ -942,7 +929,7 @@
           </Row>
           <Row variant="bottom">
             <div slot="left">
-              <Title>Total</Title>
+              <p class="typo-text-bold">Total</p>
             </div>
 
             <div slot="right">

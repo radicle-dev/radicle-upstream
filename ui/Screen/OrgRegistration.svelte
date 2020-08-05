@@ -14,7 +14,7 @@
     ModalLayout,
     Transaction,
   } from "../DesignSystem/Component";
-  import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
+  import { Avatar, Input } from "../DesignSystem/Primitive";
 
   let avatarFallback, orgId, payer, showAvatar, subject, transaction;
   let state = RegistrationFlowState.Preparation;
@@ -105,12 +105,11 @@
 <ModalLayout dataCy="org-registration-modal">
   <div class="wrapper">
     {#if state === RegistrationFlowState.Preparation}
-      <Title variant="big" style="text-align: center;">Org registration</Title>
-      <Text
-        style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
+      <h2 style="text-align: center;">Org registration</h2>
+      <p style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
         Registering an org allows you to give others in your org the right to
         sign transactions, like adding other members or adding projects.
-      </Text>
+      </p>
       <Input.Text
         dataCy="input"
         placeholder="Org name (e.g. flowerpot)"
