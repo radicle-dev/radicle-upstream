@@ -3,6 +3,8 @@
   import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
+  import { openPath } from "../../../native/ipc.js";
+
   import { checkout } from "../../src/project.ts";
   import * as notification from "../../src/notification.ts";
   import * as path from "../../src/path.ts";
@@ -88,7 +90,7 @@
         true,
         "Open folder",
         () => {
-          console.log("opening folder");
+          openPath(event.detail.checkoutDirectoryPath);
         }
       );
     } catch (error) {
