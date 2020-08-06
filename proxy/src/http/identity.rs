@@ -18,7 +18,10 @@ pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
 {
-    get_filter(Arc::clone(&ctx)).or(create_filter(ctx)).boxed()
+    get_filter(Arc::clone(&ctx))
+        .or(create_filter(Arc::clone(&ctx)))
+        .or(list_tracked_identities_filter(ctx))
+        .boxed()
 }
 
 /// `POST /`
@@ -80,6 +83,30 @@ where
         .and_then(handler::get)
 }
 
+/// `GET /tracked-identities`
+fn list_tracked_identities_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    http::with_context(ctx)
+        .and(warp::get())
+        .and(document::document(document::description(
+            "List tracked Identities",
+        )))
+        .and(document::document(document::tag("Identity")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(document::array(identity::Identity::document()))
+                    .mime("application/json"),
+            )
+            .description("Successful retrieval"),
+        ))
+        .and_then(handler::list_tracked_identities)
+}
+
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use warp::http::StatusCode;
@@ -125,6 +152,16 @@ mod handler {
         let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id)?;
         Ok(reply::json(&id))
+    }
+
+    /// Retrieve the list of tracked identities.
+    pub async fn list_tracked_identities<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let tracked_users = identity::list_tracked_identities(&ctx.peer_api)?;
+        Ok(reply::json(&tracked_users))
     }
 }
 
