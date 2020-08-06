@@ -4,18 +4,21 @@ h1,
 .typo-header-1 {
   font-family: var(--typeface-bold);
   font-size: 36px;
+  line-height: 44px;
 }
 
 h2,
 .typo-header-2 {
   font-family: var(--typeface-bold);
   font-size: 24px;
+  line-height: 30px;
 }
 
 h3,
 .typo-header-3 {
   font-family: var(--typeface-bold);
   font-size: 20px;
+  line-height: 24px;
 }
 
 h4,
