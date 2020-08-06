@@ -43,11 +43,14 @@
     fill: var(--color-background);
   }
 
+  .message {
+    padding: 0 8px 0 8px;
+  }
+
   .close {
     cursor: pointer;
-    margin: 0 8px 0 6px;
-    padding: 5px 0 0 8px;
-    height: 32px;
+    margin-right: 8px;
+    padding-left: 8px;
     user-select: none;
     border-left: 1px solid;
   }
@@ -63,20 +66,20 @@
 
 <div class={`notification ${level.toLowerCase()}`} {style}>
   {#if showIcon}
-    {#if level === Level.Info}
-      <Icon.Info style="margin-left: 8px; height: 24px" />
-    {:else if level === Level.Error}
-      <Icon.Important style="margin-left: 8px; height: 24px" />
-    {/if}
+    <svelte:component
+      this={level === Level.Info ? Icon.Info : Icon.Important}
+      style="margin-left: 8px; height: 24px" />
   {/if}
 
-  <p style="padding-left: 8px; margin-top: -1px;">{message}</p>
+  <p class="message">{message}</p>
 
-  <div
-    class={`close ${level.toLowerCase()}`}
-    on:click={() => {
-      dispatch('action');
-    }}>
-    <p class="typo-text-bold" style="margin-top: -1px;">{actionText}</p>
-  </div>
+  {#if actionText}
+    <div
+      class={`close ${level.toLowerCase()}`}
+      on:click={() => {
+        dispatch('action');
+      }}>
+      <p class="typo-text-bold">{actionText}</p>
+    </div>
+  {/if}
 </div>
