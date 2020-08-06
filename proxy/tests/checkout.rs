@@ -31,14 +31,11 @@ async fn can_checkout() -> Result<(), error::Error> {
         "fixture data",
         "master",
     )?;
-    let urn = platinum_project.urn();
 
     let path = tmp_dir.path().join("projects").join("git-platinum");
     let exe_path = exe_path()?;
     project::Checkout::new(
-        urn,
-        "git-platinum".to_string(),
-        platinum_project.default_branch().to_owned(),
+        platinum_project,
         path,
         exe_path,
     )

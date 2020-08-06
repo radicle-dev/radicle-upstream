@@ -221,15 +221,9 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let default_branch = ctx
-            .peer_api
-            .get_project(&urn, peer_id)?
-            .default_branch()
-            .to_owned();
-        let directory_name = &project::get(&ctx.peer_api, &urn)?.metadata.name;
+        let project = ctx.peer_api.get_project(&urn, peer_id)?;
 
-        project::Checkout::new(urn, directory_name.to_string(), default_branch, path, None)
-            .run()?;
+        project::Checkout::new(project, path, None).run()?;
 
         Ok(reply::with_status(reply::json(&true), StatusCode::CREATED))
     }

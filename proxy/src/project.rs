@@ -117,18 +117,14 @@ impl Credential {
 }
 
 /// The data necessary for checking out a project.
-pub struct Checkout<P>
+pub struct Checkout<P, ST>
 where
     P: AsRef<path::Path>,
 {
     /// The credential helper.
     credential: Credential,
-    /// The project URN.
-    urn: coco::Urn,
-    /// The directory that will be created in path where the git repository will be checked out
-    directory_name: String,
-    /// The branch to use for the checkout.
-    branch: String,
+    /// The project.
+    project: coco::Project<ST>,
     /// The path on the filesystem where we're going to checkout to.
     path: P,
     /// The `PATH` environment variable to be used for the checkout. It is safe to leave this
@@ -137,18 +133,13 @@ where
     bin_path: Option<ffi::OsString>,
 }
 
-impl<P> Checkout<P>
+impl<P, ST> Checkout<P, ST>
 where
     P: AsRef<path::Path>,
+    ST: Clone,
 {
     /// Create a new `Checkout` with the mock `Credential::Password` helper.
-    pub fn new<Bin>(
-        urn: coco::Urn,
-        directory_name: String,
-        branch: String,
-        path: P,
-        bin_path: Bin,
-    ) -> Self
+    pub fn new<Bin>(project: coco::Project<ST>, path: P, bin_path: Bin) -> Self
     where
         Bin: Into<Option<ffi::OsString>>,
     {
@@ -159,9 +150,7 @@ where
             //
             // How will we get ahold on the secret key here?
             credential: Credential::Password("radicle-upstream".to_owned()),
-            urn,
-            directory_name,
-            branch,
+            project,
             path,
             bin_path: bin_path.into(),
         }
@@ -188,14 +177,15 @@ where
         let path = &self.path.as_ref();
         let project_path = if let Some(destination) = path.components().next_back() {
             let destination: &std::ffi::OsStr = destination.as_ref();
-            let name: &std::ffi::OsStr = self.directory_name.as_ref();
+            let project_name = self.project.name().to_string();
+            let name: &std::ffi::OsStr = project_name.as_ref();
             if destination == name {
                 path.to_path_buf()
             } else {
                 path.join(name)
             }
         } else {
-            path.join(&self.directory_name)
+            path.join(&self.project.name().to_string())
         };
 
         let mut child_process = Command::new("git")
@@ -203,8 +193,8 @@ where
             .arg(self.credential.to_helper())
             .arg("clone")
             .arg("-b")
-            .arg(self.branch)
-            .arg(LocalUrl::from(self.urn).to_string())
+            .arg(self.project.default_branch())
+            .arg(LocalUrl::from(self.project.urn()).to_string())
             .arg(project_path.as_os_str())
             .env("PATH", &bin_path)
             .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
