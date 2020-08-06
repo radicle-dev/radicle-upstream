@@ -37,6 +37,7 @@ async fn can_checkout() -> Result<(), error::Error> {
     let exe_path = exe_path()?;
     project::Checkout::new(
         urn,
+        "git-platinum".to_string(),
         platinum_project.default_branch().to_owned(),
         path,
         exe_path,

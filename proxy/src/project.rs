@@ -188,7 +188,7 @@ where
         let path = &self.path.as_ref();
         let project_path = if let Some(destination) = path.components().next_back() {
             let destination: &std::ffi::OsStr = destination.as_ref();
-            let name: &std::ffi::OsStr = &self.directory_name.as_ref();
+            let name: &std::ffi::OsStr = self.directory_name.as_ref();
             if destination == name {
                 path.to_path_buf()
             } else {
