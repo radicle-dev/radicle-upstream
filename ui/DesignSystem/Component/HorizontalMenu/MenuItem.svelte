@@ -1,9 +1,7 @@
 <script>
-  import { link } from "svelte-spa-router";
-  export let href = null;
+  export let active = null;
   export let icon = null;
   export let title = null;
-  export let active = null;
 </script>
 
 <style>
@@ -29,7 +27,7 @@
 </style>
 
 <!-- svelte-ignore a11y-missing-attribute -->
-<a data-cy={title} use:link={href}>
+<a data-cy={title} on:click>
   {#if active}
     <div class="icon">
       <svelte:component this={icon} style="fill: var(--color-secondary)" />

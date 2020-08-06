@@ -1,11 +1,12 @@
-<script>
-  import { location } from "svelte-spa-router";
-
-  import * as path from "../../src/path.ts";
+<script lang="ts">
+  import * as view from "../../src/view";
 
   import MenuItem from "./HorizontalMenu/MenuItem.svelte";
 
-  export let items = null;
+  export let items: view.MenuItem<string>[];
+  export let nav: view.Navigation<string>;
+
+  const current = nav.current;
 </script>
 
 <style>
@@ -42,8 +43,8 @@
         <MenuItem
           icon={item.icon}
           title={item.title}
-          href={item.href}
-          active={path.active(item.href, $location, item.looseActiveStateMatching)} />
+          on:click={() => nav.set(item.key)}
+          active={$current.key === item.key} />
       </li>
     {/each}
 

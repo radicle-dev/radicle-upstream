@@ -14,43 +14,6 @@
   import Theme from "./Theme.svelte";
   import ViewRouter from "./View/Router.svelte";
 
-  /* import IdentityCreation from "./Screen/IdentityCreation.svelte"; */
-  /* import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte"; */
-  /* import NotFound from "./Screen/NotFound.svelte"; */
-  /* import Org from "./Screen/Org.svelte"; */
-  /* import OrgRegistration from "./Screen/OrgRegistration.svelte"; */
-  /* import MemberRegistration from "./Screen/Org/MemberRegistration.svelte"; */
-  /* import Profile from "./Screen/Profile.svelte"; */
-  /* import Project from "./Screen/Project.svelte"; */
-  /* import ProjectCreation from "./Screen/ProjectCreation.svelte"; */
-  /* import ProjectRegistration from "./Screen/ProjectRegistration.svelte"; */
-  /* import Search from "./Screen/Search.svelte"; */
-  /* import Settings from "./Screen/Settings.svelte"; */
-  /* import TransactionDetails from "./Screen/TransactionDetails.svelte"; */
-  /* import UserRegistration from "./Screen/UserRegistration.svelte"; */
-
-  /* const routes = { */
-  /*   "/": Blank, */
-  /*   "/identity/new": IdentityCreation, */
-  /*   "/search": Search, */
-  /*   "/settings": Settings, */
-  /*   "/profile/*": Profile, */
-  /*   "/orgs/register": OrgRegistration, */
-  /*   "/orgs/:id/members/register": MemberRegistration, */
-  /*   "/orgs/:id": Org, */
-  /*   "/orgs/:id/*": Org, */
-  /*   "/projects/new": ProjectCreation, */
-  /*   "/projects/register/:domainId": ProjectRegistration, */
-  /*   "/projects/:projectId/register/:domainId": ProjectRegistration, */
-  /*   "/projects/:id/*": Project, */
-  /*   "/design-system-guide": DesignSystemGuide, */
-  /*   "/help": Help, */
-  /*   "/user-registration": UserRegistration, */
-  /*   "/transactions/:id": TransactionDetails, */
-  /*   "*": NotFound, */
-  /* }; */
-
-
   const screens = view.create(screen.map, screen.Screen.ProfileProjects);
   setContext("screens", screens);
 

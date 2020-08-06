@@ -14,26 +14,19 @@
 
   import ViewRouter from "../View/Router.svelte";
 
-  import Projects from "./Profile/Projects.svelte";
-  import Wallet from "./Profile/Wallet.svelte";
-
   import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
 
   const fragments = view.create(profile.fragments, profile.Fragment.Projects);
 
-  const menuRoutes = {
-    "/profile/projects": ProjectsMenu,
-  };
-
-  const topbarMenuItems: profile.MenuItem[] = [
+  const topbarMenuItems: view.MenuItem<profile.Fragment>[] = [
     {
-      click: () => fragments.set(profile.Fragment.Projects),
       icon: Icon.Source,
+      key: profile.Fragment.Projects,
       title: "Projects",
     },
     {
-      click: () => fragments.set(profile.Fragment.Wallet),
       icon: Icon.Fund,
+      key: profile.Fragment.Wallet,
       title: "Wallet",
     },
   ];
@@ -43,7 +36,7 @@
       title: "New project",
       dataCy: "new-project",
       icon: Icon.Plus,
-      event: () => push(path.createProject()),
+      event: () => console.log("navigate to project creation"),
     },
   ];
 
@@ -53,7 +46,7 @@
       title: "Register handle",
       dataCy: "register-handle",
       icon: Icon.Register,
-      event: () => push(path.registerUser()),
+      event: () => console.log("navigate to user registration"),
     });
   }
 </script>
@@ -62,12 +55,12 @@
   <Header.Large
     variant="profile"
     entity={session.identity}
-    on:registerHandle={() => push(path.registerUser())}>
+    on:registerHandle={() => console.log("navigate to user registration")}>
     <div slot="left">
-      <HorizontalMenu items={topbarMenuItems} />
+      <HorizontalMenu items={topbarMenuItems} nav={fragments} />
     </div>
     <div slot="right" style="display: flex">
-      <Router routes={menuRoutes} />
+      <ProjectsMenu />
       <AdditionalActionsDropdown
         dataCy="profile-context-menu"
         style="margin: 0 16px"
@@ -76,5 +69,5 @@
     </div>
   </Header.Large>
 
-  <ViewRouter views={fragments} />
+  <ViewRouter nav={fragments} />
 </SidebarLayout>

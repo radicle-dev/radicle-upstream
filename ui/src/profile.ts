@@ -13,9 +13,3 @@ export const fragments: view.Map<Fragment, typeof SvelteComponent> = {
   [Fragment.Projects]: Projects,
   [Fragment.Wallet]: Wallet,
 };
-
-export interface MenuItem {
-  click(): void,
-  icon: typeof SvelteComponent,
-  title: string,
-}
