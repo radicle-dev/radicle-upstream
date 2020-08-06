@@ -70,13 +70,13 @@
     {/if}
   {/if}
 
-  <p style="padding-left: 8px;">{message}</p>
+  <p style="padding-left: 8px; margin-top: -1px;">{message}</p>
 
   <div
     class={`close ${level.toLowerCase()}`}
     on:click={() => {
       dispatch('action');
     }}>
-    <p class="typo-text-bold">{actionText}</p>
+    <p class="typo-text-bold" style="margin-top: -1px;">{actionText}</p>
   </div>
 </div>
