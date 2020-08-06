@@ -20,7 +20,7 @@ where
 {
     get_filter(Arc::clone(&ctx))
         .or(create_filter(Arc::clone(&ctx)))
-        .or(list_tracked_identities_filter(ctx))
+        .or(list_tracked_filter(ctx))
         .boxed()
 }
 
@@ -84,7 +84,7 @@ where
 }
 
 /// `GET /tracked-identities`
-fn list_tracked_identities_filter<R>(
+fn list_tracked_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
@@ -104,7 +104,7 @@ where
             )
             .description("Successful retrieval"),
         ))
-        .and_then(handler::list_tracked_identities)
+        .and_then(handler::list_tracked)
 }
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
@@ -155,12 +155,12 @@ mod handler {
     }
 
     /// Retrieve the list of tracked identities.
-    pub async fn list_tracked_identities<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn list_tracked<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let tracked_users = identity::list_tracked_identities(&ctx.peer_api)?;
+        let tracked_users = identity::list_tracked(&ctx.peer_api)?;
         Ok(reply::json(&tracked_users))
     }
 }

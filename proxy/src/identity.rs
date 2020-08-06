@@ -88,16 +88,12 @@ pub fn get(api: &coco::Api, id: &coco::Urn) -> Result<Identity, error::Error> {
 /// Retrieve the list of tracked identities.
 ///
 /// # Errors
-pub fn list_tracked_identities(api: &coco::Api) -> Result<Vec<Identity>, error::Error> {
-    let mut tracked_users = vec![];
-    for project in api.list_projects()? {
-        let project_urn = project.urn();
-        for peer in api.tracked(&project_urn)? {
-            tracked_users.push(peer.into())
-        }
-    }
-    // TODO(merle): Deduplicate `tracked_users`
-    Ok(tracked_users)
+pub fn list_tracked(api: &coco::Api) -> Result<Vec<Identity>, error::Error> {
+    let peers = api.list_projects()?.into_iter().flat_map(|project| {
+        api.tracked(&project.urn())
+            .expect("Peers could not be retrieved.")
+    });
+    Ok(peers.map(|peer| peer.into()).collect())
 }
 
 /// A `SharedIdentifier` is the combination of a user handle and the [`coco::Urn`] that identifies
