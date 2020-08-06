@@ -29,7 +29,7 @@
     }
 
     // To open search => OS modifier key + p
-    if (OSKey && event.code === "Comma") {
+    if (OSKey && event.code === "KeyP") {
       toggle(path.search());
     }
 

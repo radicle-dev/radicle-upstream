@@ -1,7 +1,7 @@
 <script>
   import ModalLayout from "../DesignSystem/Component/ModalLayout.svelte";
 
-  const OSKey = navigator.platform.includes("Mac") ? "cmd" : "ctrl";
+  const OSKey = navigator.platform.includes("Mac") ? "⌘" : "ctrl";
 </script>
 
 <style>
