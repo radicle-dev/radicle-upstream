@@ -10,7 +10,7 @@
   import * as view from "./src/view";
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
-  import { Button, Title } from "./DesignSystem/Primitive";
+  import { Button } from "./DesignSystem/Primitive";
 
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
@@ -87,6 +87,10 @@
     justify-content: center;
     align-items: center;
   }
+
+  h2 {
+    margin-bottom: 32px;
+  }
 </style>
 
 <Hotkeys />
@@ -96,9 +100,7 @@
   <ViewRouter nav={screens} />
 
   <div slot="error" class="error">
-    <Title variant="big" style="margin-bottom: 32px;">
-      We're having trouble logging you into radicle. 😪
-    </Title>
+    <h2>We're having trouble logging you into radicle. 😪</h2>
     <Button on:click={clear}>Clear Session</Button>
   </div>
 </Remote>

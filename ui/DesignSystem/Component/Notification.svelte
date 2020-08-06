@@ -1,7 +1,7 @@
 <script>
   import { Level } from "../../src/notification.ts";
 
-  import { Icon, Text, Title } from "../Primitive";
+  import { Icon } from "../Primitive";
 
   export let style = null;
   export let level = Level.Info;
@@ -65,9 +65,9 @@
     {/if}
   {/if}
 
-  <Text style="padding-left: 8px;">{message}</Text>
+  <p style="padding-left: 8px; margin-top: -1px;">{message}</p>
 
   <div class={`close ${level.toLowerCase()}`} on:click>
-    <Title>Close</Title>
+    <p class="typo-text-bold" style="margin-top: -1px;">Close</p>
   </div>
 </div>

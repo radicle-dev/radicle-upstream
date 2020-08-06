@@ -1,5 +1,5 @@
 <script>
-  import { Text, Icon } from "../../DesignSystem/Primitive";
+  import { Icon } from "../../DesignSystem/Primitive";
 
   export let message = null;
 </script>
@@ -16,9 +16,12 @@
     align-items: center;
     justify-content: left;
   }
+  .error p {
+    padding-left: 0.5rem;
+  }
 </style>
 
 <div class="error">
   <Icon.Important variant="big" style="fill: white" />
-  <Text style="padding-left: 0.5rem">Error: {message}</Text>
+  <p>Error: {message}</p>
 </div>

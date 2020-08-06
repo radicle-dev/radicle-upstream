@@ -28,7 +28,6 @@
 
   nav :global(.menu-list-item:hover p) {
     color: var(--color-secondary) !important;
-    font-family: var(--typeface-medium);
   }
 
   nav :global(.menu-list-item:hover .icon svg) {

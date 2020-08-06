@@ -7,7 +7,6 @@
   import { fetch as fetchSession } from "../src/session.ts";
   import * as transaction from "../src/transaction.ts";
 
-  import { Title } from "../DesignSystem/Primitive";
   import {
     NavigationButtons,
     ModalLayout,
@@ -93,9 +92,9 @@
       <div class="project-registration">
 
         {#if showRegistrationDetails === true}
-          <Title variant="big" style="text-align: center; margin-bottom: 24px;">
+          <h2 style="text-align: center; margin-bottom: 24px;">
             Project registration
-          </Title>
+          </h2>
           <RegistrationDetailsStep
             identity={session.identity}
             {projects}

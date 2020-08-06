@@ -15,8 +15,6 @@
 
   header .file-header {
     display: flex;
-    font-family: var(--typeface-medium);
-    font-size: 1rem;
     height: 3rem;
     align-items: center;
     padding-left: 13px;
@@ -29,8 +27,6 @@
   }
 
   .code {
-    font-family: var(--typeface-mono-regular);
-    font-size: 16px;
     padding: 1.5rem;
     overflow-x: auto;
   }
@@ -42,7 +38,7 @@
 
 <div class="file-source" data-cy="file-source">
   <header>
-    <div class="file-header">
+    <div class="file-header typo-text-bold">
       <Icon.File />
       <span class="file-name">{path}</span>
     </div>
@@ -51,7 +47,7 @@
     {#if isMarkdown(path)}
       <Markdown {content} />
     {:else}
-      <pre class="code">{content}</pre>
+      <pre class="code typo-text-mono">{content}</pre>
     {/if}
   </div>
 </div>

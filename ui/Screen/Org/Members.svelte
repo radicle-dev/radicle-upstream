@@ -1,7 +1,7 @@
 <script>
   import { org as store } from "../../src/org.ts";
 
-  import { Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { Icon } from "../../DesignSystem/Primitive";
   import {
     AdditionalActionsDropdown,
     List,
@@ -52,6 +52,11 @@
     align-items: center;
     margin-right: 24px;
   }
+
+  .pending p {
+    color: var(--color-caution);
+    padding: 8px;
+  }
 </style>
 
 <Remote {store} let:data={org}>
@@ -63,18 +68,14 @@
     style="margin: 0 auto;">
     <div class="member">
       <div class="info">
-        <Title>{member.handle}</Title>
+        <p class="typo-text-bold">{member.handle}</p>
         <Icon.Verified style="margin-left: 6px; fill: var(--color-primary);" />
       </div>
 
       <div class="membership-details">
         {#if member.pending}
           <div class="pending">
-            <Text
-              variant="tiny"
-              style="color: var(--color-caution); padding: 8px;">
-              Pending
-            </Text>
+            <p class="typo-text-small">Pending</p>
           </div>
         {/if}
         <AdditionalActionsDropdown menuItems={menuItems(member)} />

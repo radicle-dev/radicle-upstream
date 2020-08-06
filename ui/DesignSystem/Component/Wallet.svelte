@@ -1,7 +1,6 @@
 <script>
   import * as currency from "../../src/currency.ts";
   import { formatRad } from "../../src/transaction.ts";
-  import { Title } from "../Primitive";
   import Rad from "./Rad.svelte";
   import TransactionList from "./Wallet/TxList.svelte";
   import SendReceive from "./Wallet/SendReceive.svelte";
@@ -36,6 +35,7 @@
     width: 100%;
     height: 100%;
     margin-left: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   .balance {
@@ -57,7 +57,7 @@
   {#if balance !== '0' || transactions.length !== 0}
     <div>
       <div class="balance" data-cy="balance">
-        <Title style="padding-bottom: 1rem;" variant="large">Balance</Title>
+        <h3 style="padding-bottom: 1rem;">Balance</h3>
         <Rad
           style="display: inline-block;"
           size="big"
@@ -69,12 +69,11 @@
       </div>
     </div>
     <div class="transactions" data-cy="transactions">
-      <Title
-        variant="large"
+      <h3
         style="padding: 1.25rem 1.5rem; border-bottom: 1px solid
         var(--color-foreground-level-2);">
         Transactions
-      </Title>
+      </h3>
       <TransactionList {transactions} {accountId} />
     </div>
   {:else}

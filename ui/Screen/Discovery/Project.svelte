@@ -1,16 +1,10 @@
 <script>
+  import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import {
-    Avatar,
-    Code,
-    Icon,
-    Text,
-    Title,
-  } from "../../DesignSystem/Primitive";
-  import {
-    Copyable,
     Stats,
     TrackToggle,
     Tooltip,
+    Urn,
   } from "../../DesignSystem/Component";
 
   export let project = null;
@@ -51,16 +45,14 @@
   }
 
   .shareableEntityIdentifier {
-    background: var(--color-foreground-level-2);
     margin-bottom: 16px;
-    border-radius: 4px;
-    padding: 4px;
-    overflow: hidden;
-    max-width: 180px;
+    display: flex;
+    justify-content: flex-start;
   }
 
   .description {
     height: 100px;
+    overflow: hidden;
   }
 
   .registered {
@@ -82,18 +74,18 @@
   <div class="header">
     <div class="title">
       {#if project.registration}
-        <Title variant="large" style="color: var(--color-foreground-level-4);">
+        <h3 style="color: var(--color-foreground-level-4);">
           {project.domain}
-        </Title>
-        <Title variant="large" truncate>
+        </h3>
+        <h3 class="typo-overflow-ellipses">
           &nbsp;{`/ ${project.metadata.name}`}
-        </Title>
+        </h3>
         <div class="registered">
           <Icon.Verified
             style="fill: var(--color-primary); position: relative; bottom: -5px;" />
         </div>
       {:else}
-        <Title variant="large" truncate>{project.metadata.name}</Title>
+        <h3 class="typo-overflow-ellipses">{project.metadata.name}</h3>
       {/if}
     </div>
 
@@ -103,19 +95,13 @@
 
   </div>
   <div class="shareableEntityIdentifier">
-    <Copyable style="min-width: 0;">
-      <Code
-        variant="medium"
-        style="color: var(--color-foreground-level-5); font-size: 14px;
-        text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
-        {project.shareableEntityIdentifier}
-      </Code>
-    </Copyable>
+    <Urn
+      urn={project.shareableEntityIdentifier}
+      notificationText="The project ID was copied to your clipboard" />
   </div>
-  <!-- TODO(sos): middle-truncate shareableEntityID & show copy icon -->
 
   <div class="description">
-    <Text>{project.metadata.description}</Text>
+    <p>{project.metadata.description}</p>
   </div>
 
   <div class="bottom">

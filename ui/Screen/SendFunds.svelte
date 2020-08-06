@@ -18,14 +18,7 @@
 
   import { Dropdown, ModalLayout, Rad } from "../DesignSystem/Component";
   import Row from "../DesignSystem/Component/Transaction/Row.svelte";
-  import {
-    Avatar,
-    Button,
-    Icon,
-    Input,
-    Text,
-    Title,
-  } from "../DesignSystem/Primitive";
+  import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
 
   const { identity } = getContext("session");
   const { orgs } = getContext("session");
@@ -195,22 +188,25 @@
           <div class="icon">
             <Icon.ArrowUp style="fill: var(--color-primary)" />
           </div>
-          <Title variant="big">Outgoing transfer</Title>
+          <h2>Outgoing transfer</h2>
         </header>
-        <Title
+        <p
+          class="typo-text-bold"
           style="color: var(--color-foreground-level-6); padding: 0 0.5rem
           0.5rem 0.5rem;">
           To
-        </Title>
+        </p>
         <Input.Text
           dataCy="modal-recipient-input"
           bind:value={$recipientStore}
           placeholder="Enter recipient address"
           style="flex: 1; padding-bottom: 0.5rem;"
           validation={$recipientValidation} />
-        <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
+        <p
+          class="typo-text-bold"
+          style="color: var(--color-foreground-level-6); padding: 0.5rem;">
           Amount
-        </Title>
+        </p>
         <Input.Text
           dataCy="modal-amount-input"
           placeholder="Enter the amount"
@@ -224,9 +220,11 @@
               style="fill: var(--color-foreground-level-6)" />
           </div>
         </Input.Text>
-        <Title style="color: var(--color-foreground-level-6); padding: 0.5rem;">
+        <p
+          class="typo-text-bold"
+          style="color: var(--color-foreground-level-6); padding: 0.5rem;">
           From
-        </Title>
+        </p>
         <Dropdown
           dataCy="modal-sender-dropdown"
           placeholder="Select wallet you want to use"
@@ -250,7 +248,7 @@
           <div class="icon">
             <Icon.ArrowUp style="fill: var(--color-primary)" />
           </div>
-          <Title variant="big">Outgoing transfer</Title>
+          <h2>Outgoing transfer</h2>
           <div class="from-to">
             <div class="from">
               {#each dropdownOptions as option}
@@ -265,20 +263,18 @@
             </div>
             <Icon.ArrowRight />
             <div class="to">
-              <Title truncate style="color: var(--color-foreground-level-6);">
+              <p
+                class="typo-text-bold typo-overflow-ellipses"
+                style="color: var(--color-foreground-level-6);">
                 {$recipientStore}
-              </Title>
+              </p>
             </div>
           </div>
         </header>
 
         <Row dataCy="transfer-amount" variant="top" style="">
           <div slot="left">
-            <Text
-              variant="regular"
-              style="color:var(--color-foreground-level-6);">
-              Amount
-            </Text>
+            <p style="color:var(--color-foreground-level-6);">Amount</p>
           </div>
 
           <div slot="right">
@@ -289,11 +285,9 @@
         </Row>
         <Row dataCy="transaction-fee" variant="middle" style="">
           <div slot="left">
-            <Text
-              variant="regular"
-              style="color:var(--color-foreground-level-6);">
+            <p style="color:var(--color-foreground-level-6);">
               Transaction Fee
-            </Text>
+            </p>
           </div>
           <div slot="right">
             <Rad rad={summary.txFee.rad} usd={summary.txFee.usd} />
@@ -304,11 +298,11 @@
           variant="bottom"
           style="border: 1px solid var(--color-foreground-level-2);">
           <div slot="left">
-            <Title
-              variant="regular"
+            <p
+              class="typo-text-bold"
               style="color:var(--color-foreground-level-6);">
               Total
-            </Title>
+            </p>
           </div>
           <div slot="right">
             <Rad rad={summary.total.rad} usd={summary.total.usd} />
@@ -316,11 +310,7 @@
         </Row>
         <Row dataCy="funding-source" style="margin-top: 1.5rem;">
           <div slot="left">
-            <Text
-              variant="regular"
-              style="color:var(--color-foreground-level-6);">
-              Funding source
-            </Text>
+            <p style="color:var(--color-foreground-level-6);">Funding source</p>
           </div>
 
           <div slot="right">

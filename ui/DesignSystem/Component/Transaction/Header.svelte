@@ -6,7 +6,7 @@
     timestamp,
   } from "../../../src/transaction.ts";
 
-  import { Avatar, Icon, Title, Text } from "../../../DesignSystem/Primitive";
+  import { Avatar, Icon } from "../../../DesignSystem/Primitive";
 
   export let avatar = null;
   export let transaction = null;
@@ -41,9 +41,7 @@
         this={Icon[headerIcon(transaction.messages[0])]}
         style="fill: var(--color-primary)" />
     </div>
-    <Title variant="big">
-      {formatMessage(transaction.messages[0], accountId)}
-    </Title>
+    <h2>{formatMessage(transaction.messages[0], accountId)}</h2>
     <caption style="display: inline-flex; margin:16px 0; max-width: 20rem;">
       {#if avatar}
         <Avatar
@@ -54,13 +52,15 @@
           style="color: var(--color-foreground)"
           dataCy="subject-avatar" />
       {:else}
-        <Title truncate dataCy="subject">{subject.name}</Title>
+        <p class="typo-text-bold typo-overflow-ellipses" data-cy="subject">
+          {subject.name}
+        </p>
       {/if}
     </caption>
     {#if transaction.state}
-      <Text variant="normal" style="color:var(--color-foreground-level-4);">
+      <p style="color:var(--color-foreground-level-4);">
         {timestamp(transaction.state)}
-      </Text>
+      </p>
     {/if}
   </div>
 </div>
