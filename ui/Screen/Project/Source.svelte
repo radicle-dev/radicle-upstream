@@ -184,7 +184,7 @@
       <Urn
         urn={project.shareableEntityIdentifier}
         showOnHover
-        notificationTxt="The project ID was copied to your clipboard" />
+        notificationText="The project ID was copied to your clipboard" />
     </div>
     <div class="description">
       <p>{project.metadata.description}</p>

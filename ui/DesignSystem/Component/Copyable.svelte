@@ -6,7 +6,7 @@
 
   export let style = null;
   export let copyContent = null;
-  export let notificationTxt = null;
+  export let notificationText = "Copied to your clipboard";
   export let iconBeforeCopy = Icon.Copy;
   export let iconAfterCopy = Icon.Check;
   export let iconSize = "small";
@@ -25,7 +25,7 @@
       copyContent !== null ? copyContent : slotContent.textContent;
     copyToClipboard(content.trim());
 
-    notificationTxt ? notification.info(notificationTxt) : null;
+    notification.info(notificationText);
 
     copied = true;
 

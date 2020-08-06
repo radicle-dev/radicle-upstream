@@ -27,6 +27,6 @@
   <Flex align="center">
     <Urn
       urn={accountId}
-      notificationTxt="The address was copied to your clipboard" />
+      notificationText="The address was copied to your clipboard" />
   </Flex>
 </div>

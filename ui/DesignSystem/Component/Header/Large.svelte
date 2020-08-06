@@ -10,14 +10,16 @@
   export let entity = null;
   export let variant = null; // profile | org
 
-  const name =
-    variant === "profile" && entity.registered
-      ? entity.registered
-      : variant === "profile" && !entity.registered
-      ? entity.metadata.handle
-      : variant === "org"
-      ? entity.id
-      : null;
+  let name;
+  if (variant === "profile") {
+    if (entity.registered) {
+      name = entity.registered;
+    } else {
+      name = entity.metadata.handle;
+    }
+  } else if (variant === "org") {
+    name = entity.id;
+  }
 
   const onRegisterHandle = () => {
     dispatch("registerHandle");
@@ -109,7 +111,7 @@
           <Urn
             urn={entity.shareableEntityIdentifier}
             showOnHover
-            notificationTxt={`Radicle ID for ${name} copied to your clipboard.`} />
+            notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
         </div>
       </div>
     </div>
