@@ -23,6 +23,7 @@
     justify-content: center;
     margin-bottom: 8px;
     user-select: none;
+    white-space: nowrap;
   }
 
   .info {
