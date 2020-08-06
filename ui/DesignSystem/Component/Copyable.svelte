@@ -1,10 +1,12 @@
 <script>
   // TODO(sarah): write tests for this once it's implemented in the ui somewhere
   import { copyToClipboard } from "../../../native/ipc.js";
+  import * as notification from "../../src/notification.ts";
   import Icon from "../Primitive/Icon";
 
   export let style = null;
   export let copyContent = null;
+  export let notificationText = "Copied to your clipboard";
   export let iconBeforeCopy = Icon.Copy;
   export let iconAfterCopy = Icon.Check;
   export let iconSize = "small";
@@ -22,6 +24,8 @@
     const content =
       copyContent !== null ? copyContent : slotContent.textContent;
     copyToClipboard(content.trim());
+
+    notification.info(notificationText);
 
     copied = true;
 
