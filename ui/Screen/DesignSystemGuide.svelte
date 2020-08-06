@@ -1068,7 +1068,10 @@
       </Swatch>
 
       <Swatch>
-        <Urn urn="%rad:git:copy-me-to-see-the-full-urn" showOnHover />
+        <Urn
+          urn="%rad:git:copy-me-to-see-the-full-urn"
+          showOnHover
+          notificationText="The urn was copied to your clipboard" />
       </Swatch>
     </Section>
   </div>
