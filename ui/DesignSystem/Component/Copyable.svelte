@@ -24,7 +24,8 @@
     const content =
       copyContent !== null ? copyContent : slotContent.textContent;
     copyToClipboard(content.trim());
-    notification.info(notificationTxt);
+
+    notificationTxt ? notification.info(notificationTxt) : null;
 
     copied = true;
 
