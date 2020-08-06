@@ -223,9 +223,9 @@ mod handler {
         let ctx = ctx.read().await;
         let project = ctx.peer_api.get_project(&urn, peer_id)?;
 
-        project::Checkout::new(project, path, None).run()?;
+        let path = project::Checkout::new(project, path, None).run()?;
 
-        Ok(reply::with_status(reply::json(&true), StatusCode::CREATED))
+        Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
     }
 
     /// Get the [`project::Project`] for the given `id`.

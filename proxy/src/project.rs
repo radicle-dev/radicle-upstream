@@ -166,7 +166,7 @@ where
     ///
     ///   * We couldn't resolve the executable path.
     ///   * The checkout process failed.
-    pub fn run(self) -> Result<(), error::Error> {
+    pub fn run(self) -> Result<path::PathBuf, error::Error> {
         let bin_path = match self.bin_path {
             Some(path) => Ok(path),
             None => Self::default_bin_path(),
@@ -204,7 +204,7 @@ where
         let result = child_process.wait()?;
 
         if result.success() {
-            Ok(())
+            Ok(project_path)
         } else {
             Err(error::Error::Checkout)
         }

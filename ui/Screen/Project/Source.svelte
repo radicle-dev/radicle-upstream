@@ -78,7 +78,7 @@
 
   const handleCheckout = async event => {
     try {
-      await checkout(
+      const path = await checkout(
         id,
         event.detail.checkoutDirectoryPath,
         "PEER_ID_GOES_HERE",
@@ -86,11 +86,11 @@
       );
 
       notification.info(
-        `${metadata.name} checked out to ${event.detail.checkoutDirectoryPath}`,
+        `${metadata.name} checked out to ${path}`,
         true,
         "Open folder",
         () => {
-          openPath(event.detail.checkoutDirectoryPath);
+          openPath(path);
         }
       );
     } catch (error) {
