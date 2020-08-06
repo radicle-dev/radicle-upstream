@@ -34,12 +34,7 @@ async fn can_checkout() -> Result<(), error::Error> {
 
     let path = tmp_dir.path().join("projects").join("git-platinum");
     let exe_path = exe_path()?;
-    project::Checkout::new(
-        platinum_project,
-        path,
-        exe_path,
-    )
-    .run()?;
+    project::Checkout::new(platinum_project, path, exe_path).run()?;
 
     Ok(())
 }
