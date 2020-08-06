@@ -1,9 +1,7 @@
 <script lang="ts">
   import { setContext } from "svelte";
-  import { push, location } from "svelte-spa-router";
 
   import * as notification from "./src/notification";
-  import * as path from "./src/path";
   import * as remote from "./src/remote";
   import * as screen from "./src/screen";
   import { clear, fetch, session as store } from "./src/session";
@@ -53,7 +51,7 @@
   /* }; */
 
 
-  const screens = view.create(screen.map, screen.Screen.Blank);
+  const screens = view.create(screen.map, screen.Screen.ProfileProjects);
   setContext("screens", screens);
 
   $: switch ($store.status) {
@@ -63,11 +61,7 @@
 
     case remote.Status.Success:
       if ($store.data.identity === null) {
-        push(path.createIdentity());
-      } else {
-        if ($location === "/" || $location === "/identity/new") {
-          push(path.profileProjects());
-        }
+        screens.set(screen.Screen.IdentityCreation);
       }
       break;
 

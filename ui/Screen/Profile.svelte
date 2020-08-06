@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   import { getContext } from "svelte";
-  import Router, { push } from "svelte-spa-router";
 
-  import * as path from "../src/path.ts";
+  import * as profile from "../src/profile";
+  import * as view from "../src/view";
 
   import {
     AdditionalActionsDropdown,
@@ -12,34 +12,29 @@
   } from "../DesignSystem/Component";
   import { Icon } from "../DesignSystem/Primitive";
 
+  import ViewRouter from "../View/Router.svelte";
+
   import Projects from "./Profile/Projects.svelte";
   import Wallet from "./Profile/Wallet.svelte";
-  import NotFound from "./NotFound.svelte";
-
-  const screenRoutes = {
-    "/profile/projects": Projects,
-    "/profile/wallet": Wallet,
-    "*": NotFound,
-  };
 
   import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
+
+  const fragments = view.create(profile.fragments, profile.Fragment.Projects);
 
   const menuRoutes = {
     "/profile/projects": ProjectsMenu,
   };
 
-  const topbarMenuItems = [
+  const topbarMenuItems: profile.MenuItem[] = [
     {
+      click: () => fragments.set(profile.Fragment.Projects),
       icon: Icon.Source,
       title: "Projects",
-      href: path.profileProjects(),
-      looseActiveStateMatching: true,
     },
     {
+      click: () => fragments.set(profile.Fragment.Wallet),
       icon: Icon.Fund,
       title: "Wallet",
-      href: path.profileWallet(),
-      looseActiveStateMatching: false,
     },
   ];
 
@@ -64,7 +59,6 @@
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-
   <Header.Large
     variant="profile"
     entity={session.identity}
@@ -82,5 +76,5 @@
     </div>
   </Header.Large>
 
-  <Router routes={screenRoutes} />
+  <ViewRouter views={fragments} />
 </SidebarLayout>
