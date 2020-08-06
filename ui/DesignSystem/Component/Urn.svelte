@@ -4,6 +4,7 @@
 
   export let urn = null;
   export let showOnHover = false;
+  export let notificationText = "Copied to your clipboard";
 
   const cleanUrn = urn.replace(/^%?rad:git:/, "");
 
@@ -42,7 +43,11 @@
   data-cy="urn"
   on:mouseover={showFullUrn}
   on:mouseout={hideFullUrn}>
-  <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
+  <Copyable
+    iconSize="small"
+    style="align-items: center;"
+    copyContent={urn}
+    {notificationText}>
     {#if urn.length > 24}
       {#if (showOnHover && !hover) || !showOnHover}
         <p class="typo-text-small-mono">{firstSix}</p>

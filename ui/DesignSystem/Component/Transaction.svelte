@@ -96,7 +96,9 @@
       <p class="row-text">Transaction ID</p>
     </div>
     <div slot="right">
-      <Urn urn={transaction.id} />
+      <Urn
+        urn={transaction.id}
+        notificationText="The transaction ID is copied to your clipboard" />
     </div>
   </Row>
 
