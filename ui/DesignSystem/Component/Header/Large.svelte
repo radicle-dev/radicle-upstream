@@ -10,6 +10,15 @@
   export let entity = null;
   export let variant = null; // profile | org
 
+  const name =
+    variant === "profile" && entity.registered
+      ? entity.registered
+      : variant === "profile" && !entity.registered
+      ? entity.metadata.handle
+      : variant === "org"
+      ? entity.id
+      : null;
+
   const onRegisterHandle = () => {
     dispatch("registerHandle");
   };
@@ -79,17 +88,15 @@
       <div class="metadata">
         <div class="user">
           <h1 data-cy="entity-name" style="display: flex; align-items: center;">
-            {#if variant === 'profile' && entity.registered}
-              {entity.registered}
-            {:else if variant === 'profile' && !entity.registered}
-              {entity.metadata.handle}
+            {name}
+            {#if variant === 'profile' && !entity.registered}
               <Button
                 variant="outline"
                 style="margin-left: 12px;"
                 on:click={() => onRegisterHandle()}>
                 Register handle
               </Button>
-            {:else if variant === 'org'}{entity.id}{/if}
+            {/if}
           </h1>
           {#if variant === 'org' || entity.registered}
             <Icon.Verified
@@ -99,7 +106,10 @@
           {/if}
         </div>
         <div class="shareable-entity-identifier">
-          <Urn urn={entity.shareableEntityIdentifier} showOnHover />
+          <Urn
+            urn={entity.shareableEntityIdentifier}
+            showOnHover
+            notificationTxt={`Radicle ID for ${name} copied to your clipboard.`} />
         </div>
       </div>
     </div>

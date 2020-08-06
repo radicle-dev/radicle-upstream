@@ -181,7 +181,10 @@
   <div class="header">
     <h2>{project.metadata.name}</h2>
     <div class="project-id">
-      <Urn urn={project.shareableEntityIdentifier} showOnHover />
+      <Urn
+        urn={project.shareableEntityIdentifier}
+        showOnHover
+        notificationTxt="The project ID was copied to your clipboard" />
     </div>
     <div class="description">
       <p>{project.metadata.description}</p>

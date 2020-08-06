@@ -25,6 +25,8 @@
   {/if}
   <p class="typo-text-bold" style="padding: 1.5rem 0 0.5rem 0;">Address</p>
   <Flex align="center">
-    <Urn urn={accountId} />
+    <Urn
+      urn={accountId}
+      notificationTxt="The address was copied to your clipboard" />
   </Flex>
 </div>

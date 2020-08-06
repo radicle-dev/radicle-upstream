@@ -1064,11 +1064,16 @@
       </Swatch>
 
       <Swatch>
-        <Urn urn="5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu" />
+        <Urn
+          urn="5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu"
+          notificationTxt="This random string was copied to your clipboard" />
       </Swatch>
 
       <Swatch>
-        <Urn urn="%rad:git:copy-me-to-see-the-full-urn" showOnHover />
+        <Urn
+          urn="%rad:git:copy-me-to-see-the-full-urn"
+          showOnHover
+          notificationTxt="The urn was copied to your clipboard" />
       </Swatch>
     </Section>
   </div>
