@@ -1,5 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import { link } from "svelte-spa-router";
+
+  import * as path from "../../src/path.ts";
 
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
   import { Tooltip } from "../../DesignSystem/Component";
@@ -43,6 +46,11 @@
     user-select: none;
     margin-bottom: 16px;
   }
+
+  .info {
+    display: flex;
+    margin-top: 16px;
+  }
 </style>
 
 <svelte:window on:click={clickOutside} />
@@ -55,6 +63,14 @@
     placeholder="~/path/to/folder"
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
+  <div class="info">
+    <p class="typo-text-small">
+      You need to have
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <a class="typo-link" use:link={path.shortcuts()}>git-remote-rad</a>
+      helper set up.
+    </p>
+  </div>
 
   <Tooltip
     value={!checkoutDirectoryPath ? 'Please select a folder' : null}
