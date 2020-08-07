@@ -25,7 +25,7 @@
     <kbd>{modifierKeys}</kbd>
     +
     <kbd>/</kbd>
-    - help
+    - shortcuts
   </div>
   <div class="shortcut">
     <kbd>{modifierKeys}</kbd>

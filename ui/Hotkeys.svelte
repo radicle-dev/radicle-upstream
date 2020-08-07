@@ -21,7 +21,7 @@
 
     // To open help => OS modifier key + /
     if (modifierKey && event.code === "Slash") {
-      toggle(path.help());
+      toggle(path.shortcuts());
     }
 
     // To open settings => OS modifier key + ,
