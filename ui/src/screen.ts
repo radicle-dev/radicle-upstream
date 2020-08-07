@@ -19,3 +19,6 @@ export const map: view.Map<Screen, typeof SvelteComponent> = {
   [Screen.IdentityCreation]: IdentityCreation,
   [Screen.ProfileProjects]: Profile,
 };
+
+export const nav: view.Navigation<Screen> = view.create(map, Screen.ProfileProjects);
+export const set = (key: Screen, props?: view.Props): void => nav.set(key, props);

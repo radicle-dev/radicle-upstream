@@ -16,8 +16,6 @@
 
   import ProjectsMenu from "./Profile/ProjectsMenu.svelte";
 
-  const fragments = view.create(profile.fragments, profile.Fragment.Projects);
-
   const topbarMenuItems: view.MenuItem<profile.Fragment>[] = [
     {
       icon: Icon.Source,
@@ -57,7 +55,7 @@
     entity={session.identity}
     on:registerHandle={() => console.log("navigate to user registration")}>
     <div slot="left">
-      <HorizontalMenu items={topbarMenuItems} nav={fragments} />
+      <HorizontalMenu items={topbarMenuItems} nav={profile.nav} />
     </div>
     <div slot="right" style="display: flex">
       <ProjectsMenu />
@@ -69,5 +67,5 @@
     </div>
   </Header.Large>
 
-  <ViewRouter nav={fragments} />
+  <ViewRouter nav={profile.nav} />
 </SidebarLayout>

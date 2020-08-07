@@ -1,11 +1,8 @@
 <script lang="ts">
-  import { setContext } from "svelte";
-
   import * as notification from "./src/notification";
   import * as remote from "./src/remote";
   import * as screen from "./src/screen";
   import { clear, fetch, session as store } from "./src/session";
-  import * as view from "./src/view";
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
   import { Button } from "./DesignSystem/Primitive";
@@ -14,9 +11,6 @@
   import Theme from "./Theme.svelte";
   import ViewRouter from "./View/Router.svelte";
 
-  const screens = view.create(screen.map, screen.Screen.ProfileProjects);
-  setContext("screens", screens);
-
   $: switch ($store.status) {
     case remote.Status.NotAsked:
       fetch();
@@ -24,7 +18,7 @@
 
     case remote.Status.Success:
       if ($store.data.identity === null) {
-        screens.set(screen.Screen.IdentityCreation);
+        screen.set(screen.Screen.IdentityCreation);
       }
       break;
 
@@ -54,7 +48,7 @@
 <NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
 <Theme />
 <Remote {store} context="session">
-  <ViewRouter nav={screens} />
+  <ViewRouter nav={screen.nav} />
 
   <div slot="error" class="error">
     <h2>We're having trouble logging you into radicle. 😪</h2>

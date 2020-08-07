@@ -9,7 +9,7 @@ export interface View<K extends string> {
   readonly props?: Props;
 }
 
-type Props = Record<string, 0 | string>;
+export type Props = Record<string, 0 | string>;
 export type Map<Key extends string, C extends typeof SvelteComponent> = Required<
   Record<Key, C>
 >;
