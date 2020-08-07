@@ -13,3 +13,7 @@ export const getDirectoryPath = () =>
 
 export const copyToClipboard = text =>
   window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);
+
+export const isDev = () => {
+  return window.electron.isDev;
+};
