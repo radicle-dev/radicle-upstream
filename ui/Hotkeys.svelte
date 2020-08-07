@@ -19,7 +19,7 @@
     }
 
     // To open help => OS modifier key + /
-    if (modifierKey && event.code === "Slash") {
+    if (event.shiftKey && event.code === "Slash") {
       toggle(path.shortcuts());
     }
 
