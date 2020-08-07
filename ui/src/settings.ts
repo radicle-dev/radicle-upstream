@@ -60,5 +60,4 @@ export const themeOptions: Option[] = [
 ];
 
 // gives back the OS you're using in hotkeys.svelte & shortcuts.svelte
-
 export const isMac: boolean = navigator.platform.includes("Mac");
