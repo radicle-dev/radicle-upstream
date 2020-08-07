@@ -1,7 +1,9 @@
 <script>
+  import { isMac } from "../src/settings.ts";
+
   import ModalLayout from "../DesignSystem/Component/ModalLayout.svelte";
 
-  const modifierKeys = navigator.platform.includes("Mac") ? "⌘" : "ctrl";
+  const modifierKeys = isMac ? "⌘" : "ctrl";
 </script>
 
 <style>

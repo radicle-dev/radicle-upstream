@@ -2,6 +2,7 @@
   import { location, pop, push } from "svelte-spa-router";
 
   import * as path from "./src/path.ts";
+  import { isMac } from "./src/settings.ts";
 
   const toggle = destination => {
     if (path.active(destination, $location)) {
@@ -11,9 +12,7 @@
   };
 
   const onKeydown = event => {
-    const modifierKey = navigator.platform.includes("Mac")
-      ? event.metaKey
-      : event.ctrlKey;
+    const modifierKey = isMac ? event.metaKey : event.ctrlKey;
 
     if (event.target !== document.body) {
       return false;
