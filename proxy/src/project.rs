@@ -192,6 +192,8 @@ where
             .arg("-c")
             .arg(self.credential.to_helper())
             .arg("clone")
+            .arg("-o")
+            .arg("rad")
             .arg("-b")
             .arg(self.project.default_branch())
             .arg(LocalUrl::from(self.project.urn()).to_string())
