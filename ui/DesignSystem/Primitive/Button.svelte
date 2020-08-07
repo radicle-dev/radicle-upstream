@@ -25,7 +25,7 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    height: 40px;
+    min-height: 40px;
     outline-style: none;
     padding: 0 12px;
     user-select: none;
