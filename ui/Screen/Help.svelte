@@ -1,7 +1,7 @@
 <script>
   import ModalLayout from "../DesignSystem/Component/ModalLayout.svelte";
 
-  const OSKey = navigator.platform.includes("Mac") ? "⌘" : "ctrl";
+  const modifierKeys = navigator.platform.includes("Mac") ? "⌘" : "ctrl";
 </script>
 
 <style>
@@ -22,31 +22,31 @@
 
 <ModalLayout>
   <div class="shortcut">
-    <kbd>{OSKey}</kbd>
+    <kbd>{modifierKeys}</kbd>
     +
     <kbd>/</kbd>
     - help
   </div>
   <div class="shortcut">
-    <kbd>{OSKey}</kbd>
+    <kbd>{modifierKeys}</kbd>
     +
     <kbd>,</kbd>
     - settings
   </div>
   <div class="shortcut">
-    <kbd>{OSKey}</kbd>
+    <kbd>{modifierKeys}</kbd>
     +
     <kbd>d</kbd>
     - design system
   </div>
   <div class="shortcut">
-    <kbd>{OSKey}</kbd>
+    <kbd>{modifierKeys}</kbd>
     +
     <kbd>p</kbd>
     - search
   </div>
   <div class="shortcut">
-    <kbd>{OSKey}</kbd>
+    <kbd>{modifierKeys}</kbd>
     +
     <kbd>n</kbd>
     - create new project
