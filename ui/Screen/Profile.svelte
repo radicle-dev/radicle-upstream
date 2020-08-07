@@ -2,6 +2,7 @@
   import { getContext } from "svelte";
   import Router, { push } from "svelte-spa-router";
 
+  import { isDev } from "../../native/ipc.js";
   import * as path from "../src/path.ts";
 
   import {
@@ -35,13 +36,15 @@
       href: path.profileProjects(),
       looseActiveStateMatching: true,
     },
-    {
+  ];
+
+  isDev() &&
+    topbarMenuItems.push({
       icon: Icon.Fund,
       title: "Wallet",
       href: path.profileWallet(),
       looseActiveStateMatching: false,
-    },
-  ];
+    });
 
   const dropdownMenuItems = [
     {
