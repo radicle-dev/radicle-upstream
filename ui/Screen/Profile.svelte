@@ -2,6 +2,7 @@
   import { getContext } from "svelte";
 
   import * as profile from "../src/profile";
+  import * as screen from "../src/screen";
   import * as view from "../src/view";
 
   import {
@@ -34,7 +35,7 @@
       title: "New project",
       dataCy: "new-project",
       icon: Icon.Plus,
-      event: () => console.log("navigate to project creation"),
+      event: () => screen.set(screen.Screen.ProjectCreation),
     },
   ];
 
@@ -44,7 +45,7 @@
       title: "Register handle",
       dataCy: "register-handle",
       icon: Icon.Register,
-      event: () => console.log("navigate to user registration"),
+      event: () => screen.set(screen.Screen.UserRegistration),
     });
   }
 </script>
@@ -53,7 +54,7 @@
   <Header.Large
     variant="profile"
     entity={session.identity}
-    on:registerHandle={() => console.log("navigate to user registration")}>
+    on:registerHandle={() => screen.set(screen.Screen.UserRegistration)}>
     <div slot="left">
       <HorizontalMenu items={topbarMenuItems} nav={profile.nav} />
     </div>
