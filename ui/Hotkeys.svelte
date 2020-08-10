@@ -2,6 +2,7 @@
   import { location, pop, push } from "svelte-spa-router";
 
   import * as path from "./src/path.ts";
+  import { isMac } from "./src/settings.ts";
 
   const toggle = destination => {
     if (path.active(destination, $location)) {
@@ -11,16 +12,35 @@
   };
 
   const onKeydown = event => {
+    const modifierKey = isMac ? event.metaKey : event.ctrlKey;
+
     if (event.target !== document.body) {
       return false;
     }
 
-    if (event.shiftKey && event.code === "KeyD") {
+    // To open help => OS modifier key + /
+    if (event.shiftKey && event.code === "Slash") {
+      toggle(path.shortcuts());
+    }
+
+    // To open settings => OS modifier key + ,
+    if (modifierKey && event.code === "Comma") {
+      toggle(path.settings());
+    }
+
+    // To open search => OS modifier key + p
+    if (modifierKey && event.code === "KeyP") {
+      toggle(path.search());
+    }
+
+    // To open design system => OS modifier key + d
+    if (modifierKey && event.code === "KeyD") {
       toggle(path.designSystemGuide());
     }
 
-    if (event.shiftKey && event.code === "Slash") {
-      toggle(path.help());
+    // To create a new project => OS modifier key + n
+    if (modifierKey && event.code === "KeyN") {
+      toggle(path.createProject());
     }
   };
 </script>

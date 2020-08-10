@@ -1,4 +1,6 @@
 <script>
+  import { link } from "svelte-spa-router";
+
   import {
     clear,
     clearCache,
@@ -9,6 +11,7 @@
     updateRegistry,
   } from "../src/session.ts";
   import { networkOptions, themeOptions } from "../src/settings.ts";
+  import * as path from "../src/path.ts";
 
   import { Button, Input } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
@@ -44,15 +47,6 @@
     justify-content: space-between;
   }
 
-  section header a {
-    color: var(--color-secondary);
-    text-decoration: underline;
-  }
-
-  section header a:hover {
-    color: var(--color-secondary-level-6);
-  }
-
   .section-item {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -72,11 +66,24 @@
     align-items: center;
     margin-left: 16px;
   }
+
+  .title {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    align-items: flex-end;
+    padding: 0 0.75rem;
+  }
 </style>
 
 <SidebarLayout dataCy="page">
   <div class="container">
-    <h1 style="margin-bottom: 32px;">Settings</h1>
+    <div class="title">
+      <h1>Settings</h1>
+      <a class="typo-link" href={path.shortcuts()} use:link>
+        Keyboard shortcuts
+      </a>
+    </div>
 
     <section>
       <header>
@@ -118,7 +125,7 @@
       <header>
         <h3>Seeds</h3>
         <!-- TODO(sos): link to actual docs abt seeds -->
-        <a href="link/to/docs">Learn about seeds</a>
+        <a class="typo-link" href="link/to/docs">Learn about seeds</a>
       </header>
       <div class="section-item" style="align-items: flex-start;">
         <div class="info">

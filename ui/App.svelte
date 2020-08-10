@@ -16,7 +16,7 @@
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
-  import Help from "./Screen/Help.svelte";
+  import Shortcuts from "./Screen/Shortcuts.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
@@ -47,7 +47,7 @@
     "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
     "/design-system-guide": DesignSystemGuide,
-    "/help": Help,
+    "/shortcuts": Shortcuts,
     "/user-registration": UserRegistration,
     "/transactions/:id": TransactionDetails,
     "/send-funds": SendFunds,
