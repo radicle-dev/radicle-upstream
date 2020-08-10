@@ -76,6 +76,7 @@
     value={!checkoutDirectoryPath ? 'Please select a folder' : null}
     position="bottom">
     <Button
+      dataCy="checkout-button"
       on:click={() => {
         dispatch('checkout', { checkoutDirectoryPath: checkoutDirectoryPath });
         toggleDropdown();
@@ -88,6 +89,10 @@
   </Tooltip>
 </div>
 
-<Button variant="transparent" icon={Icon.Copy} on:click={toggleDropdown}>
+<Button
+  variant="transparent"
+  icon={Icon.Copy}
+  on:click={toggleDropdown}
+  dataCy="checkout-modal-toggle">
   Checkout
 </Button>

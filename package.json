@@ -106,7 +106,7 @@
     "start:test": "run-p --race svelte:watch proxy:start:test electron:start",
     "test": "TZ='UTC' yarn test:unit && TZ='UTC' yarn test:integration",
     "test:integration": "TZ='UTC' run-p --race proxy:start:test wait:test",
-    "test:integration:debug": "TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
+    "test:integration:debug": "RUST_LOG=proxy=debug TZ='UTC' run-p --race svelte:watch proxy:start:test wait:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "wait:test": "wait-on tcp:8080 && yarn svelte:build && yarn cypress:run",
