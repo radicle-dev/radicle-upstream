@@ -8,6 +8,7 @@ use librad::net;
 use librad::net::discovery;
 use librad::paths;
 use librad::peer;
+use librad::signer;
 
 use crate::error;
 
@@ -45,6 +46,7 @@ pub type Disco = discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)
 /// Address: 127.0.0.1:0
 /// No seeds.
 /// Default gossip parameters.
+/// Signer is a [`keys::SecretKey`]
 ///
 /// # Errors
 ///
@@ -59,10 +61,10 @@ pub fn default(
 
 /// Configure a [`net::peer::PeerConfig`].
 #[must_use]
-pub fn configure(
-    paths: paths::Paths,
-    key: keys::SecretKey,
-) -> net::peer::PeerConfig<Disco, keys::SecretKey> {
+pub fn configure<S>(paths: paths::Paths, signer: S) -> net::peer::PeerConfig<Disco, S>
+where
+    S: signer::Signer,
+{
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`
 
@@ -75,7 +77,7 @@ pub fn configure(
     let disco = discovery::Static::new(seeds);
     // TODO(finto): read in from config or passed as param
     net::peer::PeerConfig {
-        signer: key,
+        signer,
         paths,
         listen_addr,
         gossip_params,

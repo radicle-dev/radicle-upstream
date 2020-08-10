@@ -13,6 +13,7 @@ use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
+use librad::signer;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
 
@@ -21,13 +22,23 @@ use crate::error;
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
+pub trait Signer: signer::Signer + Clone {}
+
 /// High-level interface to the coco monorepo and gossip layer.
-pub struct Api {
+pub struct Api<S>
+where
+    S: Signer,
+    S::Error: keys::SignError,
+{
     /// Thread-safe wrapper around [`PeerApi`].
-    peer_api: Arc<Mutex<PeerApi<keys::SecretKey>>>,
+    peer_api: Arc<Mutex<PeerApi<S>>>,
 }
 
-impl Api {
+impl<S> Api<S>
+where
+    S: Signer,
+    S::Error: keys::SignError,
+{
     /// Create a new `PeerApi` given a `PeerConfig`.
     ///
     /// # Errors
@@ -35,7 +46,7 @@ impl Api {
     /// If turning the config into a `Peer` fails
     /// If trying to accept on the socket fails
     pub async fn new<I>(
-        config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
+        config: PeerConfig<discovery::Static<I, SocketAddr>, S>,
     ) -> Result<Self, error::Error>
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
@@ -93,7 +104,7 @@ impl Api {
             Err(err) => {
                 log::warn!("an error occurred while trying to get 'rad/self': {}", err);
                 None
-            },
+            }
         }
     }
 
@@ -114,8 +125,8 @@ impl Api {
     ///   * Fails to initialise `User`.
     ///   * Fails to verify `User`.
     ///   * Fails to set the default `rad/self` for this `PeerApi`.
-    pub fn init_owner(&self, key: keys::SecretKey, handle: &str) -> Result<User, error::Error> {
-        let user = self.init_user(key, handle)?;
+    pub fn init_owner(&self, signer: S, handle: &str) -> Result<User, error::Error> {
+        let user = self.init_user(signer, handle)?;
         let user = verify_user(user)?;
 
         self.set_default_owner(user.clone())?;
@@ -244,10 +255,9 @@ impl Api {
     /// Will error if:
     ///     * The signing of the project metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
     pub fn init_project(
         &self,
-        key: &keys::SecretKey,
+        signer: S,
         owner: &User,
         path: impl AsRef<std::path::Path> + Send,
         name: &str,
@@ -273,10 +283,10 @@ impl Api {
                     .to_builder()
                     .set_description(description.to_string())
                     .set_default_branch(default_branch.to_string())
-                    .add_key(key.public())
+                    .add_key(signer.public_key())
                     .add_certifier(owner.urn())
                     .build()?;
-            meta.sign_owned(key)?;
+            meta.sign_owned(signer)?;
             let urn = meta.urn();
 
             let storage = api.storage().reopen()?;
@@ -306,15 +316,15 @@ impl Api {
     /// Will error if:
     ///     * The signing of the user metadata fails.
     ///     * The interaction with `librad` [`librad::git::storage::Storage`] fails.
-    #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
     pub fn init_user(
         &self,
-        key: keys::SecretKey,
+        signer: S,
         handle: &str,
     ) -> Result<user::User<entity::Draft>, error::Error> {
         // Create the project meta
-        let mut user = user::User::<entity::Draft>::create(handle.to_string(), key.public())?;
-        user.sign_owned(&key)?;
+        let mut user =
+            user::User::<entity::Draft>::create(handle.to_string(), signer.public_key())?;
+        user.sign_owned(&signer)?;
         let urn = user.urn();
 
         // Initialising user in the storage.
@@ -383,12 +393,16 @@ pub fn verify_user(user: user::User<entity::Draft>) -> Result<User, error::Error
 
 /// Equips a repository with a rad remote for the given id. If the directory at the given path
 /// is not managed by git yet we initialise it first.
-fn setup_remote(
-    peer: &PeerApi<keys::SecretKey>,
+fn setup_remote<S>(
+    peer: &PeerApi<S>,
     path: impl AsRef<std::path::Path>,
     id: &librad::hash::Hash,
     default_branch: &str,
-) -> Result<(), error::Error> {
+) -> Result<(), error::Error>
+where
+    S: signer::Signer,
+    S::Error: keys::SignError,
+{
     // Check if directory at path is a git repo.
     if git2::Repository::open(&path).is_err() {
         let repo = git2::Repository::init(&path)?;

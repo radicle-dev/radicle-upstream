@@ -47,8 +47,8 @@ macro_rules! combine {
 }
 
 /// Main entry point for HTTP API.
-pub fn api<R>(
-    peer_api: coco::Api,
+pub fn api<R, S>(
+    peer_api: coco::Api<S>,
     keystore: keystore::Keystorage,
     registry: R,
     store: kv::Store,
@@ -56,6 +56,8 @@ pub fn api<R>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Cache + registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     let subscriptions = crate::notification::Subscriptions::default();
     let ctx = Context {
@@ -136,13 +138,15 @@ where
 /// Asserts presence of the owner and reject the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard<R>(ctx: Ctx<R>) -> BoxedFilter<(coco::User,)>
+fn with_owner_guard<R, S>(ctx: Ctx<R, S>) -> BoxedFilter<(coco::User,)>
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     warp::any()
         .and(with_context(ctx))
-        .and_then(|ctx: Ctx<R>| async move {
+        .and_then(|ctx: Ctx<R, S>| async move {
             let ctx = ctx.read().await;
             let session = crate::session::current(&ctx.peer_api, &ctx.registry, &ctx.store)
                 .await
@@ -164,9 +168,13 @@ where
 }
 
 /// Container to pass down dependencies into HTTP filter chains.
-pub struct Context<R> {
+pub struct Context<R, S>
+where
+    S: coco::Signer,
+    S::Error: coco::SignError,
+{
     /// [`coco::Api`] to operate on the local monorepo.
-    peer_api: coco::Api,
+    peer_api: coco::Api<S>,
     /// Storage to manage keys.
     keystore: keystore::Keystorage,
     /// [`registry::Client`] to perform registry operations.
@@ -178,18 +186,20 @@ pub struct Context<R> {
 }
 
 /// Wrapper around the thread-safe handle on [`Context`].
-pub type Ctx<R> = Arc<RwLock<Context<R>>>;
+pub type Ctx<R, S> = Arc<RwLock<Context<R, S>>>;
 
 /// Middleware filter to inject a context into a filter chain to be passed down to a handler.
 #[must_use]
-fn with_context<R>(ctx: Ctx<R>) -> BoxedFilter<(Ctx<R>,)>
+fn with_context<R, S>(ctx: Ctx<R, S>) -> BoxedFilter<(Ctx<R, S>,)>
 where
     R: Send + Sync + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     warp::any().map(move || ctx.clone()).boxed()
 }
 
-impl Context<registry::Cacher<registry::Registry>> {
+impl Context<registry::Cacher<registry::Registry>, coco::SecretKey> {
     #[cfg(test)]
     async fn tmp(
         tmp_dir: &tempfile::TempDir,
@@ -240,7 +250,7 @@ where
                 Err(err) => {
                     log::error!("failed to deserialize query string '{}': {}", raw, err);
                     panic!("{}", err)
-                },
+                }
             }
         })
         .boxed()
@@ -291,8 +301,8 @@ impl ToDocumentedType for RegisterProjectInput {
 /// # Errors
 ///
 /// Might return an http error
-async fn register_project<R>(
-    ctx: Ctx<R>,
+async fn register_project<R, S>(
+    ctx: Ctx<R, S>,
     domain_type: registry::DomainType,
     domain_id: registry::Id,
     project_name: registry::ProjectName,
@@ -300,6 +310,8 @@ async fn register_project<R>(
 ) -> Result<impl Reply, Rejection>
 where
     R: registry::Client,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     // TODO(xla): Get keypair from persistent storage.
     let fake_pair = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);

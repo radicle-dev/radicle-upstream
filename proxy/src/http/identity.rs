@@ -14,19 +14,23 @@ use crate::identity;
 use crate::registry;
 
 /// Combination of all identity routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     get_filter(Arc::clone(&ctx)).or(create_filter(ctx)).boxed()
 }
 
 /// `POST /`
-fn create_filter<R>(
-    ctx: http::Ctx<R>,
+fn create_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx)
         .and(warp::post())
@@ -49,9 +53,13 @@ where
 }
 
 /// `GET /<id>`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn get_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx)
         .and(document::param::<coco::Urn>(
@@ -93,12 +101,14 @@ mod handler {
     use crate::session;
 
     /// Create a new [`identity::Identity`].
-    pub async fn create<R>(
-        ctx: http::Ctx<R>,
+    pub async fn create<R, S>(
+        ctx: http::Ctx<R, S>,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
 
@@ -118,9 +128,11 @@ mod handler {
     }
 
     /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, id: coco::Urn) -> Result<impl Reply, Rejection>
+    pub async fn get<R, S>(ctx: http::Ctx<R, S>, id: coco::Urn) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id)?;

@@ -16,9 +16,11 @@ use crate::identity;
 use crate::registry;
 
 /// Combination of all source filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     blob_filter(ctx.clone())
         .or(branches_filter(ctx.clone()))
@@ -32,9 +34,13 @@ where
 }
 
 /// `GET /blob/<project_id>?revision=<revision>&path=<path>`
-fn blob_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn blob_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("blob")
         .and(warp::get())
@@ -64,11 +70,13 @@ where
 }
 
 /// `GET /branches/<project_id>`
-fn branches_filter<R>(
-    ctx: http::Ctx<R>,
+fn branches_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("branches")
         .and(warp::get())
@@ -97,11 +105,13 @@ where
 }
 
 /// `GET /commit/<project_id>/<sha1>`
-fn commit_filter<R>(
-    ctx: http::Ctx<R>,
+fn commit_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("commit")
         .and(warp::get())
@@ -124,11 +134,13 @@ where
 }
 
 /// `GET /commits/<project_id>?branch=<branch>`
-fn commits_filter<R>(
-    ctx: http::Ctx<R>,
+fn commits_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("commits")
         .and(warp::get())
@@ -181,11 +193,13 @@ fn local_state_filter() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 }
 
 /// `GET /revisions/<project_id>`
-fn revisions_filter<R>(
-    ctx: http::Ctx<R>,
+fn revisions_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("revisions")
         .and(warp::get())
@@ -214,9 +228,13 @@ where
 }
 
 /// `GET /tags/<project_id>`
-fn tags_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn tags_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("tags")
         .and(warp::get())
@@ -239,9 +257,13 @@ where
 }
 
 /// `GET /tree/<project_id>/<revision>/<prefix>`
-fn tree_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn tree_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("tree")
         .and(warp::get())
@@ -283,8 +305,8 @@ mod handler {
     use crate::session;
 
     /// Fetch a [`coco::Blob`].
-    pub async fn blob<R>(
-        ctx: http::Ctx<R>,
+    pub async fn blob<R, S>(
+        ctx: http::Ctx<R, S>,
         project_urn: coco::Urn,
         super::BlobQuery {
             path,
@@ -295,6 +317,8 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client + 'static,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
 
@@ -305,7 +329,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 
@@ -322,13 +346,15 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`].
-    pub async fn branches<R>(
-        ctx: http::Ctx<R>,
+    pub async fn branches<R, S>(
+        ctx: http::Ctx<R, S>,
         project_urn: coco::Urn,
         super::BranchQuery { peer_id }: super::BranchQuery,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let branches = ctx.peer_api.with_browser(&project_urn, |browser| {
@@ -339,13 +365,15 @@ mod handler {
     }
 
     /// Fetch a [`coco::Commit`].
-    pub async fn commit<R>(
-        ctx: http::Ctx<R>,
+    pub async fn commit<R, S>(
+        ctx: http::Ctx<R, S>,
         project_urn: coco::Urn,
         sha1: String,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let commit = ctx.peer_api.with_browser(&project_urn, |mut browser| {
@@ -356,13 +384,15 @@ mod handler {
     }
 
     /// Fetch the list of [`coco::Commit`] from a branch.
-    pub async fn commits<R>(
-        ctx: http::Ctx<R>,
+    pub async fn commits<R, S>(
+        ctx: http::Ctx<R, S>,
         project_urn: coco::Urn,
         query: super::CommitsQuery,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let commits = ctx.peer_api.with_browser(&project_urn, |mut browser| {
@@ -380,13 +410,15 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Branch`] and [`coco::Tag`].
-    pub async fn revisions<R>(
-        ctx: http::Ctx<R>,
+    pub async fn revisions<R, S>(
+        ctx: http::Ctx<R, S>,
         owner: coco::User,
         project_urn: coco::Urn,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let peers = ctx.peer_api.tracked(&project_urn)?;
@@ -405,9 +437,14 @@ mod handler {
     }
 
     /// Fetch the list [`coco::Tag`].
-    pub async fn tags<R>(ctx: http::Ctx<R>, project_urn: coco::Urn) -> Result<impl Reply, Rejection>
+    pub async fn tags<R, S>(
+        ctx: http::Ctx<R, S>,
+        project_urn: coco::Urn,
+    ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let tags = ctx
@@ -418,8 +455,8 @@ mod handler {
     }
 
     /// Fetch a [`coco::Tree`].
-    pub async fn tree<R>(
-        ctx: http::Ctx<R>,
+    pub async fn tree<R, S>(
+        ctx: http::Ctx<R, S>,
         project_urn: coco::Urn,
         super::TreeQuery {
             prefix,
@@ -429,6 +466,8 @@ mod handler {
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
 
@@ -436,7 +475,7 @@ mod handler {
         let default_branch = match peer_id {
             Some(peer_id) if peer_id != ctx.peer_api.peer_id() => {
                 git::Branch::remote(project.default_branch(), &peer_id.to_string())
-            },
+            }
             Some(_) | None => git::Branch::local(project.default_branch()),
         };
 

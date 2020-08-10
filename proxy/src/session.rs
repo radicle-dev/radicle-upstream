@@ -73,13 +73,15 @@ pub fn clear_current(store: &kv::Store) -> Result<(), error::Error> {
 ///
 /// Errors if access to the session state fails, or associated data like the [`identity::Identity`]
 /// can't be found.
-pub async fn current<R>(
-    api: &coco::Api,
+pub async fn current<R, S>(
+    api: &coco::Api<S>,
     registry: &R,
     store: &kv::Store,
 ) -> Result<Session, error::Error>
 where
     R: registry::Client,
+    S: coco::Signer + Clone,
+    S::Error: coco::SignError,
 {
     let mut session = get(store, KEY_CURRENT)?;
     session.registration_fee = RegistrationFee {

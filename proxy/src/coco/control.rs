@@ -9,7 +9,7 @@ use librad::meta::project;
 use radicle_surf::vcs::git::git2;
 
 use crate::coco::config;
-use crate::coco::peer::{Api, User};
+use crate::coco::peer::{Api, Signer, User};
 use crate::error;
 
 /// Deletes the local git repsoitory coco uses to keep its state.
@@ -30,7 +30,15 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
 #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
-pub fn setup_fixtures(api: &Api, key: keys::SecretKey, owner: &User) -> Result<(), error::Error> {
+pub fn setup_fixtures<S>(
+    api: &Api<S>,
+    key: keys::SecretKey,
+    owner: &User,
+) -> Result<(), error::Error>
+where
+    S: Signer,
+    S::Error: keys::SignError,
+{
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -66,14 +74,18 @@ pub fn setup_fixtures(api: &Api, key: keys::SecretKey, owner: &User) -> Result<(
 ///
 /// Will return [`error::Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
-pub fn replicate_platinum(
-    api: &Api,
+pub fn replicate_platinum<S>(
+    api: &Api<S>,
     key: &keys::SecretKey,
     owner: &User,
     name: &str,
     description: &str,
     default_branch: &str,
-) -> Result<project::Project<entity::Draft>, error::Error> {
+) -> Result<project::Project<entity::Draft>, error::Error>
+where
+    S: Signer,
+    S::Error: keys::SignError,
+{
     // Craft the absolute path to git-platinum fixtures.
     let mut platinum_path = env::current_dir()?;
     platinum_path.push("../fixtures/git-platinum");
@@ -127,15 +139,19 @@ pub fn replicate_platinum(
 
 /// Create and track a fake peer.
 #[must_use]
-pub fn track_fake_peer(
-    api: &Api,
+pub fn track_fake_peer<S>(
+    api: &Api<S>,
     key: keys::SecretKey,
     project: &project::Project<entity::Draft>,
     fake_user_handle: &str,
 ) -> (
     librad::peer::PeerId,
     librad::meta::entity::Entity<librad::meta::user::UserInfo, librad::meta::entity::Draft>,
-) {
+)
+where
+    S: Signer,
+    S::Error: keys::SignError,
+{
     // TODO(finto): We're faking a lot of the networking interaction here.
     // Create git references of the form and track the peer.
     //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/signed_refs/heads

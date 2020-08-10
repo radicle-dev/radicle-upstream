@@ -5,15 +5,18 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::identity;
 use crate::registry;
 use crate::session;
 
 /// Combination of all session filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     clear_cache_filter(ctx.clone())
         .or(delete_filter(ctx.clone()))
@@ -23,11 +26,13 @@ where
 }
 
 /// `DELETE /cache`
-fn clear_cache_filter<R>(
-    ctx: http::Ctx<R>,
+fn clear_cache_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Cache + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("cache")
         .and(warp::delete())
@@ -44,11 +49,13 @@ where
 }
 
 /// `DELETE /`
-fn delete_filter<R>(
-    ctx: http::Ctx<R>,
+fn delete_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     warp::delete()
         .and(path::end())
@@ -64,9 +71,13 @@ where
 }
 
 /// `GET /`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn get_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     warp::get()
         .and(path::end())
@@ -86,11 +97,13 @@ where
 }
 
 /// `Post /settings`
-fn update_settings_filter<R>(
-    ctx: http::Ctx<R>,
+fn update_settings_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("settings")
         .and(warp::post())
@@ -110,14 +123,17 @@ mod handler {
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
+    use crate::coco;
     use crate::http;
     use crate::registry;
     use crate::session;
 
     /// Clear [`registry::Cache`].
-    pub async fn clear_cache<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn clear_cache<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: registry::Cache,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         ctx.registry.clear()?;
@@ -126,9 +142,11 @@ mod handler {
     }
 
     /// Clear the current [`session::Session`].
-    pub async fn delete<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn delete<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         session::clear_current(&ctx.store)?;
@@ -137,9 +155,11 @@ mod handler {
     }
 
     /// Fetch the [`session::Session`].
-    pub async fn get<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn get<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
 
@@ -149,12 +169,14 @@ mod handler {
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.
-    pub async fn update_settings<R>(
-        ctx: http::Ctx<R>,
+    pub async fn update_settings<R, S>(
+        ctx: http::Ctx<R, S>,
         settings: session::settings::Settings,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         session::set_settings(&ctx.store, settings)?;

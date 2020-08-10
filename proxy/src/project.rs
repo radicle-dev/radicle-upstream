@@ -80,7 +80,11 @@ pub enum Registration {
 }
 
 /// Fetch the project with a given urn from a peer
-pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::Error> {
+pub fn get<S>(api: &coco::Api<S>, project_urn: &coco::Urn) -> Result<Project, error::Error>
+where
+    S: coco::Signer + Clone,
+    S::Error: coco::SignError,
+{
     let project = api.get_project(project_urn)?;
     let stats = api.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
@@ -88,7 +92,11 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
 }
 
 /// Returns a list of `Project`s for your peer.
-pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
+pub fn list_projects<S>(api: &coco::Api<S>) -> Result<Vec<Project>, error::Error>
+where
+    S: coco::Signer + Clone,
+    S::Error: coco::SignError,
+{
     let project_meta = api.list_projects()?;
 
     project_meta

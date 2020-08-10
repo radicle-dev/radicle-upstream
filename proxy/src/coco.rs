@@ -1,5 +1,6 @@
 //! Abstractions and utilities for git interactions through the API.
 pub use librad::hash::Hash;
+pub use librad::keys::{SecretKey, SignError};
 pub use librad::meta::project::Project;
 pub use librad::uri::{self, RadUrn as Urn};
 
@@ -9,7 +10,7 @@ pub use radicle_surf::vcs::git::Stats;
 pub mod config;
 pub mod control;
 mod peer;
-pub use peer::{verify_user, Api, User};
+pub use peer::{verify_user, Api, Signer, User};
 
 mod source;
 pub use source::{

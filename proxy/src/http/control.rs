@@ -4,13 +4,16 @@ use serde::{Deserialize, Serialize};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::registry;
 
 /// Combination of all control filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     create_project_filter(ctx.clone())
         .or(nuke_coco_filter(ctx.clone()))
@@ -20,11 +23,13 @@ where
 }
 
 /// POST /create-project
-fn create_project_filter<R>(
-    ctx: http::Ctx<R>,
+fn create_project_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path!("create-project")
         .and(super::with_context(ctx.clone()))
@@ -34,11 +39,13 @@ where
 }
 
 /// POST /register-user
-fn register_user_filter<R>(
-    ctx: http::Ctx<R>,
+fn register_user_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path!("register-user")
         .and(http::with_context(ctx))
@@ -47,11 +54,13 @@ where
 }
 
 /// GET /nuke/coco
-fn nuke_coco_filter<R>(
-    ctx: http::Ctx<R>,
+fn nuke_coco_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path!("nuke" / "coco")
         .and(super::with_context(ctx))
@@ -59,11 +68,13 @@ where
 }
 
 /// GET /nuke/registry
-fn nuke_registry_filter<R>(
-    ctx: http::Ctx<R>,
+fn nuke_registry_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path!("nuke" / "registry")
         .and(http::with_context(ctx))
@@ -87,13 +98,15 @@ mod handler {
     use crate::registry;
 
     /// Create a project from the fixture repo.
-    pub async fn create_project<R>(
-        ctx: http::Ctx<R>,
+    pub async fn create_project<R, S>(
+        ctx: http::Ctx<R, S>,
         owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
 
@@ -125,12 +138,14 @@ mod handler {
     }
 
     /// Register a user with another key
-    pub async fn register_user<R>(
-        ctx: http::Ctx<R>,
+    pub async fn register_user<R, S>(
+        ctx: http::Ctx<R, S>,
         input: super::RegisterInput,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
 
@@ -153,9 +168,11 @@ mod handler {
     }
 
     /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn nuke_coco<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
@@ -184,9 +201,11 @@ mod handler {
     }
 
     /// Reset the Registry state by replacing the emulator in place.
-    pub async fn nuke_registry<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn nuke_registry<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let (client, _) = radicle_registry_client::Client::new_emulator();
         let mut ctx = ctx.write().await;

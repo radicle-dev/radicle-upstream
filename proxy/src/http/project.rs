@@ -8,14 +8,17 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::project;
 use crate::registry;
 
 /// Combination of all routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     list_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
@@ -25,11 +28,13 @@ where
 }
 
 /// `POST /`
-fn create_filter<R>(
-    ctx: http::Ctx<R>,
+fn create_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx.clone())
         .and(http::with_owner_guard(ctx))
@@ -53,9 +58,13 @@ where
 }
 
 /// `GET /<id>`
-fn get_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn get_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx)
         .and(warp::get())
@@ -83,9 +92,13 @@ where
 }
 
 /// `GET /`
-fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn list_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx)
         .and(warp::get())
@@ -106,11 +119,13 @@ where
 }
 
 /// `GET /discover`
-fn discover_filter<R>(
-    ctx: http::Ctx<R>,
+fn discover_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     path("discover")
         .and(warp::get())
@@ -143,13 +158,15 @@ mod handler {
     use crate::project;
 
     /// Create a new [`project::Project`].
-    pub async fn create<R>(
-        ctx: http::Ctx<R>,
+    pub async fn create<R, S>(
+        ctx: http::Ctx<R, S>,
         owner: coco::User,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
 
@@ -177,9 +194,11 @@ mod handler {
     }
 
     /// Get the [`project::Project`] for the given `id`.
-    pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection>
+    pub async fn get<R, S>(ctx: http::Ctx<R, S>, urn: String) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let urn = urn.parse().map_err(Error::from)?;
         let ctx = ctx.read().await;
@@ -188,9 +207,11 @@ mod handler {
     }
 
     /// List all known projects.
-    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn list<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let projects = project::list_projects(&ctx.peer_api)?;
@@ -199,9 +220,11 @@ mod handler {
     }
 
     /// Get a feed of untracked projects.
-    pub async fn discover<R>(_ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    pub async fn discover<R, S>(_ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let feed = project::discover()?;
 
@@ -259,7 +282,7 @@ impl Serialize for project::Registration {
         match self {
             Self::Org(org_id) => {
                 serializer.serialize_newtype_variant("Registration", 0, "Org", &org_id.to_string())
-            },
+            }
             Self::User(user_id) => serializer.serialize_newtype_variant(
                 "Registration",
                 1,

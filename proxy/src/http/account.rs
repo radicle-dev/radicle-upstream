@@ -4,13 +4,16 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::registry;
 
 /// Prefixed filters.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     exists_filter(ctx.clone())
         .or(get_balance_filter(ctx))
@@ -18,11 +21,13 @@ where
 }
 
 /// `GET /<id>/exists`
-fn exists_filter<R>(
-    ctx: http::Ctx<R>,
+fn exists_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx)
         .and(warp::get())
@@ -44,11 +49,13 @@ where
 }
 
 /// `GET /<id>/balance`
-fn get_balance_filter<R>(
-    ctx: http::Ctx<R>,
+fn get_balance_filter<R, S>(
+    ctx: http::Ctx<R, S>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx)
         .and(warp::get())
@@ -87,17 +94,20 @@ where
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
+    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::registry;
 
     /// Check whether the given account exists on chain
-    pub async fn exists<R>(
-        ctx: http::Ctx<R>,
+    pub async fn exists<R, S>(
+        ctx: http::Ctx<R, S>,
         account_id_string: String,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let account_id: registry::AccountId = match registry::parse_ss58_address(&account_id_string)
@@ -114,12 +124,14 @@ mod handler {
     }
 
     /// Get the [`registry::Balance`] of a given account.
-    pub async fn get_balance<R>(
-        ctx: http::Ctx<R>,
+    pub async fn get_balance<R, S>(
+        ctx: http::Ctx<R, S>,
         account_id_string: String,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let account_id: registry::AccountId = match registry::parse_ss58_address(&account_id_string)

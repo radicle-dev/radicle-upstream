@@ -5,13 +5,16 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::registry;
 
 /// `GET /<id>/status`
-pub fn get_status_filter<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+pub fn get_status_filter<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx)
         .and(warp::get())
@@ -56,14 +59,20 @@ mod handler {
     use std::convert::TryFrom;
     use warp::{reply, Rejection, Reply};
 
+    use crate::coco;
     use crate::error::Error;
     use crate::http;
     use crate::registry;
 
     /// Get the status for the given `id`.
-    pub async fn get_status<R>(ctx: http::Ctx<R>, input: String) -> Result<impl Reply, Rejection>
+    pub async fn get_status<R, S>(
+        ctx: http::Ctx<R, S>,
+        input: String,
+    ) -> Result<impl Reply, Rejection>
     where
         R: registry::Client,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         let ctx = ctx.read().await;
         let id = registry::Id::try_from(input).map_err(Error::from)?;

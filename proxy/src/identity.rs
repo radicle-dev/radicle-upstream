@@ -2,7 +2,6 @@
 
 use serde::{Deserialize, Serialize};
 
-use librad::keys;
 use librad::meta::user;
 use librad::peer;
 
@@ -66,12 +65,12 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub fn create(
-    api: &coco::Api,
-    key: keys::SecretKey,
-    handle: &str,
-) -> Result<Identity, error::Error> {
-    let user = api.init_owner(key, handle)?;
+pub fn create<S>(api: &coco::Api<S>, signer: S, handle: &str) -> Result<Identity, error::Error>
+where
+    S: coco::Signer + Clone,
+    S::Error: coco::SignError,
+{
+    let user = api.init_owner(signer, handle)?;
     Ok((api.peer_id(), user).into())
 }
 
@@ -80,7 +79,11 @@ pub fn create(
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub fn get(api: &coco::Api, id: &coco::Urn) -> Result<Identity, error::Error> {
+pub fn get<S>(api: &coco::Api<S>, id: &coco::Urn) -> Result<Identity, error::Error>
+where
+    S: coco::Signer + Clone,
+    S::Error: coco::SignError,
+{
     let user = api.get_user(id)?;
     Ok((api.peer_id(), user).into())
 }

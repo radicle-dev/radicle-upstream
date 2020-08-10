@@ -6,21 +6,26 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{Filter, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::registry;
 
 /// Combination of all transaction routes.
-pub fn filters<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     list_filter(ctx)
 }
 
 /// `POST /`
-fn list_filter<R>(ctx: http::Ctx<R>) -> BoxedFilter<(impl Reply,)>
+fn list_filter<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Cache + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     http::with_context(ctx)
         .and(warp::post())
@@ -53,16 +58,19 @@ mod handler {
     use std::str::FromStr;
     use warp::{reply, Rejection, Reply};
 
+    use crate::coco;
     use crate::http;
     use crate::registry;
 
     /// List all transactions.
-    pub async fn list<R>(
-        ctx: http::Ctx<R>,
+    pub async fn list<R, S>(
+        ctx: http::Ctx<R, S>,
         input: super::ListInput,
     ) -> Result<impl Reply, Rejection>
     where
         R: registry::Cache,
+        S: coco::Signer,
+        S::Error: coco::SignError,
     {
         // TODO(xla): Don't panic when trying to convert ids.
         let tx_ids = input
