@@ -2,7 +2,6 @@
   import { createEventDispatcher } from "svelte";
   import { location, link } from "svelte-spa-router";
 
-  import { isDev } from "../../../native/ipc.js";
   import * as path from "../../src/path.ts";
 
   import Tooltip from "./Tooltip.svelte";
@@ -165,18 +164,16 @@
         </a>
       </Tooltip>
     </li>
-    {#if isDev()}
-      <li
-        class="item indicator"
-        data-cy="wallet"
-        class:active={path.active(path.profileWallet(), $location)}>
-        <Tooltip value="Wallet">
-          <a href={path.profileWallet()} use:link>
-            <Icon.Fund />
-          </a>
-        </Tooltip>
-      </li>
-    {/if}
+    <li
+      class="item indicator"
+      data-cy="wallet"
+      class:active={path.active(path.profileWallet(), $location)}>
+      <Tooltip value="Wallet">
+        <a href={path.profileWallet()} use:link>
+          <Icon.Fund />
+        </a>
+      </Tooltip>
+    </li>
     <li
       class="item indicator"
       data-cy="settings"
