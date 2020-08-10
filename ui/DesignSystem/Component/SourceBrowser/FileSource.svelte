@@ -61,6 +61,13 @@
   .container {
     display: flex;
   }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 </style>
 
 <div class="file-source" data-cy="file-source">
@@ -98,7 +105,7 @@
           })
           .join('\n')}
       </pre>
-      <pre class="code typo-text-mono">
+      <pre class="code typo-text-mono no-scrollbar">
         {#if blob.html}
           {@html blob.content}
         {:else}{blob.content}{/if}
