@@ -6,7 +6,7 @@ const withEmptyRepositoryStub = callback => {
     const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-repo`;
 
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
-    cy.exec(`mkdir ${emptyDirectoryPath}`);
+    cy.exec(`mkdir -p ${emptyDirectoryPath}`);
 
     // stub native call and return the directory path to the UI
     cy.window().then(appWindow => {

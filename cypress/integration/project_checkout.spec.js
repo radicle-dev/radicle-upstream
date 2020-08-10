@@ -7,7 +7,7 @@ const withWorkspaceStub = callback => {
 
     // Clean up any left-overs from previous failed tests.
     cy.exec(`rm -rf ${checkoutPath}`);
-    cy.exec(`mkdir ${checkoutPath}`);
+    cy.exec(`mkdir -p ${checkoutPath}`);
 
     // Stub Electron native calls
     cy.window().then(appWindow => {
