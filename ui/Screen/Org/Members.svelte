@@ -1,4 +1,5 @@
 <script>
+  import { isDev } from "../../../native/ipc.js";
   import { org as store } from "../../src/org.ts";
 
   import { Icon } from "../../DesignSystem/Primitive";
@@ -78,7 +79,9 @@
             <p class="typo-text-small">Pending</p>
           </div>
         {/if}
-        <AdditionalActionsDropdown menuItems={menuItems(member)} />
+        {#if isDev()}
+          <AdditionalActionsDropdown menuItems={menuItems(member)} />
+        {/if}
       </div>
     </div>
   </List>
