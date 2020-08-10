@@ -1,10 +1,13 @@
 //! Utility to work with the peer api of librad.
 
 use std::convert::TryFrom;
+use std::marker::PhantomData;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
+use librad::git::local::{transport, url::LocalUrl};
+use librad::git::types::{FlatRef, Force, NamespacedRef, remote::Remote};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -13,6 +16,7 @@ use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
+use librad::signer::SomeSigner;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::{self, git2};
 
@@ -40,6 +44,13 @@ impl Api {
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
     {
+        // Register the rad:// transport protocol
+        let settings = transport::Settings {
+            paths: config.paths.clone(),
+            signer: SomeSigner { signer: config.signer.clone() }.into(),
+        };
+        transport::register(settings);
+
         let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
         // publish events.
@@ -271,10 +282,9 @@ impl Api {
             return Err(error::Error::EntityExists(urn));
         }
 
-        setup_repo(&api, path, &urn.id, default_branch)?;
         let repo = storage.create_repo(&meta)?;
         repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
-
+        setup_repo(path, urn.clone(), default_branch)?;
         Ok(meta)
     }
 
@@ -361,9 +371,8 @@ pub fn verify_user(user: user::User<entity::Draft>) -> Result<User, error::Error
 }
 
 fn setup_repo(
-    api: &PeerApi<keys::SecretKey>,
     path: impl AsRef<std::path::Path>,
-    id: &librad::hash::Hash,
+    urn: RadUrn,
     default_branch: &str,
 ) -> Result<(), error::Error> {
     // Check if directory at path is a git repo.
@@ -380,18 +389,18 @@ fn setup_repo(
         };
 
         {
-        let tree = repo.find_tree(tree_id)?;
-        // Normally creating a commit would involve looking up the current HEAD
-        // commit and making that be the parent of the initial commit, but here this
-        // is the first commit so there will be no parent.
-        repo.commit(
-            Some(&format!("refs/heads/{}", default_branch)),
-            &sig,
-            &sig,
-            "Initial commit",
-            &tree,
-            &[],
-        )?;
+            let tree = repo.find_tree(tree_id)?;
+            // Normally creating a commit would involve looking up the current HEAD
+            // commit and making that be the parent of the initial commit, but here this
+            // is the first commit so there will be no parent.
+            repo.commit(
+                Some(&format!("refs/heads/{}", default_branch)),
+                &sig,
+                &sig,
+                "Initial commit",
+                &tree,
+                &[],
+            )?;
         }
 
         Ok(repo)
@@ -399,7 +408,7 @@ fn setup_repo(
 
     // Set up the rad remote if we need to
     if !repo.find_remote("rad").is_ok() {
-        setup_remote(&repo, &api, &id, default_branch)?;
+        setup_remote(&repo, urn, default_branch)?;
     }
 
     Ok(())
@@ -409,8 +418,7 @@ fn setup_repo(
 /// is not managed by git yet we initialise it first.
 fn setup_remote(
     repo: &git2::Repository,
-    peer: &PeerApi<keys::SecretKey>,
-    id: &librad::hash::Hash,
+    urn: RadUrn,
     default_branch: &str,
 ) -> Result<(), error::Error> {
     // TODO(finto): Need to check that Hash is the same for this repository. So basically we
@@ -419,31 +427,47 @@ fn setup_remote(
     if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
         log::error!("error while trying to find default branch: {:?}", err);
         return Err(error::Error::DefaultBranchMissing(
-            id.to_string(),
+            urn.id.to_string(),
             default_branch.to_string(),
         ));
     }
 
-    let monorepo = peer.paths().git_dir().join("");
-    let namespace_prefix = format!("refs/namespaces/{}/refs", id);
-    let mut remote = repo.remote_with_fetch(
-        "rad",
-        &format!(
-            "file://{}",
-            monorepo.display(),
-        ),
-        &format!("+{}/heads/*:refs/heads/*", namespace_prefix),
-    )?;
-    repo.remote_add_push(
-        "rad",
-        &format!("+refs/heads/*:{}/heads/*", namespace_prefix),
-    )?;
-    remote.push(
-        &[&format!(
-            "refs/heads/{}:{}/heads/{}",
-            default_branch, namespace_prefix, default_branch
-        )],
-        None,
+    let working_copy_heads: FlatRef<String, _> = FlatRef::heads(PhantomData, None);
+    let namespace_heads = NamespacedRef::heads(urn.id.clone(), None);
+    let fetch =
+        working_copy_heads
+            .clone()
+            .refspec(namespace_heads.clone(), Force::True);
+    let push =
+        namespace_heads
+            .clone()
+            .refspec(working_copy_heads.clone(), Force::True);
+
+    let url: LocalUrl = urn.clone().into();
+    let mut remote = Remote::rad_remote(url.clone(), fetch.into_dyn());
+    remote.add_pushes(vec![push.into_dyn()].into_iter());
+    let mut git_remote = remote.create(repo)?;
+
+    /* TODO(finto): Pushing isn't working and is possibly failing silently.
+     * When I inspect the monorepo the default branch isn't pushed.
+     * This could be due to the remote helper needing credentials, which I attempted to fix below,
+     * but no luck...
+     */
+    let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
+    let namespace_default = NamespacedRef::head(urn.id, None, default_branch);
+
+    let mut callbacks = git2::RemoteCallbacks::new();
+    callbacks.credentials(|_url, username_from_url, _allowed_types| {
+        git2::Cred::userpass_plaintext(username_from_url.unwrap(), "radicle-upstream")
+    });
+    let mut push_options = git2::PushOptions::new();
+    push_options.remote_callbacks(callbacks);
+
+    git_remote.push(
+        &[&namespace_default
+            .refspec(default, Force::False)
+            .to_string()],
+        Some(&mut push_options),
     )?;
 
     Ok(())
