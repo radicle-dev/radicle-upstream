@@ -1,10 +1,27 @@
 <script>
-  import { Button, Input, Icon, Title } from "../../Primitive";
+  import { push } from "svelte-spa-router";
+  import * as path from "../../../src/path.ts";
+  import {
+    payerStore,
+    recipientStore,
+    amountStore,
+  } from "../../../src/transfer.ts";
+
+  import { Button, Input, Icon } from "../../Primitive";
   import Receive from "./Receive.svelte";
 
   export let accountId = null;
+  export let id = null;
+  let recipient,
+    amount,
+    currentlyActiveSend = true;
 
-  $: currentlyActiveSend = true;
+  const openSendModal = () => {
+    payerStore.set(id);
+    recipientStore.set(recipient);
+    amountStore.set(amount);
+    push(path.sendFunds());
+  };
 </script>
 
 <style>
@@ -23,8 +40,6 @@
     margin: 0;
     background-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-5);
-    font-family: var(--typeface-bold);
-    font-size: 1rem;
     border: 1px solid transparent;
   }
 
@@ -63,6 +78,10 @@
     padding: 1.5rem;
   }
 
+  .send > p {
+    padding-bottom: 0.5rem;
+  }
+
   .submit {
     display: flex;
     flex-direction: row;
@@ -73,6 +92,7 @@
 <div class="send-receive">
   <div class="selector">
     <button
+      class="typo-semi-bold"
       class:active={currentlyActiveSend}
       value="send"
       data-cy="send-tab"
@@ -80,6 +100,7 @@
       Send
     </button>
     <button
+      class="typo-semi-bold"
       class:active={!currentlyActiveSend}
       value="receive"
       data-cy="receive-tab"
@@ -89,12 +110,16 @@
   </div>
   {#if currentlyActiveSend}
     <div class="send" data-cy="send">
-      <Title style="padding-bottom: 0.5rem;">To</Title>
+      <p class="typo-text-bold">To</p>
       <Input.Text
-        placeholder="Enter address or registered handle"
+        dataCy="recipient-input"
+        bind:value={recipient}
+        placeholder="Enter an account address"
         style="flex: 1; padding-bottom: 1rem;" />
-      <Title style="padding-bottom: 0.5rem;">Amount</Title>
+      <p class="typo-text-bold">Amount</p>
       <Input.Text
+        dataCy="amount-input"
+        bind:value={amount}
         placeholder="Enter the amount"
         showLeftItem
         style="flex: 1; padding-bottom: 1rem;">
@@ -105,12 +130,17 @@
         </div>
       </Input.Text>
       <!-- TODO: Add note back in when implemented on registry
-      <Title style="padding-bottom: 0.5rem;">Note</Title>
+      <p class="typo-text-bold">Note</p>
       <Input.Text
         placeholder="Optional message"
         style="flex: 1; padding-bottom: 1rem;" /> -->
       <div class="submit">
-        <Button disabled={true}>Send transaction</Button>
+        <Button
+          dataCy="send-transaction-button"
+          disabled={!recipient || !amount || recipient === '' || amount === ''}
+          on:click={openSendModal}>
+          Send transaction
+        </Button>
       </div>
     </div>
   {:else}

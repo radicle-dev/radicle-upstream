@@ -6,7 +6,7 @@
   import * as notification from "../src/notification.ts";
   import { RegistrationFlowState, register } from "../src/org.ts";
   import { session, fetch as fetchSession } from "../src/session.ts";
-  import { formatPayer, MessageType } from "../src/transaction.ts";
+  import { getPayer, MessageType } from "../src/transaction.ts";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -14,7 +14,7 @@
     ModalLayout,
     Transaction,
   } from "../DesignSystem/Component";
-  import { Avatar, Input, Text, Title } from "../DesignSystem/Primitive";
+  import { Avatar, Input } from "../DesignSystem/Primitive";
 
   let avatarFallback, orgId, payer, showAvatar, subject, transaction;
   let state = RegistrationFlowState.Preparation;
@@ -36,7 +36,7 @@
               },
             ],
           };
-          payer = formatPayer($session.data.identity);
+          payer = getPayer(transaction.messages[0], $session.data);
           state = RegistrationFlowState.Confirmation;
         }
         break;
@@ -105,12 +105,11 @@
 <ModalLayout dataCy="org-registration-modal">
   <div class="wrapper">
     {#if state === RegistrationFlowState.Preparation}
-      <Title variant="big" style="text-align: center;">Org registration</Title>
-      <Text
-        style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
+      <h2 style="text-align: center;">Org registration</h2>
+      <p style="color: var(--color-foreground-level-5); margin: 16px 0 24px 0;">
         Registering an org allows you to give others in your org the right to
         sign transactions, like adding other members or adding projects.
-      </Text>
+      </p>
       <Input.Text
         dataCy="input"
         placeholder="Org name (e.g. flowerpot)"

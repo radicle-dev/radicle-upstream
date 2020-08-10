@@ -28,7 +28,10 @@
     ],
   };
 
-  const payer = transaction.formatPayer(identity);
+  // When registering a user, we don't yet have orgs in the session
+  // as orgs require a registered user. Therefore we can here assume
+  // that the payer is the given identity as it can't be no one else.
+  const payer = transaction.payerFromIdentity(identity);
 </script>
 
 <Transaction transaction={tx} {payer} />

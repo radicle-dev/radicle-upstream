@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { Avatar, Text } from "../../Primitive";
+  import { Avatar } from "../../Primitive";
 
   const dispatch = createEventDispatcher();
 
@@ -50,9 +50,10 @@
       {...avatarProps}
       {disabled} />
   {:else}
-    <Text
-      style={`overflow:hidden; text-overflow: ellipsis; margin: 0 42px  0 12px; color: ${disabledColor}`}>
+    <p
+      class="typo-overflow-ellipses"
+      style={`margin: 0 42px  0 12px; color: ${disabledColor}`}>
       {textProps.title}
-    </Text>
+    </p>
   {/if}
 </div>

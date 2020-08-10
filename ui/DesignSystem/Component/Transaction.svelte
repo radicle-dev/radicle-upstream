@@ -9,15 +9,9 @@
     statusText,
   } from "../../src/transaction.ts";
 
-  import {
-    Avatar,
-    Icon,
-    Numeric,
-    Title,
-    Text,
-  } from "../../DesignSystem/Primitive";
+  import { Avatar, Icon } from "../../DesignSystem/Primitive";
 
-  import Copyable from "../../DesignSystem/Component/Copyable.svelte";
+  import Urn from "../../DesignSystem/Component/Urn.svelte";
 
   import Rad from "./Rad.svelte";
   import Header from "./Transaction/Header.svelte";
@@ -25,10 +19,11 @@
 
   export let transaction = null;
   export let payer = null;
+  export let viewerAccountId = null;
 
   let avatar;
 
-  const subject = formatSubject(transaction.messages[0]);
+  const subject = formatSubject(transaction.messages[0], viewerAccountId);
 
   const updateAvatar = async () => (avatar = await subject.avatarSource);
 
@@ -37,13 +32,17 @@
   $: updateAvatar();
 </script>
 
-<Header {transaction} {avatar} {subject} />
+<style>
+  .row-text {
+    color: var(--color-foreground-level-6);
+  }
+</style>
 
-<Row dataCy="transaction-fee" variant="top" style="">
+<Header {transaction} {avatar} {subject} accountId={viewerAccountId} />
+
+<Row dataCy="transaction-fee" variant="top">
   <div slot="left">
-    <Text variant="regular" style="color:var(--color-foreground-level-6);">
-      Transaction Fee
-    </Text>
+    <p class="row-text">Transaction fee</p>
   </div>
 
   <div slot="right">
@@ -52,11 +51,9 @@
 </Row>
 
 {#if summary.registrationFee}
-  <Row dataCy="registration-fee" variant="middle" style="">
+  <Row dataCy="registration-fee" variant="middle">
     <div slot="left">
-      <Text variant="regular" style="color:var(--color-foreground-level-6);">
-        {formatStake(transaction.messages[0])}
-      </Text>
+      <p class="row-text">{formatStake(transaction.messages[0].type)}</p>
     </div>
 
     <div slot="right">
@@ -67,15 +64,25 @@
   </Row>
 {/if}
 
+{#if summary.transferAmount}
+  <Row dataCy="transfer-amount" variant="middle">
+    <div slot="left">
+      <p class="row-text">Amount</p>
+    </div>
+
+    <div slot="right">
+      <Rad rad={summary.transferAmount.rad} usd={summary.transferAmount.usd} />
+    </div>
+  </Row>
+{/if}
+
 <Row
   dataCy="total"
   variant="bottom"
   style="margin-bottom: 24px; border-top: 1px solid
   var(--color-foreground-level-2); ">
   <div slot="left">
-    <Title style="color: var(--color-foreground-level-6);" variant="medium">
-      Total
-    </Title>
+    <p class="typo-text-bold">Total</p>
   </div>
 
   <div slot="right">
@@ -86,29 +93,18 @@
 {#if transaction.id}
   <Row variant="top">
     <div slot="left">
-      <Text variant="regular" style="color:var(--color-foreground-level-6);">
-        Transaction ID
-      </Text>
+      <p class="row-text">Transaction ID</p>
     </div>
     <div slot="right">
-      <Copyable
-        style="background:var(--color-foreground-level-2); border-radius:2px;
-        display:flex; align-items: center; padding: 4px;">
-        <Numeric
-          variant="small"
-          style="color: var(--color-foreground-level-6); max-width: 24ch;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          {transaction.id}
-        </Numeric>
-      </Copyable>
+      <Urn
+        urn={transaction.id}
+        notificationText="The transaction ID is copied to your clipboard" />
     </div>
   </Row>
 
   <Row variant="bottom" style="margin-bottom: 24px;">
     <div slot="left">
-      <Text variant="regular" style="color:var(--color-foreground-level-6);">
-        Status
-      </Text>
+      <p class="row-text">Status</p>
     </div>
     <div slot="right" style="display: flex; align-items: center;">
       {#if iconState(transaction.state) === 'negative'}
@@ -125,23 +121,19 @@
           variant="small"
           state={iconState(transaction.state)} />
       {/if}
-      <Text style="align-self: center; color: var(--color-foreground-level-6);">
-        {statusText(transaction.state)}
-      </Text>
+      <p style="align-self: center;">{statusText(transaction.state)}</p>
     </div>
   </Row>
 {/if}
 
-<Row style="">
+<Row>
   <div slot="left">
-    <Text style="color: var(--color-foreground-level-6);" variant="regular">
-      Funding source
-    </Text>
+    <p class="row-text">Funding source</p>
   </div>
 
   <div slot="right">
     <Avatar
-      dataCy="payer-avatar"
+      dataCy="funding-source"
       title={payer.name}
       imageUrl={payer.imageUrl}
       avatarFallback={payer.avatarFallback}

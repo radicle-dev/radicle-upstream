@@ -1,5 +1,5 @@
 <script>
-  import { Title, Icon } from "../../Primitive";
+  import { Icon } from "../../Primitive";
 
   export let file = null;
 
@@ -123,41 +123,39 @@
   td.diff-line-number {
     color: var(--color-foreground-level-4);
   }
-
-  td.diff-expand-header,
-  td.diff-expand-action,
-  td.diff-line-type,
-  td.diff-line-content,
-  td.diff-line-number {
-    font-family: var(--typeface-mono-regular);
-  }
 </style>
 
 <article class="changeset-file">
   <header>
     <Icon.File style="margin-right: 8px;" />
-    <Title>{file.path}</Title>
+    <p class="typo-text-bold">{file.path}</p>
   </header>
   <main>
     {#if file.diff.type == 'plain' && file.diff.hunks.length > 0}
       <table class="diff">
         {#each file.diff.hunks as hunk}
           <tr class="diff-line">
-            <td colspan="2" class="diff-expand-action" />
-            <td colspan="2" class="diff-expand-header">{hunk.header}</td>
+            <td colspan="2" class="diff-expand-action typo-mono" />
+            <td colspan="2" class="diff-expand-header typo-mono">
+              {hunk.header}
+            </td>
           </tr>
           {#each hunk.lines as line}
             <tr class="diff-line" data-expanded data-type={lineType(line)}>
-              <td class="diff-line-number left" data-type={lineType(line)}>
+              <td
+                class="diff-line-number typo-mono left"
+                data-type={lineType(line)}>
                 {lineNumberL(line)}
               </td>
-              <td class="diff-line-number right" data-type={lineType(line)}>
+              <td
+                class="diff-line-number typo-mono right"
+                data-type={lineType(line)}>
                 {lineNumberR(line)}
               </td>
-              <td class="diff-line-type" data-type={line.type}>
+              <td class="diff-line-type typo-mono" data-type={line.type}>
                 {lineType(line)}
               </td>
-              <td class="diff-line-content">{line.line}</td>
+              <td class="diff-line-content typo-mono">{line.line}</td>
             </tr>
           {/each}
         {/each}

@@ -393,7 +393,7 @@ context("source code browsing", () => {
           cy.contains("bin / ls").should("exist");
 
           // it instead shows a message
-          cy.contains("Binary content.").should("exist");
+          cy.contains("Binary content").should("exist");
         });
       });
     });

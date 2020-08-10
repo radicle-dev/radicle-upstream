@@ -1,5 +1,5 @@
 <script>
-  import { Avatar, Button, Text, Input } from "../../DesignSystem/Primitive";
+  import { Avatar, Button, Input } from "../../DesignSystem/Primitive";
 
   export let style = null;
   export let user = null;
@@ -32,11 +32,11 @@
   <section>
     <Input.Textarea placeholder="Leave a comment" style="flex: 1" />
     <div class="comment-meta">
-      <Text
-        variant="tiny"
+      <p
+        class="typo-text-small"
         style="margin-left: 12px; color: var(--color-foreground-level-4);">
         Markdown supported
-      </Text>
+      </p>
       <div class="actions">
         <Button variant="vanilla">Close Issue</Button>
         <Button style="margin-left: 16px;">Comment</Button>

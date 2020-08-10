@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { Button, Icon, Text } from "../Primitive";
+  import { Button, Icon } from "../Primitive";
 
   const dispatch = createEventDispatcher();
 
@@ -29,6 +29,10 @@
     max-width: 20rem;
     margin: 0 auto;
   }
+  .text {
+    margin: 1.5rem 0;
+    color: var(--color-foreground-level-6);
+  }
   button {
     color: var(--color-foreground-level-5);
     text-decoration: underline;
@@ -49,9 +53,7 @@
 
 <div class="empty-state" data-cy="empty-state" {style}>
   <Icon.EmptyState variant={icon} />
-  <Text style="margin: 1.5rem 0; color: var(--color-foreground-level-6);">
-    {text}
-  </Text>
+  <p class="text">{text}</p>
   {#if primaryActionText !== null}
     <Button
       dataCy="primary-action"
@@ -62,7 +64,7 @@
   {/if}
   {#if secondaryActionText !== null}
     <button data-cy="secondary-action" on:click={() => onSecondaryAction()}>
-      <Text>{secondaryActionText}</Text>
+      <p>{secondaryActionText}</p>
     </button>
   {/if}
 </div>

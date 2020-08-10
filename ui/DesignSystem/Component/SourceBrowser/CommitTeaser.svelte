@@ -3,9 +3,7 @@
 
   import * as path from "../../../src/path.ts";
 
-  import { Text, Icon } from "../../Primitive";
-
-  import UserCard from "../UserCard.svelte";
+  import { Icon } from "../../Primitive";
 
   export let projectId = null;
   export let commitMessage = null;
@@ -48,9 +46,8 @@
   }
 
   .commit-sha {
-    color: var(--color-secondary);
-    font-family: var(--typeface-mono-bold);
     padding: 0 8px 0 4px;
+    color: var(--commit-sha-color, var(--color-secondary));
   }
 </style>
 
@@ -58,18 +55,22 @@
   <div class="align-left">
     <Icon.Commit style="fill: var(--color-secondary)" />
     <a
-      class="commit-sha"
+      class="commit-sha typo-text-small-mono"
       href={path.projectCommit(projectId, commitSha)}
       use:link>
       {commitSha.substring(0, 7)}
     </a>
-    <p class="commit-message">{commitMessage}</p>
+    <p class="commit-message typo-text-small">{commitMessage}</p>
   </div>
 
   <div class="align-right">
-    <UserCard
-      {user}
-      style="margin-right: 8px; color: var(--color-foreground-level-6)" />
-    <Text style="color: var(--color-foreground-level-6)">{timestamp}</Text>
+    <p
+      class="typo-text-small-bold"
+      style="margin-right: 8px; color: var(--color-foreground-level-6)">
+      {user.username}
+    </p>
+    <p class="typo-text-small" style="color: var(--color-foreground-level-6)">
+      {timestamp}
+    </p>
   </div>
 </div>

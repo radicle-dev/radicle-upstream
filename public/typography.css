@@ -1,0 +1,133 @@
+/* Headers */
+
+h1,
+.typo-header-1 {
+  font-family: var(--typeface-bold);
+  font-size: 36px;
+  line-height: 44px;
+}
+
+h2,
+.typo-header-2 {
+  font-family: var(--typeface-bold);
+  font-size: 24px;
+  line-height: 30px;
+}
+
+h3,
+.typo-header-3 {
+  font-family: var(--typeface-bold);
+  font-size: 20px;
+  line-height: 24px;
+}
+
+h4,
+.typo-header-4 {
+  font-family: var(--typeface-bold);
+  font-size: 16px;
+  line-height: 22.5px;
+}
+
+h5,
+.typo-header-5 {
+  font-family: var(--typeface-medium);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
+
+/* paragraph */
+
+p,
+.typo-text {
+  font-family: var(--typeface-regular);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.typo-text-bold {
+  font-family: var(--typeface-medium);
+  font-size: 16px;
+}
+
+.typo-text-mono {
+  font-family: var(--typeface-mono-regular);
+  font-size: 16px;
+}
+
+.typo-text-mono-bold {
+  font-family: var(--typeface-mono-medium);
+  font-size: 16px;
+}
+
+.typo-text-small {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.typo-text-small-bold {
+  font-family: var(--typeface-medium);
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.typo-text-small-mono {
+  font-family: var(--typeface-mono-medium);
+  font-size: 14px;
+}
+
+/* Links */
+
+.typo-link {
+  color: var(--color-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.typo-link:hover,
+.typo-link:focus {
+  color: var(--color-secondary-level-2);
+}
+
+.typo-link:active {
+  color: var(--color-secondary-level-6);
+}
+
+/* Modifiers */
+
+.typo-regular {
+  font-family: var(--typeface-regular);
+}
+
+.typo-semi-bold {
+  font-family: var(--typeface-medium);
+}
+
+.typo-bold {
+  font-family: var(--typeface-bold);
+}
+
+.typo-mono {
+  font-family: var(--typeface-mono-regular);
+}
+
+.typo-mono-semi-bold {
+  font-family: var(--typeface-mono-medium);
+}
+
+.typo-mono-bold {
+  font-family: var(--typeface-mono-bold);
+}
+
+.typo-overflow-ellipses {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.typo-all-caps {
+  font-family: var(--typeface-medium);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}

@@ -2,7 +2,7 @@
   import { projects as store, fetch } from "../src/discovery";
 
   import { Remote, SidebarLayout } from "../DesignSystem/Component";
-  import { Icon, Input, Title } from "../DesignSystem/Primitive";
+  import { Icon, Input } from "../DesignSystem/Primitive";
 
   import Project from "./Discovery/Project.svelte";
 
@@ -26,7 +26,7 @@
 
 <SidebarLayout>
   <div class="container">
-    <Title variant="huge" style="margin-bottom: 32px;">Discover</Title>
+    <h1 style="margin-bottom: 32px;">Discover</h1>
 
     <div class="projects">
       <Input.Text

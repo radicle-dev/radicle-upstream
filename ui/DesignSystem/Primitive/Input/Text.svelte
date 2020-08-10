@@ -1,5 +1,4 @@
 <script>
-  import Text from "../Text.svelte";
   import Icon from "../Icon";
 
   import { ValidationStatus } from "../../../src/validation.ts";
@@ -76,6 +75,11 @@
     margin-left: 12px;
   }
 
+  .validation-row p {
+    color: var(--color-negative);
+    text-align: left;
+  }
+
   .left-item-wrapper {
     align-items: center;
     display: flex;
@@ -122,9 +126,7 @@
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
       <div class="validation-row">
-        <Text style="color: var(--color-negative); text-align: left;">
-          {validation.message}
-        </Text>
+        <p>{validation.message}</p>
       </div>
     {/if}
   {/if}

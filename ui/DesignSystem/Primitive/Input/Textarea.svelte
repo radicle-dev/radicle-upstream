@@ -1,5 +1,4 @@
 <script>
-  import Text from "../Text.svelte";
   import Icon from "../Icon";
 
   import { ValidationStatus } from "../../../src/validation.ts";
@@ -50,8 +49,7 @@
     color: var(--color-foreground-level-5);
   }
 
-  textarea:focus,
-  textarea:hover {
+  textarea:focus {
     min-height: 98px;
     outline: none;
     border: 1px solid
@@ -78,6 +76,10 @@
     align-items: center;
     margin-top: 12px;
     margin-left: 12px;
+  }
+  .validation-row p {
+    color: var(--color-negative);
+    text-align: left;
   }
 </style>
 
@@ -107,9 +109,7 @@
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: 8px; right: 10px;" />
       <div class="validation-row">
-        <Text style="color: var(--color-negative); text-align: left;">
-          {validation.message}
-        </Text>
+        <p>{validation.message}</p>
       </div>
     {/if}
   {/if}

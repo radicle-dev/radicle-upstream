@@ -1,4 +1,6 @@
 <script>
+  import { link } from "svelte-spa-router";
+
   import {
     clear,
     clearCache,
@@ -9,8 +11,9 @@
     updateRegistry,
   } from "../src/session.ts";
   import { networkOptions, themeOptions } from "../src/settings.ts";
+  import * as path from "../src/path.ts";
 
-  import { Button, Input, Text, Title } from "../DesignSystem/Primitive";
+  import { Button, Input } from "../DesignSystem/Primitive";
   import { SidebarLayout, SegmentedControl } from "../DesignSystem/Component";
 
   let seedInputValue = $settings.coco.seeds.join("\n");
@@ -44,17 +47,10 @@
     justify-content: space-between;
   }
 
-  section header a {
-    color: var(--color-secondary);
-  }
-
-  section header a:hover {
-    text-decoration: underline;
-  }
-
   .section-item {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 1rem;
     align-items: center;
     margin-bottom: 24px;
     padding: 0 12px;
@@ -66,30 +62,43 @@
 
   .action {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-left: 16px;
+  }
+
+  .title {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    align-items: flex-end;
+    padding: 0 0.75rem;
   }
 </style>
 
 <SidebarLayout dataCy="page">
   <div class="container">
-    <Title style="margin-bottom: 32px;" variant="huge">Settings</Title>
+    <div class="title">
+      <h1>Settings</h1>
+      <a class="typo-link" href={path.shortcuts()} use:link>
+        Keyboard shortcuts
+      </a>
+    </div>
 
     <section>
       <header>
-        <Title variant="large">Version</Title>
+        <h3>Version</h3>
       </header>
       <div class="section-item">
         <div class="info">
-          <Text style="color: var(--color-foreground-level-6);">
+          <p style="color: var(--color-foreground-level-6);">
             Version 01.45.02
-          </Text>
+          </p>
         </div>
         <div class="action">
-          <Text style="color: var(--color-foreground-level-6);">
+          <p style="color: var(--color-foreground-level-6);">
             There’s a new version of Radicle Upstream
-          </Text>
+          </p>
           <Button style="margin-left: 16px;">Update to Version 01.45.03</Button>
         </div>
       </div>
@@ -97,11 +106,11 @@
 
     <section>
       <header>
-        <Title variant="large">Appearance</Title>
+        <h3>Appearance</h3>
       </header>
       <div class="section-item">
         <div class="info">
-          <Text variant="medium">Theme</Text>
+          <p class="typo-text-bold">Theme</p>
         </div>
         <div class="action">
           <SegmentedControl
@@ -114,22 +123,25 @@
 
     <section>
       <header>
-        <Title variant="large">Seeds</Title>
+        <h3>Seeds</h3>
         <!-- TODO(sos): link to actual docs abt seeds -->
-        <a href="link/to/docs">Learn about seeds</a>
+        <a class="typo-link" href="link/to/docs">Learn about seeds</a>
       </header>
       <div class="section-item" style="align-items: flex-start;">
         <div class="info">
-          <Text variant="medium">
+          <p class="typo-text-bold">
             Seeds help you see more projects and people on the network
-          </Text>
-          <Text
+          </p>
+          <p
             style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
             Have some seed addresses you’d like to join? Enter them here and new
             projects from the seeds you’re subscribed to will appear in the
             Discover page.
-          </Text>
+          </p>
+        </div>
+        <div class="action">
           <Input.Textarea
+            style="flex: 1; height: 6rem;"
             bind:value={seedInputValue}
             on:change={updateSeeds}
             placeholder="Enter seeds here" />
@@ -139,11 +151,11 @@
 
     <section>
       <header>
-        <Title variant="large">Registry</Title>
+        <h3>Registry</h3>
       </header>
       <div class="section-item">
         <div class="info">
-          <Text variant="medium">Network</Text>
+          <p class="typo-text-bold">Network</p>
         </div>
         <div class="action">
           <SegmentedControl
@@ -156,14 +168,14 @@
 
     <section>
       <header>
-        <Title variant="large">Session management</Title>
+        <h3>Session management</h3>
       </header>
       <div class="section-item">
         <div class="info">
-          <Text variant="medium">Clear local cache</Text>
-          <Text style="color: var(--color-foreground-level-6);">
+          <p class="typo-text-bold">Clear local cache</p>
+          <p style="color: var(--color-foreground-level-6);">
             Removes all locally-stored temporary data from your device.
-          </Text>
+          </p>
         </div>
         <div class="action">
           <Button
@@ -176,11 +188,11 @@
       </div>
       <div class="section-item">
         <div class="info">
-          <Text variant="medium">Clears all authentication data</Text>
-          <Text style="color: var(--color-foreground-level-6);">
+          <p class="typo-text-bold">Clears all authentication data</p>
+          <p style="color: var(--color-foreground-level-6);">
             This is similar to how logout works. You will have to create a new
             identity or restore your existing identity.
-          </Text>
+          </p>
         </div>
         <div class="action">
           <Button
@@ -195,33 +207,33 @@
 
     <section>
       <header>
-        <Title variant="large">Legal</Title>
+        <h3>Legal</h3>
       </header>
       <div class="section-item">
         <div class="info">
-          <Text variant="medium">Twemoji</Text>
-          <Text style="color: var(--color-foreground-level-6);">
+          <p class="typo-text-bold">Twemoji</p>
+          <p style="color: var(--color-foreground-level-6);">
             Copyright 2020 Twitter, Inc and other contributors. Licensed under
             CC-BY 4.0.
-          </Text>
+          </p>
         </div>
       </div>
       <div class="section-item">
         <div class="info">
-          <Text variant="medium">Inter</Text>
-          <Text style="color: var(--color-foreground-level-6);">
+          <p class="typo-text-bold">Inter</p>
+          <p style="color: var(--color-foreground-level-6);">
             Inter font by Rasmus Andersson licensed under the SIL Open Font
             License 1.1.
-          </Text>
+          </p>
         </div>
       </div>
       <div class="section-item">
         <div class="info">
-          <Text variant="medium">Source Code Pro</Text>
-          <Text style="color: var(--color-foreground-level-6);">
+          <p class="typo-text-bold">Source Code Pro</p>
+          <p style="color: var(--color-foreground-level-6);">
             Source Code Pro font by Adobe Fonts distributed under the SIL Open
             Font License.
-          </Text>
+          </p>
         </div>
       </div>
     </section>

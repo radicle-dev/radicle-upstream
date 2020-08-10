@@ -10,14 +10,7 @@
   import { getValidationState } from "../src/validation.ts";
   import { fetch as fetchSession } from "../src/session.ts";
 
-  import {
-    Button,
-    Flex,
-    Icon,
-    Input,
-    Text,
-    Title,
-  } from "../DesignSystem/Primitive";
+  import { Button, Flex, Icon, Input } from "../DesignSystem/Primitive";
   import {
     Dropdown,
     ModalLayout,
@@ -258,9 +251,7 @@
 <ModalLayout dataCy="page">
   <div class="wrapper" data-cy="create-project">
     <div class="create-project">
-      <Title variant="big" style="margin-bottom: 32px;">
-        Create a new project
-      </Title>
+      <h2 style="margin-bottom: 32px;">Create a new project</h2>
 
       <Input.Text
         placeholder="Project name*"
@@ -274,9 +265,11 @@
         placeholder="Project description"
         bind:value={description} />
 
-      <Title style="margin: 16px 0 12px 16px; text-align: left">
+      <p
+        class="typo-text-bold"
+        style="margin: 16px 0 12px 16px; text-align: left">
         Select one:
-      </Title>
+      </p>
 
       <div class="radio-selector">
         <RadioOption
@@ -285,11 +278,11 @@
           on:click={() => (currentSelection = NEW)}
           dataCy="new-project">
           <div slot="option-body">
-            <Text
+            <p
               style="margin-bottom: 12px; color:
               var(--color-foreground-level-6); text-align: left">
               Choose where you'd like to create the repository
-            </Text>
+            </p>
             <Input.Directory
               placeholder="~/path/to/folder"
               validation={newRepositoryPathValidation}
@@ -303,21 +296,21 @@
           on:click={() => (currentSelection = EXISTING)}
           dataCy="existing-project">
           <div slot="option-body">
-            <Text
+            <p
               style="margin-bottom: 12px; color:
               var(--color-foreground-level-6); text-align:left">
               Choose an existing repository
-            </Text>
+            </p>
             <Input.Directory
               placeholder="~/path/to/folder"
               validation={existingRepositoryPathValidation}
               bind:path={existingRepositoryPath} />
             <div class="default-branch-row">
-              <Text
+              <p
                 style="margin-right: 16px; color:
                 var(--color-foreground-level-6)">
                 Default branch
-              </Text>
+              </p>
               {#if localState.branches && localState.branches.length > 0}
                 <Dropdown
                   style="max-width: 22.9rem;"
@@ -341,19 +334,19 @@
         <div class="validation-row">
           <Icon.Important
             style="margin-right: 8px;fill: var(--color-negative)" />
-          <Title style="color: var(--color-negative)">
+          <p class="typo-text-bold" style="color: var(--color-negative)">
             {validations.currentSelection[0]}
-          </Title>
+          </p>
         </div>
       {/if}
 
       <Flex style="margin-top: 32px">
         <div slot="left">
-          <Text
-            variant="tiny"
+          <p
+            class="typo-text-small"
             style="color: var(--color-foreground-level-5); padding-left: 15px;">
             * required
-          </Text>
+          </p>
         </div>
         <div slot="right">
           <div class="double-button">
