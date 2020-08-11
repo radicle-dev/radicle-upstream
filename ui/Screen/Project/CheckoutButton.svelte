@@ -24,6 +24,12 @@
   };
 
   let checkoutDirectoryPath;
+
+  let showHint = true;
+
+  const hideHint = () => {
+    showHint = false;
+  };
 </script>
 
 <style>
@@ -32,19 +38,29 @@
     top: 3.25rem;
     right: 0;
     position: absolute;
-    border-radius: 4px;
+    border-radius: 8px;
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
     box-shadow: var(--elevation-medium);
     padding: 1rem;
+    width: 22.8rem;
   }
+
   p {
     color: var(--color-foreground-level-6);
     user-select: none;
   }
 
   .info {
-    margin: 0.5rem 0 1rem;
+    margin-top: 1rem;
+    background-color: var(--color-foreground-level-1);
+    border-radius: 4px;
+    padding: 0.5rem;
+  }
+
+  .close-hint-button {
+    float: right;
+    cursor: pointer;
   }
 </style>
 
@@ -60,14 +76,16 @@
     placeholder="~/path/to/folder"
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
-  <div class="info">
-    <p
-      style="margin-bottom: 0.25rem; color: var(--color-foreground-level-5);"
-      class="typo-text-small">
-      Add this to your shell for the git integration to work:
+  <div class="info" hidden={!showHint} on:click={hideHint}>
+    <div class="close-hint-button">
+      <Icon.Cross variant="small" />
+    </div>
+    <p style="margin-bottom: 0.75rem; color: display: flex;">
+      To checkout projects, you first need to add this to your shell
+      configuration:
     </p>
     <Copyable>
-      <p class="typo-text-small-mono">export PATH=$PATH:~/.radicle/bin</p>
+      <p class="typo-text-small-mono">export PATH="~/.radicle/bin:$PATH"</p>
     </Copyable>
   </div>
 
@@ -82,7 +100,7 @@
       }}
       disabled={!checkoutDirectoryPath}
       variant="secondary"
-      style="width: 100%; display: block; text-align: center;">
+      style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
       Checkout
     </Button>
   </Tooltip>
