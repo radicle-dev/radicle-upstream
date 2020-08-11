@@ -40,13 +40,9 @@ pub enum Error {
     #[error("the identity '{0}' already exits")]
     EntityExists(coco::Urn),
 
-    /// Configured default branch for the project is missing.
-    #[error("repository '{0}' doesn't have the configured default branch '{1}'")]
-    DefaultBranchMissing(String, String),
-
-    /// Repository already has a 'rad' remote.
-    #[error("repository '{0}' has already been setup with a 'rad' remote")]
-    RadRemoteExists(String),
+    /// Failed to create a librad project.
+    #[error(transparent)]
+    ProjectCreation(#[from] coco::project::Error),
 
     /// FileSystem errors from interacting with code in repository.
     #[error(transparent)]

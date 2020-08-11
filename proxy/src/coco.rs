@@ -11,6 +11,9 @@ pub mod control;
 mod peer;
 pub use peer::{verify_user, Api, User};
 
+pub mod project;
+pub use project::{ProjectCreation, RepoCreation};
+
 mod source;
 pub use source::{
     blob, branches, commit, commit_header, commits, into_branch_type, local_state, revisions, tags,
