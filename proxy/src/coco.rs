@@ -12,7 +12,6 @@ mod peer;
 pub use peer::{verify_user, Api, User};
 
 pub mod project;
-pub use project::{ProjectCreation, RepoCreation};
 
 mod source;
 pub use source::{

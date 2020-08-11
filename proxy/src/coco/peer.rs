@@ -16,7 +16,7 @@ use librad::peer::PeerId;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git;
 
-use crate::coco::project::ProjectCreation;
+use crate::coco;
 use crate::error;
 use crate::project::Project;
 
@@ -259,7 +259,7 @@ impl Api {
         &self,
         key: &keys::SecretKey,
         owner: &User,
-        project: ProjectCreation<P>,
+        project: coco::project::Create<P>,
     ) -> Result<project::Project<entity::Draft>, error::Error> {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
@@ -391,27 +391,27 @@ mod test {
 
     use crate::coco::config;
     use crate::coco::control;
-    use crate::coco::project::{ProjectCreation, RepoCreation};
+    use crate::coco::project;
     use crate::error::Error;
 
     use super::Api;
 
-    fn fakie_project(path: PathBuf) -> ProjectCreation<PathBuf> {
-        ProjectCreation {
-            repo_creation: RepoCreation::New {
+    fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
+        project::Create {
+            repo: project::Repo::New {
                 path,
-                name: "fakie-nose-kickflip-backside-180-to-handplant".to_string()
+                name: "fakie-nose-kickflip-backside-180-to-handplant".to_string(),
             },
             description: "rad git tricks".to_string(),
             default_branch: "dope".to_string(),
         }
     }
 
-    fn radicle_project(path: PathBuf) -> ProjectCreation<PathBuf> {
-        ProjectCreation {
-            repo_creation: RepoCreation::New {
+    fn radicle_project(path: PathBuf) -> project::Create<PathBuf> {
+        project::Create {
+            repo: project::Repo::New {
                 path,
-                name: "radicalise".to_string()
+                name: "radicalise".to_string(),
             },
             description: "the people".to_string(),
             default_branch: "power".to_string(),
@@ -440,8 +440,7 @@ mod test {
         let api = Api::new(config).await?;
 
         let user = api.init_owner(key.clone(), "cloudhead")?;
-        let project =
-            api.init_project(&key, &user, radicle_project(repo_path.clone()));
+        let project = api.init_project(&key, &user, radicle_project(repo_path.clone()));
 
         assert!(project.is_ok());
         assert!(repo_path.join("radicalise").exists());
@@ -459,8 +458,7 @@ mod test {
         let api = Api::new(config).await?;
 
         let user = api.init_owner(key.clone(), "cloudhead")?;
-        let project =
-            api.init_project(&key, &user, radicle_project(repo_path.clone()));
+        let project = api.init_project(&key, &user, radicle_project(repo_path.clone()));
 
         assert!(project.is_ok());
         assert!(repo_path.exists());
@@ -500,8 +498,7 @@ mod test {
 
         let user = api.init_owner(key.clone(), "cloudhead")?;
         let project_creation = radicle_project(repo_path.clone());
-        let project =
-            api.init_project(&key, &user, project_creation.clone())?;
+        let project = api.init_project(&key, &user, project_creation.clone())?;
 
         let err = api.init_project(&key, &user, project_creation.into_existing());
 
@@ -532,11 +529,7 @@ mod test {
 
         let kalt = api.init_user(key.clone(), "kalt")?;
         let kalt = super::verify_user(kalt)?;
-        let fakie = api.init_project(
-            &key,
-            &kalt,
-            fakie_project(repo_path)
-        )?;
+        let fakie = api.init_project(&key, &kalt, fakie_project(repo_path))?;
 
         let projects = api.list_projects()?;
         let mut project_names = projects

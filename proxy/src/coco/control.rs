@@ -10,9 +10,9 @@ use librad::meta::entity;
 use librad::meta::project;
 use radicle_surf::vcs::git::git2;
 
+use crate::coco;
 use crate::coco::config;
 use crate::coco::peer::{Api, User};
-use crate::coco::project::{ProjectCreation, RepoCreation};
 use crate::error;
 
 /// Deletes the local git repsoitory coco uses to keep its state.
@@ -84,10 +84,10 @@ pub fn replicate_platinum(
 
     clone_platinum(&platinum_into)?;
 
-    let project_creation = ProjectCreation {
+    let project_creation = coco::project::Create {
         description: description.to_string(),
         default_branch: default_branch.to_string(),
-        repo_creation: RepoCreation::Existing {
+        repo: coco::project::Repo::Existing {
             path: platinum_into.clone(),
         },
     };
@@ -124,10 +124,14 @@ pub fn replicate_platinum(
 }
 
 /// Craft the absolute path to git-platinum fixtures.
+///
+/// # Errors
+///
+///   * Failed to get current directory
 pub fn platinum_directory() -> io::Result<path::PathBuf> {
     let mut platinum_path = env::current_dir()?;
     platinum_path.push("../fixtures/git-platinum");
-    Ok(path::Path::new("file://").join(platinum_path).to_path_buf())
+    Ok(path::Path::new("file://").join(platinum_path))
 }
 
 /// Create and track a fake peer.
@@ -214,6 +218,16 @@ pub fn track_fake_peer(
 
 /// This function exists as a standalone because the logic does not play well with async in
 /// `replicate_platinum`.
+///
+/// # Errors
+///
+///   * Cloning the repository failed
+///   * We could not fetch branches
+///
+/// # Panics
+///
+///   * The platinum directory path was malformed
+///   * Getting the branches fails
 pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), error::Error> {
     let platinum_from = platinum_directory()?;
     let platinum_from = platinum_from
@@ -226,8 +240,7 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), error
         .branch("master")
         .clone_local(git2::build::CloneLocal::Auto)
         .fetch_options(fetch_options)
-        .clone(platinum_from, platinum_into.as_ref())
-        .expect("unable to clone fixtures repo");
+        .clone(platinum_from, platinum_into.as_ref())?;
 
     {
         let branches = platinum_repo.branches(Some(git2::BranchType::Remote))?;

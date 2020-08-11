@@ -120,7 +120,7 @@ mod handler {
     pub async fn create<R>(
         ctx: http::Ctx<R>,
         owner: coco::User,
-        input: coco::ProjectCreation<PathBuf>,
+        input: coco::project::Create<PathBuf>,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
@@ -129,11 +129,7 @@ mod handler {
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
 
-        let meta = ctx.peer_api.init_project(
-            &key,
-            &owner,
-            input,
-        )?;
+        let meta = ctx.peer_api.init_project(&key, &owner, input)?;
         let urn = meta.urn();
 
         let stats = ctx
@@ -408,10 +404,10 @@ mod test {
 
         session::set_identity(&ctx.store, id.clone())?;
 
-        let project = coco::ProjectCreation {
-            repo_creation: coco::RepoCreation::New {
+        let project = coco::project::Create {
+            repo: coco::project::Repo::New {
                 path: dir.path(),
-                name: "Upstream".to_string()
+                name: "Upstream".to_string(),
             },
             description: "Desktop client for radicle.".into(),
             default_branch: "master".into(),
@@ -452,7 +448,6 @@ mod test {
 
     #[tokio::test]
     async fn create_existing() -> Result<(), error::Error> {
-        pretty_env_logger::init();
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
@@ -467,8 +462,10 @@ mod test {
 
         session::set_identity(&ctx.store, id.clone())?;
 
-        let project = coco::ProjectCreation {
-            repo_creation: coco::RepoCreation::Existing { path: repo_path.clone() },
+        let project = coco::project::Create {
+            repo: coco::project::Repo::Existing {
+                path: repo_path.clone(),
+            },
             description: "Desktop client for radicle.".into(),
             default_branch: "master".into(),
         };

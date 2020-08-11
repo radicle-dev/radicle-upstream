@@ -12,6 +12,7 @@ use radicle_surf::vcs::git::git2;
 
 use crate::coco::User;
 
+/// The default name for a user's remote, which is `"rad"`.
 const RAD_REMOTE: &str = "rad";
 
 /// Errors that can occur during project creation.
@@ -47,7 +48,7 @@ pub enum Error {
 /// The data required to either open an existing repository or create a new one.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
-pub enum RepoCreation<Path> {
+pub enum Repo<Path> {
     /// Open an existing repository.
     Existing {
         /// The path to the existing project.
@@ -62,8 +63,12 @@ pub enum RepoCreation<Path> {
     },
 }
 
-impl<Path: AsRef<path::Path>> RepoCreation<Path> {
+impl<Path: AsRef<path::Path>> Repo<Path> {
     /// Get the project name based off of `path` or `path` + `name`.
+    ///
+    /// # Errors
+    ///
+    ///   * The existing path provided was empty, so we could not get the project's name.
     pub fn project_name(&self) -> Result<String, Error> {
         match self {
             Self::Existing { path } => path
@@ -71,7 +76,7 @@ impl<Path: AsRef<path::Path>> RepoCreation<Path> {
                 .components()
                 .next_back()
                 .and_then(|component| component.as_os_str().to_str())
-                .map(|name| name.to_string())
+                .map(ToString::to_string)
                 .ok_or_else(|| Error::EmptyExistingPath(path.as_ref().to_path_buf())),
             Self::New { name, .. } => Ok(name.to_string()),
         }
@@ -87,7 +92,7 @@ impl<Path: AsRef<path::Path>> RepoCreation<Path> {
     ///
     ///   * Failed to find the repository at the provided path.
     ///   * Failed to initialise the repository.
-    pub fn repo(&self, default_branch: &str) -> Result<git2::Repository, git2::Error> {
+    pub fn create(&self, default_branch: &str) -> Result<git2::Repository, git2::Error> {
         match &self {
             Self::Existing { .. } => git2::Repository::open(self.full_path()),
             Self::New { .. } => {
@@ -117,10 +122,11 @@ impl<Path: AsRef<path::Path>> RepoCreation<Path> {
                 }
 
                 Ok(repo)
-            }
+            },
         }
     }
 
+    /// Get the full path of the `Repo` creation data.
     fn full_path(&self) -> PathBuf {
         match self {
             Self::Existing { path } => path.as_ref().to_path_buf(),
@@ -132,16 +138,16 @@ impl<Path: AsRef<path::Path>> RepoCreation<Path> {
 /// The data required for creating a new project.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ProjectCreation<Path> {
+pub struct Create<Path> {
     /// Description of the project we want to create.
     pub description: String,
     /// The default branch name for the project.
     pub default_branch: String,
     /// How the repository should be created or opened.
-    pub repo_creation: RepoCreation<Path>,
+    pub repo: Repo<Path>,
 }
 
-impl<Path: AsRef<path::Path>> ProjectCreation<Path> {
+impl<Path: AsRef<path::Path>> Create<Path> {
     /// Initialise the [`git2::Repository`] for the project found at `urn` in the `monorepo`.
     ///
     /// # Errors
@@ -153,7 +159,7 @@ impl<Path: AsRef<path::Path>> ProjectCreation<Path> {
         monorepo: impl AsRef<path::Path>,
         urn: &RadUrn,
     ) -> Result<git2::Repository, Error> {
-        let repo = self.repo_creation.repo(&self.default_branch)?;
+        let repo = self.repo.create(&self.default_branch)?;
 
         // Test if the repo has setup rad remote.
         match repo.find_remote(RAD_REMOTE) {
@@ -161,7 +167,7 @@ impl<Path: AsRef<path::Path>> ProjectCreation<Path> {
             Err(err) => {
                 log::debug!("setting up remote after git2::Error: {:?}", err);
                 setup_remote(&repo, monorepo, &urn.id, &self.default_branch)?;
-            }
+            },
         }
 
         Ok(repo)
@@ -169,13 +175,17 @@ impl<Path: AsRef<path::Path>> ProjectCreation<Path> {
 
     /// Build a [`project::Project`], where the provided [`User`] is the owner, and the set of keys
     /// starts with the provided [`keys::PublicKey`].
+    ///
+    /// # Errors
+    ///
+    ///   * Failed to build the project entity.
     pub fn build(
         &self,
         owner: &User,
         key: keys::PublicKey,
     ) -> Result<project::Project<entity::Draft>, Error> {
-        let name = self.repo_creation.project_name()?;
-        let project = project::Project::<entity::Draft>::create(name.to_string(), owner.urn())?
+        let name = self.repo.project_name()?;
+        let project = project::Project::<entity::Draft>::create(name, owner.urn())?
             .to_builder()
             .set_description(self.description.clone())
             .set_default_branch(self.default_branch.clone())
@@ -187,12 +197,13 @@ impl<Path: AsRef<path::Path>> ProjectCreation<Path> {
     }
 }
 
-impl ProjectCreation<PathBuf> {
+impl Create<PathBuf> {
     #[cfg(test)]
+    #[must_use]
     pub fn into_existing(self) -> Self {
-        ProjectCreation {
-            repo_creation: RepoCreation::Existing {
-                path: self.repo_creation.full_path(),
+        Self {
+            repo: Repo::Existing {
+                path: self.repo.full_path(),
             },
             ..self
         }
