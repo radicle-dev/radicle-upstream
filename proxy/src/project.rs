@@ -1,7 +1,13 @@
 //! Combine the domain `CoCo` and Registry domain specific understanding of a Project into a single
 //! abstraction.
 
+use std::ffi;
+use std::path;
+use std::process::Command;
+
 use serde::{Deserialize, Serialize};
+
+use librad::git::local::url::LocalUrl;
 
 use crate::coco;
 use crate::error;
@@ -55,7 +61,7 @@ impl<ST> From<(coco::Project<ST>, coco::Stats)> for Project
 where
     ST: Clone,
 {
-    /// Create a `Project` given a `librad` defined [`project::Project`] and the [`coco::Stats`]
+    /// Create a `Project` given a `librad` defined [`coco::Project`] and the [`coco::Stats`]
     /// for the repository.
     fn from((project, stats): (coco::Project<ST>, coco::Stats)) -> Self {
         let id = project.urn();
@@ -80,18 +86,158 @@ pub enum Registration {
 }
 
 /// Fetch the project with a given urn from a peer
+///
+/// # Errors
+///
+///   * Failed to get the project.
+///   * Failed to get the stats of the project.
 pub fn get<S>(api: &coco::Api<S>, project_urn: &coco::Urn) -> Result<Project, error::Error>
 where
     S: coco::Signer + Clone,
     S::Error: coco::SignError,
 {
-    let project = api.get_project(project_urn)?;
+    let project = api.get_project(project_urn, None)?;
     let stats = api.with_browser(project_urn, |browser| Ok(browser.get_stats()?))?;
 
     Ok((project, stats).into())
 }
 
+/// Specify how to create the git credential helper argument for a [`Checkout`]
+enum Credential {
+    /// Plain-text password. You've been warned!
+    Password(String),
+}
+
+impl Credential {
+    /// Convert the `Credential` into the git credential helper.
+    fn to_helper(&self) -> String {
+        match self {
+            Self::Password(pass) => format!(
+                "credential.helper=!f() {{ test \"$1\" = get && echo \"password={}\"; }}; f",
+                pass
+            ),
+        }
+    }
+}
+
+/// The data necessary for checking out a project.
+pub struct Checkout<P, ST>
+where
+    P: AsRef<path::Path>,
+{
+    /// The credential helper.
+    credential: Credential,
+    /// The project.
+    project: coco::Project<ST>,
+    /// The path on the filesystem where we're going to checkout to.
+    path: P,
+    /// The `PATH` environment variable to be used for the checkout. It is safe to leave this
+    /// `None` when executing the application for real. However, if we want to run an integration
+    /// test we need to tell say where the `git-rad-remote` helper can be found.
+    bin_path: Option<ffi::OsString>,
+}
+
+impl<P, ST> Checkout<P, ST>
+where
+    P: AsRef<path::Path>,
+    ST: Clone,
+{
+    /// Create a new `Checkout` with the mock `Credential::Password` helper.
+    pub fn new<Bin>(project: coco::Project<ST>, path: P, bin_path: Bin) -> Self
+    where
+        Bin: Into<Option<ffi::OsString>>,
+    {
+        Self {
+            // TODO(rudolfs): we'll have to figure out how to pass the secret
+            // key to git in a safe manner. As it is now it could be sniffed
+            // out from the process list while the user is doing a clone.
+            //
+            // How will we get ahold on the secret key here?
+            credential: Credential::Password("radicle-upstream".to_owned()),
+            project,
+            path,
+            bin_path: bin_path.into(),
+        }
+    }
+
+    /// Checkout a working copy of a [`Project`].
+    ///
+    /// NOTE: `RAD_HOME` should be expected to be set if using a custom root for
+    /// [`librad::paths::Paths`]. If it is not set the underlying binary will delegate to the
+    /// `ProjectDirs` setup of the `Paths`.
+    ///
+    /// # Errors
+    ///
+    ///   * We couldn't resolve the executable path.
+    ///   * The checkout process failed.
+    pub fn run(self) -> Result<path::PathBuf, error::Error> {
+        let bin_path = match self.bin_path {
+            Some(path) => Ok(path),
+            None => Self::default_bin_path(),
+        }?;
+
+        // Check if the path provided ends in the 'directory_name' provided. If not we create the
+        // full path to that name.
+        let path = &self.path.as_ref();
+        let project_path = if let Some(destination) = path.components().next_back() {
+            let destination: &std::ffi::OsStr = destination.as_ref();
+            let project_name = self.project.name().to_string();
+            let name: &std::ffi::OsStr = project_name.as_ref();
+            if destination == name {
+                path.to_path_buf()
+            } else {
+                path.join(name)
+            }
+        } else {
+            path.join(&self.project.name().to_string())
+        };
+
+        let mut child_process = Command::new("git")
+            .arg("-c")
+            .arg(self.credential.to_helper())
+            .arg("clone")
+            .arg("--origin")
+            .arg("rad")
+            .arg("--branch")
+            .arg(self.project.default_branch())
+            .arg(LocalUrl::from(self.project.urn()).to_string())
+            .arg(project_path.as_os_str())
+            .env("PATH", &bin_path)
+            .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
+            .spawn()?;
+
+        // TODO: Capture the error if any and respond
+        let result = child_process.wait()?;
+
+        if result.success() {
+            Ok(project_path)
+        } else {
+            Err(error::Error::Checkout)
+        }
+    }
+
+    /// Set up the PATH env variable used for running the checkout.
+    fn default_bin_path() -> Result<ffi::OsString, error::Error> {
+        let exe_path = std::env::current_exe()?;
+        let exe_path = exe_path.parent().expect("failed to find executable path");
+
+        let paths = std::env::var_os("PATH").map_or(vec![exe_path.to_path_buf()], |path| {
+            let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
+            paths.push(exe_path.to_path_buf());
+            paths.reverse();
+            paths
+        });
+
+        Ok(std::env::join_paths(paths)?)
+    }
+}
+
 /// Returns a list of `Project`s for your peer.
+///
+/// # Errors
+///
+///   * We couldn't get a project list.
+///   * We couldn't get project stats.
 pub fn list_projects<S>(api: &coco::Api<S>) -> Result<Vec<Project>, error::Error>
 where
     S: coco::Signer + Clone,
@@ -111,6 +257,10 @@ where
 }
 
 /// Returns a stubbed feed of `Project`s
+///
+/// # Errors
+///
+///   * Parsing an empty path fails (it shouldn't really).
 pub fn discover() -> Result<Vec<Project>, error::Error> {
     let urn = coco::Urn::new(
         coco::Hash::hash(b"hash"),

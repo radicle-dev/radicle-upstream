@@ -1,5 +1,6 @@
 export const DIALOG_SHOWOPENDIALOG = "IPC_DIALOG_SHOWOPENDIALOG";
 export const CLIPBOARD_WRITETEXT = "IPC_CLIPBOARD_WRITETEXT";
+export const OPEN_PATH = "IPC_OPEN_PATH";
 
 // We have to be able to select empty directories when we create new
 // projects. Unfortunately we can't use the HTML5 open dialog via
@@ -13,3 +14,6 @@ export const getDirectoryPath = () =>
 
 export const copyToClipboard = text =>
   window.electron.ipcRenderer.invoke(CLIPBOARD_WRITETEXT, text);
+
+export const openPath = path =>
+  window.electron.ipcRenderer.invoke(OPEN_PATH, path);
