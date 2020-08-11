@@ -41,7 +41,7 @@
     "/orgs/:id/members/register": MemberRegistration,
     "/orgs/:id": Org,
     "/orgs/:id/*": Org,
-    "/projects/untracked/:uri": Untracked,
+    "/projects/untracked/:urn": Untracked,
     "/projects/new": ProjectCreation,
     "/projects/register/:domainId": ProjectRegistration,
     "/projects/:projectId/register/:domainId": ProjectRegistration,

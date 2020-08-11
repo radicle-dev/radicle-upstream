@@ -35,8 +35,8 @@ export const projectIssues = (id: string): string => `/projects/${id}/issues`;
 export const projectIssue = (id: string): string => `/projects/${id}/issue`;
 export const projectRevisions = (id: string): string =>
   `/projects/${id}/revisions`;
-export const projectUntracked = (uri: string): string =>
-  `/projects/untracked/${uri}`;
+export const projectUntracked = (urn: string): string =>
+  `/projects/untracked/${urn}`;
 
 export const projectSource = (
   projectId: string,

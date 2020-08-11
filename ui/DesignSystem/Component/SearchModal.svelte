@@ -2,14 +2,14 @@
   import { createEventDispatcher } from "svelte";
   import { push } from "svelte-spa-router";
 
-  import { Code, Icon, Input, Text } from "../Primitive";
+  import { Icon, Input } from "../Primitive";
 
-  import Copyable from "./Copyable.svelte";
   import TrackToggle from "./TrackToggle.svelte";
+  import Urn from "./Urn.svelte";
 
   import * as path from "../../src/path";
   import { Status } from "../../src/remote";
-  import { updateUri, validation } from "../../src/search";
+  import { updateUrn, validation } from "../../src/search";
   import { ValidationStatus } from "../../src/validation";
 
   // Trying a `hide` variable here because animating the transition might be
@@ -48,7 +48,7 @@
   };
 
   $: if (value && value.length > 0) {
-    updateUri({ uri: value });
+    updateUrn({ urn: value });
   }
 
   // TODO(sos): animate & show/hide based on actual remote response
@@ -111,13 +111,6 @@
 
     margin-bottom: 48px;
   }
-
-  .uri {
-    background: var(--color-foreground-level-2);
-    max-width: 180px;
-    padding: 4px;
-    border-radius: 4px;
-  }
 </style>
 
 <svelte:window on:click={clickOutside} on:keydown={onKeydown} />
@@ -141,23 +134,15 @@
     {#if showTrackingInfo}
       <div class="tracking-info">
         <div class="header">
-          <div class="uri">
-            <Copyable style="min-width: 0;">
-              <Code
-                variant="medium"
-                style="font-size: 14px; color: var(--color-foreground-level-6);
-                text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
-                bshw82ienbytkx8173ndja0sjen833j88113jcb
-              </Code>
-            </Copyable>
-          </div>
-
+          <Urn
+            urn="bshw82ienbytkx8173ndja0sjen833j88113jcb"
+            notificationText="The project ID was copied to your clipboard" />
           <TrackToggle />
         </div>
-        <Text align="center" style="color: var(--color-foreground-level-6);">
+        <p>
           You’re not tracking this project yet, so there’s nothing to show here.
           Track it and you’ll be notified as soon as it’s available.
-        </Text>
+        </p>
       </div>
     {/if}
   </div>

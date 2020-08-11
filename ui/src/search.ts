@@ -5,7 +5,7 @@ import * as event from "./event";
 import { ValidationStatus } from "./validation";
 
 interface UntrackedProject {
-  uri: string;
+  urn: string;
 }
 
 enum Kind {
@@ -14,7 +14,7 @@ enum Kind {
 
 interface Update extends event.Event<Kind> {
   kind: Kind.Update;
-  uri: string;
+  urn: string;
 }
 
 type Msg = Update;
@@ -32,4 +32,4 @@ const update = (msg: Msg): void => {
 // TODO(sos): actual validation & remote stores
 export const validation = writable({ status: ValidationStatus.NotStarted });
 
-export const updateUri = event.create<Kind, Msg>(Kind.Update, update);
+export const updateUrn = event.create<Kind, Msg>(Kind.Update, update);
