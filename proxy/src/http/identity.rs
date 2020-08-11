@@ -5,7 +5,7 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
-use warp::{Filter, Rejection, Reply};
+use warp::{path, Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::coco;
@@ -90,7 +90,8 @@ fn list_tracked_filter<R>(
 where
     R: registry::Client + 'static,
 {
-    http::with_context(ctx)
+    path("tracked-identities")
+        .and(http::with_context(ctx))
         .and(warp::get())
         .and(document::document(document::description(
             "List tracked Identities",
