@@ -1,11 +1,8 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { link } from "svelte-spa-router";
-
-  import * as path from "../../src/path.ts";
 
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
-  import { Tooltip } from "../../DesignSystem/Component";
+  import { Copyable, Tooltip } from "../../DesignSystem/Component";
 
   const dispatch = createEventDispatcher();
 
@@ -44,32 +41,34 @@
   p {
     color: var(--color-foreground-level-6);
     user-select: none;
-    margin-bottom: 16px;
   }
 
   .info {
-    display: flex;
-    margin-top: 16px;
+    margin: 0.5rem 0 1rem;
   }
 </style>
 
 <svelte:window on:click={clickOutside} />
 
 <div class="clone-dropdown" hidden={!expanded} bind:this={dropdown}>
-  <p>Checkout a working copy to your local disk</p>
+  <p style="margin-bottom: 0.5rem;">
+    Checkout a working copy to your local disk
+  </p>
 
   <Input.Directory
-    style="margin-bottom: 16px;"
+    style="margin-bottom: 0.5rem;"
     placeholder="~/path/to/folder"
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
   <div class="info">
-    <p class="typo-text-small">
-      You need to have
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <a class="typo-link" use:link={path.shortcuts()}>git-remote-rad</a>
-      helper set up.
+    <p
+      style="margin-bottom: 0.25rem; color: var(--color-foreground-level-5);"
+      class="typo-text-small">
+      Add this to your shell for the git integration to work:
     </p>
+    <Copyable>
+      <p class="typo-text-small-mono">export PATH=$PATH:~/.radicle/bin</p>
+    </Copyable>
   </div>
 
   <Tooltip
