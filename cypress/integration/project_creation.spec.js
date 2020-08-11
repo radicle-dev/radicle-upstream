@@ -3,10 +3,10 @@ import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
 const withEmptyRepositoryStub = callback => {
   cy.exec("pwd").then(result => {
     const pwd = result.stdout;
-    const emptyDirectoryPath = `${pwd}/fixtures/empty-repo`;
+    const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-repo`;
 
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
-    cy.exec(`mkdir ${emptyDirectoryPath}`);
+    cy.exec(`mkdir -p ${emptyDirectoryPath}`);
 
     // stub native call and return the directory path to the UI
     cy.window().then(appWindow => {
@@ -32,7 +32,7 @@ const withEmptyRepositoryStub = callback => {
 const withPlatinumStub = callback => {
   cy.exec("pwd").then(result => {
     const pwd = result.stdout;
-    const platinumPath = `${pwd}/fixtures/git-platinum-copy`;
+    const platinumPath = `${pwd}/cypress/workspace/git-platinum-copy`;
 
     cy.exec(`rm -rf ${platinumPath}`);
     cy.exec(

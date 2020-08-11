@@ -60,6 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let paths_config = if args.test {
+        std::env::set_var("RAD_HOME", temp_dir.path());
         coco::config::Paths::FromRoot(temp_dir.path().to_path_buf())
     } else {
         coco::config::Paths::default()
