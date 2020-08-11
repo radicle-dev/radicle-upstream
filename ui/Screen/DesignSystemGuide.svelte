@@ -857,26 +857,50 @@
 
     <Section title="Notifications" subTitle="Info, Warnings and Errors">
       <Swatch>
-        <Notification
-          showIcon="true"
-          message="This is harmless, but you should know anyway." />
+        <Notification message="Snackbar" />
       </Swatch>
 
       <Swatch>
-        <Notification message="This is harmless without an icon." />
+        <Notification message="Snackbar with icon" showIcon={true} />
+      </Swatch>
+
+      <Swatch>
+        <Notification message="Snackbar with" actionText="Action" />
+      </Swatch>
+
+      <Swatch>
+        <Notification
+          message="Snackbar with icon and"
+          showIcon={true}
+          actionText="Action" />
       </Swatch>
 
       <Swatch>
         <Notification
           level={notification.Level.Error}
-          showIcon="true"
-          message="Something bad happened, halp!" />
+          message="Just plain error" />
       </Swatch>
 
       <Swatch>
         <Notification
           level={notification.Level.Error}
-          message="Something bad happened with no icon!" />
+          message="Error with icon"
+          showIcon={true} />
+      </Swatch>
+
+      <Swatch>
+        <Notification
+          level={notification.Level.Error}
+          message="Error with"
+          actionText="Action" />
+      </Swatch>
+
+      <Swatch>
+        <Notification
+          level={notification.Level.Error}
+          message="Error with icon and"
+          showIcon={true}
+          actionText="Action" />
       </Swatch>
     </Section>
 

@@ -1,10 +1,13 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+  import { link } from "svelte-spa-router";
+
+  import * as path from "../../src/path.ts";
+
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
+  import { Tooltip } from "../../DesignSystem/Component";
 
-  import * as notification from "../../src/notification.ts";
-
-  export let projectId = null;
-  export let projectName = null;
+  const dispatch = createEventDispatcher();
 
   // Dropdown element. Set by the view.
   let dropdown = null;
@@ -13,7 +16,7 @@
 
   const toggleDropdown = ev => {
     expanded = !expanded;
-    ev.stopPropagation();
+    ev && ev.stopPropagation();
   };
 
   const clickOutside = ev => {
@@ -24,11 +27,6 @@
   };
 
   let checkoutDirectoryPath;
-
-  const handleCheckout = () => {
-    projectId;
-    notification.info(`${projectName} checked out to ${checkoutDirectoryPath}`);
-  };
 </script>
 
 <style>
@@ -48,6 +46,11 @@
     user-select: none;
     margin-bottom: 16px;
   }
+
+  .info {
+    display: flex;
+    margin-top: 16px;
+  }
 </style>
 
 <svelte:window on:click={clickOutside} />
@@ -60,17 +63,36 @@
     placeholder="~/path/to/folder"
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
+  <div class="info">
+    <p class="typo-text-small">
+      You need to have
+      <!-- svelte-ignore a11y-missing-attribute -->
+      <a class="typo-link" use:link={path.shortcuts()}>git-remote-rad</a>
+      helper set up.
+    </p>
+  </div>
 
-  <Button
-    on:click={handleCheckout}
-    disabled={!checkoutDirectoryPath}
-    title={!checkoutDirectoryPath ? 'Please select a folder.' : ''}
-    variant="secondary"
-    style="width: 100%; display: block; text-align: center;">
-    Checkout
-  </Button>
+  <Tooltip
+    value={!checkoutDirectoryPath ? 'Please select a folder' : null}
+    position="bottom">
+    <Button
+      dataCy="checkout-button"
+      on:click={() => {
+        dispatch('checkout', { checkoutDirectoryPath: checkoutDirectoryPath });
+        toggleDropdown();
+      }}
+      disabled={!checkoutDirectoryPath}
+      variant="secondary"
+      style="width: 100%; display: block; text-align: center;">
+      Checkout
+    </Button>
+  </Tooltip>
 </div>
 
-<Button variant="transparent" icon={Icon.Copy} on:click={toggleDropdown}>
+<Button
+  variant="transparent"
+  icon={Icon.Copy}
+  on:click={toggleDropdown}
+  dataCy="checkout-modal-toggle">
   Checkout
 </Button>

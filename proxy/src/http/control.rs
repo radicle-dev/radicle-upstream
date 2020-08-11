@@ -164,6 +164,8 @@ mod handler {
         // N.B. this may gather lot's of tmp files on your system. We're sorry.
         let tmp_path = {
             let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+            log::debug!("New temporary path is: {:?}", temp_dir.path());
+            std::env::set_var("RAD_HOME", temp_dir.path());
             temp_dir.path().to_path_buf()
         };
 

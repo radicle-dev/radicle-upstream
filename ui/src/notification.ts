@@ -14,7 +14,10 @@ export enum Level {
 interface Notification {
   id: ID;
   level: Level;
+  showIcon: boolean;
   message: string;
+  actionText: string;
+  actionHandler: () => void;
 }
 
 type Notifications = Notification[];
@@ -38,11 +41,17 @@ interface Remove extends event.Event<Kind> {
 interface ShowError extends event.Event<Kind> {
   kind: Kind.ShowError;
   message: string;
+  showIcon: boolean;
+  actionText?: string;
+  actionHandler?: () => void;
 }
 
 interface ShowInfo extends event.Event<Kind> {
   kind: Kind.ShowInfo;
   message: string;
+  showIcon: boolean;
+  actionText?: string;
+  actionHandler?: () => void;
 }
 
 type Msg = Remove | ShowError | ShowInfo;
@@ -52,7 +61,13 @@ const filter = (id: ID): void => {
   store.set(notifications);
 };
 
-const show = (level: Level, message: string): void => {
+const show = (
+  level: Level,
+  showIcon: boolean,
+  message: string,
+  actionText?: string,
+  actionHandler?: () => void
+): void => {
   const id = Math.random();
   notifications = [
     ...notifications,
@@ -60,6 +75,15 @@ const show = (level: Level, message: string): void => {
       id,
       level,
       message,
+      showIcon,
+      actionText: actionText || "Close",
+      actionHandler: () => {
+        if (actionHandler) {
+          actionHandler();
+        }
+
+        remove(id);
+      },
     },
   ];
   store.set(notifications);
@@ -72,12 +96,24 @@ const show = (level: Level, message: string): void => {
 const update = (msg: Msg): void => {
   switch (msg.kind) {
     case Kind.ShowError:
-      show(Level.Error, msg.message);
+      show(
+        Level.Error,
+        msg.showIcon,
+        msg.message,
+        msg.actionText,
+        msg.actionHandler
+      );
 
       break;
 
     case Kind.ShowInfo:
-      show(Level.Info, msg.message);
+      show(
+        Level.Info,
+        msg.showIcon,
+        msg.message,
+        msg.actionText,
+        msg.actionHandler
+      );
 
       break;
 
@@ -88,9 +124,27 @@ const update = (msg: Msg): void => {
   }
 };
 
-export const error = (message: string): void =>
-  event.create<Kind, Msg>(Kind.ShowError, update)({ message });
-export const info = (message: string): void =>
-  event.create<Kind, Msg>(Kind.ShowInfo, update)({ message });
-export const remove = (id: ID): void =>
+const remove = (id: ID): void =>
   event.create<Kind, Msg>(Kind.Remove, update)({ id });
+
+export const error = (
+  message: string,
+  showIcon = false,
+  actionText?: string,
+  actionHandler?: () => void
+): void =>
+  event.create<Kind, Msg>(
+    Kind.ShowError,
+    update
+  )({ message, showIcon, actionText, actionHandler });
+
+export const info = (
+  message: string,
+  showIcon = false,
+  actionText?: string,
+  actionHandler?: () => void
+): void =>
+  event.create<Kind, Msg>(
+    Kind.ShowInfo,
+    update
+  )({ message, showIcon, actionText, actionHandler });
