@@ -1,4 +1,4 @@
-# What is Upstream?
+# Upstream
 [![Build status][ba]][st]
 
 Upstream is a cross-platform desktop client for the radicle code collaboration
