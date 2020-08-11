@@ -36,6 +36,7 @@
 
   const { id, metadata } = getContext("project");
 
+  let y = 0;
   let currentPeerId;
   let currentRevision;
   let currentObjectType;
@@ -127,9 +128,11 @@
 </script>
 
 <style>
+  .header-wrapper {
+    background-color: var(--color-foreground-level-1);
+  }
   .header {
     padding: var(--content-padding);
-    border-bottom: 1px solid var(--color-foreground-level-3);
   }
   .project-id {
     color: var(--color-foreground-level-5);
@@ -139,49 +142,43 @@
   .description {
     margin-top: 1rem;
   }
+  .center-content {
+    margin: 0 auto;
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+  }
 
-  .container {
+  .repo-header-wrapper {
+    position: sticky;
+    top: var(--topbar-height);
+    background-color: var(--color-background);
+  }
+
+  .elevation {
+    box-shadow: var(--elevation-low);
+  }
+
+  .repo-header {
     display: flex;
-    width: inherit;
-    margin-bottom: 4rem;
+    align-items: center;
+    height: 4rem;
     padding: 0 var(--content-padding);
   }
 
-  .column-left {
+  .header-right {
     display: flex;
-    flex-direction: column;
-    width: 18rem;
-    padding-right: 0.75rem;
-  }
-
-  .column-right {
-    display: flex;
-    flex-direction: column;
-    padding-left: 0.75rem;
-    min-width: var(--content-min-width);
+    justify-content: space-between;
     width: 100%;
-  }
-
-  .commit-header {
-    height: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .source-tree {
-    overflow-x: auto;
+    align-items: center;
   }
 
   .revision-selector-wrapper {
+    min-width: 15.4rem;
     margin: var(--content-padding) 0;
     position: relative;
-    width: 100%;
+    padding-right: 0.75rem;
   }
-  .repo-header {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+
   .repo-stats {
     height: 2.5rem;
     margin: 1.5rem 0;
@@ -201,118 +198,164 @@
     padding: 0 0.5rem;
     border-radius: 0.75rem;
   }
+
+  .container {
+    display: flex;
+    width: inherit;
+    margin-bottom: 4rem;
+    padding: 0 var(--content-padding);
+  }
+
+  .column-left {
+    display: flex;
+    flex-direction: column;
+    width: 18rem;
+    padding-right: 0.75rem;
+
+    position: sticky;
+    top: calc(var(--topbar-height) + 4rem);
+    align-self: flex-start;
+    height: calc(100vh - var(--topbar-height) - 6rem - var(--content-padding));
+  }
+
+  .column-right {
+    display: flex;
+    flex-direction: column;
+    padding-left: 0.75rem;
+    min-width: var(--content-min-width);
+    width: 100%;
+  }
+
+  .commit-header {
+    height: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .source-tree {
+    overflow-x: auto;
+  }
 </style>
 
+<svelte:window bind:scrollY={y} />
+
 <Remote store={projectStore} let:data={project}>
-  <div class="header">
-    <h2>{project.metadata.name}</h2>
-    <div class="project-id">
-      <Urn
-        urn={project.shareableEntityIdentifier}
-        showOnHover
-        notificationText="The project ID was copied to your clipboard" />
-    </div>
-    <div class="description">
-      <p>{project.metadata.description}</p>
+  <div class="header-wrapper">
+    <div class="header center-content">
+      <h2>{project.metadata.name}</h2>
+      <div class="project-id">
+        <Urn
+          urn={project.shareableEntityIdentifier}
+          showOnHover
+          notificationText="The project ID was copied to your clipboard" />
+      </div>
+      <div class="description">
+        <p>{project.metadata.description}</p>
+      </div>
     </div>
   </div>
-
-  <div class="container">
-    <div class="column-left">
-      <!-- Revision selector -->
-      <Remote store={revisionsStore} let:data={revisions}>
-        <div class="revision-selector-wrapper">
-          <RevisionSelector
-            {currentPeerId}
-            {currentRevision}
-            {revisions}
-            on:select={event => {
-              updateRevision(project.id, event.detail.revision, event.detail.peerId);
-            }} />
+  <div class="wrapper">
+    <div class="repo-header-wrapper {y > 142 ? 'elevation' : ''} ">
+      <div class="repo-header center-content">
+        <!-- Revision selector -->
+        <Remote store={revisionsStore} let:data={revisions}>
+          <div class="revision-selector-wrapper">
+            <RevisionSelector
+              {currentPeerId}
+              {currentRevision}
+              {revisions}
+              on:select={event => {
+                updateRevision(project.id, event.detail.revision, event.detail.peerId);
+              }} />
+          </div>
+        </Remote>
+        <div class="header-right">
+          <div class="repo-stats" data-cy="repo-stats">
+            <div class="repo-stat-item">
+              <Icon.Commit />
+              <p style="margin: 0 8px;">
+                <!-- svelte-ignore a11y-missing-attribute -->
+                <a
+                  data-cy="commits-button"
+                  on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
+                  Commits
+                </a>
+              </p>
+              <span class="stat typo-mono-bold">{project.stats.commits}</span>
+            </div>
+            <div class="repo-stat-item">
+              <Icon.Branch />
+              <p style="margin: 0 8px;">Branches</p>
+              <span class="stat typo-mono-bold">{project.stats.branches}</span>
+            </div>
+            <div class="repo-stat-item">
+              <Icon.Member />
+              <p style="margin: 0 8px;">Contributors</p>
+              <span class="stat typo-mono-bold">
+                {project.stats.contributors}
+              </span>
+            </div>
+          </div>
+          <CheckoutButton
+            on:checkout={handleCheckout}
+            projectName={project.metadata.name} />
         </div>
-      </Remote>
-
-      <!-- Tree -->
-      <div class="source-tree" data-cy="source-tree">
-        <Folder
-          {currentRevision}
-          {currentObjectPath}
-          {currentPeerId}
-          projectId={project.id}
-          toplevel
-          name={project.metadata.name} />
       </div>
     </div>
 
-    <div class="column-right">
-      <div class="repo-header">
-        <div class="repo-stats" data-cy="repo-stats">
-          <div class="repo-stat-item">
-            <Icon.Commit />
-            <p style="margin: 0 8px;">
-              <!-- svelte-ignore a11y-missing-attribute -->
-              <a
-                data-cy="commits-button"
-                on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
-                Commits
-              </a>
-            </p>
-            <span class="stat typo-mono-bold">{project.stats.commits}</span>
-          </div>
-          <div class="repo-stat-item">
-            <Icon.Branch />
-            <p style="margin: 0 8px;">Branches</p>
-            <span class="stat typo-mono-bold">{project.stats.branches}</span>
-          </div>
-          <div class="repo-stat-item">
-            <Icon.Member />
-            <p style="margin: 0 8px;">Contributors</p>
-            <span class="stat typo-mono-bold">
-              {project.stats.contributors}
-            </span>
-          </div>
+    <div class="container center-content">
+      <div class="column-left">
+
+        <!-- Tree -->
+        <div class="source-tree" data-cy="source-tree">
+          <Folder
+            {currentRevision}
+            {currentObjectPath}
+            {currentPeerId}
+            projectId={project.id}
+            toplevel
+            name={project.metadata.name} />
         </div>
-        <CheckoutButton
-          on:checkout={handleCheckout}
-          projectName={project.metadata.name} />
       </div>
 
-      <!-- Object -->
-      <Remote store={objectStore} let:data={object}>
-        {#if object.info.objectType === ObjectType.Blob}
-          <FileSource
-            blob={object}
-            path={currentObjectPath}
-            rootPath={path.projectSource(project.id)}
-            projectName={project.metadata.name}
-            projectId={project.id} />
-        {:else if object.path === ''}
-          <!-- Repository root -->
-          <div class="commit-header">
-            <CommitTeaser
-              projectId={project.id}
-              user={{ username: object.info.lastCommit.author.name, avatar: object.info.lastCommit.author.avatar }}
-              commitMessage={object.info.lastCommit.summary}
-              commitSha={object.info.lastCommit.sha1}
-              timestamp={format(object.info.lastCommit.committerTime * 1000)}
-              style="height: 100%" />
-          </div>
+      <div class="column-right">
 
-          <!-- Readme -->
-          <Remote
-            store={readme(id, currentPeerId, currentRevision)}
-            let:data={readme}>
-            {#if readme}
-              <Readme content={readme.content} path={readme.path} />
-            {:else}
-              <EmptyState
-                text="This project doesn't have a README yet."
-                icon="eyes"
-                style="height: 320px;" />
-            {/if}
-          </Remote>
-        {/if}
-      </Remote>
+        <!-- Object -->
+        <Remote store={objectStore} let:data={object}>
+          {#if object.info.objectType === ObjectType.Blob}
+            <FileSource
+              blob={object}
+              path={currentObjectPath}
+              rootPath={path.projectSource(project.id)}
+              projectName={project.metadata.name}
+              projectId={project.id} />
+          {:else if object.path === ''}
+            <!-- Repository root -->
+            <div class="commit-header">
+              <CommitTeaser
+                projectId={project.id}
+                user={{ username: object.info.lastCommit.author.name, avatar: object.info.lastCommit.author.avatar }}
+                commitMessage={object.info.lastCommit.summary}
+                commitSha={object.info.lastCommit.sha1}
+                timestamp={format(object.info.lastCommit.committerTime * 1000)}
+                style="height: 100%" />
+            </div>
+
+            <!-- Readme -->
+            <Remote
+              store={readme(id, currentPeerId, currentRevision)}
+              let:data={readme}>
+              {#if readme}
+                <Readme content={readme.content} path={readme.path} />
+              {:else}
+                <EmptyState
+                  text="This project doesn't have a README yet."
+                  icon="eyes"
+                  style="height: 320px;" />
+              {/if}
+            </Remote>
+          {/if}
+        </Remote>
+      </div>
     </div>
   </div>
 </Remote>

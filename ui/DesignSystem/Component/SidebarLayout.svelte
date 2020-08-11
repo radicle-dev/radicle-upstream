@@ -19,7 +19,6 @@
     position: relative;
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));
-    overflow-x: hidden;
     height: 100%;
   }
 </style>
