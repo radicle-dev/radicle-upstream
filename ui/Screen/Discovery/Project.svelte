@@ -95,9 +95,10 @@
 
   </div>
   <div class="shareableEntityIdentifier">
-    <Urn urn={project.shareableEntityIdentifier} />
+    <Urn
+      urn={project.shareableEntityIdentifier}
+      notificationText="The project ID was copied to your clipboard" />
   </div>
-  <!-- TODO(sos): middle-truncate shareableEntityID & show copy icon -->
 
   <div class="description">
     <p>{project.metadata.description}</p>

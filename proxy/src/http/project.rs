@@ -1,5 +1,7 @@
 //! Endpoints and serialisation for [`project::Project`] related types.
 
+use std::path::PathBuf;
+
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
@@ -8,6 +10,7 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::project;
 use crate::registry;
@@ -18,10 +21,42 @@ where
     R: registry::Client + 'static,
 {
     list_filter(ctx.clone())
+        .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
         .or(discover_filter(ctx.clone()))
         .or(get_filter(ctx))
         .boxed()
+}
+
+/// `POST /<id>/checkout`
+fn checkout_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    http::with_context(ctx)
+        .and(warp::post())
+        .and(document::param::<coco::Urn>("id", "Project id"))
+        .and(warp::body::json())
+        .and(document::document(document::description(
+            "Create a new working copy for a project",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(
+            document::body(CheckoutInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(201, None).description("Checkout succeeded"),
+        ))
+        .and(document::document(
+            document::response(
+                404,
+                document::body(super::error::Error::document()).mime("application/json"),
+            )
+            .description("Project not found"),
+        ))
+        .and_then(handler::checkout)
 }
 
 /// `POST /`
@@ -174,6 +209,23 @@ mod handler {
             reply::json(&project),
             StatusCode::CREATED,
         ))
+    }
+
+    /// Checkout a [`project::Project`]'s source code.
+    pub async fn checkout<R>(
+        ctx: http::Ctx<R>,
+        urn: coco::Urn,
+        super::CheckoutInput { path, peer_id }: super::CheckoutInput,
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let project = ctx.peer_api.get_project(&urn, peer_id)?;
+
+        let path = project::Checkout::new(project, path, None).run()?;
+
+        Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
     }
 
     /// Get the [`project::Project`] for the given `id`.
@@ -359,7 +411,7 @@ impl ToDocumentedType for project::Metadata {
 pub struct CreateInput {
     /// Location on the filesystem of the project, an empty directory means we set up a fresh git
     /// repo at the path before initialising the project.
-    path: String,
+    path: PathBuf,
     /// User provided metadata for the project.
     metadata: MetadataInput,
 }
@@ -376,6 +428,30 @@ impl ToDocumentedType for CreateInput {
         properties.insert("metadata".into(), MetadataInput::document());
 
         document::DocumentedType::from(properties).description("Input for project creation")
+    }
+}
+
+/// Bundled input data for project checkout.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckoutInput {
+    /// Location on the filesystem where the working copy should be created.
+    path: PathBuf,
+    /// Which peer are we checking out from. If it's `None`, we're checking out our own project.
+    peer_id: Option<coco::PeerId>,
+}
+
+impl ToDocumentedType for CheckoutInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(3);
+        properties.insert(
+            "path".into(),
+            document::string()
+                .description("Filesystem location where the working copy should be created")
+                .example("/Users/rudolfs/work/radicle-tests/upstream-checkout"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for project checkout")
     }
 }
 
@@ -437,7 +513,7 @@ mod test {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let path = dir.path().to_str().unwrap();
+        let path = dir.path();
         let ctx = http::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 

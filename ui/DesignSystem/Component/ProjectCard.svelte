@@ -10,6 +10,7 @@
   .project-card {
     display: flex;
     width: 100%;
+    max-height: 3.2rem;
   }
 
   .container {
@@ -33,6 +34,8 @@
 
   .desc {
     color: var(--color-foreground-level-5);
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 </style>
 
@@ -47,7 +50,7 @@
         </div>
       {/if}
     </div>
-    <p class="desc typo-overflow-ellipses">
+    <p class="desc">
       {#if description}{description}{/if}
     </p>
   </div>

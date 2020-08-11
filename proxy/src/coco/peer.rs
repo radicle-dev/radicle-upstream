@@ -2,7 +2,7 @@
 
 use std::convert::TryFrom;
 use std::net::SocketAddr;
-use std::path::PathBuf;
+use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use librad::keys;
@@ -192,14 +192,18 @@ impl Api {
     /// # Errors
     ///
     ///   * Resolving the project fails.
-    pub fn get_project(
+    pub fn get_project<P>(
         &self,
         urn: &RadUrn,
-    ) -> Result<project::Project<entity::Draft>, error::Error> {
+        peer: P,
+    ) -> Result<project::Project<entity::Draft>, error::Error>
+    where
+        P: Into<Option<PeerId>>,
+    {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
 
-        Ok(storage.metadata(urn)?)
+        Ok(storage.metadata_of(urn, peer)?)
     }
 
     /// Get the user found at `urn`.
@@ -227,7 +231,7 @@ impl Api {
     {
         let git_dir = self.monorepo();
 
-        let project = self.get_project(urn)?;
+        let project = self.get_project(urn, None)?;
         let default_branch = git::Branch::local(project.default_branch());
         let repo = git::Repository::new(git_dir)?;
         let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
@@ -249,7 +253,7 @@ impl Api {
         &self,
         key: &keys::SecretKey,
         owner: &User,
-        path: impl AsRef<std::path::Path> + Send,
+        path: impl AsRef<path::Path> + Send,
         name: &str,
         description: &str,
         default_branch: &str,

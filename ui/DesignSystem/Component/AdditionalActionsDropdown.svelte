@@ -128,20 +128,7 @@
       {#if menuItems}
         <div class="menu" data-cy="dropdown-menu">
           {#each menuItems as item}
-            {#if item.tooltip !== undefined}
-              <Tooltip value={item.tooltip} position="bottom">
-                <div
-                  data-cy={item.dataCy}
-                  class="menu-item"
-                  class:disabled={item.disabled}
-                  on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
-                  <svelte:component
-                    this={item.icon}
-                    style="margin-right: 12px" />
-                  <p>{item.title}</p>
-                </div>
-              </Tooltip>
-            {:else}
+            <Tooltip value={item.tooltip} position="bottom">
               <div
                 data-cy={item.dataCy}
                 class="menu-item"
@@ -150,7 +137,7 @@
                 <svelte:component this={item.icon} style="margin-right: 12px" />
                 <p>{item.title}</p>
               </div>
-            {/if}
+            </Tooltip>
           {/each}
         </div>
       {/if}

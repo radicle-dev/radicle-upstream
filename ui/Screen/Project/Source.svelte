@@ -3,6 +3,10 @@
   import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
+  import { openPath } from "../../../native/ipc.js";
+
+  import { checkout } from "../../src/project.ts";
+  import * as notification from "../../src/notification.ts";
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
@@ -70,6 +74,28 @@
         currentObjectPath
       )
     );
+  };
+
+  const handleCheckout = async event => {
+    try {
+      const path = await checkout(
+        id,
+        event.detail.checkoutDirectoryPath,
+        "PEER_ID_GOES_HERE",
+        "BRANCH_TO_CHECK_OUT_GOES_HERE"
+      );
+
+      notification.info(
+        `${metadata.name} checked out to ${path}`,
+        true,
+        "Open folder",
+        () => {
+          openPath(path);
+        }
+      );
+    } catch (error) {
+      notification.error(`Checkout failed: ${error.message}`, true);
+    }
   };
 
   // TODO(rudolfs): this functionality should be part of navigation/routing.
@@ -181,7 +207,10 @@
   <div class="header">
     <h2>{project.metadata.name}</h2>
     <div class="project-id">
-      <Urn urn={project.shareableEntityIdentifier} showOnHover />
+      <Urn
+        urn={project.shareableEntityIdentifier}
+        showOnHover
+        notificationText="The project ID was copied to your clipboard" />
     </div>
     <div class="description">
       <p>{project.metadata.description}</p>
@@ -244,7 +273,7 @@
           </div>
         </div>
         <CheckoutButton
-          projectId={project.id}
+          on:checkout={handleCheckout}
           projectName={project.metadata.name} />
       </div>
 

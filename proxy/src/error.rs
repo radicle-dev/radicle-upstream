@@ -56,6 +56,10 @@ pub enum Error {
     #[error("the path '{0}' was not found")]
     PathNotFound(surf::file_system::Path),
 
+    /// Could not construct a path.
+    #[error(transparent)]
+    JoinPaths(#[from] std::env::JoinPathsError),
+
     /// Originated from `radicle_surf`.
     #[error(transparent)]
     Git(#[from] surf::git::error::Error),
@@ -87,6 +91,10 @@ pub enum Error {
     /// The given block could not be found in the Registry.
     #[error("the given block '{0}' could not be found in the Registry")]
     BlockNotFound(registry::BlockHash),
+
+    /// An error occurred while performing the checkout of a project.
+    #[error("checkout of the project failed")]
+    Checkout,
 
     /// Accept error from `librad`.
     #[error(transparent)]
