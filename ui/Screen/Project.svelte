@@ -1,5 +1,6 @@
 <script>
   import { getContext } from "svelte";
+  import { isDev } from "../../native/ipc.js";
   import Router, { link, push } from "svelte-spa-router";
 
   import * as path from "../src/path.ts";
@@ -47,41 +48,50 @@
 
   export let params = null;
   const projectId = params.id;
+  let codeCollabMenuItems;
+  const topbarMenuItems = projectId => {
+    const items = [
+      {
+        icon: Icon.Home,
+        title: "Source",
+        href: path.projectSource(projectId),
+        looseActiveStateMatching: true,
+      },
+    ];
+    isDev() &&
+      items.push(
+        {
+          icon: Icon.Issue,
+          title: "Issues",
+          href: path.projectIssues(projectId),
+          looseActiveStateMatching: false,
+        },
+        {
+          icon: Icon.Revision,
+          title: "Revisions",
+          href: path.projectRevisions(projectId),
+          looseActiveStateMatching: false,
+        }
+      );
+    return items;
+  };
 
-  const topbarMenuItems = projectId => [
-    {
-      icon: Icon.Home,
-      title: "Source",
-      href: path.projectSource(projectId),
-      looseActiveStateMatching: true,
-    },
-    {
-      icon: Icon.Issue,
-      title: "Issues",
-      href: path.projectIssues(projectId),
-      looseActiveStateMatching: false,
-    },
-    {
-      icon: Icon.Revision,
-      title: "Revisions",
-      href: path.projectRevisions(projectId),
-      looseActiveStateMatching: false,
-    },
-  ];
+  $: dropdownMenuItems = [registerProjectMenuItem].concat(codeCollabMenuItems);
 
-  $: dropdownMenuItems = [
-    registerProjectMenuItem,
-    {
-      title: "New issue",
-      icon: Icon.Issue,
-      event: () => console.log("event(new-issue)"),
-    },
-    {
-      title: "New revision",
-      icon: Icon.Revision,
-      event: () => console.log("event(new-revision)"),
-    },
-  ];
+  if (isDev()) {
+    codeCollabMenuItems = [
+      {
+        title: "New issue",
+        icon: Icon.Issue,
+        event: () => console.log("event(new-issue)"),
+      },
+      {
+        title: "New revision",
+        icon: Icon.Revision,
+        event: () => console.log("event(new-revision)"),
+      },
+    ];
+  }
 
   const session = getContext("session");
 
