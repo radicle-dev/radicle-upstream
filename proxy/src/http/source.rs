@@ -895,7 +895,7 @@ mod test {
         let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1030,7 +1030,7 @@ mod test {
         let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1084,7 +1084,7 @@ mod test {
         let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1122,7 +1122,7 @@ mod test {
         let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1176,7 +1176,7 @@ mod test {
         let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1262,7 +1262,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1331,7 +1331,7 @@ mod test {
         let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1371,7 +1371,7 @@ mod test {
         let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",
@@ -1458,7 +1458,7 @@ mod test {
         let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            key,
             &owner,
             "git-platinum",
             "fixture data",

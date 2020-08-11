@@ -203,7 +203,8 @@ impl Context<registry::Cacher<registry::Registry>, coco::SecretKey> {
     #[cfg(test)]
     async fn tmp(
         tmp_dir: &tempfile::TempDir,
-    ) -> Result<Ctx<registry::Cacher<registry::Registry>>, crate::error::Error> {
+    ) -> Result<Ctx<registry::Cacher<registry::Registry>, coco::SecretKey>, crate::error::Error>
+    {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let pw = keystore::SecUtf8::from("radicle-upstream");

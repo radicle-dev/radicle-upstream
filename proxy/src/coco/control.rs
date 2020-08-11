@@ -9,7 +9,7 @@ use librad::meta::project;
 use radicle_surf::vcs::git::git2;
 
 use crate::coco::config;
-use crate::coco::peer::{Api, Signer, User};
+use crate::coco::{Api, SignError, Signer, User};
 use crate::error;
 
 /// Deletes the local git repsoitory coco uses to keep its state.
@@ -30,14 +30,10 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
 #[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
-pub fn setup_fixtures<S>(
-    api: &Api<S>,
-    key: keys::SecretKey,
-    owner: &User,
-) -> Result<(), error::Error>
+pub fn setup_fixtures<S>(api: &Api<S>, signer: S, owner: &User) -> Result<(), error::Error>
 where
     S: Signer,
-    S::Error: keys::SignError,
+    S::Error: SignError,
 {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
@@ -61,7 +57,7 @@ where
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(api, &key, owner, info.0, info.1, info.2)?;
+        replicate_platinum(api, signer, owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -76,7 +72,7 @@ where
 /// the coco project.
 pub fn replicate_platinum<S>(
     api: &Api<S>,
-    key: &keys::SecretKey,
+    signer: S,
     owner: &User,
     name: &str,
     description: &str,
@@ -84,7 +80,7 @@ pub fn replicate_platinum<S>(
 ) -> Result<project::Project<entity::Draft>, error::Error>
 where
     S: Signer,
-    S::Error: keys::SignError,
+    S::Error: SignError,
 {
     // Craft the absolute path to git-platinum fixtures.
     let mut platinum_path = env::current_dir()?;
@@ -100,7 +96,7 @@ where
     clone_platinum(&platinum_from, &platinum_into)?;
 
     let meta = api.init_project(
-        key,
+        signer,
         owner,
         platinum_into.clone(),
         name,
@@ -141,7 +137,7 @@ where
 #[must_use]
 pub fn track_fake_peer<S>(
     api: &Api<S>,
-    key: keys::SecretKey,
+    signer: S,
     project: &project::Project<entity::Draft>,
     fake_user_handle: &str,
 ) -> (
@@ -150,7 +146,7 @@ pub fn track_fake_peer<S>(
 )
 where
     S: Signer,
-    S::Error: keys::SignError,
+    S::Error: SignError,
 {
     // TODO(finto): We're faking a lot of the networking interaction here.
     // Create git references of the form and track the peer.
@@ -160,7 +156,7 @@ where
     //   to fake_user
     let urn = project.urn();
     let fake_user =
-        api.init_user(key, fake_user_handle).unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
+        api.init_user(signer, fake_user_handle).unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
     let remote = librad::peer::PeerId::from(keys::SecretKey::new());
     let monorepo = git2::Repository::open(api.monorepo()).expect("failed to open monorepo");
     let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);

@@ -3,13 +3,12 @@
 use std::convert::TryFrom;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-use librad::keys;
 use librad::net;
 use librad::net::discovery;
 use librad::paths;
 use librad::peer;
-use librad::signer;
 
+use crate::coco;
 use crate::error;
 
 /// Path configuration
@@ -46,24 +45,28 @@ pub type Disco = discovery::Static<std::vec::IntoIter<(peer::PeerId, SocketAddr)
 /// Address: 127.0.0.1:0
 /// No seeds.
 /// Default gossip parameters.
-/// Signer is a [`keys::SecretKey`]
 ///
 /// # Errors
 ///
 /// Results in an error if the [`paths::Paths`] could not be created.
-pub fn default(
-    key: keys::SecretKey,
+pub fn default<S>(
+    signer: S,
     path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, error::Error> {
+) -> Result<net::peer::PeerConfig<Disco, S>, error::Error>
+where
+    S: coco::Signer,
+    S::Error: coco::SignError,
+{
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(paths, key))
+    Ok(configure(paths, signer))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
 #[must_use]
 pub fn configure<S>(paths: paths::Paths, signer: S) -> net::peer::PeerConfig<Disco, S>
 where
-    S: signer::Signer,
+    S: coco::Signer,
+    S::Error: coco::SignError,
 {
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`

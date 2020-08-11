@@ -22,7 +22,9 @@ use crate::error;
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
-pub trait Signer: signer::Signer + Clone {}
+pub trait Signer: keys::AsPKCS8 + signer::Signer + Clone {}
+
+impl<T: keys::AsPKCS8 + signer::Signer + Clone> Signer for T {}
 
 /// High-level interface to the coco monorepo and gossip layer.
 pub struct Api<S>
@@ -287,10 +289,10 @@ where
                     .to_builder()
                     .set_description(description.to_string())
                     .set_default_branch(default_branch.to_string())
-                    .add_key(signer.public_key())
+                    .add_key(signer.public_key().into())
                     .add_certifier(owner.urn())
                     .build()?;
-            meta.sign_owned(signer)?;
+            meta.sign_owned(&signer)?;
             let urn = meta.urn();
 
             let storage = api.storage().reopen()?;
@@ -327,7 +329,7 @@ where
     ) -> Result<user::User<entity::Draft>, error::Error> {
         // Create the project meta
         let mut user =
-            user::User::<entity::Draft>::create(handle.to_string(), signer.public_key())?;
+            user::User::<entity::Draft>::create(handle.to_string(), signer.public_key().into())?;
         user.sign_owned(&signer)?;
         let urn = user.urn();
 
@@ -404,7 +406,7 @@ fn setup_remote<S>(
     default_branch: &str,
 ) -> Result<(), error::Error>
 where
-    S: signer::Signer,
+    S: Signer,
     S::Error: keys::SignError,
 {
     // Check if directory at path is a git repo.
@@ -520,8 +522,7 @@ mod test {
         let api = Api::new(config).await?;
 
         let user = api.init_owner(key.clone(), "cloudhead")?;
-        let project =
-            api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
+        let project = api.init_project(key, &user, &repo_path, "radicalise", "the people", "power");
 
         assert!(project.is_ok());
 
@@ -560,9 +561,9 @@ mod test {
 
         let user = api.init_owner(key.clone(), "cloudhead")?;
         let _project =
-            api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power")?;
+            api.init_project(key, &user, &repo_path, "radicalise", "the people", "power")?;
 
-        let err = api.init_project(&key, &user, &repo_path, "radicalise", "the people", "power");
+        let err = api.init_project(key, &user, &repo_path, "radicalise", "the people", "power");
 
         if let Err(Error::RadRemoteExists(path)) = err {
             assert_eq!(path, format!("{}", repo_path.display()))
@@ -592,7 +593,7 @@ mod test {
         let kalt = api.init_user(key.clone(), "kalt")?;
         let kalt = super::verify_user(kalt)?;
         let fakie = api.init_project(
-            &key,
+            key,
             &kalt,
             &repo_path,
             "fakie-nose-kickflip-backside-180-to-handplant",
