@@ -656,6 +656,20 @@
 
       <Swatch>
         <Input.Text
+          style="flex: 1;"
+          disabled
+          placeholder="Hey, I'm a disabled input with a placeholder." />
+      </Swatch>
+
+      <Swatch>
+        <Input.Text
+          style="flex: 1;"
+          disabled
+          value="I'm a disabled input with a value." />
+      </Swatch>
+
+      <Swatch>
+        <Input.Text
           placeholder="And I'm an input with a validation error."
           style="flex: 1"
           validation={{ status: ValidationStatus.Error, message: "Well, that didn't go well..." }} />
