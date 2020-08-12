@@ -288,6 +288,7 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
+    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -378,6 +379,47 @@ mod test {
             })
         );
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn list_tracked() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let id = identity::create(&ctx.peer_api, key.clone(), "cloudhead")?;
+
+        let owner = ctx.peer_api.get_user(&id.clone().urn)?;
+        let owner = coco::verify_user(owner)?;
+
+        session::set_identity(&ctx.store, id)?;
+
+        let platinum_project = coco::control::replicate_platinum(
+            &ctx.peer_api,
+            &key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+
+        let fintohaps: identity::Identity =
+            coco::control::track_fake_peer(&ctx.peer_api, key, &platinum_project, "fintohaps")
+                .into();
+
+        let res = request()
+            .method("GET")
+            .path("/tracked-identities")
+            .reply(&api)
+            .await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        // TODO(merle): Deduplicate tracked identities or fix test set up
+        assert_eq!(have, json!([fintohaps, fintohaps]));
         Ok(())
     }
 }
