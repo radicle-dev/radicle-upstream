@@ -12,16 +12,11 @@
   import { updateUrn, validation } from "../../src/search";
   import { ValidationStatus } from "../../src/validation";
 
-  // Trying a `hide` variable here because animating the transition might be
-  // easier this way
-  let searchBar,
-    hide = false,
-    value;
+  let searchBar, value;
 
   const navigateToProject = () => {
     if ($validation.status !== ValidationStatus.Success) return;
 
-    hide = true;
     dispatch("hide");
     push(path.projectUntracked(value));
   };
@@ -29,7 +24,6 @@
   const onKeydown = ev => {
     switch (ev.key) {
       case "Escape":
-        hide = true;
         dispatch("hide");
         break;
       case "Enter":
@@ -41,8 +35,7 @@
   const dispatch = createEventDispatcher();
 
   const clickOutside = ev => {
-    if (!hide && ev.target !== searchBar && !searchBar.contains(ev.target)) {
-      hide = true;
+    if (ev.target !== searchBar && !searchBar.contains(ev.target)) {
       showTrackingInfo = false;
     }
   };
@@ -72,7 +65,6 @@
   }
 
   .search-modal {
-    /* TODO(sos): cute animation */
     display: flex;
     position: absolute;
     top: 0;
@@ -80,28 +72,38 @@
     bottom: 0;
     right: 0;
     z-index: 10000;
+    cursor: pointer;
 
     align-items: center;
     justify-content: center;
-    text-align: center;
-  }
-  .hide {
-    display: none;
   }
 
   .content {
     z-index: 1000;
-    width: 420px;
+    width: 26.25rem;
   }
 
   .search-bar {
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
   }
 
   .tracking-info {
     background: var(--color-background);
-    border-radius: 4px;
-    padding: 32px;
+
+    /* TODO(brandonhaslegs): the text input does not have this dramatic of a border radius
+      do we want the component to have a variable border radius or 
+      is this something that will be changing app-wide? 
+    */
+    border-radius: 0.5rem;
+
+    height: 0;
+    overflow: hidden;
+    transition: height 0.25s ease;
+  }
+
+  .showTrackingInfo {
+    height: 13.5rem;
+    padding: 2rem;
   }
 
   .header {
@@ -109,13 +111,13 @@
     justify-content: space-between;
     align-items: flex-start;
 
-    margin-bottom: 48px;
+    margin-bottom: 0.25rem;
   }
 </style>
 
 <svelte:window on:click={clickOutside} on:keydown={onKeydown} />
 
-<div class="search-modal" class:hide>
+<div class="search-modal">
   <div class="overlay" />
   <div class="content" on:click={navigateToProject}>
     <div class="search-bar" bind:this={searchBar}>
@@ -131,19 +133,23 @@
       </Input.Text>
     </div>
 
-    {#if showTrackingInfo}
-      <div class="tracking-info">
-        <div class="header">
-          <Urn
-            urn="bshw82ienbytkx8173ndja0sjen833j88113jcb"
-            notificationText="The project ID was copied to your clipboard" />
-          <TrackToggle />
-        </div>
-        <p>
-          You’re not tracking this project yet, so there’s nothing to show here.
-          Track it and you’ll be notified as soon as it’s available.
-        </p>
+    <div class="tracking-info" class:showTrackingInfo>
+      <div class="header">
+        <h3 style="color: var(--color-foreground-level-6);">my-new-project</h3>
+        <TrackToggle />
       </div>
-    {/if}
+
+      <div style="display: flex; margin-bottom: 1rem;">
+        <Urn
+          urn="bshw82ienbytkx8173ndja0sjen833j88113jcb"
+          notificationText="The project ID was copied to your clipboard"
+          showOnHover />
+      </div>
+
+      <p style="color: var(--color-foreground-level-6);">
+        You’re not tracking this project yet, so there’s nothing to show here.
+        Track it and you’ll be notified as soon as it’s available.
+      </p>
+    </div>
   </div>
 </div>

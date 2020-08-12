@@ -2,9 +2,10 @@
   import Copyable from "./Copyable.svelte";
   import { Icon } from "../Primitive";
 
-  export let urn = null;
-  export let showOnHover = false;
   export let notificationText = "Copied to your clipboard";
+  export let showOnHover = false;
+  export let style = null;
+  export let urn = null;
 
   const cleanUrn = urn.replace(/^%?rad:git:/, "");
 
@@ -42,7 +43,8 @@
   class="wrapper urn"
   data-cy="urn"
   on:mouseover={showFullUrn}
-  on:mouseout={hideFullUrn}>
+  on:mouseout={hideFullUrn}
+  {style}>
   <Copyable
     iconSize="small"
     style="align-items: center;"
