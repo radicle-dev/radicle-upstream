@@ -37,6 +37,7 @@
   const clickOutside = ev => {
     if (ev.target !== searchBar && !searchBar.contains(ev.target)) {
       showTrackingInfo = false;
+      dispatch("hide");
     }
   };
 

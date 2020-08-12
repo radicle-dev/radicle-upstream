@@ -1,6 +1,8 @@
 //! Abstractions and utilities for git interactions through the API.
+
 pub use librad::hash::Hash;
 pub use librad::meta::project::Project;
+pub use librad::peer::PeerId;
 pub use librad::uri::{self, RadUrn as Urn};
 
 pub use radicle_surf::diff::{Diff, FileDiff};
@@ -10,6 +12,8 @@ pub mod config;
 pub mod control;
 mod peer;
 pub use peer::{verify_user, Api, User};
+
+pub mod project;
 
 mod source;
 pub use source::{

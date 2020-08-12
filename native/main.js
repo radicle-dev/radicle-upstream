@@ -42,6 +42,10 @@ ipcMain.handle(ipc.CLIPBOARD_WRITETEXT, async (_event, text) => {
   clipboard.writeText(text);
 });
 
+ipcMain.handle(ipc.OPEN_PATH, async (_event, path) => {
+  shell.openPath(path);
+});
+
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1200,

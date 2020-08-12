@@ -40,13 +40,9 @@ pub enum Error {
     #[error("the identity '{0}' already exits")]
     EntityExists(coco::Urn),
 
-    /// Configured default branch for the project is missing.
-    #[error("repository '{0}' doesn't have the configured default branch '{1}'")]
-    DefaultBranchMissing(String, String),
-
-    /// Repository already has a 'rad' remote.
-    #[error("repository '{0}' has already been setup with a 'rad' remote")]
-    RadRemoteExists(String),
+    /// Failed to create a librad project.
+    #[error(transparent)]
+    ProjectCreation(#[from] coco::project::Error),
 
     /// FileSystem errors from interacting with code in repository.
     #[error(transparent)]
@@ -55,6 +51,10 @@ pub enum Error {
     /// Trying to find a file path which could not be found.
     #[error("the path '{0}' was not found")]
     PathNotFound(surf::file_system::Path),
+
+    /// Could not construct a path.
+    #[error(transparent)]
+    JoinPaths(#[from] std::env::JoinPathsError),
 
     /// Originated from `radicle_surf`.
     #[error(transparent)]
@@ -87,6 +87,10 @@ pub enum Error {
     /// The given block could not be found in the Registry.
     #[error("the given block '{0}' could not be found in the Registry")]
     BlockNotFound(registry::BlockHash),
+
+    /// An error occurred while performing the checkout of a project.
+    #[error("checkout of the project failed")]
+    Checkout,
 
     /// Accept error from `librad`.
     #[error(transparent)]

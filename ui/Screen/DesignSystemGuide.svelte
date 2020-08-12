@@ -647,6 +647,20 @@
 
       <Swatch>
         <Input.Text
+          style="flex: 1;"
+          disabled
+          placeholder="Hey, I'm a disabled input with a placeholder." />
+      </Swatch>
+
+      <Swatch>
+        <Input.Text
+          style="flex: 1;"
+          disabled
+          value="I'm a disabled input with a value." />
+      </Swatch>
+
+      <Swatch>
+        <Input.Text
           placeholder="And I'm an input with a validation error."
           style="flex: 1"
           validation={{ status: ValidationStatus.Error, message: "Well, that didn't go well..." }} />
@@ -857,26 +871,50 @@
 
     <Section title="Notifications" subTitle="Info, Warnings and Errors">
       <Swatch>
-        <Notification
-          showIcon="true"
-          message="This is harmless, but you should know anyway." />
+        <Notification message="Snackbar" />
       </Swatch>
 
       <Swatch>
-        <Notification message="This is harmless without an icon." />
+        <Notification message="Snackbar with icon" showIcon={true} />
+      </Swatch>
+
+      <Swatch>
+        <Notification message="Snackbar with" actionText="Action" />
+      </Swatch>
+
+      <Swatch>
+        <Notification
+          message="Snackbar with icon and"
+          showIcon={true}
+          actionText="Action" />
       </Swatch>
 
       <Swatch>
         <Notification
           level={notification.Level.Error}
-          showIcon="true"
-          message="Something bad happened, halp!" />
+          message="Just plain error" />
       </Swatch>
 
       <Swatch>
         <Notification
           level={notification.Level.Error}
-          message="Something bad happened with no icon!" />
+          message="Error with icon"
+          showIcon={true} />
+      </Swatch>
+
+      <Swatch>
+        <Notification
+          level={notification.Level.Error}
+          message="Error with"
+          actionText="Action" />
+      </Swatch>
+
+      <Swatch>
+        <Notification
+          level={notification.Level.Error}
+          message="Error with icon and"
+          showIcon={true}
+          actionText="Action" />
       </Swatch>
     </Section>
 

@@ -60,6 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     let paths_config = if args.test {
+        std::env::set_var("RAD_HOME", temp_dir.path());
         coco::config::Paths::FromRoot(temp_dir.path().to_path_buf())
     } else {
         coco::config::Paths::default()
@@ -79,8 +80,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.test {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = coco_api.init_owner(key.clone(), "cloudhead")?;
-        coco::control::setup_fixtures(&coco_api, key, &owner).expect("fixture creation failed");
+        let owner = coco_api.init_owner(&key, "cloudhead")?;
+        coco::control::setup_fixtures(&coco_api, &key, &owner).expect("fixture creation failed");
     }
 
     let store = {

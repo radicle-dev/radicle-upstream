@@ -58,7 +58,10 @@
           {lastSix}
         </p>
       {:else if showOnHover && hover}
-        <p class="typo-text-small-mono" style="padding-right: 0.25rem;">
+        <p
+          data-cy="full-urn"
+          class="typo-text-small-mono"
+          style="padding-right: 0.25rem;">
           {cleanUrn}
         </p>
       {/if}

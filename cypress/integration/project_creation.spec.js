@@ -3,10 +3,10 @@ import { DIALOG_SHOWOPENDIALOG } from "../../native/ipc.js";
 const withEmptyRepositoryStub = callback => {
   cy.exec("pwd").then(result => {
     const pwd = result.stdout;
-    const emptyDirectoryPath = `${pwd}/fixtures/empty-repo`;
+    const emptyDirectoryPath = `${pwd}/cypress/workspace/empty-repo`;
 
     cy.exec(`rm -rf ${emptyDirectoryPath}`);
-    cy.exec(`mkdir ${emptyDirectoryPath}`);
+    cy.exec(`mkdir -p ${emptyDirectoryPath}`);
 
     // stub native call and return the directory path to the UI
     cy.window().then(appWindow => {
@@ -18,6 +18,7 @@ const withEmptyRepositoryStub = callback => {
             }
           },
         },
+        isDev: true,
       };
     });
 
@@ -31,7 +32,7 @@ const withEmptyRepositoryStub = callback => {
 const withPlatinumStub = callback => {
   cy.exec("pwd").then(result => {
     const pwd = result.stdout;
-    const platinumPath = `${pwd}/fixtures/git-platinum-copy`;
+    const platinumPath = `${pwd}/cypress/workspace/git-platinum-copy`;
 
     cy.exec(`rm -rf ${platinumPath}`);
     cy.exec(
@@ -48,6 +49,7 @@ const withPlatinumStub = callback => {
             }
           },
         },
+        isDev: true,
       };
     });
 
@@ -197,6 +199,15 @@ context("project creation", () => {
     });
 
     context("form", () => {
+      it("clears name input when switching from new to existing project", () => {
+        cy.pick("name").clear();
+        cy.pick("name").type("this-will-be-a-new-project");
+        cy.pick("new-project").click();
+        cy.pick("name").should("have.value", "this-will-be-a-new-project");
+        cy.pick("existing-project").click();
+        cy.pick("name").should("have.value", "");
+      });
+
       it("prevents the user from submitting invalid data", () => {
         // shows a validation message when new project path is empty
         cy.pick("page", "new-project")
@@ -260,14 +271,18 @@ context("project creation", () => {
         cy.pick("profile-context-menu").click();
         cy.pick("dropdown-menu", "new-project").click();
 
-        cy.pick("name").type("git-platinum-copy");
-        cy.pick("description").type("Best project");
+        cy.pick("name").should("not.be.disabled");
 
         cy.pick("existing-project").click();
+        cy.pick("name").should("be.disabled");
+
         cy.pick("existing-project", "choose-path-button").click();
         // Make sure UI has time to update path value from stub,
         // this prevents this spec from failing on CI.
         cy.wait(500);
+
+        cy.pick("name").should("have.value", "git-platinum-copy");
+        cy.pick("description").type("Best project");
 
         cy.pick("create-project-button").click();
         cy.pick("project-screen", "topbar", "project-avatar").contains(
