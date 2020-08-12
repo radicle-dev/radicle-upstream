@@ -32,7 +32,7 @@
   }
 
   .container {
-    padding: 24px 24px 16px 24px;
+    padding: 1rem 2rem;
   }
 </style>
 
