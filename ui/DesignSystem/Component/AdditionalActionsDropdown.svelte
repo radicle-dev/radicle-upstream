@@ -1,7 +1,7 @@
 <script>
   import { fade } from "svelte/transition";
 
-  import { Icon, Text } from "../Primitive";
+  import { Icon } from "../Primitive";
   import Urn from "./Urn.svelte";
   import Tooltip from "./Tooltip.svelte";
 
@@ -128,7 +128,7 @@
       {#if menuItems}
         <div class="menu" data-cy="dropdown-menu">
           {#each menuItems as item}
-            {#if item.tooltip !== undefined}
+            {#if item !== undefined}
               <Tooltip value={item.tooltip} position="bottom">
                 <div
                   data-cy={item.dataCy}
@@ -138,18 +138,9 @@
                   <svelte:component
                     this={item.icon}
                     style="margin-right: 12px" />
-                  <Text>{item.title}</Text>
+                  <p>{item.title}</p>
                 </div>
               </Tooltip>
-            {:else}
-              <div
-                data-cy={item.dataCy}
-                class="menu-item"
-                class:disabled={item.disabled}
-                on:click|stopPropagation={!item.disabled && handleItemSelection(item)}>
-                <svelte:component this={item.icon} style="margin-right: 12px" />
-                <Text>{item.title}</Text>
-              </div>
             {/if}
           {/each}
         </div>

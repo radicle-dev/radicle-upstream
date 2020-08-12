@@ -25,12 +25,10 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    height: 40px;
+    min-height: 40px;
     outline-style: none;
     padding: 0 12px;
     user-select: none;
-    font-family: var(--typeface-medium);
-    font-size: 16px;
     line-height: 22px;
   }
 
@@ -323,7 +321,7 @@
 
 <button
   data-cy={dataCy}
-  class="button {buttonClass}"
+  class="button typo-text-bold {buttonClass}"
   {title}
   {disabled}
   on:click

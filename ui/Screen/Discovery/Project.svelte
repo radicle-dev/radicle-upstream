@@ -1,5 +1,5 @@
 <script>
-  import { Avatar, Icon, Text, Title } from "../../DesignSystem/Primitive";
+  import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import {
     Stats,
     TrackToggle,
@@ -74,18 +74,18 @@
   <div class="header">
     <div class="title">
       {#if project.registration}
-        <Title variant="large" style="color: var(--color-foreground-level-4);">
+        <h3 style="color: var(--color-foreground-level-4);">
           {project.domain}
-        </Title>
-        <Title variant="large" truncate>
+        </h3>
+        <h3 class="typo-overflow-ellipses">
           &nbsp;{`/ ${project.metadata.name}`}
-        </Title>
+        </h3>
         <div class="registered">
           <Icon.Verified
             style="fill: var(--color-primary); position: relative; bottom: -5px;" />
         </div>
       {:else}
-        <Title variant="large" truncate>{project.metadata.name}</Title>
+        <h3 class="typo-overflow-ellipses">{project.metadata.name}</h3>
       {/if}
     </div>
 
@@ -95,12 +95,13 @@
 
   </div>
   <div class="shareableEntityIdentifier">
-    <Urn urn={project.shareableEntityIdentifier} />
+    <Urn
+      urn={project.shareableEntityIdentifier}
+      notificationText="The project ID was copied to your clipboard" />
   </div>
-  <!-- TODO(sos): middle-truncate shareableEntityID & show copy icon -->
 
   <div class="description">
-    <Text>{project.metadata.description}</Text>
+    <p>{project.metadata.description}</p>
   </div>
 
   <div class="bottom">

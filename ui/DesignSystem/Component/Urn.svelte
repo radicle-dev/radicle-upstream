@@ -1,9 +1,10 @@
 <script>
   import Copyable from "./Copyable.svelte";
-  import { Icon, Text } from "../Primitive";
+  import { Icon } from "../Primitive";
 
   export let urn = null;
   export let showOnHover = false;
+  export let notificationText = "Copied to your clipboard";
 
   const cleanUrn = urn.replace(/^%?rad:git:/, "");
 
@@ -31,6 +32,10 @@
     padding: 0 4px;
     border-radius: 4px;
   }
+
+  .urn p {
+    color: var(--color-foreground-level-6);
+  }
 </style>
 
 <div
@@ -38,33 +43,28 @@
   data-cy="urn"
   on:mouseover={showFullUrn}
   on:mouseout={hideFullUrn}>
-  <Copyable iconSize="small" style="align-items: center;" copyContent={urn}>
+  <Copyable
+    iconSize="small"
+    style="align-items: center;"
+    copyContent={urn}
+    {notificationText}>
     {#if urn.length > 24}
       {#if (showOnHover && !hover) || !showOnHover}
-        <Text
-          style="font-family: var(--typeface-mono-medium); font-size: 14px;
-          color: var(--color-foreground-level-6);">
-          {firstSix}
-        </Text>
+        <p class="typo-text-small-mono">{firstSix}</p>
         <Icon.Ellipses size="small" />
-        <Text
-          style="font-family: var(--typeface-mono-medium); font-size: 14px;
-          color: var(--color-foreground-level-6); padding-right: 0.25rem">
+        <p class="typo-text-small-mono" style="padding-right: 0.25rem">
           {lastSix}
-        </Text>
+        </p>
       {:else if showOnHover && hover}
-        <Text
-          style="font-family: var(--typeface-mono-medium); font-size: 14px;
-          color: var(--color-foreground-level-6); padding-right: 0.25rem;">
+        <p
+          data-cy="full-urn"
+          class="typo-text-small-mono"
+          style="padding-right: 0.25rem;">
           {cleanUrn}
-        </Text>
+        </p>
       {/if}
     {:else}
-      <Text
-        style="font-family: var(--typeface-mono-medium); font-size: 14px; color:
-        var(--color-foreground-level-6); padding-right: 0.25rem">
-        {urn}
-      </Text>
+      <p class="typo-text-small-mono" style="padding-right: 0.25rem">{urn}</p>
     {/if}
   </Copyable>
 </div>

@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Text } from "../Primitive";
+  import { Icon } from "../Primitive";
   import Option from "./Dropdown/Option.svelte";
 
   export let placeholder = null;
@@ -111,9 +111,9 @@
     {#if value && optionByValue}
       <Option {...optionByValue} {disabled} />
     {:else}
-      <Text style={`margin: 0 42px 0 12px; color: ${disabledColor()}`}>
+      <p style={`margin: 0 42px 0 12px; color: ${disabledColor()}`}>
         {placeholder}
-      </Text>
+      </p>
     {/if}
     <Icon.Expand
       style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
@@ -131,9 +131,9 @@
 
   {#if !validationPending && !valid && validationMessage}
     <div class="validation-row">
-      <Text style="color: var(--color-negative); text-align: left;">
+      <p style="color: var(--color-negative); text-align: left;">
         {validationMessage}
-      </Text>
+      </p>
     </div>
   {/if}
 </div>

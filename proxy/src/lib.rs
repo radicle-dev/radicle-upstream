@@ -36,6 +36,6 @@ pub mod http;
 pub mod identity;
 pub mod keystore;
 mod notification;
-mod project;
+pub mod project;
 pub mod registry;
 pub mod session;

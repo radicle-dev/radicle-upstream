@@ -1,5 +1,4 @@
 <script>
-  import { Text } from "../../DesignSystem/Primitive";
   import ActionItem from "./Timeline/ActionItem.svelte";
   import CommentItem from "./Timeline/CommentItem.svelte";
   export let startDate = null;
@@ -34,7 +33,7 @@
 
 <ul {style}>
   <li class="base-item">
-    <Text style="color: var(--color-foreground-level-4)">{startDate}</Text>
+    <p style="color: var(--color-foreground-level-4)">{startDate}</p>
   </li>
   {#each items as item}
     {#if item.variant === 'comment'}

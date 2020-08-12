@@ -19,14 +19,11 @@
   }
 
   .item {
-    font-family: var(--typeface-medium);
-    font-size: 16px;
     line-height: 130%;
     color: var(--color-foreground-level-6);
   }
 
   .item.active {
-    font-family: var(--typeface-medium);
     color: var(--color-secondary);
   }
 </style>
@@ -43,7 +40,7 @@
     </div>
   {/if}
 
-  <p class="item" class:active>{title}</p>
+  <p class="item typo-text-bold" class:active>{title}</p>
 </a>
 
 {#if active}
