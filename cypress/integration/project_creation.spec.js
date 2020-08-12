@@ -260,14 +260,18 @@ context("project creation", () => {
         cy.pick("profile-context-menu").click();
         cy.pick("dropdown-menu", "new-project").click();
 
-        cy.pick("name").type("git-platinum-copy");
-        cy.pick("description").type("Best project");
+        cy.pick("name").should("not.be.disabled");
 
         cy.pick("existing-project").click();
+        cy.pick("name").should("be.disabled");
+
         cy.pick("existing-project", "choose-path-button").click();
         // Make sure UI has time to update path value from stub,
         // this prevents this spec from failing on CI.
         cy.wait(500);
+
+        cy.pick("name").should("have.value", "git-platinum-copy");
+        cy.pick("description").type("Best project");
 
         cy.pick("create-project-button").click();
         cy.pick("project-screen", "topbar", "project-avatar").contains(

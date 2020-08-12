@@ -221,7 +221,12 @@
     "existingRepositoryPath",
     validations
   );
+
+  // Use the directory name for existing projects as the project name.
   $: name = existingRepositoryPath.split("/").slice(-1)[0];
+
+  // Reset the project name when switching between new and existing repo.
+  $: isExisting && (name = "");
 </script>
 
 <style>
