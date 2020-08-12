@@ -5,7 +5,7 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
-use warp::{path, Filter, Rejection, Reply};
+use warp::{Filter, Rejection, Reply};
 
 use crate::avatar;
 use crate::coco;
@@ -83,15 +83,14 @@ where
         .and_then(handler::get)
 }
 
-/// `GET /tracked-identities`
+/// `GET /`
 fn list_tracked_filter<R>(
     ctx: http::Ctx<R>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
-    path("tracked-identities")
-        .and(http::with_context(ctx))
+    http::with_context(ctx)
         .and(warp::get())
         .and(document::document(document::description(
             "List tracked Identities",
@@ -410,11 +409,7 @@ mod test {
             coco::control::track_fake_peer(&ctx.peer_api, key, &platinum_project, "fintohaps")
                 .into();
 
-        let res = request()
-            .method("GET")
-            .path("/tracked-identities")
-            .reply(&api)
-            .await;
+        let res = request().method("GET").path("/").reply(&api).await;
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         assert_eq!(res.status(), StatusCode::OK);
