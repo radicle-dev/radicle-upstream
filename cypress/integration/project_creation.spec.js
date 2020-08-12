@@ -199,6 +199,15 @@ context("project creation", () => {
     });
 
     context("form", () => {
+      it("clears name input when switching from new to existing project", () => {
+        cy.pick("name").clear();
+        cy.pick("name").type("this-will-be-a-new-project");
+        cy.pick("new-project").click();
+        cy.pick("name").should("have.value", "this-will-be-a-new-project");
+        cy.pick("existing-project").click();
+        cy.pick("name").should("have.value", "");
+      });
+
       it("prevents the user from submitting invalid data", () => {
         // shows a validation message when new project path is empty
         cy.pick("page", "new-project")
