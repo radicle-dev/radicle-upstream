@@ -1,8 +1,9 @@
 <script>
   import { format } from "timeago.js";
   import { link } from "svelte-spa-router";
+  import { isMarkdown } from "../../../src/source.ts";
 
-  import { Icon } from "../../Primitive";
+  import { Icon, Markdown } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
   import EmptyState from "../EmptyState.svelte";
 
@@ -61,6 +62,23 @@
   .container {
     display: flex;
   }
+
+  .markdown-wrapper {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+
+  .file-source > header + .container .markdown-wrapper {
+    padding-top: 0;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 </style>
 
 <div class="file-source" data-cy="file-source">
@@ -88,6 +106,10 @@
         icon="eyes"
         text="Binary content"
         style="height: 100%; padding: 2rem 0 1rem;" />
+    {:else if isMarkdown(path)}
+      <div class="markdown-wrapper">
+        <Markdown content={blob.content} />
+      </div>
     {:else}
       <pre class="line-numbers typo-text-mono">
         {@html blob.content
@@ -98,7 +120,7 @@
           })
           .join('\n')}
       </pre>
-      <pre class="code typo-text-mono">
+      <pre class="code typo-text-mono no-scrollbar">
         {#if blob.html}
           {@html blob.content}
         {:else}{blob.content}{/if}

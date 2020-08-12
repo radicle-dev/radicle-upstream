@@ -235,7 +235,7 @@ const update = (msg: Msg): void => {
                 peerId: msg.peerId,
                 revision: msg.revision,
                 path: msg.path,
-                highlight: true,
+                highlight: !isMarkdown(msg.path),
               },
             })
             .then(objectStore.success)
