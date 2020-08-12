@@ -13,6 +13,19 @@ export interface Metadata {
   description?: string;
 }
 
+export interface New {
+  type: "new";
+  path: string;
+  name: string;
+}
+
+export interface Existing {
+  type: "existing";
+  path: string;
+}
+
+type Repo = New | Existing;
+
 export interface Stats {
   branches: number;
   commits: number;
@@ -61,8 +74,7 @@ enum Kind {
 
 interface Create extends event.Event<Kind> {
   kind: Kind.Create;
-  metadata: Metadata;
-  path: string;
+  input: CreateInput;
 }
 
 interface Fetch extends event.Event<Kind> {
@@ -77,8 +89,9 @@ interface FetchList extends event.Event<Kind> {
 type Msg = Create | Fetch | FetchList;
 
 interface CreateInput {
-  metadata: Metadata;
-  path: string;
+  repo: Repo;
+  description?: string;
+  defaultBranch: string;
 }
 
 interface RegisterInput {
@@ -91,10 +104,7 @@ const update = (msg: Msg): void => {
     case Kind.Create:
       creationStore.loading();
       api
-        .post<CreateInput, Project>(`projects`, {
-          metadata: msg.metadata,
-          path: msg.path,
-        })
+        .post<CreateInput, Project>(`projects`, msg.input)
         .then(creationStore.success)
         .catch(creationStore.error);
 
@@ -119,11 +129,8 @@ const update = (msg: Msg): void => {
   }
 };
 
-export const create = (metadata: Metadata, path: string): Promise<Project> => {
-  return api.post<CreateInput, Project>(`projects`, {
-    metadata,
-    path,
-  });
+export const create = (input: CreateInput): Promise<Project> => {
+  return api.post<CreateInput, Project>(`projects`, input);
 };
 
 export const getOrgProject = (

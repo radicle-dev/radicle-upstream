@@ -11,25 +11,27 @@ jest.mock("./api");
 describe("creating a project", () => {
   it("sends a correctly-formatted POST request to api", () => {
     project
-      .create(
-        {
+      .create({
+        defaultBranch: "trunk",
+        description: "surfing",
+        repo: {
+          type: "new",
           name: "radicle-surf",
-          defaultBranch: "trunk",
-          description: "surfing",
+          path: "somewhere/in/the/machine",
         },
-        "somewhere/in/the/machine"
-      )
+      })
       .catch(reason => {
         console.error("Project creation failed: ", reason);
       });
 
     expect(api.post).toHaveBeenCalledWith("projects", {
-      metadata: {
-        defaultBranch: "trunk",
-        description: "surfing",
+      defaultBranch: "trunk",
+      description: "surfing",
+      repo: {
+        type: "new",
         name: "radicle-surf",
+        path: "somewhere/in/the/machine",
       },
-      path: "somewhere/in/the/machine",
     });
   });
 });

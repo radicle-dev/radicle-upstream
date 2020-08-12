@@ -156,14 +156,13 @@
     let response;
 
     try {
-      response = await create(
-        {
-          name,
-          description,
-          defaultBranch,
-        },
-        isNew ? newRepositoryPath : existingRepositoryPath
-      );
+      response = await create({
+        description,
+        defaultBranch,
+        repo: isNew
+          ? { type: NEW, name, path: newRepositoryPath }
+          : { type: EXISTING, path: existingRepositoryPath },
+      });
 
       // Re-fetch session so we have the right permissions to enable the
       // project registration button rithout a page-reload.
@@ -222,6 +221,7 @@
     "existingRepositoryPath",
     validations
   );
+  $: name = existingRepositoryPath.split("/").slice(-1)[0];
 </script>
 
 <style>
@@ -266,7 +266,8 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        validation={nameValidation} />
+        validation={nameValidation}
+        disabled={isExisting} />
 
       <Input.Text
         dataCy="description"
