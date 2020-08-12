@@ -32,7 +32,7 @@
     orgs={session.orgs}
     registerOrgPermission={session.permissions.registerOrg} />
 
-  <div class="container" data-cy="scrollable-content">
+  <div class="container">
     <div class="content" {style}>
       <slot />
     </div>

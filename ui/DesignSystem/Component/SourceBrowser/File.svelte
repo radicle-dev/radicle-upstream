@@ -20,13 +20,9 @@
     width: 100%;
   }
 
-  /* prevent icon from shrinking when the filename is long */
-  .file :global(svg) {
-    overflow: unset;
-  }
-
   .file-name {
     margin-left: 0.25rem;
+    word-wrap: none;
   }
 
   a {

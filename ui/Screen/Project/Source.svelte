@@ -1,5 +1,5 @@
 <script>
-  import { getContext } from "svelte";
+  import { getContext, onMount } from "svelte";
   import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
@@ -36,7 +36,14 @@
 
   const { id, metadata } = getContext("project");
 
-  let y = 0;
+  let headerHeight;
+  onMount(() => {
+    headerHeight = document
+      .getElementById("projectHeader")
+      .getBoundingClientRect().height;
+  });
+
+  let scrollY = 0;
   let currentPeerId;
   let currentRevision;
   let currentObjectType;
@@ -140,7 +147,7 @@
     display: inline-block;
   }
   .description {
-    margin-top: 1rem;
+    margin: 0.5rem 0;
   }
   .center-content {
     margin: 0 auto;
@@ -173,7 +180,7 @@
   }
 
   .revision-selector-wrapper {
-    min-width: 15.4rem;
+    min-width: 18rem;
     margin: var(--content-padding) 0;
     position: relative;
     padding-right: 0.75rem;
@@ -209,13 +216,9 @@
   .column-left {
     display: flex;
     flex-direction: column;
-    width: 18rem;
+    min-width: 18rem;
     padding-right: 0.75rem;
-
-    position: sticky;
-    top: calc(var(--topbar-height) + 4rem);
-    align-self: flex-start;
-    height: calc(100vh - var(--topbar-height) - 6rem - var(--content-padding));
+    /* overflow: scroll; */
   }
 
   .column-right {
@@ -236,25 +239,26 @@
   }
 </style>
 
-<svelte:window bind:scrollY={y} />
+<svelte:window bind:scrollY />
 
 <Remote store={projectStore} let:data={project}>
   <div class="header-wrapper">
-    <div class="header center-content">
+    <div id="projectHeader" class="header center-content">
       <h2>{project.metadata.name}</h2>
+      <div class="description">
+        <p>{project.metadata.description}</p>
+      </div>
       <div class="project-id">
         <Urn
           urn={project.shareableEntityIdentifier}
           showOnHover
           notificationText="The project ID was copied to your clipboard" />
       </div>
-      <div class="description">
-        <p>{project.metadata.description}</p>
-      </div>
     </div>
   </div>
   <div class="wrapper">
-    <div class="repo-header-wrapper {y > 142 ? 'elevation' : ''} ">
+    <div
+      class="repo-header-wrapper {scrollY > headerHeight ? 'elevation' : ''}">
       <div class="repo-header center-content">
         <!-- Revision selector -->
         <Remote store={revisionsStore} let:data={revisions}>

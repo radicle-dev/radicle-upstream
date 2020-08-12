@@ -39,6 +39,7 @@
     color: var(--color-foreground-level-6);
     user-select: none;
     line-height: 1.5rem;
+    word-wrap: none;
   }
   .folder:hover {
     background-color: var(--color-foreground-level-1);
@@ -47,10 +48,6 @@
 
   .folder-name {
     margin-left: 0.25rem;
-  }
-
-  .expanded :global(svg) {
-    transform: rotate(90deg);
   }
 
   .container {
@@ -64,8 +61,10 @@
 
 {#if !toplevel}
   <div class="folder" on:click={toggle}>
-    <span class:expanded class:active style="height: 24px">
-      <Icon.Chevron dataCy={`expand-${name}`} />
+    <span class:active style="height: 24px">
+      <Icon.Chevron
+        variant={expanded ? 'down' : 'right'}
+        dataCy={`expand-${name}`} />
     </span>
     <span class="folder-name">{name}</span>
   </div>
