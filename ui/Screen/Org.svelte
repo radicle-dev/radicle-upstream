@@ -2,6 +2,7 @@
   import { getContext } from "svelte";
   import Router, { push } from "svelte-spa-router";
 
+  import { isDev } from "../../native/ipc.js";
   import { fetch, org as store } from "../src/org.ts";
   import * as path from "../src/path.ts";
 
@@ -37,28 +38,33 @@
     "/orgs/:id/members": MembersMenu,
   };
 
-  const topbarMenuItems = orgId => [
-    {
-      icon: Icon.Source,
-      title: "Projects",
-      href: path.orgProjects(orgId),
-      looseActiveStateMatching: true,
-    },
-    {
-      icon: Icon.Fund,
-      title: "Wallet",
-      href: path.orgFund(orgId),
-      looseActiveStateMatching: false,
-    },
-    {
+  const topbarMenuItems = orgId => {
+    const items = [
+      {
+        icon: Icon.Source,
+        title: "Projects",
+        href: path.orgProjects(orgId),
+        looseActiveStateMatching: true,
+      },
+    ];
+    isDev() &&
+      items.push({
+        icon: Icon.Fund,
+        title: "Wallet",
+        href: path.orgFund(orgId),
+        looseActiveStateMatching: false,
+      });
+    items.push({
       icon: Icon.Member,
       title: "Members",
       href: path.orgMembers(orgId),
       looseActiveStateMatching: false,
-    },
-  ];
+    });
+    return items;
+  };
 
   let registerProjectMenuItem;
+  let sendFundsMenuItem;
 
   $: dropdownMenuItems = [
     registerProjectMenuItem,
@@ -67,11 +73,7 @@
       icon: Icon.Plus,
       event: () => push(path.memberRegistration(params.id)),
     },
-    {
-      title: "Send funds",
-      icon: Icon.ArrowUp,
-      event: () => console.log("event(send-funds-to-org)"),
-    },
+    sendFundsMenuItem,
   ];
 
   if (session.permissions.registerProject) {
@@ -88,6 +90,14 @@
       icon: Icon.Plus,
       disabled: true,
       tooltip: "To unlock project registration, create a local project first.",
+    };
+  }
+
+  if (isDev()) {
+    sendFundsMenuItem = {
+      title: "Send funds",
+      icon: Icon.ArrowUp,
+      event: () => console.log("event(send-funds-to-org)"),
     };
   }
 

@@ -17,3 +17,7 @@ export const copyToClipboard = text =>
 
 export const openPath = path =>
   window.electron.ipcRenderer.invoke(OPEN_PATH, path);
+
+export const isDev = () => {
+  return window.electron.isDev;
+};
