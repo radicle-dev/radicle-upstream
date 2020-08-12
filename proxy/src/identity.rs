@@ -68,7 +68,7 @@ pub struct Metadata {
 /// # Errors
 pub fn create(
     api: &coco::Api,
-    key: keys::SecretKey,
+    key: &keys::SecretKey,
     handle: &str,
 ) -> Result<Identity, error::Error> {
     let user = api.init_owner(key, handle)?;

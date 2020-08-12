@@ -135,7 +135,7 @@ mod handler {
         }
 
         let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
-        let id = identity::create(&ctx.peer_api, key, &input.handle)?;
+        let id = identity::create(&ctx.peer_api, &key, &input.handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -349,7 +349,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let user = ctx.peer_api.init_user(key, "cloudhead")?;
+        let user = ctx.peer_api.init_user(&key, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
         let peer_id = ctx.peer_api.peer_id();
@@ -387,7 +387,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let id = identity::create(&ctx.peer_api, key.clone(), "cloudhead")?;
+        let id = identity::create(&ctx.peer_api, &key, "cloudhead")?;
 
         let owner = ctx.peer_api.get_user(&id.clone().urn)?;
         let owner = coco::verify_user(owner)?;
@@ -404,7 +404,7 @@ mod test {
         )?;
 
         let fintohaps: identity::Identity =
-            coco::control::track_fake_peer(&ctx.peer_api, key, &platinum_project, "fintohaps")
+            coco::control::track_fake_peer(&ctx.peer_api, &key, &platinum_project, "fintohaps")
                 .into();
 
         let res = request().method("GET").path("/").reply(&api).await;

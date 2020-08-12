@@ -32,8 +32,7 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-#[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
-pub fn setup_fixtures(api: &Api, key: keys::SecretKey, owner: &User) -> Result<(), error::Error> {
+pub fn setup_fixtures(api: &Api, key: &keys::SecretKey, owner: &User) -> Result<(), error::Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -56,7 +55,7 @@ pub fn setup_fixtures(api: &Api, key: keys::SecretKey, owner: &User) -> Result<(
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(api, &key, owner, info.0, info.1, info.2)?;
+        replicate_platinum(api, key, owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -92,7 +91,7 @@ pub fn replicate_platinum(
         },
     };
 
-    let meta = api.init_project(key, owner, project_creation)?;
+    let meta = api.init_project(key, owner, &project_creation)?;
 
     // Push branches and tags.
     {
@@ -138,7 +137,7 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 #[must_use]
 pub fn track_fake_peer(
     api: &Api,
-    key: keys::SecretKey,
+    key: &keys::SecretKey,
     project: &project::Project<entity::Draft>,
     fake_user_handle: &str,
 ) -> (

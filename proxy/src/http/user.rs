@@ -539,7 +539,7 @@ mod test {
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
         let urn = coco::Urn::new(
             owner.root_hash().clone(),
             librad::uri::Protocol::Git,
