@@ -7,7 +7,6 @@
   import { fetch as fetchSession } from "../src/session.ts";
   import * as transaction from "../src/transaction.ts";
 
-  import { Title } from "../DesignSystem/Primitive";
   import {
     NavigationButtons,
     ModalLayout,
@@ -51,8 +50,6 @@
     }
   };
 
-  const wallet = () => transaction.formatPayer(session.identity);
-
   // TODO(sos): coordinate message format for project registration with proxy
   // See https://github.com/radicle-dev/radicle-upstream/issues/441
   const tx = () => ({
@@ -67,6 +64,8 @@
       },
     ],
   });
+
+  const payer = () => transaction.getPayer(tx().messages[0], session);
 
   const handleDetailsNextClick = event => {
     domainId = event.detail.domainId;
@@ -93,9 +92,9 @@
       <div class="project-registration">
 
         {#if showRegistrationDetails === true}
-          <Title variant="big" style="text-align: center; margin-bottom: 24px;">
+          <h2 style="text-align: center; margin-bottom: 24px;">
             Project registration
-          </Title>
+          </h2>
           <RegistrationDetailsStep
             identity={session.identity}
             {projects}
@@ -106,7 +105,7 @@
             bind:projectName
             on:next={handleDetailsNextClick} />
         {:else}
-          <Transaction transaction={tx()} payer={wallet()} />
+          <Transaction transaction={tx()} payer={payer()} />
 
           <NavigationButtons
             style={'margin-top: 32px;'}

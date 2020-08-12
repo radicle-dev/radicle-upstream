@@ -52,6 +52,10 @@ pub enum Error {
     #[error("the path '{0}' was not found")]
     PathNotFound(surf::file_system::Path),
 
+    /// Could not construct a path.
+    #[error(transparent)]
+    JoinPaths(#[from] std::env::JoinPathsError),
+
     /// Originated from `radicle_surf`.
     #[error(transparent)]
     Git(#[from] surf::git::error::Error),
@@ -84,6 +88,10 @@ pub enum Error {
     #[error("the given block '{0}' could not be found in the Registry")]
     BlockNotFound(registry::BlockHash),
 
+    /// An error occurred while performing the checkout of a project.
+    #[error("checkout of the project failed")]
+    Checkout,
+
     /// Accept error from `librad`.
     #[error(transparent)]
     LibradAccept(#[from] librad::net::peer::AcceptError),
@@ -106,7 +114,7 @@ pub enum Error {
 
     /// Parse error for [`coco::Urn`].
     #[error(transparent)]
-    LibradParseUrn(#[from] coco::ParseError),
+    LibradParseUrn(#[from] coco::uri::rad_urn::ParseError),
 
     /// Project error from `librad`.
     #[error(transparent)]

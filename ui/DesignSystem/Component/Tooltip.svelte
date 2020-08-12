@@ -1,5 +1,4 @@
 <script>
-  import { Text } from "../Primitive";
   export let value = null;
   export let position = "right"; // right | bottom | top | left
 
@@ -97,17 +96,21 @@
   }
 </style>
 
-<div
-  style="height: 100%;"
-  data-tooltip
-  data-cy="tooltip"
-  on:mouseover={event => showTooltip(event)}
-  on:mouseout={hideTooltip}>
-  <slot />
+{#if value}
   <div
-    style={`top: ${tooltip.positionY}px; left: ${tooltip.positionX}px;`}
-    class={`tooltip ${tooltip.className} ${position}`}>
-    <Text>{value}</Text>
+    style="height: 100%;"
+    data-tooltip
+    data-cy="tooltip"
+    on:mouseenter={event => showTooltip(event)}
+    on:mouseleave={hideTooltip}>
+    <slot />
+    <div
+      style={`top: ${tooltip.positionY}px; left: ${tooltip.positionX}px;`}
+      class={`tooltip ${tooltip.className} ${position}`}>
+      <p>{value}</p>
+    </div>
+    <span class="triangle" />
   </div>
-  <span class="triangle" />
-</div>
+{:else}
+  <slot />
+{/if}

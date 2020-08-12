@@ -1,9 +1,11 @@
 <script>
   import { format } from "timeago.js";
   import { link } from "svelte-spa-router";
+  import { isMarkdown } from "../../../src/source.ts";
 
-  import { Icon } from "../../Primitive";
+  import { Icon, Markdown } from "../../Primitive";
   import CommitTeaser from "./CommitTeaser.svelte";
+  import EmptyState from "../EmptyState.svelte";
 
   export let blob = null;
   export let path = null;
@@ -21,8 +23,6 @@
 
   header .file-header {
     display: flex;
-    font-family: var(--typeface-medium);
-    font-size: 1rem;
     height: 3rem;
     align-items: center;
     padding-left: 13px;
@@ -32,7 +32,6 @@
 
   header .file-name {
     margin-left: 0.5rem;
-    font-family: var(--typeface-medium);
   }
 
   header .file-name a {
@@ -49,8 +48,6 @@
   }
 
   .line-numbers {
-    font-family: var(--typeface-mono-regular);
-    font-size: 16px;
     color: var(--color-foreground-level-4);
     text-align: right;
     user-select: none;
@@ -59,22 +56,34 @@
 
   .code {
     padding-bottom: 0.5rem;
-  }
-
-  .code {
-    font-family: var(--typeface-mono-regular);
-    font-size: 16px;
     overflow-x: auto;
   }
 
   .container {
     display: flex;
   }
+
+  .markdown-wrapper {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+
+  .file-source > header + .container .markdown-wrapper {
+    padding-top: 0;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 </style>
 
 <div class="file-source" data-cy="file-source">
   <header>
-    <div class="file-header" data-cy="file-header">
+    <div class="file-header typo-semi-bold" data-cy="file-header">
       <Icon.File />
       <span class="file-name">
         <a href={rootPath} use:link>{projectName}</a>
@@ -93,9 +102,16 @@
   </header>
   <div class="container">
     {#if blob.binary}
-      ఠ ͟ಠ Binary content.
+      <EmptyState
+        icon="eyes"
+        text="Binary content"
+        style="height: 100%; padding: 2rem 0 1rem;" />
+    {:else if isMarkdown(path)}
+      <div class="markdown-wrapper">
+        <Markdown content={blob.content} />
+      </div>
     {:else}
-      <pre class="line-numbers">
+      <pre class="line-numbers typo-text-mono">
         {@html blob.content
           .split('\n')
           .slice(0, -1)
@@ -104,7 +120,7 @@
           })
           .join('\n')}
       </pre>
-      <pre class="code">
+      <pre class="code typo-text-mono no-scrollbar">
         {#if blob.html}
           {@html blob.content}
         {:else}{blob.content}{/if}

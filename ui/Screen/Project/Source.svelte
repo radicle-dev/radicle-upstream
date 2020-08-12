@@ -3,6 +3,10 @@
   import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
+  import { openPath } from "../../../native/ipc.js";
+
+  import { checkout } from "../../src/project.ts";
+  import * as notification from "../../src/notification.ts";
   import * as path from "../../src/path.ts";
   import { project as projectStore } from "../../src/project.ts";
   import * as remote from "../../src/remote.ts";
@@ -19,8 +23,8 @@
     RevisionType,
   } from "../../src/source.ts";
 
-  import { Code, Icon, Text, Title } from "../../DesignSystem/Primitive";
-  import { Copyable, EmptyState, Remote } from "../../DesignSystem/Component";
+  import { Icon } from "../../DesignSystem/Primitive";
+  import { EmptyState, Remote, Urn } from "../../DesignSystem/Component";
 
   import FileSource from "../../DesignSystem/Component/SourceBrowser/FileSource.svelte";
   import CommitTeaser from "../../DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
@@ -38,7 +42,7 @@
   let currentObjectPath;
 
   $: {
-    const parsed = path.parseProjectSourceLocation($querystring);
+    const parsed = path.parseQueryString($querystring);
 
     currentPeerId = parsed.peerId || null;
     currentObjectType = parsed.objectType || ObjectType.Tree;
@@ -70,6 +74,28 @@
         currentObjectPath
       )
     );
+  };
+
+  const handleCheckout = async event => {
+    try {
+      const path = await checkout(
+        id,
+        event.detail.checkoutDirectoryPath,
+        "PEER_ID_GOES_HERE",
+        "BRANCH_TO_CHECK_OUT_GOES_HERE"
+      );
+
+      notification.info(
+        `${metadata.name} checked out to ${path}`,
+        true,
+        "Open folder",
+        () => {
+          openPath(path);
+        }
+      );
+    } catch (error) {
+      notification.error(`Checkout failed: ${error.message}`, true);
+    }
   };
 
   // TODO(rudolfs): this functionality should be part of navigation/routing.
@@ -170,7 +196,6 @@
     margin-right: 1rem;
   }
   .stat {
-    font-family: var(--typeface-mono-bold);
     background-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
     padding: 0 0.5rem;
@@ -180,18 +205,15 @@
 
 <Remote store={projectStore} let:data={project}>
   <div class="header">
-    <Title variant="big">{project.metadata.name}</Title>
+    <h2>{project.metadata.name}</h2>
     <div class="project-id">
-      <Code>
-        <Copyable iconSize="normal">
-          <span style="margin-right: 8px;">
-            {project.shareableEntityIdentifier}
-          </span>
-        </Copyable>
-      </Code>
+      <Urn
+        urn={project.shareableEntityIdentifier}
+        showOnHover
+        notificationText="The project ID was copied to your clipboard" />
     </div>
     <div class="description">
-      <Text>{project.metadata.description}</Text>
+      <p>{project.metadata.description}</p>
     </div>
   </div>
 
@@ -227,29 +249,31 @@
         <div class="repo-stats" data-cy="repo-stats">
           <div class="repo-stat-item">
             <Icon.Commit />
-            <Text style="margin: 0 8px;">
+            <p style="margin: 0 8px;">
               <!-- svelte-ignore a11y-missing-attribute -->
               <a
                 data-cy="commits-button"
                 on:click={navigateOnReady(path.projectCommits(project.id, currentRevision), commitsStore)}>
                 Commits
               </a>
-            </Text>
-            <span class="stat">{project.stats.commits}</span>
+            </p>
+            <span class="stat typo-mono-bold">{project.stats.commits}</span>
           </div>
           <div class="repo-stat-item">
             <Icon.Branch />
-            <Text style="margin: 0 8px;">Branches</Text>
-            <span class="stat">{project.stats.branches}</span>
+            <p style="margin: 0 8px;">Branches</p>
+            <span class="stat typo-mono-bold">{project.stats.branches}</span>
           </div>
           <div class="repo-stat-item">
             <Icon.Member />
-            <Text style="margin: 0 8px;">Contributors</Text>
-            <span class="stat">{project.stats.contributors}</span>
+            <p style="margin: 0 8px;">Contributors</p>
+            <span class="stat typo-mono-bold">
+              {project.stats.contributors}
+            </span>
           </div>
         </div>
         <CheckoutButton
-          projectId={project.id}
+          on:checkout={handleCheckout}
           projectName={project.metadata.name} />
       </div>
 

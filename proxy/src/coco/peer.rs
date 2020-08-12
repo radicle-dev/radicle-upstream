@@ -18,7 +18,6 @@ use radicle_surf::vcs::git;
 
 use crate::coco;
 use crate::error;
-use crate::project::Project;
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
@@ -26,7 +25,7 @@ pub type User = user::User<entity::Verified>;
 /// High-level interface to the coco monorepo and gossip layer.
 pub struct Api {
     /// Thread-safe wrapper around [`PeerApi`].
-    peer_api: Arc<Mutex<PeerApi>>,
+    peer_api: Arc<Mutex<PeerApi<keys::SecretKey>>>,
 }
 
 impl Api {
@@ -37,7 +36,7 @@ impl Api {
     /// If turning the config into a `Peer` fails
     /// If trying to accept on the socket fails
     pub async fn new<I>(
-        config: PeerConfig<discovery::Static<I, SocketAddr>>,
+        config: PeerConfig<discovery::Static<I, SocketAddr>, keys::SecretKey>,
     ) -> Result<Self, error::Error>
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
@@ -129,12 +128,12 @@ impl Api {
     ///
     /// # Errors
     ///
-    ///   * The retrieving the project entities from the store fails.
+    ///   * Retrieving the project entities from the store fails.
     #[allow(
         clippy::match_wildcard_for_single_variants,
         clippy::wildcard_enum_match_arm
     )]
-    pub fn list_projects(&self) -> Result<Vec<Project>, error::Error> {
+    pub fn list_projects(&self) -> Result<Vec<project::Project<entity::Draft>>, error::Error> {
         let project_meta = {
             let api = self.peer_api.lock().expect("unable to acquire lock");
             let storage = api.storage().reopen()?;
@@ -158,15 +157,7 @@ impl Api {
             .collect::<Vec<_>>()
         };
 
-        project_meta
-            .into_iter()
-            .map(|project| {
-                self.with_browser(&project.urn(), |browser| {
-                    let stats = browser.get_stats()?;
-                    Ok((project, stats).into())
-                })
-            })
-            .collect()
+        Ok(project_meta)
     }
 
     /// Returns the list of [`user::User`]s known for your peer.
@@ -202,14 +193,18 @@ impl Api {
     /// # Errors
     ///
     ///   * Resolving the project fails.
-    pub fn get_project(
+    pub fn get_project<P>(
         &self,
         urn: &RadUrn,
-    ) -> Result<project::Project<entity::Draft>, error::Error> {
+        peer: P,
+    ) -> Result<project::Project<entity::Draft>, error::Error>
+    where
+        P: Into<Option<PeerId>>,
+    {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
 
-        Ok(storage.metadata(urn)?)
+        Ok(storage.metadata_of(urn, peer)?)
     }
 
     /// Get the user found at `urn`.
@@ -237,7 +232,7 @@ impl Api {
     {
         let git_dir = self.monorepo();
 
-        let project = self.get_project(urn)?;
+        let project = self.get_project(urn, None)?;
         let default_branch = git::Branch::local(project.default_branch());
         let repo = git::Repository::new(git_dir)?;
         let namespace = git::Namespace::try_from(project.urn().id.to_string().as_str())?;
@@ -534,7 +529,7 @@ mod test {
         let projects = api.list_projects()?;
         let mut project_names = projects
             .into_iter()
-            .map(|project| project.metadata.name)
+            .map(|project| project.name().to_string())
             .collect::<Vec<_>>();
         project_names.sort();
 

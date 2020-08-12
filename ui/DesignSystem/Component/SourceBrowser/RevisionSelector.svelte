@@ -3,7 +3,7 @@
 
   import { RevisionType } from "../../../src/source.ts";
 
-  import { Avatar, Icon, Text, Title } from "../../Primitive";
+  import { Avatar, Icon } from "../../Primitive";
 
   export let currentRevision = null;
   export let currentPeerId = null;
@@ -48,6 +48,11 @@
 </script>
 
 <style>
+  .revision-name {
+    color: var(--color-foreground-level-6);
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
   .revision-selector {
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 4px;
@@ -65,8 +70,6 @@
     visibility: hidden;
   }
   .selector-avatar {
-    overflow: hidden;
-    text-overflow: ellipsis;
     display: flex;
     justify-content: space-between;
     width: 100%;
@@ -105,9 +108,6 @@
     cursor: pointer;
     overflow-x: hidden;
     user-select: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .branch:hover,
   .tag:hover {
@@ -131,7 +131,7 @@
   data-revision={currentRevision.name}
   on:click|stopPropagation={showDropdown}
   hidden={expanded}>
-  <div class="selector-avatar">
+  <div class="selector-avatar typo-overflow-ellipses">
     <div style="display: flex; overflow: hidden;">
       {#if currentRevision.type === RevisionType.Branch}
         <Icon.Branch
@@ -144,12 +144,7 @@
           style="vertical-align: bottom; fill: var(--color-foreground-level-4);
           flex-shrink: 0;" />
       {/if}
-      <Text
-        style="color: var(--color-foreground-level-6); white-space: nowrap;
-        text-overflow: ellipsis; overflow: hidden; margin-left: 0.5rem;
-        margin-right: 0.5rem;">
-        {currentRevision.name}
-      </Text>
+      <p class="revision-name typo-overflow-ellipses">{currentRevision.name}</p>
     </div>
     <Avatar
       avatarFallback={currentSelectedPeer.identity.avatarFallback}
@@ -172,15 +167,14 @@
           style="display: flex; justify-content: flex-start; margin-right: 8px;"
           size="small"
           variant="circle" />
-        <Title
-          style="white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+        <p class="typo-text-bold typo-overflow-ellipses">
           {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
-        </Title>
+        </p>
       </div>
       <ul>
         {#each repo.branches as branch}
           <li
-            class="branch"
+            class="branch typo-overflow-ellipses"
             class:selected={currentRevision.name === branch && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-repo-handle={repo.identity.metadata.handle}
             data-branch={branch}
@@ -201,7 +195,7 @@
         {/each}
         {#each repo.tags as tag}
           <li
-            class="tag"
+            class="tag typo-overflow-ellipses"
             data-repo-handle={repo.identity.metadata.handle}
             class:selected={currentRevision.name === tag && currentSelectedPeer.identity.peerId === repo.identity.peerId}
             data-tag={tag}

@@ -7,7 +7,7 @@
   import { clear, fetch, session as store } from "./src/session.ts";
 
   import { NotificationFaucet, Remote } from "./DesignSystem/Component";
-  import { Button, Title } from "./DesignSystem/Primitive";
+  import { Button } from "./DesignSystem/Primitive";
 
   import Hotkeys from "./Hotkeys.svelte";
   import Theme from "./Theme.svelte";
@@ -16,7 +16,7 @@
   import IdentityCreation from "./Screen/IdentityCreation.svelte";
   import DesignSystemGuide from "./Screen/DesignSystemGuide.svelte";
   import Discovery from "./Screen/Discovery.svelte";
-  import Help from "./Screen/Help.svelte";
+  import Shortcuts from "./Screen/Shortcuts.svelte";
   import NotFound from "./Screen/NotFound.svelte";
   import Org from "./Screen/Org.svelte";
   import OrgRegistration from "./Screen/OrgRegistration.svelte";
@@ -26,6 +26,7 @@
   import ProjectCreation from "./Screen/ProjectCreation.svelte";
   import ProjectRegistration from "./Screen/ProjectRegistration.svelte";
   import Search from "./Screen/Search.svelte";
+  import SendFunds from "./Screen/SendFunds.svelte";
   import Settings from "./Screen/Settings.svelte";
   import TransactionDetails from "./Screen/TransactionDetails.svelte";
   import UserRegistration from "./Screen/UserRegistration.svelte";
@@ -46,9 +47,10 @@
     "/projects/:projectId/register/:domainId": ProjectRegistration,
     "/projects/:id/*": Project,
     "/design-system-guide": DesignSystemGuide,
-    "/help": Help,
+    "/shortcuts": Shortcuts,
     "/user-registration": UserRegistration,
     "/transactions/:id": TransactionDetails,
+    "/send-funds": SendFunds,
     "*": NotFound,
   };
 
@@ -83,6 +85,10 @@
     justify-content: center;
     align-items: center;
   }
+
+  h2 {
+    margin-bottom: 32px;
+  }
 </style>
 
 <Hotkeys />
@@ -92,9 +98,7 @@
   <Router {routes} />
 
   <div slot="error" class="error">
-    <Title variant="big" style="margin-bottom: 32px;">
-      We're having trouble logging you into radicle. 😪
-    </Title>
+    <h2>We're having trouble logging you into radicle. 😪</h2>
     <Button on:click={clear}>Clear Session</Button>
   </div>
 </Remote>

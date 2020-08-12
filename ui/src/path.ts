@@ -24,6 +24,7 @@ export const memberRegistration = (id: string): string =>
   `/orgs/${id}/members/register`;
 
 export const createProject = (): string => "/projects/new";
+export const sendFunds = (): string => "/send-funds";
 export const registerProject = (domainId: string): string =>
   `/projects/register/${domainId}`;
 export const registerExistingProject = (
@@ -50,7 +51,7 @@ export const projectSource = (
   })}`;
 };
 
-export const parseProjectSourceLocation = (querystring: string): ParsedQs => {
+export const parseQueryString = (querystring: string): ParsedQs => {
   return parse(querystring);
 };
 
@@ -59,10 +60,11 @@ export const projectCommit = (id: string, hash: string): string =>
 export const projectCommits = (id: string, revision: RevisionQuery): string =>
   `/projects/${id}/commits/${JSON.stringify(revision)}`;
 
-export const transactions = (id: string): string => `/transactions/${id}`;
+export const transactions = (id: string, viewerAccountId: string): string =>
+  `/transactions/${id}?${stringify({ viewerAccountId })}`;
 
 export const designSystemGuide = (): string => "/design-system-guide";
-export const help = (): string => "/help";
+export const shortcuts = (): string => "/shortcuts";
 
 export const active = (
   path: string,

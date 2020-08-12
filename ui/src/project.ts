@@ -133,6 +133,25 @@ export const create = (input: CreateInput): Promise<Project> => {
   return api.post<CreateInput, Project>(`projects`, input);
 };
 
+interface CheckoutInput {
+  remote: string;
+  branch: string;
+  path: string;
+}
+
+export const checkout = (
+  id: string,
+  path: string,
+  remote: string,
+  branch: string
+): Promise<boolean> => {
+  return api.post<CheckoutInput, boolean>(`projects/${id}`, {
+    branch,
+    path,
+    remote,
+  });
+};
+
 export const getOrgProject = (
   orgId: string,
   projectName: string

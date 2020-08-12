@@ -1,7 +1,7 @@
 <script>
   import Urn from "../Urn.svelte";
   import QR from "../QR.svelte";
-  import { Text, Title } from "../../Primitive";
+  import { Flex } from "../../Primitive";
 
   export let accountId = null;
   export let text = null;
@@ -19,10 +19,14 @@
 <div class="receive" data-cy="receive">
   <QR key={accountId} size="136" />
   {#if text}
-    <Text style="padding-top: 1.5rem; color: var(--color-foreground-level-6)">
+    <p style="padding-top: 1.5rem; color: var(--color-foreground-level-6)">
       {text}
-    </Text>
+    </p>
   {/if}
-  <Title style="padding: 1.5rem 0 0.5rem 0;">Address</Title>
-  <Urn urn={accountId} />
+  <p class="typo-text-bold" style="padding: 1.5rem 0 0.5rem 0;">Address</p>
+  <Flex align="center">
+    <Urn
+      urn={accountId}
+      notificationText="The address was copied to your clipboard" />
+  </Flex>
 </div>

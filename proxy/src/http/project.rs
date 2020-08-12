@@ -1,5 +1,7 @@
 //! Endpoints and serialisation for [`project::Project`] related types.
 
+use std::path::PathBuf;
+
 use serde::ser::SerializeStruct as _;
 use serde::{Deserialize, Serialize, Serializer};
 use std::collections::HashMap;
@@ -8,6 +10,7 @@ use warp::document::{self, ToDocumentedType};
 use warp::filters::BoxedFilter;
 use warp::{path, Filter, Rejection, Reply};
 
+use crate::coco;
 use crate::http;
 use crate::project;
 use crate::registry;
@@ -18,9 +21,42 @@ where
     R: registry::Client + 'static,
 {
     list_filter(ctx.clone())
+        .or(checkout_filter(ctx.clone()))
         .or(create_filter(ctx.clone()))
+        .or(discover_filter(ctx.clone()))
         .or(get_filter(ctx))
         .boxed()
+}
+
+/// `POST /<id>/checkout`
+fn checkout_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    http::with_context(ctx)
+        .and(warp::post())
+        .and(document::param::<coco::Urn>("id", "Project id"))
+        .and(warp::body::json())
+        .and(document::document(document::description(
+            "Create a new working copy for a project",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(
+            document::body(CheckoutInput::document()).mime("application/json"),
+        ))
+        .and(document::document(
+            document::response(201, None).description("Checkout succeeded"),
+        ))
+        .and(document::document(
+            document::response(
+                404,
+                document::body(super::error::Error::document()).mime("application/json"),
+            )
+            .description("Project not found"),
+        ))
+        .and_then(handler::checkout)
 }
 
 /// `POST /`
@@ -59,6 +95,7 @@ where
     http::with_context(ctx)
         .and(warp::get())
         .and(document::param::<String>("id", "Project id"))
+        .and(path::end())
         .and(document::document(document::description(
             "Find Project by ID",
         )))
@@ -103,6 +140,32 @@ where
         .and_then(handler::list)
 }
 
+/// `GET /discover`
+fn discover_filter<R>(
+    ctx: http::Ctx<R>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+{
+    path("discover")
+        .and(warp::get())
+        .and(http::with_context(ctx))
+        .and(path::end())
+        .and(document::document(document::description(
+            "Fetch discovery feed",
+        )))
+        .and(document::document(document::tag("Project")))
+        .and(document::document(document::response(
+            200,
+            document::body(
+                document::array(project::Project::document())
+                    .description("Feed of untracked projects"),
+            )
+            .mime("application/json"),
+        )))
+        .and_then(handler::discover)
+}
+
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
@@ -143,6 +206,23 @@ mod handler {
         ))
     }
 
+    /// Checkout a [`project::Project`]'s source code.
+    pub async fn checkout<R>(
+        ctx: http::Ctx<R>,
+        urn: coco::Urn,
+        super::CheckoutInput { path, peer_id }: super::CheckoutInput,
+    ) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let ctx = ctx.read().await;
+        let project = ctx.peer_api.get_project(&urn, peer_id)?;
+
+        let path = project::Checkout::new(project, path, None).run()?;
+
+        Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
+    }
+
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get<R>(ctx: http::Ctx<R>, urn: String) -> Result<impl Reply, Rejection>
     where
@@ -160,9 +240,19 @@ mod handler {
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
 
         Ok(reply::json(&projects))
+    }
+
+    /// Get a feed of untracked projects.
+    pub async fn discover<R>(_ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+    {
+        let feed = project::discover()?;
+
+        Ok(reply::json(&feed))
     }
 }
 
@@ -316,7 +406,7 @@ impl ToDocumentedType for project::Metadata {
 pub struct CreateInput {
     /// Location on the filesystem of the project, an empty directory means we set up a fresh git
     /// repo at the path before initialising the project.
-    path: String,
+    path: PathBuf,
     /// User provided metadata for the project.
     metadata: MetadataInput,
 }
@@ -333,6 +423,30 @@ impl ToDocumentedType for CreateInput {
         properties.insert("metadata".into(), MetadataInput::document());
 
         document::DocumentedType::from(properties).description("Input for project creation")
+    }
+}
+
+/// Bundled input data for project checkout.
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CheckoutInput {
+    /// Location on the filesystem where the working copy should be created.
+    path: PathBuf,
+    /// Which peer are we checking out from. If it's `None`, we're checking out our own project.
+    peer_id: Option<coco::PeerId>,
+}
+
+impl ToDocumentedType for CheckoutInput {
+    fn document() -> document::DocumentedType {
+        let mut properties = HashMap::with_capacity(3);
+        properties.insert(
+            "path".into(),
+            document::string()
+                .description("Filesystem location where the working copy should be created")
+                .example("/Users/rudolfs/work/radicle-tests/upstream-checkout"),
+        );
+
+        document::DocumentedType::from(properties).description("Input for project checkout")
     }
 }
 
@@ -420,7 +534,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -480,7 +594,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
         let meta = projects.first().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
@@ -552,11 +666,67 @@ mod test {
 
         coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
 
-        let projects = ctx.peer_api.list_projects()?;
+        let projects = project::list_projects(&ctx.peer_api)?;
         let res = request().method("GET").path("/").reply(&api).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(projects));
+        });
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn discover() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
+
+        coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
+
+        let res = request().method("GET").path("/discover").reply(&api).await;
+        let want = json!([
+            {
+                "id": "rad:git:hwd1yrerz7sig1smr8yjs5ue1oij61bfhyx41couxqj61qn5joox5pu4o4c",
+                "metadata": {
+                    "defaultBranch": "main",
+                    "description": "It is not the slumber of reason that engenders monsters, \
+                    but vigilant and insomniac rationality.",
+                    "name": "radicle-upstream"
+                },
+                "registration": serde_json::Value::Null,
+                "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4ouwe",
+                "stats": {
+                    "branches": 36,
+                    "commits": 216,
+                    "contributors": 6,
+                },
+            },
+            {
+                "id": "rad:git:hwd1yrefz6xkwb46xkt7dhmwsjendiaqsaynpjwweqrqjc8muaath4gsf7o",
+                "metadata": {
+                    "defaultBranch": "main",
+                    "description": "The monstrous complexity of our reality, a reality cross-hatched with fibre-optic cables, \
+                    radio and microwaves, oil and gas pipelines, aerial and shipping routes, and the unrelenting, simultaneous execution \
+                    of millions of communication protocols with every passing millisecond.",
+                    "name": "radicle-link"
+                },
+                "registration": serde_json::Value::Null,
+                "shareableEntityIdentifier": "rad:git:hwd1yre85ddm5ruz4kgqppdtdgqgqr4wjy3fmskgebhpzwcxshei7d4fd",
+                "stats": {
+                    "branches": 49,
+                    "commits": 343,
+                    "contributors": 7,
+                },
+            },
+        ]);
+
+        http::test::assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, want);
         });
 
         Ok(())

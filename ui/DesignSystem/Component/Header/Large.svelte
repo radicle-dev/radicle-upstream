@@ -1,14 +1,25 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Avatar, Button, Icon, Title, Text, Numeric } from "../../Primitive";
-  import Copyable from "../Copyable.svelte";
+  import { Avatar, Button, Icon } from "../../Primitive";
+  import Urn from "../Urn.svelte";
 
   const dispatch = createEventDispatcher();
 
   export let style = null;
   export let entity = null;
   export let variant = null; // profile | org
+
+  let name;
+  if (variant === "profile") {
+    if (entity.registered) {
+      name = entity.registered;
+    } else {
+      name = entity.metadata.handle;
+    }
+  } else if (variant === "org") {
+    name = entity.id;
+  }
 
   const onRegisterHandle = () => {
     dispatch("registerHandle");
@@ -50,8 +61,8 @@
 
   .shareable-entity-identifier {
     display: flex;
+    align-items: center;
     padding-top: 8px;
-    color: var(--color-foreground-level-6);
   }
 
   .action-bar {
@@ -78,22 +89,17 @@
 
       <div class="metadata">
         <div class="user">
-          <Title
-            dataCy="entity-name"
-            variant="huge"
-            style="display: flex; align-items: center;">
-            {#if variant === 'profile' && entity.registered}
-              {entity.registered}
-            {:else if variant === 'profile' && !entity.registered}
-              {entity.metadata.handle}
+          <h1 data-cy="entity-name" style="display: flex; align-items: center;">
+            {name}
+            {#if variant === 'profile' && !entity.registered}
               <Button
                 variant="outline"
                 style="margin-left: 12px;"
                 on:click={() => onRegisterHandle()}>
                 Register handle
               </Button>
-            {:else if variant === 'org'}{entity.id}{/if}
-          </Title>
+            {/if}
+          </h1>
           {#if variant === 'org' || entity.registered}
             <Icon.Verified
               dataCy="verified-badge"
@@ -102,17 +108,10 @@
           {/if}
         </div>
         <div class="shareable-entity-identifier">
-          <Text variant="tiny" style="margin-right: 4px; white-space: nowrap;">
-            Radicle ID
-          </Text>
-          <Copyable>
-            <Numeric
-              variant="small"
-              style="max-width: 20rem; white-space: nowrap; overflow: hidden;
-              text-overflow: ellipsis; margin-right: 8px;">
-              {entity.shareableEntityIdentifier}
-            </Numeric>
-          </Copyable>
+          <Urn
+            urn={entity.shareableEntityIdentifier}
+            showOnHover
+            notificationText={`Radicle ID for ${name} copied to your clipboard.`} />
         </div>
       </div>
     </div>

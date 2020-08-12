@@ -9,11 +9,11 @@
     font-family: var(--typeface-medium);
     font-size: 2rem;
     padding: 1rem 0;
-    margin: 2rem 0 1.75rem;
+    margin: 0 0 1.75rem;
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
-  .markdown :global(h1):first-child {
-    margin-top: 0;
+  .markdown :global(h1):not(:first-child) {
+    margin-top: 2rem;
   }
 
   .markdown :global(h1 > code) {
@@ -127,6 +127,12 @@
     padding: 1rem;
     border-radius: 0.25rem;
     margin: 1rem 0;
+    overflow: scroll;
+    scrollbar-width: none;
+  }
+
+  .markdown :global(pre::-webkit-scrollbar) {
+    display: none;
   }
 
   .markdown :global(hr) {

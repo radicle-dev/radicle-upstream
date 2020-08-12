@@ -72,6 +72,7 @@ where
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
+    use radicle_registry_client::CryptoPair;
     use std::convert::TryFrom;
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
@@ -136,6 +137,12 @@ mod handler {
         let fake_pair =
             radicle_registry_client::ed25519::Pair::from_legacy_string(&input.handle, None);
 
+        log::info!(
+            "Registering user handle {} with public key {}",
+            &input.handle,
+            &fake_pair.public()
+        );
+
         let handle = registry::Id::try_from(input.handle).map_err(Error::from)?;
         ctx.registry
             .register_user(&fake_pair, handle.clone(), None, input.transaction_fee)
@@ -157,6 +164,8 @@ mod handler {
         // N.B. this may gather lot's of tmp files on your system. We're sorry.
         let tmp_path = {
             let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+            log::debug!("New temporary path is: {:?}", temp_dir.path());
+            std::env::set_var("RAD_HOME", temp_dir.path());
             temp_dir.path().to_path_buf()
         };
 

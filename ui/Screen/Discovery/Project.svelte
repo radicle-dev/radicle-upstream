@@ -1,16 +1,10 @@
 <script>
+  import { Avatar, Icon } from "../../DesignSystem/Primitive";
   import {
-    Avatar,
-    Code,
-    Icon,
-    Text,
-    Title,
-  } from "../../DesignSystem/Primitive";
-  import {
-    Copyable,
     Stats,
     TrackToggle,
     Tooltip,
+    Urn,
   } from "../../DesignSystem/Component";
 
   export let project = null;
@@ -51,16 +45,14 @@
   }
 
   .shareableEntityIdentifier {
-    background: var(--color-foreground-level-2);
     margin-bottom: 16px;
-    border-radius: 4px;
-    padding: 4px;
-    overflow: hidden;
-    max-width: 180px;
+    display: flex;
+    justify-content: flex-start;
   }
 
   .description {
     height: 100px;
+    overflow: hidden;
   }
 
   .registered {
@@ -81,14 +73,20 @@
   data-cy="project-card">
   <div class="header">
     <div class="title">
-      <Title variant="large" style="color: var(--color-foreground-level-4);">
-        {project.domain}
-      </Title>
-      <Title variant="large" truncate>&nbsp;{`/ ${project.name}`}</Title>
-      <div class="registered">
-        <Icon.Verified
-          style="fill: var(--color-primary); position: relative; bottom: -5px;" />
-      </div>
+      {#if project.registration}
+        <h3 style="color: var(--color-foreground-level-4);">
+          {project.domain}
+        </h3>
+        <h3 class="typo-overflow-ellipses">
+          &nbsp;{`/ ${project.metadata.name}`}
+        </h3>
+        <div class="registered">
+          <Icon.Verified
+            style="fill: var(--color-primary); position: relative; bottom: -5px;" />
+        </div>
+      {:else}
+        <h3 class="typo-overflow-ellipses">{project.metadata.name}</h3>
+      {/if}
     </div>
 
     {#if showTrackButton}
@@ -97,19 +95,13 @@
 
   </div>
   <div class="shareableEntityIdentifier">
-    <Copyable style="min-width: 0;">
-      <Code
-        variant="medium"
-        style="color: var(--color-foreground-level-5); font-size: 14px;
-        text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">
-        {project.shareableEntityIdentifier}
-      </Code>
-    </Copyable>
+    <Urn
+      urn={project.shareableEntityIdentifier}
+      notificationText="The project ID was copied to your clipboard" />
   </div>
-  <!-- TODO(sos): middle-truncate shareableEntityID & show copy icon -->
 
   <div class="description">
-    <Text>{project.description}</Text>
+    <p>{project.metadata.description}</p>
   </div>
 
   <div class="bottom">
@@ -117,8 +109,10 @@
       branches={project.stats.branches}
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
-    <Tooltip value={project.maintainers[0].handle}>
-      <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
-    </Tooltip>
+    {#if project.maintainers && project.maintainers.length > 0}
+      <Tooltip value={project.maintainers[0].handle}>
+        <Avatar avatarFallback={project.maintainers[0].avatar} size="small" />
+      </Tooltip>
+    {/if}
   </div>
 </div>

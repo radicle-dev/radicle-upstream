@@ -1,5 +1,5 @@
 <script>
-  import { Icon, Title } from "../../Primitive";
+  import { Icon } from "../../Primitive";
 
   export let progress = null; // only applys on variant: caution
   export let style = null;
@@ -26,6 +26,11 @@
   .positive {
     background-color: var(--color-positive);
   }
+
+  h4 {
+    align-self: center;
+    color: var(--color-background);
+  }
 </style>
 
 <div {style} class="statusbar {variant}">
@@ -42,9 +47,5 @@
       style="margin: 16px; fill: var(--color-background)"
       state={variant} />
   {/if}
-  <Title
-    variant="medium"
-    style="align-self: center; color: var(--color-background);">
-    {text}
-  </Title>
+  <h4>{text}</h4>
 </div>

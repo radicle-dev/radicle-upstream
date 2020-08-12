@@ -9,7 +9,7 @@
     getValidationState,
   } from "../../src/validation.ts";
 
-  import { Button, Input, Text, Title } from "../../DesignSystem/Primitive";
+  import { Button, Input } from "../../DesignSystem/Primitive";
 
   const dispatch = createEventDispatcher();
 
@@ -81,6 +81,15 @@
     height: 100%;
   }
 
+  h2 {
+    text-align: center;
+  }
+
+  p {
+    margin: 20px 0;
+    color: var(--color-foreground-level-5);
+  }
+
   .buttons {
     display: flex;
     justify-content: flex-end;
@@ -89,11 +98,11 @@
 
 <div class="container">
   <div data-cy="form">
-    <Title variant="big" style="text-align: center;">Create an identity</Title>
-    <Text style="margin: 20px 0; color: var(--color-foreground-level-5);">
+    <h2>Create an identity</h2>
+    <p>
       An identity is required to interact on the radicle network. Multiple
       devices can be linked to a single identity.
-    </Text>
+    </p>
     <Input.Text
       placeholder="Enter a handle*"
       bind:value={handle}
