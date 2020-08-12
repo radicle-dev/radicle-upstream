@@ -20,7 +20,7 @@ where
 {
     get_filter(Arc::clone(&ctx))
         .or(create_filter(Arc::clone(&ctx)))
-        .or(list_tracked_filter(ctx))
+        .or(list_filter(ctx))
         .boxed()
 }
 
@@ -84,16 +84,14 @@ where
 }
 
 /// `GET /`
-fn list_tracked_filter<R>(
-    ctx: http::Ctx<R>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+fn list_filter<R>(ctx: http::Ctx<R>) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
 {
     http::with_context(ctx)
         .and(warp::get())
         .and(document::document(document::description(
-            "List tracked Identities",
+            "List known Identities",
         )))
         .and(document::document(document::tag("Identity")))
         .and(document::document(
@@ -104,7 +102,7 @@ where
             )
             .description("Successful retrieval"),
         ))
-        .and_then(handler::list_tracked)
+        .and_then(handler::list)
 }
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
@@ -154,14 +152,14 @@ mod handler {
         Ok(reply::json(&id))
     }
 
-    /// Retrieve the list of tracked identities.
-    pub async fn list_tracked<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
+    /// Retrieve the list of identities known to the session user.
+    pub async fn list<R>(ctx: http::Ctx<R>) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
     {
         let ctx = ctx.read().await;
-        let tracked_users = identity::list_tracked(&ctx.peer_api)?;
-        Ok(reply::json(&tracked_users))
+        let users = identity::list(&ctx.peer_api)?;
+        Ok(reply::json(&users))
     }
 }
 
@@ -382,7 +380,7 @@ mod test {
     }
 
     #[tokio::test]
-    async fn list_tracked() -> Result<(), error::Error> {
+    async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = http::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
