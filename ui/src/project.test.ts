@@ -15,7 +15,7 @@ describe("creating a project", () => {
         defaultBranch: "trunk",
         description: "surfing",
         repo: {
-          type: "new",
+          type: project.RepoType.New,
           name: "radicle-surf",
           path: "somewhere/in/the/machine",
         },
@@ -28,7 +28,7 @@ describe("creating a project", () => {
       defaultBranch: "trunk",
       description: "surfing",
       repo: {
-        type: "new",
+        type: project.RepoType.New,
         name: "radicle-surf",
         path: "somewhere/in/the/machine",
       },

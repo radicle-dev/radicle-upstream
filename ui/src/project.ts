@@ -13,14 +13,19 @@ export interface Metadata {
   description?: string;
 }
 
+export enum RepoType {
+  New = "new",
+  Existing = "existing",
+}
+
 export interface New {
-  type: "new";
+  type: RepoType.New;
   path: string;
   name: string;
 }
 
 export interface Existing {
-  type: "existing";
+  type: RepoType.Existing;
   path: string;
 }
 

@@ -5,7 +5,7 @@
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config.ts";
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
-  import { create } from "../src/project.ts";
+  import { create, RepoType } from "../src/project.ts";
   import { getLocalState } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
   import { fetch as fetchSession } from "../src/session.ts";
@@ -19,13 +19,10 @@
 
   let currentSelection;
 
-  const NEW = "new";
-  const EXISTING = "existing";
-
   const projectNameMatch = "^[a-z0-9][a-z0-9_-]+$";
 
-  $: isNew = currentSelection === NEW;
-  $: isExisting = currentSelection === EXISTING;
+  $: isNew = currentSelection === RepoType.New;
+  $: isExisting = currentSelection === RepoType.Existing;
 
   let name;
   let description = "";
@@ -153,8 +150,8 @@
         description,
         defaultBranch,
         repo: isNew
-          ? { type: NEW, name, path: newRepositoryPath }
-          : { type: EXISTING, path: existingRepositoryPath },
+          ? { type: RepoType.New, name, path: newRepositoryPath }
+          : { type: RepoType.Existing, path: existingRepositoryPath },
       });
 
       // Re-fetch session so we have the right permissions to enable the
@@ -281,7 +278,7 @@
         <RadioOption
           title="Start with a new repository"
           active={isNew}
-          on:click={() => (currentSelection = NEW)}
+          on:click={() => (currentSelection = RepoType.New)}
           dataCy="new-project">
           <div slot="option-body">
             <p
@@ -299,7 +296,7 @@
         <RadioOption
           title="Continue with an existing repository"
           active={isExisting}
-          on:click={() => (currentSelection = EXISTING)}
+          on:click={() => (currentSelection = RepoType.Existing)}
           dataCy="existing-project">
           <div slot="option-body">
             <p
