@@ -16,7 +16,7 @@ use crate::registry;
 pub use shared_identifier::SharedIdentifier;
 
 /// The users personal identifying metadata and keys.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
     /// The Peer Id for the user.
@@ -56,7 +56,7 @@ impl<S> From<(peer::PeerId, user::User<S>)> for Identity {
 }
 
 /// User maintained information for an identity, which can evolve over time.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     /// Similar to a nickname, the users chosen short identifier.
@@ -93,7 +93,10 @@ pub fn list_tracked(api: &coco::Api) -> Result<Vec<Identity>, error::Error> {
     for project in api.list_projects()? {
         let project_urn = project.urn();
         for peer in api.tracked(&project_urn)? {
-            tracked_users.push(peer.into())
+            let user = peer.into();
+            if !tracked_users.contains(&user) {
+                tracked_users.push(user)
+            }
         }
     }
     Ok(tracked_users)
@@ -127,7 +130,7 @@ pub mod shared_identifier {
     }
 
     /// The combination of a handle and a urn give user's a structure for sharing their identities.
-    #[derive(Clone, Debug)]
+    #[derive(Clone, Debug, PartialEq)]
     pub struct SharedIdentifier {
         /// The user's chosen handle.
         pub handle: String,

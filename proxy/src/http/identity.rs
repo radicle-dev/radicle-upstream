@@ -413,8 +413,7 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         assert_eq!(res.status(), StatusCode::OK);
-        // TODO(merle): Deduplicate tracked identities or fix test set up
-        assert_eq!(have, json!([fintohaps, fintohaps]));
+        assert_eq!(have, json!([fintohaps]));
         Ok(())
     }
 }
