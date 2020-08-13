@@ -4,7 +4,6 @@ use std::path::{self, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
 use librad::uri::RadUrn;
