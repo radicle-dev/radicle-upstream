@@ -148,7 +148,7 @@ mod handler {
             return Err(Rejection::from(error::Error::EntityExists(identity.urn)));
         }
 
-        let id = identity::create(&ctx.peer_api, ctx.signer.clone(), &input.handle)?;
+        let id = identity::create(&ctx.peer_api, &ctx.signer, &input.handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -365,7 +365,7 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let user = ctx.peer_api.init_user(ctx.signer.clone(), "cloudhead")?;
+        let user = ctx.peer_api.init_user(&ctx.signer, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
         let peer_id = ctx.peer_api.peer_id();
@@ -402,7 +402,7 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let id = identity::create(&ctx.peer_api, ctx.signer.clone(), "cloudhead")?;
+        let id = identity::create(&ctx.peer_api, &ctx.signer, "cloudhead")?;
 
         let owner = ctx.peer_api.get_user(&id.clone().urn)?;
         let owner = coco::verify_user(owner)?;
@@ -411,7 +411,7 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            ctx.signer.clone(),
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -420,7 +420,7 @@ mod test {
 
         let fintohaps: identity::Identity = coco::control::track_fake_peer(
             &ctx.peer_api,
-            ctx.signer.clone(),
+            &ctx.signer,
             &platinum_project,
             "fintohaps",
         )

@@ -65,7 +65,7 @@ pub struct Metadata {
 /// Creates a new identity.
 ///
 /// # Errors
-pub fn create<S>(api: &coco::Api<S>, signer: S, handle: &str) -> Result<Identity, error::Error>
+pub fn create<S>(api: &coco::Api<S>, signer: &S, handle: &str) -> Result<Identity, error::Error>
 where
     S: coco::Signer + Clone,
     S::Error: coco::SignError,

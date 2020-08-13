@@ -208,9 +208,7 @@ mod handler {
     {
         let ctx = ctx.read().await;
 
-        let meta = ctx
-            .peer_api
-            .init_project(ctx.signer.clone(), &owner, &input)?;
+        let meta = ctx.peer_api.init_project(&ctx.signer, &owner, &input)?;
         let urn = meta.urn();
 
         let stats = ctx
@@ -539,7 +537,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let handle = "cloudhead";
-        let id = identity::create(&ctx.peer_api, ctx.signer.clone(), handle)?;
+        let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -596,7 +594,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let handle = "cloudhead";
-        let id = identity::create(&ctx.peer_api, ctx.signer.clone(), handle)?;
+        let id = identity::create(&ctx.peer_api, &ctx.signer, handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -651,10 +649,10 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(ctx.signer.clone(), "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            ctx.signer.clone(),
+            &ctx.signer,
             &owner,
             "git-platinum",
             "fixture data",
@@ -684,9 +682,9 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(ctx.signer.clone(), "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, ctx.signer.clone(), &owner)?;
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
 
         let projects = project::list_projects(&ctx.peer_api)?;
         let res = request().method("GET").path("/").reply(&api).await;
@@ -705,9 +703,9 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let owner = ctx.peer_api.init_owner(ctx.signer.clone(), "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, ctx.signer.clone(), &owner)?;
+        coco::control::setup_fixtures(&ctx.peer_api, &ctx.signer, &owner)?;
 
         let res = request().method("GET").path("/discover").reply(&api).await;
         let want = json!([

@@ -32,7 +32,7 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-pub fn setup_fixtures<S>(api: &Api<S>, signer: S, owner: &User) -> Result<(), error::Error>
+pub fn setup_fixtures<S>(api: &Api<S>, signer: &S, owner: &User) -> Result<(), error::Error>
 where
     S: Signer,
     S::Error: SignError,
@@ -59,7 +59,7 @@ where
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(api, signer.clone(), owner, info.0, info.1, info.2)?;
+        replicate_platinum(api, signer, owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -74,7 +74,7 @@ where
 /// the coco project.
 pub fn replicate_platinum<S>(
     api: &Api<S>,
-    signer: S,
+    signer: &S,
     owner: &User,
     name: &str,
     description: &str,
@@ -151,7 +151,7 @@ pub fn platinum_directory() -> io::Result<path::PathBuf> {
 #[must_use]
 pub fn track_fake_peer<S>(
     api: &Api<S>,
-    signer: S,
+    signer: &S,
     project: &project::Project<entity::Draft>,
     fake_user_handle: &str,
 ) -> (

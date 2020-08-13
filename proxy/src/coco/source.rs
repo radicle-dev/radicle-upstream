@@ -682,10 +682,10 @@ mod tests {
         let key = SecretKey::new();
         let config = coco::config::default(key.clone(), tmp_dir)?;
         let api = coco::Api::new(config).await?;
-        let owner = api.init_owner(key.clone(), "cloudhead")?;
+        let owner = api.init_owner(&key, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &api,
-            key,
+            &key,
             &owner,
             "git-platinum",
             "fixture data",

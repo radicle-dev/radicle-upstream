@@ -173,7 +173,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     }
 
     /// Build a [`project::Project`], where the provided [`User`] is the owner, and the set of keys
-    /// starts with the provided [`keys::PublicKey`].
+    /// starts with the provided [`Signer`].
     ///
     /// # Errors
     ///
@@ -181,7 +181,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     pub fn build<S>(
         &self,
         owner: &User,
-        signer: S,
+        signer: &S,
     ) -> Result<project::Project<entity::Draft>, Error>
     where
         S: Signer,

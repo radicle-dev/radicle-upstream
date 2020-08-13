@@ -111,7 +111,7 @@ mod handler {
 
         let meta = coco::control::replicate_platinum(
             &ctx.peer_api,
-            ctx.signer.clone(),
+            &ctx.signer,
             &owner,
             &input.name,
             &input.description,
@@ -120,12 +120,8 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ = coco::control::track_fake_peer(
-                    &ctx.peer_api,
-                    ctx.signer.clone(),
-                    &meta,
-                    &user_handle,
-                );
+                let _ =
+                    coco::control::track_fake_peer(&ctx.peer_api, &ctx.signer, &meta, &user_handle);
             }
         }
         let stats = ctx

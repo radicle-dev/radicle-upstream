@@ -567,7 +567,7 @@ mod test {
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
-        let owner = ctx.peer_api.init_owner(ctx.signer.clone(), "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&ctx.signer, "cloudhead")?;
         let urn = coco::Urn::new(
             owner.root_hash().clone(),
             librad::uri::Protocol::Git,
