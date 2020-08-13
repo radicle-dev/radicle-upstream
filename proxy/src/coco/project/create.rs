@@ -1,10 +1,14 @@
+use std::ffi;
+use std::fmt;
+use std::io;
 use std::marker::PhantomData;
 use std::path::{self, PathBuf};
+use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
 use librad::git::local::url::LocalUrl;
-use librad::git::types::{remote::Remote, FlatRef, Force, NamespacedRef};
+use librad::git::types::{remote::Remote, FlatRef, Force, NamespacedRef, Refspec};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -41,6 +45,15 @@ pub enum Error {
     /// An error occurred setting up the project entity.
     #[error(transparent)]
     Entity(#[from] entity::Error),
+    /// An error occurred when trying to push the default branch
+    #[error("failed to push the refspec '{0}'")]
+    PushFailed(String),
+    #[error(transparent)]
+    /// An I/O error occurred during push.
+    Io(#[from] io::Error),
+    /// TODO
+    #[error(transparent)]
+    Binpath(#[from] super::bin_path::Error),
 }
 
 /// The data required to either open an existing repository or create a new one.
@@ -90,11 +103,21 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
     ///
     ///   * Failed to find the repository at the provided path.
     ///   * Failed to initialise the repository.
-    pub fn create(&self, default_branch: &str) -> Result<git2::Repository, git2::Error> {
+    pub fn create(
+        &self,
+        description: &str,
+        default_branch: &str,
+    ) -> Result<git2::Repository, git2::Error> {
         match &self {
             Self::Existing { .. } => git2::Repository::open(self.full_path()),
             Self::New { .. } => {
-                let repo = git2::Repository::init(self.full_path())?;
+                let mut options = git2::RepositoryInitOptions::new();
+                options.no_reinit(true);
+                options.mkpath(true);
+                options.description(description);
+                options.initial_head(default_branch);
+
+                let repo = git2::Repository::init_opts(self.full_path(), &options)?;
                 // First use the config to initialize a commit signature for the user.
                 let sig = repo.signature()?;
                 // Now let's create an empty tree for this commit
@@ -120,7 +143,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                 }
 
                 Ok(repo)
-            },
+            }
         }
     }
 
@@ -152,16 +175,19 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     ///
     ///   * Failed to setup the repository
     ///   * Failed to build the project entity
-    pub fn setup_repo(&self, urn: &RadUrn) -> Result<git2::Repository, Error> {
-        let repo = self.repo.create(&self.default_branch)?;
+    pub fn setup_repo(
+        &self,
+        urn: &RadUrn,
+        bin_path: Option<ffi::OsString>,
+    ) -> Result<git2::Repository, Error> {
+        let repo = self.repo.create(&self.description, &self.default_branch)?;
 
         // Test if the repo has setup rad remote.
         match repo.find_remote(super::RAD_REMOTE) {
             Ok(_) => return Err(Error::RadRemoteExists(repo.path().to_path_buf())),
-            Err(err) => {
-                log::debug!("setting up remote after git2::Error: {:?}", err);
-                Self::setup_remote(&repo, urn, &self.default_branch)?;
-            },
+            Err(_err) => {
+                Self::setup_remote(&repo, urn, &self.default_branch, bin_path)?;
+            }
         }
 
         Ok(repo)
@@ -196,6 +222,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         repo: &git2::Repository,
         urn: &RadUrn,
         default_branch: &str,
+        bin_path: Option<ffi::OsString>,
     ) -> Result<(), Error> {
         // TODO(finto): Need to check that Hash is the same for this repository. So basically we
         // initialise the remote or update it.
@@ -218,7 +245,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         let local_url: LocalUrl = urn.clone().into();
         let mut remote = Remote::rad_remote(local_url, fetch.into_dyn());
         remote.add_pushes(vec![push.into_dyn()].into_iter());
-        let mut git_remote = remote.create(repo)?;
+        let _ = remote.create(repo)?;
 
         /* TODO(finto): Pushing isn't working and is possibly failing silently.
          * When I inspect the monorepo the default branch isn't pushed.
@@ -228,19 +255,11 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
         let namespace_default = NamespacedRef::head(urn.id.clone(), None, default_branch);
 
-        let mut callbacks = git2::RemoteCallbacks::new();
-        callbacks.credentials(|_url, username_from_url, _allowed_types| {
-            git2::Cred::userpass_plaintext(
-                username_from_url.expect("failed to get username"),
-                "radicle-upstream",
-            )
-        });
-        let mut push_options = git2::PushOptions::new();
-        push_options.remote_callbacks(callbacks);
-
-        git_remote.push(
-            &[&namespace_default.refspec(default, Force::False).to_string()],
-            Some(&mut push_options),
+        push_spec(
+            &repo,
+            &namespace_default.refspec(default, Force::False),
+            super::Credential::Password("radicle-upstream".to_string()),
+            bin_path,
         )?;
 
         Ok(())
@@ -257,5 +276,38 @@ impl Create<PathBuf> {
             },
             ..self
         }
+    }
+}
+
+fn push_spec<R, L>(
+    repo: &git2::Repository,
+    spec: &Refspec<R, L>,
+    credential: super::Credential,
+    bin_path: Option<ffi::OsString>,
+) -> Result<(), Error>
+where
+    R: fmt::Display + ToString + Clone,
+    L: fmt::Display + ToString + Clone,
+{
+    let bin_path = match bin_path {
+        Some(path) => Ok(path),
+        None => super::default_bin_path(),
+    }?;
+
+    let mut child_process = Command::new("git")
+        .arg("-c")
+        .arg(credential.to_helper())
+        .arg("push")
+        .arg(format!("{}", repo.path().display()))
+        .arg(spec.to_string())
+        .env("PATH", &bin_path)
+        .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
+        .spawn()?;
+
+    let result = child_process.wait()?;
+    if result.success() {
+        Ok(())
+    } else {
+        Err(Error::PushFailed(spec.to_string()))
     }
 }

@@ -281,7 +281,7 @@ impl Api {
             repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
         }
 
-        let _ = project.setup_repo(&urn)?;
+        let _ = project.setup_repo(&urn, None)?;
 
         Ok(meta)
     }
@@ -449,10 +449,16 @@ mod test {
 
     #[tokio::test]
     async fn can_create_project() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let repo_path = tmp_dir.path().join("radicle");
+        pretty_env_logger::init();
+        let path = {
+            let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+            tmp_dir.into_path()
+        };
+        std::fs::create_dir(path.clone());
+        log::debug!("TMP DIR: {:?}", path);
+        let repo_path = path.join("radicle");
         let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let config = config::default(key.clone(), path.clone())?;
         let api = Api::new(config).await?;
 
         let user = api.init_owner(&key, "cloudhead")?;
