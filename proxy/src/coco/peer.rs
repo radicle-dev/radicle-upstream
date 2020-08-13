@@ -46,7 +46,10 @@ impl Api {
         // Register the rad:// transport protocol
         let settings = transport::Settings {
             paths: config.paths.clone(),
-            signer: SomeSigner { signer: config.signer.clone() }.into(),
+            signer: SomeSigner {
+                signer: config.signer.clone(),
+            }
+            .into(),
         };
         transport::register(settings);
 
@@ -391,7 +394,7 @@ mod test {
 
     use librad::keys::SecretKey;
     use librad::meta::entity;
-    use librad::meta::project;
+    use librad::meta::Project;
 
     use crate::coco::config;
     use crate::coco::control;
@@ -399,6 +402,19 @@ mod test {
     use crate::error::Error;
 
     use super::{Api, User};
+
+    fn create_fakie(
+        api: &Api,
+        key: &SecretKey,
+        owner: &User,
+        repo_path: PathBuf,
+    ) -> Result<Project<entity::Draft>, Error> {
+        api.init_project(
+            key,
+            owner,
+            &fakie_project(repo_path),
+        )
+    }
 
     fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
         project::Create {
@@ -584,9 +600,9 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let kalt = api.init_owner(key.clone(), "kalt")?;
+        let kalt = api.init_owner(&key, "kalt")?;
 
-        let _fakie = create_fakie(&api, &key, kalt.clone(), &repo_path)?;
+        let _fakie = create_fakie(&api, &key, &kalt, repo_path.clone())?;
 
         std::fs::remove_dir_all(tmp_dir.path().join("git")).expect("failed to remove tmp path");
         assert!(repo_path.exists());
@@ -594,25 +610,9 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let kalt = api.init_owner(key.clone(), "kalt")?;
-        let _fakie = create_fakie(&api, &key, kalt.clone(), &repo_path)?;
+        let kalt = api.init_owner(&key, "kalt")?;
+        let _fakie = create_fakie(&api, &key, &kalt, repo_path)?;
 
         Ok(())
-    }
-
-    fn create_fakie(
-        api: &Api,
-        key: &SecretKey,
-        owner: User,
-        repo_path: &std::path::Path,
-    ) -> Result<project::Project<entity::Draft>, Error> {
-        api.init_project(
-            &key,
-            &owner,
-            &repo_path,
-            "fakie-nose-kickflip-backside-180-to-handplant",
-            "rad git tricks",
-            "dope",
-        )
     }
 }

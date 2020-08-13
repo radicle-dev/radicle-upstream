@@ -228,26 +228,27 @@ fn setup_remote(repo: &git2::Repository, urn: &RadUrn, default_branch: &str) -> 
     let fetch = working_copy_heads
         .clone()
         .refspec(namespace_heads.clone(), Force::True);
-    let push = namespace_heads
-        .clone()
-        .refspec(working_copy_heads.clone(), Force::True);
+    let push = namespace_heads.refspec(working_copy_heads, Force::True);
 
-    let url: LocalUrl = urn.clone().into();
-    let mut remote = Remote::rad_remote(url.clone(), fetch.into_dyn());
+    let local_url: LocalUrl = urn.clone().into();
+    let mut remote = Remote::rad_remote(local_url, fetch.into_dyn());
     remote.add_pushes(vec![push.into_dyn()].into_iter());
     let mut git_remote = remote.create(repo)?;
 
     /* TODO(finto): Pushing isn't working and is possibly failing silently.
      * When I inspect the monorepo the default branch isn't pushed.
-     * This could be due to the remote helper needing credentials, which I attempted to fix below,
-     * but no luck...
+     * This could be due to the remote helper needing credentials, which I attempted to fix
+     * below, but no luck...
      */
     let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
     let namespace_default = NamespacedRef::head(urn.id.clone(), None, default_branch);
 
     let mut callbacks = git2::RemoteCallbacks::new();
     callbacks.credentials(|_url, username_from_url, _allowed_types| {
-        git2::Cred::userpass_plaintext(username_from_url.unwrap(), "radicle-upstream")
+        git2::Cred::userpass_plaintext(
+            username_from_url.expect("failed to get username"),
+            "radicle-upstream",
+        )
     });
     let mut push_options = git2::PushOptions::new();
     push_options.remote_callbacks(callbacks);
