@@ -12,26 +12,22 @@
   .file {
     display: flex;
     cursor: pointer;
-    padding: 4px 4px 4px 4px;
-    margin: 4px 0;
+    padding: 0.25rem 0.25rem 0.25rem 0.25rem;
+    margin: 0.25rem 0;
     color: var(--color-foreground-level-6);
     line-height: 1.5em;
     flex: 1;
     width: 100%;
   }
 
-  /* prevent icon from shrinking when the filename is long */
-  .file :global(svg) {
-    overflow: unset;
-  }
-
   .file-name {
     margin-left: 0.25rem;
+    white-space: nowrap;
   }
 
   a {
     display: flex;
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   a:hover {

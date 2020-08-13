@@ -376,7 +376,7 @@ context("source code browsing", () => {
           // line numbers are shown
           cy.contains("1\n2\n3\n4\n5\n").should("exist");
 
-          cy.pick("scrollable-content").scrollTo("bottom");
+          cy.scrollTo("bottom");
           // the scrollbar allows us to reach the bottom of the file
           cy.contains("callFn f' vs'").should("be.inViewport");
         });
