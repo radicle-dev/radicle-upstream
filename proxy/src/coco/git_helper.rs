@@ -7,8 +7,9 @@ use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
-/// Returns true if it is an executable.
+/// Trait for extending the Path module.
 trait IsExecutable {
+    /// Returns true if it is an executable.
     fn is_executable(&self) -> bool;
 }
 
@@ -26,6 +27,13 @@ impl IsExecutable for Path {
 
 /// Checks if the git-remote-rad helper is in a stable location and has the
 /// executable flag, if not copies the executable to the right place.
+///
+/// # Errors
+///
+///   * Could not get the path to directory where helper binaries should be stored.
+///   * Could not get the current working directory.
+///   * Could not create the path to binary directory.
+///   * Could not copy helper executable to the binary directory.
 pub fn setup() -> Result<(), error::Error> {
     log::info!("Making sure git-remote-rad helper is set up");
 

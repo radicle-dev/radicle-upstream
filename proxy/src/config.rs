@@ -11,13 +11,21 @@ pub fn dirs() -> ProjectDirs {
 }
 
 /// Returns the path to a folder containing helper binaries.
+///
+/// # Errors
+///
+///   * Could not get the user home path from the HOME env variable
 pub fn bin_dir() -> Result<path::PathBuf, error::Error> {
     let home_dir = std::env::var("HOME").expect("Couldn't determine home dir from env");
 
-    Ok(path::Path::new(&home_dir).join(".radicle/bin").to_owned())
+    Ok(path::Path::new(&home_dir).join(".radicle/bin"))
 }
 
 /// Returns path to the directory containing the proxy binary.
+///
+/// # Errors
+///
+///   * Could not determine the path of this binary.
 pub fn proxy_path() -> Result<path::PathBuf, error::Error> {
     let exe_path = std::env::current_exe()?;
 

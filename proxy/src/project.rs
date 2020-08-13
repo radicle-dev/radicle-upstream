@@ -217,9 +217,9 @@ where
     fn default_bin_path() -> Result<ffi::OsString, error::Error> {
         let proxy_path = config::proxy_path()?;
 
-        let paths = std::env::var_os("PATH").map_or(vec![proxy_path.to_path_buf()], |path| {
+        let paths = std::env::var_os("PATH").map_or(vec![proxy_path.to_owned()], |path| {
             let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
-            paths.push(proxy_path.to_path_buf());
+            paths.push(proxy_path.to_owned());
             paths.reverse();
             paths
         });
