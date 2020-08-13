@@ -20,7 +20,10 @@ where
     S: coco::Signer,
     S::Error: coco::SignError,
 {
-    get_filter(Arc::clone(&ctx)).or(create_filter(ctx)).boxed()
+    get_filter(Arc::clone(&ctx))
+        .or(create_filter(Arc::clone(&ctx)))
+        .or(list_filter(ctx))
+        .boxed()
 }
 
 /// `POST /`
@@ -88,6 +91,32 @@ where
         .and_then(handler::get)
 }
 
+/// `GET /`
+fn list_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
+{
+    http::with_context(ctx)
+        .and(warp::get())
+        .and(document::document(document::description(
+            "List known Identities",
+        )))
+        .and(document::document(document::tag("Identity")))
+        .and(document::document(
+            document::response(
+                200,
+                document::body(document::array(identity::Identity::document()))
+                    .mime("application/json"),
+            )
+            .description("Successful retrieval"),
+        ))
+        .and_then(handler::list)
+}
+
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
     use warp::http::StatusCode;
@@ -120,7 +149,7 @@ mod handler {
         }
 
         let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
-        let id = identity::create(&ctx.peer_api, key, &input.handle)?;
+        let id = identity::create(&ctx.peer_api, &key, &input.handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -137,6 +166,18 @@ mod handler {
         let ctx = ctx.read().await;
         let id = identity::get(&ctx.peer_api, &id)?;
         Ok(reply::json(&id))
+    }
+
+    /// Retrieve the list of identities known to the session user.
+    pub async fn list<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
+    where
+        R: Send + Sync,
+        S: coco::Signer,
+        S::Error: coco::SignError,
+    {
+        let ctx = ctx.read().await;
+        let users = identity::list(&ctx.peer_api)?;
+        Ok(reply::json(&users))
     }
 }
 
@@ -262,6 +303,7 @@ mod test {
     use warp::test::request;
 
     use crate::avatar;
+    use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
@@ -325,7 +367,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let user = ctx.peer_api.init_user(key, "cloudhead")?;
+        let user = ctx.peer_api.init_user(&key, "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
         let peer_id = ctx.peer_api.peer_id();
@@ -352,6 +394,42 @@ mod test {
             })
         );
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn list() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let key = ctx.keystore.get_librad_key()?;
+        let id = identity::create(&ctx.peer_api, &key, "cloudhead")?;
+
+        let owner = ctx.peer_api.get_user(&id.clone().urn)?;
+        let owner = coco::verify_user(owner)?;
+
+        session::set_identity(&ctx.store, id)?;
+
+        let platinum_project = coco::control::replicate_platinum(
+            &ctx.peer_api,
+            &key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+
+        let fintohaps: identity::Identity =
+            coco::control::track_fake_peer(&ctx.peer_api, &key, &platinum_project, "fintohaps")
+                .into();
+
+        let res = request().method("GET").path("/").reply(&api).await;
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        assert_eq!(res.status(), StatusCode::OK);
+        assert_eq!(have, json!([fintohaps]));
         Ok(())
     }
 }

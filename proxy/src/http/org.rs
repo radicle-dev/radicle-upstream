@@ -720,7 +720,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
@@ -846,7 +846,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
         let default_branch = "master";
