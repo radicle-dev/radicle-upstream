@@ -6,7 +6,6 @@ use std::path::Path;
 use proxy::coco;
 use proxy::error;
 use proxy::keystore;
-use proxy::project;
 
 #[tokio::test]
 async fn can_checkout() -> Result<(), error::Error> {
@@ -33,14 +32,13 @@ async fn can_checkout() -> Result<(), error::Error> {
     )?;
 
     let path = tmp_dir.path().join("projects").join("git-platinum");
-    let exe_path = exe_path()?;
-    project::Checkout::new(platinum_project, path, exe_path).run()?;
+    coco::project::Checkout::new(platinum_project, path, exe_path()).run()?;
 
     Ok(())
 }
 
 /// Set up the PATH env variable used for running the checkout.
-fn exe_path() -> Result<ffi::OsString, error::Error> {
+fn exe_path() -> ffi::OsString {
     let exe_path = env!("CARGO_BIN_EXE_git-remote-rad");
     let exe_path = Path::new(exe_path.strip_suffix("git-remote-rad").unwrap());
 
@@ -51,5 +49,5 @@ fn exe_path() -> Result<ffi::OsString, error::Error> {
         paths
     });
 
-    Ok(env::join_paths(paths)?)
+    env::join_paths(paths).expect("failed to join paths")
 }

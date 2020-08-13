@@ -1837,7 +1837,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=264a1868183560f5c0e7c3496add18b913eef7ac#264a1868183560f5c0e7c3496add18b913eef7ac"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=1d9c4c107e6ac1816342a35c0558262fba4a96ff#1d9c4c107e6ac1816342a35c0558262fba4a96ff"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -3033,8 +3033,7 @@ checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
 [[package]]
 name = "quinn"
 version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88de58d76d8f82fb28e5c89302119c102bb5b9ce57b034186b559b63ba147a0f"
+source = "git+https://github.com/djc/quinn?rev=babb07b079e7e3ac4ff2fa7ef25b0dac5e934377#babb07b079e7e3ac4ff2fa7ef25b0dac5e934377"
 dependencies = [
  "bytes 0.5.6",
  "err-derive",
@@ -3051,8 +3050,7 @@ dependencies = [
 [[package]]
 name = "quinn-proto"
 version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0ea0a358c179c6b7af34805c675d1664a9c6a234a7acd7efdbb32d2f39d3d2a"
+source = "git+https://github.com/djc/quinn?rev=babb07b079e7e3ac4ff2fa7ef25b0dac5e934377#babb07b079e7e3ac4ff2fa7ef25b0dac5e934377"
 dependencies = [
  "bytes 0.5.6",
  "err-derive",
@@ -3085,7 +3083,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=264a1868183560f5c0e7c3496add18b913eef7ac#264a1868183560f5c0e7c3496add18b913eef7ac"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=1d9c4c107e6ac1816342a35c0558262fba4a96ff#1d9c4c107e6ac1816342a35c0558262fba4a96ff"
 dependencies = [
  "anyhow",
  "git2",
@@ -3564,11 +3562,11 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0d4a31f5d68413404705d6982529b0e11a9aacd4839d1d6222ee3b8cb4015e1"
+checksum = "cac94b333ee2aac3284c5b8a1b7fb4dd11cba88c244e3fe33cdbd047af0eb693"
 dependencies = [
- "base64 0.11.0",
+ "base64 0.12.3",
  "log 0.4.8",
  "ring",
  "sct",

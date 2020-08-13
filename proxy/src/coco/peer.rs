@@ -409,11 +409,7 @@ mod test {
         owner: &User,
         repo_path: PathBuf,
     ) -> Result<Project<entity::Draft>, Error> {
-        api.init_project(
-            key,
-            owner,
-            &fakie_project(repo_path),
-        )
+        api.init_project(key, owner, &fakie_project(repo_path))
     }
 
     fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
