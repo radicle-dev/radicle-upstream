@@ -261,7 +261,7 @@ mod test {
     #[tokio::test]
     async fn delete() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -287,7 +287,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let res = request().method("GET").path("/").reply(&api).await;
@@ -334,7 +334,7 @@ mod test {
     #[tokio::test]
     async fn update_settings() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let mut settings = session::settings::Settings::default();

@@ -887,7 +887,7 @@ mod test {
     #[tokio::test]
     async fn blob() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1021,7 +1021,7 @@ mod test {
     #[tokio::test]
     async fn blob_dev_branch() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1074,7 +1074,7 @@ mod test {
     #[tokio::test]
     async fn branches() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1111,7 +1111,7 @@ mod test {
     #[allow(clippy::indexing_slicing)]
     async fn commit() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1164,7 +1164,7 @@ mod test {
     #[tokio::test]
     async fn commits() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1209,7 +1209,7 @@ mod test {
     #[tokio::test]
     async fn local_state() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let path = "../fixtures/git-platinum";
@@ -1241,7 +1241,7 @@ mod test {
     #[tokio::test]
     async fn revisions() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1321,7 +1321,7 @@ mod test {
     #[tokio::test]
     async fn tags() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1360,7 +1360,7 @@ mod test {
     #[tokio::test]
     async fn tree() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1446,7 +1446,7 @@ mod test {
             .add(b'=');
 
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;

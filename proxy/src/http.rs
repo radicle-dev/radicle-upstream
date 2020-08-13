@@ -199,11 +199,7 @@ where
 }
 
 impl Context<registry::Cacher<registry::Registry>, coco::SecretKey> {
-    #[cfg(test)]
-    async fn tmp(
-        tmp_dir: &tempfile::TempDir,
-    ) -> Result<Ctx<registry::Cacher<registry::Registry>, coco::SecretKey>, crate::error::Error>
-    {
+    async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let pw = crate::keystore::SecUtf8::from("radicle-upstream");
@@ -223,13 +219,23 @@ impl Context<registry::Cacher<registry::Registry>, coco::SecretKey> {
             registry::Cacher::new(reg, &store)
         };
 
-        Ok(Arc::new(RwLock::new(Self {
+        Ok(Self {
             peer_api,
             registry,
             signer: key,
             store,
             subscriptions: crate::notification::Subscriptions::default(),
-        })))
+        })
+    }
+}
+
+impl<R, S> From<Context<R, S>> for Ctx<R, S>
+where
+    S: coco::Signer,
+    S::Error: coco::SignError,
+{
+    fn from(ctx: Context<R, S>) -> Self {
+        Arc::new(RwLock::new(ctx))
     }
 }
 

@@ -176,7 +176,7 @@ mod test {
     #[tokio::test]
     async fn account_exists() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -205,7 +205,7 @@ mod test {
     #[tokio::test]
     async fn account_does_not_exists() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx);
 
         let author =
@@ -230,7 +230,7 @@ mod test {
     #[tokio::test]
     async fn account_exists_bad_request() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx);
 
         let non_ss58_address = "abc";
@@ -248,7 +248,7 @@ mod test {
     #[tokio::test]
     async fn existing_account_balance() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -281,7 +281,7 @@ mod test {
     #[tokio::test]
     async fn unexisting_account_balance() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let unkown_account =
@@ -301,7 +301,7 @@ mod test {
     #[tokio::test]
     async fn account_balance_bad_request() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let non_ss58_address = "abc";

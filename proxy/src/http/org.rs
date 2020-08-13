@@ -666,7 +666,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -715,7 +715,7 @@ mod test {
     #[tokio::test]
     async fn register_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -784,7 +784,7 @@ mod test {
     #[tokio::test]
     async fn get_project() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
@@ -840,7 +840,7 @@ mod test {
     #[tokio::test]
     async fn get_projects() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -924,7 +924,7 @@ mod test {
     #[tokio::test]
     async fn register() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -963,7 +963,7 @@ mod test {
     #[tokio::test]
     async fn register_member() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -1019,7 +1019,7 @@ mod test {
     #[tokio::test]
     async fn transfer() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;

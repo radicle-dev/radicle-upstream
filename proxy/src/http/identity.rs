@@ -311,7 +311,7 @@ mod test {
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let res = request()
@@ -361,7 +361,7 @@ mod test {
     #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -398,7 +398,7 @@ mod test {
     #[tokio::test]
     async fn list() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;

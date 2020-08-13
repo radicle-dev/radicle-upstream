@@ -9,16 +9,13 @@ use crate::http;
 use crate::registry;
 
 /// Combination of all control filters.
-pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
-where
-    R: registry::Client + 'static,
-    S: coco::Signer,
-    S::Error: coco::SignError,
-{
+pub fn filters<R, S>(
+    ctx: http::Ctx<registry::Cacher<registry::Registry>, coco::SecretKey>,
+) -> BoxedFilter<(impl Reply,)> {
     create_project_filter(ctx.clone())
-        .or(nuke_coco_filter(ctx.clone()))
         .or(nuke_registry_filter(ctx.clone()))
-        .or(register_user_filter(ctx))
+        .or(register_user_filter(ctx.clone()))
+        .or(reset_filter(ctx))
         .boxed()
 }
 
@@ -53,18 +50,13 @@ where
         .and_then(handler::register_user)
 }
 
-/// GET /nuke/coco
-fn nuke_coco_filter<R, S>(
-    ctx: http::Ctx<R, S>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-    S: coco::Signer,
-    S::Error: coco::SignError,
-{
-    path!("nuke" / "coco")
+/// GET /reset
+fn reset_filter(
+    ctx: http::Ctx<registry::Cacher<registry::Registry>, coco::SecretKey>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path!("reset")
         .and(super::with_context(ctx))
-        .and_then(handler::nuke_coco)
+        .and_then(handler::reset)
 }
 
 /// GET /nuke/registry
@@ -83,12 +75,12 @@ where
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use radicle_registry_client::CryptoPair;
     use std::convert::TryFrom;
+
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
-    use librad::paths;
+    use radicle_registry_client::CryptoPair;
 
     use crate::coco;
     use crate::error::Error;
@@ -165,33 +157,22 @@ mod handler {
         Ok(reply::json(&true))
     }
 
-    /// Reset the coco state by creating a new temporary directory for the librad paths.
-    pub async fn nuke_coco<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
-    where
-        R: Send + Sync,
-        S: coco::Signer,
-        S::Error: coco::SignError,
-    {
+    /// Reset the known state by replacing the [`http::Context`].
+    pub async fn reset(
+        ctx: http::Ctx<registry::Cacher<registry::Registry>, coco::SecretKey>,
+    ) -> Result<impl Reply, Rejection> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
         //
         // N.B. this may gather lot's of tmp files on your system. We're sorry.
-        let tmp_path = {
-            let temp_dir = tempfile::tempdir().expect("test dir creation failed");
-            log::debug!("New temporary path is: {:?}", temp_dir.path());
-            std::env::set_var("RAD_HOME", temp_dir.path());
-            temp_dir.path().to_path_buf()
-        };
-
-        let paths = paths::Paths::from_root(tmp_path).map_err(Error::from)?;
+        let tmp_dir = tempfile::tempdir().expect("test dir creation failed");
+        log::debug!("New temporary path is: {:?}", tmp_dir.path());
+        std::env::set_var("RAD_HOME", tmp_dir.path());
 
         let mut ctx = ctx.write().await;
-        let config = coco::config::configure(paths, ctx.signer.clone());
-        let new_peer_api = coco::Api::new(config).await?;
-
-        ctx.peer_api = new_peer_api;
-        // ctx.keystore = new_keystore;
+        let new_ctx = http::Context::tmp(&tmp_dir).await?;
+        *ctx = new_ctx;
 
         Ok(reply::json(&true))
     }
@@ -219,16 +200,16 @@ mod handler {
         use crate::http;
 
         #[tokio::test]
-        async fn nuke_coco() -> Result<(), error::Error> {
+        async fn reset() -> Result<(), error::Error> {
             let tmp_dir = tempfile::tempdir()?;
-            let ctx = http::Context::tmp(&tmp_dir).await?;
+            let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
 
             let (old_paths, old_peer_id) = {
                 let ctx = ctx.read().await;
                 (ctx.peer_api.paths(), ctx.peer_api.peer_id())
             };
 
-            super::nuke_coco(ctx.clone()).await.unwrap();
+            super::reset(ctx.clone()).await.unwrap();
 
             let (new_paths, new_peer_id) = {
                 let ctx = ctx.read().await;
@@ -276,7 +257,10 @@ pub struct RegisterInput {
 #[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
+    use std::sync::Arc;
+
     use pretty_assertions::assert_eq;
+    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
@@ -290,7 +274,7 @@ mod test {
     #[tokio::test]
     async fn create_project_after_nuke() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = Arc::new(RwLock::new(http::Context::tmp(&tmp_dir).await?));
         let api = super::filters(ctx);
 
         // Create project before nuke.
@@ -308,7 +292,7 @@ mod test {
         http::test::assert_response(&res, StatusCode::CREATED, |_have| {});
 
         // Reset state.
-        let res = request().method("GET").path("/nuke/coco").reply(&api).await;
+        let res = request().method("GET").path("/reset").reply(&api).await;
         assert_eq!(res.status(), StatusCode::OK);
 
         let res = request()

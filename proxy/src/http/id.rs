@@ -101,7 +101,7 @@ mod test {
     #[tokio::test]
     async fn get_status_available() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::get_status_filter(ctx.clone());
 
         let id = registry::Id::try_from("monadic")?;
@@ -121,7 +121,7 @@ mod test {
     #[tokio::test]
     async fn get_status_taken_by_user() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::get_status_filter(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -149,7 +149,7 @@ mod test {
     #[tokio::test]
     async fn get_status_taken_by_org() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::get_status_filter(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -182,7 +182,7 @@ mod test {
     #[tokio::test]
     async fn get_status_retired_by_user() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::get_status_filter(ctx.clone());
 
         let ctx = ctx.read().await;
@@ -214,7 +214,7 @@ mod test {
     #[tokio::test]
     async fn get_status_retired_by_org() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
         let api = super::get_status_filter(ctx.clone());
 
         let ctx = ctx.read().await;
