@@ -1,5 +1,5 @@
 <script>
-  import { getContext, onMount } from "svelte";
+  import { getContext } from "svelte";
   import { querystring, push } from "svelte-spa-router";
   import { format } from "timeago.js";
 
@@ -36,14 +36,8 @@
 
   const { id, metadata } = getContext("project");
 
-  let headerHeight;
-  onMount(() => {
-    headerHeight = document
-      .getElementById("projectHeader")
-      .getBoundingClientRect().height;
-  });
-
   let scrollY = 0;
+  let headerHeight;
   let currentPeerId;
   let currentRevision;
   let currentObjectType;
@@ -218,7 +212,6 @@
     flex-direction: column;
     min-width: 18rem;
     padding-right: 0.75rem;
-    /* overflow: scroll; */
   }
 
   .column-right {
@@ -243,7 +236,7 @@
 
 <Remote store={projectStore} let:data={project}>
   <div class="header-wrapper">
-    <div id="projectHeader" class="header center-content">
+    <div bind:clientHeight={headerHeight} class="header center-content">
       <h2>{project.metadata.name}</h2>
       <div class="description">
         <p>{project.metadata.description}</p>
@@ -257,8 +250,7 @@
     </div>
   </div>
   <div class="wrapper">
-    <div
-      class="repo-header-wrapper {scrollY > headerHeight ? 'elevation' : ''}">
+    <div class="repo-header-wrapper" class:elevation={scrollY > headerHeight}>
       <div class="repo-header center-content">
         <!-- Revision selector -->
         <Remote store={revisionsStore} let:data={revisions}>
