@@ -55,6 +55,7 @@
     margin: 0;
   }
   .container.toplevel {
+    display: inline-block;
     padding-left: 0;
   }
 </style>
