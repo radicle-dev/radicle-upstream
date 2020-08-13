@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use librad::git::local::url::LocalUrl;
 
 use crate::coco;
+use crate::config;
 use crate::error;
 use crate::registry;
 
@@ -214,12 +215,11 @@ where
 
     /// Set up the PATH env variable used for running the checkout.
     fn default_bin_path() -> Result<ffi::OsString, error::Error> {
-        let exe_path = std::env::current_exe()?;
-        let exe_path = exe_path.parent().expect("failed to find executable path");
+        let proxy_path = config::proxy_path()?;
 
-        let paths = std::env::var_os("PATH").map_or(vec![exe_path.to_path_buf()], |path| {
+        let paths = std::env::var_os("PATH").map_or(vec![proxy_path.to_path_buf()], |path| {
             let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
-            paths.push(exe_path.to_path_buf());
+            paths.push(proxy_path.to_path_buf());
             paths.reverse();
             paths
         });
