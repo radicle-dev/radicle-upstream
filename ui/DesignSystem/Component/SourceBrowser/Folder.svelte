@@ -34,16 +34,16 @@
   .folder {
     display: flex;
     cursor: pointer;
-    padding: 4px 4px 4px 4px;
-    margin: 4px 0;
+    padding: 0.25rem 0.25rem 0.25rem 0.25rem;
+    margin: 0.25rem 0;
     color: var(--color-foreground-level-6);
     user-select: none;
     line-height: 1.5rem;
-    word-wrap: none;
+    white-space: nowrap;
   }
   .folder:hover {
     background-color: var(--color-foreground-level-1);
-    border-radius: 4px;
+    border-radius: 0.25rem;
   }
 
   .folder-name {
@@ -61,7 +61,7 @@
 
 {#if !toplevel}
   <div class="folder" on:click={toggle}>
-    <span class:active style="height: 24px">
+    <span class:active style="height: 1.5rem">
       <Icon.Chevron
         variant={expanded ? 'down' : 'right'}
         dataCy={`expand-${name}`} />
