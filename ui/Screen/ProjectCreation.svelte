@@ -15,6 +15,7 @@
     Dropdown,
     ModalLayout,
     RadioOption,
+    RemoteHelperHint,
   } from "../DesignSystem/Component";
 
   let currentSelection;
@@ -328,6 +329,7 @@
             </div>
           </div>
         </RadioOption>
+        <RemoteHelperHint hidden={false} />
       </div>
 
       {#if validations && validations.currentSelection}

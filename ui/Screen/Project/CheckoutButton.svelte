@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
-  import { Copyable, Tooltip } from "../../DesignSystem/Component";
+  import { RemoteHelperHint, Tooltip } from "../../DesignSystem/Component";
 
   const dispatch = createEventDispatcher();
 
@@ -24,12 +24,6 @@
   };
 
   let checkoutDirectoryPath;
-
-  let showHint = true;
-
-  const hideHint = () => {
-    showHint = false;
-  };
 </script>
 
 <style>
@@ -50,18 +44,6 @@
     color: var(--color-foreground-level-6);
     user-select: none;
   }
-
-  .info {
-    margin-top: 1rem;
-    background-color: var(--color-foreground-level-1);
-    border-radius: 4px;
-    padding: 0.5rem;
-  }
-
-  .close-hint-button {
-    float: right;
-    cursor: pointer;
-  }
 </style>
 
 <svelte:window on:click={clickOutside} />
@@ -76,18 +58,8 @@
     placeholder="~/path/to/folder"
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
-  <div class="info" hidden={!showHint} on:click={hideHint}>
-    <div class="close-hint-button">
-      <Icon.Cross variant="small" />
-    </div>
-    <p style="margin-bottom: 0.75rem; color: display: flex;">
-      To checkout projects, you first need to add this to your shell
-      configuration:
-    </p>
-    <Copyable>
-      <p class="typo-text-small-mono">export PATH="~/.radicle/bin:$PATH"</p>
-    </Copyable>
-  </div>
+
+  <RemoteHelperHint hidden={false} />
 
   <Tooltip
     value={!checkoutDirectoryPath ? 'Please select a folder' : null}

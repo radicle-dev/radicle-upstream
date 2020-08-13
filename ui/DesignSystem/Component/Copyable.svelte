@@ -40,7 +40,7 @@
 <style>
   .wrapper {
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     white-space: nowrap;
   }
 
