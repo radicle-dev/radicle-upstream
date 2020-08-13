@@ -31,8 +31,8 @@
     <Icon.Cross variant="small" />
   </div>
   <p style="margin-bottom: 0.75rem; color: display: flex;">
-    Before you get started, you need to add this to your shell configuration
-    file. Not sure how?
+    Before you get started, you need to add this to your shell configuration.
+    Not sure how?
     <a
       style="color: var(--color-foreground-level-6);"
       class="typo-link"
