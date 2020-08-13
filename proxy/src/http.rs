@@ -176,6 +176,7 @@ where
     peer_api: coco::Api<S>,
     /// [`registry::Client`] to perform registry operations.
     registry: R,
+    /// [`coco::Signer`] to access methods on the [`coco::Api`].
     signer: S,
     /// [`kv::Store`] used for session state and cache.
     store: kv::Store,
