@@ -11,7 +11,6 @@ use warp::http::StatusCode;
 use warp::{path, reject, reply, Filter, Rejection, Reply};
 
 use crate::coco;
-use crate::keystore;
 use crate::registry;
 
 mod account;
@@ -49,8 +48,8 @@ macro_rules! combine {
 /// Main entry point for HTTP API.
 pub fn api<R, S>(
     peer_api: coco::Api<S>,
-    keystore: keystore::Keystorage,
     registry: R,
+    signer: S,
     store: kv::Store,
     enable_control: bool,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
@@ -62,8 +61,8 @@ where
     let subscriptions = crate::notification::Subscriptions::default();
     let ctx = Context {
         peer_api,
-        keystore,
         registry,
+        signer,
         store,
         subscriptions: subscriptions.clone(),
     };
@@ -175,10 +174,9 @@ where
 {
     /// [`coco::Api`] to operate on the local monorepo.
     peer_api: coco::Api<S>,
-    /// Storage to manage keys.
-    keystore: keystore::Keystorage,
     /// [`registry::Client`] to perform registry operations.
     registry: R,
+    signer: S,
     /// [`kv::Store`] used for session state and cache.
     store: kv::Store,
     /// Subscriptions for notification of significant events in the system.
@@ -207,12 +205,12 @@ impl Context<registry::Cacher<registry::Registry>, coco::SecretKey> {
     {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = keystore::Keystorage::new(&paths, pw);
+        let pw = crate::keystore::SecUtf8::from("radicle-upstream");
+        let mut keystore = crate::keystore::Keystorage::new(&paths, pw);
         let key = keystore.init_librad_key()?;
 
         let peer_api = {
-            let config = coco::config::default(key, tmp_dir.path())?;
+            let config = coco::config::default(key.clone(), tmp_dir.path())?;
             coco::Api::new(config).await?
         };
 
@@ -225,9 +223,9 @@ impl Context<registry::Cacher<registry::Registry>, coco::SecretKey> {
         };
 
         Ok(Arc::new(RwLock::new(Self {
-            keystore,
             peer_api,
             registry,
+            signer: key,
             store,
             subscriptions: crate::notification::Subscriptions::default(),
         })))

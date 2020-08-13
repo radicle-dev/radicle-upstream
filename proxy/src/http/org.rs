@@ -719,8 +719,7 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(ctx.signer.clone(), "cloudhead")?;
         let author = radicle_registry_client::ed25519::Pair::from_legacy_string("//Alice", None);
         let handle = registry::Id::try_from("alice")?;
         let org_id = registry::Id::try_from("radicle")?;
@@ -845,15 +844,14 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(ctx.signer.clone(), "cloudhead")?;
         let project_name = "upstream";
         let project_description = "desktop client for radicle";
         let default_branch = "master";
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            key,
+            ctx.signer.clone(),
             &owner,
             project_name,
             project_description,

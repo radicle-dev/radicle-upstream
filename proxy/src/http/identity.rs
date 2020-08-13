@@ -148,8 +148,7 @@ mod handler {
             return Err(Rejection::from(error::Error::EntityExists(identity.urn)));
         }
 
-        let key = ctx.keystore.get_librad_key().map_err(error::Error::from)?;
-        let id = identity::create(&ctx.peer_api, &key, &input.handle)?;
+        let id = identity::create(&ctx.peer_api, ctx.signer.clone(), &input.handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
 
@@ -366,8 +365,7 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let user = ctx.peer_api.init_user(&key, "cloudhead")?;
+        let user = ctx.peer_api.init_user(ctx.signer.clone(), "cloudhead")?;
         let urn = user.urn();
         let handle = user.name().to_string();
         let peer_id = ctx.peer_api.peer_id();
@@ -404,8 +402,7 @@ mod test {
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
-        let key = ctx.keystore.get_librad_key()?;
-        let id = identity::create(&ctx.peer_api, &key, "cloudhead")?;
+        let id = identity::create(&ctx.peer_api, ctx.signer.clone(), "cloudhead")?;
 
         let owner = ctx.peer_api.get_user(&id.clone().urn)?;
         let owner = coco::verify_user(owner)?;
@@ -414,16 +411,20 @@ mod test {
 
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            ctx.signer.clone(),
             &owner,
             "git-platinum",
             "fixture data",
             "master",
         )?;
 
-        let fintohaps: identity::Identity =
-            coco::control::track_fake_peer(&ctx.peer_api, &key, &platinum_project, "fintohaps")
-                .into();
+        let fintohaps: identity::Identity = coco::control::track_fake_peer(
+            &ctx.peer_api,
+            ctx.signer.clone(),
+            &platinum_project,
+            "fintohaps",
+        )
+        .into();
 
         let res = request().method("GET").path("/").reply(&api).await;
 

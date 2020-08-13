@@ -93,7 +93,6 @@ mod handler {
     use crate::coco;
     use crate::error::Error;
     use crate::http;
-    use crate::keystore;
     use crate::project;
     use crate::registry;
 
@@ -110,10 +109,9 @@ mod handler {
     {
         let ctx = ctx.read().await;
 
-        let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
         let meta = coco::control::replicate_platinum(
             &ctx.peer_api,
-            &key,
+            ctx.signer.clone(),
             &owner,
             &input.name,
             &input.description,
@@ -122,7 +120,12 @@ mod handler {
 
         if let Some(user_handle_list) = input.fake_peers {
             for user_handle in user_handle_list {
-                let _ = coco::control::track_fake_peer(&ctx.peer_api, &key, &meta, &user_handle);
+                let _ = coco::control::track_fake_peer(
+                    &ctx.peer_api,
+                    ctx.signer.clone(),
+                    &meta,
+                    &user_handle,
+                );
             }
         }
         let stats = ctx
@@ -187,16 +190,12 @@ mod handler {
 
         let paths = paths::Paths::from_root(tmp_path).map_err(Error::from)?;
 
-        let pw = keystore::SecUtf8::from("radicle-upstream");
-        let mut new_keystore = keystore::Keystorage::new(&paths, pw);
-        let key = new_keystore.init_librad_key().map_err(Error::from)?;
-
-        let config = coco::config::configure(paths, key.clone());
+        let mut ctx = ctx.write().await;
+        let config = coco::config::configure(paths, ctx.signer.clone());
         let new_peer_api = coco::Api::new(config).await?;
 
-        let mut ctx = ctx.write().await;
         ctx.peer_api = new_peer_api;
-        ctx.keystore = new_keystore;
+        // ctx.keystore = new_keystore;
 
         Ok(reply::json(&true))
     }

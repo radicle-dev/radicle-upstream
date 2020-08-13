@@ -59,7 +59,7 @@ where
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(api, signer, owner, info.0, info.1, info.2)?;
+        replicate_platinum(api, signer.clone(), owner, info.0, info.1, info.2)?;
     }
 
     Ok(())

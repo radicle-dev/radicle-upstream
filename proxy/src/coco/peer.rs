@@ -23,6 +23,7 @@ use crate::error;
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
 
+/// Blanket trait to use as our generic [`signer::Signer`].
 pub trait Signer: keys::AsPKCS8 + signer::Signer + Clone {}
 
 impl<T: keys::AsPKCS8 + signer::Signer + Clone> Signer for T {}
@@ -271,7 +272,7 @@ where
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
 
-        let mut meta = project.build(owner, signer)?;
+        let mut meta = project.build(owner, signer.clone())?;
         meta.sign_owned(&signer)?;
 
         let urn = meta.urn();
@@ -432,7 +433,7 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let annie = api.init_user(&key, "annie_are_you_ok?");
+        let annie = api.init_user(key, "annie_are_you_ok?");
         assert!(annie.is_ok());
 
         Ok(())
@@ -447,7 +448,7 @@ mod test {
         let api = Api::new(config).await?;
 
         let user = api.init_owner(key.clone(), "cloudhead")?;
-        let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
+        let project = api.init_project(key, &user, &radicle_project(repo_path.clone()));
 
         assert!(project.is_ok());
         assert!(repo_path.join("radicalise").exists());
@@ -464,8 +465,8 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(&key, "cloudhead")?;
-        let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
+        let user = api.init_owner(key.clone(), "cloudhead")?;
+        let project = api.init_project(key.clone(), &user, &radicle_project(repo_path.clone()));
 
         assert!(project.is_ok());
         assert!(repo_path.exists());
@@ -480,8 +481,8 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(&key, "cloudhead")?;
-        let err = api.init_user(&key, "cloudhead");
+        let user = api.init_owner(key.clone(), "cloudhead")?;
+        let err = api.init_user(key, "cloudhead");
 
         if let Err(Error::EntityExists(urn)) = err {
             assert_eq!(urn, user.urn())
@@ -504,9 +505,8 @@ mod test {
         let api = Api::new(config).await?;
 
         let user = api.init_owner(key.clone(), "cloudhead")?;
-        let user = api.init_owner(&key, "cloudhead")?;
         let project_creation = radicle_project(repo_path.clone());
-        let project = api.init_project(key, &user, &project_creation)?;
+        let project = api.init_project(key.clone(), &user, &project_creation)?;
 
         let err = api.init_project(key, &user, &project_creation.into_existing());
 
@@ -531,11 +531,11 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let user = api.init_owner(&key, "cloudhead")?;
+        let user = api.init_owner(key.clone(), "cloudhead")?;
 
-        control::setup_fixtures(&api, &key, &user)?;
+        control::setup_fixtures(&api, key.clone(), &user)?;
 
-        let kalt = api.init_user(&key, "kalt")?;
+        let kalt = api.init_user(key.clone(), "kalt")?;
         let kalt = super::verify_user(kalt)?;
         let fakie = api.init_project(key, &kalt, &fakie_project(repo_path))?;
 
@@ -563,9 +563,9 @@ mod test {
         let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
-        let cloudhead = api.init_user(&key, "cloudhead")?;
+        let cloudhead = api.init_user(key.clone(), "cloudhead")?;
         let _cloudhead = super::verify_user(cloudhead)?;
-        let kalt = api.init_user(&key, "kalt")?;
+        let kalt = api.init_user(key, "kalt")?;
         let _kalt = super::verify_user(kalt)?;
 
         let users = api.list_users()?;

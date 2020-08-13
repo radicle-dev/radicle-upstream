@@ -44,13 +44,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             });
 
             client
-        },
+        }
         host => {
             let host = url17::Host::parse(host)?;
             radicle_registry_client::Client::create_with_executor(host)
                 .await
                 .expect("unable to construct devnet client")
-        },
+        }
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
@@ -80,8 +80,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if args.test {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = coco_api.init_owner(&key, "cloudhead")?;
-        coco::control::setup_fixtures(&coco_api, &key, &owner).expect("fixture creation failed");
+        let owner = coco_api.init_owner(key.clone(), "cloudhead")?;
+        coco::control::setup_fixtures(&coco_api, key.clone(), &owner)
+            .expect("fixture creation failed");
     }
 
     let store = {
@@ -99,7 +100,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(coco_api, keystore, cache.clone(), store, args.test);
+    let api = http::api(coco_api, cache.clone(), key.clone(), store, args.test);
 
     tokio::spawn(async move {
         cache.run().await.expect("cacher run failed");
