@@ -26,8 +26,9 @@
   }
 </style>
 
-<div class="info" {hidden} {style}>
+<div class="info" {hidden} {style} data-cy="remote-helper-hint">
   <div
+    data-cy="close-hint-button"
     class="close-hint-button"
     on:click={() => {
       dispatch('hide');
