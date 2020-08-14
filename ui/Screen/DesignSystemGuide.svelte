@@ -378,7 +378,7 @@
         <h4>Radicle Upstream</h4>
       </TypographySwatch>
 
-      <TypographySwatch title="<p>">
+      <TypographySwatch title={`<p> or <span class="typo-text">`}>
         <p>Radicle Upstream</p>
       </TypographySwatch>
 
