@@ -24,6 +24,7 @@ use crate::error;
 pub type User = user::User<entity::Verified>;
 
 /// High-level interface to the coco monorepo and gossip layer.
+#[derive(Clone)]
 pub struct Api {
     /// Thread-safe wrapper around [`PeerApi`].
     peer_api: Arc<Mutex<PeerApi<keys::SecretKey>>>,
@@ -702,12 +703,15 @@ mod test {
         let bob_peer = Api::new(config).await?;
 
         let alice = alice_peer.init_user(alice_key, "alice")?;
-        let _ = bob_peer.clone_user(
-            alice.urn().into_rad_url(alice_peer.peer_id().clone()),
-            vec![alice_addr].into_iter(),
-        )?;
+        let bobby = bob_peer.clone();
+        let user_urn = tokio::task::spawn_blocking(move || {
+            bobby.clone_user(
+                alice.urn().into_rad_url(alice_peer.peer_id().clone()),
+                vec![alice_addr].into_iter(),
+            )
+        }).await.unwrap()?;
 
-        assert_eq!(bob_peer.list_users()?, vec![]);
+        assert_eq!(bob_peer.list_users()?.into_iter().map(|user| user.urn()).collect::<Vec<_>>(), vec![user_urn.clone(), user_urn]);
 
         Ok(())
     }
