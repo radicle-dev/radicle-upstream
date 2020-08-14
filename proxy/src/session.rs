@@ -231,7 +231,7 @@ pub mod settings {
 
     impl Default for Hints {
         fn default() -> Self {
-            Hints {
+            Self {
                 show_remote_helper: true,
             }
         }
