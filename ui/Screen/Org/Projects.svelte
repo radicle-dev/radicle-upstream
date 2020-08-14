@@ -5,15 +5,12 @@
   import { projects as store, fetchProjectList } from "../../src/org.ts";
   import * as path from "../../src/path.ts";
 
-  import { Flex } from "../../DesignSystem/Primitive";
   import {
-    AdditionalActionsDropdown,
     EmptyState,
     Error,
     List,
-    ProjectCard,
+    ProjectListItem,
     Remote,
-    Stats,
   } from "../../DesignSystem/Component";
 
   export let params = null;
@@ -26,20 +23,13 @@
     }
   };
 
-  const projectCardProps = orgProject => {
-    if (orgProject.maybeProject) {
-      return {
-        title: orgProject.name,
-        description: orgProject.maybeProject.metadata.description,
-        showRegisteredBadge: true,
-      };
-    } else {
-      return {
-        title: orgProject.name,
-        showRegisteredBadge: true,
-      };
-    }
-  };
+  const formatMetadata = orgProject =>
+    orgProject.maybeProject
+      ? {
+          name: orgProject.name,
+          description: orgProject.maybeProject.metadata.description,
+        }
+      : { name: orgProject.name };
 
   const create = () => push(path.registerProject(params.id));
   const register = () => push(path.memberRegistration(params.id));
@@ -57,25 +47,12 @@
       style="margin: 0 auto;">
       <!-- TODO(julien): what should the registered but no coco metadata
         state look like visually? -->
-      <Flex
-        style="flex: 1; padding: 22px 15px 26px 12px;"
-        dataCy={`project-${orgProject.name}`}>
-        <div slot="left">
-          <ProjectCard {...projectCardProps(orgProject)} />
-        </div>
-
-        <div slot="right" style="display: flex; align-items: center;">
-          {#if orgProject.maybeProject}
-            <Stats
-              branches={orgProject.maybeProject.stats.branches}
-              commits={orgProject.maybeProject.stats.commits}
-              contributors={orgProject.maybeProject.stats.contributors} />
-          {/if}
-
-          <AdditionalActionsDropdown
-            headerTitle={orgProject.shareableEntityIdentifier} />
-        </div>
-      </Flex>
+      <ProjectListItem
+        dataCy={`project-${orgProject.name}`}
+        metadata={formatMetadata(orgProject)}
+        stats={orgProject.maybeProject && orgProject.maybeProject.stats}
+        registration={true}
+        shareableEntityIdentifier={orgProject.shareableEntityIdentifier} />
     </List>
   {:else if session.permissions.registerProject}
     <EmptyState

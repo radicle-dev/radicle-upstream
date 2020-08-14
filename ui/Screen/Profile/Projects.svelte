@@ -5,15 +5,13 @@
   import * as path from "../../src/path.ts";
   import { projects as projectsStore } from "../../src/project.ts";
 
-  import { Flex, Icon } from "../../DesignSystem/Primitive";
+  import { Icon } from "../../DesignSystem/Primitive";
   import {
-    AdditionalActionsDropdown,
     EmptyState,
     Error,
     List,
-    ProjectCard,
+    ProjectListItem,
     Remote,
-    Stats,
   } from "../../DesignSystem/Component";
 
   const session = getContext("session");
@@ -23,40 +21,22 @@
     push(path.projectSource(project.id));
   };
 
-  const contextMenuItems = (projectId, session) => {
-    if (session.permissions.registerProject) {
-      return [
-        {
-          title: "Register project",
-          dataCy: "register-project",
-          icon: Icon.Register,
-          event: () =>
-            push(
-              path.registerExistingProject(
-                projectId,
-                session.identity.registered
-              )
-            ),
-        },
-      ];
-    } else {
-      return [
-        {
-          title: "Register project",
-          dataCy: "register-project",
-          icon: Icon.Register,
-          disabled: true,
-          tooltip: "Register your handle to register a project.",
-        },
-      ];
-    }
-  };
-
-  const projectCardProps = project => ({
-    title: project.metadata.name,
-    description: project.metadata.description,
-    showRegisteredBadge: project.registration,
-  });
+  const contextMenuItems = (projectId, session) => [
+    {
+      title: "Register project",
+      dataCy: "register-project",
+      icon: Icon.Register,
+      disabled: !session.permissions.registerProject,
+      tooltip: session.permissions.registerProject
+        ? null
+        : "Register your handle to register a project.",
+      event: () =>
+        session.permissions.registerProject &&
+        push(
+          path.registerExistingProject(projectId, session.identity.registered)
+        ),
+    },
+  ];
 
   const create = () => push(path.createProject());
   const register = () => push(path.registerUser());
@@ -70,23 +50,10 @@
       on:select={select}
       let:item={project}
       style="margin: 0 auto;">
-      <Flex
-        style="flex: 1; padding: 24px 16px 24px 24px;"
-        dataCy={`project-list-entry-${project.metadata.name}`}>
-        <div slot="left">
-          <ProjectCard {...projectCardProps(project)} />
-        </div>
-        <div slot="right" style="display: flex; align-items: center;">
-          <Stats
-            branches={project.stats.branches}
-            commits={project.stats.commits}
-            contributors={project.stats.contributors} />
-          <AdditionalActionsDropdown
-            dataCy="context-menu"
-            headerTitle={project.shareableEntityIdentifier}
-            menuItems={contextMenuItems(project.id, session)} />
-        </div>
-      </Flex>
+      <ProjectListItem
+        dataCy={`project-list-entry-${project.metadata.name}`}
+        {...project}
+        menuItems={contextMenuItems(project.id, session)} />
     </List>
   {:else if session.permissions.registerHandle}
     <EmptyState
