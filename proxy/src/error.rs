@@ -9,7 +9,6 @@ use radicle_surf as surf;
 use radicle_surf::git::git2;
 
 use crate::coco;
-use crate::keystore;
 
 /// Project problems.
 #[derive(Debug, thiserror::Error)]
@@ -127,10 +126,6 @@ pub enum Error {
     /// Failure during the verification of a `librad` entity.
     #[error(transparent)]
     LibradVerification(#[from] entity::HistoryVerificationError),
-
-    /// Failure when interacting with [`crate::keystore`].
-    #[error(transparent)]
-    Keystorage(#[from] keystore::Error),
 
     /// Common I/O errors.
     #[error(transparent)]

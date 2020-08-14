@@ -5,7 +5,6 @@ use std::net::SocketAddr;
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
 use librad::meta::user;
@@ -13,26 +12,22 @@ use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig};
 use librad::paths;
 use librad::peer::PeerId;
-use librad::signer;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git;
 
 use crate::coco;
 use crate::error;
 
+use crate::coco::key::{SignError, Signer};
+
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
-
-/// Blanket trait to use as our generic [`signer::Signer`].
-pub trait Signer: keys::AsPKCS8 + signer::Signer + Clone {}
-
-impl<T: keys::AsPKCS8 + signer::Signer + Clone> Signer for T {}
 
 /// High-level interface to the coco monorepo and gossip layer.
 pub struct Api<S>
 where
     S: Signer,
-    S::Error: keys::SignError,
+    S::Error: SignError,
 {
     /// Thread-safe wrapper around [`PeerApi`].
     peer_api: Arc<Mutex<PeerApi<S>>>,
@@ -41,7 +36,7 @@ where
 impl<S> Api<S>
 where
     S: Signer,
-    S::Error: keys::SignError,
+    S::Error: SignError,
 {
     /// Create a new `PeerApi` given a `PeerConfig`.
     ///

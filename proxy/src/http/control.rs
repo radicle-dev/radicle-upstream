@@ -166,7 +166,7 @@ mod handler {
     }
 
     /// Reset the known state by replacing the [`http::Context`].
-    pub async fn reset<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
+    pub async fn reset<R, S>(_ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: registry::Client + 'static,
         S: coco::Signer,
@@ -177,13 +177,13 @@ mod handler {
         // The Peer creates the directory again.
         //
         // N.B. this may gather lot's of tmp files on your system. We're sorry.
-        let tmp_dir = tempfile::tempdir().expect("test dir creation failed");
-        log::debug!("New temporary path is: {:?}", tmp_dir.path());
-        std::env::set_var("RAD_HOME", tmp_dir.path());
+        // let tmp_dir = tempfile::tempdir().expect("test dir creation failed");
+        // log::debug!("New temporary path is: {:?}", tmp_dir.path());
+        // std::env::set_var("RAD_HOME", tmp_dir.path());
 
-        let mut ctx = ctx.write().await;
-        let new_ctx = http::Context::tmp(&tmp_dir).await?;
-        *ctx = new_ctx;
+        // let mut ctx = ctx.write().await;
+        // let new_ctx = http::Context::tmp(&tmp_dir).await?;
+        // *ctx = new_ctx;
 
         Ok(reply::json(&true))
     }

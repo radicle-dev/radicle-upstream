@@ -198,16 +198,17 @@ where
     warp::any().map(move || ctx.clone()).boxed()
 }
 
-impl Context<registry::Cacher<registry::Registry>, coco::SecretKey> {
+impl Context<registry::Cacher<registry::Registry>, coco::KeyStore> {
+    #[cfg(test)]
     async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
-        let pw = crate::keystore::SecUtf8::from("radicle-upstream");
-        let mut keystore = crate::keystore::Keystorage::new(&paths, pw);
-        let key = keystore.init_librad_key()?;
+        let pw = coco::SecUtf8::from("radicle-upstream");
+        // TODO(xla): Convert coco::key errors properly.
+        let keystore = coco::KeyStore::init(&paths, pw).unwrap();
 
         let peer_api = {
-            let config = coco::config::default(key.clone(), tmp_dir.path())?;
+            let config = coco::config::default(keystore, tmp_dir.path())?;
             coco::Api::new(config).await?
         };
 
@@ -222,7 +223,7 @@ impl Context<registry::Cacher<registry::Registry>, coco::SecretKey> {
         Ok(Self {
             peer_api,
             registry,
-            signer: key,
+            signer: keystore,
             store,
             subscriptions: crate::notification::Subscriptions::default(),
         })

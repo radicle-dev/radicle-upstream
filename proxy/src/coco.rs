@@ -11,8 +11,10 @@ pub use radicle_surf::vcs::git::Stats;
 
 pub mod config;
 pub mod control;
+mod key;
+pub use key::{SecUtf8, Signer, Store as KeyStore};
 mod peer;
-pub use peer::{verify_user, Api, Signer, User};
+pub use peer::{verify_user, Api, User};
 
 pub mod project;
 
