@@ -5,7 +5,7 @@
   import { DEFAULT_BRANCH_FOR_NEW_PROJECTS } from "../src/config.ts";
   import * as notification from "../src/notification.ts";
   import * as path from "../src/path.ts";
-  import { create } from "../src/project.ts";
+  import { create, RepoType } from "../src/project.ts";
   import { getLocalState } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
   import { fetch as fetchSession } from "../src/session.ts";
@@ -20,13 +20,10 @@
 
   let currentSelection;
 
-  const NEW = "new";
-  const EXISTING = "existing";
-
   const projectNameMatch = "^[a-z0-9][a-z0-9_-]+$";
 
-  $: isNew = currentSelection === NEW;
-  $: isExisting = currentSelection === EXISTING;
+  $: isNew = currentSelection === RepoType.New;
+  $: isExisting = currentSelection === RepoType.Existing;
 
   let name;
   let description = "";
@@ -150,14 +147,13 @@
     let response;
 
     try {
-      response = await create(
-        {
-          name,
-          description,
-          defaultBranch,
-        },
-        isNew ? newRepositoryPath : existingRepositoryPath
-      );
+      response = await create({
+        description,
+        defaultBranch,
+        repo: isNew
+          ? { type: RepoType.New, name, path: newRepositoryPath }
+          : { type: RepoType.Existing, path: existingRepositoryPath },
+      });
 
       // Re-fetch session so we have the right permissions to enable the
       // project registration button rithout a page-reload.
@@ -216,6 +212,12 @@
     "existingRepositoryPath",
     validations
   );
+
+  // Use the directory name for existing projects as the project name.
+  $: name = existingRepositoryPath.split("/").slice(-1)[0];
+
+  // Reset the project name when switching between new and existing repo.
+  $: isExisting && (name = "");
 </script>
 
 <style>
@@ -258,7 +260,8 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        validation={nameValidation} />
+        validation={nameValidation}
+        disabled={isExisting} />
 
       <Input.Text
         dataCy="description"
@@ -276,7 +279,7 @@
         <RadioOption
           title="Start with a new repository"
           active={isNew}
-          on:click={() => (currentSelection = NEW)}
+          on:click={() => (currentSelection = RepoType.New)}
           dataCy="new-project">
           <div slot="option-body">
             <p
@@ -294,7 +297,7 @@
         <RadioOption
           title="Continue with an existing repository"
           active={isExisting}
-          on:click={() => (currentSelection = EXISTING)}
+          on:click={() => (currentSelection = RepoType.Existing)}
           dataCy="existing-project">
           <div slot="option-body">
             <p

@@ -2,12 +2,15 @@
 
 use std::convert::TryFrom;
 use std::env;
+use std::io;
+use std::path;
 
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
 use radicle_surf::vcs::git::git2;
 
+use crate::coco;
 use crate::coco::config;
 use crate::coco::peer::{Api, User};
 use crate::error;
@@ -29,8 +32,7 @@ pub fn nuke_monorepo() -> Result<(), std::io::Error> {
 ///
 /// Will error if filesystem access is not granted or broken for the configured
 /// [`librad::paths::Paths`].
-#[allow(clippy::needless_pass_by_value)] // We don't want to keep `SecretKey` in memory.
-pub fn setup_fixtures(api: &Api, key: keys::SecretKey, owner: &User) -> Result<(), error::Error> {
+pub fn setup_fixtures(api: &Api, key: &keys::SecretKey, owner: &User) -> Result<(), error::Error> {
     let infos = vec![
         ("monokel", "A looking glass into the future", "master"),
         (
@@ -53,7 +55,7 @@ pub fn setup_fixtures(api: &Api, key: keys::SecretKey, owner: &User) -> Result<(
     for info in infos {
         // let path = format!("{}/{}/{}", root, "repos", info.0);
         // std::fs::create_dir_all(path.clone())?;
-        replicate_platinum(api, &key, owner, info.0, info.1, info.2)?;
+        replicate_platinum(api, key, owner, info.0, info.1, info.2)?;
     }
 
     Ok(())
@@ -74,27 +76,22 @@ pub fn replicate_platinum(
     description: &str,
     default_branch: &str,
 ) -> Result<project::Project<entity::Draft>, error::Error> {
-    // Craft the absolute path to git-platinum fixtures.
-    let mut platinum_path = env::current_dir()?;
-    platinum_path.push("../fixtures/git-platinum");
-    let mut platinum_from = String::from("file://");
-    platinum_from.push_str(platinum_path.to_str().expect("unable get path"));
-
     // Construct path for fixtures to clone into.
     let monorepo = api.monorepo();
     let workspace = monorepo.join("../workspace");
     let platinum_into = workspace.join(name);
 
-    clone_platinum(&platinum_from, &platinum_into)?;
+    clone_platinum(&platinum_into)?;
 
-    let meta = api.init_project(
-        key,
-        owner,
-        platinum_into.clone(),
-        name,
-        description,
-        default_branch,
-    )?;
+    let project_creation = coco::project::Create {
+        description: description.to_string(),
+        default_branch: default_branch.to_string(),
+        repo: coco::project::Repo::Existing {
+            path: platinum_into.clone(),
+        },
+    };
+
+    let meta = api.init_project(key, owner, &project_creation)?;
 
     // Push branches and tags.
     {
@@ -125,11 +122,22 @@ pub fn replicate_platinum(
     Ok(meta)
 }
 
+/// Craft the absolute path to git-platinum fixtures.
+///
+/// # Errors
+///
+///   * Failed to get current directory
+pub fn platinum_directory() -> io::Result<path::PathBuf> {
+    let mut platinum_path = env::current_dir()?;
+    platinum_path.push("../fixtures/git-platinum");
+    Ok(path::Path::new("file://").join(platinum_path))
+}
+
 /// Create and track a fake peer.
 #[must_use]
 pub fn track_fake_peer(
     api: &Api,
-    key: keys::SecretKey,
+    key: &keys::SecretKey,
     project: &project::Project<entity::Draft>,
     fake_user_handle: &str,
 ) -> (
@@ -209,10 +217,21 @@ pub fn track_fake_peer(
 
 /// This function exists as a standalone because the logic does not play well with async in
 /// `replicate_platinum`.
-fn clone_platinum(
-    platinum_from: &str,
-    platinum_into: &std::path::PathBuf,
-) -> Result<(), error::Error> {
+///
+/// # Errors
+///
+///   * Cloning the repository failed
+///   * We could not fetch branches
+///
+/// # Panics
+///
+///   * The platinum directory path was malformed
+///   * Getting the branches fails
+pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), error::Error> {
+    let platinum_from = platinum_directory()?;
+    let platinum_from = platinum_from
+        .to_str()
+        .expect("failed to get platinum directory");
     let mut fetch_options = git2::FetchOptions::new();
     fetch_options.download_tags(git2::AutotagOption::All);
 
@@ -220,8 +239,7 @@ fn clone_platinum(
         .branch("master")
         .clone_local(git2::build::CloneLocal::Auto)
         .fetch_options(fetch_options)
-        .clone(platinum_from, platinum_into.as_path())
-        .expect("unable to clone fixtures repo");
+        .clone(platinum_from, platinum_into.as_ref())?;
 
     {
         let branches = platinum_repo.branches(Some(git2::BranchType::Remote))?;

@@ -169,6 +169,8 @@ where
 /// Project handlers to implement conversion and translation between core domain and http request
 /// fullfilment.
 mod handler {
+    use std::path::PathBuf;
+
     use warp::http::StatusCode;
     use warp::{reply, Rejection, Reply};
 
@@ -181,7 +183,7 @@ mod handler {
     pub async fn create<R>(
         ctx: http::Ctx<R>,
         owner: coco::User,
-        input: super::CreateInput,
+        input: coco::project::Create<PathBuf>,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
@@ -190,14 +192,7 @@ mod handler {
 
         let key = ctx.keystore.get_librad_key().map_err(Error::from)?;
 
-        let meta = ctx.peer_api.init_project(
-            &key,
-            &owner,
-            &input.path,
-            &input.metadata.name,
-            &input.metadata.description,
-            &input.metadata.default_branch,
-        )?;
+        let meta = ctx.peer_api.init_project(&key, &owner, &input)?;
         let urn = meta.urn();
 
         let stats = ctx
@@ -509,32 +504,33 @@ mod test {
     use crate::session;
 
     #[tokio::test]
-    async fn create() -> Result<(), error::Error> {
+    async fn create_new() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;
-        let path = dir.path();
         let ctx = http::Context::tmp(&tmp_dir).await?;
         let api = super::filters(ctx.clone());
 
         let ctx = ctx.read().await;
         let handle = "cloudhead";
         let key = ctx.keystore.get_librad_key()?;
-        let id = identity::create(&ctx.peer_api, key, handle)?;
+        let id = identity::create(&ctx.peer_api, &key, handle)?;
 
         session::set_identity(&ctx.store, id.clone())?;
+
+        let project = coco::project::Create {
+            repo: coco::project::Repo::New {
+                path: dir.path(),
+                name: "Upstream".to_string(),
+            },
+            description: "Desktop client for radicle.".into(),
+            default_branch: "master".into(),
+        };
 
         let res = request()
             .method("POST")
             .path("/")
-            .json(&super::CreateInput {
-                path: path.into(),
-                metadata: super::MetadataInput {
-                    name: "Upstream".into(),
-                    description: "Desktop client for radicle.".into(),
-                    default_branch: "master".into(),
-                },
-            })
+            .json(&project)
             .reply(&api)
             .await;
 
@@ -565,6 +561,66 @@ mod test {
     }
 
     #[tokio::test]
+    async fn create_existing() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+        let dir = tempfile::tempdir_in(repos_dir.path())?;
+        let repo_path = dir.path().join("Upstream");
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let handle = "cloudhead";
+        let key = ctx.keystore.get_librad_key()?;
+        let id = identity::create(&ctx.peer_api, &key, handle)?;
+
+        session::set_identity(&ctx.store, id.clone())?;
+
+        let project = coco::project::Create {
+            repo: coco::project::Repo::Existing {
+                path: repo_path.clone(),
+            },
+            description: "Desktop client for radicle.".into(),
+            default_branch: "master".into(),
+        };
+
+        // Create the repository for which we'll create a project for
+        coco::control::clone_platinum(repo_path)?;
+
+        let res = request()
+            .method("POST")
+            .path("/")
+            .json(&project)
+            .reply(&api)
+            .await;
+
+        let projects = project::list_projects(&ctx.peer_api)?;
+        let meta = projects.first().unwrap();
+
+        let have: Value = serde_json::from_slice(res.body()).unwrap();
+        let want = json!({
+            "id": meta.id,
+            "metadata": {
+                "defaultBranch": "master",
+                "description": "Desktop client for radicle.",
+                "name": "Upstream",
+            },
+            "registration": Value::Null,
+            "shareableEntityIdentifier": format!("%{}", meta.id.to_string()),
+            "stats": {
+                "branches": 1,
+                "commits": 14,
+                "contributors": 4,
+            },
+        });
+
+        assert_eq!(res.status(), StatusCode::CREATED);
+        assert_eq!(have, want);
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn get() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
         let ctx = http::Context::tmp(&tmp_dir).await?;
@@ -572,7 +628,7 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
         let platinum_project = coco::control::replicate_platinum(
             &ctx.peer_api,
             &key,
@@ -606,9 +662,9 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
+        coco::control::setup_fixtures(&ctx.peer_api, &key, &owner)?;
 
         let projects = project::list_projects(&ctx.peer_api)?;
         let res = request().method("GET").path("/").reply(&api).await;
@@ -628,9 +684,9 @@ mod test {
 
         let ctx = ctx.read().await;
         let key = ctx.keystore.get_librad_key()?;
-        let owner = ctx.peer_api.init_owner(key.clone(), "cloudhead")?;
+        let owner = ctx.peer_api.init_owner(&key, "cloudhead")?;
 
-        coco::control::setup_fixtures(&ctx.peer_api, key, &owner)?;
+        coco::control::setup_fixtures(&ctx.peer_api, &key, &owner)?;
 
         let res = request().method("GET").path("/discover").reply(&api).await;
         let want = json!([
