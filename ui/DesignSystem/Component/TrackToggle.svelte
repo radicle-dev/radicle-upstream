@@ -3,6 +3,7 @@
 
   export let style = null;
   export let tracking = false;
+  export let variant = "collapsed"; //  expanded | collapsed
 
   let hover = false;
   let active = false;
@@ -117,6 +118,9 @@
     {:else if hover}
       <Icon.Peer style="margin: 0 8px 0 12px" />
       <p class="typo-text-bold" style="margin-right: 12px">Untrack</p>
+    {:else if variant === 'expanded'}
+      <Icon.Peer style="margin: 0 12px" />
+      <p class="typo-text-bold" style="margin-right: 12px">Tracking</p>
     {:else}
       <Icon.Peer style="margin: 0 12px" />
     {/if}

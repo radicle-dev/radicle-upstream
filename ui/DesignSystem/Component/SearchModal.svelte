@@ -73,7 +73,6 @@
     bottom: 0;
     right: 0;
     z-index: 10000;
-    cursor: pointer;
 
     align-items: center;
     justify-content: center;
@@ -90,13 +89,8 @@
 
   .tracking-info {
     background: var(--color-background);
-
-    /* TODO(brandonhaslegs): the text input does not have this dramatic of a border radius
-      do we want the component to have a variable border radius or 
-      is this something that will be changing app-wide? 
-    */
+    cursor: pointer;
     border-radius: 0.5rem;
-
     height: 0;
     overflow: hidden;
     transition: height 0.25s ease;
@@ -120,13 +114,15 @@
 
 <div class="search-modal">
   <div class="overlay" />
-  <div class="content" on:click={navigateToProject}>
+  <div class="content">
     <div class="search-bar" bind:this={searchBar}>
       <Input.Text
         autofocus
         bind:value
         placeholder="Have a Radicle project ID? Paste it here..."
         showLeftItem
+        style="height: 3rem;"
+        inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
         validation={$validation}>
         <div slot="left" style="display: flex;">
           <Icon.Search />
@@ -134,10 +130,13 @@
       </Input.Text>
     </div>
 
-    <div class="tracking-info" class:showTrackingInfo>
+    <div
+      class="tracking-info"
+      class:showTrackingInfo
+      on:click={navigateToProject}>
       <div class="header">
         <h3 style="color: var(--color-foreground-level-6);">my-new-project</h3>
-        <TrackToggle />
+        <TrackToggle variant="expanded" />
       </div>
 
       <div style="display: flex; margin-bottom: 1rem;">

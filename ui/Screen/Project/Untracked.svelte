@@ -47,6 +47,6 @@
       Track it and you’ll be notified as soon as it’s available.
     </p>
 
-    <TrackToggle />
+    <TrackToggle variant="expanded" />
   </div>
 </SidebarLayout>
