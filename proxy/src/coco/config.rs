@@ -1,6 +1,7 @@
 //! Configuration for [`crate::coco`].
 
 use std::convert::TryFrom;
+use std::env;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use librad::keys;
@@ -10,6 +11,8 @@ use librad::paths;
 use librad::peer;
 
 use crate::error;
+
+const RAD_HOME: &str = "RAD_HOME";
 
 /// Path configuration
 pub enum Paths {
@@ -53,6 +56,7 @@ pub fn default(
     key: keys::SecretKey,
     path: impl AsRef<std::path::Path>,
 ) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, error::Error> {
+    env::set_var(RAD_HOME, path.as_ref());
     let paths = paths::Paths::from_root(path)?;
     Ok(configure(paths, key))
 }

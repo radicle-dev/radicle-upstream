@@ -43,20 +43,24 @@ impl Api {
     where
         I: Iterator<Item = (PeerId, SocketAddr)> + Send + 'static,
     {
-        // Register the rad:// transport protocol
-        let settings = transport::Settings {
-            paths: config.paths.clone(),
-            signer: SomeSigner {
-                signer: config.signer.clone(),
-            }
-            .into(),
-        };
-        transport::register(settings);
+        let paths = config.paths.clone();
+        let signer = config.signer.clone();
 
         let peer = config.try_into_peer().await?;
         // TODO(finto): discarding the run loop below. Should be used to subsrcibe to events and
         // publish events.
         let (api, _futures) = peer.accept()?;
+
+        log::debug!("GIT_DIR '{:?}'", paths.git_dir());
+        // Register the rad:// transport protocol
+        let settings = transport::Settings {
+            paths,
+            signer: SomeSigner {
+                signer,
+            }
+            .into(),
+        };
+        transport::register(settings);
 
         Ok(Self {
             peer_api: Arc::new(Mutex::new(api)),
@@ -279,9 +283,12 @@ impl Api {
         } else {
             let repo = storage.create_repo(&meta)?;
             repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
+            log::debug!("Created project with Urn '{}", urn);
         }
 
-        let _ = project.setup_repo(&urn, None)?;
+        assert!(storage.has_urn(&urn)?, "WHAT IN THE FUCK");
+        let repo = project.setup_repo(&urn, None)?;
+        log::debug!("Setup repository at path '{}'", repo.path().display());
 
         Ok(meta)
     }
@@ -390,11 +397,14 @@ impl entity::Resolver<user::User<entity::Draft>> for FakeUserResolver {
 #[cfg(test)]
 #[allow(clippy::panic)]
 mod test {
+    use std::env;
     use std::path::PathBuf;
 
     use librad::keys::SecretKey;
     use librad::meta::entity;
     use librad::meta::Project;
+    use librad::git::local::transport;
+    use librad::signer::SomeSigner;
 
     use crate::coco::config;
     use crate::coco::control;
@@ -449,20 +459,32 @@ mod test {
 
     #[tokio::test]
     async fn can_create_project() -> Result<(), Error> {
-        pretty_env_logger::init();
         let path = {
             let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
             tmp_dir.into_path()
         };
         std::fs::create_dir(path.clone());
-        log::debug!("TMP DIR: {:?}", path);
+        log::debug!("TMP DIR CAN CREATE: {:?}", path);
+        env::set_var("RAD_HOME", path.clone());
         let repo_path = path.join("radicle");
         let key = SecretKey::new();
         let config = config::default(key.clone(), path.clone())?;
         let api = Api::new(config).await?;
 
         let user = api.init_owner(&key, "cloudhead")?;
+        let settings = transport::Settings {
+            paths: api.paths(),
+            signer: SomeSigner {
+                signer: key.clone(),
+            }
+            .into(),
+        };
+        transport::register(settings);
         let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
+
+        if project.is_err() {
+            log::error!("{:?}", project);
+        }
 
         assert!(project.is_ok());
         assert!(repo_path.join("radicalise").exists());
@@ -472,11 +494,17 @@ mod test {
 
     #[tokio::test]
     async fn can_create_project_directory_exists() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-        let repo_path = tmp_dir.path().join("radicle");
+        pretty_env_logger::init();
+        let path = {
+            let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+            tmp_dir.into_path()
+        };
+        std::fs::create_dir(path.clone());
+        log::debug!("TMP DIR: {:?}", path);
+        let repo_path = path.join("radicle");
         let repo_path = repo_path.join("radicalise");
         let key = SecretKey::new();
-        let config = config::default(key.clone(), tmp_dir.path())?;
+        let config = config::default(key.clone(), path)?;
         let api = Api::new(config).await?;
 
         let user = api.init_owner(&key, "cloudhead")?;

@@ -245,7 +245,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         let local_url: LocalUrl = urn.clone().into();
         let mut remote = Remote::rad_remote(local_url, fetch.into_dyn());
         remote.add_pushes(vec![push.into_dyn()].into_iter());
-        let _ = remote.create(repo)?;
+        let mut git_remote = remote.create(repo)?;
 
         /* TODO(finto): Pushing isn't working and is possibly failing silently.
          * When I inspect the monorepo the default branch isn't pushed.
@@ -253,14 +253,8 @@ impl<Path: AsRef<path::Path>> Create<Path> {
          * below, but no luck...
          */
         let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
-        let namespace_default = NamespacedRef::head(urn.id.clone(), None, default_branch);
-
-        push_spec(
-            &repo,
-            &namespace_default.refspec(default, Force::False),
-            super::Credential::Password("radicle-upstream".to_string()),
-            bin_path,
-        )?;
+        // let namespace_default = NamespacedRef::head(urn.id.clone(), None, default_branch);
+        git_remote.push(&[default.to_string()], None)?;
 
         Ok(())
     }
@@ -279,6 +273,7 @@ impl Create<PathBuf> {
     }
 }
 
+// TODO
 fn push_spec<R, L>(
     repo: &git2::Repository,
     spec: &Refspec<R, L>,
@@ -295,10 +290,12 @@ where
     }?;
 
     let mut child_process = Command::new("git")
+        .current_dir(repo.path())
         .arg("-c")
         .arg(credential.to_helper())
         .arg("push")
-        .arg(format!("{}", repo.path().display()))
+        .arg(super::RAD_REMOTE)
+        //         .arg(format!("{}", repo.path().display()))
         .arg(spec.to_string())
         .env("PATH", &bin_path)
         .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
