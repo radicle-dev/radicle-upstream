@@ -13,8 +13,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: absolute;
-    bottom: 24px;
+    position: fixed;
+    bottom: 1.5rem;
     z-index: 1001;
     left: 50%;
     transform: translateX(-50%);

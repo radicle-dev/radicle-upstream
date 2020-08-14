@@ -15,11 +15,10 @@
 
 <style>
   .commits-page {
-    padding-top: 32px;
-    margin-bottom: 64px;
-    margin-left: 96px;
-    margin-right: 96px;
+    margin: 0 auto 6rem;
+    max-width: var(--content-max-width);
     min-width: var(--content-min-width);
+    padding: 2rem var(--content-padding) 0;
     position: relative;
   }
   .commit-group header {
@@ -29,23 +28,23 @@
   }
   .commit-group ul {
     border: 1px solid var(--color-foreground-level-3);
-    border-radius: 4px;
+    border-radius: 0.25rem;
     margin-bottom: 2rem;
   }
   .commit {
     border-bottom: 1px solid var(--color-foreground-level-3);
-    height: 48px;
+    height: 3rem;
     display: block;
-    padding: 4px 0;
+    padding: 0.25rem 0;
   }
   .commit:first-child {
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
   }
   .commit:last-child {
     border-bottom: none;
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
   }
   .commit:hover {
     background: var(--color-foreground-level-1);
