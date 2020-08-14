@@ -1,6 +1,10 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import { Icon } from "../../DesignSystem/Primitive";
-  import { Copyable } from "../../DesignSystem/Component";
+  import Copyable from "./Copyable.svelte";
+
+  const dispatch = createEventDispatcher();
 
   export let style = null;
   export let hidden = false;
@@ -26,6 +30,7 @@
   <div
     class="close-hint-button"
     on:click={() => {
+      dispatch('hide');
       hidden = true;
     }}>
     <Icon.Cross variant="small" />

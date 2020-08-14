@@ -3,6 +3,7 @@
 
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
   import { RemoteHelperHint, Tooltip } from "../../DesignSystem/Component";
+  import { dismissRemoteHelperHint, settings } from "../../src/session.ts";
 
   const dispatch = createEventDispatcher();
 
@@ -59,7 +60,9 @@
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
 
-  <RemoteHelperHint hidden={false} />
+  <RemoteHelperHint
+    on:hide={dismissRemoteHelperHint}
+    hidden={!$settings.appearance.hints.showRemoteHelper} />
 
   <Tooltip
     value={!checkoutDirectoryPath ? 'Please select a folder' : null}

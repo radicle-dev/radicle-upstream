@@ -8,7 +8,11 @@
   import { create, RepoType } from "../src/project.ts";
   import { getLocalState } from "../src/source.ts";
   import { getValidationState } from "../src/validation.ts";
-  import { fetch as fetchSession } from "../src/session.ts";
+  import {
+    dismissRemoteHelperHint,
+    fetch as fetchSession,
+    settings,
+  } from "../src/session.ts";
 
   import { Button, Flex, Icon, Input } from "../DesignSystem/Primitive";
   import {
@@ -332,7 +336,9 @@
             </div>
           </div>
         </RadioOption>
-        <RemoteHelperHint hidden={false} />
+        <RemoteHelperHint
+          on:hide={dismissRemoteHelperHint}
+          hidden={!$settings.appearance.hints.showRemoteHelper} />
       </div>
 
       {#if validations && validations.currentSelection}
