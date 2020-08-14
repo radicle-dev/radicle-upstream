@@ -9,9 +9,12 @@ use crate::http;
 use crate::registry;
 
 /// Combination of all control filters.
-pub fn filters<R, S>(
-    ctx: http::Ctx<registry::Cacher<registry::Registry>, coco::SecretKey>,
-) -> BoxedFilter<(impl Reply,)> {
+pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
+where
+    R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
+{
     create_project_filter(ctx.clone())
         .or(nuke_registry_filter(ctx.clone()))
         .or(register_user_filter(ctx.clone()))
@@ -51,9 +54,14 @@ where
 }
 
 /// GET /reset
-fn reset_filter(
-    ctx: http::Ctx<registry::Cacher<registry::Registry>, coco::SecretKey>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+fn reset_filter<R, S>(
+    ctx: http::Ctx<R, S>,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+where
+    R: registry::Client + 'static,
+    S: coco::Signer,
+    S::Error: coco::SignError,
+{
     path!("reset")
         .and(super::with_context(ctx))
         .and_then(handler::reset)
@@ -158,9 +166,12 @@ mod handler {
     }
 
     /// Reset the known state by replacing the [`http::Context`].
-    pub async fn reset(
-        ctx: http::Ctx<registry::Cacher<registry::Registry>, coco::SecretKey>,
-    ) -> Result<impl Reply, Rejection> {
+    pub async fn reset<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
+    where
+        R: registry::Client + 'static,
+        S: coco::Signer,
+        S::Error: coco::SignError,
+    {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
         // The Peer creates the directory again.
