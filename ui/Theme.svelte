@@ -1,6 +1,6 @@
-<script>
-  import { settings } from "./src/session.ts";
-  import { Theme } from "./src/settings.ts";
+<script lang="ts">
+  import { settings } from "./src/session";
+  import { Theme } from "./src/settings";
 
   $: {
     const theme = $settings ? $settings.appearance.theme : Theme.Light;

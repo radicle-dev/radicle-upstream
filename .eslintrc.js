@@ -1,41 +1,43 @@
-{
-  "env": {
-    "browser": true,
-    "es6": true,
-    "node": true
+const eslintSveltePreprocess = require('eslint-svelte3-preprocess');
+const svelteConfig = require('./svelte.config')
+
+module.exports = {
+  env: {
+    browser: true,
+    es6: true,
+    node: true
   },
-  "plugins": ["no-only-tests"],
-  "extends": ["eslint:recommended"],
-  "parserOptions": {
-    "ecmaVersion": 2017,
-    "sourceType": "module",
-    "ecmaFeatures": {
-      "modules": true,
-      "experimentalObjectRestSpread": true
+  plugins: ["no-only-tests", "svelte3"],
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    ecmaVersion: 2017,
+    sourceType: "module",
+    ecmaFeatures: {
+      modules: true,
+      experimentalObjectRestSpread: true
     }
   },
-  "overrides": [
+  overrides: [
     {
-      "files": ["**/*.svelte"],
-      "plugins": ["svelte3"],
-      "processor": "svelte3/svelte3",
-      "parser": "babel-eslint"
+      files: ["**/*.svelte"],
+      processor: "svelte3/svelte3",
     },
     {
-      "files": ["**/*.ts"],
-      "extends": [
+      files: ["**/*.ts"],
+      extends: [
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking"
       ],
-      "plugins": ["@typescript-eslint"],
-      "parser": "@typescript-eslint/parser",
-      "parserOptions": {
-        "project": "./tsconfig.json"
+      plugins: ["@typescript-eslint"],
+      parser: "@typescript-eslint/parser",
+      parserOptions: {
+        project: "./tsconfig.json"
       }
     }
   ],
-  "rules": {
+  rules: {
     "no-only-tests/no-only-tests": "error",
     // Disallow Unused Variables
     // https://eslint.org/docs/rules/no-unused-vars
@@ -59,5 +61,8 @@
     // require at least one whitespace after comments( // and /*)
     // https://eslint.org/docs/rules/spaced-comment
     "spaced-comment": ["warn", "always"]
+  },
+  settings: {
+    "svelte3/preprocess": eslintSveltePreprocess(svelteConfig.preprocess)
   }
 }
