@@ -15,7 +15,7 @@ use librad::net::discovery;
 pub use librad::net::peer::{PeerApi, PeerConfig, RunLoop};
 use librad::paths;
 use librad::peer::PeerId;
-use librad::uri::{RadUrn, RadUrl};
+use librad::uri::{RadUrl, RadUrn};
 use radicle_surf::vcs::git::{self, git2};
 
 use crate::error;
@@ -230,7 +230,29 @@ impl Api {
         Ok(storage.metadata_of(urn, peer)?)
     }
 
-    /// TODO
+    /// Given some hints as to where you might find it, get the urn of the project found at `url`.
+    ///
+    /// # Errors
+    // /   * Could not successfully acquire a lock to the API.
+    pub fn clone_project<Addrs>(
+        &self,
+        url: RadUrl,
+        addr_hints: Addrs,
+    ) -> Result<RadUrn, error::Error>
+    where
+        Addrs: IntoIterator<Item = SocketAddr>,
+    {
+        let api = self.peer_api.lock().expect("unable to acquire lock");
+        let storage = api.storage().reopen()?;
+        let repo = storage.clone_repo::<project::ProjectInfo, _>(url, addr_hints)?;
+        Ok(repo.urn)
+    }
+
+    /// Given some hints as to where you might find it, get the urn of the user found at `url`.
+    ///
+    /// # Errors
+    ///
+    ///   * Could not successfully acquire a lock to the API.
     pub fn clone_user<Addrs>(&self, url: RadUrl, addr_hints: Addrs) -> Result<RadUrn, error::Error>
     where
         Addrs: IntoIterator<Item = SocketAddr>,
@@ -642,6 +664,56 @@ mod test {
     }
 
     #[tokio::test]
+    async fn test_can_clone_project() -> Result<(), Error> {
+        let mut bob_addr = *config::LOCALHOST_ANY;
+        bob_addr.set_port(8066);
+
+        let mut alice_addr = *config::LOCALHOST_ANY;
+        alice_addr.set_port(8067);
+
+        let alice_key = SecretKey::new();
+
+        let alice_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let alice_repo_path = alice_tmp_dir.path().join("radicle");
+        let paths = paths::Paths::from_root(alice_tmp_dir.path())?;
+
+        let config = config::configure(paths, alice_key.clone(), alice_addr, vec![]);
+        let alice_peer = Api::new(config).await?;
+
+        let alice = alice_peer.init_owner(alice_key.clone(), "alice")?;
+        let project =
+            alice_peer.init_project(&alice_key, &alice, &alice_repo_path, "just", "do", "it")?;
+
+        let bob_key = SecretKey::new();
+
+        let bob_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let paths = paths::Paths::from_root(bob_tmp_dir.path())?;
+        let config = config::configure(paths, bob_key.clone(), bob_addr, vec![]);
+        let bob_peer = Api::new(config).await?;
+
+        let bobby = bob_peer.clone();
+        let project_urn = tokio::task::spawn_blocking(move || {
+            bobby.clone_project(
+                project.urn().into_rad_url(alice_peer.peer_id().clone()),
+                vec![alice_addr].into_iter(),
+            )
+        })
+        .await
+        .unwrap()?;
+
+        assert_eq!(
+            bob_peer
+                .list_projects()?
+                .into_iter()
+                .map(|project| project.urn())
+                .collect::<Vec<_>>(),
+            vec![project_urn.clone()]
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_list_users() -> Result<(), Error> {
         let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         let key = SecretKey::new();
@@ -682,24 +754,14 @@ mod test {
         log::debug!("alice.tmpdir = {:?}", alice_tmp_dir.path());
         let paths = paths::Paths::from_root(alice_tmp_dir.path())?;
         log::debug!("alice.addr = {}", alice_addr);
-        let config = config::configure(
-            paths,
-            alice_key.clone(),
-            alice_addr,
-            vec![],
-        );
+        let config = config::configure(paths, alice_key.clone(), alice_addr, vec![]);
         let alice_peer = Api::new(config).await?;
 
         let bob_tmp_dir = tempfile::tempdir().expect("failed to create temdir");
         log::debug!("bob.tmpdir = {:?}", bob_tmp_dir.path());
         let paths = paths::Paths::from_root(bob_tmp_dir.path())?;
         log::debug!("bob.addr = {}", bob_addr);
-        let config = config::configure(
-            paths,
-            bob_key.clone(),
-            bob_addr,
-            vec![],
-        );
+        let config = config::configure(paths, bob_key.clone(), bob_addr, vec![]);
         let bob_peer = Api::new(config).await?;
 
         let alice = alice_peer.init_user(alice_key, "alice")?;
@@ -709,9 +771,18 @@ mod test {
                 alice.urn().into_rad_url(alice_peer.peer_id().clone()),
                 vec![alice_addr].into_iter(),
             )
-        }).await.unwrap()?;
+        })
+        .await
+        .unwrap()?;
 
-        assert_eq!(bob_peer.list_users()?.into_iter().map(|user| user.urn()).collect::<Vec<_>>(), vec![user_urn.clone(), user_urn]);
+        assert_eq!(
+            bob_peer
+                .list_users()?
+                .into_iter()
+                .map(|user| user.urn())
+                .collect::<Vec<_>>(),
+            vec![user_urn.clone(), user_urn]
+        );
 
         Ok(())
     }
