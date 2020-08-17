@@ -6,6 +6,9 @@ use crate::error;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 
+/// Filename of the git helper binary.
+pub const HELPER_BINARY_NAME: &str = "git-remote-rad";
+
 fn is_executable(path: std::path::PathBuf) -> Result<bool, error::Error> {
     let metadata = path.metadata()?;
     let permissions = metadata.permissions();
@@ -24,10 +27,8 @@ fn is_executable(path: std::path::PathBuf) -> Result<bool, error::Error> {
 pub fn setup() -> Result<(), error::Error> {
     log::info!("Making sure git-remote-rad helper is set up");
 
-    let helper_binary_name = "git-remote-rad";
-
     let bin_dir = config::bin_dir()?;
-    let full_dest_path = bin_dir.join(helper_binary_name);
+    let full_dest_path = bin_dir.join(HELPER_BINARY_NAME);
 
     if full_dest_path.exists() && is_executable(full_dest_path.clone())? {
         log::debug!("Git helper already exists at: {:?}", full_dest_path);
@@ -37,7 +38,7 @@ pub fn setup() -> Result<(), error::Error> {
     let proxy_path = config::proxy_path()?;
 
     fs::create_dir_all(bin_dir)?;
-    fs::copy(proxy_path.join(helper_binary_name), full_dest_path.clone())?;
+    fs::copy(proxy_path.join(HELPER_BINARY_NAME), full_dest_path.clone())?;
     log::debug!("Copied git-remote-rad helper to: {:?}", full_dest_path);
 
     Ok(())
