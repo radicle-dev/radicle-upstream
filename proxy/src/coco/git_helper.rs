@@ -45,7 +45,6 @@ pub fn setup(src_dir: &path::PathBuf, dst_dir: &path::PathBuf) -> Result<(), err
 
 #[cfg(test)]
 mod test {
-    use crate::coco;
     use crate::error;
     use std::fs;
     use std::os::unix::fs::PermissionsExt;
@@ -54,7 +53,7 @@ mod test {
     #[tokio::test]
     async fn setup_creates_destination_directory_if_none_exists() -> Result<(), error::Error> {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
-        let src_git_helper_bin_path = tmp_src_dir.path().join(coco::git_helper::GIT_REMOTE_RAD);
+        let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
         let file = fs::File::create(src_git_helper_bin_path.clone())
             .expect("failed to create mock binary");
         let mut src_permissions = file.metadata()?.permissions();
@@ -64,9 +63,9 @@ mod test {
 
         let tmp_dst_dir = tempfile::tempdir().expect("failed to create destination tempdir");
         let dst_full_path = tmp_dst_dir.path().join(".radicle/bin");
-        coco::git_helper::setup(&tmp_src_dir.path().to_path_buf(), &dst_full_path)?;
+        super::setup(&tmp_src_dir.path().to_path_buf(), &dst_full_path)?;
 
-        let dst_git_helper_bin_path = dst_full_path.join(coco::git_helper::GIT_REMOTE_RAD);
+        let dst_git_helper_bin_path = dst_full_path.join(super::GIT_REMOTE_RAD);
 
         let dst_metadata = dst_git_helper_bin_path.metadata()?;
         let dst_permissions = dst_metadata.permissions();
@@ -79,7 +78,7 @@ mod test {
     #[tokio::test]
     async fn setup_copies_binary_if_none_exists() -> Result<(), error::Error> {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
-        let src_git_helper_bin_path = tmp_src_dir.path().join(coco::git_helper::GIT_REMOTE_RAD);
+        let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
         let file = fs::File::create(src_git_helper_bin_path.clone())
             .expect("failed to create mock binary");
         let mut src_permissions = file.metadata()?.permissions();
@@ -92,9 +91,9 @@ mod test {
         let dst_full_path = tmp_dst_dir.path().join(".radicle/bin");
         fs::create_dir_all(dst_full_path.clone())?;
 
-        coco::git_helper::setup(&tmp_src_dir.path().to_path_buf(), &dst_full_path)?;
+        super::setup(&tmp_src_dir.path().to_path_buf(), &dst_full_path)?;
 
-        let dst_git_helper_bin_path = dst_full_path.join(coco::git_helper::GIT_REMOTE_RAD);
+        let dst_git_helper_bin_path = dst_full_path.join(super::GIT_REMOTE_RAD);
 
         let dst_metadata = dst_git_helper_bin_path.metadata()?;
         let dst_permissions = dst_metadata.permissions();
@@ -107,7 +106,7 @@ mod test {
     #[tokio::test]
     async fn setup_makes_binary_executable() -> Result<(), error::Error> {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
-        let src_git_helper_bin_path = tmp_src_dir.path().join(coco::git_helper::GIT_REMOTE_RAD);
+        let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
         let file = fs::File::create(src_git_helper_bin_path.clone())
             .expect("failed to create mock binary");
         let mut src_permissions = file.metadata()?.permissions();
@@ -120,7 +119,7 @@ mod test {
         let dst_full_path = tmp_dst_dir.path().join(".radicle/bin");
         fs::create_dir_all(dst_full_path.clone())?;
 
-        let dst_file_path = dst_full_path.join(coco::git_helper::GIT_REMOTE_RAD);
+        let dst_file_path = dst_full_path.join(super::GIT_REMOTE_RAD);
         let dst_file =
             fs::File::create(dst_file_path.clone()).expect("failed to create mock binary");
         let mut dst_permissions = dst_file.metadata()?.permissions();
@@ -128,9 +127,9 @@ mod test {
 
         fs::set_permissions(dst_file_path, dst_permissions)?;
 
-        coco::git_helper::setup(&tmp_src_dir.path().to_path_buf(), &dst_full_path)?;
+        super::setup(&tmp_src_dir.path().to_path_buf(), &dst_full_path)?;
 
-        let dst_git_helper_bin_path = dst_full_path.join(coco::git_helper::GIT_REMOTE_RAD);
+        let dst_git_helper_bin_path = dst_full_path.join(super::GIT_REMOTE_RAD);
 
         let dst_metadata = dst_git_helper_bin_path.metadata()?;
         let dst_permissions = dst_metadata.permissions();
