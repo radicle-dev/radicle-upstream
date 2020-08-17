@@ -1,9 +1,10 @@
 //! git-remote-rad git helper related functionality.
 
-use crate::error;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path;
+
+use crate::error;
 
 /// Filename of the git helper binary.
 pub const GIT_REMOTE_RAD: &str = "git-remote-rad";

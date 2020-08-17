@@ -1,9 +1,10 @@
 //! Configuration vital to the setup and alteration of the application.
 
-use crate::error;
-use directories::ProjectDirs;
 use std::ffi;
 use std::path;
+
+use crate::error;
+use directories::ProjectDirs;
 
 /// Returns the directories to locate all application state.
 #[must_use]
