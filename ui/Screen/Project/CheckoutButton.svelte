@@ -60,9 +60,9 @@
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
 
-  <RemoteHelperHint
-    on:hide={dismissRemoteHelperHint}
-    hidden={!$settings.appearance.hints.showRemoteHelper} />
+  {#if $settings.appearance.hints.showRemoteHelper}
+    <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
+  {/if}
 
   <Tooltip
     value={!checkoutDirectoryPath ? 'Please select a folder' : null}

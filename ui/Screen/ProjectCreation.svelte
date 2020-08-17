@@ -336,9 +336,9 @@
             </div>
           </div>
         </RadioOption>
-        <RemoteHelperHint
-          on:hide={dismissRemoteHelperHint}
-          hidden={!$settings.appearance.hints.showRemoteHelper} />
+        {#if $settings.appearance.hints.showRemoteHelper}
+          <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
+        {/if}
       </div>
 
       {#if validations && validations.currentSelection}

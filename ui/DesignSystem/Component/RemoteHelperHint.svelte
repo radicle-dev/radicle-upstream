@@ -7,7 +7,6 @@
   const dispatch = createEventDispatcher();
 
   export let style = null;
-  export let hidden = false;
 </script>
 
 <style>
@@ -26,13 +25,12 @@
   }
 </style>
 
-<div class="info" {hidden} {style} data-cy="remote-helper-hint">
+<div class="info" {style} data-cy="remote-helper-hint">
   <div
     data-cy="close-hint-button"
     class="close-hint-button"
     on:click={() => {
       dispatch('hide');
-      hidden = true;
     }}>
     <Icon.Cross variant="small" />
   </div>
