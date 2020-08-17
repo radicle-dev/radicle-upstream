@@ -43,13 +43,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             });
 
             client
-        }
+        },
         host => {
             let host = url17::Host::parse(host)?;
             radicle_registry_client::Client::create_with_executor(host)
                 .await
                 .expect("unable to construct devnet client")
-        }
+        },
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");

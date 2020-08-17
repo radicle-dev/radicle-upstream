@@ -299,7 +299,7 @@ where
                 Err(err) => {
                     log::error!("failed to deserialize query string '{}': {}", raw, err);
                     panic!("{}", err)
-                }
+                },
             }
         })
         .boxed()

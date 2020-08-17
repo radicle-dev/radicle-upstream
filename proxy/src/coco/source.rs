@@ -335,10 +335,10 @@ fn blob_content(path: &str, content: &[u8], theme: Option<&Theme>) -> BlobConten
                         );
                     }
                     BlobContent::Html(html)
-                }
+                },
                 _ => BlobContent::Ascii(content.to_owned()),
             }
-        }
+        },
         (Err(_), _) => BlobContent::Binary,
     }
 }
@@ -442,7 +442,7 @@ pub fn commit<'repo>(browser: &mut Browser<'repo>, sha1: &str) -> Result<Commit,
                     match line {
                         diff::LineDiff::Addition { .. } => additions += 1,
                         diff::LineDiff::Deletion { .. } => deletions += 1,
-                        _ => {}
+                        _ => {},
                     }
                 }
             }

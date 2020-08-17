@@ -20,7 +20,6 @@ pub trait Signer: Clone + keys::AsPKCS8 + signer::Signer {}
 impl<T: Clone + keys::AsPKCS8 + signer::Signer> Signer for T {}
 
 pub trait Reset: Signer {
-    fn key_file_path(&self) -> &std::path::Path;
     fn reset(&mut self, paths: &paths::Paths, passphrase: SecUtf8) -> Result<(), Error>;
 }
 
@@ -53,7 +52,7 @@ impl Store {
                     let key = keys::SecretKey::new();
                     storage.put_key(key.clone())?;
                     Ok(key)
-                }
+                },
                 _ => Err(err),
             },
         }?;
@@ -78,10 +77,6 @@ impl keys::AsPKCS8 for Store {
 }
 
 impl Reset for Store {
-    fn key_file_path(&self) -> &std::path::Path {
-        self.storage.key_file_path()
-    }
-
     fn reset(&mut self, paths: &paths::Paths, passphrase: SecUtf8) -> Result<(), Error> {
         let path = paths.keys_dir();
         let key_path = path.join(KEY);

@@ -774,7 +774,7 @@ mod test {
                 );
                 assert_eq!(domain_type.clone(), registry::DomainType::Org);
                 assert_eq!(domain_id.clone(), org_id);
-            }
+            },
             _ => panic!("The tx message is an unexpected variant."),
         }
 
