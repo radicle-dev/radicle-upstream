@@ -126,7 +126,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                 }
 
                 Ok(repo)
-            },
+            }
         }
     }
 
@@ -167,10 +167,10 @@ impl<Path: AsRef<path::Path>> Create<Path> {
                 // Being defensive here and making sure that if the URLs don't match we're loud
                 // about it.
                 assert_eq!(remote.url(), Some(url.to_string().as_str()));
-            },
+            }
             Err(_err) => {
                 Self::setup_remote(&repo, url, &self.default_branch)?;
-            },
+            }
         }
 
         Ok(repo)
@@ -206,7 +206,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         url: LocalUrl,
         default_branch: &str,
     ) -> Result<(), Error> {
-        let id = url.repo().clone();
+        let id = url.repo.clone();
 
         if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
             log::error!("error while trying to find default branch: {:?}", err);
