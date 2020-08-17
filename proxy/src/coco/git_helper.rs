@@ -5,24 +5,11 @@ use crate::config;
 use crate::error;
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
-use std::path::Path;
 
-/// Trait for extending the Path module.
-trait IsExecutable {
-    /// Returns true if it is an executable.
-    fn is_executable(&self) -> bool;
-}
-
-/// Implements isExecutable for Path.
-impl IsExecutable for Path {
-    fn is_executable(&self) -> bool {
-        let metadata = match self.metadata() {
-            Ok(metadata) => metadata,
-            Err(_) => return false,
-        };
-        let permissions = metadata.permissions();
-        permissions.mode() & 0o111 != 0
-    }
+fn is_executable(path: std::path::PathBuf) -> Result<bool, error::Error> {
+    let metadata = path.metadata()?;
+    let permissions = metadata.permissions();
+    Ok(permissions.mode() & 0o111 != 0)
 }
 
 /// Checks if the git-remote-rad helper is in a stable location and has the
@@ -42,7 +29,7 @@ pub fn setup() -> Result<(), error::Error> {
     let bin_dir = config::bin_dir()?;
     let full_dest_path = bin_dir.join(helper_binary_name);
 
-    if full_dest_path.is_executable() {
+    if full_dest_path.exists() && is_executable(full_dest_path.clone())? {
         log::debug!("Git helper already exists at: {:?}", full_dest_path);
         return Ok(());
     }
