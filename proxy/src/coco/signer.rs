@@ -19,12 +19,20 @@ pub trait Signer: Clone + keys::AsPKCS8 + signer::Signer {}
 
 impl<T: Clone + keys::AsPKCS8 + signer::Signer> Signer for T {}
 
+/// Utility trait to manage state for an exisitng [`Signer`].
 pub trait Reset: Signer {
+    /// Reset the [`Signer`] state under the given path.
+    ///
+    /// # Errors
+    ///
+    /// *
     fn reset(&mut self, paths: &paths::Paths, passphrase: SecUtf8) -> Result<(), Error>;
 }
 
 /// Synonym for an error when interacting with a store for [`librad::keys`].
 pub type Error = file::Error<crypto::SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
+
+/// Parameterised [`FileStorage`] used in Store implementation.
 type Storage = FileStorage<
     crypto::Pwhash<SecUtf8>,
     keys::PublicKey,
@@ -32,6 +40,7 @@ type Storage = FileStorage<
     <keys::SecretKey as SecretKeyExt>::Metadata,
 >;
 
+/// [`FileStorage`] backed [`Signer`] implementation.
 #[derive(Clone)]
 pub struct Store {
     public_key: sign::PublicKey,
@@ -52,7 +61,7 @@ impl Store {
                     let key = keys::SecretKey::new();
                     storage.put_key(key.clone())?;
                     Ok(key)
-                },
+                }
                 _ => Err(err),
             },
         }?;
