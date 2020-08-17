@@ -198,17 +198,52 @@ where
     warp::any().map(move || ctx.clone()).boxed()
 }
 
+impl<R, S> Context<R, S>
+where
+    R: registry::Client,
+    S: coco::ResetSigner,
+    S::Error: coco::SignError,
+{
+    async fn reset(&mut self, tmp_dir: &tempfile::TempDir) -> Result<(), crate::error::Error> {
+        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
+
+        // Reset signer.
+        let pw = coco::SecUtf8::from("radicle-upstream");
+        self.signer
+            .reset(&paths, pw)
+            .map_err(crate::error::Error::Signer)?;
+
+        println!("{:?}", tmp_dir.path());
+        println!("{:?}", self.signer.key_file_path());
+
+        // Reset peer api.
+        let peer_api = {
+            let config = coco::config::default(self.signer.clone(), tmp_dir.path())?;
+            coco::Api::new(config).await?
+        };
+        self.peer_api = peer_api;
+
+        // Reset store.
+        self.store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+
+        // Reset registry.
+        let (client, _) = radicle_registry_client::Client::new_emulator();
+        self.registry.reset(client);
+
+        Ok(())
+    }
+}
+
 impl Context<registry::Cacher<registry::Registry>, coco::StoreSigner> {
     #[cfg(test)]
     async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let pw = coco::SecUtf8::from("radicle-upstream");
-        // TODO(xla): Convert coco::key errors properly.
-        let keystore = coco::StoreSigner::init(&paths, pw).unwrap();
+        let signer = coco::StoreSigner::init(&paths, pw)?;
 
         let peer_api = {
-            let config = coco::config::default(keystore.clone(), tmp_dir.path())?;
+            let config = coco::config::default(signer.clone(), tmp_dir.path())?;
             coco::Api::new(config).await?
         };
 
@@ -223,7 +258,7 @@ impl Context<registry::Cacher<registry::Registry>, coco::StoreSigner> {
         Ok(Self {
             peer_api,
             registry,
-            signer: keystore,
+            signer,
             store,
             subscriptions: crate::notification::Subscriptions::default(),
         })

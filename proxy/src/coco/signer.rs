@@ -20,7 +20,8 @@ pub trait Signer: Clone + keys::AsPKCS8 + signer::Signer {}
 impl<T: Clone + keys::AsPKCS8 + signer::Signer> Signer for T {}
 
 pub trait Reset: Signer {
-    fn reset(&mut self) -> Result<(), Error>;
+    fn key_file_path(&self) -> &std::path::Path;
+    fn reset(&mut self, paths: &paths::Paths, passphrase: SecUtf8) -> Result<(), Error>;
 }
 
 /// Synonym for an error when interacting with a store for [`librad::keys`].
@@ -77,8 +78,20 @@ impl keys::AsPKCS8 for Store {
 }
 
 impl Reset for Store {
-    fn reset(&mut self) -> Result<(), Error> {
-        todo!()
+    fn key_file_path(&self) -> &std::path::Path {
+        self.storage.key_file_path()
+    }
+
+    fn reset(&mut self, paths: &paths::Paths, passphrase: SecUtf8) -> Result<(), Error> {
+        let path = paths.keys_dir();
+        let key_path = path.join(KEY);
+        let mut storage = FileStorage::new(&key_path, crypto::Pwhash::new(passphrase));
+        let key = keys::SecretKey::new();
+        storage.put_key(key)?;
+
+        self.storage = storage;
+
+        Ok(())
     }
 }
 
