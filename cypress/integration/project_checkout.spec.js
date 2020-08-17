@@ -80,22 +80,10 @@ context("project checkout", () => {
         // the OS file browser.
         cy.contains("platinum checked out to").should("not.exist");
 
-        // Get project URN and check that the working directory has the
-        // appropriate rad:// remotes set up.
-        cy.pick("project-screen", "urn")
-          .trigger("mouseover")
-          .pick("full-urn")
-          .invoke("text")
-          .then(urn => {
-            cy.exec(`git -C ${checkoutPath}/platinum remote -v`).then(
-              result => {
-                expect(result.stdout).to.equal(
-                  `rad\trad://${urn}.git (fetch)\n` +
-                    `rad\trad://${urn}.git (push)`
-                );
-              }
-            );
-          });
+        // Check that the working directory has the rad remote.
+        cy.exec(`git -C ${checkoutPath}/platinum remote show`).then(result => {
+          expect(result.stdout).to.equal(`rad`);
+        });
       });
     });
   });
