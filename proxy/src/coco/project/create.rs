@@ -1,4 +1,3 @@
-use std::io;
 use std::marker::PhantomData;
 use std::path::{self, PathBuf};
 
@@ -9,8 +8,6 @@ use librad::git::types::{remote::Remote, FlatRef, Force, NamespacedRef};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
-use librad::peer::PeerId;
-use librad::uri::RadUrn;
 use radicle_surf::vcs::git::git2;
 
 use crate::coco::User;
@@ -43,12 +40,6 @@ pub enum Error {
     /// An error occurred setting up the project entity.
     #[error(transparent)]
     Entity(#[from] entity::Error),
-    /// An error occurred when trying to push the default branch
-    #[error("failed to push the refspec '{0}'")]
-    PushFailed(String),
-    #[error(transparent)]
-    /// An I/O error occurred during push.
-    Io(#[from] io::Error),
 }
 
 /// The data required to either open an existing repository or create a new one.
@@ -138,7 +129,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                 }
 
                 Ok(repo)
-            },
+            }
         }
     }
 
@@ -170,15 +161,19 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     ///
     ///   * Failed to setup the repository
     ///   * Failed to build the project entity
-    pub fn setup_repo(&self, peer_id: PeerId, urn: &RadUrn) -> Result<git2::Repository, Error> {
+    pub fn setup_repo(&self, url: LocalUrl) -> Result<git2::Repository, Error> {
         let repo = self.repo.create(&self.description, &self.default_branch)?;
 
         // Test if the repo has setup rad remote.
         match repo.find_remote(super::RAD_REMOTE) {
-            Ok(_) => {}, // return Err(Error::RadRemoteExists(repo.path().to_path_buf())),
+            Ok(remote) => {
+                // Being defensive here and making sure that if the URLs don't match we're loud
+                // about it.
+                assert_eq!(remote.url(), Some(url.to_string().as_str()));
+            }
             Err(_err) => {
-                Self::setup_remote(peer_id, &repo, urn, &self.default_branch)?;
-            },
+                Self::setup_remote(&repo, url, &self.default_branch)?;
+            }
         }
 
         Ok(repo)
@@ -210,13 +205,11 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     /// Equips a repository with a rad remote for the given id. If the directory at the given path
     /// is not managed by git yet we initialise it first.
     fn setup_remote(
-        peer_id: PeerId,
         repo: &git2::Repository,
-        urn: &RadUrn,
+        url: LocalUrl,
         default_branch: &str,
     ) -> Result<(), Error> {
-        // TODO(finto): Need to check that Hash is the same for this repository. So basically we
-        // initialise the remote or update it.
+        let id = url.repo().clone();
 
         if let Err(err) = repo.resolve_reference_from_short_name(default_branch) {
             log::error!("error while trying to find default branch: {:?}", err);
@@ -227,14 +220,13 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         }
 
         let working_copy_heads: FlatRef<String, _> = FlatRef::heads(PhantomData, None);
-        let namespace_heads = NamespacedRef::heads(urn.id.clone(), None);
+        let namespace_heads = NamespacedRef::heads(id, None);
         let fetch = working_copy_heads
             .clone()
             .refspec(namespace_heads.clone(), Force::True);
         let push = namespace_heads.refspec(working_copy_heads, Force::True);
 
-        let local_url = LocalUrl::from_urn(urn.clone(), peer_id);
-        let mut remote = Remote::rad_remote(local_url, fetch.into_dyn());
+        let mut remote = Remote::rad_remote(url, fetch.into_dyn());
         remote.add_pushes(vec![push.into_dyn()].into_iter());
         let mut git_remote = remote.create(repo)?;
 

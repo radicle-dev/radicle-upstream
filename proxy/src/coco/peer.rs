@@ -5,7 +5,7 @@ use std::net::SocketAddr;
 use std::path::{self, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use librad::git::local::transport;
+use librad::git::local::{transport, url::LocalUrl};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -282,7 +282,7 @@ impl Api {
             log::debug!("Created project with Urn '{}", urn);
         }
 
-        let repo = project.setup_repo(api.peer_id().clone(), &urn)?;
+        let repo = project.setup_repo(LocalUrl::from_urn(urn, api.peer_id().clone()))?;
         log::debug!("Setup repository at path '{}'", repo.path().display());
 
         Ok(meta)
@@ -604,7 +604,10 @@ mod test {
         let api = Api::new(config).await?;
 
         let kalt = api.init_owner(&key, "kalt")?;
-        let _fakie = api.init_project(&key, &kalt, &fakie_project(repo_path).into_existing())?;
+        let mut fakie_proj = fakie_project(repo_path);
+        fakie_proj.description = "so rad, dude!".to_string();
+        fakie_proj.default_branch = "rad".to_string();
+        let _fakie = api.init_project(&key, &kalt, &fakie_proj.into_existing())?;
 
         Ok(())
     }
