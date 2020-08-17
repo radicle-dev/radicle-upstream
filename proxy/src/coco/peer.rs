@@ -52,11 +52,10 @@ impl Api {
         let (api, _futures) = peer.accept()?;
 
         // Register the rad:// transport protocol
-        let settings = transport::Settings {
+        transport::register(transport::Settings {
             paths,
             signer: SomeSigner { signer }.into(),
-        };
-        transport::register(settings);
+        });
 
         Ok(Self {
             peer_api: Arc::new(Mutex::new(api)),

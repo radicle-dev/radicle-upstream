@@ -69,6 +69,7 @@ where
     http::with_context(ctx.clone())
         .and(http::with_owner_guard(ctx))
         .and(warp::post())
+        .and(path::end())
         .and(warp::body::json())
         .and(document::document(document::description(
             "Create a new project",
@@ -218,7 +219,7 @@ mod handler {
         let ctx = ctx.read().await;
         let project = ctx.peer_api.get_project(&urn, peer_id)?;
 
-        let path = coco::project::Checkout::new(project, path, None)
+        let path = coco::project::Checkout::new(project, path)
             .run(ctx.peer_api.peer_id())
             .map_err(Error::from)?;
 
@@ -498,12 +499,68 @@ mod test {
     use warp::http::StatusCode;
     use warp::test::request;
 
+    use librad::git::local::url::LocalUrl;
+    use radicle_surf::vcs::git::git2;
+
     use crate::coco;
     use crate::error;
     use crate::http;
     use crate::identity;
     use crate::project;
     use crate::session;
+
+    #[tokio::test]
+    async fn checkout() -> Result<(), error::Error> {
+        let tmp_dir = tempfile::tempdir()?;
+        let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
+        let dir = tempfile::tempdir_in(repos_dir.path())?;
+        let ctx = http::Context::tmp(&tmp_dir).await?;
+        let api = super::filters(ctx.clone());
+
+        let ctx = ctx.read().await;
+        let handle = "cloudhead";
+        let key = ctx.keystore.get_librad_key()?;
+
+        let owner = ctx.peer_api.init_owner(&key, handle)?;
+        session::set_identity(&ctx.store, (ctx.peer_api.peer_id(), owner.clone()).into())?;
+
+        let platinum_project = coco::control::replicate_platinum(
+            &ctx.peer_api,
+            &key,
+            &owner,
+            "git-platinum",
+            "fixture data",
+            "master",
+        )?;
+        let urn = platinum_project.urn();
+
+        let input = super::CheckoutInput {
+            path: dir.path().to_path_buf(),
+            peer_id: None,
+        };
+        let res = request()
+            .method("POST")
+            .path(&format!("/{}/checkout", urn))
+            .json(&input)
+            .reply(&api)
+            .await;
+
+        http::test::assert_response(&res, StatusCode::CREATED, |_| {});
+        assert!(dir.path().exists());
+
+        let repo = git2::Repository::open(dir.path().join("git-platinum"))?;
+        let remote = repo.find_remote("rad")?;
+        assert_eq!(
+            remote.url(),
+            Some(
+                LocalUrl::from_urn(urn, ctx.peer_api.peer_id())
+                    .to_string()
+                    .as_str()
+            )
+        );
+
+        Ok(())
+    }
 
     #[tokio::test]
     async fn create_new() -> Result<(), error::Error> {
