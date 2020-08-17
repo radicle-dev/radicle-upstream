@@ -44,13 +44,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             });
 
             client
-        },
+        }
         host => {
             let host = url17::Host::parse(host)?;
             radicle_registry_client::Client::create_with_executor(host)
                 .await
                 .expect("unable to construct devnet client")
-        },
+        }
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
@@ -96,7 +96,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         kv::Store::new(config)?
     };
 
-    coco::git_helper::setup().expect("Git remote helper setup failed");
+    let proxy_path = config::proxy_path()?;
+    let bin_dir = config::bin_dir()?;
+    coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
 
     log::info!("Starting API");
 
