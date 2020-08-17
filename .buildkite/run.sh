@@ -43,7 +43,7 @@ echo "--- Run proxy fmt"
 (cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy lints"
-(cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options --deny warnings)
+(cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings)
 
 echo "--- Run app eslint checks"
 time yarn lint
