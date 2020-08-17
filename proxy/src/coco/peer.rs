@@ -451,10 +451,6 @@ mod test {
         let user = api.init_owner(&key, "cloudhead")?;
         let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
 
-        if project.is_err() {
-            log::error!("{:?}", project);
-        }
-
         assert!(project.is_ok());
         assert!(repo_path.join("radicalise").exists());
 

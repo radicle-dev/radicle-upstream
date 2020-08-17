@@ -24,9 +24,6 @@ pub enum Error {
     /// An error occurred when performing git operations.
     #[error(transparent)]
     Git(#[from] git2::Error),
-    /// Repository already has a 'rad' remote.
-    #[error("a remote named 'rad' already exists for the repository '{0}'")]
-    RadRemoteExists(PathBuf),
     /// Configured default branch for the project is missing.
     #[error(
         "the default branch '{branch}' supplied was not found for the repository at '{repo_path}'"
