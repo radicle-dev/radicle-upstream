@@ -9,7 +9,8 @@ use std::os::unix::fs::PermissionsExt;
 /// Filename of the git helper binary.
 pub const HELPER_BINARY_NAME: &str = "git-remote-rad";
 
-fn is_executable(path: std::path::PathBuf) -> Result<bool, error::Error> {
+/// Check if a path contains an executable file.
+fn is_executable(path: &std::path::PathBuf) -> Result<bool, error::Error> {
     let metadata = path.metadata()?;
     let permissions = metadata.permissions();
     Ok(permissions.mode() & 0o111 != 0)
@@ -30,7 +31,7 @@ pub fn setup() -> Result<(), error::Error> {
     let bin_dir = config::bin_dir()?;
     let full_dest_path = bin_dir.join(HELPER_BINARY_NAME);
 
-    if full_dest_path.exists() && is_executable(full_dest_path.clone())? {
+    if full_dest_path.exists() && is_executable(&full_dest_path)? {
         log::debug!("Git helper already exists at: {:?}", full_dest_path);
         return Ok(());
     }
