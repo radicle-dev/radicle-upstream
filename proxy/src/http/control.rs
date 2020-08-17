@@ -172,17 +172,8 @@ mod handler {
         S: coco::ResetSigner,
         S::Error: coco::SignError,
     {
-        // TmpDir deletes the temporary directory once it DROPS.
-        // This means our new directory goes missing, and future calls will fail.
-        // The Peer creates the directory again.
-        //
-        // N.B. this may gather lot's of tmp files on your system. We're sorry.
-        let tmp_dir = tempfile::tempdir().expect("test dir creation failed");
-        log::debug!("New temporary path is: {:?}", tmp_dir.path());
-        std::env::set_var("RAD_HOME", tmp_dir.path());
-
         let ctx = &mut *ctx.write().await;
-        ctx.reset(&tmp_dir).await?;
+        ctx.reset().await?;
 
         Ok(reply::json(&true))
     }
@@ -211,29 +202,21 @@ mod handler {
 
         #[tokio::test]
         async fn reset() -> Result<(), error::Error> {
-            use crate::coco::ResetSigner;
-
             let tmp_dir = tempfile::tempdir()?;
             let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
 
-            let (old_paths, old_peer_id, old_key_path) = {
+            let (old_paths, old_peer_id) = {
                 let ctx = ctx.read().await;
-                let key_path = ctx.signer.key_file_path().to_str().unwrap().to_string();
-                println!("old key path {:?}", key_path);
-                (ctx.peer_api.paths(), ctx.peer_api.peer_id(), key_path)
+                (ctx.peer_api.paths(), ctx.peer_api.peer_id())
             };
 
             super::reset(ctx.clone()).await.unwrap();
 
-            let (new_paths, new_peer_id, new_key_path) = {
+            let (new_paths, new_peer_id) = {
                 let ctx = ctx.read().await;
-                let key_path = ctx.signer.key_file_path().to_str().unwrap().to_string();
-                println!("new key path {:?}", key_path);
-
-                (ctx.peer_api.paths(), ctx.peer_api.peer_id(), key_path)
+                (ctx.peer_api.paths(), ctx.peer_api.peer_id())
             };
 
-            assert_ne!(old_key_path, new_key_path);
             assert_ne!(old_paths.all_dirs(), new_paths.all_dirs());
             assert_ne!(old_peer_id, new_peer_id);
 

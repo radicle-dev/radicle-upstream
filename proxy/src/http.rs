@@ -204,8 +204,21 @@ where
     S: coco::ResetSigner,
     S::Error: coco::SignError,
 {
-    async fn reset(&mut self, tmp_dir: &tempfile::TempDir) -> Result<(), crate::error::Error> {
-        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
+    async fn reset(&mut self) -> Result<(), crate::error::Error> {
+        // TmpDir deletes the temporary directory once it DROPS.
+        // This means our new directory goes missing, and future calls will fail.
+        // The Peer creates the directory again.
+        //
+        // N.B. this may gather lot's of tmp files on your system. We're sorry.
+        let tmp_path = {
+            let temp_dir = tempfile::tempdir().expect("test dir creation failed");
+            log::debug!("New temporary path is: {:?}", temp_dir.path());
+            std::env::set_var("RAD_HOME", temp_dir.path());
+            temp_dir.path().to_path_buf()
+        };
+
+        let paths =
+            librad::paths::Paths::from_root(tmp_path.clone()).map_err(crate::error::Error::from)?;
 
         // Reset signer.
         let pw = coco::SecUtf8::from("radicle-upstream");
@@ -213,18 +226,12 @@ where
             .reset(&paths, pw)
             .map_err(crate::error::Error::Signer)?;
 
-        println!("{:?}", tmp_dir.path());
-        println!("{:?}", self.signer.key_file_path());
-
         // Reset peer api.
-        let peer_api = {
-            let config = coco::config::default(self.signer.clone(), tmp_dir.path())?;
-            coco::Api::new(config).await?
-        };
-        self.peer_api = peer_api;
+        let coco_config = coco::config::configure(paths, self.signer.clone());
+        self.peer_api = coco::Api::new(coco_config).await?;
 
         // Reset store.
-        self.store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
+        self.store = kv::Store::new(kv::Config::new(tmp_path.join("store")))?;
 
         // Reset registry.
         let (client, _) = radicle_registry_client::Client::new_emulator();

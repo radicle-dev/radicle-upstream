@@ -87,8 +87,9 @@ impl Reset for Store {
         let key_path = path.join(KEY);
         let mut storage = FileStorage::new(&key_path, crypto::Pwhash::new(passphrase));
         let key = keys::SecretKey::new();
-        storage.put_key(key)?;
+        storage.put_key(key.clone())?;
 
+        self.public_key = key.public_key();
         self.storage = storage;
 
         Ok(())
