@@ -1837,7 +1837,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=18e629a8c9e8bd6d0bbd95c50c9a605b316ce04c#18e629a8c9e8bd6d0bbd95c50c9a605b316ce04c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=e471952ec83579e313d77e5f428fa272da20fa4c#e471952ec83579e313d77e5f428fa272da20fa4c"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -3083,7 +3083,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=18e629a8c9e8bd6d0bbd95c50c9a605b316ce04c#18e629a8c9e8bd6d0bbd95c50c9a605b316ce04c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=e471952ec83579e313d77e5f428fa272da20fa4c#e471952ec83579e313d77e5f428fa272da20fa4c"
 dependencies = [
  "anyhow",
  "git2",
@@ -3095,7 +3095,7 @@ dependencies = [
 [[package]]
 name = "radicle-keystore"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-keystore.git?rev=27c9a7b8ce5b87d2be3703f7a3290fa7a0552fc6#27c9a7b8ce5b87d2be3703f7a3290fa7a0552fc6"
+source = "git+https://github.com/radicle-dev/radicle-keystore.git?rev=3377e666bde3130a06dd19343e7df2eaa774176a#3377e666bde3130a06dd19343e7df2eaa774176a"
 dependencies = [
  "async-trait",
  "futures 0.3.5",
