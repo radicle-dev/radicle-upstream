@@ -7,7 +7,6 @@ use proxy::coco;
 use proxy::config;
 use proxy::env;
 use proxy::http;
-use proxy::keystore;
 use proxy::registry;
 
 /// Flags accepted by the proxy binary.
@@ -65,23 +64,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         coco::config::Paths::default()
     };
-    let pw = SecUtf8::from("radicle-upstream");
 
     let paths = paths::Paths::try_from(paths_config)?;
 
-    let mut keystore = keystore::Keystorage::new(&paths, pw);
-    let key = keystore.init_librad_key()?;
+    let pw = SecUtf8::from("radicle-upstream");
+    let signer = coco::KeyStore::init(&paths, pw)?;
 
     let coco_api = {
-        let config = coco::config::configure(paths, key.clone());
+        let config = coco::config::configure(paths, signer.clone());
         coco::Api::new(config).await?
     };
 
     if args.test {
         // TODO(xla): Given that we have proper ownership and user handling in coco, we should
         // evaluate how meaningful these fixtures are.
-        let owner = coco_api.init_owner(&key, "cloudhead")?;
-        coco::control::setup_fixtures(&coco_api, &key, &owner).expect("fixture creation failed");
+        let owner = coco_api.init_owner(&signer, "cloudhead")?;
+        coco::control::setup_fixtures(&coco_api, &signer, &owner).expect("fixture creation failed");
     }
 
     let store = {
@@ -99,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);
-    let api = http::api(coco_api, cache.clone(), key.clone(), store, args.test);
+    let api = http::api(coco_api, cache.clone(), signer, store, args.test);
 
     tokio::spawn(async move {
         cache.run().await.expect("cacher run failed");

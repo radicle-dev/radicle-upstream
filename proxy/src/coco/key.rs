@@ -40,8 +40,18 @@ impl Store {
         let path = paths.keys_dir();
         let key_path = path.join(KEY);
         let mut storage = FileStorage::new(&key_path, crypto::Pwhash::new(passphrase));
-        let key = keys::SecretKey::new();
-        storage.put_key(key.clone())?;
+
+        let key = match storage.get_key() {
+            Ok(key) => Ok(key.secret_key),
+            Err(err) => match err {
+                file::Error::NoSuchKey => {
+                    let key = keys::SecretKey::new();
+                    storage.put_key(key.clone())?;
+                    Ok(key)
+                }
+                _ => Err(err),
+            },
+        }?;
 
         Ok(Self {
             public_key: key.public_key(),
