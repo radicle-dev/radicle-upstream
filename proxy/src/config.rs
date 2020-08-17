@@ -2,6 +2,7 @@
 
 use crate::error;
 use directories::ProjectDirs;
+use std::ffi;
 use std::path;
 
 /// Returns the directories to locate all application state.
@@ -33,4 +34,23 @@ pub fn proxy_path() -> Result<path::PathBuf, error::Error> {
         .parent()
         .expect("failed to find executable path")
         .to_owned())
+}
+
+/// Include the path to the current running binary in the global system PATH.
+///
+/// # Errors
+///
+///   * Could not determine path to the proxy binary.
+///   * Could not join paths.
+pub fn default_bin_path() -> Result<ffi::OsString, error::Error> {
+    let proxy_path = proxy_path()?;
+
+    let paths = std::env::var_os("PATH").map_or(vec![proxy_path.to_owned()], |path| {
+        let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
+        paths.push(proxy_path.to_owned());
+        paths.reverse();
+        paths
+    });
+
+    Ok(std::env::join_paths(paths)?)
 }

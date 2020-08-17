@@ -130,7 +130,7 @@ where
     path: P,
     /// The `PATH` environment variable to be used for the checkout. It is safe to leave this
     /// `None` when executing the application for real. However, if we want to run an integration
-    /// test we need to tell say where the `git-rad-remote` helper can be found.
+    /// test we need to tell where the `git-rad-remote` helper can be found.
     bin_path: Option<ffi::OsString>,
 }
 
@@ -170,7 +170,7 @@ where
     pub fn run(self) -> Result<path::PathBuf, error::Error> {
         let bin_path = match self.bin_path {
             Some(path) => Ok(path),
-            None => Self::default_bin_path(),
+            None => config::default_bin_path(),
         }?;
 
         // Check if the path provided ends in the 'directory_name' provided. If not we create the
@@ -211,20 +211,6 @@ where
         } else {
             Err(error::Error::Checkout)
         }
-    }
-
-    /// Set up the PATH env variable used for running the checkout.
-    fn default_bin_path() -> Result<ffi::OsString, error::Error> {
-        let proxy_path = config::proxy_path()?;
-
-        let paths = std::env::var_os("PATH").map_or(vec![proxy_path.to_owned()], |path| {
-            let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
-            paths.push(proxy_path.to_owned());
-            paths.reverse();
-            paths
-        });
-
-        Ok(std::env::join_paths(paths)?)
     }
 }
 
