@@ -76,6 +76,9 @@ test fixtures which are included in this repository as a git submodule:
 ```sh
 git submodule update --init --remote
 git submodule foreach "git fetch --all"
+git submodule foreach "git checkout -B dev -t origin/dev"
+git submodule foreach "git checkout master"
+git submodule foreach "git pull origin master"
 ```
 
 💡 *You'll have to run the previous commands every time there are any updates
