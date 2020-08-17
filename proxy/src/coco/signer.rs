@@ -19,8 +19,12 @@ pub trait Signer: Clone + keys::AsPKCS8 + signer::Signer {}
 
 impl<T: Clone + keys::AsPKCS8 + signer::Signer> Signer for T {}
 
+pub trait Reset: Signer {
+    fn reset(&mut self) -> Result<(), Error>;
+}
+
 /// Synonym for an error when interacting with a store for [`librad::keys`].
-type Error = file::Error<crypto::SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
+pub type Error = file::Error<crypto::SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
 type Storage = FileStorage<
     crypto::Pwhash<SecUtf8>,
     keys::PublicKey,
@@ -69,6 +73,12 @@ impl keys::AsPKCS8 for Store {
             .map(|pair| pair.secret_key)
             .unwrap()
             .as_pkcs8()
+    }
+}
+
+impl Reset for Store {
+    fn reset(&mut self) -> Result<(), Error> {
+        todo!()
     }
 }
 

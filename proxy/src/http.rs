@@ -55,7 +55,7 @@ pub fn api<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Cache + registry::Client + 'static,
-    S: coco::Signer,
+    S: coco::ResetSigner,
     S::Error: coco::SignError,
 {
     let subscriptions = crate::notification::Subscriptions::default();
@@ -198,14 +198,14 @@ where
     warp::any().map(move || ctx.clone()).boxed()
 }
 
-impl Context<registry::Cacher<registry::Registry>, coco::KeyStore> {
+impl Context<registry::Cacher<registry::Registry>, coco::StoreSigner> {
     #[cfg(test)]
     async fn tmp(tmp_dir: &tempfile::TempDir) -> Result<Self, crate::error::Error> {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let pw = coco::SecUtf8::from("radicle-upstream");
         // TODO(xla): Convert coco::key errors properly.
-        let keystore = coco::KeyStore::init(&paths, pw).unwrap();
+        let keystore = coco::StoreSigner::init(&paths, pw).unwrap();
 
         let peer_api = {
             let config = coco::config::default(keystore.clone(), tmp_dir.path())?;

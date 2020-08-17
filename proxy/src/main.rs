@@ -68,7 +68,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let paths = paths::Paths::try_from(paths_config)?;
 
     let pw = SecUtf8::from("radicle-upstream");
-    let signer = coco::KeyStore::init(&paths, pw)?;
+    let signer = coco::StoreSigner::init(&paths, pw)?;
 
     let coco_api = {
         let config = coco::config::configure(paths, signer.clone());

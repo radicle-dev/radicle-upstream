@@ -173,6 +173,10 @@ pub enum Error {
         "while trying to get user revisions we could not find any, there should be at least one"
     )]
     EmptyRevisions,
+
+    /// Errors from [`coco::Signer`].
+    #[error(transparent)]
+    Signer(#[from] coco::SignerError),
 }
 
 impl From<registry::DispatchError> for Error {

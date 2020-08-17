@@ -12,7 +12,7 @@ use crate::registry;
 pub fn filters<R, S>(ctx: http::Ctx<R, S>) -> BoxedFilter<(impl Reply,)>
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: coco::ResetSigner,
     S::Error: coco::SignError,
 {
     create_project_filter(ctx.clone())
@@ -59,7 +59,7 @@ fn reset_filter<R, S>(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
 where
     R: registry::Client + 'static,
-    S: coco::Signer,
+    S: coco::ResetSigner,
     S::Error: coco::SignError,
 {
     path!("reset")
@@ -166,10 +166,10 @@ mod handler {
     }
 
     /// Reset the known state by replacing the [`http::Context`].
-    pub async fn reset<R, S>(_ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
+    pub async fn reset<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
     where
         R: registry::Client + 'static,
-        S: coco::Signer,
+        S: coco::ResetSigner,
         S::Error: coco::SignError,
     {
         // TmpDir deletes the temporary directory once it DROPS.
@@ -184,6 +184,8 @@ mod handler {
         // let mut ctx = ctx.write().await;
         // let new_ctx = http::Context::tmp(&tmp_dir).await?;
         // *ctx = new_ctx;
+        let mut ctx = ctx.write().await;
+        ctx.signer.reset().map_err(Error::Signer)?;
 
         Ok(reply::json(&true))
     }

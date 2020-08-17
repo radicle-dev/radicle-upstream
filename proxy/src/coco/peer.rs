@@ -18,7 +18,7 @@ use radicle_surf::vcs::git;
 use crate::coco;
 use crate::error;
 
-use crate::coco::key::{SignError, Signer};
+use crate::coco::signer::{SignError, Signer};
 
 /// Export a verified [`user::User`] type.
 pub type User = user::User<entity::Verified>;
