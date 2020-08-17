@@ -26,7 +26,7 @@ else
 fi
 
 echo "--- Updating submodules"
-time git submodule update --remote --init --recursive
+time git submodule update --init --remote
 time git submodule foreach "git fetch --all"
 time git submodule foreach "git checkout -B dev -t origin/dev"
 time git submodule foreach "git checkout master"
