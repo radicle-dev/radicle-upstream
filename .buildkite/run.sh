@@ -26,7 +26,7 @@ else
 fi
 
 echo "--- Updating submodules"
-time git submodule update --remote --init --recursive
+time git submodule update --init --remote
 time git submodule foreach "git fetch --all"
 time git submodule foreach "git checkout -B dev -t origin/dev"
 time git submodule foreach "git checkout master"
@@ -43,7 +43,7 @@ echo "--- Run proxy fmt"
 (cd proxy && time cargo fmt --all -- --check)
 
 echo "--- Run proxy lints"
-(cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options)
+(cd proxy && time cargo clippy --all --all-features --all-targets -Z unstable-options -- --deny warnings)
 
 echo "--- Run app eslint checks"
 time yarn lint
