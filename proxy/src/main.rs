@@ -94,6 +94,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         kv::Store::new(config)?
     };
 
+    let proxy_path = config::proxy_path()?;
+    let bin_dir = config::bin_dir()?;
+    coco::git_helper::setup(&proxy_path, &bin_dir).expect("Git remote helper setup failed");
+
     log::info!("Starting API");
 
     let cache = registry::Cacher::new(registry::Registry::new(registry_client), &store);

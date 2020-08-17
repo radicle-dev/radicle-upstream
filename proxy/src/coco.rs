@@ -11,14 +11,16 @@ pub use radicle_surf::vcs::git::Stats;
 
 pub mod config;
 pub mod control;
-mod signer;
-pub use signer::{
-    Error as SignerError, Reset as ResetSigner, SecUtf8, Signer, Store as StoreSigner,
-};
+pub mod git_helper;
 mod peer;
 pub use peer::{verify_user, Api, User};
 
 pub mod project;
+
+mod signer;
+pub use signer::{
+    Error as SignerError, Reset as ResetSigner, SecUtf8, Signer, Store as StoreSigner,
+};
 
 mod source;
 pub use source::{

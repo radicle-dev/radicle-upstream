@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 use librad::git::local::url::LocalUrl;
 
 use crate::coco;
+use crate::config;
 use crate::error;
 use crate::registry;
 
@@ -133,7 +134,7 @@ where
     path: P,
     /// The `PATH` environment variable to be used for the checkout. It is safe to leave this
     /// `None` when executing the application for real. However, if we want to run an integration
-    /// test we need to tell say where the `git-rad-remote` helper can be found.
+    /// test we need to tell where the `git-rad-remote` helper can be found.
     bin_path: Option<ffi::OsString>,
 }
 
@@ -173,7 +174,7 @@ where
     pub fn run(self) -> Result<path::PathBuf, error::Error> {
         let bin_path = match self.bin_path {
             Some(path) => Ok(path),
-            None => Self::default_bin_path(),
+            None => config::default_bin_path(),
         }?;
 
         // Check if the path provided ends in the 'directory_name' provided. If not we create the
@@ -214,21 +215,6 @@ where
         } else {
             Err(error::Error::Checkout)
         }
-    }
-
-    /// Set up the PATH env variable used for running the checkout.
-    fn default_bin_path() -> Result<ffi::OsString, error::Error> {
-        let exe_path = std::env::current_exe()?;
-        let exe_path = exe_path.parent().expect("failed to find executable path");
-
-        let paths = std::env::var_os("PATH").map_or(vec![exe_path.to_path_buf()], |path| {
-            let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
-            paths.push(exe_path.to_path_buf());
-            paths.reverse();
-            paths
-        });
-
-        Ok(std::env::join_paths(paths)?)
     }
 }
 
