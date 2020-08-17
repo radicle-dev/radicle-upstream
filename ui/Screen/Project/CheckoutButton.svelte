@@ -38,7 +38,7 @@
     border: 1px solid var(--color-foreground-level-3);
     box-shadow: var(--elevation-medium);
     padding: 1rem;
-    width: 22.8rem;
+    width: 25rem;
   }
 
   p {
