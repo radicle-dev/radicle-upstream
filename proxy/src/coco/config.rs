@@ -12,7 +12,8 @@ use librad::peer;
 
 use crate::error;
 
-const RAD_HOME: &str = "RAD_HOME";
+/// The environment variable that points to where librad data lives.
+pub const RAD_HOME: &str = "RAD_HOME";
 
 /// Path configuration
 pub enum Paths {

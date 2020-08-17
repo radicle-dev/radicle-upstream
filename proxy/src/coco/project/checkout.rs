@@ -4,6 +4,7 @@ use std::path::{self, PathBuf};
 use std::process::Command;
 
 use librad::git::local::url::LocalUrl;
+use librad::peer::PeerId;
 
 use crate::coco::Project;
 
@@ -71,7 +72,7 @@ where
     ///
     ///   * We couldn't resolve the executable path.
     ///   * The checkout process failed.
-    pub fn run(self) -> Result<PathBuf, Error> {
+    pub fn run(self, peer_id: PeerId) -> Result<PathBuf, Error> {
         let bin_path = match self.bin_path {
             Some(path) => Ok(path),
             None => super::default_bin_path(),
@@ -101,7 +102,7 @@ where
             .arg("rad")
             .arg("--branch")
             .arg(self.project.default_branch())
-            .arg(LocalUrl::from(self.project.urn()).to_string())
+            .arg(LocalUrl::from_urn(self.project.urn(), peer_id).to_string())
             .arg(project_path.as_os_str())
             .env("PATH", &bin_path)
             .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))

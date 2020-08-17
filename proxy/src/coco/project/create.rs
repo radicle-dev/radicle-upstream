@@ -1,17 +1,15 @@
-use std::ffi;
-use std::fmt;
 use std::io;
 use std::marker::PhantomData;
 use std::path::{self, PathBuf};
-use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
 use librad::git::local::url::LocalUrl;
-use librad::git::types::{remote::Remote, FlatRef, Force, NamespacedRef, Refspec};
+use librad::git::types::{remote::Remote, FlatRef, Force, NamespacedRef};
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
+use librad::peer::PeerId;
 use librad::uri::RadUrn;
 use radicle_surf::vcs::git::git2;
 
@@ -51,9 +49,6 @@ pub enum Error {
     #[error(transparent)]
     /// An I/O error occurred during push.
     Io(#[from] io::Error),
-    /// TODO
-    #[error(transparent)]
-    Binpath(#[from] super::bin_path::Error),
 }
 
 /// The data required to either open an existing repository or create a new one.
@@ -143,7 +138,7 @@ impl<Path: AsRef<path::Path>> Repo<Path> {
                 }
 
                 Ok(repo)
-            }
+            },
         }
     }
 
@@ -175,19 +170,15 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     ///
     ///   * Failed to setup the repository
     ///   * Failed to build the project entity
-    pub fn setup_repo(
-        &self,
-        urn: &RadUrn,
-        bin_path: Option<ffi::OsString>,
-    ) -> Result<git2::Repository, Error> {
+    pub fn setup_repo(&self, peer_id: PeerId, urn: &RadUrn) -> Result<git2::Repository, Error> {
         let repo = self.repo.create(&self.description, &self.default_branch)?;
 
         // Test if the repo has setup rad remote.
         match repo.find_remote(super::RAD_REMOTE) {
-            Ok(_) => return Err(Error::RadRemoteExists(repo.path().to_path_buf())),
+            Ok(_) => {}, // return Err(Error::RadRemoteExists(repo.path().to_path_buf())),
             Err(_err) => {
-                Self::setup_remote(&repo, urn, &self.default_branch, bin_path)?;
-            }
+                Self::setup_remote(peer_id, &repo, urn, &self.default_branch)?;
+            },
         }
 
         Ok(repo)
@@ -219,10 +210,10 @@ impl<Path: AsRef<path::Path>> Create<Path> {
     /// Equips a repository with a rad remote for the given id. If the directory at the given path
     /// is not managed by git yet we initialise it first.
     fn setup_remote(
+        peer_id: PeerId,
         repo: &git2::Repository,
         urn: &RadUrn,
         default_branch: &str,
-        bin_path: Option<ffi::OsString>,
     ) -> Result<(), Error> {
         // TODO(finto): Need to check that Hash is the same for this repository. So basically we
         // initialise the remote or update it.
@@ -242,18 +233,13 @@ impl<Path: AsRef<path::Path>> Create<Path> {
             .refspec(namespace_heads.clone(), Force::True);
         let push = namespace_heads.refspec(working_copy_heads, Force::True);
 
-        let local_url: LocalUrl = urn.clone().into();
+        let local_url = LocalUrl::from_urn(urn.clone(), peer_id);
         let mut remote = Remote::rad_remote(local_url, fetch.into_dyn());
         remote.add_pushes(vec![push.into_dyn()].into_iter());
         let mut git_remote = remote.create(repo)?;
 
-        /* TODO(finto): Pushing isn't working and is possibly failing silently.
-         * When I inspect the monorepo the default branch isn't pushed.
-         * This could be due to the remote helper needing credentials, which I attempted to fix
-         * below, but no luck...
-         */
         let default: FlatRef<String, _> = FlatRef::head(PhantomData, None, default_branch);
-        // let namespace_default = NamespacedRef::head(urn.id.clone(), None, default_branch);
+
         git_remote.push(&[default.to_string()], None)?;
 
         Ok(())
@@ -270,41 +256,5 @@ impl Create<PathBuf> {
             },
             ..self
         }
-    }
-}
-
-// TODO
-fn push_spec<R, L>(
-    repo: &git2::Repository,
-    spec: &Refspec<R, L>,
-    credential: super::Credential,
-    bin_path: Option<ffi::OsString>,
-) -> Result<(), Error>
-where
-    R: fmt::Display + ToString + Clone,
-    L: fmt::Display + ToString + Clone,
-{
-    let bin_path = match bin_path {
-        Some(path) => Ok(path),
-        None => super::default_bin_path(),
-    }?;
-
-    let mut child_process = Command::new("git")
-        .current_dir(repo.path())
-        .arg("-c")
-        .arg(credential.to_helper())
-        .arg("push")
-        .arg(super::RAD_REMOTE)
-        //         .arg(format!("{}", repo.path().display()))
-        .arg(spec.to_string())
-        .env("PATH", &bin_path)
-        .envs(std::env::vars().filter(|(key, _)| key.starts_with("GIT_TRACE")))
-        .spawn()?;
-
-    let result = child_process.wait()?;
-    if result.success() {
-        Ok(())
-    } else {
-        Err(Error::PushFailed(spec.to_string()))
     }
 }

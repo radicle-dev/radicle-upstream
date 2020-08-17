@@ -219,7 +219,7 @@ mod handler {
         let project = ctx.peer_api.get_project(&urn, peer_id)?;
 
         let path = coco::project::Checkout::new(project, path, None)
-            .run()
+            .run(ctx.peer_api.peer_id())
             .map_err(Error::from)?;
 
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))

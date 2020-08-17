@@ -32,7 +32,7 @@ async fn can_checkout() -> Result<(), error::Error> {
     )?;
 
     let path = tmp_dir.path().join("projects").join("git-platinum");
-    coco::project::Checkout::new(platinum_project, path, exe_path()).run()?;
+    coco::project::Checkout::new(platinum_project, path, exe_path()).run(api.peer_id())?;
 
     Ok(())
 }

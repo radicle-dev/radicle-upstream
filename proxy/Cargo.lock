@@ -1837,6 +1837,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=82c3f42b537c85b8c31fba6ac1fe13f7af8b4c41#82c3f42b537c85b8c31fba6ac1fe13f7af8b4c41"
 dependencies = [
  "async-trait",
  "bit-vec",
@@ -3082,6 +3083,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=82c3f42b537c85b8c31fba6ac1fe13f7af8b4c41#82c3f42b537c85b8c31fba6ac1fe13f7af8b4c41"
 dependencies = [
  "anyhow",
  "git2",

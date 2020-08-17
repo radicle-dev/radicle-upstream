@@ -51,14 +51,10 @@ impl Api {
         // publish events.
         let (api, _futures) = peer.accept()?;
 
-        log::debug!("GIT_DIR '{:?}'", paths.git_dir());
         // Register the rad:// transport protocol
         let settings = transport::Settings {
             paths,
-            signer: SomeSigner {
-                signer,
-            }
-            .into(),
+            signer: SomeSigner { signer }.into(),
         };
         transport::register(settings);
 
@@ -286,8 +282,7 @@ impl Api {
             log::debug!("Created project with Urn '{}", urn);
         }
 
-        assert!(storage.has_urn(&urn)?, "WHAT IN THE FUCK");
-        let repo = project.setup_repo(&urn, None)?;
+        let repo = project.setup_repo(api.peer_id().clone(), &urn)?;
         log::debug!("Setup repository at path '{}'", repo.path().display());
 
         Ok(meta)
@@ -401,26 +396,13 @@ mod test {
     use std::path::PathBuf;
 
     use librad::keys::SecretKey;
-    use librad::meta::entity;
-    use librad::meta::Project;
-    use librad::git::local::transport;
-    use librad::signer::SomeSigner;
 
     use crate::coco::config;
     use crate::coco::control;
     use crate::coco::project;
     use crate::error::Error;
 
-    use super::{Api, User};
-
-    fn create_fakie(
-        api: &Api,
-        key: &SecretKey,
-        owner: &User,
-        repo_path: PathBuf,
-    ) -> Result<Project<entity::Draft>, Error> {
-        api.init_project(key, owner, &fakie_project(repo_path))
-    }
+    use super::Api;
 
     fn fakie_project(path: PathBuf) -> project::Create<PathBuf> {
         project::Create {
@@ -459,27 +441,14 @@ mod test {
 
     #[tokio::test]
     async fn can_create_project() -> Result<(), Error> {
-        let path = {
-            let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-            tmp_dir.into_path()
-        };
-        std::fs::create_dir(path.clone());
-        log::debug!("TMP DIR CAN CREATE: {:?}", path);
-        env::set_var("RAD_HOME", path.clone());
-        let repo_path = path.join("radicle");
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        env::set_var("RAD_HOME", tmp_dir.path());
+        let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
-        let config = config::default(key.clone(), path.clone())?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
         let user = api.init_owner(&key, "cloudhead")?;
-        let settings = transport::Settings {
-            paths: api.paths(),
-            signer: SomeSigner {
-                signer: key.clone(),
-            }
-            .into(),
-        };
-        transport::register(settings);
         let project = api.init_project(&key, &user, &radicle_project(repo_path.clone()));
 
         if project.is_err() {
@@ -494,17 +463,11 @@ mod test {
 
     #[tokio::test]
     async fn can_create_project_directory_exists() -> Result<(), Error> {
-        pretty_env_logger::init();
-        let path = {
-            let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
-            tmp_dir.into_path()
-        };
-        std::fs::create_dir(path.clone());
-        log::debug!("TMP DIR: {:?}", path);
-        let repo_path = path.join("radicle");
+        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let repo_path = tmp_dir.path().join("radicle");
         let repo_path = repo_path.join("radicalise");
         let key = SecretKey::new();
-        let config = config::default(key.clone(), path)?;
+        let config = config::default(key.clone(), tmp_dir.path())?;
         let api = Api::new(config).await?;
 
         let user = api.init_owner(&key, "cloudhead")?;
@@ -632,7 +595,7 @@ mod test {
 
         let kalt = api.init_owner(&key, "kalt")?;
 
-        let _fakie = create_fakie(&api, &key, &kalt, repo_path.clone())?;
+        let _fakie = api.init_project(&key, &kalt, &fakie_project(repo_path.clone()))?;
 
         std::fs::remove_dir_all(tmp_dir.path().join("git")).expect("failed to remove tmp path");
         assert!(repo_path.exists());
@@ -641,7 +604,7 @@ mod test {
         let api = Api::new(config).await?;
 
         let kalt = api.init_owner(&key, "kalt")?;
-        let _fakie = create_fakie(&api, &key, &kalt, repo_path)?;
+        let _fakie = api.init_project(&key, &kalt, &fakie_project(repo_path).into_existing())?;
 
         Ok(())
     }

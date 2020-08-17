@@ -97,25 +97,18 @@ pub fn replicate_platinum(
     {
         let repo = git2::Repository::open(platinum_into)?;
         let mut rad_remote = repo.find_remote("rad")?;
-        let namespace_prefix = format!("refs/namespaces/{}/refs", meta.urn().id);
 
         // Push all tags to rad remote.
         let tags = repo
             .tag_names(None)?
             .into_iter()
             .flatten()
-            .map(|t| format!("+refs/tags/{}:{}/tags/{}", t, namespace_prefix, t))
+            .map(|t| format!("+refs/tags/{}", t))
             .collect::<Vec<_>>();
         rad_remote.push(&tags, None)?;
 
         // Push branches.
-        rad_remote.push(
-            &[
-                &format!("refs/heads/dev:{}/heads/dev", namespace_prefix),
-                &format!("refs/heads/master:{}/heads/master", namespace_prefix),
-            ],
-            None,
-        )?;
+        rad_remote.push(&["refs/heads/dev", "refs/heads/master"], None)?;
     }
 
     // Init as rad project.
