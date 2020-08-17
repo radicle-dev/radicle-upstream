@@ -208,7 +208,7 @@ impl Context<registry::Cacher<registry::Registry>, coco::KeyStore> {
         let keystore = coco::KeyStore::init(&paths, pw).unwrap();
 
         let peer_api = {
-            let config = coco::config::default(keystore, tmp_dir.path())?;
+            let config = coco::config::default(keystore.clone(), tmp_dir.path())?;
             coco::Api::new(config).await?
         };
 

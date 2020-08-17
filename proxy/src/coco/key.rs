@@ -5,7 +5,6 @@ use librad::paths;
 use librad::signer;
 use radicle_keystore::crypto;
 use radicle_keystore::file;
-use radicle_keystore::pinentry;
 use radicle_keystore::sign::{self, Signer as _};
 use radicle_keystore::{FileStorage, Keystore, SecretKeyExt};
 
@@ -23,7 +22,7 @@ impl<T: Clone + keys::AsPKCS8 + signer::Signer> Signer for T {}
 /// Synonym for an error when interacting with a store for [`librad::keys`].
 type Error = file::Error<crypto::SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
 type Storage = FileStorage<
-    crypto::Pwhash<pinentry::SecUtf8>,
+    crypto::Pwhash<SecUtf8>,
     keys::PublicKey,
     keys::SecretKey,
     <keys::SecretKey as SecretKeyExt>::Metadata,
@@ -37,7 +36,7 @@ pub struct Store {
 
 impl Store {
     /// Sets up a new [`Store`] with a fresh key.
-    pub fn init(paths: &paths::Paths, passphrase: pinentry::SecUtf8) -> Result<Self, Error> {
+    pub fn init(paths: &paths::Paths, passphrase: SecUtf8) -> Result<Self, Error> {
         let path = paths.keys_dir();
         let key_path = path.join(KEY);
         let mut storage = FileStorage::new(&key_path, crypto::Pwhash::new(passphrase));
