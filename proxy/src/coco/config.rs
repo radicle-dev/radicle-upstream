@@ -54,7 +54,7 @@ pub fn default(
     path: impl AsRef<std::path::Path>,
 ) -> Result<net::peer::PeerConfig<Disco, keys::SecretKey>, error::Error> {
     let paths = paths::Paths::from_root(path)?;
-    Ok(configure(paths, key))
+    Ok(configure(paths, key, vec![]))
 }
 
 /// Configure a [`net::peer::PeerConfig`].
@@ -62,6 +62,7 @@ pub fn default(
 pub fn configure(
     paths: paths::Paths,
     key: keys::SecretKey,
+    seeds: Vec<(peer::PeerId, SocketAddr)>,
 ) -> net::peer::PeerConfig<Disco, keys::SecretKey> {
     // TODO(finto): There should be a coco::config module that knows how to parse the
     // configs/parameters to give us back a `PeerConfig`
@@ -70,9 +71,8 @@ pub fn configure(
     let gossip_params = net::gossip::MembershipParams::default();
     // TODO(finto): Read from config or passed as param
     let listen_addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 0);
-    // TODO(finto): could we initialise with known seeds from a cache?
-    let seeds: Vec<(peer::PeerId, SocketAddr)> = vec![];
     let disco = discovery::Static::new(seeds);
+
     // TODO(finto): read in from config or passed as param
     net::peer::PeerConfig {
         signer: key,
@@ -80,5 +80,67 @@ pub fn configure(
         listen_addr,
         gossip_params,
         disco,
+    }
+}
+
+/// Resolve seed identifiers into `(PeerId, SocketAddr)` pairs.
+pub async fn resolve_seeds<T: AsRef<str>>(
+    seeds: &[T],
+) -> Result<Vec<(peer::PeerId, SocketAddr)>, error::Error> {
+    let mut resolved = Vec::with_capacity(seeds.len());
+
+    for seed in seeds.iter() {
+        let seed = seed.as_ref();
+
+        if let Some(ix) = seed.chars().position(|c| c == '@') {
+            let (peer_id, rest) = seed.split_at(ix);
+            let host = &rest[1..]; // Skip '@'
+
+            if let Some(addr) = tokio::net::lookup_host(host).await?.next() {
+                let peer_id = peer::PeerId::from_default_encoding(peer_id)
+                    .map_err(|err| error::Error::InvalidSeed(seed.to_string(), Some(err)))?;
+
+                resolved.push((peer_id, addr));
+            }
+        } else {
+            return Err(error::Error::InvalidSeed(seed.to_string(), None));
+        }
+    }
+
+    Ok(resolved)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::net;
+
+    #[tokio::test]
+    async fn test_resolve_seeds() {
+        let seeds = super::resolve_seeds(&[
+            "hydsst3z3d5bc6pxq4gz1g4cu6sgbx38czwf3bmmk3ouz4ibjbbtds@localhost:9999",
+        ])
+        .await
+        .expect("a valid seed doesn't return an error");
+
+        let expected: net::SocketAddr = ([127, 0, 0, 1], 9999).into();
+
+        assert!(
+            matches!(seeds.first(), Some((_, addr)) if *addr == expected),
+            "{:?}",
+            seeds
+        );
+
+        super::resolve_seeds(&[String::from("hydsst3obtds@localhost:9999")])
+            .await
+            .expect_err("an invalid seed returns an error");
+        super::resolve_seeds(&[String::from("localhost:9999")])
+            .await
+            .expect_err("an invalid seed returns an error");
+        super::resolve_seeds(&[String::from("hydsst3obtds@localhost")])
+            .await
+            .expect_err("an invalid seed returns an error");
+        super::resolve_seeds(&[String::from("hydsst3obtds")])
+            .await
+            .expect_err("an invalid seed returns an error");
     }
 }

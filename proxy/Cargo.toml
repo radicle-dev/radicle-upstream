@@ -33,7 +33,7 @@ serde_qs = "0.6"
 syntect = "4.2"
 tempfile = "3.1"
 thiserror = "1.0"
-tokio = { version = "0.2", features = [ "macros", "time" ] }
+tokio = { version = "0.2", features = [ "macros", "time", "dns" ] }
 url17 = { package = "url", version = "1.7" }
 url = "2.1"
 warp = { git = "https://github.com/radicle-dev/warp", branch = "openapi", features = [ "openapi" ], default-features = false }
