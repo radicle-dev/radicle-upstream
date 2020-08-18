@@ -684,22 +684,32 @@ mod test {
         let project =
             alice_peer.init_project(&alice_key, &alice, &alice_repo_path, "just", "do", "it")?;
 
+        let alice_other_repo_path = alice_tmp_dir.path().join("radical");
+        let _other_project = alice_peer.init_project(
+            &alice_key,
+            &alice,
+            &alice_other_repo_path,
+            "hi",
+            "i",
+            "exist",
+        )?;
+
         let bob_key = SecretKey::new();
 
         let bob_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
-        let paths = paths::Paths::from_root(bob_tmp_dir.path())?;
-        let config = config::configure(paths, bob_key.clone(), bob_addr, vec![]);
-        let bob_peer = Api::new(config).await?;
+        let bob_paths = paths::Paths::from_root(bob_tmp_dir.path())?;
+        let bob_config = config::configure(bob_paths, bob_key.clone(), bob_addr, vec![]);
+        let bob_peer = Api::new(bob_config).await?;
 
         let bobby = bob_peer.clone();
-        let project_urn = tokio::task::spawn_blocking(move || {
+        let cloned_project_urn = tokio::task::spawn_blocking(move || {
             bobby.clone_project(
-                project.urn().into_rad_url(alice_peer.peer_id().clone()),
+                project.urn().into_rad_url(alice_peer.peer_id()),
                 vec![alice_addr].into_iter(),
             )
         })
         .await
-        .unwrap()?;
+        .expect("oops")?;
 
         assert_eq!(
             bob_peer
@@ -707,7 +717,7 @@ mod test {
                 .into_iter()
                 .map(|project| project.urn())
                 .collect::<Vec<_>>(),
-            vec![project_urn.clone()]
+            vec![cloned_project_urn]
         );
 
         Ok(())
