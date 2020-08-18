@@ -5,6 +5,4 @@
   const id = params.id;
 </script>
 
-<SidebarLayout style="margin-top: 0;" dataCy="profile-screen">
-  User profile: {id}
-</SidebarLayout>
+<SidebarLayout>User profile: {id}</SidebarLayout>
