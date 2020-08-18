@@ -1,9 +1,13 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, getContext } from "svelte";
+  import { push } from "svelte-spa-router";
+
+  import * as path from "../../../src/path.ts";
 
   import { RevisionType } from "../../../src/source.ts";
 
   import { Avatar, Icon } from "../../Primitive";
+  import { Tooltip } from "../../Component";
 
   export let currentRevision = null;
   export let currentPeerId = null;
@@ -11,6 +15,8 @@
   export let revisions = null;
 
   let currentSelectedPeer;
+
+  const session = getContext("session");
 
   $: if (currentPeerId) {
     currentSelectedPeer = revisions.find(rev => {
@@ -100,6 +106,8 @@
     color: var(--color-foreground-level-6);
     padding: 0.5rem;
     user-select: none;
+    align-items: center;
+    justify-content: space-between;
   }
   .branch,
   .tag {
@@ -122,6 +130,10 @@
   .revision-dropdown ul:last-child li {
     border-radius: 0 0 3px 3px;
   }
+  .open-profile {
+    display: flex;
+    justify-content: center;
+  }
 </style>
 
 <svelte:window on:click={handleClick} />
@@ -139,7 +151,7 @@
           style="vertical-align: bottom; fill: var(--color-foreground-level-4);
           flex-shrink: 0;" />
       {:else}
-        <Icon.Commit
+        <Icon.Label
           dataCy="tag-icon"
           style="vertical-align: bottom; fill: var(--color-foreground-level-4);
           flex-shrink: 0;" />
@@ -162,14 +174,26 @@
   <div class="revision-dropdown" hidden={!expanded}>
     {#each revisions as repo}
       <div class="peer">
-        <Avatar
-          avatarFallback={repo.identity.avatarFallback}
-          style="display: flex; justify-content: flex-start; margin-right: 8px;"
-          size="small"
-          variant="circle" />
-        <p class="typo-text-bold typo-overflow-ellipses">
-          {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
-        </p>
+        <div style="display: flex;">
+          <Avatar
+            avatarFallback={repo.identity.avatarFallback}
+            style="display: flex; justify-content: flex-start; margin-right:
+            8px;"
+            size="small"
+            variant="circle" />
+          <p class="typo-text-bold typo-overflow-ellipses">
+            {repo.identity.metadata.handle || repo.identity.shareableEntityIdentifier}
+          </p>
+        </div>
+        <Tooltip value="Go to profile" position="top">
+          <div
+            class="open-profile"
+            on:click={() => {
+              repo.identity.peerId === session.identity.peerId ? push(path.profileProjects()) : push(path.userProfile(repo.identity.peerId));
+            }}>
+            <Icon.Open />
+          </div>
+        </Tooltip>
       </div>
       <ul>
         {#each repo.branches as branch}
@@ -206,7 +230,7 @@
                   name: tag,
                 }
               )}>
-            <Icon.Commit
+            <Icon.Label
               dataCy="tag-icon"
               style="vertical-align: bottom; fill:
               var(--color-foreground-level-4)" />
