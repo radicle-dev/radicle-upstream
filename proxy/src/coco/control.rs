@@ -20,7 +20,7 @@ use crate::error;
 /// # Errors
 ///
 /// Will error in case the call to the [`std::fs::remove_dir_all`] fails.
-pub fn nuke_monorepo() -> Result<(), std::io::Error> {
+pub fn reset_monorepo() -> Result<(), std::io::Error> {
     let paths =
         librad::paths::Paths::try_from(config::Paths::default()).expect("unable to create paths");
     std::fs::remove_dir_all(paths.git_dir())

@@ -1,13 +1,12 @@
 context("user registration", () => {
   before(() => {
-    cy.nukeAllState();
+    cy.resetAllState();
     cy.registerAlternativeUser("nope");
     cy.createProjectWithFixture();
   });
 
   beforeEach(() => {
-    cy.nukeCocoState();
-    cy.nukeSessionState();
+    cy.resetAllState();
     cy.createIdentity();
 
     cy.visit("public/index.html");
@@ -81,6 +80,7 @@ context("user registration", () => {
     });
 
     it("prevents the user from registering an unavailable handle", () => {
+      cy.registerAlternativeUser("nope");
       cy.pick("handle").clear();
       cy.pick("handle").type("nope");
       cy.pick("page").contains("Sorry, this one is no longer available");
@@ -102,7 +102,7 @@ context("user registration", () => {
   context("transaction", () => {
     before(() => {
       // Clear everything again so transaction center is empty
-      cy.nukeAllState();
+      cy.resetAllState();
       cy.createProjectWithFixture();
     });
 
@@ -179,8 +179,7 @@ context("user registration", () => {
 
   context("permissions", () => {
     before(() => {
-      cy.nukeAllState();
-      cy.nukeCache();
+      cy.resetAllState();
     });
 
     it("only allows to register a handle once", () => {

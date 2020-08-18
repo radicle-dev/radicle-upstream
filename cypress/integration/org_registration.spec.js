@@ -1,6 +1,6 @@
 context("org registration permission", () => {
   before(() => {
-    cy.nukeAllState();
+    cy.resetAllState();
     cy.createIdentity();
     cy.visit("public/index.html");
   });
@@ -19,7 +19,7 @@ context("org registration permission", () => {
 
 context("org registration", () => {
   beforeEach(() => {
-    cy.nukeAllState();
+    cy.resetAllState();
     cy.createIdentity();
     cy.registerUser();
     cy.createProjectWithFixture();

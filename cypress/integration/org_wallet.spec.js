@@ -1,5 +1,5 @@
 before(() => {
-  cy.nukeAllState();
+  cy.resetAllState();
 
   cy.createIdentity("coolname");
   cy.registerUser("coolname");

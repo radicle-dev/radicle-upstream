@@ -4,9 +4,7 @@ context("identity creation", () => {
   };
 
   beforeEach(() => {
-    cy.nukeCocoState();
-    cy.nukeSessionState();
-    cy.nukeRegistryState();
+    cy.resetAllState();
     cy.visit("./public/index.html");
   });
 

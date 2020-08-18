@@ -16,7 +16,7 @@ const org2 = "github";
 
 context("project registration permission", () => {
   it("disables project registration without a registered user", () => {
-    cy.nukeAllState();
+    cy.resetAllState();
     cy.createIdentity(user);
     cy.createProjectWithFixture(
       project1.name,
@@ -44,7 +44,7 @@ context("project registration permission", () => {
   });
 
   it("disables project registration under an org without a local project", () => {
-    cy.nukeAllState();
+    cy.resetAllState();
     cy.createIdentity(user);
     cy.registerUser(user);
     cy.registerOrg(org1);
@@ -62,7 +62,7 @@ context("project registration permission", () => {
 
 context("project registration", () => {
   beforeEach(() => {
-    cy.nukeAllState();
+    cy.resetAllState();
 
     cy.createIdentity(user);
     cy.registerUser(user);
@@ -83,7 +83,7 @@ context("project registration", () => {
 
     // The transaction center is populated with transactions that come from this
     // before block and it covers the dropdown menu that is needed in the tests.
-    cy.nukeCache();
+    cy.resetCache();
 
     cy.visit("public/index.html");
   });

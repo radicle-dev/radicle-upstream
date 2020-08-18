@@ -2,8 +2,7 @@ context("routing", () => {
   context("session persistancy", () => {
     context("first time app start with no stored session data", () => {
       it("opens on the identity creation wizard", () => {
-        cy.nukeCocoState();
-        cy.nukeSessionState();
+        cy.resetAllState();
         cy.visit("./public/index.html");
         cy.pick("get-started-button").should("exist");
       });
@@ -50,7 +49,7 @@ context("routing", () => {
 
   context("navigating between orgs", () => {
     it("goes to the respective org profile screen", () => {
-      cy.nukeAllState();
+      cy.resetAllState();
 
       cy.createIdentity();
       cy.registerUser();

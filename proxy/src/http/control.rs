@@ -16,7 +16,6 @@ where
     S::Error: coco::SignError,
 {
     create_project_filter(ctx.clone())
-        .or(nuke_registry_filter(ctx.clone()))
         .or(register_user_filter(ctx.clone()))
         .or(reset_filter(ctx))
         .boxed()
@@ -65,20 +64,6 @@ where
     path!("reset")
         .and(super::with_context(ctx))
         .and_then(handler::reset)
-}
-
-/// GET /nuke/registry
-fn nuke_registry_filter<R, S>(
-    ctx: http::Ctx<R, S>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-where
-    R: registry::Client + 'static,
-    S: coco::Signer,
-    S::Error: coco::SignError,
-{
-    path!("nuke" / "registry")
-        .and(http::with_context(ctx))
-        .and_then(handler::nuke_registry)
 }
 
 /// Control handlers for conversion between core domain and http request fulfilment.
@@ -178,20 +163,6 @@ mod handler {
         Ok(reply::json(&true))
     }
 
-    /// Reset the Registry state by replacing the emulator in place.
-    pub async fn nuke_registry<R, S>(ctx: http::Ctx<R, S>) -> Result<impl Reply, Rejection>
-    where
-        R: registry::Client,
-        S: coco::Signer,
-        S::Error: coco::SignError,
-    {
-        let (client, _) = radicle_registry_client::Client::new_emulator();
-        let mut ctx = ctx.write().await;
-        ctx.registry.reset(client);
-
-        Ok(reply::json(&true))
-    }
-
     #[allow(clippy::unwrap_used, clippy::panic)]
     #[cfg(test)]
     mod test {
@@ -258,25 +229,27 @@ pub struct RegisterInput {
 #[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
-    use std::sync::Arc;
-
     use pretty_assertions::assert_eq;
-    use tokio::sync::RwLock;
     use warp::http::StatusCode;
     use warp::test::request;
 
     use crate::error;
     use crate::http;
+    use crate::identity;
+    use crate::session;
 
-    // TODO(xla): This can't hold true anymore, given that we nuke the owner. Which is required in
-    // order to register a project. Should we rework the test? How do we make sure an owner is
-    // present?
-    #[ignore]
     #[tokio::test]
     async fn create_project_after_nuke() -> Result<(), error::Error> {
         let tmp_dir = tempfile::tempdir()?;
-        let ctx = Arc::new(RwLock::new(http::Context::tmp(&tmp_dir).await?));
-        let api = super::filters(ctx);
+        let ctx = http::Ctx::from(http::Context::tmp(&tmp_dir).await?);
+        let api = super::filters(ctx.clone());
+
+        // Set up owner.
+        {
+            let ctx = ctx.read().await;
+            let owner = identity::create(&ctx.peer_api, &ctx.signer, "cloudhead")?;
+            session::set_identity(&ctx.store, owner)?;
+        }
 
         // Create project before nuke.
         let res = request()
@@ -295,6 +268,13 @@ mod test {
         // Reset state.
         let res = request().method("GET").path("/reset").reply(&api).await;
         assert_eq!(res.status(), StatusCode::OK);
+
+        // Set up new owner.
+        {
+            let ctx = ctx.read().await;
+            let owner = identity::create(&ctx.peer_api, &ctx.signer, "cloudhead")?;
+            session::set_identity(&ctx.store, owner)?;
+        }
 
         let res = request()
             .method("POST")

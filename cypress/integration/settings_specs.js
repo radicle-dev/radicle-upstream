@@ -1,9 +1,6 @@
 context("settings", () => {
   beforeEach(() => {
-    cy.nukeCache();
-    cy.nukeCocoState();
-    cy.nukeSessionState();
-    cy.nukeRegistryState();
+    cy.resetAllState();
     cy.createIdentity();
 
     cy.visit("public/index.html");

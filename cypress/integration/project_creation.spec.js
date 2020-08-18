@@ -60,7 +60,7 @@ const withPlatinumStub = callback => {
 };
 
 beforeEach(() => {
-  cy.nukeAllState();
+  cy.resetAllState();
   cy.createIdentity();
   cy.visit("./public/index.html");
 });

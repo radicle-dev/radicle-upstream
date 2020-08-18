@@ -27,7 +27,7 @@ fn main() {
     };
 
     info!("Nuking coco state...");
-    match control::nuke_monorepo() {
+    match control::reset_monorepo() {
         Ok(_) => info!("done"),
         Err(err) => {
             if err.kind() == ErrorKind::NotFound {
