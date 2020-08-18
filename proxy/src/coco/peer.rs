@@ -278,7 +278,7 @@ impl Api {
         } else {
             let repo = storage.create_repo(&meta)?;
             repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
-            log::debug!("Created project with Urn '{}", urn);
+            log::debug!("Created project with Urn '{}'", urn);
         }
 
         let repo = project.setup_repo(LocalUrl::from_urn(urn, api.peer_id().clone()))?;
