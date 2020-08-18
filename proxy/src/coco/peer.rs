@@ -7,6 +7,7 @@ use std::sync::{Arc, Mutex};
 
 use futures::stream::StreamExt;
 
+use librad::git::storage;
 use librad::keys;
 use librad::meta::entity;
 use librad::meta::project;
@@ -245,6 +246,7 @@ impl Api {
         let api = self.peer_api.lock().expect("unable to acquire lock");
         let storage = api.storage().reopen()?;
         let repo = storage.clone_repo::<project::ProjectInfo, _>(url, addr_hints)?;
+        repo.set_rad_self(storage::RadSelfSpec::Default)?;
         Ok(repo.urn)
     }
 
@@ -346,7 +348,7 @@ impl Api {
                 return Err(error::Error::EntityExists(urn));
             } else {
                 let repo = storage.create_repo(&meta)?;
-                repo.set_rad_self(librad::git::storage::RadSelfSpec::Urn(owner.urn()))?;
+                repo.set_rad_self(storage::RadSelfSpec::Urn(owner.urn()))?;
             }
             Ok(meta)
         };
@@ -665,6 +667,8 @@ mod test {
 
     #[tokio::test]
     async fn test_can_clone_project() -> Result<(), Error> {
+        pretty_env_logger::init();
+
         let mut bob_addr = *config::LOCALHOST_ANY;
         bob_addr.set_port(8066);
 
@@ -684,24 +688,26 @@ mod test {
         let project =
             alice_peer.init_project(&alice_key, &alice, &alice_repo_path, "just", "do", "it")?;
 
-        let alice_other_repo_path = alice_tmp_dir.path().join("radical");
-        let _other_project = alice_peer.init_project(
-            &alice_key,
-            &alice,
-            &alice_other_repo_path,
-            "hi",
-            "i",
-            "exist",
-        )?;
-
         let bob_key = SecretKey::new();
 
-        let bob_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
-        let bob_paths = paths::Paths::from_root(bob_tmp_dir.path())?;
+        let path = {
+            let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+            let path = tmp_dir.into_path();
+            std::fs::remove_dir_all(path.clone()).expect("failed to remove tempdir");
+            path
+        };
+
+        std::fs::create_dir(path.clone()).expect("failed to create directory");
+
+        // let bob_tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
+        let bob_paths = paths::Paths::from_root(path)?;
         let bob_config = config::configure(bob_paths, bob_key.clone(), bob_addr, vec![]);
         let bob_peer = Api::new(bob_config).await?;
+        let _bob = bob_peer.init_owner(bob_key, "bob")?;
 
         let bobby = bob_peer.clone();
+
+        // TODO(sos): move spawn_blocking into clone_project & clone_user
         let cloned_project_urn = tokio::task::spawn_blocking(move || {
             bobby.clone_project(
                 project.urn().into_rad_url(alice_peer.peer_id()),
@@ -717,8 +723,10 @@ mod test {
                 .into_iter()
                 .map(|project| project.urn())
                 .collect::<Vec<_>>(),
-            vec![cloned_project_urn]
+            vec![cloned_project_urn.clone(), cloned_project_urn]
         );
+
+        // TODO(sos): assert bob_projects.contains(cloned_project_urn)
 
         Ok(())
     }
