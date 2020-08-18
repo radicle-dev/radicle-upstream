@@ -20,8 +20,8 @@
       return false;
     }
 
-    // To open help => OS modifier key + h
-    if (modifierKey && event.key === "h") {
+    // To open help => ?
+    if (event.key === "?") {
       toggle(path.shortcuts());
     }
 
