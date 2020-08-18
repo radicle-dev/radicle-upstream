@@ -17,6 +17,21 @@ use crate::error;
 pub enum Routing {
     /// The currently active [`coco::User`] is missing.
     MissingOwner,
+    /// Query part of the URL cannot be deserialized.
+    ///
+    /// Used by [`http::with_qs`] and [`http::with_qs_opt`].
+    InvalidQuery {
+        /// The original query string
+        query: String,
+        /// Error message describing the deserialization error.
+        // We can’t use `serde_qs::Error` here because it is not `Sync` which is
+        // required to implement `reject::Reject`. Instead we
+        error: String,
+    },
+    /// A query string is required but missing
+    ///
+    /// Used by [`http::with_qs`].
+    QueryMissing,
 }
 
 impl reject::Reject for Routing {}
@@ -31,6 +46,10 @@ impl fmt::Display for Routing {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MissingOwner => write!(f, "Owner is missing"),
+            Self::InvalidQuery { query, error } => {
+                write!(f, "Invalid query string \"{}\": {}", query, error)
+            },
+            Self::QueryMissing => write!(f, "Required query string is missing"),
         }
     }
 }
@@ -86,6 +105,12 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
             match err {
                 Routing::MissingOwner => {
                     (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
+                },
+                Routing::InvalidQuery { .. } => {
+                    (StatusCode::BAD_REQUEST, "INVALID_QUERY", err.to_string())
+                },
+                Routing::QueryMissing { .. } => {
+                    (StatusCode::BAD_REQUEST, "QUERY_MISSING", err.to_string())
                 },
             }
         } else if let Some(err) = err.find::<error::Error>() {
