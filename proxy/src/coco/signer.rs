@@ -70,7 +70,7 @@ impl Store {
                     let key = keys::SecretKey::new();
                     storage.put_key(key.clone())?;
                     Ok(key)
-                }
+                },
                 file::Error::KeyExists
                 | file::Error::Crypto(_)
                 | file::Error::Conversion(_)
