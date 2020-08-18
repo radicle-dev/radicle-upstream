@@ -281,6 +281,9 @@ mod test {
                 "settings": {
                     "appearance": {
                         "theme": "light",
+                        "hints": {
+                            "showRemoteHelper": true,
+                        }
                     },
                     "coco": {
                         "seeds": [
@@ -337,6 +340,9 @@ mod test {
                 "settings": {
                     "appearance": {
                         "theme": "dark",
+                        "hints": {
+                            "showRemoteHelper": true,
+                        }
                     },
                     "coco": {
                         "seeds": [

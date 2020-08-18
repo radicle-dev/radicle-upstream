@@ -87,12 +87,12 @@
   }
 
   h2 {
-    margin-bottom: 32px;
+    margin-bottom: 2rem;
   }
 </style>
 
 <Hotkeys />
-<NotificationFaucet style="margin-top: calc(var(--topbar-height) + 11px)" />
+<NotificationFaucet />
 <Theme />
 <Remote {store} context="session">
   <Router {routes} />

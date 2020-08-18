@@ -19,6 +19,7 @@ import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
 import SearchModal from "./SearchModal.svelte";
+import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
@@ -58,6 +59,7 @@ export {
   RadioOption,
   Stats,
   Remote,
+  RemoteHelperHint,
   Row,
   SearchModal,
   SegmentedControl,

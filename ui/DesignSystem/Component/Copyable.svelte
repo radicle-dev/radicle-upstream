@@ -40,14 +40,17 @@
 <style>
   .wrapper {
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     white-space: nowrap;
-    flex-direction: row;
-    align-items: center;
   }
 
   .content {
     display: flex;
+    background-color: var(--color-foreground-level-2);
+    padding: 0 4px;
+    border-radius: 4px;
+    color: var(--color-foreground-level-6);
+    align-items: center;
   }
 </style>
 
@@ -58,7 +61,7 @@
       <svelte:component
         this={copyIcon}
         size={iconSize}
-        style="display: flex; min-width: {iconSize === 'small' ? '16px' : '24px'};" />
+        style="display: flex; margin-left: 0.25rem; min-width: {iconSize === 'small' ? '16px' : '24px'};" />
     {/if}
   </span>
 </div>

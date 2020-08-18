@@ -28,15 +28,6 @@
     justify-content: center;
     position: relative;
   }
-  .urn {
-    background-color: var(--color-foreground-level-2);
-    padding: 0 4px;
-    border-radius: 4px;
-  }
-
-  .urn p {
-    color: var(--color-foreground-level-6);
-  }
 </style>
 
 <div
@@ -54,19 +45,12 @@
       {#if (showOnHover && !hover) || !showOnHover}
         <p class="typo-text-small-mono">{firstSix}</p>
         <Icon.Ellipses size="small" />
-        <p class="typo-text-small-mono" style="padding-right: 0.25rem">
-          {lastSix}
-        </p>
+        <p class="typo-text-small-mono">{lastSix}</p>
       {:else if showOnHover && hover}
-        <p
-          data-cy="full-urn"
-          class="typo-text-small-mono"
-          style="padding-right: 0.25rem;">
-          {cleanUrn}
-        </p>
+        <p data-cy="full-urn" class="typo-text-small-mono">{cleanUrn}</p>
       {/if}
     {:else}
-      <p class="typo-text-small-mono" style="padding-right: 0.25rem">{urn}</p>
+      <p class="typo-text-small-mono">{urn}</p>
     {/if}
   </Copyable>
 </div>
