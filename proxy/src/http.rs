@@ -204,6 +204,7 @@ where
     S: coco::ResetSigner,
     S::Error: coco::SignError,
 {
+    /// Replaces the fields the [`Context`] holds onto in a new temporary location.
     async fn reset(&mut self) -> Result<(), crate::error::Error> {
         // TmpDir deletes the temporary directory once it DROPS.
         // This means our new directory goes missing, and future calls will fail.
