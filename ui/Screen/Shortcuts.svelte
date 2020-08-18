@@ -24,9 +24,9 @@
 
 <ModalLayout>
   <div class="shortcut">
-    <kbd>shift</kbd>
+    <kbd>{modifierKeys}</kbd>
     +
-    <kbd>/</kbd>
+    <kbd>h</kbd>
     - shortcuts
   </div>
   <div class="shortcut">
