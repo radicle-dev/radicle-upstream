@@ -223,25 +223,64 @@ impl Context<registry::Cacher<registry::Registry>> {
     }
 }
 
-/// Deserialise a query string using [`serde_qs`]. This is useful for more complicated query
-/// structures that involve nesting, enums, etc.
+/// Parses an optional query string with [`serde_qs`] and returns the result.
+///
+/// If no query string is present (i.e. `?` is not included in the path) `None`
+/// is returned.
+///
+/// This filter is different from [`warp::filters::query::query`]. It is able to
+/// handle the absence of a query string and can deserialize more complex
+/// structures.
+///
+/// # Errors
+///
+/// If the query string cannot be parsed into `T` the filter rejects with
+/// [`http::error::Routing::InvalidQuery`].
+#[must_use]
+pub fn with_qs_opt<T>() -> BoxedFilter<(Option<T>,)>
+where
+    for<'de> T: Deserialize<'de> + Send + Sync + 'static,
+{
+    warp::filters::query::raw()
+        .map(Some)
+        .or_else(|rejection: Rejection| async {
+            if rejection.find::<warp::reject::InvalidQuery>().is_some() {
+                Ok((None,))
+            } else {
+                Err(rejection)
+            }
+        })
+        .and_then(|raw: Option<String>| async move {
+            if let Some(raw) = raw {
+                let query = percent_encoding::percent_decode_str(&raw).decode_utf8_lossy();
+                match serde_qs::from_str(&query) {
+                    Ok(value) => Ok(Some(value)),
+                    Err(error) => Err(warp::reject::Rejection::from(
+                        error::Routing::InvalidQuery {
+                            query: query.into_owned(),
+                            error: error.to_string(),
+                        },
+                    )),
+                }
+            } else {
+                Ok(None)
+            }
+        })
+        .boxed()
+}
+
+/// Parses the query string with [`serde_qs`] and returns the result.
+///
+/// Similar to [`with_qs_opt`] but requires a query string to be present.
+/// Otherwise the filter is rejected with [`http::error::Routing::QueryMissing`].
 #[must_use]
 pub fn with_qs<T>() -> BoxedFilter<(T,)>
 where
-    for<'de> T: Deserialize<'de> + Send + Sync,
+    for<'de> T: Deserialize<'de> + Send + Sync + 'static,
 {
-    warp::filters::query::raw()
-        .map(|raw: String| {
-            log::debug!("attempting to decode query string '{}'", raw);
-            let utf8 = percent_encoding::percent_decode_str(&raw).decode_utf8_lossy();
-            log::debug!("attempting to deserialize query string '{}'", utf8);
-            match serde_qs::from_str(utf8.as_ref()) {
-                Ok(result) => result,
-                Err(err) => {
-                    log::error!("failed to deserialize query string '{}': {}", raw, err);
-                    panic!("{}", err)
-                },
-            }
+    with_qs_opt()
+        .and_then(|opt_query: Option<T>| async move {
+            opt_query.ok_or(warp::reject::Rejection::from(error::Routing::QueryMissing))
         })
         .boxed()
 }
@@ -331,6 +370,7 @@ where
 
 #[cfg(test)]
 mod test {
+    use super::*;
     use bytes::Bytes;
     use http::response::Response;
     use pretty_assertions::assert_eq;
@@ -351,5 +391,88 @@ mod test {
 
         let have: Value = serde_json::from_slice(res.body()).expect("failed to deserialise body");
         checks(have);
+    }
+    #[derive(serde::Deserialize, serde::Serialize)]
+    struct Query {
+        value: u32,
+    }
+
+    fn with_qs_opt_test_filter() -> BoxedFilter<(impl Reply,)> {
+        with_qs_opt::<Query>()
+            .map(|opt_query| warp::reply::json(&opt_query))
+            .recover(super::error::recover)
+            .boxed()
+    }
+
+    #[tokio::test]
+    async fn with_qs_opt_present() {
+        let res = warp::test::request()
+            .method("GET")
+            .path("/?value=72")
+            .reply(&with_qs_opt_test_filter())
+            .await;
+
+        assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(
+                have,
+                serde_json::json!({
+                    "value": 72,
+                })
+            );
+        });
+    }
+    #[tokio::test]
+    async fn with_qs_opt_invalid() {
+        let res = warp::test::request()
+            .method("GET")
+            .path("/?value=not_a_number")
+            .reply(&with_qs_opt_test_filter())
+            .await;
+
+        assert_response(&res, StatusCode::BAD_REQUEST, |have| {
+            assert_eq!(
+                have,
+                serde_json::json!({
+                    "message": "Invalid query string \"value=not_a_number\": failed with reason: invalid digit found in string",
+                    "variant": "INVALID_QUERY"
+                })
+            );
+        });
+    }
+    #[tokio::test]
+    async fn with_qs_opt_none() {
+        let res = warp::test::request()
+            .method("GET")
+            .path("/")
+            .reply(&with_qs_opt_test_filter())
+            .await;
+
+        assert_response(&res, StatusCode::OK, |have| {
+            assert_eq!(have, serde_json::json!(null))
+        });
+    }
+
+    #[tokio::test]
+    async fn with_qs_missing() {
+        let api = with_qs::<Query>()
+            .map(|opt_query| warp::reply::json(&opt_query))
+            .recover(super::error::recover)
+            .boxed();
+
+        let res = warp::test::request()
+            .method("GET")
+            .path("/")
+            .reply(&api)
+            .await;
+
+        assert_response(&res, StatusCode::BAD_REQUEST, |have| {
+            assert_eq!(
+                have,
+                serde_json::json!({
+                    "message": "Required query string is missing",
+                    "variant": "QUERY_MISSING"
+                })
+            );
+        });
     }
 }
