@@ -46,6 +46,6 @@
     .
   </p>
   <Copyable>
-    <p class="typo-text-small-mono">export PATH="~/.radicle/bin:$PATH"</p>
+    <p class="typo-text-small-mono">export PATH="$HOME/.radicle/bin:$PATH"</p>
   </Copyable>
 </div>
