@@ -8,6 +8,7 @@
   export let value = null;
   export let dataCy = null;
 
+  export let spellcheck = false;
   export let disabled = null;
   export let validation = null;
   export let showSuccessCheck = false;
@@ -87,6 +88,7 @@
   <textarea
     data-cy={dataCy}
     class:invalid={validation && validation.status === ValidationStatus.Error}
+    spellcheck={spellcheck ? 'true' : 'false'}
     {placeholder}
     bind:value
     {disabled}
