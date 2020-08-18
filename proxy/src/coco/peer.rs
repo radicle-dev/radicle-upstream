@@ -582,7 +582,7 @@ mod test {
 
     #[tokio::test]
     async fn create_with_existing_remote() -> Result<(), Error> {
-        let tmp_dir = tempfile::tempdir().expect("failed to create temdir");
+        let tmp_dir = tempfile::tempdir().expect("failed to create tempdir");
         let repo_path = tmp_dir.path().join("radicle");
         let key = SecretKey::new();
         let config = config::default(key.clone(), tmp_dir.path())?;
