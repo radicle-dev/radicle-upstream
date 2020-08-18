@@ -41,6 +41,34 @@ beforeEach(() => {
 });
 
 context("project checkout", () => {
+  context("git remote helper setup hints", () => {
+    it("shows hints on how to set up the remote helper", () => {
+      // The hint is visible in the project checkout modal.
+      cy.pick("project-list-entry-platinum").click();
+      cy.pick("checkout-modal-toggle").click();
+      cy.pick("remote-helper-hint").should("be.visible");
+      cy.pick("profile").click();
+
+      // The hint is visible in the project creation modal.
+      cy.pick("new-project-button").click();
+      cy.pick("remote-helper-hint").should("be.visible");
+
+      // Dismiss the hint.
+      cy.pick("close-hint-button").click();
+      cy.pick("remote-helper-hint").should("not.be.visible");
+      cy.pick("cancel-button").click();
+
+      // Hint is still hidden when re-entering project creation
+      cy.pick("new-project-button").click();
+      cy.pick("remote-helper-hint").should("not.be.visible");
+      cy.pick("cancel-button").click();
+
+      // The hint is also hidden in the project creation modal.
+      cy.pick("new-project-button").click();
+      cy.pick("remote-helper-hint").should("not.be.visible");
+    });
+  });
+
   context("happy path", () => {
     it("checks out the project into a working directory", () => {
       cy.pick("project-list-entry-platinum").click();

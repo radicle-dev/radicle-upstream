@@ -201,6 +201,8 @@ pub mod settings {
     pub struct Appearance {
         /// Currently active color scheme.
         pub theme: Theme,
+        /// User dismissable hints.
+        pub hints: Hints,
     }
 
     /// Color schemes available.
@@ -216,6 +218,22 @@ pub mod settings {
     impl Default for Theme {
         fn default() -> Self {
             Self::Light
+        }
+    }
+
+    /// User dismissable textual hints.
+    #[derive(Debug, PartialEq, Deserialize, Serialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Hints {
+        /// Whether to show hints about how to set up the remote helper.
+        pub show_remote_helper: bool,
+    }
+
+    impl Default for Hints {
+        fn default() -> Self {
+            Self {
+                show_remote_helper: true,
+            }
         }
     }
 

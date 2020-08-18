@@ -1,11 +1,9 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { link } from "svelte-spa-router";
-
-  import * as path from "../../src/path.ts";
 
   import { Button, Input, Icon } from "../../DesignSystem/Primitive";
-  import { Tooltip } from "../../DesignSystem/Component";
+  import { RemoteHelperHint, Tooltip } from "../../DesignSystem/Component";
+  import { dismissRemoteHelperHint, settings } from "../../src/session.ts";
 
   const dispatch = createEventDispatcher();
 
@@ -35,42 +33,36 @@
     top: 3.25rem;
     right: 0;
     position: absolute;
-    border-radius: 4px;
+    border-radius: 8px;
     background: var(--color-background);
     border: 1px solid var(--color-foreground-level-3);
     box-shadow: var(--elevation-medium);
     padding: 1rem;
+    width: 25rem;
   }
+
   p {
     color: var(--color-foreground-level-6);
     user-select: none;
-    margin-bottom: 16px;
-  }
-
-  .info {
-    display: flex;
-    margin-top: 16px;
   }
 </style>
 
 <svelte:window on:click={clickOutside} />
 
 <div class="clone-dropdown" hidden={!expanded} bind:this={dropdown}>
-  <p>Checkout a working copy to your local disk</p>
+  <p style="margin-bottom: 0.5rem;">
+    Checkout a working copy to your local disk
+  </p>
 
   <Input.Directory
-    style="margin-bottom: 16px;"
+    style="margin-bottom: 0.5rem;"
     placeholder="~/path/to/folder"
     buttonVariant="outline"
     bind:path={checkoutDirectoryPath} />
-  <div class="info">
-    <p class="typo-text-small">
-      You need to have
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <a class="typo-link" use:link={path.shortcuts()}>git-remote-rad</a>
-      helper set up.
-    </p>
-  </div>
+
+  {#if $settings.appearance.hints.showRemoteHelper}
+    <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
+  {/if}
 
   <Tooltip
     value={!checkoutDirectoryPath ? 'Please select a folder' : null}
@@ -83,7 +75,7 @@
       }}
       disabled={!checkoutDirectoryPath}
       variant="secondary"
-      style="width: 100%; display: block; text-align: center;">
+      style="margin-top: 1rem; width: 100%; display: block; text-align: center;">
       Checkout
     </Button>
   </Tooltip>

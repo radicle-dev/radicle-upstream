@@ -91,12 +91,7 @@ pub fn get(api: &coco::Api, project_urn: &coco::Urn) -> Result<Project, error::E
 
     Ok((project, stats).into())
 }
-/// Returns a list of `Project`s for your peer.
-///
-/// # Errors
-///
-///   * We couldn't get a project list.
-///   * We couldn't get project stats.
+
 pub fn list_projects(api: &coco::Api) -> Result<Vec<Project>, error::Error> {
     let project_meta = api.list_projects()?;
 
