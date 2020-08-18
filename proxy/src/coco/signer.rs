@@ -1,3 +1,5 @@
+//! Signing and key handling.
+
 use std::convert::Infallible;
 
 use librad::keys;
@@ -25,7 +27,7 @@ pub trait Reset: Signer {
     ///
     /// # Errors
     ///
-    /// *
+    /// * if the write of the newly generated key fails
     fn reset(&mut self, paths: &paths::Paths, passphrase: SecUtf8) -> Result<(), Error>;
 }
 
@@ -43,12 +45,19 @@ type Storage = FileStorage<
 /// [`FileStorage`] backed [`Signer`] implementation.
 #[derive(Clone)]
 pub struct Store {
+    /// Cached public key.
     public_key: sign::PublicKey,
+    /// The underlying [`FileStorage`].
     storage: Storage,
 }
 
 impl Store {
     /// Sets up a new [`Store`] with a fresh key.
+    ///
+    /// # Errors
+    ///
+    /// * if the file system errors for any other reason than [`file::Error::NoSuckKey`]
+    /// * if the write of the generated key fails
     pub fn init(paths: &paths::Paths, passphrase: SecUtf8) -> Result<Self, Error> {
         let path = paths.keys_dir();
         let key_path = path.join(KEY);
@@ -62,7 +71,11 @@ impl Store {
                     storage.put_key(key.clone())?;
                     Ok(key)
                 }
-                _ => Err(err),
+                file::Error::KeyExists
+                | file::Error::Crypto(_)
+                | file::Error::Conversion(_)
+                | file::Error::Serde(_)
+                | file::Error::Io(_) => Err(err),
             },
         }?;
 
@@ -80,7 +93,7 @@ impl keys::AsPKCS8 for Store {
         self.storage
             .get_key()
             .map(|pair| pair.secret_key)
-            .unwrap()
+            .expect("unable to read key")
             .as_pkcs8()
     }
 }
@@ -100,6 +113,7 @@ impl Reset for Store {
     }
 }
 
+#[allow(clippy::unreachable)]
 #[async_trait::async_trait]
 impl sign::Signer for Store {
     type Error = Error;
