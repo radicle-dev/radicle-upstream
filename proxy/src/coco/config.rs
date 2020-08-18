@@ -84,7 +84,13 @@ pub fn configure(
 }
 
 /// Resolve seed identifiers into `(PeerId, SocketAddr)` pairs.
-pub async fn resolve_seeds<T: AsRef<str>>(
+///
+/// The expected format is `<peer-id>@<host>:<port>`
+///
+/// # Errors
+///
+/// If any of the supplied seeds cannot be parsed, an error is returned.
+pub async fn resolve_seeds<T: AsRef<str> + Send + Sync>(
     seeds: &[T],
 ) -> Result<Vec<(peer::PeerId, SocketAddr)>, error::Error> {
     let mut resolved = Vec::with_capacity(seeds.len());
@@ -94,6 +100,7 @@ pub async fn resolve_seeds<T: AsRef<str>>(
 
         if let Some(ix) = seed.chars().position(|c| c == '@') {
             let (peer_id, rest) = seed.split_at(ix);
+            #[allow(clippy::indexing_slicing)]
             let host = &rest[1..]; // Skip '@'
 
             if let Some(addr) = tokio::net::lookup_host(host).await?.next() {
