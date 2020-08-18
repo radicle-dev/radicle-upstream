@@ -88,7 +88,7 @@
   <textarea
     data-cy={dataCy}
     class:invalid={validation && validation.status === ValidationStatus.Error}
-    spellcheck={spellcheck ? 'true' : 'false'}
+    {spellcheck}
     {placeholder}
     bind:value
     {disabled}
