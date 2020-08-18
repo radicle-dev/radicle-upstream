@@ -1,12 +1,17 @@
 <script>
   import Router, { push, location } from "svelte-spa-router";
 
+  import * as modal from "./src/modal.ts";
   import * as notification from "./src/notification.ts";
   import * as path from "./src/path.ts";
   import * as remote from "./src/remote.ts";
   import { clear, fetch, session as store } from "./src/session.ts";
 
-  import { NotificationFaucet, Remote } from "./DesignSystem/Component";
+  import {
+    NotificationFaucet,
+    Remote,
+    ModalOverlay,
+  } from "./DesignSystem/Component";
   import { Button } from "./DesignSystem/Primitive";
 
   import Hotkeys from "./Hotkeys.svelte";
@@ -94,6 +99,8 @@
 <Hotkeys />
 <NotificationFaucet />
 <Theme />
+<ModalOverlay store={modal.store} />
+
 <Remote {store} context="session">
   <Router {routes} />
 

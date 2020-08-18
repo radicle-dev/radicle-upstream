@@ -2,6 +2,7 @@
   import { createEventDispatcher } from "svelte";
   import { location, link } from "svelte-spa-router";
 
+  import * as modal from "../../src/modal.ts";
   import * as path from "../../src/path.ts";
 
   import Tooltip from "./Tooltip.svelte";
@@ -157,7 +158,7 @@
   <ul class="bottom">
     <li class="item indicator" data-cy="search">
       <Tooltip value="Navigate to a project">
-        <div on:click|stopPropagation={() => dispatch('opensearch')}>
+        <div on:click|stopPropagation={() => modal.toggle(path.search())}>
           <Icon.Search />
         </div>
       </Tooltip>

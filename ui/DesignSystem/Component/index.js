@@ -8,6 +8,7 @@ import Header from "./Header";
 import HorizontalMenu from "./HorizontalMenu.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
+import ModalOverlay from "./ModalOverlay.svelte";
 import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
@@ -48,6 +49,7 @@ export {
   HorizontalMenu,
   Label,
   List,
+  ModalOverlay,
   NavigationButtons,
   Notification,
   NotificationFaucet,

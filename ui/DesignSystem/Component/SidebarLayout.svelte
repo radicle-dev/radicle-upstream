@@ -6,18 +6,10 @@
 
   import TransactionCenter from "../../App/TransactionCenter.svelte";
 
-  import SearchModal from "./SearchModal.svelte";
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy = null;
   export let style = null;
-
-  let showSearchModal = false;
-
-  const toggleSearchModal = ev => {
-    showSearchModal = !showSearchModal;
-    ev.stopPropagation();
-  };
 
   const session = getContext("session");
 </script>
@@ -36,14 +28,9 @@
 
   <Sidebar
     on:createorg={() => push(path.orgRegistration())}
-    on:opensearch={toggleSearchModal}
     identity={session.identity}
     orgs={session.orgs}
     registerOrgPermission={session.permissions.registerOrg} />
-
-  {#if showSearchModal}
-    <SearchModal on:hide={() => (showSearchModal = false)} />
-  {/if}
 
   <div class="container" data-cy="scrollable-content">
     <div class="content" {style}>

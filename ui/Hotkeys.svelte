@@ -1,6 +1,7 @@
 <script>
   import { location, pop, push } from "svelte-spa-router";
 
+  import * as modal from "./src/modal.ts";
   import * as path from "./src/path.ts";
   import { isMac } from "./src/settings.ts";
 
@@ -10,6 +11,8 @@
     }
     push(destination);
   };
+
+  const toggleModal = destination => modal.toggle(destination);
 
   const onKeydown = event => {
     const modifierKey = isMac ? event.metaKey : event.ctrlKey;
@@ -30,7 +33,7 @@
 
     // To open search => OS modifier key + p
     if (modifierKey && event.code === "KeyP") {
-      toggle(path.search());
+      toggleModal(path.search());
     }
 
     // To open design system => OS modifier key + d
@@ -41,6 +44,10 @@
     // To create a new project => OS modifier key + n
     if (modifierKey && event.code === "KeyN") {
       toggle(path.createProject());
+    }
+
+    if (event.code === "Escape") {
+      modal.hide();
     }
   };
 </script>

@@ -1,5 +1,4 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import { push } from "svelte-spa-router";
 
   import { Icon, Input } from "../Primitive";
@@ -7,6 +6,7 @@
   import TrackToggle from "./TrackToggle.svelte";
   import Urn from "./Urn.svelte";
 
+  import * as modal from "../../src/modal";
   import * as path from "../../src/path";
   import { Status } from "../../src/remote";
   import { updateUrn, validation } from "../../src/search";
@@ -14,30 +14,20 @@
 
   let searchBar, value;
 
+  export let content;
+
   const navigateToProject = () => {
     if ($validation.status !== ValidationStatus.Success) return;
 
-    dispatch("hide");
+    modal.hide();
     push(path.projectUntracked(value));
   };
 
   const onKeydown = ev => {
     switch (ev.key) {
-      case "Escape":
-        dispatch("hide");
-        break;
       case "Enter":
         navigateToProject();
         break;
-    }
-  };
-
-  const dispatch = createEventDispatcher();
-
-  const clickOutside = ev => {
-    if (ev.target !== searchBar && !searchBar.contains(ev.target)) {
-      showTrackingInfo = false;
-      dispatch("hide");
     }
   };
 
@@ -51,35 +41,7 @@
 </script>
 
 <style>
-  .overlay {
-    /* TODO(sos): ask brandonhaslegs for color & opacity for both light & dark modes */
-    background-color: black;
-    opacity: 0.7;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    z-index: 900;
-  }
-
-  .search-modal {
-    display: flex;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    z-index: 10000;
-
-    align-items: center;
-    justify-content: center;
-  }
-
-  .content {
-    z-index: 1000;
+  .container {
     width: 26.25rem;
   }
 
@@ -93,6 +55,7 @@
     border-radius: 0.5rem;
     height: 0;
     overflow: hidden;
+    /* TODO(sos): replace with svelte transitions */
     transition: height 0.25s ease;
   }
 
@@ -110,46 +73,44 @@
   }
 </style>
 
-<svelte:window on:click={clickOutside} on:keydown={onKeydown} />
+<!-- TODO(sos) -->
+<svelte:window on:keydown={onKeydown} />
 
-<div class="search-modal">
-  <div class="overlay" />
-  <div class="content">
-    <div class="search-bar" bind:this={searchBar}>
-      <Input.Text
-        autofocus
-        bind:value
-        placeholder="Have a Radicle project ID? Paste it here..."
-        showLeftItem
-        style="height: 3rem;"
-        inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
-        validation={$validation}>
-        <div slot="left" style="display: flex;">
-          <Icon.Search />
-        </div>
-      </Input.Text>
+<div class="container" bind:this={content}>
+  <div class="search-bar" bind:this={searchBar}>
+    <!-- TODO(sos): fix autofocus / hotkey conflict -->
+    <Input.Text
+      bind:value
+      placeholder="Have a Radicle project ID? Paste it here..."
+      showLeftItem
+      style="height: 3rem;"
+      inputStyle="border: none; border-radius: 0.5rem; height: 3rem;"
+      validation={$validation}>
+      <div slot="left" style="display: flex;">
+        <Icon.Search />
+      </div>
+    </Input.Text>
+  </div>
+
+  <div
+    class="tracking-info"
+    class:showTrackingInfo
+    on:click={navigateToProject}>
+    <div class="header">
+      <h3 style="color: var(--color-foreground-level-6);">my-new-project</h3>
+      <TrackToggle variant="expanded" />
     </div>
 
-    <div
-      class="tracking-info"
-      class:showTrackingInfo
-      on:click={navigateToProject}>
-      <div class="header">
-        <h3 style="color: var(--color-foreground-level-6);">my-new-project</h3>
-        <TrackToggle variant="expanded" />
-      </div>
-
-      <div style="display: flex; margin-bottom: 1rem;">
-        <Urn
-          urn="bshw82ienbytkx8173ndja0sjen833j88113jcb"
-          notificationText="The project ID was copied to your clipboard"
-          showOnHover />
-      </div>
-
-      <p style="color: var(--color-foreground-level-6);">
-        You’re not tracking this project yet, so there’s nothing to show here.
-        Track it and you’ll be notified as soon as it’s available.
-      </p>
+    <div style="display: flex; margin-bottom: 1rem;">
+      <Urn
+        urn="bshw82ienbytkx8173ndja0sjen833j88113jcb"
+        notificationText="The project ID was copied to your clipboard"
+        showOnHover />
     </div>
+
+    <p style="color: var(--color-foreground-level-6);">
+      You’re not tracking this project yet, so there’s nothing to show here.
+      Track it and you’ll be notified as soon as it’s available.
+    </p>
   </div>
 </div>
