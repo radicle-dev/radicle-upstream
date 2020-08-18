@@ -234,7 +234,8 @@ impl Context<registry::Cacher<registry::Registry>> {
 ///
 /// # Errors
 ///
-/// If  the rejects with [`http::error::Routing::InvalidQuery`].
+/// If the query string cannot be parsed into `T` the filter rejects with
+/// [`http::error::Routing::InvalidQuery`].
 #[must_use]
 pub fn with_qs_opt<T>() -> BoxedFilter<(Option<T>,)>
 where
