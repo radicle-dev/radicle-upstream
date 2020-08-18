@@ -10,6 +10,7 @@ use librad::meta::entity;
 use librad::meta::project;
 use radicle_surf::vcs::git::git2;
 
+use crate::coco::config;
 use crate::coco::User;
 
 /// Errors that can occur during project creation.
@@ -162,7 +163,7 @@ impl<Path: AsRef<path::Path>> Create<Path> {
         let repo = self.repo.create(&self.description, &self.default_branch)?;
 
         // Test if the repo has setup rad remote.
-        match repo.find_remote(super::RAD_REMOTE) {
+        match repo.find_remote(config::RAD_REMOTE) {
             Ok(remote) => {
                 // Being defensive here and making sure that if the URLs don't match we're loud
                 // about it.
