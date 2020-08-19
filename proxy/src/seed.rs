@@ -82,8 +82,6 @@ pub async fn resolve<T: AsRef<str> + Send + Sync>(seeds: &[T]) -> Result<Vec<See
 mod tests {
     use std::net;
 
-    use pretty_assertions::assert_eq;
-
     #[tokio::test]
     async fn test_resolve_seeds() {
         let seeds = super::resolve(&[
@@ -94,14 +92,11 @@ mod tests {
 
         let expected: net::SocketAddr = ([127, 0, 0, 1], 9999).into();
 
-        if let Some(super::Seed { addr, .. }) = seeds.first() {
-            assert_eq!(expected, *addr);
-        }
-        // assert!(
-        //     matches!(seeds.first(), Some(super::Seed { addr, ..}) if *addr == expected),
-        //     "{:?}",
-        //     seeds
-        // );
+        assert!(
+            matches!(seeds.first(), Some(super::Seed { addr, ..}) if *addr == expected),
+            "{:?}",
+            seeds
+        );
 
         super::resolve(&[String::from("hydsst3obtds@localhost:9999")])
             .await

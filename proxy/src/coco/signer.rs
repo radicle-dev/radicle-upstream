@@ -65,18 +65,15 @@ impl Store {
 
         let key = match storage.get_key() {
             Ok(key) => Ok(key.secret_key),
-            Err(err) => match err {
-                file::Error::NoSuchKey => {
+            Err(err) => {
+                if let file::Error::NoSuchKey = err {
                     let key = keys::SecretKey::new();
                     storage.put_key(key.clone())?;
                     Ok(key)
-                },
-                file::Error::KeyExists
-                | file::Error::Crypto(_)
-                | file::Error::Conversion(_)
-                | file::Error::Serde(_)
-                | file::Error::Io(_) => Err(err),
-            },
+                } else {
+                    Err(err)
+                }
+            }
         }?;
 
         Ok(Self {
