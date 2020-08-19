@@ -1109,6 +1109,7 @@
         <Urn
           urn="%rad:git:copy-me-to-see-the-full-urn"
           showOnHover
+          truncate
           notificationText="The urn was copied to your clipboard" />
       </Swatch>
     </Section>

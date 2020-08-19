@@ -2,9 +2,10 @@
   import Copyable from "./Copyable.svelte";
   import { Icon } from "../Primitive";
 
-  export let urn = null;
-  export let showOnHover = false;
   export let notificationText = "Copied to your clipboard";
+  export let showOnHover = false;
+  export let truncate = false;
+  export let urn = null;
 
   const cleanUrn = urn.replace(/^%?rad:git:/, "");
 
@@ -13,12 +14,13 @@
 
   let hover = false;
 
-  const hideFullUrn = () => {
-    hover = false;
+  const handleHover = event => {
+    if (!showOnHover) return;
+
+    hover = event.type === "mouseover";
   };
-  const showFullUrn = () => {
-    hover = true;
-  };
+
+  $: expanded = truncate ? hover : true;
 </script>
 
 <style>
@@ -32,20 +34,20 @@
 <div
   class="wrapper urn"
   data-cy="urn"
-  on:mouseover={showFullUrn}
-  on:mouseout={hideFullUrn}>
+  on:mouseover={handleHover}
+  on:mouseout={handleHover}>
   <Copyable
     iconSize="small"
     style="align-items: center;"
     copyContent={urn}
     {notificationText}>
     {#if urn.length > 24}
-      {#if (showOnHover && !hover) || !showOnHover}
+      {#if expanded}
+        <p data-cy="full-urn" class="typo-text-small-mono">{cleanUrn}</p>
+      {:else}
         <p class="typo-text-small-mono">{firstSix}</p>
         <Icon.Ellipses size="small" />
         <p class="typo-text-small-mono">{lastSix}</p>
-      {:else if showOnHover && hover}
-        <p data-cy="full-urn" class="typo-text-small-mono">{cleanUrn}</p>
       {/if}
     {:else}
       <p class="typo-text-small-mono">{urn}</p>

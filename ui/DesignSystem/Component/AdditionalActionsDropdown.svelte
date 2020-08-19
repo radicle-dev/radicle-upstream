@@ -121,7 +121,7 @@
     <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
       {#if headerTitle}
         <div class="header">
-          <Urn urn={headerTitle} />
+          <Urn urn={headerTitle} truncate />
         </div>
       {/if}
 

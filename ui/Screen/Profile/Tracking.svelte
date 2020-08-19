@@ -59,7 +59,7 @@
   </List>
 
   <div class="header">
-    <p class="typo-text-bold">Still looking...&nbsp;</p>
+    <p class="typo-text-bold">Still looking…&nbsp;</p>
     <p style="color: var(--color-foreground-level-6);">
       These projects haven't been found in your network yet or don't exist.
     </p>
@@ -69,7 +69,7 @@
     items={[{ urn: 'hwd1yreg4khbjfa4gsyrio3f7ehluwkdhyregs4k' }]}
     let:item={project}>
     <div class="undiscovered-project">
-      <Urn urn={project.urn} showOnHover />
+      <Urn urn={project.urn} />
       <TrackToggle tracking={true} />
     </div>
   </List>
