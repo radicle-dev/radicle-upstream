@@ -125,7 +125,7 @@ where
     http::with_context(ctx)
         .and(warp::get())
         .and(path::end())
-        .and(http::query_default::<ListQuery>())
+        .and(http::with_qs_opt::<ListQuery>())
         .and(document::document(
             document::query("user", document::string())
                 .required(false)
@@ -245,11 +245,12 @@ mod handler {
     /// If [`super::ListUser::user`] is given we only return projects that this user tracks.
     pub async fn list<R>(
         ctx: http::Ctx<R>,
-        query: super::ListQuery,
+        opt_query: Option<super::ListQuery>,
     ) -> Result<impl Reply, Rejection>
     where
         R: Send + Sync,
     {
+        let query = opt_query.unwrap_or_default();
         let ctx = ctx.read().await;
 
         let projects = if let Some(user) = query.user {
