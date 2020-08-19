@@ -1,9 +1,9 @@
 use std::convert::TryFrom;
 
 use librad::paths;
-use radicle_keystore::pinentry::SecUtf8;
 
 use proxy::coco;
+use proxy::coco::signer;
 use proxy::config;
 use proxy::env;
 use proxy::http;
@@ -45,13 +45,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             });
 
             client
-        },
+        }
         host => {
             let host = url17::Host::parse(host)?;
             radicle_registry_client::Client::create_with_executor(host)
                 .await
                 .expect("unable to construct devnet client")
-        },
+        }
     };
 
     let temp_dir = tempfile::tempdir().expect("test dir creation failed");
@@ -81,8 +81,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         kv::Store::new(config)?
     };
 
-    let pw = SecUtf8::from("radicle-upstream");
-    let signer = coco::StoreSigner::init(&paths, pw)?;
+    let pw = signer::SecUtf8::from("radicle-upstream");
+    let signer = signer::Store::init(&paths, pw)?;
 
     let coco_api = {
         let seeds = session::settings(&store).await?.coco.seeds;

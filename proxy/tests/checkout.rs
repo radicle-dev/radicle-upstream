@@ -4,6 +4,7 @@ use std::ffi;
 use std::path::Path;
 
 use proxy::coco;
+use proxy::coco::signer;
 use proxy::error;
 use proxy::project;
 
@@ -13,7 +14,7 @@ async fn can_checkout() -> Result<(), error::Error> {
 
     env::set_var("RAD_HOME", tmp_dir.path());
     let paths = coco::config::Paths::FromRoot(tmp_dir.path().to_path_buf()).try_into()?;
-    let signer = coco::StoreSigner::init(&paths, coco::SecUtf8::from("radicle-upstream"))?;
+    let signer = signer::Store::init(&paths, signer::SecUtf8::from("radicle-upstream"))?;
     let config = coco::config::configure(paths, signer.clone(), vec![]);
     let api = coco::Api::new(config).await?;
 
