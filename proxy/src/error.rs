@@ -80,10 +80,6 @@ pub enum Error {
     #[error("the Project Name '{0}' is invalid")]
     InvalidProjectName(String),
 
-    /// Seed input is invalid.
-    #[error("the seed '{0}' is invalid: {:1}")]
-    InvalidSeed(String, Option<librad::peer::conversion::Error>),
-
     /// The given account could not be found in the Registry.
     #[error("the given account '{0}' could not be found in the Registry")]
     AccountNotFound(registry::AccountId),

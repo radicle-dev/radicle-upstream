@@ -9,6 +9,7 @@ use proxy::env;
 use proxy::http;
 use proxy::keystore;
 use proxy::registry;
+use proxy::seed;
 use proxy::session;
 
 /// Flags accepted by the proxy binary.
@@ -87,12 +88,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let coco_api = {
         let seeds = session::settings(&store).await?.coco.seeds;
-        let seeds = coco::config::resolve_seeds(&seeds)
-            .await
-            .unwrap_or_else(|err| {
-                log::error!("Error parsing seed list {:?}: {}", seeds, err);
-                vec![]
-            });
+        let seeds = seed::resolve(&seeds).await.unwrap_or_else(|err| {
+            log::error!("Error parsing seed list {:?}: {}", seeds, err);
+            vec![]
+        });
         let config = coco::config::configure(paths, key.clone(), seeds);
 
         coco::Api::new(config).await?
